@@ -113,6 +113,11 @@ bool IsSessionInSecondaryLoginScreen() {
   return session_manager::SessionManager::Get()->IsInSecondaryLoginScreen();
 }
 
+bool IsUserSupervised() {
+  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
+  return user && user->IsSupervised();
+}
+
 }  // namespace
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
@@ -234,18 +239,9 @@ base::string16 SystemTrayDelegateChromeOS::GetSupervisedUserMessage()
     const {
   if (!IsUserSupervised())
     return base::string16();
-  if (IsUserChild())
+  if (user_manager::UserManager::Get()->IsLoggedInAsChildUser())
     return GetChildUserMessage();
   return GetLegacySupervisedUserMessage();
-}
-
-bool SystemTrayDelegateChromeOS::IsUserSupervised() const {
-  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
-  return user && user->IsSupervised();
-}
-
-bool SystemTrayDelegateChromeOS::IsUserChild() const {
-  return user_manager::UserManager::Get()->IsLoggedInAsChildUser();
 }
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
@@ -695,6 +691,8 @@ SystemTrayDelegateChromeOS::GetLegacySupervisedUserMessage() const {
 const base::string16
 SystemTrayDelegateChromeOS::GetChildUserMessage() const {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  // TODO(jamescook): If supervised users are always enabled on Chrome OS then
+  // these ifdefs can be removed.
   SupervisedUserService* service =
       SupervisedUserServiceFactory::GetForProfile(user_profile_);
   base::string16 first_custodian =

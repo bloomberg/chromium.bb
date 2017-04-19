@@ -85,6 +85,13 @@ class ASH_EXPORT SessionController
   // nullptr if no user session is found for the index.
   const mojom::UserSession* GetUserSession(UserIndex index) const;
 
+  // Returns true if the current user is supervised: has legacy supervised
+  // account or kid account.
+  bool IsUserSupervised() const;
+
+  // Returns true if the current user is a child account.
+  bool IsUserChild() const;
+
   // Locks the screen. The locking happens asynchronously.
   void LockScreen();
 

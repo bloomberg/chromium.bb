@@ -10,7 +10,6 @@
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_utils.h"
@@ -112,8 +111,8 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
     return;
   bool need_label = false;
   bool need_avatar = false;
-  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
-  if (delegate->IsUserSupervised())
+  SessionController* session = Shell::Get()->session_controller();
+  if (session->IsUserSupervised())
     need_label = true;
   switch (status) {
     case LoginStatus::LOCKED:
@@ -157,7 +156,7 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
     }
   }
 
-  if (delegate->IsUserSupervised()) {
+  if (session->IsUserSupervised()) {
     label_->SetText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL));
   } else if (status == LoginStatus::GUEST) {

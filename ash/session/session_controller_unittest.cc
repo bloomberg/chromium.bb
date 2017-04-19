@@ -348,5 +348,26 @@ TEST_F(SessionControllerTest, UserSessionUnblockedWithRunningUnlockAnimation) {
   }
 }
 
+TEST_F(SessionControllerTest, IsUserSupervised) {
+  mojom::UserSessionPtr session = mojom::UserSession::New();
+  session->session_id = 1u;
+  session->type = user_manager::USER_TYPE_SUPERVISED;
+  controller()->UpdateUserSession(std::move(session));
+
+  EXPECT_TRUE(controller()->IsUserSupervised());
+}
+
+TEST_F(SessionControllerTest, IsUserChild) {
+  mojom::UserSessionPtr session = mojom::UserSession::New();
+  session->session_id = 1u;
+  session->type = user_manager::USER_TYPE_CHILD;
+  controller()->UpdateUserSession(std::move(session));
+
+  EXPECT_TRUE(controller()->IsUserChild());
+
+  // Child accounts are supervised.
+  EXPECT_TRUE(controller()->IsUserSupervised());
+}
+
 }  // namespace
 }  // namespace ash

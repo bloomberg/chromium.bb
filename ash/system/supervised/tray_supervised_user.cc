@@ -8,6 +8,7 @@
 
 #include "ash/login_status.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/label_tray_view.h"
@@ -55,8 +56,7 @@ void TraySupervisedUser::UpdateMessage() {
 
 views::View* TraySupervisedUser::CreateDefaultView(LoginStatus status) {
   DCHECK(!tray_view_);
-  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
-  if (!delegate->IsUserSupervised())
+  if (!Shell::Get()->session_controller()->IsUserSupervised())
     return nullptr;
 
   tray_view_ = new LabelTrayView(this, GetSupervisedUserIcon());
@@ -74,12 +74,13 @@ void TraySupervisedUser::OnViewClicked(views::View* sender) {
 
 void TraySupervisedUser::UpdateAfterLoginStatusChange(LoginStatus status) {
   SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
+  SessionController* session = Shell::Get()->session_controller();
 
-  bool is_user_supervised = delegate->IsUserSupervised();
+  const bool is_user_supervised = session->IsUserSupervised();
   if (status == status_ && is_user_supervised == is_user_supervised_)
     return;
 
-  if (is_user_supervised && !delegate->IsUserChild() &&
+  if (is_user_supervised && !session->IsUserChild() &&
       status_ != LoginStatus::LOCKED &&
       !delegate->GetSupervisedUserManager().empty()) {
     CreateOrUpdateSupervisedWarningNotification();
@@ -111,7 +112,7 @@ void TraySupervisedUser::OnCustodianInfoChanged() {
   SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   std::string manager_name = delegate->GetSupervisedUserManager();
   if (!manager_name.empty()) {
-    if (!delegate->IsUserChild() &&
+    if (!Shell::Get()->session_controller()->IsUserChild() &&
         !message_center::MessageCenter::Get()->FindVisibleNotificationById(
             kNotificationId)) {
       CreateOrUpdateSupervisedWarningNotification();
@@ -121,12 +122,10 @@ void TraySupervisedUser::OnCustodianInfoChanged() {
 }
 
 const gfx::VectorIcon& TraySupervisedUser::GetSupervisedUserIcon() const {
-  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
-
   // Not intended to be used for non-supervised users.
-  DCHECK(delegate->IsUserSupervised());
+  DCHECK(Shell::Get()->session_controller()->IsUserSupervised());
 
-  if (delegate->IsUserChild())
+  if (Shell::Get()->session_controller()->IsUserChild())
     return kSystemMenuChildUserIcon;
   return kSystemMenuSupervisedUserIcon;
 }

@@ -43,14 +43,6 @@ base::string16 SystemTrayDelegate::GetSupervisedUserMessage() const {
   return base::string16();
 }
 
-bool SystemTrayDelegate::IsUserSupervised() const {
-  return false;
-}
-
-bool SystemTrayDelegate::IsUserChild() const {
-  return false;
-}
-
 void SystemTrayDelegate::ShowEnterpriseInfo() {}
 
 void SystemTrayDelegate::ShowUserLogin() {}

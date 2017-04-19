@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -75,7 +76,7 @@ WmShelf* WmShelf::ForWindow(WmWindow* window) {
 
 // static
 bool WmShelf::CanChangeShelfAlignment() {
-  if (Shell::Get()->system_tray_delegate()->IsUserSupervised())
+  if (Shell::Get()->session_controller()->IsUserSupervised())
     return false;
 
   LoginStatus login_status =

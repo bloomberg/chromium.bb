@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_type.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 using session_manager::SessionState;
@@ -124,6 +125,23 @@ const mojom::UserSession* SessionController::GetUserSession(
     return nullptr;
 
   return user_sessions_[index].get();
+}
+
+bool SessionController::IsUserSupervised() const {
+  if (!IsActiveUserSessionStarted())
+    return false;
+
+  user_manager::UserType active_user_type = GetUserSession(0)->type;
+  return active_user_type == user_manager::USER_TYPE_SUPERVISED ||
+         active_user_type == user_manager::USER_TYPE_CHILD;
+}
+
+bool SessionController::IsUserChild() const {
+  if (!IsActiveUserSessionStarted())
+    return false;
+
+  user_manager::UserType active_user_type = GetUserSession(0)->type;
+  return active_user_type == user_manager::USER_TYPE_CHILD;
 }
 
 void SessionController::LockScreen() {

@@ -7,6 +7,7 @@
 #include "ash/system/tiles/tiles_default_view.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_controller_client.h"
+#include "components/user_manager/user_type.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/view.h"
 
@@ -99,10 +100,11 @@ TEST_F(TrayTilesTest, ButtonStatesAddingUser) {
 
 // Settings buttons are disabled when adding a supervised user.
 TEST_F(TrayTilesTest, ButtonStatesSupervisedUserFlow) {
-  // Simulate a supervised user session with disabled settings.
+  // Simulate the add supervised user flow, which is a regular user session but
+  // with web UI settings disabled.
   const bool enable_settings = false;
-  GetSessionControllerClient()->AddUserSession("foo@example.com",
-                                               enable_settings);
+  GetSessionControllerClient()->AddUserSession(
+      "foo@example.com", user_manager::USER_TYPE_REGULAR, enable_settings);
   std::unique_ptr<views::View> default_view(
       tray_tiles()->CreateDefaultViewForTesting());
   EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());

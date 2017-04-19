@@ -414,7 +414,7 @@ void UserCardView::AddUserContent(views::BoxLayout* layout,
   base::string16 user_email_string;
   if (login_status != LoginStatus::GUEST) {
     user_email_string =
-        Shell::Get()->system_tray_delegate()->IsUserSupervised()
+        Shell::Get()->session_controller()->IsUserSupervised()
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL)
             : base::UTF8ToUTF16(
                   controller->GetUserSession(user_index_)->display_email);

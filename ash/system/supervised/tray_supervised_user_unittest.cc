@@ -5,7 +5,10 @@
 #include "ash/system/supervised/tray_supervised_user.h"
 
 #include "ash/login_status.h"
-#include "ash/test/ash_test.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
+#include "ash/test/test_session_controller_client.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -16,7 +19,8 @@ using message_center::NotificationList;
 
 namespace ash {
 
-class TraySupervisedUserTest : public AshTest {
+// Tests handle creating their own sessions.
+class TraySupervisedUserTest : public test::NoSessionAshTestBase {
  public:
   TraySupervisedUserTest() {}
   ~TraySupervisedUserTest() override {}
@@ -40,33 +44,19 @@ message_center::Notification* TraySupervisedUserTest::GetPopup() {
   return NULL;
 }
 
-class TraySupervisedUserInitialTest : public TraySupervisedUserTest {
- public:
-  // Set the initial login status to supervised-user before AshTest::SetUp()
-  // constructs the system tray.
-  TraySupervisedUserInitialTest()
-      : scoped_initial_login_status_(LoginStatus::SUPERVISED) {}
-  ~TraySupervisedUserInitialTest() override {}
-
- private:
-  test::ScopedInitialLoginStatus scoped_initial_login_status_;
-
-  DISALLOW_COPY_AND_ASSIGN(TraySupervisedUserInitialTest);
-};
-
+// Verifies that when a supervised user logs in that a warning notification is
+// shown and ash does not crash.
 TEST_F(TraySupervisedUserTest, SupervisedUserHasNotification) {
-  test::TestSystemTrayDelegate* delegate = GetSystemTrayDelegate();
-  delegate->SetLoginStatus(LoginStatus::SUPERVISED);
+  SessionController* session = Shell::Get()->session_controller();
+  ASSERT_EQ(LoginStatus::NOT_LOGGED_IN, session->login_status());
+  ASSERT_FALSE(session->IsActiveUserSessionStarted());
 
-  message_center::Notification* notification = GetPopup();
-  ASSERT_NE(static_cast<message_center::Notification*>(NULL), notification);
-  EXPECT_EQ(static_cast<int>(message_center::SYSTEM_PRIORITY),
-            notification->rich_notification_data().priority);
-}
+  // Simulate a supervised user logging in.
+  test::TestSessionControllerClient* client = GetSessionControllerClient();
+  client->Reset();
+  client->AddUserSession("user1@test.com", user_manager::USER_TYPE_SUPERVISED);
+  client->SetSessionState(session_manager::SessionState::ACTIVE);
 
-TEST_F(TraySupervisedUserInitialTest, SupervisedUserNoCrash) {
-  // Initial login status is already SUPERVISED, which should create
-  // the notification and should not cause crashes.
   message_center::Notification* notification = GetPopup();
   ASSERT_NE(static_cast<message_center::Notification*>(NULL), notification);
   EXPECT_EQ(static_cast<int>(message_center::SYSTEM_PRIORITY),

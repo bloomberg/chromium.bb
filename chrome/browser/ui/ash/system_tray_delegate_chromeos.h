@@ -58,8 +58,6 @@ class SystemTrayDelegateChromeOS
   std::string GetSupervisedUserManager() const override;
   base::string16 GetSupervisedUserManagerName() const override;
   base::string16 GetSupervisedUserMessage() const override;
-  bool IsUserSupervised() const override;
-  bool IsUserChild() const override;
   void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
   void GetCurrentIME(ash::IMEInfo* info) override;

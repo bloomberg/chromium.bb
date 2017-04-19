@@ -23,6 +23,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   // set up a login status. This will fit to most of the test cases, but this
   // cannot be set during the initialization. To test the initialization,
   // consider using SetInitialLoginStatus() instead.
+  // TODO(jamescook): Eliminate this method and |login_status_|.
   void SetLoginStatus(LoginStatus login_status);
 
   // Updates the session length limit so that the limit will come from now in
@@ -41,7 +42,6 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   // SystemTrayDelegate:
   LoginStatus GetUserLoginStatus() const override;
   std::string GetSupervisedUserManager() const override;
-  bool IsUserSupervised() const override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   void GetCurrentIME(IMEInfo* info) override;
@@ -55,20 +55,6 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   IMEInfoList ime_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSystemTrayDelegate);
-};
-
-// Changes the initial login status before TestSystemTrayDelegate is created.
-// Allows testing the case when chrome is restarted right after login (such as
-// when a flag is set).
-class ScopedInitialLoginStatus {
- public:
-  explicit ScopedInitialLoginStatus(LoginStatus status);
-  ~ScopedInitialLoginStatus();
-
- private:
-  LoginStatus old_status_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedInitialLoginStatus);
 };
 
 }  // namespace test

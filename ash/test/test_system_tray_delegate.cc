@@ -14,14 +14,8 @@
 namespace ash {
 namespace test {
 
-namespace {
-
-LoginStatus g_initial_status = LoginStatus::USER;
-
-}  // namespace
-
 TestSystemTrayDelegate::TestSystemTrayDelegate()
-    : login_status_(g_initial_status), session_length_limit_set_(false) {}
+    : login_status_(LoginStatus::USER), session_length_limit_set_(false) {}
 
 TestSystemTrayDelegate::~TestSystemTrayDelegate() {}
 
@@ -49,12 +43,6 @@ void TestSystemTrayDelegate::SetAvailableIMEList(const IMEInfoList& list) {
 }
 
 LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
-  // Initial login status has been changed for testing.
-  if (g_initial_status != LoginStatus::USER &&
-      g_initial_status == login_status_) {
-    return login_status_;
-  }
-
   // At new user image screen manager->IsUserLoggedIn() would return true
   // but there's no browser session available yet so use SessionStarted().
   SessionController* controller = Shell::Get()->session_controller();
@@ -67,13 +55,9 @@ LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
 }
 
 std::string TestSystemTrayDelegate::GetSupervisedUserManager() const {
-  if (!IsUserSupervised())
+  if (!Shell::Get()->session_controller()->IsUserSupervised())
     return std::string();
   return "manager@chrome.com";
-}
-
-bool TestSystemTrayDelegate::IsUserSupervised() const {
-  return login_status_ == LoginStatus::SUPERVISED;
 }
 
 bool TestSystemTrayDelegate::GetSessionStartTime(
@@ -98,17 +82,6 @@ void TestSystemTrayDelegate::GetCurrentIME(IMEInfo* info) {
 
 void TestSystemTrayDelegate::GetAvailableIMEList(IMEInfoList* list) {
   *list = ime_list_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-ScopedInitialLoginStatus::ScopedInitialLoginStatus(LoginStatus new_status)
-    : old_status_(g_initial_status) {
-  g_initial_status = new_status;
-}
-
-ScopedInitialLoginStatus::~ScopedInitialLoginStatus() {
-  g_initial_status = old_status_;
 }
 
 }  // namespace test

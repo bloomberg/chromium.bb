@@ -69,22 +69,16 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns the display email of the user that manages the current supervised
   // user.
+  // TODO(jamescook): Migrate to SessionController. http://crbug.com/712799
   virtual std::string GetSupervisedUserManager() const;
 
   // Returns the name of the user that manages the current supervised user.
+  // TODO(jamescook): Migrate to SessionController. http://crbug.com/712799
   virtual base::string16 GetSupervisedUserManagerName() const;
 
   // Returns the notification for supervised users.
+  // TODO(jamescook): Migrate to SessionController. http://crbug.com/712799
   virtual base::string16 GetSupervisedUserMessage() const;
-
-  // Returns true if the current user is supervised: has legacy supervised
-  // account or kid account.
-  virtual bool IsUserSupervised() const;
-
-  // Returns true if the current user is child.
-  // TODO(merkulova): remove on FakeUserManager componentization.
-  // crbug.com/443119
-  virtual bool IsUserChild() const;
 
   // Shows information about enterprise enrolled devices.
   virtual void ShowEnterpriseInfo();
