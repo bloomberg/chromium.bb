@@ -24,6 +24,7 @@ void StartCronetIfNecessary(int port) {
     [Cronet setSslKeyLogFileName:@"SSLKEYLOGFILE"];
     [Cronet addQuicHint:@"test.example.com" port:443 altPort:443];
     [Cronet enableTestCertVerifierForTesting];
+    [Cronet setHttpCacheType:CRNHttpCacheTypeDisabled];
     [Cronet start];
   }
   NSString* rules = base::SysUTF8ToNSString(

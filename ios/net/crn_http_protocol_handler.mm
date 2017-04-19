@@ -51,7 +51,7 @@ class HttpProtocolHandlerCore;
 namespace {
 
 // Size of the buffer used to read the net::URLRequest.
-const int kIOBufferSize = 4096;
+const int kIOBufferSize = 64 * 1024;
 
 // Global instance of the HTTPProtocolHandlerDelegate.
 net::HTTPProtocolHandlerDelegate* g_protocol_handler_delegate = nullptr;

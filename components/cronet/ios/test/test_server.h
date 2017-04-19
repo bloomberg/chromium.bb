@@ -20,6 +20,11 @@ class TestServer {
   // Returns URL which respond with setting cookie to |cookie_line| and echo it
   // in response body.
   static std::string GetSetCookieURL(const std::string& cookie_line);
+  // Prepares response and returns URL which respond with |data_size| of bytes
+  // in response body.
+  static std::string PrepareBigDataURL(long data_size);
+  // Releases response created by PrepareBigDataURL().
+  static void ReleaseBigDataURL();
 };
 
 }  // namespace cronet

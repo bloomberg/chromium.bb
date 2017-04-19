@@ -7,8 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/format_macros.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -17,8 +21,11 @@ namespace {
 
 const char kEchoHeaderPath[] = "/EchoHeader?";
 const char kSetCookiePath[] = "/SetCookie?";
+const char kBigDataPath[] = "/BigData?";
 
 std::unique_ptr<net::EmbeddedTestServer> g_test_server;
+base::LazyInstance<std::string>::Leaky g_big_data_body =
+    LAZY_INSTANCE_INITIALIZER;
 
 std::unique_ptr<net::test_server::HttpResponse> EchoHeaderInRequest(
     const net::test_server::HttpRequest& request) {
@@ -34,6 +41,18 @@ std::unique_ptr<net::test_server::HttpResponse> EchoHeaderInRequest(
   auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
   http_response->set_content(header_value);
   return std::move(http_response);
+}
+
+std::unique_ptr<net::test_server::HttpResponse> ReturnBigDataInResponse(
+    const net::test_server::HttpRequest& request) {
+  DCHECK(base::StartsWith(request.relative_url, kBigDataPath,
+                          base::CompareCase::INSENSITIVE_ASCII));
+  std::string data_size_str = request.relative_url.substr(strlen(kBigDataPath));
+  int64_t data_size;
+  CHECK(base::StringToInt64(base::StringPiece(data_size_str), &data_size));
+  CHECK(data_size == static_cast<int64_t>(g_big_data_body.Get().size()));
+  return base::MakeUnique<net::test_server::RawHttpResponse>(
+      std::string(), g_big_data_body.Get());
 }
 
 std::unique_ptr<net::test_server::HttpResponse> SetAndEchoCookieInResponse(
@@ -57,6 +76,10 @@ std::unique_ptr<net::test_server::HttpResponse> CronetTestRequestHandler(
   if (base::StartsWith(request.relative_url, kSetCookiePath,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return SetAndEchoCookieInResponse(request);
+  }
+  if (base::StartsWith(request.relative_url, kBigDataPath,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    return ReturnBigDataInResponse(request);
   }
   return base::MakeUnique<net::test_server::BasicHttpResponse>();
 }
@@ -88,6 +111,27 @@ std::string TestServer::GetEchoHeaderURL(const std::string& header_name) {
 std::string TestServer::GetSetCookieURL(const std::string& cookie_line) {
   DCHECK(g_test_server);
   return g_test_server->GetURL(kSetCookiePath + cookie_line).spec();
+}
+
+std::string TestServer::PrepareBigDataURL(long data_size) {
+  DCHECK(g_test_server);
+  DCHECK(g_big_data_body.Get().empty());
+  // Response line with headers.
+  std::string response_builder;
+  base::StringAppendF(&response_builder, "HTTP/1.1 200 OK\r\n");
+  base::StringAppendF(&response_builder, "Content-Length: %" PRIuS "\r\n",
+                      data_size);
+  base::StringAppendF(&response_builder, "\r\n");
+  response_builder += std::string(data_size, 'c');
+  g_big_data_body.Get() = response_builder;
+  return g_test_server
+      ->GetURL(kBigDataPath + base::Int64ToString(response_builder.size()))
+      .spec();
+}
+
+void TestServer::ReleaseBigDataURL() {
+  DCHECK(!g_big_data_body.Get().empty());
+  g_big_data_body.Get() = std::string();
 }
 
 }  // namespace cronet

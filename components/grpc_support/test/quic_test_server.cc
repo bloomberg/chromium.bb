@@ -40,6 +40,14 @@ const char kHelloHeaderValue[] = "hello header value";
 const char kHelloTrailerName[] = "hello_trailer";
 const char kHelloTrailerValue[] = "hello trailer value";
 
+const char kTestServerSimpleUrl[] = "https://test.example.com/simple.txt";
+const char kSimplePath[] = "/simple.txt";
+const char kSimpleBodyValue[] = "Simple Hello from QUIC Server";
+const char kSimpleStatus[] = "200";
+
+const char kSimpleHeaderName[] = "hello_header";
+const char kSimpleHeaderValue[] = "hello header value";
+
 base::Thread* g_quic_server_thread = nullptr;
 net::QuicHttpResponseCache* g_quic_response_cache = nullptr;
 net::QuicSimpleServer* g_quic_server = nullptr;
@@ -55,6 +63,11 @@ void SetupQuicHttpResponseCache() {
   g_quic_response_cache->AddResponse(base::StringPrintf("%s", kTestServerHost),
                                       kHelloPath, std::move(headers),
                                       kHelloBodyValue, std::move(trailers));
+  headers[kSimpleHeaderName] = kSimpleHeaderValue;
+  headers[kStatusHeader] = kSimpleStatus;
+  g_quic_response_cache->AddResponse(base::StringPrintf("%s", kTestServerHost),
+                                     kSimplePath, std::move(headers),
+                                     kSimpleBodyValue);
 }
 
 void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
@@ -72,7 +85,6 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
       directory.AppendASCII("quic_test.example.com.crt"),
       directory.AppendASCII("quic_test.example.com.key.pkcs8"),
       directory.AppendASCII("quic_test.example.com.key.sct")));
-
   SetupQuicHttpResponseCache();
 
   g_quic_server = new net::QuicSimpleServer(
@@ -85,7 +97,6 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
       net::IPEndPoint(net::IPAddress::IPv4AllZeros(), 0));
   CHECK_GE(rv, 0) << "Quic server fails to start";
   g_quic_server_port = g_quic_server->server_address().port();
-
   server_started_event->Signal();
 }
 
