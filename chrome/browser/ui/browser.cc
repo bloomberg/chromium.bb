@@ -494,6 +494,17 @@ Browser::~Browser() {
   command_controller_.reset();
   BrowserList::RemoveBrowser(this);
 
+  // If closing the window is going to trigger a shutdown, then we need to
+  // schedule all active downloads to be cancelled. This needs to be after
+  // removing |this| from BrowserList so that OkToClose...() can determine
+  // whether there are any other windows open for the browser.
+  int num_downloads;
+  if (!browser_defaults::kBrowserAliveWithNoWindows &&
+      OkToCloseWithInProgressDownloads(&num_downloads) ==
+          DOWNLOAD_CLOSE_BROWSER_SHUTDOWN) {
+    DownloadService::CancelAllDownloads();
+  }
+
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
@@ -554,12 +565,6 @@ Browser::~Browser() {
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
 
-  int num_downloads;
-  if (OkToCloseWithInProgressDownloads(&num_downloads) ==
-          DOWNLOAD_CLOSE_BROWSER_SHUTDOWN &&
-      !browser_defaults::kBrowserAliveWithNoWindows) {
-    DownloadService::CancelAllDownloads();
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
