@@ -112,25 +112,20 @@ SlotAssignment::SlotAssignment(ShadowRoot& owner)
   DCHECK(owner.IsV1());
 }
 
-static void DetachNotAssignedNode(Node& node) {
-  if (node.GetLayoutObject())
-    node.LazyReattachIfAttached();
-}
-
 void SlotAssignment::ResolveAssignment() {
   for (Member<HTMLSlotElement> slot : Slots())
     slot->SaveAndClearDistribution();
 
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
     if (!child.IsSlotable()) {
-      DetachNotAssignedNode(child);
+      child.LazyReattachIfAttached();
       continue;
     }
     HTMLSlotElement* slot = FindSlotByName(child.SlotName());
     if (slot)
       slot->AppendAssignedNode(child);
     else
-      DetachNotAssignedNode(child);
+      child.LazyReattachIfAttached();
   }
 }
 
