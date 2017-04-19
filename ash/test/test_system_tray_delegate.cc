@@ -66,6 +66,12 @@ LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   return login_status_;
 }
 
+std::string TestSystemTrayDelegate::GetSupervisedUserManager() const {
+  if (!IsUserSupervised())
+    return std::string();
+  return "manager@chrome.com";
+}
+
 bool TestSystemTrayDelegate::IsUserSupervised() const {
   return login_status_ == LoginStatus::SUPERVISED;
 }

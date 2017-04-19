@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/system/tray/default_system_tray_delegate.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -18,7 +18,7 @@ class NetworkingConfigDelegate;
 // version see SystemTrayDelegateChromeOS.
 //
 // TODO: Replace with SystemTrayController. http://crbug.com/647412.
-class SystemTrayDelegateMus : public DefaultSystemTrayDelegate {
+class SystemTrayDelegateMus : public SystemTrayDelegate {
  public:
   SystemTrayDelegateMus();
   ~SystemTrayDelegateMus() override;

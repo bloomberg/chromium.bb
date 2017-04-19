@@ -5,15 +5,15 @@
 #ifndef ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
 #define ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
 
-#include "ash/system/tray/default_system_tray_delegate.h"
 #include "ash/system/tray/ime_info.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 
 namespace ash {
 namespace test {
 
-class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
+class TestSystemTrayDelegate : public SystemTrayDelegate {
  public:
   TestSystemTrayDelegate();
   ~TestSystemTrayDelegate() override;
@@ -38,8 +38,9 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   // Sets the list of available IMEs.
   void SetAvailableIMEList(const IMEInfoList& list);
 
-  // Overridden from SystemTrayDelegate:
+  // SystemTrayDelegate:
   LoginStatus GetUserLoginStatus() const override;
+  std::string GetSupervisedUserManager() const override;
   bool IsUserSupervised() const override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;

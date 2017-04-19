@@ -15,9 +15,9 @@
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
-#include "ash/system/tray/default_system_tray_delegate.h"
 #include "ash/test/test_keyboard_ui.h"
 #include "ash/test/test_shelf_delegate.h"
+#include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -127,7 +127,7 @@ ShelfDelegate* ShellDelegateImpl::CreateShelfDelegate(ShelfModel* model) {
 }
 
 SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {
-  return new DefaultSystemTrayDelegate;
+  return new test::TestSystemTrayDelegate;
 }
 
 std::unique_ptr<WallpaperDelegate>

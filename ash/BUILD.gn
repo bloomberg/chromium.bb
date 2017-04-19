@@ -494,8 +494,6 @@ component("ash") {
     "system/toast/toast_overlay.h",
     "system/tray/actionable_view.cc",
     "system/tray/actionable_view.h",
-    "system/tray/default_system_tray_delegate.cc",
-    "system/tray/default_system_tray_delegate.h",
     "system/tray/fixed_sized_image_view.cc",
     "system/tray/fixed_sized_image_view.h",
     "system/tray/hover_highlight_view.cc",
