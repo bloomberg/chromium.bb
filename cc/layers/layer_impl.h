@@ -72,10 +72,6 @@ enum DrawMode {
 
 class CC_EXPORT LayerImpl {
  public:
-  typedef LayerImplList RenderSurfaceListType;
-  typedef LayerImplList LayerListType;
-  typedef RenderSurfaceImpl RenderSurfaceType;
-
   static std::unique_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return base::WrapUnique(new LayerImpl(tree_impl, id));
   }
