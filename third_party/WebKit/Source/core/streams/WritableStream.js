@@ -41,14 +41,16 @@
   const _strategySize = v8.createPrivateSymbol('[[strategySize]]');
   const _underlyingSink = v8.createPrivateSymbol('[[underlyingSink]]');
 
-  // Numeric encodings of states
+  // Numeric encodings of stream states. Stored in the _stateAndFlags slot.
   const WRITABLE = 0;
   const CLOSED = 1;
-  const ERRORED = 2;
+  const ERRORING = 2;
+  const ERRORED = 3;
 
-  // Mask to extract or assign states to _stateAndFlags
+  // Mask to extract or assign states to _stateAndFlags.
   const STATE_MASK = 0xF;
 
+  // Also stored in _stateAndFlags.
   const BACKPRESSURE_FLAG = 0x10;
 
   // Javascript functions. It is important to use these copies, as the ones on
@@ -206,48 +208,26 @@
     if (state === ERRORED) {
       return Promise_reject(stream[_storedError]);
     }
-    TEMP_ASSERT(state === WRITABLE,
-               'state is "writable".');
     const error = new TypeError(errStreamAborting);
     if (stream[_pendingAbortRequest] !== undefined) {
       return Promise_reject(error);
     }
 
-    const controller = stream[_writableStreamController];
-    TEMP_ASSERT(controller !== undefined,
-                'controller is not undefined');
-    if (!WritableStreamHasOperationMarkedInFlight(stream) &&
-        controller[_started]) {
-      WritableStreamFinishAbort(stream);
-      return WritableStreamDefaultControllerAbortSteps(controller, reason);
+    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
+                '_state_ is `"writable"` or `"erroring"`');
+
+    const wasAlreadyErroring = state === ERRORING;
+    if (wasAlreadyErroring) {
+      reason = undefined;
     }
-    const writer = stream[_writer];
-    if (writer !== undefined) {
-      WritableStreamDefaultWriterEnsureReadyPromiseRejected(writer, error);
-    }
+
     const promise = v8.createPromise();
-    stream[_pendingAbortRequest] = {promise, reason};
+    stream[_pendingAbortRequest] = {promise, reason, wasAlreadyErroring};
+
+    if (!wasAlreadyErroring) {
+      WritableStreamStartErroring(stream, error);
+    }
     return promise;
-  }
-
-  function WritableStreamError(stream, error) {
-    stream[_stateAndFlags] = (stream[_stateAndFlags] & ~STATE_MASK) | ERRORED;
-    stream[_storedError] = error;
-    WritableStreamDefaultControllerErrorSteps(stream[_writableStreamController]);
-    if (stream[_pendingAbortRequest] === undefined) {
-      const writer = stream[_writer];
-      if (writer !== undefined) {
-        WritableStreamDefaultWriterEnsureReadyPromiseRejected(writer, error);
-      }
-    }
-    if (!WritableStreamHasOperationMarkedInFlight(stream)) {
-      WritableStreamRejectPromisesInReactionToError(stream);
-    }
-  }
-
-  function WritableStreamFinishAbort(stream) {
-    const error = new TypeError(errStreamAborted);
-    WritableStreamError(stream, error);
   }
 
   // Writable Stream Abstract Operations Used by Controllers
@@ -262,23 +242,90 @@
     return promise;
   }
 
+  function WritableStreamDealWithRejection(stream, error) {
+    const state = stream[_stateAndFlags] & STATE_MASK;
+    if (state === WRITABLE) {
+      WritableStreamStartErroring(stream, error);
+      return;
+    }
+
+    TEMP_ASSERT(state === ERRORING, '_state_ is `"erroring"`');
+    WritableStreamFinishErroring(stream);
+  }
+
+  function WritableStreamStartErroring(stream, reason) {
+    TEMP_ASSERT(stream[_storedError] === undefined,
+                '_stream_.[[storedError]] is *undefined*');
+    TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
+                '_stream_.[[state]] is `"writable"`');
+
+    const controller = stream[_writableStreamController];
+    TEMP_ASSERT(controller !== undefined, '_controller_ is not *undefined*');
+
+    stream[_stateAndFlags] = (stream[_stateAndFlags] & ~STATE_MASK) | ERRORING;
+    stream[_storedError] = reason;
+
+    const writer = stream[_writer];
+    if (writer !== undefined) {
+      WritableStreamDefaultWriterEnsureReadyPromiseRejected(writer, reason);
+    }
+
+    if (!WritableStreamHasOperationMarkedInFlight(stream) &&
+        controller[_started]) {
+      WritableStreamFinishErroring(stream);
+    }
+  }
+
+  function WritableStreamFinishErroring(stream) {
+    TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === ERRORING,
+                '_stream_.[[state]] is `"erroring"`');
+    TEMP_ASSERT(
+        !WritableStreamHasOperationMarkedInFlight(stream),
+        '! WritableStreamHasOperationMarkedInFlight(_stream_) is *false*');
+
+    stream[_stateAndFlags] = (stream[_stateAndFlags] & ~STATE_MASK) | ERRORED;
+
+    WritableStreamDefaultControllerErrorSteps(
+        stream[_writableStreamController]);
+
+    const storedError = stream[_storedError];
+    rejectPromises(stream[_writeRequests], storedError);
+    stream[_writeRequests] = new binding.SimpleQueue();
+
+    if (stream[_pendingAbortRequest] === undefined) {
+      WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
+      return;
+    }
+
+    const abortRequest = stream[_pendingAbortRequest];
+    stream[_pendingAbortRequest] = undefined;
+
+    if (abortRequest.wasAlreadyErroring === true) {
+      v8.rejectPromise(abortRequest.promise, storedError);
+      WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
+      return;
+    }
+
+    const promise = WritableStreamDefaultControllerAbortSteps(
+        stream[_writableStreamController], abortRequest.reason);
+
+    thenPromise(
+        promise,
+        () => {
+          v8.resolvePromise(abortRequest.promise, undefined);
+          WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
+        },
+        reason => {
+          v8.rejectPromise(abortRequest.promise, reason);
+          WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
+        });
+  }
+
   function WritableStreamFinishInFlightWrite(stream) {
     TEMP_ASSERT(stream[_inFlightWriteRequest] !== undefined,
                 '_stream_.[[inFlightWriteRequest]] is not *undefined*.');
     v8.resolvePromise(stream[_inFlightWriteRequest], undefined);
     stream[_inFlightWriteRequest] = undefined;
-    const state = stream[_stateAndFlags] & STATE_MASK;
-    if (state === ERRORED) {
-      WritableStreamFinishInFlightWriteInErroredState(stream);
-      return;
-    }
-    TEMP_ASSERT(state === WRITABLE, '_state_ is `"writable"`.');
-    WritableStreamHandleAbortRequestIfPending(stream);
-  }
-
-  function WritableStreamFinishInFlightWriteInErroredState(stream) {
-    WritableStreamRejectAbortRequestIfPending(stream);
-    WritableStreamRejectPromisesInReactionToError(stream);
   }
 
   function WritableStreamFinishInFlightWriteWithError(stream, error) {
@@ -286,14 +333,12 @@
                 '_stream_.[[inFlightWriteRequest]] is not *undefined*.');
     v8.rejectPromise(stream[_inFlightWriteRequest], error);
     stream[_inFlightWriteRequest] = undefined;
-    const state = stream[_stateAndFlags] & STATE_MASK;
-    if (state === ERRORED) {
-      WritableStreamFinishInFlightWriteInErroredState(stream);
-      return;
-    }
-    TEMP_ASSERT(state === WRITABLE, '_state_ is `"writable"`.');
-    WritableStreamError(stream, error);
-    WritableStreamRejectAbortRequestIfPending(stream);
+
+    let state = stream[_stateAndFlags] & STATE_MASK;
+    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
+                '_stream_.[[state]] is `"writable"` or `"erroring"`');
+
+    WritableStreamDealWithRejection(stream, error);
   }
 
   function WritableStreamFinishInFlightClose(stream) {
@@ -301,26 +346,29 @@
                 '_stream_.[[inFlightCloseRequest]] is not *undefined*.');
     v8.resolvePromise(stream[_inFlightCloseRequest], undefined);
     stream[_inFlightCloseRequest] = undefined;
+
     const state = stream[_stateAndFlags] & STATE_MASK;
-    if (state === ERRORED) {
-      WritableStreamFinishInFlightCloseInErroredState(stream);
-      return;
+    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
+                '_stream_.[[state]] is `"writable"` or `"erroring"`');
+
+    if (state === ERRORING) {
+      stream[_storedError] = undefined;
+      if (stream[_pendingAbortRequest] !== undefined) {
+        v8.resolvePromise(stream[_pendingAbortRequest].promise, undefined);
+        stream[_pendingAbortRequest] = undefined;
+      }
     }
-    TEMP_ASSERT(state === WRITABLE, '_state_ is `"writable"`.');
+
     stream[_stateAndFlags] = (stream[_stateAndFlags] & ~STATE_MASK) | CLOSED;
     const writer = stream[_writer];
     if (writer !== undefined) {
       v8.resolvePromise(writer[_closedPromise], undefined);
     }
-    if (stream[_pendingAbortRequest] !== undefined) {
-      v8.resolvePromise(stream[_pendingAbortRequest].promise, undefined);
-      stream[_pendingAbortRequest] = undefined;
-    }
-  }
 
-  function WritableStreamFinishInFlightCloseInErroredState(stream) {
-    WritableStreamRejectAbortRequestIfPending(stream);
-    WritableStreamRejectClosedPromiseInReactionToError(stream);
+    TEMP_ASSERT(stream[_pendingAbortRequest] === undefined,
+                '_stream_.[[pendingAbortRequest]] is *undefined*');
+    TEMP_ASSERT(stream[_storedError] === undefined,
+                '_stream_.[[storedError]] is *undefined*');
   }
 
   function WritableStreamFinishInFlightCloseWithError(stream, error) {
@@ -328,34 +376,22 @@
                 '_stream_.[[inFlightCloseRequest]] is not *undefined*.');
     v8.rejectPromise(stream[_inFlightCloseRequest], error);
     stream[_inFlightCloseRequest] = undefined;
+
     const state = stream[_stateAndFlags] & STATE_MASK;
-    if (state === ERRORED) {
-      WritableStreamFinishInFlightCloseInErroredState(stream);
-      return;
+    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
+                '_stream_.[[state]] is `"writable"` or `"erroring"`');
+
+    if (stream[_pendingAbortRequest] !== undefined) {
+      v8.rejectPromise(stream[_pendingAbortRequest].promise, error);
+      stream[_pendingAbortRequest] = undefined;
     }
-    TEMP_ASSERT(state === WRITABLE, '_state_ is `"writable"`.');
-    WritableStreamError(stream, error);
-    WritableStreamRejectAbortRequestIfPending(stream);
+
+    WritableStreamDealWithRejection(stream, error);
   }
 
   function WritableStreamCloseQueuedOrInFlight(stream) {
     return stream[_closeRequest] !== undefined ||
         stream[_inFlightCloseRequest] !== undefined;
-  }
-
-  function WritableStreamHandleAbortRequestIfPending(stream) {
-    if (stream[_pendingAbortRequest] === undefined) {
-      return;
-    }
-    WritableStreamFinishAbort(stream);
-    const abortRequest = stream[_pendingAbortRequest];
-    stream[_pendingAbortRequest] = undefined;
-    const promise =
-        WritableStreamDefaultControllerAbortSteps(stream[_writableStreamController],
-                                                  abortRequest.reason);
-    thenPromise(promise,
-                result => v8.resolvePromise(abortRequest.promise, result),
-                reason => v8.rejectPromise(abortRequest.promise, reason));
   }
 
   function WritableStreamHasOperationMarkedInFlight(stream) {
@@ -381,35 +417,22 @@
     stream[_inFlightWriteRequest] = writeRequest;
   }
 
-  function WritableStreamRejectClosedPromiseInReactionToError(stream) {
+  function WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream) {
+    TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === ERRORED,
+                '_stream_.[[state]] is `"errored"`');
+
+    if (stream[_closeRequest] !== undefined) {
+      TEMP_ASSERT(stream[_inFlightCloseRequest] === undefined,
+                  '_stream_.[[inFlightCloseRequest]] is *undefined*');
+      v8.rejectPromise(stream[_closeRequest], stream[_storedError]);
+      stream[_closeRequest] = undefined;
+    }
+
     const writer = stream[_writer];
     if (writer !== undefined) {
       v8.rejectPromise(writer[_closedPromise], stream[_storedError]);
       v8.markPromiseAsHandled(writer[_closedPromise]);
     }
-  }
-
-  function WritableStreamRejectAbortRequestIfPending(stream) {
-    if (stream[_pendingAbortRequest] !== undefined) {
-      v8.rejectPromise(stream[_pendingAbortRequest].promise,
-                       stream[_storedError]);
-      stream[_pendingAbortRequest] = undefined;
-    }
-  }
-
-  function WritableStreamRejectPromisesInReactionToError(stream) {
-    const storedError = stream[_storedError];
-    rejectPromises(stream[_writeRequests], storedError);
-    stream[_writeRequests] = new binding.SimpleQueue();
-
-    if (stream[_closeRequest] !== undefined) {
-      TEMP_ASSERT(stream[_inFlightCloseRequest] === undefined,
-                  '_stream_.[[inFlightCloseRequest]] is *undefined*.');
-      v8.rejectPromise(stream[_closeRequest], storedError);
-      stream[_closeRequest] = undefined;
-    }
-
-    WritableStreamRejectClosedPromiseInReactionToError(stream);
   }
 
   function WritableStreamUpdateBackpressure(stream, backpressure) {
@@ -466,28 +489,44 @@
       this[_ownerWritableStream] = stream;
       stream[_writer] = this;
       const state = stream[_stateAndFlags] & STATE_MASK;
-      if (state === WRITABLE) {
-        if (stream[_pendingAbortRequest] !== undefined) {
-          const error = new TypeError(errStreamAborting);
-          this[_readyPromise] = Promise_reject(error);
-          v8.markPromiseAsHandled(this[_readyPromise]);
-        } else if (!WritableStreamCloseQueuedOrInFlight(stream) &&
-            stream[_stateAndFlags] & BACKPRESSURE_FLAG) {
-          this[_readyPromise] = v8.createPromise();
-        } else {
-          this[_readyPromise] = Promise_resolve(undefined);
+      switch (state) {
+        case WRITABLE:
+        {
+          if (!WritableStreamCloseQueuedOrInFlight(stream) &&
+              stream[_stateAndFlags] & BACKPRESSURE_FLAG) {
+            this[_readyPromise] = v8.createPromise();
+          } else {
+            this[_readyPromise] = Promise_resolve(undefined);
+          }
+          this[_closedPromise] = v8.createPromise();
+          break;
         }
-        this[_closedPromise] = v8.createPromise();
-      } else if (state === CLOSED) {
-        this[_readyPromise] = Promise_resolve(undefined);
-        this[_closedPromise] = Promise_resolve(undefined);
-      } else {
-        TEMP_ASSERT(state === ERRORED, '_state_ is `"errored"`.');
-        const storedError = stream[_storedError];
-        this[_readyPromise] = Promise_reject(storedError);
-        v8.markPromiseAsHandled(this[_readyPromise]);
-        this[_closedPromise] = Promise_reject(storedError);
-        v8.markPromiseAsHandled(this[_closedPromise]);
+
+        case ERRORING:
+        {
+          this[_readyPromise] = Promise_reject(stream[_storedError]);
+          v8.markPromiseAsHandled(this[_readyPromise]);
+          this[_closedPromise] = v8.createPromise();
+          break;
+        }
+
+        case CLOSED:
+        {
+          this[_readyPromise] = Promise_resolve(undefined);
+          this[_closedPromise] = Promise_resolve(undefined);
+          break;
+        }
+
+        default:
+        {
+          TEMP_ASSERT(state === ERRORED, '_state_ is `"errored"`.');
+          const storedError = stream[_storedError];
+          this[_readyPromise] = Promise_reject(storedError);
+          v8.markPromiseAsHandled(this[_readyPromise]);
+          this[_closedPromise] = Promise_reject(storedError);
+          v8.markPromiseAsHandled(this[_closedPromise]);
+          break;
+        }
       }
     }
 
@@ -584,15 +623,16 @@
       return Promise_reject(
           createCannotActionOnStateStreamError('close', state));
     }
-    if (stream[_pendingAbortRequest] !== undefined) {
-      return Promise_reject(new TypeError(errStreamAborting));
-    }
-    TEMP_ASSERT(state === WRITABLE, '_state_ is `"writable"`.');
+
+    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
+                '_state_ is `"writable"` or `"erroring"`.');
     TEMP_ASSERT(!WritableStreamCloseQueuedOrInFlight(stream),
                 '! WritableStreamCloseQueuedOrInFlight(_stream_) is *false*.');
     const promise = v8.createPromise();
     stream[_closeRequest] = promise;
-    if (stream[_stateAndFlags] & BACKPRESSURE_FLAG) {
+
+    if ((stream[_stateAndFlags] & BACKPRESSURE_FLAG) &&
+        state === WRITABLE) {
       v8.resolvePromise(writer[_readyPromise], undefined);
     }
     WritableStreamDefaultControllerClose(stream[_writableStreamController]);
@@ -609,12 +649,26 @@
     if (state === ERRORED) {
       return Promise_reject(stream[_storedError]);
     }
-    TEMP_ASSERT(state === WRITABLE, 'state is "writable".');
+
+    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
+                '_state_ is `"writable"` or `"erroring"`.');
+
     return WritableStreamDefaultWriterClose(writer);
   }
 
-  function WritableStreamDefaultWriterEnsureReadyPromiseRejected(writer,
-                                                                 error) {
+  function WritableStreamDefaultWriterEnsureClosedPromiseRejected(
+      writer, error) {
+    if (v8.promiseState(writer[_closedPromise]) === v8.kPROMISE_PENDING) {
+      v8.rejectPromise(writer[_closedPromise], error);
+    } else {
+      writer[_closedPromise] = Promise_reject(error);
+    }
+    v8.markPromiseAsHandled(writer[_closedPromise]);
+  }
+
+
+  function WritableStreamDefaultWriterEnsureReadyPromiseRejected(
+      writer, error) {
     if (v8.promiseState(writer[_readyPromise]) === v8.kPROMISE_PENDING) {
       v8.rejectPromise(writer[_readyPromise], error);
     } else {
@@ -626,7 +680,7 @@
   function WritableStreamDefaultWriterGetDesiredSize(writer) {
     const stream = writer[_ownerWritableStream];
     const state = stream[_stateAndFlags] & STATE_MASK;
-    if (state === ERRORED || stream[_pendingAbortRequest] !== undefined) {
+    if (state === ERRORED || state === ERRORING) {
       return null;
     }
     if (state === CLOSED) {
@@ -643,16 +697,10 @@
     TEMP_ASSERT(stream[_writer] === writer,
                 'stream.[[writer]] is writer.');
     const releasedError = new TypeError(errReleasedWriterClosedPromise);
-    const state = stream[_stateAndFlags] & STATE_MASK;
-    WritableStreamDefaultWriterEnsureReadyPromiseRejected(writer,
-                                                          releasedError);
-    if (state === WRITABLE ||
-        WritableStreamHasOperationMarkedInFlight(stream)) {
-      v8.rejectPromise(writer[_closedPromise], releasedError);
-    } else {
-      writer[_closedPromise] = Promise_reject(releasedError);
-    }
-    v8.markPromiseAsHandled(writer[_closedPromise]);
+    WritableStreamDefaultWriterEnsureReadyPromiseRejected(
+        writer, releasedError);
+    WritableStreamDefaultWriterEnsureClosedPromiseRejected(
+        writer, releasedError);
     stream[_writer] = undefined;
     writer[_ownerWritableStream] = undefined;
   }
@@ -678,9 +726,10 @@
       return Promise_reject(
           createCannotActionOnStateStreamError('write to', CLOSED));
     }
-    if (stream[_pendingAbortRequest] !== undefined) {
-      return Promise_reject(new TypeError(errStreamAborting));
+    if (state === ERRORING) {
+      return Promise_reject(stream[_storedError]);
     }
+    TEMP_ASSERT(state === WRITABLE, '_state_ is `"writable"`');
     const promise = WritableStreamAddWriteRequest(stream);
     WritableStreamDefaultControllerWrite(controller, chunk, chunkSize);
     return promise;
@@ -730,9 +779,10 @@
       if (!IsWritableStreamDefaultController(this)) {
         throw new TypeError(streamErrors.illegalInvocation);
       }
-      const state = this[_controlledWritableStream][_stateAndFlags] & STATE_MASK;
-      if (state === CLOSED || state === ERRORED) {
-        throw createCannotActionOnStateStreamError('error', state);
+      const state =
+          this[_controlledWritableStream][_stateAndFlags] & STATE_MASK;
+      if (state !== WRITABLE) {
+        return;
       }
       WritableStreamDefaultControllerError(this, e);
     }
@@ -744,9 +794,7 @@
   // or impossible, so use static dispatch for now. This will have to be fixed
   // when adding a byte controller.
   function WritableStreamDefaultControllerAbortSteps(controller, reason) {
-    const sinkAbortPromise =
-        PromiseInvokeOrNoop(controller[_underlyingSink], 'abort', [reason]);
-    return thenPromise(sinkAbortPromise, () => undefined);
+    return PromiseInvokeOrNoop(controller[_underlyingSink], 'abort', [reason]);
   }
 
   function WritableStreamDefaultControllerErrorSteps(controller) {
@@ -761,21 +809,18 @@
     thenPromise(
         startPromise,
         () => {
+          const state = stream[_stateAndFlags] & STATE_MASK;
+          TEMP_ASSERT(state === WRITABLE || state === ERRORING,
+                      '_stream_.[[state]] is `"writable"` or `"erroring"`');
           controller[_started] = true;
-          if ((stream[_stateAndFlags] & STATE_MASK) === ERRORED) {
-            WritableStreamRejectAbortRequestIfPending(stream);
-          } else {
-            WritableStreamHandleAbortRequestIfPending(stream);
-          }
           WritableStreamDefaultControllerAdvanceQueueIfNeeded(controller);
         },
         r => {
-          TEMP_ASSERT(
-              (stream[_stateAndFlags] & STATE_MASK) === WRITABLE ||
-                  (stream[_stateAndFlags] & STATE_MASK) === ERRORED,
-              '_stream_.[[state]] is `"writable"` or `"errored"`.');
-          WritableStreamDefaultControllerErrorIfNeeded(controller, r);
-          WritableStreamRejectAbortRequestIfPending(stream);
+          const state = stream[_stateAndFlags] & STATE_MASK;
+          TEMP_ASSERT(state === WRITABLE || state === ERRORING,
+                      '_stream_.[[state]] is `"writable"` or `"erroring"`');
+          controller[_started] = true;
+          WritableStreamDealWithRejection(stream, r);
         });
   }
 
@@ -818,7 +863,8 @@
       return;
     }
     const stream = controller[_controlledWritableStream];
-    if (!WritableStreamCloseQueuedOrInFlight(stream)) {
+    if (!WritableStreamCloseQueuedOrInFlight(stream) &&
+        (stream[_stateAndFlags] & STATE_MASK) === WRITABLE) {
       const backpressure =
           WritableStreamDefaultControllerGetBackpressure(controller);
       WritableStreamUpdateBackpressure(stream, backpressure);
@@ -828,14 +874,18 @@
 
   function WritableStreamDefaultControllerAdvanceQueueIfNeeded(controller) {
     const stream = controller[_controlledWritableStream];
-    const state = stream[_stateAndFlags] & STATE_MASK;
-    if (state === CLOSED || state === ERRORED) {
-      return;
-    }
     if (!controller[_started]) {
       return;
     }
     if (stream[_inFlightWriteRequest] !== undefined) {
+      return;
+    }
+    const state = stream[_stateAndFlags] & STATE_MASK;
+    if (state === CLOSED || state === ERRORED) {
+      return;
+    }
+    if (state === ERRORING) {
+      WritableStreamFinishErroring(stream);
       return;
     }
     if (controller[_queue].length === 0) {
@@ -851,7 +901,8 @@
   }
 
   function WritableStreamDefaultControllerErrorIfNeeded(controller, error) {
-    const state = controller[_controlledWritableStream][_stateAndFlags] & STATE_MASK;
+    const state =
+        controller[_controlledWritableStream][_stateAndFlags] & STATE_MASK;
     if (state === WRITABLE) {
       WritableStreamDefaultControllerError(controller, error);
     }
@@ -863,8 +914,8 @@
     DequeueValue(controller);
     TEMP_ASSERT(controller[_queue].length === 0,
                 'controller.[[queue]] is empty.');
-    const sinkClosePromise = PromiseInvokeOrNoop(controller[_underlyingSink],
-                                                 'close', [controller]);
+    const sinkClosePromise = PromiseInvokeOrNoop(
+        controller[_underlyingSink], 'close', []);
     thenPromise(
         sinkClosePromise,
         () => WritableStreamFinishInFlightClose(stream),
@@ -882,12 +933,11 @@
         () => {
           WritableStreamFinishInFlightWrite(stream);
           const state = stream[_stateAndFlags] & STATE_MASK;
-          if (state === ERRORED) {
-            return;
-          }
-          TEMP_ASSERT(state === WRITABLE, '_state_ is `"writable"`.');
+          TEMP_ASSERT(state === WRITABLE || state === ERRORING,
+                      '_state_ is `"writable"` or `"erroring"`');
           DequeueValue(controller);
-          if (!WritableStreamCloseQueuedOrInFlight(stream)) {
+          if (!WritableStreamCloseQueuedOrInFlight(stream) &&
+              state === WRITABLE) {
             const backpressure =
                 WritableStreamDefaultControllerGetBackpressure(controller);
             WritableStreamUpdateBackpressure(stream, backpressure);
@@ -895,13 +945,7 @@
           WritableStreamDefaultControllerAdvanceQueueIfNeeded(controller);
         },
         reason => {
-          const wasErrored = (stream[_stateAndFlags] & STATE_MASK) === ERRORED;
           WritableStreamFinishInFlightWriteWithError(stream, reason);
-          TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === ERRORED,
-                      '_stream_.[[state]] is `"errored"`.');
-          if (!wasErrored) {
-            ResetQueue(controller);
-          }
         });
   }
 
@@ -915,7 +959,7 @@
     const stream = controller[_controlledWritableStream];
     TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
                 '_stream_.[[state]] is `"writable"`.');
-    WritableStreamError(stream, error);
+    WritableStreamStartErroring(stream, error);
   }
 
   // Queue-with-Sizes Operations
