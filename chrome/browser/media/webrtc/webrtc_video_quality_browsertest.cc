@@ -344,19 +344,11 @@ INSTANTIATE_TEST_CASE_P(
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQualityVp8) {
-// Disable these tests until crbug.com/711400 is addressed.
-#if defined(OS_MACOSX)
-  return;
-#endif  // defined(OS_MACOSX)
   TestVideoQuality("VP8");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQualityVp9) {
-// Disable these tests until crbug.com/711400 is addressed.
-#if defined(OS_MACOSX)
-  return;
-#endif  // defined(OS_MACOSX)
   TestVideoQuality("VP9");
 }
 
@@ -364,10 +356,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQualityH264) {
-// Disable these tests until crbug.com/711400 is addressed.
-#if defined(OS_MACOSX)
-  return;
-#endif  // defined(OS_MACOSX)
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
     LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
