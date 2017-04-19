@@ -17,6 +17,8 @@ class ScrollOffset;
 }
 
 namespace views {
+class ViewObserverTest;
+
 namespace test {
 class ScrollViewTestApi;
 }
@@ -105,6 +107,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void OnGestureEvent(ui::GestureEvent* event) override;
   const char* GetClassName() const override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
+  void OnChildLayerChanged(View* child) override;
 
   // ScrollBarController overrides:
   void ScrollToPosition(ScrollBar* source, int position) override;
@@ -118,6 +123,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
  private:
   friend class test::ScrollViewTestApi;
+  FRIEND_TEST_ALL_PREFIXES(ViewObserverTest, ScrollViewChildAddLayerTest);
 
   class Viewport;
 
@@ -162,6 +168,11 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void AddBorder();
   void UpdateBorder();
 
+  // Enables view port layering if |child| or any of its descendants has a
+  // layer. Returns true if yes. We short circuit the recursion if we enabled
+  // layering.
+  bool EnableLayeringRecursivelyForChild(View* child);
+
   // The current contents and its viewport. |contents_| is contained in
   // |contents_viewport_|.
   View* contents_;
@@ -203,6 +214,12 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // Focus ring, if one is installed.
   View* focus_ring_ = nullptr;
+
+  // Set to true if we enabled layering for the viewport.
+  bool viewport_layer_enabled_ = false;
+
+  // Set to true if the scroll with layers feature is enabled.
+  const bool scroll_with_layers_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollView);
 };

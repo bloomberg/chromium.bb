@@ -5023,4 +5023,81 @@ TEST_F(ViewObserverTest, ChildViewReordered) {
   EXPECT_EQ(child_view2.get(), view_reordered());
 }
 
+// Validates that if a child of a ScrollView adds a layer, then a layer
+// is added to the ScrollView's viewport.
+TEST_F(ViewObserverTest, ScrollViewChildAddLayerTest) {
+  std::unique_ptr<ScrollView> scroll_view(new ScrollView());
+  scroll_view->SetContents(new View());
+  // Bail if the scroll view already has a layer.
+  if (scroll_view->contents_viewport_->layer())
+    return;
+
+  EXPECT_FALSE(scroll_view->contents_viewport_->layer());
+
+  std::unique_ptr<View> child_view = NewView();
+  scroll_view->AddChildView(child_view.get());
+  child_view->SetPaintToLayer(ui::LAYER_TEXTURED);
+
+  EXPECT_TRUE(scroll_view->contents_viewport_->layer());
+  scroll_view->RemoveChildView(child_view.get());
+}
+
+// Provides a simple parent view implementation which tracks layer change
+// notifications from child views.
+class TestParentView : public View {
+ public:
+  TestParentView()
+      : received_layer_change_notification_(false), layer_change_count_(0) {}
+
+  void Reset() {
+    received_layer_change_notification_ = false;
+    layer_change_count_ = 0;
+  }
+
+  bool received_layer_change_notification() const {
+    return received_layer_change_notification_;
+  }
+
+  int layer_change_count() const { return layer_change_count_; }
+
+  // View overrides.
+  void OnChildLayerChanged(View* child) override {
+    received_layer_change_notification_ = true;
+    layer_change_count_++;
+  }
+
+ private:
+  // Set to true if we receive the OnChildLayerChanged() notification for a
+  // child.
+  bool received_layer_change_notification_;
+
+  // Contains the number of OnChildLayerChanged() notifications for a child.
+  int layer_change_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestParentView);
+};
+
+// Tests the following cases.
+// 1. We receive the OnChildLayerChanged() notification when a layer change
+//    occurs in a child view.
+// 2. We don't receive two layer changes when a child with an existing layer
+//    creates a new layer.
+TEST_F(ViewObserverTest, ChildViewLayerNotificationTest) {
+  std::unique_ptr<TestParentView> parent_view(new TestParentView);
+  std::unique_ptr<View> child_view = NewView();
+  parent_view->AddChildView(child_view.get());
+
+  EXPECT_FALSE(parent_view->received_layer_change_notification());
+  EXPECT_EQ(0, parent_view->layer_change_count());
+
+  child_view->SetPaintToLayer(ui::LAYER_TEXTURED);
+  EXPECT_TRUE(parent_view->received_layer_change_notification());
+  EXPECT_EQ(1, parent_view->layer_change_count());
+
+  parent_view->Reset();
+  child_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  EXPECT_TRUE(parent_view->received_layer_change_notification());
+  EXPECT_EQ(1, parent_view->layer_change_count());
+}
+
 }  // namespace views

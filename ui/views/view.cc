@@ -537,39 +537,16 @@ void View::SetPaintToLayer(ui::LayerType layer_type) {
   if (paint_to_layer_ && (layer()->type() == layer_type))
     return;
 
-  DestroyLayer();
+  DestroyLayerImpl(LayerChangeNotifyBehavior::DONT_NOTIFY);
   CreateLayer(layer_type);
   paint_to_layer_ = true;
+
+  // Notify the parent chain about the layer change.
+  NotifyParentsOfLayerChange();
 }
 
 void View::DestroyLayer() {
-  if (!paint_to_layer_)
-    return;
-
-  paint_to_layer_ = false;
-  if (!layer())
-    return;
-
-  ui::Layer* new_parent = layer()->parent();
-  std::vector<ui::Layer*> children = layer()->children();
-  for (size_t i = 0; i < children.size(); ++i) {
-    layer()->Remove(children[i]);
-    if (new_parent)
-      new_parent->Add(children[i]);
-  }
-
-  LayerOwner::DestroyLayer();
-
-  if (new_parent)
-    ReorderLayers();
-
-  UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(NULL));
-
-  SchedulePaint();
-
-  Widget* widget = GetWidget();
-  if (widget)
-    widget->LayerTreeChanged();
+  DestroyLayerImpl(LayerChangeNotifyBehavior::NOTIFY);
 }
 
 std::unique_ptr<ui::Layer> View::RecreateLayer() {
@@ -1628,6 +1605,49 @@ void View::UpdateChildLayerVisibility(bool ancestor_visible) {
   }
 }
 
+void View::DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents) {
+  if (!paint_to_layer_)
+    return;
+
+  paint_to_layer_ = false;
+  if (!layer())
+    return;
+
+  ui::Layer* new_parent = layer()->parent();
+  std::vector<ui::Layer*> children = layer()->children();
+  for (size_t i = 0; i < children.size(); ++i) {
+    layer()->Remove(children[i]);
+    if (new_parent)
+      new_parent->Add(children[i]);
+  }
+
+  LayerOwner::DestroyLayer();
+
+  if (new_parent)
+    ReorderLayers();
+
+  UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(NULL));
+
+  SchedulePaint();
+
+  // Notify the parent chain about the layer change.
+  if (notify_parents == LayerChangeNotifyBehavior::NOTIFY)
+    NotifyParentsOfLayerChange();
+
+  Widget* widget = GetWidget();
+  if (widget)
+    widget->LayerTreeChanged();
+}
+
+void View::NotifyParentsOfLayerChange() {
+  // Notify the parent chain about the layer change.
+  View* view_parent = parent();
+  while (view_parent) {
+    view_parent->OnChildLayerChanged(this);
+    view_parent = view_parent->parent();
+  }
+}
+
 void View::UpdateChildLayerBounds(const gfx::Vector2d& offset) {
   if (layer()) {
     SetLayerBounds(GetLocalBounds() + offset);
@@ -1695,6 +1715,8 @@ void View::ReorderChildLayers(ui::Layer* parent_layer) {
       child->ReorderChildLayers(parent_layer);
   }
 }
+
+void View::OnChildLayerChanged(View* child) {}
 
 // Input -----------------------------------------------------------------------
 

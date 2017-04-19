@@ -340,9 +340,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Compositor.
   void SetPaintToLayer(ui::LayerType layer_type = ui::LAYER_TEXTURED);
 
-  // Destroys the layer associated with this view, and reparents any descendants
-  // to the destroyed layer's parent. If the view does not currently have a
-  // layer, this has no effect.
+  // Please refer to the comments above the DestroyLayerImpl() function for
+  // details.
   void DestroyLayer();
 
   // Overridden from ui::LayerOwner:
@@ -1189,6 +1188,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // below layers owned by a view.
   virtual void ReorderChildLayers(ui::Layer* parent_layer);
 
+  // Notifies parents about a layer being created or destroyed in a child. An
+  // example where a subclass may override this method is when it wants to clip
+  // the child by adding its own layer.
+  virtual void OnChildLayerChanged(View* child);
+
   // Input ---------------------------------------------------------------------
 
   virtual DragInfo* GetDragInfo();
@@ -1447,6 +1451,25 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // visibility of the child layers.
   void UpdateLayerVisibility();
   void UpdateChildLayerVisibility(bool visible);
+
+  enum class LayerChangeNotifyBehavior {
+    // Notify the parent chain about the layer change.
+    NOTIFY,
+    // Don't notify the parent chain about the layer change.
+    DONT_NOTIFY
+  };
+
+  // Destroys the layer associated with this view, and reparents any descendants
+  // to the destroyed layer's parent. If the view does not currently have a
+  // layer, this has no effect.
+  // The |notify_parents| enum controls whether a notification about the layer
+  // change is sent to the parents.
+  void DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents);
+
+  // Notifies parents about layering changes in the view. This includes layer
+  // creation and destruction.
+  void NotifyParentsOfLayerChange();
+
 
   // Orphans the layers in this subtree that are parented to layers outside of
   // this subtree.

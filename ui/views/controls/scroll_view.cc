@@ -61,13 +61,16 @@ int CheckScrollBounds(int viewport_size, int content_size, int current_pos) {
 }
 
 // Make sure the content is not scrolled out of bounds
-void ConstrainScrollToBounds(View* viewport, View* view) {
+void ConstrainScrollToBounds(View* viewport,
+                             View* view,
+                             bool scroll_with_layers_enabled) {
   if (!view)
     return;
 
   // Note that even when ScrollView::ScrollsWithLayers() is true, the header row
   // scrolls by repainting.
-  const bool scrolls_with_layers = viewport->layer() != nullptr;
+  const bool scrolls_with_layers =
+      scroll_with_layers_enabled && viewport->layer() != nullptr;
   if (scrolls_with_layers) {
     DCHECK(view->layer());
     DCHECK_EQ(0, view->x());
@@ -152,7 +155,9 @@ ScrollView::ScrollView()
       min_height_(-1),
       max_height_(-1),
       background_color_(SK_ColorTRANSPARENT),
-      hide_horizontal_scrollbar_(false) {
+      hide_horizontal_scrollbar_(false),
+      scroll_with_layers_enabled_(
+          base::FeatureList::IsEnabled(kToolkitViewsScrollWithLayers)) {
   set_notify_enter_exit_on_child(true);
 
   AddChildView(contents_viewport_);
@@ -166,8 +171,9 @@ ScrollView::ScrollView()
   vert_sb_->set_controller(this);
   corner_view_->SetVisible(false);
 
-  if (!base::FeatureList::IsEnabled(kToolkitViewsScrollWithLayers))
+  if (!scroll_with_layers_enabled_)
     return;
+
   EnableViewPortLayer();
 }
 
@@ -450,8 +456,10 @@ void ScrollView::Layout() {
   if (header_)
     header_->Layout();
 
-  ConstrainScrollToBounds(header_viewport_, header_);
-  ConstrainScrollToBounds(contents_viewport_, contents_);
+  ConstrainScrollToBounds(header_viewport_, header_,
+                          scroll_with_layers_enabled_);
+  ConstrainScrollToBounds(contents_viewport_, contents_,
+                          scroll_with_layers_enabled_);
   SchedulePaint();
   UpdateScrollBarPositions();
 }
@@ -525,6 +533,16 @@ const char* ScrollView::GetClassName() const {
 
 void ScrollView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateBorder();
+}
+
+void ScrollView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && !viewport_layer_enabled_ && Contains(details.parent))
+    EnableLayeringRecursivelyForChild(details.child);
+}
+
+void ScrollView::OnChildLayerChanged(View* child) {
+  EnableViewPortLayer();
 }
 
 void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
@@ -717,12 +735,18 @@ void ScrollView::ScrollToOffset(const gfx::ScrollOffset& offset) {
 }
 
 bool ScrollView::ScrollsWithLayers() const {
+  if (!scroll_with_layers_enabled_)
+    return false;
   // Just check for the presence of a layer since it's cheaper than querying the
   // Feature flag each time.
   return contents_viewport_->layer() != nullptr;
 }
 
 void ScrollView::EnableViewPortLayer() {
+  if (viewport_layer_enabled_)
+    return;
+
+  viewport_layer_enabled_ = true;
   background_color_ = SK_ColorWHITE;
   contents_viewport_->set_background(
       Background::CreateSolidBackground(background_color_));
@@ -761,6 +785,22 @@ void ScrollView::UpdateBorder() {
           draw_focus_indicator_
               ? ui::NativeTheme::kColorId_FocusedBorderColor
               : ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+}
+
+bool ScrollView::EnableLayeringRecursivelyForChild(View* view) {
+  if (viewport_layer_enabled_ || scroll_with_layers_enabled_)
+    return true;
+
+  if (view->layer()) {
+    EnableViewPortLayer();
+    return true;
+  }
+
+  for (int i = 0; i < view->child_count(); ++i) {
+    if (EnableLayeringRecursivelyForChild(view->child_at(i)))
+      return true;
+  }
+  return false;
 }
 
 // VariableRowHeightScrollHelper ----------------------------------------------
