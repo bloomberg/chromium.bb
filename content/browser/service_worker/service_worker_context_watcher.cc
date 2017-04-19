@@ -182,7 +182,8 @@ void ServiceWorkerContextWatcher::OnRunningStateChanged(
     int64_t version_id,
     content::EmbeddedWorkerStatus running_status) {
   auto it = version_info_map_.find(version_id);
-  DCHECK(it != version_info_map_.end());
+  if (it == version_info_map_.end())
+    return;
   ServiceWorkerVersionInfo* version = it->second.get();
   if (version->running_status == running_status)
     return;
@@ -196,7 +197,8 @@ void ServiceWorkerContextWatcher::OnVersionStateChanged(
     int64_t version_id,
     content::ServiceWorkerVersion::Status status) {
   auto it = version_info_map_.find(version_id);
-  DCHECK(it != version_info_map_.end());
+  if (it == version_info_map_.end())
+    return;
   ServiceWorkerVersionInfo* version = it->second.get();
   if (version->status == status)
     return;
@@ -211,7 +213,8 @@ void ServiceWorkerContextWatcher::OnVersionDevToolsRoutingIdChanged(
     int process_id,
     int devtools_agent_route_id) {
   auto it = version_info_map_.find(version_id);
-  DCHECK(it != version_info_map_.end());
+  if (it == version_info_map_.end())
+    return;
   ServiceWorkerVersionInfo* version = it->second.get();
   if (version->process_id == process_id &&
       version->devtools_agent_route_id == devtools_agent_route_id) {
@@ -229,7 +232,8 @@ void ServiceWorkerContextWatcher::OnMainScriptHttpResponseInfoSet(
     base::Time script_response_time,
     base::Time script_last_modified) {
   auto it = version_info_map_.find(version_id);
-  DCHECK(it != version_info_map_.end());
+  if (it == version_info_map_.end())
+    return;
   ServiceWorkerVersionInfo* version = it->second.get();
   version->script_response_time = script_response_time;
   version->script_last_modified = script_last_modified;
@@ -274,7 +278,8 @@ void ServiceWorkerContextWatcher::OnControlleeAdded(
     int route_id,
     ServiceWorkerProviderType type) {
   auto it = version_info_map_.find(version_id);
-  DCHECK(it != version_info_map_.end());
+  if (it == version_info_map_.end())
+    return;
   ServiceWorkerVersionInfo* version = it->second.get();
   version->clients[uuid] =
       ServiceWorkerVersionInfo::ClientInfo(process_id, route_id, type);
