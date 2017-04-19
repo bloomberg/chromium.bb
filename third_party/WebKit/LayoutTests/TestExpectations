@@ -268,6 +268,13 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip 
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
 
+#### external/wpt/css/CSS2/abspos
+#### Passed: 13 81%
+#### Skipped: 3
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-001.xht [ Skip ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-007.xht [ Skip ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-009a.xht [ Skip ]
+
 #### external/wpt/css/CSS2/normal-flow
 #### Passed: 420 59%
 #### Skipped: 288
