@@ -435,7 +435,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
   // to eliminate cases like past search URLs from history that differ only
   // by some obscure query param from each other or from the search/keyword
   // provider matches.
-  TemplateURL* template_url = GetTemplateURLWithKeyword(
+  const TemplateURL* template_url = GetTemplateURLWithKeyword(
       template_url_service, keyword, stripped_destination_url.host());
   if (template_url != NULL &&
       template_url->SupportsReplacement(

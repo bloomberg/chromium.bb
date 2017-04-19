@@ -223,7 +223,7 @@ gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
 }
 
 bool ChromeOmniboxClient::ProcessExtensionKeyword(
-    TemplateURL* template_url,
+    const TemplateURL* template_url,
     const AutocompleteMatch& match,
     WindowOpenDisposition disposition,
     OmniboxNavigationObserver* observer) {

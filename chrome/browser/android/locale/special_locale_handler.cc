@@ -65,8 +65,9 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
     return false;
 
   for (const auto& data_url : prepopulated_list) {
-    TemplateURL* existing = template_url_service_->GetTemplateURLForKeyword(
-        data_url.get()->keyword());
+    const TemplateURL* existing =
+        template_url_service_->GetTemplateURLForKeyword(
+            data_url.get()->keyword());
     // Do not add local engines if there is already one.
     if (existing)
       continue;

@@ -73,7 +73,7 @@ gfx::Image OmniboxClient::GetIconIfExtensionMatch(
 }
 
 bool OmniboxClient::ProcessExtensionKeyword(
-    TemplateURL* template_url,
+    const TemplateURL* template_url,
     const AutocompleteMatch& match,
     WindowOpenDisposition disposition,
     OmniboxNavigationObserver* observer) {

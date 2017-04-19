@@ -167,15 +167,19 @@ class TemplateURLService : public WebDataServiceConsumer,
   // The caller should not try to delete the returned pointer; the data store
   // retains ownership of it.
   TemplateURL* GetTemplateURLForKeyword(const base::string16& keyword);
+  const TemplateURL* GetTemplateURLForKeyword(
+      const base::string16& keyword) const;
 
   // Returns that TemplateURL with the specified GUID, or NULL if not found.
   // The caller should not try to delete the returned pointer; the data store
   // retains ownership of it.
   TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid);
+  const TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid) const;
 
   // Returns the first TemplateURL found with a URL using the specified |host|,
   // or NULL if there are no such TemplateURLs
   TemplateURL* GetTemplateURLForHost(const std::string& host);
+  const TemplateURL* GetTemplateURLForHost(const std::string& host) const;
 
   // Adds |template_url| to this model.  Returns a raw pointer to |template_url|
   // if the addition succeeded, or null on failure.  (Many callers need still
@@ -388,7 +392,7 @@ class TemplateURLService : public WebDataServiceConsumer,
       TemplateURLServiceClient* client,
       PrefService* prefs,
       const SearchTermsData& search_terms_data,
-      TemplateURL* existing_turl,
+      const TemplateURL* existing_turl,
       const syncer::SyncData& sync_data,
       syncer::SyncChangeList* change_list);
 

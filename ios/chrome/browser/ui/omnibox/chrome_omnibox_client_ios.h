@@ -45,7 +45,7 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
   AutocompleteClassifier* GetAutocompleteClassifier() override;
   gfx::Image GetIconIfExtensionMatch(
       const AutocompleteMatch& match) const override;
-  bool ProcessExtensionKeyword(TemplateURL* template_url,
+  bool ProcessExtensionKeyword(const TemplateURL* template_url,
                                const AutocompleteMatch& match,
                                WindowOpenDisposition disposition,
                                OmniboxNavigationObserver* observer) override;

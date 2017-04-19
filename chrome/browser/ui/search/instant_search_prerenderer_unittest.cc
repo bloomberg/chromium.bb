@@ -355,7 +355,7 @@ TEST_F(InstantSearchPrerendererTest, PrerenderingAllowed) {
   custom_search_type_match.keyword = ASCIIToUTF16("k");
   custom_search_type_match.destination_url =
       GURL("https://www.dummyurl.com/search?q=fan&img=1");
-  TemplateURL* template_url =
+  const TemplateURL* template_url =
       custom_search_type_match.GetTemplateURL(service, false);
   EXPECT_TRUE(template_url);
   EXPECT_TRUE(AutocompleteMatch::IsSearchType(custom_search_type_match.type));

@@ -430,7 +430,7 @@ void AutocompleteController::UpdateMatchDestinationURLWithQueryFormulationTime(
 void AutocompleteController::UpdateMatchDestinationURL(
     const TemplateURLRef::SearchTermsArgs& search_terms_args,
     AutocompleteMatch* match) const {
-  TemplateURL* template_url = match->GetTemplateURL(
+  const TemplateURL* template_url = match->GetTemplateURL(
       template_url_service_, false);
   if (!template_url)
     return;

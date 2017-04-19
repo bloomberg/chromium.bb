@@ -97,7 +97,7 @@ class OmniboxClient {
   // that was created by CreateOmniboxNavigationObserver() for |match|; in some
   // embedding contexts, processing an extension keyword involves invoking
   // action on this observer.
-  virtual bool ProcessExtensionKeyword(TemplateURL* template_url,
+  virtual bool ProcessExtensionKeyword(const TemplateURL* template_url,
                                        const AutocompleteMatch& match,
                                        WindowOpenDisposition disposition,
                                        OmniboxNavigationObserver* observer);

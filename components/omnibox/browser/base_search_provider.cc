@@ -133,7 +133,7 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
                    base::Unretained(this))));
   }
 
-  TemplateURL* template_url =
+  const TemplateURL* template_url =
       match.GetTemplateURL(client_->GetTemplateURLService(), false);
   // This may be NULL if the template corresponding to the keyword has been
   // deleted or there is no keyword set.

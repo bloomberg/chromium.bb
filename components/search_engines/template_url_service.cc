@@ -396,6 +396,13 @@ void TemplateURLService::AddMatchingDomainKeywords(
 
 TemplateURL* TemplateURLService::GetTemplateURLForKeyword(
     const base::string16& keyword) {
+  return const_cast<TemplateURL*>(
+      static_cast<const TemplateURLService*>(this)->
+          GetTemplateURLForKeyword(keyword));
+}
+
+const TemplateURL* TemplateURLService::GetTemplateURLForKeyword(
+    const base::string16& keyword) const {
   KeywordToTURLAndMeaningfulLength::const_iterator elem(
       keyword_to_turl_and_length_.find(keyword));
   if (elem != keyword_to_turl_and_length_.end())
@@ -408,6 +415,13 @@ TemplateURL* TemplateURLService::GetTemplateURLForKeyword(
 
 TemplateURL* TemplateURLService::GetTemplateURLForGUID(
     const std::string& sync_guid) {
+return const_cast<TemplateURL*>(
+      static_cast<const TemplateURLService*>(this)->
+          GetTemplateURLForGUID(sync_guid));
+}
+
+const TemplateURL* TemplateURLService::GetTemplateURLForGUID(
+    const std::string& sync_guid) const {
   GUIDToTURL::const_iterator elem(guid_to_turl_.find(sync_guid));
   if (elem != guid_to_turl_.end())
     return elem->second;
@@ -419,6 +433,13 @@ TemplateURL* TemplateURLService::GetTemplateURLForGUID(
 
 TemplateURL* TemplateURLService::GetTemplateURLForHost(
     const std::string& host) {
+  return const_cast<TemplateURL*>(
+      static_cast<const TemplateURLService*>(this)->
+          GetTemplateURLForHost(host));
+}
+
+const TemplateURL* TemplateURLService::GetTemplateURLForHost(
+    const std::string& host) const {
   if (loaded_)
     return provider_map_->GetTemplateURLForHost(host);
   TemplateURL* initial_dsp = initial_default_search_provider_.get();
@@ -840,10 +861,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
 base::string16 TemplateURLService::GetKeywordShortName(
     const base::string16& keyword,
     bool* is_omnibox_api_extension_keyword) const {
-  // TODO(jeffschiller): Make GetTemplateURLForKeyword const and remove the
-  // const_cast.
-  const TemplateURL* template_url =
-      const_cast<TemplateURLService*>(this)->GetTemplateURLForKeyword(keyword);
+  const TemplateURL* template_url = GetTemplateURLForKeyword(keyword);
 
   // TODO(sky): Once LocationBarView adds a listener to the TemplateURLService
   // to track changes to the model, this should become a DCHECK.
@@ -1253,7 +1271,7 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
     TemplateURLServiceClient* client,
     PrefService* prefs,
     const SearchTermsData& search_terms_data,
-    TemplateURL* existing_turl,
+    const TemplateURL* existing_turl,
     const syncer::SyncData& sync_data,
     syncer::SyncChangeList* change_list) {
   DCHECK(change_list);
@@ -2220,10 +2238,7 @@ bool TemplateURLService::IsLocalTemplateURLBetter(
     const TemplateURL* local_turl,
     const TemplateURL* sync_turl,
     bool prefer_local_default) const {
-  // TODO(jeffschiller): Make GetTemplateURLForKeyword const and remove the
-  // const_cast.
-  DCHECK(const_cast<TemplateURLService*>(this)->GetTemplateURLForGUID(
-          local_turl->sync_guid()));
+  DCHECK(GetTemplateURLForGUID(local_turl->sync_guid()));
   return local_turl->last_modified() > sync_turl->last_modified() ||
          local_turl->created_by_policy() ||
          (prefer_local_default && local_turl == GetDefaultSearchProvider());
@@ -2401,7 +2416,7 @@ void TemplateURLService::OnSyncedDefaultSearchProviderGUIDChanged() {
     return;
   }
 
-  TemplateURL* turl = GetTemplateURLForGUID(new_guid);
+  const TemplateURL* turl = GetTemplateURLForGUID(new_guid);
   if (turl)
     default_search_manager_.SetUserSelectedDefaultSearchEngine(turl->data());
 }

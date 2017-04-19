@@ -88,7 +88,7 @@ void EditSearchEngineController::AcceptAddOrEdit(
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
-  TemplateURL* existing =
+  const TemplateURL* existing =
       template_url_service->GetTemplateURLForKeyword(keyword_input);
   if (existing && (!edit_keyword_delegate_ || existing != template_url_)) {
     // An entry may have been added with the same keyword string while the
