@@ -99,8 +99,7 @@ bool FetchHeaderList::Get(const String& name, String& result) const {
       resultBuilder.Append(header->second);
       found = true;
     } else {
-      // TODO(rakuco): This must be ", " instead. crbug.com/700434.
-      resultBuilder.Append(',');
+      resultBuilder.Append(", ");
       resultBuilder.Append(header->second);
     }
   }

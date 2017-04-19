@@ -328,7 +328,7 @@ void ResourceRequest::AddHTTPHeaderField(const AtomicString& name,
                                          const AtomicString& value) {
   HTTPHeaderMap::AddResult result = http_header_fields_.Add(name, value);
   if (!result.is_new_entry)
-    result.stored_value->value = result.stored_value->value + ',' + value;
+    result.stored_value->value = result.stored_value->value + ", " + value;
 }
 
 void ResourceRequest::AddHTTPHeaderFields(const HTTPHeaderMap& header_fields) {

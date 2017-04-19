@@ -166,7 +166,7 @@ var hasCustomHeader =
   checkJsonpHeader.bind(this, 'X-ServiceWorker-Test', 'test');
 var hasCustomHeader2 = function(url, data) {
   checkJsonpHeader('X-ServiceWorker-s', 'test1', url, data);
-  checkJsonpHeader('X-ServiceWorker-Test', 'test2,test3', url, data);
+  checkJsonpHeader('X-ServiceWorker-Test', 'test2, test3', url, data);
   checkJsonpHeader('X-ServiceWorker-ua', 'test4', url, data);
   checkJsonpHeader('X-ServiceWorker-U', 'test5', url, data);
   checkJsonpHeader('X-ServiceWorker-V', 'test6', url, data);

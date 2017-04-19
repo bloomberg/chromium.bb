@@ -136,7 +136,7 @@ test(function() {
     headers.append('X-FETCH-TEST-2', 'response test field - append');
     assert_equals(size(headers), 5, 'headers size should increase by 1.');
     assert_equals(headers.get('X-FETCH-Test'),
-                  'response test field - updated,response test field - append',
+                  'response test field - updated, response test field - append',
                   'the value of the first header added should be returned.');
     allValues = headers.getAll('X-FETch-TEST');
     assert_equals(allValues.length, 2);
@@ -156,7 +156,7 @@ test(function() {
     headers = new Headers([['a', 'b'], ['c', 'd'], ['c', 'e']]);
     assert_equals(size(headers), 2, 'headers size should match');
     assert_equals(headers.get('a'), 'b');
-    assert_equals(headers.get('c'), 'd,e');
+    assert_equals(headers.get('c'), 'd, e');
     assert_equals(headers.getAll('c')[0], 'd');
     assert_equals(headers.getAll('c')[1], 'e');
 
@@ -164,7 +164,7 @@ test(function() {
     var headers2 = new Headers(headers);
     assert_equals(size(headers2), 2, 'headers size should match');
     assert_equals(headers2.get('a'), 'b');
-    assert_equals(headers2.get('c'), 'd,e');
+    assert_equals(headers2.get('c'), 'd, e');
     assert_equals(headers2.getAll('c')[0], 'd');
     assert_equals(headers2.getAll('c')[1], 'e');
     headers.set('a', 'x');
@@ -175,14 +175,14 @@ test(function() {
     headers3.append('test', 'a');
     headers3.append('test', '');
     headers3.append('test', 'b');
-    assert_equals(headers3.get('test'), 'a,,b');
+    assert_equals(headers3.get('test'), 'a, , b');
     headers3.set('test', '');
     assert_equals(headers3.get('test'), '');
 
     var headers4 = new Headers();
     headers4.append('foo', '');
     headers4.append('foo', 'a');
-    assert_equals(headers4.get('foo'), ',a');
+    assert_equals(headers4.get('foo'), ', a');
     // new Headers with Dictionary
     headers = new Headers({'a': 'b', 'c': 'd'});
     assert_equals(size(headers), 2, 'headers size should match');
@@ -269,7 +269,7 @@ test(function(t) {
     assert_array_equals(keys, ['a', 'b', 'c'],
                         'The pairs to iterate over should be the return ' +
                         'value of an algorithm that implicitly makes a copy.');
-    assert_array_equals(values, ['1,2,3', '2', '3'],
+    assert_array_equals(values, ['1, 2, 3', '2', '3'],
                         "The values should be combined and separated by ','.");
 }, 'Iteration mutation');
 

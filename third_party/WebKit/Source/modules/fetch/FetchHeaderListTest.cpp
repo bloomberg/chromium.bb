@@ -87,7 +87,7 @@ TEST(FetchHeaderListTest, Combine) {
   EXPECT_TRUE(headerList->Get("X-Foo", combinedValue));
   EXPECT_EQ("bar", combinedValue);
   EXPECT_TRUE(headerList->Get("content-TYPE", combinedValue));
-  EXPECT_EQ("text/plain,application/xml,foo", combinedValue);
+  EXPECT_EQ("text/plain, application/xml, foo", combinedValue);
 }
 
 // This is going to be removed: see crbug.com/645492.
@@ -146,7 +146,7 @@ TEST(FetchHeaderListTest, SortAndCombine) {
   headerList->Append("X-Foo", "bar");
   const std::pair<String, String> expectedHeaders[] = {
       std::make_pair("accept", "XYZ"),
-      std::make_pair("content-type", "multipart/form-data,application/xml"),
+      std::make_pair("content-type", "multipart/form-data, application/xml"),
       std::make_pair("x-foo", "bar")};
   const Vector<FetchHeaderList::Header> sortedAndCombined =
       headerList->SortAndCombine();

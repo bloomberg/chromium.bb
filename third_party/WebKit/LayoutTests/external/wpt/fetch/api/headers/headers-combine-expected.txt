@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Create headers using same name for different values assert_equals: expected "doubleValue1, doubleValue2" but got "doubleValue1,doubleValue2"
-PASS Check delete and has methods when using same name for different values 
-PASS Check set methods when called with already used name 
-FAIL Check append methods when called with already used name assert_equals: expected "singleValue, newSingleValue" but got "singleValue,newSingleValue"
-Harness: the test ran to completion.
-
