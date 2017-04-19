@@ -78,7 +78,6 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/timing/Performance.h"
 #include "platform/DragImage.h"
-#include "platform/HostWindow.h"
 #include "platform/PluginScriptForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -871,14 +870,6 @@ bool LocalFrame::ShouldThrottleRendering() const {
 
 void LocalFrame::RegisterInitializationCallback(FrameInitCallback callback) {
   GetInitializationVector().push_back(callback);
-}
-
-bool LocalFrame::ScheduleAnimation(HostWindow* window) {
-  if (window) {
-    window->ScheduleAnimation(this);
-    return true;
-  }
-  return false;
 }
 
 inline LocalFrame::LocalFrame(LocalFrameClient* client,

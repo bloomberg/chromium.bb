@@ -2748,7 +2748,11 @@ void FrameView::ScrollbarStyleChanged() {
 }
 
 bool FrameView::ScheduleAnimation() {
-  return frame_->ScheduleAnimation(GetHostWindow());
+  if (HostWindow* window = GetHostWindow()) {
+    window->ScheduleAnimation(frame_);
+    return true;
+  }
+  return false;
 }
 
 void FrameView::NotifyPageThatContentAreaWillPaint() const {

@@ -1902,7 +1902,11 @@ bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {
 }
 
 bool PaintLayerScrollableArea::ScheduleAnimation() {
-  return Box().GetFrame()->ScheduleAnimation(GetHostWindow());
+  if (HostWindow* window = GetHostWindow()) {
+    window->ScheduleAnimation(Box().GetFrame());
+    return true;
+  }
+  return false;
 }
 
 void PaintLayerScrollableArea::ResetRebuildScrollbarLayerFlags() {

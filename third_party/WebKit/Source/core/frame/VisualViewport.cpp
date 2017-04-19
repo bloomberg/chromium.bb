@@ -675,7 +675,11 @@ LocalFrame* VisualViewport::MainFrame() const {
 }
 
 bool VisualViewport::ScheduleAnimation() {
-  return MainFrame()->ScheduleAnimation(GetHostWindow());
+  if (HostWindow* window = GetHostWindow()) {
+    window->ScheduleAnimation(MainFrame());
+    return true;
+  }
+  return false;
 }
 
 void VisualViewport::ClampToBoundaries() {
