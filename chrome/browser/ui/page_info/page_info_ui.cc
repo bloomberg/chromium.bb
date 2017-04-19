@@ -15,6 +15,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "ppapi/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -135,8 +136,14 @@ PageInfoUI::IdentityInfo::GetSecurityDescription() const {
 
   switch (identity_status) {
     case PageInfo::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
-      // Internal pages have their own UI implementations which should never
-      // call this function.
+#if defined(OS_ANDROID)
+      // We provide identical summary and detail strings for Android, which
+      // deduplicates them in the UI code.
+      return CreateSecurityDescription(IDS_PAGE_INFO_INTERNAL_PAGE,
+                                       IDS_PAGE_INFO_INTERNAL_PAGE);
+#endif
+      // Internal pages on desktop have their own UI implementations which
+      // should never call this function.
       NOTREACHED();
     case PageInfo::SITE_IDENTITY_STATUS_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
