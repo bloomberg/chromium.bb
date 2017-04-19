@@ -240,6 +240,7 @@ void TaskSchedulerImpl::Initialize(
       MakeUnique<SchedulerSingleThreadTaskRunnerManager>(
           worker_pool_params_vector, worker_pool_index_for_traits_callback_,
           task_tracker_.get(), delayed_task_manager_.get());
+  single_thread_task_runner_manager_->Start();
 
   // Callback invoked by workers to re-enqueue a sequence in the appropriate
   // PriorityQueue.

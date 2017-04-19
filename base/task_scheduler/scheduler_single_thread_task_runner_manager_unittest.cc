@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/delayed_task_manager.h"
@@ -14,6 +15,7 @@
 #include "base/task_scheduler/task_tracker.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,6 +72,7 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
         MakeUnique<SchedulerSingleThreadTaskRunnerManager>(
             GetParamsVector(), Bind(&GetThreadPoolIndexForTraits),
             &task_tracker_, delayed_task_manager_.get());
+    StartSingleThreadTaskRunnerManagerFromSetUp();
   }
 
   void TearDown() override {
@@ -79,6 +82,10 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
   }
 
  protected:
+  virtual void StartSingleThreadTaskRunnerManagerFromSetUp() {
+    single_thread_task_runner_manager_->Start();
+  }
+
   virtual void TearDownSingleThreadTaskRunnerManager() {
     single_thread_task_runner_manager_->JoinForTesting();
     single_thread_task_runner_manager_.reset();
@@ -465,6 +472,54 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
 }
 
 #endif  // defined(OS_WIN)
+
+namespace {
+
+class TaskSchedulerSingleThreadTaskRunnerManagerStartTest
+    : public TaskSchedulerSingleThreadTaskRunnerManagerTest {
+ public:
+  TaskSchedulerSingleThreadTaskRunnerManagerStartTest() = default;
+
+ private:
+  void StartSingleThreadTaskRunnerManagerFromSetUp() override {
+    // Start() is called in the test body rather than in SetUp().
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerSingleThreadTaskRunnerManagerStartTest);
+};
+
+}  // namespace
+
+// Verify that a task posted before Start() doesn't run until Start() is called.
+TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerStartTest,
+       PostTaskBeforeStart) {
+  AtomicFlag manager_started;
+  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
+                             WaitableEvent::InitialState::NOT_SIGNALED);
+  single_thread_task_runner_manager_
+      ->CreateSingleThreadTaskRunnerWithTraits(TaskTraits())
+      ->PostTask(
+          FROM_HERE,
+          Bind(
+              [](WaitableEvent* task_running, AtomicFlag* manager_started) {
+                task_running->Signal();
+
+                // The task should not run before Start().
+                EXPECT_TRUE(manager_started->IsSet());
+              },
+              Unretained(&task_running), Unretained(&manager_started)));
+
+  // Wait a little bit to make sure that the task isn't scheduled before start.
+  // Note: This test won't catch a case where the task is scheduled between
+  // setting |manager_started| and calling Start(). However, we expect the test
+  // to be flaky if the tested code allows that to happen.
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  manager_started.Set();
+  single_thread_task_runner_manager_->Start();
+
+  // This should not hang if the task is scheduled after Start().
+  task_running.Wait();
+}
 
 }  // namespace internal
 }  // namespace base

@@ -35,6 +35,12 @@ class SchedulerWorkerDelegate;
 
 }  // namespace
 
+// Manages a pool of threads which are each associated with one
+// SingleThreadTaskRunner.
+//
+// No threads are created (and hence no tasks can run) before Start() is called.
+//
+// This class is thread-safe.
 class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
  public:
   SchedulerSingleThreadTaskRunnerManager(
@@ -44,6 +50,10 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
       TaskTracker* task_tracker,
       DelayedTaskManager* delayed_task_manager);
   ~SchedulerSingleThreadTaskRunnerManager();
+
+  // Starts threads for existing SingleThreadTaskRunners and allows threads to
+  // be started when SingleThreadTaskRunners are created in the future.
+  void Start();
 
   scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
       const TaskTraits& traits);
@@ -79,10 +89,13 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   TaskTracker* const task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;
 
-  // Synchronizes access to |workers_| and |worker_id_|.
-  SchedulerLock workers_lock_;
+  // Synchronizes access to |workers_|, |next_worker_id_| and |started_|.
+  SchedulerLock lock_;
   std::vector<scoped_refptr<SchedulerWorker>> workers_;
   int next_worker_id_ = 0;
+
+  // Set to true when Start() is called.
+  bool started_ = false;
 
 #if DCHECK_IS_ON()
   subtle::Atomic32 workers_unregistered_during_join_ = 0;
