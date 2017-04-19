@@ -104,9 +104,10 @@ void HTMLScriptElement::ParseAttribute(
 
 Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
     ContainerNode* insertion_point) {
+  ScriptType script_type = ScriptType::kClassic;
   if (insertion_point->isConnected() && HasSourceAttribute() &&
       !Loader()->IsScriptTypeSupported(
-          ScriptLoader::kDisallowLegacyTypeInTypeAttribute))
+          ScriptLoader::kDisallowLegacyTypeInTypeAttribute, script_type))
     UseCounter::Count(GetDocument(),
                       UseCounter::kScriptElementWithInvalidTypeHasSrc);
   HTMLElement::InsertedInto(insertion_point);

@@ -157,10 +157,12 @@ void ScriptLoader::DispatchLoadEvent() {
   SetHaveFiredLoadEvent(true);
 }
 
-bool ScriptLoader::IsValidScriptTypeAndLanguage(
+namespace {
+
+bool IsValidClassicScriptTypeAndLanguage(
     const String& type,
     const String& language,
-    LegacyTypeSupport support_legacy_types) {
+    ScriptLoader::LegacyTypeSupport support_legacy_types) {
   // FIXME: isLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used
   // here to maintain backwards compatibility with existing layout tests. The
   // specific violations are:
@@ -173,12 +175,10 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
            MIMETypeRegistry::IsSupportedJavaScriptMIMEType("text/" +
                                                            language) ||
            MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(language);
-  } else if (RuntimeEnabledFeatures::moduleScriptsEnabled() &&
-             type == "module") {
-    return true;
   } else if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
                  type.StripWhiteSpace()) ||
-             (support_legacy_types == kAllowLegacyTypeInTypeAttribute &&
+             (support_legacy_types ==
+                  ScriptLoader::kAllowLegacyTypeInTypeAttribute &&
               MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(type))) {
     return true;
   }
@@ -186,11 +186,40 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
   return false;
 }
 
-bool ScriptLoader::IsScriptTypeSupported(
-    LegacyTypeSupport support_legacy_types) const {
+}  // namespace
+
+// Step 6 of https://html.spec.whatwg.org/#prepare-a-script
+bool ScriptLoader::IsValidScriptTypeAndLanguage(
+    const String& type,
+    const String& language,
+    LegacyTypeSupport support_legacy_types,
+    ScriptType& out_script_type) {
+  if (IsValidClassicScriptTypeAndLanguage(type, language,
+                                          support_legacy_types)) {
+    // - "If the script block's type string is an ASCII case-insensitive match
+    //    for any JavaScript MIME type, the script's type is "classic"."
+    // TODO(hiroshige): Annotate and/or cleanup this step.
+    out_script_type = ScriptType::kClassic;
+    return true;
+  }
+
+  if (RuntimeEnabledFeatures::moduleScriptsEnabled() && type == "module") {
+    // - "If the script block's type string is an ASCII case-insensitive match
+    //    for the string "module", the script's type is "module"."
+    out_script_type = ScriptType::kModule;
+    return true;
+  }
+
+  // - "If neither of the above conditions are true, then abort these steps
+  //    at this point. No script is executed."
+  return false;
+}
+
+bool ScriptLoader::IsScriptTypeSupported(LegacyTypeSupport support_legacy_types,
+                                         ScriptType& out_script_type) const {
   return IsValidScriptTypeAndLanguage(element_->TypeAttributeValue(),
                                       element_->LanguageAttributeValue(),
-                                      support_legacy_types);
+                                      support_legacy_types, out_script_type);
 }
 
 // https://html.spec.whatwg.org/#prepare-a-script
@@ -231,9 +260,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (!element_->IsConnected())
     return false;
 
-  // 6.
-  // TODO(hiroshige): Annotate and/or cleanup this step.
-  if (!IsScriptTypeSupported(support_legacy_types))
+  // 6. "Determine the script's type as follows:"
+  // |script_type_| is set here.
+  if (!IsScriptTypeSupported(support_legacy_types, script_type_))
     return false;
 
   // 7. "If was-parser-inserted is true,
@@ -263,6 +292,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //      steps at this point. The script is not executed."
   if (!context_document->CanExecuteScripts(kAboutToExecuteScript))
     return false;
+
+  // 11. "If the script element has a nomodule content attribute
+  //      and the script's type is "classic", then abort these steps.
+  //      The script is not executed."
+  // TODO(japhet): Implement this step.
 
   // 13.
   if (!IsScriptForEventSupported())

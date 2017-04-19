@@ -521,10 +521,11 @@ class TokenPreloadScanner::StartTagScanner {
       return ShouldPreloadLink(type);
     if (Match(tag_impl_, inputTag) && !input_is_image_)
       return false;
+    ScriptType script_type = ScriptType::kClassic;
     if (Match(tag_impl_, scriptTag) &&
         !ScriptLoader::IsValidScriptTypeAndLanguage(
             type_attribute_value_, language_attribute_value_,
-            ScriptLoader::kAllowLegacyTypeInTypeAttribute)) {
+            ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
       return false;
     }
     return true;
