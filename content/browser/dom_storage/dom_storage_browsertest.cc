@@ -98,7 +98,13 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_DataPersists) {
   SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
 }
 
-IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, SanityCheck) {
+// http://crbug.com/712872 All the mojo tests are flaky on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_SanityCheck DISABLED_SanityCheck
+#else
+#define MAYBE_SanityCheck SanityCheck
+#endif
+IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, MAYBE_SanityCheck) {
   SimpleTest(GetTestUrl("dom_storage", "sanity_check.html"), kNotIncognito);
 }
 
@@ -112,6 +118,11 @@ IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, PRE_DataPersists) {
   Flush();
 }
 
+// http://crbug.com/712872 All the mojo tests are flaky on Mac.
+#if defined(OS_MACOSX)
+#undef MAYBE_DataPersists
+#define MAYBE_DataPersists DISABLED_DataPersists
+#endif
 IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, MAYBE_DataPersists) {
   SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
 }
@@ -134,6 +145,9 @@ IN_PROC_BROWSER_TEST_F(DOMStorageMigrationBrowserTest, PRE_DataMigrates) {
 
 // http://crbug.com/654704 PRE_ tests aren't supported on Android.
 #if defined(OS_ANDROID)
+#define MAYBE_DataMigrates DISABLED_DataMigrates
+#elif defined(OS_MACOSX)
+// http://crbug.com/712872 All the mojo tests are flaky on Mac.
 #define MAYBE_DataMigrates DISABLED_DataMigrates
 #else
 #define MAYBE_DataMigrates DataMigrates
