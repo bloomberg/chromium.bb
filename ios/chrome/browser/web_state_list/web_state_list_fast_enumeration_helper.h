@@ -7,6 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
+#import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
+
 class WebStateList;
 
 namespace web {
@@ -22,14 +27,18 @@ class WebState;
 @end
 
 // Helper class allowing NSFastEnumeration over a WebStateList.
-@interface WebStateListFastEnumerationHelper : NSObject<NSFastEnumeration>
+class WebStateListFastEnumerationHelper {
+ public:
+  WebStateListFastEnumerationHelper(WebStateList* web_state_list,
+                                    id<WebStateProxyFactory> proxy_factory);
+  ~WebStateListFastEnumerationHelper();
 
-- (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                        proxyFactory:(id<WebStateProxyFactory>)proxyFactory
-    NS_DESIGNATED_INITIALIZER;
+  id<NSFastEnumeration> GetFastEnumeration();
 
-- (instancetype)init NS_UNAVAILABLE;
+ private:
+  base::scoped_nsprotocol<id<NSFastEnumeration>> fast_enumeration_;
 
-@end
+  DISALLOW_COPY_AND_ASSIGN(WebStateListFastEnumerationHelper);
+};
 
 #endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_FAST_ENUMERATION_HELPER_H_

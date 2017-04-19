@@ -44,15 +44,12 @@ class WebStateListFastEnumerationHelperTest : public PlatformTest {
       : web_state_list_(&web_state_list_delegate_) {}
 
   NSArray* ArrayFromWebStateList() {
-    id<WebStateProxyFactory> proxy =
+    WebStateListFastEnumerationHelper helper(
+        &web_state_list_,
         [[WebStateProxyFactoryForWebStateListFastEnumerationHelperTest alloc]
-            init];
-    WebStateListFastEnumerationHelper* helper =
-        [[WebStateListFastEnumerationHelper alloc]
-            initWithWebStateList:&web_state_list_
-                    proxyFactory:proxy];
+            init]);
     NSMutableArray* array = [NSMutableArray array];
-    for (id wrapper in helper) {
+    for (id wrapper in helper.GetFastEnumeration()) {
       // NSArray* cannot store a nil pointer. The NSFastEnumeration protocol
       // allows returning nil as one of the value in the iterated container,
       // so skip the value in that case (see NilWrapper test).

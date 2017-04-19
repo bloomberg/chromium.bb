@@ -138,8 +138,7 @@ void CleanCertificatePolicyCache(
   std::unique_ptr<WebStateList> _webStateList;
 
   // Helper providing NSFastEnumeration implementation over the WebStateList.
-  base::scoped_nsobject<WebStateListFastEnumerationHelper>
-      _fastEnumerationHelper;
+  std::unique_ptr<WebStateListFastEnumerationHelper> _fastEnumerationHelper;
 
   // WebStateListObservers reacting to modifications of the model (may send
   // notification, translate and forward events, update metrics, ...).
@@ -275,9 +274,9 @@ void CleanCertificatePolicyCache(
         base::MakeUnique<TabModelWebStateListDelegate>(self);
     _webStateList = base::MakeUnique<WebStateList>(_webStateListDelegate.get());
 
-    _fastEnumerationHelper.reset([[WebStateListFastEnumerationHelper alloc]
-        initWithWebStateList:_webStateList.get()
-                proxyFactory:[[TabModelWebStateProxyFactory alloc] init]]);
+    _fastEnumerationHelper =
+        base::MakeUnique<WebStateListFastEnumerationHelper>(
+            _webStateList.get(), [[TabModelWebStateProxyFactory alloc] init]);
 
     _browserState = browserState;
     DCHECK(_browserState);
@@ -672,9 +671,10 @@ void CleanCertificatePolicyCache(
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
                                   objects:(id*)objects
                                     count:(NSUInteger)count {
-  return [_fastEnumerationHelper countByEnumeratingWithState:state
-                                                     objects:objects
-                                                       count:count];
+  return [_fastEnumerationHelper->GetFastEnumeration()
+      countByEnumeratingWithState:state
+                          objects:objects
+                            count:count];
 }
 
 #pragma mark - TabUsageRecorderDelegate

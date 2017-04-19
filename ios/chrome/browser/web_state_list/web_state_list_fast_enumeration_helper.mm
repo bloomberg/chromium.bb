@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -17,10 +18,17 @@
 #error "This file requires ARC support."
 #endif
 
-@interface WebStateListFastEnumerationHelper ()<WebStateListObserving>
+@interface WebStateListFastEnumeration
+    : NSObject<NSFastEnumeration, WebStateListObserving>
+
+- (instancetype)initWithWebStateList:(WebStateList*)webStateList
+                        proxyFactory:(id<WebStateProxyFactory>)proxyFactory;
+
+- (void)shutdown;
+
 @end
 
-@implementation WebStateListFastEnumerationHelper {
+@implementation WebStateListFastEnumeration {
   // The wrapped WebStateList.
   WebStateList* _webStateList;
 
@@ -47,8 +55,14 @@
   return self;
 }
 
-- (void)dealloc {
+- (void)shutdown {
   _webStateList->RemoveObserver(_observerBridge.get());
+  _webStateList = nullptr;
+  ++_mutationCounter;
+}
+
+- (void)dealloc {
+  DCHECK(!_webStateList) << "-shutdown must be called before -dealloc";
 }
 
 #pragma mark NSFastEnumeration
@@ -66,6 +80,9 @@
 
   if (len > static_cast<unsigned long>(INT_MAX))
     len = static_cast<unsigned long>(INT_MAX);
+
+  if (!_webStateList)
+    return 0;
 
   DCHECK_LE(offset, _webStateList->count());
   const int count =
@@ -112,3 +129,22 @@
 }
 
 @end
+
+WebStateListFastEnumerationHelper::WebStateListFastEnumerationHelper(
+    WebStateList* web_state_list,
+    id<WebStateProxyFactory> proxy_factory)
+    : fast_enumeration_([[WebStateListFastEnumeration alloc]
+          initWithWebStateList:web_state_list
+                  proxyFactory:proxy_factory]) {}
+
+WebStateListFastEnumerationHelper::~WebStateListFastEnumerationHelper() {
+  WebStateListFastEnumeration* fast_enumeration =
+      base::mac::ObjCCastStrict<WebStateListFastEnumeration>(
+          fast_enumeration_.get());
+  [fast_enumeration shutdown];
+  fast_enumeration_.reset();
+}
+
+id<NSFastEnumeration> WebStateListFastEnumerationHelper::GetFastEnumeration() {
+  return fast_enumeration_.get();
+}
