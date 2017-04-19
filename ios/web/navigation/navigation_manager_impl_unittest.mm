@@ -176,15 +176,15 @@ TEST_F(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToItemAtIndex:1];
+  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToItemAtIndex:0];
+  [session_controller() goToItemAtIndex:0 discardNonCommittedItems:NO];
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToItemAtIndex:1];
+  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 }
@@ -230,19 +230,19 @@ TEST_F(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToItemAtIndex:1];
+  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToItemAtIndex:0];
+  [session_controller() goToItemAtIndex:0 discardNonCommittedItems:NO];
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToItemAtIndex:1];
+  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToItemAtIndex:2];
+  [session_controller() goToItemAtIndex:2 discardNonCommittedItems:NO];
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 }
@@ -282,7 +282,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
 
   // Go to entry at index 1 and test API from that state.
-  [session_controller() goToItemAtIndex:1];
+  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
   ASSERT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -306,7 +306,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000002, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 2 and test API from that state.
-  [session_controller() goToItemAtIndex:2];
+  [session_controller() goToItemAtIndex:2 discardNonCommittedItems:NO];
   ASSERT_EQ(2, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -328,7 +328,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 4 and test API from that state.
-  [session_controller() goToItemAtIndex:4];
+  [session_controller() goToItemAtIndex:4 discardNonCommittedItems:NO];
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -424,7 +424,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Set pending index to 4 and committed entry to 1 and test.
-  [session_controller() goToItemAtIndex:1];
+  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
   [session_controller() setPendingItemIndex:4];
   ASSERT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(4, navigation_manager()->GetPendingItemIndex());
@@ -447,7 +447,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Test with existing transient entry in the end of the stack.
-  [session_controller() goToItemAtIndex:4];
+  [session_controller() goToItemAtIndex:4 discardNonCommittedItems:NO];
   [session_controller() setPendingItemIndex:-1];
   [session_controller() addTransientItemWithURL:GURL("http://www.url.com")];
   ASSERT_EQ(5, navigation_manager()->GetItemCount());
@@ -506,7 +506,7 @@ TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
 
   // Now go forward to that middle transient item (pending index is 1,
   // current index is 0).
-  [session_controller() goToItemAtIndex:0];
+  [session_controller() goToItemAtIndex:0 discardNonCommittedItems:NO];
   [session_controller() setPendingItemIndex:1];
   ASSERT_EQ(3, navigation_manager()->GetItemCount());
   ASSERT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
@@ -1159,7 +1159,7 @@ TEST_F(NavigationManagerTest,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   [session_controller() commitPendingItem];
 
-  [session_controller() goToItemAtIndex:1];
+  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
 
   navigation_manager()->Reload(web::ReloadType::NORMAL,
@@ -1287,7 +1287,7 @@ TEST_F(NavigationManagerTest,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   [session_controller() commitPendingItem];
 
-  [session_controller() goToItemAtIndex:1];
+  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
 
   navigation_manager()->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,

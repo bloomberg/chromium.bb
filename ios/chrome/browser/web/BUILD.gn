@@ -293,6 +293,7 @@ source_set("eg_tests") {
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/strings",
+    "//components/version_info:version_info",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",

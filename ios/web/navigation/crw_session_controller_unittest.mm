@@ -372,7 +372,7 @@ TEST_F(CRWSessionControllerTest, commitPendingItemWithExistingForwardItems) {
   [session_controller_ commitPendingItem];
 
   // Go back to the first item.
-  [session_controller_ goToItemAtIndex:0];
+  [session_controller_ goToItemAtIndex:0 discardNonCommittedItems:NO];
 
   // Create and commit a new pending item.
   [session_controller_
@@ -416,7 +416,7 @@ TEST_F(CRWSessionControllerTest, commitPendingItemIndex) {
   ASSERT_EQ(3U, [session_controller_ items].size());
 
   // Go to the middle, and commit first pending item index.
-  [session_controller_ goToItemAtIndex:1];
+  [session_controller_ goToItemAtIndex:1 discardNonCommittedItems:NO];
   [session_controller_ setPendingItemIndex:0];
   ASSERT_EQ(0, [session_controller_ pendingItemIndex]);
   web::NavigationItem* pending_item = [session_controller_ pendingItem];
@@ -824,16 +824,16 @@ TEST_F(CRWSessionControllerTest, PreviousNavigationItem) {
 
   EXPECT_EQ(session_controller_.get().previousItemIndex, 1);
 
-  [session_controller_ goToItemAtIndex:1];
+  [session_controller_ goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_EQ(session_controller_.get().previousItemIndex, 2);
 
-  [session_controller_ goToItemAtIndex:0];
+  [session_controller_ goToItemAtIndex:0 discardNonCommittedItems:NO];
   EXPECT_EQ(session_controller_.get().previousItemIndex, 1);
 
-  [session_controller_ goToItemAtIndex:1];
+  [session_controller_ goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_EQ(session_controller_.get().previousItemIndex, 0);
 
-  [session_controller_ goToItemAtIndex:2];
+  [session_controller_ goToItemAtIndex:2 discardNonCommittedItems:NO];
   EXPECT_EQ(session_controller_.get().previousItemIndex, 1);
 }
 
@@ -999,11 +999,11 @@ TEST_F(CRWSessionControllerTest, TestBackwardForwardItems) {
   EXPECT_TRUE([session_controller_ forwardItems].empty());
   EXPECT_EQ("http://www.example.com/redirect", backItems[0]->GetURL().spec());
 
-  [session_controller_ goToItemAtIndex:1];
+  [session_controller_ goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_EQ(1U, [session_controller_ backwardItems].size());
   EXPECT_EQ(1U, [session_controller_ forwardItems].size());
 
-  [session_controller_ goToItemAtIndex:0];
+  [session_controller_ goToItemAtIndex:0 discardNonCommittedItems:NO];
   web::NavigationItemList forwardItems = [session_controller_ forwardItems];
   EXPECT_EQ(0U, [session_controller_ backwardItems].size());
   EXPECT_EQ(2U, forwardItems.size());
@@ -1052,8 +1052,20 @@ TEST_F(CRWSessionControllerTest, GoToItemAtIndex) {
   EXPECT_TRUE([session_controller_ pendingItem]);
   EXPECT_TRUE([session_controller_ transientItem]);
 
+  // Going back and forth without discaring transient and pending items.
+  [session_controller_ goToItemAtIndex:1 discardNonCommittedItems:NO];
+  EXPECT_EQ(1, session_controller_.get().lastCommittedItemIndex);
+  EXPECT_EQ(3, session_controller_.get().previousItemIndex);
+  EXPECT_TRUE(session_controller_.get().pendingItem);
+  EXPECT_TRUE(session_controller_.get().transientItem);
+  [session_controller_ goToItemAtIndex:3 discardNonCommittedItems:NO];
+  EXPECT_EQ(3, session_controller_.get().lastCommittedItemIndex);
+  EXPECT_EQ(1, session_controller_.get().previousItemIndex);
+  EXPECT_TRUE(session_controller_.get().pendingItem);
+  EXPECT_TRUE(session_controller_.get().transientItem);
+
   // Going back should discard transient and pending items.
-  [session_controller_ goToItemAtIndex:1];
+  [session_controller_ goToItemAtIndex:1 discardNonCommittedItems:YES];
   EXPECT_EQ(1, session_controller_.get().lastCommittedItemIndex);
   EXPECT_EQ(3, session_controller_.get().previousItemIndex);
   EXPECT_FALSE(session_controller_.get().pendingItem);
@@ -1062,21 +1074,22 @@ TEST_F(CRWSessionControllerTest, GoToItemAtIndex) {
   // Going forward should discard transient item.
   [session_controller_ addTransientItemWithURL:GURL("http://www.example.com")];
   EXPECT_TRUE(session_controller_.get().transientItem);
-  [session_controller_ goToItemAtIndex:2];
+  [session_controller_ goToItemAtIndex:2 discardNonCommittedItems:YES];
   EXPECT_EQ(2, session_controller_.get().lastCommittedItemIndex);
   EXPECT_EQ(1, session_controller_.get().previousItemIndex);
   EXPECT_FALSE(session_controller_.get().transientItem);
 
   // Out of bounds navigations should be no-op.
-  [session_controller_ goToItemAtIndex:-1];
+  [session_controller_ goToItemAtIndex:-1 discardNonCommittedItems:NO];
   EXPECT_EQ(2, session_controller_.get().lastCommittedItemIndex);
   EXPECT_EQ(1, session_controller_.get().previousItemIndex);
-  [session_controller_ goToItemAtIndex:NSIntegerMax];
+  [session_controller_ goToItemAtIndex:NSIntegerMax
+              discardNonCommittedItems:NO];
   EXPECT_EQ(2, session_controller_.get().lastCommittedItemIndex);
   EXPECT_EQ(1, session_controller_.get().previousItemIndex);
 
   // Going to current index should not change the previous index.
-  [session_controller_ goToItemAtIndex:2];
+  [session_controller_ goToItemAtIndex:2 discardNonCommittedItems:NO];
   EXPECT_EQ(2, session_controller_.get().lastCommittedItemIndex);
   EXPECT_EQ(1, session_controller_.get().previousItemIndex);
 }

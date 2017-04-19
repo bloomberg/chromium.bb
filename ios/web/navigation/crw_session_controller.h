@@ -134,7 +134,8 @@ struct Referrer;
 - (void)copyStateFromSessionControllerAndPrune:(CRWSessionController*)source;
 
 // Sets |lastCommittedItemIndex| to the |index| if it's in the entries bounds.
-- (void)goToItemAtIndex:(NSInteger)index;
+// Discards pending and transient entries if |discard| is YES.
+- (void)goToItemAtIndex:(NSInteger)index discardNonCommittedItems:(BOOL)discard;
 
 // Removes the item at |index| after discarding any noncomitted entries.
 // |index| must not be the index of the last committed item, or a noncomitted

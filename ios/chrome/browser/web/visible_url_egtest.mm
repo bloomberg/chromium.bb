@@ -7,6 +7,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/version_info/version_info.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
+#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -495,6 +500,38 @@ class PausableResponseProvider : public HtmlResponseProvider {
   [[EarlGrey selectElementWithMatcher:WebViewContainingText(kTestPage1)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that visible URL is always the same as last committed URL if user
+// issues 2 go forward commands to WebUI page (crbug.com/711465).
+- (void)testDoubleForwardNavigationToWebUIPage {
+  // Create 3rd entry in the history, to be able to go back twice.
+  GURL URL(kChromeUIVersionURL);
+  [ChromeEarlGrey loadURL:GURL(kChromeUIVersionURL)];
+
+  // Tap the back button twice in the toolbar and wait for URL 1 to load.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kTestPage1)]
+      assertWithMatcher:grey_notNil()];
+
+  // Quickly (using chrome command) navigate forward twice and wait for
+  // kChromeUIVersionURL to load.
+  base::scoped_nsobject<GenericChromeCommand> forwardCommand(
+      [[GenericChromeCommand alloc] initWithTag:IDC_FORWARD]);
+  chrome_test_util::RunCommandWithActiveViewController(forwardCommand);
+  chrome_test_util::RunCommandWithActiveViewController(forwardCommand);
+
+  const std::string version = version_info::GetVersionNumber();
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(version)]
+      assertWithMatcher:grey_notNil()];
+
+  // Make sure that kChromeUIVersionURL URL is displayed in the omnibox.
+  std::string expectedText = base::UTF16ToUTF8(web::GetDisplayTitleForUrl(URL));
+  [[EarlGrey selectElementWithMatcher:OmniboxText(expectedText)]
       assertWithMatcher:grey_notNil()];
 }
 

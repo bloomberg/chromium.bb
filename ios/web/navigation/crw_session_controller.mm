@@ -541,19 +541,24 @@ initiationType:(web::NavigationInitiationType)initiationType;
             self.items.size());
 }
 
-- (void)goToItemAtIndex:(NSInteger)index {
+- (void)goToItemAtIndex:(NSInteger)index
+    discardNonCommittedItems:(BOOL)discard {
   if (index < 0 || static_cast<NSUInteger>(index) >= self.items.size())
     return;
 
-  if (index < _lastCommittedItemIndex) {
-    // Going back.
-    [self discardNonCommittedItems];
-  } else if (_lastCommittedItemIndex < index) {
-    // Going forward.
-    [self discardTransientItem];
-  } else {
-    // |delta| is 0, no need to change the last committed item index.
+  if (index == _lastCommittedItemIndex) {
+    // |delta| is 0, no need to change current navigation index.
     return;
+  }
+
+  if (discard) {
+    if (index < _lastCommittedItemIndex) {
+      // Going back.
+      [self discardNonCommittedItems];
+    } else if (_lastCommittedItemIndex < index) {
+      // Going forward.
+      [self discardTransientItem];
+    }
   }
 
   _previousItemIndex = _lastCommittedItemIndex;

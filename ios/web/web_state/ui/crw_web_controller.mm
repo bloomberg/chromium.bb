@@ -619,10 +619,11 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // events. Navigation is considered complete when the document has finished
 // loading, or when other page load mechanics are completed on a
 // non-document-changing URL change.
-- (void)didFinishNavigation;
+- (void)didFinishNavigation:(WKNavigation*)navigation;
 // Update the appropriate parts of the model and broadcast to the embedder. This
 // may be called multiple times and thus must be idempotent.
-- (void)loadCompleteWithSuccess:(BOOL)loadSuccess;
+- (void)loadCompleteWithSuccess:(BOOL)loadSuccess
+                  forNavigation:(WKNavigation*)navigation;
 // Called after URL is finished loading and _loadPhase is set to PAGE_LOADED.
 - (void)didFinishWithURL:(const GURL&)currentURL loadSuccess:(BOOL)loadSuccess;
 // Navigates forwards or backwards by |delta| pages. No-op if delta is out of
@@ -759,7 +760,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
 // Called when a load ends in an SSL error and certificate chain.
-- (void)handleSSLCertError:(NSError*)error;
+- (void)handleSSLCertError:(NSError*)error forNavigation:navigation;
 
 // Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
 // reply with NSURLSessionAuthChallengeDisposition and credentials.
@@ -892,7 +893,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // TODO(stuartmorgan): Figure out if there's actually enough shared logic that
 // this makes sense. At the very least remove inMainFrame since that only makes
 // sense for UIWebView.
-- (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame;
+- (void)handleLoadError:(NSError*)error
+            inMainFrame:(BOOL)inMainFrame
+          forNavigation:(WKNavigation*)navigation;
 
 // Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).
 - (void)handleCancelledError:(NSError*)error;
@@ -2073,7 +2076,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [sessionController isSameDocumentNavigationBetweenItem:fromItem
                                                      andItem:toItem];
   if (sameDocumentNavigation) {
-    [sessionController goToItemAtIndex:index];
+    [sessionController goToItemAtIndex:index discardNonCommittedItems:YES];
     [self updateHTML5HistoryState];
   } else {
     [sessionController discardNonCommittedItems];
@@ -2091,15 +2094,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return _loadPhase == web::PAGE_LOADED;
 }
 
-- (void)didFinishNavigation {
+- (void)didFinishNavigation:(WKNavigation*)navigation {
   // This can be called at multiple times after the document has loaded. Do
   // nothing if the document has already loaded.
   if (_loadPhase == web::PAGE_LOADED)
     return;
-  [self loadCompleteWithSuccess:YES];
+  [self loadCompleteWithSuccess:YES forNavigation:navigation];
 }
 
-- (void)loadCompleteWithSuccess:(BOOL)loadSuccess {
+- (void)loadCompleteWithSuccess:(BOOL)loadSuccess
+                  forNavigation:(WKNavigation*)navigation {
   [self removePlaceholderOverlay];
   // The webView may have been torn down (or replaced by a native view). Be
   // safe and do nothing if that's happened.
@@ -2114,10 +2118,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   [self optOutScrollsToTopForSubviews];
 
-  // Ensure the URL is as expected (and already reported to the delegate).
-  // If |_lastRegisteredRequestURL| is invalid then |currentURL| will be
-  // "about:blank".
-  DCHECK((currentURL == _lastRegisteredRequestURL) ||
+  DCHECK((currentURL == _lastRegisteredRequestURL) ||  // latest navigation
+         // previous navigation
+         ![[_navigationStates lastAddedNavigation] isEqual:navigation] ||
+         // invalid URL load
          (!_lastRegisteredRequestURL.is_valid() &&
           _documentURL.spec() == url::kAboutBlankURL))
       << std::endl
@@ -2826,7 +2830,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       return;
     base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
     [strongSelf optOutScrollsToTopForSubviews];
-    [strongSelf didFinishNavigation];
+    [strongSelf didFinishNavigation:nil];
   }];
   return YES;
 }
@@ -2881,7 +2885,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
       return;
     base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-    [strongSelf didFinishNavigation];
+    [strongSelf didFinishNavigation:nil];
   }];
   return YES;
 }
@@ -3116,7 +3120,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return YES;
 }
 
-- (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame {
+- (void)handleLoadError:(NSError*)error
+            inMainFrame:(BOOL)inMainFrame
+          forNavigation:(WKNavigation*)navigation {
   NSString* MIMEType = [_pendingNavigationInfo MIMEType];
   if ([_passKitDownloader isMIMETypePassKitType:MIMEType])
     return;
@@ -3179,7 +3185,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       id<CRWNativeContent> controller =
           [_delegate controllerForUnhandledContentAtURL:errorGURL];
       if (controller) {
-        [self loadCompleteWithSuccess:NO];
+        [self loadCompleteWithSuccess:NO forNavigation:navigation];
         [self removeWebViewAllowingCachedReconstruction:NO];
         [self setNativeController:controller];
         [self loadNativeViewWithSuccess:YES];
@@ -3207,7 +3213,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                  NSURLErrorFailingURLStringErrorKey : [errorURL absoluteString],
                  NSUnderlyingErrorKey : error
                }];
-    [self loadCompleteWithSuccess:NO];
+    [self loadCompleteWithSuccess:NO forNavigation:navigation];
     [self loadErrorInNativeView:wrapperError];
     return;
   }
@@ -3219,7 +3225,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  [self loadCompleteWithSuccess:NO];
+  [self loadCompleteWithSuccess:NO forNavigation:navigation];
   [self loadErrorInNativeView:error];
 }
 
@@ -3952,7 +3958,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _webStateImpl->OnVisibleSecurityStateChange();
 }
 
-- (void)handleSSLCertError:(NSError*)error {
+- (void)handleSSLCertError:(NSError*)error
+             forNavigation:(WKNavigation*)navigation {
   CHECK(web::IsWKWebViewSSLCertError(error));
 
   net::SSLInfo info;
@@ -3962,7 +3969,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // |info.cert| can be null if certChain in NSError is empty or can not be
     // parsed, in this case do not ask delegate if error should be allowed, it
     // should not be.
-    [self handleLoadError:error inMainFrame:YES];
+    [self handleLoadError:error inMainFrame:YES forNavigation:navigation];
     return;
   }
 
@@ -4181,7 +4188,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                         messageRouter:messageRouter
                     completionHandler:^(NSError* loadError) {
                       if (loadError)
-                        [self handleLoadError:loadError inMainFrame:YES];
+                        [self handleLoadError:loadError
+                                  inMainFrame:YES
+                                forNavigation:nil];
                       else
                         self.webStateImpl->SetContentsMimeType("text/html");
                     }];
@@ -4445,6 +4454,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [_navigationStates setState:web::WKNavigationState::STARTED
                 forNavigation:navigation];
 
+  if (navigation &&
+      ![[_navigationStates lastAddedNavigation] isEqual:navigation]) {
+    // |navigation| is not the latest navigation and will be cancelled.
+    // Ignore |navigation| as a new navigation will start soon.
+    return;
+  }
+
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
   if (webViewURL.is_empty()) {
     // May happen on iOS9, however in didCommitNavigation: callback the URL
@@ -4532,9 +4548,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
 
     if (web::IsWKWebViewSSLCertError(error))
-      [self handleSSLCertError:error];
+      [self handleSSLCertError:error forNavigation:navigation];
     else
-      [self handleLoadError:error inMainFrame:YES];
+      [self handleLoadError:error inMainFrame:YES forNavigation:navigation];
   }
 
   // This must be reset at the end, since code above may need information about
@@ -4564,8 +4580,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // will be "about:blank".
     [[self sessionController] updatePendingItem:_documentURL];
   }
-  DCHECK(_documentURL == _lastRegisteredRequestURL ||
-         (!_lastRegisteredRequestURL.is_valid() &&
+
+  // If |navigation| is nil (which happens for windows open by DOM), then it
+  // should be the first and the only pending navigaiton.
+  BOOL isLastNavigation =
+      !navigation ||
+      [[_navigationStates lastAddedNavigation] isEqual:navigation];
+  DCHECK(_documentURL == _lastRegisteredRequestURL ||  // latest navigation
+         !isLastNavigation ||                          // previous navigation
+         (!_lastRegisteredRequestURL.is_valid() &&     // invalid URL load
           _documentURL.spec() == url::kAboutBlankURL));
 
   self.webStateImpl->UpdateHttpResponseHeaders(_documentURL);
@@ -4592,7 +4615,23 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self injectWindowID];
   }
 
-  [self webPageChanged];
+  if (isLastNavigation) {
+    [self webPageChanged];
+  } else {
+    // WKWebView has more than one in progress navigation, and committed
+    // navigation was not the latest. It is critical to keep last committed
+    // URL the same as actual document URL, so try guessing which navigation
+    // item should be set to current.
+    // TODO(crbug.com/712269):
+    for (int i = 0; i < self.navigationManagerImpl->GetItemCount(); i++) {
+      web::NavigationItem* item = self.navigationManagerImpl->GetItemAtIndex(i);
+      if (item->GetURL() == _documentURL) {
+        // Do not discard pending entry, because another pending navigation is
+        // still in progress and will commit or fail soon.
+        [self.sessionController goToItemAtIndex:i discardNonCommittedItems:NO];
+      }
+    }
+  }
   self.webStateImpl->OnNavigationCommitted(_documentURL);
 
   [self updateSSLStatusForCurrentNavigationItem];
@@ -4624,7 +4663,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // WKUserScriptInjectionTimeAtDocumentEnd to inject this material at the
   // appropriate time rather than invoking here.
   web::ExecuteJavaScript(webView, @"__gCrWeb.didFinishNavigation()", nil);
-  [self didFinishNavigation];
+  [self didFinishNavigation:navigation];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4634,7 +4673,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                 forNavigation:navigation];
 
   [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
-            inMainFrame:YES];
+            inMainFrame:YES
+          forNavigation:navigation];
   _certVerificationErrors->Clear();
 }
 
@@ -4794,7 +4834,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Fast back forward navigation may not call |didFinishNavigation:|, so
   // signal did finish navigation explicitly.
   if (_lastRegisteredRequestURL == _documentURL) {
-    [self didFinishNavigation];
+    [self didFinishNavigation:nil];
   }
 }
 
@@ -4941,7 +4981,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self didStartLoadingURL:_documentURL];
     _webStateImpl->OnSameDocumentNavigation(newURL);
     [self updateSSLStatusForCurrentNavigationItem];
-    [self didFinishNavigation];
+    [self didFinishNavigation:nil];
   }
 }
 
