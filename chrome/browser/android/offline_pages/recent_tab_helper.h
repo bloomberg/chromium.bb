@@ -128,17 +128,12 @@ class RecentTabHelper
   bool downloads_snapshot_on_hold_ = false;
 
   // Snapshot information for the last successful snapshot requested by
-  // downloads. Null if no successful one has ever completed for the current
-  // page.
+  // downloads. Null if no successful one has ever completed.
   std::unique_ptr<SnapshotProgressInfo> downloads_latest_saved_snapshot_info_;
 
   // Snapshot progress information for a last_n triggered request. Null if
   // last_n is not currently capturing the current page.
   std::unique_ptr<SnapshotProgressInfo> last_n_ongoing_snapshot_info_;
-
-  // Snapshot information for the last successful snapshot requested by
-  // last_n. Null if no successful one has ever completed for the current page.
-  std::unique_ptr<SnapshotProgressInfo> last_n_latest_saved_snapshot_info_;
 
   // If empty, the tab does not have AndroidId and can not capture pages.
   std::string tab_id_;

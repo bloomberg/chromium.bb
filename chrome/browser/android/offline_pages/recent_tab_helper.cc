@@ -212,27 +212,18 @@ void RecentTabHelper::DidFinishNavigation(
         downloads_ongoing_snapshot_info_.get(), false);
   }
 
-  // If the previous page was saved, delete it now.
-  if (last_n_latest_saved_snapshot_info_) {
-    std::vector<int64_t> id{last_n_latest_saved_snapshot_info_->request_id};
-    page_model_->DeletePagesByOfflineId(id, DeletePageCallback());
-  }
-
   // Cancel any and all in flight snapshot tasks from the previous page.
+  DVLOG_IF(1, last_n_ongoing_snapshot_info_)
+      << " - Canceling ongoing last_n snapshot";
   CancelInFlightSnapshots();
   downloads_snapshot_on_hold_ = false;
 
   // Always reset so that posted tasks get canceled.
   snapshot_controller_->Reset();
 
-  // Check for conditions that should stop last_n from creating snapshots of
-  // this page:
-  // - It is an error page.
-  // - The navigation is a POST as offline pages are never loaded for them.
-  // - The navigated URL is not supported.
-  // - The page being loaded is already an offline page.
+  // Check for conditions that would cause us not to snapshot.
   bool can_save =
-      !navigation_handle->IsErrorPage() && !navigation_handle->IsPost() &&
+      !navigation_handle->IsErrorPage() &&
       OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL()) &&
       OfflinePageUtils::GetOfflinePageFromWebContents(web_contents()) ==
           nullptr;
@@ -428,12 +419,8 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
 void RecentTabHelper::SavePageCallback(SnapshotProgressInfo* snapshot_info,
                                        OfflinePageModel::SavePageResult result,
                                        int64_t offline_id) {
-  DCHECK((snapshot_info->IsForLastN() &&
-          snapshot_info->request_id == OfflinePageModel::kInvalidOfflineId) ||
+  DCHECK(snapshot_info->IsForLastN() ||
          snapshot_info->request_id == offline_id);
-  // Store the assigned offline_id (for downloads case it will already contain
-  // the same value).
-  snapshot_info->request_id = offline_id;
   ReportSnapshotCompleted(snapshot_info, result == SavePageResult::SUCCESS);
 }
 
@@ -447,12 +434,7 @@ void RecentTabHelper::ReportSnapshotCompleted(
            << " for: " << web_contents()->GetLastCommittedURL().spec();
   if (snapshot_info->IsForLastN()) {
     DCHECK_EQ(snapshot_info, last_n_ongoing_snapshot_info_.get());
-    if (success) {
-      last_n_latest_saved_snapshot_info_ =
-          std::move(last_n_ongoing_snapshot_info_);
-    } else {
-      last_n_ongoing_snapshot_info_.reset();
-    }
+    last_n_ongoing_snapshot_info_.reset();
     return;
   }
 
@@ -499,15 +481,10 @@ ClientId RecentTabHelper::GetRecentPagesClientId() const {
 }
 
 void RecentTabHelper::CancelInFlightSnapshots() {
-  DVLOG_IF(1, last_n_ongoing_snapshot_info_)
-      << " - Canceling ongoing last_n snapshot";
-  DVLOG_IF(1, downloads_ongoing_snapshot_info_)
-      << " - Canceling ongoing downloads snapshot";
   weak_ptr_factory_.InvalidateWeakPtrs();
   downloads_ongoing_snapshot_info_.reset();
   downloads_latest_saved_snapshot_info_.reset();
   last_n_ongoing_snapshot_info_.reset();
-  last_n_latest_saved_snapshot_info_.reset();
 }
 
 }  // namespace offline_pages

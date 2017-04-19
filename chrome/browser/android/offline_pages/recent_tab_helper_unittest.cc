@@ -375,8 +375,8 @@ TEST_F(RecentTabHelperTest, LastNDisabledOnSvelte) {
   ASSERT_EQ(1U, GetAllPages().size());
 }
 
-// Checks that last_n will not save a snapshot while the tab is being presented
-// as a custom tab. Download requests should be unaffected though.
+// Checks that last_n will not save a snapshot if the tab while the tab is
+// presented as a custom tab. Download requests should be unaffected though.
 TEST_F(RecentTabHelperTest, LastNWontSaveCustomTab) {
   // Simulates the tab running as a custom tab.
   default_test_delegate()->set_is_custom_tab(true);
@@ -500,16 +500,15 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
   EXPECT_EQ(kTestPageUrl, GetAllPages()[0].url);
   int64_t first_offline_id = GetAllPages()[0].offline_id;
 
-  // Reload the same URL until the page is minimally loaded. The previous
-  // snapshot should have been removed.
+  // Navigate with the same URL until the page is minimally loaded then hide the
+  // tab. The previous snapshot should be removed and a new one taken.
   NavigateAndCommitTyped(kTestPageUrl);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
   EXPECT_EQ(1U, page_added_count());
-  EXPECT_EQ(1U, model_removed_count());
-  ASSERT_EQ(0U, GetAllPages().size());
+  EXPECT_EQ(0U, model_removed_count());
+  ASSERT_EQ(1U, GetAllPages().size());
 
-  // Hide the tab and a new snapshot should be taken.
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
@@ -566,15 +565,15 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsDifferentUrls) {
   ASSERT_EQ(1U, GetAllPages().size());
   EXPECT_EQ(kTestPageUrl, GetAllPages()[0].url);
 
-  // Fully load the second URL. The previous snapshot should have been deleted.
+  // Fully load the second URL then hide the tab and check for a single snapshot
+  // of the new page.
   NavigateAndCommitTyped(kTestPageUrlOther);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   EXPECT_EQ(1U, page_added_count());
-  EXPECT_EQ(1U, model_removed_count());
-  ASSERT_EQ(0U, GetAllPages().size());
+  EXPECT_EQ(0U, model_removed_count());
+  ASSERT_EQ(1U, GetAllPages().size());
 
-  // Then hide the tab and check for a single snapshot of the new page.
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
@@ -732,7 +731,7 @@ TEST_F(RecentTabHelperTest, DownloadRequestLaterInLoad) {
 }
 
 // Simulates a download request to offline the current page made after loading
-// is completed. Should end up with one offline page.
+// is completed. Should end up with one offline pages.
 TEST_F(RecentTabHelperTest, DownloadRequestAfterFullyLoad) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
@@ -898,8 +897,7 @@ TEST_F(RecentTabHelperTest, ReloadIsTrackedAsNavigationAndSavedOnlyUponLoad) {
   RunUntilIdle();
   ASSERT_EQ(1U, GetAllPages().size());
 
-  // Starts a reload and hides the tab before it minimally load. The previous
-  // snapshot should be removed.
+  // Starts a reload and hides the tab. No new snapshot should be saved.
   controller().Reload(content::ReloadType::NORMAL, false);
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -907,8 +905,8 @@ TEST_F(RecentTabHelperTest, ReloadIsTrackedAsNavigationAndSavedOnlyUponLoad) {
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
-  EXPECT_EQ(1U, model_removed_count());
-  ASSERT_EQ(0U, GetAllPages().size());
+  EXPECT_EQ(0U, model_removed_count());
+  ASSERT_EQ(1U, GetAllPages().size());
 
   // Finish loading and hide the tab. A new snapshot should be created.
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
