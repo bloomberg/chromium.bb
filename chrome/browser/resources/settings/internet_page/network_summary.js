@@ -276,7 +276,7 @@ Polymer({
         newDeviceStates[state.Type] = state;
       }
     } else {
-      newDeviceStates = this.deviceStates;
+      newDeviceStates = Object.assign({}, this.deviceStates);
     }
 
     // Clear any current networks.

@@ -64,8 +64,19 @@ Polymer({
     var name = CrOnc.getNetworkName(network);
     if (state)
       return this.getConnectionStateText_(state, name);
-    if (this.deviceIsEnabled_(this.deviceState))
-      return CrOncStrings.networkListItemNotConnected;
+    var deviceState = this.deviceState;
+    if (deviceState) {
+      if (deviceState.State ==
+          chrome.networkingPrivate.DeviceStateType.ENABLING) {
+        return this.i18n('internetDeviceEnabling');
+      }
+      if (deviceState.Type == CrOnc.Type.CELLULAR &&
+          this.deviceState.Scanning) {
+        return this.i18n('internetMobileSearching');
+      }
+      if (deviceState.State == chrome.networkingPrivate.DeviceStateType.ENABLED)
+        return CrOncStrings.networkListItemNotConnected;
+    }
     return this.i18n('deviceOff');
   },
 
@@ -193,7 +204,8 @@ Polymer({
    * @private
    */
   showDetailsIsVisible_: function() {
-    return this.deviceIsEnabled_(this.deviceState);
+    return this.deviceIsEnabled_(this.deviceState) &&
+        (!!this.activeNetworkState.GUID || this.networkStateList.length > 0);
   },
 
   /**
