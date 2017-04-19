@@ -83,8 +83,8 @@ static void UpdateAsync(
   info.display = static_cast<blink::WebDisplayMode>(java_display_mode);
   info.orientation =
       static_cast<blink::WebScreenOrientationLockType>(java_orientation);
-  info.theme_color = (long)java_theme_color;
-  info.background_color = (long)java_background_color;
+  info.theme_color = (int64_t)java_theme_color;
+  info.background_color = (int64_t)java_background_color;
   info.best_primary_icon_url = best_primary_icon_url;
   info.manifest_url = web_manifest_url;
 
