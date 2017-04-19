@@ -236,6 +236,7 @@ test("storage_unittests") {
     "blob/blob_transport_request_builder_unittest.cc",
     "blob/blob_url_request_job_unittest.cc",
     "database/database_quota_client_unittest.cc",
+    "database/database_tracker_unittest.cc",
     "database/database_util_unittest.cc",
     "database/databases_table_unittest.cc",
     "fileapi/copy_or_move_file_validator_unittest.cc",

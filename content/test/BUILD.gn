@@ -1057,7 +1057,6 @@ test("content_unittests") {
     "../browser/compositor/reflector_impl_unittest.cc",
     "../browser/compositor/software_browser_compositor_output_surface_unittest.cc",
     "../browser/compositor/software_output_device_ozone_unittest.cc",
-    "../browser/database_tracker_unittest.cc",
     "../browser/devtools/devtools_http_handler_unittest.cc",
     "../browser/devtools/devtools_manager_unittest.cc",
     "../browser/devtools/protocol/tracing_handler_unittest.cc",

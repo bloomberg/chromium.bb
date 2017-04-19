@@ -39,13 +39,11 @@ class TestObserver : public storage::DatabaseTracker::Observer {
   TestObserver()
       : new_notification_received_(false),
         observe_size_changes_(true),
-        observe_scheduled_deletions_(true) {
-  }
+        observe_scheduled_deletions_(true) {}
   TestObserver(bool observe_size_changes, bool observe_scheduled_deletions)
       : new_notification_received_(false),
         observe_size_changes_(observe_size_changes),
-        observe_scheduled_deletions_(observe_scheduled_deletions) {
-  }
+        observe_scheduled_deletions_(observe_scheduled_deletions) {}
 
   ~TestObserver() override {}
   void OnDatabaseSizeChanged(const std::string& origin_identifier,
@@ -72,9 +70,7 @@ class TestObserver : public storage::DatabaseTracker::Observer {
     new_notification_received_ = false;
     return temp_new_notification_received;
   }
-  std::string GetNotificationOriginIdentifier() {
-    return origin_identifier_;
-  }
+  std::string GetNotificationOriginIdentifier() { return origin_identifier_; }
   base::string16 GetNotificationDatabaseName() { return database_name_; }
   int64_t GetNotificationDatabaseSize() { return database_size_; }
 
@@ -94,18 +90,14 @@ void CheckNotificationReceived(TestObserver* observer,
   EXPECT_TRUE(observer->DidReceiveNewNotification());
   EXPECT_EQ(expected_origin_identifier,
             observer->GetNotificationOriginIdentifier());
-  EXPECT_EQ(expected_database_name,
-            observer->GetNotificationDatabaseName());
-  EXPECT_EQ(expected_database_size,
-            observer->GetNotificationDatabaseSize());
+  EXPECT_EQ(expected_database_name, observer->GetNotificationDatabaseName());
+  EXPECT_EQ(expected_database_size, observer->GetNotificationDatabaseSize());
 }
 
 class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
  public:
   TestQuotaManagerProxy()
-      : QuotaManagerProxy(NULL, NULL),
-        registered_client_(NULL) {
-  }
+      : QuotaManagerProxy(NULL, NULL), registered_client_(NULL) {}
 
   void RegisterClient(storage::QuotaClient* client) override {
     EXPECT_FALSE(registered_client_);
@@ -149,9 +141,7 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
     }
   }
 
-  bool WasAccessNotified(const GURL& origin) {
-    return accesses_[origin] != 0;
-  }
+  bool WasAccessNotified(const GURL& origin) { return accesses_[origin] != 0; }
 
   bool WasModificationNotified(const GURL& origin, int64_t amount) {
     return modifications_[origin].first != 0 &&
@@ -216,12 +206,9 @@ class DatabaseTracker_TestHelper_Test {
     const base::string16 kDB3 = ASCIIToUTF16("db3");
     const base::string16 kDescription = ASCIIToUTF16("database_description");
 
-    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                            &database_size);
-    tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
-                            &database_size);
-    tracker->DatabaseOpened(kOrigin2, kDB3, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0, &database_size);
+    tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0, &database_size);
+    tracker->DatabaseOpened(kOrigin2, kDB3, kDescription, 0, &database_size);
 
     EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
@@ -229,12 +216,12 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin2)))));
-    EXPECT_EQ(1, base::WriteFile(
-        tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
-    EXPECT_EQ(2, base::WriteFile(
-        tracker->GetFullDBFilePath(kOrigin2, kDB2), "aa", 2));
-    EXPECT_EQ(3, base::WriteFile(
-        tracker->GetFullDBFilePath(kOrigin2, kDB3), "aaa", 3));
+    EXPECT_EQ(
+        1, base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
+    EXPECT_EQ(2, base::WriteFile(tracker->GetFullDBFilePath(kOrigin2, kDB2),
+                                 "aa", 2));
+    EXPECT_EQ(3, base::WriteFile(tracker->GetFullDBFilePath(kOrigin2, kDB3),
+                                 "aaa", 3));
     tracker->DatabaseModified(kOrigin1, kDB1);
     tracker->DatabaseModified(kOrigin2, kDB2);
     tracker->DatabaseModified(kOrigin2, kDB3);
@@ -252,26 +239,25 @@ class DatabaseTracker_TestHelper_Test {
     tracker->DatabaseClosed(kOrigin1, kDB1);
     result = callback.GetResult(result);
     EXPECT_EQ(net::OK, result);
-    EXPECT_FALSE(base::PathExists(
-          tracker->DatabaseDirectory().AppendASCII(kOrigin1)));
+    EXPECT_FALSE(
+        base::PathExists(tracker->DatabaseDirectory().AppendASCII(kOrigin1)));
 
     // Recreate db1.
-    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0, &database_size);
     EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin1)))));
-    EXPECT_EQ(1, base::WriteFile(
-        tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
+    EXPECT_EQ(
+        1, base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
     tracker->DatabaseModified(kOrigin1, kDB1);
 
     // Setup file modification times.  db1 and db2 are modified now, db3 three
     // days ago.
     base::Time now = base::Time::Now();
-    EXPECT_TRUE(base::TouchFile(tracker->GetFullDBFilePath(kOrigin1, kDB1),
-                                now, now));
-    EXPECT_TRUE(base::TouchFile(tracker->GetFullDBFilePath(kOrigin2, kDB2),
-                                now, now));
+    EXPECT_TRUE(
+        base::TouchFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), now, now));
+    EXPECT_TRUE(
+        base::TouchFile(tracker->GetFullDBFilePath(kOrigin2, kDB2), now, now));
     base::Time three_days_ago = now - base::TimeDelta::FromDays(3);
     EXPECT_TRUE(base::TouchFile(tracker->GetFullDBFilePath(kOrigin2, kDB3),
                                 three_days_ago, three_days_ago));
@@ -279,8 +265,7 @@ class DatabaseTracker_TestHelper_Test {
     // Delete databases modified since yesterday. db2 is whitelisted.
     base::Time yesterday = base::Time::Now();
     yesterday -= base::TimeDelta::FromDays(1);
-    result = tracker->DeleteDataModifiedSince(
-        yesterday, callback.callback());
+    result = tracker->DeleteDataModifiedSince(yesterday, callback.callback());
     EXPECT_EQ(net::ERR_IO_PENDING, result);
     ASSERT_FALSE(callback.have_result());
     EXPECT_TRUE(observer.DidReceiveNewNotification());
@@ -288,12 +273,10 @@ class DatabaseTracker_TestHelper_Test {
     tracker->DatabaseClosed(kOrigin2, kDB2);
     result = callback.GetResult(result);
     EXPECT_EQ(net::OK, result);
-    EXPECT_FALSE(base::PathExists(
-        tracker->DatabaseDirectory().AppendASCII(kOrigin1)));
-    EXPECT_TRUE(
-        base::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB2)));
-    EXPECT_TRUE(
-        base::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB3)));
+    EXPECT_FALSE(
+        base::PathExists(tracker->DatabaseDirectory().AppendASCII(kOrigin1)));
+    EXPECT_TRUE(base::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB2)));
+    EXPECT_TRUE(base::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB3)));
 
     tracker->DatabaseClosed(kOrigin2, kDB3);
     tracker->RemoveObserver(&observer);
@@ -335,15 +318,11 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(origin1_info);
     EXPECT_TRUE(origin2_info);
 
-
-    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0, &database_size);
     EXPECT_EQ(0, database_size);
-    tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0, &database_size);
     EXPECT_EQ(0, database_size);
-    tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0, &database_size);
     EXPECT_EQ(0, database_size);
 
     // Write some data to each file and check that the listeners are
@@ -354,12 +333,12 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin2)))));
-    EXPECT_EQ(1, base::WriteFile(
-        tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
-    EXPECT_EQ(2, base::WriteFile(
-        tracker->GetFullDBFilePath(kOrigin2, kDB2), "aa", 2));
-    EXPECT_EQ(4, base::WriteFile(
-        tracker->GetFullDBFilePath(kOrigin1, kDB3), "aaaa", 4));
+    EXPECT_EQ(
+        1, base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
+    EXPECT_EQ(2, base::WriteFile(tracker->GetFullDBFilePath(kOrigin2, kDB2),
+                                 "aa", 2));
+    EXPECT_EQ(4, base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB3),
+                                 "aaaa", 4));
     tracker->DatabaseModified(kOrigin1, kDB1);
     CheckNotificationReceived(&observer1, kOrigin1, kDB1, 1);
     CheckNotificationReceived(&observer2, kOrigin1, kDB1, 1);
@@ -376,8 +355,7 @@ class DatabaseTracker_TestHelper_Test {
     tracker->DatabaseClosed(kOrigin1, kDB3);
 
     // Open an existing database and check the reported size
-    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0, &database_size);
     EXPECT_EQ(1, database_size);
     tracker->DatabaseClosed(kOrigin1, kDB1);
 
@@ -387,8 +365,7 @@ class DatabaseTracker_TestHelper_Test {
     // Close the tracker database and clear all caches.
     // Then make sure that DatabaseOpened() still returns the correct result.
     tracker->CloseTrackerDatabaseAndClearCaches();
-    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0, &database_size);
     EXPECT_EQ(1, database_size);
     tracker->DatabaseClosed(kOrigin1, kDB1);
 
@@ -396,8 +373,7 @@ class DatabaseTracker_TestHelper_Test {
     tracker->RemoveObserver(&observer1);
 
     // Trying to delete a database in use should fail
-    tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0, &database_size);
     EXPECT_FALSE(tracker->DeleteClosedDatabase(kOrigin1, kDB3));
     origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
     EXPECT_TRUE(origin1_info);
@@ -424,8 +400,7 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_EQ(2, origins_info[1].TotalSize());
 
     // Trying to delete an origin with databases in use should fail
-    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0, &database_size);
     EXPECT_FALSE(tracker->DeleteOrigin(kOrigin1, false));
     origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
     EXPECT_TRUE(origin1_info);
@@ -465,8 +440,7 @@ class DatabaseTracker_TestHelper_Test {
     // then delete it. Observe the tracker notifies accordingly.
 
     int64_t database_size = 0;
-    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0, &database_size);
     EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
     test_quota_proxy->reset();
 
@@ -484,8 +458,8 @@ class DatabaseTracker_TestHelper_Test {
 
     tracker->DatabaseClosed(kOriginId, kName);
     EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
-    EXPECT_EQ(net::OK, tracker->DeleteDatabase(
-        kOriginId, kName, net::CompletionCallback()));
+    EXPECT_EQ(net::OK, tracker->DeleteDatabase(kOriginId, kName,
+                                               net::CompletionCallback()));
     EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, -100));
     test_quota_proxy->reset();
 
@@ -493,8 +467,7 @@ class DatabaseTracker_TestHelper_Test {
     // then close it (at which time deletion will actually occur).
     // Observe the tracker notifies accordingly.
 
-    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0, &database_size);
     EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
     test_quota_proxy->reset();
 
@@ -505,9 +478,9 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, 100));
     test_quota_proxy->reset();
 
-    EXPECT_EQ(net::ERR_IO_PENDING,
-              tracker->DeleteDatabase(kOriginId, kName,
-                                      net::CompletionCallback()));
+    EXPECT_EQ(
+        net::ERR_IO_PENDING,
+        tracker->DeleteDatabase(kOriginId, kName, net::CompletionCallback()));
     EXPECT_FALSE(test_quota_proxy->WasModificationNotified(kOrigin, -100));
 
     tracker->DatabaseClosed(kOriginId, kName);
@@ -520,8 +493,7 @@ class DatabaseTracker_TestHelper_Test {
     // a renderer crash.
     // Observe the tracker notifies accordingly.
 
-    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0, &database_size);
     EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
     test_quota_proxy->reset();
     db_file = tracker->GetFullDBFilePath(kOriginId, kName);
@@ -563,11 +535,9 @@ class DatabaseTracker_TestHelper_Test {
           base::ThreadTaskRunnerHandle::Get().get()));
 
       // Open two new databases.
-      tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                              &database_size);
+      tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0, &database_size);
       EXPECT_EQ(0, database_size);
-      tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
-                              &database_size);
+      tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0, &database_size);
       EXPECT_EQ(0, database_size);
 
       // Write some data to each file.
@@ -605,8 +575,7 @@ class DatabaseTracker_TestHelper_Test {
     // and it got deleted.
     EXPECT_EQ(size_t(1), origins_info.size());
     EXPECT_EQ(kOrigin1, origins_info[0].GetOriginIdentifier());
-    EXPECT_TRUE(
-        base::PathExists(tracker->GetFullDBFilePath(kOrigin1, kDB1)));
+    EXPECT_TRUE(base::PathExists(tracker->GetFullDBFilePath(kOrigin1, kDB1)));
     EXPECT_EQ(base::FilePath(), tracker->GetFullDBFilePath(kOrigin2, kDB2));
 
     // The origin directory of kOrigin1 remains, but the origin directory of
@@ -641,11 +610,9 @@ class DatabaseTracker_TestHelper_Test {
       tracker->SetForceKeepSessionState();
 
       // Open two new databases.
-      tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                              &database_size);
+      tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0, &database_size);
       EXPECT_EQ(0, database_size);
-      tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
-                              &database_size);
+      tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0, &database_size);
       EXPECT_EQ(0, database_size);
 
       // Write some data to each file.
@@ -681,10 +648,8 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(tracker->GetAllOriginsInfo(&origins_info));
     // No origins were deleted.
     EXPECT_EQ(size_t(2), origins_info.size());
-    EXPECT_TRUE(
-        base::PathExists(tracker->GetFullDBFilePath(kOrigin1, kDB1)));
-    EXPECT_TRUE(
-        base::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB2)));
+    EXPECT_TRUE(base::PathExists(tracker->GetFullDBFilePath(kOrigin1, kDB1)));
+    EXPECT_TRUE(base::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB2)));
 
     EXPECT_TRUE(base::PathExists(origin1_db_dir));
     EXPECT_TRUE(base::PathExists(origin2_db_dir));
@@ -763,8 +728,7 @@ class DatabaseTracker_TestHelper_Test {
     // Create a record of a database in the tracker db and create
     // a spoof_db_file on disk in the expected location.
     int64_t database_size = 0;
-    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
-                            &database_size);
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0, &database_size);
     base::FilePath spoof_db_file = tracker->GetFullDBFilePath(kOriginId, kName);
     EXPECT_FALSE(tracker->GetFullDBFilePath(kOriginId, kName).empty());
     EXPECT_TRUE(base::CreateDirectory(spoof_db_file.DirName()));
@@ -791,10 +755,9 @@ class DatabaseTracker_TestHelper_Test {
     // --------------------------------------------------------
     // Create another record of a database in the tracker db and create
     // a spoof_db_file on disk in the expected location.
-    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
-        &database_size);
-    base::FilePath spoof_db_file2 = tracker->GetFullDBFilePath(kOriginId,
-        kName);
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0, &database_size);
+    base::FilePath spoof_db_file2 =
+        tracker->GetFullDBFilePath(kOriginId, kName);
     EXPECT_FALSE(tracker->GetFullDBFilePath(kOriginId, kName).empty());
     EXPECT_NE(spoof_db_file, spoof_db_file2);
     EXPECT_TRUE(base::CreateDirectory(spoof_db_file2.DirName()));
