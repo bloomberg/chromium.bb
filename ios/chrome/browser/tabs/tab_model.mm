@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_web_state_list_observer.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
@@ -169,7 +170,7 @@ void CleanCertificatePolicyCache(
 }
 
 // Session window for the contents of the tab model.
-@property(nonatomic, readonly) SessionWindowIOS* windowForSavingSession;
+@property(nonatomic, readonly) SessionIOS* sessionForSaving;
 
 // Helper method that posts a notification with the given name with |tab|
 // in the userInfo dictionary under the kTabModelTabKey.
@@ -392,9 +393,9 @@ void CleanCertificatePolicyCache(
     return;
   NSString* statePath =
       base::SysUTF8ToNSString(_browserState->GetStatePath().AsUTF8Unsafe());
-  [_sessionService saveSessionWindow:self.windowForSavingSession
-                           directory:statePath
-                         immediately:immediately];
+  [_sessionService saveSession:self.sessionForSaving
+                     directory:statePath
+                   immediately:immediately];
 }
 
 - (Tab*)tabAtIndex:(NSUInteger)index {
@@ -690,7 +691,7 @@ void CleanCertificatePolicyCache(
 
 #pragma mark - Private methods
 
-- (SessionWindowIOS*)windowForSavingSession {
+- (SessionIOS*)sessionForSaving {
   // Background tabs will already have their state preserved, but not the
   // fg tab. Do it now.
   [self.currentTab recordStateInHistory];
@@ -699,9 +700,10 @@ void CleanCertificatePolicyCache(
   // be done on a separate thread.
   // TODO(crbug.com/661986): This could get expensive especially since this
   // window may never be saved (if another call comes in before the delay).
-  return [[[SessionWindowIOS alloc]
+  SessionWindowIOS* sessionWindow = [[[SessionWindowIOS alloc]
       initWithSessions:SerializeWebStateList(_webStateList.get())
          selectedIndex:[self indexOfTab:self.currentTab]] autorelease];
+  return [[SessionIOS alloc] initWithWindows:@[ sessionWindow ]];
 }
 
 - (void)postNotificationName:(NSString*)notificationName withTab:(Tab*)tab {

@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #import "ios/chrome/browser/physical_web/start_physical_web_discovery.h"
+#import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -300,8 +301,12 @@
     // Load existing saved tab model state.
     NSString* statePath =
         base::SysUTF8ToNSString(browserState->GetStatePath().AsUTF8Unsafe());
-    sessionWindow = [[SessionServiceIOS sharedService]
-        loadSessionWindowFromDirectory:statePath];
+    SessionIOS* session =
+        [[SessionServiceIOS sharedService] loadSessionFromDirectory:statePath];
+    if (session) {
+      DCHECK_EQ(session.sessionWindows.count, 1u);
+      sessionWindow = session.sessionWindows[0];
+    }
   }
 
   // Create tab model from saved session (nil is ok).

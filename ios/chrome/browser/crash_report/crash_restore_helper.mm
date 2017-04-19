@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -259,13 +260,15 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   DCHECK(!_sessionRestored);
   _sessionRestored = YES;
   _infoBarBridge.reset();
-  SessionWindowIOS* sessionWindow = [[SessionServiceIOS sharedService]
-      loadSessionWindowFromPath:[self sessionBackupPath]];
-  if (sessionWindow) {
-    breakpad_helper::WillStartCrashRestoration();
-    return [_tabModel restoreSessionWindow:sessionWindow];
-  }
-  return NO;
+
+  SessionIOS* session = [[SessionServiceIOS sharedService]
+      loadSessionFromPath:[self sessionBackupPath]];
+  if (!session)
+    return NO;
+
+  DCHECK_EQ(session.sessionWindows.count, 1u);
+  breakpad_helper::WillStartCrashRestoration();
+  return [_tabModel restoreSessionWindow:session.sessionWindows[0]];
 }
 
 - (void)infoBarRemoved:(infobars::InfoBar*)infobar {
@@ -281,12 +284,14 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   // the recently closed tabs.
   _sessionRestored = YES;
 
-  SessionWindowIOS* window = [[SessionServiceIOS sharedService]
-      loadSessionWindowFromPath:[self sessionBackupPath]];
-  DCHECK(window);
-  NSArray* sessions = window.sessions;
+  SessionIOS* session = [[SessionServiceIOS sharedService]
+      loadSessionFromPath:[self sessionBackupPath]];
+  DCHECK_EQ(session.sessionWindows.count, 1u);
+
+  NSArray<CRWSessionStorage*>* sessions = session.sessionWindows[0].sessions;
   if (!sessions.count)
     return;
+
   sessions::TabRestoreService* const tabRestoreService =
       IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
   tabRestoreService->LoadTabsFromLastSession();

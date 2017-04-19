@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
+#import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
@@ -1150,8 +1151,10 @@ TEST_F(TabModelTest, PersistSelectionChange) {
 
   NSString* state_path = base::SysUTF8ToNSString(
       chrome_browser_state_->GetStatePath().AsUTF8Unsafe());
-  SessionWindowIOS* session_window =
-      [test_session_service loadSessionWindowFromDirectory:state_path];
+  SessionIOS* session =
+      [test_session_service loadSessionFromDirectory:state_path];
+  ASSERT_EQ(1u, session.sessionWindows.count);
+  SessionWindowIOS* session_window = session.sessionWindows[0];
 
   // Create tab model from saved session.
   SetTabModel(CreateTabModel(test_session_service.get(), session_window));

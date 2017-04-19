@@ -8,14 +8,17 @@
 
 #include "base/critical_closure.h"
 #include "base/files/file_path.h"
+#include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
+#import "base/mac/foundation_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
+#import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
@@ -72,9 +75,8 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   // The SequencedTaskRunner on which File IO operations are performed.
   scoped_refptr<base::SequencedTaskRunner> _taskRunner;
 
-  // Maps session path to the pending session window for the delayed save
-  // behaviour.
-  NSMutableDictionary<NSString*, SessionWindowIOS*>* _pendingSessionWindows;
+  // Maps session path to the pending session for the delayed save behaviour.
+  NSMutableDictionary<NSString*, SessionIOS*>* _pendingSessions;
 }
 
 #pragma mark - NSObject overrides
@@ -101,19 +103,18 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   DCHECK(taskRunner);
   self = [super init];
   if (self) {
-    _pendingSessionWindows = [NSMutableDictionary dictionary];
+    _pendingSessions = [NSMutableDictionary dictionary];
     _taskRunner = taskRunner;
   }
   return self;
 }
 
-- (void)saveSessionWindow:(SessionWindowIOS*)sessionWindow
-                directory:(NSString*)directory
-              immediately:(BOOL)immediately {
+- (void)saveSession:(SessionIOS*)session
+          directory:(NSString*)directory
+        immediately:(BOOL)immediately {
   NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
-  BOOL hadPendingSession =
-      [_pendingSessionWindows objectForKey:sessionPath] != nil;
-  [_pendingSessionWindows setObject:sessionWindow forKey:sessionPath];
+  BOOL hadPendingSession = [_pendingSessions objectForKey:sessionPath] != nil;
+  [_pendingSessions setObject:session forKey:sessionPath];
   if (immediately) {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self performSaveToPathInBackground:sessionPath];
@@ -126,12 +127,13 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   }
 }
 
-- (SessionWindowIOS*)loadSessionWindowFromDirectory:(NSString*)directory {
+- (SessionIOS*)loadSessionFromDirectory:(NSString*)directory {
   NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
-  return [self loadSessionWindowFromPath:sessionPath];
+  return [self loadSessionFromPath:sessionPath];
 }
 
-- (SessionWindowIOS*)loadSessionWindowFromPath:(NSString*)sessionPath {
+- (SessionIOS*)loadSessionFromPath:(NSString*)sessionPath {
+  NSObject<NSCoding>* rootObject = nil;
   @try {
     NSData* data = [NSData dataWithContentsOfFile:sessionPath];
     if (!data)
@@ -142,13 +144,25 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 
     // Register compatibility aliases to support legacy saved sessions.
     [unarchiver cr_registerCompatibilityAliases];
-    return [unarchiver decodeObjectForKey:kRootObjectKey];
+    rootObject = [unarchiver decodeObjectForKey:kRootObjectKey];
   } @catch (NSException* exception) {
     NOTREACHED() << "Error loading session file: "
                  << base::SysNSStringToUTF8(sessionPath) << ": "
                  << base::SysNSStringToUTF8([exception reason]);
-    return nil;
   }
+
+  if (!rootObject)
+    return nil;
+
+  // Support for legacy saved session that contained a single SessionWindowIOS
+  // object as the root object (pre-M-59).
+  if ([rootObject isKindOfClass:[SessionWindowIOS class]]) {
+    return [[SessionIOS alloc] initWithWindows:@[
+      base::mac::ObjCCastStrict<SessionWindowIOS>(rootObject)
+    ]];
+  }
+
+  return base::mac::ObjCCastStrict<SessionIOS>(rootObject);
 }
 
 - (void)deleteLastSessionFileInDirectory:(NSString*)directory {
@@ -177,17 +191,15 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 // Do the work of saving on a background thread.
 - (void)performSaveToPathInBackground:(NSString*)sessionPath {
   DCHECK(sessionPath);
-  DCHECK([_pendingSessionWindows objectForKey:sessionPath] != nil);
+  DCHECK([_pendingSessions objectForKey:sessionPath] != nil);
 
   // Serialize to NSData on the main thread to avoid accessing potentially
   // non-threadsafe objects on a background thread.
-  SessionWindowIOS* sessionWindow =
-      [_pendingSessionWindows objectForKey:sessionPath];
-  [_pendingSessionWindows removeObjectForKey:sessionPath];
+  SessionIOS* session = [_pendingSessions objectForKey:sessionPath];
+  [_pendingSessions removeObjectForKey:sessionPath];
 
   @try {
-    NSData* sessionData =
-        [NSKeyedArchiver archivedDataWithRootObject:sessionWindow];
+    NSData* sessionData = [NSKeyedArchiver archivedDataWithRootObject:session];
     _taskRunner->PostTask(
         FROM_HERE, base::MakeCriticalClosure(base::BindBlockArc(^{
           [self performSaveSessionData:sessionData sessionPath:sessionPath];

@@ -15,6 +15,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -68,15 +69,21 @@ class SessionServiceTest : public PlatformTest {
     return base::SysUTF8ToNSString(session_path.AsUTF8Unsafe());
   }
 
-  // Create a SessionWindowIOS with |tab_count| tabs.
-  SessionWindowIOS* CreateSessionWindow(NSUInteger tab_count) {
-    NSMutableArray<CRWSessionStorage*>* tabs = [NSMutableArray array];
-    while (tabs.count < tab_count) {
-      [tabs addObject:[[CRWSessionStorage alloc] init]];
+  // Create a SessionIOS corresponding to |window_count| windows each with
+  // |tab_count| tabs.
+  SessionIOS* CreateSession(NSUInteger window_count, NSUInteger tab_count) {
+    NSMutableArray<SessionWindowIOS*>* windows = [NSMutableArray array];
+    while (windows.count < window_count) {
+      NSMutableArray<CRWSessionStorage*>* tabs = [NSMutableArray array];
+      while (tabs.count < tab_count) {
+        [tabs addObject:[[CRWSessionStorage alloc] init]];
+      }
+      [windows addObject:[[SessionWindowIOS alloc]
+                             initWithSessions:[tabs copy]
+                                selectedIndex:(tabs.count ? tabs.count - 1
+                                                          : NSNotFound)]];
     }
-    return [[SessionWindowIOS alloc]
-        initWithSessions:[tabs copy]
-           selectedIndex:(tabs.count ? tabs.count - 1 : NSNotFound)];
+    return [[SessionIOS alloc] initWithWindows:[windows copy]];
   }
 
   SessionServiceIOS* session_service() { return session_service_; }
@@ -97,12 +104,12 @@ TEST_F(SessionServiceTest, SessionPathForDirectory) {
               [SessionServiceIOS sessionPathForDirectory:@""]);
 }
 
-TEST_F(SessionServiceTest, SaveSessionWindowToDirectory) {
-  [session_service() saveSessionWindow:CreateSessionWindow(0u)
-                             directory:directory()
-                           immediately:YES];
+TEST_F(SessionServiceTest, SaveSessionWindowToPath) {
+  [session_service() saveSession:CreateSession(0u, 0u)
+                       directory:directory()
+                     immediately:YES];
 
-  // Even if immediately is YES, the file is created by a task on the task
+  // Even if |immediately| is YES, the file is created by a task on the task
   // runner passed to SessionServiceIOS initializer (which is the current
   // thread task runner during test). Wait for the task to complete.
   base::RunLoop().RunUntilIdle();
@@ -111,17 +118,17 @@ TEST_F(SessionServiceTest, SaveSessionWindowToDirectory) {
   EXPECT_TRUE([file_manager removeItemAtPath:directory() error:nullptr]);
 }
 
-TEST_F(SessionServiceTest, SaveSessionWindowToExistingDirectory) {
+TEST_F(SessionServiceTest, SaveSessionWindowToPathDirectoryExists) {
   ASSERT_TRUE([[NSFileManager defaultManager] createDirectoryAtPath:directory()
                                         withIntermediateDirectories:YES
                                                          attributes:nil
                                                               error:nullptr]);
 
-  [session_service() saveSessionWindow:CreateSessionWindow(0u)
-                             directory:directory()
-                           immediately:YES];
+  [session_service() saveSession:CreateSession(0u, 0u)
+                       directory:directory()
+                     immediately:YES];
 
-  // Even if immediately is YES, the file is created by a task on the task
+  // Even if |immediately| is YES, the file is created by a task on the task
   // runner passed to SessionServiceIOS initializer (which is the current
   // thread task runner during test). Wait for the task to complete.
   base::RunLoop().RunUntilIdle();
@@ -130,34 +137,37 @@ TEST_F(SessionServiceTest, SaveSessionWindowToExistingDirectory) {
   EXPECT_TRUE([file_manager removeItemAtPath:directory() error:nullptr]);
 }
 
-TEST_F(SessionServiceTest, LoadSessionWindowFromDirectoryNoFile) {
-  SessionWindowIOS* session_window =
-      [session_service() loadSessionWindowFromDirectory:directory()];
-  EXPECT_TRUE(session_window == nil);
+TEST_F(SessionServiceTest, LoadSessionFromDirectoryNoFile) {
+  SessionIOS* session =
+      [session_service() loadSessionFromDirectory:directory()];
+  EXPECT_TRUE(session == nil);
 }
 
-TEST_F(SessionServiceTest, LoadSessionWindowFromDirectory) {
-  [session_service() saveSessionWindow:CreateSessionWindow(1u)
-                             directory:directory()
-                           immediately:YES];
+TEST_F(SessionServiceTest, LoadSessionFromDirectory) {
+  [session_service() saveSession:CreateSession(2u, 1u)
+                       directory:directory()
+                     immediately:YES];
 
-  // Even if immediately is YES, the file is created by a task on the task
+  // Even if |immediately| is YES, the file is created by a task on the task
   // runner passed to SessionServiceIOS initializer (which is the current
   // thread task runner during test). Wait for the task to complete.
   base::RunLoop().RunUntilIdle();
 
-  SessionWindowIOS* session_window =
-      [session_service() loadSessionWindowFromDirectory:directory()];
-  EXPECT_EQ(1u, session_window.sessions.count);
-  EXPECT_EQ(0u, session_window.selectedIndex);
+  SessionIOS* session =
+      [session_service() loadSessionFromDirectory:directory()];
+  EXPECT_EQ(2u, session.sessionWindows.count);
+  for (SessionWindowIOS* sessionWindow in session.sessionWindows) {
+    EXPECT_EQ(1u, sessionWindow.sessions.count);
+    EXPECT_EQ(0u, sessionWindow.selectedIndex);
+  }
 }
 
-TEST_F(SessionServiceTest, LoadSessionWindowFromPath) {
-  [session_service() saveSessionWindow:CreateSessionWindow(1u)
-                             directory:directory()
-                           immediately:YES];
+TEST_F(SessionServiceTest, LoadSessionFromPath) {
+  [session_service() saveSession:CreateSession(2u, 1u)
+                       directory:directory()
+                     immediately:YES];
 
-  // Even if immediately is YES, the file is created by a task on the task
+  // Even if |immediately| is YES, the file is created by a task on the task
   // runner passed to SessionServiceIOS initializer (which is the current
   // thread task runner during test). Wait for the task to complete.
   base::RunLoop().RunUntilIdle();
@@ -172,19 +182,20 @@ TEST_F(SessionServiceTest, LoadSessionWindowFromPath) {
                                                       toPath:renamed_path
                                                        error:nil]);
 
-  SessionWindowIOS* session_window =
-      [session_service() loadSessionWindowFromPath:renamed_path];
-  EXPECT_EQ(1u, session_window.sessions.count);
-  EXPECT_EQ(0u, session_window.selectedIndex);
+  SessionIOS* session = [session_service() loadSessionFromPath:renamed_path];
+  EXPECT_EQ(2u, session.sessionWindows.count);
+  for (SessionWindowIOS* sessionWindow in session.sessionWindows) {
+    EXPECT_EQ(1u, sessionWindow.sessions.count);
+    EXPECT_EQ(0u, sessionWindow.selectedIndex);
+  }
 }
 
-TEST_F(SessionServiceTest, LoadCorruptedSessionWindow) {
+TEST_F(SessionServiceTest, LoadCorruptedSession) {
   NSString* session_path =
       SessionPathForTestData(FILE_PATH_LITERAL("corrupted.plist"));
   ASSERT_NSNE(nil, session_path);
-  SessionWindowIOS* session_window =
-      [session_service() loadSessionWindowFromPath:session_path];
-  EXPECT_TRUE(session_window == nil);
+  SessionIOS* session = [session_service() loadSessionFromPath:session_path];
+  EXPECT_TRUE(session == nil);
 }
 
 // TODO(crbug.com/661633): remove this once M67 has shipped (i.e. once more
@@ -193,9 +204,8 @@ TEST_F(SessionServiceTest, LoadM57Session) {
   NSString* session_path =
       SessionPathForTestData(FILE_PATH_LITERAL("session_m57.plist"));
   ASSERT_NSNE(nil, session_path);
-  SessionWindowIOS* session_window =
-      [session_service() loadSessionWindowFromPath:session_path];
-  EXPECT_TRUE(session_window != nil);
+  SessionIOS* session = [session_service() loadSessionFromPath:session_path];
+  EXPECT_EQ(1u, session.sessionWindows.count);
 }
 
 // TODO(crbug.com/661633): remove this once M68 has shipped (i.e. once more
@@ -204,9 +214,8 @@ TEST_F(SessionServiceTest, LoadM58Session) {
   NSString* session_path =
       SessionPathForTestData(FILE_PATH_LITERAL("session_m58.plist"));
   ASSERT_NSNE(nil, session_path);
-  SessionWindowIOS* session_window =
-      [session_service() loadSessionWindowFromPath:session_path];
-  EXPECT_TRUE(session_window != nil);
+  SessionIOS* session = [session_service() loadSessionFromPath:session_path];
+  EXPECT_EQ(1u, session.sessionWindows.count);
 }
 
 }  // anonymous namespace

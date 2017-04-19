@@ -9,7 +9,7 @@
 
 #include "base/sequenced_task_runner.h"
 
-@class SessionWindowIOS;
+@class SessionIOS;
 
 // A singleton service for saving the current session. Can either save on a
 // delay or immediately. Saving is always performed on a separate thread.
@@ -24,22 +24,22 @@
     (const scoped_refptr<base::SequencedTaskRunner>&)taskRunner
     NS_DESIGNATED_INITIALIZER;
 
-// Saves the session represented by |sessionWindow| to |directory| on disk. If
-// |immediately| is NO, the save is done after a delay. If another call is
-// pending, this one is ignored. If YES, the save is done now, cancelling any
-// pending calls.  Either way, the save is done on a separate thread to avoid
-// blocking the UI thread.
-- (void)saveSessionWindow:(SessionWindowIOS*)sessionWindow
-                directory:(NSString*)directory
-              immediately:(BOOL)immediately;
+// Saves the session represented by |session| to |directory|. If |immediately|
+// is NO, the save is done after a delay. If another call is pending, this one
+// is ignored. If YES, the save is done now, cancelling any pending calls.
+// Either way, the save is done on a separate thread to avoid blocking the UI
+// thread.
+- (void)saveSession:(SessionIOS*)sessionWindow
+          directory:(NSString*)directory
+        immediately:(BOOL)immediately;
 
-// Loads the session window from default session file in |directory| on the
-// main thread. Returns nil in case of errors.
-- (SessionWindowIOS*)loadSessionWindowFromDirectory:(NSString*)directory;
+// Loads the session from default session file in |directory| on the main
+// thread. Returns nil in case of errors.
+- (SessionIOS*)loadSessionFromDirectory:(NSString*)directory;
 
-// Loads the session window from |sessionPath| on the main thread. Returns nil
-// in case of errors.
-- (SessionWindowIOS*)loadSessionWindowFromPath:(NSString*)sessionPath;
+// Loads the session from |sessionPath| on the main thread. Returns nil in case
+// of errors.
+- (SessionIOS*)loadSessionFromPath:(NSString*)sessionPath;
 
 // Schedules deletion of the file containing the last session in |directory|.
 - (void)deleteLastSessionFileInDirectory:(NSString*)directory;

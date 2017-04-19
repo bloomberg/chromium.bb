@@ -9,8 +9,7 @@
 
 @class CRWSessionStorage;
 
-// Encapsulates everything required to save a session "window". For iOS, there
-// will only be one window at a time.
+// Encapsulates everything required to save a session "window".
 @interface SessionWindowIOS : NSObject<NSCoding>
 
 // Initializes SessionsWindowIOS using the parameters are initial values for
@@ -20,7 +19,7 @@
                    selectedIndex:(NSUInteger)selectedIndex
     NS_DESIGNATED_INITIALIZER;
 
-// The serialized session objects.
+// The serialized session objects. May be empty but never nil.
 @property(nonatomic, readonly) NSArray<CRWSessionStorage*>* sessions;
 
 // The currently selected session. NSNotFound if the sessionWindow contains
