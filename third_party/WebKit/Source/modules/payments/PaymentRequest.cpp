@@ -45,19 +45,23 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
 
-using payments::mojom::blink::CanMakePaymentQueryResult;
-using payments::mojom::blink::PaymentAddressPtr;
-using payments::mojom::blink::PaymentCurrencyAmount;
-using payments::mojom::blink::PaymentCurrencyAmountPtr;
-using payments::mojom::blink::PaymentDetailsModifierPtr;
-using payments::mojom::blink::PaymentDetailsPtr;
-using payments::mojom::blink::PaymentErrorReason;
-using payments::mojom::blink::PaymentItemPtr;
-using payments::mojom::blink::PaymentMethodDataPtr;
-using payments::mojom::blink::PaymentOptionsPtr;
-using payments::mojom::blink::PaymentResponsePtr;
-using payments::mojom::blink::PaymentShippingOptionPtr;
-using payments::mojom::blink::PaymentShippingType;
+namespace {
+
+using ::payments::mojom::blink::CanMakePaymentQueryResult;
+using ::payments::mojom::blink::PaymentAddressPtr;
+using ::payments::mojom::blink::PaymentCurrencyAmount;
+using ::payments::mojom::blink::PaymentCurrencyAmountPtr;
+using ::payments::mojom::blink::PaymentDetailsModifierPtr;
+using ::payments::mojom::blink::PaymentDetailsPtr;
+using ::payments::mojom::blink::PaymentErrorReason;
+using ::payments::mojom::blink::PaymentItemPtr;
+using ::payments::mojom::blink::PaymentMethodDataPtr;
+using ::payments::mojom::blink::PaymentOptionsPtr;
+using ::payments::mojom::blink::PaymentResponsePtr;
+using ::payments::mojom::blink::PaymentShippingOptionPtr;
+using ::payments::mojom::blink::PaymentShippingType;
+
+}  // namespace
 
 namespace mojo {
 
@@ -255,7 +259,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
   }
 
   if (android_pay.hasAllowedCardNetworks()) {
-    using payments::mojom::blink::AndroidPayCardNetwork;
+    using ::payments::mojom::blink::AndroidPayCardNetwork;
 
     const struct {
       const AndroidPayCardNetwork code;
@@ -282,7 +286,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
     output->tokenization_type =
         payments::mojom::blink::AndroidPayTokenization::UNSPECIFIED;
     if (tokenization.hasTokenizationType()) {
-      using payments::mojom::blink::AndroidPayTokenization;
+      using ::payments::mojom::blink::AndroidPayTokenization;
 
       const struct {
         const AndroidPayTokenization code;
@@ -330,7 +334,7 @@ void SetBasicCardMethodData(const ScriptValue& input,
     return;
 
   if (basic_card.hasSupportedNetworks()) {
-    using payments::mojom::blink::BasicCardNetwork;
+    using ::payments::mojom::blink::BasicCardNetwork;
 
     const struct {
       const BasicCardNetwork code;
@@ -355,7 +359,7 @@ void SetBasicCardMethodData(const ScriptValue& input,
   }
 
   if (basic_card.hasSupportedTypes()) {
-    using payments::mojom::blink::BasicCardType;
+    using ::payments::mojom::blink::BasicCardType;
 
     const struct {
       const BasicCardType code;
@@ -1070,6 +1074,9 @@ void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
 }
 
 void PaymentRequest::OnCompleteTimeout(TimerBase*) {
+  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, kErrorMessageLevel,
+      "Timed out waiting for a PaymentResponse.complete() call."));
   payment_provider_->Complete(payments::mojom::blink::PaymentComplete(kFail));
   ClearResolversAndCloseMojoConnection();
 }
