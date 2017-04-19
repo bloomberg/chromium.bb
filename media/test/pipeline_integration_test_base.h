@@ -127,6 +127,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   }
 
  protected:
+  MediaLog media_log_;
   base::MessageLoop message_loop_;
   base::MD5Context md5_context_;
   bool hashing_enabled_;

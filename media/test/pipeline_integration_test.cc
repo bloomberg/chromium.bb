@@ -456,7 +456,7 @@ class MockMediaSource {
             base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
             base::Bind(&MockMediaSource::OnEncryptedMediaInitData,
                        base::Unretained(this)),
-            scoped_refptr<MediaLog>(new MediaLog()))),
+            &media_log_)),
         owned_chunk_demuxer_(chunk_demuxer_) {
     file_data_ = ReadTestDataFile(filename);
 
@@ -633,6 +633,7 @@ class MockMediaSource {
   MOCK_METHOD1(InitSegmentReceivedMock, void(std::unique_ptr<MediaTracks>&));
 
  private:
+  MediaLog media_log_;
   scoped_refptr<DecoderBuffer> file_data_;
   size_t current_position_;
   size_t initial_append_size_;

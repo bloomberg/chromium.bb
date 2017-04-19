@@ -22,7 +22,7 @@ class VideoDecoderConfig;
 // Helper class used to parse a Video element inside a TrackEntry element.
 class WebMVideoClient : public WebMParserClient {
  public:
-  explicit WebMVideoClient(const scoped_refptr<MediaLog>& media_log);
+  explicit WebMVideoClient(MediaLog* media_log);
   ~WebMVideoClient() override;
 
   // Reset this object's state so it can process a new video track element.
@@ -48,7 +48,7 @@ class WebMVideoClient : public WebMParserClient {
   bool OnBinary(int id, const uint8_t* data, int size) override;
   bool OnFloat(int id, double val) override;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
   int64_t pixel_width_;
   int64_t pixel_height_;
   int64_t crop_bottom_;

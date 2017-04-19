@@ -144,7 +144,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebFrame* frame,
     blink::WebMediaPlayerClient* client,
     media::WebMediaPlayerDelegate* delegate,
-    media::MediaLog* media_log,
+    std::unique_ptr<media::MediaLog> media_log,
     std::unique_ptr<MediaStreamRendererFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
@@ -162,7 +162,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       delegate_id_(0),
       paused_(true),
       video_rotation_(media::VIDEO_ROTATION_0),
-      media_log_(media_log),
+      media_log_(std::move(media_log)),
       renderer_factory_(std::move(factory)),
       io_task_runner_(io_task_runner),
       compositor_task_runner_(compositor_task_runner),
@@ -225,8 +225,8 @@ void WebMediaPlayerMS::Load(LoadType load_type,
   blink::WebMediaStream web_stream =
       GetWebMediaStreamFromWebMediaPlayerSource(source);
 
-  compositor_ = new WebMediaPlayerMSCompositor(
-      compositor_task_runner_, web_stream, AsWeakPtr(), media_log_);
+  compositor_ = new WebMediaPlayerMSCompositor(compositor_task_runner_,
+                                               web_stream, AsWeakPtr());
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
@@ -249,7 +249,7 @@ void WebMediaPlayerMS::Load(LoadType load_type,
     // Report UMA and RAPPOR metrics.
     GURL url = source.IsURL() ? GURL(source.GetAsURL()) : GURL();
     media::ReportMetrics(load_type, url, frame_->GetSecurityOrigin(),
-                         media_log_);
+                         media_log_.get());
 
     audio_renderer_ = renderer_factory_->GetAudioRenderer(
         web_stream, frame->GetRoutingID(), initial_audio_output_device_id_,

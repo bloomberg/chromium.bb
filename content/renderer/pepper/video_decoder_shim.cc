@@ -657,6 +657,7 @@ class VideoDecoderShim::DecoderImpl {
 
   // WeakPtr is bound to main_message_loop_. Use only in shim callbacks.
   base::WeakPtr<VideoDecoderShim> shim_;
+  media::MediaLog media_log_;
   std::unique_ptr<media::VideoDecoder> decoder_;
   bool initialized_ = false;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -697,8 +698,7 @@ void VideoDecoderShim::DecoderImpl::Initialize(
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
   {
     std::unique_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
-        new media::FFmpegVideoDecoder(
-            make_scoped_refptr(new media::MediaLog())));
+        new media::FFmpegVideoDecoder(&media_log_));
     ffmpeg_video_decoder->set_decode_nalus(true);
     decoder_ = std::move(ffmpeg_video_decoder);
   }

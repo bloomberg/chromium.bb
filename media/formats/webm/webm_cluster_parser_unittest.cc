@@ -294,9 +294,7 @@ void AppendToEnd(const StreamParser::BufferQueue& src,
 
 class WebMClusterParserTest : public testing::Test {
  public:
-  WebMClusterParserTest()
-      : media_log_(new StrictMock<MockMediaLog>()),
-        parser_(CreateDefaultParser()) {}
+  WebMClusterParserTest() : parser_(CreateDefaultParser()) {}
 
  protected:
   void ResetParserToHaveDefaultDurations() {
@@ -326,7 +324,7 @@ class WebMClusterParserTest : public testing::Test {
         kTimecodeScale, kAudioTrackNum, audio_default_duration, kVideoTrackNum,
         video_default_duration, text_tracks, ignored_tracks,
         audio_encryption_key_id, video_encryption_key_id, audio_codec,
-        media_log_);
+        &media_log_);
   }
 
   // Create a default version of the parser for test.
@@ -365,7 +363,7 @@ class WebMClusterParserTest : public testing::Test {
                               video_encryption_key_id, audio_codec);
   }
 
-  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
+  StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<WebMClusterParser> parser_;
 
  private:
@@ -1094,7 +1092,7 @@ TEST_F(WebMClusterParserTest, ReadOpusDurationsSimpleBlockAtEndOfCluster) {
     ASSERT_TRUE(VerifyBuffers(parser_, kBlockInfo, block_count));
 
     // Fail early if any iteration fails to meet the logging expectations.
-    ASSERT_TRUE(Mock::VerifyAndClearExpectations(media_log_.get()));
+    ASSERT_TRUE(Mock::VerifyAndClearExpectations(&media_log_));
 
     loop_count++;
   }
@@ -1141,7 +1139,7 @@ TEST_F(WebMClusterParserTest, PreferOpusDurationsOverBlockDurations) {
     ASSERT_TRUE(VerifyBuffers(parser_, block_infos, block_count));
 
     // Fail early if any iteration fails to meet the logging expectations.
-    ASSERT_TRUE(Mock::VerifyAndClearExpectations(media_log_.get()));
+    ASSERT_TRUE(Mock::VerifyAndClearExpectations(&media_log_));
 
     loop_count++;
   }

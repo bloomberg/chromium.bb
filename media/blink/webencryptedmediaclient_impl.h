@@ -38,7 +38,7 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
       base::Callback<bool(void)> are_secure_codecs_supported_cb,
       CdmFactory* cdm_factory,
       MediaPermission* media_permission,
-      const scoped_refptr<MediaLog>& media_log);
+      MediaLog* media_log);
   ~WebEncryptedMediaClientImpl() override;
 
   // WebEncryptedMediaClient implementation.
@@ -81,7 +81,7 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
   base::Callback<bool(void)> are_secure_codecs_supported_cb_;
   CdmFactory* cdm_factory_;
   KeySystemConfigSelector key_system_config_selector_;
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
   base::WeakPtrFactory<WebEncryptedMediaClientImpl> weak_factory_;
 };
 

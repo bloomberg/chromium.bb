@@ -186,9 +186,8 @@ void ChunkDemuxerStream::OnStartOfCodedFrameGroup(
   stream_->OnStartOfCodedFrameGroup(start_timestamp);
 }
 
-bool ChunkDemuxerStream::UpdateAudioConfig(
-    const AudioDecoderConfig& config,
-    const scoped_refptr<MediaLog>& media_log) {
+bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
+                                           MediaLog* media_log) {
   DCHECK(config.IsValidConfig());
   DCHECK_EQ(type_, AUDIO);
   base::AutoLock auto_lock(lock_);
@@ -208,9 +207,8 @@ bool ChunkDemuxerStream::UpdateAudioConfig(
   return stream_->UpdateAudioConfig(config);
 }
 
-bool ChunkDemuxerStream::UpdateVideoConfig(
-    const VideoDecoderConfig& config,
-    const scoped_refptr<MediaLog>& media_log) {
+bool ChunkDemuxerStream::UpdateVideoConfig(const VideoDecoderConfig& config,
+                                           MediaLog* media_log) {
   DCHECK(config.IsValidConfig());
   DCHECK_EQ(type_, VIDEO);
   base::AutoLock auto_lock(lock_);
@@ -224,9 +222,8 @@ bool ChunkDemuxerStream::UpdateVideoConfig(
   return stream_->UpdateVideoConfig(config);
 }
 
-void ChunkDemuxerStream::UpdateTextConfig(
-    const TextTrackConfig& config,
-    const scoped_refptr<MediaLog>& media_log) {
+void ChunkDemuxerStream::UpdateTextConfig(const TextTrackConfig& config,
+                                          MediaLog* media_log) {
   DCHECK_EQ(type_, TEXT);
   base::AutoLock auto_lock(lock_);
   DCHECK(!stream_);
@@ -402,7 +399,7 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
 ChunkDemuxer::ChunkDemuxer(
     const base::Closure& open_cb,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : state_(WAITING_FOR_INIT),
       cancel_next_seek_(false),
       host_(NULL),

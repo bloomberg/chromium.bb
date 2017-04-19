@@ -130,8 +130,7 @@ class EndToEndFrameChecker
     : public base::RefCountedThreadSafe<EndToEndFrameChecker> {
  public:
   explicit EndToEndFrameChecker(const VideoDecoderConfig& config)
-      : decoder_(make_scoped_refptr(new media::MediaLog())),
-        count_frames_checked_(0) {
+      : decoder_(&media_log_), count_frames_checked_(0) {
     bool decoder_init_result;
     decoder_.Initialize(
         config, false, nullptr,
@@ -169,6 +168,7 @@ class EndToEndFrameChecker
   friend class base::RefCountedThreadSafe<EndToEndFrameChecker>;
   virtual ~EndToEndFrameChecker() {}
 
+  MediaLog media_log_;
   FFmpegVideoDecoder decoder_;
   std::queue<scoped_refptr<VideoFrame>> expectations_;
   int count_frames_checked_;

@@ -143,7 +143,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
 
   // Parameters passed in the constructor.
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-  const scoped_refptr<MediaLog> media_log_;
+  MediaLog* const media_log_;
 
   // Pipeline client. Valid only while the pipeline is running.
   Client* client_;

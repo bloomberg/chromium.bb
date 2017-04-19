@@ -16,7 +16,7 @@ TEST_F(DolbyVisionConfigurationTest, Profile0Level1ELTrackTest) {
   DolbyVisionConfiguration dv_config;
   uint8_t data[] = {0x00, 0x00, 0x00, 0x0E};
 
-  dv_config.Parse(data, sizeof(data));
+  dv_config.ParseForTesting(data, sizeof(data));
 
   EXPECT_EQ(dv_config.dv_version_major, 0);
   EXPECT_EQ(dv_config.dv_version_minor, 0);
@@ -31,7 +31,7 @@ TEST_F(DolbyVisionConfigurationTest, Profile4Level2ELTrackWithBLTest) {
   DolbyVisionConfiguration dv_config;
   uint8_t data[] = {0x00, 0x00, 0x08, 0x16};
 
-  dv_config.Parse(data, sizeof(data));
+  dv_config.ParseForTesting(data, sizeof(data));
 
   EXPECT_EQ(dv_config.dv_version_major, 0);
   EXPECT_EQ(dv_config.dv_version_minor, 0);
@@ -46,7 +46,7 @@ TEST_F(DolbyVisionConfigurationTest, Profile5Test) {
   DolbyVisionConfiguration dv_config;
   uint8_t data[] = {0x00, 0x00, 0x0A, 0x17};
 
-  dv_config.Parse(data, sizeof(data));
+  dv_config.ParseForTesting(data, sizeof(data));
 
   EXPECT_EQ(dv_config.dv_version_major, 0);
   EXPECT_EQ(dv_config.dv_version_minor, 0);
@@ -61,7 +61,7 @@ TEST_F(DolbyVisionConfigurationTest, ParseNotEnoughData) {
   DolbyVisionConfiguration dv_config;
   uint8_t data[] = {0x00, 0x00, 0x0C};
 
-  EXPECT_FALSE(dv_config.Parse(data, sizeof(data)));
+  EXPECT_FALSE(dv_config.ParseForTesting(data, sizeof(data)));
 }
 
 }  // namespace mp4

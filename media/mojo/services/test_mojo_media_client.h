@@ -36,7 +36,7 @@ class TestMojoMediaClient : public MojoMediaClient {
   std::unique_ptr<VideoRendererSink> CreateVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) final;
   std::unique_ptr<RendererFactory> CreateRendererFactory(
-      const scoped_refptr<MediaLog>& media_log) final;
+      MediaLog* media_log) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* /* host_interfaces */) final;
 

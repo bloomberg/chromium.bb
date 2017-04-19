@@ -45,7 +45,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
             const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
             const NewMediaSegmentCB& new_segment_cb,
             const EndMediaSegmentCB& end_of_segment_cb,
-            const scoped_refptr<MediaLog>& media_log) override;
+            MediaLog* media_log) override;
   void Flush() override;
   bool Parse(const uint8_t* buf, int size) override;
 
@@ -127,7 +127,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   NewMediaSegmentCB new_segment_cb_;
   EndMediaSegmentCB end_of_segment_cb_;
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // True when AAC SBR extension is signalled in the mimetype
   // (mp4a.40.5 in the codecs parameter).

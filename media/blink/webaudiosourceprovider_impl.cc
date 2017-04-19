@@ -100,13 +100,13 @@ class WebAudioSourceProviderImpl::TeeFilter
 
 WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
     scoped_refptr<SwitchableAudioRendererSink> sink,
-    scoped_refptr<MediaLog> media_log)
+    MediaLog* media_log)
     : volume_(1.0),
       state_(kStopped),
       client_(nullptr),
       sink_(std::move(sink)),
       tee_filter_(new TeeFilter()),
-      media_log_(std::move(media_log)),
+      media_log_(media_log),
       weak_factory_(this) {}
 
 WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() {

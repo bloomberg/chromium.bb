@@ -66,7 +66,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
                     bool is_mse,
                     bool is_encrypted,
                     bool is_embedded_media_experience_enabled,
-                    scoped_refptr<MediaLog> media_log,
+                    MediaLog* media_log,
                     const gfx::Size& initial_video_size,
                     const GetMediaTimeCB& get_media_time_cb);
   ~WatchTimeReporter() override;
@@ -130,7 +130,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
                     bool is_mse,
                     bool is_encrypted,
                     bool is_embedded_media_experience_enabled,
-                    scoped_refptr<MediaLog> media_log,
+                    MediaLog* media_log,
                     const gfx::Size& initial_video_size,
                     const GetMediaTimeCB& get_media_time_cb,
                     bool is_background);
@@ -154,7 +154,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   const bool is_mse_;
   const bool is_encrypted_;
   const bool is_embedded_media_experience_enabled_;
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
   const gfx::Size initial_video_size_;
   const GetMediaTimeCB get_media_time_cb_;
   const bool is_background_;

@@ -21,7 +21,7 @@ class EncryptionScheme;
 // Helper class used to parse an Audio element inside a TrackEntry element.
 class WebMAudioClient : public WebMParserClient {
  public:
-  explicit WebMAudioClient(const scoped_refptr<MediaLog>& media_log);
+  explicit WebMAudioClient(MediaLog* media_log);
   ~WebMAudioClient() override;
 
   // Reset this object's state so it can process a new audio track element.
@@ -45,7 +45,7 @@ class WebMAudioClient : public WebMParserClient {
   bool OnUInt(int id, int64_t val) override;
   bool OnFloat(int id, double val) override;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
   int channels_;
   double samples_per_second_;
   double output_samples_per_second_;

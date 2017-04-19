@@ -41,13 +41,52 @@ using ::testing::SaveArg;
 
 namespace media {
 
+static ScopedVector<VideoDecoder> CreateVideoDecodersForTest(
+    MediaLog* media_log,
+    CreateVideoDecodersCB prepend_video_decoders_cb) {
+  ScopedVector<VideoDecoder> video_decoders;
+
+  if (!prepend_video_decoders_cb.is_null()) {
+    video_decoders = prepend_video_decoders_cb.Run();
+    DCHECK(!video_decoders.empty());
+  }
+
+#if !defined(MEDIA_DISABLE_LIBVPX)
+  video_decoders.push_back(new VpxVideoDecoder());
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
+
+// Android does not have an ffmpeg video decoder.
+#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
+  video_decoders.push_back(new FFmpegVideoDecoder(media_log));
+#endif
+  return video_decoders;
+}
+
+static ScopedVector<AudioDecoder> CreateAudioDecodersForTest(
+    MediaLog* media_log,
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    CreateAudioDecodersCB prepend_audio_decoders_cb) {
+  ScopedVector<AudioDecoder> audio_decoders;
+
+  if (!prepend_audio_decoders_cb.is_null()) {
+    audio_decoders = prepend_audio_decoders_cb.Run();
+    DCHECK(!audio_decoders.empty());
+  }
+
+#if !defined(MEDIA_DISABLE_FFMPEG)
+  audio_decoders.push_back(
+      new FFmpegAudioDecoder(media_task_runner, media_log));
+#endif
+  return audio_decoders;
+}
+
 const char kNullVideoHash[] = "d41d8cd98f00b204e9800998ecf8427e";
 const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
 
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
-      pipeline_(new PipelineImpl(message_loop_.task_runner(), new MediaLog())),
+      pipeline_(new PipelineImpl(message_loop_.task_runner(), &media_log_)),
       ended_(false),
       pipeline_status_(PIPELINE_OK),
       last_video_frame_format_(PIXEL_FORMAT_UNKNOWN),
@@ -319,46 +358,8 @@ void PipelineIntegrationTestBase::CreateDemuxer(
                  base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::DemuxerMediaTracksUpdatedCB,
                  base::Unretained(this)),
-      new MediaLog()));
+      &media_log_));
 #endif
-}
-
-ScopedVector<VideoDecoder> CreateVideoDecodersForTest(
-    CreateVideoDecodersCB prepend_video_decoders_cb) {
-  ScopedVector<VideoDecoder> video_decoders;
-
-  if (!prepend_video_decoders_cb.is_null()) {
-    video_decoders = prepend_video_decoders_cb.Run();
-    DCHECK(!video_decoders.empty());
-  }
-
-#if !defined(MEDIA_DISABLE_LIBVPX)
-  video_decoders.push_back(new VpxVideoDecoder());
-#endif  // !defined(MEDIA_DISABLE_LIBVPX)
-
-// Android does not have an ffmpeg video decoder.
-#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
-  video_decoders.push_back(
-      new FFmpegVideoDecoder(make_scoped_refptr(new MediaLog())));
-#endif
-  return video_decoders;
-}
-
-ScopedVector<AudioDecoder> CreateAudioDecodersForTest(
-    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    CreateAudioDecodersCB prepend_audio_decoders_cb) {
-  ScopedVector<AudioDecoder> audio_decoders;
-
-  if (!prepend_audio_decoders_cb.is_null()) {
-    audio_decoders = prepend_audio_decoders_cb.Run();
-    DCHECK(!audio_decoders.empty());
-  }
-
-#if !defined(MEDIA_DISABLE_FFMPEG)
-  audio_decoders.push_back(
-      new FFmpegAudioDecoder(media_task_runner, new MediaLog()));
-#endif
-  return audio_decoders;
 }
 
 std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
@@ -375,8 +376,9 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
   std::unique_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       message_loop_.task_runner(), message_loop_.task_runner().get(),
       video_sink_.get(),
-      base::Bind(&CreateVideoDecodersForTest, prepend_video_decoders_cb), false,
-      nullptr, new MediaLog()));
+      base::Bind(&CreateVideoDecodersForTest, &media_log_,
+                 prepend_video_decoders_cb),
+      false, nullptr, &media_log_));
 
   if (!clockless_playback_) {
     audio_sink_ = new NullAudioSink(message_loop_.task_runner());
@@ -396,9 +398,9 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       (clockless_playback_)
           ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
           : audio_sink_.get(),
-      base::Bind(&CreateAudioDecodersForTest, message_loop_.task_runner(),
-                 prepend_audio_decoders_cb),
-      new MediaLog()));
+      base::Bind(&CreateAudioDecodersForTest, &media_log_,
+                 message_loop_.task_runner(), prepend_audio_decoders_cb),
+      &media_log_));
   if (hashing_enabled_) {
     if (clockless_playback_)
       clockless_audio_sink_->StartAudioHashForTesting();

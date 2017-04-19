@@ -43,7 +43,7 @@ DecoderStreamTraits<DemuxerStream::AUDIO>::GetDecoderConfig(
 }
 
 DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderStreamTraits(
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : media_log_(media_log) {}
 
 void DecoderStreamTraits<DemuxerStream::AUDIO>::ReportStatistics(
@@ -111,7 +111,7 @@ DecoderStreamTraits<DemuxerStream::VIDEO>::GetDecoderConfig(
 }
 
 DecoderStreamTraits<DemuxerStream::VIDEO>::DecoderStreamTraits(
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     // Randomly selected number of samples to keep.
     : keyframe_distance_average_(16) {}
 

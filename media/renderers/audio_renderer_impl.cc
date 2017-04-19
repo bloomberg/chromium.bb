@@ -37,7 +37,7 @@ AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     media::AudioRendererSink* sink,
     const CreateAudioDecodersCB& create_audio_decoders_cb,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : task_runner_(task_runner),
       expecting_config_changes_(false),
       sink_(sink),

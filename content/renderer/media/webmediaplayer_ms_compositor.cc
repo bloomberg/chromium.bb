@@ -14,7 +14,6 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -130,11 +129,9 @@ scoped_refptr<media::VideoFrame> CopyFrame(
 WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     const blink::WebMediaStream& web_stream,
-    const base::WeakPtr<WebMediaPlayerMS>& player,
-    scoped_refptr<media::MediaLog> media_log)
+    const base::WeakPtr<WebMediaPlayerMS>& player)
     : compositor_task_runner_(compositor_task_runner),
       player_(player),
-      media_log_(std::move(media_log)),
       video_frame_provider_client_(nullptr),
       current_frame_used_by_compositor_(false),
       last_render_length_(base::TimeDelta::FromSecondsD(1.0 / 60.0)),
@@ -157,7 +154,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
     rendering_frame_buffer_.reset(new media::VideoRendererAlgorithm(
         base::Bind(&WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks,
                    base::Unretained(this)),
-        media_log_));
+        &media_log_));
   }
 
   // Just for logging purpose.
@@ -463,7 +460,7 @@ void WebMediaPlayerMSCompositor::SetAlgorithmEnabledForTesting(
     rendering_frame_buffer_.reset(new media::VideoRendererAlgorithm(
         base::Bind(&WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks,
                    base::Unretained(this)),
-        media_log_));
+        &media_log_));
   }
 }
 

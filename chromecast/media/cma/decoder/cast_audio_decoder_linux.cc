@@ -68,8 +68,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
                                              ::media::CHANNEL_LAYOUT_STEREO));
     }
     base::WeakPtr<CastAudioDecoderImpl> self = weak_factory_.GetWeakPtr();
-    decoder_.reset(new ::media::FFmpegAudioDecoder(
-        task_runner_, make_scoped_refptr(new ::media::MediaLog())));
+    decoder_.reset(new ::media::FFmpegAudioDecoder(task_runner_, &media_log_));
     decoder_->Initialize(
         media::DecoderConfigAdapter::ToMediaAudioDecoderConfig(config_),
         nullptr, base::Bind(&CastAudioDecoderImpl::OnInitialized, self),
@@ -246,6 +245,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
         new media::DecoderBufferAdapter(config_.id, result));
   }
 
+  ::media::MediaLog media_log_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   InitializedCallback initialized_callback_;
   OutputFormat output_format_;

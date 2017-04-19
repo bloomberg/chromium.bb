@@ -231,7 +231,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // Current playback rate.
   double playback_rate_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // Host object to report buffered byte range changes to.
   BufferedDataSourceHost* host_;

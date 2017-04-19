@@ -73,7 +73,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
       : tick_clock_(new base::SimpleTestTickClock()),
         algorithm_(base::Bind(&WallClockTimeSource::GetWallClockTimes,
                               base::Unretained(&time_source_)),
-                   make_scoped_refptr(new MediaLog())) {
+                   &media_log_) {
     // Always start the TickClock at a non-zero value since null values have
     // special connotations.
     tick_clock_->Advance(base::TimeDelta::FromMicroseconds(10000));
@@ -331,6 +331,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
   }
 
  protected:
+  MediaLog media_log_;
   VideoFramePool frame_pool_;
   std::unique_ptr<base::SimpleTestTickClock> tick_clock_;
   WallClockTimeSource time_source_;

@@ -587,12 +587,13 @@ bool AVCDecoderConfigurationRecord::Parse(BoxReader* reader) {
 
 bool AVCDecoderConfigurationRecord::Parse(const uint8_t* data, int data_size) {
   BufferReader reader(data, data_size);
-  return ParseInternal(&reader, new MediaLog());
+  // TODO(wolenetz): Questionable MediaLog usage, http://crbug.com/712310
+  MediaLog media_log;
+  return ParseInternal(&reader, &media_log);
 }
 
-bool AVCDecoderConfigurationRecord::ParseInternal(
-    BufferReader* reader,
-    const scoped_refptr<MediaLog>& media_log) {
+bool AVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader,
+                                                  MediaLog* media_log) {
   RCHECK(reader->Read1(&version) && version == 1 &&
          reader->Read1(&profile_indication) &&
          reader->Read1(&profile_compatibility) &&

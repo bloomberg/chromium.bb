@@ -15,7 +15,6 @@
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log_event.h"
@@ -25,7 +24,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
+class MEDIA_EXPORT MediaLog {
  public:
   enum MediaLogLevel {
     MEDIALOG_ERROR,
@@ -43,6 +42,7 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   static std::string MediaEventToLogString(const MediaLogEvent& event);
 
   MediaLog();
+  virtual ~MediaLog();
 
   // Add an event to this log. Overriden by inheritors to actually do something
   // with it.
@@ -123,10 +123,6 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   static base::flat_set<base::StringPiece> GetWatchTimeKeys();
   static base::flat_set<base::StringPiece> GetWatchTimePowerKeys();
 
- protected:
-  friend class base::RefCountedThreadSafe<MediaLog>;
-  virtual ~MediaLog();
-
  private:
   // A unique (to this process) id for this MediaLog.
   int32_t id_;
@@ -137,15 +133,14 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
 // Helper class to make it easier to use MediaLog like DVLOG().
 class MEDIA_EXPORT LogHelper {
  public:
-  LogHelper(MediaLog::MediaLogLevel level,
-            const scoped_refptr<MediaLog>& media_log);
+  LogHelper(MediaLog::MediaLogLevel level, MediaLog* media_log);
   ~LogHelper();
 
   std::ostream& stream() { return stream_; }
 
  private:
-  MediaLog::MediaLogLevel level_;
-  const scoped_refptr<MediaLog> media_log_;
+  const MediaLog::MediaLogLevel level_;
+  MediaLog* const media_log_;
   std::stringstream stream_;
 };
 

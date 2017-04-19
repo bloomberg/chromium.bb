@@ -108,7 +108,7 @@ class FFmpegDemuxerTest : public testing::Test {
 
     demuxer_.reset(new FFmpegDemuxer(
         base::ThreadTaskRunnerHandle::Get(), data_source_.get(),
-        encrypted_media_init_data_cb, tracks_updated_cb, new MediaLog()));
+        encrypted_media_init_data_cb, tracks_updated_cb, &media_log_));
   }
 
   DemuxerStream* GetStream(DemuxerStream::Type type) {
@@ -246,6 +246,7 @@ class FFmpegDemuxerTest : public testing::Test {
   // Fixture members.
 
   base::test::ScopedTaskScheduler task_scheduler_;
+  MediaLog media_log_;
   std::unique_ptr<FileDataSource> data_source_;
   std::unique_ptr<FFmpegDemuxer> demuxer_;
   StrictMock<MockDemuxerHost> host_;

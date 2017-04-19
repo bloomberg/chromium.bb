@@ -60,7 +60,7 @@ class MEDIA_EXPORT VideoRendererImpl
       const CreateVideoDecodersCB& create_video_decoders_cb,
       bool drop_frames,
       GpuVideoAcceleratorFactories* gpu_factories,
-      const scoped_refptr<MediaLog>& media_log);
+      MediaLog* media_log);
   ~VideoRendererImpl() override;
 
   // VideoRenderer implementation.
@@ -208,7 +208,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
   std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // Flag indicating low-delay mode.
   bool low_delay_;

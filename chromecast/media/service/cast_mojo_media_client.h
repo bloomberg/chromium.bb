@@ -32,7 +32,7 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
   scoped_refptr<::media::AudioRendererSink> CreateAudioRendererSink(
       const std::string& audio_device_id) override;
   std::unique_ptr<::media::RendererFactory> CreateRendererFactory(
-      const scoped_refptr<::media::MediaLog>& media_log) override;
+      ::media::MediaLog* media_log) override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces) override;
 

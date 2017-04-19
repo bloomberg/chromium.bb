@@ -45,8 +45,7 @@ static base::TimeDelta PrecisionCappedDefaultDuration(
   return base::TimeDelta::FromMicroseconds(mult);
 }
 
-WebMTracksParser::WebMTracksParser(const scoped_refptr<MediaLog>& media_log,
-                                   bool ignore_text_tracks)
+WebMTracksParser::WebMTracksParser(MediaLog* media_log, bool ignore_text_tracks)
     : ignore_text_tracks_(ignore_text_tracks),
       media_log_(media_log),
       audio_client_(media_log),

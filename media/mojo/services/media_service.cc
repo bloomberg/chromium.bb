@@ -17,8 +17,7 @@ namespace media {
 
 // TODO(xhwang): Hook up MediaLog when possible.
 MediaService::MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client)
-    : mojo_media_client_(std::move(mojo_media_client)),
-      media_log_(new MediaLog()) {
+    : mojo_media_client_(std::move(mojo_media_client)) {
   DCHECK(mojo_media_client_);
   registry_.AddInterface<mojom::MediaService>(this);
 }
@@ -59,7 +58,7 @@ void MediaService::CreateInterfaceFactory(
 
   mojo::MakeStrongBinding(
       base::MakeUnique<InterfaceFactoryImpl>(
-          std::move(host_interfaces), media_log_, ref_factory_->CreateRef(),
+          std::move(host_interfaces), &media_log_, ref_factory_->CreateRef(),
           mojo_media_client_.get()),
       std::move(request));
 }

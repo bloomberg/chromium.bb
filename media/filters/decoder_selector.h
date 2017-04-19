@@ -56,7 +56,7 @@ class MEDIA_EXPORT DecoderSelector {
   DecoderSelector(
       const scoped_refptr<base::SingleThreadTaskRunner>& message_loop,
       ScopedVector<Decoder> decoders,
-      const scoped_refptr<MediaLog>& media_log);
+      MediaLog* media_log);
 
   // Aborts pending Decoder selection and fires |select_decoder_cb| with
   // NULL and NULL immediately if it's pending.
@@ -91,7 +91,7 @@ class MEDIA_EXPORT DecoderSelector {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ScopedVector<Decoder> decoders_;
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   StreamTraits* traits_;
 

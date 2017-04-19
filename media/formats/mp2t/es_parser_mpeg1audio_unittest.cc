@@ -28,6 +28,7 @@ class EsParserMpeg1AudioTest : public EsParserTestBase,
   bool Process(const std::vector<Packet>& pes_packets, bool force_timing);
 
  private:
+  MediaLog media_log_;
   DISALLOW_COPY_AND_ASSIGN(EsParserMpeg1AudioTest);
 };
 
@@ -41,7 +42,7 @@ bool EsParserMpeg1AudioTest::Process(
       base::Bind(&EsParserMpeg1AudioTest::NewAudioConfig,
                  base::Unretained(this)),
       base::Bind(&EsParserMpeg1AudioTest::EmitBuffer, base::Unretained(this)),
-      new MediaLog());
+      &media_log_);
   return ProcessPesPackets(&es_parser, pes_packets, force_timing);
 }
 

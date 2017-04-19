@@ -96,12 +96,9 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // Called when midstream config updates occur.
   // Returns true if the new config is accepted.
   // Returns false if the new config should trigger an error.
-  bool UpdateAudioConfig(const AudioDecoderConfig& config,
-                         const scoped_refptr<MediaLog>& media_log);
-  bool UpdateVideoConfig(const VideoDecoderConfig& config,
-                         const scoped_refptr<MediaLog>& media_log);
-  void UpdateTextConfig(const TextTrackConfig& config,
-                        const scoped_refptr<MediaLog>& media_log);
+  bool UpdateAudioConfig(const AudioDecoderConfig& config, MediaLog* media_log);
+  bool UpdateVideoConfig(const VideoDecoderConfig& config, MediaLog* media_log);
+  void UpdateTextConfig(const TextTrackConfig& config, MediaLog* media_log);
 
   void MarkEndOfStream();
   void UnmarkEndOfStream();
@@ -184,7 +181,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // |media_log| Used to report content and engine debug messages.
   ChunkDemuxer(const base::Closure& open_cb,
                const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-               const scoped_refptr<MediaLog>& media_log);
+               MediaLog* media_log);
   ~ChunkDemuxer() override;
 
   // Demuxer implementation.
@@ -410,7 +407,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   bool enable_text_;
 
   // MediaLog for reporting messages and properties to debug content and engine.
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   PipelineStatusCB init_cb_;
   // Callback to execute upon seek completion.

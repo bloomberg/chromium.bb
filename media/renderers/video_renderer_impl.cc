@@ -34,7 +34,7 @@ VideoRendererImpl::VideoRendererImpl(
     const CreateVideoDecodersCB& create_video_decoders_cb,
     bool drop_frames,
     GpuVideoAcceleratorFactories* gpu_factories,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : task_runner_(media_task_runner),
       sink_(sink),
       sink_started_(false),

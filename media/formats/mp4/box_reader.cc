@@ -91,7 +91,7 @@ bool BufferReader::Read4sInto8s(int64_t* v) {
 
 BoxReader::BoxReader(const uint8_t* buf,
                      const size_t buf_size,
-                     const scoped_refptr<MediaLog>& media_log,
+                     MediaLog* media_log,
                      bool is_EOS)
     : BufferReader(buf, buf_size),
       media_log_(media_log),
@@ -117,7 +117,7 @@ BoxReader::~BoxReader() {
 // static
 BoxReader* BoxReader::ReadTopLevelBox(const uint8_t* buf,
                                       const size_t buf_size,
-                                      const scoped_refptr<MediaLog>& media_log,
+                                      MediaLog* media_log,
                                       bool* err) {
   std::unique_ptr<BoxReader> reader(
       new BoxReader(buf, buf_size, media_log, false));
@@ -140,7 +140,7 @@ BoxReader* BoxReader::ReadTopLevelBox(const uint8_t* buf,
 // static
 bool BoxReader::StartTopLevelBox(const uint8_t* buf,
                                  const size_t buf_size,
-                                 const scoped_refptr<MediaLog>& media_log,
+                                 MediaLog* media_log,
                                  FourCC* type,
                                  size_t* box_size,
                                  bool* err) {
@@ -158,7 +158,9 @@ bool BoxReader::StartTopLevelBox(const uint8_t* buf,
 // static
 BoxReader* BoxReader::ReadConcatentatedBoxes(const uint8_t* buf,
                                              const size_t buf_size) {
-  BoxReader* reader = new BoxReader(buf, buf_size, new MediaLog(), true);
+  // TODO(wolenetz): Questionable MediaLog usage, http://crbug.com/712310
+  MediaLog media_log;
+  BoxReader* reader = new BoxReader(buf, buf_size, &media_log, true);
 
   // Concatenated boxes are passed in without a wrapping parent box. Set
   // |box_size_| to the concatenated buffer length to mimic having already
@@ -170,8 +172,7 @@ BoxReader* BoxReader::ReadConcatentatedBoxes(const uint8_t* buf,
 }
 
 // static
-bool BoxReader::IsValidTopLevelBox(const FourCC& type,
-                                   const scoped_refptr<MediaLog>& media_log) {
+bool BoxReader::IsValidTopLevelBox(const FourCC& type, MediaLog* media_log) {
   switch (type) {
     case FOURCC_FTYP:
     case FOURCC_PDIN:

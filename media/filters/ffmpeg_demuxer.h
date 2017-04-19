@@ -68,10 +68,9 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   //
   // FFmpegDemuxerStream keeps a copy of |demuxer| and initializes itself using
   // information inside |stream|. Both parameters must outlive |this|.
-  static std::unique_ptr<FFmpegDemuxerStream> Create(
-      FFmpegDemuxer* demuxer,
-      AVStream* stream,
-      const scoped_refptr<MediaLog>& media_log);
+  static std::unique_ptr<FFmpegDemuxerStream> Create(FFmpegDemuxer* demuxer,
+                                                     AVStream* stream,
+                                                     MediaLog* media_log);
 
   ~FFmpegDemuxerStream() override;
 
@@ -155,7 +154,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
                       AVStream* stream,
                       std::unique_ptr<AudioDecoderConfig> audio_config,
                       std::unique_ptr<VideoDecoderConfig> video_config,
-                      scoped_refptr<MediaLog> media_log);
+                      MediaLog* media_log);
 
   // Runs |read_cb_| if present with the front of |buffer_queue_|, calling
   // NotifyCapacityAvailable() if capacity is still available.
@@ -177,7 +176,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   base::TimeDelta start_time_;
   std::unique_ptr<AudioDecoderConfig> audio_config_;
   std::unique_ptr<VideoDecoderConfig> video_config_;
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
   Type type_;
   Liveness liveness_;
   base::TimeDelta duration_;
@@ -210,7 +209,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
                 DataSource* data_source,
                 const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
                 const MediaTracksUpdatedCB& media_tracks_updated_cb,
-                const scoped_refptr<MediaLog>& media_log);
+                MediaLog* media_log);
   ~FFmpegDemuxer() override;
 
   // Demuxer implementation.
@@ -332,7 +331,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // integrate with libavformat.
   DataSource* data_source_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // Derived bitrate after initialization has completed.
   int bitrate_;

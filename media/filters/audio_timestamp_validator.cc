@@ -25,7 +25,7 @@ const int kStableTimeGapThrsholdMsec = 1;
 
 AudioTimestampValidator::AudioTimestampValidator(
     const AudioDecoderConfig& decoder_config,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : has_codec_delay_(decoder_config.codec_delay() > 0),
       media_log_(media_log),
       audio_base_ts_(kNoTimestamp),

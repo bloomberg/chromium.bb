@@ -25,7 +25,7 @@ struct MEDIA_EXPORT DolbyVisionConfiguration : Box {
   //       context and therefore the box header is not expected to be present
   //       in |data|.
   // Returns true if |data| was successfully parsed.
-  bool Parse(const uint8_t* data, int data_size);
+  bool ParseForTesting(const uint8_t* data, int data_size);
 
   uint8_t dv_version_major;
   uint8_t dv_version_minor;
@@ -38,8 +38,7 @@ struct MEDIA_EXPORT DolbyVisionConfiguration : Box {
   VideoCodecProfile codec_profile;
 
  private:
-  bool ParseInternal(BufferReader* reader,
-                     const scoped_refptr<MediaLog>& media_log);
+  bool ParseInternal(BufferReader* reader, MediaLog* media_log);
 };
 
 }  // namespace mp4

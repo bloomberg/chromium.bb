@@ -7,14 +7,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/base/media_log.h"
 
 namespace media {
 
 WebMediaPlayerParams::WebMediaPlayerParams(
+    std::unique_ptr<MediaLog> media_log,
     const DeferLoadCB& defer_load_cb,
     const scoped_refptr<SwitchableAudioRendererSink>& audio_renderer_sink,
-    const scoped_refptr<MediaLog>& media_log,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
@@ -30,7 +29,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     bool embedded_media_experience_enabled)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
-      media_log_(media_log),
+      media_log_(std::move(media_log)),
       media_task_runner_(media_task_runner),
       worker_task_runner_(worker_task_runner),
       compositor_task_runner_(compositor_task_runner),

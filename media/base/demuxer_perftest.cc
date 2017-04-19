@@ -178,6 +178,7 @@ int StreamReader::GetNextStreamIndexToRead() {
 static void RunDemuxerBenchmark(const std::string& filename) {
   base::FilePath file_path(GetTestDataFilePath(filename));
   base::TimeDelta total_time;
+  MediaLog media_log_;
   for (int i = 0; i < kBenchmarkIterations; ++i) {
     // Setup.
     base::test::ScopedTaskScheduler scoped_task_scheduler;
@@ -191,7 +192,7 @@ static void RunDemuxerBenchmark(const std::string& filename) {
         base::Bind(&OnMediaTracksUpdated);
     FFmpegDemuxer demuxer(base::ThreadTaskRunnerHandle::Get(), &data_source,
                           encrypted_media_init_data_cb, tracks_updated_cb,
-                          new MediaLog());
+                          &media_log_);
 
     {
       base::RunLoop run_loop;

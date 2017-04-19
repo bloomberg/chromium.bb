@@ -27,7 +27,7 @@ class MEDIA_EXPORT FrameProcessor {
   typedef base::Callback<void(base::TimeDelta)> UpdateDurationCB;
 
   FrameProcessor(const UpdateDurationCB& update_duration_cb,
-                 const scoped_refptr<MediaLog>& media_log);
+                 MediaLog* media_log);
   ~FrameProcessor();
 
   // Get/set the current append mode, which if true means "sequence" and if
@@ -170,7 +170,7 @@ class MEDIA_EXPORT FrameProcessor {
   UpdateDurationCB update_duration_cb_;
 
   // MediaLog for reporting messages and properties to debug content and engine.
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // Counters that limit spam to |media_log_| for frame processor warnings.
   int num_dropped_preroll_warnings_ = 0;

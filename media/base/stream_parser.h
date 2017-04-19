@@ -128,7 +128,7 @@ class MEDIA_EXPORT StreamParser {
       const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
       const NewMediaSegmentCB& new_segment_cb,
       const EndMediaSegmentCB& end_of_segment_cb,
-      const scoped_refptr<MediaLog>& media_log) = 0;
+      MediaLog* media_log) = 0;
 
   // Called during the reset parser state algorithm.  This flushes the current
   // parser and puts the parser in a state where it can receive data.  This

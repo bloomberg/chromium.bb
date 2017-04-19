@@ -37,14 +37,16 @@ namespace media {
 
 InterfaceFactoryImpl::InterfaceFactoryImpl(
     service_manager::mojom::InterfaceProviderPtr interfaces,
-    scoped_refptr<MediaLog> media_log,
+    MediaLog* media_log,
     std::unique_ptr<service_manager::ServiceContextRef> connection_ref,
     MojoMediaClient* mojo_media_client)
     :
+#if defined(ENABLE_MOJO_RENDERER)
+      media_log_(media_log),
+#endif
 #if defined(ENABLE_MOJO_CDM)
       interfaces_(std::move(interfaces)),
 #endif
-      media_log_(media_log),
       connection_ref_(std::move(connection_ref)),
       mojo_media_client_(mojo_media_client) {
   DVLOG(1) << __func__;

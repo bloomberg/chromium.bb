@@ -113,7 +113,7 @@ GpuVideoDecoder::BufferData::~BufferData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
                                  const RequestSurfaceCB& request_surface_cb,
-                                 scoped_refptr<MediaLog> media_log)
+                                 MediaLog* media_log)
     : needs_bitstream_conversion_(false),
       factories_(factories),
       request_surface_cb_(request_surface_cb),
@@ -169,7 +169,7 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size,
 // callsite to always be called with the same stat name (can't parameterize it).
 static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
     const VideoDecoder::InitCB& cb,
-    scoped_refptr<MediaLog> media_log,
+    MediaLog* media_log,
     bool success) {
   // TODO(xhwang): Report |success| directly.
   PipelineStatus status = success ? PIPELINE_OK : DECODER_ERROR_NOT_SUPPORTED;

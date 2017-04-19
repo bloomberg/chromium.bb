@@ -88,10 +88,9 @@ static const int kSampleRateReserved = 3;
 static const int kCodecDelay = 529;
 
 // static
-bool MPEG1AudioStreamParser::ParseHeader(
-    const scoped_refptr<MediaLog>& media_log,
-    const uint8_t* data,
-    Header* header) {
+bool MPEG1AudioStreamParser::ParseHeader(MediaLog* media_log,
+                                         const uint8_t* data,
+                                         Header* header) {
   BitReader reader(data, kHeaderSize);
   int sync;
   int version;

@@ -378,10 +378,9 @@ void MediaLog::SetBooleanProperty(
   AddEvent(std::move(event));
 }
 
-LogHelper::LogHelper(MediaLog::MediaLogLevel level,
-                     const scoped_refptr<MediaLog>& media_log)
+LogHelper::LogHelper(MediaLog::MediaLogLevel level, MediaLog* media_log)
     : level_(level), media_log_(media_log) {
-  DCHECK(media_log_.get());
+  DCHECK(media_log_);
 }
 
 LogHelper::~LogHelper() {

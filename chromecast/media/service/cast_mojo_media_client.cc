@@ -57,12 +57,10 @@ class CastAudioRendererSink : public ::media::AudioRendererSink {
 class CastRendererFactory : public ::media::RendererFactory {
  public:
   CastRendererFactory(MediaPipelineBackendFactory* backend_factory,
-                      const scoped_refptr<::media::MediaLog>& media_log,
                       VideoModeSwitcher* video_mode_switcher,
                       VideoResolutionPolicy* video_resolution_policy,
                       MediaResourceTracker* media_resource_tracker)
       : backend_factory_(backend_factory),
-        media_log_(media_log),
         video_mode_switcher_(video_mode_switcher),
         video_resolution_policy_(video_resolution_policy),
         media_resource_tracker_(media_resource_tracker) {}
@@ -85,7 +83,6 @@ class CastRendererFactory : public ::media::RendererFactory {
 
  private:
   MediaPipelineBackendFactory* const backend_factory_;
-  scoped_refptr<::media::MediaLog> media_log_;
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
   MediaResourceTracker* media_resource_tracker_;
@@ -123,11 +120,10 @@ CastMojoMediaClient::CreateAudioRendererSink(
 }
 
 std::unique_ptr<::media::RendererFactory>
-CastMojoMediaClient::CreateRendererFactory(
-    const scoped_refptr<::media::MediaLog>& media_log) {
+CastMojoMediaClient::CreateRendererFactory(::media::MediaLog* /* media_log */) {
   return base::MakeUnique<CastRendererFactory>(
-      backend_factory_, media_log, video_mode_switcher_,
-      video_resolution_policy_, media_resource_tracker_);
+      backend_factory_, video_mode_switcher_, video_resolution_policy_,
+      media_resource_tracker_);
 }
 
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(

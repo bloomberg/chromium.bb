@@ -730,6 +730,7 @@ class VideoFrameQualityValidator
 
   enum State { UNINITIALIZED, INITIALIZED, DECODING, DECODER_ERROR };
 
+  MediaLog media_log_;
   const VideoCodecProfile profile_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
   VideoDecoder::DecodeCB decode_cb_;
@@ -749,7 +750,7 @@ VideoFrameQualityValidator::VideoFrameQualityValidator(
     const base::Closure& flush_complete_cb,
     const base::Closure& decode_error_cb)
     : profile_(profile),
-      decoder_(new FFmpegVideoDecoder(make_scoped_refptr(new MediaLog()))),
+      decoder_(new FFmpegVideoDecoder(&media_log_)),
       decode_cb_(
           base::Bind(&VideoFrameQualityValidator::DecodeDone, AsWeakPtr())),
       eos_decode_cb_(

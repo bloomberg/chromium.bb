@@ -38,7 +38,7 @@ void WebMStreamParser::Init(
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewMediaSegmentCB& new_segment_cb,
     const EndMediaSegmentCB& end_of_segment_cb,
-    const scoped_refptr<MediaLog>& media_log) {
+    MediaLog* media_log) {
   DCHECK_EQ(state_, kWaitingForInit);
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());

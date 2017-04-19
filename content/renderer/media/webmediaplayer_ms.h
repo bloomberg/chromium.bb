@@ -73,7 +73,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
       blink::WebFrame* frame,
       blink::WebMediaPlayerClient* client,
       media::WebMediaPlayerDelegate* delegate,
-      media::MediaLog* media_log,
+      std::unique_ptr<media::MediaLog> media_log,
       std::unique_ptr<MediaStreamRendererFactory> factory,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
@@ -233,7 +233,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   bool paused_;
   media::VideoRotation video_rotation_;
 
-  scoped_refptr<media::MediaLog> media_log_;
+  std::unique_ptr<media::MediaLog> media_log_;
 
   std::unique_ptr<MediaStreamRendererFactory> renderer_factory_;
 

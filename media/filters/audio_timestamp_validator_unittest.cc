@@ -41,8 +41,7 @@ class AudioTimestampValidatorTest
     : public testing::Test,
       public ::testing::WithParamInterface<ValidatorTestParams> {
  public:
-  AudioTimestampValidatorTest()
-      : media_log_(new testing::StrictMock<MockMediaLog>()) {}
+  AudioTimestampValidatorTest() {}
 
  protected:
   void SetUp() override {
@@ -57,7 +56,7 @@ class AudioTimestampValidatorTest
 
   base::TimeDelta front_discard_;
 
-  scoped_refptr<testing::StrictMock<MockMediaLog>> media_log_;
+  testing::StrictMock<MockMediaLog> media_log_;
 };
 
 TEST_P(AudioTimestampValidatorTest, WarnForEraticTimes) {
@@ -75,7 +74,7 @@ TEST_P(AudioTimestampValidatorTest, WarnForEraticTimes) {
   // stabilized.
   EXPECT_MEDIA_LOG(HasSubstr("timestamp gap detected")).Times(0);
 
-  AudioTimestampValidator validator(decoder_config, media_log_);
+  AudioTimestampValidator validator(decoder_config, &media_log_);
 
   const base::TimeDelta kRandomOffsets[] = {
       base::TimeDelta::FromMilliseconds(100),
@@ -123,7 +122,7 @@ TEST_P(AudioTimestampValidatorTest, NoWarningForValidTimes) {
   // Expect no gap warnings for series of buffers with valid timestamps.
   EXPECT_MEDIA_LOG(HasSubstr("timestamp gap detected")).Times(0);
 
-  AudioTimestampValidator validator(decoder_config, media_log_);
+  AudioTimestampValidator validator(decoder_config, &media_log_);
 
   for (int i = 0; i < 100; ++i) {
     // Each buffer's timestamp is kBufferDuration from the previous buffer.
@@ -154,7 +153,7 @@ TEST_P(AudioTimestampValidatorTest, SingleWarnForSingleLargeGap) {
                             kSamplesPerSecond, EmptyExtraData(), Unencrypted(),
                             kSeekPreroll, codec_delay_);
 
-  AudioTimestampValidator validator(decoder_config, media_log_);
+  AudioTimestampValidator validator(decoder_config, &media_log_);
 
   // Validator should quickly stabilize pattern for timestamp expectations.
   EXPECT_MEDIA_LOG(HasSubstr("Failed to reconcile encoded audio times "
@@ -199,7 +198,7 @@ TEST_P(AudioTimestampValidatorTest, RepeatedWarnForSlowAccumulatingDrift) {
                             kSamplesPerSecond, EmptyExtraData(), Unencrypted(),
                             kSeekPreroll, codec_delay_);
 
-  AudioTimestampValidator validator(decoder_config, media_log_);
+  AudioTimestampValidator validator(decoder_config, &media_log_);
 
   EXPECT_MEDIA_LOG(HasSubstr("Failed to reconcile encoded audio times "
                              "with decoded output."))

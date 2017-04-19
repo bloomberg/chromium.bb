@@ -20,7 +20,7 @@ constexpr gfx::Size kSizeJustRight = gfx::Size(201, 201);
 #define EXPECT_WATCH_TIME(key, value)                                      \
   do {                                                                     \
     EXPECT_CALL(                                                           \
-        *media_log_,                                                       \
+        media_log_,                                                        \
         OnWatchTimeUpdate(has_video_ ? MediaLog::kWatchTimeAudioVideo##key \
                                      : MediaLog::kWatchTimeAudio##key,     \
                           value))                                          \
@@ -30,23 +30,21 @@ constexpr gfx::Size kSizeJustRight = gfx::Size(201, 201);
 #define EXPECT_BACKGROUND_WATCH_TIME(key, value)                           \
   do {                                                                     \
     DCHECK(has_video_);                                                    \
-    EXPECT_CALL(*media_log_,                                               \
+    EXPECT_CALL(media_log_,                                                \
                 OnWatchTimeUpdate(                                         \
                     MediaLog::kWatchTimeAudioVideoBackground##key, value)) \
         .RetiresOnSaturation();                                            \
   } while (0)
 
 #define EXPECT_WATCH_TIME_FINALIZED() \
-  EXPECT_CALL(*media_log_, OnWatchTimeFinalized()).RetiresOnSaturation();
+  EXPECT_CALL(media_log_, OnWatchTimeFinalized()).RetiresOnSaturation();
 
 #define EXPECT_POWER_WATCH_TIME_FINALIZED() \
-  EXPECT_CALL(*media_log_, OnPowerWatchTimeFinalized()).RetiresOnSaturation();
+  EXPECT_CALL(media_log_, OnPowerWatchTimeFinalized()).RetiresOnSaturation();
 
 class WatchTimeReporterTest : public testing::TestWithParam<bool> {
  public:
-  WatchTimeReporterTest()
-      : has_video_(GetParam()),
-        media_log_(new testing::StrictMock<WatchTimeLogMonitor>()) {}
+  WatchTimeReporterTest() : has_video_(GetParam()) {}
   ~WatchTimeReporterTest() override {}
 
  protected:
@@ -93,7 +91,7 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool> {
       EXPECT_WATCH_TIME_FINALIZED();
 
     wtr_.reset(new WatchTimeReporter(
-        has_audio, has_video_, is_mse, is_encrypted, false, media_log_,
+        has_audio, has_video_, is_mse, is_encrypted, false, &media_log_,
         initial_video_size,
         base::Bind(&WatchTimeReporterTest::GetCurrentMediaTime,
                    base::Unretained(this))));
@@ -263,8 +261,8 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool> {
   MOCK_METHOD0(GetCurrentMediaTime, base::TimeDelta());
 
   const bool has_video_;
+  testing::StrictMock<WatchTimeLogMonitor> media_log_;
   base::TestMessageLoop message_loop_;
-  scoped_refptr<testing::StrictMock<WatchTimeLogMonitor>> media_log_;
   std::unique_ptr<WatchTimeReporter> wtr_;
 
  private:

@@ -50,8 +50,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   };
 
   VideoDecoderSelectorTest()
-      : media_log_(new MediaLog()),
-        traits_(media_log_),
+      : traits_(&media_log_),
         demuxer_stream_(
             new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
         decoder_1_(new StrictMock<MockVideoDecoder>()),
@@ -105,7 +104,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
         all_decoders_.begin() + num_decoders, all_decoders_.end());
 
     decoder_selector_.reset(new VideoDecoderSelector(
-        message_loop_.task_runner(), std::move(all_decoders_), media_log_));
+        message_loop_.task_runner(), std::move(all_decoders_), &media_log_));
   }
 
   void SelectDecoder() {
@@ -136,7 +135,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
     NOTREACHED();
   }
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog media_log_;
 
   // Stream traits specific to video decoding.
   DecoderStreamTraits<DemuxerStream::VIDEO> traits_;

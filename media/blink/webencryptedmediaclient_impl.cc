@@ -89,7 +89,7 @@ WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     base::Callback<bool(void)> are_secure_codecs_supported_cb,
     CdmFactory* cdm_factory,
     MediaPermission* media_permission,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : are_secure_codecs_supported_cb_(are_secure_codecs_supported_cb),
       cdm_factory_(cdm_factory),
       key_system_config_selector_(KeySystems::GetInstance(), media_permission),

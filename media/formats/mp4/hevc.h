@@ -64,8 +64,7 @@ struct MEDIA_EXPORT HEVCDecoderConfigurationRecord : Box {
   VideoCodecProfile GetVideoProfile() const;
 
  private:
-  bool ParseInternal(BufferReader* reader,
-                     const scoped_refptr<MediaLog>& media_log);
+  bool ParseInternal(BufferReader* reader, MediaLog* media_log);
 };
 
 class MEDIA_EXPORT HEVC {

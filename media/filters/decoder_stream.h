@@ -56,10 +56,9 @@ class MEDIA_EXPORT DecoderStream {
   // Indicates completion of a DecoderStream read.
   typedef base::Callback<void(Status, const scoped_refptr<Output>&)> ReadCB;
 
-  DecoderStream(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      ScopedVector<Decoder> decoders,
-      const scoped_refptr<MediaLog>& media_log);
+  DecoderStream(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+                ScopedVector<Decoder> decoders,
+                MediaLog* media_log);
   virtual ~DecoderStream();
 
   // Returns the string representation of the StreamType for logging purpose.
@@ -187,7 +186,7 @@ class MEDIA_EXPORT DecoderStream {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   State state_;
 

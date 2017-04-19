@@ -113,10 +113,8 @@ bool FFmpegVideoDecoder::IsCodecSupported(VideoCodec codec) {
   return avcodec_find_decoder(VideoCodecToCodecID(codec)) != nullptr;
 }
 
-FFmpegVideoDecoder::FFmpegVideoDecoder(scoped_refptr<MediaLog> media_log)
-    : media_log_(std::move(media_log)),
-      state_(kUninitialized),
-      decode_nalus_(false) {
+FFmpegVideoDecoder::FFmpegVideoDecoder(MediaLog* media_log)
+    : media_log_(media_log), state_(kUninitialized), decode_nalus_(false) {
   thread_checker_.DetachFromThread();
 }
 

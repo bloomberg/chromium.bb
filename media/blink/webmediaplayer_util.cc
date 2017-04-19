@@ -110,7 +110,7 @@ std::string LoadTypeToString(blink::WebMediaPlayer::LoadType load_type) {
 void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
                    const GURL& url,
                    const blink::WebSecurityOrigin& security_origin,
-                   scoped_refptr<MediaLog> media_log) {
+                   MediaLog* media_log) {
   DCHECK(media_log);
 
   // Report URL scheme, such as http, https, file, blob etc.
@@ -137,7 +137,7 @@ void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
 
 void ReportPipelineError(blink::WebMediaPlayer::LoadType load_type,
                          PipelineStatus error,
-                         scoped_refptr<MediaLog> media_log) {
+                         MediaLog* media_log) {
   DCHECK_NE(PIPELINE_OK, error);
 
   // Report the origin from where the media player is created.

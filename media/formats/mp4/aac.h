@@ -34,8 +34,7 @@ class MEDIA_EXPORT AAC {
   // The function will parse the data and get the ElementaryStreamDescriptor,
   // then it will parse the ElementaryStreamDescriptor to get audio stream
   // configurations.
-  bool Parse(const std::vector<uint8_t>& data,
-             const scoped_refptr<MediaLog>& media_log);
+  bool Parse(const std::vector<uint8_t>& data, MediaLog* media_log);
 
   // Gets the output sample rate for the AAC stream.
   // |sbr_in_mimetype| should be set to true if the SBR mode is

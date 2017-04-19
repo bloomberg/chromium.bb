@@ -63,10 +63,10 @@ MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
 
 class SourceBufferStreamTest : public testing::Test {
  protected:
-  SourceBufferStreamTest() : media_log_(new StrictMock<MockMediaLog>()) {
+  SourceBufferStreamTest() {
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
-    stream_.reset(new SourceBufferStream(video_config_, media_log_));
+    stream_.reset(new SourceBufferStream(video_config_, &media_log_));
   }
 
   void SetMemoryLimit(size_t buffers_of_data) {
@@ -82,7 +82,7 @@ class SourceBufferStreamTest : public testing::Test {
   void SetTextStream() {
     video_config_ = TestVideoConfig::Invalid();
     TextTrackConfig config(kTextSubtitles, "", "", "");
-    stream_.reset(new SourceBufferStream(config, media_log_));
+    stream_.reset(new SourceBufferStream(config, &media_log_));
     SetStreamInfo(2, 2);
   }
 
@@ -91,7 +91,7 @@ class SourceBufferStreamTest : public testing::Test {
     audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                              CHANNEL_LAYOUT_STEREO, 1000, EmptyExtraData(),
                              Unencrypted(), base::TimeDelta(), 0);
-    stream_.reset(new SourceBufferStream(audio_config_, media_log_));
+    stream_.reset(new SourceBufferStream(audio_config_, &media_log_));
 
     // Equivalent to 2ms per frame.
     SetStreamInfo(500, 500);
@@ -408,10 +408,10 @@ class SourceBufferStreamTest : public testing::Test {
 
   base::TimeDelta frame_duration() const { return frame_duration_; }
 
+  StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<SourceBufferStream> stream_;
   VideoDecoderConfig video_config_;
   AudioDecoderConfig audio_config_;
-  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
 
  private:
   base::TimeDelta ConvertToFrameDuration(int frames_per_second) {
@@ -3658,7 +3658,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, EmptyExtraData(), Unencrypted());
-  stream_.reset(new SourceBufferStream(config, media_log_));
+  stream_.reset(new SourceBufferStream(config, &media_log_));
   Seek(0);
   NewCodedFrameGroupAppend("0K 0K 30K 30 60 60");
   CheckExpectedBuffers("0K 0K 30K 30 60 60");
@@ -3669,7 +3669,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_SingleAppend_Warning) {
 
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, EmptyExtraData(), Unencrypted());
-  stream_.reset(new SourceBufferStream(config, media_log_));
+  stream_.reset(new SourceBufferStream(config, &media_log_));
   Seek(0);
 
   // Note, in reality, a non-keyframe audio frame is rare or perhaps not
@@ -4214,7 +4214,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
   audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                            CHANNEL_LAYOUT_STEREO, 4000, EmptyExtraData(),
                            Unencrypted(), base::TimeDelta(), 0);
-  stream_.reset(new SourceBufferStream(audio_config_, media_log_));
+  stream_.reset(new SourceBufferStream(audio_config_, &media_log_));
   // Equivalent to 0.5ms per frame.
   SetStreamInfo(2000, 2000);
   Seek(0);

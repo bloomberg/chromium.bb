@@ -55,21 +55,19 @@ void InvokeCbAndSaveResult(const base::Callback<bool()>& cb, bool* result) {
 
 class SourceBufferStateTest : public ::testing::Test {
  public:
-  SourceBufferStateTest()
-      : media_log_(new testing::StrictMock<MockMediaLog>()),
-        mock_stream_parser_(nullptr) {}
+  SourceBufferStateTest() : mock_stream_parser_(nullptr) {}
 
   std::unique_ptr<SourceBufferState> CreateSourceBufferState() {
     std::unique_ptr<FrameProcessor> frame_processor = base::WrapUnique(
         new FrameProcessor(base::Bind(&SourceBufferStateTest::OnUpdateDuration,
                                       base::Unretained(this)),
-                           media_log_));
+                           &media_log_));
     mock_stream_parser_ = new testing::StrictMock<MockStreamParser>();
     return base::WrapUnique(new SourceBufferState(
         base::WrapUnique(mock_stream_parser_), std::move(frame_processor),
         base::Bind(&SourceBufferStateTest::CreateDemuxerStream,
                    base::Unretained(this)),
-        media_log_));
+        &media_log_));
   }
 
   std::unique_ptr<SourceBufferState> CreateAndInitSourceBufferState(
@@ -132,7 +130,7 @@ class SourceBufferStateTest : public ::testing::Test {
     return demuxer_streams_.back().get();
   }
 
-  scoped_refptr<testing::StrictMock<MockMediaLog>> media_log_;
+  testing::StrictMock<MockMediaLog> media_log_;
   std::vector<std::unique_ptr<ChunkDemuxerStream>> demuxer_streams_;
   MockStreamParser* mock_stream_parser_;
   StreamParser::NewConfigCB new_config_cb_;

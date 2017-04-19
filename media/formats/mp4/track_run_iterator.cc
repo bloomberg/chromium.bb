@@ -94,8 +94,7 @@ DecodeTimestamp DecodeTimestampFromRational(int64_t numer, int64_t denom) {
       TimeDeltaFromRational(numer, denom));
 }
 
-TrackRunIterator::TrackRunIterator(const Movie* moov,
-                                   const scoped_refptr<MediaLog>& media_log)
+TrackRunIterator::TrackRunIterator(const Movie* moov, MediaLog* media_log)
     : moov_(moov), media_log_(media_log), sample_offset_(0) {
   CHECK(moov);
 }
@@ -117,7 +116,7 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
                                SampleInfo* sample_info,
                                const SampleDependsOn sdtp_sample_depends_on,
                                bool is_audio,
-                               const scoped_refptr<MediaLog>& media_log) {
+                               MediaLog* media_log) {
   if (i < trun.sample_sizes.size()) {
     sample_info->size = trun.sample_sizes[i];
   } else if (tfhd.default_sample_size > 0) {

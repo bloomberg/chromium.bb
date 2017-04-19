@@ -64,7 +64,7 @@ class MEDIA_EXPORT AudioRendererImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       AudioRendererSink* sink,
       const CreateAudioDecodersCB& create_audio_decoders_cb,
-      const scoped_refptr<MediaLog>& media_log);
+      MediaLog* media_log);
   ~AudioRendererImpl() override;
 
   // TimeSource implementation.
@@ -217,7 +217,7 @@ class MEDIA_EXPORT AudioRendererImpl
 
   std::unique_ptr<AudioBufferStream> audio_buffer_stream_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // Cached copy of hardware params from |sink_|.
   AudioParameters audio_parameters_;

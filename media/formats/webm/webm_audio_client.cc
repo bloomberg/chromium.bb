@@ -10,8 +10,7 @@
 
 namespace media {
 
-WebMAudioClient::WebMAudioClient(const scoped_refptr<MediaLog>& media_log)
-    : media_log_(media_log) {
+WebMAudioClient::WebMAudioClient(MediaLog* media_log) : media_log_(media_log) {
   Reset();
 }
 

@@ -9,12 +9,10 @@
 
 namespace media {
 
-WebMContentEncodingsClient::WebMContentEncodingsClient(
-    const scoped_refptr<MediaLog>& media_log)
+WebMContentEncodingsClient::WebMContentEncodingsClient(MediaLog* media_log)
     : media_log_(media_log),
       content_encryption_encountered_(false),
-      content_encodings_ready_(false) {
-}
+      content_encodings_ready_(false) {}
 
 WebMContentEncodingsClient::~WebMContentEncodingsClient() {
 }

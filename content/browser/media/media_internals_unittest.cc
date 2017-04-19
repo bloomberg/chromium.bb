@@ -321,6 +321,7 @@ class DirectMediaLog : public media::MediaLog {
   explicit DirectMediaLog(int render_process_id)
       : render_process_id_(render_process_id),
         internals_(content::MediaInternals::GetInstance()) {}
+  ~DirectMediaLog() override {}
 
   void AddEvent(std::unique_ptr<media::MediaLogEvent> event) override {
     std::vector<media::MediaLogEvent> events(1, *event);
@@ -328,8 +329,6 @@ class DirectMediaLog : public media::MediaLog {
   }
 
  private:
-  ~DirectMediaLog() override {}
-
   const int render_process_id_;
   MediaInternals* const internals_;
 
@@ -352,7 +351,7 @@ class MediaInternalsWatchTimeTest : public testing::Test,
                   bool is_mse,
                   bool is_encrypted) {
     wtr_.reset(new media::WatchTimeReporter(
-        has_audio, has_video, is_mse, is_encrypted, true, media_log_,
+        has_audio, has_video, is_mse, is_encrypted, true, media_log_.get(),
         gfx::Size(800, 600),
         base::Bind(&MediaInternalsWatchTimeTest::GetCurrentMediaTime,
                    base::Unretained(this))));
@@ -388,7 +387,7 @@ class MediaInternalsWatchTimeTest : public testing::Test,
  protected:
   const int render_process_id_;
   MediaInternals* const internals_;
-  scoped_refptr<DirectMediaLog> media_log_;
+  std::unique_ptr<DirectMediaLog> media_log_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<media::WatchTimeReporter> wtr_;
   const base::flat_set<base::StringPiece> watch_time_keys_;

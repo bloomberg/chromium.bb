@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/media_log.h"
 #include "media/base/stream_parser.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
@@ -65,6 +66,7 @@ class StreamParserTestBase {
   void OnNewSegment();
   void OnEndOfSegment();
 
+  MediaLog media_log_;
   std::unique_ptr<StreamParser> parser_;
   std::stringstream results_stream_;
   AudioDecoderConfig last_audio_config_;

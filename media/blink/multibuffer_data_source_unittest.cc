@@ -195,7 +195,7 @@ class MockMultibufferDataSource : public MultibufferDataSource {
             task_runner,
             url_index,
             frame,
-            new media::MediaLog(),
+            &media_log_,
             host,
             base::Bind(&MockMultibufferDataSource::set_downloading,
                        base::Unretained(this))),
@@ -208,6 +208,7 @@ class MockMultibufferDataSource : public MultibufferDataSource {
  private:
   // Whether the resource is downloading or deferred.
   bool downloading_;
+  MediaLog media_log_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMultibufferDataSource);
 };

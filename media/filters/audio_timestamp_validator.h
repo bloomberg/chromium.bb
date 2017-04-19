@@ -19,7 +19,7 @@ namespace media {
 class MEDIA_EXPORT AudioTimestampValidator {
  public:
   AudioTimestampValidator(const AudioDecoderConfig& decoder_config,
-                          const scoped_refptr<MediaLog>& media_log);
+                          MediaLog* media_log);
   ~AudioTimestampValidator();
 
   // These methods monitor DecoderBuffer timestamps for gaps for the purpose of
@@ -31,7 +31,7 @@ class MEDIA_EXPORT AudioTimestampValidator {
 
  private:
   bool has_codec_delay_;
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // Accumulates time from decoded audio frames. We adjust the base timestamp as
   // needed for the first few buffers (stabilization period) of decoded output

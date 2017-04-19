@@ -174,6 +174,7 @@ class Mp2tStreamParserTest : public testing::Test {
   }
 
  protected:
+  MediaLog media_log_;
   std::unique_ptr<Mp2tStreamParser> parser_;
   int segment_count_;
   int config_count_;
@@ -358,7 +359,7 @@ class Mp2tStreamParserTest : public testing::Test {
         base::Bind(&Mp2tStreamParserTest::OnNewSegment, base::Unretained(this)),
         base::Bind(&Mp2tStreamParserTest::OnEndOfSegment,
                    base::Unretained(this)),
-        new MediaLog());
+        &media_log_);
   }
 
   bool ParseMpeg2TsFile(const std::string& filename, int append_bytes) {

@@ -33,7 +33,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
  public:
   DecryptingDemuxerStream(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const scoped_refptr<MediaLog>& media_log,
+      MediaLog* media_log,
       const base::Closure& waiting_for_decryption_key_cb);
 
   // Cancels all pending operations immediately and fires all pending callbacks.
@@ -102,7 +102,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   State state_;
 

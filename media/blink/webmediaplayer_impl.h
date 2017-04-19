@@ -100,7 +100,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       WebMediaPlayerDelegate* delegate,
       std::unique_ptr<RendererFactory> renderer_factory,
       linked_ptr<UrlIndex> url_index,
-      const WebMediaPlayerParams& params);
+      std::unique_ptr<WebMediaPlayerParams> params);
   ~WebMediaPlayerImpl() override;
 
   void Load(LoadType load_type,
@@ -481,7 +481,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
-  scoped_refptr<MediaLog> media_log_;
+  std::unique_ptr<MediaLog> media_log_;
 
   // |pipeline_controller_| owns an instance of Pipeline.
   PipelineController pipeline_controller_;

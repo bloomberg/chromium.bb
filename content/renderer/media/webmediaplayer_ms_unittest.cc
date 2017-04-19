@@ -403,7 +403,7 @@ class WebMediaPlayerMSTest
             nullptr,
             this,
             &delegate_,
-            new media::MediaLog(),
+            base::MakeUnique<media::MediaLog>(),
             std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
             message_loop_.task_runner(),
             message_loop_.task_runner(),

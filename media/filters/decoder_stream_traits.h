@@ -44,7 +44,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   static scoped_refptr<OutputType> CreateEOSOutput();
   static DecoderConfigType GetDecoderConfig(DemuxerStream* stream);
 
-  explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log);
+  explicit DecoderStreamTraits(MediaLog* media_log);
 
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
   void InitializeDecoder(DecoderType* decoder,
@@ -63,7 +63,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   // drift.
   std::unique_ptr<AudioTimestampValidator> audio_ts_validator_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 };
 
 template <>
@@ -81,7 +81,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   static scoped_refptr<OutputType> CreateEOSOutput();
   static DecoderConfigType GetDecoderConfig(DemuxerStream* stream);
 
-  explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log);
+  explicit DecoderStreamTraits(MediaLog* media_log);
 
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
   void InitializeDecoder(DecoderType* decoder,

@@ -44,7 +44,7 @@ template <DemuxerStream::Type StreamType>
 DecoderSelector<StreamType>::DecoderSelector(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     ScopedVector<Decoder> decoders,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : task_runner_(task_runner),
       decoders_(std::move(decoders)),
       media_log_(media_log),

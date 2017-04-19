@@ -178,9 +178,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     return GenerateCluster(46, 66, 5);
   }
 
-  ChunkDemuxerTest()
-      : media_log_(new StrictMock<MockMediaLog>()),
-        append_window_end_for_next_append_(kInfiniteDuration) {
+  ChunkDemuxerTest() : append_window_end_for_next_append_(kInfiniteDuration) {
     init_segment_received_cb_ = base::Bind(
         &ChunkDemuxerTest::InitSegmentReceived, base::Unretained(this));
     CreateNewDemuxer();
@@ -192,7 +190,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
         &ChunkDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
     demuxer_.reset(
-        new ChunkDemuxer(open_cb, encrypted_media_init_data_cb, media_log_));
+        new ChunkDemuxer(open_cb, encrypted_media_init_data_cb, &media_log_));
   }
 
   virtual ~ChunkDemuxerTest() {
@@ -1298,10 +1296,10 @@ class ChunkDemuxerTest : public ::testing::Test {
     return true;
   }
 
+  StrictMock<MockMediaLog> media_log_;
+
   base::MessageLoop message_loop_;
   MockDemuxerHost host_;
-
-  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
 
   std::unique_ptr<ChunkDemuxer> demuxer_;
   Demuxer::MediaTracksUpdatedCB init_segment_received_cb_;

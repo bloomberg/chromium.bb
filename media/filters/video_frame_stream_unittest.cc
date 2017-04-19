@@ -92,7 +92,7 @@ class VideoFrameStreamTest
     decoders.push_back(decoder3_);
 
     video_frame_stream_.reset(new VideoFrameStream(
-        message_loop_.task_runner(), std::move(decoders), new MediaLog()));
+        message_loop_.task_runner(), std::move(decoders), &media_log_));
 
     if (GetParam().is_encrypted && GetParam().has_decryptor) {
       decryptor_.reset(new NiceMock<MockDecryptor>());
@@ -364,6 +364,7 @@ class VideoFrameStreamTest
 
   base::MessageLoop message_loop_;
 
+  MediaLog media_log_;
   std::unique_ptr<VideoFrameStream> video_frame_stream_;
   std::unique_ptr<FakeDemuxerStream> demuxer_stream_;
   std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;

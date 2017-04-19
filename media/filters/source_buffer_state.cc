@@ -119,7 +119,7 @@ SourceBufferState::SourceBufferState(
     std::unique_ptr<StreamParser> stream_parser,
     std::unique_ptr<FrameProcessor> frame_processor,
     const CreateDemuxerStreamCB& create_demuxer_stream_cb,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
       timestamp_offset_during_append_(NULL),
       parsing_media_segment_(false),

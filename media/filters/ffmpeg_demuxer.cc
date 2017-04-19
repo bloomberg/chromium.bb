@@ -203,7 +203,7 @@ static void SetTimeProperty(MediaLogEvent* event,
 std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     FFmpegDemuxer* demuxer,
     AVStream* stream,
-    const scoped_refptr<MediaLog>& media_log) {
+    MediaLog* media_log) {
   if (!demuxer || !stream)
     return nullptr;
 
@@ -265,14 +265,14 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
     AVStream* stream,
     std::unique_ptr<AudioDecoderConfig> audio_config,
     std::unique_ptr<VideoDecoderConfig> video_config,
-    scoped_refptr<MediaLog> media_log)
+    MediaLog* media_log)
     : demuxer_(demuxer),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       stream_(stream),
       start_time_(kNoTimestamp),
       audio_config_(audio_config.release()),
       video_config_(video_config.release()),
-      media_log_(std::move(media_log)),
+      media_log_(media_log),
       type_(UNKNOWN),
       liveness_(LIVENESS_UNKNOWN),
       end_of_stream_(false),
@@ -836,7 +836,7 @@ FFmpegDemuxer::FFmpegDemuxer(
     DataSource* data_source,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const MediaTracksUpdatedCB& media_tracks_updated_cb,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : host_(NULL),
       task_runner_(task_runner),
       // FFmpeg has no asynchronous API, so we use base::WaitableEvents inside
@@ -1374,7 +1374,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       VideoDecoderConfig video_config = streams_[i]->video_decoder_config();
 
       RecordVideoCodecStats(video_config, stream->codecpar->color_range,
-                            media_log_.get());
+                            media_log_);
 
       media_track = media_tracks->AddVideoTrack(video_config, track_id, "main",
                                                 track_label, track_language);

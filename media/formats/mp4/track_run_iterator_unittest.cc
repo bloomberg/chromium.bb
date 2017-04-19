@@ -150,13 +150,11 @@ MATCHER(ReservedValueInSampleDependencyInfo, "") {
 
 class TrackRunIteratorTest : public testing::Test {
  public:
-  TrackRunIteratorTest() : media_log_(new StrictMock<MockMediaLog>()) {
-    CreateMovie();
-  }
+  TrackRunIteratorTest() { CreateMovie(); }
 
  protected:
+  StrictMock<MockMediaLog> media_log_;
   Movie moov_;
-  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
   std::unique_ptr<TrackRunIterator> iter_;
 
   void CreateMovie() {
@@ -486,14 +484,14 @@ class TrackRunIteratorTest : public testing::Test {
 };
 
 TEST_F(TrackRunIteratorTest, NoRunsTest) {
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   ASSERT_TRUE(iter_->Init(MovieFragment()));
   EXPECT_FALSE(iter_->IsRunValid());
   EXPECT_FALSE(iter_->IsSampleValid());
 }
 
 TEST_F(TrackRunIteratorTest, BasicOperationTest) {
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   MovieFragment moof = CreateFragment();
 
   // Test that runs are sorted correctly, and that properties of the initial
@@ -550,7 +548,7 @@ TEST_F(TrackRunIteratorTest, TrackExtendsDefaultsTest) {
   moov_.extends.tracks[0].default_sample_duration = 50;
   moov_.extends.tracks[0].default_sample_size = 3;
   moov_.extends.tracks[0].default_sample_flags = ToSampleFlags("UN");
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   MovieFragment moof = CreateFragment();
   moof.tracks[0].header.has_default_sample_flags = false;
   moof.tracks[0].header.default_sample_size = 0;
@@ -569,7 +567,7 @@ TEST_F(TrackRunIteratorTest, FirstSampleFlagTest) {
   // Ensure that keyframes are flagged correctly in the face of BMFF boxes which
   // explicitly specify the flags for the first sample in a run and rely on
   // defaults for all subsequent samples
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   MovieFragment moof = CreateFragment();
   moof.tracks[1].header.has_default_sample_flags = true;
   moof.tracks[1].header.default_sample_flags = ToSampleFlags("UN");
@@ -585,7 +583,7 @@ TEST_F(TrackRunIteratorTest, FirstSampleFlagTest) {
 // Verify that parsing fails if a reserved value is in the sample flags.
 TEST_F(TrackRunIteratorTest, SampleInfoTest_ReservedInSampleFlags) {
   EXPECT_MEDIA_LOG(ReservedValueInSampleDependencyInfo());
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   MovieFragment moof = CreateFragment();
   // Change the "depends on" field on one of the samples to a
   // reserved value.
@@ -596,7 +594,7 @@ TEST_F(TrackRunIteratorTest, SampleInfoTest_ReservedInSampleFlags) {
 // Verify that parsing fails if a reserved value is in the default sample flags.
 TEST_F(TrackRunIteratorTest, SampleInfoTest_ReservedInDefaultSampleFlags) {
   EXPECT_MEDIA_LOG(ReservedValueInSampleDependencyInfo());
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   MovieFragment moof = CreateFragment();
   // Set the default flag to contain a reserved "depends on" value.
   moof.tracks[0].header.default_sample_flags = ToSampleFlags("RN");
@@ -619,7 +617,7 @@ TEST_F(TrackRunIteratorTest, ReorderingTest) {
   // (that is, 2 / kVideoTimescale) and a duration of zero (which is treated as
   // infinite according to 14496-12:2012). This will cause the first 80ms of the
   // media timeline - which will be empty, due to CTS biasing - to be discarded.
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   EditListEntry entry;
   entry.segment_duration = 0;
   entry.media_time = 2;
@@ -656,7 +654,7 @@ TEST_F(TrackRunIteratorTest, ReorderingTest) {
 }
 
 TEST_F(TrackRunIteratorTest, IgnoreUnknownAuxInfoTest) {
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   MovieFragment moof = CreateFragment();
   moof.tracks[1].auxiliary_offset.offsets.push_back(50);
   moof.tracks[1].auxiliary_size.default_sample_info_size = 2;
@@ -670,7 +668,7 @@ TEST_F(TrackRunIteratorTest, IgnoreUnknownAuxInfoTest) {
 TEST_F(TrackRunIteratorTest,
        DecryptConfigTestWithSampleEncryptionAndNoSubsample) {
   AddEncryption(&moov_.tracks[1]);
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
 
   MovieFragment moof = CreateFragment();
   AddSampleEncryption(!SampleEncryption::kUseSubsampleEncryption,
@@ -705,7 +703,7 @@ TEST_F(TrackRunIteratorTest,
 TEST_F(TrackRunIteratorTest,
        DecryptConfigTestWithSampleEncryptionAndSubsample) {
   AddEncryption(&moov_.tracks[1]);
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
 
   MovieFragment moof = CreateFragment();
   AddSampleEncryption(SampleEncryption::kUseSubsampleEncryption,
@@ -751,7 +749,7 @@ TEST_F(TrackRunIteratorTest,
 
 TEST_F(TrackRunIteratorTest, DecryptConfigTestWithAuxInfo) {
   AddEncryption(&moov_.tracks[1]);
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
 
   MovieFragment moof = CreateFragment();
   AddAuxInfoHeaders(50, &moof.tracks[1]);
@@ -798,7 +796,7 @@ TEST_F(TrackRunIteratorTest, CencSampleGroupTest) {
   AddCencSampleGroup(&moov_.tracks[0], &moof.tracks[0], kSampleToGroupTable,
                      arraysize(kSampleToGroupTable));
 
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   ASSERT_TRUE(InitMoofWithArbitraryAuxInfo(&moof));
 
   std::string cenc_sample_group_key_id(
@@ -829,7 +827,7 @@ TEST_F(TrackRunIteratorTest, CencSampleGroupWithTrackEncryptionBoxTest) {
   AddCencSampleGroup(&moov_.tracks[0], &moof.tracks[0], kSampleToGroupTable,
                      arraysize(kSampleToGroupTable));
 
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   ASSERT_TRUE(InitMoofWithArbitraryAuxInfo(&moof));
 
   std::string track_encryption_key_id(kKeyId, kKeyId + arraysize(kKeyId));
@@ -875,7 +873,7 @@ TEST_F(TrackRunIteratorTest, CencSampleGroupWithTrackEncryptionBoxTest) {
 TEST_F(TrackRunIteratorTest, SharedAuxInfoTest) {
   AddEncryption(&moov_.tracks[0]);
   AddEncryption(&moov_.tracks[1]);
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
 
   MovieFragment moof = CreateFragment();
   moof.tracks[0].runs.resize(1);
@@ -917,7 +915,7 @@ TEST_F(TrackRunIteratorTest, SharedAuxInfoTest) {
 TEST_F(TrackRunIteratorTest, UnexpectedOrderingTest) {
   AddEncryption(&moov_.tracks[0]);
   AddEncryption(&moov_.tracks[1]);
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
 
   MovieFragment moof = CreateFragment();
   AddAuxInfoHeaders(20000, &moof.tracks[0]);
@@ -961,7 +959,7 @@ TEST_F(TrackRunIteratorTest, KeyFrameFlagCombinations) {
   moof.tracks[1].runs[0].sample_count = 6;
   SetFlagsOnSamples("US UN OS ON NS NN", &moof.tracks[0].runs[0]);
   SetFlagsOnSamples("US UN OS ON NS NN", &moof.tracks[1].runs[0]);
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
 
   ASSERT_TRUE(iter_->Init(moof));
   EXPECT_TRUE(iter_->IsRunValid());
@@ -992,7 +990,7 @@ TEST_F(TrackRunIteratorTest, KeyFrameFlagCombinations) {
 #if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
 TEST_F(TrackRunIteratorTest, DecryptConfigTestWithConstantIvNoAuxInfo) {
   AddEncryptionCbcs(&moov_.tracks[1]);
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
 
   MovieFragment moof = CreateFragment();
 
@@ -1040,7 +1038,7 @@ TEST_F(TrackRunIteratorTest, DecryptConfigTestWithSampleGroupsAndConstantIv) {
   AddCencSampleGroup(&moov_.tracks[1], &moof.tracks[1], kSampleToGroupTable,
                      arraysize(kSampleToGroupTable));
   AddConstantIvsToCencSampleGroup(&moov_.tracks[1], &moof.tracks[1]);
-  iter_.reset(new TrackRunIterator(&moov_, media_log_));
+  iter_.reset(new TrackRunIterator(&moov_, &media_log_));
   ASSERT_TRUE(iter_->Init(moof));
 
   // The run for track 2 will be the second.

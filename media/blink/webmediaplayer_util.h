@@ -34,13 +34,13 @@ void MEDIA_BLINK_EXPORT
 ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
               const GURL& url,
               const blink::WebSecurityOrigin& security_origin,
-              scoped_refptr<MediaLog> media_log);
+              MediaLog* media_log);
 
 // Report metrics about pipeline errors.
 void MEDIA_BLINK_EXPORT
 ReportPipelineError(blink::WebMediaPlayer::LoadType load_type,
                     PipelineStatus error,
-                    scoped_refptr<MediaLog> media_log);
+                    MediaLog* media_log);
 
 // TODO(ddorwin): Move this function to an EME-specific file.
 // We may also want to move the next one and pass Blink types to WMPI.

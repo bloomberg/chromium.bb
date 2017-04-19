@@ -52,8 +52,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   };
 
   AudioDecoderSelectorTest()
-      : media_log_(new MediaLog()),
-        traits_(media_log_),
+      : traits_(&media_log_),
         demuxer_stream_(
             new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)),
         decoder_1_(new StrictMock<MockAudioDecoder>()),
@@ -112,7 +111,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
         all_decoders_.begin() + num_decoders, all_decoders_.end());
 
     decoder_selector_.reset(new AudioDecoderSelector(
-        message_loop_.task_runner(), std::move(all_decoders_), media_log_));
+        message_loop_.task_runner(), std::move(all_decoders_), &media_log_));
   }
 
   void SelectDecoder() {
@@ -141,7 +140,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
     NOTREACHED();
   }
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog media_log_;
 
   // Stream traits specific to audio decoding.
   DecoderStreamTraits<DemuxerStream::AUDIO> traits_;

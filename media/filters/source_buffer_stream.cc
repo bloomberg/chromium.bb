@@ -139,7 +139,7 @@ SourceBufferRange::GapPolicy TypeToGapPolicy(SourceBufferStream::Type type) {
 }  // namespace
 
 SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
-                                       const scoped_refptr<MediaLog>& media_log)
+                                       MediaLog* media_log)
     : media_log_(media_log),
       seek_buffer_timestamp_(kNoTimestamp),
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
@@ -152,7 +152,7 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
 }
 
 SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
-                                       const scoped_refptr<MediaLog>& media_log)
+                                       MediaLog* media_log)
     : media_log_(media_log),
       seek_buffer_timestamp_(kNoTimestamp),
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
@@ -165,7 +165,7 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
 }
 
 SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
-                                       const scoped_refptr<MediaLog>& media_log)
+                                       MediaLog* media_log)
     : media_log_(media_log),
       text_track_config_(text_config),
       seek_buffer_timestamp_(kNoTimestamp),

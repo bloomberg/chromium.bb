@@ -61,7 +61,7 @@ static void ReleaseAudioBufferImpl(void* opaque, uint8_t* data) {
 
 FFmpegAudioDecoder::FFmpegAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : task_runner_(task_runner),
       state_(kUninitialized),
       av_sample_format_(0),

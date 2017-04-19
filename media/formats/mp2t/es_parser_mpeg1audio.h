@@ -33,7 +33,7 @@ class MEDIA_EXPORT EsParserMpeg1Audio : public EsParser {
 
   EsParserMpeg1Audio(const NewAudioConfigCB& new_audio_config_cb,
                      const EmitBufferCB& emit_buffer_cb,
-                     const scoped_refptr<MediaLog>& media_log);
+                     MediaLog* media_log);
   ~EsParserMpeg1Audio() override;
 
   // EsParser implementation.
@@ -65,7 +65,7 @@ class MEDIA_EXPORT EsParserMpeg1Audio : public EsParser {
 
   void SkipMpeg1AudioFrame(const Mpeg1AudioFrame& mpeg1audio_frame);
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // Callbacks:
   // - to signal a new audio configuration,

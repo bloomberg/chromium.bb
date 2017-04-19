@@ -49,13 +49,13 @@ MATCHER_P(UnsupportedAudioProfileLog, profile_string, "") {
 
 class AACTest : public testing::Test {
  public:
-  AACTest() : media_log_(new StrictMock<MockMediaLog>()) {}
+  AACTest() {}
 
   bool Parse(const std::vector<uint8_t>& data) {
-    return aac_.Parse(data, media_log_);
+    return aac_.Parse(data, &media_log_);
   }
 
-  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
+  StrictMock<MockMediaLog> media_log_;
   AAC aac_;
 };
 

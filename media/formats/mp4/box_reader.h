@@ -101,7 +101,7 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   // |buf| is retained but not owned, and must outlive the BoxReader instance.
   static BoxReader* ReadTopLevelBox(const uint8_t* buf,
                                     const size_t buf_size,
-                                    const scoped_refptr<MediaLog>& media_log,
+                                    MediaLog* media_log,
                                     bool* err);
 
   // Read the box header from the current buffer. This function returns true if
@@ -112,7 +112,7 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   // |buf| is not retained.
   static bool StartTopLevelBox(const uint8_t* buf,
                                const size_t buf_size,
-                               const scoped_refptr<MediaLog>& media_log,
+                               MediaLog* media_log,
                                FourCC* type,
                                size_t* box_size,
                                bool* err) WARN_UNUSED_RESULT;
@@ -128,8 +128,7 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   // Returns true if |type| is recognized to be a top-level box, false
   // otherwise. This returns true for some boxes which we do not parse.
   // Helpful in debugging misaligned appends.
-  static bool IsValidTopLevelBox(const FourCC& type,
-                                 const scoped_refptr<MediaLog>& media_log);
+  static bool IsValidTopLevelBox(const FourCC& type, MediaLog* media_log);
 
   // Scan through all boxes within the current box, starting at the current
   // buffer position. Must be called before any of the *Child functions work.
@@ -183,14 +182,14 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   uint8_t version() const { return version_; }
   uint32_t flags() const { return flags_; }
 
-  const scoped_refptr<MediaLog>& media_log() const { return media_log_; }
+  MediaLog* media_log() const { return media_log_; }
 
  private:
   // Create a BoxReader from |buf|. |is_EOS| should be true if |buf| is
   // complete stream (i.e. no additional data is expected to be appended).
   BoxReader(const uint8_t* buf,
             const size_t buf_size,
-            const scoped_refptr<MediaLog>& media_log,
+            MediaLog* media_log,
             bool is_EOS);
 
   // Must be called immediately after init. If the return is false, this
@@ -209,7 +208,7 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   template <typename T>
   bool ReadAllChildrenInternal(std::vector<T>* children, bool check_box_type);
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
   size_t box_size_;
   bool box_size_known_;
   FourCC type_;

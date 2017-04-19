@@ -65,7 +65,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
             base::Bind(
                 &FrameProcessorTestCallbackHelper::OnPossibleDurationIncrease,
                 base::Unretained(&callbacks_)),
-            new MediaLog())),
+            &media_log_)),
         append_window_end_(kInfiniteDuration),
         frame_duration_(base::TimeDelta::FromMilliseconds(10)),
         audio_id_(1),
@@ -264,6 +264,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   }
 
   base::MessageLoop message_loop_;
+  MediaLog media_log_;
   StrictMock<FrameProcessorTestCallbackHelper> callbacks_;
 
   std::unique_ptr<FrameProcessor> frame_processor_;
@@ -307,14 +308,14 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
                                           CHANNEL_LAYOUT_STEREO, 1000,
                                           EmptyExtraData(), Unencrypted());
         frame_processor_->OnPossibleAudioConfigUpdate(decoder_config);
-        ASSERT_TRUE(audio_->UpdateAudioConfig(decoder_config, new MediaLog()));
+        ASSERT_TRUE(audio_->UpdateAudioConfig(decoder_config, &media_log_));
         break;
       }
       case DemuxerStream::VIDEO: {
         ASSERT_FALSE(video_);
         video_.reset(new ChunkDemuxerStream(DemuxerStream::VIDEO, "2"));
-        ASSERT_TRUE(video_->UpdateVideoConfig(TestVideoConfig::Normal(),
-                                              new MediaLog()));
+        ASSERT_TRUE(
+            video_->UpdateVideoConfig(TestVideoConfig::Normal(), &media_log_));
         break;
       }
       // TODO(wolenetz): Test text coded frame processing.

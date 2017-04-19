@@ -23,7 +23,7 @@ const char DecryptingVideoDecoder::kDecoderName[] = "DecryptingVideoDecoder";
 
 DecryptingVideoDecoder::DecryptingVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const scoped_refptr<MediaLog>& media_log,
+    MediaLog* media_log,
     const base::Closure& waiting_for_decryption_key_cb)
     : task_runner_(task_runner),
       media_log_(media_log),

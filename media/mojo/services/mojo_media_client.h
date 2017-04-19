@@ -63,7 +63,7 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
 
   // Returns the RendererFactory to be used by MojoRendererService.
   virtual std::unique_ptr<RendererFactory> CreateRendererFactory(
-      const scoped_refptr<MediaLog>& media_log);
+      MediaLog* media_log);
 
   // Returns the CdmFactory to be used by MojoCdmService. |host_interfaces| can
   // be used to request interfaces provided remotely by the host. It may be a

@@ -57,7 +57,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
   DecryptingAudioDecoderTest()
       : decoder_(new DecryptingAudioDecoder(
             message_loop_.task_runner(),
-            new MediaLog(),
+            &media_log_,
             base::Bind(&DecryptingAudioDecoderTest::OnWaitingForDecryptionKey,
                        base::Unretained(this)))),
         cdm_context_(new StrictMock<MockCdmContext>()),
@@ -246,6 +246,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   base::MessageLoop message_loop_;
+  MediaLog media_log_;
   std::unique_ptr<DecryptingAudioDecoder> decoder_;
   std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
   std::unique_ptr<StrictMock<MockDecryptor>> decryptor_;

@@ -64,7 +64,7 @@ class MEDIA_EXPORT MPEG1AudioStreamParser : public MPEGAudioStreamParserBase {
   // Parses the header starting at |data|.
   // Assumption: size of array |data| should be at least |kHeaderSize|.
   // Returns false if the header is not valid.
-  static bool ParseHeader(const scoped_refptr<MediaLog>& media_log,
+  static bool ParseHeader(MediaLog* media_log,
                           const uint8_t* data,
                           Header* header);
 

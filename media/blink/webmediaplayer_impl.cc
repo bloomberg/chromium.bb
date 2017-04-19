@@ -177,7 +177,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebMediaPlayerDelegate* delegate,
     std::unique_ptr<RendererFactory> renderer_factory,
     linked_ptr<UrlIndex> url_index,
-    const WebMediaPlayerParams& params)
+    std::unique_ptr<WebMediaPlayerParams> params)
     : frame_(frame),
       delegate_state_(DelegateState::GONE),
       delegate_has_audio_(false),
@@ -186,9 +186,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       highest_ready_state_(WebMediaPlayer::kReadyStateHaveNothing),
       preload_(MultibufferDataSource::AUTO),
       main_task_runner_(frame->LoadingTaskRunner()),
-      media_task_runner_(params.media_task_runner()),
-      worker_task_runner_(params.worker_task_runner()),
-      media_log_(params.media_log()),
+      media_task_runner_(params->media_task_runner()),
+      worker_task_runner_(params->worker_task_runner()),
+      media_log_(params->take_media_log()),
       pipeline_controller_(
           base::MakeUnique<PipelineImpl>(media_task_runner_, media_log_.get()),
           base::Bind(&WebMediaPlayerImpl::CreateRenderer,
@@ -213,40 +213,40 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       encrypted_client_(encrypted_client),
       delegate_(delegate),
       delegate_id_(0),
-      defer_load_cb_(params.defer_load_cb()),
-      context_3d_cb_(params.context_3d_cb()),
-      adjust_allocated_memory_cb_(params.adjust_allocated_memory_cb()),
+      defer_load_cb_(params->defer_load_cb()),
+      context_3d_cb_(params->context_3d_cb()),
+      adjust_allocated_memory_cb_(params->adjust_allocated_memory_cb()),
       last_reported_memory_usage_(0),
       supports_save_(true),
       chunk_demuxer_(NULL),
       url_index_(url_index),
       // Threaded compositing isn't enabled universally yet.
-      compositor_task_runner_(params.compositor_task_runner()
-                                  ? params.compositor_task_runner()
+      compositor_task_runner_(params->compositor_task_runner()
+                                  ? params->compositor_task_runner()
                                   : base::ThreadTaskRunnerHandle::Get()),
       compositor_(new VideoFrameCompositor(compositor_task_runner_)),
 #if defined(OS_ANDROID)  // WMPI_CAST
-      cast_impl_(this, client_, params.context_3d_cb()),
+      cast_impl_(this, client_, params->context_3d_cb()),
 #endif
       volume_(1.0),
       volume_multiplier_(1.0),
       renderer_factory_(std::move(renderer_factory)),
-      surface_manager_(params.surface_manager()),
+      surface_manager_(params->surface_manager()),
       overlay_surface_id_(SurfaceManager::kNoSurfaceID),
       suppress_destruction_errors_(false),
-      suspend_enabled_(params.allow_suspend()),
+      suspend_enabled_(params->allow_suspend()),
       use_fallback_path_(false),
       is_encrypted_(false),
       preroll_attempt_pending_(false),
-      observer_(params.media_observer()),
+      observer_(params->media_observer()),
       max_keyframe_distance_to_disable_background_video_(
-          params.max_keyframe_distance_to_disable_background_video()),
+          params->max_keyframe_distance_to_disable_background_video()),
       max_keyframe_distance_to_disable_background_video_mse_(
-          params.max_keyframe_distance_to_disable_background_video_mse()),
+          params->max_keyframe_distance_to_disable_background_video_mse()),
       enable_instant_source_buffer_gc_(
-          params.enable_instant_source_buffer_gc()),
+          params->enable_instant_source_buffer_gc()),
       embedded_media_experience_enabled_(
-          params.embedded_media_experience_enabled()) {
+          params->embedded_media_experience_enabled()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
@@ -267,13 +267,13 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
-  if (params.initial_cdm())
-    SetCdm(params.initial_cdm());
+  if (params->initial_cdm())
+    SetCdm(params->initial_cdm());
 
   // TODO(xhwang): When we use an external Renderer, many methods won't work,
   // e.g. GetCurrentFrameFromCompositor(). See http://crbug.com/434861
-  audio_source_provider_ =
-      new WebAudioSourceProviderImpl(params.audio_renderer_sink(), media_log_);
+  audio_source_provider_ = new WebAudioSourceProviderImpl(
+      params->audio_renderer_sink(), media_log_.get());
 
   if (observer_)
     observer_->SetClient(this);
@@ -400,7 +400,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   GURL gurl(url);
-  ReportMetrics(load_type, gurl, frame_->GetSecurityOrigin(), media_log_);
+  ReportMetrics(load_type, gurl, frame_->GetSecurityOrigin(), media_log_.get());
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", gurl.spec());
@@ -669,8 +669,8 @@ void WebMediaPlayerImpl::EnabledAudioTracksChanged(
     logstr << track_id << " ";
     enabledMediaTrackIds.push_back(track_id);
   }
-  MEDIA_LOG(INFO, media_log_) << "Enabled audio tracks: [" << logstr.str()
-                              << "]";
+  MEDIA_LOG(INFO, media_log_.get())
+      << "Enabled audio tracks: [" << logstr.str() << "]";
   pipeline_controller_.OnEnabledAudioTracksChanged(enabledMediaTrackIds);
 }
 
@@ -681,8 +681,9 @@ void WebMediaPlayerImpl::SelectedVideoTrackChanged(
   base::Optional<MediaTrack::Id> selected_video_track_id;
   if (selectedTrackId && !video_track_disabled_)
     selected_video_track_id = MediaTrack::Id(selectedTrackId->Utf8().data());
-  MEDIA_LOG(INFO, media_log_) << "Selected video track: ["
-                              << selected_video_track_id.value_or("") << "]";
+  MEDIA_LOG(INFO, media_log_.get())
+      << "Selected video track: [" << selected_video_track_id.value_or("")
+      << "]";
   pipeline_controller_.OnSelectedVideoTrackChanged(selected_video_track_id);
 }
 
@@ -1186,8 +1187,7 @@ void WebMediaPlayerImpl::OnPipelineResumed() {
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  client_->MediaSourceOpened(
-      new WebMediaSourceImpl(chunk_demuxer_, media_log_));
+  client_->MediaSourceOpened(new WebMediaSourceImpl(chunk_demuxer_));
 }
 
 void WebMediaPlayerImpl::OnMemoryPressure(
@@ -1228,7 +1228,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
   if (suppress_destruction_errors_)
     return;
 
-  ReportPipelineError(load_type_, status, media_log_);
+  ReportPipelineError(load_type_, status, media_log_.get());
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(status));
 
   if (ready_state_ == WebMediaPlayer::kReadyStateHaveNothing) {
@@ -1755,9 +1755,9 @@ void WebMediaPlayerImpl::StartPipeline() {
         BindToCurrentLoop(base::Bind(
             &WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated, AsWeakPtr()));
 
-    demuxer_.reset(new FFmpegDemuxer(media_task_runner_, data_source_.get(),
-                                     encrypted_media_init_data_cb,
-                                     media_tracks_updated_cb, media_log_));
+    demuxer_.reset(new FFmpegDemuxer(
+        media_task_runner_, data_source_.get(), encrypted_media_init_data_cb,
+        media_tracks_updated_cb, media_log_.get()));
 #else
     OnError(PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
@@ -1769,7 +1769,7 @@ void WebMediaPlayerImpl::StartPipeline() {
     chunk_demuxer_ = new ChunkDemuxer(
         BindToCurrentLoop(
             base::Bind(&WebMediaPlayerImpl::OnDemuxerOpened, AsWeakPtr())),
-        encrypted_media_init_data_cb, media_log_);
+        encrypted_media_init_data_cb, media_log_.get());
     demuxer_.reset(chunk_demuxer_);
 
     if (base::FeatureList::IsEnabled(kMemoryPressureBasedSourceBufferGC)) {
@@ -2168,7 +2168,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
   watch_time_reporter_.reset(
       new WatchTimeReporter(HasAudio(), HasVideo(), !!chunk_demuxer_,
                             is_encrypted_, embedded_media_experience_enabled_,
-                            media_log_, pipeline_metadata_.natural_size,
+                            media_log_.get(), pipeline_metadata_.natural_size,
                             base::Bind(&GetCurrentTimeInternal, this)));
   watch_time_reporter_->OnVolumeChange(volume_);
   if (delegate_->IsFrameHidden())

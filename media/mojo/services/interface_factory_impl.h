@@ -25,7 +25,7 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
  public:
   InterfaceFactoryImpl(
       service_manager::mojom::InterfaceProviderPtr interfaces,
-      scoped_refptr<MediaLog> media_log,
+      MediaLog* media_log,
       std::unique_ptr<service_manager::ServiceContextRef> connection_ref,
       MojoMediaClient* mojo_media_client);
   ~InterfaceFactoryImpl() final;
@@ -57,6 +57,7 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
 #endif  // defined(ENABLE_MOJO_VIDEO_DECODER)
 
 #if defined(ENABLE_MOJO_RENDERER)
+  MediaLog* media_log_;
   std::unique_ptr<RendererFactory> renderer_factory_;
   mojo::StrongBindingSet<mojom::Renderer> renderer_bindings_;
 #endif  // defined(ENABLE_MOJO_RENDERER)
@@ -67,7 +68,6 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
   mojo::StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
 #endif  // defined(ENABLE_MOJO_CDM)
 
-  scoped_refptr<MediaLog> media_log_;
   std::unique_ptr<service_manager::ServiceContextRef> connection_ref_;
   MojoMediaClient* mojo_media_client_;
 

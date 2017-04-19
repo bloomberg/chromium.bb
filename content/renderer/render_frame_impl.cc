@@ -2846,13 +2846,6 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
       &GetSharedMainThreadContext3D,
       RenderThreadImpl::current()->SharedMainThreadContextProvider());
 
-  // This must be created for every new WebMediaPlayer, each instance generates
-  // a new player id which is used to collate logs on the browser side.
-  // TODO(chcunningham, dalecurtis): This should be switched to a unique_ptr
-  // owned by WebMediaPlayer to avoid this confusion. http://crbug.com/711818.
-  scoped_refptr<media::MediaLog> media_log(
-      new RenderMediaLog(url::Origin(security_origin).GetURL()));
-
   bool embedded_media_experience_enabled = false;
 #if defined(OS_ANDROID)
   if (!UseMediaPlayerRenderer(url) && !media_surface_manager_)
@@ -2887,22 +2880,10 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
           "max_keyframe_distance_media_source_ms",
           base::TimeDelta::FromSeconds(10).InMilliseconds()));
 
-  media::WebMediaPlayerParams params(
-      base::Bind(&ContentRendererClient::DeferMediaLoad,
-                 base::Unretained(GetContentClient()->renderer()),
-                 static_cast<RenderFrame*>(this),
-                 GetWebMediaPlayerDelegate()->has_played_media()),
-      audio_renderer_sink, media_log, render_thread->GetMediaThreadTaskRunner(),
-      render_thread->GetWorkerTaskRunner(),
-      render_thread->compositor_task_runner(), context_3d_cb,
-      base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
-                 base::Unretained(blink::MainThreadIsolate())),
-      initial_cdm, media_surface_manager_, media_observer,
-      max_keyframe_distance_to_disable_background_video,
-      max_keyframe_distance_to_disable_background_video_mse,
-      GetWebkitPreferences().enable_instant_source_buffer_gc,
-      GetContentClient()->renderer()->AllowMediaSuspend(),
-      embedded_media_experience_enabled);
+  // This must be created for every new WebMediaPlayer, each instance generates
+  // a new player id which is used to collate logs on the browser side.
+  std::unique_ptr<media::MediaLog> media_log(
+      new RenderMediaLog(url::Origin(security_origin).GetURL()));
 
   bool use_fallback_path = false;
 #if defined(OS_ANDROID)
@@ -2930,7 +2911,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMojoRenderer)) {
       media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
-          media_log, GetDecoderFactory(),
+          media_log.get(), GetDecoderFactory(),
           base::Bind(&RenderThreadImpl::GetGpuFactories,
                      base::Unretained(render_thread)));
     }
@@ -2943,7 +2924,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     }
 #else
     media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
-        media_log, GetDecoderFactory(),
+        media_log.get(), GetDecoderFactory(),
         base::Bind(&RenderThreadImpl::GetGpuFactories,
                    base::Unretained(render_thread)));
 #endif  // defined(ENABLE_MOJO_RENDERER)
@@ -2958,9 +2939,28 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   if (!url_index_.get() || url_index_->frame() != frame_)
     url_index_.reset(new media::UrlIndex(frame_));
 
+  std::unique_ptr<media::WebMediaPlayerParams> params(
+      new media::WebMediaPlayerParams(
+          std::move(media_log),
+          base::Bind(&ContentRendererClient::DeferMediaLoad,
+                     base::Unretained(GetContentClient()->renderer()),
+                     static_cast<RenderFrame*>(this),
+                     GetWebMediaPlayerDelegate()->has_played_media()),
+          audio_renderer_sink, render_thread->GetMediaThreadTaskRunner(),
+          render_thread->GetWorkerTaskRunner(),
+          render_thread->compositor_task_runner(), context_3d_cb,
+          base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
+                     base::Unretained(blink::MainThreadIsolate())),
+          initial_cdm, media_surface_manager_, media_observer,
+          max_keyframe_distance_to_disable_background_video,
+          max_keyframe_distance_to_disable_background_video_mse,
+          GetWebkitPreferences().enable_instant_source_buffer_gc,
+          GetContentClient()->renderer()->AllowMediaSuspend(),
+          embedded_media_experience_enabled));
+
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
       frame_, client, encrypted_client, GetWebMediaPlayerDelegate(),
-      std::move(media_renderer_factory), url_index_, params);
+      std::move(media_renderer_factory), url_index_, std::move(params));
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   media_player->SetMediaPlayerManager(GetMediaPlayerManager());
@@ -6303,7 +6303,7 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
 
   return new WebMediaPlayerMS(
       frame_, client, GetWebMediaPlayerDelegate(),
-      new RenderMediaLog(url::Origin(security_origin).GetURL()),
+      base::MakeUnique<RenderMediaLog>(url::Origin(security_origin).GetURL()),
       CreateRendererFactory(), render_thread->GetIOTaskRunner(),
       compositor_task_runner, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),

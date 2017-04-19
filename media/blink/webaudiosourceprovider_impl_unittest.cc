@@ -29,7 +29,7 @@ class WebAudioSourceProviderImplUnderTest : public WebAudioSourceProviderImpl {
  public:
   WebAudioSourceProviderImplUnderTest(
       scoped_refptr<SwitchableAudioRendererSink> sink)
-      : WebAudioSourceProviderImpl(std::move(sink), new MediaLog()),
+      : WebAudioSourceProviderImpl(std::move(sink), &media_log_),
         fallback_sink_(new MockAudioRendererSink()) {}
 
   MockAudioRendererSink* fallback_sink() { return fallback_sink_.get(); }
@@ -41,6 +41,7 @@ class WebAudioSourceProviderImplUnderTest : public WebAudioSourceProviderImpl {
 
  private:
   ~WebAudioSourceProviderImplUnderTest() override = default;
+  MediaLog media_log_;
   scoped_refptr<MockAudioRendererSink> fallback_sink_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAudioSourceProviderImplUnderTest);

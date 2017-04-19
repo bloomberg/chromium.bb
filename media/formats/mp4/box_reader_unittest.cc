@@ -83,7 +83,7 @@ SkipBox::~SkipBox() {}
 
 class BoxReaderTest : public testing::Test {
  public:
-  BoxReaderTest() : media_log_(new StrictMock<MockMediaLog>()) {}
+  BoxReaderTest() {}
 
  protected:
   std::vector<uint8_t> GetBuf() {
@@ -95,7 +95,7 @@ class BoxReaderTest : public testing::Test {
 
     bool err;
     std::unique_ptr<BoxReader> reader(
-        BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
+        BoxReader::ReadTopLevelBox(&buf[0], buf.size(), &media_log_, &err));
 
     EXPECT_FALSE(err);
     EXPECT_TRUE(reader);
@@ -127,7 +127,7 @@ class BoxReaderTest : public testing::Test {
 
     bool err;
     std::unique_ptr<BoxReader> reader(BoxReader::ReadTopLevelBox(
-        &buffer_wrapper[0], buffer_wrapper.size(), media_log_, &err));
+        &buffer_wrapper[0], buffer_wrapper.size(), &media_log_, &err));
     EXPECT_FALSE(err);
     EXPECT_TRUE(reader);
     EXPECT_EQ(FOURCC_EMSG, reader->type());
@@ -148,14 +148,14 @@ class BoxReaderTest : public testing::Test {
     EXPECT_FALSE(reader->ReadAllChildrenAndCheckFourCC(&children));
   }
 
-  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
+  StrictMock<MockMediaLog> media_log_;
 };
 
 TEST_F(BoxReaderTest, ExpectedOperationTest) {
   std::vector<uint8_t> buf = GetBuf();
   bool err;
   std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), &media_log_, &err));
   EXPECT_FALSE(err);
   EXPECT_TRUE(reader.get());
 
@@ -183,7 +183,7 @@ TEST_F(BoxReaderTest, OuterTooShortTest) {
 
   // Create a soft failure by truncating the outer box.
   std::unique_ptr<BoxReader> r(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size() - 2, media_log_, &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size() - 2, &media_log_, &err));
 
   EXPECT_FALSE(err);
   EXPECT_FALSE(r.get());
@@ -196,7 +196,7 @@ TEST_F(BoxReaderTest, InnerTooLongTest) {
   // Make an inner box too big for its outer box.
   buf[25] = 1;
   std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), &media_log_, &err));
 
   SkipBox box;
   EXPECT_FALSE(box.Parse(reader.get()));
@@ -215,7 +215,7 @@ TEST_F(BoxReaderTest, WrongFourCCTest) {
   EXPECT_MEDIA_LOG(HasSubstr("Unrecognized top-level box type DALE"));
 
   std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), &media_log_, &err));
   EXPECT_FALSE(reader.get());
   EXPECT_TRUE(err);
 }
@@ -224,7 +224,7 @@ TEST_F(BoxReaderTest, ScanChildrenTest) {
   std::vector<uint8_t> buf = GetBuf();
   bool err;
   std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), &media_log_, &err));
 
   EXPECT_TRUE(reader->SkipBytes(16) && reader->ScanChildren());
 
@@ -248,7 +248,7 @@ TEST_F(BoxReaderTest, ReadAllChildrenTest) {
   buf[3] = 0x38;
   bool err;
   std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), &media_log_, &err));
 
   std::vector<PsshBox> kids;
   EXPECT_TRUE(reader->SkipBytes(16) && reader->ReadAllChildren(&kids));
@@ -306,7 +306,7 @@ TEST_F(BoxReaderTest, NestedBoxWithHugeSize) {
 
   bool err;
   std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
+      BoxReader::ReadTopLevelBox(kData, sizeof(kData), &media_log_, &err));
 
   EXPECT_FALSE(err);
   EXPECT_TRUE(reader);
@@ -331,7 +331,7 @@ TEST_F(BoxReaderTest, ScanChildrenWithInvalidChild) {
 
   bool err;
   std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
+      BoxReader::ReadTopLevelBox(kData, sizeof(kData), &media_log_, &err));
 
   EXPECT_FALSE(err);
   EXPECT_TRUE(reader);
@@ -352,7 +352,7 @@ TEST_F(BoxReaderTest, ReadAllChildrenWithChildLargerThanParent) {
 
   bool err;
   std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
+      BoxReader::ReadTopLevelBox(kData, sizeof(kData), &media_log_, &err));
 
   EXPECT_FALSE(err);
   EXPECT_TRUE(reader);

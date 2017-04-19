@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/media_log.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
@@ -25,7 +26,6 @@
 
 namespace media {
 
-class MediaLog;
 class MojoMediaClient;
 
 class MEDIA_MOJO_EXPORT MediaService
@@ -59,7 +59,7 @@ class MEDIA_MOJO_EXPORT MediaService
   // a unique_ptr here.
   std::unique_ptr<MojoMediaClient> mojo_media_client_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog media_log_;
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   service_manager::BinderRegistry registry_;

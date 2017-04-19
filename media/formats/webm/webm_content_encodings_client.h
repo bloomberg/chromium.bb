@@ -25,7 +25,7 @@ typedef std::vector<std::unique_ptr<ContentEncoding>> ContentEncodings;
 // Parser for WebM ContentEncodings element.
 class MEDIA_EXPORT WebMContentEncodingsClient : public WebMParserClient {
  public:
-  explicit WebMContentEncodingsClient(const scoped_refptr<MediaLog>& media_log);
+  explicit WebMContentEncodingsClient(MediaLog* media_log);
   ~WebMContentEncodingsClient() override;
 
   const ContentEncodings& content_encodings() const;
@@ -37,7 +37,7 @@ class MEDIA_EXPORT WebMContentEncodingsClient : public WebMParserClient {
   bool OnBinary(int id, const uint8_t* data, int size) override;
 
  private:
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
   std::unique_ptr<ContentEncoding> cur_content_encoding_;
   bool content_encryption_encountered_;
   ContentEncodings content_encodings_;

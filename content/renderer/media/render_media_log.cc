@@ -47,9 +47,23 @@ RenderMediaLog::RenderMediaLog(const GURL& security_origin)
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       tick_clock_(new base::DefaultTickClock()),
       last_ipc_send_time_(tick_clock_->NowTicks()),
-      ipc_send_pending_(false) {
+      ipc_send_pending_(false),
+      weak_factory_(this) {
   DCHECK(RenderThread::Get())
       << "RenderMediaLog must be constructed on the render thread";
+  // Pre-bind the WeakPtr on the right thread since we'll receive calls from
+  // other threads and don't want races.
+  weak_this_ = weak_factory_.GetWeakPtr();
+}
+
+RenderMediaLog::~RenderMediaLog() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // There's no further chance to handle this, so send them now. This should not
+  // be racy since nothing should have a pointer to the media log on another
+  // thread by this point.
+  if (ipc_send_pending_)
+    SendQueuedMediaEvents();
 }
 
 void RenderMediaLog::AddEvent(std::unique_ptr<media::MediaLogEvent> event) {
@@ -104,7 +118,8 @@ void RenderMediaLog::AddEvent(std::unique_ptr<media::MediaLogEvent> event) {
 
   if (delay_for_next_ipc_send > base::TimeDelta()) {
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&RenderMediaLog::SendQueuedMediaEvents, this),
+        FROM_HERE,
+        base::Bind(&RenderMediaLog::SendQueuedMediaEvents, weak_this_),
         delay_for_next_ipc_send);
     return;
   }
@@ -115,7 +130,8 @@ void RenderMediaLog::AddEvent(std::unique_ptr<media::MediaLogEvent> event) {
     return;
   }
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RenderMediaLog::SendQueuedMediaEvents, this));
+      FROM_HERE,
+      base::Bind(&RenderMediaLog::SendQueuedMediaEvents, weak_this_));
 }
 
 std::string RenderMediaLog::GetLastErrorMessage() {
@@ -137,7 +153,7 @@ void RenderMediaLog::RecordRapporWithSecurityOrigin(const std::string& metric) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&RenderMediaLog::RecordRapporWithSecurityOrigin,
-                              this, metric));
+                              weak_this_, metric));
     return;
   }
 
@@ -168,10 +184,10 @@ void RenderMediaLog::SendQueuedMediaEvents() {
     last_ipc_send_time_ = tick_clock_->NowTicks();
   }
 
-  RenderThread::Get()->Send(new ViewHostMsg_MediaLogEvents(events_to_send));
-}
+  if (events_to_send.empty())
+    return;
 
-RenderMediaLog::~RenderMediaLog() {
+  RenderThread::Get()->Send(new ViewHostMsg_MediaLogEvents(events_to_send));
 }
 
 void RenderMediaLog::SetTickClockForTesting(

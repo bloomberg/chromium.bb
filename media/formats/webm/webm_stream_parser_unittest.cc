@@ -23,8 +23,7 @@ namespace media {
 
 class WebMStreamParserTest : public testing::Test {
  public:
-  WebMStreamParserTest()
-      : media_log_(new testing::StrictMock<MockMediaLog>()) {}
+  WebMStreamParserTest() {}
 
  protected:
   void ParseWebMFile(const std::string& filename,
@@ -52,7 +51,7 @@ class WebMStreamParserTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&WebMStreamParserTest::EndMediaSegmentCB,
                    base::Unretained(this)),
-        media_log_);
+        &media_log_);
     bool result = parser_->Parse(buffer->data(), buffer->data_size());
     EXPECT_TRUE(result);
   }
@@ -86,7 +85,7 @@ class WebMStreamParserTest : public testing::Test {
   MOCK_METHOD0(NewMediaSegmentCB, void());
   MOCK_METHOD0(EndMediaSegmentCB, void());
 
-  scoped_refptr<testing::StrictMock<MockMediaLog>> media_log_;
+  testing::StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<WebMStreamParser> parser_;
   std::unique_ptr<MediaTracks> media_tracks_;
 };

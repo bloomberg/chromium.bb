@@ -32,14 +32,15 @@ bool DolbyVisionConfiguration::Parse(BoxReader* reader) {
   return ParseInternal(reader, reader->media_log());
 }
 
-bool DolbyVisionConfiguration::Parse(const uint8_t* data, int data_size) {
+bool DolbyVisionConfiguration::ParseForTesting(const uint8_t* data,
+                                               int data_size) {
   BufferReader reader(data, data_size);
-  return ParseInternal(&reader, new MediaLog());
+  MediaLog media_log;
+  return ParseInternal(&reader, &media_log);
 }
 
-bool DolbyVisionConfiguration::ParseInternal(
-    BufferReader* reader,
-    const scoped_refptr<MediaLog>& media_log) {
+bool DolbyVisionConfiguration::ParseInternal(BufferReader* reader,
+                                             MediaLog* media_log) {
   uint16_t profile_track_indication = 0;
   RCHECK(reader->Read1(&dv_version_major) && reader->Read1(&dv_version_minor) &&
          reader->Read2(&profile_track_indication));

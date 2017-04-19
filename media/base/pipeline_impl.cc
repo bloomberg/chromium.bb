@@ -48,7 +48,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
                                       public RendererClient {
  public:
   RendererWrapper(scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-                  scoped_refptr<MediaLog> media_log);
+                  MediaLog* media_log);
   ~RendererWrapper() final;
 
   void Start(Demuxer* demuxer,
@@ -149,7 +149,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
 
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  const scoped_refptr<MediaLog> media_log_;
+  MediaLog* const media_log_;
 
   base::WeakPtr<PipelineImpl> weak_pipeline_;
   Demuxer* demuxer_;
@@ -187,10 +187,10 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
 
 PipelineImpl::RendererWrapper::RendererWrapper(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    scoped_refptr<MediaLog> media_log)
+    MediaLog* media_log)
     : media_task_runner_(std::move(media_task_runner)),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      media_log_(std::move(media_log)),
+      media_log_(media_log),
       demuxer_(nullptr),
       playback_rate_(kDefaultPlaybackRate),
       volume_(kDefaultVolume),

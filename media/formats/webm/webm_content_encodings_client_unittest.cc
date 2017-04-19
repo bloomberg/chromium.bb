@@ -51,9 +51,7 @@ MATCHER_P(UnexpectedContentEncAlgo, algo, "") {
 class WebMContentEncodingsClientTest : public testing::Test {
  public:
   WebMContentEncodingsClientTest()
-      : media_log_(new StrictMock<MockMediaLog>()),
-        client_(media_log_),
-        parser_(kWebMIdContentEncodings, &client_) {}
+      : client_(&media_log_), parser_(kWebMIdContentEncodings, &client_) {}
 
   void ParseAndExpectToFail(const uint8_t* buf, int size) {
     int result = parser_.Parse(buf, size);
@@ -61,7 +59,7 @@ class WebMContentEncodingsClientTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
+  StrictMock<MockMediaLog> media_log_;
   WebMContentEncodingsClient client_;
   WebMListParser parser_;
 };

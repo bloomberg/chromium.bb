@@ -48,7 +48,7 @@ class MEDIA_EXPORT GpuVideoDecoder
  public:
   GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
                   const RequestSurfaceCB& request_surface_cb,
-                  scoped_refptr<MediaLog> media_log);
+                  MediaLog* media_log);
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
@@ -172,7 +172,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // normal video frames and not render them to a surface.
   RequestSurfaceCB request_surface_cb_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // Populated during Initialize() (on success) and unchanged until an error
   // occurs.

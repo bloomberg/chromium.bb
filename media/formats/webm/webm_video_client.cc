@@ -9,8 +9,7 @@
 
 namespace media {
 
-WebMVideoClient::WebMVideoClient(const scoped_refptr<MediaLog>& media_log)
-    : media_log_(media_log) {
+WebMVideoClient::WebMVideoClient(MediaLog* media_log) : media_log_(media_log) {
   Reset();
 }
 

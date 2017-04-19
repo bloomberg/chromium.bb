@@ -62,10 +62,9 @@ std::unique_ptr<VideoRendererSink> TestMojoMediaClient::CreateVideoRendererSink(
 }
 
 std::unique_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
-    const scoped_refptr<MediaLog>& media_log) {
+    MediaLog* media_log) {
   return base::MakeUnique<DefaultRendererFactory>(
-      std::move(media_log), nullptr,
-      DefaultRendererFactory::GetGpuFactoriesCB());
+      media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB());
 }
 
 std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(

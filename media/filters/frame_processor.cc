@@ -162,7 +162,7 @@ bool MseTrackBuffer::FlushProcessedFrames() {
 }
 
 FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb,
-                               const scoped_refptr<MediaLog>& media_log)
+                               MediaLog* media_log)
     : group_start_timestamp_(kNoTimestamp),
       update_duration_cb_(update_duration_cb),
       media_log_(media_log) {

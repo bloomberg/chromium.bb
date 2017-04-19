@@ -58,11 +58,10 @@ class MEDIA_EXPORT SourceBufferStream {
   };
 
   SourceBufferStream(const AudioDecoderConfig& audio_config,
-                     const scoped_refptr<MediaLog>& media_log);
+                     MediaLog* media_log);
   SourceBufferStream(const VideoDecoderConfig& video_config,
-                     const scoped_refptr<MediaLog>& media_log);
-  SourceBufferStream(const TextTrackConfig& text_config,
-                     const scoped_refptr<MediaLog>& media_log);
+                     MediaLog* media_log);
+  SourceBufferStream(const TextTrackConfig& text_config, MediaLog* media_log);
 
   ~SourceBufferStream();
 
@@ -370,7 +369,7 @@ class MEDIA_EXPORT SourceBufferStream {
 
   // Used to report log messages that can help the web developer figure out what
   // is wrong with the content.
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // List of disjoint buffered ranges, ordered by start time.
   RangeList ranges_;

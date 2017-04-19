@@ -33,7 +33,7 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
  public:
   using GetGpuFactoriesCB = base::Callback<GpuVideoAcceleratorFactories*()>;
 
-  DefaultRendererFactory(const scoped_refptr<MediaLog>& media_log,
+  DefaultRendererFactory(MediaLog* media_log,
                          DecoderFactory* decoder_factory,
                          const GetGpuFactoriesCB& get_gpu_factories_cb);
   ~DefaultRendererFactory() final;
@@ -53,7 +53,7 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const RequestSurfaceCB& request_surface_cb,
       GpuVideoAcceleratorFactories* gpu_factories);
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   // Factory to create extra audio and video decoders.
   // Could be nullptr if not extra decoders are available.

@@ -85,7 +85,7 @@ class VideoRendererImplTest : public testing::Test {
                    base::Unretained(this)),
         true,
         nullptr,  // gpu_factories
-        new MediaLog()));
+        &media_log_));
     renderer_->SetTickClockForTesting(
         std::unique_ptr<base::TickClock>(tick_clock_));
     null_video_sink_->set_tick_clock_for_testing(tick_clock_);
@@ -439,6 +439,9 @@ class VideoRendererImplTest : public testing::Test {
   }
 
  protected:
+  base::MessageLoop message_loop_;
+  MediaLog media_log_;
+
   // Fixture members.
   std::unique_ptr<VideoRendererImpl> renderer_;
   base::SimpleTestTickClock* tick_clock_;  // Owned by |renderer_|.
@@ -458,8 +461,6 @@ class VideoRendererImplTest : public testing::Test {
   std::unique_ptr<NullVideoSink> null_video_sink_;
 
   WallClockTimeSource time_source_;
-
-  base::MessageLoop message_loop_;
 
  private:
   void DecodeRequested(const scoped_refptr<DecoderBuffer>& buffer,

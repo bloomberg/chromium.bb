@@ -69,7 +69,7 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
       : fake_callback_(0.1, kAudioTrackSampleRate),
         audio_source_(new media::WebAudioSourceProviderImpl(
             new media::NullAudioSink(base::ThreadTaskRunnerHandle::Get()),
-            new media::MediaLog())) {}
+            &media_log_)) {}
 
   void SetUp() final {
     const media::AudioParameters params(
@@ -117,6 +117,7 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
   blink::WebMediaStreamSource blink_audio_source_;
   blink::WebMediaStreamTrack blink_audio_track_;
 
+  media::MediaLog media_log_;
   media::FakeAudioRenderCallback fake_callback_;
   scoped_refptr<media::WebAudioSourceProviderImpl> audio_source_;
 };

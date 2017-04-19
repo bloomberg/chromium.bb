@@ -45,7 +45,7 @@ WebMClusterParser::WebMClusterParser(
     const std::string& audio_encryption_key_id,
     const std::string& video_encryption_key_id,
     const AudioCodec audio_codec,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : timecode_multiplier_(timecode_scale / 1000.0),
       ignored_tracks_(ignored_tracks),
       audio_encryption_key_id_(audio_encryption_key_id),
@@ -604,7 +604,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
 WebMClusterParser::Track::Track(int track_num,
                                 bool is_video,
                                 base::TimeDelta default_duration,
-                                const scoped_refptr<MediaLog>& media_log)
+                                MediaLog* media_log)
     : track_num_(track_num),
       is_video_(is_video),
       default_duration_(default_duration),

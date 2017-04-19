@@ -39,11 +39,10 @@ struct EsParserMpeg1Audio::Mpeg1AudioFrame {
 EsParserMpeg1Audio::EsParserMpeg1Audio(
     const NewAudioConfigCB& new_audio_config_cb,
     const EmitBufferCB& emit_buffer_cb,
-    const scoped_refptr<MediaLog>& media_log)
+    MediaLog* media_log)
     : media_log_(media_log),
       new_audio_config_cb_(new_audio_config_cb),
-      emit_buffer_cb_(emit_buffer_cb) {
-}
+      emit_buffer_cb_(emit_buffer_cb) {}
 
 EsParserMpeg1Audio::~EsParserMpeg1Audio() {
 }

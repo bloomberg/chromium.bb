@@ -36,7 +36,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
  public:
   DecryptingAudioDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const scoped_refptr<MediaLog>& media_log,
+      MediaLog* media_log,
       const base::Closure& waiting_for_decryption_key_cb);
   ~DecryptingAudioDecoder() override;
 
@@ -90,7 +90,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   State state_;
 

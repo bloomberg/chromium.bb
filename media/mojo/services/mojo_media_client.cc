@@ -43,7 +43,7 @@ std::unique_ptr<VideoRendererSink> MojoMediaClient::CreateVideoRendererSink(
 }
 
 std::unique_ptr<RendererFactory> MojoMediaClient::CreateRendererFactory(
-    const scoped_refptr<MediaLog>& media_log) {
+    MediaLog* media_log) {
   return nullptr;
 }
 

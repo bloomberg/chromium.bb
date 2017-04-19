@@ -98,8 +98,7 @@ class PipelineImplTest : public ::testing::Test {
   };
 
   PipelineImplTest()
-      : pipeline_(
-            new PipelineImpl(message_loop_.task_runner(), new MediaLog())),
+      : pipeline_(new PipelineImpl(message_loop_.task_runner(), &media_log_)),
         demuxer_(new StrictMock<MockDemuxer>()),
         demuxer_host_(nullptr),
         scoped_renderer_(new StrictMock<MockRenderer>()),
@@ -324,6 +323,7 @@ class PipelineImplTest : public ::testing::Test {
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
   base::MessageLoop message_loop_;
+  MediaLog media_log_;
   std::unique_ptr<PipelineImpl> pipeline_;
 
   std::unique_ptr<StrictMock<MockDemuxer>> demuxer_;

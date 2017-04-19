@@ -32,7 +32,7 @@
 namespace media {
 
 DefaultRendererFactory::DefaultRendererFactory(
-    const scoped_refptr<MediaLog>& media_log,
+    MediaLog* media_log,
     DecoderFactory* decoder_factory,
     const GetGpuFactoriesCB& get_gpu_factories_cb)
     : media_log_(media_log),

@@ -32,7 +32,7 @@ class MEDIA_EXPORT StreamParserFactory {
   static std::unique_ptr<StreamParser> Create(
       const std::string& type,
       const std::vector<std::string>& codecs,
-      const scoped_refptr<MediaLog>& media_log);
+      MediaLog* media_log);
 };
 
 }  // namespace media

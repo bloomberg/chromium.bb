@@ -18,6 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/content_export.h"
+#include "media/base/media_log.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -32,7 +33,6 @@ class Size;
 }
 
 namespace media {
-class MediaLog;
 class VideoRendererAlgorithm;
 }
 
@@ -59,8 +59,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   WebMediaPlayerMSCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const blink::WebMediaStream& web_stream,
-      const base::WeakPtr<WebMediaPlayerMS>& player,
-      scoped_refptr<media::MediaLog> media_log_);
+      const base::WeakPtr<WebMediaPlayerMS>& player);
 
   void EnqueueFrame(scoped_refptr<media::VideoFrame> frame);
 
@@ -125,7 +124,10 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   base::WeakPtr<WebMediaPlayerMS> player_;
 
-  scoped_refptr<media::MediaLog> media_log_;
+  // TODO(qiangchen, emircan): It might be nice to use a real MediaLog here from
+  // the WebMediaPlayerMS instance, but it owns the MediaLog and this class has
+  // non-deterministic destruction paths (either compositor or IO).
+  media::MediaLog media_log_;
 
   size_t serial_;
 

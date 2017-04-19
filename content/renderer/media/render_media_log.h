@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -34,6 +35,7 @@ namespace content {
 class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
  public:
   explicit RenderMediaLog(const GURL& security_origin);
+  ~RenderMediaLog() override;
 
   // MediaLog implementation.
   void AddEvent(std::unique_ptr<media::MediaLogEvent> event) override;
@@ -46,8 +48,6 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
  private:
-  ~RenderMediaLog() override;
-
   // Posted as a delayed task on |task_runner_| to throttle ipc message
   // frequency.
   void SendQueuedMediaEvents();
@@ -78,6 +78,9 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
 
   // Holds a copy of the most recent PIPELINE_ERROR, if any.
   std::unique_ptr<media::MediaLogEvent> last_pipeline_error_;
+
+  base::WeakPtr<RenderMediaLog> weak_this_;
+  base::WeakPtrFactory<RenderMediaLog> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMediaLog);
 };

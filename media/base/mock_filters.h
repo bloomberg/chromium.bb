@@ -578,7 +578,7 @@ class MockStreamParser : public StreamParser {
            const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
            const NewMediaSegmentCB& new_segment_cb,
            const EndMediaSegmentCB& end_of_segment_cb,
-           const scoped_refptr<MediaLog>& media_log));
+           MediaLog* media_log));
   MOCK_METHOD0(Flush, void());
   MOCK_METHOD2(Parse, bool(const uint8_t*, int));
 

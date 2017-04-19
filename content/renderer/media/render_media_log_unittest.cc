@@ -18,11 +18,11 @@ namespace content {
 class RenderMediaLogTest : public testing::Test {
  public:
   RenderMediaLogTest()
-      : log_(new RenderMediaLog(GURL("http://foo.com"))),
+      : log_(GURL("http://foo.com")),
         tick_clock_(new base::SimpleTestTickClock()),
         task_runner_(new base::TestMockTimeTaskRunner()) {
-    log_->SetTickClockForTesting(std::unique_ptr<base::TickClock>(tick_clock_));
-    log_->SetTaskRunnerForTesting(task_runner_);
+    log_.SetTickClockForTesting(std::unique_ptr<base::TickClock>(tick_clock_));
+    log_.SetTaskRunnerForTesting(task_runner_);
   }
 
   ~RenderMediaLogTest() override {
@@ -30,7 +30,7 @@ class RenderMediaLogTest : public testing::Test {
   }
 
   void AddEvent(media::MediaLogEvent::Type type) {
-    log_->AddEvent(log_->CreateEvent(type));
+    log_.AddEvent(log_.CreateEvent(type));
     // AddEvent() could post. Run the task runner to make sure it's executed.
     task_runner_->RunUntilIdle();
   }
@@ -58,7 +58,7 @@ class RenderMediaLogTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   MockRenderThread render_thread_;
-  scoped_refptr<RenderMediaLog> log_;
+  RenderMediaLog log_;
   base::SimpleTestTickClock* tick_clock_;  // Owned by |log_|.
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 

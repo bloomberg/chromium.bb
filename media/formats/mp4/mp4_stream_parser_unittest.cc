@@ -51,8 +51,7 @@ MATCHER_P(ErrorLog, error_string, "") {
 class MP4StreamParserTest : public testing::Test {
  public:
   MP4StreamParserTest()
-      : media_log_(new StrictMock<MockMediaLog>()),
-        configs_received_(false),
+      : configs_received_(false),
         lower_bound_(
             DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max())) {
     std::set<int> audio_object_types;
@@ -61,7 +60,7 @@ class MP4StreamParserTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
+  StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<MP4StreamParser> parser_;
   bool configs_received_;
   std::unique_ptr<MediaTracks> media_tracks_;
@@ -192,7 +191,7 @@ class MP4StreamParserTest : public testing::Test {
         base::Bind(&MP4StreamParserTest::KeyNeededF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewSegmentF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::EndOfSegmentF, base::Unretained(this)),
-        media_log_);
+        &media_log_);
   }
 
   StreamParser::InitParameters GetDefaultInitParametersExpectations() {

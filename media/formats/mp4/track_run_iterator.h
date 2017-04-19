@@ -37,7 +37,7 @@ class MEDIA_EXPORT TrackRunIterator {
  public:
   // Create a new TrackRunIterator. A reference to |moov| will be retained for
   // the lifetime of this object.
-  TrackRunIterator(const Movie* moov, const scoped_refptr<MediaLog>& media_log);
+  TrackRunIterator(const Movie* moov, MediaLog* media_log);
   ~TrackRunIterator();
 
   // Sets up the iterator to handle all the runs from the current fragment.
@@ -105,7 +105,7 @@ class MEDIA_EXPORT TrackRunIterator {
 #endif
 
   const Movie* moov_;
-  scoped_refptr<MediaLog> media_log_;
+  MediaLog* media_log_;
 
   std::vector<TrackRunInfo> runs_;
   std::vector<TrackRunInfo>::const_iterator run_itr_;
