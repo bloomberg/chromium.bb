@@ -130,6 +130,7 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -1361,7 +1362,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     private void checkAccessibility() {
-        onAccessibilityModeChanged(DeviceClassManager.isAccessibilityModeEnabled(this));
+        onAccessibilityModeChanged(AccessibilityUtil.isAccessibilityEnabled());
     }
 
     /**

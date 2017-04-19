@@ -124,7 +124,7 @@ public class ChromeActivityTest extends ChromeTabbedActivityTestBase {
                         return getActivity().getLayoutManager().animationsEnabled();
                     }
                 });
-        assertEquals(animationsEnabled, DeviceClassManager.enableAnimations(getActivity()));
+        assertEquals(animationsEnabled, DeviceClassManager.enableAnimations());
     }
 
     @Override

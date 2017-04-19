@@ -142,8 +142,7 @@ public class TabStateBrowserControlsVisibilityDelegate
         enableHidingBrowserControls &= (securityState != ConnectionSecurityLevel.DANGEROUS
                 && securityState != ConnectionSecurityLevel.SECURITY_WARNING);
 
-        enableHidingBrowserControls &=
-                !AccessibilityUtil.isAccessibilityEnabled(mTab.getApplicationContext());
+        enableHidingBrowserControls &= !AccessibilityUtil.isAccessibilityEnabled();
 
         ContentViewCore cvc = mTab.getContentViewCore();
         enableHidingBrowserControls &= cvc == null || !cvc.isFocusedNodeEditable();

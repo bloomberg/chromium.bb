@@ -12,7 +12,9 @@ import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.view.accessibility.AccessibilityManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
 
 import java.util.List;
@@ -40,13 +42,17 @@ public class AccessibilityUtil {
 
     /**
      * Checks to see that this device has accessibility and touch exploration enabled.
-     * @param context A {@link Context} instance.
      * @return        Whether or not accessibility and touch exploration are enabled.
      */
-    public static boolean isAccessibilityEnabled(Context context) {
-        AccessibilityManager manager = (AccessibilityManager)
-                context.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        return manager != null && manager.isEnabled() && manager.isTouchExplorationEnabled();
+    public static boolean isAccessibilityEnabled() {
+        TraceEvent.begin("AccessibilityManager::isAccessibilityEnabled");
+        AccessibilityManager manager =
+                (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.ACCESSIBILITY_SERVICE);
+        boolean retVal =
+                manager != null && manager.isEnabled() && manager.isTouchExplorationEnabled();
+        TraceEvent.end("AccessibilityManager::isAccessibilityEnabled");
+        return retVal;
     }
 
     /**

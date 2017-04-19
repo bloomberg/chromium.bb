@@ -358,7 +358,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 @Override
                 public void didAddTab(Tab tab, TabLaunchType type) {
                     if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
-                            && !DeviceClassManager.enableAnimations(getApplicationContext())) {
+                            && !DeviceClassManager.enableAnimations()) {
                         Toast.makeText(ChromeTabbedActivity.this,
                                 R.string.open_in_new_tab_toast,
                                 Toast.LENGTH_SHORT).show();
@@ -627,7 +627,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             } else {
                 mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder);
             }
-            mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations(this));
+            mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
             mLayoutManager.addOverviewModeObserver(this);
 
             // TODO(yusufo): get rid of findViewById(R.id.url_bar).
@@ -904,8 +904,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         super.onAccessibilityModeChanged(enabled);
 
         if (mLayoutManager != null) {
-            mLayoutManager.setEnableAnimations(
-                    DeviceClassManager.enableAnimations(getApplicationContext()));
+            mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
         }
         if (isTablet()) {
             if (getCompositorViewHolder() != null) {

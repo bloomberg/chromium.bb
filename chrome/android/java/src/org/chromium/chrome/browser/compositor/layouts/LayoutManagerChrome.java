@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector.CloseAllTabsDelegat
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -548,7 +549,7 @@ public class LayoutManagerChrome
      * @return Whether or not to use the accessibility layout.
      */
     protected boolean useAccessibilityLayout() {
-        return DeviceClassManager.isAccessibilityModeEnabled(mHost.getContext())
+        return AccessibilityUtil.isAccessibilityEnabled()
                 || DeviceClassManager.enableAccessibilityLayout();
     }
 
@@ -656,8 +657,7 @@ public class LayoutManagerChrome
             }
 
             if (direction == ScrollDirection.DOWN) {
-                boolean isAccessibility =
-                        DeviceClassManager.isAccessibilityModeEnabled(mHost.getContext());
+                boolean isAccessibility = AccessibilityUtil.isAccessibilityEnabled();
                 return mOverviewLayout != null && !isAccessibility;
             }
 

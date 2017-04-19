@@ -4,14 +4,11 @@
 
 package org.chromium.chrome.browser.device;
 
-import android.content.Context;
-import android.view.accessibility.AccessibilityManager;
-
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
-import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -109,11 +106,10 @@ public class DeviceClassManager {
     }
 
     /**
-     * @param context A {@link Context} instance.
-     * @return        Whether or not we are showing animations.
+     * @return Whether or not we are showing animations.
      */
-    public static boolean enableAnimations(Context context) {
-        return getInstance().mEnableAnimations && !isAccessibilityModeEnabled(context);
+    public static boolean enableAnimations() {
+        return getInstance().mEnableAnimations && !AccessibilityUtil.isAccessibilityEnabled();
     }
 
     /**
@@ -135,15 +131,5 @@ public class DeviceClassManager {
      */
     public static boolean disableDomainReliability() {
         return getInstance().mDisableDomainReliability;
-    }
-
-    public static boolean isAccessibilityModeEnabled(Context context) {
-        TraceEvent.begin("DeviceClassManager::isAccessibilityModeEnabled");
-        AccessibilityManager manager = (AccessibilityManager)
-                context.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        boolean enabled = manager != null && manager.isEnabled()
-                && manager.isTouchExplorationEnabled();
-        TraceEvent.end("DeviceClassManager::isAccessibilityModeEnabled");
-        return enabled;
     }
 }
