@@ -332,13 +332,6 @@ class Manager(object):
                 _log.error("Build check failed")
                 return exit_code
 
-        # Check that the system dependencies (themes, fonts, ...) are correct.
-        if not self._options.nocheck_sys_deps:
-            self._printer.write_update("Checking system dependencies ...")
-            exit_code = self._port.check_sys_deps(self._needs_servers(test_names))
-            if exit_code:
-                return exit_code
-
         if self._options.clobber_old_results:
             self._clobber_old_results()
         elif self._filesystem.exists(self._results_directory):
@@ -350,6 +343,14 @@ class Manager(object):
         self._port.host.filesystem.maybe_make_directory(self._results_directory)
 
         self._port.setup_test_run()
+
+        # Check that the system dependencies (themes, fonts, ...) are correct.
+        if not self._options.nocheck_sys_deps:
+            self._printer.write_update("Checking system dependencies ...")
+            exit_code = self._port.check_sys_deps(self._needs_servers(test_names))
+            if exit_code:
+                return exit_code
+
         return exit_codes.OK_EXIT_STATUS
 
     def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations,
