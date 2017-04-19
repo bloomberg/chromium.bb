@@ -31,8 +31,8 @@
 #ifndef FindInPageCoordinates_h
 #define FindInPageCoordinates_h
 
+#include "core/CoreExport.h"
 #include "platform/geometry/FloatRect.h"
-#include "web/WebExport.h"
 
 namespace blink {
 class Range;
@@ -54,9 +54,9 @@ class LayoutObject;
 // of their container.  The provided methods support scroll:overflow and are
 // CSS position and transform-friendly.
 
-WEB_EXPORT FloatRect FindInPageRectFromAbsoluteRect(const FloatRect&,
-                                                    const LayoutObject*);
-WEB_EXPORT FloatRect FindInPageRectFromRange(Range*);
+CORE_EXPORT FloatRect FindInPageRectFromAbsoluteRect(const FloatRect&,
+                                                     const LayoutObject*);
+CORE_EXPORT FloatRect FindInPageRectFromRange(Range*);
 
 }  // namespace blink
 

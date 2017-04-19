@@ -9,6 +9,7 @@
 #include "core/dom/NodeList.h"
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/FindInPageCoordinates.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLElement.h"
@@ -19,7 +20,6 @@
 #include "public/platform/Platform.h"
 #include "public/web/WebDocument.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/FindInPageCoordinates.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 

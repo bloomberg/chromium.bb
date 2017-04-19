@@ -73,8 +73,6 @@ component("web") {
     "ExternalDateTimeChooser.h",
     "ExternalPopupMenu.cpp",
     "ExternalPopupMenu.h",
-    "FindInPageCoordinates.cpp",
-    "FindInPageCoordinates.h",
     "FullscreenController.cpp",
     "FullscreenController.h",
     "IndexedDBClientImpl.cpp",

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/FindInPageCoordinates.h"
+#include "core/editing/FindInPageCoordinates.h"
 
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"

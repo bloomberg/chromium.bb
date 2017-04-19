@@ -32,6 +32,8 @@ blink_core_sources("editing") {
     "EditorKeyBindings.cpp",
     "EphemeralRange.cpp",
     "EphemeralRange.h",
+    "FindInPageCoordinates.cpp",
+    "FindInPageCoordinates.h",
     "FrameCaret.cpp",
     "FrameCaret.h",
     "FrameSelection.cpp",

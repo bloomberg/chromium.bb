@@ -34,6 +34,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
+#include "core/editing/FindInPageCoordinates.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/SearchBuffer.h"
 #include "core/editing/markers/DocumentMarker.h"
@@ -52,7 +53,6 @@
 #include "public/web/WebFindOptions.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
-#include "web/FindInPageCoordinates.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 
