@@ -18,8 +18,9 @@ class LayerTreeImpl;
 class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
  public:
   int ScrollLayerId() const { return scroll_layer_id_; }
+  ElementId scroll_element_id() const { return scroll_element_id_; }
 
-  void SetScrollLayerId(int scroll_layer_id);
+  void SetScrollInfo(int scroll_layer_id, ElementId scroll_element_id);
 
   float current_pos() const { return current_pos_; }
   bool SetCurrentPos(float current_pos);
@@ -77,6 +78,7 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
 
  private:
   int scroll_layer_id_;
+  ElementId scroll_element_id_;
   bool is_overlay_scrollbar_;
 
   float thumb_thickness_scale_factor_;

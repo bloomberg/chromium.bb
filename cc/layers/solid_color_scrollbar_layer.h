@@ -22,7 +22,8 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
       int thumb_thickness,
       int track_start,
       bool is_left_side_vertical_scrollbar,
-      int scroll_layer_id);
+      int scroll_layer_id,
+      ElementId scroll_element_id);
 
   // Layer overrides.
   bool OpacityCanAnimateOnImplThread() const override;
@@ -35,8 +36,9 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   void SetNeedsDisplayRect(const gfx::Rect& rect) override;
 
   // ScrollbarLayerInterface
-  int ScrollLayerId() const override;
-  void SetScrollLayer(int layer_id) override;
+  ElementId scroll_element_id() const override;
+  // TODO(pdr): Remove layer_id and refactor scrollbars to just use element ids.
+  void SetScrollInfo(int layer_id, ElementId element_id) override;
 
   ScrollbarOrientation orientation() const override;
 
@@ -57,7 +59,8 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
                            int thumb_thickness,
                            int track_start,
                            bool is_left_side_vertical_scrollbar,
-                           int scroll_layer_id);
+                           int scroll_layer_id,
+                           ElementId scroll_element_id);
   ~SolidColorScrollbarLayer() override;
 
  private:
@@ -69,10 +72,12 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
                                    int thumb_thickness,
                                    int track_start,
                                    bool is_left_side_vertical_scrollbar,
-                                   int scroll_layer_id);
+                                   int scroll_layer_id,
+                                   ElementId scroll_element_id);
     ~SolidColorScrollbarLayerInputs();
 
     int scroll_layer_id;
+    ElementId scroll_element_id;
     ScrollbarOrientation orientation;
     int thumb_thickness;
     int track_start;

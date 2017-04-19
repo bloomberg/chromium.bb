@@ -274,8 +274,8 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
 
   if (scrollbar_needs_animation) {
     ScrollbarAnimationController* controller =
-        layer_tree_host_impl_->ScrollbarAnimationControllerForId(
-            scroll_layer_id);
+        layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
+            scroll_layer->element_id());
     if (!controller)
       return;
 
@@ -552,7 +552,8 @@ void LayerTreeImpl::ShowScrollbars() {
     if (!layer->needs_show_scrollbars())
       return;
     ScrollbarAnimationController* controller =
-        layer_tree_host_impl_->ScrollbarAnimationControllerForId(layer->id());
+        layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
+            layer->element_id());
     if (controller) {
       controller->DidRequestShowFromMainThread();
       layer->set_needs_show_scrollbars(false);
@@ -736,14 +737,12 @@ void LayerTreeImpl::SetCurrentlyScrollingNode(ScrollNode* node) {
   if (old_element_id == new_element_id)
     return;
 
-  // TODO(pdr): Make the scrollbar animation controller lookup based on
-  // element ids instead of layer ids.
   ScrollbarAnimationController* old_animation_controller =
-      layer_tree_host_impl_->ScrollbarAnimationControllerForId(
-          LayerIdByElementId(old_element_id));
+      layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
+          old_element_id);
   ScrollbarAnimationController* new_animation_controller =
-      layer_tree_host_impl_->ScrollbarAnimationControllerForId(
-          LayerIdByElementId(new_element_id));
+      layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
+          new_element_id);
 
   if (old_animation_controller)
     old_animation_controller->DidScrollEnd();
@@ -1726,9 +1725,11 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
 
   scrollbar_map_.insert(std::pair<int, int>(scrollbar_layer->ScrollLayerId(),
                                             scrollbar_layer->id()));
-  if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar())
+  if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar()) {
+    auto scroll_layer_id = scrollbar_layer->ScrollLayerId();
     layer_tree_host_impl_->RegisterScrollbarAnimationController(
-        scrollbar_layer->ScrollLayerId());
+        scroll_layer_id, scrollbar_layer->scroll_element_id());
+  }
 
   DidUpdateScrollState(scrollbar_layer->ScrollLayerId());
 }
@@ -1746,9 +1747,10 @@ void LayerTreeImpl::UnregisterScrollbar(
       break;
     }
 
-  if (IsActiveTree() && scrollbar_map_.count(scroll_layer_id) == 0)
+  if (IsActiveTree() && scrollbar_map_.count(scroll_layer_id) == 0) {
     layer_tree_host_impl_->UnregisterScrollbarAnimationController(
-        scroll_layer_id);
+        scrollbar_layer->scroll_element_id());
+  }
 }
 
 ScrollbarSet LayerTreeImpl::ScrollbarsFor(int scroll_layer_id) const {

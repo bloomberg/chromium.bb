@@ -403,6 +403,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   int num_copy_requests_in_target_subtree();
 
+  // Stable identifier for clients. See comment in cc/trees/element_id.h.
   void SetElementId(ElementId id);
   ElementId element_id() const { return inputs_.element_id; }
 

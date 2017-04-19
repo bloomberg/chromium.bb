@@ -1129,6 +1129,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   bool use_paint_properties = paint_properties_.source_frame_number ==
                               layer_tree_host_->SourceFrameNumber();
 
+  // The ElementId should be set first because other setters depend on it such
+  // as LayerImpl::SetScrollClipLayer.
+  layer->SetElementId(inputs_.element_id);
   layer->SetBackgroundColor(inputs_.background_color);
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
   layer->SetBounds(use_paint_properties ? paint_properties_.bounds
@@ -1169,7 +1172,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollClipLayer(inputs_.scroll_clip_layer_id);
   layer->set_user_scrollable_horizontal(inputs_.user_scrollable_horizontal);
   layer->set_user_scrollable_vertical(inputs_.user_scrollable_vertical);
-  layer->SetElementId(inputs_.element_id);
   layer->SetMutableProperties(inputs_.mutable_properties);
 
   // When a scroll offset animation is interrupted the new scroll position on

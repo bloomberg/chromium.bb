@@ -312,6 +312,10 @@ bool LayerImpl::IsSnapped() {
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   DCHECK(layer->IsActive());
 
+  // The ElementId should be set first because other setters depend on it such
+  // as LayerImpl::SetScrollClipLayer.
+  layer->SetElementId(element_id_);
+
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
   layer->main_thread_scrolling_reasons_ = main_thread_scrolling_reasons_;
   layer->user_scrollable_horizontal_ = user_scrollable_horizontal_;
@@ -346,7 +350,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->SetBounds(bounds_);
   layer->SetScrollClipLayer(scroll_clip_layer_id_);
-  layer->SetElementId(element_id_);
   layer->SetMutableProperties(mutable_properties_);
 
   // If the main thread commits multiple times before the impl thread actually

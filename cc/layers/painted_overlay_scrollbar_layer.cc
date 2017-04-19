@@ -32,16 +32,19 @@ std::unique_ptr<LayerImpl> PaintedOverlayScrollbarLayer::CreateLayerImpl(
 
 scoped_refptr<PaintedOverlayScrollbarLayer>
 PaintedOverlayScrollbarLayer::Create(std::unique_ptr<Scrollbar> scrollbar,
-                                     int scroll_layer_id) {
-  return make_scoped_refptr(
-      new PaintedOverlayScrollbarLayer(std::move(scrollbar), scroll_layer_id));
+                                     int scroll_layer_id,
+                                     ElementId scroll_element_id) {
+  return make_scoped_refptr(new PaintedOverlayScrollbarLayer(
+      std::move(scrollbar), scroll_layer_id, scroll_element_id));
 }
 
 PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
     std::unique_ptr<Scrollbar> scrollbar,
-    int scroll_layer_id)
+    int scroll_layer_id,
+    ElementId scroll_element_id)
     : scrollbar_(std::move(scrollbar)),
       scroll_layer_id_(scroll_layer_id),
+      scroll_element_id_(scroll_element_id),
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()) {
   DCHECK(scrollbar_->UsesNinePatchThumbResource());
@@ -49,15 +52,17 @@ PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
 
 PaintedOverlayScrollbarLayer::~PaintedOverlayScrollbarLayer() {}
 
-int PaintedOverlayScrollbarLayer::ScrollLayerId() const {
-  return scroll_layer_id_;
+ElementId PaintedOverlayScrollbarLayer::scroll_element_id() const {
+  return scroll_element_id_;
 }
 
-void PaintedOverlayScrollbarLayer::SetScrollLayer(int layer_id) {
-  if (layer_id == scroll_layer_id_)
+void PaintedOverlayScrollbarLayer::SetScrollInfo(int layer_id,
+                                                 ElementId element_id) {
+  if (layer_id == scroll_layer_id_ && element_id == scroll_element_id_)
     return;
 
   scroll_layer_id_ = layer_id;
+  scroll_element_id_ = element_id;
   SetNeedsFullTreeSync();
 }
 
@@ -79,7 +84,7 @@ void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   PaintedOverlayScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedOverlayScrollbarLayerImpl*>(layer);
 
-  scrollbar_layer->SetScrollLayerId(scroll_layer_id_);
+  scrollbar_layer->SetScrollInfo(scroll_layer_id_, scroll_element_id_);
 
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);

@@ -206,8 +206,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       did_lock_scrolling_layer_(false),
       wheel_scrolling_(false),
       scroll_affects_scroll_handler_(false),
-      scroll_layer_id_mouse_currently_over_(Layer::INVALID_ID),
-      scroll_layer_id_mouse_currently_captured_(Layer::INVALID_ID),
       tile_priorities_dirty_(false),
       settings_(settings),
       visible_(false),
@@ -2939,7 +2937,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   if (scroll_node) {
     // Flash the overlay scrollbar even if the scroll dalta is 0.
     ScrollbarAnimationController* animation_controller =
-        ScrollbarAnimationControllerForId(scroll_node->owning_layer_id);
+        ScrollbarAnimationControllerForElementId(scroll_node->element_id);
 
     if (animation_controller)
       animation_controller->WillUpdateScroll();
@@ -2990,7 +2988,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       if (scrolls_main_viewport_scroll_layer) {
         // Flash the overlay scrollbar even if the scroll dalta is 0.
         ScrollbarAnimationController* animation_controller =
-            ScrollbarAnimationControllerForId(scroll_node->owning_layer_id);
+            ScrollbarAnimationControllerForElementId(scroll_node->element_id);
 
         if (animation_controller)
           animation_controller->WillUpdateScroll();
@@ -3250,7 +3248,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     return InputHandlerScrollResult();
 
   ScrollbarAnimationController* animation_controller =
-      ScrollbarAnimationControllerForId(scroll_node->owning_layer_id);
+      ScrollbarAnimationControllerForElementId(scroll_node->element_id);
 
   if (animation_controller)
     animation_controller->WillUpdateScroll();
@@ -3390,21 +3388,22 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
 
 void LayerTreeHostImpl::MouseDown() {
   ScrollbarAnimationController* animation_controller =
-      ScrollbarAnimationControllerForId(scroll_layer_id_mouse_currently_over_);
+      ScrollbarAnimationControllerForElementId(
+          scroll_element_id_mouse_currently_over_);
   if (animation_controller) {
     animation_controller->DidMouseDown();
-    scroll_layer_id_mouse_currently_captured_ =
-        scroll_layer_id_mouse_currently_over_;
+    scroll_element_id_mouse_currently_captured_ =
+        scroll_element_id_mouse_currently_over_;
   }
 }
 
 void LayerTreeHostImpl::MouseUp() {
-  if (scroll_layer_id_mouse_currently_captured_ != Layer::INVALID_ID) {
+  if (scroll_element_id_mouse_currently_captured_) {
     ScrollbarAnimationController* animation_controller =
-        ScrollbarAnimationControllerForId(
-            scroll_layer_id_mouse_currently_captured_);
+        ScrollbarAnimationControllerForElementId(
+            scroll_element_id_mouse_currently_captured_);
 
-    scroll_layer_id_mouse_currently_captured_ = Layer::INVALID_ID;
+    scroll_element_id_mouse_currently_captured_ = ElementId();
 
     if (animation_controller)
       animation_controller->DidMouseUp();
@@ -3421,10 +3420,10 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   // TODO(sahel): get rid of this extera checking when
   // FindScrollLayerForDeviceViewportPoint finds the proper layer for
   // scrolling on main thread when mouse is over scrollbar as well.
-  int new_id = Layer::INVALID_ID;
+  ElementId new_element_id;
   if (layer_impl && layer_impl->ToScrollbarLayer())
-    new_id = layer_impl->ToScrollbarLayer()->ScrollLayerId();
-  if (new_id == Layer::INVALID_ID) {
+    new_element_id = layer_impl->ToScrollbarLayer()->scroll_element_id();
+  if (!new_element_id) {
     bool scroll_on_main_thread = false;
     uint32_t main_thread_scrolling_reasons;
     LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
@@ -3435,25 +3434,28 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
     if (scroll_layer_impl == InnerViewportScrollLayer())
       scroll_layer_impl = OuterViewportScrollLayer();
 
-    new_id = scroll_layer_impl ? scroll_layer_impl->id() : Layer::INVALID_ID;
+    if (scroll_layer_impl)
+      new_element_id = scroll_layer_impl->element_id();
   }
 
-  if (new_id != scroll_layer_id_mouse_currently_over_) {
+  if (new_element_id != scroll_element_id_mouse_currently_over_) {
     ScrollbarAnimationController* old_animation_controller =
-        ScrollbarAnimationControllerForId(
-            scroll_layer_id_mouse_currently_over_);
+        ScrollbarAnimationControllerForElementId(
+            scroll_element_id_mouse_currently_over_);
     if (old_animation_controller) {
       old_animation_controller->DidMouseLeave();
     }
-    scroll_layer_id_mouse_currently_over_ = new_id;
+    scroll_element_id_mouse_currently_over_ = new_element_id;
   }
 
   ScrollbarAnimationController* new_animation_controller =
-      ScrollbarAnimationControllerForId(new_id);
+      ScrollbarAnimationControllerForElementId(new_element_id);
   if (!new_animation_controller)
     return;
 
-  for (ScrollbarLayerImplBase* scrollbar : ScrollbarsFor(new_id)) {
+  int new_layer_id = active_tree_->LayerIdByElementId(new_element_id);
+  for (ScrollbarLayerImplBase* scrollbar :
+       active_tree_->ScrollbarsFor(new_layer_id)) {
     new_animation_controller->DidMouseMoveNear(
         scrollbar->orientation(),
         DeviceSpaceDistanceToLayer(device_viewport_point, scrollbar) /
@@ -3464,7 +3466,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
 void LayerTreeHostImpl::MouseLeave() {
   for (auto& pair : scrollbar_animation_controllers_)
     pair.second->DidMouseLeave();
-  scroll_layer_id_mouse_currently_over_ = Layer::INVALID_ID;
+  scroll_element_id_mouse_currently_over_ = ElementId();
 }
 
 void LayerTreeHostImpl::PinchGestureBegin() {
@@ -3533,8 +3535,9 @@ static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
 
 static void CollectScrollbarUpdates(
     ScrollAndScaleSet* scroll_info,
-    std::unordered_map<int, std::unique_ptr<ScrollbarAnimationController>>*
-        controllers) {
+    std::unordered_map<ElementId,
+                       std::unique_ptr<ScrollbarAnimationController>,
+                       ElementIdHash>* controllers) {
   scroll_info->scrollbars.reserve(controllers->size());
   for (auto& pair : *controllers) {
     scroll_info->scrollbars.push_back(LayerTreeHostCommon::ScrollbarsUpdateInfo(
@@ -3678,29 +3681,30 @@ std::string LayerTreeHostImpl::LayerTreeAsJson() const {
 }
 
 void LayerTreeHostImpl::RegisterScrollbarAnimationController(
-    int scroll_layer_id) {
+    int scroll_layer_id,
+    ElementId scroll_element_id) {
   if (settings().scrollbar_animator == LayerTreeSettings::NO_ANIMATOR)
     return;
-  if (ScrollbarAnimationControllerForId(scroll_layer_id))
+  if (ScrollbarAnimationControllerForElementId(scroll_element_id))
     return;
-  scrollbar_animation_controllers_[scroll_layer_id] =
+  scrollbar_animation_controllers_[scroll_element_id] =
       active_tree_->CreateScrollbarAnimationController(scroll_layer_id);
 }
 
 void LayerTreeHostImpl::UnregisterScrollbarAnimationController(
-    int scroll_layer_id) {
-  scrollbar_animation_controllers_.erase(scroll_layer_id);
+    ElementId scroll_element_id) {
+  scrollbar_animation_controllers_.erase(scroll_element_id);
 }
 
 ScrollbarAnimationController*
-LayerTreeHostImpl::ScrollbarAnimationControllerForId(
-    int scroll_layer_id) const {
+LayerTreeHostImpl::ScrollbarAnimationControllerForElementId(
+    ElementId scroll_element_id) const {
   // The viewport layers have only one set of scrollbars and their controller
   // is registered with the outer viewport.
   if (InnerViewportScrollLayer() && OuterViewportScrollLayer() &&
-      scroll_layer_id == InnerViewportScrollLayer()->id())
-    scroll_layer_id = OuterViewportScrollLayer()->id();
-  auto i = scrollbar_animation_controllers_.find(scroll_layer_id);
+      scroll_element_id == InnerViewportScrollLayer()->element_id())
+    scroll_element_id = OuterViewportScrollLayer()->element_id();
+  auto i = scrollbar_animation_controllers_.find(scroll_element_id);
   if (i == scrollbar_animation_controllers_.end())
     return nullptr;
   return i->second.get();

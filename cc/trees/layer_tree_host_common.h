@@ -147,11 +147,11 @@ class CC_EXPORT LayerTreeHostCommon {
   // to be told when they're faded out so it can stop handling input for
   // invisible scrollbars.
   struct CC_EXPORT ScrollbarsUpdateInfo {
-    int layer_id;
+    ElementId element_id;
     bool hidden;
 
     ScrollbarsUpdateInfo();
-    ScrollbarsUpdateInfo(int layer_id, bool hidden);
+    ScrollbarsUpdateInfo(ElementId element_id, bool hidden);
 
     bool operator==(const ScrollbarsUpdateInfo& other) const;
   };

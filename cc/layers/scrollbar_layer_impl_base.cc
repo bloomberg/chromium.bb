@@ -36,20 +36,24 @@ void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   DCHECK(layer->ToScrollbarLayer());
   layer->ToScrollbarLayer()->set_is_overlay_scrollbar(is_overlay_scrollbar_);
-  layer->ToScrollbarLayer()->SetScrollLayerId(ScrollLayerId());
+  layer->ToScrollbarLayer()->SetScrollInfo(ScrollLayerId(),
+                                           scroll_element_id());
 }
 
 ScrollbarLayerImplBase* ScrollbarLayerImplBase::ToScrollbarLayer() {
   return this;
 }
 
-void ScrollbarLayerImplBase::SetScrollLayerId(int scroll_layer_id) {
-  if (scroll_layer_id_ == scroll_layer_id)
+void ScrollbarLayerImplBase::SetScrollInfo(int scroll_layer_id,
+                                           ElementId scroll_element_id) {
+  if (scroll_layer_id_ == scroll_layer_id &&
+      scroll_element_id == scroll_element_id)
     return;
 
   layer_tree_impl()->UnregisterScrollbar(this);
 
   scroll_layer_id_ = scroll_layer_id;
+  scroll_element_id_ = scroll_element_id;
 
   layer_tree_impl()->RegisterScrollbar(this);
 }

@@ -321,10 +321,11 @@ class CC_EXPORT LayerTreeHostImpl
 
   size_t SourceAnimationFrameNumberForTesting() const;
 
-  void RegisterScrollbarAnimationController(int scroll_layer_id);
-  void UnregisterScrollbarAnimationController(int scroll_layer_id);
-  ScrollbarAnimationController* ScrollbarAnimationControllerForId(
-      int scroll_layer_id) const;
+  void RegisterScrollbarAnimationController(int scroll_layer_id,
+                                            ElementId scroll_element_id);
+  void UnregisterScrollbarAnimationController(ElementId scroll_element_id);
+  ScrollbarAnimationController* ScrollbarAnimationControllerForElementId(
+      ElementId scroll_element_id) const;
 
   DrawMode GetDrawMode() const;
 
@@ -759,8 +760,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool did_lock_scrolling_layer_;
   bool wheel_scrolling_;
   bool scroll_affects_scroll_handler_;
-  int scroll_layer_id_mouse_currently_over_;
-  int scroll_layer_id_mouse_currently_captured_;
+  ElementId scroll_element_id_mouse_currently_over_;
+  ElementId scroll_element_id_mouse_currently_captured_;
 
   std::vector<std::unique_ptr<SwapPromise>>
       swap_promises_for_main_thread_scroll_update_;
@@ -820,9 +821,11 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<MutatorHost> mutator_host_;
   std::set<VideoFrameController*> video_frame_controllers_;
 
-  // Map from scroll layer ID to scrollbar animation controller.
+  // Map from scroll element ID to scrollbar animation controller.
   // There is one animation controller per pair of overlay scrollbars.
-  std::unordered_map<int, std::unique_ptr<ScrollbarAnimationController>>
+  std::unordered_map<ElementId,
+                     std::unique_ptr<ScrollbarAnimationController>,
+                     ElementIdHash>
       scrollbar_animation_controllers_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;

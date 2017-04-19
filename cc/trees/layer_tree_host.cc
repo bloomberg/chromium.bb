@@ -788,7 +788,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
       SetNeedsUpdateLayers();
     }
     for (size_t i = 0; i < info->scrollbars.size(); ++i) {
-      Layer* layer = LayerById(info->scrollbars[i].layer_id);
+      Layer* layer = LayerByElementId(info->scrollbars[i].element_id);
       if (!layer)
         continue;
       layer->SetScrollbarsHiddenFromImplSide(info->scrollbars[i].hidden);

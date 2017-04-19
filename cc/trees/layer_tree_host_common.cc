@@ -164,15 +164,15 @@ bool LayerTreeHostCommon::ScrollUpdateInfo::operator==(
 }
 
 LayerTreeHostCommon::ScrollbarsUpdateInfo::ScrollbarsUpdateInfo()
-    : layer_id(Layer::INVALID_ID), hidden(true) {}
+    : element_id(), hidden(true) {}
 
-LayerTreeHostCommon::ScrollbarsUpdateInfo::ScrollbarsUpdateInfo(int layer_id,
+LayerTreeHostCommon::ScrollbarsUpdateInfo::ScrollbarsUpdateInfo(ElementId id,
                                                                 bool hidden)
-    : layer_id(layer_id), hidden(hidden) {}
+    : element_id(id), hidden(hidden) {}
 
 bool LayerTreeHostCommon::ScrollbarsUpdateInfo::operator==(
     const LayerTreeHostCommon::ScrollbarsUpdateInfo& other) const {
-  return layer_id == other.layer_id && hidden == other.hidden;
+  return element_id == other.element_id && hidden == other.hidden;
 }
 
 ScrollAndScaleSet::ScrollAndScaleSet()

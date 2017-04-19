@@ -182,6 +182,7 @@ class CC_EXPORT LayerImpl {
   float Opacity() const;
   const gfx::Transform& Transform() const;
 
+  // Stable identifier for clients. See comment in cc/trees/element_id.h.
   void SetElementId(ElementId element_id);
   ElementId element_id() const { return element_id_; }
 
