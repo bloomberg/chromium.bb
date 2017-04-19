@@ -136,6 +136,25 @@ class RendererImplTest : public ::testing::Test {
                                base::Bind(&CallbackHelper::OnInitialize,
                                           base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
+
+    if (start_status == PIPELINE_OK && audio_stream_) {
+      ON_CALL(*audio_renderer_, Flush(_))
+          .WillByDefault(DoAll(SetBufferingState(&audio_renderer_client_,
+                                                 BUFFERING_HAVE_NOTHING),
+                               RunClosure<0>()));
+      ON_CALL(*audio_renderer_, StartPlaying())
+          .WillByDefault(SetBufferingState(&audio_renderer_client_,
+                                           BUFFERING_HAVE_ENOUGH));
+    }
+    if (start_status == PIPELINE_OK && video_stream_) {
+      ON_CALL(*video_renderer_, Flush(_))
+          .WillByDefault(DoAll(SetBufferingState(&video_renderer_client_,
+                                                 BUFFERING_HAVE_NOTHING),
+                               RunClosure<0>()));
+      ON_CALL(*video_renderer_, StartPlayingFrom(_))
+          .WillByDefault(SetBufferingState(&video_renderer_client_,
+                                           BUFFERING_HAVE_ENOUGH));
+    }
   }
 
   void CreateAudioStream() {
@@ -215,15 +234,11 @@ class RendererImplTest : public ::testing::Test {
     EXPECT_CALL(time_source_, StartTicking());
 
     if (audio_stream_) {
-      EXPECT_CALL(*audio_renderer_, StartPlaying())
-          .WillOnce(SetBufferingState(&audio_renderer_client_,
-                                      BUFFERING_HAVE_ENOUGH));
+      EXPECT_CALL(*audio_renderer_, StartPlaying());
     }
 
     if (video_stream_) {
-      EXPECT_CALL(*video_renderer_, StartPlayingFrom(start_time))
-          .WillOnce(SetBufferingState(&video_renderer_client_,
-                                      BUFFERING_HAVE_ENOUGH));
+      EXPECT_CALL(*video_renderer_, StartPlayingFrom(start_time));
     }
 
     renderer_impl_->StartPlayingFrom(start_time);
@@ -231,19 +246,11 @@ class RendererImplTest : public ::testing::Test {
   }
 
   void SetFlushExpectationsForAVRenderers() {
-    if (audio_stream_) {
-      EXPECT_CALL(*audio_renderer_, Flush(_))
-          .WillOnce(DoAll(SetBufferingState(&audio_renderer_client_,
-                                            BUFFERING_HAVE_NOTHING),
-                          RunClosure<0>()));
-    }
+    if (audio_stream_)
+      EXPECT_CALL(*audio_renderer_, Flush(_));
 
-    if (video_stream_) {
-      EXPECT_CALL(*video_renderer_, Flush(_))
-          .WillOnce(DoAll(SetBufferingState(&video_renderer_client_,
-                                            BUFFERING_HAVE_NOTHING),
-                          RunClosure<0>()));
-    }
+    if (video_stream_)
+      EXPECT_CALL(*video_renderer_, Flush(_));
   }
 
   void Flush(bool underflowed) {
@@ -751,10 +758,10 @@ TEST_F(RendererImplTest, VideoUnderflowWithAudioFlush) {
   // the video renderer (which simulates spool up time for the video renderer).
   const base::TimeDelta kStartTime;
   EXPECT_CALL(time_source_, SetMediaTime(kStartTime));
-  EXPECT_CALL(*audio_renderer_, StartPlaying())
-      .WillOnce(
-          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_ENOUGH));
+  EXPECT_CALL(time_source_, StartTicking());
+  EXPECT_CALL(*audio_renderer_, StartPlaying());
   EXPECT_CALL(*video_renderer_, StartPlayingFrom(kStartTime));
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
   renderer_impl_->StartPlayingFrom(kStartTime);
 
   // Nothing else should primed on the message loop.
@@ -772,25 +779,20 @@ TEST_F(RendererImplTest, StreamStatusNotificationHandling) {
   InitializeAndExpect(PIPELINE_OK);
   Play();
 
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+
   // Verify that DemuxerStream status changes cause the corresponding
   // audio/video renderer to be flushed and restarted.
   EXPECT_CALL(time_source_, StopTicking());
-  EXPECT_CALL(*audio_renderer_, Flush(_)).WillOnce(RunClosure<0>());
-  EXPECT_CALL(*audio_renderer_, StartPlaying())
-      .Times(1)
-      .WillOnce(
-          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_ENOUGH));
+  EXPECT_CALL(*audio_renderer_, Flush(_));
+  EXPECT_CALL(*audio_renderer_, StartPlaying());
+  EXPECT_CALL(time_source_, StartTicking());
   stream_status_change_cb.Run(audio_stream_.get(), false, base::TimeDelta());
 
-  EXPECT_CALL(*video_renderer_, Flush(_)).WillOnce(RunClosure<0>());
-  EXPECT_CALL(*video_renderer_, StartPlayingFrom(_))
-      .Times(1)
-      .WillOnce(DoAll(
-          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_ENOUGH),
-          PostQuitWhenIdle()));
-
+  EXPECT_CALL(*video_renderer_, Flush(_));
+  EXPECT_CALL(*video_renderer_, StartPlayingFrom(_));
   stream_status_change_cb.Run(video_stream_.get(), false, base::TimeDelta());
-  base::RunLoop().Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Stream status changes are handled asynchronously by the renderer and may take
@@ -815,18 +817,8 @@ TEST_F(RendererImplTest, PostponedStreamStatusNotificationHandling) {
 
   EXPECT_CALL(time_source_, StopTicking()).Times(2);
   EXPECT_CALL(time_source_, StartTicking()).Times(2);
-  EXPECT_CALL(*audio_renderer_, Flush(_))
-      .Times(2)
-      .WillRepeatedly(DoAll(
-          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_NOTHING),
-          WithArg<0>(PostCallback())));
-  EXPECT_CALL(*audio_renderer_, StartPlaying())
-      .Times(2)
-      .WillOnce(
-          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_ENOUGH))
-      .WillOnce(DoAll(
-          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_ENOUGH),
-          PostQuitWhenIdle()));
+  EXPECT_CALL(*audio_renderer_, Flush(_)).Times(2);
+  EXPECT_CALL(*audio_renderer_, StartPlaying()).Times(2);
   // The first stream status change will be processed immediately. Each status
   // change processing involves Flush + StartPlaying when the Flush is done. The
   // Flush operation is async in this case, so the second status change will be
@@ -834,20 +826,10 @@ TEST_F(RendererImplTest, PostponedStreamStatusNotificationHandling) {
   // we must still get two pairs of Flush/StartPlaying calls eventually.
   stream_status_change_cb.Run(audio_stream_.get(), false, base::TimeDelta());
   stream_status_change_cb.Run(audio_stream_.get(), true, base::TimeDelta());
-  base::RunLoop().Run();
+  base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(*video_renderer_, Flush(_))
-      .Times(2)
-      .WillRepeatedly(DoAll(
-          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_NOTHING),
-          WithArg<0>(PostCallback())));
-  EXPECT_CALL(*video_renderer_, StartPlayingFrom(base::TimeDelta()))
-      .Times(2)
-      .WillOnce(
-          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_ENOUGH))
-      .WillOnce(DoAll(
-          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_ENOUGH),
-          PostQuitWhenIdle()));
+  EXPECT_CALL(*video_renderer_, Flush(_)).Times(2);
+  EXPECT_CALL(*video_renderer_, StartPlayingFrom(base::TimeDelta())).Times(2);
   // The first stream status change will be processed immediately. Each status
   // change processing involves Flush + StartPlaying when the Flush is done. The
   // Flush operation is async in this case, so the second status change will be
@@ -855,7 +837,7 @@ TEST_F(RendererImplTest, PostponedStreamStatusNotificationHandling) {
   // we must still get two pairs of Flush/StartPlaying calls eventually.
   stream_status_change_cb.Run(video_stream_.get(), false, base::TimeDelta());
   stream_status_change_cb.Run(video_stream_.get(), true, base::TimeDelta());
-  base::RunLoop().Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Verify that a RendererImpl::Flush gets postponed until after stream status
@@ -875,10 +857,7 @@ TEST_F(RendererImplTest, FlushDuringAudioReinit) {
   base::Closure audio_renderer_flush_cb;
   EXPECT_CALL(*audio_renderer_, Flush(_))
       .WillOnce(SaveArg<0>(&audio_renderer_flush_cb));
-  EXPECT_CALL(*audio_renderer_, StartPlaying())
-      .Times(1)
-      .WillOnce(
-          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_ENOUGH));
+  EXPECT_CALL(*audio_renderer_, StartPlaying());
 
   // This should start flushing the audio renderer (due to audio stream status
   // change) and should populate the |audio_renderer_flush_cb|.
@@ -919,10 +898,7 @@ TEST_F(RendererImplTest, FlushDuringVideoReinit) {
   base::Closure video_renderer_flush_cb;
   EXPECT_CALL(*video_renderer_, Flush(_))
       .WillOnce(SaveArg<0>(&video_renderer_flush_cb));
-  EXPECT_CALL(*video_renderer_, StartPlayingFrom(_))
-      .Times(1)
-      .WillOnce(
-          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_ENOUGH));
+  EXPECT_CALL(*video_renderer_, StartPlayingFrom(_));
 
   // This should start flushing the video renderer (due to video stream status
   // change) and should populate the |video_renderer_flush_cb|.
@@ -967,10 +943,7 @@ TEST_F(RendererImplTest, AudioTrackSwitchDuringFlush) {
   Play();
 
   EXPECT_CALL(time_source_, StopTicking()).Times(testing::AnyNumber());
-  EXPECT_CALL(*video_renderer_, Flush(_))
-      .WillRepeatedly(DoAll(
-          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_NOTHING),
-          RunClosure<0>()));
+  EXPECT_CALL(*video_renderer_, Flush(_));
 
   // Initiate RendererImpl::Flush, but postpone its completion by not calling
   // audio renderer flush callback right away, i.e. pretending audio renderer
@@ -1025,10 +998,7 @@ TEST_F(RendererImplTest, VideoTrackSwitchDuringFlush) {
 
   EXPECT_CALL(time_source_, StopTicking()).Times(testing::AnyNumber());
   EXPECT_CALL(*video_renderer_, OnTimeStopped()).Times(testing::AnyNumber());
-  EXPECT_CALL(*audio_renderer_, Flush(_))
-      .WillRepeatedly(DoAll(
-          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_NOTHING),
-          RunClosure<0>()));
+  EXPECT_CALL(*audio_renderer_, Flush(_));
 
   // Initiate RendererImpl::Flush, but postpone its completion by not calling
   // video renderer flush callback right away, i.e. pretending video renderer
