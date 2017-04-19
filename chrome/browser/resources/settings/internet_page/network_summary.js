@@ -55,25 +55,33 @@ Polymer({
     networkingPrivate: Object,
 
     /**
-     * The device state for each network device type.
+     * The device state for each network device type. We initialize this to
+     * include a disabled WiFi type since WiFi is always present. This reduces
+     * the amount of visual change on first load.
      * @private {DeviceStateObject}
      */
     deviceStates: {
       type: Object,
       value: function() {
-        return {};
+        return {
+          WiFi: {
+            Type: chrome.networkingPrivate.NetworkType.WI_FI,
+            State: chrome.networkingPrivate.DeviceStateType.DISABLED
+          },
+        };
       },
       notify: true,
     },
 
     /**
-     * Array of active network states, one per device type.
+     * Array of active network states, one per device type. Initialized to
+     * include a default WiFi state (see deviceStates comment).
      * @private {!Array<!CrOnc.NetworkStateProperties>}
      */
     activeNetworkStates_: {
       type: Array,
       value: function() {
-        return [];
+        return [{GUID: '', Type: chrome.networkingPrivate.NetworkType.WI_FI}];
       },
     },
 
@@ -84,7 +92,7 @@ Polymer({
     networkStateLists_: {
       type: Object,
       value: function() {
-        return {};
+        return {WiFi: []};
       },
     },
   },
