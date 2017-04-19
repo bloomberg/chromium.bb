@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -123,14 +124,15 @@ bool GbmSurface::CreatePixmaps() {
     return true;
   for (size_t i = 0; i < arraysize(textures_); i++) {
     scoped_refptr<gfx::NativePixmap> pixmap =
-        surface_factory()->CreateNativePixmap(widget(), GetSize(),
-                                              gfx::BufferFormat::BGRA_8888,
-                                              gfx::BufferUsage::SCANOUT);
+        surface_factory()->CreateNativePixmap(
+            widget(), GetSize(), display::DisplaySnapshot::PrimaryFormat(),
+            gfx::BufferUsage::SCANOUT);
     if (!pixmap)
       return false;
     scoped_refptr<gl::GLImageNativePixmap> image =
-        new gl::GLImageNativePixmap(GetSize(), GL_BGRA_EXT);
-    if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRA_8888))
+        new gl::GLImageNativePixmap(GetSize(), GL_RGB);
+    if (!image->Initialize(pixmap.get(),
+                           display::DisplaySnapshot::PrimaryFormat()))
       return false;
     images_[i] = image;
     // Bind image to texture.
