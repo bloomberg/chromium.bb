@@ -489,18 +489,20 @@ void ExtensionDownloader::CreateManifestFetcher() {
                                   net::LOAD_DO_NOT_SAVE_COOKIES |
                                   net::LOAD_DISABLE_CACHE);
 
-  // Send traffic-management headers.
+  // Send traffic-management headers to the webstore.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=647516
-  manifest_fetcher_->AddExtraRequestHeader(base::StringPrintf(
-      "%s: %s", kUpdateInteractivityHeader,
-      active_request->foreground_check() ? kUpdateInteractivityForeground
-                                         : kUpdateInteractivityBackground));
-  manifest_fetcher_->AddExtraRequestHeader(
-      base::StringPrintf("%s: %s", kUpdateAppIdHeader, id_list.c_str()));
-  manifest_fetcher_->AddExtraRequestHeader(base::StringPrintf(
-      "%s: %s-%s", kUpdateUpdaterHeader,
-      UpdateQueryParams::GetProdIdString(UpdateQueryParams::CRX),
-      UpdateQueryParams::GetProdVersion().c_str()));
+  if (extension_urls::IsWebstoreUpdateUrl(active_request->full_url())) {
+    manifest_fetcher_->AddExtraRequestHeader(base::StringPrintf(
+        "%s: %s", kUpdateInteractivityHeader,
+        active_request->foreground_check() ? kUpdateInteractivityForeground
+                                           : kUpdateInteractivityBackground));
+    manifest_fetcher_->AddExtraRequestHeader(
+        base::StringPrintf("%s: %s", kUpdateAppIdHeader, id_list.c_str()));
+    manifest_fetcher_->AddExtraRequestHeader(base::StringPrintf(
+        "%s: %s-%s", kUpdateUpdaterHeader,
+        UpdateQueryParams::GetProdIdString(UpdateQueryParams::CRX),
+        UpdateQueryParams::GetProdVersion().c_str()));
+  }
 
   // Update checks can be interrupted if a network change is detected; this is
   // common for the retail mode AppPack on ChromeOS. Retrying once should be

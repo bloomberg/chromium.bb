@@ -811,19 +811,19 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ("a%3D1%26b%3D2%26c", params["ap"]);
   }
 
-  void TestUpdateUrlDataFromGallery(
-      const std::string& gallery_url,
+  void TestUpdateUrlDataFromUrl(
+      const std::string& update_url,
       ManifestFetchData::FetchPriority fetch_priority,
-      int num_extensions) {
+      int num_extensions,
+      bool should_include_traffic_management_headers) {
     net::TestURLFetcherFactory factory;
 
     MockService service(prefs_.get());
     MockExtensionDownloaderDelegate delegate;
     ExtensionDownloader downloader(&delegate, service.request_context());
     ExtensionList extensions;
-    std::string url(gallery_url);
 
-    service.CreateTestExtensions(1, num_extensions, &extensions, &url,
+    service.CreateTestExtensions(1, num_extensions, &extensions, &update_url,
                                  Manifest::INTERNAL);
 
     for (int i = 0; i < num_extensions; ++i) {
@@ -839,49 +839,53 @@ class ExtensionUpdaterTest : public testing::Test {
     ASSERT_TRUE(fetcher);
     // Make sure that extensions that update from the gallery ignore any
     // update URL data.
-    const std::string& update_url = fetcher->GetOriginalURL().spec();
-    std::string::size_type x = update_url.find("x=");
+    const std::string& fetcher_url = fetcher->GetOriginalURL().spec();
+    std::string::size_type x = fetcher_url.find("x=");
     EXPECT_NE(std::string::npos, x);
-    std::string::size_type ap = update_url.find("ap%3D", x);
+    std::string::size_type ap = fetcher_url.find("ap%3D", x);
     EXPECT_EQ(std::string::npos, ap);
 
     net::HttpRequestHeaders fetch_headers;
     fetcher->GetExtraRequestHeaders(&fetch_headers);
-    EXPECT_TRUE(fetch_headers.HasHeader(
-        ExtensionDownloader::kUpdateInteractivityHeader));
-    EXPECT_TRUE(
-        fetch_headers.HasHeader(ExtensionDownloader::kUpdateAppIdHeader));
-    EXPECT_TRUE(
+    EXPECT_EQ(should_include_traffic_management_headers,
+              fetch_headers.HasHeader(
+                  ExtensionDownloader::kUpdateInteractivityHeader));
+    EXPECT_EQ(should_include_traffic_management_headers,
+              fetch_headers.HasHeader(ExtensionDownloader::kUpdateAppIdHeader));
+    EXPECT_EQ(
+        should_include_traffic_management_headers,
         fetch_headers.HasHeader(ExtensionDownloader::kUpdateUpdaterHeader));
 
-    std::string interactivity_value;
-    fetch_headers.GetHeader(ExtensionDownloader::kUpdateInteractivityHeader,
-                            &interactivity_value);
+    if (should_include_traffic_management_headers) {
+      std::string interactivity_value;
+      fetch_headers.GetHeader(ExtensionDownloader::kUpdateInteractivityHeader,
+                              &interactivity_value);
 
-    std::string expected_interactivity_value =
-        fetch_priority == ManifestFetchData::FetchPriority::FOREGROUND ? "fg"
-                                                                       : "bg";
-    EXPECT_EQ(expected_interactivity_value, interactivity_value);
+      std::string expected_interactivity_value =
+          fetch_priority == ManifestFetchData::FetchPriority::FOREGROUND ? "fg"
+                                                                         : "bg";
+      EXPECT_EQ(expected_interactivity_value, interactivity_value);
 
-    std::string appid_value;
-    fetch_headers.GetHeader(ExtensionDownloader::kUpdateAppIdHeader,
-                            &appid_value);
-    if (num_extensions > 1) {
-      for (int i = 0; i < num_extensions; ++i) {
-        EXPECT_TRUE(
-            testing::IsSubstring("", "", extensions[i]->id(), appid_value));
+      std::string appid_value;
+      fetch_headers.GetHeader(ExtensionDownloader::kUpdateAppIdHeader,
+                              &appid_value);
+      if (num_extensions > 1) {
+        for (int i = 0; i < num_extensions; ++i) {
+          EXPECT_TRUE(
+              testing::IsSubstring("", "", extensions[i]->id(), appid_value));
+        }
+      } else {
+        EXPECT_EQ(extensions[0]->id(), appid_value);
       }
-    } else {
-      EXPECT_EQ(extensions[0]->id(), appid_value);
-    }
 
-    std::string updater_value;
-    fetch_headers.GetHeader(ExtensionDownloader::kUpdateUpdaterHeader,
-                            &updater_value);
-    std::string expected_updater_value = base::StringPrintf(
-        "%s-%s", UpdateQueryParams::GetProdIdString(UpdateQueryParams::CRX),
-        UpdateQueryParams::GetProdVersion().c_str());
-    EXPECT_EQ(expected_updater_value, updater_value);
+      std::string updater_value;
+      fetch_headers.GetHeader(ExtensionDownloader::kUpdateUpdaterHeader,
+                              &updater_value);
+      const std::string expected_updater_value = base::StringPrintf(
+          "%s-%s", UpdateQueryParams::GetProdIdString(UpdateQueryParams::CRX),
+          UpdateQueryParams::GetProdVersion().c_str());
+      EXPECT_EQ(expected_updater_value, updater_value);
+    }
   }
 
   void TestInstallSource() {
@@ -2017,14 +2021,18 @@ TEST_F(ExtensionUpdaterTest, TestUpdateUrlData) {
   TestUpdateUrlDataEmpty();
   TestUpdateUrlDataSimple();
   TestUpdateUrlDataCompound();
-  TestUpdateUrlDataFromGallery(extension_urls::GetWebstoreUpdateUrl().spec(),
-                               ManifestFetchData::FetchPriority::BACKGROUND, 1);
-  TestUpdateUrlDataFromGallery(extension_urls::GetWebstoreUpdateUrl().spec(),
-                               ManifestFetchData::FetchPriority::FOREGROUND, 1);
-  TestUpdateUrlDataFromGallery(extension_urls::GetWebstoreUpdateUrl().spec(),
-                               ManifestFetchData::FetchPriority::BACKGROUND, 2);
-  TestUpdateUrlDataFromGallery(extension_urls::GetWebstoreUpdateUrl().spec(),
-                               ManifestFetchData::FetchPriority::FOREGROUND, 4);
+  std::string gallery_url_spec = extension_urls::GetWebstoreUpdateUrl().spec();
+  TestUpdateUrlDataFromUrl(
+      gallery_url_spec, ManifestFetchData::FetchPriority::BACKGROUND, 1, true);
+  TestUpdateUrlDataFromUrl(
+      gallery_url_spec, ManifestFetchData::FetchPriority::FOREGROUND, 1, true);
+  TestUpdateUrlDataFromUrl(
+      gallery_url_spec, ManifestFetchData::FetchPriority::BACKGROUND, 2, true);
+  TestUpdateUrlDataFromUrl(
+      gallery_url_spec, ManifestFetchData::FetchPriority::FOREGROUND, 4, true);
+  TestUpdateUrlDataFromUrl("http://example.com/update",
+                           ManifestFetchData::FetchPriority::FOREGROUND, 4,
+                           false);
 }
 
 TEST_F(ExtensionUpdaterTest, TestInstallSource) {
