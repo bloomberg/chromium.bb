@@ -313,6 +313,11 @@ void TapSuppressDialogsButton() {
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_OK);
   [[EarlGrey selectElementWithMatcher:OKButton] performAction:grey_tap()
                                                         error:&errorOK];
+  // Reenable synchronization in case it was disabled by a test.  See comments
+  // in testShowJavaScriptAfterNewTabAnimation for details.
+  [[GREYConfiguration sharedInstance]
+          setValue:@(YES)
+      forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   if (!errorOK || !errorCancel) {
     GREYFail(@"There are still alerts");
@@ -555,11 +560,6 @@ void TapSuppressDialogsButton() {
                           @"correctly.");
 #endif
 
-  // TODO(crbug.com/711291): reenable this on tablets.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled for iPad.");
-  }
-
   // Load the test page with a link to kOnLoadAlertURL and long tap on the link.
   [self loadPageWithLink];
   id<GREYMatcher> webViewMatcher =
@@ -572,6 +572,20 @@ void TapSuppressDialogsButton() {
   id<GREYMatcher> newTabMatcher = testing::ContextMenuItemWithText(
       l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB));
   [[EarlGrey selectElementWithMatcher:newTabMatcher] performAction:grey_tap()];
+
+  // This test case requires that a dialog is presented in the onload event so
+  // that the DialogPresenter attempts to display during a new tab animation.
+  // Because presenting a dialog halts the JavaScript execution on the page,
+  // this prevents the page loaded event from being received until the alert is
+  // closed.  On iPad, this means that there is a loading indicator that
+  // continues to animate until the dialog is closed.  Disabling EarlGrey
+  // synchronization code for iPad allows the test to detect and dismiss the
+  // dialog while this animation is occurring.
+  if (IsIPadIdiom()) {
+    [[GREYConfiguration sharedInstance]
+            setValue:@(NO)
+        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  }
 
   // Wait for the alert to be shown.
   NSString* alertLabel = [DialogPresenter
@@ -587,6 +601,13 @@ void TapSuppressDialogsButton() {
 
   // Close the alert.
   TapOK();
+
+  // Reenable synchronization on iPads now that the dialog has been dismissed.
+  if (IsIPadIdiom()) {
+    [[GREYConfiguration sharedInstance]
+            setValue:@(YES)
+        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  }
 }
 
 @end
