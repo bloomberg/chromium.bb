@@ -15,7 +15,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
-#include "base/test/user_action_tester.cc"
+#include "base/test/user_action_tester.h"
 #include "chromeos/network/network_handler.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"

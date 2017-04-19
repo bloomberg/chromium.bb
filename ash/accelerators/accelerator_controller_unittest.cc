@@ -30,7 +30,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
-#include "base/test/user_action_tester.cc"
+#include "base/test/user_action_tester.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
