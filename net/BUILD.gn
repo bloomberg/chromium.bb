@@ -559,6 +559,8 @@ component("net") {
       "cert/ev_root_ca_metadata.h",
       "cert/internal/cert_issuer_source_nss.cc",
       "cert/internal/cert_issuer_source_nss.h",
+      "cert/internal/system_trust_store.cc",
+      "cert/internal/system_trust_store.h",
       "cert/internal/trust_store_mac.cc",
       "cert/internal/trust_store_mac.h",
       "cert/internal/trust_store_nss.cc",
