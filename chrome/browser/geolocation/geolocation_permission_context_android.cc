@@ -14,6 +14,7 @@
 #include "chrome/browser/android/location_settings_impl.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/profiles/profile.h"
@@ -237,6 +238,23 @@ void GeolocationPermissionContextAndroid::NotifyPermissionSet(
         content::WebContents::FromRenderFrameHost(
             content::RenderFrameHost::FromID(id.render_process_id(),
                                              id.render_frame_id()));
+
+    // Only show the location settings dialog if the tab for |web_contents| is
+    // user-interactable (i.e. is the current tab, and Chrome is active and not
+    // in tab-switching mode).
+    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+    if (tab && !tab->IsUserInteractable()) {
+      FinishNotifyPermissionSet(id, requesting_origin, embedding_origin,
+                                callback, false /* persist */,
+                                CONTENT_SETTING_BLOCK);
+      // This case should be very rare, so just pretend it was a denied prompt
+      // for metrics purposes.
+      LogLocationSettingsMetric(
+          kLocationSettingsDenyMetricBase, is_default_search,
+          LocationSettingsBackOffLevel(is_default_search));
+      return;
+    }
+
     location_settings_->PromptToEnableSystemLocationSetting(
         is_default_search ? SEARCH : DEFAULT, web_contents,
         base::BindOnce(
