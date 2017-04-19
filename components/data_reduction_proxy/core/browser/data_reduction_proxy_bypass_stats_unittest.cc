@@ -40,6 +40,7 @@
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_storage.h"
@@ -80,14 +81,15 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
 
     test_context_ =
         DataReductionProxyTestContext::Builder().WithMockConfig().Build();
-    mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_);
+    mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_,
+                                               TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   std::unique_ptr<net::URLRequest> CreateURLRequestWithResponseHeaders(
       const GURL& url,
       const std::string& response_headers) {
-    std::unique_ptr<net::URLRequest> fake_request =
-        context_.CreateRequest(url, net::IDLE, &delegate_);
+    std::unique_ptr<net::URLRequest> fake_request = context_.CreateRequest(
+        url, net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
 
     // Create a test job that will fill in the given response headers for the
     // |fake_request|.
@@ -326,8 +328,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
           retry_socket_data_provider.get());
     }
 
-    std::unique_ptr<net::URLRequest> request(
-        context_.CreateRequest(url, net::IDLE, &delegate_));
+    std::unique_ptr<net::URLRequest> request(context_.CreateRequest(
+        url, net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->set_method("GET");
     request->SetLoadFlags(load_flags);
     request->Start();
@@ -385,7 +387,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
     mock_socket_factory_.AddSocketDataProvider(&response_socket_data_provider);
 
     std::unique_ptr<net::URLRequest> request(
-        context_.CreateRequest(GURL("http://foo.com"), net::IDLE, &delegate_));
+        context_.CreateRequest(GURL("http://foo.com"), net::IDLE, &delegate_,
+                               TRAFFIC_ANNOTATION_FOR_TESTS));
     request->set_method("GET");
     request->Start();
     drp_test_context_->RunUntilIdle();

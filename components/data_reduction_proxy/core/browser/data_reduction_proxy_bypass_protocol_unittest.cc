@@ -37,6 +37,7 @@
 #include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -237,7 +238,8 @@ class DataReductionProxyProtocolTest : public testing::Test {
         network_delegate_->headers_received_count();
     TestDelegate d;
     std::unique_ptr<URLRequest> r(context_->CreateRequest(
-        GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, &d));
+        GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
     r->set_method(method);
     r->SetLoadFlags(net::LOAD_NORMAL);
 
@@ -340,7 +342,8 @@ TEST_F(DataReductionProxyProtocolTest, TestIdempotency) {
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-        GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, NULL));
+        GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, NULL,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
     request->set_method(tests[i].method);
     EXPECT_EQ(tests[i].expected_result,
               util::IsMethodIdempotent(request->method()));
@@ -876,8 +879,9 @@ TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
       mock_socket_factory()->AddSocketDataProvider(&retry_socket);
 
     net::TestDelegate delegate;
-    std::unique_ptr<net::URLRequest> url_request(context()->CreateRequest(
-        GURL("http://www.google.com"), net::IDLE, &delegate));
+    std::unique_ptr<net::URLRequest> url_request(
+        context()->CreateRequest(GURL("http://www.google.com"), net::IDLE,
+                                 &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     url_request->Start();
     drp_test_context()->RunUntilIdle();
 
@@ -935,8 +939,9 @@ TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
 
     base::HistogramTester histogram_tester;
     net::TestDelegate delegate;
-    std::unique_ptr<net::URLRequest> request(context()->CreateRequest(
-        GURL("http://google.com"), net::IDLE, &delegate));
+    std::unique_ptr<net::URLRequest> request(
+        context()->CreateRequest(GURL("http://google.com"), net::IDLE,
+                                 &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->Start();
     drp_test_context()->RunUntilIdle();
 
@@ -971,7 +976,8 @@ TEST_F(DataReductionProxyProtocolTest,
 
   TestDelegate d;
   std::unique_ptr<URLRequest> r(context_->CreateRequest(
-      GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, &d));
+      GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, &d,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   r->set_method("GET");
   r->SetLoadFlags(net::LOAD_NORMAL);
 

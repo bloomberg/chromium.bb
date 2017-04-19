@@ -33,6 +33,7 @@
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -110,8 +111,9 @@ class ContentLoFiDeciderTest : public testing::Test {
   std::unique_ptr<net::URLRequest> CreateRequest(
       bool is_main_frame,
       content::PreviewsState previews_state) {
-    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
-        GURL("http://www.google.com/"), net::IDLE, &delegate_);
+    std::unique_ptr<net::URLRequest> request =
+        context_.CreateRequest(GURL("http://www.google.com/"), net::IDLE,
+                               &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     AllocateRequestInfoForTesting(
         request.get(),
         (is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
@@ -124,10 +126,10 @@ class ContentLoFiDeciderTest : public testing::Test {
       content::ResourceType resource_type,
       bool scheme_is_https,
       content::PreviewsState previews_state) {
-    std::unique_ptr<net::URLRequest> request =
-        context_.CreateRequest(GURL(scheme_is_https ? "https://www.google.com/"
-                                                    : "http://www.google.com/"),
-                               net::IDLE, &delegate_);
+    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+        GURL(scheme_is_https ? "https://www.google.com/"
+                             : "http://www.google.com/"),
+        net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     AllocateRequestInfoForTesting(request.get(), resource_type, previews_state);
     return request;
   }

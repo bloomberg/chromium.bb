@@ -32,6 +32,7 @@
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
@@ -172,8 +173,9 @@ TEST_F(DataReductionProxyInterceptorTest, MAYBE_TestJobFactoryChaining) {
   Init(std::move(factory1));
 
   net::TestDelegate d;
-  std::unique_ptr<net::URLRequest> req(default_context_->CreateRequest(
-      GURL("http://foo"), net::DEFAULT_PRIORITY, &d));
+  std::unique_ptr<net::URLRequest> req(
+      default_context_->CreateRequest(GURL("http://foo"), net::DEFAULT_PRIORITY,
+                                      &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   req->Start();
   base::RunLoop().Run();
@@ -262,7 +264,8 @@ TEST_F(DataReductionProxyInterceptorWithServerTest, TestBypass) {
   // DataReductionProxyProtocolTest.
   net::TestDelegate delegate;
   std::unique_ptr<net::URLRequest> request(context().CreateRequest(
-      direct().GetURL("/block10.html"), net::DEFAULT_PRIORITY, &delegate));
+      direct().GetURL("/block10.html"), net::DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   request->Start();
   EXPECT_TRUE(request->is_pending());
   base::RunLoop().Run();
@@ -274,7 +277,8 @@ TEST_F(DataReductionProxyInterceptorWithServerTest, TestBypass) {
 TEST_F(DataReductionProxyInterceptorWithServerTest, TestNoBypass) {
   net::TestDelegate delegate;
   std::unique_ptr<net::URLRequest> request(context().CreateRequest(
-      direct().GetURL("/noblock.html"), net::DEFAULT_PRIORITY, &delegate));
+      direct().GetURL("/noblock.html"), net::DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   request->Start();
   EXPECT_TRUE(request->is_pending());
   base::RunLoop().Run();
@@ -312,8 +316,8 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
   // Creates a URLRequest using the test's TestURLRequestContext and executes
   // it. Returns the created URLRequest.
   std::unique_ptr<net::URLRequest> CreateAndExecuteRequest(const GURL& url) {
-    std::unique_ptr<net::URLRequest> request(
-        context_.CreateRequest(url, net::IDLE, &delegate_));
+    std::unique_ptr<net::URLRequest> request(context_.CreateRequest(
+        url, net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->Start();
     drp_test_context_->RunUntilIdle();
     return request;

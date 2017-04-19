@@ -20,6 +20,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,8 +67,9 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
     EXPECT_TRUE(
         content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-    std::unique_ptr<net::URLRequest> request = context.CreateRequest(
-        GURL("http://www.google.com/"), net::IDLE, delegate);
+    std::unique_ptr<net::URLRequest> request =
+        context.CreateRequest(GURL("http://www.google.com/"), net::IDLE,
+                              delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), content::RESOURCE_TYPE_SUB_FRAME, NULL,

@@ -49,6 +49,7 @@
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/proxy/proxy_server.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
@@ -916,8 +917,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
     base::HistogramTester histogram_tester;
     net::TestURLRequestContext context_;
     net::TestDelegate delegate_;
-    std::unique_ptr<net::URLRequest> request =
-        context_.CreateRequest(GURL(), net::IDLE, &delegate_);
+    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+        GURL(), net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     request->SetLoadFlags(request->load_flags() |
                           net::LOAD_MAIN_FRAME_DEPRECATED);
     bool should_enable_lofi = config()->ShouldEnableLoFi(*request.get());

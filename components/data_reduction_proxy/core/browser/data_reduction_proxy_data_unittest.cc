@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,7 +66,8 @@ TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {
 TEST_F(DataReductionProxyDataTest, AddToURLRequest) {
   std::unique_ptr<net::URLRequestContext> context(new net::URLRequestContext());
   std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
-      GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr));
+      GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   DataReductionProxyData* data =
       DataReductionProxyData::GetData(*fake_request.get());
   EXPECT_FALSE(data);
@@ -122,7 +124,8 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
 TEST_F(DataReductionProxyDataTest, ClearData) {
   std::unique_ptr<net::URLRequestContext> context(new net::URLRequestContext());
   std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
-      GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr));
+      GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
 
   DataReductionProxyData* data =
       DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());

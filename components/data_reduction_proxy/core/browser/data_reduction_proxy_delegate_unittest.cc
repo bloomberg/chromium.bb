@@ -51,6 +51,7 @@
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -658,8 +659,8 @@ class DataReductionProxyDelegateTest : public testing::Test {
     mock_socket_factory_.AddSocketDataProvider(&socket);
 
     net::TestDelegate delegate;
-    std::unique_ptr<net::URLRequest> request =
-        context_.CreateRequest(url, net::IDLE, &delegate);
+    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+        url, net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
     if (request_headers)
       request->SetExtraRequestHeaders(*request_headers);
 
@@ -1037,8 +1038,9 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeForWriteError) {
   mock_socket_factory()->AddSocketDataProvider(&socket);
 
   net::TestDelegate delegate;
-  std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
-      GURL("http://example.com/path/"), net::IDLE, &delegate);
+  std::unique_ptr<net::URLRequest> request =
+      context()->CreateRequest(GURL("http://example.com/path/"), net::IDLE,
+                               &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   request->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -1058,8 +1060,9 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeForReadError) {
   mock_socket_factory()->AddSocketDataProvider(&socket);
 
   net::TestDelegate delegate;
-  std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
-      GURL("http://example.com/path/"), net::IDLE, &delegate);
+  std::unique_ptr<net::URLRequest> request =
+      context()->CreateRequest(GURL("http://example.com/path/"), net::IDLE,
+                               &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   request->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -1150,8 +1153,9 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
     mock_socket_factory()->AddSocketDataProvider(&socket);
 
     net::TestDelegate test_delegate;
-    std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
-        GURL("http://example.com"), net::IDLE, &test_delegate);
+    std::unique_ptr<net::URLRequest> request =
+        context()->CreateRequest(GURL("http://example.com"), net::IDLE,
+                                 &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
     request->Start();
 
     base::RunLoop().RunUntilIdle();

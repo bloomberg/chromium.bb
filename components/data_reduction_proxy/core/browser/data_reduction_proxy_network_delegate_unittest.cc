@@ -57,6 +57,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
@@ -320,8 +321,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     mock_socket_factory_.AddSocketDataProvider(&socket);
 
     net::TestDelegate delegate;
-    std::unique_ptr<net::URLRequest> request =
-        context_.CreateRequest(url, net::IDLE, &delegate);
+    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+        url, net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
     if (request_headers)
       request->SetExtraRequestHeaders(*request_headers);
     request->SetLoadFlags(request->load_flags() | load_flags);
@@ -429,8 +430,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     mock_socket_factory_.AddSocketDataProvider(&socket);
 
     net::TestDelegate delegate;
-    std::unique_ptr<net::URLRequest> request =
-        context_.CreateRequest(url, net::IDLE, &delegate);
+    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+        url, net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
     if (request_headers)
       request->SetExtraRequestHeaders(*request_headers);
 
@@ -706,8 +707,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::ProxyRetryInfoMap proxy_retry_info;
 
       net::TestDelegate delegate;
-      std::unique_ptr<net::URLRequest> fake_request =
-          context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
+      std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
+          GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
       lofi_decider()->SetIsUsingLoFi(
           config()->ShouldEnableLoFi(*fake_request.get()));
@@ -725,8 +726,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::HttpRequestHeaders headers;
       net::ProxyRetryInfoMap proxy_retry_info;
       net::TestDelegate delegate;
-      std::unique_ptr<net::URLRequest> fake_request =
-          context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
+      std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
+          GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       lofi_decider()->SetIsUsingLoFi(false);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
@@ -740,8 +741,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::HttpRequestHeaders headers;
       net::ProxyRetryInfoMap proxy_retry_info;
       net::TestDelegate delegate;
-      std::unique_ptr<net::URLRequest> fake_request =
-          context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
+      std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
+          GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
       lofi_decider()->SetIsUsingLoFi(true);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
@@ -757,8 +758,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::HttpRequestHeaders headers;
       net::ProxyRetryInfoMap proxy_retry_info;
       net::TestDelegate delegate;
-      std::unique_ptr<net::URLRequest> fake_request =
-          context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
+      std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
+          GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
       lofi_decider()->SetIsUsingLoFi(false);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
@@ -773,8 +774,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::HttpRequestHeaders headers;
       net::ProxyRetryInfoMap proxy_retry_info;
       net::TestDelegate delegate;
-      std::unique_ptr<net::URLRequest> fake_request =
-          context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
+      std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
+          GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       lofi_decider()->SetIsUsingLoFi(false);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
@@ -788,8 +789,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::HttpRequestHeaders headers;
       net::ProxyRetryInfoMap proxy_retry_info;
       net::TestDelegate delegate;
-      std::unique_ptr<net::URLRequest> fake_request =
-          context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
+      std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
+          GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
       lofi_decider()->SetIsUsingLoFi(
           config()->ShouldEnableLoFi(*fake_request.get()));
@@ -844,8 +845,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
     test_network_quality_estimator()->set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
 
-    std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
-        GURL(kTestURL), net::RequestPriority::IDLE, nullptr);
+    std::unique_ptr<net::URLRequest> request =
+        context()->CreateRequest(GURL(kTestURL), net::RequestPriority::IDLE,
+                                 nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
     request->SetLoadFlags(test.main_frame ? net::LOAD_MAIN_FRAME_DEPRECATED
                                           : 0);
     lofi_decider()->SetIsUsingLoFi(test.lofi_on);
@@ -907,8 +909,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
     else
       data_reduction_proxy_info.UseNamedProxy("some.other.proxy");
     config()->UpdateConfigForTesting(test.data_reduction_proxy_enabled, true);
-    std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
-        GURL(kTestURL), net::RequestPriority::IDLE, nullptr);
+    std::unique_ptr<net::URLRequest> request =
+        context()->CreateRequest(GURL(kTestURL), net::RequestPriority::IDLE,
+                                 nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
     request->set_method("GET");
     net::HttpRequestHeaders headers;
     net::ProxyRetryInfoMap proxy_retry_info;
@@ -939,8 +942,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   test_network_quality_estimator()->set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
 
-  std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
-      GURL(kTestURL), net::RequestPriority::IDLE, nullptr);
+  std::unique_ptr<net::URLRequest> request =
+      context()->CreateRequest(GURL(kTestURL), net::RequestPriority::IDLE,
+                               nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
   lofi_decider()->SetIsUsingLoFi(true);
   io_data()->request_options()->SetSecureSession("fake-session");
