@@ -39,6 +39,17 @@ void WebApkIconHasher::DownloadAndComputeMurmur2Hash(
     net::URLRequestContextGetter* request_context_getter,
     const GURL& icon_url,
     const Murmur2HashCallback& callback) {
+  DownloadAndComputeMurmur2HashWithTimeout(request_context_getter, icon_url,
+                                           kDownloadTimeoutInMilliseconds,
+                                           callback);
+}
+
+// static
+void WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
+    net::URLRequestContextGetter* request_context_getter,
+    const GURL& icon_url,
+    int timeout_ms,
+    const Murmur2HashCallback& callback) {
   if (!icon_url.is_valid()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, ""));
@@ -58,17 +69,17 @@ void WebApkIconHasher::DownloadAndComputeMurmur2Hash(
   }
 
   // The icon hasher will delete itself when it is done.
-  new WebApkIconHasher(request_context_getter, icon_url, callback);
+  new WebApkIconHasher(request_context_getter, icon_url, timeout_ms, callback);
 }
 
 WebApkIconHasher::WebApkIconHasher(
     net::URLRequestContextGetter* url_request_context_getter,
     const GURL& icon_url,
+    int timeout_ms,
     const Murmur2HashCallback& callback)
     : callback_(callback) {
   download_timeout_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kDownloadTimeoutInMilliseconds),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_ms),
       base::Bind(&WebApkIconHasher::OnDownloadTimedOut,
                  base::Unretained(this)));
 

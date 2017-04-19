@@ -349,10 +349,10 @@ TEST_F(WebApkInstallerTest, Success) {
 }
 
 // Test that installation fails if fetching the bitmap at the best primary icon
-// URL times out. In a perfect world the fetch would never time out because the
-// bitmap at the best primary icon URL should be in the HTTP cache.
+// URL returns no content. In a perfect world the fetch would always succeed
+// because the fetch for the same icon succeeded recently.
 TEST_F(WebApkInstallerTest, BestPrimaryIconUrlDownloadTimesOut) {
-  SetBestPrimaryIconUrl(test_server()->GetURL("/slow?1000"));
+  SetBestPrimaryIconUrl(test_server()->GetURL("/nocontent"));
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
   runner->RunInstallWebApk();
@@ -360,10 +360,10 @@ TEST_F(WebApkInstallerTest, BestPrimaryIconUrlDownloadTimesOut) {
 }
 
 // Test that installation fails if fetching the bitmap at the best badge icon
-// URL times out. In a perfect world the fetch would never time out because the
-// bitmap at the best badge icon URL should be in the HTTP cache.
+// URL returns no content. In a perfect world the fetch would always succeed
+// because the fetch for the same icon succeeded recently.
 TEST_F(WebApkInstallerTest, BestBadgeIconUrlDownloadTimesOut) {
-  SetBestBadgeIconUrl(test_server()->GetURL("/slow?1000"));
+  SetBestBadgeIconUrl(test_server()->GetURL("/nocontent"));
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
   runner->RunInstallWebApk();

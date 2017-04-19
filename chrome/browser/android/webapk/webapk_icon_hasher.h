@@ -35,11 +35,17 @@ class WebApkIconHasher : public net::URLFetcherDelegate {
       const GURL& icon_url,
       const Murmur2HashCallback& callback);
 
- private:
-  WebApkIconHasher(
+  static void DownloadAndComputeMurmur2HashWithTimeout(
       net::URLRequestContextGetter* request_context_getter,
       const GURL& icon_url,
+      int timeout_ms,
       const Murmur2HashCallback& callback);
+
+ private:
+  WebApkIconHasher(net::URLRequestContextGetter* request_context_getter,
+                   const GURL& icon_url,
+                   int timeout_ms,
+                   const Murmur2HashCallback& callback);
   ~WebApkIconHasher() override;
 
   // net::URLFetcherDelegate:
