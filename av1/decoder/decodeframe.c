@@ -2303,11 +2303,7 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
   } else {
     const int ctx = av1_get_skip_context(xd);
 #if CONFIG_NEW_MULTISYMBOL
-#if CONFIG_EC_ADAPT
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-    FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
     const int skip = aom_read_symbol(r, ec_ctx->skip_cdfs[ctx], 2, ACCT_STR);
 #else
     const int skip = aom_read(r, cm->fc->skip_probs[ctx], ACCT_STR);
@@ -5118,9 +5114,10 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if !CONFIG_EC_ADAPT
     if (cm->interp_filter == SWITCHABLE) read_switchable_interp_probs(fc, &r);
 #endif
-
+#if !CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
       av1_diff_update_prob(&r, &fc->intra_inter_prob[i], ACCT_STR);
+#endif
 
     if (cm->reference_mode != SINGLE_REFERENCE)
       setup_compound_reference_mode(cm);

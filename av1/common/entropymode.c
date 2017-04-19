@@ -1340,6 +1340,16 @@ static const aom_prob default_intra_inter_p[INTRA_INTER_CONTEXTS] = {
   9, 102, 187, 225
 };
 
+#if CONFIG_NEW_MULTISYMBOL
+static const aom_cdf_prob
+    default_intra_inter_cdf[INTRA_INTER_CONTEXTS][CDF_SIZE(2)] = {
+      { AOM_ICDF(1152), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(13056), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(23936), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(28800), AOM_ICDF(32768), 0 }
+    };
+#endif
+
 static const aom_prob default_comp_inter_p[COMP_INTER_CONTEXTS] = {
   239, 183, 119, 96, 41
 };
@@ -4556,6 +4566,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->inter_ext_tx_cdf, default_inter_ext_tx_cdf);
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->skip_cdfs, default_skip_cdfs);
+  av1_copy(fc->intra_inter_cdf, default_intra_inter_cdf);
 #endif
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   av1_copy(fc->intra_filter_cdf, default_intra_filter_cdf);

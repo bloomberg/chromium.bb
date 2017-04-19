@@ -1876,7 +1876,17 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     return get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME) != INTRA_FRAME;
   } else {
     const int ctx = av1_get_intra_inter_context(xd);
+#if CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EC_ADAPT
+    FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+    FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+    const int is_inter =
+        aom_read_symbol(r, ec_ctx->intra_inter_cdf[ctx], 2, ACCT_STR);
+#else
     const int is_inter = aom_read(r, cm->fc->intra_inter_prob[ctx], ACCT_STR);
+#endif
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->intra_inter[ctx][is_inter];
     return is_inter;
