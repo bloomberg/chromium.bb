@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
-#include "chrome/common/url_constants.cc"
+#include "chrome/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using Creator = StartupBrowserCreatorImpl;
