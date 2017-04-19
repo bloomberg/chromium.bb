@@ -359,8 +359,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
 }
 
 // Test that the counting restarts when history sync state changes.
-// TODO(crbug.com/553421): Enable this test and move it to the
-// sync/test/integration directory.
+// TODO(crbug.com/553421): Move this to the sync/test/integration directory?
 IN_PROC_BROWSER_TEST_F(HistoryCounterTest, RestartOnSyncChange) {
   // Set up the Sync client.
   ASSERT_TRUE(SetupClients());

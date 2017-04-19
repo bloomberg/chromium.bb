@@ -12,7 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/core/counters/autofill_counter.h"
+#include "components/browsing_data/core/counters/passwords_counter.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,6 +88,35 @@ TEST_F(BrowsingDataUtilsTest, AutofillCounterResult) {
     base::string16 output = browsing_data::GetCounterTextFromResult(&result);
     EXPECT_EQ(output, base::ASCIIToUTF16(test_case.expected_output));
   }
+}
+
+// Tests the output of the Passwords counter.
+TEST_F(BrowsingDataUtilsTest, PasswordsCounterResult) {
+  scoped_refptr<password_manager::TestPasswordStore> store(
+      new password_manager::TestPasswordStore());
+  browsing_data::PasswordsCounter counter(
+      scoped_refptr<password_manager::PasswordStore>(store), nullptr);
+
+  const struct TestCase {
+    int num_passwords;
+    int is_synced;
+    std::string expected_output;
+  } kTestCases[] = {
+      {0, false, "none"},        {0, true, "none"},
+      {1, false, "1 password"},  {1, true, "1 password (synced)"},
+      {5, false, "5 passwords"}, {5, true, "5 passwords (synced)"},
+  };
+
+  for (const TestCase& test_case : kTestCases) {
+    browsing_data::PasswordsCounter::PasswordResult result(
+        &counter, test_case.num_passwords, test_case.is_synced);
+    SCOPED_TRACE(base::StringPrintf("Test params: %d password(s), %d is_synced",
+                                    test_case.num_passwords,
+                                    test_case.is_synced));
+    base::string16 output = browsing_data::GetCounterTextFromResult(&result);
+    EXPECT_EQ(output, base::ASCIIToUTF16(test_case.expected_output));
+  }
+  store->ShutdownOnUIThread();
 }
 
 TEST_F(BrowsingDataUtilsTest, MigratePreferencesToBasic) {

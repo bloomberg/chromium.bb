@@ -66,6 +66,7 @@ source_set("unit_tests") {
     "//base",
     "//components/autofill/core/browser:browser",
     "//components/history/core/test:test",
+    "//components/password_manager/core/browser:test_support",
     "//components/signin/core/browser:test_support",
     "//components/sync",
     "//components/sync:test_support_driver",

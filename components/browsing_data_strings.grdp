@@ -28,8 +28,14 @@
   <message name="IDS_DEL_PASSWORDS_COUNTER" desc="A counter showing how many passwords the user has.">
     {COUNT, plural,
      =0 {none}
-     =1 {1}
-     other {#}}
+     =1 {1 password}
+     other {# passwords}}
+  </message>
+  <message name="IDS_DEL_PASSWORDS_COUNTER_SYNCED" desc="A counter showing how many passwords the user has and that they are synced.">
+    {COUNT, plural,
+     =0 {none}
+     =1 {1 password (synced)}
+     other {# passwords (synced)}}
   </message>
   <message name="IDS_DEL_AUTOFILL_COUNTER_EMPTY" desc="A counter showing that the user has no form data stored.">
     none

@@ -139,7 +139,9 @@ void BrowsingDataCounter::TransitionToReadyToReportResult() {
 // BrowsingDataCounter::Result -------------------------------------------------
 
 BrowsingDataCounter::Result::Result(const BrowsingDataCounter* source)
-    : source_(source) {}
+    : source_(source) {
+  DCHECK(source);
+}
 
 BrowsingDataCounter::Result::~Result() {}
 

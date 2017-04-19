@@ -66,7 +66,7 @@ void RecordDeletionForPeriod(TimePeriod period) {
 }
 
 base::string16 GetCounterTextFromResult(
-    const browsing_data::BrowsingDataCounter::Result* result) {
+    const BrowsingDataCounter::Result* result) {
   base::string16 text;
   std::string pref_name = result->source()->GetPrefName();
 
@@ -74,28 +74,30 @@ base::string16 GetCounterTextFromResult(
     // The counter is still counting.
     text = l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_CALCULATING);
 
-  } else if (pref_name == browsing_data::prefs::kDeletePasswords ||
-             pref_name == browsing_data::prefs::kDeleteDownloadHistory) {
-    // Counters with trivially formatted result: passwords and downloads.
-    browsing_data::BrowsingDataCounter::ResultInt count =
-        static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
-            result)
-            ->Value();
+  } else if (pref_name == prefs::kDeletePasswords) {
+    const PasswordsCounter::PasswordResult* password_result =
+        static_cast<const PasswordsCounter::PasswordResult*>(result);
+
+    BrowsingDataCounter::ResultInt count = password_result->Value();
+
     text = l10n_util::GetPluralStringFUTF16(
-        pref_name == browsing_data::prefs::kDeletePasswords
-            ? IDS_DEL_PASSWORDS_COUNTER
-            : IDS_DEL_DOWNLOADS_COUNTER,
+        password_result->password_sync_enabled()
+            ? IDS_DEL_PASSWORDS_COUNTER_SYNCED
+            : IDS_DEL_PASSWORDS_COUNTER,
         count);
-  } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistoryBasic) {
+  } else if (pref_name == prefs::kDeleteDownloadHistory) {
+    BrowsingDataCounter::ResultInt count =
+        static_cast<const BrowsingDataCounter::FinishedResult*>(result)
+            ->Value();
+    text = l10n_util::GetPluralStringFUTF16(IDS_DEL_DOWNLOADS_COUNTER, count);
+  } else if (pref_name == prefs::kDeleteBrowsingHistoryBasic) {
     // The basic tab doesn't show history counter results.
     NOTREACHED();
-  } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
+  } else if (pref_name == prefs::kDeleteBrowsingHistory) {
     // History counter.
-    const browsing_data::HistoryCounter::HistoryResult* history_result =
-        static_cast<const browsing_data::HistoryCounter::HistoryResult*>(
-            result);
-    browsing_data::BrowsingDataCounter::ResultInt local_item_count =
-        history_result->Value();
+    const HistoryCounter::HistoryResult* history_result =
+        static_cast<const HistoryCounter::HistoryResult*>(result);
+    BrowsingDataCounter::ResultInt local_item_count = history_result->Value();
     bool has_synced_visits = history_result->has_synced_visits();
     text = has_synced_visits
                ? l10n_util::GetPluralStringFUTF16(
@@ -103,17 +105,14 @@ base::string16 GetCounterTextFromResult(
                : l10n_util::GetPluralStringFUTF16(
                      IDS_DEL_BROWSING_HISTORY_COUNTER, local_item_count);
 
-  } else if (pref_name == browsing_data::prefs::kDeleteFormData) {
+  } else if (pref_name == prefs::kDeleteFormData) {
     // Autofill counter.
-    const browsing_data::AutofillCounter::AutofillResult* autofill_result =
-        static_cast<const browsing_data::AutofillCounter::AutofillResult*>(
-            result);
-    browsing_data::AutofillCounter::ResultInt num_suggestions =
-        autofill_result->Value();
-    browsing_data::AutofillCounter::ResultInt num_credit_cards =
+    const AutofillCounter::AutofillResult* autofill_result =
+        static_cast<const AutofillCounter::AutofillResult*>(result);
+    AutofillCounter::ResultInt num_suggestions = autofill_result->Value();
+    AutofillCounter::ResultInt num_credit_cards =
         autofill_result->num_credit_cards();
-    browsing_data::AutofillCounter::ResultInt num_addresses =
-        autofill_result->num_addresses();
+    AutofillCounter::ResultInt num_addresses = autofill_result->num_addresses();
 
     std::vector<base::string16> displayed_strings;
 

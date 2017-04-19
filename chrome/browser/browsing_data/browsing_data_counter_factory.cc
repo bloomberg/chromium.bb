@@ -76,8 +76,9 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
 
   if (pref_name == browsing_data::prefs::kDeletePasswords) {
     return base::MakeUnique<browsing_data::PasswordsCounter>(
-        PasswordStoreFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS));
+        PasswordStoreFactory::GetForProfile(profile,
+                                            ServiceAccessType::EXPLICIT_ACCESS),
+        ProfileSyncServiceFactory::GetForProfile(profile));
   }
 
   if (pref_name == browsing_data::prefs::kDeleteFormData) {

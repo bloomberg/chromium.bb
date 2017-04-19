@@ -46,7 +46,8 @@ IOSBrowsingDataCounterFactory::GetForBrowserStateAndPref(
   if (pref_name == browsing_data::prefs::kDeletePasswords) {
     return base::MakeUnique<browsing_data::PasswordsCounter>(
         IOSChromePasswordStoreFactory::GetForBrowserState(
-            browser_state, ServiceAccessType::EXPLICIT_ACCESS));
+            browser_state, ServiceAccessType::EXPLICIT_ACCESS),
+        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state));
   }
 
   if (pref_name == browsing_data::prefs::kDeleteFormData) {
