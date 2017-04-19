@@ -81,6 +81,11 @@
       showcase::kClassForInstantiationKey : @"UIKitTableViewCellViewController",
       showcase::kUseCaseKey : @"UIKit Table Cells",
     },
+    @{
+      showcase::kClassForDisplayKey : @"SearchWidgetViewController",
+      showcase::kClassForInstantiationKey : @"SearchWidgetViewController",
+      showcase::kUseCaseKey : @"Search Widget",
+    },
   ];
 }
 

@@ -20,6 +20,21 @@ compile_plist("entitlements") {
 }
 
 ios_appex_bundle("search_widget_extension") {
+  deps = [
+    ":search_widget",
+  ]
+
+  extra_substitutions = [
+    "CHROME_CHANNEL_SCHEME=$url_channel_scheme",
+    "CHROMIUM_SHORT_NAME=$chromium_short_name",
+    "WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.SearchTodayExtension",
+  ]
+
+  entitlements_target = ":entitlements"
+  info_plist_target = ":tweak_info_plist"
+}
+
+source_set("search_widget") {
   sources = [
     "search_widget_view.h",
     "search_widget_view.mm",
@@ -30,17 +45,7 @@ ios_appex_bundle("search_widget_extension") {
   deps = [
     "//base",
     "//components/open_from_clipboard:open_from_clipboard_impl",
-    "//components/prefs",
-    "//components/variations",
-    "//components/version_info",
-    "//ios/chrome/common",
     "//ios/chrome/common/app_group",
-    "//ios/chrome/common/app_group:client",
-    "//ios/chrome/common/physical_web",
-    "//ios/chrome/today_extension/strings",
-    "//ios/third_party/material_components_ios",
-    "//net",
-    "//ui/base",
   ]
 
   libs = [
@@ -49,14 +54,17 @@ ios_appex_bundle("search_widget_extension") {
     "UIKit.framework",
   ]
 
-  extra_substitutions = [
-    "CHROME_CHANNEL_SCHEME=$url_channel_scheme",
-    "CHROMIUM_SHORT_NAME=$chromium_short_name",
-    "WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.SearchTodayExtension",
-  ]
-
   configs += [ "//build/config/compiler:enable_arc" ]
+}
 
-  entitlements_target = ":entitlements"
-  info_plist_target = ":tweak_info_plist"
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "search_widget_view_controller_unittest.mm",
+  ]
+  deps = [
+    ":search_widget",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
