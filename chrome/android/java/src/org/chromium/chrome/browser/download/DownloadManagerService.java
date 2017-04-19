@@ -79,6 +79,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private static final String UNKNOWN_MIME_TYPE = "application/unknown";
     private static final String DOWNLOAD_UMA_ENTRY = "DownloadUmaEntry";
     private static final String DOWNLOAD_RETRY_COUNT_FILE_NAME = "DownloadRetryCount";
+    private static final String DOWNLOAD_MANUAL_RETRY_SUFFIX = ".Manual";
+    private static final String DOWNLOAD_TOTAL_RETRY_SUFFIX = ".Total";
     private static final long UPDATE_DELAY_MILLIS = 1000;
     // Wait 10 seconds to resume all downloads, so that we won't impact tab loading.
     private static final long RESUME_DELAY_MILLIS = 10000;
@@ -783,7 +785,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
             case DOWNLOAD_STATUS_CANCELLED:
                 recordDownloadFinishedUMA(downloadStatus, downloadItem.getId(),
                         downloadItem.getDownloadInfo().getBytesReceived());
-                clearDownloadRetryCount(downloadItem.getId());
+                clearDownloadRetryCount(downloadItem.getId(), true);
+                clearDownloadRetryCount(downloadItem.getId(), false);
                 break;
             case DOWNLOAD_STATUS_INTERRUPTED:
                 entry = getUmaStatsEntry(downloadItem.getId());
@@ -1196,14 +1199,19 @@ public class DownloadManagerService extends BroadcastReceiver implements
             if (!progress.mCanDownloadWhileMetered) {
                 progress.mCanDownloadWhileMetered = isActiveNetworkMetered(mContext);
             }
-            clearDownloadRetryCount(item.getId());
+            incrementDownloadRetryCount(item.getId(), true);
+            clearDownloadRetryCount(item.getId(), true);
         } else {
-            int count = incrementAndReturnDownloadRetryCount(item.getId());
-            if (count > getAutoResumptionLimit()) {
+            // TODO(qinmin): Consolidate this logic with the logic in notification service that
+            // throttles browser restarts.
+            SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference(mContext);
+            int count = sharedPrefs.getInt(item.getId(), 0);
+            if (count >= getAutoResumptionLimit()) {
                 removeAutoResumableDownload(item.getId());
                 onDownloadInterrupted(item.getDownloadInfo(), false);
                 return;
             }
+            incrementDownloadRetryCount(item.getId(), false);
         }
         nativeResumeDownload(getNativeDownloadManagerService(), item.getId(),
                 item.getDownloadInfo().isOffTheRecord());
@@ -1771,29 +1779,73 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     /**
      * Increments the interruption count for a download. If the interruption count reaches a certain
-     * threshold, the download will no longer auto resume unless user click the resume button
-     * to clear the count.
+     * threshold, the download will no longer auto resume unless user click the resume button to
+     * clear the count.
+     *
      * @param downloadGuid Download GUID.
-     * @return The interruption count of the download, after incrementation.
+     * @param hasUserGesture Whether the retry is caused by user gesture.
      */
-    private int incrementAndReturnDownloadRetryCount(String downloadGuid) {
-        SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference(mContext);
-        int count = sharedPrefs.getInt(downloadGuid, 0);
-        count++;
-        SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putInt(downloadGuid, count);
-        editor.apply();
-        return count;
+    private void incrementDownloadRetryCount(String downloadGuid, boolean hasUserGesture) {
+        String name = getDownloadRetryCountSharedPrefName(downloadGuid, hasUserGesture, false);
+        incrementDownloadRetrySharedPreferenceCount(name);
+        name = getDownloadRetryCountSharedPrefName(downloadGuid, hasUserGesture, true);
+        incrementDownloadRetrySharedPreferenceCount(name);
     }
 
     /**
-     * clears the interruption count for a download.
-     * @param downloadGuid Download GUID.
+     * Helper method to increment the retry count for a SharedPreference entry.
+     * @param sharedPreferenceName Name of the SharedPreference entry.
      */
-    private void clearDownloadRetryCount(String downloadGuid) {
+    private void incrementDownloadRetrySharedPreferenceCount(String sharedPreferenceName) {
         SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference(mContext);
+        int count = sharedPrefs.getInt(sharedPreferenceName, 0);
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.remove(downloadGuid);
+        count++;
+        editor.putInt(sharedPreferenceName, count);
+        editor.apply();
+    }
+
+    /**
+     * Helper method to retrieve the SharedPreference name for different download retry types.
+     * TODO(qinmin): introduce a proto for this and consolidate all the UMA metrics (including
+     * retry counts in DownloadHistory) stored in persistent storage.
+     * @param downloadGuid Guid of the download.
+     * @param hasUserGesture Whether the SharedPreference is for manual retry attempts.
+     * @param isTotalCount Whether the SharedPreference is for total retry attempts.
+     */
+    private String getDownloadRetryCountSharedPrefName(
+            String downloadGuid, boolean hasUserGesture, boolean isTotalCount) {
+        if (isTotalCount) return downloadGuid + DOWNLOAD_TOTAL_RETRY_SUFFIX;
+        if (hasUserGesture) return downloadGuid + DOWNLOAD_MANUAL_RETRY_SUFFIX;
+        return downloadGuid;
+    }
+
+    /**
+     * clears the retry count for a download.
+     *
+     * @param downloadGuid Download GUID.
+     * @param isAutoRetryOnly Whether to clear the auto retry count only.
+     */
+    private void clearDownloadRetryCount(String downloadGuid, boolean isAutoRetryOnly) {
+        SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference(mContext);
+        String name = getDownloadRetryCountSharedPrefName(downloadGuid, !isAutoRetryOnly, false);
+        int count = Math.min(sharedPrefs.getInt(name, 0), 200);
+        assert count >= 0;
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.remove(name);
+        if (isAutoRetryOnly) {
+            RecordHistogram.recordSparseSlowlyHistogram(
+                    "MobileDownload.ResumptionsCount.Automatic", count);
+        } else {
+            RecordHistogram.recordSparseSlowlyHistogram(
+                    "MobileDownload.ResumptionsCount.Manual", count);
+            name = getDownloadRetryCountSharedPrefName(downloadGuid, false, true);
+            count = sharedPrefs.getInt(name, 0);
+            assert count >= 0;
+            RecordHistogram.recordSparseSlowlyHistogram(
+                    "MobileDownload.ResumptionsCount.Total", Math.min(count, 500));
+            editor.remove(name);
+        }
         editor.apply();
     }
 
