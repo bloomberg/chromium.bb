@@ -32,6 +32,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 
@@ -125,6 +126,9 @@ MINIMUM_PROCESS_LIFETIME = 60
 # trying to restart entirely.
 SHORT_BACKOFF_THRESHOLD = 5
 MAX_LAUNCH_FAILURES = SHORT_BACKOFF_THRESHOLD + 10
+
+# Number of seconds to save session output to the log.
+SESSION_OUTPUT_TIME_LIMIT_SECONDS = 30
 
 # Globals needed by the atexit cleanup() handler.
 g_desktops = []
@@ -351,6 +355,41 @@ class Host:
     config["host_name"] = self.host_name
     config["host_secret_hash"] = self.host_secret_hash
     config["private_key"] = self.private_key
+
+
+class SessionOutputFilterThread(threading.Thread):
+  """Reads session log from a pipe and logs the output for amount of time
+  defined by SESSION_OUTPUT_TIME_LIMIT_SECONDS."""
+
+  def __init__(self, stream):
+    threading.Thread.__init__(self)
+    self.stream = stream
+    self.daemon = True
+
+  def run(self):
+    started_time = time.time()
+    is_logging = True
+    while True:
+      try:
+        line = self.stream.readline();
+      except IOError as e:
+        print("IOError when reading session output: ", e)
+        return
+
+      if line == "":
+        # EOF reached. Just stop the thread.
+        return
+
+      if not is_logging:
+        continue
+
+      if time.time() - started_time >= SESSION_OUTPUT_TIME_LIMIT_SECONDS:
+        is_logging = False
+        print("Suppressing rest of the session output.")
+        sys.stdout.flush()
+      else:
+        print("Session output: %s" % line.strip("\n"))
+        sys.stdout.flush()
 
 
 class Desktop:
@@ -677,8 +716,14 @@ class Desktop:
     logging.info("Launching X session: %s" % xsession_command)
     self.session_proc = subprocess.Popen(xsession_command,
                                          stdin=open(os.devnull, "r"),
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.STDOUT,
                                          cwd=HOME_DIR,
                                          env=self.child_env)
+
+    output_filter_thread = SessionOutputFilterThread(self.session_proc.stdout)
+    output_filter_thread.start()
+
     if not self.session_proc.pid:
       raise Exception("Could not start X session")
 
