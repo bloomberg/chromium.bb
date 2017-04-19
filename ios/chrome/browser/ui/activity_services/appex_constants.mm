@@ -22,11 +22,4 @@ NSNumber* const kPasswordAppExVersionNumber = @110;
 NSString* const kUTTypeAppExtensionFindLoginAction =
     @"org.appextension.chrome-password-action";
 
-// Known App Extensions.
-NSString* const kAppExtensionOnePassword =
-    @"com.agilebits.onepassword-ios.extension";
-NSString* const kAppExtensionLastPass = @"com.lastpass.ilastpass.LastPassExt";
-NSString* const kAppExtensionDashlanePrefix =
-    @"com.dashlane.dashlanephonefinal.";
-
 }  // namespace activity_services

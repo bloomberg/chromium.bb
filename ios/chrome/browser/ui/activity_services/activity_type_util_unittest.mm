@@ -52,7 +52,7 @@ TEST(ActivityTypeUtilTest, TypeToMessageTest) {
       activity_type_util::NATIVE_CLIPBOARD,
       l10n_util::GetNSString(IDS_IOS_SHARE_TO_CLIPBOARD_SUCCESS));
   TypeToMessageTestHelper(
-      activity_type_util::APPEX_PASSWORD_MANAGEMENT_OTHERS,
+      activity_type_util::APPEX_PASSWORD_MANAGEMENT,
       l10n_util::GetNSString(IDS_IOS_APPEX_PASSWORD_FORM_FILLED_SUCCESS));
 }
 

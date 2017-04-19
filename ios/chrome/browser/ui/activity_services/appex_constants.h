@@ -33,15 +33,6 @@ extern NSNumber* const kPasswordAppExVersionNumber;
 // the App Extension.
 extern NSString* const kUTTypeAppExtensionFindLoginAction;
 
-// Signature for 1Password App Extension
-extern NSString* const kAppExtensionOnePassword;
-
-// Signature for LastPass App Extension
-extern NSString* const kAppExtensionLastPass;
-
-// Prefix of signature for Dashlane App Extension
-extern NSString* const kAppExtensionDashlanePrefix;
-
 }  // namespace activity_services
 
 #endif  // IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_APPEX_CONSTANTS_H_

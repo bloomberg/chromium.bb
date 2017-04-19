@@ -187,7 +187,7 @@ class ActivityServiceControllerTest : public PlatformTest {
     [activityController setShareToDelegateForTesting:(id)shareToDelegateMock];
 
     // Sets up the returned item from a Password Management App Extension.
-    NSString* activityType = activity_services::kAppExtensionLastPass;
+    NSString* activityType = @"com.lastpass.ilastpass.LastPassExt";
     ShareTo::ShareResult result = ShareTo::ShareResult::SHARE_SUCCESS;
     BOOL resetUI =
         [activityController processItemsReturnedFromActivity:activityType
@@ -274,7 +274,7 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
   // Gets the list of NSExtensionItem objects returned by the array of
   // id<UIActivityItemSource> objects returned by -activityItemsForData:.
   NSArray* extensionItems = FindItemsForActivityType(
-      items, activity_services::kAppExtensionOnePassword);
+      items, @"com.agilebits.onepassword-ios.extension");
   ASSERT_EQ(1U, [extensionItems count]);
   NSExtensionItem* item = extensionItems[0];
   EXPECT_EQ(1U, item.attachments.count);
@@ -313,7 +313,7 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
       [OCMockObject niceMockForClass:[UIActivityViewController class]];
   NSString* title = [actionSource
       activityViewController:mockActivityViewController
-      subjectForActivityType:activity_services::kAppExtensionOnePassword];
+      subjectForActivityType:@"com.agilebits.onepassword-ios.extension"];
   EXPECT_NSEQ(@"kung fu fighting", title);
 }
 
