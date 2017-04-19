@@ -470,6 +470,11 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           geometry_mapper_option, kIgnorePlatformOverlayScrollbarSize,
           respect_overflow_clip, &offset_from_root,
           local_painting_info.sub_pixel_accumulation);
+      // PaintLayer::collectFragments depends on the paint dirty rect in
+      // complicated ways. For now, always assume a partially painted output
+      // for fragmented content.
+      if (layer_fragments.size() > 1)
+        result = kMayBeClippedByPaintDirtyRect;
     }
 
     if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
@@ -697,6 +702,7 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
     geometry_mapper_option = PaintLayer::kUseGeometryMapper;
 
+  PaintResult result = kFullyPainted;
   PaintLayer* pagination_layer = paint_layer_.EnclosingPaginationLayer();
   PaintLayerFragments layer_fragments;
   bool is_fixed_position_object_in_paged_media =
@@ -739,6 +745,11 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
         painting_info.paint_dirty_rect, cache_slot, geometry_mapper_option,
         kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip, nullptr,
         painting_info.sub_pixel_accumulation, &transformed_extent);
+    // PaintLayer::collectFragments depends on the paint dirty rect in
+    // complicated ways. For now, always assume a partially painted output
+    // for fragmented content.
+    if (layer_fragments.size() > 1)
+      result = kMayBeClippedByPaintDirtyRect;
   }
 
   Optional<DisplayItemCacheSkipper> cache_skipper;
@@ -764,7 +775,6 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
     }
   }
 
-  PaintResult result = kFullyPainted;
   for (const auto& fragment : layer_fragments) {
     Optional<LayerClipRecorder> clip_recorder;
     if (parent_layer && !RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {

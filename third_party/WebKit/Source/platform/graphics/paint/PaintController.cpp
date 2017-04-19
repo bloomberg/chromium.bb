@@ -452,7 +452,8 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     DCHECK(!IsCheckingUnderInvalidation());
     under_invalidation_checking_begin_ = begin_index;
     under_invalidation_message_prefix_ =
-        "(In cached subsequence of " + cached_item->Client().DebugName() + ")";
+        "(In cached subsequence starting with " +
+        cached_item->Client().DebugName() + ")";
   }
 
   Vector<PaintChunk>::const_iterator cached_chunk;
