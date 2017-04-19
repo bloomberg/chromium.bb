@@ -8,14 +8,15 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/render_frame_host_id.h"
+#include "chrome/common/media_router/media_source.h"
 #include "url/origin.h"
 
 namespace media_router {
 
 // Represents a presentation request made from a render frame. Contains the
 // presentation URL of the request, and information on the originating frame.
+// TODO(crbug.com/708209): Move this class to content/browser/.
 class PresentationRequest {
  public:
   PresentationRequest(const RenderFrameHostId& render_frame_host_id,

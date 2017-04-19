@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
+#include "chrome/common/media_router/issue.h"
 #include "components/signin/core/browser/account_info.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/gfx/geometry/size.h"

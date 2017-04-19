@@ -10,12 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/media/router/issue.h"
-#include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router_base.h"
-#include "chrome/browser/media/router/media_sink.h"
-#include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
+#include "chrome/common/media_router/issue.h"
+#include "chrome/common/media_router/media_route.h"
+#include "chrome/common/media_router/media_sink.h"
+#include "chrome/common/media_router/media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
 

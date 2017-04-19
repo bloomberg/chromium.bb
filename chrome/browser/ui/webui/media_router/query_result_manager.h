@@ -15,11 +15,11 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
-#include "chrome/browser/media/router/media_sink.h"
-#include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/ui/webui/media_router/cast_modes_with_media_sources.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
+#include "chrome/common/media_router/media_sink.h"
+#include "chrome/common/media_router/media_source.h"
 
 namespace url {
 class Origin;

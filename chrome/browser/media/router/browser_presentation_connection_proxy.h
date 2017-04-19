@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_BROWSER_PRESENTATION_CONNECTION_PROXY_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_BROWSER_PRESENTATION_CONNECTION_PROXY_H_
 
-#include "chrome/browser/media/router/media_route.h"
+#include "chrome/common/media_router/media_route.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/common/presentation_connection_message.h"
 #include "content/public/common/presentation_info.h"

@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
+#include "chrome/common/media_router/media_route.h"
 #include "chrome/test/media_router/media_router_integration_browsertest.h"
 #include "chrome/test/media_router/test_media_sinks_observer.h"
 

@@ -3,12 +3,10 @@
 # found in the LICENSE file.
 #
 
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 static_library("router") {
   deps = [
-    ":mojo_bindings_common",
     "//base",
     "//chrome/common:constants",
     "//components/keyed_service/content",
@@ -19,21 +17,18 @@ static_library("router") {
     "//third_party/icu",
     "//url",
   ]
+  public_deps = [
+    "//chrome/common/media_router:router",
+  ]
   sources = [
     "browser_presentation_connection_proxy.cc",
     "browser_presentation_connection_proxy.h",
     "create_presentation_connection_request.cc",
     "create_presentation_connection_request.h",
-    "discovery/media_sink_internal.cc",
-    "discovery/media_sink_internal.h",
-    "issue.cc",
-    "issue.h",
     "issue_manager.cc",
     "issue_manager.h",
     "issues_observer.cc",
     "issues_observer.h",
-    "media_route.cc",
-    "media_route.h",
     "media_router.h",
     "media_router_base.cc",
     "media_router_base.h",
@@ -45,18 +40,10 @@ static_library("router") {
     "media_router_metrics.h",
     "media_routes_observer.cc",
     "media_routes_observer.h",
-    "media_sink.cc",
-    "media_sink.h",
     "media_sink_service.cc",
     "media_sink_service.h",
     "media_sinks_observer.cc",
     "media_sinks_observer.h",
-    "media_source.cc",
-    "media_source.h",
-    "media_source_helper.cc",
-    "media_source_helper.h",
-    "media_status.cc",
-    "media_status.h",
     "mojo/media_route_controller.cc",
     "mojo/media_route_controller.h",
     "offscreen_presentation_manager.cc",
@@ -74,17 +61,12 @@ static_library("router") {
     "receiver_presentation_service_delegate_impl.cc",
     "receiver_presentation_service_delegate_impl.h",
     "render_frame_host_id.h",
-    "route_message.cc",
-    "route_message.h",
     "route_message_observer.cc",
     "route_message_observer.h",
-    "route_request_result.cc",
-    "route_request_result.h",
   ]
 
   if (!is_android) {
     deps += [
-      ":mojo_bindings",
       "discovery",
       "//extensions/browser",
       "//mojo/public/cpp/bindings",
@@ -106,41 +88,6 @@ static_library("router") {
   }
 }
 
-mojom("mojo_bindings_common") {
-  sources = [
-    "mojo/media_controller.mojom",
-    "mojo/media_status.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/common:common_custom_types",
-  ]
-}
-
-mojom("mojo_bindings") {
-  sources = [
-    "mojo/media_router.mojom",
-  ]
-
-  public_deps = [
-    ":mojo_bindings_common",
-    "//mojo/common:common_custom_types",
-    "//net/interfaces:interfaces",
-    "//url/mojo:url_mojom_gurl",
-    "//url/mojo:url_mojom_origin",
-  ]
-}
-
-mojom("mojo_test_interfaces") {
-  sources = [
-    "mojo/media_router_traits_test_service.mojom",
-  ]
-
-  public_deps = [
-    ":mojo_bindings",
-  ]
-}
-
 static_library("test_support") {
   testonly = true
   deps = [
@@ -159,8 +106,8 @@ static_library("test_support") {
 
   if (!is_android) {
     deps += [
-      ":mojo_bindings",
-      ":mojo_test_interfaces",
+      "//chrome/common/media_router/mojo:media_router",
+      "//chrome/common/media_router/mojo:media_router_test_interfaces",
       "//extensions/common",
     ]
     sources += [

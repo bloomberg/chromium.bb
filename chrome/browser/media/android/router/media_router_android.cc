@@ -13,9 +13,9 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
-#include "chrome/browser/media/router/route_message.h"
 #include "chrome/browser/media/router/route_message_observer.h"
-#include "chrome/browser/media/router/route_request_result.h"
+#include "chrome/common/media_router/route_message.h"
+#include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_context.h"
 #include "url/gurl.h"
 

@@ -9,8 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "chrome/browser/media/router/media_route.h"
-#include "chrome/browser/media/router/mojo/media_controller.mojom.h"
+#include "chrome/common/media_router/media_route.h"
+#include "chrome/common/media_router/mojo/media_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media_router {

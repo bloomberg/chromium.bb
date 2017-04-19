@@ -543,7 +543,8 @@ static_library("common") {
   }
 
   if (enable_media_router) {
-    public_deps += [ "//chrome/common/media_router:interfaces" ]
+    public_deps +=
+        [ "//chrome/common/media_router/mojo:dial_utility_interfaces" ]
   }
 }
 

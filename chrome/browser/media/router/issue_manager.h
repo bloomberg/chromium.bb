@@ -13,8 +13,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/issues_observer.h"
+#include "chrome/common/media_router/issue.h"
 
 namespace media_router {
 

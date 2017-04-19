@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
-#include "chrome/browser/media/router/route_message.h"
+#include "chrome/common/media_router/route_message.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 
 namespace content {

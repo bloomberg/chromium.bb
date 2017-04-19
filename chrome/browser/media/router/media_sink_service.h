@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "chrome/browser/media/router/media_sink.h"
+#include "chrome/common/media_router/media_sink.h"
 
 namespace media_router {
 

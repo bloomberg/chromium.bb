@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/render_frame_host_id.h"
+#include "chrome/common/media_router/media_route.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/presentation_service_delegate.h"
 

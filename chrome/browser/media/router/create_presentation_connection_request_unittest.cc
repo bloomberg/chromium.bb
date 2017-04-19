@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
-#include "chrome/browser/media/router/media_source_helper.h"
+
+#include "base/bind.h"
+#include "chrome/common/media_router/media_source_helper.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

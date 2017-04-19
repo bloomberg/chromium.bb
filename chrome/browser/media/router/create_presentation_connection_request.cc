@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 
-#include "chrome/browser/media/router/media_source_helper.h"
-#include "chrome/browser/media/router/route_request_result.h"
+#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/route_request_result.h"
 #include "url/origin.h"
 
 using content::PresentationInfo;

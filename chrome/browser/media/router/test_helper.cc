@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/router/test_helper.h"
 
-#include "chrome/browser/media/router/media_source.h"
+#include "chrome/common/media_router/media_source.h"
 
 namespace media_router {
 

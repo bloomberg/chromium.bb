@@ -12,9 +12,9 @@
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
+#include "chrome/common/media_router/media_route.h"
 
 namespace media_router {
 

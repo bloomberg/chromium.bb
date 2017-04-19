@@ -7,7 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/media/router/route_request_result.h"
+#include "chrome/common/media_router/route_request_result.h"
 
 namespace base {
 class Version;

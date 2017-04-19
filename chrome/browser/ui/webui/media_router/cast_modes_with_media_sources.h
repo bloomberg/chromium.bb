@@ -8,8 +8,8 @@
 #include <map>
 #include <unordered_set>
 
-#include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
+#include "chrome/common/media_router/media_source.h"
 
 namespace media_router {
 

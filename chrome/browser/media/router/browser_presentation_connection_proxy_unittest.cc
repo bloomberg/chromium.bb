@@ -6,9 +6,9 @@
 
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "chrome/browser/media/router/media_source.h"
-#include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/common/media_router/media_source.h"
+#include "chrome/common/media_router/media_source_helper.h"
 #include "content/public/common/presentation_connection_message.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"

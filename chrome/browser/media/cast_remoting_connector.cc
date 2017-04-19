@@ -14,10 +14,11 @@
 #include "chrome/browser/media/cast_remoting_sender.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/media_source_helper.h"
-#include "chrome/browser/media/router/route_message.h"
 #include "chrome/browser/media/router/route_message_observer.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/route_message.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -142,7 +143,9 @@ CastRemotingConnector* CastRemotingConnector::Get(
     connector = new CastRemotingConnector(
         media_router::MediaRouterFactory::GetApiForBrowserContext(
             contents->GetBrowserContext()),
-        media_router::MediaSourceForTabContentRemoting(contents).id());
+        media_router::MediaSourceForTabContentRemoting(
+            SessionTabHelper::IdForTab(contents))
+            .id());
     contents->SetUserData(kUserDataKey, connector);
   }
   return connector;

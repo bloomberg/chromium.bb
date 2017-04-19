@@ -6,7 +6,7 @@
 #define CHROME_UTILITY_MEDIA_ROUTER_DIAL_DEVICE_DESCRIPTION_PARSER_IMPL_H_
 
 #include "base/macros.h"
-#include "chrome/common/media_router/dial_device_description_parser.mojom.h"
+#include "chrome/common/media_router/mojo/dial_device_description_parser.mojom.h"
 
 namespace media_router {
 

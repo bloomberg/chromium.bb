@@ -5,17 +5,18 @@
 #include "chrome/test/media_router/media_router_e2e_browsertest.h"
 
 #include <vector>
+
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/media_source.h"
-#include "chrome/browser/media/router/media_source_helper.h"
-#include "chrome/browser/media/router/route_request_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/media_router/media_source.h"
+#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/route_request_result.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/test_data_util.h"

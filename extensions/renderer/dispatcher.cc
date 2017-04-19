@@ -790,20 +790,6 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
 
     // Platform app sources that are not API-specific..
     {"platformApp", IDR_PLATFORM_APP_JS},
-
-#if defined(ENABLE_MEDIA_ROUTER)
-    {"chrome/browser/media/router/mojo/media_controller.mojom",
-     IDR_MEDIA_CONTROLLER_MOJOM_JS},
-    {"chrome/browser/media/router/mojo/media_router.mojom",
-     IDR_MEDIA_ROUTER_MOJOM_JS},
-    {"chrome/browser/media/router/mojo/media_status.mojom",
-     IDR_MEDIA_STATUS_MOJOM_JS},
-    {"media_router_bindings", IDR_MEDIA_ROUTER_BINDINGS_JS},
-    {"mojo/common/time.mojom", IDR_MOJO_TIME_MOJOM_JS},
-    {"net/interfaces/ip_address.mojom", IDR_MOJO_IP_ADDRESS_MOJOM_JS},
-    {"url/mojo/origin.mojom", IDR_ORIGIN_MOJOM_JS},
-    {"url/mojo/url.mojom", IDR_MOJO_URL_MOJOM_JS},
-#endif  // defined(ENABLE_MEDIA_ROUTER)
   };
 
   if (base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {

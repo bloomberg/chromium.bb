@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/media/router/media_route.h"
+#include "chrome/common/media_router/media_route.h"
 
 namespace media_router {
 

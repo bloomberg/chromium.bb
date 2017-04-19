@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/media_router/cast_modes_with_media_sources.h"
 
-#include "chrome/browser/media/router/media_source_helper.h"
+#include "chrome/common/media_router/media_source_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

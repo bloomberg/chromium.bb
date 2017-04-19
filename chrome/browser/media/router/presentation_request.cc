@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/router/presentation_request.h"
 
-#include "chrome/browser/media/router/media_source_helper.h"
+#include "chrome/common/media_router/media_source_helper.h"
 
 namespace media_router {
 

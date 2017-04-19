@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/common/media_router/dial_device_description_parser.mojom.h"
+#include "chrome/common/media_router/mojo/dial_device_description_parser.mojom.h"
 #include "content/public/browser/utility_process_mojo_client.h"
 
 namespace media_router {

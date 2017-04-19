@@ -10,10 +10,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/media/router/media_route.h"
-#include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/presentation_request.h"
 #include "chrome/browser/media/router/render_frame_host_id.h"
+#include "chrome/common/media_router/media_route.h"
 #include "content/public/browser/presentation_service_delegate.h"
 
 namespace content {
