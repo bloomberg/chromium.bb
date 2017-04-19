@@ -20,6 +20,7 @@
 #include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/wire_message.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -638,6 +639,8 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   base::Closure write_remote_characteristic_success_callback_;
   device::BluetoothRemoteGattCharacteristic::ErrorCallback
       write_remote_characteristic_error_callback_;
+
+  proximity_auth::ScopedDisableLoggingForTesting disable_logging_;
 };
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
