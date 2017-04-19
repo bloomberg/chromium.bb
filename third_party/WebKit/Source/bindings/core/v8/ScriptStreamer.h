@@ -72,10 +72,6 @@ class CORE_EXPORT ScriptStreamer final
   void SuppressStreaming();
   bool StreamingSuppressed() const { return streaming_suppressed_; }
 
-  v8::ScriptCompiler::CompileOptions GetCompileOptions() const {
-    return compile_options_;
-  }
-
   // Called by PendingScript when data arrives from the network.
   void NotifyAppendData(ScriptResource*);
   void NotifyFinished(Resource*);
@@ -83,10 +79,6 @@ class CORE_EXPORT ScriptStreamer final
   // Called by ScriptStreamingTask when it has streamed all data to V8 and V8
   // has processed it.
   void StreamingCompleteOnBackgroundThread();
-
-  v8::ScriptCompiler::StreamedSource::Encoding GetEncoding() const {
-    return encoding_;
-  }
 
   const String& ScriptURLString() const { return script_url_string_; }
   unsigned long ScriptResourceIdentifier() const {
@@ -96,8 +88,6 @@ class CORE_EXPORT ScriptStreamer final
   static void SetSmallScriptThresholdForTesting(size_t threshold) {
     small_script_threshold_ = threshold;
   }
-
-  static size_t SmallScriptThreshold() { return small_script_threshold_; }
 
  private:
   // Scripts whose first data chunk is smaller than this constant won't be
