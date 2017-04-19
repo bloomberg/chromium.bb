@@ -190,6 +190,7 @@ void ValidateAndConvertDisplayItems(const HeapVector<PaymentItem>& input,
 void ValidateAndConvertShippingOptions(
     const HeapVector<PaymentShippingOption>& input,
     Vector<PaymentShippingOptionPtr>& output,
+    ExecutionContext& execution_context,
     ExceptionState& exception_state) {
   HashSet<String> unique_ids;
   for (const PaymentShippingOption& option : input) {
@@ -199,6 +200,10 @@ void ValidateAndConvertShippingOptions(
     }
 
     if (unique_ids.Contains(option.id())) {
+      execution_context.AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel,
+          "Duplicate shipping option identifier '" + option.id() +
+              "' is treated as an invalid address indicator."));
       // Clear |output| instead of throwing an exception.
       output.clear();
       return;
@@ -496,8 +501,9 @@ void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase& input,
   }
 
   if (input.hasShippingOptions() && request_shipping) {
-    ValidateAndConvertShippingOptions(
-        input.shippingOptions(), output->shipping_options, exception_state);
+    ValidateAndConvertShippingOptions(input.shippingOptions(),
+                                      output->shipping_options,
+                                      execution_context, exception_state);
     if (exception_state.HadException())
       return;
   }
