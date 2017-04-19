@@ -32,17 +32,14 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node);
 // Make a deep copy of |node|, but don't include empty lists or dictionaries
 // in the copy. It's possible for this function to return NULL and it
 // expects |node| to always be non-NULL.
-std::unique_ptr<ListValue> CopyListWithoutEmptyChildren(const ListValue& list) {
-  std::unique_ptr<ListValue> copy;
-  for (const auto& entry : list) {
+std::unique_ptr<Value> CopyListWithoutEmptyChildren(const Value& list) {
+  Value copy(Value::Type::LIST);
+  for (const auto& entry : list.GetList()) {
     std::unique_ptr<Value> child_copy = CopyWithoutEmptyChildren(entry);
-    if (child_copy) {
-      if (!copy)
-        copy.reset(new ListValue);
-      copy->Append(std::move(child_copy));
-    }
+    if (child_copy)
+      copy.GetList().push_back(std::move(*child_copy));
   }
-  return copy;
+  return copy.GetList().empty() ? nullptr : MakeUnique<Value>(std::move(copy));
 }
 
 std::unique_ptr<DictionaryValue> CopyDictionaryWithoutEmptyChildren(
@@ -170,6 +167,14 @@ Value::Value(DictStorage&& in_dict) noexcept : type_(Type::DICTIONARY) {
   dict_.Init(std::move(in_dict));
 }
 
+Value::Value(const ListStorage& in_list) : type_(Type::LIST) {
+  list_.Init(in_list);
+}
+
+Value::Value(ListStorage&& in_list) noexcept : type_(Type::LIST) {
+  list_.Init(std::move(in_list));
+}
+
 Value& Value::operator=(const Value& that) {
   if (type_ == that.type_) {
     InternalCopyAssignFromSameType(that);
@@ -227,6 +232,16 @@ const std::string& Value::GetString() const {
 const Value::BlobStorage& Value::GetBlob() const {
   CHECK(is_blob());
   return *binary_value_;
+}
+
+Value::ListStorage& Value::GetList() {
+  CHECK(is_list());
+  return *list_;
+}
+
+const Value::ListStorage& Value::GetList() const {
+  CHECK(is_list());
+  return *list_;
 }
 
 size_t Value::GetSize() const {

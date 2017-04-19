@@ -30,6 +30,9 @@ TEST(ValuesTest, TestNothrow) {
   static_assert(
       std::is_nothrow_constructible<Value, Value::BlobStorage&&>::value,
       "IsNothrowMoveConstructibleFromBlob");
+  static_assert(
+      std::is_nothrow_constructible<Value, Value::ListStorage&&>::value,
+      "IsNothrowMoveConstructibleFromList");
   static_assert(std::is_nothrow_move_assignable<Value>::value,
                 "IsNothrowMoveAssignable");
 }
@@ -224,25 +227,14 @@ TEST(ValuesTest, CopyDictionary) {
 }
 
 TEST(ValuesTest, CopyList) {
-  // TODO(crbug.com/646113): Clean this up once ListValue switched to
-  // value semantics.
-  int copy;
-  ListValue value;
-  value.AppendInteger(123);
+  Value value(Value::ListStorage{Value(123)});
 
-  ListValue copied_value(value);
-  copied_value.GetInteger(0, &copy);
+  Value copied_value(value);
+  EXPECT_EQ(value, copied_value);
 
-  EXPECT_EQ(value.type(), copied_value.type());
-  EXPECT_EQ(123, copy);
-
-  auto blank = MakeUnique<Value>();
-
-  *blank = value;
-  EXPECT_EQ(Value::Type::LIST, blank->type());
-
-  static_cast<ListValue*>(blank.get())->GetInteger(0, &copy);
-  EXPECT_EQ(123, copy);
+  Value blank;
+  blank = value;
+  EXPECT_EQ(value, blank);
 }
 
 // Group of tests for the move constructors and move-assigmnent.
@@ -341,22 +333,17 @@ TEST(ValuesTest, MoveDictionary) {
 }
 
 TEST(ValuesTest, MoveList) {
-  // TODO(crbug.com/646113): Clean this up once ListValue switched to
-  // value semantics.
-  int move;
-  ListValue value;
-  value.AppendInteger(123);
-
-  ListValue moved_value(std::move(value));
-  moved_value.GetInteger(0, &move);
-
+  const Value::ListStorage list = {Value(123)};
+  Value value(list);
+  Value moved_value(std::move(value));
   EXPECT_EQ(Value::Type::LIST, moved_value.type());
-  EXPECT_EQ(123, move);
+  EXPECT_EQ(123, moved_value.GetList().back().GetInt());
 
   Value blank;
 
-  blank = ListValue();
+  blank = Value(list);
   EXPECT_EQ(Value::Type::LIST, blank.type());
+  EXPECT_EQ(123, blank.GetList().back().GetInt());
 }
 
 TEST(ValuesTest, Basic) {

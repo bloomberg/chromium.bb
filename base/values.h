@@ -98,6 +98,9 @@ class BASE_EXPORT Value {
 
   explicit Value(DictStorage&& in_dict) noexcept;
 
+  explicit Value(const ListStorage& in_list);
+  explicit Value(ListStorage&& in_list) noexcept;
+
   Value& operator=(const Value& that);
   Value& operator=(Value&& that) noexcept;
 
@@ -130,6 +133,9 @@ class BASE_EXPORT Value {
   double GetDouble() const;  // Implicitly converts from int if necessary.
   const std::string& GetString() const;
   const BlobStorage& GetBlob() const;
+
+  ListStorage& GetList();
+  const ListStorage& GetList() const;
 
   size_t GetSize() const;         // DEPRECATED, use GetBlob().size() instead.
   const char* GetBuffer() const;  // DEPRECATED, use GetBlob().data() instead.
