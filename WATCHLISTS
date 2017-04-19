@@ -383,6 +383,9 @@
                   'chrome/android/javatests/src/org/chromium/chrome/browser/contextualsearch/|' \
                   'components/contextual_search/',
     },
+    'content_network' : {
+      'filepath': 'content/network/',
+    },
     'cookie_monster': {
       'filepath': 'net/cookies/|'\
                   'chrome/browser/net/sqlite_persistent_cookie_store',
@@ -1913,6 +1916,9 @@
     'content_loader': ['loading-reviews@chromium.org',
                        'mmenke@chromium.org',
                        'rdsmith@chromium.org'],
+    'content_network': ['asanka@chromium.org',
+    		        'mmenke@chromium.org',
+    		        'rdsmith@chromium.org'],
     'content_renderer': ['mlamouri+watch-content@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org',
                       'mlamouri+watch-content@chromium.org',
