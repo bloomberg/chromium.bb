@@ -15,7 +15,7 @@ message ExternalPolicyData {
   // A URL where the policy data can be downloaded from.
   optional string download_url = 1;
 
-  // SHA-1 hash of the data at |download_url|. This is used to verify the
+  // SHA-256 hash of the data at |download_url|. This is used to verify the
   // integrity of the data, and to detect updates on the client side: the client
   // downloads the data when its local hash does not match |secure_hash|.
   optional bytes secure_hash = 2;
