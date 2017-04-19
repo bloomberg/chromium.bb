@@ -1,5 +1,5 @@
 #if defined(__i386__)
-.file	"src/crypto/aes/asm/aesni-x86.S"
+.file	"src/crypto/fipsmodule/aes/asm/aesni-x86.S"
 .text
 .globl	aesni_encrypt
 .hidden	aesni_encrypt
