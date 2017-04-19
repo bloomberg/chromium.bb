@@ -2517,6 +2517,13 @@ const char kFramebustingDescription[] =
     "unless they are same-origin or the iframe is processing a user "
     "gesture.";
 
+const char kVibrateRequiresUserGestureName[] =
+    "Requiring user gesture for the Vibration API";
+
+const char kVibrateRequiresUserGestureDescription[] =
+    "Block the Vibration API if no user gesture has been received on "
+    "the frame or any embedded frame.";
+
 #if defined(OS_ANDROID)
 
 const char kEnableVrShellName[] = "Enable Chrome VR.";

@@ -1,11 +1,17 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/user-gesture-utils.js"></script>
 <script src="vibration-utils.js"></script>
 </head>
 <body>
+<h4 id="test"></h4>
 <script>
 description('Tests for how patterns are handled in the Vibration API.');
+
+// Simulates a user click for vibrate to be allowed.
+var element = document.getElementById("test");
+simulateUserClick(element.offsetLeft + 2, element.offsetTop + 2);
 
 // A trailing pause is discarded from a pattern i.e. patterns of even
 // non-zero length are truncated by 1.

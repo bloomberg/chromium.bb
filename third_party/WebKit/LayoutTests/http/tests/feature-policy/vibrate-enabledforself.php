@@ -15,13 +15,22 @@ Header("Feature-Policy: {\"vibrate\": [\"self\"]}");
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
-  if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.dumpChildFramesAsText();
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.dumpChildFramesAsText();
+}
+
+function loaded() {
+  var iframes = document.getElementsByTagName('iframe');
+  for (var i = 0; i < iframes.length; ++i) {
+    var iframe = iframes[i];
+    // The iframe uses eventSender to emulate a user navigatation, which requires absolute coordinates.
+    iframe.contentWindow.postMessage({x: iframe.offsetLeft, y: iframe.offsetTop}, "*");
   }
+}
 </script>
 </head>
-<body>
+<body onload="loaded();">
 <iframe id="f1" src="resources/feature-policy-vibrate-enabled.html"></iframe>
 <iframe id="f2" src="http://localhost:8000/feature-policy/resources/feature-policy-vibrate-disabled.html"></iframe>
 </body>

@@ -226,6 +226,10 @@ const base::Feature kTokenBinding{"token-binding",
 const base::Feature kTouchpadAndWheelScrollLatching{
     "TouchpadAndWheelScrollLatching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether vibrate requires user gesture.
+const base::Feature kVibrateRequiresUserGesture{
+    "VibrateRequiresUserGesture", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables VR UI.
 const base::Feature kVrShell{"VrShell", base::FEATURE_DISABLED_BY_DEFAULT};
 

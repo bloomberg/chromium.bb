@@ -510,6 +510,12 @@ extern const char kTouchSelectionStrategyCharacter[];
 // direction in which the handle is dragged.
 extern const char kTouchSelectionStrategyDirection[];
 
+// Name of the flag that requires a user gesture for vibrate.
+extern const char kVibrateRequiresUserGestureName[];
+
+// Description of the flag that requires a user gesture for vibrate.
+extern const char kVibrateRequiresUserGestureDescription[];
+
 // Title for the flag to use the Online Wallet sandbox servers (instead of
 // production).
 extern const char kWalletServiceUseSandboxName[];

@@ -1,8 +1,14 @@
 <!DOCTYPE html>
+<h4 id="test"></h4>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/user-gesture-utils.js"></script>
+<script src="vibration-utils.js"></script>
 <script>
 'use strict';
+// Simulates a user click for vibrate to be allowed.
+var element = document.getElementById("test");
+simulateUserClick(element.offsetLeft + 2, element.offsetTop + 2);
 
 test(() => {
   // Initially the page is hidden and no vibration can be started.

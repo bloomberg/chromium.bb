@@ -415,6 +415,12 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
       return willBeRemoved("indexedDB.webkitGetDatabaseNames()", M60,
                            "5725741740195840");
 
+    case UseCounter::kVibrateWithoutUserGesture:
+      return willBeRemoved(
+          "A call to navigator.vibrate without user tap on the frame or any "
+          "embedded frame",
+          M60, "5644273861001216");
+
     case UseCounter::kChildSrcAllowedWorkerThatScriptSrcBlocked:
       return replacedWillBeRemoved("The 'child-src' directive",
                                    "the 'script-src' directive for Workers",

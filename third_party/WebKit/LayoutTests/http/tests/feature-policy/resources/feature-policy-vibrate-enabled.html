@@ -1,11 +1,26 @@
 <!DOCTYPE html>
 <head>
-  <title>Feature-Policy Vibrate Enabled</title>
-  <script src="/resources/testharness.js"></script>
-  <script src="/resources/testharnessreport.js"></script>
-</head>
+<title>Feature-Policy Vibrate Enabled</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/js-test-resources/user-gesture-utils.js"></script>
 <script>
-  test(function() {
-    assert_true(navigator.vibrate(200));
+
+function startTest(event) {
+  // Simulates a user click for vibrate to be allowed.
+  var element = document.getElementById("test");
+  simulateUserClick(element.offsetLeft + event.data.x + 2, element.offsetTop + event.data.y + 2);
+}
+
+function testVibrate() {
+  test(function () {
+      assert_true(navigator.vibrate(200));
   }, 'Any iframe may call navigator.vibrate when enabled.');
+}
+
+window.addEventListener("message", startTest, false);
 </script>
+<body>
+<button id="test" onclick="testVibrate();">Click to vibrate</button>
+</body>
+</html>

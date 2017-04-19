@@ -2,13 +2,20 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
+<script src="../resources/user-gesture-utils.js"></script>
 <script src="resources/vibration-helpers.js"></script>
+<script src="vibration-utils.js"></script>
+<h4 id="test"></h4>
 <script>
 
 'use strict';
 
 if (!window.testRunner)
   debug('This test cannot be run without the TestRunner');
+
+// Simulates a user click for vibrate to be allowed.
+var element = document.getElementById("test");
+simulateUserClick(element.offsetLeft + 2, element.offsetTop + 2);
 
 vibration_test(vibration => {
   assert_true(vibration instanceof Object);

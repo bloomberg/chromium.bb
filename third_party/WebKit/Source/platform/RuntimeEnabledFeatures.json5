@@ -948,6 +948,10 @@
       name: "V8IdleTasks",
     },
     {
+      name: "VibrateRequiresUserGesture",
+      status: "experimental",
+    },
+    {
       name: "VideoFullscreenDetection",
     },
     {

@@ -3,9 +3,23 @@
   <title>Feature-Policy Vibrate Disabled</title>
   <script src="/resources/testharness.js"></script>
   <script src="/resources/testharnessreport.js"></script>
-</head>
+<script src="/js-test-resources/user-gesture-utils.js"></script>
 <script>
-  test(function() {
+
+function startTest(event) {
+  // Simulates a user click for vibrate to be allowed.
+  var element = document.getElementById("test");
+  simulateUserClick(element.offsetLeft + event.data.x + 2, element.offsetTop + event.data.y + 2);
+}
+
+function testVibrate() {
+  test(function () {
     assert_false(navigator.vibrate(200));
   }, 'No iframe may call navigator.vibrate when disabled.');
+}
+
+window.addEventListener("message", startTest, true);
 </script>
+<body>
+<button id="test" onclick="testVibrate();">Click to vibrate</button>
+
