@@ -465,6 +465,7 @@ android_library("chrome_test_java") {
     "//third_party/WebKit/public:mojo_bindings_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_tools:android_support_annotations_java",
     "//third_party/android_tools:android_support_design_java",
     "//third_party/android_tools:android_support_transition_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
