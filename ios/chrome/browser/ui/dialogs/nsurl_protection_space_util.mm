@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
@@ -12,6 +11,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace ios_internal {
 namespace nsurlprotectionspace_util {

@@ -7,9 +7,13 @@
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/javascript_dialog_blocking_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 JavaScriptDialogPresenterImpl::JavaScriptDialogPresenterImpl(
     DialogPresenter* dialogPresenter)
-    : dialog_presenter_([dialogPresenter retain]) {}
+    : dialog_presenter_(dialogPresenter) {}
 
 JavaScriptDialogPresenterImpl::~JavaScriptDialogPresenterImpl() {}
 
