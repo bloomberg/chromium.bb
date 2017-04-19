@@ -288,6 +288,10 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("did_submit_in_last_frame", did_submit_in_last_frame_);
   state->SetBoolean("needs_impl_side_invalidation",
                     needs_impl_side_invalidation_);
+  state->SetBoolean("current_pending_tree_is_impl_side",
+                    current_pending_tree_is_impl_side_);
+  state->SetBoolean("previous_pending_tree_was_impl_side",
+                    previous_pending_tree_was_impl_side_);
   state->EndDictionary();
 }
 

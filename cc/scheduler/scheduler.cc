@@ -511,7 +511,6 @@ void Scheduler::ScheduleBeginImplFrameDeadline() {
 
   begin_impl_frame_deadline_mode_ =
       state_machine_.CurrentBeginImplFrameDeadlineMode();
-  base::TimeTicks deadline;
   switch (begin_impl_frame_deadline_mode_) {
     case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE:
       // No deadline.
@@ -519,18 +518,18 @@ void Scheduler::ScheduleBeginImplFrameDeadline() {
     case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE:
       // We are ready to draw a new active tree immediately.
       // We don't use Now() here because it's somewhat expensive to call.
-      deadline = base::TimeTicks();
+      deadline_ = base::TimeTicks();
       break;
     case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_REGULAR:
       // We are animating on the impl thread but we can wait for some time.
-      deadline = begin_impl_frame_tracker_.Current().deadline;
+      deadline_ = begin_impl_frame_tracker_.Current().deadline;
       break;
     case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_LATE:
       // We are blocked for one reason or another and we should wait.
       // TODO(brianderson): Handle long deadlines (that are past the next
       // frame's frame time) properly instead of using this hack.
-      deadline = begin_impl_frame_tracker_.Current().frame_time +
-                 begin_impl_frame_tracker_.Current().interval;
+      deadline_ = begin_impl_frame_tracker_.Current().frame_time +
+                  begin_impl_frame_tracker_.Current().interval;
       break;
     case SchedulerStateMachine::
         BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW:
@@ -544,9 +543,11 @@ void Scheduler::ScheduleBeginImplFrameDeadline() {
   TRACE_EVENT2("cc", "Scheduler::ScheduleBeginImplFrameDeadline", "mode",
                SchedulerStateMachine::BeginImplFrameDeadlineModeToString(
                    begin_impl_frame_deadline_mode_),
-               "deadline", deadline);
+               "deadline", deadline_);
 
-  base::TimeDelta delta = std::max(deadline - Now(), base::TimeDelta());
+  deadline_scheduled_at_ = Now();
+  base::TimeDelta delta =
+      std::max(deadline_ - deadline_scheduled_at_, base::TimeDelta());
   task_runner_->PostDelayedTask(
       FROM_HERE, begin_impl_frame_deadline_task_.callback(), delta);
 }
@@ -728,6 +729,17 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetString("begin_impl_frame_deadline_mode",
                    SchedulerStateMachine::BeginImplFrameDeadlineModeToString(
                        begin_impl_frame_deadline_mode_));
+
+  state->SetDouble("deadline_ms",
+                   (deadline_ - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble(
+      "deadline_scheduled_at_ms",
+      (deadline_scheduled_at_ - base::TimeTicks()).InMillisecondsF());
+
+  state->SetDouble("now_ms", (Now() - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("now_to_deadline_ms", (deadline_ - Now()).InMillisecondsF());
+  state->SetDouble("now_to_deadline_scheduled_at_ms",
+                   (deadline_scheduled_at_ - Now()).InMillisecondsF());
 
   state->BeginDictionary("begin_impl_frame_tracker");
   begin_impl_frame_tracker_.AsValueInto(state);

@@ -79,10 +79,11 @@ base::TimeDelta BeginFrameTracker::Interval() const {
 
 void BeginFrameTracker::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->SetInteger("updated_at_us",
-                    (current_updated_at_ - base::TimeTicks()).InMicroseconds());
-  state->SetInteger("finished_at_us", (current_finished_at_ - base::TimeTicks())
-                                          .InMicroseconds());
+  state->SetDouble("updated_at_ms",
+                   (current_updated_at_ - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble(
+      "finished_at_ms",
+      (current_finished_at_ - base::TimeTicks()).InMillisecondsF());
   if (HasFinished()) {
     state->SetString("state", "FINISHED");
     state->BeginDictionary("current_args_");

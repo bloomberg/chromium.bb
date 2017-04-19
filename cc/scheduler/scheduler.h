@@ -176,6 +176,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   SchedulerStateMachine::BeginImplFrameDeadlineMode
       begin_impl_frame_deadline_mode_ =
           SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE;
+  base::TimeTicks deadline_;
+  base::TimeTicks deadline_scheduled_at_;
 
   BeginFrameTracker begin_impl_frame_tracker_;
   BeginFrameArgs begin_main_frame_args_;
