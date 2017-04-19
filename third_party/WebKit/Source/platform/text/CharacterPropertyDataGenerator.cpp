@@ -20,7 +20,7 @@
 namespace blink {
 
 #if defined(USING_SYSTEM_ICU)
-static void generate(FILE*) {}
+static void Generate(FILE*) {}
 #else
 
 const UChar32 kMaxCodepoint = 0x10FFFF;

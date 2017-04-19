@@ -192,26 +192,26 @@ static void applyPatternAndFreeze(icu::UnicodeSet* unicodeSet,
   DCHECK_EQ(err, U_ZERO_ERROR);
 }
 
-bool Character::isEmoji(UChar32 ch) {
-  return Character::isEmojiTextDefault(ch) ||
-         Character::isEmojiEmojiDefault(ch);
+bool Character::IsEmoji(UChar32 ch) {
+  return Character::IsEmojiTextDefault(ch) ||
+         Character::IsEmojiEmojiDefault(ch);
 }
 
-bool Character::isEmojiTextDefault(UChar32 ch) {
+bool Character::IsEmojiTextDefault(UChar32 ch) {
   DEFINE_STATIC_LOCAL(icu::UnicodeSet, emojiTextSet, ());
   if (emojiTextSet.isEmpty())
     applyPatternAndFreeze(&emojiTextSet, kEmojiTextPattern);
-  return emojiTextSet.contains(ch) && !isEmojiEmojiDefault(ch);
+  return emojiTextSet.contains(ch) && !IsEmojiEmojiDefault(ch);
 }
 
-bool Character::isEmojiEmojiDefault(UChar32 ch) {
+bool Character::IsEmojiEmojiDefault(UChar32 ch) {
   DEFINE_STATIC_LOCAL(icu::UnicodeSet, emojiEmojiSet, ());
   if (emojiEmojiSet.isEmpty())
     applyPatternAndFreeze(&emojiEmojiSet, kEmojiEmojiPattern);
   return emojiEmojiSet.contains(ch);
 }
 
-bool Character::isEmojiModifierBase(UChar32 ch) {
+bool Character::IsEmojiModifierBase(UChar32 ch) {
   DEFINE_STATIC_LOCAL(icu::UnicodeSet, emojieModifierBaseSet, ());
   if (emojieModifierBaseSet.isEmpty())
     applyPatternAndFreeze(&emojieModifierBaseSet, kEmojiModifierBasePattern);
