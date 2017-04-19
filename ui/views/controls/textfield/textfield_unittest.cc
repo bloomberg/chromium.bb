@@ -2797,13 +2797,15 @@ TEST_F(TextfieldTest, SelectionClipboard) {
   EXPECT_EQ(gfx::Range(4, 4), textfield_->GetSelectedRange());
   EXPECT_TRUE(GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION).empty());
 
-  // Middle clicking in the selection should clear the clipboard and selection.
+  // Middle clicking in the selection should insert the selection clipboard
+  // contents into the middle of the selection, and move the cursor to the end
+  // of the pasted content.
   SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, "foo");
   textfield_->SelectRange(gfx::Range(2, 6));
   textfield_->OnMousePressed(middle);
-  EXPECT_STR_EQ("012301230123", textfield_->text());
-  EXPECT_EQ(gfx::Range(6, 6), textfield_->GetSelectedRange());
-  EXPECT_TRUE(GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION).empty());
+  EXPECT_STR_EQ("0123foo01230123", textfield_->text());
+  EXPECT_EQ(gfx::Range(7, 7), textfield_->GetSelectedRange());
+  EXPECT_STR_EQ("foo", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
 
   // Double and triple clicking should update the clipboard contents.
   textfield_->SetText(ASCIIToUTF16("ab cd ef"));

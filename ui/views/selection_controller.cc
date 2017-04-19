@@ -80,20 +80,14 @@ bool SelectionController::OnMousePressed(
     }
   }
 
-  if (handles_selection_clipboard_ && event.IsOnlyMiddleMouseButton()) {
-    if (render_text->IsPointInSelection(event.location())) {
-      delegate_->OnBeforePointerAction();
-      render_text->ClearSelection();
-      delegate_->UpdateSelectionClipboard();
-      delegate_->OnAfterPointerAction(false, true);
-    } else if (!delegate_->IsReadOnly()) {
-      delegate_->OnBeforePointerAction();
-      const bool selection_changed =
-          render_text->MoveCursorTo(event.location(), false);
-      const bool text_changed = delegate_->PasteSelectionClipboard();
-      delegate_->OnAfterPointerAction(text_changed,
-                                      selection_changed | text_changed);
-    }
+  if (handles_selection_clipboard_ && event.IsOnlyMiddleMouseButton() &&
+      !delegate_->IsReadOnly()) {
+    delegate_->OnBeforePointerAction();
+    const bool selection_changed =
+        render_text->MoveCursorTo(event.location(), false);
+    const bool text_changed = delegate_->PasteSelectionClipboard();
+    delegate_->OnAfterPointerAction(text_changed,
+                                    selection_changed | text_changed);
   }
 
   return true;
