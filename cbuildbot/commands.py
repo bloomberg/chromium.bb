@@ -1146,11 +1146,7 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
     subsystems_attr_str = ' or '.join(subsystem_attr)
 
     if suite != 'suite_attr_wrapper':
-      if type(suite) is str:
-        suite_attr_str = 'suite:%s' % suite
-      else:
-        suite_attr_str = ' or '.join(['suite:%s' % x for x in suite])
-
+      suite_attr_str = 'suite:%s' % suite
       attr_value = '(%s) and (%s)' % (suite_attr_str, subsystems_attr_str)
     else:
       attr_value = subsystems_attr_str
