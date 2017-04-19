@@ -99,6 +99,7 @@ class TaskTracker;
 
 class SequencedWorkerPool;
 class SimpleThread;
+class StackSamplingProfiler;
 class Thread;
 class ThreadTestHelper;
 
@@ -183,6 +184,7 @@ class BASE_EXPORT ThreadRestrictions {
   // BEGIN ALLOWED USAGE.
   friend class android_webview::AwFormDatabaseService;
   friend class android_webview::CookieManager;
+  friend class base::StackSamplingProfiler;
   friend class content::BrowserShutdownProfileDumper;
   friend class content::BrowserSurfaceViewManager;
   friend class content::BrowserTestBase;
