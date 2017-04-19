@@ -53,6 +53,17 @@ void WaitForOffset(CGFloat y_offset) {
   GREYAssert([condition waitWithTimeout:10], error_text);
 }
 
+// Loads the long page at |url|, scrolls to the top, and waits for the offset to
+// be {0, 0} before returning.
+void ScrollLongPageToTop(const GURL& url) {
+  // Load the page and swipe down.
+  [ShellEarlGrey loadURL:url];
+  [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+  // Waits for the {0, 0} offset.
+  WaitForOffset(0.0);
+}
+
 }  // namespace
 
 using web::test::HttpServer;
@@ -65,24 +76,18 @@ using web::test::HttpServer;
 
 // Tests that page scroll position of a page is restored upon returning to the
 // page via the back/forward buttons.
-// TODO(crbug.com/702410): This test flakily fails when it scrolls too far down
-// the page.
-- (void)FLAKY_testScrollPositionRestoring {
+- (void)testScrollPositionRestoring {
   web::test::SetUpFileBasedHttpServer();
 
-  // Load first URL which is a long page.
-  [ShellEarlGrey loadURL:HttpServer::MakeUrl(kLongPage1)];
-
   // Scroll the first page and verify the offset.
+  ScrollLongPageToTop(HttpServer::MakeUrl(kLongPage1));
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
       performAction:grey_scrollInDirection(kGREYDirectionDown, kOffset1)];
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
       assertWithMatcher:grey_scrollViewContentOffset(CGPointMake(0, kOffset1))];
 
-  // Load second URL, which is also a long page.
-  [ShellEarlGrey loadURL:HttpServer::MakeUrl(kLongPage2)];
-
   // Scroll the second page and verify the offset.
+  ScrollLongPageToTop(HttpServer::MakeUrl(kLongPage2));
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
       performAction:grey_scrollInDirection(kGREYDirectionDown, kOffset2)];
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
