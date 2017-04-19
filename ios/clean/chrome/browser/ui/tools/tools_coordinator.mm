@@ -22,6 +22,7 @@
 @implementation ToolsCoordinator
 @synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
+@synthesize toolsMenuConfiguration = _toolsMenuConfiguration;
 
 #pragma mark - BrowserCoordinator
 
@@ -30,7 +31,9 @@
   self.viewController.modalPresentationStyle = UIModalPresentationCustom;
   self.viewController.transitioningDelegate = self;
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
-  self.mediator = [[ToolsMediator alloc] initWithConsumer:self.viewController];
+  self.mediator =
+      [[ToolsMediator alloc] initWithConsumer:self.viewController
+                             andConfiguration:self.toolsMenuConfiguration];
   [super start];
 }
 

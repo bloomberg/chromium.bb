@@ -7,9 +7,12 @@
 
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
+@class ToolsMenuConfiguration;
+
 // Coordinator that shows an inteface for the user to select a
 // tool or action to use.
 @interface ToolsCoordinator : BrowserCoordinator
+@property(nonatomic, strong) ToolsMenuConfiguration* toolsMenuConfiguration;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLS_TOOLS_COORDINATOR_H_

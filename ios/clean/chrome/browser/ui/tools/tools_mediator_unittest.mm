@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
 
 #import "ios/clean/chrome/browser/ui/tools/tools_consumer.h"
+#import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -22,9 +23,14 @@ class ToolsMediatorTest : public PlatformTest {
 
 TEST_F(ToolsMediatorTest, TestSetConsumer) {
   id consumer = OCMProtocolMock(@protocol(ToolsConsumer));
-  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer];
+  id configuration = OCMClassMock([ToolsMenuConfiguration class]);
+  OCMStub([configuration isInTabSwitcher]).andReturn(YES);
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer
+                                     andConfiguration:configuration];
 
   [[consumer verify] setToolsMenuItems:[OCMArg any]];
+  [[consumer verify] setDisplayOverflowControls:NO];
 }
 
 }  // namespace

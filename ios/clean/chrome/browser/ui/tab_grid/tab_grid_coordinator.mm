@@ -20,6 +20,7 @@
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
+#import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "net/base/mac/url_conversions.h"
@@ -141,6 +142,10 @@
 - (void)showToolsMenu {
   ToolsCoordinator* toolsCoordinator = [[ToolsCoordinator alloc] init];
   [self addChildCoordinator:toolsCoordinator];
+  ToolsMenuConfiguration* menuConfiguration =
+      [[ToolsMenuConfiguration alloc] initWithDisplayView:nil];
+  menuConfiguration.inTabSwitcher = YES;
+  toolsCoordinator.toolsMenuConfiguration = menuConfiguration;
   [toolsCoordinator start];
   self.toolsMenuCoordinator = toolsCoordinator;
 }

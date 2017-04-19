@@ -29,12 +29,14 @@ const CGFloat kMenuItemHeight = 48;
 @property(nonatomic, strong) NSArray<ToolsMenuItem*>* menuItems;
 @property(nonatomic, strong)
     MenuOverflowControlsStackView* toolbarOverflowStackView;
+@property(nonatomic, assign) BOOL displayOverflowControls;
 @end
 
 @implementation MenuViewController
 @synthesize dispatcher = _dispatcher;
 @synthesize menuItems = _menuItems;
 @synthesize toolbarOverflowStackView = _toolbarOverflowStackView;
+@synthesize displayOverflowControls = _displayOverflowControls;
 
 - (void)loadView {
   CGRect frame;
@@ -79,7 +81,8 @@ const CGFloat kMenuItemHeight = 48;
 
   // Stack view to hold overflow ToolbarButtons.
   if (self.traitCollection.horizontalSizeClass ==
-      UIUserInterfaceSizeClassCompact) {
+          UIUserInterfaceSizeClassCompact &&
+      self.displayOverflowControls) {
     self.toolbarOverflowStackView =
         [[MenuOverflowControlsStackView alloc] init];
     // PLACEHOLDER: ToolsMenuButton might end up being part of the MenuVC's view
@@ -120,6 +123,10 @@ const CGFloat kMenuItemHeight = 48;
 
 - (void)setToolsMenuItems:(NSArray*)menuItems {
   _menuItems = menuItems;
+}
+
+- (void)displayOverflowControls:(BOOL)displayOverflowControls {
+  self.displayOverflowControls = displayOverflowControls;
 }
 
 @end

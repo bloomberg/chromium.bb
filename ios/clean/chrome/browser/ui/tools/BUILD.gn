@@ -20,6 +20,7 @@ source_set("tools") {
     "//ios/clean/chrome/browser/ui/presenters",
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators",
+    "//ios/shared/chrome/browser/ui/tools_menu",
   ]
 }
 
@@ -62,6 +63,7 @@ source_set("unit_tests") {
     ":tools_ui",
     "//base/test:test_support",
     "//ios/chrome/test/base",
+    "//ios/shared/chrome/browser/ui/tools_menu",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

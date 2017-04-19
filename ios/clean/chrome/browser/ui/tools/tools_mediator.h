@@ -8,11 +8,13 @@
 #import <Foundation/Foundation.h>
 
 @protocol ToolsConsumer;
+@class ToolsMenuConfiguration;
 
 // A mediator object that sets a ToolsMenuVC appeareance based on various data
 // sources.
 @interface ToolsMediator : NSObject
 - (instancetype)initWithConsumer:(id<ToolsConsumer>)consumer
+                andConfiguration:(ToolsMenuConfiguration*)menuConfiguration
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 @end
