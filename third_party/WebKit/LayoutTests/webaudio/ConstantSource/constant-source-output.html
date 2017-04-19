@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
   </head>
 
@@ -17,7 +17,7 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("constant source", function (taskDone) {
+      audit.define("constant source", (task, should) => {
         // Verify a constant source outputs the correct (fixed) constant.
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
         var node = new ConstantSourceNode(context, {
@@ -31,12 +31,12 @@
           var expected = new Float32Array(actual.length);
           expected.fill(node.offset.value);
 
-          Should("Basic: ConstantSourceNode({offset: 0.5})", actual)
+          should(actual, "Basic: ConstantSourceNode({offset: 0.5})")
             .beEqualToArray(expected);
-        }).then(taskDone);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("start/stop", function (taskDone) {
+      audit.define("start/stop", (task, should) => {
         // Verify a constant source starts and stops at the correct time and has
         // the correct (fixed) value.
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
@@ -62,31 +62,27 @@
           }
 
           var prefix = "start/stop: ";
-          var success = Should(prefix + "ConstantSourceNode frames [0, " +
-              startFrame + ")",
-              actual.slice(0, startFrame))
+          should(actual.slice(0, startFrame,
+              prefix + "ConstantSourceNode frames [0, " +
+              startFrame + ")"
+              ))
             .beConstantValueOf(0);
 
-          success = Should(prefix + "ConstantSourceNode frames [" + startFrame +
+          should(actual.slice(startFrame, stopFrame,
+              prefix + "ConstantSourceNode frames [" + startFrame +
               ", " +
-              stopFrame + ")",
-              actual.slice(startFrame, stopFrame))
-            .beConstantValueOf(1) && success;
+              stopFrame + ")"))
+            .beConstantValueOf(1);
 
-          success = Should(prefix + "ConstantSourceNode frames [" + stopFrame + ", " +
-              renderFrames + ")",
-              actual.slice(stopFrame))
-            .beConstantValueOf(0) && success;
-
-          Should("ConstantSourceNode started and stopped", success)
-            .summarize(
-              "at the correct times with the correct values",
-              "with the incorrect times or values");
-        }).then(taskDone);
+          should(actual.slice(stopFrame),
+              prefix + "ConstantSourceNode frames [" + stopFrame + ", " +
+              renderFrames + ")")
+            .beConstantValueOf(0);
+        }).then(() => task.done());
         
       });
 
-      audit.defineTask("basic automation", function (taskDone) {
+      audit.define("basic automation", (task, should) => {
         // Verify that automation works as expected.
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
         var source = context.createConstantSource();
@@ -107,26 +103,21 @@
             var rampEndFrame = Math.ceil(rampEndTime * context.sampleRate);
             var prefix = "Automation: ";
 
-            var success = Should(prefix + "ConstantSourceNode.linearRamp(1, 0.5)",
-                actual.slice(0, rampEndFrame))
+            should(actual.slice(0, rampEndFrame,
+                prefix + "ConstantSourceNode.linearRamp(1, 0.5)"))
               .beCloseToArray(expected, {
                 // Experimentally determined threshold..
                 relativeThreshold: 7.1610e-7
               });
 
-            success = Should(prefix + "ConstantSourceNode after ramp",
-                actual.slice(rampEndFrame))
-              .beConstantValueOf(1) && success;
-
-            Should("ConstantSourceNode automation", success)
-              .summarize(
-                "produced the correct values",
-                "did not produce the correct values");
+            should(actual.slice(rampEndFrame),
+                prefix + "ConstantSourceNode after ramp")
+              .beConstantValueOf(1);
           })
-          .then(taskDone);
+          .then(() => task.done());
       });
       
-      audit.defineTask("connected audioparam", function (taskDone) {
+      audit.define("connected audioparam", (task, should) => {
         // Verify the constant source output with connected AudioParam produces
         // the correct output.
         var context = new OfflineAudioContext(2, renderFrames, sampleRate)
@@ -155,32 +146,26 @@
             // The expected output should be oscillator + 1 because offset
             // is 1.
             expected = expected.map(x => 1 + x);
-            var success = true;
             var prefix = "Connected param: ";
 
             // The initial part of the output should be silent because the
             // source node hasn't started yet.
-            success = Should(prefix + "ConstantSourceNode frames [0, " +
-                sourceStartFrame + ")", actual.slice(0, sourceStartFrame)
-              )
+            should(actual.slice(0, sourceStartFrame),
+                prefix + "ConstantSourceNode frames [0, " +
+                sourceStartFrame + ")")
               .beConstantValueOf(0);
             // The rest of the output should be the same as the oscillator (in
             // channel 1)
-            success = Should(prefix + "ConstantSourceNode frames [" +
-                sourceStartFrame + ", " + renderFrames + ")",
-                actual.slice(sourceStartFrame))
+            should(actual.slice(sourceStartFrame),
+                prefix + "ConstantSourceNode frames [" +
+                sourceStartFrame + ", " + renderFrames + ")")
               .beCloseToArray(expected.slice(sourceStartFrame), 0);
 
-            Should("ConstantSourceNode with connected AudioParam",
-                success)
-              .summarize(
-                "had the expected output",
-                "did not have the expected output");
           })
-          .then(taskDone);
+          .then(() => task.done());
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
