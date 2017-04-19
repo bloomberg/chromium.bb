@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
@@ -54,15 +53,16 @@ enum TouchBarAction {
 };
 
 // The touch bar's identifier.
-NSString* const kBrowserWindowTouchBarId = @"browser-window";
+const NSTouchBarCustomizationIdentifier kBrowserWindowTouchBarId =
+    @"BrowserWindowTouchBarId";
 
 // Touch bar items identifiers.
-NSString* const kBackForwardTouchId = @"BACK-FWD";
-NSString* const kReloadOrStopTouchId = @"RELOAD-STOP";
-NSString* const kHomeTouchId = @"HOME";
-NSString* const kSearchTouchId = @"SEARCH";
-NSString* const kStarTouchId = @"BOOKMARK";
-NSString* const kNewTabTouchId = @"NEW-TAB";
+const NSTouchBarItemIdentifier kBackForwardTouchId = @"BackForwardTouchId";
+const NSTouchBarItemIdentifier kReloadOrStopTouchId = @"ReloadOrStopTouchId";
+const NSTouchBarItemIdentifier kHomeTouchId = @"HomeTouchId";
+const NSTouchBarItemIdentifier kSearchTouchId = @"SearchTouchId";
+const NSTouchBarItemIdentifier kStarTouchId = @"StarTouchId";
+const NSTouchBarItemIdentifier kNewTabTouchId = @"NewTabTouchId";
 
 // The button indexes in the back and forward segment control.
 const int kBackSegmentIndex = 0;
@@ -75,8 +75,9 @@ const SkColor kTouchBarStarActiveColor = gfx::kGoogleBlue500;
 // The size of the touch bar icons.
 const int kTouchBarIconSize = 16;
 
-// The min width of the search button in the touch bar.
-const int kSearchBtnMinWidth = 205;
+// The width of the search button in the touch bar.
+const int kSearchBtnWidthWithHomeBtn = 205;
+const int kSearchBtnWidthWithoutHomeBtn = 280;
 
 // Creates an NSImage from the given VectorIcon.
 NSImage* CreateNSImageFromIcon(const gfx::VectorIcon& icon,
@@ -99,18 +100,6 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
   button.tag = command;
   [button setAccessibilityLabel:l10n_util::GetNSString(tooltip_id)];
   return button;
-}
-
-NSString* GetTouchBarId(NSString* const touch_bar_id) {
-  NSString* chrome_bundle_id =
-      base::SysUTF8ToNSString(base::mac::BaseBundleID());
-  return [NSString stringWithFormat:@"%@.%@", chrome_bundle_id, touch_bar_id];
-}
-
-NSString* GetTouchBarItemId(NSString* const touch_bar_id,
-                            NSString* const item_id) {
-  return [NSString
-      stringWithFormat:@"%@-%@", GetTouchBarId(touch_bar_id), item_id];
 }
 
 TouchBarAction TouchBarActionFromCommand(int command) {
@@ -216,29 +205,22 @@ class HomePrefNotificationBridge {
 
   base::scoped_nsobject<NSTouchBar> touchBar(
       [[NSClassFromString(@"NSTouchBar") alloc] init]);
-  NSMutableArray* customIdentifiers = [NSMutableArray arrayWithCapacity:7];
-  NSMutableArray* defaultIdentifiers = [NSMutableArray arrayWithCapacity:6];
-
-  NSArray* touchBarItems = @[
-    kBackForwardTouchId, kReloadOrStopTouchId, kHomeTouchId, kSearchTouchId,
-    kStarTouchId, kNewTabTouchId
-  ];
-
-  for (NSString* item in touchBarItems) {
-    NSString* itemIdentifier =
-        GetTouchBarItemId(kBrowserWindowTouchBarId, item);
-    [customIdentifiers addObject:itemIdentifier];
-
-    // Don't add the home button if it's not shown in the toolbar.
-    if (showHomeButton_.GetValue() || ![item isEqualTo:kHomeTouchId])
-      [defaultIdentifiers addObject:itemIdentifier];
+  NSArray* touchBarItemIdentifiers;
+  if (showHomeButton_.GetValue()) {
+    touchBarItemIdentifiers = @[
+      kBackForwardTouchId, kReloadOrStopTouchId, kHomeTouchId, kSearchTouchId,
+      kStarTouchId, kNewTabTouchId
+    ];
+  } else {
+    touchBarItemIdentifiers = @[
+      kBackForwardTouchId, kReloadOrStopTouchId, kSearchTouchId, kStarTouchId,
+      kNewTabTouchId
+    ];
   }
 
-  [customIdentifiers addObject:NSTouchBarItemIdentifierFlexibleSpace];
-
-  [touchBar setCustomizationIdentifier:GetTouchBarId(kBrowserWindowTouchBarId)];
-  [touchBar setDefaultItemIdentifiers:defaultIdentifiers];
-  [touchBar setCustomizationAllowedItemIdentifiers:customIdentifiers];
+  [touchBar setCustomizationIdentifier:kBrowserWindowTouchBarId];
+  [touchBar setDefaultItemIdentifiers:touchBarItemIdentifiers];
+  [touchBar setCustomizationAllowedItemIdentifiers:touchBarItemIdentifiers];
   [touchBar setDelegate:self];
 
   return touchBar.autorelease();
@@ -251,35 +233,23 @@ class HomePrefNotificationBridge {
 
   base::scoped_nsobject<NSCustomTouchBarItem> touchBarItem([[NSClassFromString(
       @"NSCustomTouchBarItem") alloc] initWithIdentifier:identifier]);
-  if ([identifier hasSuffix:kBackForwardTouchId]) {
+  if ([identifier isEqualTo:kBackForwardTouchId]) {
     [touchBarItem setView:[self backOrForwardTouchBarView]];
-    [touchBarItem setCustomizationLabel:
-                      l10n_util::GetNSString(
-                          IDS_TOUCH_BAR_BACK_FORWARD_CUSTOMIZATION_LABEL)];
-  } else if ([identifier hasSuffix:kReloadOrStopTouchId]) {
+  } else if ([identifier isEqualTo:kReloadOrStopTouchId]) {
     const gfx::VectorIcon& icon =
         isPageLoading_ ? kNavigateStopIcon : kNavigateReloadIcon;
     int commandId = isPageLoading_ ? IDC_STOP : IDC_RELOAD;
     int tooltipId = isPageLoading_ ? IDS_TOOLTIP_STOP : IDS_TOOLTIP_RELOAD;
     [touchBarItem
         setView:CreateTouchBarButton(icon, self, commandId, tooltipId)];
-    [touchBarItem setCustomizationLabel:
-                      l10n_util::GetNSString(
-                          IDS_TOUCH_BAR_STOP_RELOAD_CUSTOMIZATION_LABEL)];
-  } else if ([identifier hasSuffix:kHomeTouchId]) {
+  } else if ([identifier isEqualTo:kHomeTouchId]) {
     [touchBarItem setView:CreateTouchBarButton(kNavigateHomeIcon, self,
                                                IDC_HOME, IDS_TOOLTIP_HOME)];
-    [touchBarItem
-        setCustomizationLabel:l10n_util::GetNSString(
-                                  IDS_TOUCH_BAR_HOME_CUSTOMIZATION_LABEL)];
-  } else if ([identifier hasSuffix:kNewTabTouchId]) {
+  } else if ([identifier isEqualTo:kNewTabTouchId]) {
     [touchBarItem
         setView:CreateTouchBarButton(kNewTabMacTouchbarIcon, self, IDC_NEW_TAB,
                                      IDS_TOOLTIP_NEW_TAB)];
-    [touchBarItem
-        setCustomizationLabel:l10n_util::GetNSString(
-                                  IDS_TOUCH_BAR_NEW_TAB_CUSTOMIZATION_LABEL)];
-  } else if ([identifier hasSuffix:kStarTouchId]) {
+  } else if ([identifier isEqualTo:kStarTouchId]) {
     const gfx::VectorIcon& icon =
         isStarred_ ? toolbar::kStarActiveIcon : toolbar::kStarIcon;
     SkColor iconColor =
@@ -287,13 +257,8 @@ class HomePrefNotificationBridge {
     int tooltipId = isStarred_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
     [touchBarItem setView:CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE,
                                                tooltipId, iconColor)];
-    [touchBarItem
-        setCustomizationLabel:l10n_util::GetNSString(
-                                  IDS_TOUCH_BAR_BOOKMARK_CUSTOMIZATION_LABEL)];
-  } else if ([identifier hasSuffix:kSearchTouchId]) {
+  } else if ([identifier isEqualTo:kSearchTouchId]) {
     [touchBarItem setView:[self searchTouchBarView]];
-    [touchBarItem setCustomizationLabel:l10n_util::GetNSString(
-                                            IDS_TOUCH_BAR_GOOGLE_SEARCH)];
   }
 
   return touchBarItem.autorelease();
@@ -364,12 +329,9 @@ class HomePrefNotificationBridge {
                          action:@selector(executeCommand:)];
   searchButton.imageHugsTitle = YES;
   searchButton.tag = IDC_FOCUS_LOCATION;
-  [searchButton.widthAnchor
-      constraintGreaterThanOrEqualToConstant:kSearchBtnMinWidth]
-      .active = YES;
-  [searchButton
-      setContentHuggingPriority:1.0
-                 forOrientation:NSLayoutConstraintOrientationHorizontal];
+  int width = showHomeButton_.GetValue() ? kSearchBtnWidthWithHomeBtn
+                                         : kSearchBtnWidthWithoutHomeBtn;
+  [searchButton.widthAnchor constraintEqualToConstant:width].active = YES;
   return searchButton;
 }
 

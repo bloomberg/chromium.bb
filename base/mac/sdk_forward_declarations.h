@@ -187,7 +187,6 @@ BASE_EXPORT extern NSString* const CIDetectorTypeText;
 
 @interface NSObject (ElCapitanSDK)
 - (NSLayoutConstraint*)constraintEqualToConstant:(CGFloat)c;
-- (NSLayoutConstraint*)constraintGreaterThanOrEqualToConstant:(CGFloat)c;
 @end
 
 @interface NSView (ElCapitanSDK)
@@ -245,10 +244,6 @@ BASE_EXPORT extern NSString* const CIDetectorTypeText;
                               trackingMode:(NSSegmentSwitchTracking)trackingMode
                                     target:(id)target
                                     action:(SEL)action;
-@end
-
-@interface NSApplication (SierraPointOneSDK)
-@property BOOL automaticCustomizeTouchBarMenuItemEnabled;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_12_1
