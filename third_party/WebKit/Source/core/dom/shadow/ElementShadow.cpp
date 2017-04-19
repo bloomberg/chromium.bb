@@ -28,6 +28,7 @@
 
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/shadow/ElementShadowV0.h"
 #include "core/frame/Deprecation.h"
@@ -79,7 +80,12 @@ ShadowRoot& ElementShadow::AddShadowRoot(Element& shadow_host,
   shadow_root->SetParentOrShadowHostNode(&shadow_host);
   shadow_root->SetParentTreeScope(shadow_host.GetTreeScope());
   AppendShadowRoot(*shadow_root);
-  SetNeedsDistributionRecalc();
+  if (type == ShadowRootType::V0) {
+    SetNeedsDistributionRecalc();
+  } else {
+    for (Node& child : NodeTraversal::ChildrenOf(shadow_host))
+      child.LazyReattachIfAttached();
+  }
 
   shadow_root->InsertedInto(&shadow_host);
   shadow_host.SetChildNeedsStyleRecalc();
