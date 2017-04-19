@@ -26,9 +26,9 @@ shouldBeTrue("(new File([], '')) instanceof window.File");
 shouldBeTrue("(new File([], document)) instanceof window.File");
 
 // Test invalid file parts.
-shouldThrow("new File('hello', 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument is neither an array, nor does it have indexed properties."');
-shouldThrow("new File(0, 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument is neither an array, nor does it have indexed properties."');
-shouldThrow("new File(null, 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument is neither an array, nor does it have indexed properties."');
+shouldThrow("new File('hello', 'world.html')", '"TypeError: Failed to construct \'File\': The provided value cannot be converted to a sequence."');
+shouldThrow("new File(0, 'world.html')", '"TypeError: Failed to construct \'File\': The provided value cannot be converted to a sequence."');
+shouldThrow("new File(null, 'world.html')", '"TypeError: Failed to construct \'File\': The provided value cannot be converted to a sequence."');
 
 // Test valid file parts.
 shouldBeTrue("(new File([], 'world.html')) instanceof window.File");
@@ -151,8 +151,15 @@ shouldBe("new File([new Blob([(new Int32Array(100)).buffer]), new File([new Uint
 shouldBe("new Blob([new Blob([new Int32Array(100)]), new File([new Uint16Array(100)], 'world.txt'), new Uint8Array(100), new Float32Array(100), new DataView(new ArrayBuffer(100))]).size", "1200");
 shouldBe("new Blob([new Blob([(new Int32Array(100)).buffer]), new File([new Uint16Array(100).buffer], 'world.txt'), (new Uint8Array(100)).buffer, (new Float32Array(100)).buffer, (new DataView(new ArrayBuffer(100))).buffer]).size", "1200");
 
-// Test passing blob parts in objects with indexed properties.
-// (This depends on the bindings code handling of sequence<T>)
-shouldBe("new File({length: 0}, 'world.txt').size", "0");
-shouldBe("new File({length: 1, 0: 'string'}, 'world.txt').size", "6");
+// Custom iterators, converted via the bindings code to sequence<T>.
+function createIterable(iterations) {
+  return {
+    [Symbol.iterator]() {
+      var i = 0;
+      return {next: () => iterations[i++]};
+    },
+  };
+}
+shouldBe("new File(createIterable([{done:true}]), 'world.txt').size", "0");
+shouldBe("new File(createIterable([{done:false, value:'string'},{done:true}]), 'world.txt').size", "6");
 </script>

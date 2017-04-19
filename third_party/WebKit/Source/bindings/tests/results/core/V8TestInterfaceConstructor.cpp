@@ -112,15 +112,15 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (exceptionState.HadException())
     return;
 
-  sequenceStringArg = ToImplArray<Vector<String>>(info[4], 5, info.GetIsolate(), exceptionState);
+  sequenceStringArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[4], exceptionState);
   if (exceptionState.HadException())
     return;
 
-  sequenceDictionaryArg = ToImplArray<Vector<Dictionary>>(info[5], 6, info.GetIsolate(), exceptionState);
+  sequenceDictionaryArg = NativeValueTraits<IDLSequence<Dictionary>>::NativeValue(info.GetIsolate(), info[5], exceptionState);
   if (exceptionState.HadException())
     return;
 
-  sequenceLongOrTestDictionaryArg = ToImplArray<HeapVector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
+  sequenceLongOrTestDictionaryArg = NativeValueTraits<IDLSequence<LongOrTestDictionary>>::NativeValue(info.GetIsolate(), info[6], exceptionState);
   if (exceptionState.HadException())
     return;
 

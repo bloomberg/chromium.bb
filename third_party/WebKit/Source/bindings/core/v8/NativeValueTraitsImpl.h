@@ -283,17 +283,121 @@ struct NativeValueTraits<IDLSequence<T>>
   // Nondependent types need to be explicitly qualified to be accessible.
   using typename NativeValueTraitsBase<IDLSequence<T>>::ImplType;
 
+  // https://heycam.github.io/webidl/#es-sequence
   static ImplType NativeValue(v8::Isolate* isolate,
                               v8::Local<v8::Value> value,
                               ExceptionState& exception_state) {
-    return NativeValue(isolate, value, exception_state, 0);
+    if (!value->IsObject()) {
+      exception_state.ThrowTypeError(
+          "The provided value cannot be converted to a sequence.");
+      return ImplType();
+    }
+
+    ImplType result;
+    // TODO(rakuco): Checking for IsArray() may not be enough. Other engines
+    // also prefer regular array iteration over a custom @@iterator when the
+    // latter is defined, but it is not clear if this is a valid optimization.
+    if (value->IsArray()) {
+      ConvertSequenceFast(isolate, value.As<v8::Array>(), exception_state,
+                          result);
+    } else {
+      ConvertSequenceSlow(isolate, value.As<v8::Object>(), exception_state,
+                          result);
+    }
+
+    if (exception_state.HadException())
+      return ImplType();
+    return result;
   }
 
-  static ImplType NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state,
-                              int index) {
-    return ToImplArray<ImplType, T>(value, index, isolate, exception_state);
+ private:
+  // Fast case: we're interating over an Array that adheres to
+  // %ArrayIteratorPrototype%'s protocol.
+  static void ConvertSequenceFast(v8::Isolate* isolate,
+                                  v8::Local<v8::Array> v8_array,
+                                  ExceptionState& exception_state,
+                                  ImplType& result) {
+    const uint32_t length = v8_array->Length();
+    if (length > ImplType::MaxCapacity()) {
+      exception_state.ThrowRangeError("Array length exceeds supported limit.");
+      return;
+    }
+    result.ReserveInitialCapacity(length);
+    v8::TryCatch block(isolate);
+    for (uint32_t i = 0; i < length; ++i) {
+      v8::Local<v8::Value> element;
+      if (!v8_array->Get(isolate->GetCurrentContext(), i).ToLocal(&element)) {
+        exception_state.RethrowV8Exception(block.Exception());
+        return;
+      }
+      result.UncheckedAppend(
+          NativeValueTraits<T>::NativeValue(isolate, element, exception_state));
+      if (exception_state.HadException())
+        return;
+    }
+  }
+
+  // Slow case: follow WebIDL's "Creating a sequence from an iterable" steps to
+  // iterate through each element.
+  // https://heycam.github.io/webidl/#create-sequence-from-iterable
+  static void ConvertSequenceSlow(v8::Isolate* isolate,
+                                  v8::Local<v8::Object> v8_object,
+                                  ExceptionState& exception_state,
+                                  ImplType& result) {
+    v8::TryCatch block(isolate);
+
+    v8::Local<v8::Object> iterator =
+        GetEsIterator(isolate, v8_object, exception_state);
+    if (exception_state.HadException())
+      return;
+
+    v8::Local<v8::String> next_key = V8String(isolate, "next");
+    v8::Local<v8::String> value_key = V8String(isolate, "value");
+    v8::Local<v8::String> done_key = V8String(isolate, "done");
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    while (true) {
+      v8::Local<v8::Value> next;
+      if (!iterator->Get(context, next_key).ToLocal(&next)) {
+        exception_state.RethrowV8Exception(block.Exception());
+        return;
+      }
+      if (!next->IsFunction()) {
+        exception_state.ThrowTypeError("Iterator.next should be callable.");
+        return;
+      }
+      v8::Local<v8::Value> next_result;
+      if (!V8ScriptRunner::CallFunction(next.As<v8::Function>(),
+                                        ToExecutionContext(context), iterator,
+                                        0, nullptr, isolate)
+               .ToLocal(&next_result)) {
+        exception_state.RethrowV8Exception(block.Exception());
+        return;
+      }
+      if (!next_result->IsObject()) {
+        exception_state.ThrowTypeError(
+            "Iterator.next() did not return an object.");
+        return;
+      }
+      v8::Local<v8::Object> result_object = next_result.As<v8::Object>();
+      v8::Local<v8::Value> element;
+      v8::Local<v8::Value> done;
+      if (!result_object->Get(context, value_key).ToLocal(&element) ||
+          !result_object->Get(context, done_key).ToLocal(&done)) {
+        exception_state.RethrowV8Exception(block.Exception());
+        return;
+      }
+      bool done_boolean;
+      if (!done->BooleanValue(context).To(&done_boolean)) {
+        exception_state.RethrowV8Exception(block.Exception());
+        return;
+      }
+      if (done_boolean)
+        break;
+      result.emplace_back(
+          NativeValueTraits<T>::NativeValue(isolate, element, exception_state));
+      if (exception_state.HadException())
+        return;
+    }
   }
 };
 

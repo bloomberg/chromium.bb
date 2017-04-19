@@ -1,21 +1,19 @@
 This is a testharness.js-based test.
-Found 61 tests; 54 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 61 tests; 57 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Blob interface object 
 PASS Blob constructor with no arguments 
 PASS Blob constructor with no arguments, without 'new' 
 PASS Blob constructor without brackets 
 PASS Blob constructor with undefined as first argument 
-FAIL Passing non-objects, Dates and RegExps for blobParts should throw a TypeError. assert_throws: Should throw for argument object "[object Object]". function "function () {
-      new Blob(arg);
-    }" did not throw
-FAIL A plain object with @@iterator should be treated as a sequence for the blobParts argument. Failed to construct 'Blob': The 1st argument is neither an array, nor does it have indexed properties.
+PASS Passing non-objects, Dates and RegExps for blobParts should throw a TypeError. 
+PASS A plain object with @@iterator should be treated as a sequence for the blobParts argument. 
 PASS A plain object with @@iterator and a length property should be treated as a sequence for the blobParts argument. 
 PASS A String object should be treated as a sequence for the blobParts argument. 
 PASS A Uint8Array object should be treated as a sequence for the blobParts argument. 
 PASS The length getter should be invoked and any exceptions should be propagated. 
 PASS A platform object that supports indexed properties should be treated as a sequence for the blobParts argument (overwritten 'length'.) 
 PASS ToUint32 should be applied to the length and any exceptions should be propagated. 
-FAIL Getters and value conversions should happen in order until an exception is thrown. assert_array_equals: lengths differ, expected 8 got 5
+PASS Getters and value conversions should happen in order until an exception is thrown. 
 PASS ToString should be called on elements of the blobParts array and any exceptions should be propagated. 
 FAIL Changes to the blobParts array should be reflected in the returned Blob (pop). assert_equals: expected 4 but got 13
 FAIL Changes to the blobParts array should be reflected in the returned Blob (unshift). assert_equals: expected 4 but got 2

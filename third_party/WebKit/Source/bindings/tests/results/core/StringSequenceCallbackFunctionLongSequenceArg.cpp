@@ -78,7 +78,7 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* script
     return false;
   }
 
-  Vector<String> cppValue = ToImplArray<Vector<String>>(v8ReturnValue, 0, m_scriptState->GetIsolate(), exceptionState);
+  Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(m_scriptState->GetIsolate(), v8ReturnValue, exceptionState);
   if (exceptionState.HadException())
     return false;
   returnValue = cppValue;

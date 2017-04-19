@@ -7,6 +7,17 @@ throwOnGetLengthObject.__defineGetter__("length", function () { throw "Cannot ge
 var throwOnGetZeroObject = { length: 1 };
 throwOnGetZeroObject.__defineGetter__("0", function () { throw "Cannot get 0 property of this object."; });
 
+function createIterable(iterations) {
+    return {
+        [Symbol.iterator]() {
+            var i = 0;
+            return {next: () => iterations[i++]};
+        },
+    };
+}
+var emptyIterableObject = createIterable([{done: true}]);
+var singleItemIterableObject = createIterable([{done: false, value: "arg0"}, {done: true}]);
+
 var expectNoException = [
     'null',
     'undefined',
@@ -16,8 +27,8 @@ var expectNoException = [
     '"", undefined',
     '"", []',
     '"", [ "arg0" ]',
-    '"", { length: 0 }',
-    '"", { length: 1, 0: "arg0" }',
+    '"", emptyIterableObject',
+    '"", singleItemIterableObject',
     '"", null, null',
     '"", null, undefined',
     '"", null, function(){}',
@@ -35,6 +46,8 @@ var expectException = [
     '"", 0',
     '"", ""',
     '"", { }',
+    '"", { length: 0 }',
+    '"", { length: 1, 0: "arg0" }',
     '"", null, 0',
     '"", null, ""',
     '"", null, { }',

@@ -273,6 +273,184 @@ TEST(NativeValueTraitsImplTest, IDLRecord) {
   }
 }
 
+TEST(NativeValueTraitsImplTest, IDLSequence) {
+  V8TestingScope scope;
+  {
+    v8::Local<v8::Array> v8_array = v8::Array::New(scope.GetIsolate());
+    NonThrowableExceptionState exception_state;
+    const auto& sequence =
+        NativeValueTraits<IDLSequence<IDLOctet>>::NativeValue(
+            scope.GetIsolate(), v8_array, exception_state);
+    EXPECT_TRUE(sequence.IsEmpty());
+  }
+  {
+    v8::Local<v8::Array> v8_array = v8::Array::New(scope.GetIsolate());
+    for (int32_t i = 0; i < 5; ++i) {
+      v8_array->Set(scope.GetContext(), ToV8(&scope, i), ToV8(&scope, i))
+          .ToChecked();
+    }
+    NonThrowableExceptionState exception_state;
+    const auto& sequence = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(
+        scope.GetIsolate(), v8_array, exception_state);
+    EXPECT_EQ(Vector<int32_t>({0, 1, 2, 3, 4}), sequence);
+  }
+  {
+    const double double_pi = 3.141592653589793238;
+    const float float_pi = double_pi;
+    v8::Local<v8::Array> v8_real_array = v8::Array::New(scope.GetIsolate(), 1);
+    v8_real_array
+        ->Set(scope.GetContext(), ToV8(&scope, 0), ToV8(&scope, double_pi))
+        .ToChecked();
+
+    NonThrowableExceptionState exception_state;
+    Vector<double> double_vector =
+        NativeValueTraits<IDLSequence<IDLDouble>>::NativeValue(
+            scope.GetIsolate(), v8_real_array, exception_state);
+    EXPECT_EQ(1U, double_vector.size());
+    EXPECT_EQ(double_pi, double_vector[0]);
+
+    Vector<float> float_vector =
+        NativeValueTraits<IDLSequence<IDLFloat>>::NativeValue(
+            scope.GetIsolate(), v8_real_array, exception_state);
+    EXPECT_EQ(1U, float_vector.size());
+    EXPECT_EQ(float_pi, float_vector[0]);
+  }
+  {
+    v8::Local<v8::Array> v8_array = v8::Array::New(scope.GetIsolate(), 3);
+    EXPECT_TRUE(v8_array
+                    ->Set(scope.GetContext(), ToV8(&scope, 0),
+                          ToV8(&scope, "Vini, vidi, vici."))
+                    .ToChecked());
+    EXPECT_TRUE(
+        v8_array->Set(scope.GetContext(), ToV8(&scope, 1), ToV8(&scope, 65535))
+            .ToChecked());
+    EXPECT_TRUE(
+        v8_array->Set(scope.GetContext(), ToV8(&scope, 2), ToV8(&scope, 0.125))
+            .ToChecked());
+
+    NonThrowableExceptionState exception_state;
+    Vector<ScriptValue> script_value_vector =
+        NativeValueTraits<IDLSequence<ScriptValue>>::NativeValue(
+            scope.GetIsolate(), v8_array, exception_state);
+    EXPECT_EQ(3U, script_value_vector.size());
+    String report_on_zela;
+    EXPECT_TRUE(script_value_vector[0].ToString(report_on_zela));
+    EXPECT_EQ("Vini, vidi, vici.", report_on_zela);
+    EXPECT_EQ(65535U,
+              ToUInt32(scope.GetIsolate(), script_value_vector[1].V8Value(),
+                       kNormalConversion, exception_state));
+  }
+  {
+    v8::Local<v8::Array> v8_string_array1 =
+        v8::Array::New(scope.GetIsolate(), 2);
+    EXPECT_TRUE(
+        v8_string_array1
+            ->Set(scope.GetContext(), ToV8(&scope, 0), ToV8(&scope, "foo"))
+            .ToChecked());
+    EXPECT_TRUE(
+        v8_string_array1
+            ->Set(scope.GetContext(), ToV8(&scope, 1), ToV8(&scope, "bar"))
+            .ToChecked());
+    v8::Local<v8::Array> v8_string_array2 =
+        v8::Array::New(scope.GetIsolate(), 3);
+    EXPECT_TRUE(
+        v8_string_array2
+            ->Set(scope.GetContext(), ToV8(&scope, 0), ToV8(&scope, "x"))
+            .ToChecked());
+    EXPECT_TRUE(
+        v8_string_array2
+            ->Set(scope.GetContext(), ToV8(&scope, 1), ToV8(&scope, "y"))
+            .ToChecked());
+    EXPECT_TRUE(
+        v8_string_array2
+            ->Set(scope.GetContext(), ToV8(&scope, 2), ToV8(&scope, "z"))
+            .ToChecked());
+    v8::Local<v8::Array> v8_string_array_array =
+        v8::Array::New(scope.GetIsolate(), 2);
+    EXPECT_TRUE(v8_string_array_array
+                    ->Set(scope.GetContext(), ToV8(&scope, 0), v8_string_array1)
+                    .ToChecked());
+    EXPECT_TRUE(v8_string_array_array
+                    ->Set(scope.GetContext(), ToV8(&scope, 1), v8_string_array2)
+                    .ToChecked());
+
+    NonThrowableExceptionState exception_state;
+    Vector<Vector<String>> string_vector_vector =
+        NativeValueTraits<IDLSequence<IDLSequence<IDLString>>>::NativeValue(
+            scope.GetIsolate(), v8_string_array_array, exception_state);
+    EXPECT_EQ(2U, string_vector_vector.size());
+    EXPECT_EQ(2U, string_vector_vector[0].size());
+    EXPECT_EQ("foo", string_vector_vector[0][0]);
+    EXPECT_EQ("bar", string_vector_vector[0][1]);
+    EXPECT_EQ(3U, string_vector_vector[1].size());
+    EXPECT_EQ("x", string_vector_vector[1][0]);
+    EXPECT_EQ("y", string_vector_vector[1][1]);
+    EXPECT_EQ("z", string_vector_vector[1][2]);
+  }
+  {
+    v8::Local<v8::String> script_code =
+        ToV8(&scope,
+             "let arr = [1, 2, 3];"
+             "let iterations = ["
+             "  {done: false, value: 8},"
+             "  {done: false, value: 5},"
+             "  {done: true}"
+             "];"
+             "arr[Symbol.iterator] = function() {"
+             "  let i = 0;"
+             "  return {next: () => iterations[i++]};"
+             "}; arr")
+            .As<v8::String>();
+    v8::MicrotasksScope microtasks(scope.GetIsolate(),
+                                   v8::MicrotasksScope::kDoNotRunMicrotasks);
+    v8::Local<v8::Value> v8_array =
+        v8::Script::Compile(scope.GetContext(), script_code)
+            .ToLocalChecked()
+            ->Run(scope.GetContext())
+            .ToLocalChecked();
+    EXPECT_TRUE(v8_array->IsArray());
+
+    NonThrowableExceptionState exception_state;
+    const auto& sequence = NativeValueTraits<IDLSequence<IDLByte>>::NativeValue(
+        scope.GetIsolate(), v8_array, exception_state);
+    EXPECT_EQ(Vector<int8_t>({1, 2, 3}), sequence);
+  }
+  {
+    v8::Local<v8::String> script_code =
+        ToV8(&scope,
+             "let obj = {"
+             "  iterations: ["
+             "    {done: false, value: 55},"
+             "    {done: false, value: 0},"
+             "    {done: true, value: 99}"
+             "  ],"
+             "  [Symbol.iterator]() {"
+             "    let i = 0;"
+             "    return {next: () => this.iterations[i++]};"
+             "  }"
+             "}; obj")
+            .As<v8::String>();
+    v8::MicrotasksScope microtasks(scope.GetIsolate(),
+                                   v8::MicrotasksScope::kDoNotRunMicrotasks);
+    v8::Local<v8::Value> v8_object =
+        v8::Script::Compile(scope.GetContext(), script_code)
+            .ToLocalChecked()
+            ->Run(scope.GetContext())
+            .ToLocalChecked();
+    EXPECT_TRUE(v8_object->IsObject());
+
+    NonThrowableExceptionState exception_state;
+    const auto& byte_sequence =
+        NativeValueTraits<IDLSequence<IDLByte>>::NativeValue(
+            scope.GetIsolate(), v8_object, exception_state);
+    EXPECT_EQ(Vector<int8_t>({55, 0}), byte_sequence);
+    const auto& boolean_sequence =
+        NativeValueTraits<IDLSequence<IDLBoolean>>::NativeValue(
+            scope.GetIsolate(), v8_object, exception_state);
+    EXPECT_EQ(Vector<bool>({true, false}), boolean_sequence);
+  }
+}
+
 }  // namespace
 
 }  // namespace blink

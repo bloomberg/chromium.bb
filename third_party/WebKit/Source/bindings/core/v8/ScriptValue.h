@@ -174,6 +174,16 @@ class CORE_EXPORT ScriptValue final {
   RefPtr<SharedPersistent<v8::Value>> value_;
 };
 
+template <>
+struct NativeValueTraits<ScriptValue>
+    : public NativeValueTraitsBase<ScriptValue> {
+  static inline ScriptValue NativeValue(v8::Isolate* isolate,
+                                        v8::Local<v8::Value> value,
+                                        ExceptionState& exception_state) {
+    return ScriptValue(ScriptState::Current(isolate), value);
+  }
+};
+
 }  // namespace blink
 
 #endif  // ScriptValue_h

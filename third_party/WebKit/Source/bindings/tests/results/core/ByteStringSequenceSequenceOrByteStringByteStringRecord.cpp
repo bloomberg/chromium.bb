@@ -67,8 +67,8 @@ void V8ByteStringSequenceSequenceOrByteStringByteStringRecord::toImpl(v8::Isolat
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (v8Value->IsArray()) {
-    Vector<Vector<String>> cppValue = ToImplArray<Vector<Vector<String>>>(v8Value, 0, isolate, exceptionState);
+  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
+    Vector<Vector<String>> cppValue = NativeValueTraits<IDLSequence<IDLSequence<IDLByteString>>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setByteStringSequenceSequence(cppValue);

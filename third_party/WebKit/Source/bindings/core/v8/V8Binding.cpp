@@ -904,6 +904,23 @@ v8::Local<v8::Object> GetEsIterator(v8::Isolate* isolate,
   return iterator.As<v8::Object>();
 }
 
+bool HasCallableIteratorSymbol(v8::Isolate* isolate,
+                               v8::Local<v8::Value> value,
+                               ExceptionState& exception_state) {
+  if (!value->IsObject())
+    return false;
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::Local<v8::Value> iterator_getter;
+  if (!value.As<v8::Object>()
+           ->Get(context, v8::Symbol::GetIterator(isolate))
+           .ToLocal(&iterator_getter)) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return false;
+  }
+  return iterator_getter->IsFunction();
+}
+
 bool AddHiddenValueToArray(v8::Isolate* isolate,
                            v8::Local<v8::Object> object,
                            v8::Local<v8::Value> value,

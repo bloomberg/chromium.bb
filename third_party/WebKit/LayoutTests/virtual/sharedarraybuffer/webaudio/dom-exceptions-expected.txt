@@ -44,8 +44,8 @@ PASS > [createChannelMerger]
 PASS   context.createChannelMerger(99) threw IndexSizeError: "Failed to execute 'createChannelMerger' on 'BaseAudioContext': The number of inputs provided (99) is outside the range [1, 32].". 
 PASS < [createChannelMerger] All assertions passed. (total 1 assertions) 
 PASS > [createPeriodicWave]  
-PASS   context.createPeriodicWave(null, null) threw TypeError: "Failed to execute 'createPeriodicWave' on 'BaseAudioContext': The 1st argument is neither an array, nor does it have indexed properties.". 
-PASS   context.createPeriodicWave(new Float32Array(10), null) threw TypeError: "Failed to execute 'createPeriodicWave' on 'BaseAudioContext': The 2nd argument is neither an array, nor does it have indexed properties.". 
+PASS   context.createPeriodicWave(null, null) threw TypeError: "Failed to execute 'createPeriodicWave' on 'BaseAudioContext': The provided value cannot be converted to a sequence.". 
+PASS   context.createPeriodicWave(new Float32Array(10), null) threw TypeError: "Failed to execute 'createPeriodicWave' on 'BaseAudioContext': The provided value cannot be converted to a sequence.". 
 PASS   context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100)) did not throw an exception. 
 PASS   context.createPeriodicWave(new Float32Array(8192), new Float32Array(8192)) did not throw an exception. 
 PASS   context.createPeriodicWave(new Float32Array(10000), new Float32Array(10000)) did not throw an exception. 
@@ -103,7 +103,7 @@ PASS   node.channelInterpretation is equal to speakers.
 PASS   context.destination.channelCount = 99 threw IndexSizeError: [error message omitted]. 
 PASS < [channel-stuff] All assertions passed. (total 7 assertions) 
 PASS > [audioparam]  
-PASS   param.setValueCurveAtTime(null, 0, 0) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The 1st argument is neither an array, nor does it have indexed properties.". 
+PASS   param.setValueCurveAtTime(null, 0, 0) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided value cannot be converted to a sequence.". 
 PASS   node.gain.exponentialRampToValueAtTime(-1, 0.1) did not throw an exception. 
 PASS   node.gain.exponentialRampToValueAtTime(0, 0.1) threw InvalidAccessError: "Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) should not be in the range (-1.40130e-45, 1.40130e-45).". 
 PASS   node.gain.exponentialRampToValueAtTime(1e-100, 0.1) threw InvalidAccessError: "Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) should not be in the range (-1.40130e-45, 1.40130e-45).". 

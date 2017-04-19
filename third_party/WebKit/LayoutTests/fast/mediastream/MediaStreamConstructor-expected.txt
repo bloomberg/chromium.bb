@@ -14,10 +14,10 @@ PASS localStream.getAudioTracks().length is 1
 PASS localStream.getVideoTracks().length is 1
 PASS checkIdAttribute(localStream.id) is true
 PASS new MediaStream(document) threw exception TypeError: Failed to construct 'MediaStream': No matching constructor signature..
-PASS new MediaStream([document]) threw exception TypeError: Failed to construct 'MediaStream': Invalid Array element type.
-PASS new MediaStream([stream.getAudioTracks()[0], document]) threw exception TypeError: Failed to construct 'MediaStream': Invalid Array element type.
-PASS new MediaStream([null]) threw exception TypeError: Failed to construct 'MediaStream': Invalid Array element type.
-PASS new MediaStream([undefined]) threw exception TypeError: Failed to construct 'MediaStream': Invalid Array element type.
+PASS new MediaStream([document]) threw exception TypeError: Failed to construct 'MediaStream': Failed to convert value to 'MediaStreamTrack'..
+PASS new MediaStream([stream.getAudioTracks()[0], document]) threw exception TypeError: Failed to construct 'MediaStream': Failed to convert value to 'MediaStreamTrack'..
+PASS new MediaStream([null]) threw exception TypeError: Failed to construct 'MediaStream': Failed to convert value to 'MediaStreamTrack'..
+PASS new MediaStream([undefined]) threw exception TypeError: Failed to construct 'MediaStream': Failed to convert value to 'MediaStreamTrack'..
 PASS new MediaStream(null) threw exception TypeError: Failed to construct 'MediaStream': No matching constructor signature..
 PASS new MediaStream(undefined) threw exception TypeError: Failed to construct 'MediaStream': No matching constructor signature..
 Stream constructed

@@ -13,17 +13,30 @@ test(function(t) {
     
     var arrayValues = [5, 15, 25];
     
+    function createIterableObject() {
+      return {
+        [Symbol.iterator]() {
+          var i = 0;
+          return {
+            next() {
+              if (i >= arrayValues.length)
+                return { done: true };
+              return { done: false, value: arrayValues[i++] };
+            }
+          }
+        }
+      }
+    }
+
     function createTestArray(arrayType) {
       var array;
       if (arrayType == Object) {
-        // Test a "sequence" (Object with length property).
-        array = {length: arrayValues.length};
+        array = createIterableObject();
       } else {
         array = new arrayType(arrayValues.length);
+        for (var i = 0; i < arrayValues.length; ++i)
+          array[i] = arrayValues[i];
       }
-    
-      for (var i = 0; i < arrayValues.length; ++i)
-          array[i] = arrayValues[i]
       return array;
     }
     

@@ -22,9 +22,9 @@ shouldBeEqualToString("(new Blob()).type", "");
 shouldBeEqualToString("(new Blob(undefined)).type", "");
 
 // Test invalid blob parts.
-shouldThrow("new Blob('hello')", '"TypeError: Failed to construct \'Blob\': The 1st argument is neither an array, nor does it have indexed properties."');
-shouldThrow("new Blob(0)", '"TypeError: Failed to construct \'Blob\': The 1st argument is neither an array, nor does it have indexed properties."');
-shouldThrow("new Blob(null)", '"TypeError: Failed to construct \'Blob\': The 1st argument is neither an array, nor does it have indexed properties."');
+shouldThrow("new Blob('hello')", '"TypeError: Failed to construct \'Blob\': The provided value cannot be converted to a sequence."');
+shouldThrow("new Blob(0)", '"TypeError: Failed to construct \'Blob\': The provided value cannot be converted to a sequence."');
+shouldThrow("new Blob(null)", '"TypeError: Failed to construct \'Blob\': The provided value cannot be converted to a sequence."');
 
 // Test valid blob parts.
 shouldBeTrue("(new Blob([])) instanceof window.Blob");
@@ -128,37 +128,44 @@ if (window.SharedArrayBuffer) {
   shouldThrow("new Blob([new Uint8Array(new SharedArrayBuffer(4))])", '"TypeError: Failed to construct \'Blob\': The provided ArrayBufferView value must not be shared."');
 }
 
-// Test passing blob parts in objects with indexed properties.
-// (This depends on the bindings code handling of sequence<T>)
-shouldBe("new Blob({length: 0}).size", "0");
-shouldBe("new Blob({length: 1, 0: 'string'}).size", "6");
+// Custom iterators, converted via the bindings code to sequence<T>.
+function createIterable(iterations) {
+  return {
+    [Symbol.iterator]() {
+      var i = 0;
+      return {next: () => iterations[i++]};
+    },
+  };
+}
+shouldBe("new Blob(createIterable([{done:true}])).size", "0");
+shouldBe("new Blob(createIterable([{done:false, value:'string'},{done:true}])).size", "6");
 
 testNormalization();
 
 function testNormalization() {
-    // Test that strings are not NFC normalized
-    OMICRON_WITH_OXIA = '\u1F79'; // NFC normalized to U+3CC
-    shouldBe("OMICRON_WITH_OXIA.charCodeAt(0)", "0x1F79");
-    reader = new FileReader();
-    reader.readAsText(new Blob([OMICRON_WITH_OXIA]));
-    reader.onload = function() {
-        shouldBe("reader.result.charCodeAt(0)", "0x1F79");
-        testEncodingReplacements();
-    };
+  // Test that strings are not NFC normalized
+  OMICRON_WITH_OXIA = '\u1F79'; // NFC normalized to U+3CC
+  shouldBe("OMICRON_WITH_OXIA.charCodeAt(0)", "0x1F79");
+  reader = new FileReader();
+  reader.readAsText(new Blob([OMICRON_WITH_OXIA]));
+  reader.onload = function() {
+    shouldBe("reader.result.charCodeAt(0)", "0x1F79");
+    testEncodingReplacements();
+  };
 }
 
 function testEncodingReplacements() {
-    // Test that invalid UTF-16 code units are replaced.
-    CONTAINS_UNPAIRED_SURROGATES = 'abc\uDC00def\uD800ghi';
-    shouldBe("CONTAINS_UNPAIRED_SURROGATES.charCodeAt(3)", "0xDC00");
-    shouldBe("CONTAINS_UNPAIRED_SURROGATES.charCodeAt(7)", "0xD800");
-    reader = new FileReader();
-    reader.readAsText(new Blob([CONTAINS_UNPAIRED_SURROGATES]));
-    reader.onload = function() {
-        shouldBe("reader.result.charCodeAt(3)", "0xFFFD");
-        shouldBe("reader.result.charCodeAt(7)", "0xFFFD");
-        finishJSTest();
-    };
+  // Test that invalid UTF-16 code units are replaced.
+  CONTAINS_UNPAIRED_SURROGATES = 'abc\uDC00def\uD800ghi';
+  shouldBe("CONTAINS_UNPAIRED_SURROGATES.charCodeAt(3)", "0xDC00");
+  shouldBe("CONTAINS_UNPAIRED_SURROGATES.charCodeAt(7)", "0xD800");
+  reader = new FileReader();
+  reader.readAsText(new Blob([CONTAINS_UNPAIRED_SURROGATES]));
+  reader.onload = function() {
+    shouldBe("reader.result.charCodeAt(3)", "0xFFFD");
+    shouldBe("reader.result.charCodeAt(7)", "0xFFFD");
+    finishJSTest();
+  };
 }
 
 </script>

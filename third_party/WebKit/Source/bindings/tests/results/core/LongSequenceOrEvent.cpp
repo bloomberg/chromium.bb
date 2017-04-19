@@ -75,8 +75,8 @@ void V8LongSequenceOrEvent::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     return;
   }
 
-  if (v8Value->IsArray()) {
-    Vector<int32_t> cppValue = ToImplArray<Vector<int32_t>, IDLLong>(v8Value, 0, isolate, exceptionState);
+  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
+    Vector<int32_t> cppValue = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setLongSequence(cppValue);

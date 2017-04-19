@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 50 tests; 34 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 50 tests; 35 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS non-animatable property 'animation' is not accessed when using a property-indexed keyframe object 
 PASS non-animatable property 'animationDelay' is not accessed when using a property-indexed keyframe object 
 PASS non-animatable property 'animationDirection' is not accessed when using a property-indexed keyframe object 
@@ -44,14 +44,7 @@ FAIL Custom iterator with basic keyframes. effect.getKeyframes is not a function
 FAIL easing and offset are ignored on iterable objects. effect.getKeyframes is not a function
 FAIL Custom iterator with multiple properties specified. effect.getKeyframes is not a function
 FAIL Custom iterator with offset specified. effect.getKeyframes is not a function
-FAIL Custom iterator with non object keyframe should throw. assert_throws: function "function () {
-    new KeyframeEffect(null, createIterable([
-      {done: false, value: {left: '100px'}},
-      {done: false, value: 1234},
-      {done: false, value: {left: '200px'}},
-      {done: true},
-    ]));
-  }" did not throw
+PASS Custom iterator with non object keyframe should throw. 
 FAIL Custom iterator with value list in keyframe should give bizarre string representation of list. effect.getKeyframes is not a function
 FAIL Only enumerable properties on keyframes are considered anim.effect.getKeyframes is not a function
 FAIL Only properties defined directly on keyframes are considered anim.effect.getKeyframes is not a function

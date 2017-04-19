@@ -425,7 +425,9 @@ IdlUnionType.includes_for_type = includes_for_union_type
 
 
 def includes_for_array_or_sequence_type(idl_type, extended_attributes=None):
-    return idl_type.element_type.includes_for_type(extended_attributes)
+    return set.union(set(['bindings/core/v8/IDLTypes.h',
+                          'bindings/core/v8/NativeValueTraitsImpl.h']),
+                     idl_type.element_type.includes_for_type(extended_attributes))
 
 IdlArrayOrSequenceType.includes_for_type = includes_for_array_or_sequence_type
 
@@ -578,14 +580,9 @@ def native_value_traits_type_name(idl_type):
     return name
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, isolate):
     if idl_type.name == 'void':
         return ''
-
-    # Array or sequence types
-    native_array_element_type = idl_type.native_array_element_type
-    if native_array_element_type:
-        return v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value, index, isolate)
 
     # Simple types
     idl_type = idl_type.preprocessed_type
@@ -628,7 +625,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
             '{idl_type}::Create(ScriptState::Current({isolate}), {v8_value})')
     elif idl_type.v8_conversion_needs_exception_state:
         # Effectively, this if branch means everything with v8_conversion_needs_exception_state == True
-        # except for unions, sequences and dictionary interfaces.
+        # except for unions and dictionary interfaces.
         base_idl_type = native_value_traits_type_name(idl_type)
         cpp_expression_format = (
             'NativeValueTraits<{idl_type}>::NativeValue({isolate}, {arguments})')
@@ -639,47 +636,15 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     return cpp_expression_format.format(arguments=arguments, idl_type=base_idl_type, v8_value=v8_value, variable_name=variable_name, isolate=isolate)
 
 
-def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value, index, isolate='info.GetIsolate()'):
-    # Index is None for setters, index (starting at 0) for method arguments,
-    # and is used to provide a human-readable exception message
-    if index is None:
-        index = 0  # special case, meaning "setter"
-    else:
-        index += 1  # human-readable index
-    if (native_array_element_type.is_interface_type and
-        native_array_element_type.name != 'Dictionary'):
-        this_cpp_type = None
-        expression_format = 'ToMemberNativeArray<{native_array_element_type}>({v8_value}, {index}, {isolate}, exceptionState)'
-    else:
-        this_cpp_type = native_array_element_type.cpp_type
-        if native_array_element_type.is_dictionary or native_array_element_type.is_union_type:
-            vector_type = 'HeapVector'
-        else:
-            vector_type = 'Vector'
-        if native_array_element_type.is_primitive_type:
-            value_type = native_value_traits_type_name(native_array_element_type)
-            expression_format = ('ToImplArray<%s<{cpp_type}>, %s>'
-                                 '({v8_value}, {index}, {isolate}, '
-                                 'exceptionState)' % (vector_type, value_type))
-        else:
-            expression_format = ('ToImplArray<%s<{cpp_type}>>'
-                                 '({v8_value}, {index}, {isolate}, '
-                                 'exceptionState)' % vector_type)
-
-    expression = expression_format.format(native_array_element_type=native_array_element_type.name, cpp_type=this_cpp_type,
-                                          index=index, v8_value=v8_value, isolate=isolate)
-    return expression
-
-
 # FIXME: this function should be refactored, as this takes too many flags.
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True,
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, declare_variable=True,
                                 isolate='info.GetIsolate()', bailout_return_value=None, use_exception_state=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
     idl_type = idl_type.preprocessed_type
 
-    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate)
+    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, isolate)
 
     # Optional expression that returns a value to be assigned to the local variable.
     assign_expression = None

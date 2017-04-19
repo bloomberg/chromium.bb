@@ -69,8 +69,8 @@ void V8DoubleOrLongOrBooleanSequence::toImpl(v8::Isolate* isolate, v8::Local<v8:
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (v8Value->IsArray()) {
-    HeapVector<LongOrBoolean> cppValue = ToImplArray<HeapVector<LongOrBoolean>>(v8Value, 0, isolate, exceptionState);
+  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
+    HeapVector<LongOrBoolean> cppValue = NativeValueTraits<IDLSequence<LongOrBoolean>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setLongOrBooleanSequence(cppValue);

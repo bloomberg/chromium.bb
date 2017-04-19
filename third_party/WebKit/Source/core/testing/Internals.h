@@ -71,6 +71,7 @@ class OriginTrialsTest;
 class Page;
 class Range;
 class RecordTest;
+class SequenceTest;
 class SerializedScriptValue;
 class ShadowRoot;
 class TypeConversions;
@@ -384,6 +385,7 @@ class Internals final : public GarbageCollected<Internals>,
 
   TypeConversions* typeConversions() const;
   RecordTest* recordTest() const;
+  SequenceTest* sequenceTest() const;
   DictionaryTest* dictionaryTest() const;
   UnionTypesTest* unionTypesTest() const;
   OriginTrialsTest* originTrialsTest() const;

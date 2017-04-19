@@ -99,7 +99,7 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
   if (stringOrDoubleSequenceMemberValue.IsEmpty() || stringOrDoubleSequenceMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<StringOrDouble> stringOrDoubleSequenceMember = ToImplArray<HeapVector<StringOrDouble>>(stringOrDoubleSequenceMemberValue, 0, isolate, exceptionState);
+    HeapVector<StringOrDouble> stringOrDoubleSequenceMember = NativeValueTraits<IDLSequence<StringOrDouble>>::NativeValue(isolate, stringOrDoubleSequenceMemberValue, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setStringOrDoubleSequenceMember(stringOrDoubleSequenceMember);

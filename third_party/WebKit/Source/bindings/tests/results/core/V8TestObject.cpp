@@ -1223,7 +1223,7 @@ static void stringArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "stringArrayAttribute");
 
   // Prepare the value to be set.
-  Vector<String> cppValue = ToImplArray<Vector<String>>(v8Value, 0, info.GetIsolate(), exceptionState);
+  Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -1248,7 +1248,7 @@ static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::Value>
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceEmptyArrayAttribute");
 
   // Prepare the value to be set.
-  HeapVector<Member<TestInterfaceEmpty>> cppValue = ToMemberNativeArray<TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState);
+  HeapVector<Member<TestInterfaceEmpty>> cppValue = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -1273,7 +1273,7 @@ static void floatArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "floatArrayAttribute");
 
   // Prepare the value to be set.
-  Vector<float> cppValue = ToImplArray<Vector<float>, IDLFloat>(v8Value, 0, info.GetIsolate(), exceptionState);
+  Vector<float> cppValue = NativeValueTraits<IDLSequence<IDLFloat>>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -1298,7 +1298,7 @@ static void stringFrozenArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "stringFrozenArrayAttribute");
 
   // Prepare the value to be set.
-  Vector<String> cppValue = ToImplArray<Vector<String>>(v8Value, 0, info.GetIsolate(), exceptionState);
+  Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -1323,7 +1323,7 @@ static void testInterfaceEmptyFrozenArrayAttributeAttributeSetter(v8::Local<v8::
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceEmptyFrozenArrayAttribute");
 
   // Prepare the value to be set.
-  HeapVector<Member<TestInterfaceEmpty>> cppValue = ToMemberNativeArray<TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState);
+  HeapVector<Member<TestInterfaceEmpty>> cppValue = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -1946,7 +1946,7 @@ static void cachedArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "cachedArrayAttribute");
 
   // Prepare the value to be set.
-  Vector<String> cppValue = ToImplArray<Vector<String>>(v8Value, 0, info.GetIsolate(), exceptionState);
+  Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -4907,7 +4907,7 @@ static void voidMethodArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Valu
   }
 
   Vector<int32_t> arrayLongArg;
-  arrayLongArg = ToImplArray<Vector<int32_t>, IDLLong>(info[0], 1, info.GetIsolate(), exceptionState);
+  arrayLongArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -4925,7 +4925,7 @@ static void voidMethodArrayStringArgMethod(const v8::FunctionCallbackInfo<v8::Va
   }
 
   Vector<String> arrayStringArg;
-  arrayStringArg = ToImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+  arrayStringArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -4943,7 +4943,7 @@ static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbac
   }
 
   HeapVector<Member<TestInterfaceEmpty>> arrayTestInterfaceEmptyArg;
-  arrayTestInterfaceEmptyArg = ToMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState);
+  arrayTestInterfaceEmptyArg = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -4962,7 +4962,7 @@ static void voidMethodNullableArrayLongArgMethod(const v8::FunctionCallbackInfo<
 
   Nullable<Vector<int32_t>> arrayLongArg;
   if (!IsUndefinedOrNull(info[0])) {
-    arrayLongArg = ToImplArray<Vector<int32_t>, IDLLong>(info[0], 1, info.GetIsolate(), exceptionState);
+    arrayLongArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.HadException())
       return;
   }
@@ -4999,7 +4999,7 @@ static void voidMethodSequenceLongArgMethod(const v8::FunctionCallbackInfo<v8::V
   }
 
   Vector<int32_t> longSequenceArg;
-  longSequenceArg = ToImplArray<Vector<int32_t>, IDLLong>(info[0], 1, info.GetIsolate(), exceptionState);
+  longSequenceArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -5017,7 +5017,7 @@ static void voidMethodSequenceStringArgMethod(const v8::FunctionCallbackInfo<v8:
   }
 
   Vector<String> stringSequenceArg;
-  stringSequenceArg = ToImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+  stringSequenceArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -5035,7 +5035,7 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethod(const v8::FunctionCall
   }
 
   HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptySequenceArg;
-  testInterfaceEmptySequenceArg = ToMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState);
+  testInterfaceEmptySequenceArg = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -5053,7 +5053,7 @@ static void voidMethodSequenceSequenceDOMStringArgMethod(const v8::FunctionCallb
   }
 
   Vector<Vector<String>> stringSequenceSequenceArg;
-  stringSequenceSequenceArg = ToImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
+  stringSequenceSequenceArg = NativeValueTraits<IDLSequence<IDLSequence<IDLString>>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -5072,7 +5072,7 @@ static void voidMethodNullableSequenceLongArgMethod(const v8::FunctionCallbackIn
 
   Nullable<Vector<int32_t>> longSequenceArg;
   if (!IsUndefinedOrNull(info[0])) {
-    longSequenceArg = ToImplArray<Vector<int32_t>, IDLLong>(info[0], 1, info.GetIsolate(), exceptionState);
+    longSequenceArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.HadException())
       return;
   }
@@ -5097,7 +5097,7 @@ static void voidMethodStringFrozenArrayMethodMethod(const v8::FunctionCallbackIn
   }
 
   Vector<String> stringFrozenArrayArg;
-  stringFrozenArrayArg = ToImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+  stringFrozenArrayArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -5115,7 +5115,7 @@ static void voidMethodTestInterfaceEmptyFrozenArrayMethodMethod(const v8::Functi
   }
 
   HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyFrozenArrayArg;
-  testInterfaceEmptyFrozenArrayArg = ToMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState);
+  testInterfaceEmptyFrozenArrayArg = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -5740,7 +5740,7 @@ static void voidMethodDictionarySequenceArgMethod(const v8::FunctionCallbackInfo
   }
 
   Vector<Dictionary> dictionarySequenceArg;
-  dictionarySequenceArg = ToImplArray<Vector<Dictionary>>(info[0], 1, info.GetIsolate(), exceptionState);
+  dictionarySequenceArg = NativeValueTraits<IDLSequence<Dictionary>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -6278,7 +6278,7 @@ static void voidMethodDefaultStringSequenceArgMethod(const v8::FunctionCallbackI
 
   Vector<String> defaultStringSequenceArg;
   if (!info[0]->IsUndefined()) {
-    defaultStringSequenceArg = ToImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+    defaultStringSequenceArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.HadException())
       return;
   } else {
@@ -6605,7 +6605,7 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   Vector<int32_t> longArrayArg;
-  longArrayArg = ToImplArray<Vector<int32_t>, IDLLong>(info[0], 1, info.GetIsolate(), exceptionState);
+  longArrayArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -8798,7 +8798,7 @@ static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(const v8::F
   }
 
   HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedSequenceArg;
-  testInterfaceGarbageCollectedSequenceArg = ToMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState);
+  testInterfaceGarbageCollectedSequenceArg = NativeValueTraits<IDLSequence<TestInterfaceGarbageCollected>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -8816,7 +8816,7 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethod(const v8::Func
   }
 
   HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedArrayArg;
-  testInterfaceGarbageCollectedArrayArg = ToMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState);
+  testInterfaceGarbageCollectedArrayArg = NativeValueTraits<IDLSequence<TestInterfaceGarbageCollected>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 

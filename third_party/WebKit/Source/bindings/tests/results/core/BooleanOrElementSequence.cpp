@@ -74,8 +74,8 @@ void V8BooleanOrElementSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
   if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
-  if (v8Value->IsArray()) {
-    HeapVector<Member<Element>> cppValue = ToMemberNativeArray<Element>(v8Value, 0, isolate, exceptionState);
+  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
+    HeapVector<Member<Element>> cppValue = NativeValueTraits<IDLSequence<Element>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setElementSequence(cppValue);

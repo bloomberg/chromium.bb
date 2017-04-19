@@ -21,7 +21,7 @@ PASS new RTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]}); did not throw 
 PASS new RTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com'], username:'x', credential:'x'}]}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]}); threw exception InvalidAccessError: Failed to construct 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"..
 PASS new RTCPeerConnection({fooServers:[]}); did not throw exception.
-PASS new RTCPeerConnection({iceServers:true}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The value provided is neither an array, nor does it have indexed properties..
+PASS new RTCPeerConnection({iceServers:true}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The provided value cannot be converted to a sequence..
 PASS new RTCPeerConnection({iceServers:[1, 2, 3]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': cannot convert to dictionary..
 PASS new RTCPeerConnection({iceServers:[{}]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCIceServer.
 PASS new RTCPeerConnection({iceServers:[{url:'foo'}]}); threw exception SyntaxError: Failed to construct 'RTCPeerConnection': 'foo' is not a valid URL..
@@ -60,11 +60,11 @@ PASS new RTCPeerConnection(null, {optional:[{invalid:0}]}); did not throw except
 PASS new RTCPeerConnection(null, {valid_and_supported_1:1}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed constraints object..
 PASS new RTCPeerConnection(null, {valid_but_unsupported_1:1}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed constraints object..
 PASS new RTCPeerConnection(null, {valid_and_supported_2:1, mandatory:{valid_and_supported_1:1}}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed constraints object..
-PASS new RTCPeerConnection({iceServers:[], certificates:null}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The value provided is neither an array, nor does it have indexed properties..
+PASS new RTCPeerConnection({iceServers:[], certificates:null}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The provided value cannot be converted to a sequence..
 PASS new RTCPeerConnection({iceServers:[], certificates:undefined}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[], certificates:[]}); did not throw exception.
-PASS new RTCPeerConnection({iceServers:[], certificates:[null]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Invalid Array element type.
-PASS new RTCPeerConnection({iceServers:[], certificates:[1337]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Invalid Array element type.
+PASS new RTCPeerConnection({iceServers:[], certificates:[null]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Failed to convert value to 'RTCCertificate'..
+PASS new RTCPeerConnection({iceServers:[], certificates:[1337]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Failed to convert value to 'RTCCertificate'..
 PASS new RTCPeerConnection({iceServers:[], certificates:[certRSA]}, null); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[], certificates:[certECDSA]}, null); did not throw exception.
 PASS certExpired.expires <= new Date().getTime() is true

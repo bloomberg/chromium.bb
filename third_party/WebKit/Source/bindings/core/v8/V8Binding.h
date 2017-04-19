@@ -829,6 +829,12 @@ inline bool ToV8Sequence(v8::Local<v8::Value> value,
   length = sequence_length;
   return true;
 }
+// Validates that the passed object is a sequence type per the WebIDL spec: it
+// has a callable @iterator.
+// https://heycam.github.io/webidl/#es-sequence
+CORE_EXPORT bool HasCallableIteratorSymbol(v8::Isolate*,
+                                           v8::Local<v8::Value>,
+                                           ExceptionState&);
 
 // TODO(rakuco): remove the specializations below (and consequently the
 // non-IDLBase version of NativeValueTraitsBase) once we manage to convert all
@@ -895,21 +901,13 @@ struct NativeValueTraits<double> {
 };
 
 template <>
-struct NativeValueTraits<v8::Local<v8::Value>> {
+struct NativeValueTraits<v8::Local<v8::Value>>
+    : public NativeValueTraitsBase<v8::Local<v8::Value>> {
   static inline v8::Local<v8::Value> NativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exception_state) {
     return value;
-  }
-};
-
-template <>
-struct NativeValueTraits<ScriptValue> {
-  static inline ScriptValue NativeValue(v8::Isolate* isolate,
-                                        v8::Local<v8::Value> value,
-                                        ExceptionState& exception_state) {
-    return ScriptValue(ScriptState::Current(isolate), value);
   }
 };
 

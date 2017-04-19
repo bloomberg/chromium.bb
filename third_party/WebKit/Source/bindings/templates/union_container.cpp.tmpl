@@ -109,10 +109,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {% endif %}
   {% if array_or_sequence_type %}
   {# 11.1, 11.2. Arrays and Sequences #}
-  {# FIXME: This should also check "object but not RegExp". Add checks
-     when we implement conversions for Date and RegExp. #}
-  {# TODO(bashi): Should check @@iterator symbol instead. #}
-  if (v8Value->IsArray()) {
+  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
     {{v8_value_to_local_cpp_value(array_or_sequence_type) | indent}}
     impl.set{{array_or_sequence_type.type_name}}(cppValue);
     return;

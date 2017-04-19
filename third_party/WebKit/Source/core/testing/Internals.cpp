@@ -124,6 +124,7 @@
 #include "core/testing/MockHyphenation.h"
 #include "core/testing/OriginTrialsTest.h"
 #include "core/testing/RecordTest.h"
+#include "core/testing/SequenceTest.h"
 #include "core/testing/TypeConversions.h"
 #include "core/testing/UnionTypesTest.h"
 #include "core/workers/WorkerThread.h"
@@ -2386,6 +2387,10 @@ DictionaryTest* Internals::dictionaryTest() const {
 
 RecordTest* Internals::recordTest() const {
   return RecordTest::Create();
+}
+
+SequenceTest* Internals::sequenceTest() const {
+  return SequenceTest::create();
 }
 
 UnionTypesTest* Internals::unionTypesTest() const {
