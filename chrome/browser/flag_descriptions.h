@@ -896,6 +896,13 @@ extern const char kEnableWasmName[];
 // Description for the flag to enable WebAssembly.
 extern const char kEnableWasmDescription[];
 
+// Title for the flag to enable WebAssembly streaming compilation/instantiation.
+extern const char kEnableWasmStreamingName[];
+
+// Description for the flag to enable WebAssembly streaming
+// compilation/instantiation.
+extern const char kEnableWasmStreamingDescription[];
+
 #if defined(OS_ANDROID)
 
 // Title for the flag to enable the download button on MediaDocument.

@@ -43,8 +43,8 @@ void WebRuntimeFeatures::EnableWebBluetooth(bool enable) {
   RuntimeEnabledFeatures::setWebBluetoothEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebAssemblySerialization(bool enable) {
-  RuntimeEnabledFeatures::setWebAssemblySerializationEnabled(enable);
+void WebRuntimeFeatures::EnableWebAssemblyStreaming(bool enable) {
+  RuntimeEnabledFeatures::setWebAssemblyStreamingEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableWebUsb(bool enable) {

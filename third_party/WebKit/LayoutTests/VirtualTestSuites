@@ -423,6 +423,11 @@
     "args": ["--enable-features=WebAssembly"]
   },
   {
+    "prefix": "enable_wasm_streaming",
+    "base": "http/tests/wasm_streaming",
+    "args": ["--enable-features=WebAssemblyStreaming"]
+  },
+  {
     "prefix": "enable_asmjs",
     "base": "http/tests/asmjs",
     "args": ["--enable-features=AsmJsToWebAssembly"]

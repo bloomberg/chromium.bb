@@ -811,9 +811,13 @@ const char kEnableSharedArrayBufferDescription[] =
     "Enable SharedArrayBuffer support in JavaScript.";
 
 const char kEnableWasmName[] = "WebAssembly structured cloning support.";
-
 const char kEnableWasmDescription[] =
     "Enable web pages to use WebAssembly structured cloning.";
+
+const char kEnableWasmStreamingName[] =
+    "WebAssembly streaming compile/instantiate support.";
+const char kEnableWasmStreamingDescription[] =
+    "WebAssembly.{compile|instantiate} taking a Response as parameter.";
 
 #if defined(OS_ANDROID)
 

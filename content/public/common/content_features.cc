@@ -229,10 +229,14 @@ const base::Feature kTouchpadAndWheelScrollLatching{
 // Enables VR UI.
 const base::Feature kVrShell{"VrShell", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable WebAssembly.
+// Enable WebAssembly structured cloning.
 // http://webassembly.org/
 const base::Feature kWebAssembly{"WebAssembly",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable WebAssembly streamed compilation.
+const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.

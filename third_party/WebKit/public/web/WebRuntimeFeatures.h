@@ -124,7 +124,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void EnableTouchEventFeatureDetection(bool);
   BLINK_EXPORT static void EnableTouchpadAndWheelScrollLatching(bool);
   BLINK_EXPORT static void EnableV8IdleTasks(bool);
-  BLINK_EXPORT static void EnableWebAssemblySerialization(bool);
+  BLINK_EXPORT static void EnableWebAssemblyStreaming(bool);
   BLINK_EXPORT static void EnableWebBluetooth(bool);
   BLINK_EXPORT static void EnableWebFontsInterventionV2With2G(bool);
   BLINK_EXPORT static void EnableWebFontsInterventionV2With3G(bool);

@@ -974,9 +974,9 @@
       status: "experimental",
     },
     {
-      name: "WebAssemblySerialization",
-      status: "test",
-    },
+      name: "WebAssemblyStreaming",
+      status: "experimental",
+    }, 
     {
       name: "WebAuth",
       status: "experimental",

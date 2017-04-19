@@ -224,7 +224,9 @@ bool WasmCompileOverload(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }  // namespace
 
 void WasmResponseExtensions::Initialize(v8::Isolate* isolate) {
-  isolate->SetWasmCompileCallback(WasmCompileOverload);
+  if (RuntimeEnabledFeatures::webAssemblyStreamingEnabled()) {
+    isolate->SetWasmCompileCallback(WasmCompileOverload);
+  }
 }
 
 }  // namespace blink
