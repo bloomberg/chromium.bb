@@ -18,6 +18,7 @@
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/screen.h"
@@ -184,13 +185,10 @@ void OnMoveLoopEnd(bool* out_success,
 }  // namespace
 
 DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
+    aura::WindowTreeHostMusInitParams init_params,
     internal::NativeWidgetDelegate* native_widget_delegate,
-    DesktopNativeWidgetAura* desktop_native_widget_aura,
-    const cc::FrameSinkId& frame_sink_id,
-    const std::map<std::string, std::vector<uint8_t>>* mus_properties)
-    : aura::WindowTreeHostMus(MusClient::Get()->window_tree_client(),
-                              frame_sink_id,
-                              mus_properties),
+    DesktopNativeWidgetAura* desktop_native_widget_aura)
+    : aura::WindowTreeHostMus(std::move(init_params)),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
       close_widget_factory_(this) {

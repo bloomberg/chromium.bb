@@ -44,6 +44,7 @@
 #include "ui/aura/mus/window_tree_client_observer.h"
 #include "ui/aura/mus/window_tree_client_test_observer.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tracker.h"
@@ -116,7 +117,7 @@ class EventAckHandler : public base::MessageLoop::NestingObserver {
 };
 
 WindowTreeHostMus* GetWindowTreeHostMus(Window* window) {
-  return static_cast<WindowTreeHostMus*>(window->GetRootWindow()->GetHost());
+  return WindowTreeHostMus::ForWindow(window);
 }
 
 WindowTreeHostMus* GetWindowTreeHostMus(WindowMus* window) {
@@ -465,9 +466,13 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
   std::unique_ptr<WindowPortMus> window_port =
       CreateWindowPortMus(window_data, window_mus_type);
   roots_.insert(window_port.get());
+  WindowTreeHostMusInitParams init_params;
+  init_params.window_port = std::move(window_port);
+  init_params.window_tree_client = this;
+  init_params.display_id = display_id;
+  init_params.frame_sink_id = frame_sink_id;
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      base::MakeUnique<WindowTreeHostMus>(std::move(window_port), this,
-                                          display_id, frame_sink_id);
+      base::MakeUnique<WindowTreeHostMus>(std::move(init_params));
   window_tree_host->InitHost();
   SetLocalPropertiesFromServerProperties(
       WindowMus::Get(window_tree_host->window()), window_data);

@@ -18,6 +18,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -724,7 +725,7 @@ TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
                                        nullptr, false);
   second_client.ConnectViaWindowTreeFactory();
   aura::WindowTreeHostMus window_tree_host_in_second_client(
-      &second_client, cc::FrameSinkId(1, 1));
+      aura::CreateInitParamsForTopLevel(&second_client));
   window_tree_host_in_second_client.InitHost();
   window_tree_host_in_second_client.window()->Show();
   ASSERT_TRUE(second_client.GetRoots().count(
@@ -754,7 +755,7 @@ TEST_F(WindowServerTest, OnWindowHierarchyChangedIncludesTransientParent) {
                                        nullptr, false);
   second_client.ConnectViaWindowTreeFactory();
   aura::WindowTreeHostMus window_tree_host_in_second_client(
-      &second_client, cc::FrameSinkId(1, 1));
+      aura::CreateInitParamsForTopLevel(&second_client));
   window_tree_host_in_second_client.InitHost();
   window_tree_host_in_second_client.window()->Show();
   aura::Window* second_client_child = NewVisibleWindow(

@@ -7,9 +7,7 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -25,32 +23,14 @@ class Display;
 namespace aura {
 
 class InputMethodMus;
-class WindowPortMus;
 class WindowTreeClient;
 class WindowTreeHostMusDelegate;
 
+struct WindowTreeHostMusInitParams;
+
 class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
-  // |properties| are applied to the window created by this class (using
-  // PropertyConverter).
-  // TODO: this should take an unordered_map, see http://crbug.com/670515.
-  WindowTreeHostMus(
-      std::unique_ptr<WindowPortMus> window_port,
-      WindowTreeClient* window_tree_client,
-      int64_t display_id,
-      const cc::FrameSinkId& frame_sink_id = cc::FrameSinkId(),
-      const std::map<std::string, std::vector<uint8_t>>* properties = nullptr);
-
-  // This constructor is intended for creating top level windows in
-  // non-window-manager code. |properties| are properties passed verbatim to
-  // the server, that is, no conversion is done before sending |properties| to
-  // the server. Additionally |properties| are passed to PropertyConverter and
-  // any known properties are set on the Window created by this class.
-  // TODO: this should take an unordered_map, see http://crbug.com/670515.
-  explicit WindowTreeHostMus(
-      WindowTreeClient* window_tree_client,
-      const cc::FrameSinkId& frame_sink_id = cc::FrameSinkId(),
-      const std::map<std::string, std::vector<uint8_t>>* properties = nullptr);
+  explicit WindowTreeHostMus(WindowTreeHostMusInitParams init_params);
 
   ~WindowTreeHostMus() override;
 

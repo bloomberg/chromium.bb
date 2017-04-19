@@ -33,10 +33,9 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
       public aura::WindowTreeHostMus {
  public:
   DesktopWindowTreeHostMus(
+      aura::WindowTreeHostMusInitParams init_params,
       internal::NativeWidgetDelegate* native_widget_delegate,
-      DesktopNativeWidgetAura* desktop_native_widget_aura,
-      const cc::FrameSinkId& frame_sink_id,
-      const std::map<std::string, std::vector<uint8_t>>* mus_properties);
+      DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostMus() override;
 
   // Called when the window was deleted on the server.

@@ -19,6 +19,7 @@
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/mus/aura_init.h"
@@ -273,8 +274,12 @@ std::unique_ptr<DesktopWindowTreeHost> MusClient::CreateDesktopWindowTreeHost(
     DesktopNativeWidgetAura* desktop_native_widget_aura) {
   std::map<std::string, std::vector<uint8_t>> mus_properties =
       ConfigurePropertiesFromParams(init_params);
+  aura::WindowTreeHostMusInitParams window_tree_host_init_params =
+      aura::CreateInitParamsForTopLevel(MusClient::Get()->window_tree_client(),
+                                        std::move(mus_properties));
   return base::MakeUnique<DesktopWindowTreeHostMus>(
-      delegate, desktop_native_widget_aura, cc::FrameSinkId(), &mus_properties);
+      std::move(window_tree_host_init_params), delegate,
+      desktop_native_widget_aura);
 }
 
 void MusClient::OnEmbed(

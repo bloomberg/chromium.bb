@@ -5,6 +5,7 @@
 #include "ui/views/test/native_widget_factory.h"
 
 #include "base/memory/ptr_util.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/test/test_platform_native_widget.h"
@@ -30,10 +31,13 @@ NativeWidget* CreatePlatformNativeWidgetImplAuraMus(
           widget, type == kStubCapture, destroyed);
   std::map<std::string, std::vector<uint8_t>> mus_properties =
       MusClient::Get()->ConfigurePropertiesFromParams(init_params);
+  aura::WindowTreeHostMusInitParams window_tree_host_init_params =
+      aura::CreateInitParamsForTopLevel(MusClient::Get()->window_tree_client(),
+                                        std::move(mus_properties));
   desktop_native_widget_aura->SetDesktopWindowTreeHost(
       base::MakeUnique<DesktopWindowTreeHostMus>(
-          widget, desktop_native_widget_aura, cc::FrameSinkId(),
-          &mus_properties));
+          std::move(window_tree_host_init_params), widget,
+          desktop_native_widget_aura));
   return desktop_native_widget_aura;
 }
 
