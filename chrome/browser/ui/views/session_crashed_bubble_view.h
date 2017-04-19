@@ -37,6 +37,8 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
       bool uma_opted_in_already);
 
  private:
+  friend class SessionCrashedBubbleViewTest;
+
   SessionCrashedBubbleView(views::View* anchor_view,
                            Browser* browser,
                            bool offer_uma_optin);

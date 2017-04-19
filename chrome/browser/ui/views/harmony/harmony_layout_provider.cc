@@ -11,6 +11,7 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
     case views::INSETS_PANEL:
     case views::INSETS_BUBBLE_CONTENTS:
       return gfx::Insets(kHarmonyLayoutUnit);
+    case views::INSETS_BUBBLE_TITLE:
     case views::INSETS_DIALOG_TITLE: {
       constexpr int top = kHarmonyLayoutUnit;
       constexpr int side = kHarmonyLayoutUnit;

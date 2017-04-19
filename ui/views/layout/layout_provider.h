@@ -21,6 +21,8 @@ enum InsetsMetric {
 
   // The margins around the contents area of a bubble (popover)-style dialog.
   INSETS_BUBBLE_CONTENTS = VIEWS_INSETS_START,
+  // The margins around the title of a bubble (popover)-style dialog.
+  INSETS_BUBBLE_TITLE,
   // The margins around the button row of a dialog.
   INSETS_DIALOG_BUTTON,
   // The margins around the icon/title of a dialog.

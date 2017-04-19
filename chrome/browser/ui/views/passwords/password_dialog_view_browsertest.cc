@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/account_chooser_dialog_view.h"
 #include "chrome/browser/ui/views/passwords/auto_signin_first_run_dialog_view.h"
@@ -137,10 +138,11 @@ TestManagePasswordsUIController::CreateAutoSigninPrompt(
   return current_autosignin_prompt_;
 }
 
-class PasswordDialogViewTest : public InProcessBrowserTest {
+class PasswordDialogViewTest : public DialogBrowserTest {
  public:
-  // InProcessBrowserTest:
+  // DialogBrowserTest:
   void SetUpOnMainThread() override;
+  void ShowDialog(const std::string& name) override;
 
   void SetupChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
@@ -211,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
   GURL icon_url("https://google.com/icon.png");
   form.icon_url = icon_url;
-  form.display_name = base::ASCIIToUTF16("Peter Pen");
+  form.display_name = base::ASCIIToUTF16("Peter Pan");
   form.federation_origin = url::Origin(GURL("https://google.com/federation"));
   local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
 
@@ -247,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(
   local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
   GURL icon_url("https://google.com/icon.png");
   form.icon_url = icon_url;
-  form.display_name = base::ASCIIToUTF16("Peter Pen");
+  form.display_name = base::ASCIIToUTF16("Peter Pan");
   form.federation_origin = url::Origin(GURL("https://google.com/federation"));
   local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
 
@@ -463,6 +465,31 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   client()->NotifySuccessfulLoginWithExistingPassword(form);
   ASSERT_TRUE(controller()->current_autosignin_prompt());
+}
+
+// DialogBrowserTest methods for interactive dialog invocation.
+void PasswordDialogViewTest::ShowDialog(const std::string& name) {
+  GURL origin("https://example.com");
+  EXPECT_EQ("PopupAutoSigninPrompt", name);
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  autofill::PasswordForm form;
+  form.origin = origin;
+  form.display_name = base::ASCIIToUTF16("Peter");
+  form.username_value = base::ASCIIToUTF16("peter@pan.test");
+  form.icon_url = GURL("broken url");
+  local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
+  GURL icon_url("https://google.com/icon.png");
+  form.icon_url = icon_url;
+  form.display_name = base::ASCIIToUTF16("Peter Pan");
+  form.federation_origin = url::Origin(GURL("https://google.com/federation"));
+  local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
+  SetupChooseCredentials(std::move(local_credentials), origin);
+  ASSERT_TRUE(controller()->current_account_chooser());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
+                       InvokeDialog_PopupAutoSigninPrompt) {
+  RunDialog();
 }
 
 }  // namespace

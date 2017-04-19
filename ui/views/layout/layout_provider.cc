@@ -33,14 +33,17 @@ LayoutProvider* LayoutProvider::Get() {
 gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, VIEWS_INSETS_MAX);
   switch (metric) {
+    case InsetsMetric::INSETS_BUBBLE_CONTENTS:
+      return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
+    case InsetsMetric::INSETS_BUBBLE_TITLE:
+      return gfx::Insets(kPanelVertMargin, kPanelHorizMargin, 0,
+                         kPanelHorizMargin);
     case InsetsMetric::INSETS_DIALOG_BUTTON:
       return gfx::Insets(0, kButtonHEdgeMarginNew, kButtonVEdgeMarginNew,
                          kButtonHEdgeMarginNew);
     case InsetsMetric::INSETS_DIALOG_TITLE:
       return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew, 0,
                          kButtonHEdgeMarginNew);
-    case InsetsMetric::INSETS_BUBBLE_CONTENTS:
-      return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
     case InsetsMetric::INSETS_PANEL:
       return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew);
     case InsetsMetric::INSETS_VECTOR_IMAGE_BUTTON:

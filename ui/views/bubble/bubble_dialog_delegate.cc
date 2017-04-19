@@ -217,7 +217,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       parent_window_(NULL) {
   LayoutProvider* provider = LayoutProvider::Get();
   margins_ = provider->GetInsetsMetric(INSETS_BUBBLE_CONTENTS);
-  title_margins_ = provider->GetInsetsMetric(INSETS_DIALOG_TITLE);
+  title_margins_ = provider->GetInsetsMetric(INSETS_BUBBLE_TITLE);
   if (anchor_view)
     SetAnchorView(anchor_view);
   UpdateColorsFromTheme(GetNativeTheme());
