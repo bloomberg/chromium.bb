@@ -1,5 +1,5 @@
 <?php
-    header("Content-Security-Policy-Report-Only: img-src http://allowed.test"); 
+    header("Content-Security-Policy-Report-Only: img-src http://allowed.test");
 ?>
 <!DOCTYPE html>
 <script src="/resources/testharness.js"></script>
@@ -29,17 +29,15 @@ async_test(t => {
 
 async_test(t => {
     var i = document.createElement('img');
-    // TODO(mkwst): This should be `http://allowed.test:8000/security/resources/redir.php?url=...`
-    // rather than the redirect target: https://crbug.com/613960
-    createListener("http://127.0.0.1:8000/security/resources/compass.jpg?t=3", t);
-    i.src = "http://allowed.test:8000/security/resources/redir.php?url=" + encodeURIComponent("http://127.0.0.1:8000/security/resources/compass.jpg?t=3");
+    var url = "http://allowed.test:8000/security/resources/redir.php?url=" + encodeURIComponent("http://127.0.0.1:8000/security/resources/compass.jpg?t=3");
+    createListener(url, t);
+    i.src = url;
 }, "Block after redirect, same-origin = original URL in report");
 
 async_test(t => {
     var i = document.createElement('img');
-    // TODO(mkwst): This should be `http://allowed.test:8000/security/resources/redir.php?url=...`
-    // rather than the redirect target: https://crbug.com/613960
-    createListener("http://blocked.test:8000", t);
-    i.src = "http://allowed.test:8000/security/resources/redir.php?url=" + encodeURIComponent("http://blocked.test:8000/security/resources/compass.jpg?t=4");
+    var url = "http://allowed.test:8000/security/resources/redir.php?url=" + encodeURIComponent("http://blocked.test:8000/security/resources/compass.jpg?t=4");
+    createListener(url, t);
+    i.src = url;
 }, "Block after redirect, cross-origin = original URL in report");
 </script>

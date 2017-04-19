@@ -171,7 +171,7 @@ bool ResourceLoader::WillFollowRedirect(
   const KURL original_url = new_request.Url();
 
   if (!IsManualRedirectFetchRequest(resource_->GetResourceRequest())) {
-    ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
+    ResourceRequestBlockedReason blocked_reason = Context().CanFollowRedirect(
         resource_->GetType(), new_request, new_request.Url(),
         resource_->Options(),
         /* Don't send security violation reports for unused preloads */

@@ -115,9 +115,12 @@ void FetchContext::AddConsoleMessage(const String&,
                                      FetchContext::LogMessageType) const {}
 
 void FetchContext::PopulateResourceRequest(
+    const KURL&,
     Resource::Type,
     const ClientHintsPreferences&,
     const FetchParameters::ResourceWidth&,
+    const ResourceLoaderOptions&,
+    SecurityViolationReportingPolicy,
     ResourceRequest&) {}
 
 void FetchContext::SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) {}

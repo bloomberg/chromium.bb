@@ -500,9 +500,15 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
          factory.GetType() == Resource::kRaw ||
          factory.GetType() == Resource::kXSLStyleSheet);
 
+  SecurityViolationReportingPolicy reporting_policy =
+      params.IsSpeculativePreload()
+          ? SecurityViolationReportingPolicy::kSuppressReporting
+          : SecurityViolationReportingPolicy::kReport;
   Context().PopulateResourceRequest(
+      MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()),
       factory.GetType(), params.GetClientHintsPreferences(),
-      params.GetResourceWidth(), resource_request);
+      params.GetResourceWidth(), params.Options(), reporting_policy,
+      resource_request);
 
   if (!params.Url().IsValid())
     return kAbort;
@@ -521,10 +527,7 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
       MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()),
       params.Options(),
       /* Don't send security violation reports for speculative preloads */
-      params.IsSpeculativePreload()
-          ? SecurityViolationReportingPolicy::kSuppressReporting
-          : SecurityViolationReportingPolicy::kReport,
-      params.GetOriginRestriction());
+      reporting_policy, params.GetOriginRestriction());
   if (blocked_reason != ResourceRequestBlockedReason::kNone) {
     DCHECK(!substitute_data.ForceSynchronousLoad());
     return kBlock;

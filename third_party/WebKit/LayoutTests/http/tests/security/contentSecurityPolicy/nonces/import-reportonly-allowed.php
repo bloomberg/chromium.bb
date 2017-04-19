@@ -16,15 +16,9 @@
         var watcher = new EventWatcher(t, document, ['securitypolicyviolation', 'securitypolicyviolation']);
         watcher
             .wait_for('securitypolicyviolation')
-            .then(t.step_func(e => {
-                assert_equals(e.blockedURI, "http://127.0.0.1:8000/security/resources/blank.html");
-                assert_equals(e.lineNumber, 27);
-                // TODO(mkwst): We shouldn't be generating another violation report here.
-                return watcher.wait_for('securitypolicyviolation');
-            }))
             .then(t.step_func_done(e => {
                 assert_equals(e.blockedURI, "http://127.0.0.1:8000/security/resources/blank.html");
-                assert_equals(e.lineNumber, 0);
+                assert_equals(e.lineNumber, 21);
             }));
 
         document.head.appendChild(link);

@@ -202,6 +202,19 @@ class CORE_EXPORT FrameLoader final {
       bool is_client_redirect,
       HTMLFormElement*);
 
+  // Like ShouldContinueForNavigationPolicy, but should be used when following
+  // redirects.
+  NavigationPolicy ShouldContinueForRedirectNavigationPolicy(
+      const ResourceRequest&,
+      const SubstituteData&,
+      DocumentLoader*,
+      ContentSecurityPolicyDisposition,
+      NavigationType,
+      NavigationPolicy,
+      FrameLoadType,
+      bool is_client_redirect,
+      HTMLFormElement*);
+
   // Note: When a PlzNavigtate navigation is handled by the client, we will
   // have created a dummy provisional DocumentLoader, so this will return true
   // while the client handles the navigation.

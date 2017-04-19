@@ -467,7 +467,7 @@ bool DocumentLoader::RedirectReceived(
     fetcher_->StopFetching();
     return false;
   }
-  if (GetFrameLoader().ShouldContinueForNavigationPolicy(
+  if (GetFrameLoader().ShouldContinueForRedirectNavigationPolicy(
           request_, SubstituteData(), this, kCheckContentSecurityPolicy,
           navigation_type_, kNavigationPolicyCurrentTab, load_type_,
           IsClientRedirect(), nullptr) != kNavigationPolicyCurrentTab) {

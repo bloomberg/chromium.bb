@@ -32,11 +32,13 @@
 #define FrameFetchContext_h
 
 #include "core/CoreExport.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/BaseFetchContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
@@ -123,6 +125,13 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
       FetchParameters::OriginRestriction) const override;
+  ResourceRequestBlockedReason CanFollowRedirect(
+      Resource::Type,
+      const ResourceRequest&,
+      const KURL&,
+      const ResourceLoaderOptions&,
+      SecurityViolationReportingPolicy,
+      FetchParameters::OriginRestriction) const override;
   ResourceRequestBlockedReason AllowResponse(
       Resource::Type,
       const ResourceRequest&,
@@ -141,9 +150,12 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void AddConsoleMessage(const String&,
                          LogMessageType = kLogErrorMessage) const override;
 
-  void PopulateResourceRequest(Resource::Type,
+  void PopulateResourceRequest(const KURL&,
+                               Resource::Type,
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
+                               const ResourceLoaderOptions&,
+                               SecurityViolationReportingPolicy,
                                ResourceRequest&) override;
   void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
 
@@ -187,6 +199,14 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       SecurityViolationReportingPolicy,
       FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
+
+  ResourceRequestBlockedReason CheckCSPForRequest(
+      const ResourceRequest&,
+      const KURL&,
+      const ResourceLoaderOptions&,
+      SecurityViolationReportingPolicy,
+      ResourceRequest::RedirectStatus,
+      ContentSecurityPolicy::CheckHeaderType) const;
 
   Member<DocumentLoader> document_loader_;
 };

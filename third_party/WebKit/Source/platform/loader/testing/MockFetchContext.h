@@ -54,6 +54,16 @@ class MockFetchContext : public FetchContext {
       FetchParameters::OriginRestriction) const override {
     return ResourceRequestBlockedReason::kNone;
   }
+  ResourceRequestBlockedReason CanFollowRedirect(
+      Resource::Type type,
+      const ResourceRequest& request,
+      const KURL& url,
+      const ResourceLoaderOptions& options,
+      SecurityViolationReportingPolicy reporting_policy,
+      FetchParameters::OriginRestriction origin_restriction) const override {
+    return CanRequest(type, request, url, options, reporting_policy,
+                      origin_restriction);
+  }
   bool ShouldLoadNewResource(Resource::Type) const override {
     return load_policy_ == kShouldLoadNewResource;
   }

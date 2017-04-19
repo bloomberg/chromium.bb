@@ -469,6 +469,69 @@ TEST_F(FrameFetchContextModifyRequestTest, SendEmbeddingCSPHeader) {
   }
 }
 
+// Tests that CanFollowRedirect() checks both report-only and enforced CSP
+// headers.
+TEST_F(FrameFetchContextTest, RedirectChecksReportedAndEnforcedCSP) {
+  ContentSecurityPolicy* policy = document->GetContentSecurityPolicy();
+  policy->DidReceiveHeader("script-src https://foo.test",
+                           kContentSecurityPolicyHeaderTypeEnforce,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+  policy->DidReceiveHeader("script-src https://bar.test",
+                           kContentSecurityPolicyHeaderTypeReport,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+  KURL url(KURL(), "http://baz.test");
+  ResourceRequest resource_request(url);
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  EXPECT_EQ(
+      ResourceRequestBlockedReason::CSP,
+      fetch_context->CanFollowRedirect(
+          Resource::kScript, resource_request, url, ResourceLoaderOptions(),
+          SecurityViolationReportingPolicy::kReport,
+          FetchParameters::kUseDefaultOriginRestrictionForType));
+  EXPECT_EQ(2u, policy->violation_reports_sent_.size());
+}
+
+// Tests that AllowResponse() checks both report-only and enforced CSP headers.
+TEST_F(FrameFetchContextTest, AllowResponseChecksReportedAndEnforcedCSP) {
+  ContentSecurityPolicy* policy = document->GetContentSecurityPolicy();
+  policy->DidReceiveHeader("script-src https://foo.test",
+                           kContentSecurityPolicyHeaderTypeEnforce,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+  policy->DidReceiveHeader("script-src https://bar.test",
+                           kContentSecurityPolicyHeaderTypeReport,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+  KURL url(KURL(), "http://baz.test");
+  ResourceRequest resource_request(url);
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  EXPECT_EQ(ResourceRequestBlockedReason::CSP,
+            fetch_context->AllowResponse(Resource::kScript, resource_request,
+                                         url, ResourceLoaderOptions()));
+  EXPECT_EQ(2u, policy->violation_reports_sent_.size());
+}
+
+// Tests that PopulateResourceRequest() checks report-only CSP headers, so that
+// any violations are reported before the request is modified.
+TEST_F(FrameFetchContextTest, PopulateResourceRequestChecksReportOnlyCSP) {
+  ContentSecurityPolicy* policy = document->GetContentSecurityPolicy();
+  policy->DidReceiveHeader(
+      "upgrade-insecure-requests; script-src https://foo.test",
+      kContentSecurityPolicyHeaderTypeEnforce,
+      kContentSecurityPolicyHeaderSourceHTTP);
+  policy->DidReceiveHeader("script-src https://bar.test",
+                           kContentSecurityPolicyHeaderTypeReport,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+  KURL url(KURL(), "http://baz.test");
+  ResourceRequest resource_request(url);
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  fetch_context->PopulateResourceRequest(
+      url, Resource::kScript, ClientHintsPreferences(),
+      FetchParameters::ResourceWidth(), ResourceLoaderOptions(),
+      SecurityViolationReportingPolicy::kReport, resource_request);
+  EXPECT_EQ(1u, policy->violation_reports_sent_.size());
+  // Check that the resource was upgraded to a secure URL.
+  EXPECT_EQ(KURL(KURL(), "https://baz.test"), resource_request.Url());
+}
+
 class FrameFetchContextHintsTest : public FrameFetchContextTest {
  public:
   FrameFetchContextHintsTest() {}

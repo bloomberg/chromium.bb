@@ -133,16 +133,19 @@ TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {
   EXPECT_FALSE(csp2->AllowScriptFromSource(
       example_url, String(), IntegrityMetadataSet(), kParserInserted,
       ResourceRequest::RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      SecurityViolationReportingPolicy::kSuppressReporting,
+      ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
   EXPECT_TRUE(csp2->AllowPluginType(
       "application/x-type-1", "application/x-type-1", example_url,
       SecurityViolationReportingPolicy::kSuppressReporting));
   EXPECT_TRUE(csp2->AllowImageFromSource(
       example_url, ResourceRequest::RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      SecurityViolationReportingPolicy::kSuppressReporting,
+      ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
   EXPECT_FALSE(csp2->AllowImageFromSource(
       not_example_url, ResourceRequest::RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      SecurityViolationReportingPolicy::kSuppressReporting,
+      ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
   EXPECT_FALSE(csp2->AllowPluginType(
       "application/x-type-2", "application/x-type-2", example_url,
       SecurityViolationReportingPolicy::kSuppressReporting));
@@ -686,7 +689,10 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_TRUE(policy->AllowScriptFromSource(
-        resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted));
+        resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted,
+        ResourceRequest::RedirectStatus::kNoRedirect,
+        SecurityViolationReportingPolicy::kReport,
+        ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
     // If this is expected to generate a violation, we should have sent a
     // report, even though we don't deny access in `allowScriptFromSource`:
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
@@ -827,9 +833,17 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     policy->DidReceiveHeader(test.policy2,
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(test.allowed1, policy->AllowScriptFromSource(
-                                 resource, String(test.nonce),
-                                 IntegrityMetadataSet(), kParserInserted));
+    EXPECT_EQ(test.allowed1,
+              policy->AllowScriptFromSource(
+                  resource, String(test.nonce), IntegrityMetadataSet(),
+                  kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+                  SecurityViolationReportingPolicy::kReport,
+                  ContentSecurityPolicy::CheckHeaderType::kCheckEnforce));
+    EXPECT_TRUE(policy->AllowScriptFromSource(
+        resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted,
+        ResourceRequest::RedirectStatus::kNoRedirect,
+        SecurityViolationReportingPolicy::kReport,
+        ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report / Enforce
@@ -841,9 +855,17 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     policy->DidReceiveHeader(test.policy2,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(test.allowed2, policy->AllowScriptFromSource(
-                                 resource, String(test.nonce),
-                                 IntegrityMetadataSet(), kParserInserted));
+    EXPECT_TRUE(policy->AllowScriptFromSource(
+        resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted,
+        ResourceRequest::RedirectStatus::kNoRedirect,
+        SecurityViolationReportingPolicy::kReport,
+        ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
+    EXPECT_EQ(test.allowed2,
+              policy->AllowScriptFromSource(
+                  resource, String(test.nonce), IntegrityMetadataSet(),
+                  kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+                  SecurityViolationReportingPolicy::kReport,
+                  ContentSecurityPolicy::CheckHeaderType::kCheckEnforce));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Enforce / Enforce
@@ -855,10 +877,12 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     policy->DidReceiveHeader(test.policy2,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(
-        test.allowed1 && test.allowed2,
-        policy->AllowScriptFromSource(resource, String(test.nonce),
-                                      IntegrityMetadataSet(), kParserInserted));
+    EXPECT_EQ(test.allowed1 && test.allowed2,
+              policy->AllowScriptFromSource(
+                  resource, String(test.nonce), IntegrityMetadataSet(),
+                  kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+                  SecurityViolationReportingPolicy::kReport,
+                  ContentSecurityPolicy::CheckHeaderType::kCheckEnforce));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report / Report
@@ -871,7 +895,10 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_TRUE(policy->AllowScriptFromSource(
-        resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted));
+        resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted,
+        ResourceRequest::RedirectStatus::kNoRedirect,
+        SecurityViolationReportingPolicy::kReport,
+        ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
   }
 }

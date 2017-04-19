@@ -38,6 +38,7 @@
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
@@ -154,6 +155,15 @@ class PLATFORM_EXPORT FetchContext
       FetchParameters::OriginRestriction) const {
     return ResourceRequestBlockedReason::kOther;
   }
+  virtual ResourceRequestBlockedReason CanFollowRedirect(
+      Resource::Type,
+      const ResourceRequest&,
+      const KURL&,
+      const ResourceLoaderOptions&,
+      SecurityViolationReportingPolicy,
+      FetchParameters::OriginRestriction) const {
+    return ResourceRequestBlockedReason::kOther;
+  }
   virtual ResourceRequestBlockedReason AllowResponse(
       Resource::Type,
       const ResourceRequest&,
@@ -180,9 +190,12 @@ class PLATFORM_EXPORT FetchContext
   // Populates the ResourceRequest using the given values and information
   // stored in the FetchContext implementation. Used by ResourceFetcher to
   // prepare a ResourceRequest instance at the start of resource loading.
-  virtual void PopulateResourceRequest(Resource::Type,
+  virtual void PopulateResourceRequest(const KURL&,
+                                       Resource::Type,
                                        const ClientHintsPreferences&,
                                        const FetchParameters::ResourceWidth&,
+                                       const ResourceLoaderOptions&,
+                                       SecurityViolationReportingPolicy,
                                        ResourceRequest&);
   // Sets the first party for cookies and requestor origin using information
   // stored in the FetchContext implementation.

@@ -654,11 +654,33 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequest(
   return blocked_reason;
 }
 
+ResourceRequestBlockedReason FrameFetchContext::CanFollowRedirect(
+    Resource::Type type,
+    const ResourceRequest& resource_request,
+    const KURL& url,
+    const ResourceLoaderOptions& options,
+    SecurityViolationReportingPolicy reporting_policy,
+    FetchParameters::OriginRestriction origin_restriction) const {
+  // CanRequestInternal checks enforced CSP, so check report-only here to ensure
+  // that violations are sent.
+  CheckCSPForRequest(resource_request, url, options, reporting_policy,
+                     RedirectStatus::kFollowedRedirect,
+                     ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
+  return CanRequest(type, resource_request, url, options, reporting_policy,
+                    origin_restriction);
+}
+
 ResourceRequestBlockedReason FrameFetchContext::AllowResponse(
     Resource::Type type,
     const ResourceRequest& resource_request,
     const KURL& url,
     const ResourceLoaderOptions& options) const {
+  // canRequestInternal only checks enforced policies: check report-only here
+  // to ensure violations are sent.
+  CheckCSPForRequest(resource_request, url, options,
+                     SecurityViolationReportingPolicy::kReport,
+                     RedirectStatus::kFollowedRedirect,
+                     ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
   ResourceRequestBlockedReason blocked_reason =
       CanRequestInternal(type, resource_request, url, options,
                          SecurityViolationReportingPolicy::kReport,
@@ -732,21 +754,14 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequestInternal(
       break;
   }
 
-  // FIXME: Convert this to check the isolated world's Content Security Policy
-  // once webkit.org/b/104520 is solved.
-  bool should_bypass_main_world_csp =
-      GetFrame()->GetScriptController().ShouldBypassMainWorldCSP() ||
-      options.content_security_policy_option ==
-          kDoNotCheckContentSecurityPolicy;
-
-  if (execution_context_) {
-    DCHECK(execution_context_->GetContentSecurityPolicy());
-    if (!should_bypass_main_world_csp &&
-        !execution_context_->GetContentSecurityPolicy()->AllowRequest(
-            resource_request.GetRequestContext(), url,
-            options.content_security_policy_nonce, options.integrity_metadata,
-            options.parser_disposition, redirect_status, reporting_policy))
-      return ResourceRequestBlockedReason::CSP;
+  // We check the 'report-only' headers before upgrading the request (in
+  // populateResourceRequest). We check the enforced headers here to ensure we
+  // block things we ought to block.
+  if (CheckCSPForRequest(
+          resource_request, url, options, reporting_policy, redirect_status,
+          ContentSecurityPolicy::CheckHeaderType::kCheckEnforce) ==
+      ResourceRequestBlockedReason::CSP) {
+    return ResourceRequestBlockedReason::CSP;
   }
 
   if (type == Resource::kScript || type == Resource::kImportResource) {
@@ -831,6 +846,31 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequestInternal(
     }
   }
 
+  return ResourceRequestBlockedReason::kNone;
+}
+
+ResourceRequestBlockedReason FrameFetchContext::CheckCSPForRequest(
+    const ResourceRequest& resource_request,
+    const KURL& url,
+    const ResourceLoaderOptions& options,
+    SecurityViolationReportingPolicy reporting_policy,
+    ResourceRequest::RedirectStatus redirect_status,
+    ContentSecurityPolicy::CheckHeaderType check_header_type) const {
+  if (GetFrame()->GetScriptController().ShouldBypassMainWorldCSP() ||
+      options.content_security_policy_option ==
+          kDoNotCheckContentSecurityPolicy) {
+    return ResourceRequestBlockedReason::kNone;
+  }
+
+  if (execution_context_) {
+    DCHECK(execution_context_->GetContentSecurityPolicy());
+    if (!execution_context_->GetContentSecurityPolicy()->AllowRequest(
+            resource_request.GetRequestContext(), url,
+            options.content_security_policy_nonce, options.integrity_metadata,
+            options.parser_disposition, redirect_status, reporting_policy,
+            check_header_type))
+      return ResourceRequestBlockedReason::CSP;
+  }
   return ResourceRequestBlockedReason::kNone;
 }
 
@@ -960,11 +1000,22 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 }
 
 void FrameFetchContext::PopulateResourceRequest(
+    const KURL& url,
     Resource::Type type,
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
+    const ResourceLoaderOptions& options,
+    SecurityViolationReportingPolicy reporting_policy,
     ResourceRequest& request) {
   SetFirstPartyCookieAndRequestorOrigin(request);
+
+  // Before modifying the request for CSP, evaluate report-only headers. This
+  // allows site owners to learn about requests that are being modified
+  // (e.g. mixed content that is being upgraded by upgrade-insecure-requests).
+  CheckCSPForRequest(request, url, options, reporting_policy,
+                     request.GetRedirectStatus(),
+                     ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
+
   ModifyRequestForCSP(request);
   AddClientHintsIfNecessary(hints_preferences, resource_width, request);
   AddCSPHeaderIfNecessary(type, request);
