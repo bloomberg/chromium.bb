@@ -487,7 +487,6 @@ post_process_cmdline() {
     soft_enable new_tokenset
     soft_enable ext_intra
     soft_enable mv_compress
-    soft_enable ext_refs
 
     # Backwards/jenkins compatibility with --enable-aom-highbitdepth
     enabled aom_highbitdepth && enable_feature highbitdepth
