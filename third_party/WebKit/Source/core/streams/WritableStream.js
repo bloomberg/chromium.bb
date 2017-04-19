@@ -107,35 +107,14 @@
 
   const stateNames = {[CLOSED]: 'closed', [ERRORED]: 'errored'};
   function createCannotActionOnStateStreamError(action, state) {
-    TEMP_ASSERT(stateNames[state] !== undefined,
-                `name for state ${state} exists in stateNames`);
+    // assert(stateNames[state] !== undefined,
+    //        `name for state ${state} exists in stateNames`);
     return new TypeError(
         templateErrorCannotActionOnStateStream(action, stateNames[state]));
   }
 
   function rejectPromises(queue, e) {
     queue.forEach(promise => v8.rejectPromise(promise, e));
-  }
-
-  // https://tc39.github.io/ecma262/#sec-ispropertykey
-  // TODO(ricea): Remove this when the asserts using it are removed.
-  function IsPropertyKey(argument) {
-    return typeof argument === 'string' || typeof argument === 'symbol';
-  }
-
-  // TODO(ricea): Remove all asserts once the implementation has stabilised.
-  function TEMP_ASSERT(predicate, message) {
-    if (predicate) {
-      return;
-    }
-    v8.log(`Assertion failed: ${message}\n`);
-    v8.logStackTrace();
-    class WritableStreamInternalError extends Error {
-      constructor(message) {
-        super(message);
-      }
-    }
-    throw new WritableStreamInternalError(message);
   }
 
   class WritableStream {
@@ -195,8 +174,8 @@
   }
 
   function IsWritableStreamLocked(stream) {
-    TEMP_ASSERT(IsWritableStream(stream),
-                '! IsWritableStream(stream) is true.');
+    // assert(IsWritableStream(stream),
+    //        '! IsWritableStream(stream) is true.');
     return stream[_writer] !== undefined;
   }
 
@@ -213,8 +192,8 @@
       return Promise_reject(error);
     }
 
-    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
-                '_state_ is `"writable"` or `"erroring"`');
+    // assert(state === WRITABLE || state === ERRORING,
+    //        '_state_ is `"writable"` or `"erroring"`');
 
     const wasAlreadyErroring = state === ERRORING;
     if (wasAlreadyErroring) {
@@ -233,10 +212,10 @@
   // Writable Stream Abstract Operations Used by Controllers
 
   function WritableStreamAddWriteRequest(stream) {
-    TEMP_ASSERT(IsWritableStreamLocked(stream),
-                '! IsWritableStreamLocked(writer) is true.');
-    TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
-                'stream.[[state]] is "writable".');
+    // assert(IsWritableStreamLocked(stream),
+    //        '! IsWritableStreamLocked(writer) is true.');
+    // assert((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
+    //        'stream.[[state]] is "writable".');
     const promise = v8.createPromise();
     stream[_writeRequests].push(promise);
     return promise;
@@ -249,18 +228,18 @@
       return;
     }
 
-    TEMP_ASSERT(state === ERRORING, '_state_ is `"erroring"`');
+    // assert(state === ERRORING, '_state_ is `"erroring"`');
     WritableStreamFinishErroring(stream);
   }
 
   function WritableStreamStartErroring(stream, reason) {
-    TEMP_ASSERT(stream[_storedError] === undefined,
-                '_stream_.[[storedError]] is *undefined*');
-    TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
-                '_stream_.[[state]] is `"writable"`');
+    // assert(stream[_storedError] === undefined,
+    //        '_stream_.[[storedError]] is *undefined*');
+    // assert((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
+    //        '_stream_.[[state]] is `"writable"`');
 
     const controller = stream[_writableStreamController];
-    TEMP_ASSERT(controller !== undefined, '_controller_ is not *undefined*');
+    // assert(controller !== undefined, '_controller_ is not *undefined*');
 
     stream[_stateAndFlags] = (stream[_stateAndFlags] & ~STATE_MASK) | ERRORING;
     stream[_storedError] = reason;
@@ -277,11 +256,10 @@
   }
 
   function WritableStreamFinishErroring(stream) {
-    TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === ERRORING,
-                '_stream_.[[state]] is `"erroring"`');
-    TEMP_ASSERT(
-        !WritableStreamHasOperationMarkedInFlight(stream),
-        '! WritableStreamHasOperationMarkedInFlight(_stream_) is *false*');
+    // assert((stream[_stateAndFlags] & STATE_MASK) === ERRORING,
+    //        '_stream_.[[state]] is `"erroring"`');
+    // assert(!WritableStreamHasOperationMarkedInFlight(stream),
+    //        '! WritableStreamHasOperationMarkedInFlight(_stream_) is *false*');
 
     stream[_stateAndFlags] = (stream[_stateAndFlags] & ~STATE_MASK) | ERRORED;
 
@@ -322,34 +300,34 @@
   }
 
   function WritableStreamFinishInFlightWrite(stream) {
-    TEMP_ASSERT(stream[_inFlightWriteRequest] !== undefined,
-                '_stream_.[[inFlightWriteRequest]] is not *undefined*.');
+    // assert(stream[_inFlightWriteRequest] !== undefined,
+    //        '_stream_.[[inFlightWriteRequest]] is not *undefined*.');
     v8.resolvePromise(stream[_inFlightWriteRequest], undefined);
     stream[_inFlightWriteRequest] = undefined;
   }
 
   function WritableStreamFinishInFlightWriteWithError(stream, error) {
-    TEMP_ASSERT(stream[_inFlightWriteRequest] !== undefined,
-                '_stream_.[[inFlightWriteRequest]] is not *undefined*.');
+    // assert(stream[_inFlightWriteRequest] !== undefined,
+    //        '_stream_.[[inFlightWriteRequest]] is not *undefined*.');
     v8.rejectPromise(stream[_inFlightWriteRequest], error);
     stream[_inFlightWriteRequest] = undefined;
 
     let state = stream[_stateAndFlags] & STATE_MASK;
-    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
-                '_stream_.[[state]] is `"writable"` or `"erroring"`');
+    // assert(state === WRITABLE || state === ERRORING,
+    //        '_stream_.[[state]] is `"writable"` or `"erroring"`');
 
     WritableStreamDealWithRejection(stream, error);
   }
 
   function WritableStreamFinishInFlightClose(stream) {
-    TEMP_ASSERT(stream[_inFlightCloseRequest] !== undefined,
-                '_stream_.[[inFlightCloseRequest]] is not *undefined*.');
+    // assert(stream[_inFlightCloseRequest] !== undefined,
+    //        '_stream_.[[inFlightCloseRequest]] is not *undefined*.');
     v8.resolvePromise(stream[_inFlightCloseRequest], undefined);
     stream[_inFlightCloseRequest] = undefined;
 
     const state = stream[_stateAndFlags] & STATE_MASK;
-    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
-                '_stream_.[[state]] is `"writable"` or `"erroring"`');
+    // assert(state === WRITABLE || state === ERRORING,
+    //        '_stream_.[[state]] is `"writable"` or `"erroring"`');
 
     if (state === ERRORING) {
       stream[_storedError] = undefined;
@@ -365,21 +343,21 @@
       v8.resolvePromise(writer[_closedPromise], undefined);
     }
 
-    TEMP_ASSERT(stream[_pendingAbortRequest] === undefined,
-                '_stream_.[[pendingAbortRequest]] is *undefined*');
-    TEMP_ASSERT(stream[_storedError] === undefined,
-                '_stream_.[[storedError]] is *undefined*');
+    // assert(stream[_pendingAbortRequest] === undefined,
+    //        '_stream_.[[pendingAbortRequest]] is *undefined*');
+    // assert(stream[_storedError] === undefined,
+    //        '_stream_.[[storedError]] is *undefined*');
   }
 
   function WritableStreamFinishInFlightCloseWithError(stream, error) {
-    TEMP_ASSERT(stream[_inFlightCloseRequest] !== undefined,
-                '_stream_.[[inFlightCloseRequest]] is not *undefined*.');
+    // assert(stream[_inFlightCloseRequest] !== undefined,
+    //        '_stream_.[[inFlightCloseRequest]] is not *undefined*.');
     v8.rejectPromise(stream[_inFlightCloseRequest], error);
     stream[_inFlightCloseRequest] = undefined;
 
     const state = stream[_stateAndFlags] & STATE_MASK;
-    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
-                '_stream_.[[state]] is `"writable"` or `"erroring"`');
+    // assert(state === WRITABLE || state === ERRORING,
+    //        '_stream_.[[state]] is `"writable"` or `"erroring"`');
 
     if (stream[_pendingAbortRequest] !== undefined) {
       v8.rejectPromise(stream[_pendingAbortRequest].promise, error);
@@ -400,30 +378,30 @@
   }
 
   function WritableStreamMarkCloseRequestInFlight(stream) {
-    TEMP_ASSERT(stream[_inFlightCloseRequest] === undefined,
-                '_stream_.[[inFlightCloseRequest]] is *undefined*.');
-    TEMP_ASSERT(stream[_closeRequest] !== undefined,
-                '_stream_.[[closeRequest]] is not *undefined*.');
+    // assert(stream[_inFlightCloseRequest] === undefined,
+    //        '_stream_.[[inFlightCloseRequest]] is *undefined*.');
+    // assert(stream[_closeRequest] !== undefined,
+    //        '_stream_.[[closeRequest]] is not *undefined*.');
     stream[_inFlightCloseRequest] = stream[_closeRequest];
     stream[_closeRequest] = undefined;
   }
 
   function WritableStreamMarkFirstWriteRequestInFlight(stream) {
-    TEMP_ASSERT(stream[_inFlightWriteRequest] === undefined,
-                '_stream_.[[inFlightWriteRequest]] is *undefined*.');
-    TEMP_ASSERT(stream[_writeRequests].length !== 0,
-                '_stream_.[[writeRequests]] is not empty.');
+    // assert(stream[_inFlightWriteRequest] === undefined,
+    //        '_stream_.[[inFlightWriteRequest]] is *undefined*.');
+    // assert(stream[_writeRequests].length !== 0,
+    //        '_stream_.[[writeRequests]] is not empty.');
     const writeRequest = stream[_writeRequests].shift();
     stream[_inFlightWriteRequest] = writeRequest;
   }
 
   function WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream) {
-    TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === ERRORED,
-                '_stream_.[[state]] is `"errored"`');
+    // assert((stream[_stateAndFlags] & STATE_MASK) === ERRORED,
+    //        '_stream_.[[state]] is `"errored"`');
 
     if (stream[_closeRequest] !== undefined) {
-      TEMP_ASSERT(stream[_inFlightCloseRequest] === undefined,
-                  '_stream_.[[inFlightCloseRequest]] is *undefined*');
+      // assert(stream[_inFlightCloseRequest] === undefined,
+      //        '_stream_.[[inFlightCloseRequest]] is *undefined*');
       v8.rejectPromise(stream[_closeRequest], stream[_storedError]);
       stream[_closeRequest] = undefined;
     }
@@ -436,17 +414,17 @@
   }
 
   function WritableStreamUpdateBackpressure(stream, backpressure) {
-    TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
-                'stream.[[state]] is "writable".');
-    TEMP_ASSERT(!WritableStreamCloseQueuedOrInFlight(stream),
-                'WritableStreamCloseQueuedOrInFlight(_stream_) is *false*.');
+    // assert((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
+    //        'stream.[[state]] is "writable".');
+    // assert(!WritableStreamCloseQueuedOrInFlight(stream),
+    //        'WritableStreamCloseQueuedOrInFlight(_stream_) is *false*.');
     const writer = stream[_writer];
     if (writer !== undefined &&
         backpressure !== Boolean(stream[_stateAndFlags] & BACKPRESSURE_FLAG)) {
       if (backpressure) {
         writer[_readyPromise] = v8.createPromise();
       } else {
-        TEMP_ASSERT(!backpressure, '_backpressure_ is *false*.');
+        // assert(!backpressure, '_backpressure_ is *false*.');
         v8.resolvePromise(writer[_readyPromise], undefined);
       }
     }
@@ -460,21 +438,21 @@
   // Functions to expose internals for ReadableStream.pipeTo. These are not
   // part of the standard.
   function isWritableStreamErrored(stream) {
-    TEMP_ASSERT(
-        IsWritableStream(stream), '! IsWritableStream(stream) is true.');
+    // assert(
+    //     IsWritableStream(stream), '! IsWritableStream(stream) is true.');
     return (stream[_stateAndFlags] & STATE_MASK) === ERRORED;
   }
 
   function isWritableStreamClosingOrClosed(stream) {
-    TEMP_ASSERT(
-        IsWritableStream(stream), '! IsWritableStream(stream) is true.');
+    // assert(
+    //     IsWritableStream(stream), '! IsWritableStream(stream) is true.');
     return WritableStreamCloseQueuedOrInFlight(stream) ||
         (stream[_stateAndFlags] & STATE_MASK) === CLOSED;
   }
 
   function getWritableStreamStoredError(stream) {
-    TEMP_ASSERT(
-        IsWritableStream(stream), '! IsWritableStream(stream) is true.');
+    // assert(
+    //     IsWritableStream(stream), '! IsWritableStream(stream) is true.');
     return stream[_storedError];
   }
 
@@ -519,7 +497,7 @@
 
         default:
         {
-          TEMP_ASSERT(state === ERRORED, '_state_ is `"errored"`.');
+          // assert(state === ERRORED, '_state_ is `"errored"`.');
           const storedError = stream[_storedError];
           this[_readyPromise] = Promise_reject(storedError);
           v8.markPromiseAsHandled(this[_readyPromise]);
@@ -586,8 +564,8 @@
       if (stream === undefined) {
         return;
       }
-      TEMP_ASSERT(stream[_writer] !== undefined,
-                  'stream.[[writer]] is not undefined.');
+      // assert(stream[_writer] !== undefined,
+      //        'stream.[[writer]] is not undefined.');
       WritableStreamDefaultWriterRelease(this);
     }
 
@@ -610,24 +588,24 @@
 
   function WritableStreamDefaultWriterAbort(writer, reason) {
     const stream = writer[_ownerWritableStream];
-    TEMP_ASSERT(stream !== undefined,
-                'stream is not undefined.');
+    // assert(stream !== undefined,
+    //        'stream is not undefined.');
     return WritableStreamAbort(stream, reason);
   }
 
   function WritableStreamDefaultWriterClose(writer) {
     const stream = writer[_ownerWritableStream];
-    TEMP_ASSERT(stream !== undefined, 'stream is not undefined.');
+    // assert(stream !== undefined, 'stream is not undefined.');
     const state = stream[_stateAndFlags] & STATE_MASK;
     if (state === CLOSED || state === ERRORED) {
       return Promise_reject(
           createCannotActionOnStateStreamError('close', state));
     }
 
-    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
-                '_state_ is `"writable"` or `"erroring"`.');
-    TEMP_ASSERT(!WritableStreamCloseQueuedOrInFlight(stream),
-                '! WritableStreamCloseQueuedOrInFlight(_stream_) is *false*.');
+    // assert(state === WRITABLE || state === ERRORING,
+    //        '_state_ is `"writable"` or `"erroring"`.');
+    // assert(!WritableStreamCloseQueuedOrInFlight(stream),
+    //        '! WritableStreamCloseQueuedOrInFlight(_stream_) is *false*.');
     const promise = v8.createPromise();
     stream[_closeRequest] = promise;
 
@@ -641,7 +619,7 @@
 
   function WritableStreamDefaultWriterCloseWithErrorPropagation(writer) {
     const stream = writer[_ownerWritableStream];
-    TEMP_ASSERT(stream !== undefined, 'stream is not undefined.');
+    // assert(stream !== undefined, 'stream is not undefined.');
     const state = stream[_stateAndFlags] & STATE_MASK;
     if (WritableStreamCloseQueuedOrInFlight(stream) || state === CLOSED) {
       return Promise_resolve(undefined);
@@ -650,8 +628,8 @@
       return Promise_reject(stream[_storedError]);
     }
 
-    TEMP_ASSERT(state === WRITABLE || state === ERRORING,
-                '_state_ is `"writable"` or `"erroring"`.');
+    // assert(state === WRITABLE || state === ERRORING,
+    //        '_state_ is `"writable"` or `"erroring"`.');
 
     return WritableStreamDefaultWriterClose(writer);
   }
@@ -692,10 +670,10 @@
 
   function WritableStreamDefaultWriterRelease(writer) {
     const stream = writer[_ownerWritableStream];
-    TEMP_ASSERT(stream !== undefined,
-                'stream is not undefined.');
-    TEMP_ASSERT(stream[_writer] === writer,
-                'stream.[[writer]] is writer.');
+    // assert(stream !== undefined,
+    //        'stream is not undefined.');
+    // assert(stream[_writer] === writer,
+    //        'stream.[[writer]] is writer.');
     const releasedError = new TypeError(errReleasedWriterClosedPromise);
     WritableStreamDefaultWriterEnsureReadyPromiseRejected(
         writer, releasedError);
@@ -707,7 +685,7 @@
 
   function WritableStreamDefaultWriterWrite(writer, chunk) {
     const stream = writer[_ownerWritableStream];
-    TEMP_ASSERT(stream !== undefined, 'stream is not undefined.');
+    // assert(stream !== undefined, 'stream is not undefined.');
     const controller = stream[_writableStreamController];
     const chunkSize =
         WritableStreamDefaultControllerGetChunkSize(controller, chunk);
@@ -729,7 +707,7 @@
     if (state === ERRORING) {
       return Promise_reject(stream[_storedError]);
     }
-    TEMP_ASSERT(state === WRITABLE, '_state_ is `"writable"`');
+    // assert(state === WRITABLE, '_state_ is `"writable"`');
     const promise = WritableStreamAddWriteRequest(stream);
     WritableStreamDefaultControllerWrite(controller, chunk, chunkSize);
     return promise;
@@ -738,16 +716,16 @@
   // Functions to expose internals for ReadableStream.pipeTo. These do not
   // appear in the standard.
   function getWritableStreamDefaultWriterClosedPromise(writer) {
-    TEMP_ASSERT(
-        IsWritableStreamDefaultWriter(writer),
-        'writer is a WritableStreamDefaultWriter.');
+    // assert(
+    //     IsWritableStreamDefaultWriter(writer),
+    //     'writer is a WritableStreamDefaultWriter.');
     return writer[_closedPromise];
   }
 
   function getWritableStreamDefaultWriterReadyPromise(writer) {
-    TEMP_ASSERT(
-        IsWritableStreamDefaultWriter(writer),
-        'writer is a WritableStreamDefaultWriter.');
+    // assert(
+    //     IsWritableStreamDefaultWriter(writer),
+    //     'writer is a WritableStreamDefaultWriter.');
     return writer[_readyPromise];
   }
 
@@ -810,15 +788,15 @@
         startPromise,
         () => {
           const state = stream[_stateAndFlags] & STATE_MASK;
-          TEMP_ASSERT(state === WRITABLE || state === ERRORING,
-                      '_stream_.[[state]] is `"writable"` or `"erroring"`');
+          // assert(state === WRITABLE || state === ERRORING,
+          //        '_stream_.[[state]] is `"writable"` or `"erroring"`');
           controller[_started] = true;
           WritableStreamDefaultControllerAdvanceQueueIfNeeded(controller);
         },
         r => {
           const state = stream[_stateAndFlags] & STATE_MASK;
-          TEMP_ASSERT(state === WRITABLE || state === ERRORING,
-                      '_stream_.[[state]] is `"writable"` or `"erroring"`');
+          // assert(state === WRITABLE || state === ERRORING,
+          //        '_stream_.[[state]] is `"writable"` or `"erroring"`');
           controller[_started] = true;
           WritableStreamDealWithRejection(stream, r);
         });
@@ -912,8 +890,8 @@
     const stream = controller[_controlledWritableStream];
     WritableStreamMarkCloseRequestInFlight(stream);
     DequeueValue(controller);
-    TEMP_ASSERT(controller[_queue].length === 0,
-                'controller.[[queue]] is empty.');
+    // assert(controller[_queue].length === 0,
+    //        'controller.[[queue]] is empty.');
     const sinkClosePromise = PromiseInvokeOrNoop(
         controller[_underlyingSink], 'close', []);
     thenPromise(
@@ -933,8 +911,8 @@
         () => {
           WritableStreamFinishInFlightWrite(stream);
           const state = stream[_stateAndFlags] & STATE_MASK;
-          TEMP_ASSERT(state === WRITABLE || state === ERRORING,
-                      '_state_ is `"writable"` or `"erroring"`');
+          // assert(state === WRITABLE || state === ERRORING,
+          //        '_state_ is `"writable"` or `"erroring"`');
           DequeueValue(controller);
           if (!WritableStreamCloseQueuedOrInFlight(stream) &&
               state === WRITABLE) {
@@ -957,8 +935,8 @@
 
   function WritableStreamDefaultControllerError(controller, error) {
     const stream = controller[_controlledWritableStream];
-    TEMP_ASSERT((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
-                '_stream_.[[state]] is `"writable"`.');
+    // assert((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
+    //        '_stream_.[[state]] is `"writable"`.');
     WritableStreamStartErroring(stream, error);
   }
 
@@ -966,13 +944,13 @@
   //
   // TODO(ricea): Share these operations with ReadableStream.js.
   function DequeueValue(container) {
-    TEMP_ASSERT(
-        hasOwnProperty(container, _queue) &&
-            hasOwnProperty(container, _queueTotalSize),
-        'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
-            'slots.');
-    TEMP_ASSERT(container[_queue].length !== 0,
-                '_container_.[[queue]] is not empty.');
+    // assert(
+    //     hasOwnProperty(container, _queue) &&
+    //         hasOwnProperty(container, _queueTotalSize),
+    //     'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
+    //         'slots.');
+    // assert(container[_queue].length !== 0,
+    //        '_container_.[[queue]] is not empty.');
     const pair = container[_queue].shift();
     container[_queueTotalSize] -= pair.size;
     if (container[_queueTotalSize] < 0) {
@@ -982,11 +960,11 @@
   }
 
   function EnqueueValueWithSize(container, value, size) {
-    TEMP_ASSERT(
-        hasOwnProperty(container, _queue) &&
-            hasOwnProperty(container, _queueTotalSize),
-        'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
-            'slots.');
+    // assert(
+    //     hasOwnProperty(container, _queue) &&
+    //         hasOwnProperty(container, _queueTotalSize),
+    //     'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
+    //         'slots.');
     size = Number(size);
     if (!IsFiniteNonNegativeNumber(size)) {
       throw new RangeError(streamErrors.invalidSize);
@@ -997,23 +975,23 @@
   }
 
   function PeekQueueValue(container) {
-    TEMP_ASSERT(
-        hasOwnProperty(container, _queue) &&
-            hasOwnProperty(container, _queueTotalSize),
-        'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
-            'slots.');
-    TEMP_ASSERT(container[_queue].length !== 0,
-                '_container_.[[queue]] is not empty.');
+    // assert(
+    //     hasOwnProperty(container, _queue) &&
+    //         hasOwnProperty(container, _queueTotalSize),
+    //     'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
+    //         'slots.');
+    // assert(container[_queue].length !== 0,
+    //        '_container_.[[queue]] is not empty.');
     const pair = container[_queue].peek();
     return pair.value;
   }
 
   function ResetQueue(container) {
-    TEMP_ASSERT(
-        hasOwnProperty(container, _queue) &&
-            hasOwnProperty(container, _queueTotalSize),
-        'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
-            'slots.');
+    // assert(
+    //     hasOwnProperty(container, _queue) &&
+    //         hasOwnProperty(container, _queueTotalSize),
+    //     'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
+    //         'slots.');
     container[_queue] = new binding.SimpleQueue();
     container[_queueTotalSize] = 0;
   }
@@ -1026,8 +1004,8 @@
   //
   // TODO(ricea): Consolidate with ReadableStream implementation.
   function InvokeOrNoop(O, P, args) {
-    TEMP_ASSERT(IsPropertyKey(P),
-                'P is a valid property key.');
+    // assert(IsPropertyKey(P),
+    //        'P is a valid property key.');
     if (args === undefined) {
       args = [];
     }
