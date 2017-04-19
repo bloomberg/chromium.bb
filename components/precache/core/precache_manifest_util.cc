@@ -36,19 +36,26 @@ base::Optional<std::vector<bool>> GetResourceBitset(
     if (it != resource_bitset_map.end()) {
       if (it->second.has_bitset()) {
         const std::string& bitset = it->second.bitset();
-        ret.emplace(bitset.size() * 8);
-        for (size_t i = 0; i < bitset.size(); ++i) {
-          for (size_t j = 0; j < 8; ++j) {
-            if ((1 << j) & bitset[i])
-              ret.value()[i * 8 + j] = true;
+        const int bitset_size = bitset.size() * 8;
+        DCHECK_GE(bitset_size, manifest.resource_size());
+        if (bitset_size >= manifest.resource_size()) {
+          ret.emplace(bitset_size);
+          for (size_t i = 0; i < bitset.size(); ++i) {
+            for (size_t j = 0; j < 8; ++j) {
+              if ((1 << j) & bitset[i])
+                ret.value()[i * 8 + j] = true;
+            }
           }
         }
       } else if (it->second.has_deprecated_bitset()) {
         uint64_t bitset = it->second.deprecated_bitset();
-        ret.emplace(64);
-        for (int i = 0; i < 64; ++i) {
-          if ((0x1ULL << i) & bitset)
-            ret.value()[i] = true;
+        DCHECK_GE(64, manifest.resource_size());
+        if (64 >= manifest.resource_size()) {
+          ret.emplace(64);
+          for (int i = 0; i < 64; ++i) {
+            if ((0x1ULL << i) & bitset)
+              ret.value()[i] = true;
+          }
         }
       }
     }
