@@ -31,8 +31,8 @@ class DISPLAY_TYPES_EXPORT DisplayMode {
 
  private:
   gfx::Size size_;
-  bool is_interlaced_;
   float refresh_rate_;
+  bool is_interlaced_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayMode);
 };
