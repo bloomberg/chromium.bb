@@ -50,6 +50,7 @@ class ServiceWorkerContextCore;
 class CONTENT_EXPORT EmbeddedWorkerInstance
     : NON_EXPORTED_BASE(public mojom::EmbeddedWorkerInstanceHost) {
  public:
+  class DevToolsProxy;
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
 
   // This enum is used in UMA histograms. Append-only.
@@ -191,7 +192,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
  private:
   typedef base::ObserverList<Listener> ListenerList;
-  class DevToolsProxy;
   class StartTask;
   class WorkerProcessHandle;
   friend class EmbeddedWorkerRegistry;
@@ -210,9 +210,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Called back from StartTask after the worker is registered to
   // WorkerDevToolsManager.
-  void OnRegisteredToDevToolsManager(bool is_new_process,
-                                     int worker_devtools_agent_route_id,
-                                     bool wait_for_debugger);
+  void OnRegisteredToDevToolsManager(
+      bool is_new_process,
+      std::unique_ptr<DevToolsProxy> devtools_proxy,
+      bool wait_for_debugger);
 
   // Sends StartWorker message via Mojo.
   ServiceWorkerStatusCode SendStartWorker(

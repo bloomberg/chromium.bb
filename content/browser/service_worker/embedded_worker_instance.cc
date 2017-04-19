@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -80,9 +79,11 @@ void SetupOnUI(
     const GURL& scope,
     bool is_installed,
     mojom::EmbeddedWorkerInstanceClientRequest request,
-    const base::Callback<void(int worker_devtools_agent_route_id,
-                              bool wait_for_debugger)>& callback) {
+    const base::Callback<
+        void(std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
+             bool wait_for_debugger)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
   int worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   bool wait_for_debugger = false;
   if (RenderProcessHost* rph = RenderProcessHost::FromID(process_id)) {
@@ -97,11 +98,12 @@ void SetupOnUI(
             is_installed);
     if (request.is_pending())
       BindInterface(rph, std::move(request));
+    devtools_proxy = base::MakeUnique<EmbeddedWorkerInstance::DevToolsProxy>(
+        process_id, worker_devtools_agent_route_id);
   }
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(callback, worker_devtools_agent_route_id, wait_for_debugger));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(callback, base::Passed(&devtools_proxy), wait_for_debugger));
 }
 
 void CallDetach(EmbeddedWorkerInstance* instance) {
@@ -137,15 +139,16 @@ bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
 
 }  // namespace
 
-// Lives on IO thread, proxies notifications to DevToolsManager that lives on
-// UI thread. Owned by EmbeddedWorkerInstance.
-class EmbeddedWorkerInstance::DevToolsProxy : public base::NonThreadSafe {
+// Created on UI thread and moved to IO thread. Proxies notifications to
+// DevToolsManager that lives on UI thread. Owned by EmbeddedWorkerInstance.
+class EmbeddedWorkerInstance::DevToolsProxy {
  public:
   DevToolsProxy(int process_id, int agent_route_id)
       : process_id_(process_id),
         agent_route_id_(agent_route_id) {}
 
   ~DevToolsProxy() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -154,21 +157,21 @@ class EmbeddedWorkerInstance::DevToolsProxy : public base::NonThreadSafe {
   }
 
   void NotifyWorkerReadyForInspection() {
-    DCHECK(CalledOnValidThread());
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(NotifyWorkerReadyForInspectionOnUI,
                                        process_id_, agent_route_id_));
   }
 
   void NotifyWorkerVersionInstalled() {
-    DCHECK(CalledOnValidThread());
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(NotifyWorkerVersionInstalledOnUI,
                                        process_id_, agent_route_id_));
   }
 
   void NotifyWorkerVersionDoomed() {
-    DCHECK(CalledOnValidThread());
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(NotifyWorkerVersionDoomedOnUI,
                                        process_id_, agent_route_id_));
@@ -186,6 +189,7 @@ class EmbeddedWorkerInstance::DevToolsProxy : public base::NonThreadSafe {
   const int process_id_;
   const int agent_route_id_;
   bool worker_stop_ignored_notified_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DevToolsProxy);
 };
 
@@ -248,7 +252,6 @@ class EmbeddedWorkerInstance::StartTask {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_ASYNC_END0("ServiceWorker", "EmbeddedWorkerInstance::Start",
                            this);
-
     if (!instance_->context_)
       return;
 
@@ -372,21 +375,22 @@ class EmbeddedWorkerInstance::StartTask {
                               is_new_process)));
   }
 
-  void OnSetupOnUICompleted(std::unique_ptr<EmbeddedWorkerStartParams> params,
-                            bool is_new_process,
-                            int worker_devtools_agent_route_id,
-                            bool wait_for_debugger) {
+  void OnSetupOnUICompleted(
+      std::unique_ptr<EmbeddedWorkerStartParams> params,
+      bool is_new_process,
+      std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
+      bool wait_for_debugger) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker",
                                  "EmbeddedWorkerInstance::Start", this,
                                  "OnSetupOnUICompleted");
 
+    params->worker_devtools_agent_route_id = devtools_proxy->agent_route_id();
+    params->wait_for_debugger = wait_for_debugger;
+
     // Notify the instance that it is registered to the devtools manager.
     instance_->OnRegisteredToDevToolsManager(
-        is_new_process, worker_devtools_agent_route_id, wait_for_debugger);
-
-    params->worker_devtools_agent_route_id = worker_devtools_agent_route_id;
-    params->wait_for_debugger = wait_for_debugger;
+        is_new_process, std::move(devtools_proxy), wait_for_debugger);
 
     ServiceWorkerStatusCode status =
         instance_->SendStartWorker(std::move(params));
@@ -478,21 +482,21 @@ bool EmbeddedWorkerInstance::Stop() {
   // Abort an inflight start task.
   inflight_start_task_.reset();
 
-    if (status_ == EmbeddedWorkerStatus::STARTING &&
-        !HasSentStartWorker(starting_phase())) {
-      // Don't send the StopWorker message when the StartWorker message hasn't
-      // been sent.
-      // TODO(shimazu): Invoke OnStopping/OnStopped after the legacy IPC path is
-      // removed.
-      OnDetached();
-      return false;
-    }
-    client_->StopWorker();
+  if (status_ == EmbeddedWorkerStatus::STARTING &&
+      !HasSentStartWorker(starting_phase())) {
+    // Don't send the StopWorker message when the StartWorker message hasn't
+    // been sent.
+    // TODO(shimazu): Invoke OnStopping/OnStopped after the legacy IPC path is
+    // removed.
+    OnDetached();
+    return false;
+  }
+  client_->StopWorker();
 
-    status_ = EmbeddedWorkerStatus::STOPPING;
-    for (auto& observer : listener_list_)
-      observer.OnStopping();
-    return true;
+  status_ = EmbeddedWorkerStatus::STOPPING;
+  for (auto& observer : listener_list_)
+    observer.OnStopping();
+  return true;
 }
 
 void EmbeddedWorkerInstance::StopIfIdle() {
@@ -562,12 +566,11 @@ void EmbeddedWorkerInstance::OnProcessAllocated(
 
 void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
     bool is_new_process,
-    int worker_devtools_agent_route_id,
+    std::unique_ptr<DevToolsProxy> devtools_proxy,
     bool wait_for_debugger) {
-  if (worker_devtools_agent_route_id != MSG_ROUTING_NONE) {
+  if (devtools_proxy) {
     DCHECK(!devtools_proxy_);
-    devtools_proxy_.reset(
-        new DevToolsProxy(process_id(), worker_devtools_agent_route_id));
+    devtools_proxy_ = std::move(devtools_proxy);
   }
   if (wait_for_debugger) {
     // We don't measure the start time when wait_for_debugger flag is set. So
@@ -627,7 +630,6 @@ void EmbeddedWorkerInstance::OnScriptReadFinished() {
 
 void EmbeddedWorkerInstance::OnScriptLoaded() {
   using LoadSource = ServiceWorkerMetrics::LoadSource;
-
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstance::OnScriptLoaded");
 
   if (!inflight_start_task_)
