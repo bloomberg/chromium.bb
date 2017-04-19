@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/test/mock_blob_url_request_context.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -25,6 +24,7 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/local_file_util.h"
+#include "storage/browser/test/mock_blob_url_request_context.h"
 #include "storage/browser/test/mock_file_change_observer.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/test_file_system_backend.h"
@@ -46,15 +46,13 @@ namespace {
 const GURL kOrigin("http://example.com");
 const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
 
-void AssertStatusEq(base::File::Error expected,
-                    base::File::Error actual) {
+void AssertStatusEq(base::File::Error expected, base::File::Error actual) {
   ASSERT_EQ(expected, actual);
 }
 
 }  // namespace
 
-class FileSystemOperationImplWriteTest
-    : public testing::Test {
+class FileSystemOperationImplWriteTest : public testing::Test {
  public:
   FileSystemOperationImplWriteTest()
       : status_(base::File::FILE_OK),
@@ -146,9 +144,7 @@ class FileSystemOperationImplWriteTest
     }
   }
 
-  void DidCancel(base::File::Error status) {
-    cancel_status_ = status;
-  }
+  void DidCancel(base::File::Error status) { cancel_status_ = status; }
 
   const MockBlobURLRequestContext& url_request_context() const {
     return *url_request_context_;
@@ -179,13 +175,11 @@ class FileSystemOperationImplWriteTest
 };
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {
-  ScopedTextBlob blob(url_request_context(),
-                      "blob-id:success",
+  ScopedTextBlob blob(url_request_context(), "blob-id:success",
                       "Hello, world!\n");
   file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_path_),
-      blob.GetBlobDataHandle(),
-      0, RecordWriteCallback());
+      blob.GetBlobDataHandle(), 0, RecordWriteCallback());
   base::RunLoop().Run();
 
   EXPECT_EQ(14, bytes_written());
@@ -208,7 +202,6 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteZero) {
 
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
-
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidBlobUrl) {
   std::unique_ptr<storage::BlobDataHandle> null_handle;
@@ -243,15 +236,14 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidFile) {
 TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
   base::FilePath virtual_dir_path(FILE_PATH_LITERAL("d"));
   file_system_context_->operation_runner()->CreateDirectory(
-      URLForPath(virtual_dir_path),
-      true /* exclusive */, false /* recursive */,
+      URLForPath(virtual_dir_path), true /* exclusive */, false /* recursive */,
       base::Bind(&AssertStatusEq, base::File::FILE_OK));
 
   ScopedTextBlob blob(url_request_context(), "blob:writedir",
                       "It\'ll not be written, too.");
   file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_dir_path),
-      blob.GetBlobDataHandle(),  0, RecordWriteCallback());
+      blob.GetBlobDataHandle(), 0, RecordWriteCallback());
   base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_written());
@@ -266,8 +258,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
 }
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
-  ScopedTextBlob blob(url_request_context(), "blob:success",
-                      "Hello, world!\n");
+  ScopedTextBlob blob(url_request_context(), "blob:success", "Hello, world!\n");
   quota_manager_->SetQuota(
       kOrigin, FileSystemTypeToQuotaStorageType(kFileSystemType), 10);
   file_system_context_->operation_runner()->Write(
@@ -283,8 +274,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
 }
 
 TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelSuccessfulWrite) {
-  ScopedTextBlob blob(url_request_context(), "blob:success",
-                      "Hello, world!\n");
+  ScopedTextBlob blob(url_request_context(), "blob:success", "Hello, world!\n");
   FileSystemOperationRunner::OperationID id =
       file_system_context_->operation_runner()->Write(
           &url_request_context(), URLForPath(virtual_path_),

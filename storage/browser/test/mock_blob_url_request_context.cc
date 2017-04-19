@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/mock_blob_url_request_context.h"
+#include "storage/browser/test/mock_blob_url_request_context.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,12 +28,10 @@ MockBlobURLRequestContext::~MockBlobURLRequestContext() {
   AssertNoURLRequests();
 }
 
-ScopedTextBlob::ScopedTextBlob(
-    const MockBlobURLRequestContext& request_context,
-    const std::string& blob_id,
-    const std::string& data)
-    : blob_id_(blob_id),
-      context_(request_context.blob_storage_context()) {
+ScopedTextBlob::ScopedTextBlob(const MockBlobURLRequestContext& request_context,
+                               const std::string& blob_id,
+                               const std::string& data)
+    : blob_id_(blob_id), context_(request_context.blob_storage_context()) {
   DCHECK(context_);
   storage::BlobDataBuilder blob_builder(blob_id_);
   if (!data.empty())
@@ -41,8 +39,7 @@ ScopedTextBlob::ScopedTextBlob(
   handle_ = context_->AddFinishedBlob(&blob_builder);
 }
 
-ScopedTextBlob::~ScopedTextBlob() {
-}
+ScopedTextBlob::~ScopedTextBlob() {}
 
 std::unique_ptr<storage::BlobDataHandle> ScopedTextBlob::GetBlobDataHandle() {
   return context_->GetBlobDataFromUUID(blob_id_);
