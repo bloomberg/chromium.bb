@@ -227,7 +227,7 @@ base::string16 GetFlyoutParentAutomationId(IUIAutomation* automation,
     return base::string16();
 
   base::win::ScopedComPtr<IUIAutomationTreeWalker> tree_walker;
-  result = automation->CreateTreeWalker(condition.get(), tree_walker.Receive());
+  result = automation->CreateTreeWalker(condition.Get(), tree_walker.Receive());
   if (FAILED(result))
     return base::string16();
 
@@ -235,12 +235,12 @@ base::string16 GetFlyoutParentAutomationId(IUIAutomation* automation,
   result = automation->CreateCacheRequest(cache_request.Receive());
   if (FAILED(result))
     return base::string16();
-  ConfigureCacheRequest(cache_request.get());
+  ConfigureCacheRequest(cache_request.Get());
 
   // From MSDN, NormalizeElementBuildCache() "Retrieves the ancestor element
   // nearest to the specified Microsoft UI Automation element in the tree view".
   IUIAutomationElement* flyout_element = nullptr;
-  result = tree_walker->NormalizeElementBuildCache(element, cache_request.get(),
+  result = tree_walker->NormalizeElementBuildCache(element, cache_request.Get(),
                                                    &flyout_element);
   if (FAILED(result) || !flyout_element)
     return base::string16();
@@ -560,7 +560,7 @@ HRESULT SettingsAppMonitor::Context::EventHandler::HandleAutomationEvent(
            << ", runtime id: " << IntArrayToString(GetCachedInt32ArrayValue(
                                       sender, UIA_RuntimeIdPropertyId));
 
-  switch (DetectElementType(automation_.get(), sender)) {
+  switch (DetectElementType(automation_.Get(), sender)) {
     case ElementType::DEFAULT_BROWSER:
       context_runner_->PostTask(
           FROM_HERE,
@@ -679,7 +679,7 @@ void SettingsAppMonitor::Context::HandleFocusChangedEvent(
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Duplicate focus changed events are suppressed.
-  ElementType element_type = DetectElementType(automation_.get(), sender.get());
+  ElementType element_type = DetectElementType(automation_.Get(), sender.Get());
   if (last_focused_element_ == element_type)
     return;
   last_focused_element_ = element_type;
@@ -733,7 +733,7 @@ base::win::ScopedComPtr<IUIAutomationEventHandler>
 SettingsAppMonitor::Context::GetAutomationEventHandler() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::win::ScopedComPtr<IUIAutomationEventHandler> handler;
-  handler.QueryFrom(GetEventHandler().get());
+  handler.QueryFrom(GetEventHandler().Get());
   return handler;
 }
 
@@ -741,7 +741,7 @@ base::win::ScopedComPtr<IUIAutomationFocusChangedEventHandler>
 SettingsAppMonitor::Context::GetFocusChangedEventHandler() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::win::ScopedComPtr<IUIAutomationFocusChangedEventHandler> handler;
-  handler.QueryFrom(GetEventHandler().get());
+  handler.QueryFrom(GetEventHandler().Get());
   return handler;
 }
 
@@ -755,11 +755,11 @@ HRESULT SettingsAppMonitor::Context::InstallObservers() {
   HRESULT result = automation_->CreateCacheRequest(cache_request.Receive());
   if (FAILED(result))
     return result;
-  ConfigureCacheRequest(cache_request.get());
+  ConfigureCacheRequest(cache_request.Get());
 
   // Observe changes in focus.
   result = automation_->AddFocusChangedEventHandler(
-      cache_request.get(), GetFocusChangedEventHandler().get());
+      cache_request.Get(), GetFocusChangedEventHandler().Get());
   if (FAILED(result))
     return result;
 
@@ -768,8 +768,8 @@ HRESULT SettingsAppMonitor::Context::InstallObservers() {
   result = automation_->GetRootElement(desktop.Receive());
   if (desktop) {
     result = automation_->AddAutomationEventHandler(
-        UIA_Invoke_InvokedEventId, desktop.get(), TreeScope_Subtree,
-        cache_request.get(), GetAutomationEventHandler().get());
+        UIA_Invoke_InvokedEventId, desktop.Get(), TreeScope_Subtree,
+        cache_request.Get(), GetAutomationEventHandler().Get());
   }
 
   return result;

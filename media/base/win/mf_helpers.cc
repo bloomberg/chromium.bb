@@ -35,7 +35,7 @@ base::win::ScopedComPtr<IMFSample> CreateEmptySampleWithBuffer(
   RETURN_ON_HR_FAILURE(hr, "Failed to create memory buffer for sample",
                        base::win::ScopedComPtr<IMFSample>());
 
-  hr = sample->AddBuffer(buffer.get());
+  hr = sample->AddBuffer(buffer.Get());
   RETURN_ON_HR_FAILURE(hr, "Failed to add buffer to sample",
                        base::win::ScopedComPtr<IMFSample>());
 

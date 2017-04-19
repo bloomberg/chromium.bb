@@ -784,7 +784,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     base::win::ScopedComPtr<IPersistFile> persist_file;
     if (FAILED(shell_link.CreateInstance(CLSID_ShellLink, NULL,
                                          CLSCTX_INPROC_SERVER)) ||
-        FAILED(persist_file.QueryFrom(shell_link.get())) ||
+        FAILED(persist_file.QueryFrom(shell_link.Get())) ||
         FAILED(persist_file->Load(shortcut.value().c_str(), STGM_READ))) {
       DLOG(WARNING) << "Failed loading shortcut at " << shortcut.value();
       continue;
@@ -797,7 +797,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     // Validate the existing app id for the shortcut.
     base::win::ScopedComPtr<IPropertyStore> property_store;
     propvariant.Reset();
-    if (FAILED(property_store.QueryFrom(shell_link.get())) ||
+    if (FAILED(property_store.QueryFrom(shell_link.Get())) ||
         property_store->GetValue(PKEY_AppUserModel_ID, propvariant.Receive()) !=
             S_OK) {
       // When in doubt, prefer not updating the shortcut.

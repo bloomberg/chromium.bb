@@ -146,10 +146,10 @@ void AudioCapturerWin::Deinitialize() {
 }
 
 bool AudioCapturerWin::Initialize() {
-  DCHECK(!audio_capture_client_.get());
-  DCHECK(!audio_client_.get());
-  DCHECK(!mm_device_.get());
-  DCHECK(!audio_volume_.get());
+  DCHECK(!audio_capture_client_.Get());
+  DCHECK(!audio_client_.Get());
+  DCHECK(!mm_device_.Get());
+  DCHECK(!audio_volume_.Get());
   DCHECK(static_cast<PWAVEFORMATEX>(wave_format_ex_) == nullptr);
   DCHECK(thread_checker_.CalledOnValidThread());
 

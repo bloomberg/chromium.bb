@@ -228,7 +228,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
 
   AccessibleStates ia2_state = 0;
   base::win::ScopedComPtr<IAccessible2> iaccessible2;
-  hr = QueryIAccessible2(iaccessible.get(), iaccessible2.Receive());
+  hr = QueryIAccessible2(iaccessible.Get(), iaccessible2.Receive());
   if (SUCCEEDED(hr))
     iaccessible2->get_states(&ia2_state);
 
@@ -246,7 +246,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   // For TEXT_REMOVED and TEXT_INSERTED events, query the text that was
   // inserted or removed and include that in the log.
   base::win::ScopedComPtr<IAccessibleText> accessible_text;
-  hr = QueryIAccessibleText(iaccessible.get(), accessible_text.Receive());
+  hr = QueryIAccessibleText(iaccessible.Get(), accessible_text.Receive());
   if (SUCCEEDED(hr)) {
     if (event == IA2_EVENT_TEXT_REMOVED) {
       IA2TextSegment old_text;

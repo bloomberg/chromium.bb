@@ -324,15 +324,15 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
     hr = CreateStreamOnHGlobal(NULL, TRUE,
                                print_capabilities_stream.Receive());
     DCHECK(SUCCEEDED(hr));
-    if (print_capabilities_stream.get()) {
+    if (print_capabilities_stream.Get()) {
       base::win::ScopedBstr error;
       hr = XPSModule::GetPrintCapabilities(
-          provider, NULL, print_capabilities_stream.get(), error.Receive());
+          provider, NULL, print_capabilities_stream.Get(), error.Receive());
       DCHECK(SUCCEEDED(hr));
       if (FAILED(hr)) {
         return false;
       }
-      hr = StreamOnHGlobalToString(print_capabilities_stream.get(),
+      hr = StreamOnHGlobalToString(print_capabilities_stream.Get(),
                                    &printer_info->printer_capabilities);
       DCHECK(SUCCEEDED(hr));
       printer_info->caps_mime_type = "text/xml";
@@ -347,14 +347,14 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
       hr = CreateStreamOnHGlobal(NULL, TRUE,
                                  printer_defaults_stream.Receive());
       DCHECK(SUCCEEDED(hr));
-      if (printer_defaults_stream.get()) {
+      if (printer_defaults_stream.Get()) {
         DWORD dm_size = devmode_out->dmSize + devmode_out->dmDriverExtra;
         hr = XPSModule::ConvertDevModeToPrintTicket(
             provider, dm_size, devmode_out.get(), kPTJobScope,
-            printer_defaults_stream.get());
+            printer_defaults_stream.Get());
         DCHECK(SUCCEEDED(hr));
         if (SUCCEEDED(hr)) {
-          hr = StreamOnHGlobalToString(printer_defaults_stream.get(),
+          hr = StreamOnHGlobalToString(printer_defaults_stream.Get(),
                                        &printer_info->printer_defaults);
           DCHECK(SUCCEEDED(hr));
           printer_info->defaults_mime_type = "text/xml";

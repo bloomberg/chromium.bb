@@ -132,7 +132,7 @@ ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
   ScopedComPtr<IPin> pin;
   ScopedComPtr<IEnumPins> pin_enum;
   HRESULT hr = filter->EnumPins(pin_enum.Receive());
-  if (pin_enum.get() == NULL)
+  if (pin_enum.Get() == NULL)
     return pin;
 
   // Get first unconnected pin.
@@ -141,16 +141,16 @@ ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
     PIN_DIRECTION this_pin_dir = static_cast<PIN_DIRECTION>(-1);
     hr = pin->QueryDirection(&this_pin_dir);
     if (pin_dir == this_pin_dir) {
-      if ((category == GUID_NULL || PinMatchesCategory(pin.get(), category)) &&
+      if ((category == GUID_NULL || PinMatchesCategory(pin.Get(), category)) &&
           (major_type == GUID_NULL ||
-           PinMatchesMajorType(pin.get(), major_type))) {
+           PinMatchesMajorType(pin.Get(), major_type))) {
         return pin;
       }
     }
     pin.Reset();
   }
 
-  DCHECK(!pin.get());
+  DCHECK(!pin.Get());
   return pin;
 }
 
@@ -234,20 +234,20 @@ VideoCaptureDeviceWin::VideoCaptureDeviceWin(
 
 VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (media_control_.get())
+  if (media_control_.Get())
     media_control_->Stop();
 
-  if (graph_builder_.get()) {
+  if (graph_builder_.Get()) {
     if (sink_filter_.get()) {
       graph_builder_->RemoveFilter(sink_filter_.get());
       sink_filter_ = NULL;
     }
 
-    if (capture_filter_.get())
-      graph_builder_->RemoveFilter(capture_filter_.get());
+    if (capture_filter_.Get())
+      graph_builder_->RemoveFilter(capture_filter_.Get());
   }
 
-  if (capture_graph_builder_.get())
+  if (capture_graph_builder_.Get())
     capture_graph_builder_.Reset();
 }
 
@@ -257,12 +257,12 @@ bool VideoCaptureDeviceWin::Init() {
 
   hr = GetDeviceFilter(device_descriptor_.device_id, capture_filter_.Receive());
   DLOG_IF_FAILED_WITH_HRESULT("Failed to create capture filter", hr);
-  if (!capture_filter_.get())
+  if (!capture_filter_.Get())
     return false;
 
-  output_capture_pin_ = GetPin(capture_filter_.get(), PINDIR_OUTPUT,
+  output_capture_pin_ = GetPin(capture_filter_.Get(), PINDIR_OUTPUT,
                                PIN_CATEGORY_CAPTURE, GUID_NULL);
-  if (!output_capture_pin_.get()) {
+  if (!output_capture_pin_.Get()) {
     DLOG(ERROR) << "Failed to get capture output pin";
     return false;
   }
@@ -288,7 +288,7 @@ bool VideoCaptureDeviceWin::Init() {
   if (FAILED(hr))
     return false;
 
-  hr = capture_graph_builder_->SetFiltergraph(graph_builder_.get());
+  hr = capture_graph_builder_->SetFiltergraph(graph_builder_.Get());
   DLOG_IF_FAILED_WITH_HRESULT("Failed to give graph to capture graph builder",
                               hr);
   if (FAILED(hr))
@@ -299,7 +299,7 @@ bool VideoCaptureDeviceWin::Init() {
   if (FAILED(hr))
     return false;
 
-  hr = graph_builder_->AddFilter(capture_filter_.get(), NULL);
+  hr = graph_builder_->AddFilter(capture_filter_.Get(), NULL);
   DLOG_IF_FAILED_WITH_HRESULT("Failed to add the capture device to the graph",
                               hr);
   if (FAILED(hr))
@@ -318,11 +318,11 @@ bool VideoCaptureDeviceWin::Init() {
   base::win::ScopedComPtr<IAMStreamConfig> stream_config;
 
   hr = capture_graph_builder_->FindInterface(
-      &PIN_CATEGORY_CAPTURE, &MEDIATYPE_Interleaved, capture_filter_.get(),
+      &PIN_CATEGORY_CAPTURE, &MEDIATYPE_Interleaved, capture_filter_.Get(),
       IID_IAMStreamConfig, (void**)stream_config.Receive());
   if (FAILED(hr)) {
     hr = capture_graph_builder_->FindInterface(
-        &PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, capture_filter_.get(),
+        &PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, capture_filter_.Get(),
         IID_IAMStreamConfig, (void**)stream_config.Receive());
     DLOG_IF_FAILED_WITH_HRESULT("Failed to find CapFilter:IAMStreamConfig", hr);
   }
@@ -397,11 +397,11 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   if (media_type->subtype == kMediaSubTypeHDYC) {
     // HDYC pixel format, used by the DeckLink capture card, needs an AVI
     // decompressor filter after source, let |graph_builder_| add it.
-    hr = graph_builder_->Connect(output_capture_pin_.get(),
-                                 input_sink_pin_.get());
+    hr = graph_builder_->Connect(output_capture_pin_.Get(),
+                                 input_sink_pin_.Get());
   } else {
-    hr = graph_builder_->ConnectDirect(output_capture_pin_.get(),
-                                       input_sink_pin_.get(), NULL);
+    hr = graph_builder_->ConnectDirect(output_capture_pin_.Get(),
+                                       input_sink_pin_.Get(), NULL);
   }
 
   if (FAILED(hr)) {
@@ -437,8 +437,8 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
     return;
   }
 
-  graph_builder_->Disconnect(output_capture_pin_.get());
-  graph_builder_->Disconnect(input_sink_pin_.get());
+  graph_builder_->Disconnect(output_capture_pin_.Get());
+  graph_builder_->Disconnect(input_sink_pin_.Get());
 
   client_.reset();
   state_ = kIdle;
@@ -525,12 +525,12 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
       // Try to get a better |time_per_frame| from IAMVideoControl. If not, use
       // the value from VIDEOINFOHEADER.
       REFERENCE_TIME time_per_frame = h->AvgTimePerFrame;
-      if (video_control.get()) {
+      if (video_control.Get()) {
         ScopedCoMem<LONGLONG> max_fps;
         LONG list_size = 0;
         const SIZE size = {format.frame_size.width(),
                            format.frame_size.height()};
-        hr = video_control->GetFrameRateList(output_capture_pin_.get(),
+        hr = video_control->GetFrameRateList(output_capture_pin_.Get(),
                                              stream_index, size, &list_size,
                                              &max_fps);
         // Can't assume the first value will return the max fps.
@@ -566,7 +566,7 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter(
   ScopedComPtr<IKsPropertySet> ks_propset;
   DWORD type_support = 0;
   HRESULT hr;
-  if (SUCCEEDED(hr = ks_propset.QueryFrom(capture_filter_.get())) &&
+  if (SUCCEEDED(hr = ks_propset.QueryFrom(capture_filter_.Get())) &&
       SUCCEEDED(hr = ks_propset->QuerySupported(
                     PROPSETID_VIDCAP_VIDEOPROCAMP,
                     KSPROPERTY_VIDEOPROCAMP_POWERLINE_FREQUENCY,

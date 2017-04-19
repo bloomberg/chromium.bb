@@ -100,7 +100,7 @@ static bool CreateVideoCaptureDeviceMediaFoundation(const char* sym_link,
   attributes->SetString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK,
                         base::SysUTF8ToWide(sym_link).c_str());
 
-  return SUCCEEDED(MFCreateDeviceSource(attributes.get(), source));
+  return SUCCEEDED(MFCreateDeviceSource(attributes.Get(), source));
 }
 
 static bool EnumerateVideoDevicesMediaFoundation(IMFActivate*** devices,
@@ -109,7 +109,7 @@ static bool EnumerateVideoDevicesMediaFoundation(IMFActivate*** devices,
   if (!PrepareVideoCaptureAttributesMediaFoundation(attributes.Receive(), 1))
     return false;
 
-  return SUCCEEDED(MFEnumDeviceSources(attributes.get(), devices, count));
+  return SUCCEEDED(MFEnumDeviceSources(attributes.Get(), devices, count));
 }
 
 static bool IsDeviceBlackListed(const std::string& name) {
@@ -262,16 +262,16 @@ static void GetDeviceSupportedFormatsDirectShow(const Descriptor& descriptor,
   base::win::ScopedComPtr<IBaseFilter> capture_filter;
   hr = VideoCaptureDeviceWin::GetDeviceFilter(descriptor.device_id,
                                               capture_filter.Receive());
-  if (!capture_filter.get()) {
+  if (!capture_filter.Get()) {
     DLOG(ERROR) << "Failed to create capture filter: "
                 << logging::SystemErrorCodeToString(hr);
     return;
   }
 
   base::win::ScopedComPtr<IPin> output_capture_pin(
-      VideoCaptureDeviceWin::GetPin(capture_filter.get(), PINDIR_OUTPUT,
+      VideoCaptureDeviceWin::GetPin(capture_filter.Get(), PINDIR_OUTPUT,
                                     PIN_CATEGORY_CAPTURE, GUID_NULL));
-  if (!output_capture_pin.get()) {
+  if (!output_capture_pin.Get()) {
     DLOG(ERROR) << "Failed to get capture output pin";
     return;
   }
@@ -340,7 +340,7 @@ static void GetDeviceSupportedFormatsMediaFoundation(
 
   base::win::ScopedComPtr<IMFSourceReader> reader;
   HRESULT hr =
-      MFCreateSourceReaderFromMediaSource(source.get(), NULL, reader.Receive());
+      MFCreateSourceReaderFromMediaSource(source.Get(), NULL, reader.Receive());
   if (FAILED(hr)) {
     DLOG(ERROR) << "MFCreateSourceReaderFromMediaSource failed: "
                 << logging::SystemErrorCodeToString(hr);
@@ -352,7 +352,7 @@ static void GetDeviceSupportedFormatsMediaFoundation(
   while (SUCCEEDED(reader->GetNativeMediaType(kFirstVideoStream, stream_index,
                                               type.Receive()))) {
     UINT32 width, height;
-    hr = MFGetAttributeSize(type.get(), MF_MT_FRAME_SIZE, &width, &height);
+    hr = MFGetAttributeSize(type.Get(), MF_MT_FRAME_SIZE, &width, &height);
     if (FAILED(hr)) {
       DLOG(ERROR) << "MFGetAttributeSize failed: "
                   << logging::SystemErrorCodeToString(hr);
@@ -362,7 +362,7 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     capture_format.frame_size.SetSize(width, height);
 
     UINT32 numerator, denominator;
-    hr = MFGetAttributeRatio(type.get(), MF_MT_FRAME_RATE, &numerator,
+    hr = MFGetAttributeRatio(type.Get(), MF_MT_FRAME_RATE, &numerator,
                              &denominator);
     if (FAILED(hr)) {
       DLOG(ERROR) << "MFGetAttributeSize failed: "

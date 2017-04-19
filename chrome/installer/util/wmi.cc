@@ -31,7 +31,7 @@ bool WMI::CreateLocalConnection(bool set_blanket,
     return false;
 
   if (set_blanket) {
-    hr = ::CoSetProxyBlanket(wmi_services_r.get(), RPC_C_AUTHN_WINNT,
+    hr = ::CoSetProxyBlanket(wmi_services_r.Get(), RPC_C_AUTHN_WINNT,
                              RPC_C_AUTHZ_NONE, NULL, RPC_C_AUTHN_LEVEL_CALL,
                              RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
     if (FAILED(hr))
@@ -62,7 +62,7 @@ bool WMI::CreateClassMethodObject(IWbemServices* wmi_services,
   if (FAILED(hr))
     return false;
 
-  if (NULL == params_def.get()) {
+  if (NULL == params_def.Get()) {
     // You hit this special case if the WMI class is not a CIM class. MSDN
     // sometimes tells you this. Welcome to WMI hell.
     return false;
@@ -94,20 +94,20 @@ bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
   const wchar_t class_name[] = L"Win32_Process";
   const wchar_t method_name[] = L"Create";
   base::win::ScopedComPtr<IWbemClassObject> process_create;
-  if (!WMI::CreateClassMethodObject(wmi_local.get(), class_name, method_name,
+  if (!WMI::CreateClassMethodObject(wmi_local.Get(), class_name, method_name,
                                     process_create.Receive()))
     return false;
 
   ScopedVariant b_command_line(command_line.c_str());
 
-  if (!SetParameter(process_create.get(), L"CommandLine",
+  if (!SetParameter(process_create.Get(), L"CommandLine",
                     b_command_line.AsInput()))
     return false;
 
   base::win::ScopedComPtr<IWbemClassObject> out_params;
   HRESULT hr = wmi_local->ExecMethod(
       base::win::ScopedBstr(class_name), base::win::ScopedBstr(method_name), 0,
-      NULL, process_create.get(), out_params.Receive(), NULL);
+      NULL, process_create.Get(), out_params.Receive(), NULL);
   if (FAILED(hr))
     return false;
 
@@ -141,7 +141,7 @@ base::string16 WMIComputerSystem::GetModel() {
       query_language, query,
       WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL,
       enumerator.Receive());
-  if (FAILED(hr) || !enumerator.get())
+  if (FAILED(hr) || !enumerator.Get())
     return base::string16();
 
   base::win::ScopedComPtr<IWbemClassObject> class_object;

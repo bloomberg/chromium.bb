@@ -253,7 +253,7 @@ int CoreAudioUtil::NumberOfActiveDevices(EDataFlow data_flow) {
   // Create the IMMDeviceEnumerator interface.
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator =
       CreateDeviceEnumerator();
-  if (!device_enumerator.get())
+  if (!device_enumerator.Get())
     return 0;
 
   // Generate a collection of active (present and not disabled) audio endpoint
@@ -287,7 +287,7 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDefaultDevice(EDataFlow data_flow,
   // Create the IMMDeviceEnumerator interface.
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator =
       CreateDeviceEnumerator();
-  if (!device_enumerator.get())
+  if (!device_enumerator.Get())
     return endpoint_device;
 
   // Retrieve the default audio endpoint for the specified data-flow
@@ -303,7 +303,7 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDefaultDevice(EDataFlow data_flow,
 
   // Verify that the audio endpoint device is active, i.e., that the audio
   // adapter that connects to the endpoint device is present and enabled.
-  if (!IsDeviceActive(endpoint_device.get())) {
+  if (!IsDeviceActive(endpoint_device.Get())) {
     DVLOG(1) << "Selected endpoint device is not active";
     endpoint_device.Reset();
   }
@@ -312,7 +312,7 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDefaultDevice(EDataFlow data_flow,
 
 std::string CoreAudioUtil::GetDefaultOutputDeviceID() {
   ScopedComPtr<IMMDevice> device(CreateDefaultDevice(eRender, eConsole));
-  return device.get() ? GetDeviceID(device.get()) : std::string();
+  return device.Get() ? GetDeviceID(device.Get()) : std::string();
 }
 
 ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDevice(
@@ -322,7 +322,7 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDevice(
   // Create the IMMDeviceEnumerator interface.
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator =
       CreateDeviceEnumerator();
-  if (!device_enumerator.get())
+  if (!device_enumerator.Get())
     return endpoint_device;
 
   // Retrieve an audio device specified by an endpoint device-identification
@@ -339,7 +339,7 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDevice(
 
   // Verify that the audio endpoint device is active, i.e., that the audio
   // adapter that connects to the endpoint device is present and enabled.
-  if (!IsDeviceActive(endpoint_device.get())) {
+  if (!IsDeviceActive(endpoint_device.Get())) {
     DVLOG(1) << "Selected endpoint device is not active";
     endpoint_device.Reset();
   }
@@ -430,13 +430,13 @@ std::string CoreAudioUtil::GetMatchingOutputDeviceID(
     input_device = CreateDevice(input_device_id);
   }
 
-  if (!input_device.get())
+  if (!input_device.Get())
     return std::string();
 
   // See if we can get id of the associated controller.
   ScopedComPtr<IMMDeviceEnumerator> enumerator(CreateDeviceEnumerator());
   std::string controller_id(
-      GetAudioControllerID(input_device.get(), enumerator.get()));
+      GetAudioControllerID(input_device.Get(), enumerator.Get()));
   if (controller_id.empty())
     return std::string();
 
@@ -445,7 +445,7 @@ std::string CoreAudioUtil::GetMatchingOutputDeviceID(
   ScopedComPtr<IMMDeviceCollection> collection;
   enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE,
       collection.Receive());
-  if (!collection.get())
+  if (!collection.Get())
     return std::string();
 
   UINT count = 0;
@@ -454,22 +454,22 @@ std::string CoreAudioUtil::GetMatchingOutputDeviceID(
   for (UINT i = 0; i < count; ++i) {
     collection->Item(i, output_device.Receive());
     std::string output_controller_id(
-        GetAudioControllerID(output_device.get(), enumerator.get()));
+        GetAudioControllerID(output_device.Get(), enumerator.Get()));
     if (output_controller_id == controller_id)
       break;
     output_device = NULL;
   }
 
-  return output_device.get() ? GetDeviceID(output_device.get()) : std::string();
+  return output_device.Get() ? GetDeviceID(output_device.Get()) : std::string();
 }
 
 std::string CoreAudioUtil::GetFriendlyName(const std::string& device_id) {
   ScopedComPtr<IMMDevice> audio_device = CreateDevice(device_id);
-  if (!audio_device.get())
+  if (!audio_device.Get())
     return std::string();
 
   AudioDeviceName device_name;
-  HRESULT hr = GetDeviceName(audio_device.get(), &device_name);
+  HRESULT hr = GetDeviceName(audio_device.Get(), &device_name);
   if (FAILED(hr))
     return std::string();
 
@@ -480,10 +480,10 @@ bool CoreAudioUtil::DeviceIsDefault(EDataFlow flow,
                                     ERole role,
                                     const std::string& device_id) {
   ScopedComPtr<IMMDevice> device = CreateDefaultDevice(flow, role);
-  if (!device.get())
+  if (!device.Get())
     return false;
 
-  std::string str_default(GetDeviceID(device.get()));
+  std::string str_default(GetDeviceID(device.Get()));
   return device_id.compare(str_default) == 0;
 }
 
@@ -520,7 +520,7 @@ ScopedComPtr<IAudioClient> CoreAudioUtil::CreateClient(
 ScopedComPtr<IAudioClient> CoreAudioUtil::CreateDefaultClient(
     EDataFlow data_flow, ERole role) {
   ScopedComPtr<IMMDevice> default_device(CreateDefaultDevice(data_flow, role));
-  return (default_device.get() ? CreateClient(default_device.get())
+  return (default_device.Get() ? CreateClient(default_device.Get())
                                : ScopedComPtr<IAudioClient>());
 }
 
@@ -530,10 +530,10 @@ ScopedComPtr<IAudioClient> CoreAudioUtil::CreateClient(
     return CreateDefaultClient(data_flow, role);
 
   ScopedComPtr<IMMDevice> device(CreateDevice(device_id));
-  if (!device.get())
+  if (!device.Get())
     return ScopedComPtr<IAudioClient>();
 
-  return CreateClient(device.get());
+  return CreateClient(device.Get());
 }
 
 HRESULT CoreAudioUtil::GetSharedModeMixFormat(
@@ -579,11 +579,11 @@ bool CoreAudioUtil::IsChannelLayoutSupported(const std::string& device_id,
                                              ChannelLayout channel_layout) {
   // First, get the preferred mixing format for shared mode streams.
   ScopedComPtr<IAudioClient> client(CreateClient(device_id, data_flow, role));
-  if (!client.get())
+  if (!client.Get())
     return false;
 
   WAVEFORMATPCMEX format;
-  HRESULT hr = GetSharedModeMixFormat(client.get(), &format);
+  HRESULT hr = GetSharedModeMixFormat(client.Get(), &format);
   if (FAILED(hr))
     return false;
 
@@ -616,7 +616,7 @@ bool CoreAudioUtil::IsChannelLayoutSupported(const std::string& device_id,
   // an even wider range of shared-mode formats where the installation package
   // for the audio device includes a local effects (LFX) audio processing
   // object (APO) that can handle format conversions.
-  return CoreAudioUtil::IsFormatSupported(client.get(),
+  return CoreAudioUtil::IsFormatSupported(client.Get(),
                                           AUDCLNT_SHAREMODE_SHARED, &format);
 }
 
@@ -721,20 +721,20 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
     device = CreateDevice(device_id);
   }
 
-  if (!device.get()) {
+  if (!device.Get()) {
     // Map NULL-pointer to new error code which can be different from the
     // actual error code. The exact value is not important here.
     return AUDCLNT_E_DEVICE_INVALIDATED;
   }
 
-  ScopedComPtr<IAudioClient> client(CreateClient(device.get()));
-  if (!client.get()) {
+  ScopedComPtr<IAudioClient> client(CreateClient(device.Get()));
+  if (!client.Get()) {
     // Map NULL-pointer to new error code which can be different from the
     // actual error code. The exact value is not important here.
     return AUDCLNT_E_ENDPOINT_CREATE_FAILED;
   }
 
-  HRESULT hr = GetPreferredAudioParameters(client.get(), params);
+  HRESULT hr = GetPreferredAudioParameters(client.Get(), params);
   if (FAILED(hr) || is_output_device || !params->IsValid())
     return hr;
 
@@ -758,7 +758,7 @@ ChannelConfig CoreAudioUtil::GetChannelConfig(const std::string& device_id,
       CreateClient(device_id, data_flow, eConsole));
 
   WAVEFORMATPCMEX format = {};
-  if (!client.get() || FAILED(GetSharedModeMixFormat(client.get(), &format)))
+  if (!client.Get() || FAILED(GetSharedModeMixFormat(client.Get(), &format)))
     return 0;
 
   return static_cast<ChannelConfig>(format.dwChannelMask);

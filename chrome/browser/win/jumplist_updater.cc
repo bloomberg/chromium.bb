@@ -68,14 +68,14 @@ bool AddShellLink(base::win::ScopedComPtr<IObjectCollection> collection,
     return false;
 
   if (!base::win::SetStringValueForPropertyStore(
-          property_store.get(),
+          property_store.Get(),
           PKEY_Title,
           item->title().c_str())) {
     return false;
   }
 
   // Add this IShellLink object to the given collection.
-  return SUCCEEDED(collection->AddObject(link.get()));
+  return SUCCEEDED(collection->AddObject(link.Get()));
 }
 
 }  // namespace
@@ -122,7 +122,7 @@ bool JumpListUpdater::BeginUpdate() {
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.BeginUpdateDuration");
 
   // This instance is expected to be one-time-use only.
-  DCHECK(!destination_list_.get());
+  DCHECK(!destination_list_.Get());
 
   // Check preconditions.
   if (!JumpListUpdater::IsEnabled() || app_user_model_id_.empty())
@@ -160,7 +160,7 @@ bool JumpListUpdater::CommitUpdate() {
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.CommitUpdateDuration");
 
-  if (!destination_list_.get())
+  if (!destination_list_.Get())
     return false;
 
   // Commit this transaction and send the updated JumpList to Windows.
@@ -171,7 +171,7 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.AddTasksDuration");
 
-  if (!destination_list_.get())
+  if (!destination_list_.Get())
     return false;
 
   // Retrieve the absolute path to "chrome.exe".
@@ -202,7 +202,7 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
   if (FAILED(result))
     return false;
 
-  return SUCCEEDED(destination_list_->AddUserTasks(object_array.get()));
+  return SUCCEEDED(destination_list_->AddUserTasks(object_array.Get()));
 }
 
 bool JumpListUpdater::AddCustomCategory(const std::wstring& category_name,
@@ -211,7 +211,7 @@ bool JumpListUpdater::AddCustomCategory(const std::wstring& category_name,
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.AddCustomCategoryDuration");
 
-  if (!destination_list_.get())
+  if (!destination_list_.Get())
     return false;
 
   // Retrieve the absolute path to "chrome.exe".
@@ -253,5 +253,5 @@ bool JumpListUpdater::AddCustomCategory(const std::wstring& category_name,
     return false;
 
   return SUCCEEDED(destination_list_->AppendCategory(category_name.c_str(),
-                                                     object_array.get()));
+                                                     object_array.Get()));
 }

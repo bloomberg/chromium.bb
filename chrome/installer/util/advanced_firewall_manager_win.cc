@@ -80,10 +80,10 @@ bool AdvancedFirewallManager::AddUDPRule(const base::string16& rule_name,
   // Create the rule and add it to the rule set (only succeeds if elevated).
   base::win::ScopedComPtr<INetFwRule> udp_rule =
       CreateUDPRule(rule_name, description, port);
-  if (!udp_rule.get())
+  if (!udp_rule.Get())
     return false;
 
-  HRESULT hr = firewall_rules_->Add(udp_rule.get());
+  HRESULT hr = firewall_rules_->Add(udp_rule.Get());
   DLOG_IF(ERROR, FAILED(hr)) << logging::SystemErrorCodeToString(hr);
   return SUCCEEDED(hr);
 }
@@ -158,7 +158,7 @@ void AdvancedFirewallManager::GetAllRules(
   }
 
   base::win::ScopedComPtr<IEnumVARIANT> rules_enum;
-  hr = rules_enum.QueryFrom(rules_enum_unknown.get());
+  hr = rules_enum.QueryFrom(rules_enum_unknown.Get());
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return;

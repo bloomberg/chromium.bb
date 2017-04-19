@@ -75,7 +75,7 @@ base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
   DCHECK(!parent_id.empty());
   base::win::ScopedComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
-  if (!content.get())
+  if (!content.Get())
     return base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs>();
 
   base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids;
@@ -182,7 +182,7 @@ bool GetObjectDetails(IPortableDevice* device,
   DCHECK(last_modified_time);
   base::win::ScopedComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
-  if (!content.get())
+  if (!content.Get())
     return false;
 
   base::win::ScopedComPtr<IPortableDeviceProperties> properties;
@@ -208,13 +208,13 @@ bool GetObjectDetails(IPortableDevice* device,
 
   base::win::ScopedComPtr<IPortableDeviceValues> properties_values;
   hr = properties->GetValues(object_id.c_str(),
-                             properties_to_read.get(),
+                             properties_to_read.Get(),
                              properties_values.Receive());
   if (FAILED(hr))
     return false;
 
-  *is_directory = IsDirectory(properties_values.get());
-  *name = GetObjectName(properties_values.get());
+  *is_directory = IsDirectory(properties_values.Get());
+  *name = GetObjectName(properties_values.Get());
   if (name->empty())
     return false;
 
@@ -227,9 +227,9 @@ bool GetObjectDetails(IPortableDevice* device,
   }
 
   // Try to get the last modified time, but don't fail if we can't.
-  GetLastModifiedTime(properties_values.get(), last_modified_time);
+  GetLastModifiedTime(properties_values.Get(), last_modified_time);
 
-  int64_t object_size = GetObjectSize(properties_values.get());
+  int64_t object_size = GetObjectSize(properties_values.Get());
   if (object_size < 0)
     return false;
   *size = object_size;
@@ -270,7 +270,7 @@ bool GetMTPDeviceObjectEntries(IPortableDevice* device,
   DCHECK(object_entries);
   base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids =
       GetDeviceObjectEnumerator(device, directory_object_id);
-  if (!enum_object_ids.get())
+  if (!enum_object_ids.Get())
     return false;
 
   // Loop calling Next() while S_OK is being returned.
@@ -316,7 +316,7 @@ base::win::ScopedComPtr<IPortableDevice> OpenDevice(
   if (FAILED(hr))
     return base::win::ScopedComPtr<IPortableDevice>();
 
-  hr = device->Open(pnp_device_id.c_str(), client_info.get());
+  hr = device->Open(pnp_device_id.c_str(), client_info.Get());
   if (SUCCEEDED(hr))
     return device;
   if (hr == E_ACCESSDENIED)
@@ -360,7 +360,7 @@ HRESULT GetFileStreamForObject(IPortableDevice* device,
   DCHECK(!file_object_id.empty());
   base::win::ScopedComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
-  if (!content.get())
+  if (!content.Get())
     return E_FAIL;
 
   base::win::ScopedComPtr<IPortableDeviceResources> resources;

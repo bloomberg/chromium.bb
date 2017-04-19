@@ -200,7 +200,7 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
   HRESULT hr = audio_client_->Start();
   DLOG_IF(ERROR, FAILED(hr)) << "Failed to start input streaming.";
 
-  if (SUCCEEDED(hr) && audio_render_client_for_loopback_.get())
+  if (SUCCEEDED(hr) && audio_render_client_for_loopback_.Get())
     hr = audio_render_client_for_loopback_->Start();
 
   started_ = SUCCEEDED(hr);
@@ -508,7 +508,7 @@ void WASAPIAudioInputStream::HandleError(HRESULT err) {
 
 HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
   DCHECK_EQ(OPEN_RESULT_OK, open_result_);
-  DCHECK(!endpoint_device_.get());
+  DCHECK(!endpoint_device_.Get());
 
   ScopedComPtr<IMMDeviceEnumerator> enumerator;
   HRESULT hr = enumerator.CreateInstance(__uuidof(MMDeviceEnumerator), NULL,

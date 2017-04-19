@@ -371,7 +371,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
               return S_OK;
             })));
 
-    sensor_events_->OnDataUpdated(sensor_.get(), data_report.get());
+    sensor_events_->OnDataUpdated(sensor_.get(), data_report.Get());
   }
 
   scoped_refptr<MockISensorManager> sensor_manager_;

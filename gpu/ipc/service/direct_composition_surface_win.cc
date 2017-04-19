@@ -266,7 +266,7 @@ bool DCLayerTree::Initialize(HWND window) {
   if (FAILED(hr))
     return false;
 
-  dcomp_target_->SetRoot(root_visual_.get());
+  dcomp_target_->SetRoot(root_visual_.Get());
   return true;
 }
 
@@ -295,7 +295,7 @@ void DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
       &desc, video_processor_enumerator_.Receive());
   CHECK(SUCCEEDED(hr));
 
-  hr = video_device_->CreateVideoProcessor(video_processor_enumerator_.get(), 0,
+  hr = video_device_->CreateVideoProcessor(video_processor_enumerator_.Get(), 0,
                                            video_processor_.Receive());
   CHECK(SUCCEEDED(hr));
 }
@@ -391,7 +391,7 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     out_desc.ViewDimension = D3D11_VPOV_DIMENSION_TEXTURE2D;
     out_desc.Texture2D.MipSlice = 0;
     HRESULT hr = video_device_->CreateVideoProcessorOutputView(
-        texture.get(), video_processor_enumerator_.get(), &out_desc,
+        texture.Get(), video_processor_enumerator_.Get(), &out_desc,
         out_view_.Receive());
     CHECK(SUCCEEDED(hr));
   }
@@ -401,14 +401,14 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   base::win::ScopedComPtr<ID3D11VideoContext1> context1;
   if (SUCCEEDED(video_context_.QueryInterface(context1.Receive()))) {
     context1->VideoProcessorSetStreamColorSpace1(
-        video_processor_.get(), 0,
+        video_processor_.Get(), 0,
         gfx::ColorSpaceWin::GetDXGIColorSpace(src_color_space));
   } else {
     // This can't handle as many different types of color spaces, so use it
     // only if ID3D11VideoContext1 isn't available.
     D3D11_VIDEO_PROCESSOR_COLOR_SPACE color_space =
         gfx::ColorSpaceWin::GetD3D11ColorSpace(src_color_space);
-    video_context_->VideoProcessorSetStreamColorSpace(video_processor_.get(), 0,
+    video_context_->VideoProcessorSetStreamColorSpace(video_processor_.Get(), 0,
                                                       &color_space);
   }
 
@@ -426,12 +426,12 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     HRESULT hr = swap_chain3->SetColorSpace1(color_space);
     CHECK(SUCCEEDED(hr));
     if (context1) {
-      context1->VideoProcessorSetOutputColorSpace1(video_processor_.get(),
+      context1->VideoProcessorSetOutputColorSpace1(video_processor_.Get(),
                                                    color_space);
     } else {
       D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space =
           gfx::ColorSpaceWin::GetD3D11ColorSpace(output_color_space);
-      video_context_->VideoProcessorSetOutputColorSpace(video_processor_.get(),
+      video_context_->VideoProcessorSetOutputColorSpace(video_processor_.Get(),
                                                         &d3d11_color_space);
     }
   }
@@ -442,7 +442,7 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     in_desc.Texture2D.ArraySlice = (UINT)image_dxgi->level();
     base::win::ScopedComPtr<ID3D11VideoProcessorInputView> in_view;
     HRESULT hr = video_device_->CreateVideoProcessorInputView(
-        image_dxgi->texture().get(), video_processor_enumerator_.get(),
+        image_dxgi->texture().Get(), video_processor_enumerator_.Get(),
         &in_desc, in_view.Receive());
     CHECK(SUCCEEDED(hr));
 
@@ -452,21 +452,21 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     stream.InputFrameOrField = 0;
     stream.PastFrames = 0;
     stream.FutureFrames = 0;
-    stream.pInputSurface = in_view.get();
+    stream.pInputSurface = in_view.Get();
     RECT dest_rect = gfx::Rect(swap_chain_size).ToRECT();
-    video_context_->VideoProcessorSetOutputTargetRect(video_processor_.get(),
+    video_context_->VideoProcessorSetOutputTargetRect(video_processor_.Get(),
                                                       TRUE, &dest_rect);
-    video_context_->VideoProcessorSetStreamDestRect(video_processor_.get(), 0,
+    video_context_->VideoProcessorSetStreamDestRect(video_processor_.Get(), 0,
                                                     TRUE, &dest_rect);
     RECT source_rect = gfx::Rect(ceiled_input_size).ToRECT();
-    video_context_->VideoProcessorSetStreamSourceRect(video_processor_.get(), 0,
+    video_context_->VideoProcessorSetStreamSourceRect(video_processor_.Get(), 0,
                                                       TRUE, &source_rect);
 
     video_context_->VideoProcessorSetStreamAutoProcessingMode(
-        video_processor_.get(), 0, FALSE);
+        video_processor_.Get(), 0, FALSE);
 
-    hr = video_context_->VideoProcessorBlt(video_processor_.get(),
-                                           out_view_.get(), 0, 1, &stream);
+    hr = video_context_->VideoProcessorBlt(video_processor_.Get(),
+                                           out_view_.Get(), 0, 1, &stream);
     CHECK(SUCCEEDED(hr));
   }
 
@@ -491,7 +491,7 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     DCHECK(SUCCEEDED(hr));
     base::win::ScopedComPtr<ID3D11DeviceContext> context;
     d3d11_device_->GetImmediateContext(context.Receive());
-    context->CopyResource(dest_texture.get(), src_texture.get());
+    context->CopyResource(dest_texture.Get(), src_texture.Get());
   }
 
   swap_chain_->Present(1, 0);
@@ -575,7 +575,7 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   HRESULT hr = E_FAIL;
   if (yuy2) {
     hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
-        d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
+        d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.Receive());
     is_yuy2_swapchain_ = SUCCEEDED(hr);
     failed_to_create_yuy2_swapchain_ = !is_yuy2_swapchain_;
@@ -589,7 +589,7 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.Flags = 0;
     hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
-        d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
+        d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.Receive());
     CHECK(SUCCEEDED(hr));
   }
@@ -606,11 +606,11 @@ void DCLayerTree::InitVisual(size_t i) {
   dcomp_device_->CreateVisual(visual_info->clip_visual.Receive());
   dcomp_device_->CreateVisual(visual.Receive());
   visual_info->content_visual = visual;
-  visual_info->clip_visual->AddVisual(visual.get(), FALSE, nullptr);
+  visual_info->clip_visual->AddVisual(visual.Get(), FALSE, nullptr);
 
   IDCompositionVisual2* last_visual =
-      (i > 0) ? visual_info_[i - 1].clip_visual.get() : nullptr;
-  root_visual_->AddVisual(visual_info->clip_visual.get(), TRUE, last_visual);
+      (i > 0) ? visual_info_[i - 1].clip_visual.Get() : nullptr;
+  root_visual_->AddVisual(visual_info->clip_visual.Get(), TRUE, last_visual);
 }
 
 void DCLayerTree::UpdateVisualForVideo(
@@ -629,7 +629,7 @@ void DCLayerTree::UpdateVisualForVideo(
   if (visual_info->swap_chain !=
       visual_info->swap_chain_presenter->swap_chain()) {
     visual_info->swap_chain = visual_info->swap_chain_presenter->swap_chain();
-    dc_visual->SetContent(visual_info->swap_chain.get());
+    dc_visual->SetContent(visual_info->swap_chain.Get());
   }
 
   if (visual_info->swap_chain_presenter->swap_chain_scale_x() !=
@@ -664,7 +664,7 @@ void DCLayerTree::UpdateVisualForVideo(
                                      final_transform.matrix().get(3, 0),
                                      final_transform.matrix().get(3, 1)}}};
     dcomp_transform->SetMatrix(d2d_matrix);
-    dc_visual->SetTransform(dcomp_transform.get());
+    dc_visual->SetTransform(dcomp_transform.Get());
   }
 }
 
@@ -680,9 +680,9 @@ void DCLayerTree::UpdateVisualForBackbuffer(
     visual_info->surface = surface_->dcomp_surface();
     visual_info->swap_chain = surface_->swap_chain();
     if (visual_info->surface) {
-      dc_visual->SetContent(visual_info->surface.get());
+      dc_visual->SetContent(visual_info->surface.Get());
     } else if (visual_info->swap_chain) {
-      dc_visual->SetContent(visual_info->swap_chain.get());
+      dc_visual->SetContent(visual_info->swap_chain.Get());
     } else {
       dc_visual->SetContent(nullptr);
     }
@@ -716,7 +716,7 @@ void DCLayerTree::UpdateVisualClip(VisualInfo* visual_info,
       clip->SetRight(offset_clip.right());
       clip->SetBottom(offset_clip.bottom());
       clip->SetTop(offset_clip.y());
-      visual_info->clip_visual->SetClip(clip.get());
+      visual_info->clip_visual->SetClip(clip.Get());
     } else {
       visual_info->clip_visual->SetClip(nullptr);
     }
@@ -744,7 +744,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
 
   while (visual_info_.size() > pending_overlays_.size()) {
     visual_info_.back().clip_visual->RemoveAllVisuals();
-    root_visual_->RemoveVisual(visual_info_.back().clip_visual.get());
+    root_visual_->RemoveVisual(visual_info_.back().clip_visual.Get());
     visual_info_.pop_back();
   }
 
@@ -927,7 +927,7 @@ void DirectCompositionSurfaceWin::InitializeSurface() {
     desc.AlphaMode = alpha_mode;
     desc.Flags = 0;
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
-        d3d11_device_.get(), &desc, nullptr, swap_chain_.Receive());
+        d3d11_device_.Get(), &desc, nullptr, swap_chain_.Receive());
     has_been_rendered_to_ = false;
     first_swap_ = true;
     CHECK(SUCCEEDED(hr));
@@ -1080,7 +1080,7 @@ bool DirectCompositionSurfaceWin::OnMakeCurrent(gl::GLContext* context) {
     if (draw_texture_) {
       HRESULT hr = dcomp_surface_->ResumeDraw();
       CHECK(SUCCEEDED(hr));
-      g_current_surface = dcomp_surface_.get();
+      g_current_surface = dcomp_surface_.Get();
     }
   }
   return true;
@@ -1129,7 +1129,7 @@ bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
   }
   has_been_rendered_to_ = true;
 
-  g_current_surface = dcomp_surface_.get();
+  g_current_surface = dcomp_surface_.Get();
 
   std::vector<EGLint> pbuffer_attribs{
       EGL_WIDTH,
@@ -1141,7 +1141,7 @@ bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
       EGL_NONE};
 
   EGLClientBuffer buffer =
-      reinterpret_cast<EGLClientBuffer>(draw_texture_.get());
+      reinterpret_cast<EGLClientBuffer>(draw_texture_.Get());
   real_surface_ = eglCreatePbufferFromClientBuffer(
       GetDisplay(), EGL_D3D_TEXTURE_ANGLE, buffer, GetConfig(),
       &pbuffer_attribs[0]);

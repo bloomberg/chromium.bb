@@ -760,7 +760,7 @@ bool LaunchDefaultAppsSettingsModernDialog(const wchar_t* protocol) {
   HRESULT hr = activator.CreateInstance(CLSID_ApplicationActivationManager);
   if (SUCCEEDED(hr)) {
     DWORD pid = 0;
-    CoAllowSetForegroundWindow(activator.get(), nullptr);
+    CoAllowSetForegroundWindow(activator.Get(), nullptr);
     hr = activator->ActivateApplication(kControlPanelAppModelId,
                                         L"page=SettingsPageAppsDefaults",
                                         AO_NONE, &pid);

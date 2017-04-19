@@ -361,7 +361,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
 
     // base::win::ObjectWatcher::Delegate implementation.
     void OnObjectSignaled(HANDLE object) override {
-      DCHECK(xps_print_job_.get());
+      DCHECK(xps_print_job_.Get());
       DCHECK(object == job_progress_event_.Get());
       ResetEvent(job_progress_event_.Get());
       if (!delegate_)
@@ -395,7 +395,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
           : job_ptr_(job_ptr) {
       }
       ~PrintJobCanceler() {
-        if (job_ptr_ && job_ptr_->get()) {
+        if (job_ptr_ && job_ptr_->Get()) {
           (*job_ptr_)->Cancel();
           job_ptr_->Reset();
         }
@@ -748,10 +748,10 @@ bool PrintSystemWin::ValidatePrintTicket(
     CreateStreamOnHGlobal(NULL, TRUE, result_ticket_stream.Receive());
     ret = SUCCEEDED(printing::XPSModule::MergeAndValidatePrintTicket(
         provider,
-        print_ticket_stream.get(),
+        print_ticket_stream.Get(),
         NULL,
         kPTJobScope,
-        result_ticket_stream.get(),
+        result_ticket_stream.Get(),
         error.Receive()));
     printing::XPSModule::CloseProvider(provider);
   }

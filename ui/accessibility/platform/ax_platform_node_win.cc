@@ -184,7 +184,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
     return nullptr;
   base::win::ScopedComPtr<AXPlatformNodeWin> ax_platform_node;
   accessible->QueryInterface(ax_platform_node.Receive());
-  return ax_platform_node.get();
+  return ax_platform_node.Get();
 }
 
 //
@@ -258,7 +258,7 @@ int AXPlatformNodeWin::GetIndexInParent() {
     if (S_OK == parent_accessible->get_accChild(childid_index,
                                                 child_dispatch.Receive()) &&
         S_OK == child_dispatch.QueryInterface(child_accessible.Receive())) {
-      if (child_accessible.get() == this)
+      if (child_accessible.Get() == this)
         return index - 1;
     }
   }

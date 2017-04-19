@@ -95,9 +95,9 @@ class AXPlatformNodeWinTest : public testing::Test {
 
   ScopedComPtr<IAccessible2> ToIAccessible2(
       ScopedComPtr<IAccessible> accessible) {
-    CHECK(accessible.get());
+    CHECK(accessible.Get());
     ScopedComPtr<IServiceProvider> service_provider;
-    service_provider.QueryFrom(accessible.get());
+    service_provider.QueryFrom(accessible.Get());
     ScopedComPtr<IAccessible2> result;
     CHECK(SUCCEEDED(
         service_provider->QueryService(IID_IAccessible2, result.Receive())));
@@ -291,21 +291,21 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
   {
     ScopedComPtr<IDispatch> result;
     EXPECT_EQ(S_OK, root_iaccessible->get_accChild(SELF, result.Receive()));
-    EXPECT_EQ(result.get(), root_iaccessible);
+    EXPECT_EQ(result.Get(), root_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
     ScopedVariant child1(1);
     EXPECT_EQ(S_OK, root_iaccessible->get_accChild(child1, result.Receive()));
-    EXPECT_EQ(result.get(), button_iaccessible);
+    EXPECT_EQ(result.Get(), button_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
     ScopedVariant child2(2);
     EXPECT_EQ(S_OK, root_iaccessible->get_accChild(child2, result.Receive()));
-    EXPECT_EQ(result.get(), checkbox_iaccessible);
+    EXPECT_EQ(result.Get(), checkbox_iaccessible);
   }
 
   {
@@ -327,7 +327,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
     ScopedVariant button_id_variant(button_unique_id);
     EXPECT_EQ(S_OK, root_iaccessible->get_accChild(button_id_variant,
                                                    result.Receive()));
-    EXPECT_EQ(result.get(), button_iaccessible);
+    EXPECT_EQ(result.Get(), button_iaccessible);
   }
 
   // We shouldn't be able to ask for the root node by its unique ID
@@ -348,13 +348,13 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
   {
     ScopedComPtr<IDispatch> result;
     EXPECT_EQ(S_OK, button_iaccessible->get_accParent(result.Receive()));
-    EXPECT_EQ(result.get(), root_iaccessible);
+    EXPECT_EQ(result.Get(), root_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
     EXPECT_EQ(S_OK, checkbox_iaccessible->get_accParent(result.Receive()));
-    EXPECT_EQ(result.get(), root_iaccessible);
+    EXPECT_EQ(result.Get(), root_iaccessible);
   }
 
   {
@@ -409,7 +409,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2SetSelection) {
   ScopedComPtr<IAccessible2> ia2_text_field =
       ToIAccessible2(GetRootIAccessible());
   ScopedComPtr<IAccessibleText> text_field;
-  text_field.QueryFrom(ia2_text_field.get());
+  text_field.QueryFrom(ia2_text_field.Get());
   ASSERT_NE(nullptr, text_field);
 
   EXPECT_HRESULT_SUCCEEDED(text_field->setSelection(0, 0, 1));

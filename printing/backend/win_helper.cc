@@ -416,7 +416,7 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
     DEVMODE* dm = NULL;
     // Use kPTJobScope, because kPTDocumentScope breaks duplex.
     hr = printing::XPSModule::ConvertPrintTicketToDevMode(
-        provider, pt_stream.get(), kUserDefaultDevmode, kPTJobScope, &size, &dm,
+        provider, pt_stream.Get(), kUserDefaultDevmode, kPTJobScope, &size, &dm,
         NULL);
     if (SUCCEEDED(hr)) {
       // Correct DEVMODE using DocumentProperties. See documentation for

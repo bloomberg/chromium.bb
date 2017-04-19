@@ -439,7 +439,7 @@ bool PlatformSensorReaderWin::SetReportingInterval(
 
     if (SUCCEEDED(hr)) {
       base::win::ScopedComPtr<IPortableDeviceValues> return_props;
-      hr = sensor_->SetProperties(props.get(), return_props.Receive());
+      hr = sensor_->SetProperties(props.Get(), return_props.Receive());
       return SUCCEEDED(hr);
     }
   }

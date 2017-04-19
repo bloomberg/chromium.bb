@@ -540,7 +540,7 @@ static sk_sp<SkDocument> MakeXPSDocument(SkWStream* s) {
     LOG(ERROR) << "CoCreateInstance(CLSID_XpsOMObjectFactory, ...) failed:"
                << logging::SystemErrorCodeToString(hr);
   }
-  return SkDocument::MakeXPS(s, factory.get());
+  return SkDocument::MakeXPS(s, factory.Get());
 }
 #endif
 }  // namespace

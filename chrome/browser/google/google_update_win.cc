@@ -193,7 +193,7 @@ HRESULT CreateGoogleUpdate3WebClass(
   if (FAILED(hresult))
     return hresult;
 
-  ConfigureProxyBlanket(class_factory.get());
+  ConfigureProxyBlanket(class_factory.Get());
 
   return class_factory->CreateInstance(nullptr, IID_PPV_ARGS(google_update));
 }
@@ -515,7 +515,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
       return hresult;
     }
 
-    ConfigureProxyBlanket(google_update_.get());
+    ConfigureProxyBlanket(google_update_.Get());
   }
 
   // The class was created, so all subsequent errors are reported as:
@@ -533,7 +533,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
       return hresult;
     dispatch.Reset();
 
-    ConfigureProxyBlanket(app_bundle.get());
+    ConfigureProxyBlanket(app_bundle.Get());
 
     if (!locale_.empty()) {
       // Ignore the result of this since, while setting the display language is
@@ -578,7 +578,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     hresult = dispatch.QueryInterface(app.Receive());
     if (FAILED(hresult))
       return hresult;
-    ConfigureProxyBlanket(app.get());
+    ConfigureProxyBlanket(app.Get());
     hresult = app_bundle->checkForUpdate();
     if (FAILED(hresult))
       return hresult;
@@ -600,7 +600,7 @@ bool UpdateCheckDriver::GetCurrentState(
   *hresult = dispatch.QueryInterface(current_state->Receive());
   if (FAILED(*hresult))
     return false;
-  ConfigureProxyBlanket(current_state->get());
+  ConfigureProxyBlanket(current_state->Get());
   LONG value = 0;
   *hresult = (*current_state)->get_stateValue(&value);
   if (FAILED(*hresult))

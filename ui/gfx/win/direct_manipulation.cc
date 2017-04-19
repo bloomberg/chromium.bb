@@ -44,13 +44,13 @@ void DirectManipulationHelper::Initialize(HWND window) {
   hr = manager_->GetUpdateManager(IID_PPV_ARGS(update_manager_.Receive()));
   CHECK(SUCCEEDED(hr));
 
-  hr = compositor_->SetUpdateManager(update_manager_.get());
+  hr = compositor_->SetUpdateManager(update_manager_.Get());
   CHECK(SUCCEEDED(hr));
 
-  hr = frame_info_.QueryFrom(compositor_.get());
+  hr = frame_info_.QueryFrom(compositor_.Get());
   CHECK(SUCCEEDED(hr));
 
-  hr = manager_->CreateViewport(frame_info_.get(), window,
+  hr = manager_->CreateViewport(frame_info_.Get(), window,
       IID_PPV_ARGS(view_port_outer_.Receive()));
   CHECK(SUCCEEDED(hr));
 
@@ -79,7 +79,7 @@ void DirectManipulationHelper::SetBounds(const gfx::Rect& bounds) {
   CHECK(SUCCEEDED(hr));
 
   base::win::ScopedComPtr<IDirectManipulationContent> content_outer;
-  hr = content_outer.QueryFrom(primary_content_outer.get());
+  hr = content_outer.QueryFrom(primary_content_outer.Get());
   CHECK(SUCCEEDED(hr));
 
   RECT rect = bounds.ToRECT();

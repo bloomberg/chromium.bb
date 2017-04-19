@@ -104,7 +104,7 @@ TEST(OSExchangeDataWinTest, RemoveData) {
     medium.pUnkForRelease = NULL;
     EXPECT_EQ(S_OK, com_data->SetData(&format_etc, &medium, TRUE));
   }
-  EXPECT_EQ(1u, static_cast<DataObjectImpl*>(com_data.get())->size());
+  EXPECT_EQ(1u, static_cast<DataObjectImpl*>(com_data.Get())->size());
 
   // Construct a new object with the old object so that we can use our access
   // APIs.
@@ -184,7 +184,7 @@ TEST(OSExchangeDataWinTest, EnumerationViaCOM) {
   base::win::ScopedComPtr<IDataObject> com_data(
       OSExchangeDataProviderWin::GetIDataObject(data));
   base::win::ScopedComPtr<IEnumFORMATETC> enumerator;
-  EXPECT_EQ(S_OK, com_data.get()->EnumFormatEtc(DATADIR_GET,
+  EXPECT_EQ(S_OK, com_data.Get()->EnumFormatEtc(DATADIR_GET,
                                                 enumerator.Receive()));
 
   // Test that we can get one item.
@@ -238,8 +238,8 @@ TEST(OSExchangeDataWinTest, EnumerationViaCOM) {
     EXPECT_EQ(S_OK, enumerator->Reset());
     EXPECT_EQ(S_OK, enumerator->Skip(1));
     base::win::ScopedComPtr<IEnumFORMATETC> cloned_enumerator;
-    EXPECT_EQ(S_OK, enumerator.get()->Clone(cloned_enumerator.Receive()));
-    EXPECT_EQ(S_OK, enumerator.get()->Reset());
+    EXPECT_EQ(S_OK, enumerator.Get()->Clone(cloned_enumerator.Receive()));
+    EXPECT_EQ(S_OK, enumerator.Get()->Reset());
 
     {
       ULONG retrieved = 0;

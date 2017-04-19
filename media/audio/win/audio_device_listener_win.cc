@@ -37,7 +37,7 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
   // as "Windows Server 2008 R2" where the desktop experience isn't available.
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator(
       CoreAudioUtil::CreateDeviceEnumerator());
-  if (!device_enumerator.get())
+  if (!device_enumerator.Get())
     return;
 
   HRESULT hr = device_enumerator->RegisterEndpointNotificationCallback(this);
@@ -52,7 +52,7 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
 
 AudioDeviceListenerWin::~AudioDeviceListenerWin() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (device_enumerator_.get()) {
+  if (device_enumerator_.Get()) {
     HRESULT hr =
         device_enumerator_->UnregisterEndpointNotificationCallback(this);
     LOG_IF(ERROR, FAILED(hr)) << "UnregisterEndpointNotificationCallback() "

@@ -48,7 +48,7 @@ bool D3D11PictureBuffer::Init(
   view_desc.Texture2D.ArraySlice = (UINT)level_;
 
   HRESULT hr = video_device->CreateVideoDecoderOutputView(
-      texture.get(), &view_desc, output_view_.Receive());
+      texture.Get(), &view_desc, output_view_.Receive());
 
   CHECK(SUCCEEDED(hr));
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
@@ -95,7 +95,7 @@ bool D3D11PictureBuffer::Init(
   };
 
   result = eglStreamPostD3DTextureNV12ANGLE(egl_display, stream_,
-                                            static_cast<void*>(texture.get()),
+                                            static_cast<void*>(texture.Get()),
                                             frame_attributes);
   RETURN_ON_FAILURE(result, "Could not post texture", false);
   result = eglStreamConsumerAcquireKHR(egl_display, stream_);
@@ -153,7 +153,7 @@ bool D3D11H264Accelerator::SubmitFrameMetadata(
 
   HRESULT hr;
   hr = video_context_->DecoderBeginFrame(
-      video_decoder_.get(), our_pic->picture->output_view_.get(), 0, nullptr);
+      video_decoder_.Get(), our_pic->picture->output_view_.Get(), 0, nullptr);
   CHECK(SUCCEEDED(hr));
 
   sps_ = *sps;
@@ -197,7 +197,7 @@ void D3D11H264Accelerator::RetrieveBitstreamBuffer() {
   void* buffer;
   UINT buffer_size;
   HRESULT hr = video_context_->GetDecoderBuffer(
-      video_decoder_.get(), D3D11_VIDEO_DECODER_BUFFER_BITSTREAM, &buffer_size,
+      video_decoder_.Get(), D3D11_VIDEO_DECODER_BUFFER_BITSTREAM, &buffer_size,
       &buffer);
   bitstream_buffer_bytes_ = (uint8_t*)buffer;
   bitstream_buffer_size_ = buffer_size;
@@ -298,13 +298,13 @@ bool D3D11H264Accelerator::SubmitSlice(const H264PPS* pps,
   UINT buffer_size;
   void* buffer;
   HRESULT hr = video_context_->GetDecoderBuffer(
-      video_decoder_.get(), D3D11_VIDEO_DECODER_BUFFER_PICTURE_PARAMETERS,
+      video_decoder_.Get(), D3D11_VIDEO_DECODER_BUFFER_PICTURE_PARAMETERS,
       &buffer_size, &buffer);
   CHECK(SUCCEEDED(hr));
 
   memcpy(buffer, &pic_param, sizeof(pic_param));
   hr = video_context_->ReleaseDecoderBuffer(
-      video_decoder_.get(), D3D11_VIDEO_DECODER_BUFFER_PICTURE_PARAMETERS);
+      video_decoder_.Get(), D3D11_VIDEO_DECODER_BUFFER_PICTURE_PARAMETERS);
   CHECK(SUCCEEDED(hr));
 
   DXVA_Qmatrix_H264 iq_matrix_buf = {};
@@ -331,13 +331,13 @@ bool D3D11H264Accelerator::SubmitSlice(const H264PPS* pps,
     }
   }
   hr = video_context_->GetDecoderBuffer(
-      video_decoder_.get(),
+      video_decoder_.Get(),
       D3D11_VIDEO_DECODER_BUFFER_INVERSE_QUANTIZATION_MATRIX, &buffer_size,
       &buffer);
   CHECK(SUCCEEDED(hr));
   memcpy(buffer, &iq_matrix_buf, sizeof(iq_matrix_buf));
   hr = video_context_->ReleaseDecoderBuffer(
-      video_decoder_.get(),
+      video_decoder_.Get(),
       D3D11_VIDEO_DECODER_BUFFER_INVERSE_QUANTIZATION_MATRIX);
 
   // Ideally all slices in a frame are put in the same bitstream buffer.
@@ -401,16 +401,16 @@ void D3D11H264Accelerator::SubmitSliceData() {
   UINT buffer_size;
   void* buffer;
   HRESULT hr = video_context_->GetDecoderBuffer(
-      video_decoder_.get(), D3D11_VIDEO_DECODER_BUFFER_SLICE_CONTROL,
+      video_decoder_.Get(), D3D11_VIDEO_DECODER_BUFFER_SLICE_CONTROL,
       &buffer_size, &buffer);
   CHECK(SUCCEEDED(hr));
   CHECK_LE(sizeof(slice_info_[0]) * slice_info_.size(), buffer_size);
   memcpy(buffer, &slice_info_[0], sizeof(slice_info_[0]) * slice_info_.size());
   hr = video_context_->ReleaseDecoderBuffer(
-      video_decoder_.get(), D3D11_VIDEO_DECODER_BUFFER_SLICE_CONTROL);
+      video_decoder_.Get(), D3D11_VIDEO_DECODER_BUFFER_SLICE_CONTROL);
 
   hr = video_context_->ReleaseDecoderBuffer(
-      video_decoder_.get(), D3D11_VIDEO_DECODER_BUFFER_BITSTREAM);
+      video_decoder_.Get(), D3D11_VIDEO_DECODER_BUFFER_BITSTREAM);
   D3D11_VIDEO_DECODER_BUFFER_DESC buffers[4] = {};
   buffers[0].BufferType = D3D11_VIDEO_DECODER_BUFFER_PICTURE_PARAMETERS;
   buffers[0].DataOffset = 0;
@@ -426,7 +426,7 @@ void D3D11H264Accelerator::SubmitSliceData() {
   buffers[3].DataOffset = 0;
   buffers[3].DataSize = (UINT)current_offset_;
 
-  hr = video_context_->SubmitDecoderBuffers(video_decoder_.get(), 4, buffers);
+  hr = video_context_->SubmitDecoderBuffers(video_decoder_.Get(), 4, buffers);
   current_offset_ = 0;
   slice_info_.clear();
 }
@@ -434,7 +434,7 @@ void D3D11H264Accelerator::SubmitSliceData() {
 bool D3D11H264Accelerator::SubmitDecode(const scoped_refptr<H264Picture>& pic) {
   SubmitSliceData();
 
-  HRESULT hr = video_context_->DecoderEndFrame(video_decoder_.get());
+  HRESULT hr = video_context_->DecoderEndFrame(video_decoder_.Get());
   CHECK(SUCCEEDED(hr));
 
   return true;

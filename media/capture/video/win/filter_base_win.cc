@@ -93,7 +93,7 @@ STDMETHODIMP FilterBase::FindPin(LPCWSTR id, IPin** pin) {
 }
 
 STDMETHODIMP FilterBase::QueryFilterInfo(FILTER_INFO* info) {
-  info->pGraph = owning_graph_.get();
+  info->pGraph = owning_graph_.Get();
   info->achName[0] = L'\0';
   if (info->pGraph)
     info->pGraph->AddRef();

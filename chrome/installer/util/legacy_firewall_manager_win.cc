@@ -52,7 +52,7 @@ bool LegacyFirewallManager::GetAllowIncomingConnection(bool* value) {
   // this chrome.exe.
   base::win::ScopedComPtr<INetFwAuthorizedApplications> authorized_apps(
       GetAuthorizedApplications());
-  if (!authorized_apps.get())
+  if (!authorized_apps.Get())
     return false;
 
   base::win::ScopedComPtr<INetFwAuthorizedApplication> chrome_application;
@@ -74,15 +74,15 @@ bool LegacyFirewallManager::GetAllowIncomingConnection(bool* value) {
 bool LegacyFirewallManager::SetAllowIncomingConnection(bool allow) {
   base::win::ScopedComPtr<INetFwAuthorizedApplications> authorized_apps(
       GetAuthorizedApplications());
-  if (!authorized_apps.get())
+  if (!authorized_apps.Get())
     return false;
 
   // Authorize chrome.
   base::win::ScopedComPtr<INetFwAuthorizedApplication> authorization =
       CreateChromeAuthorization(allow);
-  if (!authorization.get())
+  if (!authorization.Get())
     return false;
-  HRESULT hr = authorized_apps->Add(authorization.get());
+  HRESULT hr = authorized_apps->Add(authorization.Get());
   DLOG_IF(ERROR, FAILED(hr)) << logging::SystemErrorCodeToString(hr);
   return SUCCEEDED(hr);
 }
@@ -90,7 +90,7 @@ bool LegacyFirewallManager::SetAllowIncomingConnection(bool allow) {
 void LegacyFirewallManager::DeleteRule() {
   base::win::ScopedComPtr<INetFwAuthorizedApplications> authorized_apps(
       GetAuthorizedApplications());
-  if (!authorized_apps.get())
+  if (!authorized_apps.Get())
     return;
   authorized_apps->Remove(base::win::ScopedBstr(app_path_.value().c_str()));
 }

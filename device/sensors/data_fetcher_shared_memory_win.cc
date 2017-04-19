@@ -371,14 +371,14 @@ bool DataFetcherSharedMemory::RegisterForSensor(
 
   base::win::ScopedComPtr<ISensorManager> sensor_manager;
   HRESULT hr = sensor_manager.CreateInstance(CLSID_SensorManager);
-  if (FAILED(hr) || !sensor_manager.get())
+  if (FAILED(hr) || !sensor_manager.Get())
     return false;
 
   base::win::ScopedComPtr<ISensorCollection> sensor_collection;
   hr = sensor_manager->GetSensorsByType(sensor_type,
                                         sensor_collection.Receive());
 
-  if (FAILED(hr) || !sensor_collection.get())
+  if (FAILED(hr) || !sensor_collection.Get())
     return false;
 
   ULONG count = 0;
@@ -396,17 +396,17 @@ bool DataFetcherSharedMemory::RegisterForSensor(
             SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL,
             GetInterval().InMilliseconds()))) {
       base::win::ScopedComPtr<IPortableDeviceValues> return_values;
-      (*sensor)->SetProperties(device_values.get(), return_values.Receive());
+      (*sensor)->SetProperties(device_values.Get(), return_values.Receive());
     }
   }
 
   base::win::ScopedComPtr<ISensorEvents> sensor_events;
   hr = event_sink->QueryInterface(__uuidof(ISensorEvents),
                                   sensor_events.ReceiveVoid());
-  if (FAILED(hr) || !sensor_events.get())
+  if (FAILED(hr) || !sensor_events.Get())
     return false;
 
-  hr = (*sensor)->SetEventSink(sensor_events.get());
+  hr = (*sensor)->SetEventSink(sensor_events.Get());
   if (FAILED(hr))
     return false;
 
@@ -416,29 +416,29 @@ bool DataFetcherSharedMemory::RegisterForSensor(
 void DataFetcherSharedMemory::DisableSensors(ConsumerType consumer_type) {
   switch (consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
-      if (sensor_inclinometer_.get()) {
+      if (sensor_inclinometer_.Get()) {
         sensor_inclinometer_->SetEventSink(nullptr);
         sensor_inclinometer_.Reset();
       }
       break;
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-      if (sensor_inclinometer_absolute_.get()) {
+      if (sensor_inclinometer_absolute_.Get()) {
         sensor_inclinometer_absolute_->SetEventSink(nullptr);
         sensor_inclinometer_absolute_.Reset();
       }
       break;
     case CONSUMER_TYPE_MOTION:
-      if (sensor_accelerometer_.get()) {
+      if (sensor_accelerometer_.Get()) {
         sensor_accelerometer_->SetEventSink(nullptr);
         sensor_accelerometer_.Reset();
       }
-      if (sensor_gyrometer_.get()) {
+      if (sensor_gyrometer_.Get()) {
         sensor_gyrometer_->SetEventSink(nullptr);
         sensor_gyrometer_.Reset();
       }
       break;
     case CONSUMER_TYPE_LIGHT:
-      if (sensor_light_.get()) {
+      if (sensor_light_.Get()) {
         sensor_light_->SetEventSink(nullptr);
         sensor_light_.Reset();
       }

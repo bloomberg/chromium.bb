@@ -131,9 +131,9 @@ RdpClientWindow::~RdpClientWindow() {
     DestroyWindow();
   }
 
-  DCHECK(!client_.get());
-  DCHECK(!client_9_.get());
-  DCHECK(!client_settings_.get());
+  DCHECK(!client_.Get());
+  DCHECK(!client_9_.Get());
+  DCHECK(!client_settings_.Get());
 }
 
 bool RdpClientWindow::Connect(const ScreenResolution& resolution) {
@@ -234,7 +234,7 @@ void RdpClientWindow::ChangeResolution(const ScreenResolution& resolution) {
 }
 
 void RdpClientWindow::OnClose() {
-  if (!client_.get()) {
+  if (!client_.Get()) {
     NotifyDisconnected();
     return;
   }

@@ -350,7 +350,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
   if (FAILED(hr))
     return RESULT_FAILED_TO_CONNECT_TO_WMI;
 
-  hr = ::CoSetProxyBlanket(wmi_services.get(), RPC_C_AUTHN_WINNT,
+  hr = ::CoSetProxyBlanket(wmi_services.Get(), RPC_C_AUTHN_WINNT,
                            RPC_C_AUTHZ_NONE, nullptr, RPC_C_AUTHN_LEVEL_CALL,
                            RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
   if (FAILED(hr))

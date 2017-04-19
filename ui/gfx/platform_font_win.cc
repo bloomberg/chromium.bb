@@ -111,9 +111,9 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
     return hr;
 
   LOGFONT converted_font = {0};
-  hr = gdi_interop->ConvertFontFaceToLOGFONT(font_face.get(), &converted_font);
+  hr = gdi_interop->ConvertFontFaceToLOGFONT(font_face.Get(), &converted_font);
   if (SUCCEEDED(hr)) {
-    hr = font_collection->GetFontFromFontFace(font_face.get(), dwrite_font);
+    hr = font_collection->GetFontFromFontFace(font_face.Get(), dwrite_font);
     if (SUCCEEDED(hr)) {
       wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
                converted_font.lfFaceName);

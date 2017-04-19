@@ -286,7 +286,7 @@ static base::win::ScopedComPtr<IMFSample> CreateInputSample(
   CHECK_GT(size, 0U);
   base::win::ScopedComPtr<IMFSample> sample;
   sample = mf::CreateEmptySampleWithBuffer(std::max(min_size, size), alignment);
-  RETURN_ON_FAILURE(sample.get(), "Failed to create empty sample",
+  RETURN_ON_FAILURE(sample.Get(), "Failed to create empty sample",
                     base::win::ScopedComPtr<IMFSample>());
 
   base::win::ScopedComPtr<IMFMediaBuffer> buffer;
@@ -649,7 +649,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   TRACE_EVENT0("gpu", "DXVAVideoDecodeAccelerator_CreateD3DDevManager");
   // The device may exist if the last state was a config change.
-  if (d3d9_.get())
+  if (d3d9_.Get())
     return true;
 
   HRESULT hr = E_FAIL;
@@ -665,11 +665,11 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
 
   base::win::ScopedComPtr<IDirect3DDevice9> angle_device =
       gl::QueryD3D9DeviceObjectFromANGLE();
-  if (angle_device.get())
+  if (angle_device.Get())
     using_angle_device_ = true;
 
   if (using_angle_device_) {
-    hr = d3d9_device_ex_.QueryFrom(angle_device.get());
+    hr = d3d9_device_ex_.QueryFrom(angle_device.Get());
     RETURN_ON_HR_FAILURE(
         hr, "QueryInterface for IDirect3DDevice9Ex from angle device failed",
         false);
@@ -698,7 +698,7 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
                                          device_manager_.Receive());
   RETURN_ON_HR_FAILURE(hr, "DXVA2CreateDirect3DDeviceManager9 failed", false);
 
-  hr = device_manager_->ResetDevice(d3d9_device_ex_.get(),
+  hr = device_manager_->ResetDevice(d3d9_device_ex_.Get(),
                                     dev_manager_reset_token_);
   RETURN_ON_HR_FAILURE(hr, "Failed to reset device", false);
 
@@ -718,9 +718,9 @@ bool DXVAVideoDecodeAccelerator::CreateVideoProcessor() {
     return false;
 
   // TODO(Hubbe): Don't try again if we tried and failed already.
-  if (video_processor_service_.get())
+  if (video_processor_service_.Get())
     return true;
-  HRESULT hr = DXVA2CreateVideoService(d3d9_device_ex_.get(),
+  HRESULT hr = DXVA2CreateVideoService(d3d9_device_ex_.Get(),
                                        IID_IDirectXVideoProcessorService,
                                        video_processor_service_.ReceiveVoid());
   RETURN_ON_HR_FAILURE(hr, "DXVA2CreateVideoService failed", false);
@@ -798,7 +798,7 @@ bool DXVAVideoDecodeAccelerator::CreateVideoProcessor() {
 
 bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // The device may exist if the last state was a config change.
-  if (d3d11_device_.get())
+  if (d3d11_device_.Get())
     return true;
   HRESULT hr = create_dxgi_device_manager_(&dx11_dev_manager_reset_token_,
                                            d3d11_device_manager_.Receive());
@@ -808,7 +808,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   if (!angle_device_)
     copy_nv12_textures_ = false;
   if (share_nv12_textures_) {
-    RETURN_ON_FAILURE(angle_device_.get(), "Failed to get d3d11 device", false);
+    RETURN_ON_FAILURE(angle_device_.Get(), "Failed to get d3d11 device", false);
 
     using_angle_device_ = true;
     d3d11_device_ = angle_device_;
@@ -883,11 +883,11 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // context are synchronized across threads. We have multiple threads
   // accessing the context, the media foundation decoder threads and the
   // decoder thread via the video format conversion transform.
-  hr = multi_threaded_.QueryFrom(d3d11_device_.get());
+  hr = multi_threaded_.QueryFrom(d3d11_device_.Get());
   RETURN_ON_HR_FAILURE(hr, "Failed to query ID3D10Multithread", false);
   multi_threaded_->SetMultithreadProtected(TRUE);
 
-  hr = d3d11_device_manager_->ResetDevice(d3d11_device_.get(),
+  hr = d3d11_device_manager_->ResetDevice(d3d11_device_.Get(),
                                           dx11_dev_manager_reset_token_);
   RETURN_ON_HR_FAILURE(hr, "Failed to reset device", false);
 
@@ -933,7 +933,7 @@ void DXVAVideoDecodeAccelerator::Decode(
       reinterpret_cast<const uint8_t*>(shm.memory()), bitstream_buffer.size(),
       std::min<uint32_t>(bitstream_buffer.size(), input_stream_info_.cbSize),
       input_stream_info_.cbAlignment);
-  RETURN_AND_NOTIFY_ON_FAILURE(sample.get(), "Failed to create input sample",
+  RETURN_AND_NOTIFY_ON_FAILURE(sample.Get(), "Failed to create input sample",
                                PLATFORM_FAILURE, );
 
   RETURN_AND_NOTIFY_ON_HR_FAILURE(
@@ -1304,7 +1304,7 @@ std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxH264Resolution() {
                  "GetMaxH264Resolution. QueryDeviceObjectFromANGLE");
 
     device = gl::QueryD3D11DeviceObjectFromANGLE();
-    if (!device.get())
+    if (!device.Get())
       return max_resolution;
   }
 
@@ -1338,7 +1338,7 @@ std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxH264Resolution() {
 
   // Legacy AMD drivers with UVD3 or earlier and some Intel GPU's crash while
   // creating surfaces larger than 1920 x 1088.
-  if (IsLegacyGPU(device.get()))
+  if (IsLegacyGPU(device.Get()))
     return max_resolution;
 
   // We look for the following resolutions in the driver.
@@ -1374,7 +1374,7 @@ std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxH264Resolution() {
       base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder;
       hr = video_device->CreateVideoDecoder(&desc, &config,
                                             video_decoder.Receive());
-      if (!video_decoder.get())
+      if (!video_decoder.Get())
         return max_resolution;
 
       max_resolution = resolution_array[res_idx];
@@ -1523,12 +1523,12 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
                                  "Failed to initialize DX11 device and manager",
                                  PLATFORM_FAILURE, false);
     device_manager_to_use =
-        reinterpret_cast<ULONG_PTR>(d3d11_device_manager_.get());
+        reinterpret_cast<ULONG_PTR>(d3d11_device_manager_.Get());
   } else {
     RETURN_AND_NOTIFY_ON_FAILURE(CreateD3DDevManager(),
                                  "Failed to initialize D3D device and manager",
                                  PLATFORM_FAILURE, false);
-    device_manager_to_use = reinterpret_cast<ULONG_PTR>(device_manager_.get());
+    device_manager_to_use = reinterpret_cast<ULONG_PTR>(device_manager_.Get());
   }
 
   hr = decoder_->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER,
@@ -1663,7 +1663,7 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
   RETURN_ON_HR_FAILURE(hr, "Failed to set subtype", false);
 
   if (using_ms_vp9_mft_) {
-    hr = MFSetAttributeSize(media_type.get(), MF_MT_FRAME_SIZE,
+    hr = MFSetAttributeSize(media_type.Get(), MF_MT_FRAME_SIZE,
                             config_.initial_expected_coded_size.width(),
                             config_.initial_expected_coded_size.height());
     RETURN_ON_HR_FAILURE(hr, "Failed to set attribute size", false);
@@ -1679,14 +1679,14 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
     RETURN_ON_HR_FAILURE(hr, "Failed to set interlace mode", false);
   }
 
-  hr = decoder_->SetInputType(0, media_type.get(), 0);  // No flags
+  hr = decoder_->SetInputType(0, media_type.Get(), 0);  // No flags
   RETURN_ON_HR_FAILURE(hr, "Failed to set decoder input type", false);
   return true;
 }
 
 bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
     const GUID& subtype) {
-  bool result = SetTransformOutputType(decoder_.get(), subtype, 0, 0);
+  bool result = SetTransformOutputType(decoder_.Get(), subtype, 0, 0);
 
   if (share_nv12_textures_) {
     base::win::ScopedComPtr<IMFAttributes> out_attributes;
@@ -1846,7 +1846,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(
 
   int width = 0;
   int height = 0;
-  if (!GetVideoFrameDimensions(sample.get(), &width, &height)) {
+  if (!GetVideoFrameDimensions(sample.Get(), &width, &height)) {
     RETURN_ON_FAILURE(false, "Failed to get D3D surface from output sample",
                       false);
   }
@@ -1888,7 +1888,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       int width = 0;
       int height = 0;
-      if (!GetVideoFrameDimensions(pending_sample->output_sample.get(), &width,
+      if (!GetVideoFrameDimensions(pending_sample->output_sample.Get(), &width,
                                    &height)) {
         RETURN_AND_NOTIFY_ON_FAILURE(
             false, "Failed to get D3D surface from output sample",
@@ -1926,7 +1926,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       if (use_dx11_) {
         base::win::ScopedComPtr<IMFDXGIBuffer> dxgi_buffer;
-        hr = dxgi_buffer.QueryFrom(output_buffer.get());
+        hr = dxgi_buffer.QueryFrom(output_buffer.Get());
         RETURN_AND_NOTIFY_ON_HR_FAILURE(
             hr, "Failed to get DXGIBuffer from output sample",
             PLATFORM_FAILURE, );
@@ -1934,7 +1934,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
             __uuidof(ID3D11Texture2D),
             reinterpret_cast<void**>(d3d11_texture.Receive()));
       } else {
-        hr = MFGetService(output_buffer.get(), MR_BUFFER_SERVICE,
+        hr = MFGetService(output_buffer.Get(), MR_BUFFER_SERVICE,
                           IID_PPV_ARGS(surface.Receive()));
       }
       RETURN_AND_NOTIFY_ON_HR_FAILURE(
@@ -1942,7 +1942,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       RETURN_AND_NOTIFY_ON_FAILURE(
           index->second->CopyOutputSampleDataToPictureBuffer(
-              this, surface.get(), d3d11_texture.get(),
+              this, surface.Get(), d3d11_texture.Get(),
               pending_sample->input_buffer_id),
           "Failed to copy output sample", PLATFORM_FAILURE, );
     }
@@ -2214,7 +2214,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   // reinitialize the decoder to ensure that the stream decodes correctly.
   bool config_changed = false;
 
-  HRESULT hr = CheckConfigChanged(sample.get(), &config_changed);
+  HRESULT hr = CheckConfigChanged(sample.Get(), &config_changed);
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to check video stream config",
                                   PLATFORM_FAILURE, );
 
@@ -2237,7 +2237,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   inputs_before_decode_++;
   {
     ScopedExceptionCatcher catcher(using_ms_vp9_mft_);
-    hr = decoder_->ProcessInput(0, sample.get(), 0);
+    hr = decoder_->ProcessInput(0, sample.Get(), 0);
   }
   // As per msdn if the decoder returns MF_E_NOTACCEPTING then it means that it
   // has enough data to produce one or more output samples. In this case the
@@ -2258,7 +2258,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
           (state == kStopped || state == kNormal || state == kFlushing),
           "Failed to process output. Unexpected decoder state: " << state,
           PLATFORM_FAILURE, );
-      hr = decoder_->ProcessInput(0, sample.get(), 0);
+      hr = decoder_->ProcessInput(0, sample.Get(), 0);
     }
     // If we continue to get the MF_E_NOTACCEPTING error we do the following:-
     // 1. Add the input sample to the pending queue.
@@ -2645,7 +2645,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
 
   DCHECK(use_dx11_);
   DCHECK(!!input_sample);
-  DCHECK(d3d11_processor_.get());
+  DCHECK(d3d11_processor_.Get());
 
   if (dest_keyed_mutex) {
     HRESULT hr =
@@ -2661,7 +2661,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
                                   PLATFORM_FAILURE, );
 
   base::win::ScopedComPtr<IMFDXGIBuffer> dxgi_buffer;
-  hr = dxgi_buffer.QueryFrom(output_buffer.get());
+  hr = dxgi_buffer.QueryFrom(output_buffer.Get());
   RETURN_AND_NOTIFY_ON_HR_FAILURE(
       hr, "Failed to get DXGIBuffer from output sample", PLATFORM_FAILURE, );
   UINT index = 0;
@@ -2679,7 +2679,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
   output_view_desc.Texture2D.MipSlice = 0;
   base::win::ScopedComPtr<ID3D11VideoProcessorOutputView> output_view;
   hr = video_device_->CreateVideoProcessorOutputView(
-      dest_texture, enumerator_.get(), &output_view_desc,
+      dest_texture, enumerator_.Get(), &output_view_desc,
       output_view.Receive());
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get output view",
                                   PLATFORM_FAILURE, );
@@ -2690,17 +2690,17 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
   input_view_desc.Texture2D.MipSlice = 0;
   base::win::ScopedComPtr<ID3D11VideoProcessorInputView> input_view;
   hr = video_device_->CreateVideoProcessorInputView(
-      dx11_decoding_texture.get(), enumerator_.get(), &input_view_desc,
+      dx11_decoding_texture.Get(), enumerator_.Get(), &input_view_desc,
       input_view.Receive());
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get input view",
                                   PLATFORM_FAILURE, );
 
   D3D11_VIDEO_PROCESSOR_STREAM streams = {0};
   streams.Enable = TRUE;
-  streams.pInputSurface = input_view.get();
+  streams.pInputSurface = input_view.Get();
 
-  hr = video_context_->VideoProcessorBlt(d3d11_processor_.get(),
-                                         output_view.get(), 0, 1, &streams);
+  hr = video_context_->VideoProcessorBlt(d3d11_processor_.Get(),
+                                         output_view.Get(), 0, 1, &streams);
 
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "VideoProcessBlit failed",
                                   PLATFORM_FAILURE, );
@@ -2716,7 +2716,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
                    nullptr, nullptr, picture_buffer_id, input_buffer_id));
   } else {
     d3d11_device_context_->Flush();
-    d3d11_device_context_->End(d3d11_query_.get());
+    d3d11_device_context_->End(d3d11_query_.Get());
 
     decoder_thread_task_runner_->PostDelayedTask(
         FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushDecoder,
@@ -2753,7 +2753,7 @@ void DXVAVideoDecodeAccelerator::FlushDecoder(int iterations,
   HRESULT hr = E_FAIL;
   if (use_dx11_) {
     BOOL query_data = 0;
-    hr = d3d11_device_context_->GetData(d3d11_query_.get(), &query_data,
+    hr = d3d11_device_context_->GetData(d3d11_query_.Get(), &query_data,
                                         sizeof(BOOL), 0);
     if (FAILED(hr))
       DCHECK(false);
@@ -2803,14 +2803,14 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     RETURN_ON_HR_FAILURE(hr, "Failed to enumerate video processors", false);
 
     // TODO(Hubbe): Find correct index
-    hr = video_device_->CreateVideoProcessor(enumerator_.get(), 0,
+    hr = video_device_->CreateVideoProcessor(enumerator_.Get(), 0,
                                              d3d11_processor_.Receive());
     RETURN_ON_HR_FAILURE(hr, "Failed to create video processor.", false);
     processor_width_ = width;
     processor_height_ = height;
 
     video_context_->VideoProcessorSetStreamAutoProcessingMode(
-        d3d11_processor_.get(), 0, false);
+        d3d11_processor_.Get(), 0, false);
   }
 
   if (copy_nv12_textures_) {
@@ -2820,10 +2820,10 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     d3d11_color_space.RGB_Range = 1;
     d3d11_color_space.Nominal_Range = D3D11_VIDEO_PROCESSOR_NOMINAL_RANGE_0_255;
 
-    video_context_->VideoProcessorSetOutputColorSpace(d3d11_processor_.get(),
+    video_context_->VideoProcessorSetOutputColorSpace(d3d11_processor_.Get(),
                                                       &d3d11_color_space);
 
-    video_context_->VideoProcessorSetStreamColorSpace(d3d11_processor_.get(), 0,
+    video_context_->VideoProcessorSetStreamColorSpace(d3d11_processor_.Get(), 0,
                                                       &d3d11_color_space);
     dx11_converter_output_color_space_ = color_space;
   } else {
@@ -2852,10 +2852,10 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
                             gfx::ColorSpace::MatrixID::BT709,
                             gfx::ColorSpace::RangeID::LIMITED)) {
           video_context1->VideoProcessorSetStreamColorSpace1(
-              d3d11_processor_.get(), 0,
+              d3d11_processor_.Get(), 0,
               DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020);
           video_context1->VideoProcessorSetOutputColorSpace1(
-              d3d11_processor_.get(),
+              d3d11_processor_.Get(),
               DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
           dx11_converter_output_color_space_ = color_space.GetAsFullRangeRGB();
         } else {
@@ -2867,21 +2867,21 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
                    << gfx::ColorSpaceWin::GetDXGIColorSpace(
                           dx11_converter_output_color_space_);
           video_context1->VideoProcessorSetStreamColorSpace1(
-              d3d11_processor_.get(), 0,
+              d3d11_processor_.Get(), 0,
               gfx::ColorSpaceWin::GetDXGIColorSpace(color_space));
           video_context1->VideoProcessorSetOutputColorSpace1(
-              d3d11_processor_.get(), gfx::ColorSpaceWin::GetDXGIColorSpace(
+              d3d11_processor_.Get(), gfx::ColorSpaceWin::GetDXGIColorSpace(
                                           dx11_converter_output_color_space_));
         }
       } else {
         D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space =
             gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
         video_context_->VideoProcessorSetStreamColorSpace(
-            d3d11_processor_.get(), 0, &d3d11_color_space);
+            d3d11_processor_.Get(), 0, &d3d11_color_space);
         d3d11_color_space = gfx::ColorSpaceWin::GetD3D11ColorSpace(
             dx11_converter_output_color_space_);
         video_context_->VideoProcessorSetOutputColorSpace(
-            d3d11_processor_.get(), &d3d11_color_space);
+            d3d11_processor_.Get(), &d3d11_color_space);
       }
     }
   }
@@ -2898,7 +2898,7 @@ bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(IMFSample* sample,
   if (use_dx11_) {
     base::win::ScopedComPtr<IMFDXGIBuffer> dxgi_buffer;
     base::win::ScopedComPtr<ID3D11Texture2D> d3d11_texture;
-    hr = dxgi_buffer.QueryFrom(output_buffer.get());
+    hr = dxgi_buffer.QueryFrom(output_buffer.Get());
     RETURN_ON_HR_FAILURE(hr, "Failed to get DXGIBuffer from output sample",
                          false);
     hr = dxgi_buffer->GetResource(
@@ -2913,7 +2913,7 @@ bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(IMFSample* sample,
     output_array_size_ = d3d11_texture_desc.ArraySize;
   } else {
     base::win::ScopedComPtr<IDirect3DSurface9> surface;
-    hr = MFGetService(output_buffer.get(), MR_BUFFER_SERVICE,
+    hr = MFGetService(output_buffer.Get(), MR_BUFFER_SERVICE,
                       IID_PPV_ARGS(surface.Receive()));
     RETURN_ON_HR_FAILURE(hr, "Failed to get D3D surface from output sample",
                          false);
@@ -2942,11 +2942,11 @@ bool DXVAVideoDecodeAccelerator::SetTransformOutputType(IMFTransform* transform,
 
     if (out_subtype == output_type) {
       if (width && height) {
-        hr = MFSetAttributeSize(media_type.get(), MF_MT_FRAME_SIZE, width,
+        hr = MFSetAttributeSize(media_type.Get(), MF_MT_FRAME_SIZE, width,
                                 height);
         RETURN_ON_HR_FAILURE(hr, "Failed to set media type attributes", false);
       }
-      hr = transform->SetOutputType(0, media_type.get(), 0);  // No flags
+      hr = transform->SetOutputType(0, media_type.Get(), 0);  // No flags
       RETURN_ON_HR_FAILURE(hr, "Failed to set output type", false);
       return true;
     }
@@ -2964,7 +2964,7 @@ HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(IMFSample* sample,
   HRESULT hr = sample->GetBufferByIndex(0, buffer.Receive());
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from input sample", hr);
 
-  mf::MediaBufferScopedPointer scoped_media_buffer(buffer.get());
+  mf::MediaBufferScopedPointer scoped_media_buffer(buffer.Get());
 
   if (!config_change_detector_->DetectConfig(
           scoped_media_buffer.get(), scoped_media_buffer.current_length())) {

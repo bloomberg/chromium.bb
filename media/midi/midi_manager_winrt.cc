@@ -807,7 +807,7 @@ class MidiManagerWinrt::MidiInPortManager final
               }
 
               uint8_t* p_buffer_data = nullptr;
-              hr = GetPointerToBufferData(buffer.get(), &p_buffer_data);
+              hr = GetPointerToBufferData(buffer.Get(), &p_buffer_data);
               if (FAILED(hr))
                 return hr;
 
@@ -1026,13 +1026,13 @@ void MidiManagerWinrt::SendOnComThread(uint32_t port_index,
   }
 
   uint8_t* p_buffer_data = nullptr;
-  hr = GetPointerToBufferData(buffer.get(), &p_buffer_data);
+  hr = GetPointerToBufferData(buffer.Get(), &p_buffer_data);
   if (FAILED(hr))
     return;
 
   std::copy(data.begin(), data.end(), p_buffer_data);
 
-  hr = port->handle->SendBuffer(buffer.get());
+  hr = port->handle->SendBuffer(buffer.Get());
   if (FAILED(hr)) {
     VLOG(1) << "SendBuffer failed: " << PrintHr(hr);
     return;

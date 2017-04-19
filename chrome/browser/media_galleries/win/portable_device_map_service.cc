@@ -58,7 +58,7 @@ IPortableDevice* PortableDeviceMapService::GetPortableDevice(
   base::AutoLock lock(lock_);
   PortableDeviceMap::const_iterator it = device_map_.find(device_location);
   return (it == device_map_.end() || it->second.scheduled_to_delete) ?
-      NULL : it->second.portable_device.get();
+      NULL : it->second.portable_device.Get();
 }
 
 PortableDeviceMapService::PortableDeviceInfo::PortableDeviceInfo()

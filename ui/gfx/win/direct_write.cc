@@ -55,11 +55,11 @@ void MaybeInitializeDirectWrite() {
   // interface fails with E_INVALIDARG on certain Windows 7 gold versions
   // (6.1.7600.*). We should just use GDI in these cases.
   sk_sp<SkFontMgr> direct_write_font_mgr =
-      SkFontMgr_New_DirectWrite(factory.get());
+      SkFontMgr_New_DirectWrite(factory.Get());
   if (!direct_write_font_mgr)
     return;
   SetDefaultSkiaFactory(std::move(direct_write_font_mgr));
-  gfx::PlatformFontWin::SetDirectWriteFactory(factory.get());
+  gfx::PlatformFontWin::SetDirectWriteFactory(factory.Get());
 }
 
 }  // namespace win

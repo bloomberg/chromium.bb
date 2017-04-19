@@ -144,7 +144,7 @@ STDMETHODIMP PinBase::ReceiveConnection(IPin* connector,
 }
 
 STDMETHODIMP PinBase::Disconnect() {
-  if (!connected_pin_.get())
+  if (!connected_pin_.Get())
     return S_FALSE;
 
   connected_pin_.Reset();
@@ -152,16 +152,16 @@ STDMETHODIMP PinBase::Disconnect() {
 }
 
 STDMETHODIMP PinBase::ConnectedTo(IPin** pin) {
-  *pin = connected_pin_.get();
-  if (!connected_pin_.get())
+  *pin = connected_pin_.Get();
+  if (!connected_pin_.Get())
     return VFW_E_NOT_CONNECTED;
 
-  connected_pin_.get()->AddRef();
+  connected_pin_.Get()->AddRef();
   return S_OK;
 }
 
 STDMETHODIMP PinBase::ConnectionMediaType(AM_MEDIA_TYPE* media_type) {
-  if (!connected_pin_.get())
+  if (!connected_pin_.Get())
     return VFW_E_NOT_CONNECTED;
   *media_type = current_media_type_;
   return S_OK;

@@ -387,7 +387,7 @@ bool GetFallbackFont(const Font& font,
                           : DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
   if (FAILED(Microsoft::WRL::MakeAndInitialize<gfx::win::TextAnalysisSource>(
           text_analysis.Receive(), text, locale.c_str(),
-          number_substitution.get(), reading_direction))) {
+          number_substitution.Get(), reading_direction))) {
     return false;
   }
   base::string16 original_name = base::UTF8ToUTF16(font.GetFontName());
@@ -395,7 +395,7 @@ bool GetFallbackFont(const Font& font,
   if (font.GetStyle() & Font::ITALIC)
     font_style = DWRITE_FONT_STYLE_ITALIC;
   if (FAILED(fallback->MapCharacters(
-          text_analysis.get(), 0, text_length, nullptr, original_name.c_str(),
+          text_analysis.Get(), 0, text_length, nullptr, original_name.c_str(),
           static_cast<DWRITE_FONT_WEIGHT>(font.GetWeight()), font_style,
           DWRITE_FONT_STRETCH_NORMAL, &mapped_length, mapped_font.Receive(),
           &scale))) {
@@ -404,7 +404,7 @@ bool GetFallbackFont(const Font& font,
 
   if (mapped_font) {
     base::string16 name;
-    if (FAILED(GetFamilyNameFromDirectWriteFont(mapped_font.get(), &name)))
+    if (FAILED(GetFamilyNameFromDirectWriteFont(mapped_font.Get(), &name)))
       return false;
     *result = Font(base::UTF16ToUTF8(name), font.GetFontSize() * scale);
     return true;

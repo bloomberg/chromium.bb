@@ -308,7 +308,7 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
   result = rdp_desktop_session_->Connect(host_size.width(), host_size.height(),
                                          kDefaultRdpDpi, kDefaultRdpDpi,
                                          terminal_id, server_port,
-                                         event_handler.get());
+                                         event_handler.Get());
   if (FAILED(result)) {
     LOG(ERROR) << "RdpSession::Create() failed, 0x"
                << std::hex << result << std::dec << ".";

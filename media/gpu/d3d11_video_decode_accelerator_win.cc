@@ -105,7 +105,7 @@ bool D3D11VideoDecodeAccelerator::Initialize(const Config& config,
   base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder;
   hr = video_device_->CreateVideoDecoder(&desc, &dec_config,
                                          video_decoder.Receive());
-  CHECK(video_decoder.get());
+  CHECK(video_decoder.Get());
 
   h264_accelerator_.reset(new D3D11H264Accelerator(
       this, video_decoder, video_device_, video_context_));

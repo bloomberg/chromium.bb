@@ -132,7 +132,7 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   child_widget_sibling_dispatch = V_DISPATCH(result.ptr());
   ASSERT_EQ(S_OK, child_widget_sibling_dispatch.QueryInterface(
       child_widget_sibling_accessible.Receive()));
-  ASSERT_EQ(child_view_accessible.get(), child_widget_sibling_accessible.get());
+  ASSERT_EQ(child_view_accessible.Get(), child_widget_sibling_accessible.Get());
 
   ScopedComPtr<IDispatch> child_widget_parent_dispatch;
   ScopedComPtr<IAccessible> child_widget_parent_accessible;
@@ -140,7 +140,7 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
       child_widget_parent_dispatch.Receive()));
   ASSERT_EQ(S_OK, child_widget_parent_dispatch.QueryInterface(
       child_widget_parent_accessible.Receive()));
-  ASSERT_EQ(root_view_accessible.get(), child_widget_parent_accessible.get());
+  ASSERT_EQ(root_view_accessible.Get(), child_widget_parent_accessible.Get());
 }
 
 // Flaky on Windows: https://crbug.com/461837.

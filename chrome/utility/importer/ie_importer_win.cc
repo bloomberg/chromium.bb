@@ -296,7 +296,7 @@ bool LoadInternetShortcut(
     return false;
 
   base::win::ScopedComPtr<IPersistFile> persist_file;
-  if (FAILED(persist_file.QueryFrom(url_locator.get())))
+  if (FAILED(persist_file.QueryFrom(url_locator.Get())))
     return false;
 
   // Loads the Internet Shortcut from persistent storage.
@@ -856,7 +856,7 @@ void IEImporter::ParseFavoritesFolder(
     base::win::ScopedComPtr<IUniformResourceLocator> url_locator;
     if (!LoadInternetShortcut(*it, &url_locator))
       continue;
-    GURL url = ReadURLFromInternetShortcut(url_locator.get());
+    GURL url = ReadURLFromInternetShortcut(url_locator.Get());
     if (!url.is_valid())
       continue;
     // Skip default bookmarks. go.microsoft.com redirects to
@@ -867,7 +867,7 @@ void IEImporter::ParseFavoritesFolder(
     if (url.host() == "go.microsoft.com")
       continue;
     // Read favicon.
-    UpdateFaviconMap(*it, url, url_locator.get(), &favicon_map);
+    UpdateFaviconMap(*it, url, url_locator.Get(), &favicon_map);
 
     // Make the relative path from the Favorites folder, without the basename.
     // ex. Suppose that the Favorites folder is C:\Users\Foo\Favorites.

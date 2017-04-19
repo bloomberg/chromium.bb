@@ -93,7 +93,7 @@ bool TtsPlatformImplWin::Speak(
   std::wstring prefix;
   std::wstring suffix;
 
-  if (!speech_synthesizer_.get())
+  if (!speech_synthesizer_.Get())
     return false;
 
   SetVoiceFromName(voice.name);
@@ -138,7 +138,7 @@ bool TtsPlatformImplWin::Speak(
 }
 
 bool TtsPlatformImplWin::StopSpeaking() {
-  if (speech_synthesizer_.get()) {
+  if (speech_synthesizer_.Get()) {
     // Clear the stream number so that any further events relating to this
     // utterance are ignored.
     stream_number_ = 0;
@@ -156,7 +156,7 @@ bool TtsPlatformImplWin::StopSpeaking() {
 }
 
 void TtsPlatformImplWin::Pause() {
-  if (speech_synthesizer_.get() && utterance_id_ && !paused_) {
+  if (speech_synthesizer_.Get() && utterance_id_ && !paused_) {
     speech_synthesizer_->Pause();
     paused_ = true;
     TtsController::GetInstance()->OnTtsEvent(
@@ -165,7 +165,7 @@ void TtsPlatformImplWin::Pause() {
 }
 
 void TtsPlatformImplWin::Resume() {
-  if (speech_synthesizer_.get() && utterance_id_ && paused_) {
+  if (speech_synthesizer_.Get() && utterance_id_ && paused_) {
     speech_synthesizer_->Resume();
     paused_ = false;
     TtsController::GetInstance()->OnTtsEvent(
@@ -174,7 +174,7 @@ void TtsPlatformImplWin::Resume() {
 }
 
 bool TtsPlatformImplWin::IsSpeaking() {
-  if (speech_synthesizer_.get()) {
+  if (speech_synthesizer_.Get()) {
     SPVOICESTATUS status;
     HRESULT result = speech_synthesizer_->GetStatus(&status, NULL);
     if (result == S_OK) {
@@ -204,7 +204,7 @@ void TtsPlatformImplWin::GetVoices(
       return;
 
     base::win::ScopedCoMem<WCHAR> description;
-    if (S_OK != SpGetDescription(voice_token.get(), &description))
+    if (S_OK != SpGetDescription(voice_token.Get(), &description))
       continue;
     voice.name = base::WideToUTF8(description.get());
 
@@ -300,10 +300,10 @@ void TtsPlatformImplWin::SetVoiceFromName(const std::string& name) {
       return;
 
     base::win::ScopedCoMem<WCHAR> description;
-    if (S_OK != SpGetDescription(voice_token.get(), &description))
+    if (S_OK != SpGetDescription(voice_token.Get(), &description))
       continue;
     if (name == base::WideToUTF8(description.get())) {
-      speech_synthesizer_->SetVoice(voice_token.get());
+      speech_synthesizer_->SetVoice(voice_token.Get());
       break;
     }
   }
@@ -316,7 +316,7 @@ TtsPlatformImplWin::TtsPlatformImplWin()
     char_position_(0),
     paused_(false) {
   speech_synthesizer_.CreateInstance(CLSID_SpVoice);
-  if (speech_synthesizer_.get()) {
+  if (speech_synthesizer_.Get()) {
     ULONGLONG event_mask =
         SPFEI(SPEI_START_INPUT_STREAM) |
         SPFEI(SPEI_TTS_BOOKMARK) |

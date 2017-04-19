@@ -55,7 +55,7 @@ class SnapshotFileDetails {
   }
 
   IStream* device_file_stream() const {
-    return file_stream_.get();
+    return file_stream_.Get();
   }
 
   DWORD optimal_transfer_size() const {

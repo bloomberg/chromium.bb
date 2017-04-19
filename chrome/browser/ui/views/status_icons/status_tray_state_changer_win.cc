@@ -132,14 +132,14 @@ bool StatusTrayStateChangerWin::CreateTrayNotify() {
     return false;
 
   base::win::ScopedComPtr<ITrayNotifyWin8> tray_notify_win8;
-  hr = tray_notify_win8.QueryFrom(tray_notify_.get());
+  hr = tray_notify_win8.QueryFrom(tray_notify_.Get());
   if (SUCCEEDED(hr)) {
     interface_version_ = INTERFACE_VERSION_WIN8;
     return true;
   }
 
   base::win::ScopedComPtr<ITrayNotify> tray_notify_legacy;
-  hr = tray_notify_legacy.QueryFrom(tray_notify_.get());
+  hr = tray_notify_legacy.QueryFrom(tray_notify_.Get());
   if (SUCCEEDED(hr)) {
     interface_version_ = INTERFACE_VERSION_LEGACY;
     return true;
@@ -174,7 +174,7 @@ std::unique_ptr<NOTIFYITEM> StatusTrayStateChangerWin::RegisterCallback() {
 
 bool StatusTrayStateChangerWin::RegisterCallbackWin8() {
   base::win::ScopedComPtr<ITrayNotifyWin8> tray_notify_win8;
-  HRESULT hr = tray_notify_win8.QueryFrom(tray_notify_.get());
+  HRESULT hr = tray_notify_win8.QueryFrom(tray_notify_.Get());
   if (FAILED(hr))
     return false;
 
@@ -194,7 +194,7 @@ bool StatusTrayStateChangerWin::RegisterCallbackWin8() {
 
 bool StatusTrayStateChangerWin::RegisterCallbackLegacy() {
   base::win::ScopedComPtr<ITrayNotify> tray_notify;
-  HRESULT hr = tray_notify.QueryFrom(tray_notify_.get());
+  HRESULT hr = tray_notify.QueryFrom(tray_notify_.Get());
   if (FAILED(hr)) {
     return false;
   }
@@ -221,12 +221,12 @@ void StatusTrayStateChangerWin::SendNotifyItemUpdate(
     std::unique_ptr<NOTIFYITEM> notify_item) {
   if (interface_version_ == INTERFACE_VERSION_LEGACY) {
     base::win::ScopedComPtr<ITrayNotify> tray_notify;
-    HRESULT hr = tray_notify.QueryFrom(tray_notify_.get());
+    HRESULT hr = tray_notify.QueryFrom(tray_notify_.Get());
     if (SUCCEEDED(hr))
       tray_notify->SetPreference(notify_item.get());
   } else if (interface_version_ == INTERFACE_VERSION_WIN8) {
     base::win::ScopedComPtr<ITrayNotifyWin8> tray_notify;
-    HRESULT hr = tray_notify.QueryFrom(tray_notify_.get());
+    HRESULT hr = tray_notify.QueryFrom(tray_notify_.Get());
     if (SUCCEEDED(hr))
       tray_notify->SetPreference(notify_item.get());
   }
