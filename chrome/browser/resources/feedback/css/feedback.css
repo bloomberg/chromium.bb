@@ -9,6 +9,8 @@ html {
 
 body {
   background-color: #fbfbfb;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   margin: 0;
   overflow: auto;
@@ -42,6 +44,7 @@ body {
 
 .content {
   color: #646464;
+  flex-grow: 1;
   font-size: 12px;
   margin: 20px;
 }
@@ -146,6 +149,7 @@ body {
   display: -webkit-flex;
   justify-content: flex-end;
   left: 20px;
+  position: absolute;
   right: 20px;
 }
 
