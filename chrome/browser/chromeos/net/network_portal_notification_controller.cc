@@ -259,6 +259,14 @@ void NetworkPortalNotificationController::DefaultNetworkChanged(
     const NetworkState* network) {
   if (!network)
     return;
+
+  bool network_changed = (default_network_id_ != network->guid());
+  default_network_id_ = network->guid();
+  if (!network_changed && network->connection_state() == shill::kStateOnline &&
+      dialog_) {
+    dialog_->Close();
+  }
+
   Profile* profile = GetProfileForPrimaryUser();
   extensions::NetworkingConfigService* networking_config_service =
       GetNetworkingConfigService(profile);
@@ -276,16 +284,6 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
   if (!network ||
       state.status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
     last_network_guid_.clear();
-
-    // In browser tests we initiate fake network portal detection, but network
-    // state usually stays connected. This way, after dialog is shown, it is
-    // immediately closed. The testing check below prevents dialog from closing.
-    if (dialog_ &&
-        (!ignore_no_network_for_testing_ ||
-         state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)) {
-      dialog_->Close();
-    }
-
     CloseNotification();
     return;
   }
@@ -430,10 +428,6 @@ NetworkPortalNotificationController::GetNotification(
 void NetworkPortalNotificationController::OnExtensionFinishedAuthentication() {
   if (!retry_detection_callback_.is_null())
     retry_detection_callback_.Run();
-}
-
-void NetworkPortalNotificationController::SetIgnoreNoNetworkForTesting() {
-  ignore_no_network_for_testing_ = true;
 }
 
 void NetworkPortalNotificationController::CloseDialog() {

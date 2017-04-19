@@ -125,6 +125,9 @@ class NetworkPortalNotificationController
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) override;
 
+  // Unique identifier of the default network.
+  std::string default_network_id_;
+
   // Last network guid for which notification was displayed.
   std::string last_network_guid_;
 
@@ -133,9 +136,6 @@ class NetworkPortalNotificationController
 
   // Currently displayed authorization dialog, or NULL if none.
   NetworkPortalWebDialog* dialog_ = nullptr;
-
-  // Do not close Portal Login dialog on "No network" error in browser tests.
-  bool ignore_no_network_for_testing_ = false;
 
   // This is called if the controller learns about a potential change of the
   // captive portal.

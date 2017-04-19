@@ -153,11 +153,6 @@ class NetworkPortalDetectorImplBrowserTest
 
   MessageCenter* message_center() { return MessageCenter::Get(); }
 
-  void SetIgnoreNoNetworkForTesting() {
-    network_portal_detector_->notification_controller_
-        ->SetIgnoreNoNetworkForTesting();
-  }
-
   const NetworkPortalWebDialog* GetDialog() const {
     return network_portal_detector_->notification_controller_
         ->GetDialogForTesting();
@@ -252,8 +247,6 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
 
   LoginUser(kTestUser);
   content::RunAllPendingInMessageLoop();
-
-  SetIgnoreNoNetworkForTesting();
 
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
       prefs::kCaptivePortalAuthenticationIgnoresProxy, preference_value);
