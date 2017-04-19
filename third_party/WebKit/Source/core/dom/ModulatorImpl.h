@@ -18,6 +18,7 @@ class Document;
 class ExecutionContext;
 class ModuleMap;
 class ModuleScriptLoaderRegistry;
+class ModuleTreeLinkerRegistry;
 class ResourceFetcher;
 class ScriptState;
 class WebTaskRunner;
@@ -71,6 +72,7 @@ class ModulatorImpl final : public Modulator {
   Member<ResourceFetcher> fetcher_;
   TraceWrapperMember<ModuleMap> map_;
   Member<ModuleScriptLoaderRegistry> loader_registry_;
+  Member<ModuleTreeLinkerRegistry> tree_linker_registry_;
   Member<ScriptModuleResolver> script_module_resolver_;
 };
 

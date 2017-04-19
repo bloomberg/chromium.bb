@@ -13,6 +13,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
+#include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
@@ -33,6 +34,7 @@ ModulatorImpl::ModulatorImpl(RefPtr<ScriptState> script_state,
       fetcher_(fetcher),
       map_(this, ModuleMap::Create(this)),
       loader_registry_(ModuleScriptLoaderRegistry::Create()),
+      tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
       script_module_resolver_(ScriptModuleResolverImpl::Create(this)) {
   DCHECK(script_state_);
   DCHECK(task_runner_);
@@ -75,7 +77,7 @@ void ModulatorImpl::FetchTreeInternal(const ModuleScriptFetchRequest& request,
                                       const AncestorList& ancestor_list,
                                       ModuleGraphLevel level,
                                       ModuleTreeClient* client) {
-  NOTIMPLEMENTED();
+  tree_linker_registry_->Fetch(request, ancestor_list, level, this, client);
 }
 
 void ModulatorImpl::FetchSingle(const ModuleScriptFetchRequest& request,
@@ -141,6 +143,7 @@ DEFINE_TRACE(ModulatorImpl) {
   visitor->Trace(fetcher_);
   visitor->Trace(map_);
   visitor->Trace(loader_registry_);
+  visitor->Trace(tree_linker_registry_);
   visitor->Trace(script_module_resolver_);
 }
 
