@@ -5145,6 +5145,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   int i;
+#if CONFIG_TEMPMV_SIGNALING || CONFIG_EXT_REFS
+  const int last_fb_buf_idx = get_ref_frame_buf_idx(cpi, LAST_FRAME);
+#endif  // CONFIG_TEMPMV_SIGNALING || CONFIG_EXT_REFS
 
 #if CONFIG_ADAPT_SCAN
   av1_deliver_eob_threshold(cm, xd);
@@ -5293,7 +5296,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_initialize_me_consts(cpi, x, cm->base_qindex);
   init_encode_frame_mb_context(cpi);
 #if CONFIG_TEMPMV_SIGNALING
-  const int last_fb_buf_idx = get_ref_frame_buf_idx(cpi, LAST_FRAME);
   if (last_fb_buf_idx != INVALID_IDX) {
     cm->prev_frame = &cm->buffer_pool->frame_bufs[last_fb_buf_idx];
     cm->use_prev_frame_mvs &= !cm->error_resilient_mode &&
@@ -5320,7 +5322,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   //                   e.g. LAST_FRAME.
   if (cm->use_prev_frame_mvs && !enc_is_ref_frame_buf(cpi, cm->prev_frame)) {
     // Reassign the LAST_FRAME buffer to cm->prev_frame.
-    const int last_fb_buf_idx = get_ref_frame_buf_idx(cpi, LAST_FRAME);
     cm->prev_frame = &cm->buffer_pool->frame_bufs[last_fb_buf_idx];
   }
 #endif  // CONFIG_EXT_REFS
