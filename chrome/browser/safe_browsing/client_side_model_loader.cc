@@ -22,6 +22,7 @@
 #include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing/csd.pb.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -121,6 +122,8 @@ void ModelLoader::StartFetch() {
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   fetcher_->SetRequestContext(request_context_getter_);
+  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                         net::LOAD_DO_NOT_SEND_COOKIES);
   fetcher_->Start();
 }
 
