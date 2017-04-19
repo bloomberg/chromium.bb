@@ -79,13 +79,6 @@ class QuicStreamFactoryPeer {
   static size_t GetNumberOfActiveJobs(QuicStreamFactory* factory,
                                       const QuicServerId& server_id);
 
-  static void MaybeInitialize(QuicStreamFactory* factory);
-
-  static bool HasInitializedData(QuicStreamFactory* factory);
-
-  static bool SupportsQuicAtStartUp(QuicStreamFactory* factory,
-                                    HostPortPair host_port_pair);
-
   static bool CryptoConfigCacheIsEmpty(QuicStreamFactory* factory,
                                        const QuicServerId& quic_server_id);
 

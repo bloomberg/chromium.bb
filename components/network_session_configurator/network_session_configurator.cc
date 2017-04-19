@@ -134,32 +134,10 @@ net::QuicTagVector GetQuicConnectionOptions(
   return net::ParseQuicConnectionOptions(it->second);
 }
 
-float GetQuicLoadServerInfoTimeoutSrttMultiplier(
-    const VariationParameters& quic_trial_params) {
-  double value;
-  if (base::StringToDouble(
-          GetVariationParam(quic_trial_params, "load_server_info_time_to_srtt"),
-          &value)) {
-    return static_cast<float>(value);
-  }
-  return 0.0f;
-}
-
-bool ShouldQuicEnableConnectionRacing(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_connection_racing"), "true");
-}
-
 bool ShouldQuicEnableNonBlockingIO(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "enable_non_blocking_io"), "true");
-}
-
-bool ShouldQuicDisableDiskCache(const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "disable_disk_cache"), "true");
 }
 
 bool ShouldForceHolBlocking(const VariationParameters& quic_trial_params) {
@@ -295,18 +273,8 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
 
   if (params->enable_quic) {
-    float load_server_info_timeout_srtt_multiplier =
-        GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
-    if (load_server_info_timeout_srtt_multiplier != 0) {
-      params->quic_load_server_info_timeout_srtt_multiplier =
-          load_server_info_timeout_srtt_multiplier;
-    }
-    params->quic_enable_connection_racing =
-        ShouldQuicEnableConnectionRacing(quic_trial_params);
     params->quic_enable_non_blocking_io =
         ShouldQuicEnableNonBlockingIO(quic_trial_params);
-    params->quic_disable_disk_cache =
-        ShouldQuicDisableDiskCache(quic_trial_params);
     params->quic_force_hol_blocking = ShouldForceHolBlocking(quic_trial_params);
     params->quic_connection_options =
         GetQuicConnectionOptions(quic_trial_params);
