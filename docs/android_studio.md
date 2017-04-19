@@ -17,18 +17,18 @@ This creates a project at `out/Debug/gradle`. To create elsewhere:
 build/android/gradle/generate_gradle.py --output-directory out/My-Out-Dir --project-dir my-project
 ```
 
-By default, only common targets are generated. To customize the list of targets
-to generate projects for:
+By default, common targets are generated. To add more targets to generate
+projects for:
 
 ```shell
-build/android/gradle/generate_gradle.py --target //chrome/android:chrome_public_apk --target //android_webview/test:android_webview_apk
+build/android/gradle/generate_gradle.py --extra-target //chrome/android:chrome_public_apk
 ```
 
 For those upgrading from Android Studio 2.2 to 2.3:
 
-* Regenerate with `generate_gradle.py`.
+* Use `gn clean` and `gn gen`
 * Clean up in `//third_party/android_tools` with `git clean -ffd`.
-* Restart Android Studio with File -&gt; "Invalidate Caches / Restart".
+* Remove project from android studio and regenerate with `generate_gradle.py`.
 
 For first-time Android Studio users:
 
@@ -50,24 +50,28 @@ You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
     * Help -&gt; Find Action -&gt; "Sync Project with Gradle Files"
     * After `gn clean` you may need to restart Android Studio.
 
-## How it Works
+## How It Works
 
 Android Studio integration works by generating `build.gradle` files based on GN
-targets. Each `android_apk` and `android_library` target produces a separate
-Gradle sub-project.
+targets. Each valid target produces a separate Gradle sub-project.
+Instrumentation tests are combined with their `apk_under_test`.
 
-### Excluded files and .srcjars
+### Excluded Files
 
-Gradle supports source directories but not source files. However, some
-directories in Chromium are split amonst multiple GN targets. To accommodate
-this, the script detects such targets and creates exclude patterns to exclude
-files not in the current target. You still see them when editing, but they are
-excluded in gradle tasks.
-***
+Gradle supports source directories but not source files. However, files in
+Chromium are used amongst multiple targets. To accommodate this, the script
+detects such targets and creates exclude patterns to exclude files not in the
+current target. The editor does not respect these exclude patterns, so a `_all`
+pseudo module is added which includes directories from all targets. This allows
+imports and refactorings to be searched across all targets.
+
+### Extracting .srcjars
 
 Most generated .java files in GN are stored as `.srcjars`. Android Studio does
-not have support for them, and so the generator script builds and extracts them
-all to `extracted-srcjars/` subdirectories for each target that contains them.
+not support them, and so the generator script builds and extracts them all to
+`extracted-srcjars/` subdirectories for each target that contains them. This is
+the reason that the `_all` pseudo module may contain multiple copies of
+generated files.
 
 *** note
 ** TLDR:** Always re-generate project files when `.srcjars` change (this
@@ -123,23 +127,22 @@ resources, native libraries, etc.
     * Add the line `org.gradle.daemon=true` to `~/.gradle/gradle.properties`,
       creating it if necessary.
 
-## Status (as of April 4th, 2017)
+## Status (as of April 19th, 2017)
 
 ### What works
 
-* Tested with Android Studio v2.3.
-* Java editing and gradle compile works.
+* Android Studio v2.3.
+* Java editing and gradle compile.
 * Instrumentation tests included as androidTest.
 * Symlinks to existing .so files in jniLibs (doesn't generate them).
 * Editing resource xml files.
 * Java debugging (see
 [here](/docs/android_debugging_instructions.md#Android-Studio)).
+* Import resolution and refactoring across all modules.
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
-* Proper file resolution and imports for overlapping modules.
-* Make gradle aware of assets.
+* Gradle being aware of assets.
 * Layout editor.
-* Add a mode in which gradle is responsible for generating `R.java`.
 * Add support for native code editing.
 * Make the "Make Project" button work correctly.
