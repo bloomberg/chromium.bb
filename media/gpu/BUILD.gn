@@ -255,8 +255,6 @@ component("gpu") {
         "v4l2_device.h",
         "v4l2_image_processor.cc",
         "v4l2_image_processor.h",
-        "v4l2_jpeg_decode_accelerator.cc",
-        "v4l2_jpeg_decode_accelerator.h",
         "v4l2_slice_video_decode_accelerator.cc",
         "v4l2_slice_video_decode_accelerator.h",
         "v4l2_video_decode_accelerator.cc",
@@ -268,12 +266,14 @@ component("gpu") {
         "EGL",
         "GLESv2",
       ]
-    }
-    if (current_cpu == "arm") {
-      sources += [
-        "tegra_v4l2_device.cc",
-        "tegra_v4l2_device.h",
-      ]
+      if (current_cpu == "arm") {
+        sources += [
+          "tegra_v4l2_device.cc",
+          "tegra_v4l2_device.h",
+          "v4l2_jpeg_decode_accelerator.cc",
+          "v4l2_jpeg_decode_accelerator.h",
+        ]
+      }
     }
     if (current_cpu != "arm") {
       sources += [

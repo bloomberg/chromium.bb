@@ -32,10 +32,11 @@
 #if defined(ARCH_CPU_X86_FAMILY)
 #include "media/gpu/vaapi_jpeg_decode_accelerator.h"
 #endif
-#if defined(USE_V4L2_CODEC)
+#if defined(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
 #include "media/gpu/v4l2_device.h"
 #include "media/gpu/v4l2_jpeg_decode_accelerator.h"
 #endif
+
 #endif
 
 namespace {
@@ -43,7 +44,8 @@ namespace {
 std::unique_ptr<media::JpegDecodeAccelerator> CreateV4L2JDA(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   std::unique_ptr<media::JpegDecodeAccelerator> decoder;
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC) && \
+    defined(ARCH_CPU_ARM_FAMILY)
   scoped_refptr<media::V4L2Device> device = media::V4L2Device::Create();
   if (device)
     decoder.reset(new media::V4L2JpegDecodeAccelerator(
