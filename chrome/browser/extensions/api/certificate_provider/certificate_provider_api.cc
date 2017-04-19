@@ -140,12 +140,6 @@ bool CertificateProviderInternalReportCertificatesFunction::
 
   switch (type) {
     case net::X509Certificate::kPublicKeyTypeRSA:
-      DCHECK(public_key_length_in_bits);
-
-      // Convert bits to bytes.
-      out_info->max_signature_length_in_bytes =
-          (public_key_length_in_bits + 7) / 8;
-      out_info->type = net::SSLPrivateKey::Type::RSA;
       break;
     case net::X509Certificate::kPublicKeyTypeECDSA:
       WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,

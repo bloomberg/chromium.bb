@@ -108,25 +108,8 @@ bool EVP_MDToPrivateKeyHash(const EVP_MD* md, SSLPrivateKey::Hash* hash) {
 }
 
 std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
-    SSLPrivateKey::Type type,
     SSLPrivateKey::Hash hash,
     NetLogCaptureMode mode) {
-  std::string type_str;
-  switch (type) {
-    case SSLPrivateKey::Type::RSA:
-      type_str = "RSA";
-      break;
-    case SSLPrivateKey::Type::ECDSA_P256:
-      type_str = "ECDSA_P256";
-      break;
-    case SSLPrivateKey::Type::ECDSA_P384:
-      type_str = "ECDSA_P384";
-      break;
-    case SSLPrivateKey::Type::ECDSA_P521:
-      type_str = "ECDSA_P521";
-      break;
-  }
-
   std::string hash_str;
   switch (hash) {
     case SSLPrivateKey::Hash::MD5_SHA1:
@@ -147,7 +130,6 @@ std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
   }
 
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
-  value->SetString("type", type_str);
   value->SetString("hash", hash_str);
   return std::move(value);
 }
@@ -407,16 +389,6 @@ class SSLClientSocketImpl::SSLContext {
     return socket->NewSessionCallback(session);
   }
 
-  static int PrivateKeyTypeCallback(SSL* ssl) {
-    SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    return socket->PrivateKeyTypeCallback();
-  }
-
-  static size_t PrivateKeyMaxSignatureLenCallback(SSL* ssl) {
-    SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    return socket->PrivateKeyMaxSignatureLenCallback();
-  }
-
   static ssl_private_key_result_t PrivateKeySignDigestCallback(
       SSL* ssl,
       uint8_t* out,
@@ -476,8 +448,8 @@ class SSLClientSocketImpl::SSLContext {
 // TODO(davidben): Switch from sign_digest to sign.
 const SSL_PRIVATE_KEY_METHOD
     SSLClientSocketImpl::SSLContext::kPrivateKeyMethod = {
-        &SSLClientSocketImpl::SSLContext::PrivateKeyTypeCallback,
-        &SSLClientSocketImpl::SSLContext::PrivateKeyMaxSignatureLenCallback,
+        nullptr /* type (unused) */,
+        nullptr /* max_signature_len (unused) */,
         nullptr /* sign */,
         &SSLClientSocketImpl::SSLContext::PrivateKeySignDigestCallback,
         nullptr /* decrypt */,
@@ -1772,25 +1744,6 @@ bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
   return false;
 }
 
-int SSLClientSocketImpl::PrivateKeyTypeCallback() {
-  switch (ssl_config_.client_private_key->GetType()) {
-    case SSLPrivateKey::Type::RSA:
-      return NID_rsaEncryption;
-    case SSLPrivateKey::Type::ECDSA_P256:
-      return NID_X9_62_prime256v1;
-    case SSLPrivateKey::Type::ECDSA_P384:
-      return NID_secp384r1;
-    case SSLPrivateKey::Type::ECDSA_P521:
-      return NID_secp521r1;
-  }
-  NOTREACHED();
-  return NID_undef;
-}
-
-size_t SSLClientSocketImpl::PrivateKeyMaxSignatureLenCallback() {
-  return ssl_config_.client_private_key->GetMaxSignatureLengthInBytes();
-}
-
 ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignDigestCallback(
     uint8_t* out,
     size_t* out_len,
@@ -1808,10 +1761,8 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignDigestCallback(
     return ssl_private_key_failure;
   }
 
-  net_log_.BeginEvent(
-      NetLogEventType::SSL_PRIVATE_KEY_OP,
-      base::Bind(&NetLogPrivateKeyOperationCallback,
-                 ssl_config_.client_private_key->GetType(), hash));
+  net_log_.BeginEvent(NetLogEventType::SSL_PRIVATE_KEY_OP,
+                      base::Bind(&NetLogPrivateKeyOperationCallback, hash));
 
   signature_result_ = ERR_IO_PENDING;
   ssl_config_.client_private_key->SignDigest(

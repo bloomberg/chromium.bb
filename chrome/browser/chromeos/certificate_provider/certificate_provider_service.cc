@@ -113,9 +113,7 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
       const base::WeakPtr<CertificateProviderService>& service);
 
   // net::SSLPrivateKey:
-  Type GetType() override;
   std::vector<net::SSLPrivateKey::Hash> GetDigestPreferences() override;
-  size_t GetMaxSignatureLengthInBytes() override;
   void SignDigest(Hash hash,
                   const base::StringPiece& input,
                   const SignCallback& callback) override;
@@ -227,22 +225,10 @@ CertificateProviderService::SSLPrivateKey::SSLPrivateKey(
   thread_checker_.DetachFromThread();
 }
 
-CertificateProviderService::SSLPrivateKey::Type
-CertificateProviderService::SSLPrivateKey::GetType() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return cert_info_.type;
-}
-
 std::vector<net::SSLPrivateKey::Hash>
 CertificateProviderService::SSLPrivateKey::GetDigestPreferences() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return cert_info_.supported_hashes;
-}
-
-size_t
-CertificateProviderService::SSLPrivateKey::GetMaxSignatureLengthInBytes() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return cert_info_.max_signature_length_in_bytes;
 }
 
 // static

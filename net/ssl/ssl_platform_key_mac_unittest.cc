@@ -33,20 +33,20 @@ namespace net {
 namespace {
 
 struct TestKey {
+  const char* name;
   const char* cert_file;
   const char* key_file;
-  SSLPrivateKey::Type key_type;
 };
 
 const TestKey kTestKeys[] = {
-    {"client_1.pem", "client_1.pk8", SSLPrivateKey::Type::RSA},
-    {"client_4.pem", "client_4.pk8", SSLPrivateKey::Type::ECDSA_P256},
-    {"client_5.pem", "client_5.pk8", SSLPrivateKey::Type::ECDSA_P384},
-    {"client_6.pem", "client_6.pk8", SSLPrivateKey::Type::ECDSA_P521},
+    {"RSA", "client_1.pem", "client_1.pk8"},
+    {"ECDSA_P256", "client_4.pem", "client_4.pk8"},
+    {"ECDSA_P384", "client_5.pem", "client_5.pk8"},
+    {"ECDSA_P521", "client_6.pem", "client_6.pk8"},
 };
 
 std::string TestKeyToString(const testing::TestParamInfo<TestKey>& params) {
-  return SSLPrivateKeyTypeToString(params.param.key_type);
+  return params.param.name;
 }
 
 }  // namespace

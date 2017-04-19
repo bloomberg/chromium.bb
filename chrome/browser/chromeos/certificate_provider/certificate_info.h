@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_CERTIFICATE_INFO_H_
 #define CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_CERTIFICATE_INFO_H_
 
-#include <stddef.h>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -22,8 +21,6 @@ struct CertificateInfo {
   CertificateInfo(const CertificateInfo& other);
   ~CertificateInfo();
 
-  net::SSLPrivateKey::Type type = net::SSLPrivateKey::Type::RSA;
-  size_t max_signature_length_in_bytes = 0;
   scoped_refptr<net::X509Certificate> certificate;
   std::vector<net::SSLPrivateKey::Hash> supported_hashes;
 };

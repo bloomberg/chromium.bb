@@ -53,21 +53,14 @@ certificate_provider::CertificateInfo CreateCertInfo(
   cert_info.certificate =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), cert_filename);
   EXPECT_TRUE(cert_info.certificate) << "Could not load " << cert_filename;
-  cert_info.type = net::SSLPrivateKey::Type::RSA;
   cert_info.supported_hashes.push_back(net::SSLPrivateKey::Hash::SHA256);
-  cert_info.max_signature_length_in_bytes = 123;
 
   return cert_info;
 }
 
 bool IsKeyEqualToCertInfo(const certificate_provider::CertificateInfo& info,
                           net::SSLPrivateKey* key) {
-  if (info.supported_hashes != key->GetDigestPreferences())
-    return false;
-
-  return key->GetType() == info.type &&
-         key->GetMaxSignatureLengthInBytes() ==
-             info.max_signature_length_in_bytes;
+  return info.supported_hashes == key->GetDigestPreferences();
 }
 
 class TestDelegate : public CertificateProviderService::Delegate {
