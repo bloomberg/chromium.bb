@@ -19,6 +19,11 @@ namespace {
 // window.
 constexpr int kVisualThickness = 8;
 
+// The corner radius of the resize shadow, which not coincidentally matches
+// the corner radius of the actual window.
+static constexpr int kCornerRadiusOfResizeShadow = 2;
+static constexpr int kCornerRadiusOfWindow = 2;
+
 // This class simply draws a roundrect. The layout and tiling is handled by
 // ResizeShadow and NinePatchLayer.
 class ResizeShadowImageSource : public gfx::CanvasImageSource {
@@ -34,12 +39,16 @@ class ResizeShadowImageSource : public gfx::CanvasImageSource {
     cc::PaintFlags paint;
     paint.setAntiAlias(true);
     paint.setColor(SK_ColorBLACK);
-    canvas->DrawRoundRect(gfx::RectF(gfx::SizeF(size())), kCornerRadius, paint);
+    canvas->DrawRoundRect(gfx::RectF(gfx::SizeF(size())),
+                          kCornerRadiusOfResizeShadow, paint);
   }
 
  private:
-  static constexpr int kCornerRadius = 2;
-  static constexpr int kImageSide = 2 * kVisualThickness + 1;
+  // The image has to have enough space to depict the visual thickness (left and
+  // right) plus an inset for extending beneath the window's rounded corner plus
+  // one pixel for the center of the nine patch.
+  static constexpr int kImageSide =
+      2 * (kVisualThickness + kCornerRadiusOfWindow) + 1;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeShadowImageSource);
 };
@@ -69,7 +78,8 @@ ResizeShadow::ResizeShadow(aura::Window* window)
   }
   layer_->UpdateNinePatchLayerImage(*g_shadow_image.Get());
   gfx::Rect aperture(g_shadow_image.Get()->size());
-  constexpr gfx::Insets kApertureInsets(kVisualThickness);
+  constexpr gfx::Insets kApertureInsets(kVisualThickness +
+                                        kCornerRadiusOfWindow);
   aperture.Inset(kApertureInsets);
   layer_->UpdateNinePatchLayerAperture(aperture);
   layer_->UpdateNinePatchLayerBorder(
