@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * The base class for the new tab pages displayed in Chrome Home.
@@ -89,6 +90,11 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
             public void onHidden(Tab tab) {
                 mFadingBackgroundView.setEnabled(true);
                 if (!mTab.isClosing()) mShowOverviewOnClose = false;
+            }
+
+            @Override
+            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
             }
         };
         mTab.addObserver(mTabObserver);
