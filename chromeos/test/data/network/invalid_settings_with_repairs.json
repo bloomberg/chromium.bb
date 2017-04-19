@@ -399,6 +399,73 @@
         }
       }
     },
+    "tether-missing-battery-percentage": {
+      "GUID": "guid",
+      "Name": "name",
+      "Type": "Tether",
+      "Tether": {
+        "Carrier": "Project Fi",
+        "SignalStrength": 75
+      }
+    },
+    "tether-negative-battery": {
+      "GUID": "guid",
+      "Name": "name",
+      "Type": "Tether",
+      "Tether": {
+        "BatteryPercentage": -1,
+        "Carrier": "Project Fi",
+        "SignalStrength": 75
+      }
+    },
+    "tether-battery-over-100": {
+      "GUID": "guid",
+      "Name": "name",
+      "Type": "Tether",
+      "Tether": {
+        "BatteryPercentage": 101,
+        "Carrier": "Project Fi",
+        "SignalStrength": 75
+      }
+    },
+    "tether-missing-carrier": {
+      "GUID": "guid",
+      "Name": "name",
+      "Type": "Tether",
+      "Tether": {
+        "BatteryPercentage": 85,
+        "SignalStrength": 75
+      }
+    },
+    "tether-missing-signal-strength": {
+      "GUID": "guid",
+      "Name": "name",
+      "Type": "Tether",
+      "Tether": {
+        "BatteryPercentage": 85,
+        "Carrier": "Project Fi"
+      }
+    },
+    "tether-negative-signal-strength": {
+      "GUID": "guid",
+      "Name": "name",
+      "Type": "Tether",
+      "Tether": {
+        "BatteryPercentage": 85,
+        "Carrier": "Project Fi",
+        "SignalStrength": -1
+      }
+    },
+    "tether-signal-strength-over-100": {
+      "GUID": "guid",
+      "Name": "name",
+      "Type": "Tether",
+      "Tether": {
+        "BatteryPercentage": 85,
+        "Carrier": "Project Fi",
+        "SignalStrength": 101
+      }
+    },
     "third-party-vpn-missing-extension-id": {
       "GUID": "guid",
       "Name": "third-party VPN",

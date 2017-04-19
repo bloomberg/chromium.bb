@@ -129,6 +129,8 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
       valid = ValidateEAP(repaired.get());
     } else if (&signature == &kCertificateSignature) {
       valid = ValidateCertificate(repaired.get());
+    } else if (&signature == &kTetherSignature) {
+      valid = ValidateTether(repaired.get());
     }
   }
 
@@ -547,11 +549,10 @@ bool Validator::ValidateToplevelConfiguration(base::DictionaryValue* result) {
 bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
   using namespace ::onc::network_config;
 
-  const char* const kValidTypes[] = {::onc::network_type::kEthernet,
-                                     ::onc::network_type::kVPN,
-                                     ::onc::network_type::kWiFi,
-                                     ::onc::network_type::kCellular,
-                                     ::onc::network_type::kWimax};
+  const char* const kValidTypes[] = {
+      ::onc::network_type::kEthernet, ::onc::network_type::kVPN,
+      ::onc::network_type::kWiFi,     ::onc::network_type::kCellular,
+      ::onc::network_type::kWimax,    ::onc::network_type::kTether};
   const std::vector<const char*> valid_types(toVector(kValidTypes));
   const char* const kValidIPConfigTypes[] = {kIPConfigTypeDHCP,
                                              kIPConfigTypeStatic};
@@ -616,6 +617,9 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
           RequireField(*result, ::onc::network_config::kWimax);
     } else if (type == ::onc::network_type::kVPN) {
       all_required_exist &= RequireField(*result, ::onc::network_config::kVPN);
+    } else if (type == ::onc::network_type::kTether) {
+      all_required_exist &=
+          RequireField(*result, ::onc::network_config::kTether);
     }
   }
 
@@ -898,7 +902,7 @@ bool Validator::ValidateGlobalNetworkConfiguration(
 
   // Ensure the list contains only legitimate network type identifiers.
   const char* const kValidNetworkTypeValues[] = {kCellular, kEthernet, kWiFi,
-                                                 kWimax};
+                                                 kWimax, kTether};
   const std::vector<const char*> valid_network_type_values(
       toVector(kValidNetworkTypeValues));
   if (!ListFieldContainsValidValues(*result, kDisableNetworkTypes,
@@ -1013,6 +1017,39 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
     all_required_exist &= RequireField(*result, kX509);
 
   return !error_on_missing_field_ || all_required_exist;
+}
+
+bool Validator::ValidateTether(base::DictionaryValue* result) {
+  using namespace ::onc::tether;
+
+  int batteryPercentage;
+  if (!result->GetIntegerWithoutPathExpansion(kBatteryPercentage,
+                                              &batteryPercentage) ||
+      batteryPercentage < 0 || batteryPercentage > 100) {
+    // Battery percentage must be present and within [0, 100].
+    error_or_warning_found_ = true;
+    return false;
+  }
+
+  int signalStrength;
+  if (!result->GetIntegerWithoutPathExpansion(kSignalStrength,
+                                              &signalStrength) ||
+      signalStrength < 0 || signalStrength > 100) {
+    // Signal strength must be present and within [0, 100].
+    error_or_warning_found_ = true;
+    return false;
+  }
+
+  std::string carrier;
+  if (!result->GetStringWithoutPathExpansion(kCarrier, &carrier) ||
+      carrier.empty()) {
+    // Carrier must be a non-empty string.
+    error_or_warning_found_ = true;
+    return false;
+  }
+
+  // No required fields.
+  return true;
 }
 
 std::string Validator::MessageHeader() {

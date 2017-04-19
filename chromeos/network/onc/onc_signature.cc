@@ -166,6 +166,12 @@ const OncFieldSignature ethernet_fields[] = {
     {::onc::ethernet::kEAP, &kEAPSignature},
     {NULL}};
 
+const OncFieldSignature tether_fields[] = {
+    {::onc::tether::kBatteryPercentage, &kIntegerSignature},
+    {::onc::tether::kCarrier, &kStringSignature},
+    {::onc::tether::kSignalStrength, &kIntegerSignature},
+    {NULL}};
+
 const OncFieldSignature ipconfig_fields[] = {
     {::onc::ipconfig::kGateway, &kStringSignature},
     {::onc::ipconfig::kIPAddress, &kStringSignature},
@@ -328,6 +334,7 @@ const OncFieldSignature network_with_state_fields[] = {
     {::onc::network_config::kRestrictedConnectivity, &kBoolSignature},
     {::onc::network_config::kSavedIPConfig, &kSavedIPConfigSignature},
     {::onc::network_config::kSource, &kStringSignature},
+    {::onc::network_config::kTether, &kTetherSignature},
     {::onc::network_config::kWiFi, &kWiFiWithStateSignature},
     {::onc::network_config::kWimax, &kWiMAXWithStateSignature},
     {NULL}};
@@ -392,6 +399,8 @@ const OncValueSignature kVPNSignature = {base::Value::Type::DICTIONARY,
                                          vpn_fields, NULL};
 const OncValueSignature kEthernetSignature = {base::Value::Type::DICTIONARY,
                                               ethernet_fields, NULL};
+const OncValueSignature kTetherSignature = {base::Value::Type::DICTIONARY,
+                                            tether_fields, NULL};
 const OncValueSignature kIPConfigSignature = {base::Value::Type::DICTIONARY,
                                               ipconfig_fields, NULL};
 const OncValueSignature kSavedIPConfigSignature = {

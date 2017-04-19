@@ -59,6 +59,7 @@ const char kSourceUser[] = "User";
 const char kSourceUserPolicy[] = "UserPolicy";
 const char kSource[] = "Source";
 const char kStaticIPConfig[] = "StaticIPConfig";
+const char kTether[] = "Tether";
 const char kType[] = "Type";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
@@ -66,6 +67,10 @@ const char kWimax[] = "WiMAX";
 
 std::string CellularProperty(const std::string& property) {
   return std::string(kCellular) + "." + property;
+}
+
+std::string TetherProperty(const std::string& property) {
+  return std::string(kTether) + "." + property;
 }
 
 std::string VpnProperty(const std::string& property) {
@@ -82,6 +87,7 @@ namespace network_type {
 const char kAllTypes[] = "All";
 const char kCellular[] = "Cellular";
 const char kEthernet[] = "Ethernet";
+const char kTether[] = "Tether";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
 const char kWimax[] = "WiMAX";
@@ -187,6 +193,12 @@ const char kAuthenticationNone[] = "None";
 const char kEAP[] = "EAP";
 const char k8021X[] = "8021X";
 }  // namespace ethernet
+
+namespace tether {
+const char kBatteryPercentage[] = "BatteryPercentage";
+const char kCarrier[] = "Carrier";
+const char kSignalStrength[] = "SignalStrength";
+}  // namespace tether
 
 namespace ipconfig {
 const char kGateway[] = "Gateway";

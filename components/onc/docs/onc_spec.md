@@ -230,6 +230,11 @@ Field **NetworkConfigurations** is an array of
       [Cellular](#Cellular-type)
     * Cellular settings.
 
+* **Tether**
+    * (required if **Type** is *Tether*, otherwise ignored) -
+      [Tether](#Tether-type)
+    * Tether settings.
+
 * **Type**
     * (required if **Remove** is *false*, otherwise ignored) - **string**
     * `Allowed values are` *Cellular*,
@@ -1424,6 +1429,34 @@ ONC configuration of of **Cellular** networks is not yet supported.
       PIN becomes blocked, at which point a PUK provided by the carrier would
       be necessary to unlock the SIM (and **LockType**
       changes to *sim-puk*).
+
+
+## Tether Networks
+
+For Tether connections, **Type** must be set to *Tether* and the
+field **Tether** must be set to an object of type [Tether](#Tether-type).
+
+Used for representing a tether hotspot provided by an external device, e.g.
+a phone.
+
+### Tether type
+
+* **BatteryPercentage**
+    * (optional, read-only) - **integer**
+    * The battery percentage of the device providing the tether hotspot in the
+      range [0, 100].
+
+* **Carrier**
+    * (optional, read-only) - **string**
+    * The name of the cellular carrier when the hotspot is provided by a
+      cellular connection.
+
+* **SignalStrength**
+    * (optional, read-only) - **integer**
+    * The current signal strength for the hotspot's connection in the range
+      [0, 100]. Note that this value refers to the strength of the signal
+      between the external device and its data provider, not the strength of the
+      signal between the current device and the external device.
 
 
 ## Bluetooth / WiFi Direct Networks

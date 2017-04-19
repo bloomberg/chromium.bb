@@ -761,6 +761,8 @@ NetworkTypePattern NetworkTypePatternFromOncType(const std::string& type) {
     return NetworkTypePattern::Cellular();
   if (type == ::onc::network_type::kEthernet)
     return NetworkTypePattern::Ethernet();
+  if (type == ::onc::network_type::kTether)
+    return NetworkTypePattern::Tether();
   if (type == ::onc::network_type::kVPN)
     return NetworkTypePattern::VPN();
   if (type == ::onc::network_type::kWiFi)

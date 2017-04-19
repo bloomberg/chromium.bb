@@ -7,6 +7,8 @@
 #include <cstddef>
 
 #include "base/logging.h"
+#include "chromeos/network/network_type_pattern.h"
+#include "chromeos/network/tether_constants.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -107,6 +109,12 @@ const FieldTranslationEntry vpn_fields[] = {
     // These fields are converted during translation, see onc_translator_*.
     // { ::onc::vpn::kHost, shill::kProviderHostProperty},
     // { ::onc::vpn::kType, shill::kProviderTypeProperty },
+    {NULL}};
+
+const FieldTranslationEntry tether_fields[] = {
+    {::onc::tether::kBatteryPercentage, kTetherBatteryPercentage},
+    {::onc::tether::kCarrier, kTetherCarrier},
+    {::onc::tether::kSignalStrength, kTetherSignalStrength},
     {NULL}};
 
 const FieldTranslationEntry wifi_fields[] = {
@@ -239,6 +247,7 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
     {&kOpenVPNSignature, openvpn_fields},
     {&kVerifyX509Signature, verify_x509_fields},
     {&kVPNSignature, vpn_fields},
+    {&kTetherSignature, tether_fields},
     {&kWiFiSignature, wifi_fields},
     {&kWiFiWithStateSignature, wifi_fields},
     {&kWiMAXSignature, wimax_fields},
@@ -283,6 +292,7 @@ const StringTranslationEntry kNetworkTypeTable[] = {
     {::onc::network_type::kWimax, shill::kTypeWimax},
     {::onc::network_type::kCellular, shill::kTypeCellular},
     {::onc::network_type::kVPN, shill::kTypeVPN},
+    {::onc::network_type::kTether, kTypeTether},
     {NULL}};
 
 const StringTranslationEntry kVPNTypeTable[] = {

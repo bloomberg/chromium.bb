@@ -78,6 +78,7 @@ chrome.networkingPrivate.NetworkType = {
   ALL: 'All',
   CELLULAR: 'Cellular',
   ETHERNET: 'Ethernet',
+  TETHER: 'Tether',
   VPN: 'VPN',
   WIRELESS: 'Wireless',
   WI_FI: 'WiFi',
@@ -762,6 +763,26 @@ chrome.networkingPrivate.EthernetStateProperties;
 
 /**
  * @typedef {{
+ *   BatteryPercentage: (number|undefined),
+ *   Carrier: (string|undefined),
+ *   SignalStrength: (number|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-TetherProperties
+ */
+chrome.networkingPrivate.TetherProperties;
+
+/**
+ * @typedef {{
+ *   BatteryPercentage: (!chrome.networkingPrivate.ManagedLong|undefined),
+ *   Carrier: (!chrome.networkingPrivate.ManagedDOMString|undefined),
+ *   SignalStrength: (!chrome.networkingPrivate.ManagedLong|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-ManagedTetherProperties
+ */
+chrome.networkingPrivate.ManagedTetherProperties;
+
+/**
+ * @typedef {{
  *   AutoConnect: (boolean|undefined),
  *   Host: (string|undefined),
  *   IPsec: (!chrome.networkingPrivate.IPSecProperties|undefined),
@@ -916,6 +937,7 @@ chrome.networkingPrivate.NetworkConfigProperties;
  *   StaticIPConfig: (!chrome.networkingPrivate.IPConfigProperties|undefined),
  *   SavedIPConfig: (!chrome.networkingPrivate.IPConfigProperties|undefined),
  *   Source: (string|undefined),
+ *   Tether: (!chrome.networkingPrivate.TetherProperties|undefined),
  *   Type: !chrome.networkingPrivate.NetworkType,
  *   VPN: (!chrome.networkingPrivate.VPNProperties|undefined),
  *   WiFi: (!chrome.networkingPrivate.WiFiProperties|undefined),
@@ -944,6 +966,7 @@ chrome.networkingPrivate.NetworkProperties;
  *   StaticIPConfig: (!chrome.networkingPrivate.ManagedIPConfigProperties|undefined),
  *   SavedIPConfig: (!chrome.networkingPrivate.IPConfigProperties|undefined),
  *   Source: (string|undefined),
+ *   Tether: (!chrome.networkingPrivate.ManagedTetherProperties|undefined),
  *   Type: !chrome.networkingPrivate.NetworkType,
  *   VPN: (!chrome.networkingPrivate.ManagedVPNProperties|undefined),
  *   WiFi: (!chrome.networkingPrivate.ManagedWiFiProperties|undefined),
@@ -964,6 +987,7 @@ chrome.networkingPrivate.ManagedProperties;
  *   Name: (string|undefined),
  *   Priority: (number|undefined),
  *   Source: (string|undefined),
+ *   Tether: (!chrome.networkingPrivate.TetherProperties|undefined),
  *   Type: !chrome.networkingPrivate.NetworkType,
  *   VPN: (!chrome.networkingPrivate.VPNStateProperties|undefined),
  *   WiFi: (!chrome.networkingPrivate.WiFiStateProperties|undefined),

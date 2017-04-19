@@ -58,7 +58,7 @@ namespace networkingPrivate {
   };
 
   enum NetworkType {
-    All, Cellular, Ethernet, VPN, Wireless, WiFi, WiMAX
+    All, Cellular, Ethernet, Tether, VPN, Wireless, WiFi, WiMAX
   };
 
   enum ProxySettingsType {
@@ -202,14 +202,14 @@ namespace networkingPrivate {
     DOMString? CommonName;
     DOMString? Locality;
     DOMString? Organization;
-    DOMString? OrganizationalUnit;    
+    DOMString? OrganizationalUnit;
   };
 
   dictionary ManagedIssuerSubjectPattern {
     ManagedDOMString? CommonName;
     ManagedDOMString? Locality;
     ManagedDOMString? Organization;
-    ManagedDOMString? OrganizationalUnit;    
+    ManagedDOMString? OrganizationalUnit;
   };
 
   dictionary CertificatePattern {
@@ -574,6 +574,18 @@ namespace networkingPrivate {
     DOMString Authentication;
   };
 
+  dictionary TetherProperties {
+    long? BatteryPercentage;
+    DOMString? Carrier;
+    long? SignalStrength;
+  };
+
+  dictionary ManagedTetherProperties {
+    ManagedLong? BatteryPercentage;
+    ManagedDOMString? Carrier;
+    ManagedLong? SignalStrength;
+  };
+
   dictionary VPNProperties {
     boolean? AutoConnect;
     DOMString? Host;
@@ -689,6 +701,7 @@ namespace networkingPrivate {
     IPConfigProperties? StaticIPConfig;
     IPConfigProperties? SavedIPConfig;
     DOMString? Source;
+    TetherProperties? Tether;
     NetworkType Type;
     VPNProperties? VPN;
     WiFiProperties? WiFi;
@@ -713,6 +726,7 @@ namespace networkingPrivate {
     ManagedIPConfigProperties? StaticIPConfig;
     IPConfigProperties? SavedIPConfig;
     DOMString? Source;
+    ManagedTetherProperties? Tether;
     NetworkType Type;
     ManagedVPNProperties? VPN;
     ManagedWiFiProperties? WiFi;
@@ -729,6 +743,7 @@ namespace networkingPrivate {
     DOMString? Name;
     long? Priority;
     DOMString? Source;
+    TetherProperties? Tether;
     NetworkType Type;
     VPNStateProperties? VPN;
     WiFiStateProperties? WiFi;

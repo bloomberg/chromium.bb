@@ -117,6 +117,7 @@ INSTANTIATE_TEST_CASE_P(
                        "translation_of_shill_openvpn.onc"),
         std::make_pair("shill_output_openvpn_with_errors.json",
                        "translation_of_shill_openvpn_with_errors.onc"),
+        std::make_pair("shill_tether.json", "tether.onc"),
         std::make_pair("shill_wifi_with_state.json",
                        "translation_of_shill_wifi_with_state.onc"),
         std::make_pair("shill_wifi_proxy.json",

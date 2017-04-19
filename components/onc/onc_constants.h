@@ -82,12 +82,14 @@ ONC_EXPORT extern const char kConnectionState[];
 ONC_EXPORT extern const char kRestrictedConnectivity[];
 ONC_EXPORT extern const char kConnectable[];
 ONC_EXPORT extern const char kErrorState[];
+ONC_EXPORT extern const char kTether[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kVPN[];
 ONC_EXPORT extern const char kWiFi[];
 ONC_EXPORT extern const char kWimax[];
 
 ONC_EXPORT extern std::string CellularProperty(const std::string& property);
+ONC_EXPORT extern std::string TetherProperty(const std::string& property);
 ONC_EXPORT extern std::string VpnProperty(const std::string& property);
 ONC_EXPORT extern std::string WifiProperty(const std::string& property);
 
@@ -96,6 +98,7 @@ ONC_EXPORT extern std::string WifiProperty(const std::string& property);
 namespace network_type {
 ONC_EXPORT extern const char kCellular[];
 ONC_EXPORT extern const char kEthernet[];
+ONC_EXPORT extern const char kTether[];
 ONC_EXPORT extern const char kVPN[];
 ONC_EXPORT extern const char kWiFi[];
 ONC_EXPORT extern const char kWimax[];
@@ -215,6 +218,12 @@ ONC_EXPORT extern const char kAuthenticationNone[];
 ONC_EXPORT extern const char kEAP[];
 ONC_EXPORT extern const char k8021X[];
 }  // namespace ethernet
+
+namespace tether {
+ONC_EXPORT extern const char kBatteryPercentage[];
+ONC_EXPORT extern const char kCarrier[];
+ONC_EXPORT extern const char kSignalStrength[];
+}  // namespace tether
 
 namespace wifi {
 ONC_EXPORT extern const char kAllowGatewayARPPolling[];

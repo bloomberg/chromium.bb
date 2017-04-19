@@ -415,6 +415,8 @@ component("chromeos") {
     "network/shill_property_handler.h",
     "network/shill_property_util.cc",
     "network/shill_property_util.h",
+    "network/tether_constants.cc",
+    "network/tether_constants.h",
     "printing/ppd_cache.cc",
     "printing/ppd_cache.h",
     "printing/ppd_provider.cc",

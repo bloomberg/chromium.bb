@@ -12,9 +12,6 @@
 
 namespace chromeos {
 
-// A special case non-shill type.
-CHROMEOS_EXPORT extern const char kTypeTether[];
-
 class CHROMEOS_EXPORT NetworkTypePattern {
  public:
   // Matches any network.

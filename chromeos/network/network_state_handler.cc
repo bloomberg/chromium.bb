@@ -25,6 +25,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/tether_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

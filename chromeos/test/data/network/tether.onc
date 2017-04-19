@@ -1,0 +1,9 @@
+{
+  "Type": "Tether",
+  "Name": "Tether Network",
+  "Tether": {
+    "BatteryPercentage": 85,
+    "Carrier": "Project Fi",
+    "SignalStrength": 75
+  }
+}

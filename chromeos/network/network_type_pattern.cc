@@ -7,11 +7,10 @@
 #include <stddef.h>
 
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/tether_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
-
-const char kTypeTether[] = "wifi-tether";
 
 namespace {
 
@@ -20,6 +19,7 @@ const char kPatternEthernet[] = "PatternEthernet";
 const char kPatternWireless[] = "PatternWireless";
 const char kPatternMobile[] = "PatternMobile";
 const char kPatternNonVirtual[] = "PatternNonVirtual";
+const char kPatternTether[] = "PatternTether";
 
 enum NetworkTypeBitFlag {
   kNetworkTypeNone = 0,
@@ -141,6 +141,8 @@ std::string NetworkTypePattern::ToDebugString() const {
     return kPatternMobile;
   if (Equals(NonVirtual()))
     return kPatternNonVirtual;
+  if (Equals(Tether()))
+    return kPatternTether;
 
   std::string str;
   for (size_t i = 0; i < arraysize(shill_type_to_flag); ++i) {

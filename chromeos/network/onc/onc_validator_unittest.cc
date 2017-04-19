@@ -222,7 +222,8 @@ INSTANTIATE_TEST_CASE_P(
                   false),
         OncParams("third_party_vpn.onc",
                   &kNetworkConfigurationSignature,
-                  false)));
+                  false),
+        OncParams("tether.onc", &kNetworkWithStateSignature, false)));
 
 namespace {
 
@@ -551,6 +552,34 @@ INSTANTIATE_TEST_CASE_P(
         std::make_pair(OncParams("openvpn-invalid-verify-x509-type",
                                  &kNetworkConfigurationSignature,
                                  false),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("tether-missing-battery-percentage",
+                                 &kNetworkWithStateSignature,
+                                 true),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("tether-negative-battery",
+                                 &kNetworkWithStateSignature,
+                                 true),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("tether-battery-over-100",
+                                 &kNetworkWithStateSignature,
+                                 true),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("tether-missing-carrier",
+                                 &kNetworkWithStateSignature,
+                                 true),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("tether-missing-signal-strength",
+                                 &kNetworkWithStateSignature,
+                                 true),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("tether-negative-signal-strength",
+                                 &kNetworkWithStateSignature,
+                                 true),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("tether-signal-strength-over-100",
+                                 &kNetworkWithStateSignature,
+                                 true),
                        ExpectBothNotValid("", ""))));
 
 }  // namespace onc
