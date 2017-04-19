@@ -19,14 +19,7 @@
 
 #include "core/layout/svg/SVGResourcesCycleSolver.h"
 
-// Set to a value > 0, to debug the resource cache.
-#define DEBUG_CYCLE_DETECTION 0
-
-#include "core/layout/svg/LayoutSVGResourceClipper.h"
-#include "core/layout/svg/LayoutSVGResourceFilter.h"
-#include "core/layout/svg/LayoutSVGResourceMarker.h"
-#include "core/layout/svg/LayoutSVGResourceMasker.h"
-#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 
@@ -108,58 +101,10 @@ void SVGResourcesCycleSolver::ResolveCycles() {
   for (auto* local_resource : local_resources) {
     if (active_resources_.Contains(local_resource) ||
         ResourceContainsCycles(local_resource))
-      BreakCycle(local_resource);
+      resources_->ClearReferencesTo(local_resource);
   }
 
   active_resources_.Clear();
-}
-
-void SVGResourcesCycleSolver::BreakCycle(
-    LayoutSVGResourceContainer* resource_leading_to_cycle) {
-  DCHECK(resource_leading_to_cycle);
-  if (resource_leading_to_cycle == resources_->LinkedResource()) {
-    resources_->ResetLinkedResource();
-    return;
-  }
-
-  switch (resource_leading_to_cycle->ResourceType()) {
-    case kMaskerResourceType:
-      DCHECK_EQ(resource_leading_to_cycle, resources_->Masker());
-      resources_->ResetMasker();
-      break;
-    case kMarkerResourceType:
-      DCHECK(resource_leading_to_cycle == resources_->MarkerStart() ||
-             resource_leading_to_cycle == resources_->MarkerMid() ||
-             resource_leading_to_cycle == resources_->MarkerEnd());
-      if (resources_->MarkerStart() == resource_leading_to_cycle)
-        resources_->ResetMarkerStart();
-      if (resources_->MarkerMid() == resource_leading_to_cycle)
-        resources_->ResetMarkerMid();
-      if (resources_->MarkerEnd() == resource_leading_to_cycle)
-        resources_->ResetMarkerEnd();
-      break;
-    case kPatternResourceType:
-    case kLinearGradientResourceType:
-    case kRadialGradientResourceType:
-      DCHECK(resource_leading_to_cycle == resources_->Fill() ||
-             resource_leading_to_cycle == resources_->Stroke());
-      if (resources_->Fill() == resource_leading_to_cycle)
-        resources_->ResetFill();
-      if (resources_->Stroke() == resource_leading_to_cycle)
-        resources_->ResetStroke();
-      break;
-    case kFilterResourceType:
-      DCHECK_EQ(resource_leading_to_cycle, resources_->Filter());
-      resources_->ResetFilter();
-      break;
-    case kClipperResourceType:
-      DCHECK_EQ(resource_leading_to_cycle, resources_->Clipper());
-      resources_->ResetClipper();
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 }  // namespace blink

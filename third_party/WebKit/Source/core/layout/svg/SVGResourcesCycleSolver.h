@@ -44,7 +44,6 @@ class SVGResourcesCycleSolver {
 
  private:
   bool ResourceContainsCycles(LayoutSVGResourceContainer*);
-  void BreakCycle(LayoutSVGResourceContainer*);
 
   LayoutObject* layout_object_;
   SVGResources* resources_;

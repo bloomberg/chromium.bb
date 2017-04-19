@@ -99,26 +99,14 @@ class SVGResources {
       LayoutObject*,
       bool mark_for_invalidation = true) const;
   void ResourceDestroyed(LayoutSVGResourceContainer*);
+  void ClearReferencesTo(LayoutSVGResourceContainer*);
 
 #ifndef NDEBUG
   void Dump(const LayoutObject*);
 #endif
 
  private:
-  friend class SVGResourcesCycleSolver;
-
   bool HasResourceData() const;
-
-  // Only used by SVGResourcesCache cycle detection logic
-  void ResetClipper();
-  void ResetFilter();
-  void ResetMarkerStart();
-  void ResetMarkerMid();
-  void ResetMarkerEnd();
-  void ResetMasker();
-  void ResetFill();
-  void ResetStroke();
-  void ResetLinkedResource();
 
   void SetClipper(LayoutSVGResourceClipper*);
   void SetFilter(LayoutSVGResourceFilter*);

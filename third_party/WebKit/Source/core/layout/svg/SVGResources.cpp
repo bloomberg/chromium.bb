@@ -418,6 +418,58 @@ void SVGResources::ResourceDestroyed(LayoutSVGResourceContainer* resource) {
   }
 }
 
+void SVGResources::ClearReferencesTo(LayoutSVGResourceContainer* resource) {
+  DCHECK(resource);
+  if (linked_resource_ == resource) {
+    DCHECK(!clipper_filter_masker_data_);
+    DCHECK(!marker_data_);
+    DCHECK(!fill_stroke_data_);
+    linked_resource_ = nullptr;
+    return;
+  }
+
+  switch (resource->ResourceType()) {
+    case kMaskerResourceType:
+      DCHECK(clipper_filter_masker_data_);
+      DCHECK_EQ(clipper_filter_masker_data_->masker, resource);
+      clipper_filter_masker_data_->masker = nullptr;
+      break;
+    case kMarkerResourceType:
+      DCHECK(marker_data_);
+      DCHECK(resource == MarkerStart() || resource == MarkerMid() ||
+             resource == MarkerEnd());
+      if (marker_data_->marker_start == resource)
+        marker_data_->marker_start = nullptr;
+      if (marker_data_->marker_mid == resource)
+        marker_data_->marker_mid = nullptr;
+      if (marker_data_->marker_end == resource)
+        marker_data_->marker_end = nullptr;
+      break;
+    case kPatternResourceType:
+    case kLinearGradientResourceType:
+    case kRadialGradientResourceType:
+      DCHECK(fill_stroke_data_);
+      DCHECK(resource == Fill() || resource == Stroke());
+      if (fill_stroke_data_->fill == resource)
+        fill_stroke_data_->fill = nullptr;
+      if (fill_stroke_data_->stroke == resource)
+        fill_stroke_data_->stroke = nullptr;
+      break;
+    case kFilterResourceType:
+      DCHECK(clipper_filter_masker_data_);
+      DCHECK_EQ(clipper_filter_masker_data_->filter, resource);
+      clipper_filter_masker_data_->filter = nullptr;
+      break;
+    case kClipperResourceType:
+      DCHECK(clipper_filter_masker_data_);
+      DCHECK_EQ(clipper_filter_masker_data_->clipper, resource);
+      clipper_filter_masker_data_->clipper = nullptr;
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 void SVGResources::BuildSetOfResources(
     HashSet<LayoutSVGResourceContainer*>& set) {
   if (!HasResourceData())
@@ -469,12 +521,6 @@ void SVGResources::SetClipper(LayoutSVGResourceClipper* clipper) {
   clipper_filter_masker_data_->clipper = clipper;
 }
 
-void SVGResources::ResetClipper() {
-  DCHECK(clipper_filter_masker_data_);
-  DCHECK(clipper_filter_masker_data_->clipper);
-  clipper_filter_masker_data_->clipper = nullptr;
-}
-
 void SVGResources::SetFilter(LayoutSVGResourceFilter* filter) {
   if (!filter)
     return;
@@ -485,12 +531,6 @@ void SVGResources::SetFilter(LayoutSVGResourceFilter* filter) {
     clipper_filter_masker_data_ = ClipperFilterMaskerData::Create();
 
   clipper_filter_masker_data_->filter = filter;
-}
-
-void SVGResources::ResetFilter() {
-  DCHECK(clipper_filter_masker_data_);
-  DCHECK(clipper_filter_masker_data_->filter);
-  clipper_filter_masker_data_->filter = nullptr;
 }
 
 void SVGResources::SetMarkerStart(LayoutSVGResourceMarker* marker_start) {
@@ -505,12 +545,6 @@ void SVGResources::SetMarkerStart(LayoutSVGResourceMarker* marker_start) {
   marker_data_->marker_start = marker_start;
 }
 
-void SVGResources::ResetMarkerStart() {
-  DCHECK(marker_data_);
-  DCHECK(marker_data_->marker_start);
-  marker_data_->marker_start = nullptr;
-}
-
 void SVGResources::SetMarkerMid(LayoutSVGResourceMarker* marker_mid) {
   if (!marker_mid)
     return;
@@ -521,12 +555,6 @@ void SVGResources::SetMarkerMid(LayoutSVGResourceMarker* marker_mid) {
     marker_data_ = MarkerData::Create();
 
   marker_data_->marker_mid = marker_mid;
-}
-
-void SVGResources::ResetMarkerMid() {
-  DCHECK(marker_data_);
-  DCHECK(marker_data_->marker_mid);
-  marker_data_->marker_mid = nullptr;
 }
 
 void SVGResources::SetMarkerEnd(LayoutSVGResourceMarker* marker_end) {
@@ -541,12 +569,6 @@ void SVGResources::SetMarkerEnd(LayoutSVGResourceMarker* marker_end) {
   marker_data_->marker_end = marker_end;
 }
 
-void SVGResources::ResetMarkerEnd() {
-  DCHECK(marker_data_);
-  DCHECK(marker_data_->marker_end);
-  marker_data_->marker_end = nullptr;
-}
-
 void SVGResources::SetMasker(LayoutSVGResourceMasker* masker) {
   if (!masker)
     return;
@@ -559,12 +581,6 @@ void SVGResources::SetMasker(LayoutSVGResourceMasker* masker) {
   clipper_filter_masker_data_->masker = masker;
 }
 
-void SVGResources::ResetMasker() {
-  DCHECK(clipper_filter_masker_data_);
-  DCHECK(clipper_filter_masker_data_->masker);
-  clipper_filter_masker_data_->masker = nullptr;
-}
-
 void SVGResources::SetFill(LayoutSVGResourcePaintServer* fill) {
   if (!fill)
     return;
@@ -573,12 +589,6 @@ void SVGResources::SetFill(LayoutSVGResourcePaintServer* fill) {
     fill_stroke_data_ = FillStrokeData::Create();
 
   fill_stroke_data_->fill = fill;
-}
-
-void SVGResources::ResetFill() {
-  DCHECK(fill_stroke_data_);
-  DCHECK(fill_stroke_data_->fill);
-  fill_stroke_data_->fill = nullptr;
 }
 
 void SVGResources::SetStroke(LayoutSVGResourcePaintServer* stroke) {
@@ -591,23 +601,12 @@ void SVGResources::SetStroke(LayoutSVGResourcePaintServer* stroke) {
   fill_stroke_data_->stroke = stroke;
 }
 
-void SVGResources::ResetStroke() {
-  DCHECK(fill_stroke_data_);
-  DCHECK(fill_stroke_data_->stroke);
-  fill_stroke_data_->stroke = nullptr;
-}
-
 void SVGResources::SetLinkedResource(
     LayoutSVGResourceContainer* linked_resource) {
   if (!linked_resource)
     return;
 
   linked_resource_ = linked_resource;
-}
-
-void SVGResources::ResetLinkedResource() {
-  DCHECK(linked_resource_);
-  linked_resource_ = nullptr;
 }
 
 #ifndef NDEBUG
