@@ -175,23 +175,6 @@ std::vector<TraitsExecutionModePair> GetTraitsExecutionModePairs() {
   return params;
 }
 
-enum WorkerPoolType {
-  BACKGROUND_WORKER_POOL = 0,
-  BACKGROUND_BLOCKING_WORKER_POOL,
-  FOREGROUND_WORKER_POOL,
-  FOREGROUND_BLOCKING_WORKER_POOL,
-};
-
-size_t GetThreadPoolIndexForTraits(const TaskTraits& traits) {
-  if (traits.may_block()) {
-    return traits.priority() == TaskPriority::BACKGROUND
-               ? BACKGROUND_BLOCKING_WORKER_POOL
-               : FOREGROUND_BLOCKING_WORKER_POOL;
-  }
-  return traits.priority() == TaskPriority::BACKGROUND ? BACKGROUND_WORKER_POOL
-                                                       : FOREGROUND_WORKER_POOL;
-}
-
 class TaskSchedulerImplTest
     : public testing::TestWithParam<TraitsExecutionModePair> {
  protected:
@@ -200,27 +183,22 @@ class TaskSchedulerImplTest
   void SetUp() override {
     using StandbyThreadPolicy = SchedulerWorkerPoolParams::StandbyThreadPolicy;
 
-    std::vector<SchedulerWorkerPoolParams> params_vector;
+    constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
+    constexpr int kMaxNumBackgroundThreads = 1;
+    constexpr int kMaxNumBackgroundBlockingThreads = 3;
+    constexpr int kMaxNumForegroundThreads = 4;
+    constexpr int kMaxNumForegroundBlockingThreads = 12;
 
-    ASSERT_EQ(BACKGROUND_WORKER_POOL, params_vector.size());
-    params_vector.emplace_back("Background", ThreadPriority::BACKGROUND,
-                               StandbyThreadPolicy::LAZY, 1U, TimeDelta::Max());
+    scheduler_ = TaskSchedulerImpl::Create(
+        "Test", {{StandbyThreadPolicy::LAZY, kMaxNumBackgroundThreads,
+                  kSuggestedReclaimTime},
+                 {StandbyThreadPolicy::LAZY, kMaxNumBackgroundBlockingThreads,
+                  kSuggestedReclaimTime},
+                 {StandbyThreadPolicy::LAZY, kMaxNumForegroundThreads,
+                  kSuggestedReclaimTime},
+                 {StandbyThreadPolicy::LAZY, kMaxNumForegroundBlockingThreads,
+                  kSuggestedReclaimTime}});
 
-    ASSERT_EQ(BACKGROUND_BLOCKING_WORKER_POOL, params_vector.size());
-    params_vector.emplace_back("BackgroundBlocking", ThreadPriority::BACKGROUND,
-                               StandbyThreadPolicy::LAZY, 3U, TimeDelta::Max());
-
-    ASSERT_EQ(FOREGROUND_WORKER_POOL, params_vector.size());
-    params_vector.emplace_back("Foreground", ThreadPriority::NORMAL,
-                               StandbyThreadPolicy::LAZY, 4U, TimeDelta::Max());
-
-    ASSERT_EQ(FOREGROUND_BLOCKING_WORKER_POOL, params_vector.size());
-    params_vector.emplace_back("ForegroundBlocking", ThreadPriority::NORMAL,
-                               StandbyThreadPolicy::LAZY, 12U,
-                               TimeDelta::Max());
-
-    scheduler_ = TaskSchedulerImpl::Create(params_vector,
-                                           Bind(&GetThreadPoolIndexForTraits));
     ASSERT_TRUE(scheduler_);
   }
 

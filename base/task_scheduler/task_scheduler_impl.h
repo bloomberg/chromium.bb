@@ -24,7 +24,6 @@
 namespace base {
 
 class HistogramBase;
-class SchedulerWorkerPoolParams;
 
 namespace internal {
 
@@ -45,17 +44,6 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   static std::unique_ptr<TaskSchedulerImpl> Create(
       const std::string& name,
       const TaskScheduler::InitParams& init_params);
-
-  // Creates and returns an initialized TaskSchedulerImpl. CHECKs on failure.
-  // |worker_pool_params_vector| describes the worker pools to create.
-  // |worker_pool_index_for_traits_callback| returns the index in |worker_pools|
-  // of the worker pool in which a task with given traits should run.
-  //
-  // Deprecated. https://crbug.com/690706
-  static std::unique_ptr<TaskSchedulerImpl> Create(
-      const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector,
-      const WorkerPoolIndexForTraitsCallback&
-          worker_pool_index_for_traits_callback);
 
   ~TaskSchedulerImpl() override;
 
@@ -82,11 +70,9 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   void JoinForTesting() override;
 
  private:
-  explicit TaskSchedulerImpl(const WorkerPoolIndexForTraitsCallback&
-                                 worker_pool_index_for_traits_callback);
+  explicit TaskSchedulerImpl(const std::string& name);
 
-  void Initialize(
-      const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector);
+  void Initialize(const TaskScheduler::InitParams& init_params);
 
   // Returns the worker pool that runs Tasks with |traits|.
   SchedulerWorkerPoolImpl* GetWorkerPoolForTraits(
@@ -96,13 +82,16 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // worker pops a Task from it.
   void ReEnqueueSequenceCallback(scoped_refptr<Sequence> sequence);
 
+  const std::string name_;
   Thread service_thread_;
   std::unique_ptr<TaskTracker> task_tracker_;
   std::unique_ptr<DelayedTaskManager> delayed_task_manager_;
   std::unique_ptr<SchedulerSingleThreadTaskRunnerManager>
       single_thread_task_runner_manager_;
-  const WorkerPoolIndexForTraitsCallback worker_pool_index_for_traits_callback_;
-  std::vector<std::unique_ptr<SchedulerWorkerPoolImpl>> worker_pools_;
+
+  // There are 4 SchedulerWorkerPoolImpl in this array to match the 4
+  // SchedulerWorkerPoolParams in TaskScheduler::InitParams.
+  std::unique_ptr<SchedulerWorkerPoolImpl> worker_pools_[4];
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.

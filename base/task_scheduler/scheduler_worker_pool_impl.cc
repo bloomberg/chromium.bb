@@ -265,7 +265,7 @@ void SchedulerWorkerPoolImpl::Start(const SchedulerWorkerPoolParams& params) {
     // highest index is at the bottom of the idle stack.
     for (int index = params.max_threads() - 1; index >= 0; --index) {
       workers_[index] = make_scoped_refptr(new SchedulerWorker(
-          params.priority_hint(),
+          priority_hint_,
           MakeUnique<SchedulerWorkerDelegateImpl>(
               this, re_enqueue_sequence_callback_, index),
           task_tracker_, params.backward_compatibility(),

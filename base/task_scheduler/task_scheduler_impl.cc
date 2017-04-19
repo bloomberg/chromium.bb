@@ -58,59 +58,15 @@ size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
   return is_background ? BACKGROUND : FOREGROUND;
 }
 
-void AddAugmentedSchedulerWorkerPoolParamsToVector(
-    EnvironmentType environment_type,
-    const std::string& task_scheduler_name,
-    const SchedulerWorkerPoolParams& params,
-    std::vector<SchedulerWorkerPoolParams>*
-        scheduler_worker_pool_params_vector) {
-  DCHECK_EQ(static_cast<size_t>(environment_type),
-            scheduler_worker_pool_params_vector->size());
-  scheduler_worker_pool_params_vector->emplace_back(
-      task_scheduler_name + kEnvironmentParams[environment_type].name_suffix,
-      kEnvironmentParams[environment_type].priority_hint,
-      params.standby_thread_policy(), params.max_threads(),
-      params.suggested_reclaim_time(), params.backward_compatibility());
-}
-
 }  // namespace
-
-// static
-std::unique_ptr<TaskSchedulerImpl> TaskSchedulerImpl::Create(
-    const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector,
-    const WorkerPoolIndexForTraitsCallback&
-        worker_pool_index_for_traits_callback) {
-  std::unique_ptr<TaskSchedulerImpl> scheduler(
-      new TaskSchedulerImpl(worker_pool_index_for_traits_callback));
-  scheduler->Initialize(worker_pool_params_vector);
-  return scheduler;
-}
 
 // static
 std::unique_ptr<TaskSchedulerImpl> TaskSchedulerImpl::Create(
     const std::string& name,
     const TaskScheduler::InitParams& init_params) {
-  // Create a vector of SchedulerWorkerPoolParams using names and priority hints
-  // derived from |kEnvironmentParams| and other params from |init_params|.
-  std::vector<SchedulerWorkerPoolParams> worker_pool_params_vector;
-  AddAugmentedSchedulerWorkerPoolParamsToVector(
-      BACKGROUND, name, init_params.background_worker_pool_params,
-      &worker_pool_params_vector);
-  AddAugmentedSchedulerWorkerPoolParamsToVector(
-      BACKGROUND_BLOCKING, name,
-      init_params.background_blocking_worker_pool_params,
-      &worker_pool_params_vector);
-  AddAugmentedSchedulerWorkerPoolParamsToVector(
-      FOREGROUND, name, init_params.foreground_worker_pool_params,
-      &worker_pool_params_vector);
-  AddAugmentedSchedulerWorkerPoolParamsToVector(
-      FOREGROUND_BLOCKING, name,
-      init_params.foreground_blocking_worker_pool_params,
-      &worker_pool_params_vector);
-  DCHECK_EQ(static_cast<size_t>(ENVIRONMENT_COUNT),
-            worker_pool_params_vector.size());
-
-  return Create(worker_pool_params_vector, Bind(&GetEnvironmentIndexForTraits));
+  auto task_scheduler = WrapUnique(new TaskSchedulerImpl(name));
+  task_scheduler->Initialize(init_params);
+  return task_scheduler;
 }
 
 TaskSchedulerImpl::~TaskSchedulerImpl() {
@@ -145,15 +101,21 @@ TaskSchedulerImpl::CreateSequencedTaskRunnerWithTraits(
 scoped_refptr<SingleThreadTaskRunner>
 TaskSchedulerImpl::CreateSingleThreadTaskRunnerWithTraits(
     const TaskTraits& traits) {
+  const auto& environment_params =
+      kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
   return single_thread_task_runner_manager_
-      ->CreateSingleThreadTaskRunnerWithTraits(traits);
+      ->CreateSingleThreadTaskRunnerWithTraits(
+          name_ + environment_params.name_suffix,
+          environment_params.priority_hint, traits);
 }
 
 #if defined(OS_WIN)
 scoped_refptr<SingleThreadTaskRunner>
 TaskSchedulerImpl::CreateCOMSTATaskRunnerWithTraits(const TaskTraits& traits) {
+  const auto& environment_params =
+      kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
   return single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
-      traits);
+      environment_params.name_suffix, environment_params.priority_hint, traits);
 }
 #endif  // defined(OS_WIN)
 
@@ -196,18 +158,11 @@ void TaskSchedulerImpl::JoinForTesting() {
 #endif
 }
 
-TaskSchedulerImpl::TaskSchedulerImpl(const WorkerPoolIndexForTraitsCallback&
-                                         worker_pool_index_for_traits_callback)
-    : service_thread_("TaskSchedulerServiceThread"),
-      worker_pool_index_for_traits_callback_(
-          worker_pool_index_for_traits_callback) {
-  DCHECK(!worker_pool_index_for_traits_callback_.is_null());
-}
+TaskSchedulerImpl::TaskSchedulerImpl(const std::string& name)
+    : name_(name), service_thread_("TaskSchedulerServiceThread") {}
 
 void TaskSchedulerImpl::Initialize(
-    const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector) {
-  DCHECK(!worker_pool_params_vector.empty());
-
+    const TaskScheduler::InitParams& init_params) {
   // Start the service thread. On platforms that support it (POSIX except NaCL
   // SFI), the service thread runs a MessageLoopForIO which is used to support
   // FileDescriptorWatcher in the scope in which tasks run.
@@ -238,7 +193,6 @@ void TaskSchedulerImpl::Initialize(
 
   single_thread_task_runner_manager_ =
       MakeUnique<SchedulerSingleThreadTaskRunnerManager>(
-          worker_pool_params_vector, worker_pool_index_for_traits_callback_,
           task_tracker_.get(), delayed_task_manager_.get());
   single_thread_task_runner_manager_->Start();
 
@@ -248,24 +202,41 @@ void TaskSchedulerImpl::Initialize(
       re_enqueue_sequence_callback =
           Bind(&TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
 
+  // Order must match the EnvironmentType enum.
+  const SchedulerWorkerPoolParams* worker_pool_params[] = {
+      &init_params.background_worker_pool_params,
+      &init_params.background_blocking_worker_pool_params,
+      &init_params.foreground_worker_pool_params,
+      &init_params.foreground_blocking_worker_pool_params};
+
+  static_assert(arraysize(worker_pools_) == ENVIRONMENT_COUNT,
+                "The size of |worker_pools_| must match ENVIRONMENT_COUNT.");
+  static_assert(
+      arraysize(kEnvironmentParams) == ENVIRONMENT_COUNT,
+      "The size of |kEnvironmentParams| must match ENVIRONMENT_COUNT.");
+  static_assert(
+      arraysize(worker_pool_params) == ENVIRONMENT_COUNT,
+      "The size of |worker_pool_params| must match ENVIRONMENT_COUNT.");
+
   // Start worker pools.
-  for (const auto& worker_pool_params : worker_pool_params_vector) {
-    // Passing pointers to objects owned by |this| to
-    // SchedulerWorkerPoolImpl::Create() is safe because a TaskSchedulerImpl
-    // can't be deleted before all its worker pools have been joined.
-    worker_pools_.push_back(MakeUnique<SchedulerWorkerPoolImpl>(
-        worker_pool_params.name(), worker_pool_params.priority_hint(),
+  for (int environment_type = 0; environment_type < ENVIRONMENT_COUNT;
+       ++environment_type) {
+    // Passing pointers to objects owned by |this| to the constructor of
+    // SchedulerWorkerPoolImpl is safe because a TaskSchedulerImpl can't be
+    // deleted before all its worker pools have been joined.
+    worker_pools_[environment_type] = MakeUnique<SchedulerWorkerPoolImpl>(
+        name_ + kEnvironmentParams[environment_type].name_suffix,
+        kEnvironmentParams[environment_type].priority_hint,
         re_enqueue_sequence_callback, task_tracker_.get(),
-        delayed_task_manager_.get()));
-    worker_pools_.back()->Start(worker_pool_params);
+        delayed_task_manager_.get());
+    worker_pools_[environment_type]->Start(
+        *worker_pool_params[environment_type]);
   }
 }
 
 SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(
     const TaskTraits& traits) const {
-  const size_t index = worker_pool_index_for_traits_callback_.Run(traits);
-  DCHECK_LT(index, worker_pools_.size());
-  return worker_pools_[index].get();
+  return worker_pools_[GetEnvironmentIndexForTraits(traits)].get();
 }
 
 void TaskSchedulerImpl::ReEnqueueSequenceCallback(

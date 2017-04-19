@@ -54,12 +54,6 @@ class BASE_EXPORT TaskScheduler {
     const SchedulerWorkerPoolParams foreground_blocking_worker_pool_params;
   };
 
-  // Returns the index of the worker pool in which a task with |traits| should
-  // run. This should be coded in a future-proof way: new traits should
-  // gracefully map to a default pool.
-  using WorkerPoolIndexForTraitsCallback =
-      Callback<size_t(const TaskTraits& traits)>;
-
   // Destroying a TaskScheduler is not allowed in production; it is always
   // leaked. In tests, it should only be destroyed after JoinForTesting() has
   // returned.
@@ -145,18 +139,6 @@ class BASE_EXPORT TaskScheduler {
   // (ensures isolation).
   static void CreateAndSetSimpleTaskScheduler(const std::string& name);
 #endif  // !defined(OS_NACL)
-
-  // Creates and sets a task scheduler with custom worker pools. CHECKs on
-  // failure. |worker_pool_params_vector| describes the worker pools to create.
-  // |worker_pool_index_for_traits_callback| returns the index in |worker_pools|
-  // of the worker pool in which a task with given traits should run. For tests,
-  // prefer base::test::ScopedTaskScheduler (ensures isolation).
-  //
-  // Deprecated. Use the overload below instead. https://crbug.com/690706
-  static void CreateAndSetDefaultTaskScheduler(
-      const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector,
-      const WorkerPoolIndexForTraitsCallback&
-          worker_pool_index_for_traits_callback);
 
   // Creates and sets a task scheduler using custom params. |name| is used to
   // label threads and histograms. It should identify the component that creates

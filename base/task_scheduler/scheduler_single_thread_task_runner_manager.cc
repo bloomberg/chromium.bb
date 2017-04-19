@@ -313,18 +313,9 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
 };
 
 SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunnerManager(
-    const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector,
-    const TaskScheduler::WorkerPoolIndexForTraitsCallback&
-        worker_pool_index_for_traits_callback,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager)
-    : worker_pool_params_vector_(worker_pool_params_vector),
-      worker_pool_index_for_traits_callback_(
-          worker_pool_index_for_traits_callback),
-      task_tracker_(task_tracker),
-      delayed_task_manager_(delayed_task_manager) {
-  DCHECK_GT(worker_pool_params_vector_.size(), 0U);
-  DCHECK(worker_pool_index_for_traits_callback_);
+    : task_tracker_(task_tracker), delayed_task_manager_(delayed_task_manager) {
   DCHECK(task_tracker_);
   DCHECK(delayed_task_manager_);
 }
@@ -358,17 +349,21 @@ void SchedulerSingleThreadTaskRunnerManager::Start() {
 
 scoped_refptr<SingleThreadTaskRunner>
 SchedulerSingleThreadTaskRunnerManager::CreateSingleThreadTaskRunnerWithTraits(
+    const std::string& name,
+    ThreadPriority priority_hint,
     const TaskTraits& traits) {
   return CreateSingleThreadTaskRunnerWithDelegate<SchedulerWorkerDelegate>(
-      traits);
+      name, priority_hint, traits);
 }
 
 #if defined(OS_WIN)
 scoped_refptr<SingleThreadTaskRunner>
 SchedulerSingleThreadTaskRunnerManager::CreateCOMSTATaskRunnerWithTraits(
+    const std::string& name,
+    ThreadPriority priority_hint,
     const TaskTraits& traits) {
   return CreateSingleThreadTaskRunnerWithDelegate<SchedulerWorkerCOMDelegate>(
-      traits);
+      name, priority_hint, traits);
 }
 #endif  // defined(OS_WIN)
 
@@ -392,32 +387,29 @@ void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
 
 template <typename DelegateType>
 scoped_refptr<SingleThreadTaskRunner> SchedulerSingleThreadTaskRunnerManager::
-    CreateSingleThreadTaskRunnerWithDelegate(const TaskTraits& traits) {
-  size_t index = worker_pool_index_for_traits_callback_.Run(traits);
-  DCHECK_LT(index, worker_pool_params_vector_.size());
+    CreateSingleThreadTaskRunnerWithDelegate(const std::string& name,
+                                             ThreadPriority priority_hint,
+                                             const TaskTraits& traits) {
   return new SchedulerSingleThreadTaskRunner(
       this, traits,
-      CreateAndRegisterSchedulerWorker<DelegateType>(
-          worker_pool_params_vector_[index]));
+      CreateAndRegisterSchedulerWorker<DelegateType>(name, priority_hint));
 }
 
 template <>
 std::unique_ptr<SchedulerWorkerDelegate>
 SchedulerSingleThreadTaskRunnerManager::CreateSchedulerWorkerDelegate<
-    SchedulerWorkerDelegate>(const SchedulerWorkerPoolParams& params, int id) {
-  return MakeUnique<SchedulerWorkerDelegate>(StringPrintf(
-      "TaskSchedulerSingleThreadWorker%d%s", id, params.name().c_str()));
+    SchedulerWorkerDelegate>(const std::string& name, int id) {
+  return MakeUnique<SchedulerWorkerDelegate>(
+      StringPrintf("TaskSchedulerSingleThread%s%d", name.c_str(), id));
 }
 
 #if defined(OS_WIN)
 template <>
 std::unique_ptr<SchedulerWorkerDelegate>
 SchedulerSingleThreadTaskRunnerManager::CreateSchedulerWorkerDelegate<
-    SchedulerWorkerCOMDelegate>(const SchedulerWorkerPoolParams& params,
-                                int id) {
+    SchedulerWorkerCOMDelegate>(const std::string& name, int id) {
   return MakeUnique<SchedulerWorkerCOMDelegate>(
-      StringPrintf("TaskSchedulerSingleThreadWorker%d%sCOMSTA", id,
-                   params.name().c_str()),
+      StringPrintf("TaskSchedulerSingleThreadCOMSTA%s%d", name.c_str(), id),
       task_tracker_);
 }
 #endif  // defined(OS_WIN)
@@ -425,7 +417,8 @@ SchedulerSingleThreadTaskRunnerManager::CreateSchedulerWorkerDelegate<
 template <typename DelegateType>
 SchedulerWorker*
 SchedulerSingleThreadTaskRunnerManager::CreateAndRegisterSchedulerWorker(
-    const SchedulerWorkerPoolParams& params) {
+    const std::string& name,
+    ThreadPriority priority_hint) {
   SchedulerWorker* worker;
   bool start_worker;
 
@@ -433,8 +426,7 @@ SchedulerSingleThreadTaskRunnerManager::CreateAndRegisterSchedulerWorker(
     AutoSchedulerLock auto_lock(lock_);
     int id = next_worker_id_++;
     workers_.emplace_back(make_scoped_refptr(new SchedulerWorker(
-        params.priority_hint(),
-        CreateSchedulerWorkerDelegate<DelegateType>(params, id),
+        priority_hint, CreateSchedulerWorkerDelegate<DelegateType>(name, id),
         task_tracker_)));
     worker = workers_.back().get();
     start_worker = started_;

@@ -32,32 +32,6 @@ namespace internal {
 
 namespace {
 
-enum WorkerPoolType : size_t {
-  BACKGROUND_WORKER_POOL = 0,
-  FOREGROUND_WORKER_POOL,
-};
-
-static size_t GetThreadPoolIndexForTraits(const TaskTraits& traits) {
-  return traits.priority() == TaskPriority::BACKGROUND ? BACKGROUND_WORKER_POOL
-                                                       : FOREGROUND_WORKER_POOL;
-}
-
-std::vector<SchedulerWorkerPoolParams> GetParamsVector() {
-  using StandbyThreadPolicy = SchedulerWorkerPoolParams::StandbyThreadPolicy;
-
-  std::vector<SchedulerWorkerPoolParams> params_vector;
-
-  DCHECK_EQ(BACKGROUND_WORKER_POOL, params_vector.size());
-  params_vector.emplace_back("Background", ThreadPriority::BACKGROUND,
-                             StandbyThreadPolicy::LAZY, 1U, TimeDelta::Max());
-
-  DCHECK_EQ(FOREGROUND_WORKER_POOL, params_vector.size());
-  params_vector.emplace_back("Foreground", ThreadPriority::NORMAL,
-                             StandbyThreadPolicy::LAZY, 1U, TimeDelta::Max());
-
-  return params_vector;
-}
-
 class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
  public:
   TaskSchedulerSingleThreadTaskRunnerManagerTest()
@@ -65,12 +39,10 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
 
   void SetUp() override {
     service_thread_.Start();
-
     delayed_task_manager_ =
         MakeUnique<DelayedTaskManager>(service_thread_.task_runner());
     single_thread_task_runner_manager_ =
         MakeUnique<SchedulerSingleThreadTaskRunnerManager>(
-            GetParamsVector(), Bind(&GetThreadPoolIndexForTraits),
             &task_tracker_, delayed_task_manager_.get());
     StartSingleThreadTaskRunnerManagerFromSetUp();
   }
@@ -122,11 +94,13 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, DifferentThreadsUsed) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(
+              "A", ThreadPriority::NORMAL,
               TaskTraits().WithShutdownBehavior(
                   TaskShutdownBehavior::BLOCK_SHUTDOWN));
   scoped_refptr<SingleThreadTaskRunner> task_runner_2 =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(
+              "B", ThreadPriority::NORMAL,
               TaskTraits().WithShutdownBehavior(
                   TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
@@ -151,17 +125,13 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, PrioritySetCorrectly) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_background =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(
+              "Background", ThreadPriority::BACKGROUND,
               TaskTraits().WithPriority(TaskPriority::BACKGROUND));
-  scoped_refptr<SingleThreadTaskRunner> task_runner_user_visible =
+  scoped_refptr<SingleThreadTaskRunner> task_runner_normal =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(
+              "Normal", ThreadPriority::NORMAL,
               TaskTraits().WithPriority(TaskPriority::USER_VISIBLE));
-  scoped_refptr<SingleThreadTaskRunner> task_runner_user_blocking =
-      single_thread_task_runner_manager_
-          ->CreateSingleThreadTaskRunnerWithTraits(
-              TaskTraits()
-                  .WithPriority(TaskPriority::USER_BLOCKING)
-                  .WithShutdownBehavior(TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
   ThreadPriority thread_priority_background;
   task_runner_background->PostTask(
@@ -173,43 +143,30 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, PrioritySetCorrectly) {
       FROM_HERE,
       BindOnce(&WaitableEvent::Signal, Unretained(&waitable_event_background)));
 
-  ThreadPriority thread_priority_user_visible;
-  task_runner_user_visible->PostTask(
-      FROM_HERE,
-      BindOnce(&CaptureThreadPriority, &thread_priority_user_visible));
-  WaitableEvent waitable_event_user_visible(
+  ThreadPriority thread_priority_normal;
+  task_runner_normal->PostTask(
+      FROM_HERE, BindOnce(&CaptureThreadPriority, &thread_priority_normal));
+  WaitableEvent waitable_event_normal(
       WaitableEvent::ResetPolicy::MANUAL,
       WaitableEvent::InitialState::NOT_SIGNALED);
-  task_runner_user_visible->PostTask(
-      FROM_HERE, BindOnce(&WaitableEvent::Signal,
-                          Unretained(&waitable_event_user_visible)));
-
-  ThreadPriority thread_priority_user_blocking;
-  task_runner_user_blocking->PostTask(
+  task_runner_normal->PostTask(
       FROM_HERE,
-      BindOnce(&CaptureThreadPriority, &thread_priority_user_blocking));
-  WaitableEvent waitable_event_user_blocking(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
-  task_runner_user_blocking->PostTask(
-      FROM_HERE, BindOnce(&WaitableEvent::Signal,
-                          Unretained(&waitable_event_user_blocking)));
+      BindOnce(&WaitableEvent::Signal, Unretained(&waitable_event_normal)));
 
   waitable_event_background.Wait();
-  waitable_event_user_visible.Wait();
-  waitable_event_user_blocking.Wait();
+  waitable_event_normal.Wait();
 
   if (Lock::HandlesMultipleThreadPriorities())
     EXPECT_EQ(ThreadPriority::BACKGROUND, thread_priority_background);
   else
     EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_background);
-  EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_user_visible);
-  EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_user_blocking);
+  EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_normal);
 }
 
 TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, PostTaskAfterShutdown) {
   auto task_runner = single_thread_task_runner_manager_
-                         ->CreateSingleThreadTaskRunnerWithTraits(TaskTraits());
+                         ->CreateSingleThreadTaskRunnerWithTraits(
+                             "A", ThreadPriority::NORMAL, TaskTraits());
   task_tracker_.Shutdown();
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
 }
@@ -222,7 +179,8 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, PostDelayedTask) {
   WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
                          WaitableEvent::InitialState::NOT_SIGNALED);
   auto task_runner = single_thread_task_runner_manager_
-                         ->CreateSingleThreadTaskRunnerWithTraits(TaskTraits());
+                         ->CreateSingleThreadTaskRunnerWithTraits(
+                             "A", ThreadPriority::NORMAL, TaskTraits());
   EXPECT_TRUE(task_runner->PostDelayedTask(
       FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)),
       TestTimeouts::tiny_timeout()));
@@ -243,11 +201,13 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest,
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(
+              "A", ThreadPriority::NORMAL,
               TaskTraits().WithShutdownBehavior(
                   TaskShutdownBehavior::BLOCK_SHUTDOWN));
   scoped_refptr<SingleThreadTaskRunner> task_runner_2 =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(
+              "B", ThreadPriority::NORMAL,
               TaskTraits().WithShutdownBehavior(
                   TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
@@ -331,6 +291,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerJoinTest, ConcurrentJoin) {
   {
     auto task_runner = single_thread_task_runner_manager_
                            ->CreateSingleThreadTaskRunnerWithTraits(
+                               "A", ThreadPriority::NORMAL,
                                TaskTraits().WithBaseSyncPrimitives());
     EXPECT_TRUE(task_runner->PostTask(
         FROM_HERE,
@@ -360,6 +321,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerJoinTest,
   {
     auto task_runner = single_thread_task_runner_manager_
                            ->CreateSingleThreadTaskRunnerWithTraits(
+                               "A", ThreadPriority::NORMAL,
                                TaskTraits().WithBaseSyncPrimitives());
     EXPECT_TRUE(task_runner->PostTask(
         FROM_HERE,
@@ -383,11 +345,12 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerJoinTest,
 TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, COMSTAInitialized) {
   scoped_refptr<SingleThreadTaskRunner> com_task_runner =
       single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
+          "A", ThreadPriority::NORMAL,
           TaskTraits().WithShutdownBehavior(
               TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
   com_task_runner->PostTask(
-      FROM_HERE, Bind([]() {
+      FROM_HERE, BindOnce([]() {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
         if (SUCCEEDED(hr)) {
           ADD_FAILURE() << "COM STA was not initialized on this thread";
@@ -446,6 +409,7 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTestWin
 TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
   scoped_refptr<SingleThreadTaskRunner> com_task_runner =
       single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
+          "A", ThreadPriority::NORMAL,
           TaskTraits().WithShutdownBehavior(
               TaskShutdownBehavior::BLOCK_SHUTDOWN));
   HWND hwnd = nullptr;
@@ -454,9 +418,10 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
   // COM callback.
   com_task_runner->PostTask(
       FROM_HERE,
-      Bind([](TaskSchedulerSingleThreadTaskRunnerManagerTestWin* test_harness,
-              HWND* hwnd) { *hwnd = test_harness->CreateTestWindow(); },
-           Unretained(this), &hwnd));
+      BindOnce(
+          [](TaskSchedulerSingleThreadTaskRunnerManagerTestWin* test_harness,
+             HWND* hwnd) { *hwnd = test_harness->CreateTestWindow(); },
+          Unretained(this), &hwnd));
 
   task_tracker_.Flush();
 
@@ -466,7 +431,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
   SendMessage(hwnd, WM_USER, 0, 0);
 
   com_task_runner->PostTask(
-      FROM_HERE, Bind([](HWND hwnd) { ::DestroyWindow(hwnd); }, hwnd));
+      FROM_HERE, BindOnce([](HWND hwnd) { ::DestroyWindow(hwnd); }, hwnd));
 
   task_tracker_.Shutdown();
 }
@@ -497,10 +462,11 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerStartTest,
   WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
                              WaitableEvent::InitialState::NOT_SIGNALED);
   single_thread_task_runner_manager_
-      ->CreateSingleThreadTaskRunnerWithTraits(TaskTraits())
+      ->CreateSingleThreadTaskRunnerWithTraits("A", ThreadPriority::NORMAL,
+                                               TaskTraits())
       ->PostTask(
           FROM_HERE,
-          Bind(
+          BindOnce(
               [](WaitableEvent* task_running, AtomicFlag* manager_started) {
                 task_running->Signal();
 

@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
@@ -65,15 +64,6 @@ void TaskScheduler::CreateAndSetSimpleTaskScheduler(const std::string& name) {
               kSuggestedReclaimTime}});
 }
 #endif  // !defined(OS_NACL)
-
-// static
-void TaskScheduler::CreateAndSetDefaultTaskScheduler(
-    const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector,
-    const WorkerPoolIndexForTraitsCallback&
-        worker_pool_index_for_traits_callback) {
-  SetInstance(internal::TaskSchedulerImpl::Create(
-      worker_pool_params_vector, worker_pool_index_for_traits_callback));
-}
 
 void TaskScheduler::CreateAndSetDefaultTaskScheduler(
     const std::string& name,
