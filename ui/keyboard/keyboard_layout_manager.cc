@@ -99,7 +99,7 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
       // We need to send out this notification only if keyboard is visible since
       // keyboard window is resized even if keyboard is hidden.
       if (controller_->keyboard_visible())
-        controller_->NotifyKeyboardBoundsChanging(requested_bounds);
+        controller_->NotifyKeyboardBoundsChanging(new_bounds);
     } else if (controller_->keyboard_mode() == FLOATING) {
       controller_->NotifyKeyboardBoundsChanging(gfx::Rect());
     }
