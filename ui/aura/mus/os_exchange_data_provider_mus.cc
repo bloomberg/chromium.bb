@@ -325,11 +325,11 @@ void OSExchangeDataProviderMus::SetDragImage(
   drag_image_offset_ = cursor_offset;
 }
 
-const gfx::ImageSkia& OSExchangeDataProviderMus::GetDragImage() const {
+gfx::ImageSkia OSExchangeDataProviderMus::GetDragImage() const {
   return drag_image_;
 }
 
-const gfx::Vector2d& OSExchangeDataProviderMus::GetDragImageOffset() const {
+gfx::Vector2d OSExchangeDataProviderMus::GetDragImageOffset() const {
   return drag_image_offset_;
 }
 #endif

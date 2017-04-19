@@ -5,7 +5,6 @@
 #include "ui/views/button_drag_utils.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/canvas_painter.h"
@@ -87,7 +86,7 @@ void SetDragImage(const GURL& url,
   SkColor color = SK_ColorTRANSPARENT;
   button.Paint(ui::CanvasPainter(&bitmap, size, raster_scale, color).context());
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, raster_scale));
-  drag_utils::SetDragImageOnDataObject(image, press_point, data);
+  data->provider().SetDragImage(image, press_point);
 }
 
 }  // namespace button_drag_utils

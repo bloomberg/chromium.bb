@@ -181,11 +181,11 @@ void OSExchangeDataProviderMac::SetDragImage(
   cursor_offset_ = cursor_offset;
 }
 
-const gfx::ImageSkia& OSExchangeDataProviderMac::GetDragImage() const {
+gfx::ImageSkia OSExchangeDataProviderMac::GetDragImage() const {
   return drag_image_;
 }
 
-const gfx::Vector2d& OSExchangeDataProviderMac::GetDragImageOffset() const {
+gfx::Vector2d OSExchangeDataProviderMac::GetDragImageOffset() const {
   return cursor_offset_;
 }
 

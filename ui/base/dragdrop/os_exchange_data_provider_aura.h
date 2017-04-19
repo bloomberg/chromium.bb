@@ -55,8 +55,8 @@ class UI_BASE_EXPORT OSExchangeDataProviderAura
   bool HasHtml() const override;
   void SetDragImage(const gfx::ImageSkia& image,
                     const gfx::Vector2d& cursor_offset) override;
-  const gfx::ImageSkia& GetDragImage() const override;
-  const gfx::Vector2d& GetDragImageOffset() const override;
+  gfx::ImageSkia GetDragImage() const override;
+  gfx::Vector2d GetDragImageOffset() const override;
 
  private:
   typedef std::map<Clipboard::FormatType, base::Pickle> PickleData;

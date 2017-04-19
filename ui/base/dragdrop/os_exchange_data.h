@@ -133,8 +133,8 @@ class UI_BASE_EXPORT OSExchangeData {
 #if defined(USE_AURA) || defined(OS_MACOSX)
     virtual void SetDragImage(const gfx::ImageSkia& image,
                               const gfx::Vector2d& cursor_offset) = 0;
-    virtual const gfx::ImageSkia& GetDragImage() const = 0;
-    virtual const gfx::Vector2d& GetDragImageOffset() const = 0;
+    virtual gfx::ImageSkia GetDragImage() const = 0;
+    virtual gfx::Vector2d GetDragImageOffset() const = 0;
 #endif
   };
 

@@ -93,8 +93,8 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   bool HasHtml() const override;
   void SetDragImage(const gfx::ImageSkia& image,
                     const gfx::Vector2d& cursor_offset) override;
-  const gfx::ImageSkia& GetDragImage() const override;
-  const gfx::Vector2d& GetDragImageOffset() const override;
+  gfx::ImageSkia GetDragImage() const override;
+  gfx::Vector2d GetDragImageOffset() const override;
 
   // ui::PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;

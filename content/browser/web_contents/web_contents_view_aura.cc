@@ -61,7 +61,6 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
@@ -974,7 +973,7 @@ void WebContentsViewAura::StartDragging(
       std::move(provider));  // takes ownership of |provider|.
 
   if (!image.isNull())
-    drag_utils::SetDragImageOnDataObject(image, image_offset, &data);
+    data.provider().SetDragImage(image, image_offset);
 
   std::unique_ptr<WebDragSourceAura> drag_source(
       new WebDragSourceAura(GetNativeView(), web_contents_));

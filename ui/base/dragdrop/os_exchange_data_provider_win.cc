@@ -4,6 +4,9 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
+#include <objidl.h>
+#include <shlobj.h>
+#include <shobjidl.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -16,12 +19,19 @@
 #include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_hdc.h"
 #include "base/win/scoped_hglobal.h"
 #include "net/base/filename_util.h"
+#include "skia/ext/skia_utils_win.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "url/gurl.h"
 
@@ -540,18 +550,70 @@ void OSExchangeDataProviderWin::SetDownloadFileInfo(
 }
 
 void OSExchangeDataProviderWin::SetDragImage(
-    const gfx::ImageSkia& image,
+    const gfx::ImageSkia& image_skia,
     const gfx::Vector2d& cursor_offset) {
-  drag_image_ = image;
-  drag_image_offset_ = cursor_offset;
+  DCHECK(!image_skia.size().IsEmpty());
+
+  // InitializeFromBitmap() doesn't expect an alpha channel and is confused
+  // by premultiplied colors, so unpremultiply the bitmap.
+  SkBitmap unpremul_bitmap =
+      SkBitmapOperations::UnPreMultiply(*image_skia.bitmap());
+  int width = unpremul_bitmap.width();
+  int height = unpremul_bitmap.height();
+  size_t rowbytes = unpremul_bitmap.rowBytes();
+  DCHECK_EQ(rowbytes, static_cast<size_t>(width) * 4u);
+
+  void* bits;
+  HBITMAP hbitmap;
+  {
+    BITMAPINFOHEADER header;
+    skia::CreateBitmapHeader(width, height, &header);
+
+    base::win::ScopedGetDC screen_dc(NULL);
+    // By giving a null hSection, the |bits| will be destroyed when the
+    // |hbitmap| is destroyed.
+    hbitmap =
+        CreateDIBSection(screen_dc, reinterpret_cast<BITMAPINFO*>(&header),
+                         DIB_RGB_COLORS, &bits, NULL, 0);
+  }
+  if (!hbitmap)
+    return;
+
+  {
+    SkAutoLockPixels lock(unpremul_bitmap);
+    memcpy(bits, unpremul_bitmap.getPixels(), height * rowbytes);
+  }
+
+  base::win::ScopedComPtr<IDragSourceHelper> helper;
+  HRESULT rv = CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,
+                                IID_IDragSourceHelper, helper.ReceiveVoid());
+  if (!SUCCEEDED(rv))
+    return;
+
+  // InitializeFromBitmap() takes ownership of |hbitmap|.
+  SHDRAGIMAGE sdi;
+  sdi.sizeDragImage.cx = width;
+  sdi.sizeDragImage.cy = height;
+  sdi.crColorKey = 0xFFFFFFFF;
+  sdi.hbmpDragImage = hbitmap;
+  sdi.ptOffset = gfx::PointAtOffsetFromOrigin(cursor_offset).ToPOINT();
+  helper->InitializeFromBitmap(&sdi, data_object());
 }
 
-const gfx::ImageSkia& OSExchangeDataProviderWin::GetDragImage() const {
-  return drag_image_;
+gfx::ImageSkia OSExchangeDataProviderWin::GetDragImage() const {
+  // This class sets the image on data_object() so it shouldn't be used in
+  // situations where the drag image is later queried. In that case a different
+  // OSExchangeData::Provider should be used.
+  NOTREACHED();
+  return gfx::ImageSkia();
 }
 
-const gfx::Vector2d& OSExchangeDataProviderWin::GetDragImageOffset() const {
-  return drag_image_offset_;
+gfx::Vector2d OSExchangeDataProviderWin::GetDragImageOffset() const {
+  // This class sets the image on data_object() so it shouldn't be used in
+  // situations where the drag image is later queried. In that case a different
+  // OSExchangeData::Provider should be used.
+  NOTREACHED();
+  return gfx::Vector2d();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

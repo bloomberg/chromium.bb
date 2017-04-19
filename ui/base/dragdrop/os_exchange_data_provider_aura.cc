@@ -183,12 +183,11 @@ void OSExchangeDataProviderAura::SetDragImage(
   drag_image_offset_ = cursor_offset;
 }
 
-const gfx::ImageSkia& OSExchangeDataProviderAura::GetDragImage() const {
+gfx::ImageSkia OSExchangeDataProviderAura::GetDragImage() const {
   return drag_image_;
 }
 
-const gfx::Vector2d&
-OSExchangeDataProviderAura::GetDragImageOffset() const {
+gfx::Vector2d OSExchangeDataProviderAura::GetDragImageOffset() const {
   return drag_image_offset_;
 }
 

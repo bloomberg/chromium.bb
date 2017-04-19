@@ -29,7 +29,6 @@
 #include "extensions/common/feature_switch.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -522,10 +521,9 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
   ToolbarActionViewController* view_controller = (*it)->view_controller();
   gfx::Size size(ToolbarActionsBar::IconWidth(false),
                  ToolbarActionsBar::IconHeight());
-  drag_utils::SetDragImageOnDataObject(
+  data->provider().SetDragImage(
       view_controller->GetIcon(GetCurrentWebContents(), size).AsImageSkia(),
-      press_pt.OffsetFromOrigin(),
-      data);
+      press_pt.OffsetFromOrigin());
   // Fill in the remaining info.
   BrowserActionDragData drag_data(view_controller->GetId(),
                                   it - toolbar_action_views_.cbegin());

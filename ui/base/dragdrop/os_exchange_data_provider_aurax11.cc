@@ -504,11 +504,11 @@ void OSExchangeDataProviderAuraX11::SetDragImage(
   drag_image_offset_ = cursor_offset;
 }
 
-const gfx::ImageSkia& OSExchangeDataProviderAuraX11::GetDragImage() const {
+gfx::ImageSkia OSExchangeDataProviderAuraX11::GetDragImage() const {
   return drag_image_;
 }
 
-const gfx::Vector2d& OSExchangeDataProviderAuraX11::GetDragImageOffset() const {
+gfx::Vector2d OSExchangeDataProviderAuraX11::GetDragImageOffset() const {
   return drag_image_offset_;
 }
 
