@@ -4,16 +4,18 @@
 
 package org.chromium.net;
 
-import android.support.test.filters.SmallTest;
+import android.support.test.filters.MediumTest;
 
 import org.json.JSONObject;
 
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Tests for experimental options.
@@ -42,7 +44,7 @@ public class ExperimentalOptionsTest extends CronetTestBase {
         super.tearDown();
     }
 
-    @SmallTest
+    @MediumTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     // Tests that NetLog writes effective experimental options to NetLog.
@@ -66,27 +68,12 @@ public class ExperimentalOptionsTest extends CronetTestBase {
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("GET", callback.mResponseAsString);
         mTestFramework.mCronetEngine.stopNetLog();
-        assertTrue(logfile.exists());
-        assertTrue(logfile.length() != 0);
-        BufferedReader logReader = new BufferedReader(new FileReader(logfile));
-        boolean validFile = false;
-        try {
-            String logLine;
-            while ((logLine = logReader.readLine()) != null) {
-                if (logLine.contains("HostResolverRules")) {
-                    validFile = true;
-                    break;
-                }
-            }
-        } finally {
-            logReader.close();
-        }
-        assertTrue(validFile);
+        assertFileContainsString(logfile, "HostResolverRules");
         assertTrue(logfile.delete());
-        assertTrue(!logfile.exists());
+        assertFalse(logfile.exists());
     }
 
-    @SmallTest
+    @MediumTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSetSSLKeyLogFile() throws Exception {
@@ -107,23 +94,47 @@ public class ExperimentalOptionsTest extends CronetTestBase {
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("GET", callback.mResponseAsString);
 
-        assertTrue(file.exists());
-        assertTrue(file.length() != 0);
-        BufferedReader logReader = new BufferedReader(new FileReader(file));
-        boolean validFile = false;
-        try {
-            String logLine;
-            while ((logLine = logReader.readLine()) != null) {
-                if (logLine.contains("CLIENT_RANDOM")) {
-                    validFile = true;
-                    break;
-                }
-            }
-        } finally {
-            logReader.close();
-        }
-        assertTrue(validFile);
+        assertFileContainsString(file, "CLIENT_RANDOM");
         assertTrue(file.delete());
-        assertTrue(!file.exists());
+        assertFalse(file.exists());
+    }
+
+    // Helper method to assert that file contains content. It retries 5 times
+    // with a 100ms interval.
+    private void assertFileContainsString(File file, String content) throws Exception {
+        boolean contains = false;
+        for (int i = 0; i < 5; i++) {
+            contains = fileContainsString(file, content);
+            if (contains) break;
+            Log.i(TAG, "Retrying...");
+            Thread.sleep(100);
+        }
+        assertTrue("file content doesn't match", contains);
+    }
+
+    // Returns whether a file contains a particular string.
+    private boolean fileContainsString(File file, String content) throws IOException {
+        FileInputStream fileInputStream = null;
+        Log.i(TAG, "looking for [%s] in %s", content, file.getName());
+        try {
+            fileInputStream = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fileInputStream.read(data);
+            String actual = new String(data, "UTF-8");
+            boolean contains = actual.contains(content);
+            if (!contains) {
+                Log.i(TAG, "file content [%s]", actual);
+            }
+            return contains;
+        } catch (FileNotFoundException e) {
+            // Ignored this exception since the file will only be created when updates are
+            // flushed to the disk.
+            Log.i(TAG, "file not found");
+        } finally {
+            if (fileInputStream != null) {
+                fileInputStream.close();
+            }
+        }
+        return false;
     }
 }
