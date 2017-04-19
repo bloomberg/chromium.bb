@@ -278,15 +278,6 @@ are declared in build/common.gypi.
       <message name="IDS_PAGE_INFO_PERMISSION_ASK" desc="The label used in the permissions dropdowns for the option that makes the browser asks for permission. ">
         ask
       </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_SET_BY_POLICY" desc="The label used underneath a permission listed in the Website Settings popup if the permission was explicitly set by the user's enterprise policy.">
-        Controlled by enterprise policy
-      </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_SET_BY_EXTENSION" desc="The label used underneath a permission listed in the Website Settings popup if the permission was explicitly set by one of the user's extensions.">
-        Controlled by an extension
-      </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED" desc="The label used underneath a permission listed in the Website Settings popup if the permission was blocked by Chrome on behalf of the user.">
-        Automatically blocked
-      </message>
       <message name="IDS_PAGE_INFO_TYPE_AUTOPLAY" desc="The label used for the autoplay permission controls in the Website Settings popup.">
         Autoplay
       </message>

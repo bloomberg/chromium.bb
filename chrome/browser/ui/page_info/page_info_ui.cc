@@ -28,6 +28,33 @@ namespace {
 const int kInvalidResourceID = -1;
 
 // The resource IDs for the strings that are displayed on the permissions
+// button if the permission setting is managed by policy.
+const int kPermissionButtonTextIDPolicyManaged[] = {
+    kInvalidResourceID,
+    IDS_PAGE_INFO_PERMISSION_ALLOWED_BY_POLICY,
+    IDS_PAGE_INFO_PERMISSION_BLOCKED_BY_POLICY,
+    IDS_PAGE_INFO_PERMISSION_ASK_BY_POLICY,
+    kInvalidResourceID,
+    kInvalidResourceID};
+static_assert(arraysize(kPermissionButtonTextIDPolicyManaged) ==
+                  CONTENT_SETTING_NUM_SETTINGS,
+              "kPermissionButtonTextIDPolicyManaged array size is incorrect");
+
+// The resource IDs for the strings that are displayed on the permissions
+// button if the permission setting is managed by an extension.
+const int kPermissionButtonTextIDExtensionManaged[] = {
+    kInvalidResourceID,
+    IDS_PAGE_INFO_PERMISSION_ALLOWED_BY_EXTENSION,
+    IDS_PAGE_INFO_PERMISSION_BLOCKED_BY_EXTENSION,
+    IDS_PAGE_INFO_PERMISSION_ASK_BY_EXTENSION,
+    kInvalidResourceID,
+    kInvalidResourceID};
+static_assert(arraysize(kPermissionButtonTextIDExtensionManaged) ==
+                  CONTENT_SETTING_NUM_SETTINGS,
+              "kPermissionButtonTextIDExtensionManaged array size is "
+              "incorrect");
+
+// The resource IDs for the strings that are displayed on the permissions
 // button if the permission setting is managed by the user.
 const int kPermissionButtonTextIDUserManaged[] = {
     kInvalidResourceID,
@@ -104,6 +131,34 @@ std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(
   security_description->details = l10n_util::GetStringUTF16(details_id);
   return security_description;
 }
+
+// Gets the actual setting for a ContentSettingType, taking into account what
+// the default setting value is and whether Html5ByDefault is enabled.
+ContentSetting GetEffectiveSetting(Profile* profile,
+                                   ContentSettingsType type,
+                                   ContentSetting setting,
+                                   ContentSetting default_setting) {
+  ContentSetting effective_setting = setting;
+  if (effective_setting == CONTENT_SETTING_DEFAULT)
+    effective_setting = default_setting;
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  effective_setting = PluginsFieldTrial::EffectiveContentSetting(
+      host_content_settings_map, type, effective_setting);
+
+  // Display the UI string for ASK instead of DETECT for HTML5 by Default.
+  // TODO(tommycli): Once HTML5 by Default is shipped and the feature flag
+  // is removed, just migrate the actual content setting to ASK.
+  if (PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map) &&
+      effective_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
+    effective_setting = CONTENT_SETTING_ASK;
+  }
+#endif
+  return effective_setting;
+}
+
 }  // namespace
 
 PageInfoUI::CookieInfo::CookieInfo() : allowed(-1), blocked(-1) {}
@@ -215,25 +270,8 @@ base::string16 PageInfoUI::PermissionActionToUIString(
     ContentSetting setting,
     ContentSetting default_setting,
     content_settings::SettingSource source) {
-  ContentSetting effective_setting = setting;
-  if (effective_setting == CONTENT_SETTING_DEFAULT)
-    effective_setting = default_setting;
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  effective_setting = PluginsFieldTrial::EffectiveContentSetting(
-      host_content_settings_map, type, effective_setting);
-
-  // Display the UI string for ASK instead of DETECT for HTML5 by Default.
-  // TODO(tommycli): Once HTML5 by Default is shipped and the feature flag
-  // is removed, just migrate the actual content setting to ASK.
-  if (PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map) &&
-      effective_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
-    effective_setting = CONTENT_SETTING_ASK;
-  }
-#endif
-
+  ContentSetting effective_setting =
+      GetEffectiveSetting(profile, type, setting, default_setting);
   const int* button_text_ids = NULL;
   switch (source) {
     case content_settings::SETTING_SOURCE_USER:
@@ -274,13 +312,15 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
     Profile* profile,
     const PageInfoUI::PermissionInfo& permission,
     const GURL& url) {
+  ContentSetting effective_setting = GetEffectiveSetting(
+      profile, permission.type, permission.setting, permission.default_setting);
   int message_id = kInvalidResourceID;
   switch (permission.source) {
     case content_settings::SettingSource::SETTING_SOURCE_POLICY:
-      message_id = IDS_PAGE_INFO_PERMISSION_SET_BY_POLICY;
+      message_id = kPermissionButtonTextIDPolicyManaged[effective_setting];
       break;
     case content_settings::SettingSource::SETTING_SOURCE_EXTENSION:
-      message_id = IDS_PAGE_INFO_PERMISSION_SET_BY_EXTENSION;
+      message_id = kPermissionButtonTextIDExtensionManaged[effective_setting];
       break;
     default:
       break;

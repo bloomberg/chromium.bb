@@ -111,4 +111,27 @@
       Certificate Information
     </message>
   </if>
+
+  <!-- Content settings strings -->
+  <message name="IDS_PAGE_INFO_PERMISSION_ALLOWED_BY_POLICY" desc="The label used underneath a permission listed in the Page Info bubble if the permission was explicitly allowed by the user's enterprise policy.">
+    Allowed by your administrator
+  </message>
+  <message name="IDS_PAGE_INFO_PERMISSION_BLOCKED_BY_POLICY" desc="The label used underneath a permission listed in the Page Info bubble if the permission was explicitly blocked by the user's enterprise policy.">
+    Blocked by your administrator
+  </message>
+  <message name="IDS_PAGE_INFO_PERMISSION_ASK_BY_POLICY" desc="The label used underneath a permission listed in the Page Info bubble if the permission was explicitly set to 'Ask' by the user's enterprise policy.">
+    Setting controlled by your administrator
+  </message>
+  <message name="IDS_PAGE_INFO_PERMISSION_ALLOWED_BY_EXTENSION" desc="The label used underneath a permission listed in the Page Info bubble if the permission was explicitly allowed by one of the user's extensions.">
+    Allowed by an extension
+  </message>
+  <message name="IDS_PAGE_INFO_PERMISSION_BLOCKED_BY_EXTENSION" desc="The label used underneath a permission listed in the Page Info bubble if the permission was explicitly blocked by one of the user's extensions.">
+    Blocked by an extension
+  </message>
+  <message name="IDS_PAGE_INFO_PERMISSION_ASK_BY_EXTENSION" desc="The label used underneath a permission listed in the Page Info bubble if the permission was explicitly set to 'Ask' by one of the user's extensions.">
+    Setting controlled by an extension
+  </message>
+  <message name="IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED" desc="The label used underneath a permission listed in the Page Info bubble if the permission was blocked by Chrome on behalf of the user.">
+    Automatically blocked
+  </message>
 </grit-part>
