@@ -14,11 +14,11 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
-#include "base/timer/timer.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
+#include "net/reporting/reporting_delivery_agent.h"
 #include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_persister.h"
 #include "net/reporting/reporting_policy.h"
@@ -124,6 +124,8 @@ TestReportingContext::TestReportingContext(const ReportingPolicy& policy)
                        base::MakeUnique<base::SimpleTestClock>(),
                        base::MakeUnique<base::SimpleTestTickClock>(),
                        base::MakeUnique<TestReportingUploader>()),
+      delivery_timer_(new base::MockTimer(/* retain_user_task= */ false,
+                                          /* is_repeating= */ false)),
       persistence_timer_(new base::MockTimer(/* retain_user_task= */ false,
                                              /* is_repeating= */ false)),
       garbage_collection_timer_(
@@ -132,9 +134,11 @@ TestReportingContext::TestReportingContext(const ReportingPolicy& policy)
   persister()->SetTimerForTesting(base::WrapUnique(persistence_timer_));
   garbage_collector()->SetTimerForTesting(
       base::WrapUnique(garbage_collection_timer_));
+  delivery_agent()->SetTimerForTesting(base::WrapUnique(delivery_timer_));
 }
 
 TestReportingContext::~TestReportingContext() {
+  delivery_timer_ = nullptr;
   persistence_timer_ = nullptr;
   garbage_collection_timer_ = nullptr;
 }
@@ -176,6 +180,10 @@ void ReportingTestBase::CreateAndInitializeContext(
 
 base::TimeTicks ReportingTestBase::yesterday() {
   return tick_clock()->NowTicks() - base::TimeDelta::FromDays(1);
+}
+
+base::TimeTicks ReportingTestBase::now() {
+  return tick_clock()->NowTicks();
 }
 
 base::TimeTicks ReportingTestBase::tomorrow() {

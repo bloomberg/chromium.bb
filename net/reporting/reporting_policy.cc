@@ -9,7 +9,8 @@
 namespace net {
 
 ReportingPolicy::ReportingPolicy()
-    : persistence_interval(base::TimeDelta::FromMinutes(1)),
+    : delivery_interval(base::TimeDelta::FromMinutes(1)),
+      persistence_interval(base::TimeDelta::FromMinutes(1)),
       persist_reports_across_restarts(false),
       persist_clients_across_restarts(true),
       garbage_collection_interval(base::TimeDelta::FromMinutes(5)),
@@ -25,7 +26,8 @@ ReportingPolicy::ReportingPolicy()
 }
 
 ReportingPolicy::ReportingPolicy(const ReportingPolicy& other)
-    : endpoint_backoff_policy(other.endpoint_backoff_policy),
+    : delivery_interval(base::TimeDelta::FromMinutes(1)),
+      endpoint_backoff_policy(other.endpoint_backoff_policy),
       persistence_interval(other.persistence_interval),
       persist_reports_across_restarts(other.persist_reports_across_restarts),
       persist_clients_across_restarts(other.persist_clients_across_restarts),

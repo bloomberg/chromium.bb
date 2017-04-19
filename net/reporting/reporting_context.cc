@@ -13,7 +13,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_delegate.h"
@@ -23,6 +22,7 @@
 #include "net/reporting/reporting_observer.h"
 #include "net/reporting/reporting_persister.h"
 #include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_uploader.h"
 
 namespace net {
 
@@ -58,8 +58,14 @@ ReportingContext::~ReportingContext() {}
 void ReportingContext::Initialize() {
   DCHECK(!initialized_);
 
+  // This order isn't *critical*, but things will work better with it in this
+  // order: with the DeliveryAgent after the Persister, it can schedule delivery
+  // of persisted reports instead of waiting for a new one to be generated, and
+  // with the GarbageCollector in between, it won't bother scheduling delivery
+  // of reports that should be discarded instead.
   persister_->Initialize();
   garbage_collector_->Initialize();
+  delivery_agent_->Initialize();
 
   initialized_ = true;
 }
@@ -95,7 +101,7 @@ ReportingContext::ReportingContext(const ReportingPolicy& policy,
       initialized_(false),
       cache_(base::MakeUnique<ReportingCache>(this)),
       endpoint_manager_(base::MakeUnique<ReportingEndpointManager>(this)),
-      delivery_agent_(base::MakeUnique<ReportingDeliveryAgent>(this)),
+      delivery_agent_(ReportingDeliveryAgent::Create(this)),
       persister_(ReportingPersister::Create(this)),
       garbage_collector_(ReportingGarbageCollector::Create(this)) {}
 

@@ -18,6 +18,9 @@ struct NET_EXPORT ReportingPolicy {
   ReportingPolicy(const ReportingPolicy& other);
   ~ReportingPolicy();
 
+  // Minimum interval at which to attempt delivery of queued reports.
+  base::TimeDelta delivery_interval;
+
   // Backoff policy for failing endpoints.
   BackoffEntry::Policy endpoint_backoff_policy;
 

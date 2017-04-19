@@ -110,6 +110,7 @@ class TestReportingContext : public ReportingContext {
   base::SimpleTestTickClock* test_tick_clock() {
     return reinterpret_cast<base::SimpleTestTickClock*>(tick_clock());
   }
+  base::MockTimer* test_delivery_timer() { return delivery_timer_; }
   base::MockTimer* test_persistence_timer() { return persistence_timer_; }
   base::MockTimer* test_garbage_collection_timer() {
     return garbage_collection_timer_;
@@ -122,6 +123,7 @@ class TestReportingContext : public ReportingContext {
   // Owned by the Persister and GarbageCollector, respectively, but referenced
   // here to preserve type:
 
+  base::MockTimer* delivery_timer_;
   base::MockTimer* persistence_timer_;
   base::MockTimer* garbage_collection_timer_;
 
@@ -153,6 +155,7 @@ class ReportingTestBase : public ::testing::Test {
   base::SimpleTestTickClock* tick_clock() {
     return context_->test_tick_clock();
   }
+  base::MockTimer* delivery_timer() { return context_->test_delivery_timer(); }
   base::MockTimer* persistence_timer() {
     return context_->test_persistence_timer();
   }
@@ -175,8 +178,13 @@ class ReportingTestBase : public ::testing::Test {
   ReportingPersister* persister() { return context_->persister(); }
 
   base::TimeTicks yesterday();
-
+  base::TimeTicks now();
   base::TimeTicks tomorrow();
+
+  const std::vector<std::unique_ptr<TestReportingUploader::PendingUpload>>&
+  pending_uploads() {
+    return uploader()->pending_uploads();
+  }
 
  private:
   void CreateAndInitializeContext(
