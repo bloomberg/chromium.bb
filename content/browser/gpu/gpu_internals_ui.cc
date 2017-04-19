@@ -218,16 +218,9 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
     const char kGDMSession[] = "GDMSESSION";
     if (env->GetVar(kGDMSession, &value))
       basic_info->Append(NewDescriptionValuePair(kGDMSession, value));
-    const char* const kAtomsToCache[] = {
-        "_NET_WM_CM_S0",
-        NULL
-    };
-    ui::X11AtomCache atom_cache(gfx::GetXDisplay(), kAtomsToCache);
-    std::string compositing_manager = XGetSelectionOwner(
-        gfx::GetXDisplay(),
-        atom_cache.GetAtom("_NET_WM_CM_S0")) != None ? "Yes" : "No";
-    basic_info->Append(
-        NewDescriptionValuePair("Compositing manager", compositing_manager));
+    basic_info->Append(NewDescriptionValuePair(
+        "Compositing manager",
+        ui::IsCompositingManagerPresent() ? "Yes" : "No"));
   }
 #endif
   std::string direct_rendering = gpu_info.direct_rendering ? "Yes" : "No";
