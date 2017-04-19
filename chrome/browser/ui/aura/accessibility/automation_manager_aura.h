@@ -78,6 +78,8 @@ class AutomationManagerAura : public ui::AXHostDelegate,
                  views::AXAuraObjWrapper* aura_obj,
                  ui::AXEvent event_type);
 
+  void PerformHitTest(const ui::AXActionData& data);
+
   // Whether automation support for views is enabled.
   bool enabled_;
 
