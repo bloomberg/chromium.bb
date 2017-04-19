@@ -321,8 +321,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   size_t SourceAnimationFrameNumberForTesting() const;
 
-  void RegisterScrollbarAnimationController(int scroll_layer_id,
-                                            ElementId scroll_element_id);
+  void RegisterScrollbarAnimationController(ElementId scroll_element_id);
   void UnregisterScrollbarAnimationController(ElementId scroll_element_id);
   ScrollbarAnimationController* ScrollbarAnimationControllerForElementId(
       ElementId scroll_element_id) const;
@@ -355,7 +354,7 @@ class CC_EXPORT LayerTreeHostImpl
                                          base::TimeDelta delay) override;
   void SetNeedsAnimateForScrollbarAnimation() override;
   void SetNeedsRedrawForScrollbarAnimation() override;
-  ScrollbarSet ScrollbarsFor(int scroll_layer_id) const override;
+  ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const override;
   void DidChangeScrollbarVisibility() override;
 
   // VideoBeginFrameSource implementation.

@@ -3334,16 +3334,16 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   LayerImpl* child_clip_ptr = child_clip.get();
 
   // Check scrollbar registration on the viewport layers.
-  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
                          root_scroll->element_id()));
   vert_1_scrollbar->SetScrollInfo(root_scroll->id(), root_scroll->element_id());
-  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       root_scroll->element_id()));
   horiz_1_scrollbar->SetScrollInfo(root_scroll->id(),
                                    root_scroll->element_id());
-  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       root_scroll->element_id()));
 
@@ -3369,15 +3369,15 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   ElementId child_scroll_element_id = child->element_id();
   child_clip->test_properties()->AddChild(std::move(child));
   root_scroll->test_properties()->AddChild(std::move(child_clip));
-  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
                          child_scroll_element_id));
   vert_2_scrollbar->SetScrollInfo(child_scroll_id, child_scroll_element_id);
-  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       child_scroll_element_id));
   horiz_2_scrollbar->SetScrollInfo(child_scroll_id, child_scroll_element_id);
-  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       child_scroll_element_id));
 
@@ -3393,21 +3393,21 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
 
   // Check scrollbar unregistration.
   vert_1_scrollbar.reset();
-  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       root_scroll->element_id()));
   horiz_1_scrollbar.reset();
-  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
                          root_scroll->element_id()));
 
-  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   vert_2_scrollbar.reset();
-  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       child_scroll_element_id));
   horiz_2_scrollbar.reset();
-  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
                          root_scroll->element_id()));
 

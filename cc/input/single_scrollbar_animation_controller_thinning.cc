@@ -17,23 +17,23 @@ namespace cc {
 
 std::unique_ptr<SingleScrollbarAnimationControllerThinning>
 SingleScrollbarAnimationControllerThinning::Create(
-    int scroll_layer_id,
+    ElementId scroll_element_id,
     ScrollbarOrientation orientation,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta thinning_duration) {
   return base::WrapUnique(new SingleScrollbarAnimationControllerThinning(
-      scroll_layer_id, orientation, client, thinning_duration));
+      scroll_element_id, orientation, client, thinning_duration));
 }
 
 SingleScrollbarAnimationControllerThinning::
     SingleScrollbarAnimationControllerThinning(
-        int scroll_layer_id,
+        ElementId scroll_element_id,
         ScrollbarOrientation orientation,
         ScrollbarAnimationControllerClient* client,
         base::TimeDelta thinning_duration)
     : client_(client),
       is_animating_(false),
-      scroll_layer_id_(scroll_layer_id),
+      scroll_element_id_(scroll_element_id),
       orientation_(orientation),
       captured_(false),
       mouse_is_over_scrollbar_(false),
@@ -179,8 +179,7 @@ void SingleScrollbarAnimationControllerThinning::UpdateThumbThicknessScale() {
 
 void SingleScrollbarAnimationControllerThinning::ApplyThumbThicknessScale(
     float thumb_thickness_scale) {
-  for (ScrollbarLayerImplBase* scrollbar :
-       client_->ScrollbarsFor(scroll_layer_id_)) {
+  for (auto* scrollbar : client_->ScrollbarsFor(scroll_element_id_)) {
     if (scrollbar->orientation() != orientation_)
       continue;
     if (!scrollbar->is_overlay_scrollbar())

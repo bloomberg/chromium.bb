@@ -293,6 +293,7 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar);
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> scroll_layer = Layer::Create();
+  scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
   scoped_refptr<Layer> content_layer = Layer::Create();
   scoped_refptr<Layer> scrollbar_layer = PaintedScrollbarLayer::Create(
       std::move(scrollbar), scroll_layer->id(), scroll_layer->element_id());
@@ -406,6 +407,7 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
       FakePaintedScrollbarLayer::Create(false, true, root_layer->id(),
                                         root_layer->element_id());
 
+  root_layer->SetElementId(LayerIdToElementIdForTesting(root_layer->id()));
   root_layer->SetScrollClipLayerId(root_clip_layer->id());
   // Give the root-clip a size that will result in MaxScrollOffset = (80, 0).
   root_clip_layer->SetBounds(gfx::Size(20, 50));
@@ -597,6 +599,7 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> scroll_layer = Layer::Create();
+  scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
   scroll_layer->SetScrollClipLayerId(layer_tree_root->id());
   scoped_refptr<Layer> child1 = Layer::Create();
   scoped_refptr<Layer> child2;
@@ -732,6 +735,7 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> scroll_layer = Layer::Create();
+  scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
   scroll_layer->SetScrollClipLayerId(layer_tree_root->id());
   scoped_refptr<Layer> child1 = Layer::Create();
   scoped_refptr<Layer> scrollbar_layer;
@@ -740,7 +744,6 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
       scrollbar->Orientation(), kThumbThickness, kTrackStart,
       kIsLeftSideVerticalScrollbar, scroll_layer->id(),
       scroll_layer->element_id());
-  scroll_layer->SetScrollClipLayerId(layer_tree_root->id());
   scroll_layer->AddChild(child1);
   scroll_layer->InsertChild(scrollbar_layer, 1);
   layer_tree_root->AddChild(scroll_layer);

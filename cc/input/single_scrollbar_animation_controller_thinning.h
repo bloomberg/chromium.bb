@@ -26,7 +26,7 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
   static constexpr float kDefaultMouseMoveDistanceToTriggerAnimation = 25.f;
 
   static std::unique_ptr<SingleScrollbarAnimationControllerThinning> Create(
-      int scroll_layer_id,
+      ElementId scroll_element_id,
       ScrollbarOrientation orientation,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta thinning_duration);
@@ -50,7 +50,7 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
 
  private:
   SingleScrollbarAnimationControllerThinning(
-      int scroll_layer_id,
+      ElementId scroll_element_id,
       ScrollbarOrientation orientation,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta thinning_duration);
@@ -76,7 +76,7 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
   base::TimeTicks last_awaken_time_;
   bool is_animating_;
 
-  int scroll_layer_id_;
+  ElementId scroll_element_id_;
 
   ScrollbarOrientation orientation_;
   bool captured_;

@@ -35,8 +35,8 @@ class MockSingleScrollbarAnimationControllerClient
       : host_impl_(host_impl) {}
   virtual ~MockSingleScrollbarAnimationControllerClient() {}
 
-  ScrollbarSet ScrollbarsFor(int scroll_layer_id) const override {
-    return host_impl_->ScrollbarsFor(scroll_layer_id);
+  ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const override {
+    return host_impl_->ScrollbarsFor(scroll_element_id);
   }
 
   MOCK_METHOD2(PostDelayedScrollbarAnimationTask,
@@ -65,6 +65,8 @@ class SingleScrollbarAnimationControllerThinningTest : public testing::Test {
         LayerImpl::Create(host_impl_.active_tree(), 1);
     std::unique_ptr<LayerImpl> clip =
         LayerImpl::Create(host_impl_.active_tree(), 3);
+    scroll_layer->SetElementId(
+        LayerIdToElementIdForTesting(scroll_layer->id()));
     clip_layer_ = clip.get();
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
@@ -93,7 +95,8 @@ class SingleScrollbarAnimationControllerThinningTest : public testing::Test {
     host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
     scrollbar_controller_ = SingleScrollbarAnimationControllerThinning::Create(
-        scroll_layer_ptr->id(), HORIZONTAL, &client_, kThinningDuration);
+        scroll_layer_ptr->element_id(), HORIZONTAL, &client_,
+        kThinningDuration);
   }
 
   FakeImplTaskRunnerProvider task_runner_provider_;

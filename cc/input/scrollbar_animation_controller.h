@@ -23,7 +23,7 @@ class CC_EXPORT ScrollbarAnimationControllerClient {
   virtual void SetNeedsRedrawForScrollbarAnimation() = 0;
   virtual void SetNeedsAnimateForScrollbarAnimation() = 0;
   virtual void DidChangeScrollbarVisibility() = 0;
-  virtual ScrollbarSet ScrollbarsFor(int scroll_layer_id) const = 0;
+  virtual ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const = 0;
 
  protected:
   virtual ~ScrollbarAnimationControllerClient() {}
@@ -41,7 +41,7 @@ class CC_EXPORT ScrollbarAnimationController {
   // animation.
   static std::unique_ptr<ScrollbarAnimationController>
   CreateScrollbarAnimationControllerAndroid(
-      int scroll_layer_id,
+      ElementId scroll_element_id,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta fade_out_delay,
       base::TimeDelta fade_out_resize_delay,
@@ -51,7 +51,7 @@ class CC_EXPORT ScrollbarAnimationController {
   // fade out animation and thinning animation.
   static std::unique_ptr<ScrollbarAnimationController>
   CreateScrollbarAnimationControllerAuraOverlay(
-      int scroll_layer_id,
+      ElementId scroll_element_id,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta show_delay,
       base::TimeDelta fade_out_delay,
@@ -96,13 +96,13 @@ class CC_EXPORT ScrollbarAnimationController {
   static constexpr float kMouseMoveDistanceToTriggerShow = 30.0f;
 
  private:
-  ScrollbarAnimationController(int scroll_layer_id,
+  ScrollbarAnimationController(ElementId scroll_element_id,
                                ScrollbarAnimationControllerClient* client,
                                base::TimeDelta fade_out_delay,
                                base::TimeDelta fade_out_resize_delay,
                                base::TimeDelta fade_out_duration);
 
-  ScrollbarAnimationController(int scroll_layer_id,
+  ScrollbarAnimationController(ElementId scroll_element_id,
                                ScrollbarAnimationControllerClient* client,
                                base::TimeDelta show_delay,
                                base::TimeDelta fade_out_delay,
@@ -148,7 +148,7 @@ class CC_EXPORT ScrollbarAnimationController {
 
   bool is_animating_;
 
-  const int scroll_layer_id_;
+  const ElementId scroll_element_id_;
   bool currently_scrolling_;
   bool show_in_fast_scroll_;
 

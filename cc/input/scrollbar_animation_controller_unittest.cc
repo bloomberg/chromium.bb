@@ -44,8 +44,8 @@ class MockScrollbarAnimationControllerClient
   }
   void SetNeedsRedrawForScrollbarAnimation() override {}
   void SetNeedsAnimateForScrollbarAnimation() override {}
-  ScrollbarSet ScrollbarsFor(int scroll_layer_id) const override {
-    return host_impl_->ScrollbarsFor(scroll_layer_id);
+  ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const override {
+    return host_impl_->ScrollbarsFor(scroll_element_id);
   }
   MOCK_METHOD0(DidChangeScrollbarVisibility, void());
 
@@ -82,6 +82,8 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
     std::unique_ptr<LayerImpl> clip =
         LayerImpl::Create(host_impl_.active_tree(), 2);
     clip_layer_ = clip.get();
+    scroll_layer->SetElementId(
+        LayerIdToElementIdForTesting(scroll_layer->id()));
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
 
@@ -117,7 +119,7 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
 
     scrollbar_controller_ = ScrollbarAnimationController::
         CreateScrollbarAnimationControllerAuraOverlay(
-            scroll_layer_ptr->id(), &client_, kShowDelay, kFadeOutDelay,
+            scroll_layer_ptr->element_id(), &client_, kShowDelay, kFadeOutDelay,
             kResizeFadeOutDelay, kFadeOutDuration, kThinningDuration);
   }
 
@@ -1133,8 +1135,8 @@ class ScrollbarAnimationControllerAndroidTest
   void SetNeedsAnimateForScrollbarAnimation() override {
     did_request_animate_ = true;
   }
-  ScrollbarSet ScrollbarsFor(int scroll_layer_id) const override {
-    return host_impl_.ScrollbarsFor(scroll_layer_id);
+  ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const override {
+    return host_impl_.ScrollbarsFor(scroll_element_id);
   }
   void DidChangeScrollbarVisibility() override {}
 
@@ -1155,6 +1157,8 @@ class ScrollbarAnimationControllerAndroidTest
     std::unique_ptr<LayerImpl> clip =
         LayerImpl::Create(host_impl_.active_tree(), 3);
     clip_layer_ = clip.get();
+    scroll_layer->SetElementId(
+        LayerIdToElementIdForTesting(scroll_layer->id()));
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
     scroll_layer->test_properties()->AddChild(std::move(scrollbar));
@@ -1169,8 +1173,9 @@ class ScrollbarAnimationControllerAndroidTest
 
     scrollbar_controller_ =
         ScrollbarAnimationController::CreateScrollbarAnimationControllerAndroid(
-            scroll_layer_ptr->id(), this, base::TimeDelta::FromSeconds(2),
-            base::TimeDelta::FromSeconds(5), base::TimeDelta::FromSeconds(3));
+            scroll_layer_ptr->element_id(), this,
+            base::TimeDelta::FromSeconds(2), base::TimeDelta::FromSeconds(5),
+            base::TimeDelta::FromSeconds(3));
   }
 
   virtual ScrollbarOrientation orientation() const { return HORIZONTAL; }

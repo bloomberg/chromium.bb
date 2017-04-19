@@ -340,6 +340,8 @@ class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
 
     scoped_refptr<Layer> scroll_clip_layer = Layer::Create();
     content_layer_ = FakePictureLayer::Create(&client_);
+    content_layer_->SetElementId(
+        LayerIdToElementIdForTesting(content_layer_->id()));
     content_layer_->SetScrollClipLayerId(scroll_clip_layer->id());
     content_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
     content_layer_->SetBounds(gfx::Size(100, 200));

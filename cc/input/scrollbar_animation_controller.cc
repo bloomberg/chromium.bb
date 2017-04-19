@@ -13,19 +13,19 @@ namespace cc {
 
 std::unique_ptr<ScrollbarAnimationController>
 ScrollbarAnimationController::CreateScrollbarAnimationControllerAndroid(
-    int scroll_layer_id,
+    ElementId scroll_element_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta fade_out_delay,
     base::TimeDelta fade_out_resize_delay,
     base::TimeDelta fade_out_duration) {
   return base::WrapUnique(new ScrollbarAnimationController(
-      scroll_layer_id, client, fade_out_delay, fade_out_resize_delay,
+      scroll_element_id, client, fade_out_delay, fade_out_resize_delay,
       fade_out_duration));
 }
 
 std::unique_ptr<ScrollbarAnimationController>
 ScrollbarAnimationController::CreateScrollbarAnimationControllerAuraOverlay(
-    int scroll_layer_id,
+    ElementId scroll_element_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta show_delay,
     base::TimeDelta fade_out_delay,
@@ -33,12 +33,12 @@ ScrollbarAnimationController::CreateScrollbarAnimationControllerAuraOverlay(
     base::TimeDelta fade_out_duration,
     base::TimeDelta thinning_duration) {
   return base::WrapUnique(new ScrollbarAnimationController(
-      scroll_layer_id, client, show_delay, fade_out_delay,
+      scroll_element_id, client, show_delay, fade_out_delay,
       fade_out_resize_delay, fade_out_duration, thinning_duration));
 }
 
 ScrollbarAnimationController::ScrollbarAnimationController(
-    int scroll_layer_id,
+    ElementId scroll_element_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta fade_out_delay,
     base::TimeDelta fade_out_resize_delay,
@@ -48,7 +48,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       fade_out_resize_delay_(fade_out_resize_delay),
       need_trigger_scrollbar_show_(false),
       is_animating_(false),
-      scroll_layer_id_(scroll_layer_id),
+      scroll_element_id_(scroll_element_id),
       currently_scrolling_(false),
       show_in_fast_scroll_(false),
       opacity_(0.0f),
@@ -60,7 +60,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
 }
 
 ScrollbarAnimationController::ScrollbarAnimationController(
-    int scroll_layer_id,
+    ElementId scroll_element_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta show_delay,
     base::TimeDelta fade_out_delay,
@@ -73,7 +73,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       fade_out_resize_delay_(fade_out_resize_delay),
       need_trigger_scrollbar_show_(false),
       is_animating_(false),
-      scroll_layer_id_(scroll_layer_id),
+      scroll_element_id_(scroll_element_id),
       currently_scrolling_(false),
       show_in_fast_scroll_(false),
       opacity_(0.0f),
@@ -82,10 +82,10 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       need_thinning_animation_(true),
       weak_factory_(this) {
   vertical_controller_ = SingleScrollbarAnimationControllerThinning::Create(
-      scroll_layer_id, ScrollbarOrientation::VERTICAL, client,
+      scroll_element_id, ScrollbarOrientation::VERTICAL, client,
       thinning_duration);
   horizontal_controller_ = SingleScrollbarAnimationControllerThinning::Create(
-      scroll_layer_id, ScrollbarOrientation::HORIZONTAL, client,
+      scroll_element_id, ScrollbarOrientation::HORIZONTAL, client,
       thinning_duration);
   ApplyOpacityToScrollbars(0.0f);
 }
@@ -93,7 +93,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
 ScrollbarAnimationController::~ScrollbarAnimationController() {}
 
 ScrollbarSet ScrollbarAnimationController::Scrollbars() const {
-  return client_->ScrollbarsFor(scroll_layer_id_);
+  return client_->ScrollbarsFor(scroll_element_id_);
 }
 
 SingleScrollbarAnimationControllerThinning&

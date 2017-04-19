@@ -246,7 +246,7 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
   bool clip_layer_size_did_change = false;
   bool scroll_layer_size_did_change = false;
   bool y_offset_did_change = false;
-  for (ScrollbarLayerImplBase* scrollbar : ScrollbarsFor(scroll_layer_id)) {
+  for (auto* scrollbar : ScrollbarsFor(scroll_layer->element_id())) {
     if (scrollbar->orientation() == HORIZONTAL) {
       scrollbar_needs_animation |= scrollbar->SetCurrentPos(current_offset.x());
       clip_layer_size_did_change |=
@@ -1467,7 +1467,7 @@ const gfx::Rect LayerTreeImpl::ViewportRectForTilePriority() const {
 }
 
 std::unique_ptr<ScrollbarAnimationController>
-LayerTreeImpl::CreateScrollbarAnimationController(int scroll_layer_id) {
+LayerTreeImpl::CreateScrollbarAnimationController(ElementId scroll_element_id) {
   DCHECK(!settings().scrollbar_fade_out_delay.is_zero());
   DCHECK(!settings().scrollbar_fade_out_duration.is_zero());
   base::TimeDelta fade_out_delay = settings().scrollbar_fade_out_delay;
@@ -1478,7 +1478,7 @@ LayerTreeImpl::CreateScrollbarAnimationController(int scroll_layer_id) {
     case LayerTreeSettings::ANDROID_OVERLAY: {
       return ScrollbarAnimationController::
           CreateScrollbarAnimationControllerAndroid(
-              scroll_layer_id, layer_tree_host_impl_, fade_out_delay,
+              scroll_element_id, layer_tree_host_impl_, fade_out_delay,
               fade_out_resize_delay, fade_out_duration);
     }
     case LayerTreeSettings::AURA_OVERLAY: {
@@ -1488,7 +1488,7 @@ LayerTreeImpl::CreateScrollbarAnimationController(int scroll_layer_id) {
           settings().scrollbar_thinning_duration;
       return ScrollbarAnimationController::
           CreateScrollbarAnimationControllerAuraOverlay(
-              scroll_layer_id, layer_tree_host_impl_, show_delay,
+              scroll_element_id, layer_tree_host_impl_, show_delay,
               fade_out_delay, fade_out_resize_delay, fade_out_duration,
               thinning_duration);
     }
@@ -1720,15 +1720,15 @@ void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
 }
 
 void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
-  if (scrollbar_layer->ScrollLayerId() == Layer::INVALID_ID)
+  ElementId scroll_element_id = scrollbar_layer->scroll_element_id();
+  if (!scroll_element_id)
     return;
 
-  scrollbar_map_.insert(std::pair<int, int>(scrollbar_layer->ScrollLayerId(),
-                                            scrollbar_layer->id()));
+  element_id_to_scrollbar_layer_ids_.insert(
+      std::pair<ElementId, int>(scroll_element_id, scrollbar_layer->id()));
   if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar()) {
-    auto scroll_layer_id = scrollbar_layer->ScrollLayerId();
     layer_tree_host_impl_->RegisterScrollbarAnimationController(
-        scroll_layer_id, scrollbar_layer->scroll_element_id());
+        scroll_element_id);
   }
 
   DidUpdateScrollState(scrollbar_layer->ScrollLayerId());
@@ -1736,26 +1736,29 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
 
 void LayerTreeImpl::UnregisterScrollbar(
     ScrollbarLayerImplBase* scrollbar_layer) {
-  int scroll_layer_id = scrollbar_layer->ScrollLayerId();
-  if (scroll_layer_id == Layer::INVALID_ID)
+  ElementId scroll_element_id = scrollbar_layer->scroll_element_id();
+  if (!scroll_element_id)
     return;
 
-  auto scrollbar_range = scrollbar_map_.equal_range(scroll_layer_id);
+  auto scrollbar_range =
+      element_id_to_scrollbar_layer_ids_.equal_range(scroll_element_id);
   for (auto i = scrollbar_range.first; i != scrollbar_range.second; ++i)
     if (i->second == scrollbar_layer->id()) {
-      scrollbar_map_.erase(i);
+      element_id_to_scrollbar_layer_ids_.erase(i);
       break;
     }
 
-  if (IsActiveTree() && scrollbar_map_.count(scroll_layer_id) == 0) {
+  if (IsActiveTree() &&
+      element_id_to_scrollbar_layer_ids_.count(scroll_element_id) == 0) {
     layer_tree_host_impl_->UnregisterScrollbarAnimationController(
-        scrollbar_layer->scroll_element_id());
+        scroll_element_id);
   }
 }
 
-ScrollbarSet LayerTreeImpl::ScrollbarsFor(int scroll_layer_id) const {
+ScrollbarSet LayerTreeImpl::ScrollbarsFor(ElementId scroll_element_id) const {
   ScrollbarSet scrollbars;
-  auto scrollbar_range = scrollbar_map_.equal_range(scroll_layer_id);
+  auto scrollbar_range =
+      element_id_to_scrollbar_layer_ids_.equal_range(scroll_element_id);
   for (auto i = scrollbar_range.first; i != scrollbar_range.second; ++i)
     scrollbars.insert(LayerById(i->second)->ToScrollbarLayer());
   return scrollbars;

@@ -3444,9 +3444,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   if (!new_animation_controller)
     return;
 
-  int scroll_layer_id = active_tree_->LayerIdByElementId(scroll_element_id);
-  for (ScrollbarLayerImplBase* scrollbar :
-       active_tree_->ScrollbarsFor(scroll_layer_id)) {
+  for (auto* scrollbar : active_tree_->ScrollbarsFor(scroll_element_id)) {
     new_animation_controller->DidMouseMoveNear(
         scrollbar->orientation(),
         DeviceSpaceDistanceToLayer(device_viewport_point, scrollbar) /
@@ -3672,14 +3670,13 @@ std::string LayerTreeHostImpl::LayerTreeAsJson() const {
 }
 
 void LayerTreeHostImpl::RegisterScrollbarAnimationController(
-    int scroll_layer_id,
     ElementId scroll_element_id) {
   if (settings().scrollbar_animator == LayerTreeSettings::NO_ANIMATOR)
     return;
   if (ScrollbarAnimationControllerForElementId(scroll_element_id))
     return;
   scrollbar_animation_controllers_[scroll_element_id] =
-      active_tree_->CreateScrollbarAnimationController(scroll_layer_id);
+      active_tree_->CreateScrollbarAnimationController(scroll_element_id);
 }
 
 void LayerTreeHostImpl::UnregisterScrollbarAnimationController(
@@ -3720,8 +3717,8 @@ void LayerTreeHostImpl::SetNeedsRedrawForScrollbarAnimation() {
   SetNeedsRedraw();
 }
 
-ScrollbarSet LayerTreeHostImpl::ScrollbarsFor(int scroll_layer_id) const {
-  return active_tree_->ScrollbarsFor(scroll_layer_id);
+ScrollbarSet LayerTreeHostImpl::ScrollbarsFor(ElementId id) const {
+  return active_tree_->ScrollbarsFor(id);
 }
 
 void LayerTreeHostImpl::AddVideoFrameController(

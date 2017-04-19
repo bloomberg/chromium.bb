@@ -95,7 +95,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::Size DrawViewportSize() const;
   const gfx::Rect ViewportRectForTilePriority() const;
   std::unique_ptr<ScrollbarAnimationController>
-  CreateScrollbarAnimationController(int scroll_layer_id);
+  CreateScrollbarAnimationController(ElementId scroll_element_id);
   void DidAnimateScrollOffset();
   bool use_gpu_rasterization() const;
   GpuRasterizationStatus GetGpuRasterizationStatus() const;
@@ -395,7 +395,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer);
   void UnregisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer);
-  ScrollbarSet ScrollbarsFor(int scroll_layer_id) const;
+  ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const;
 
   void RegisterScrollLayer(LayerImpl* layer);
   void UnregisterScrollLayer(LayerImpl* layer);
@@ -532,11 +532,13 @@ class CC_EXPORT LayerTreeImpl {
   // derived from LayerImpl::scroll_clip_layer_ and exists to avoid O(n) walks.)
   std::unordered_map<int, int> clip_scroll_map_;
 
-  // Maps scroll layer ids to scrollbar layer ids.  For each scroll layer, there
-  // may be 1 or 2 scrollbar layers (for vertical and horizontal).  (This is
-  // derived from ScrollbarLayerImplBase::scroll_layer_id_ and exists to avoid
-  // O(n) walks.)
-  std::multimap<int, int> scrollbar_map_;
+  // Maps scroll element ids to scrollbar layer ids. For each scroll layer,
+  // there may be 1 or 2 scrollbar layers (for vertical and horizontal). (This
+  // is derived from ScrollbarLayerImplBase::scroll_element_id_ and exists to
+  // avoid O(n) walks.)
+  // TODO(pdr): Refactor this to be more efficient--likely a map where the value
+  // is a pair of scrollbar layer ids instead of using a multimap.
+  std::multimap<ElementId, int> element_id_to_scrollbar_layer_ids_;
 
   std::vector<PictureLayerImpl*> picture_layers_;
   LayerImplList surface_layers_;
