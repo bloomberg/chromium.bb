@@ -418,12 +418,12 @@ TEST_P(MainThreadEventQueueTest, BlockingTouch) {
 
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(2u, additional_acked_events_.size());
-  EXPECT_EQ(kEvents[1].unique_touch_event_id, additional_acked_events_.at(0));
-  EXPECT_EQ(kEvents[2].unique_touch_event_id, additional_acked_events_.at(1));
+  EXPECT_EQ(kEvents[2].unique_touch_event_id, additional_acked_events_.at(0));
+  EXPECT_EQ(kEvents[3].unique_touch_event_id, additional_acked_events_.at(1));
 
   const WebTouchEvent* last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(1)->taskAsEvent()->EventPointer());
-  EXPECT_EQ(kEvents[3].unique_touch_event_id,
+  EXPECT_EQ(kEvents[1].unique_touch_event_id,
             last_touch_event->unique_touch_event_id);
 
   HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
@@ -643,14 +643,13 @@ TEST_P(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  // Send a discrete input event and then a continuous
-  // (ack required)  event. The events should coalesce together
-  // and a post task should be on the queue at the end.
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // Send a non-blocking input event and then blocking  event.
+  // The events should coalesce together.
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_TRUE(needs_main_frame_);
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_TRUE(needs_main_frame_);

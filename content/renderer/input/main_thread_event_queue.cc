@@ -79,11 +79,11 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     if (!ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(other_event))
       return FilterResult::StopIterating;
 
-    // If this event was blocking push the event id to the blocking
-    // list before updating the dispatch_type of this event.
-    if (dispatch_type_ == DISPATCH_TYPE_BLOCKING) {
+    // If the other event was blocking store its unique touch event id to
+    // ack later.
+    if (other_event.dispatch_type_ == DISPATCH_TYPE_BLOCKING) {
       blocking_coalesced_event_ids_.push_back(
-          ui::WebInputEventTraits::GetUniqueTouchEventId(event()));
+          ui::WebInputEventTraits::GetUniqueTouchEventId(other_event.event()));
     } else {
       non_blocking_coalesced_count_++;
     }
@@ -91,7 +91,6 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     last_coalesced_timestamp_ = base::TimeTicks::Now();
 
     // The newest event (|other_item|) always wins when updating fields.
-    dispatch_type_ = other_event.dispatch_type_;
     originally_cancelable_ = other_event.originally_cancelable_;
 
     return FilterResult::CoalescedEvent;

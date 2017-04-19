@@ -343,6 +343,7 @@ void Coalesce(const WebTouchEvent& event_to_coalesce, WebTouchEvent* event) {
   event->moved_beyond_slop_region |= old_event.moved_beyond_slop_region;
   event->dispatch_type = MergeDispatchTypes(old_event.dispatch_type,
                                             event_to_coalesce.dispatch_type);
+  event->unique_touch_event_id = old_event.unique_touch_event_id;
 }
 
 bool CanCoalesce(const WebGestureEvent& event_to_coalesce,
