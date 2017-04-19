@@ -41,12 +41,8 @@ namespace blink {
 
 ImageBufferSurface::ImageBufferSurface(const IntSize& size,
                                        OpacityMode opacity_mode,
-                                       sk_sp<SkColorSpace> color_space,
-                                       SkColorType color_type)
-    : opacity_mode_(opacity_mode),
-      size_(size),
-      color_space_(color_space),
-      color_type_(color_type) {
+                                       const CanvasColorParams& color_params)
+    : opacity_mode_(opacity_mode), size_(size), color_params_(color_params) {
   SetIsHidden(false);
 }
 

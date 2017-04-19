@@ -8,9 +8,15 @@
 
 namespace blink {
 
+CanvasColorParams::CanvasColorParams() = default;
+
 CanvasColorParams::CanvasColorParams(CanvasColorSpace color_space,
                                      CanvasPixelFormat pixel_format)
     : color_space_(color_space), pixel_format_(pixel_format) {}
+
+bool CanvasColorParams::UsesOutputSpaceBlending() const {
+  return color_space_ == kLegacyCanvasColorSpace;
+}
 
 sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpaceForSkSurfaces() const {
   if (color_space_ == kLegacyCanvasColorSpace)
@@ -22,6 +28,10 @@ SkColorType CanvasColorParams::GetSkColorType() const {
   if (pixel_format_ == kF16CanvasPixelFormat)
     return kRGBA_F16_SkColorType;
   return kN32_SkColorType;
+}
+
+uint8_t CanvasColorParams::BytesPerPixel() const {
+  return SkColorTypeBytesPerPixel(GetSkColorType());
 }
 
 gfx::ColorSpace CanvasColorParams::GetGfxColorSpace() const {
@@ -40,6 +50,10 @@ gfx::ColorSpace CanvasColorParams::GetGfxColorSpace() const {
                              gfx::ColorSpace::TransferID::IEC61966_2_1);
   }
   return gfx::ColorSpace();
+}
+
+sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpace() const {
+  return GetGfxColorSpace().ToSkColorSpace();
 }
 
 bool CanvasColorParams::LinearPixelMath() const {

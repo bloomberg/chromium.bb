@@ -31,9 +31,15 @@ enum CanvasPixelFormat {
 
 class PLATFORM_EXPORT CanvasColorParams {
  public:
+  // The default constructor will create an output-blended 8-bit surface.
+  CanvasColorParams();
   CanvasColorParams(CanvasColorSpace, CanvasPixelFormat);
   CanvasColorSpace color_space() const { return color_space_; }
   CanvasPixelFormat pixel_format() const { return pixel_format_; }
+
+  // Returns true if the canvas uses blends output color space values (that is,
+  // not linear space colors).
+  bool UsesOutputSpaceBlending() const;
 
   // The SkColorSpace to use in the SkImageInfo for allocated SkSurfaces. This
   // is nullptr in legacy rendering mode.
@@ -41,12 +47,17 @@ class PLATFORM_EXPORT CanvasColorParams {
 
   // The pixel format to use for allocating SkSurfaces.
   SkColorType GetSkColorType() const;
+  uint8_t BytesPerPixel() const;
 
-  // The color space to use for compositing.
+  // The color space to use for compositing. This will always return a valid
+  // gfx or skia color space.
   gfx::ColorSpace GetGfxColorSpace() const;
+  sk_sp<SkColorSpace> GetSkColorSpace() const;
 
   // This matches CanvasRenderingContext::LinearPixelMath, and is true only when
   // the pixel format is half-float linear.
+  // TODO(ccameron): This is not the same as !UsesOutputSpaceBlending, but
+  // perhaps should be.
   bool LinearPixelMath() const;
 
  private:

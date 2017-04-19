@@ -48,8 +48,7 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
  public:
   AcceleratedImageBufferSurface(const IntSize&,
                                 OpacityMode = kNonOpaque,
-                                sk_sp<SkColorSpace> = nullptr,
-                                SkColorType = kN32_SkColorType);
+                                const CanvasColorParams& = CanvasColorParams());
   ~AcceleratedImageBufferSurface() override {}
 
   PaintCanvas* Canvas() override { return canvas_.get(); }

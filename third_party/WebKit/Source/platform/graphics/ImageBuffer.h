@@ -78,7 +78,7 @@ class PLATFORM_EXPORT ImageBuffer {
       const IntSize&,
       OpacityMode = kNonOpaque,
       ImageInitializationMode = kInitializeImagePixels,
-      sk_sp<SkColorSpace> = nullptr);
+      const CanvasColorParams& = CanvasColorParams());
   static std::unique_ptr<ImageBuffer> Create(
       std::unique_ptr<ImageBufferSurface>);
 

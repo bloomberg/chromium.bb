@@ -42,9 +42,8 @@ namespace blink {
 AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
     const IntSize& size,
     OpacityMode opacity_mode,
-    sk_sp<SkColorSpace> color_space,
-    SkColorType color_type)
-    : ImageBufferSurface(size, opacity_mode, color_space, color_type) {
+    const CanvasColorParams& color_params)
+    : ImageBufferSurface(size, opacity_mode, color_params) {
   if (!SharedGpuContext::IsValid())
     return;
   GrContext* gr_context = SharedGpuContext::Gr();
@@ -53,8 +52,9 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
 
   SkAlphaType alpha_type =
       (kOpaque == opacity_mode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-  SkImageInfo info = SkImageInfo::Make(size.Width(), size.Height(), color_type,
-                                       alpha_type, color_space);
+  SkImageInfo info = SkImageInfo::Make(
+      size.Width(), size.Height(), color_params.GetSkColorType(), alpha_type,
+      color_params.GetSkColorSpaceForSkSurfaces());
   SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
   surface_ = SkSurface::MakeRenderTarget(
       gr_context, SkBudgeted::kYes, info, 0 /* sampleCount */,

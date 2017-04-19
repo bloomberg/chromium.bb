@@ -896,10 +896,9 @@ class UnacceleratedSurfaceFactory
   virtual std::unique_ptr<ImageBufferSurface> CreateSurface(
       const IntSize& size,
       OpacityMode opacity_mode,
-      sk_sp<SkColorSpace> color_space,
-      SkColorType color_type) {
+      const CanvasColorParams& color_params) {
     return WTF::WrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacity_mode, kInitializeImagePixels, color_space, color_type));
+        size, opacity_mode, kInitializeImagePixels, color_params));
   }
 
   virtual ~UnacceleratedSurfaceFactory() {}
@@ -908,7 +907,10 @@ class UnacceleratedSurfaceFactory
 }  // namespace
 
 bool HTMLCanvasElement::ShouldUseDisplayList() {
-  if (context_->ColorSpace() != kLegacyCanvasColorSpace)
+  // Rasterization of web contents will blend in the output space. Only embed
+  // the canvas as a display list if it intended to do output space blending as
+  // well.
+  if (!context_->color_params().UsesOutputSpaceBlending())
     return false;
 
   if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
@@ -927,8 +929,7 @@ HTMLCanvasElement::CreateWebGLImageBufferSurface(OpacityMode opacity_mode) {
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
   auto surface = WTF::WrapUnique(new AcceleratedImageBufferSurface(
-      size(), opacity_mode, context_->SkSurfaceColorSpace(),
-      context_->ColorType()));
+      size(), opacity_mode, context_->color_params()));
   if (surface->IsValid())
     return std::move(surface);
   return nullptr;
@@ -958,8 +959,7 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(OpacityMode opacity_mode,
   std::unique_ptr<ImageBufferSurface> surface =
       WTF::WrapUnique(new Canvas2DImageBufferSurface(
           std::move(context_provider), size(), *msaa_sample_count, opacity_mode,
-          Canvas2DLayerBridge::kEnableAcceleration, context_->GfxColorSpace(),
-          context_->SkSurfacesUseColorSpace(), context_->ColorType()));
+          Canvas2DLayerBridge::kEnableAcceleration, context_->color_params()));
   if (!surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kGPUAccelerated2DCanvasImageBufferCreationFailed);
@@ -977,7 +977,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
   if (ShouldUseDisplayList()) {
     auto surface = WTF::WrapUnique(new RecordingImageBufferSurface(
         size(), WTF::WrapUnique(new UnacceleratedSurfaceFactory), opacity_mode,
-        context_->SkSurfaceColorSpace(), context_->ColorType()));
+        context_->color_params()));
     if (surface->IsValid()) {
       CanvasMetrics::CountCanvasContextUsage(
           CanvasMetrics::kDisplayList2DCanvasImageBufferCreated);
@@ -989,8 +989,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
 
   auto surface_factory = WTF::MakeUnique<UnacceleratedSurfaceFactory>();
   auto surface = surface_factory->CreateSurface(size(), opacity_mode,
-                                                context_->SkSurfaceColorSpace(),
-                                                context_->ColorType());
+                                                context_->color_params());
   if (surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kUnaccelerated2DCanvasImageBufferCreated);

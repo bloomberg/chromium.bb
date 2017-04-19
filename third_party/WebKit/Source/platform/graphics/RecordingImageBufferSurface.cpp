@@ -21,12 +21,8 @@ RecordingImageBufferSurface::RecordingImageBufferSurface(
     std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory>
         fallback_factory,
     OpacityMode opacity_mode,
-    sk_sp<SkColorSpace> color_space,
-    SkColorType color_type)
-    : ImageBufferSurface(size,
-                         opacity_mode,
-                         std::move(color_space),
-                         color_type),
+    const CanvasColorParams& color_params)
+    : ImageBufferSurface(size, opacity_mode, color_params),
       image_buffer_(0),
       current_frame_pixel_count_(0),
       previous_frame_pixel_count_(0),
@@ -97,8 +93,8 @@ void RecordingImageBufferSurface::FallBackToRasterCanvas(
                                kFallbackReasonCount));
   canvas_fallback_histogram.Count(reason);
 
-  fallback_surface_ = fallback_factory_->CreateSurface(
-      size(), GetOpacityMode(), ColorSpace(), ColorType());
+  fallback_surface_ = fallback_factory_->CreateSurface(size(), GetOpacityMode(),
+                                                       color_params());
   fallback_surface_->SetImageBuffer(image_buffer_);
 
   if (previous_frame_) {

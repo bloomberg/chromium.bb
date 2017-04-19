@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/common/capabilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
@@ -61,7 +62,8 @@ class DrawingBufferForTests : public DrawingBuffer {
             kWebGL1,
             false /* wantDepth */,
             false /* wantStencil */,
-            DrawingBuffer::kAllowChromiumImage /* ChromiumImageUsage */),
+            DrawingBuffer::kAllowChromiumImage /* ChromiumImageUsage */,
+            CanvasColorParams()),
         live_(0) {}
 
   ~DrawingBufferForTests() override {

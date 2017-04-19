@@ -23,10 +23,8 @@ class RecordingImageBufferFallbackSurfaceFactory {
   WTF_MAKE_NONCOPYABLE(RecordingImageBufferFallbackSurfaceFactory);
 
  public:
-  virtual std::unique_ptr<ImageBufferSurface> CreateSurface(const IntSize&,
-                                                            OpacityMode,
-                                                            sk_sp<SkColorSpace>,
-                                                            SkColorType) = 0;
+  virtual std::unique_ptr<ImageBufferSurface>
+  CreateSurface(const IntSize&, OpacityMode, const CanvasColorParams&) = 0;
   virtual ~RecordingImageBufferFallbackSurfaceFactory() {}
 
  protected:
@@ -47,8 +45,7 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
       std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory>
           fallback_factory = nullptr,
       OpacityMode = kNonOpaque,
-      sk_sp<SkColorSpace> = nullptr,
-      SkColorType = kN32_SkColorType);
+      const CanvasColorParams& = CanvasColorParams());
   ~RecordingImageBufferSurface() override;
 
   // Implementation of ImageBufferSurface interfaces

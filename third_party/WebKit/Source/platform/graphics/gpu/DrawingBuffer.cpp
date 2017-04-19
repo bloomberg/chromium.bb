@@ -77,7 +77,8 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::Create(
     bool want_antialiasing,
     PreserveDrawingBuffer preserve,
     WebGLVersion web_gl_version,
-    ChromiumImageUsage chromium_image_usage) {
+    ChromiumImageUsage chromium_image_usage,
+    const CanvasColorParams& color_params) {
   DCHECK(context_provider);
 
   if (g_should_fail_drawing_buffer_creation_for_testing) {
@@ -119,7 +120,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::Create(
       std::move(context_provider), std::move(extensions_util), client,
       discard_framebuffer_supported, want_alpha_channel, premultiplied_alpha,
       preserve, web_gl_version, want_depth_buffer, want_stencil_buffer,
-      chromium_image_usage));
+      chromium_image_usage, color_params));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
     return PassRefPtr<DrawingBuffer>();
@@ -142,7 +143,8 @@ DrawingBuffer::DrawingBuffer(
     WebGLVersion web_gl_version,
     bool want_depth,
     bool want_stencil,
-    ChromiumImageUsage chromium_image_usage)
+    ChromiumImageUsage chromium_image_usage,
+    const CanvasColorParams& color_params)
     : client_(client),
       preserve_drawing_buffer_(preserve),
       web_gl_version_(web_gl_version),
@@ -156,7 +158,7 @@ DrawingBuffer::DrawingBuffer(
       software_rendering_(this->ContextProvider()->IsSoftwareRendering()),
       want_depth_(want_depth),
       want_stencil_(want_stencil),
-      color_space_(gfx::ColorSpace::CreateSRGB()),
+      color_space_(color_params.GetGfxColorSpace()),
       chromium_image_usage_(chromium_image_usage) {
   // Used by browser tests to detect the use of a DrawingBuffer.
   TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation",

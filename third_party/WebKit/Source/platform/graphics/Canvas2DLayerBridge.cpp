@@ -87,16 +87,16 @@ static sk_sp<SkSurface> CreateSkSurface(GrContext* gr,
                                         const IntSize& size,
                                         int msaa_sample_count,
                                         OpacityMode opacity_mode,
-                                        sk_sp<SkColorSpace> color_space,
-                                        SkColorType color_type,
+                                        const CanvasColorParams& color_params,
                                         bool* surface_is_accelerated) {
   if (gr)
     gr->resetContext();
 
   SkAlphaType alpha_type =
       (kOpaque == opacity_mode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-  SkImageInfo info = SkImageInfo::Make(size.Width(), size.Height(), color_type,
-                                       alpha_type, color_space);
+  SkImageInfo info = SkImageInfo::Make(
+      size.Width(), size.Height(), color_params.GetSkColorType(), alpha_type,
+      color_params.GetSkColorSpaceForSkSurfaces());
   SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
   sk_sp<SkSurface> surface;
 
@@ -129,9 +129,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(
     int msaa_sample_count,
     OpacityMode opacity_mode,
     AccelerationMode acceleration_mode,
-    const gfx::ColorSpace& color_space,
-    bool sk_surfaces_use_color_space,
-    SkColorType color_type)
+    const CanvasColorParams& color_params)
     : context_provider_(std::move(context_provider)),
       logger_(WTF::WrapUnique(new Logger)),
       weak_ptr_factory_(this),
@@ -149,12 +147,10 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(
       acceleration_mode_(acceleration_mode),
       opacity_mode_(opacity_mode),
       size_(size),
-      color_space_(color_space),
-      sk_surfaces_use_color_space_(sk_surfaces_use_color_space),
-      color_type_(color_type) {
+      color_params_(color_params) {
   DCHECK(context_provider_);
   DCHECK(!context_provider_->IsSoftwareRendering());
-  DCHECK(color_space_.IsValid());
+  DCHECK(color_params_.GetGfxColorSpace().IsValid());
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
@@ -286,8 +282,9 @@ bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
       cc::TextureMailbox(mailbox, sync_token, texture_target, gfx::Size(size_),
                          is_overlay_candidate, secure_output_only);
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-    out_mailbox->set_color_space(color_space_);
-    image_info->gpu_memory_buffer_->SetColorSpaceForScanout(color_space_);
+    gfx::ColorSpace color_space = color_params_.GetGfxColorSpace();
+    out_mailbox->set_color_space(color_space);
+    image_info->gpu_memory_buffer_->SetColorSpaceForScanout(color_space);
   }
 
   gl->BindTexture(GC3D_TEXTURE_RECTANGLE_ARB, 0);
@@ -534,12 +531,6 @@ void Canvas2DLayerBridge::Hibernate() {
   logger_->DidStartHibernating();
 }
 
-sk_sp<SkColorSpace> Canvas2DLayerBridge::SkSurfaceColorSpace() const {
-  if (sk_surfaces_use_color_space_)
-    return color_space_.ToSkColorSpace();
-  return nullptr;
-}
-
 void Canvas2DLayerBridge::ReportSurfaceCreationFailure() {
   if (!surface_creation_failed_at_least_once_) {
     // Only count the failure once per instance so that the histogram may
@@ -570,7 +561,7 @@ SkSurface* Canvas2DLayerBridge::GetOrCreateSurface(AccelerationHint hint) {
   bool surface_is_accelerated;
   surface_ = CreateSkSurface(
       want_acceleration ? context_provider_->GetGrContext() : nullptr, size_,
-      msaa_sample_count_, opacity_mode_, SkSurfaceColorSpace(), color_type_,
+      msaa_sample_count_, opacity_mode_, color_params_,
       &surface_is_accelerated);
   surface_paint_canvas_ =
       WTF::WrapUnique(new SkiaPaintCanvas(surface_->getCanvas()));
@@ -794,9 +785,9 @@ void Canvas2DLayerBridge::FlushRecordingOnly() {
     SkCanvas* canvas = GetOrCreateSurface()->getCanvas();
     std::unique_ptr<SkCanvas> color_transform_canvas;
     if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled() &&
-        !sk_surfaces_use_color_space_) {
-      color_transform_canvas =
-          SkCreateColorSpaceXformCanvas(canvas, color_space_.ToSkColorSpace());
+        color_params_.UsesOutputSpaceBlending()) {
+      color_transform_canvas = SkCreateColorSpaceXformCanvas(
+          canvas, color_params_.GetSkColorSpace());
       canvas = color_transform_canvas.get();
     }
 
@@ -883,9 +874,9 @@ bool Canvas2DLayerBridge::RestoreSurface() {
   if (shared_gl && shared_gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     GrContext* gr_ctx = context_provider_->GetGrContext();
     bool surface_is_accelerated;
-    sk_sp<SkSurface> surface(CreateSkSurface(
-        gr_ctx, size_, msaa_sample_count_, opacity_mode_, SkSurfaceColorSpace(),
-        color_type_, &surface_is_accelerated));
+    sk_sp<SkSurface> surface(CreateSkSurface(gr_ctx, size_, msaa_sample_count_,
+                                             opacity_mode_, color_params_,
+                                             &surface_is_accelerated));
     if (!surface_)
       ReportSurfaceCreationFailure();
 
@@ -952,7 +943,7 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
   if (!PrepareMailboxFromImage(std::move(image), out_mailbox))
     return false;
   out_mailbox->set_nearest_neighbor(GetGLFilter() == GL_NEAREST);
-  out_mailbox->set_color_space(color_space_);
+  out_mailbox->set_color_space(color_params_.GetGfxColorSpace());
 
   auto func =
       WTF::Bind(&Canvas2DLayerBridge::MailboxReleased,

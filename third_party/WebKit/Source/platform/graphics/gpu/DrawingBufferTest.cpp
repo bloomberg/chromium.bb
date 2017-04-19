@@ -37,6 +37,7 @@
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
@@ -653,7 +654,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
         std::move(provider), nullptr, IntSize(10, 10), premultiplied_alpha,
         want_alpha_channel, want_depth_buffer, want_stencil_buffer,
         want_antialiasing, preserve, DrawingBuffer::kWebGL1,
-        DrawingBuffer::kAllowChromiumImage);
+        DrawingBuffer::kAllowChromiumImage, CanvasColorParams());
 
     // When we request a depth or a stencil buffer, we will get both.
     EXPECT_EQ(cases[i].request_depth || cases[i].request_stencil,

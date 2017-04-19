@@ -59,7 +59,7 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
     return AdoptRef(new Canvas2DLayerBridge(
         WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl_)), size, 0,
         kNonOpaque, Canvas2DLayerBridge::kForceAccelerationForTesting,
-        gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType));
+        CanvasColorParams()));
   }
 
  private:

@@ -89,21 +89,11 @@ class CORE_EXPORT CanvasRenderingContext
 
   HTMLCanvasElement* canvas() const { return canvas_; }
 
-  CanvasColorSpace ColorSpace() const;
   WTF::String ColorSpaceAsString() const;
-  CanvasPixelFormat PixelFormat() const;
   WTF::String PixelFormatAsString() const;
-  bool LinearPixelMath() const;
 
-  // The color space in which the the content should be interpreted by the
-  // compositor. This is always defined.
-  gfx::ColorSpace GfxColorSpace() const;
-  // The color space that should be used for SkSurface creation. This may
-  // be nullptr.
-  sk_sp<SkColorSpace> SkSurfaceColorSpace() const;
-  SkColorType ColorType() const;
+  const CanvasColorParams& color_params() const { return color_params_; }
   ColorBehavior ColorBehaviorForMediaDrawnToCanvas() const;
-  bool SkSurfacesUseColorSpace() const;
 
   virtual PassRefPtr<Image> GetImage(AccelerationHint,
                                      SnapshotReason) const = 0;

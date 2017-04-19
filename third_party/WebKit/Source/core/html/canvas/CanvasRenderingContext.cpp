@@ -67,7 +67,7 @@ CanvasRenderingContext::CanvasRenderingContext(
   // linearPixelMath rather than the requested one.
   creation_attributes_.setColorSpace(ColorSpaceAsString());
   creation_attributes_.setPixelFormat(PixelFormatAsString());
-  creation_attributes_.setLinearPixelMath(LinearPixelMath());
+  creation_attributes_.setLinearPixelMath(color_params_.LinearPixelMath());
 }
 
 WTF::String CanvasRenderingContext::ColorSpaceAsString() const {
@@ -100,35 +100,11 @@ WTF::String CanvasRenderingContext::PixelFormatAsString() const {
   return "";
 }
 
-gfx::ColorSpace CanvasRenderingContext::GfxColorSpace() const {
-  return color_params_.GetGfxColorSpace();
-}
-
-sk_sp<SkColorSpace> CanvasRenderingContext::SkSurfaceColorSpace() const {
-  return color_params_.GetSkColorSpaceForSkSurfaces();
-}
-
-bool CanvasRenderingContext::SkSurfacesUseColorSpace() const {
-  return color_params_.GetSkColorSpaceForSkSurfaces();
-}
-
-bool CanvasRenderingContext::LinearPixelMath() const {
-  return color_params_.LinearPixelMath();
-}
-
 ColorBehavior CanvasRenderingContext::ColorBehaviorForMediaDrawnToCanvas()
     const {
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
-    return ColorBehavior::TransformTo(GfxColorSpace());
+    return ColorBehavior::TransformTo(color_params_.GetGfxColorSpace());
   return ColorBehavior::TransformToGlobalTarget();
-}
-
-CanvasColorSpace CanvasRenderingContext::ColorSpace() const {
-  return color_params_.color_space();
-}
-
-SkColorType CanvasRenderingContext::ColorType() const {
-  return color_params_.GetSkColorType();
 }
 
 void CanvasRenderingContext::Dispose() {

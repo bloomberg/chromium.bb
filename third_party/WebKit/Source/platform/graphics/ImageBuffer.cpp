@@ -80,16 +80,10 @@ std::unique_ptr<ImageBuffer> ImageBuffer::Create(
     const IntSize& size,
     OpacityMode opacity_mode,
     ImageInitializationMode initialization_mode,
-    sk_sp<SkColorSpace> color_space) {
-  SkColorType color_type = kN32_SkColorType;
-  if (color_space && SkColorSpace::Equals(color_space.get(),
-                                          SkColorSpace::MakeSRGBLinear().get()))
-    color_type = kRGBA_F16_SkColorType;
-
+    const CanvasColorParams& color_params) {
   std::unique_ptr<ImageBufferSurface> surface(
       WTF::WrapUnique(new UnacceleratedImageBufferSurface(
-          size, opacity_mode, initialization_mode, std::move(color_space),
-          color_type)));
+          size, opacity_mode, initialization_mode, color_params)));
 
   if (!surface->IsValid())
     return nullptr;
@@ -354,9 +348,7 @@ void ImageBuffer::FlushGpu(FlushReason reason) {
 bool ImageBuffer::GetImageData(Multiply multiplied,
                                const IntRect& rect,
                                WTF::ArrayBufferContents& contents) const {
-  uint8_t bytes_per_pixel = 4;
-  if (surface_->ColorSpace())
-    bytes_per_pixel = SkColorTypeBytesPerPixel(surface_->ColorType());
+  uint8_t bytes_per_pixel = surface_->color_params().BytesPerPixel();
   CheckedNumeric<int> data_size = bytes_per_pixel;
   data_size *= rect.Width();
   data_size *= rect.Height();
@@ -399,7 +391,8 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
                                   WTF::ArrayBufferContents::kNotShared);
 
   // Skia does not support unpremultiplied read with an F16 to 8888 conversion
-  bool use_f16_workaround = surface_->ColorType() == kRGBA_F16_SkColorType;
+  bool use_f16_workaround =
+      surface_->color_params().GetSkColorType() == kRGBA_F16_SkColorType;
 
   SkAlphaType alpha_type = (multiplied == kPremultiplied || use_f16_workaround)
                                ? kPremul_SkAlphaType
@@ -411,10 +404,8 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
 
   // Only use sRGB when the surface has a color space.  Converting untagged
   // pixels to a particular color space is not well-defined in Skia.
-  sk_sp<SkColorSpace> color_space = nullptr;
-  if (surface_->ColorSpace()) {
-    color_space = SkColorSpace::MakeSRGB();
-  }
+  sk_sp<SkColorSpace> color_space =
+      surface_->color_params().GetSkColorSpaceForSkSurfaces();
 
   SkImageInfo info = SkImageInfo::Make(rect.Width(), rect.Height(), color_type,
                                        alpha_type, std::move(color_space));
@@ -455,9 +446,7 @@ void ImageBuffer::PutByteArray(Multiply multiplied,
                                const IntPoint& dest_point) {
   if (!IsSurfaceValid())
     return;
-  uint8_t bytes_per_pixel = 4;
-  if (surface_->ColorSpace())
-    bytes_per_pixel = SkColorTypeBytesPerPixel(surface_->ColorType());
+  uint8_t bytes_per_pixel = surface_->color_params().BytesPerPixel();
 
   DCHECK_GT(source_rect.Width(), 0);
   DCHECK_GT(source_rect.Height(), 0);
@@ -494,10 +483,11 @@ void ImageBuffer::PutByteArray(Multiply multiplied,
   }
 
   SkImageInfo info;
-  if (surface_->ColorSpace()) {
-    info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
-                             surface_->ColorType(), alpha_type,
-                             surface_->ColorSpace());
+  if (surface_->color_params().GetSkColorSpaceForSkSurfaces()) {
+    info = SkImageInfo::Make(
+        source_rect.Width(), source_rect.Height(),
+        surface_->color_params().GetSkColorType(), alpha_type,
+        surface_->color_params().GetSkColorSpaceForSkSurfaces());
   } else {
     info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
                              kRGBA_8888_SkColorType, alpha_type,
@@ -511,7 +501,7 @@ void ImageBuffer::UpdateGPUMemoryUsage() const {
     // If image buffer is accelerated, we should keep track of GPU memory usage.
     int gpu_buffer_count = 2;
     CheckedNumeric<intptr_t> checked_gpu_usage =
-        SkColorTypeBytesPerPixel(surface_->ColorType()) * gpu_buffer_count;
+        surface_->color_params().BytesPerPixel() * gpu_buffer_count;
     checked_gpu_usage *= this->size().Width();
     checked_gpu_usage *= this->size().Height();
     intptr_t gpu_memory_usage =
@@ -543,11 +533,9 @@ class UnacceleratedSurfaceFactory
   virtual std::unique_ptr<ImageBufferSurface> CreateSurface(
       const IntSize& size,
       OpacityMode opacity_mode,
-      sk_sp<SkColorSpace> color_space,
-      SkColorType color_type) {
+      const CanvasColorParams& color_params) {
     return WTF::WrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacity_mode, kInitializeImagePixels, std::move(color_space),
-        color_type));
+        size, opacity_mode, kInitializeImagePixels, color_params));
   }
 
   virtual ~UnacceleratedSurfaceFactory() {}
@@ -565,8 +553,7 @@ void ImageBuffer::DisableAcceleration() {
   std::unique_ptr<ImageBufferSurface> surface =
       WTF::WrapUnique(new RecordingImageBufferSurface(
           surface_->size(), std::move(surface_factory),
-          surface_->GetOpacityMode(), surface_->ColorSpace(),
-          surface_->ColorType()));
+          surface_->GetOpacityMode(), surface_->color_params()));
   SetSurface(std::move(surface));
 }
 

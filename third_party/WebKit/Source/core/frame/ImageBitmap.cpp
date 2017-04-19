@@ -896,9 +896,24 @@ ImageBitmap::ImageBitmap(ImageData* data,
     return;
   }
 
+  CanvasColorParams canvas_color_params;
+  if (RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() &&
+      RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+    ImageDataColorSettings color_settings;
+    data->getColorSettings(color_settings);
+    CanvasColorSpace canvas_color_space =
+        ImageData::GetCanvasColorSpace(color_settings.colorSpace());
+    CanvasPixelFormat canvas_pixel_format = kRGBA8CanvasPixelFormat;
+    if (ImageData::GetImageDataStorageFormat(color_settings.storageFormat()) !=
+        kUint8ClampedArrayStorageFormat) {
+      canvas_pixel_format = kF16CanvasPixelFormat;
+    }
+    canvas_color_params =
+        CanvasColorParams(canvas_color_space, canvas_pixel_format);
+  }
   std::unique_ptr<ImageBuffer> buffer =
       ImageBuffer::Create(parsed_options.crop_rect.Size(), kNonOpaque,
-                          kDoNotInitializeImagePixels, data->GetSkColorSpace());
+                          kDoNotInitializeImagePixels, canvas_color_params);
   if (!buffer)
     return;
 

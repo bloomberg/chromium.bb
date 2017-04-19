@@ -66,6 +66,7 @@ class ArrayBufferContents;
 }
 
 namespace blink {
+class CanvasColorParams;
 class Extensions3DUtil;
 class StaticBitmapImage;
 class WebExternalTextureLayer;
@@ -121,7 +122,8 @@ class PLATFORM_EXPORT DrawingBuffer
       bool want_antialiasing,
       PreserveDrawingBuffer,
       WebGLVersion,
-      ChromiumImageUsage);
+      ChromiumImageUsage,
+      const CanvasColorParams&);
   static void ForceNextDrawingBufferCreationToFail();
 
   ~DrawingBuffer() override;
@@ -241,7 +243,8 @@ class PLATFORM_EXPORT DrawingBuffer
                 WebGLVersion,
                 bool wants_depth,
                 bool wants_stencil,
-                ChromiumImageUsage);
+                ChromiumImageUsage,
+                const CanvasColorParams&);
 
   bool Initialize(const IntSize&, bool use_multisampling);
 

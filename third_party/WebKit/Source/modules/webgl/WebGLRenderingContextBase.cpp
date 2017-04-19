@@ -1132,11 +1132,11 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
   } else {
     NOTREACHED();
   }
-  return DrawingBuffer::Create(std::move(context_provider), this,
-                               ClampedCanvasSize(), premultiplied_alpha,
-                               want_alpha_channel, want_depth_buffer,
-                               want_stencil_buffer, want_antialiasing, preserve,
-                               web_gl_version, chromium_image_usage);
+  return DrawingBuffer::Create(
+      std::move(context_provider), this, ClampedCanvasSize(),
+      premultiplied_alpha, want_alpha_channel, want_depth_buffer,
+      want_stencil_buffer, want_antialiasing, preserve, web_gl_version,
+      chromium_image_usage, color_params());
 }
 
 void WebGLRenderingContextBase::InitializeNewContext() {

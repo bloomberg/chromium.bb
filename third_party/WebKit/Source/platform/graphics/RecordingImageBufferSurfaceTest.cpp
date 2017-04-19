@@ -32,12 +32,10 @@ class MockSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
   virtual std::unique_ptr<ImageBufferSurface> CreateSurface(
       const IntSize& size,
       OpacityMode opacity_mode,
-      sk_sp<SkColorSpace> color_space,
-      SkColorType color_type) {
+      const CanvasColorParams& color_params) {
     create_surface_count_++;
     return WTF::WrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacity_mode, kInitializeImagePixels, std::move(color_space),
-        color_type));
+        size, opacity_mode, kInitializeImagePixels, color_params));
   }
 
   virtual ~MockSurfaceFactory() {}
@@ -56,7 +54,7 @@ class RecordingImageBufferSurfaceTest : public Test {
     surface_factory_ = surface_factory.get();
     std::unique_ptr<RecordingImageBufferSurface> test_surface =
         WTF::WrapUnique(new RecordingImageBufferSurface(
-            IntSize(10, 10), std::move(surface_factory), kNonOpaque, nullptr));
+            IntSize(10, 10), std::move(surface_factory), kNonOpaque));
     test_surface_ = test_surface.get();
     // We create an ImageBuffer in order for the testSurface to be
     // properly initialized with a GraphicsContext

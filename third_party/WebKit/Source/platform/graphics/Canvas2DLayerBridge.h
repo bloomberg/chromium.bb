@@ -93,9 +93,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
                       int msaa_sample_count,
                       OpacityMode,
                       AccelerationMode,
-                      const gfx::ColorSpace&,
-                      bool sk_surfaces_use_color_space,
-                      SkColorType);
+                      const CanvasColorParams&);
 
   ~Canvas2DLayerBridge() override;
 
@@ -141,8 +139,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   void BeginDestruction();
   void Hibernate();
   bool IsHibernating() const { return hibernation_image_.get(); }
-  sk_sp<SkColorSpace> SkSurfaceColorSpace() const;
-  SkColorType ColorType() const { return color_type_; }
+  const CanvasColorParams& color_params() const { return color_params_; }
 
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
 
@@ -286,11 +283,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   AccelerationMode acceleration_mode_;
   OpacityMode opacity_mode_;
   const IntSize size_;
-  // The color space that the compositor is to use. This will always be
-  // defined.
-  gfx::ColorSpace color_space_;
-  bool sk_surfaces_use_color_space_ = false;
-  SkColorType color_type_;
+  CanvasColorParams color_params_;
   int recording_pixel_count_;
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
