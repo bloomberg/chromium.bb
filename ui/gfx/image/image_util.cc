@@ -62,8 +62,6 @@ bool JPEG1xEncodedDataFromSkiaRepresentation(const Image& image,
     return false;
 
   const SkBitmap& bitmap = image_skia_rep.sk_bitmap();
-  SkAutoLockPixels bitmap_lock(bitmap);
-
   if (!bitmap.readyToDraw())
     return false;
 
@@ -85,7 +83,6 @@ void GetVisibleMargins(const ImageSkia& image, int* left, int* right) {
   if (bitmap.drawsNothing() || bitmap.isOpaque())
     return;
 
-  SkAutoLockPixels lock(bitmap);
   int x = 0;
   for (; x < bitmap.width(); ++x) {
     if (ColumnHasVisiblePixels(bitmap, x)) {

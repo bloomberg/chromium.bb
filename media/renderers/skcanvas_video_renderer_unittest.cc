@@ -554,7 +554,6 @@ TEST_F(SkCanvasVideoRendererTest, Y16) {
   renderer_.Paint(video_frame, &canvas,
                   gfx::RectF(bitmap.width(), bitmap.height()), flags,
                   VIDEO_ROTATION_0, Context3D());
-  SkAutoLockPixels lock(bitmap);
   for (int j = 0; j < bitmap.height(); j++) {
     for (int i = 0; i < bitmap.width(); i++) {
       const int value = i + j * bitmap.width();

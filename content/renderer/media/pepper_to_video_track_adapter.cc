@@ -168,7 +168,6 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
     return;
   }
 
-  SkAutoLockPixels src_lock(bitmap);
   const uint8_t* src_data = static_cast<uint8_t*>(bitmap.getPixels());
   const int src_stride = static_cast<int>(bitmap.rowBytes());
   const int width = bitmap.width();

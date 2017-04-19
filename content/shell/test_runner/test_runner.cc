@@ -1800,10 +1800,7 @@ void TestRunner::DumpPixelsAsync(
       // Return a blank image so that the test fails.
       SkBitmap bitmap;
       bitmap.allocN32Pixels(1, 1);
-      {
-        SkAutoLockPixels lock(bitmap);
-        bitmap.eraseColor(0);
-      }
+      bitmap.eraseColor(0);
       callback.Run(bitmap);
       return;
     }

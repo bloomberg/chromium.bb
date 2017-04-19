@@ -53,8 +53,6 @@ bool SkDifferentPixelsMetric::diff(
 
   // Prepare the pixels for comparison
   result->poiCount = 0;
-  baseline->lockPixels();
-  test->lockPixels();
   for (int y = 0; y < height; y++) {
     // Grab a row from each image for easy comparison
     // TODO(epoger): The code below already assumes 4 bytes per pixel, so I
@@ -102,22 +100,10 @@ bool SkDifferentPixelsMetric::diff(
       }
     }
   }
-  test->unlockPixels();
-  baseline->unlockPixels();
 
   result->maxRedDiff = maxRedDiff;
   result->maxGreenDiff = maxGreenDiff;
   result->maxBlueDiff = maxBlueDiff;
-
-  if (bitmapsToCreate.alphaMask) {
-    result->poiAlphaMask.unlockPixels();
-  }
-  if (bitmapsToCreate.rgbDiff) {
-    result->rgbDiffBitmap.unlockPixels();
-  }
-  if (bitmapsToCreate.whiteDiff) {
-    result->whiteDiffBitmap.unlockPixels();
-  }
 
   // Calculates the percentage of identical pixels
   result->result = 1.0 - ((double)result->poiCount / (width * height));

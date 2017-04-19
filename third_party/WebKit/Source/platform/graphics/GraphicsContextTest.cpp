@@ -48,7 +48,6 @@ namespace blink {
 
 #define EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, opaqueRect)         \
   {                                                              \
-    SkAutoLockPixels locker(bitmap);                             \
     for (int y = opaqueRect.Y(); y < opaqueRect.MaxY(); ++y)     \
       for (int x = opaqueRect.X(); x < opaqueRect.MaxX(); ++x) { \
         int alpha = *bitmap.getAddr32(x, y) >> 24;               \
@@ -58,7 +57,6 @@ namespace blink {
 
 #define EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, opaqueRect) \
   {                                                           \
-    SkAutoLockPixels locker(bitmap);                          \
     for (int y = 0; y < bitmap.height(); ++y)                 \
       for (int x = 0; x < bitmap.width(); ++x) {              \
         int alpha = *bitmap.getAddr32(x, y) >> 24;            \

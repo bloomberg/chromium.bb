@@ -26,7 +26,6 @@ scoped_refptr<base::RefCountedBytes> UserImage::Encode(
     ImageFormat image_format) {
   TRACE_EVENT2("oobe", "UserImage::Encode",
                "width", bitmap.width(), "height", bitmap.height());
-  SkAutoLockPixels lock_bitmap(bitmap);
   std::vector<unsigned char> output;
   auto* bitmap_data = reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0));
   if (image_format == FORMAT_JPEG) {

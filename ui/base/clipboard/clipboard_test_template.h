@@ -394,7 +394,6 @@ static void TestBitmapWrite(Clipboard* clipboard,
                                            CLIPBOARD_TYPE_COPY_PASTE));
   const SkBitmap& image = clipboard->ReadImage(CLIPBOARD_TYPE_COPY_PASTE);
   EXPECT_EQ(size, gfx::Size(image.width(), image.height()));
-  SkAutoLockPixels image_lock(image);
   for (int j = 0; j < image.height(); ++j) {
     const uint32_t* row_address = image.getAddr32(0, j);
     for (int i = 0; i < image.width(); ++i) {

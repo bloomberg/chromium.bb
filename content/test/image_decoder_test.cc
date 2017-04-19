@@ -61,7 +61,6 @@ base::FilePath GetMD5SumPath(const base::FilePath& path) {
 void SaveMD5Sum(const base::FilePath& path, const blink::WebImage& web_image) {
   // Calculate MD5 sum.
   base::MD5Digest digest;
-  web_image.getSkBitmap().lockPixels();
   base::MD5Sum(web_image.getSkBitmap().getPixels(),
                web_image.getSkBitmap().width() *
                    web_image.getSkBitmap().height() * sizeof(uint32_t),
@@ -71,7 +70,6 @@ void SaveMD5Sum(const base::FilePath& path, const blink::WebImage& web_image) {
   int bytes_written = base::WriteFile(
       path, reinterpret_cast<const char*>(&digest), sizeof digest);
   ASSERT_EQ(sizeof digest, bytes_written);
-  web_image.getSkBitmap().unlockPixels();
 }
 #endif
 
@@ -89,7 +87,6 @@ void VerifyImage(const blink::WebImageDecoder& decoder,
   // Calculate MD5 sum.
   base::MD5Digest actual_digest;
   blink::WebImage web_image = decoder.GetFrameAtIndex(frame_index);
-  web_image.GetSkBitmap().lockPixels();
   base::MD5Sum(web_image.GetSkBitmap().getPixels(),
                web_image.GetSkBitmap().width() *
                    web_image.GetSkBitmap().height() * sizeof(uint32_t),
@@ -105,7 +102,6 @@ void VerifyImage(const blink::WebImageDecoder& decoder,
   // Verify that the sums are the same.
   EXPECT_EQ(0, memcmp(&expected_digest, &actual_digest, sizeof actual_digest))
       << path.value();
-  web_image.GetSkBitmap().unlockPixels();
 }
 #endif
 

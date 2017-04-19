@@ -91,7 +91,6 @@ bool WebContentsCaptureClient::EncodeBitmap(const SkBitmap& bitmap,
                                             std::string* base64_result) {
   DCHECK(base64_result);
   std::vector<unsigned char> data;
-  SkAutoLockPixels screen_capture_lock(bitmap);
   const bool should_discard_alpha = !ClientAllowsTransparency();
   bool encoded = false;
   std::string mime_type;

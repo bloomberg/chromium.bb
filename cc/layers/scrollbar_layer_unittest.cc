@@ -1211,10 +1211,8 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
 
     DCHECK(bitmap);
 
-    AutoLockUIResourceBitmap locked_bitmap(*bitmap);
-
     const SkColor* pixels =
-        reinterpret_cast<const SkColor*>(locked_bitmap.GetPixels());
+        reinterpret_cast<const SkColor*>(bitmap->GetPixels());
     SkColor color = argb_to_skia(
         scrollbar_layer->fake_scrollbar()->paint_fill_color());
     int width = bitmap->GetSize().width();

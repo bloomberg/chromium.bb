@@ -506,7 +506,6 @@ TEST_F(ImageTest, CheckSkiaColor) {
   gfx::Image image(gt::CreatePlatformImage());
 
   const SkBitmap* bitmap = image.ToSkBitmap();
-  SkAutoLockPixels auto_lock(*bitmap);
   gt::CheckColors(bitmap->getColor(10, 10), SK_ColorGREEN);
 }
 
@@ -544,7 +543,6 @@ TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
   // Force a conversion back to SkBitmap and check that the upper half is red.
   gfx::Image from_platform(gt::CopyPlatformType(from_skbitmap));
   const SkBitmap* bitmap2 = from_platform.ToSkBitmap();
-  SkAutoLockPixels auto_lock(*bitmap2);
   {
     SCOPED_TRACE("Checking color after conversion back to SkBitmap");
     gt::CheckColors(bitmap2->getColor(10, 10), SK_ColorRED);
@@ -585,7 +583,6 @@ TEST_F(ImageTest, SkBitmapConversionPreservesTransparency) {
   // Force a conversion back to SkBitmap and check that the upper half is red.
   gfx::Image from_platform(gt::CopyPlatformType(from_skbitmap));
   const SkBitmap* bitmap2 = from_platform.ToSkBitmap();
-  SkAutoLockPixels auto_lock(*bitmap2);
   {
     SCOPED_TRACE("Checking color after conversion back to SkBitmap");
     gt::CheckColors(bitmap2->getColor(10, 10), SK_ColorRED);

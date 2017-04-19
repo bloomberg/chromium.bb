@@ -83,8 +83,6 @@ static bool BitmapsEqual(sk_sp<const PaintRecord> record1,
 
   SkBitmap bitmap1 = RecordToBitmap(record1);
   SkBitmap bitmap2 = RecordToBitmap(record2);
-  bitmap1.lockPixels();
-  bitmap2.lockPixels();
   int mismatch_count = 0;
   const int kMaxMismatches = 10;
   for (int y = 0; y < rect.height() && mismatch_count < kMaxMismatches; ++y) {
@@ -98,8 +96,6 @@ static bool BitmapsEqual(sk_sp<const PaintRecord> record1,
       }
     }
   }
-  bitmap1.unlockPixels();
-  bitmap2.unlockPixels();
   return !mismatch_count;
 }
 

@@ -139,7 +139,6 @@ static bool bitmap_to_cielab(const SkBitmap* bitmap, ImageLAB* outImageLAB) {
   DCHECK(outImageLAB->width == width);
   DCHECK(outImageLAB->height == height);
 
-  bitmap->lockPixels();
   RGB rgb;
   LAB lab;
   for (int y = 0; y < height; y++) {
@@ -153,7 +152,6 @@ static bool bitmap_to_cielab(const SkBitmap* bitmap, ImageLAB* outImageLAB) {
       outImageLAB->writePixel(x, y, lab);
     }
   }
-  bitmap->unlockPixels();
   return true;
 }
 

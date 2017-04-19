@@ -184,7 +184,6 @@ bool SnapshotMatches(const base::FilePath& reference, const SkBitmap& bitmap) {
     return false;
 
   int32_t* ref_pixels = reinterpret_cast<int32_t*>(decoded.data());
-  SkAutoLockPixels lock_image(bitmap);
   int32_t* pixels = static_cast<int32_t*>(bitmap.getPixels());
 
   bool success = true;

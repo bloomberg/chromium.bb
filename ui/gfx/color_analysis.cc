@@ -140,7 +140,6 @@ class KMeanCluster {
 // Un-premultiplies each pixel in |bitmap| into an output |buffer|. Requires
 // approximately 10 microseconds for a 16x16 icon on an Intel Core i5.
 void UnPreMultiply(const SkBitmap& bitmap, uint32_t* buffer, int buffer_size) {
-  SkAutoLockPixels auto_lock(bitmap);
   uint32_t* in = static_cast<uint32_t*>(bitmap.getPixels());
   uint32_t* out = buffer;
   int pixel_count = std::min(bitmap.width() * bitmap.height(), buffer_size);
@@ -364,7 +363,6 @@ SkColor CalculateProminentColor(const SkBitmap& bitmap,
   DCHECK(!bitmap.empty());
   DCHECK(!bitmap.isNull());
 
-  SkAutoLockPixels auto_lock(bitmap);
   const uint32_t* pixels = static_cast<uint32_t*>(bitmap.getPixels());
   const int pixel_count = bitmap.width() * bitmap.height();
 
@@ -778,7 +776,6 @@ SkColor CalculateProminentColorOfBitmap(const SkBitmap& bitmap,
 
 gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap) {
   // First need basic stats to normalize each channel separately.
-  SkAutoLockPixels bitmap_lock(bitmap);
   gfx::Matrix3F covariance = gfx::Matrix3F::Zeros();
   if (!bitmap.getPixels())
     return covariance;
@@ -857,9 +854,6 @@ bool ApplyColorReduction(const SkBitmap& source_bitmap,
                          bool fit_to_range,
                          SkBitmap* target_bitmap) {
   DCHECK(target_bitmap);
-  SkAutoLockPixels source_lock(source_bitmap);
-  SkAutoLockPixels target_lock(*target_bitmap);
-
   DCHECK(source_bitmap.getPixels());
   DCHECK(target_bitmap->getPixels());
   DCHECK_EQ(kN32_SkColorType, source_bitmap.colorType());

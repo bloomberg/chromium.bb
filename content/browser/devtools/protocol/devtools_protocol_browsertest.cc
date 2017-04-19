@@ -579,9 +579,6 @@ bool MatchesBitmap(const SkBitmap& expected_bmp,
     return false;
   }
 
-  SkAutoLockPixels lock_actual_bmp(actual_bmp);
-  SkAutoLockPixels lock_expected_bmp(expected_bmp);
-
   DCHECK(gfx::SkIRectToRect(actual_bmp.bounds()).Contains(matching_mask));
 
   for (int x = matching_mask.x(); x < matching_mask.right(); ++x) {

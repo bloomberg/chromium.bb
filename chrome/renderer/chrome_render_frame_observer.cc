@@ -209,7 +209,6 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
     thumbnail.copyTo(&bitmap, kN32_SkColorType);
 
   std::vector<uint8_t> thumbnail_data;
-  SkAutoLockPixels lock(bitmap);
   if (bitmap.getPixels()) {
     const int kDefaultQuality = 90;
     std::vector<unsigned char> data;

@@ -105,7 +105,6 @@ BookmarkAppHelper::BitmapAndSource CreateSquareBitmapAndSourceWithColor(
 
 void ValidateBitmapSizeAndColor(SkBitmap bitmap, int size, SkColor color) {
   // Obtain pixel lock to access pixels.
-  SkAutoLockPixels lock(bitmap);
   EXPECT_EQ(color, bitmap.getColor(0, 0));
   EXPECT_EQ(size, bitmap.width());
   EXPECT_EQ(size, bitmap.height());

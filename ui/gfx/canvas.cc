@@ -514,15 +514,7 @@ void Canvas::Transform(const gfx::Transform& transform) {
 
 SkBitmap Canvas::GetBitmap() const {
   DCHECK(bitmap_);
-  SkBitmap bitmap = bitmap_.value();
-  // When the bitmap is copied, it shares the underlying pixelref, but doesn't
-  // initialize pixels unless they are locked. Hence, ensure that the returned
-  // bitmap keeps the pixelref alive by locking it. Note that the dtor of
-  // SkBitmap will unlock the pixelrefs, so this won't leak. Also note that
-  // moving SkBitmap retains the same lock as the source, so the caller
-  // will receive a locked-pixels bitmap.
-  bitmap.lockPixels();
-  return bitmap;
+  return bitmap_.value();
 }
 
 bool Canvas::IntersectsClipRect(const SkRect& rect) {

@@ -58,7 +58,6 @@ bool VerifyRect(const SkCanvas& canvas,
                 uint32_t canvas_color, uint32_t rect_color,
                 int x, int y, int w, int h) {
   const SkBitmap bitmap = skia::ReadPixels(const_cast<SkCanvas*>(&canvas));
-  SkAutoLockPixels lock(bitmap);
 
   for (int cur_y = 0; cur_y < bitmap.height(); cur_y++) {
     for (int cur_x = 0; cur_x < bitmap.width(); cur_x++) {

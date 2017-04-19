@@ -88,8 +88,6 @@ GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap& bitmap) {
   if (bitmap.isNull())
     return nullptr;
 
-  SkAutoLockPixels lock_pixels(bitmap);
-
   int width = bitmap.width();
   int height = bitmap.height();
 

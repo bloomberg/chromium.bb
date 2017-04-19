@@ -99,7 +99,6 @@ scoped_refptr<base::RefCountedMemory> CreateTestPNG(
   SkBitmap bitmap;
   bitmap.allocN32Pixels(colors.size(), 1);
 
-  SkAutoLockPixels lock(bitmap);
   for (size_t i = 0; i < colors.size(); ++i) {
     bitmap.eraseArea(SkIRect::MakeXYWH(i, 0, 1, 1), colors[i]);
   }
@@ -149,7 +148,6 @@ bool ChannelApproximatelyEqual(int expected, uint8_t channel) {
 void Calculate8bitBitmapMinMax(const SkBitmap& bitmap,
                                uint8_t* min_gl,
                                uint8_t* max_gl) {
-  SkAutoLockPixels bitmap_lock(bitmap);
   DCHECK(bitmap.getPixels());
   DCHECK_EQ(bitmap.colorType(), kAlpha_8_SkColorType);
   DCHECK(min_gl);

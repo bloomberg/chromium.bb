@@ -33,10 +33,7 @@ void CopyFromCompositingSurfaceFinished(
     const content::ReadbackRequestCallback& callback,
     std::unique_ptr<cc::SingleReleaseCallback> release_callback,
     std::unique_ptr<SkBitmap> bitmap,
-    std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock,
     bool result) {
-  bitmap_pixels_lock.reset();
-
   gpu::SyncToken sync_token;
   if (result) {
     display_compositor::GLHelper* gl_helper =
@@ -88,8 +85,6 @@ void PrepareTextureCopyOutputResult(
   if (!gl_helper)
     return;
 
-  std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock(
-      new SkAutoLockPixels(*bitmap));
   uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
 
   cc::TextureMailbox texture_mailbox;
@@ -103,8 +98,7 @@ void PrepareTextureCopyOutputResult(
       texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
       gfx::Rect(result->size()), dst_size_in_pixel, pixels, color_type,
       base::Bind(&CopyFromCompositingSurfaceFinished, callback,
-                 base::Passed(&release_callback), base::Passed(&bitmap),
-                 base::Passed(&bitmap_pixels_lock)),
+                 base::Passed(&release_callback), base::Passed(&bitmap)),
       display_compositor::GLHelper::SCALER_QUALITY_GOOD);
 #endif
 }

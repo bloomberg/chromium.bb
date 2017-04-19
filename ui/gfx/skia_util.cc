@@ -97,15 +97,11 @@ bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2) {
   size_t size1 = 0;
   size_t size2 = 0;
 
-  bitmap1.lockPixels();
   addr1 = bitmap1.getAddr32(0, 0);
   size1 = bitmap1.getSize();
-  bitmap1.unlockPixels();
 
-  bitmap2.lockPixels();
   addr2 = bitmap2.getAddr32(0, 0);
   size2 = bitmap2.getSize();
-  bitmap2.unlockPixels();
 
   return (size1 == size2) && (0 == memcmp(addr1, addr2, bitmap1.getSize()));
 }

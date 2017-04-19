@@ -24,8 +24,6 @@
 SkBitmap SkBitmapOperations::CreateInvertedBitmap(const SkBitmap& image) {
   DCHECK(image.colorType() == kN32_SkColorType);
 
-  SkAutoLockPixels lock_image(image);
-
   SkBitmap inverted;
   inverted.allocN32Pixels(image.width(), image.height());
 
@@ -60,9 +58,6 @@ SkBitmap SkBitmapOperations::CreateBlendedBitmap(const SkBitmap& first,
     return first;
   else if (alpha > alpha_max)
     return second;
-
-  SkAutoLockPixels lock_first(first);
-  SkAutoLockPixels lock_second(second);
 
   SkBitmap blended;
   blended.allocN32Pixels(first.width(), first.height());
@@ -106,10 +101,6 @@ SkBitmap SkBitmapOperations::CreateMaskedBitmap(const SkBitmap& rgb,
   SkBitmap masked;
   masked.allocN32Pixels(rgb.width(), rgb.height());
 
-  SkAutoLockPixels lock_rgb(rgb);
-  SkAutoLockPixels lock_alpha(alpha);
-  SkAutoLockPixels lock_masked(masked);
-
   for (int y = 0; y < masked.height(); ++y) {
     uint32_t* rgb_row = rgb.getAddr32(0, y);
     uint32_t* alpha_row = alpha.getAddr32(0, y);
@@ -142,10 +133,6 @@ SkBitmap SkBitmapOperations::CreateButtonBackground(SkColor color,
   double bg_r = SkColorGetR(color) * (bg_a / 255.0);
   double bg_g = SkColorGetG(color) * (bg_a / 255.0);
   double bg_b = SkColorGetB(color) * (bg_a / 255.0);
-
-  SkAutoLockPixels lock_mask(mask);
-  SkAutoLockPixels lock_image(image);
-  SkAutoLockPixels lock_background(background);
 
   for (int y = 0; y < mask.height(); ++y) {
     uint32_t* dst_row = background.getAddr32(0, y);
@@ -518,9 +505,6 @@ SkBitmap SkBitmapOperations::CreateHSLShiftedBitmap(
   SkBitmap shifted;
   shifted.allocN32Pixels(bitmap.width(), bitmap.height());
 
-  SkAutoLockPixels lock_bitmap(bitmap);
-  SkAutoLockPixels lock_shifted(shifted);
-
   // Loop through the pixels of the original bitmap.
   for (int y = 0; y < bitmap.height(); ++y) {
     SkPMColor* pixels = bitmap.getAddr32(0, y);
@@ -540,9 +524,6 @@ SkBitmap SkBitmapOperations::CreateTiledBitmap(const SkBitmap& source,
 
   SkBitmap cropped;
   cropped.allocN32Pixels(dst_w, dst_h);
-
-  SkAutoLockPixels lock_source(source);
-  SkAutoLockPixels lock_cropped(cropped);
 
   // Loop through the pixels of the original bitmap.
   for (int y = 0; y < dst_h; ++y) {
@@ -588,8 +569,6 @@ SkBitmap SkBitmapOperations::DownsampleByTwo(const SkBitmap& bitmap) {
 
   SkBitmap result;
   result.allocN32Pixels((bitmap.width() + 1) / 2, (bitmap.height() + 1) / 2);
-
-  SkAutoLockPixels lock(bitmap);
 
   const int resultLastX = result.width() - 1;
   const int srcLastX = bitmap.width() - 1;
@@ -657,16 +636,12 @@ SkBitmap SkBitmapOperations::UnPreMultiply(const SkBitmap& bitmap) {
   SkBitmap opaque_bitmap;
   opaque_bitmap.allocPixels(opaque_info);
 
-  {
-    SkAutoLockPixels bitmap_lock(bitmap);
-    SkAutoLockPixels opaque_bitmap_lock(opaque_bitmap);
-    for (int y = 0; y < opaque_bitmap.height(); y++) {
-      for (int x = 0; x < opaque_bitmap.width(); x++) {
-        uint32_t src_pixel = *bitmap.getAddr32(x, y);
-        uint32_t* dst_pixel = opaque_bitmap.getAddr32(x, y);
-        SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(src_pixel);
-        *dst_pixel = unmultiplied;
-      }
+  for (int y = 0; y < opaque_bitmap.height(); y++) {
+    for (int x = 0; x < opaque_bitmap.width(); x++) {
+      uint32_t src_pixel = *bitmap.getAddr32(x, y);
+      uint32_t* dst_pixel = opaque_bitmap.getAddr32(x, y);
+      SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(src_pixel);
+      *dst_pixel = unmultiplied;
     }
   }
 
@@ -679,9 +654,6 @@ SkBitmap SkBitmapOperations::CreateTransposedBitmap(const SkBitmap& image) {
 
   SkBitmap transposed;
   transposed.allocN32Pixels(image.height(), image.width());
-
-  SkAutoLockPixels lock_image(image);
-  SkAutoLockPixels lock_transposed(transposed);
 
   for (int y = 0; y < image.height(); ++y) {
     uint32_t* image_row = image.getAddr32(0, y);

@@ -1183,7 +1183,6 @@ TEST_F(LayerWithRealCompositorTest, DrawPixels) {
   ReadPixels(&bitmap, gfx::Rect(viewport_size));
   ASSERT_FALSE(bitmap.empty());
 
-  SkAutoLockPixels lock(bitmap);
   for (int x = 0; x < viewport_size.width(); x++) {
     for (int y = 0; y < viewport_size.height(); y++) {
       SkColor actual_color = bitmap.getColor(x, y);
@@ -1221,7 +1220,6 @@ TEST_F(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
   ReadPixels(&bitmap, gfx::Rect(viewport_size));
   ASSERT_FALSE(bitmap.empty());
 
-  SkAutoLockPixels lock(bitmap);
   for (int x = 0; x < test_size; x++) {
     for (int y = 0; y < test_size; y++) {
       SkColor actual_color = bitmap.getColor(x, y);
@@ -1262,7 +1260,6 @@ TEST_F(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
   ReadPixels(&bitmap, gfx::Rect(viewport_size));
   ASSERT_FALSE(bitmap.empty());
 
-  SkAutoLockPixels lock(bitmap);
   for (int x = 0; x < test_size; x++) {
     for (int y = 0; y < test_size; y++) {
       SkColor actual_color = bitmap.getColor(x, y);

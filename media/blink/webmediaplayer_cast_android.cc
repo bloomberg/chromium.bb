@@ -124,13 +124,10 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
   gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  {
-    SkAutoLockPixels lock(bitmap);
-    gl->TexImage2D(texture_target, 0 /* level */, GL_RGBA /* internalformat */,
-                   bitmap.width(), bitmap.height(), 0 /* border */,
-                   GL_RGBA /* format */, GL_UNSIGNED_BYTE /* type */,
-                   bitmap.getPixels());
-  }
+  gl->TexImage2D(texture_target, 0 /* level */, GL_RGBA /* internalformat */,
+                 bitmap.width(), bitmap.height(), 0 /* border */,
+                 GL_RGBA /* format */, GL_UNSIGNED_BYTE /* type */,
+                 bitmap.getPixels());
 
   gpu::Mailbox texture_mailbox;
   gl->GenMailboxCHROMIUM(texture_mailbox.name);

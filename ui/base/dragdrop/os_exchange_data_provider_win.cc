@@ -579,10 +579,7 @@ void OSExchangeDataProviderWin::SetDragImage(
   if (!hbitmap)
     return;
 
-  {
-    SkAutoLockPixels lock(unpremul_bitmap);
-    memcpy(bits, unpremul_bitmap.getPixels(), height * rowbytes);
-  }
+  memcpy(bits, unpremul_bitmap.getPixels(), height * rowbytes);
 
   base::win::ScopedComPtr<IDragSourceHelper> helper;
   HRESULT rv = CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,

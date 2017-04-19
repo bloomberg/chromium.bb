@@ -40,7 +40,6 @@ class TraceableDevToolsScreenshot
     out->append("\"");
     if (!frame_.drawsNothing()) {
       std::vector<unsigned char> data;
-      SkAutoLockPixels lock_image(frame_);
       bool encoded = gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(frame_.getAddr32(0, 0)),
           gfx::JPEGCodec::FORMAT_SkBitmap,

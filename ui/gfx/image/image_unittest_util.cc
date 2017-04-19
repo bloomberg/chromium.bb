@@ -137,8 +137,6 @@ bool AreBitmapsClose(const SkBitmap& bmp1,
     return false;
   }
 
-  SkAutoLockPixels lock1(bmp1);
-  SkAutoLockPixels lock2(bmp2);
   if (!bmp1.getPixels() || !bmp2.getPixels())
     return false;
 
@@ -174,7 +172,6 @@ void CheckImageIndicatesPNGDecodeFailure(const gfx::Image& image) {
   EXPECT_FALSE(bitmap.isNull());
   EXPECT_LE(16, bitmap.width());
   EXPECT_LE(16, bitmap.height());
-  SkAutoLockPixels auto_lock(bitmap);
   CheckColors(bitmap.getColor(10, 10), SK_ColorRED);
 }
 
@@ -271,9 +268,7 @@ PlatformImage CopyPlatformType(const gfx::Image& image) {
 // Defined in image_unittest_util_mac.mm.
 #else
 SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
-  SkBitmap bitmap = *image.bitmap();
-  SkAutoLockPixels auto_lock(bitmap);
-  return bitmap.getColor(x, y);
+  return image.bitmap()->getColor(x, y);
 }
 #endif
 

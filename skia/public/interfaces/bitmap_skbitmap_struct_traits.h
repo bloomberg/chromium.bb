@@ -27,8 +27,6 @@ struct StructTraits<skia::mojom::BitmapDataView, SkBitmap> {
   static uint64_t row_bytes(const SkBitmap& b);
   static BitmapBuffer pixel_data(const SkBitmap& b);
   static bool Read(skia::mojom::BitmapDataView data, SkBitmap* b);
-  static void* SetUpContext(const SkBitmap& b);
-  static void TearDownContext(const SkBitmap& b, void* context);
 };
 
 }  // namespace mojo

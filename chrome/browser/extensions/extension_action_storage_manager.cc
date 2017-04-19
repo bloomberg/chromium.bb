@@ -80,7 +80,6 @@ bool StringToSkBitmap(const std::string& str, SkBitmap* bitmap) {
 
 // Conversion function for reading/writing to storage.
 std::string BitmapToString(const SkBitmap& bitmap) {
-  SkAutoLockPixels lock_image(bitmap);
   std::vector<unsigned char> data;
   bool success = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &data);
   if (!success)

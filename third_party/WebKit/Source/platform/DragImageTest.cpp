@@ -156,23 +156,17 @@ TEST(DragImageTest, TrimWhitespace) {
 TEST(DragImageTest, InterpolationNone) {
   SkBitmap expected_bitmap;
   expected_bitmap.allocN32Pixels(4, 4);
-  {
-    SkAutoLockPixels lock(expected_bitmap);
-    expected_bitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 2, 2), 0xFFFFFFFF);
-    expected_bitmap.eraseArea(SkIRect::MakeXYWH(0, 2, 2, 2), 0xFF000000);
-    expected_bitmap.eraseArea(SkIRect::MakeXYWH(2, 0, 2, 2), 0xFF000000);
-    expected_bitmap.eraseArea(SkIRect::MakeXYWH(2, 2, 2, 2), 0xFFFFFFFF);
-  }
+  expected_bitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 2, 2), 0xFFFFFFFF);
+  expected_bitmap.eraseArea(SkIRect::MakeXYWH(0, 2, 2, 2), 0xFF000000);
+  expected_bitmap.eraseArea(SkIRect::MakeXYWH(2, 0, 2, 2), 0xFF000000);
+  expected_bitmap.eraseArea(SkIRect::MakeXYWH(2, 2, 2, 2), 0xFFFFFFFF);
 
   SkBitmap test_bitmap;
   test_bitmap.allocN32Pixels(2, 2);
-  {
-    SkAutoLockPixels lock(test_bitmap);
-    test_bitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 1, 1), 0xFFFFFFFF);
-    test_bitmap.eraseArea(SkIRect::MakeXYWH(0, 1, 1, 1), 0xFF000000);
-    test_bitmap.eraseArea(SkIRect::MakeXYWH(1, 0, 1, 1), 0xFF000000);
-    test_bitmap.eraseArea(SkIRect::MakeXYWH(1, 1, 1, 1), 0xFFFFFFFF);
-  }
+  test_bitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 1, 1), 0xFFFFFFFF);
+  test_bitmap.eraseArea(SkIRect::MakeXYWH(0, 1, 1, 1), 0xFF000000);
+  test_bitmap.eraseArea(SkIRect::MakeXYWH(1, 0, 1, 1), 0xFF000000);
+  test_bitmap.eraseArea(SkIRect::MakeXYWH(1, 1, 1, 1), 0xFFFFFFFF);
 
   RefPtr<TestImage> test_image =
       TestImage::Create(SkImage::MakeFromBitmap(test_bitmap));
@@ -181,13 +175,9 @@ TEST(DragImageTest, InterpolationNone) {
   ASSERT_TRUE(drag_image);
   drag_image->Scale(2, 2);
   const SkBitmap& drag_bitmap = drag_image->Bitmap();
-  {
-    SkAutoLockPixels lock1(drag_bitmap);
-    SkAutoLockPixels lock2(expected_bitmap);
-    for (int x = 0; x < drag_bitmap.width(); ++x)
-      for (int y = 0; y < drag_bitmap.height(); ++y)
-        EXPECT_EQ(expected_bitmap.getColor(x, y), drag_bitmap.getColor(x, y));
-  }
+  for (int x = 0; x < drag_bitmap.width(); ++x)
+    for (int y = 0; y < drag_bitmap.height(); ++y)
+      EXPECT_EQ(expected_bitmap.getColor(x, y), drag_bitmap.getColor(x, y));
 }
 
 }  // namespace blink

@@ -53,7 +53,6 @@ gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
 
   SkBitmap result;
   result.allocN32Pixels(width, height, false);
-  result.lockPixels();
 
   uint8_t* pixels_data = reinterpret_cast<uint8_t*>(result.getPixels());
 

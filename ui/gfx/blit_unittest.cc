@@ -46,7 +46,6 @@ void SetToCanvas(SkCanvas* canvas, uint8_t values[h][w]) {
 template <int w, int h>
 void VerifyCanvasValues(SkCanvas* canvas, uint8_t values[h][w]) {
   SkBitmap bitmap = skia::ReadPixels(canvas);
-  SkAutoLockPixels lock(bitmap);
   ASSERT_EQ(w, bitmap.width());
   ASSERT_EQ(h, bitmap.height());
 

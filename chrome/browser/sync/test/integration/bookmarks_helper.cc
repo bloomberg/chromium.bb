@@ -190,8 +190,6 @@ bool FaviconRawBitmapsMatch(const SkBitmap& bitmap_a,
                << bitmap_b.height() << ")";
     return false;
   }
-  SkAutoLockPixels bitmap_lock_a(bitmap_a);
-  SkAutoLockPixels bitmap_lock_b(bitmap_b);
   void* node_pixel_addr_a = bitmap_a.getPixels();
   EXPECT_TRUE(node_pixel_addr_a);
   void* node_pixel_addr_b = bitmap_b.getPixels();

@@ -736,7 +736,6 @@ class GLHelperTest : public testing::Test {
     }
 
     // Now compare the results.
-    SkAutoLockPixels lock_input(truth_pixels);
     const std::vector<GLHelperScaling::ScalerStage> dummy_stages;
     Compare(&truth_pixels, &output_pixels, 2, input_pixels.get(), dummy_stages,
             message + " comparing against transformed/scaled");
@@ -961,8 +960,6 @@ class GLHelperTest : public testing::Test {
     if (bmp1.colorType() != bmp2.colorType())
       return false;
 
-    SkAutoLockPixels lock1(bmp1);
-    SkAutoLockPixels lock2(bmp2);
     if (!bmp1.getPixels() || !bmp2.getPixels()) {
       LOG(ERROR) << "Empty Bitmap!";
       return false;

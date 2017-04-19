@@ -74,7 +74,6 @@ ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
          (color_type == kN32_SkColorType));
   ScopedJavaLocalRef<jobject> jbitmap = CreateJavaBitmap(
       skbitmap->width(), skbitmap->height(), color_type);
-  SkAutoLockPixels src_lock(*skbitmap);
   JavaBitmap dst_lock(jbitmap);
   void* src_pixels = skbitmap->getPixels();
   void* dst_pixels = dst_lock.pixels();

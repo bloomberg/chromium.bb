@@ -180,14 +180,12 @@ bool StructTraits<skia::mojom::BitmapDataView, SkBitmap>::Read(
   if (data.width() == 0 || data.height() == 0)
     return true;
 
-  SkAutoPixmapUnlock pixmap;
   mojo::ArrayDataView<uint8_t> data_view;
   data.GetPixelDataDataView(&data_view);
   if (static_cast<uint32_t>(b->width()) != data.width() ||
       static_cast<uint32_t>(b->height()) != data.height() ||
       static_cast<uint64_t>(b->rowBytes()) != data.row_bytes() ||
-      b->getSize() != data_view.size() || !b->requestLock(&pixmap) ||
-      !b->readyToDraw()) {
+      b->getSize() != data_view.size() || !b->readyToDraw()) {
     return false;
   }
 
@@ -198,20 +196,6 @@ bool StructTraits<skia::mojom::BitmapDataView, SkBitmap>::Read(
 
   b->notifyPixelsChanged();
   return true;
-}
-
-// static
-void* StructTraits<skia::mojom::BitmapDataView, SkBitmap>::SetUpContext(
-    const SkBitmap& b) {
-  b.lockPixels();
-  return nullptr;
-}
-
-// static
-void StructTraits<skia::mojom::BitmapDataView, SkBitmap>::TearDownContext(
-    const SkBitmap& b,
-    void* context) {
-  b.unlockPixels();
 }
 
 }  // namespace mojo

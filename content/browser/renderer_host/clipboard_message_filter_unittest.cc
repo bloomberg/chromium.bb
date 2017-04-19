@@ -103,7 +103,6 @@ TEST_F(ClipboardMessageFilterTest, SimpleImage) {
       ui::Clipboard::GetBitmapFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
 
   SkBitmap actual = clipboard()->ReadImage(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  SkAutoLockPixels locked(actual);
   EXPECT_EQ(sizeof(bitmap_data), actual.getSize());
   EXPECT_EQ(0,
             memcmp(bitmap_data, actual.getAddr32(0, 0), sizeof(bitmap_data)));

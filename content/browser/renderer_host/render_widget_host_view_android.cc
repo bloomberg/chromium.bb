@@ -284,12 +284,10 @@ void CopyFromCompositingSurfaceFinished(
     std::unique_ptr<cc::SingleReleaseCallback> release_callback,
     std::unique_ptr<SkBitmap> bitmap,
     const base::TimeTicks& start_time,
-    std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock,
     scoped_refptr<PendingReadbackLock> readback_lock,
     bool result) {
   TRACE_EVENT0(
       "cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceFinished");
-  bitmap_pixels_lock.reset();
   gpu::SyncToken sync_token;
   if (result) {
     display_compositor::GLHelper* gl_helper = GetPostReadbackGLHelper();
@@ -383,8 +381,6 @@ void PrepareTextureCopyOutputResult(
     return;
   }
 
-  std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock(
-      new SkAutoLockPixels(*bitmap));
   uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
 
   ignore_result(scoped_callback_runner.Release());
@@ -394,7 +390,7 @@ void PrepareTextureCopyOutputResult(
       gfx::Rect(result->size()), output_size_in_pixel, pixels, color_type,
       base::Bind(&CopyFromCompositingSurfaceFinished, callback,
                  base::Passed(&release_callback), base::Passed(&bitmap),
-                 start_time, base::Passed(&bitmap_pixels_lock), readback_lock),
+                 start_time, readback_lock),
       display_compositor::GLHelper::SCALER_QUALITY_GOOD);
 }
 

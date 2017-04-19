@@ -387,7 +387,6 @@ class HoveredImageSource : public gfx::ImageSkiaSource {
     SkBitmap white;
     white.allocN32Pixels(bitmap.width(), bitmap.height());
     white.eraseARGB(0, 0, 0, 0);
-    bitmap.lockPixels();
     for (int y = 0; y < bitmap.height(); ++y) {
       uint32_t* image_row = bitmap.getAddr32(0, y);
       uint32_t* dst_row = white.getAddr32(0, y);
@@ -397,7 +396,6 @@ class HoveredImageSource : public gfx::ImageSkiaSource {
         dst_row[x] = (image_pixel & 0xFF000000) == 0x0 ? 0x0 : color_;
       }
     }
-    bitmap.unlockPixels();
     return gfx::ImageSkiaRep(white, scale);
   }
 

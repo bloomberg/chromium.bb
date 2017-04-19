@@ -172,8 +172,6 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecord) {
 
   canvas_->drawPicture(record);
   EXPECT_EQ(0, decode_request_count_);
-
-  SkAutoLockPixels auto_lock(bitmap_);
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), bitmap_.getColor(0, 0));
 }
 
@@ -203,8 +201,6 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
                  PaintImage::CompletionState::DONE),
       0, 0);
   canvas_->drawPicture(recorder.finishRecordingAsPicture());
-
-  SkAutoLockPixels auto_lock(bitmap_);
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), bitmap_.getColor(0, 0));
 }
 
@@ -237,8 +233,6 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
                       record));
   thread.reset();
   EXPECT_EQ(0, decode_request_count_);
-
-  SkAutoLockPixels auto_lock(bitmap_);
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), bitmap_.getColor(0, 0));
 }
 

@@ -731,7 +731,6 @@ bool InternalEncodeSkBitmap(const SkBitmap& input,
   int bpp = input.bytesPerPixel();
   DCHECK(bpp == 1 || bpp == 4);  // We support kA8_Config and kARGB_8888_Config.
 
-  SkAutoLockPixels lock_input(input);
   unsigned char* inputAddr = bpp == 1 ?
       reinterpret_cast<unsigned char*>(input.getAddr8(0, 0)) :
       reinterpret_cast<unsigned char*>(input.getAddr32(0, 0));    // bpp = 4

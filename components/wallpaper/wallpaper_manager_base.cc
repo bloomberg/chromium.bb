@@ -431,7 +431,6 @@ bool WallpaperManagerBase::ResizeImage(
       gfx::Size(resized_width, resized_height));
 
   SkBitmap bitmap = *(resized_image.bitmap());
-  SkAutoLockPixels lock_input(bitmap);
   gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
       gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),

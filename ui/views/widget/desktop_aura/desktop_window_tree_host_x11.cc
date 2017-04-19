@@ -1887,7 +1887,6 @@ void DesktopWindowTreeHostX11::SerializeImageRepresentation(
   data->push_back(height);
 
   const SkBitmap& bitmap = rep.sk_bitmap();
-  SkAutoLockPixels locker(bitmap);
 
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x)

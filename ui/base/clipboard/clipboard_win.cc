@@ -808,11 +808,8 @@ void ClipboardWin::WriteBitmap(const SkBitmap& bitmap) {
       ::CreateDIBSection(dc, &bm_info, DIB_RGB_COLORS, &bits, NULL, 0);
 
   if (bits && source_hbitmap) {
-    {
-      SkAutoLockPixels bitmap_lock(bitmap);
-      // Copy the bitmap out of shared memory and into GDI
-      memcpy(bits, bitmap.getPixels(), bitmap.getSize());
-    }
+    // Copy the bitmap out of shared memory and into GDI
+    memcpy(bits, bitmap.getPixels(), bitmap.getSize());
 
     // Now we have an HBITMAP, we can write it to the clipboard
     WriteBitmapFromHandle(source_hbitmap,

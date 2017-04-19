@@ -37,8 +37,6 @@ bool AreImagesEqual(const gfx::ImageSkia& first, const gfx::ImageSkia& second) {
   if (second_bitmap->getSize() != size)
     return false;
 
-  SkAutoLockPixels first_pixel_lock(*first_bitmap);
-  SkAutoLockPixels second_pixel_lock(*second_bitmap);
   uint8_t* first_data = reinterpret_cast<uint8_t*>(first_bitmap->getPixels());
   uint8_t* second_data = reinterpret_cast<uint8_t*>(second_bitmap->getPixels());
   for (size_t i = 0; i < size; ++i) {

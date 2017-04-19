@@ -255,7 +255,6 @@ void TestRunnerForSpecificView::CapturePixelsCallback(
 
   v8::Context::Scope context_scope(context);
   v8::Local<v8::Value> argv[3];
-  SkAutoLockPixels snapshot_lock(snapshot);
 
   // Size can be 0 for cases where copyImageAt was called on position
   // that doesn't have an image.

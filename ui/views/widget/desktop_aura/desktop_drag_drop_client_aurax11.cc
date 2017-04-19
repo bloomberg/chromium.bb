@@ -1352,7 +1352,6 @@ bool DesktopDragDropClientAuraX11::IsValidDragImage(
   // don't make another context if the window would just be displaying a mostly
   // transparent image.
   const SkBitmap* in_bitmap = image.bitmap();
-  SkAutoLockPixels in_lock(*in_bitmap);
   for (int y = 0; y < in_bitmap->height(); ++y) {
     uint32_t* in_row = in_bitmap->getAddr32(0, y);
 

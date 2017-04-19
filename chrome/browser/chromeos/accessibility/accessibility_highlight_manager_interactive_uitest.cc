@@ -92,8 +92,6 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
   void ComputeImageStats() {
     diff_count_ = 0;
     double accum[4] = {0, 0, 0, 0};
-    SkAutoLockPixels lock_before(before_bmp_);
-    SkAutoLockPixels lock_after(after_bmp_);
     for (int x = 0; x < before_bmp_.width(); ++x) {
       for (int y = 0; y < before_bmp_.height(); ++y) {
         SkColor before_color = before_bmp_.getColor(x, y);
@@ -139,7 +137,6 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
       run_loop_quitter_ = run_loop.QuitClosure();
       run_loop.Run();
       SkBitmap bitmap = image_.AsBitmap();
-      SkAutoLockPixels lock(bitmap);
       if (bitmap.width() != bounds.width() ||
           bitmap.height() != bounds.height()) {
         LOG(INFO) << "Bitmap not correct size, trying to capture again";

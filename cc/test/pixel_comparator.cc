@@ -28,9 +28,6 @@ bool ExactPixelComparator::Compare(const SkBitmap& actual_bmp,
   DCHECK(actual_bmp.width() == expected_bmp.width() &&
          actual_bmp.height() == expected_bmp.height());
 
-  SkAutoLockPixels lock_actual_bmp(actual_bmp);
-  SkAutoLockPixels lock_expected_bmp(expected_bmp);
-
   for (int x = 0; x < actual_bmp.width(); ++x) {
     for (int y = 0; y < actual_bmp.height(); ++y) {
       SkColor actual_color = actual_bmp.getColor(x, y);
@@ -95,9 +92,6 @@ bool FuzzyPixelComparator::Compare(const SkBitmap& actual_bmp,
 
   // Check that bitmaps are not empty.
   DCHECK(actual_bmp.width() > 0 && actual_bmp.height() > 0);
-
-  SkAutoLockPixels lock_actual_bmp(actual_bmp);
-  SkAutoLockPixels lock_expected_bmp(expected_bmp);
 
   for (int x = 0; x < actual_bmp.width(); ++x) {
     for (int y = 0; y < actual_bmp.height(); ++y) {

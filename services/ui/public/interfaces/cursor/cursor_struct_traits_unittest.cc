@@ -89,17 +89,12 @@ TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
     ASSERT_EQ(input.cursor_frames()[f].height(),
               output.cursor_frames()[f].height());
 
-    input.cursor_frames()[f].lockPixels();
-    output.cursor_frames()[f].lockPixels();
     for (int x = 0; x < input.cursor_frames()[f].width(); ++x) {
       for (int y = 0; y < input.cursor_frames()[f].height(); ++y) {
         EXPECT_EQ(input.cursor_frames()[f].getColor(x, y),
                   output.cursor_frames()[f].getColor(x, y));
       }
     }
-
-    output.cursor_frames()[f].unlockPixels();
-    input.cursor_frames()[f].unlockPixels();
   }
 }
 

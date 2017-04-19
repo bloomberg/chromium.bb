@@ -54,8 +54,6 @@ bool CompareImageFragments(const SkBitmap& bitmap_left,
                            const gfx::Size& comparison_area,
                            const gfx::Point& origin_left,
                            const gfx::Point& origin_right) {
-  SkAutoLockPixels left_lock(bitmap_left);
-  SkAutoLockPixels right_lock(bitmap_right);
   for (int r = 0; r < comparison_area.height(); ++r) {
     for (int c = 0; c < comparison_area.width(); ++c) {
       SkColor color_left = bitmap_left.getColor(origin_left.x() + c,

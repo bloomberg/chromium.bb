@@ -124,7 +124,6 @@ scoped_refptr<base::RefCountedBytes> GenerateTestPNG(const int& width,
     for (int x = 0; x < width; ++x)
       *bmp.getAddr32(x, y) = background_color;
   }
-  SkAutoLockPixels lock(bmp);
   scoped_refptr<base::RefCountedBytes> png_bytes(new base::RefCountedBytes());
   gfx::PNGCodec::ColorFormat color_format = gfx::PNGCodec::FORMAT_RGBA;
   if (!gfx::PNGCodec::Encode(

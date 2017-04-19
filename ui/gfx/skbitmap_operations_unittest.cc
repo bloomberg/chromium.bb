@@ -31,9 +31,6 @@ inline bool MultipliedColorsClose(uint32_t a, uint32_t b) {
 }
 
 bool BitmapsClose(const SkBitmap& a, const SkBitmap& b) {
-  SkAutoLockPixels a_lock(a);
-  SkAutoLockPixels b_lock(b);
-
   for (int y = 0; y < a.height(); y++) {
     for (int x = 0; x < a.width(); x++) {
       SkColor a_pixel = *a.getAddr32(x, y);
@@ -67,9 +64,6 @@ SkBitmap ReferenceCreateHSLShiftedBitmap(
   shifted.allocN32Pixels(bitmap.width(), bitmap.height());
   shifted.eraseARGB(0, 0, 0, 0);
 
-  SkAutoLockPixels lock_bitmap(bitmap);
-  SkAutoLockPixels lock_shifted(shifted);
-
   // Loop through the pixels of the original bitmap.
   for (int y = 0; y < bitmap.height(); ++y) {
     SkPMColor* pixels = bitmap.getAddr32(0, y);
@@ -102,8 +96,6 @@ TEST(SkBitmapOperationsTest, CreateInvertedBitmap) {
   }
 
   SkBitmap inverted = SkBitmapOperations::CreateInvertedBitmap(src);
-  SkAutoLockPixels src_lock(src);
-  SkAutoLockPixels inverted_lock(inverted);
 
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
@@ -142,9 +134,6 @@ TEST(SkBitmapOperationsTest, CreateBlendedBitmap) {
   // Shift to red.
   SkBitmap blended = SkBitmapOperations::CreateBlendedBitmap(
     src_a, src_b, 0.5);
-  SkAutoLockPixels srca_lock(src_a);
-  SkAutoLockPixels srcb_lock(src_b);
-  SkAutoLockPixels blended_lock(blended);
 
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
@@ -178,10 +167,6 @@ TEST(SkBitmapOperationsTest, CreateMaskedBitmap) {
   }
 
   SkBitmap masked = SkBitmapOperations::CreateMaskedBitmap(src, alpha);
-
-  SkAutoLockPixels src_lock(src);
-  SkAutoLockPixels alpha_lock(alpha);
-  SkAutoLockPixels masked_lock(masked);
 
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
@@ -228,9 +213,6 @@ TEST(SkBitmapOperationsTest, CreateHSLShiftedBitmapToSame) {
   color_utils::HSL hsl = { -1, -1, -1 };
   SkBitmap shifted = ReferenceCreateHSLShiftedBitmap(src, hsl);
 
-  SkAutoLockPixels src_lock(src);
-  SkAutoLockPixels shifted_lock(shifted);
-
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
       SkColor src_pixel = *src.getAddr32(x, y);
@@ -265,9 +247,6 @@ TEST(SkBitmapOperationsTest, CreateHSLShiftedBitmapHueOnly) {
   color_utils::HSL hsl = { 0, -1, -1 };
 
   SkBitmap shifted = SkBitmapOperations::CreateHSLShiftedBitmap(src, hsl);
-
-  SkAutoLockPixels src_lock(src);
-  SkAutoLockPixels shifted_lock(shifted);
 
   for (int y = 0, i = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
@@ -323,8 +302,6 @@ TEST(SkBitmapOperationsTest, CreateCroppedBitmap) {
   ASSERT_EQ(8, cropped.width());
   ASSERT_EQ(8, cropped.height());
 
-  SkAutoLockPixels src_lock(src);
-  SkAutoLockPixels cropped_lock(cropped);
   for (int y = 4; y < 12; y++) {
     for (int x = 4; x < 12; x++) {
       EXPECT_EQ(*src.getAddr32(x, y),
@@ -344,8 +321,6 @@ TEST(SkBitmapOperationsTest, CreateCroppedBitmapWrapping) {
   ASSERT_EQ(src_w, cropped.width());
   ASSERT_EQ(src_h, cropped.height());
 
-  SkAutoLockPixels src_lock(src);
-  SkAutoLockPixels cropped_lock(cropped);
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
       EXPECT_EQ(*src.getAddr32(x, y),
@@ -392,7 +367,6 @@ TEST(SkBitmapOperationsTest, DownsampleByTwo) {
   EXPECT_EQ(2, result.height());
 
   // Some of the values are off-by-one due to rounding.
-  SkAutoLockPixels lock(result);
   EXPECT_EQ(0x9f404040, *result.getAddr32(0, 0));
   EXPECT_EQ(0xFF7f7f7f, *result.getAddr32(1, 0));
   EXPECT_EQ(0xFF7f7f7f, *result.getAddr32(0, 1));
@@ -408,7 +382,6 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoSmall) {
   one_by_one.allocN32Pixels(1, 1);
   *one_by_one.getAddr32(0, 0) = reference;
   SkBitmap result = SkBitmapOperations::DownsampleByTwo(one_by_one);
-  SkAutoLockPixels lock1(result);
   EXPECT_EQ(1, result.width());
   EXPECT_EQ(1, result.height());
   EXPECT_EQ(reference, *result.getAddr32(0, 0));
@@ -417,7 +390,6 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoSmall) {
   SkBitmap one_by_n;
   one_by_n.allocN32Pixels(300, 1);
   result = SkBitmapOperations::DownsampleByTwo(one_by_n);
-  SkAutoLockPixels lock2(result);
   EXPECT_EQ(300, result.width());
   EXPECT_EQ(1, result.height());
 
@@ -425,7 +397,6 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoSmall) {
   SkBitmap n_by_one;
   n_by_one.allocN32Pixels(1, 300);
   result = SkBitmapOperations::DownsampleByTwo(n_by_one);
-  SkAutoLockPixels lock3(result);
   EXPECT_EQ(1, result.width());
   EXPECT_EQ(300, result.height());
 
@@ -477,7 +448,6 @@ TEST(SkBitmapOperationsTest, UnPreMultiply) {
   EXPECT_EQ(2, result.width());
   EXPECT_EQ(2, result.height());
 
-  SkAutoLockPixels lock(result);
   EXPECT_EQ(0x80000000, *result.getAddr32(0, 0));
   EXPECT_EQ(0x80FFFFFF, *result.getAddr32(1, 0));
   EXPECT_EQ(0xFF00CC88, *result.getAddr32(0, 1));
@@ -498,7 +468,6 @@ TEST(SkBitmapOperationsTest, CreateTransposedBitmap) {
   EXPECT_EQ(3, result.width());
   EXPECT_EQ(2, result.height());
 
-  SkAutoLockPixels lock(result);
   for (int x = 0; x < input.width(); ++x) {
     for (int y = 0; y < input.height(); ++y) {
       EXPECT_EQ(*input.getAddr32(x, y), *result.getAddr32(y, x));
@@ -556,11 +525,6 @@ TEST(SkBitmapOperationsTest, RotateImage) {
   ASSERT_EQ(rotate180.height(), src.height());
   ASSERT_EQ(rotate270.width(), src.height());
   ASSERT_EQ(rotate270.height(), src.width());
-
-  SkAutoLockPixels lock_src(src);
-  SkAutoLockPixels lock_90(rotate90);
-  SkAutoLockPixels lock_180(rotate180);
-  SkAutoLockPixels lock_270(rotate270);
 
   for (int x=0; x < src_w; ++x) {
     for (int y=0; y < src_h; ++y) {

@@ -64,7 +64,6 @@ void ParamTraits<SkBitmap>::Write(base::Pickle* m, const SkBitmap& p) {
   m->WriteData(reinterpret_cast<const char*>(&bmp_data),
                static_cast<int>(fixed_size));
   size_t pixel_size = p.getSize();
-  SkAutoLockPixels p_lock(p);
   m->WriteData(reinterpret_cast<const char*>(p.getPixels()),
                static_cast<int>(pixel_size));
 }

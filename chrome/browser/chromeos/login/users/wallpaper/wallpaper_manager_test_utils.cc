@@ -137,10 +137,8 @@ bool ImageIsNearColor(gfx::ImageSkia image, SkColor expected_color) {
     return false;
   }
 
-  bitmap->lockPixels();
   gfx::Point center = gfx::Rect(image.size()).CenterPoint();
   SkColor image_color = bitmap->getColor(center.x(), center.y());
-  bitmap->unlockPixels();
 
   const int kDiff = 3;
   if (std::abs(static_cast<int>(SkColorGetA(image_color)) -

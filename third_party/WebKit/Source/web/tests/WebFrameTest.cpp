@@ -7483,7 +7483,6 @@ TEST_P(ParameterizedWebFrameTest, WebNodeImageContents) {
   EXPECT_EQ(image.Size().width, 10);
   EXPECT_EQ(image.Size().height, 10);
   SkBitmap bitmap = image.GetSkBitmap();
-  SkAutoLockPixels locker(bitmap);
   EXPECT_EQ(bitmap.getColor(0, 0), SK_ColorBLUE);
 }
 
@@ -8584,7 +8583,6 @@ static void NodeImageTestValidation(const IntSize& reference_bitmap_size,
   EXPECT_EQ(reference_bitmap_size.Width(), drag_image->Size().Width());
   EXPECT_EQ(reference_bitmap_size.Height(), drag_image->Size().Height());
   const SkBitmap& drag_bitmap = drag_image->Bitmap();
-  SkAutoLockPixels lock_pixel(drag_bitmap);
   EXPECT_EQ(
       0, memcmp(bitmap.getPixels(), drag_bitmap.getPixels(), bitmap.getSize()));
 }
@@ -10626,7 +10624,6 @@ TEST_F(WebFrameTest, CopyImageAt) {
       static_cast<WebMockClipboard*>(Platform::Current()->Clipboard())
           ->ReadRawImage(WebClipboard::Buffer());
 
-  SkAutoLockPixels auto_lock(image.GetSkBitmap());
   EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.GetSkBitmap().getColor(0, 0));
 };
 
@@ -10654,7 +10651,6 @@ TEST_F(WebFrameTest, CopyImageAtWithPinchZoom) {
       static_cast<WebMockClipboard*>(Platform::Current()->Clipboard())
           ->ReadRawImage(WebClipboard::Buffer());
 
-  SkAutoLockPixels auto_lock(image.GetSkBitmap());
   EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.GetSkBitmap().getColor(0, 0));
 };
 

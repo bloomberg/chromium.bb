@@ -234,7 +234,6 @@ void ApplyGaussianGradientMagnitudeFilter(SkBitmap* input_bitmap,
   // The purpose of this function is to highlight salient
   // (attention-attracting?) features of the image for use in image
   // retargeting.
-  SkAutoLockPixels source_lock(*input_bitmap);
   DCHECK(input_bitmap);
   DCHECK(input_bitmap->getPixels());
   DCHECK_EQ(kAlpha_8_SkColorType, input_bitmap->colorType());
@@ -383,7 +382,6 @@ void ExtractImageProfileInformation(const SkBitmap& input_bitmap,
                                     bool apply_log,
                                     std::vector<float>* rows,
                                     std::vector<float>* columns) {
-  SkAutoLockPixels source_lock(input_bitmap);
   DCHECK(rows);
   DCHECK(columns);
   DCHECK(input_bitmap.getPixels());
@@ -664,7 +662,6 @@ void ConstrainedProfileSegmentation(const std::vector<float>& row_profile,
 SkBitmap ComputeDecimatedImage(const SkBitmap& bitmap,
                                const std::vector<bool>& rows,
                                const std::vector<bool>& columns) {
-  SkAutoLockPixels source_lock(bitmap);
   DCHECK(bitmap.getPixels());
   DCHECK_GT(bitmap.bytesPerPixel(), 0);
   DCHECK_EQ(bitmap.width(), static_cast<int>(columns.size()));

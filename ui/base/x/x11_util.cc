@@ -319,12 +319,10 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
   image->yhot = std::min(bitmap->height() - 1, hotspot_point.y());
 
   if (bitmap->width() && bitmap->height()) {
-    bitmap->lockPixels();
     // The |bitmap| contains ARGB image, so just copy it.
     memcpy(image->pixels,
            bitmap->getPixels(),
            bitmap->width() * bitmap->height() * 4);
-    bitmap->unlockPixels();
   }
 
   return image;

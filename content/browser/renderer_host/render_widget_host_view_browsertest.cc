@@ -469,8 +469,6 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       return;
     }
 
-    SkAutoLockPixels bitmap_lock(bitmap);
-
     // Check that the |bitmap| contains cyan and/or yellow pixels.  This is
     // needed because the compositor will read back "blank" frames until the
     // first frame from the renderer is composited.  See comments in
@@ -509,7 +507,6 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     EXPECT_EQ(expected_bitmap.width(), bitmap.width());
     EXPECT_EQ(expected_bitmap.height(), bitmap.height());
     EXPECT_EQ(expected_bitmap.colorType(), bitmap.colorType());
-    SkAutoLockPixels expected_bitmap_lock(expected_bitmap);
     int fails = 0;
     for (int i = 0; i < bitmap.width() && fails < 10; ++i) {
       for (int j = 0; j < bitmap.height() && fails < 10; ++j) {
@@ -727,13 +724,10 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     // Left half is #0ff.
     bitmap->eraseARGB(255, 0, 255, 255);
     // Right half is #ff0.
-    {
-      SkAutoLockPixels lock(*bitmap);
-      for (int i = 0; i < copy_size.width() / 2; ++i) {
-        for (int j = 0; j < copy_size.height(); ++j) {
-          *(bitmap->getAddr32(copy_size.width() / 2 + i, j)) =
-              SkColorSetARGB(255, 255, 255, 0);
-        }
+    for (int i = 0; i < copy_size.width() / 2; ++i) {
+      for (int j = 0; j < copy_size.height(); ++j) {
+        *(bitmap->getAddr32(copy_size.width() / 2 + i, j)) =
+            SkColorSetARGB(255, 255, 255, 0);
       }
     }
   }

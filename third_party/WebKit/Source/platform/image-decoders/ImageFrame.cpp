@@ -48,9 +48,6 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other) {
     return *this;
 
   bitmap_ = other.bitmap_;
-  // Keep the pixels locked since we will be writing directly into the
-  // bitmap throughout this object's lifetime.
-  bitmap_.lockPixels();
   // Be sure to assign this before calling setStatus(), since setStatus() may
   // call notifyBitmapIfPixelsChanged().
   pixels_changed_ = other.pixels_changed_;

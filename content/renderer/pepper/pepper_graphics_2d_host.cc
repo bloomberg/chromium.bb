@@ -106,8 +106,6 @@ void ConvertImageData(PPB_ImageData_Impl* src_image,
 
   SkBitmap src_bitmap(src_image->GetMappedBitmap());
   SkBitmap dest_bitmap(dest_image->GetMappedBitmap());
-  SkAutoLockPixels src_lock(src_bitmap);
-  SkAutoLockPixels dest_lock(dest_bitmap);
   if (src_rect.width() == src_image->width() &&
       dest_rect.width() == dest_image->width()) {
     // Fast path if the full frame can be converted at once.

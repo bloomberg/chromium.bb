@@ -1244,8 +1244,6 @@ void GraphicsLayer::CheckPaintUnderInvalidations(
     canvas.drawPicture(std::move(new_record));
   }
 
-  old_bitmap.lockPixels();
-  new_bitmap.lockPixels();
   int mismatching_pixels = 0;
   static const int kMaxMismatchesToReport = 50;
   for (int bitmap_y = 0; bitmap_y < rect.Height(); ++bitmap_y) {
@@ -1277,8 +1275,6 @@ void GraphicsLayer::CheckPaintUnderInvalidations(
       }
     }
   }
-  old_bitmap.unlockPixels();
-  new_bitmap.unlockPixels();
 
   // Visualize under-invalidations by overlaying the new bitmap (containing red
   // pixels indicating under-invalidations, and transparent pixels otherwise)

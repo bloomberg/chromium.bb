@@ -59,9 +59,7 @@ SkColor GetColor(const gfx::ImageSkia& image, float scale,
     x = bitmap.width() / 2;
   if (y == -1)
     y = bitmap.width() / 2;
-  bitmap.lockPixels();
   SkColor color = bitmap.getColor(x, y);
-  bitmap.unlockPixels();
   return color;
 }
 

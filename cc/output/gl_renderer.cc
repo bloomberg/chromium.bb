@@ -2830,7 +2830,6 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
     if (src_pixels) {
       bitmap.reset(new SkBitmap);
       bitmap->allocN32Pixels(size.width(), size.height());
-      std::unique_ptr<SkAutoLockPixels> lock(new SkAutoLockPixels(*bitmap));
       uint8_t* dest_pixels = static_cast<uint8_t*>(bitmap->getPixels());
 
       size_t row_bytes = size.width() * 4;

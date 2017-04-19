@@ -83,8 +83,7 @@ class CODEC_EXPORT PNGCodec {
   // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed
   // to be kARGB_8888_Config, 32 bits per pixel. The params
   // |discard_transparency| and |output| are passed directly to Encode; refer to
-  // Encode for more information. During the call, an SkAutoLockPixels lock
-  // is held on |input|.
+  // Encode for more information.
   static bool EncodeBGRASkBitmap(const SkBitmap& input,
                                  bool discard_transparency,
                                  std::vector<unsigned char>* output);
@@ -99,8 +98,7 @@ class CODEC_EXPORT PNGCodec {
   // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed
   // to be kA8_Config, 8 bits per pixel. The bitmap is encoded as a grayscale
   // PNG with alpha used for color intensity. The |output| param is passed
-  // directly to Encode; refer to Encode for more information. During the call,
-  // an SkAutoLockPixels lock is held on |input|.
+  // directly to Encode; refer to Encode for more information.
   static bool EncodeA8SkBitmap(const SkBitmap& input,
                                std::vector<unsigned char>* output);
 

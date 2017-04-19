@@ -360,7 +360,6 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
   SkASSERT((ImageOperations::RESIZE_FIRST_ALGORITHM_METHOD <= method) &&
            (method <= ImageOperations::RESIZE_LAST_ALGORITHM_METHOD));
 
-  SkAutoLockPixels locker(source);
   if (!source.readyToDraw() || source.colorType() != kN32_SkColorType)
     return SkBitmap();
 

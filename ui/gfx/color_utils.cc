@@ -236,8 +236,6 @@ SkColor HSLShift(SkColor color, const HSL& shift) {
 void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]) {
   DCHECK_EQ(kN32_SkColorType, bitmap.colorType());
 
-  SkAutoLockPixels bitmap_lock(bitmap);
-
   int pixel_width = bitmap.width();
   int pixel_height = bitmap.height();
   for (int y = 0; y < pixel_height; ++y) {

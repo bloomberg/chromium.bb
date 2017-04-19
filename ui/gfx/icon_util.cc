@@ -119,7 +119,6 @@ bool ConvertImageFamilyToBitmaps(
 
     // Only 32 bit ARGB bitmaps are supported. We also make sure the bitmap has
     // been properly initialized.
-    SkAutoLockPixels bitmap_lock(bitmap);
     if ((bitmap.colorType() != kN32_SkColorType) ||
         (bitmap.getPixels() == NULL)) {
       return false;
@@ -167,7 +166,6 @@ base::win::ScopedHICON IconUtil::CreateHICONFromSkBitmap(
     const SkBitmap& bitmap) {
   // Only 32 bit ARGB bitmaps are supported. We also try to perform as many
   // validations as we can on the bitmap.
-  SkAutoLockPixels bitmap_lock(bitmap);
   if ((bitmap.colorType() != kN32_SkColorType) ||
       (bitmap.width() <= 0) || (bitmap.height() <= 0) ||
       (bitmap.getPixels() == NULL))
@@ -387,7 +385,6 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
   SkBitmap bitmap;
   bitmap.allocN32Pixels(s.width(), s.height());
   bitmap.eraseARGB(0, 0, 0, 0);
-  SkAutoLockPixels bitmap_lock(bitmap);
 
   // Now we should create a DIB so that we can use ::DrawIconEx in order to
   // obtain the icon's image.
@@ -640,7 +637,6 @@ void IconUtil::SetSingleIconImageInformation(const SkBitmap& bitmap,
 void IconUtil::CopySkBitmapBitsIntoIconBuffer(const SkBitmap& bitmap,
                                               unsigned char* buffer,
                                               size_t buffer_size) {
-  SkAutoLockPixels bitmap_lock(bitmap);
   unsigned char* bitmap_ptr = static_cast<unsigned char*>(bitmap.getPixels());
   size_t bitmap_size = bitmap.height() * bitmap.width() * 4;
   DCHECK_EQ(buffer_size, bitmap_size);

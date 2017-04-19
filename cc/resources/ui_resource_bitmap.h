@@ -54,6 +54,10 @@ class CC_EXPORT UIResourceBitmap {
     return pixel_ref_ ? pixel_ref_->rowBytes() * size_.height() : 0;
   }
 
+  const uint8_t* GetPixels() const {
+    return static_cast<const uint8_t*>(pixel_ref_->pixels());
+  }
+
  private:
   friend class AutoLockUIResourceBitmap;
 
@@ -65,16 +69,6 @@ class CC_EXPORT UIResourceBitmap {
   UIResourceFormat format_;
   gfx::Size size_;
   bool opaque_;
-};
-
-class CC_EXPORT AutoLockUIResourceBitmap {
- public:
-  explicit AutoLockUIResourceBitmap(const UIResourceBitmap& bitmap);
-  ~AutoLockUIResourceBitmap();
-  const uint8_t* GetPixels() const;
-
- private:
-  const UIResourceBitmap& bitmap_;
 };
 
 }  // namespace cc

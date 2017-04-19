@@ -498,11 +498,8 @@ void ClipboardAndroid::WriteBitmap(const SkBitmap& bitmap) {
   gfx::Size size(bitmap.width(), bitmap.height());
 
   std::string packed(reinterpret_cast<const char*>(&size), sizeof(size));
-  {
-    SkAutoLockPixels bitmap_lock(bitmap);
-    packed += std::string(static_cast<const char*>(bitmap.getPixels()),
-                          bitmap.getSize());
-  }
+  packed += std::string(static_cast<const char*>(bitmap.getPixels()),
+                        bitmap.getSize());
   g_map.Get().Set(kBitmapFormat, packed);
 }
 

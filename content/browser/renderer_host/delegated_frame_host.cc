@@ -618,13 +618,10 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
       scaled_bitmap = *bitmap.get();
     }
 
-    {
-      SkAutoLockPixels scaled_bitmap_locker(scaled_bitmap);
+    media::CopyRGBToVideoFrame(
+        reinterpret_cast<uint8_t*>(scaled_bitmap.getPixels()),
+        scaled_bitmap.rowBytes(), region_in_frame, video_frame.get());
 
-      media::CopyRGBToVideoFrame(
-          reinterpret_cast<uint8_t*>(scaled_bitmap.getPixels()),
-          scaled_bitmap.rowBytes(), region_in_frame, video_frame.get());
-    }
     ignore_result(scoped_callback_runner.Release());
     callback.Run(region_in_frame, true);
     return;

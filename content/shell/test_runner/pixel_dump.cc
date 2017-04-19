@@ -204,9 +204,7 @@ void CopyImageAtAndCapturePixels(
   blink::WebImage image = static_cast<blink::WebMockClipboard*>(
                               blink::Platform::Current()->Clipboard())
                               ->ReadRawImage(blink::WebClipboard::Buffer());
-  const SkBitmap& bitmap = image.GetSkBitmap();
-  SkAutoLockPixels autoLock(bitmap);
-  callback.Run(bitmap);
+  callback.Run(image.GetSkBitmap());
 }
 
 }  // namespace test_runner

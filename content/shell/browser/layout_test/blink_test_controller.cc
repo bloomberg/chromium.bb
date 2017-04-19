@@ -693,8 +693,6 @@ void BlinkTestController::OnTestFinished() {
 
 void BlinkTestController::OnImageDump(const std::string& actual_pixel_hash,
                                       const SkBitmap& image) {
-  SkAutoLockPixels image_lock(image);
-
   printer_->PrintImageHeader(actual_pixel_hash, expected_pixel_hash_);
 
   // Only encode and dump the png if the hashes don't match. Encoding the

@@ -485,7 +485,6 @@ class HistoryBackendTest : public HistoryBackendTestBase {
     if (!gfx::PNGCodec::Decode(bitmap_data->front(), bitmap_data->size(),
                                &bitmap))
       return false;
-    SkAutoLockPixels bitmap_lock(bitmap);
     return expected_color == bitmap.getColor(0, 0);
   }
 

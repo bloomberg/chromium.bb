@@ -89,18 +89,4 @@ UIResourceBitmap::UIResourceBitmap(sk_sp<SkPixelRef> pixel_ref,
 UIResourceBitmap::UIResourceBitmap(const UIResourceBitmap& other) = default;
 
 UIResourceBitmap::~UIResourceBitmap() {}
-
-AutoLockUIResourceBitmap::AutoLockUIResourceBitmap(
-    const UIResourceBitmap& bitmap) : bitmap_(bitmap) {
-  bitmap_.pixel_ref_->lockPixels();
-}
-
-AutoLockUIResourceBitmap::~AutoLockUIResourceBitmap() {
-  bitmap_.pixel_ref_->unlockPixels();
-}
-
-const uint8_t* AutoLockUIResourceBitmap::GetPixels() const {
-  return static_cast<const uint8_t*>(bitmap_.pixel_ref_->pixels());
-}
-
 }  // namespace cc

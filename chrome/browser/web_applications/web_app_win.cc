@@ -53,7 +53,6 @@ void GetImageCheckSum(const gfx::ImageFamily& image, base::MD5Digest* digest) {
        ++it) {
     SkBitmap bitmap = it->AsBitmap();
 
-    SkAutoLockPixels image_lock(bitmap);
     base::StringPiece image_data(
         reinterpret_cast<const char*>(bitmap.getPixels()), bitmap.getSize());
     base::MD5Update(&md5_context, image_data);

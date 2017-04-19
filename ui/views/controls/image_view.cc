@@ -20,9 +20,7 @@ namespace {
 // Returns the pixels for the bitmap in |image| at scale |image_scale|.
 void* GetBitmapPixels(const gfx::ImageSkia& img, float image_scale) {
   DCHECK_NE(0.0f, image_scale);
-  const SkBitmap& bitmap = img.GetRepresentation(image_scale).sk_bitmap();
-  SkAutoLockPixels pixel_lock(bitmap);
-  return bitmap.getPixels();
+  return img.GetRepresentation(image_scale).sk_bitmap().getPixels();
 }
 
 }  // namespace

@@ -551,9 +551,6 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   SkBitmap default_icon_bitmap = *default_icon.ToSkBitmap();
   SkBitmap valid_icon_bitmap = *valid_icon.ToSkBitmap();
 
-  SkAutoLockPixels a(new_icon_bitmap);
-  SkAutoLockPixels b(valid_icon_bitmap);
-  SkAutoLockPixels c(default_icon_bitmap);
   // Verify we did not get the default favicon.
   EXPECT_NE(0, memcmp(default_icon_bitmap.getPixels(),
                       valid_icon_bitmap.getPixels(),

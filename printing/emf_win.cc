@@ -382,7 +382,6 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
       } else {
         DCHECK(bitmap.get());
         if (bitmap.get()) {
-          SkAutoLockPixels lock(*bitmap.get());
           DCHECK_EQ(bitmap->colorType(), kN32_SkColorType);
           const uint32_t* pixels =
               static_cast<const uint32_t*>(bitmap->getPixels());

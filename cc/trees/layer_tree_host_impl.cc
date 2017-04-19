@@ -3876,9 +3876,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       gfx::ColorSpace::CreateSRGB());
 
   if (!scaled) {
-    AutoLockUIResourceBitmap bitmap_lock(bitmap);
-    auto* pixels = bitmap_lock.GetPixels();
-    resource_provider_->CopyToResource(id, pixels, source_size);
+    resource_provider_->CopyToResource(id, bitmap.GetPixels(), source_size);
   } else {
     // Only support auto-resizing for N32 textures (since this is primarily for
     // scrollbars). Users of other types need to ensure they are not too big.
@@ -3895,10 +3893,9 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
         source_size.width(), source_size.height(), kPremul_SkAlphaType);
     int row_bytes = source_size.width() * 4;
 
-    AutoLockUIResourceBitmap bitmap_lock(bitmap);
     SkBitmap source_bitmap;
     source_bitmap.setInfo(info, row_bytes);
-    source_bitmap.setPixels(const_cast<uint8_t*>(bitmap_lock.GetPixels()));
+    source_bitmap.setPixels(const_cast<uint8_t*>(bitmap.GetPixels()));
 
     // This applies the scale to draw the |bitmap| into |scaled_bitmap|.
     SkBitmap scaled_bitmap;
@@ -3912,7 +3909,6 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     scaled_canvas.clear(SK_ColorTRANSPARENT);
     scaled_canvas.drawBitmap(source_bitmap, 0, 0);
 
-    SkAutoLockPixels scaled_bitmap_lock(scaled_bitmap);
     auto* pixels = static_cast<uint8_t*>(scaled_bitmap.getPixels());
     resource_provider_->CopyToResource(id, pixels, upload_size);
   }

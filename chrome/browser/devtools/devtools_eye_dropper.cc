@@ -126,7 +126,6 @@ bool DevToolsEyeDropper::HandleMouseEvent(const blink::WebMouseEvent& event) {
       return true;
     }
 
-    SkAutoLockPixels lock_image(frame_);
     SkColor sk_color = frame_.getColor(last_cursor_x_, last_cursor_y_);
     callback_.Run(SkColorGetR(sk_color), SkColorGetG(sk_color),
                   SkColorGetB(sk_color), SkColorGetA(sk_color));

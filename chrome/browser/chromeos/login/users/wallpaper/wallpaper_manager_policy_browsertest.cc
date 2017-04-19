@@ -102,7 +102,6 @@ SkColor ComputeAverageColor(const SkBitmap& bitmap) {
     return SkColorSetARGB(0, 0, 0, 0);
   }
   uint64_t a = 0, r = 0, g = 0, b = 0;
-  bitmap.lockPixels();
   for (int x = 0; x < bitmap.width(); ++x) {
     for (int y = 0; y < bitmap.height(); ++y) {
       const SkColor color = bitmap.getColor(x, y);
@@ -112,7 +111,6 @@ SkColor ComputeAverageColor(const SkBitmap& bitmap) {
       b += SkColorGetB(color);
     }
   }
-  bitmap.unlockPixels();
   uint64_t pixel_number = bitmap.width() * bitmap.height();
   return SkColorSetARGB((a + pixel_number / 2) / pixel_number,
                         (r + pixel_number / 2) / pixel_number,

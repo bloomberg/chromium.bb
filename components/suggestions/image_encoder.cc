@@ -17,7 +17,6 @@ std::unique_ptr<SkBitmap> DecodeJPEGToSkBitmap(const void* encoded_data,
 
 bool EncodeSkBitmapToJPEG(const SkBitmap& bitmap,
                           std::vector<unsigned char>* dest) {
-  SkAutoLockPixels bitmap_lock(bitmap);
   if (!bitmap.readyToDraw() || bitmap.isNull()) {
     return false;
   }

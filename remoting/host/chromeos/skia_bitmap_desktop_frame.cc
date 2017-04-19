@@ -19,10 +19,7 @@ SkiaBitmapDesktopFrame* SkiaBitmapDesktopFrame::Create(
   DCHECK_EQ(kBGRA_8888_SkColorType, bitmap->info().colorType())
       << "DesktopFrame objects always hold RGBA data.";
 
-  bitmap->lockPixels();
   uint8_t* bitmap_data = reinterpret_cast<uint8_t*>(bitmap->getPixels());
-  bitmap->unlockPixels();
-
   const size_t row_bytes = bitmap->rowBytes();
   SkiaBitmapDesktopFrame* result = new SkiaBitmapDesktopFrame(
       size, row_bytes, bitmap_data, std::move(bitmap));
