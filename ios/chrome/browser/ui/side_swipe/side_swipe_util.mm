@@ -8,6 +8,10 @@
 
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 BOOL IsSwipingBack(UISwipeGestureRecognizerDirection direction) {
   if (UseRTLLayout())
     return direction == UISwipeGestureRecognizerDirectionLeft;

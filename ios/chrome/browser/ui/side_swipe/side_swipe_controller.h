@@ -78,8 +78,8 @@ extern NSString* const kSideSwipeDidStopNotification;
     : NSObject<CRWSwipeRecognizerProvider, UIGestureRecognizerDelegate>
 
 @property(nonatomic, assign) BOOL inSwipe;
-@property(nonatomic, assign) id<SideSwipeControllerDelegate> swipeDelegate;
-@property(nonatomic, assign) id<TabSnapshottingDelegate> snapshotDelegate;
+@property(nonatomic, weak) id<SideSwipeControllerDelegate> swipeDelegate;
+@property(nonatomic, weak) id<TabSnapshottingDelegate> snapshotDelegate;
 
 // Initializer.
 - (id)initWithTabModel:(TabModel*)model

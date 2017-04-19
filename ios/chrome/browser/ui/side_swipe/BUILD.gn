@@ -17,6 +17,7 @@ bundle_data("resources") {
 }
 
 source_set("side_swipe") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "card_side_swipe_view.h",
     "card_side_swipe_view.mm",

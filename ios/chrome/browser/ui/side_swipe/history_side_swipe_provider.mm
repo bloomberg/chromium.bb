@@ -4,9 +4,15 @@
 
 #import "ios/chrome/browser/ui/side_swipe/history_side_swipe_provider.h"
 
+#include "ios/chrome/browser/tabs/tab.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface HistorySideSwipeProvider () {
   // Keep a reference to detach before deallocing.
-  TabModel* _tabModel;  // weak
+  __weak TabModel* _tabModel;  // weak
 }
 
 @end

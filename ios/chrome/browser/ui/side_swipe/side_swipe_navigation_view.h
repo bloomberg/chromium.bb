@@ -13,7 +13,7 @@
 // is dragged from side to side.
 @interface SideSwipeNavigationView : UIView
 
-@property(nonatomic, assign) UIView* targetView;
+@property(nonatomic, weak) UIView* targetView;
 
 // Initialize with direction.
 - (instancetype)initWithFrame:(CGRect)frame

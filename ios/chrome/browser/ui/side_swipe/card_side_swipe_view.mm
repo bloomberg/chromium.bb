@@ -25,6 +25,10 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using base::UserMetricsAction;
 
 namespace {
@@ -144,8 +148,7 @@ const CGFloat kResizeFactor = 4;
     currentPoint_ = CGPointZero;
     topMargin_ = topMargin;
 
-    base::scoped_nsobject<UIView> background(
-        [[UIView alloc] initWithFrame:CGRectZero]);
+    UIView* background = [[UIView alloc] initWithFrame:CGRectZero];
     [self addSubview:background];
 
     [background setTranslatesAutoresizingMaskIntoConstraints:NO];
