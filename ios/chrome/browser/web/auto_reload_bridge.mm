@@ -8,6 +8,8 @@
 
 #include "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
+#import "ios/chrome/browser/tabs/tab.h"
+#import "ios/web/public/navigation_manager.h"
 #include "net/base/network_change_notifier.h"
 
 namespace {
@@ -80,7 +82,8 @@ class NetworkChangeObserverBridge
 #pragma mark AutoReloadDelegate methods
 
 - (void)reload {
-  [_tab reload];
+  [_tab navigationManager]->Reload(web::ReloadType::NORMAL,
+                                   false /* check_for_repost */);
 }
 
 @end

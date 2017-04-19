@@ -207,6 +207,7 @@ source_set("web_internal") {
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/ssl",
+    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/static_content",
