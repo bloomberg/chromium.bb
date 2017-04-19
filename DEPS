@@ -838,15 +838,6 @@ hooks = [
                '-o', 'src/build/util/LASTCHANGE'],
   },
   {
-    # Update LASTCHANGE.blink.
-    'name': 'lastchange_blink',
-    'pattern': '.',
-    'action': ['python', 'src/build/util/lastchange.py',
-               '--git-hash-only',
-               '-s', 'src/third_party/WebKit',
-               '-o', 'src/build/util/LASTCHANGE.blink'],
-  },
-  {
     # Update skia_commit_hash.h.
     'name': 'lastchange_skia',
     'pattern': '.',
