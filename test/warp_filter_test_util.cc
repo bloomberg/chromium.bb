@@ -23,13 +23,13 @@ using libaom_test::AV1HighbdWarpFilter::HighbdWarpTestParam;
 #endif
 
 ::testing::internal::ParamGenerator<WarpTestParam>
-libaom_test::AV1WarpFilter::GetDefaultParams() {
-  const WarpTestParam defaultParams[] = {
-    make_tuple(4, 4, 50000),  make_tuple(8, 8, 50000),
-    make_tuple(64, 64, 1000), make_tuple(4, 16, 20000),
-    make_tuple(32, 8, 10000),
+libaom_test::AV1WarpFilter::BuildParams(warp_affine_func filter) {
+  const WarpTestParam params[] = {
+    make_tuple(4, 4, 50000, filter),  make_tuple(8, 8, 50000, filter),
+    make_tuple(64, 64, 1000, filter), make_tuple(4, 16, 20000, filter),
+    make_tuple(32, 8, 10000, filter),
   };
-  return ::testing::ValuesIn(defaultParams);
+  return ::testing::ValuesIn(params);
 }
 
 AV1WarpFilterTest::~AV1WarpFilterTest() {}

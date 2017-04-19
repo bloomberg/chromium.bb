@@ -151,8 +151,6 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/variance_tree.h")
 
 set(AOM_AV1_COMMON_INTRIN_SSE2
-    # Requires CONFIG_GLOBAL_MOTION or CONFIG_WARPED_MOTION
-    #"${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c"
     "${AOM_ROOT}/av1/common/x86/idct_intrin_sse2.c")
 
 set(AOM_AV1_COMMON_INTRIN_SSSE3
@@ -382,7 +380,7 @@ if (CONFIG_PVQ)
     endif ()
 endif ()
 
-if (CONFIG_WARPED_MOTION)
+if (CONFIG_WARPED_MOTION OR CONFIG_GLOBAL_MOTION)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
       "${AOM_ROOT}/av1/common/warped_motion.c"
@@ -391,6 +389,16 @@ if (CONFIG_WARPED_MOTION)
   set(AOM_AV1_COMMON_INTRIN_SSE2
       ${AOM_AV1_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c")
+
+  set(AOM_AV1_COMMON_SSSE3_INTRIN
+      ${AOM_AV1_COMMON_SSSE3_INTRIN}
+      "${AOM_ROOT}/av1/common/x86/warp_plane_ssse3.c")
+
+  if (CONFIG_HIGHBITDEPTH)
+    set(AOM_AV1_COMMON_SSSE3_INTRIN
+        ${AOM_AV1_COMMON_SSSE3_INTRIN}
+        "${AOM_ROOT}/av1/common/x86/highbd_warp_plane_ssse3.c")
+  endif ()
 endif ()
 
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before
