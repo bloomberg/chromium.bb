@@ -1238,6 +1238,17 @@ void ExistingUserController::PerformLoginFinishedActions(
     StartAutoLoginTimer();
 }
 
+void ExistingUserController::ContinueLoginWhenCryptohomeAvailable(
+    base::OnceClosure continuation,
+    bool service_is_available) {
+  if (!service_is_available) {
+    LOG(ERROR) << "Cryptohome service is not available";
+    OnAuthFailure(AuthFailure(AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME));
+    return;
+  }
+  std::move(continuation).Run();
+}
+
 void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
     const base::Closure& continuation) {
   // Disable clicking on other windows and status tray.
@@ -1283,7 +1294,11 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
     return;
   }
 
-  continuation.Run();
+  chromeos::DBusThreadManager::Get()
+      ->GetCryptohomeClient()
+      ->WaitForServiceToBeAvailable(base::Bind(
+          &ExistingUserController::ContinueLoginWhenCryptohomeAvailable,
+          weak_factory_.GetWeakPtr(), continuation));
 }
 
 void ExistingUserController::DoCompleteLogin(

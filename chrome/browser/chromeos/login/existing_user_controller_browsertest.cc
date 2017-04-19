@@ -784,6 +784,11 @@ class ExistingUserControllerActiveDirectoryTest
     ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
   }
 
+  void TearDownOnMainThread() override {
+    base::RunLoop().RunUntilIdle();
+    ExistingUserControllerTest::TearDownOnMainThread();
+  }
+
  protected:
   void ExpectLoginFailure() {
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);

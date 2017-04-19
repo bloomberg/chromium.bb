@@ -251,6 +251,11 @@ class ExistingUserController
   // auto-login timer is started.
   void PerformLoginFinishedActions(bool start_auto_login_timer);
 
+  // Invokes |continuation| after verifying that cryptohome service is
+  // available.
+  void ContinueLoginWhenCryptohomeAvailable(base::OnceClosure continuation,
+                                            bool service_is_available);
+
   // Invokes |continuation| after verifying that the device is not disabled.
   void ContinueLoginIfDeviceNotDisabled(const base::Closure& continuation);
 
