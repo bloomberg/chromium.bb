@@ -361,12 +361,9 @@ class TestImporter(object):
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
 
-        if not try_results:
-            _log.error('No try job results.')
-            self.git_cl.run(['set-close'])
-            return False
+        _log.info('Try results: %s', try_results)
 
-        # If the CQ passes, then the issue will be closed.
+        # If the CQ passed, then the issue will be closed already.
         status = self.git_cl.run(['status' '--field', 'status']).strip()
         _log.info('CL status: "%s"', status)
         if status not in ('lgtm', 'closed'):
