@@ -8,6 +8,7 @@ import android.os.SystemClock;
 import android.util.LruCache;
 import android.webkit.URLUtil;
 
+import org.chromium.base.Callback;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink.mojom.document_metadata.CopylessPaste;
@@ -28,6 +29,8 @@ public class AppIndexingUtil {
     // the parse was in the last CACHE_VISIT_CUTOFF_MS milliseconds, then we don't parse the page,
     // and instead just report the view (not the content) to App Indexing.
     private LruCache<String, CacheEntry> mPageCache;
+
+    private static Callback<WebPage> sCallbackForTesting;
 
     /**
      * Extracts entities from document metadata and reports it to on-device App Indexing.
@@ -62,11 +65,19 @@ public class AppIndexingUtil {
                 @Override
                 public void call(WebPage webpage) {
                     putCacheEntry(url, webpage != null);
+                    if (sCallbackForTesting != null) {
+                        sCallbackForTesting.onResult(webpage);
+                    }
                     if (webpage == null) return;
                     getAppIndexingReporter().reportWebPage(webpage);
                 }
             });
         }
+    }
+
+    @VisibleForTesting
+    public static void setCallbackForTesting(Callback<WebPage> callback) {
+        sCallbackForTesting = callback;
     }
 
     private boolean wasPageVisitedRecently(String url) {

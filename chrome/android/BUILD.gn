@@ -476,6 +476,7 @@ android_library("chrome_test_java") {
     "//third_party/junit",
     "//ui/android:ui_java",
     "//ui/base/mojo:mojo_bindings_java",
+    "//url/mojo:url_mojom_gurl_java",
     google_play_services_library,
   ]
 
