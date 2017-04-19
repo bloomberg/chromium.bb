@@ -375,24 +375,8 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
           round_trip_handshakes, 1, 3, 4);
     }
   }
+
   const QuicConnectionStats stats = connection()->GetStats();
-  if (server_info_ && stats.min_rtt_us > 0) {
-    base::TimeTicks wait_for_data_start_time =
-        server_info_->wait_for_data_start_time();
-    base::TimeTicks wait_for_data_end_time =
-        server_info_->wait_for_data_end_time();
-    if (!wait_for_data_start_time.is_null() &&
-        !wait_for_data_end_time.is_null()) {
-      base::TimeDelta wait_time =
-          wait_for_data_end_time - wait_for_data_start_time;
-      const base::HistogramBase::Sample kMaxWaitToRtt = 1000;
-      base::HistogramBase::Sample wait_to_rtt =
-          static_cast<base::HistogramBase::Sample>(
-              100 * wait_time.InMicroseconds() / stats.min_rtt_us);
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicServerInfo.WaitForDataReadyToRtt",
-                                  wait_to_rtt, 1, kMaxWaitToRtt, 50);
-    }
-  }
 
   // The MTU used by QUIC is limited to a fairly small set of predefined values
   // (initial values and MTU discovery values), but does not fare well when
@@ -862,21 +846,6 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     UMA_HISTOGRAM_TIMES(
         "Net.QuicSession.HandshakeConfirmedTime",
         connect_timing_.connect_end - connect_timing_.connect_start);
-
-    if (server_info_) {
-      // TODO(rtenneti): Should we delete this histogram?
-      // Track how long it has taken to finish handshake once we start waiting
-      // for reading of QUIC server information from disk cache. We could use
-      // this data to compare total time taken if we were to cancel the disk
-      // cache read vs waiting for the read to complete.
-      base::TimeTicks wait_for_data_start_time =
-          server_info_->wait_for_data_start_time();
-      if (!wait_for_data_start_time.is_null()) {
-        UMA_HISTOGRAM_TIMES(
-            "Net.QuicServerInfo.WaitForDataReady.HandshakeConfirmedTime",
-            base::TimeTicks::Now() - wait_for_data_start_time);
-      }
-    }
     // Track how long it has taken to finish handshake after we have finished
     // DNS host resolution.
     if (!connect_timing_.dns_end.is_null()) {
@@ -891,8 +860,6 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
       ++it;
       observer->OnCryptoHandshakeConfirmed();
     }
-    if (server_info_)
-      server_info_->OnExternalCacheHit();
   }
   QuicSpdySession::OnCryptoHandshakeEvent(event);
 }
