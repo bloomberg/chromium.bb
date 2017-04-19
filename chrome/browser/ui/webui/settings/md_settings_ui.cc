@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
 #include "chrome/browser/ui/webui/settings/font_handler.h"
-#include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
@@ -44,6 +43,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/settings/languages_handler.h"
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/palette/palette_utils.h"
@@ -109,7 +112,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   AddSettingsPageUIHandler(base::MakeUnique<ExtensionControlHandler>());
   AddSettingsPageUIHandler(base::MakeUnique<FontHandler>(web_ui));
   AddSettingsPageUIHandler(base::MakeUnique<ImportDataHandler>());
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(base::MakeUnique<LanguagesHandler>(web_ui));
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
   AddSettingsPageUIHandler(
       base::MakeUnique<MediaDevicesSelectionHandler>(profile));
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)

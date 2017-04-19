@@ -64,6 +64,7 @@ LanguageHelper.prototype = {
   /** @return {!Promise} */
   whenReady: assertNotReached,
 
+// <if expr="chromeos or is_win">
   /**
    * Sets the prospective UI language to the chosen language. This won't affect
    * the actual UI language until a restart.
@@ -76,6 +77,7 @@ LanguageHelper.prototype = {
    * @return {boolean}
    */
   requiresRestart: assertNotReached,
+// </if>
 
   /**
    * @param {string} languageCode
@@ -159,12 +161,7 @@ LanguageHelper.prototype = {
    */
   getLanguage: assertNotReached,
 
-  /**
-   * @param {string} id
-   * @return {!chrome.languageSettingsPrivate.InputMethod|undefined}
-   */
-  getInputMethod: assertNotReached,
-
+// <if expr="chromeos">
   /** @param {string} id */
   addInputMethod: assertNotReached,
 
@@ -188,4 +185,5 @@ LanguageHelper.prototype = {
 
   /** @param {string} id Input method ID. */
   openInputMethodOptions: assertNotReached,
+// </if>
 };

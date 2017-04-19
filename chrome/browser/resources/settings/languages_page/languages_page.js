@@ -42,12 +42,14 @@ Polymer({
     /** @type {!LanguageHelper} */
     languageHelper: Object,
 
+// <if expr="not is_macosx">
     /** @private */
     spellCheckSecondaryText_: {
       type: String,
       value: '',
       computed: 'getSpellCheckSecondaryText_(languages.enabled.*)',
     },
+// </if>
 
     /**
      * The language to display the details for.
@@ -77,24 +79,6 @@ Polymer({
         return map;
       },
     },
-  },
-
-  /**
-   * Handler for enabling or disabling spell check.
-   * @param {!{target: Element, model: !{item: !LanguageState}}} e
-   */
-  onSpellCheckChange_: function(e) {
-    var item = e.model.item;
-    if (!item.language.supportsSpellcheck)
-      return;
-
-    this.languageHelper.toggleSpellCheck(item.language.code,
-                                         !item.spellCheckEnabled);
-  },
-
-  /** @private */
-  onBackTap_: function() {
-    this.$.pages.back();
   },
 
   /**
@@ -160,6 +144,87 @@ Polymer({
     return this.languages.enabled.length <= 1;
   },
 
+// <if expr="chromeos">
+  /**
+   * Applies Chrome OS session tweaks to the menu.
+   * @param {!CrActionMenuElement} menu
+   * @private
+   */
+  tweakMenuForCrOS_: function(menu) {
+    // In a CrOS multi-user session, the primary user controls the UI language.
+    // TODO(michaelpg): The language selection should not be hidden, but should
+    // show a policy indicator. crbug.com/648498
+    if (this.isSecondaryUser_())
+      menu.querySelector('#uiLanguageItem').hidden = true;
+
+    // The UI language choice doesn't persist for guests.
+    if (uiAccountTweaks.UIAccountTweaks.loggedInAsGuest() ||
+        uiAccountTweaks.UIAccountTweaks.loggedInAsPublicAccount()) {
+      menu.querySelector('#uiLanguageItem').hidden = true;
+    }
+  },
+
+  /**
+   * Opens the Manage Input Methods page.
+   * @private
+   */
+  onManageInputMethodsTap_: function() {
+    settings.navigateTo(settings.Route.INPUT_METHODS);
+  },
+
+  /**
+   * Handler for tap and <Enter> events on an input method on the main page,
+   * which sets it as the current input method.
+   * @param {!{model: !{item: !chrome.languageSettingsPrivate.InputMethod},
+   *           target: !{tagName: string},
+   *           type: string,
+   *           key: (string|undefined)}} e
+   */
+  onInputMethodTap_: function(e) {
+    // Taps on the paper-icon-button are handled in onInputMethodOptionsTap_.
+    if (e.target.tagName == 'PAPER-ICON-BUTTON')
+      return;
+
+    // Ignore key presses other than <Enter>.
+    if (e.type == 'keypress' && e.key != 'Enter')
+      return;
+
+    // Set the input method.
+    this.languageHelper.setCurrentInputMethod(e.model.item.id);
+  },
+
+  /**
+   * Opens the input method extension's options page in a new tab (or focuses
+   * an existing instance of the IME's options).
+   * @param {!{model: !{item: chrome.languageSettingsPrivate.InputMethod}}} e
+   * @private
+   */
+  onInputMethodOptionsTap_: function(e) {
+    this.languageHelper.openInputMethodOptions(e.model.item.id);
+  },
+// </if>
+
+// <if expr="chromeos or is_win">
+  /**
+   * @return {boolean} True for a secondary user in a multi-profile session.
+   * @private
+   */
+  isSecondaryUser_: function() {
+    return cr.isChromeOS && loadTimeData.getBoolean('isSecondaryUser');
+  },
+
+  /**
+   * @param {string} languageCode The language code identifying a language.
+   * @param {string} prospectiveUILanguage The prospective UI language.
+   * @return {boolean} True if the prospective UI language is set to
+   *     |languageCode| but requires a restart to take effect.
+   * @private
+   */
+  isRestartRequired_: function(languageCode, prospectiveUILanguage) {
+    return prospectiveUILanguage == languageCode &&
+        this.languageHelper.requiresRestart();
+  },
+
   /**
    * @param {!LanguageState} languageState
    * @param {string} prospectiveUILanguage The chosen UI language.
@@ -186,14 +251,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean} True for a secondary user in a multi-profile session.
-   * @private
-   */
-  isSecondaryUser_: function() {
-    return cr.isChromeOS && loadTimeData.getBoolean('isSecondaryUser');
-  },
-
-  /**
    * Handler for changes to the UI language checkbox.
    * @param {!{target: !PaperCheckboxElement}} e
    * @private
@@ -207,6 +264,7 @@ Polymer({
 
     this.closeMenuSoon_();
   },
+// </if>
 
   /**
    * @param {!chrome.languageSettingsPrivate.Language} language
@@ -286,49 +344,40 @@ Polymer({
     this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
   },
 
+// <if expr="chromeos or is_win">
   /**
-   * Opens the Manage Input Methods page.
+   * Checks whether the prospective UI language (the pref that indicates what
+   * language to use in Chrome) matches the current language. This pref is used
+   * only on Chrome OS and Windows; we don't control the UI language elsewhere.
+   * @param {string} languageCode The language code identifying a language.
+   * @param {string} prospectiveUILanguage The prospective UI language.
+   * @return {boolean} True if the given language matches the prospective UI
+   *     pref (which may be different from the actual UI language).
    * @private
    */
-  onManageInputMethodsTap_: function() {
-    assert(cr.isChromeOS);
-    settings.navigateTo(settings.Route.INPUT_METHODS);
+  isProspectiveUILanguage_: function(languageCode, prospectiveUILanguage) {
+    return languageCode == prospectiveUILanguage;
   },
 
-  /**
-   * Handler for tap and <Enter> events on an input method on the main page,
-   * which sets it as the current input method.
-   * @param {!{model: !{item: !chrome.languageSettingsPrivate.InputMethod},
-   *           target: !{tagName: string},
-   *           type: string,
-   *           key: (string|undefined)}} e
-   */
-  onInputMethodTap_: function(e) {
-    assert(cr.isChromeOS);
-
-    // Taps on the paper-icon-button are handled in onInputMethodOptionsTap_.
-    if (e.target.tagName == 'PAPER-ICON-BUTTON')
-      return;
-
-    // Ignore key presses other than <Enter>.
-    if (e.type == 'keypress' && e.key != 'Enter')
-      return;
-
-    // Set the input method.
-    this.languageHelper.setCurrentInputMethod(e.model.item.id);
+ /**
+  * @param {string} prospectiveUILanguage
+  * @return {string}
+  * @private
+  */
+  getProspectiveUILanguageName_: function(prospectiveUILanguage) {
+    return this.languageHelper.getLanguage(prospectiveUILanguage).displayName;
   },
+// </if>
 
   /**
-   * Opens the input method extension's options page in a new tab (or focuses
-   * an existing instance of the IME's options).
-   * @param {!{model: !{item: chrome.languageSettingsPrivate.InputMethod}}} e
+   * @return {string}
    * @private
    */
-  onInputMethodOptionsTap_: function(e) {
-    assert(cr.isChromeOS);
-    this.languageHelper.openInputMethodOptions(e.model.item.id);
+  getLanguageListTwoLine_: function() {
+    return cr.isChromeOS || cr.isWindows ? 'two-line' : '';
   },
 
+// <if expr="not is_macosx">
   /**
    * Returns the secondary text for the spell check subsection based on the
    * enabled spell check languages, listing at most 2 languages.
@@ -372,42 +421,20 @@ Polymer({
    * @private
    */
   onEditDictionaryTap_: function() {
-    assert(!cr.isMac);
     settings.navigateTo(settings.Route.EDIT_DICTIONARY);
   },
 
   /**
-   * Checks whether the prospective UI language (the pref that indicates what
-   * language to use in Chrome) matches the current language. This pref is used
-   * only on Chrome OS and Windows; we don't control the UI language elsewhere.
-   * @param {string} languageCode The language code identifying a language.
-   * @param {string} prospectiveUILanguage The prospective UI language.
-   * @return {boolean} True if the given language matches the prospective UI
-   *     pref (which may be different from the actual UI language).
-   * @private
+   * Handler for enabling or disabling spell check.
+   * @param {!{target: Element, model: !{item: !LanguageState}}} e
    */
-  isProspectiveUILanguage_: function(languageCode, prospectiveUILanguage) {
-    assert(cr.isChromeOS || cr.isWindows);
-    return languageCode == prospectiveUILanguage;
-  },
+  onSpellCheckChange_: function(e) {
+    var item = e.model.item;
+    if (!item.language.supportsSpellcheck)
+      return;
 
-// <if expr="chromeos or is_win">
-   /**
-    * @param {string} prospectiveUILanguage
-    * @return {string}
-    * @private
-    */
-  getProspectiveUILanguageName_: function(prospectiveUILanguage) {
-    return this.languageHelper.getLanguage(prospectiveUILanguage).displayName;
-  },
-// </if>
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getLanguageListTwoLine_: function() {
-    return cr.isChromeOS || cr.isWindows ? 'two-line' : '';
+    this.languageHelper.toggleSpellCheck(item.language.code,
+                                         !item.spellCheckEnabled);
   },
 
   /**
@@ -417,6 +444,7 @@ Polymer({
   getSpellCheckListTwoLine_: function() {
     return this.spellCheckSecondaryText_.length ? 'two-line' : '';
   },
+// </if>
 
   /**
    * Returns either the "selected" class, if the language matches the
@@ -435,18 +463,7 @@ Polymer({
     return '';
   },
 
-   /**
-   * @param {string} languageCode The language code identifying a language.
-   * @param {string} prospectiveUILanguage The prospective UI language.
-   * @return {boolean} True if the prospective UI language is set to
-   *     |languageCode| but requires a restart to take effect.
-   * @private
-   */
-  isRestartRequired_: function(languageCode, prospectiveUILanguage) {
-    return prospectiveUILanguage == languageCode &&
-        this.languageHelper.requiresRestart();
-  },
-
+// <if expr="chromeos">
   /**
    * @param {string} id The input method ID.
    * @param {string} currentId The ID of the currently enabled input method.
@@ -477,6 +494,7 @@ Polymer({
         });
     return inputMethod ? inputMethod.displayName : '';
   },
+// </if>
 
   /**
    * @param {!Event} e
@@ -494,30 +512,12 @@ Polymer({
         this.$.menu.getIfExists());
     if (!menu) {
       menu = /** @type {!CrActionMenuElement} */(this.$.menu.get());
-      this.initializeMenu_(menu);
+// <if expr="chromeos">
+      this.tweakMenuForCrOS_(menu);
+// </if>
     }
 
     menu.showAt(/** @type {!Element} */ (e.target));
-  },
-
-  /**
-   * Applies Chrome OS session tweaks to the menu.
-   * @param {!CrActionMenuElement} menu
-   * @private
-   */
-  initializeMenu_: function(menu) {
-    // In a CrOS multi-user session, the primary user controls the UI language.
-    // TODO(michaelpg): The language selection should not be hidden, but should
-    // show a policy indicator. crbug.com/648498
-    if (this.isSecondaryUser_())
-      menu.querySelector('#uiLanguageItem').hidden = true;
-
-    // The UI language choice doesn't persist for guests.
-    if (cr.isChromeOS &&
-        (uiAccountTweaks.UIAccountTweaks.loggedInAsGuest() ||
-         uiAccountTweaks.UIAccountTweaks.loggedInAsPublicAccount())) {
-      menu.querySelector('#uiLanguageItem').hidden = true;
-    }
   },
 
   /**
@@ -533,6 +533,7 @@ Polymer({
     }, settings.kMenuCloseDelay);
   },
 
+// <if expr="chromeos or is_win">
   /**
    * Handler for the restart button.
    * @private
@@ -541,10 +542,11 @@ Polymer({
 // <if expr="chromeos">
     settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
 // </if>
-// <if expr="not chromeos">
+// <if expr="is_win">
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
 // </if>
   },
+// </if>
 
   /**
    * Toggles the expand button within the element being listened to.

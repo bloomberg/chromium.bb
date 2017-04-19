@@ -204,6 +204,8 @@ Polymer({
         return;
       }
 
+      // TODO(dpapad): Cleanup this code. It uses results[3] and results[4]
+      // which only exist for ChromeOS.
       this.createModel_(results[1], results[2], results[3], results[4]);
       this.resolver_.resolve();
     }.bind(this));
@@ -483,13 +485,13 @@ Polymer({
     return this.resolver_.promise;
   },
 
+// <if expr="chromeos or is_win">
   /**
    * Sets the prospective UI language to the chosen language. This won't affect
    * the actual UI language until a restart.
    * @param {string} languageCode
    */
   setProspectiveUILanguage: function(languageCode) {
-    assert(cr.isChromeOS || cr.isWindows);
     chrome.send('setProspectiveUILanguage', [languageCode]);
   },
 
@@ -501,6 +503,7 @@ Polymer({
     return this.originalProspectiveUILanguage_ !=
         this.languages.prospectiveUILanguage;
   },
+// </if>
 
   /**
    * @param {string} languageCode
@@ -726,18 +729,9 @@ Polymer({
     return this.supportedLanguageMap_.get(languageCode);
   },
 
-  /**
-   * @param {string} id
-   * @return {!chrome.languageSettingsPrivate.InputMethod|undefined}
-   */
-  getInputMethod: function(id) {
-    assert(cr.isChromeOS);
-    return this.supportedInputMethodMap_.get(id);
-  },
-
+// <if expr="chromeos">
   /** @param {string} id */
   addInputMethod: function(id) {
-    assert(cr.isChromeOS);
     if (!this.supportedInputMethodMap_.has(id))
       return;
     this.languageSettingsPrivate.addInputMethod(id);
@@ -745,7 +739,6 @@ Polymer({
 
   /** @param {string} id */
   removeInputMethod: function(id) {
-    assert(cr.isChromeOS);
     if (!this.supportedInputMethodMap_.has(id))
       return;
     this.languageSettingsPrivate.removeInputMethod(id);
@@ -753,7 +746,6 @@ Polymer({
 
   /** @param {string} id */
   setCurrentInputMethod: function(id) {
-    assert(cr.isChromeOS);
     this.inputMethodPrivate.setCurrentInputMethod(id);
   },
 
@@ -770,32 +762,28 @@ Polymer({
    * @return {boolean}
    */
   isComponentIme: function(inputMethod) {
-    assert(cr.isChromeOS);
     return inputMethod.id.startsWith('_comp_');
   },
 
   /** @param {string} id Input method ID. */
   openInputMethodOptions: function(id) {
-    assert(cr.isChromeOS);
     this.inputMethodPrivate.openOptionsPage(id);
   },
 
   /** @param {string} id New current input method ID. */
   onInputMethodChanged_: function(id) {
-    assert(cr.isChromeOS);
     this.set('languages.inputMethods.currentId', id);
   },
 
   /** @param {string} id Added input method ID. */
   onInputMethodAdded_: function(id) {
-    assert(cr.isChromeOS);
     this.updateEnabledInputMethods_();
   },
 
   /** @param {string} id Removed input method ID. */
   onInputMethodRemoved_: function(id) {
-    assert(cr.isChromeOS);
     this.updateEnabledInputMethods_();
   },
+// </if>
 });
 })();

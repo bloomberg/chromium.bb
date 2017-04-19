@@ -7,14 +7,11 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/web_ui.h"
-
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#endif
+#include "content/public/browser/web_ui.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -44,7 +41,6 @@ void LanguagesHandler::RegisterMessages() {
 
 void LanguagesHandler::HandleGetProspectiveUILanguage(
     const base::ListValue* args) {
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
@@ -62,9 +58,6 @@ void LanguagesHandler::HandleGetProspectiveUILanguage(
   }
 
   ResolveJavascriptCallback(*callback_id, base::Value(locale));
-#else
-  NOTREACHED() << "Attempting to get locale on unsupported platform";
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 }
 
 void LanguagesHandler::HandleSetProspectiveUILanguage(
@@ -89,8 +82,6 @@ void LanguagesHandler::HandleSetProspectiveUILanguage(
     profile_->ChangeAppLocale(language_code,
                               Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);
   }
-#else
-  NOTREACHED() << "Attempting to set locale on unsupported platform";
 #endif
 }
 
