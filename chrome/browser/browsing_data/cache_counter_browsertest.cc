@@ -82,10 +82,9 @@ class CacheCounterTest : public InProcessBrowserTest {
 
       case DONE: {
         entry_->Close();
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            base::Bind(&CacheCounterTest::Callback,
-                       base::Unretained(this)));
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                base::BindOnce(&CacheCounterTest::Callback,
+                                               base::Unretained(this)));
         return;
       }
     }
@@ -109,9 +108,8 @@ class CacheCounterTest : public InProcessBrowserTest {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&CacheCounterTest::CreateCacheEntryStep,
-                   base::Unretained(this),
-                   net::OK));
+        base::BindOnce(&CacheCounterTest::CreateCacheEntryStep,
+                       base::Unretained(this), net::OK));
     WaitForIOThread();
   }
 

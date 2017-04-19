@@ -49,8 +49,8 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
   // Count origins with cookies.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SiteDataCountingHelper::GetCookiesOnIOThread,
-                 base::Unretained(this), make_scoped_refptr(rq_context)));
+      base::BindOnce(&SiteDataCountingHelper::GetCookiesOnIOThread,
+                     base::Unretained(this), make_scoped_refptr(rq_context)));
 
   storage::QuotaManager* quota_manager = partition->GetQuotaManager();
   if (quota_manager) {
@@ -66,8 +66,8 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
       tasks_ += 1;
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&storage::QuotaManager::GetOriginsModifiedSince,
-                     quota_manager, type, begin_, origins_callback));
+          base::BindOnce(&storage::QuotaManager::GetOriginsModifiedSince,
+                         quota_manager, type, begin_, origins_callback));
     }
   }
 
@@ -110,8 +110,8 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
   tasks_ += 1;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SiteDataCountingHelper::GetChannelIDsOnIOThread,
-                 base::Unretained(this), make_scoped_refptr(rq_context)));
+      base::BindOnce(&SiteDataCountingHelper::GetChannelIDsOnIOThread,
+                     base::Unretained(this), make_scoped_refptr(rq_context)));
 }
 
 void SiteDataCountingHelper::GetOriginsFromHostContentSettignsMap(
@@ -142,8 +142,8 @@ void SiteDataCountingHelper::GetCookiesOnIOThread(
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&SiteDataCountingHelper::Done, base::Unretained(this),
-                   std::vector<GURL>()));
+        base::BindOnce(&SiteDataCountingHelper::Done, base::Unretained(this),
+                       std::vector<GURL>()));
   }
 }
 
@@ -159,8 +159,8 @@ void SiteDataCountingHelper::GetCookiesCallback(
     }
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&SiteDataCountingHelper::Done,
-                                     base::Unretained(this), origins));
+                          base::BindOnce(&SiteDataCountingHelper::Done,
+                                         base::Unretained(this), origins));
 }
 
 void SiteDataCountingHelper::GetQuotaOriginsCallback(
@@ -169,8 +169,8 @@ void SiteDataCountingHelper::GetQuotaOriginsCallback(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<GURL> origins(origin_set.begin(), origin_set.end());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&SiteDataCountingHelper::Done,
-                                     base::Unretained(this), origins));
+                          base::BindOnce(&SiteDataCountingHelper::Done,
+                                         base::Unretained(this), origins));
 }
 
 void SiteDataCountingHelper::GetLocalStorageUsageInfoCallback(
@@ -228,8 +228,8 @@ void SiteDataCountingHelper::GetChannelIDsCallback(
     }
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&SiteDataCountingHelper::Done,
-                                     base::Unretained(this), origins));
+                          base::BindOnce(&SiteDataCountingHelper::Done,
+                                         base::Unretained(this), origins));
 }
 
 void SiteDataCountingHelper::Done(const std::vector<GURL>& origins) {
@@ -241,6 +241,6 @@ void SiteDataCountingHelper::Done(const std::vector<GURL>& origins) {
   if (--tasks_ > 0)
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(completion_callback_, unique_origins_.size()));
+      FROM_HERE, base::BindOnce(completion_callback_, unique_origins_.size()));
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }

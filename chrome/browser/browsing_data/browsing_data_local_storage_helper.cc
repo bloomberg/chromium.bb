@@ -44,7 +44,7 @@ void GetUsageInfoCallback(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
+                          base::BindOnce(callback, result));
 }
 
 }  // namespace
@@ -125,8 +125,8 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
   for (const GURL& url : pending_local_storage_info_)
     result.push_back(LocalStorageInfo(url, 0, base::Time()));
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(callback, result));
 }
 
 void CannedBrowsingDataLocalStorageHelper::DeleteOrigin(

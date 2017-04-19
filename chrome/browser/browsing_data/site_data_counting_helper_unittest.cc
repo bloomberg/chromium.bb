@@ -57,8 +57,8 @@ class SiteDataCountingHelperTest : public testing::Test {
       return;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&SiteDataCountingHelperTest::DoneCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&SiteDataCountingHelperTest::DoneCallback,
+                       base::Unretained(this)));
   }
 
   void DoneCallback() {
@@ -81,9 +81,9 @@ class SiteDataCountingHelperTest : public testing::Test {
         partition->GetURLRequestContext();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SiteDataCountingHelperTest::CreateCookiesOnIOThread,
-                   base::Unretained(this), make_scoped_refptr(rq_context),
-                   creation_time, urls));
+        base::BindOnce(&SiteDataCountingHelperTest::CreateCookiesOnIOThread,
+                       base::Unretained(this), make_scoped_refptr(rq_context),
+                       creation_time, urls));
   }
 
   void CreateLocalStorage(

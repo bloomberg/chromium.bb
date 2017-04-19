@@ -32,7 +32,7 @@ void OnFetchComplete(const BrowsingDataCookieHelper::FetchCallback& callback,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, cookies));
+                          base::BindOnce(callback, cookies));
 }
 
 }  // namespace
@@ -51,8 +51,8 @@ void BrowsingDataCookieHelper::StartFetching(const FetchCallback& callback) {
   DCHECK(!callback.is_null());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataCookieHelper::FetchCookiesOnIOThread, this,
-                 callback));
+      base::BindOnce(&BrowsingDataCookieHelper::FetchCookiesOnIOThread, this,
+                     callback));
 }
 
 void BrowsingDataCookieHelper::DeleteCookie(
@@ -60,8 +60,8 @@ void BrowsingDataCookieHelper::DeleteCookie(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataCookieHelper::DeleteCookieOnIOThread,
-                 this, cookie));
+      base::BindOnce(&BrowsingDataCookieHelper::DeleteCookieOnIOThread, this,
+                     cookie));
 }
 
 void BrowsingDataCookieHelper::FetchCookiesOnIOThread(

@@ -68,18 +68,17 @@ void BrowsingDataChannelIDHelperImpl::StartFetching(
   DCHECK(!callback.is_null());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataChannelIDHelperImpl::FetchOnIOThread, this,
-                 callback));
+      base::BindOnce(&BrowsingDataChannelIDHelperImpl::FetchOnIOThread, this,
+                     callback));
 }
 
 void BrowsingDataChannelIDHelperImpl::DeleteChannelID(
     const std::string& server_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &BrowsingDataChannelIDHelperImpl::DeleteOnIOThread, this, server_id));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&BrowsingDataChannelIDHelperImpl::DeleteOnIOThread, this,
+                     server_id));
 }
 
 void BrowsingDataChannelIDHelperImpl::FetchOnIOThread(
@@ -104,7 +103,7 @@ void BrowsingDataChannelIDHelperImpl::OnFetchComplete(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, channel_id_list));
+                          base::BindOnce(callback, channel_id_list));
 }
 
 void BrowsingDataChannelIDHelperImpl::DeleteOnIOThread(
@@ -172,8 +171,9 @@ void CannedBrowsingDataChannelIDHelper::StartFetching(
     return;
   // We post a task to emulate async fetching behavior.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CannedBrowsingDataChannelIDHelper::FinishFetching,
-                            this, callback));
+      FROM_HERE,
+      base::BindOnce(&CannedBrowsingDataChannelIDHelper::FinishFetching, this,
+                     callback));
 }
 
 void CannedBrowsingDataChannelIDHelper::FinishFetching(

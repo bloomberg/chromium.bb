@@ -485,9 +485,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       clear_hostname_resolution_cache_.Start();
       BrowserThread::PostTaskAndReply(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&ClearHostnameResolutionCacheOnIOThread,
-                     g_browser_process->io_thread(),
-                     filter_builder.BuildPluginFilter()),
+          base::BindOnce(&ClearHostnameResolutionCacheOnIOThread,
+                         g_browser_process->io_thread(),
+                         filter_builder.BuildPluginFilter()),
           clear_hostname_resolution_cache_.GetCompletionCallback());
     }
     if (profile_->GetNetworkPredictor()) {
@@ -495,8 +495,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       clear_network_predictor_.Start();
       BrowserThread::PostTaskAndReply(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&ClearNetworkPredictorOnIOThread,
-                     profile_->GetNetworkPredictor()),
+          base::BindOnce(&ClearNetworkPredictorOnIOThread,
+                         profile_->GetNetworkPredictor()),
           clear_network_predictor_.GetCompletionCallback());
       profile_->GetNetworkPredictor()->ClearPrefsOnUIThread();
     }
@@ -566,7 +566,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       // The above calls are done on the UI thread but do their work on the DB
       // thread. So wait for it.
       BrowserThread::PostTaskAndReply(
-          BrowserThread::DB, FROM_HERE, base::Bind(&base::DoNothing),
+          BrowserThread::DB, FROM_HERE, base::BindOnce(&base::DoNothing),
           clear_autofill_origin_urls_.GetCompletionCallback());
 
       autofill::PersonalDataManager* data_manager =
@@ -579,7 +579,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     clear_webrtc_logs_.Start();
     BrowserThread::PostTaskAndReply(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles,
             WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile_->GetPath()),
             delete_begin_),
@@ -675,24 +675,22 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         if (filter_builder.IsEmptyBlacklist()) {
           BrowserThread::PostTask(
               BrowserThread::IO, FROM_HERE,
-              base::Bind(
+              base::BindOnce(
                   &ClearCookiesOnIOThread, delete_begin_, delete_end_,
                   base::RetainedRef(std::move(sb_context)),
-                  UIThreadTrampoline(
-                      base::Bind(
-                          &ChromeBrowsingDataRemoverDelegate::OnClearedCookies,
-                          weak_ptr_factory_.GetWeakPtr()))));
+                  UIThreadTrampoline(base::Bind(
+                      &ChromeBrowsingDataRemoverDelegate::OnClearedCookies,
+                      weak_ptr_factory_.GetWeakPtr()))));
         } else {
           BrowserThread::PostTask(
               BrowserThread::IO, FROM_HERE,
-              base::Bind(
+              base::BindOnce(
                   &ClearCookiesWithPredicateOnIOThread, delete_begin_,
                   delete_end_, filter_builder.BuildCookieFilter(),
                   base::RetainedRef(std::move(sb_context)),
-                  UIThreadTrampoline(
-                      base::Bind(
-                          &ChromeBrowsingDataRemoverDelegate::OnClearedCookies,
-                          weak_ptr_factory_.GetWeakPtr()))));
+                  UIThreadTrampoline(base::Bind(
+                      &ChromeBrowsingDataRemoverDelegate::OnClearedCookies,
+                      weak_ptr_factory_.GetWeakPtr()))));
         }
       }
     }
@@ -750,8 +748,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     clear_http_auth_cache_.Start();
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearHttpAuthCacheOnIOThread, std::move(request_context),
-                   delete_begin_),
+        base::BindOnce(&ClearHttpAuthCacheOnIOThread,
+                       std::move(request_context), delete_begin_),
         clear_http_auth_cache_.GetCompletionCallback());
   }
 
@@ -798,9 +796,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           delete_begin_, delete_end_);
       // The above calls are done on the UI thread but do their work on the DB
       // thread. So wait for it.
-      BrowserThread::PostTaskAndReply(
-          BrowserThread::DB, FROM_HERE, base::Bind(&base::DoNothing),
-          clear_form_.GetCompletionCallback());
+      BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
+                                      base::BindOnce(&base::DoNothing),
+                                      clear_form_.GetCompletionCallback());
 
       autofill::PersonalDataManager* data_manager =
           autofill::PersonalDataManagerFactory::GetForProfile(profile_);
@@ -825,14 +823,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearNaClCacheOnIOThread,
-                   UIThreadTrampoline(
-                       clear_nacl_cache_.GetCompletionCallback())));
+        base::BindOnce(
+            &ClearNaClCacheOnIOThread,
+            UIThreadTrampoline(clear_nacl_cache_.GetCompletionCallback())));
 
     clear_pnacl_cache_.Start();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &ClearPnaclCacheOnIOThread, delete_begin_, delete_end_,
             UIThreadTrampoline(clear_pnacl_cache_.GetCompletionCallback())));
 #endif

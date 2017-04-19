@@ -176,11 +176,10 @@ class TestStoragePartition : public StoragePartition {
                           const GURL& storage_origin,
                           net::URLRequestContextGetter* rq_context,
                           const base::Closure& callback) override {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&TestStoragePartition::AsyncRunCallback,
-                                       base::Unretained(this),
-                                       callback));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&TestStoragePartition::AsyncRunCallback,
+                       base::Unretained(this), callback));
   }
 
   void ClearData(uint32_t remove_mask,
@@ -199,10 +198,9 @@ class TestStoragePartition : public StoragePartition {
     storage_partition_removal_data_.origin_matcher = origin_matcher;
 
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&TestStoragePartition::AsyncRunCallback,
-                   base::Unretained(this), callback));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&TestStoragePartition::AsyncRunCallback,
+                       base::Unretained(this), callback));
   }
 
   void ClearData(uint32_t remove_mask,
@@ -221,9 +219,10 @@ class TestStoragePartition : public StoragePartition {
     storage_partition_removal_data_.origin_matcher = origin_matcher;
     storage_partition_removal_data_.cookie_matcher = cookie_matcher;
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&TestStoragePartition::AsyncRunCallback,
-                                       base::Unretained(this), callback));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&TestStoragePartition::AsyncRunCallback,
+                       base::Unretained(this), callback));
   }
 
   void ClearHttpAndMediaCaches(

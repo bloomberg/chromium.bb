@@ -32,7 +32,7 @@ void GetAllOriginsInfoCallback(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
+                          base::BindOnce(callback, result));
 }
 
 }  // namespace
@@ -51,7 +51,7 @@ void BrowsingDataCacheStorageHelper::StartFetching(
   DCHECK(!callback.is_null());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &BrowsingDataCacheStorageHelper::FetchCacheStorageUsageInfoOnIOThread,
           this, callback));
 }
@@ -60,8 +60,9 @@ void BrowsingDataCacheStorageHelper::DeleteCacheStorage(const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataCacheStorageHelper::DeleteCacheStorageOnIOThread,
-                 this, origin));
+      base::BindOnce(
+          &BrowsingDataCacheStorageHelper::DeleteCacheStorageOnIOThread, this,
+          origin));
 }
 
 void BrowsingDataCacheStorageHelper::FetchCacheStorageUsageInfoOnIOThread(
@@ -141,7 +142,7 @@ void CannedBrowsingDataCacheStorageHelper::StartFetching(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
+                          base::BindOnce(callback, result));
 }
 
 void CannedBrowsingDataCacheStorageHelper::DeleteCacheStorage(

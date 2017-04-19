@@ -38,7 +38,7 @@ void OnFetchComplete(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, info_collection));
+                          base::BindOnce(callback, info_collection));
 }
 
 }  // namespace
@@ -55,16 +55,16 @@ void BrowsingDataAppCacheHelper::StartFetching(const FetchCallback& callback) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataAppCacheHelper::StartFetchingOnIOThread, this,
-                 callback));
+      base::BindOnce(&BrowsingDataAppCacheHelper::StartFetchingOnIOThread, this,
+                     callback));
 }
 
 void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(const GURL& manifest_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataAppCacheHelper::DeleteAppCacheGroupOnIOThread,
-                 this, manifest_url));
+      base::BindOnce(&BrowsingDataAppCacheHelper::DeleteAppCacheGroupOnIOThread,
+                     this, manifest_url));
 }
 
 BrowsingDataAppCacheHelper::~BrowsingDataAppCacheHelper() {}

@@ -114,8 +114,8 @@ class AutofillCounterTest : public InProcessBrowserTest {
   void CallbackFromDBThread() {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&base::RunLoop::Quit,
-                   base::Unretained(run_loop_.get())));
+        base::BindOnce(&base::RunLoop::Quit,
+                       base::Unretained(run_loop_.get())));
   }
 
   void WaitForDBThread() {
@@ -123,8 +123,8 @@ class AutofillCounterTest : public InProcessBrowserTest {
 
     content::BrowserThread::PostTask(
         content::BrowserThread::DB, FROM_HERE,
-        base::Bind(&AutofillCounterTest::CallbackFromDBThread,
-                   base::Unretained(this)));
+        base::BindOnce(&AutofillCounterTest::CallbackFromDBThread,
+                       base::Unretained(this)));
 
     run_loop_->Run();
   }

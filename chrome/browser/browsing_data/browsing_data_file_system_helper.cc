@@ -76,7 +76,7 @@ void BrowsingDataFileSystemHelperImpl::StartFetching(
   DCHECK(!callback.is_null());
   file_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread,
           this, callback));
 }
@@ -86,7 +86,7 @@ void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread,
           this, origin));
 }
@@ -131,7 +131,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread(
     result.push_back(iter.second);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
+                          base::BindOnce(callback, result));
 }
 
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread(
@@ -208,6 +208,6 @@ void CannedBrowsingDataFileSystemHelper::StartFetching(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(callback, file_system_info_));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(callback, file_system_info_));
 }

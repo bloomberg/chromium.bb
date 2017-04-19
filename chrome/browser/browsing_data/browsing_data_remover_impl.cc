@@ -404,10 +404,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     clear_channel_ids_.Start();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearChannelIDsOnIOThread,
-                   filter_builder.BuildChannelIDFilter(),
-                   delete_begin_, delete_end_, std::move(rq_context),
-                   clear_channel_ids_.GetCompletionCallback()));
+        base::BindOnce(&ClearChannelIDsOnIOThread,
+                       filter_builder.BuildChannelIDFilter(), delete_begin_,
+                       delete_end_, std::move(rq_context),
+                       clear_channel_ids_.GetCompletionCallback()));
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -533,8 +533,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     clear_http_auth_cache_.Start();
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearHttpAuthCacheOnIOThread, std::move(request_context),
-                   delete_begin_),
+        base::BindOnce(&ClearHttpAuthCacheOnIOThread,
+                       std::move(request_context), delete_begin_),
         clear_http_auth_cache_.GetCompletionCallback());
   }
 
@@ -648,7 +648,7 @@ void BrowsingDataRemoverImpl::Notify() {
   // are scheduled.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataRemoverImpl::RunNextTask, GetWeakPtr()));
+      base::BindOnce(&BrowsingDataRemoverImpl::RunNextTask, GetWeakPtr()));
 }
 
 void BrowsingDataRemoverImpl::NotifyIfDone() {

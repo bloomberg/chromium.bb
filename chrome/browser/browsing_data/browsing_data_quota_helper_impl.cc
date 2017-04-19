@@ -36,16 +36,16 @@ void BrowsingDataQuotaHelperImpl::StartFetching(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread, this,
-                 callback));
+      base::BindOnce(&BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread,
+                     this, callback));
 }
 
 void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread, this,
-                 host));
+      base::BindOnce(&BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread,
+                     this, host));
 }
 
 BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
@@ -159,7 +159,7 @@ void BrowsingDataQuotaHelperImpl::OnGetHostsUsageComplete(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
+                          base::BindOnce(callback, result));
 }
 
 void BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread(

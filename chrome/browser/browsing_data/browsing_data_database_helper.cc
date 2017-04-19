@@ -55,8 +55,8 @@ void BrowsingDataDatabaseHelper::StartFetching(const FetchCallback& callback) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread,
-                 this, callback));
+      base::BindOnce(&BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread,
+                     this, callback));
 }
 
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
@@ -64,8 +64,8 @@ void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread, this,
-                 origin, name));
+      base::BindOnce(&BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread,
+                     this, origin, name));
 }
 
 void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread(
@@ -98,7 +98,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
+                          base::BindOnce(callback, result));
 }
 
 void BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread(
@@ -176,8 +176,8 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(
         DatabaseInfo(identifier, info.name, info.description, 0, base::Time()));
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(callback, result));
 }
 
 void CannedBrowsingDataDatabaseHelper::DeleteDatabase(
