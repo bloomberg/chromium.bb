@@ -114,7 +114,9 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     ExpectWarmStateConfiguration();
     [configurator configureSigninPromoView:signin_promo_view_];
     EXPECT_NE(nil, image_view_profile_image_);
-    NSString* userFullName = expected_default_dentity_.userFullName;
+    NSString* userFullName = expected_default_dentity_.userFullName.length
+                                 ? expected_default_dentity_.userFullName
+                                 : expected_default_dentity_.userEmail;
     NSRange profileNameRange =
         [primary_button_title_ rangeOfString:userFullName];
     EXPECT_NE(profileNameRange.length, 0u);
@@ -153,6 +155,19 @@ TEST_F(SigninPromoViewMediatorTest, ColdStateConfigureSigninPromoView) {
 
 TEST_F(SigninPromoViewMediatorTest,
        WarmStateConfigureSigninPromoViewWithoutImage) {
+  ExpectConfiguratorNotification(YES);
+  expected_default_dentity_ =
+      [FakeChromeIdentity identityWithEmail:@"johndoe@example.com"
+                                     gaiaID:@"1"
+                                       name:nil];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      expected_default_dentity_);
+  CheckWarmStateConfigurator([mediator_ createConfigurator]);
+  CheckWarmStateConfigurator(configurator_);
+}
+
+TEST_F(SigninPromoViewMediatorTest,
+       WarmStateConfigureSigninPromoViewWithoutFullName) {
   ExpectConfiguratorNotification(YES);
   TestWarmState();
   CheckWarmStateConfigurator(configurator_);

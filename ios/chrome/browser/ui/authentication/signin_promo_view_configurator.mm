@@ -40,10 +40,10 @@
     signinPromoView.mode = SigninPromoViewModeColdState;
   } else {
     signinPromoView.mode = SigninPromoViewModeWarmState;
+    NSString* name = _userFullName.length ? _userFullName : _userEmail;
     [signinPromoView.primaryButton
-        setTitle:l10n_util::GetNSStringF(
-                     IDS_IOS_SIGNIN_PROMO_CONTINUE_AS,
-                     base::SysNSStringToUTF16(_userFullName))
+        setTitle:l10n_util::GetNSStringF(IDS_IOS_SIGNIN_PROMO_CONTINUE_AS,
+                                         base::SysNSStringToUTF16(name))
         forState:UIControlStateNormal];
     [signinPromoView.secondaryButton
         setTitle:l10n_util::GetNSStringF(IDS_IOS_SIGNIN_PROMO_NOT,
