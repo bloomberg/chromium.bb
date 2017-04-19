@@ -133,9 +133,6 @@ class NET_EXPORT HttpNetworkSession
     bool quic_enable_non_blocking_io;
     // Disables using the disk cache to store QUIC server configs.
     bool quic_disable_disk_cache;
-    // Delay starting a TCP connection when QUIC believes it can speak
-    // 0-RTT to a server.
-    bool quic_delay_tcp_race;
     // Maximum number of server configs that are to be stored in
     // HttpServerProperties, instead of the disk cache.
     size_t quic_max_server_configs_stored_in_properties;

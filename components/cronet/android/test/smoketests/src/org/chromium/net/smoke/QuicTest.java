@@ -42,15 +42,14 @@ public class QuicTest extends NativeCronetTestCase {
         mCronetEngineBuilder.addQuicHint(url.getHost(), url.getPort(), url.getPort());
         mTestSupport.installMockCertVerifierForTesting(mCronetEngineBuilder);
 
-        JSONObject quicParams = new JSONObject().put("delay_tcp_race", true);
+        JSONObject quicParams = new JSONObject();
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         mTestSupport.addHostResolverRules(experimentalOptions);
         mCronetEngineBuilder.setExperimentalOptions(experimentalOptions.toString());
 
         initCronetEngine();
 
-        // QUIC is not guaranteed to win the race even with |delay_tcp_race| set, so try
-        // multiple times.
+        // QUIC is not guaranteed to win the race, so try multiple times.
         boolean quicNegotiated = false;
 
         for (int i = 0; i < 5; i++) {

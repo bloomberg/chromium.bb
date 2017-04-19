@@ -75,7 +75,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.enable_server_push_cancellation);
   EXPECT_FALSE(params_.quic_enable_non_blocking_io);
   EXPECT_FALSE(params_.quic_disable_disk_cache);
-  EXPECT_TRUE(params_.quic_delay_tcp_race);
   EXPECT_FALSE(params_.quic_close_sessions_on_ip_change);
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
             params_.quic_idle_connection_timeout_seconds);
@@ -383,17 +382,6 @@ TEST_F(NetworkSessionConfiguratorTest, QuicDisableDiskCache) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_disable_disk_cache);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, QuicDisableDelayTcpRace) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["disable_delay_tcp_race"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_FALSE(params_.quic_delay_tcp_race);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, TCPFastOpenHttpsEnabled) {

@@ -60,10 +60,6 @@ class QuicStreamFactoryPeer {
 
   static QuicTime::Delta GetPingTimeout(QuicStreamFactory* factory);
 
-  static bool GetDelayTcpRace(QuicStreamFactory* factory);
-
-  static void SetDelayTcpRace(QuicStreamFactory* factory, bool delay_tcp_race);
-
   static bool GetRaceCertVerification(QuicStreamFactory* factory);
 
   static void SetRaceCertVerification(QuicStreamFactory* factory,

@@ -299,7 +299,6 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
   variations::testing::ClearAllVariationParams();
 
   std::map<std::string, std::string> field_trial_params;
-  field_trial_params["disable_delay_tcp_race"] = "true";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
@@ -308,7 +307,6 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
   ConfigureParamsFromFieldTrialsAndCommandLine();
 
   EXPECT_FALSE(params_.enable_quic);
-  EXPECT_TRUE(params_.quic_delay_tcp_race);
 }
 
 TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,

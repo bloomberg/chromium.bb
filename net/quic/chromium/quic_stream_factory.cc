@@ -775,7 +775,6 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_connection_racing,
     bool enable_non_blocking_io,
     bool disable_disk_cache,
-    bool delay_tcp_race,
     int max_server_configs_stored_in_properties,
     bool close_sessions_on_ip_change,
     bool mark_quic_broken_when_network_blackholes,
@@ -821,7 +820,6 @@ QuicStreamFactory::QuicStreamFactory(
       disable_disk_cache_(disable_disk_cache),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
-      delay_tcp_race_(delay_tcp_race),
       ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
       reduced_ping_timeout_(
           QuicTime::Delta::FromSeconds(reduced_ping_timeout_seconds)),
@@ -919,8 +917,9 @@ void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
 
 base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
     const QuicServerId& server_id) {
-  if (!delay_tcp_race_ || require_confirmation_)
+  if (require_confirmation_)
     return base::TimeDelta();
+
   int64_t srtt =
       1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
   // Picked 300ms based on mean time from

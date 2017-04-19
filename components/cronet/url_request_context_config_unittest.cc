@@ -44,7 +44,6 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       "fake agent",
       // JSON encoded experimental options.
       "{\"QUIC\":{\"max_server_configs_stored_in_properties\":2,"
-      "\"delay_tcp_race\":true,"
       "\"user_agent_id\":\"Custom QUIC UAID\","
       "\"idle_connection_timeout_seconds\":300,"
       "\"close_sessions_on_ip_change\":true,"
@@ -97,9 +96,6 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
 
   // Check max_server_configs_stored_in_properties.
   EXPECT_EQ(2u, params->quic_max_server_configs_stored_in_properties);
-
-  // Check delay_tcp_race.
-  EXPECT_TRUE(params->quic_delay_tcp_race);
 
   // Check idle_connection_timeout_seconds.
   EXPECT_EQ(300, params->quic_idle_connection_timeout_seconds);

@@ -188,7 +188,6 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       enable_http2(true),
       enable_quic(false),
       quic_max_server_configs_stored_in_properties(0),
-      quic_delay_tcp_race(true),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_close_sessions_on_ip_change(false),
       quic_migrate_sessions_on_network_change(false),
@@ -422,8 +421,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   network_session_params.enable_quic = http_network_session_params_.enable_quic;
   network_session_params.quic_max_server_configs_stored_in_properties =
       http_network_session_params_.quic_max_server_configs_stored_in_properties;
-  network_session_params.quic_delay_tcp_race =
-      http_network_session_params_.quic_delay_tcp_race;
   network_session_params.quic_idle_connection_timeout_seconds =
       http_network_session_params_.quic_idle_connection_timeout_seconds;
   network_session_params.quic_connection_options =

@@ -48,7 +48,6 @@ public class QuicTest extends CronetTestBase {
         JSONObject quicParams = new JSONObject()
                                         .put("connection_options", "PACE,IW10,FOO,DEADBEEF")
                                         .put("max_server_configs_stored_in_properties", 2)
-                                        .put("delay_tcp_race", true)
                                         .put("idle_connection_timeout_seconds", 300)
                                         .put("close_sessions_on_ip_change", false)
                                         .put("migrate_sessions_on_network_change", false)

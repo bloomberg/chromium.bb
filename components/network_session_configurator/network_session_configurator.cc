@@ -167,11 +167,6 @@ bool ShouldForceHolBlocking(const VariationParameters& quic_trial_params) {
       GetVariationParam(quic_trial_params, "force_hol_blocking"), "true");
 }
 
-bool ShouldQuicDelayTcpRace(const VariationParameters& quic_trial_params) {
-  return !base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "disable_delay_tcp_race"), "true");
-}
-
 bool ShouldQuicCloseSessionsOnIpChange(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -300,7 +295,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
 
   if (params->enable_quic) {
-    params->quic_delay_tcp_race = ShouldQuicDelayTcpRace(quic_trial_params);
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
     if (load_server_info_timeout_srtt_multiplier != 0) {

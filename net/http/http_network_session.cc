@@ -127,7 +127,6 @@ HttpNetworkSession::Params::Params()
       quic_enable_connection_racing(false),
       quic_enable_non_blocking_io(false),
       quic_disable_disk_cache(false),
-      quic_delay_tcp_race(true),
       quic_max_server_configs_stored_in_properties(0u),
       quic_clock(nullptr),
       quic_random(nullptr),
@@ -195,7 +194,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_enable_connection_racing,
           params.quic_enable_non_blocking_io,
           params.quic_disable_disk_cache,
-          params.quic_delay_tcp_race,
           params.quic_max_server_configs_stored_in_properties,
           params.quic_close_sessions_on_ip_change,
           params.mark_quic_broken_when_network_blackholes,
@@ -333,7 +331,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->SetBoolean("enable_connection_racing",
                    params_.quic_enable_connection_racing);
   dict->SetBoolean("disable_disk_cache", params_.quic_disable_disk_cache);
-  dict->SetBoolean("delay_tcp_race", params_.quic_delay_tcp_race);
   dict->SetInteger("max_server_configs_stored_in_properties",
                    params_.quic_max_server_configs_stored_in_properties);
   dict->SetInteger("idle_connection_timeout_seconds",
