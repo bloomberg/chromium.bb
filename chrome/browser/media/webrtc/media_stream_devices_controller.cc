@@ -82,41 +82,25 @@ using PermissionActionCallback =
                         const GURL&,
                         Profile*)>;
 
-void RecordSinglePermissionAction(const content::MediaStreamRequest& request,
-                                  ContentSettingsType content_type,
-                                  Profile* profile,
-                                  PermissionActionCallback callback) {
-  if (ContentTypeIsRequested(content_type, request)) {
-    // TODO(stefanocs): Pass the actual |gesture_type| once this file has been
-    // refactored into PermissionContext.
-    callback.Run(content_type, PermissionRequestGestureType::UNKNOWN,
-                 request.security_origin, profile);
+// Calls |action_callback| for each permission requested.
+void RecordPermissionAction(bool is_asking_for_audio,
+                            bool is_asking_for_video,
+                            const GURL& security_origin,
+                            Profile* profile,
+                            PermissionActionCallback action_callback) {
+  // TODO(stefanocs): Pass the actual |gesture_type| once this file has been
+  // refactored into PermissionContext.
+  if (is_asking_for_audio) {
+    action_callback.Run(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                        PermissionRequestGestureType::UNKNOWN, security_origin,
+                        profile);
+  }
+  if (is_asking_for_video) {
+    action_callback.Run(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                        PermissionRequestGestureType::UNKNOWN, security_origin,
+                        profile);
   }
 }
-
-// Calls |action_function| for each permission requested by |request|.
-void RecordPermissionAction(const content::MediaStreamRequest& request,
-                            Profile* profile,
-                            PermissionActionCallback callback) {
-  RecordSinglePermissionAction(request, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                               profile, callback);
-  RecordSinglePermissionAction(
-      request, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, profile, callback);
-}
-
-#if defined(OS_ANDROID)
-// Callback for the permission update infobar when the site and Chrome
-// permissions are mismatched on Android.
-void OnPermissionConflictResolved(
-    std::unique_ptr<MediaStreamDevicesController> controller,
-    bool allowed) {
-  if (allowed)
-    controller->PermissionGranted();
-  else
-    controller->ForcePermissionDeniedTemporarily();
-}
-
-#endif  // defined(OS_ANDROID)
 
 // This helper class helps to measure the number of media stream requests that
 // occur. It ensures that only one request will be recorded per navigation, per
@@ -254,7 +238,8 @@ void MediaStreamDevicesController::RegisterProfilePrefs(
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {
   if (!callback_.is_null()) {
-    RecordPermissionAction(request_, profile_,
+    RecordPermissionAction(IsAskingForAudio(), IsAskingForVideo(), GetOrigin(),
+                           profile_,
                            base::Bind(PermissionUmaUtil::PermissionIgnored));
     callback_.Run(content::MediaStreamDevices(),
                   content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
@@ -282,15 +267,28 @@ base::string16 MediaStreamDevicesController::GetMessageText() const {
           GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 
-void MediaStreamDevicesController::ForcePermissionDeniedTemporarily() {
-  set_persist(false);
-  // TODO(tsergeant): Determine whether it is appropriate to record permission
-  // action metrics here, as this is a different sort of user action.
-  RunCallback(CONTENT_SETTING_BLOCK,
-              CONTENT_SETTING_BLOCK,
+#if defined(OS_ANDROID)
+void MediaStreamDevicesController::AndroidOSPromptAnswered(bool allowed) {
+  DCHECK(old_audio_setting_ != CONTENT_SETTING_ASK &&
+         old_video_setting_ != CONTENT_SETTING_ASK);
+
+  ContentSetting audio_setting = old_audio_setting_;
+  ContentSetting video_setting = old_video_setting_;
+
+  if (!allowed) {
+    // Only permissions that were previously ALLOW for a site will have had
+    // their android permissions requested. It's only in that case that we need
+    // to change the setting to BLOCK to reflect that it wasn't allowed.
+    if (audio_setting == CONTENT_SETTING_ALLOW)
+      audio_setting = CONTENT_SETTING_BLOCK;
+    if (video_setting == CONTENT_SETTING_ALLOW)
+      video_setting = CONTENT_SETTING_BLOCK;
+  }
+
+  RunCallback(audio_setting, video_setting,
               content::MEDIA_DEVICE_PERMISSION_DENIED);
-  set_persist(true);
 }
+#endif  // defined(OS_ANDROID)
 
 PermissionRequest::IconId MediaStreamDevicesController::GetIconId() const {
 #if defined(OS_ANDROID)
@@ -315,7 +313,8 @@ GURL MediaStreamDevicesController::GetOrigin() const {
 }
 
 void MediaStreamDevicesController::PermissionGranted() {
-  RecordPermissionAction(request_, profile_,
+  RecordPermissionAction(IsAskingForAudio(), IsAskingForVideo(), GetOrigin(),
+                         profile_,
                          base::Bind(PermissionUmaUtil::PermissionGranted));
   RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
                             old_audio_setting_, CONTENT_SETTING_ALLOW),
@@ -325,7 +324,8 @@ void MediaStreamDevicesController::PermissionGranted() {
 }
 
 void MediaStreamDevicesController::PermissionDenied() {
-  RecordPermissionAction(request_, profile_,
+  RecordPermissionAction(IsAskingForAudio(), IsAskingForVideo(), GetOrigin(),
+                         profile_,
                          base::Bind(PermissionUmaUtil::PermissionDenied));
   RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
                             old_audio_setting_, CONTENT_SETTING_BLOCK),
@@ -339,7 +339,8 @@ bool MediaStreamDevicesController::ShouldShowPersistenceToggle() const {
 }
 
 void MediaStreamDevicesController::Cancelled() {
-  RecordPermissionAction(request_, profile_,
+  RecordPermissionAction(IsAskingForAudio(), IsAskingForVideo(), GetOrigin(),
+                         profile_,
                          base::Bind(PermissionUmaUtil::PermissionDismissed));
   RunCallback(old_audio_setting_, old_video_setting_,
               content::MEDIA_DEVICE_PERMISSION_DISMISSED);
@@ -389,7 +390,8 @@ void MediaStreamDevicesController::RequestPermissionsWithDelegate(
             web_contents, content_settings_types)) {
       PermissionUpdateInfoBarDelegate::Create(
           web_contents, content_settings_types,
-          base::Bind(&OnPermissionConflictResolved, base::Passed(&controller)));
+          base::Bind(&MediaStreamDevicesController::AndroidOSPromptAnswered,
+                     base::Passed(&controller)));
     }
 #endif
     return;

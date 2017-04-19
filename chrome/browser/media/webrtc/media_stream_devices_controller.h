@@ -59,14 +59,10 @@ class MediaStreamDevicesController : public PermissionRequest {
   bool IsAskingForVideo() const;
   base::string16 GetMessageText() const;
 
-  // Forces the permissions to be denied (without being persisted) regardless
-  // of what the previous state was.  If the user had previously allowed the
-  // site video or audio access, this ignores that and informs the site it was
-  // denied.
-  //
-  // This differs from PermissionGranted/PermissionDenied as they only operate
-  // on the permissions if they are in the ASK state.
-  void ForcePermissionDeniedTemporarily();
+#if defined(OS_ANDROID)
+  // Called when the Android OS-level prompt is answered.
+  void AndroidOSPromptAnswered(bool allowed);
+#endif  // defined(OS_ANDROID)
 
   bool ShouldShowPersistenceToggle() const override;
 
