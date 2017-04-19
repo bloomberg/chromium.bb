@@ -133,25 +133,25 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
       ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
   DCHECK(layout_text->HasTextBoxes());
 
-  ASSERT_EQ(4UL, text_fragments.size());
+  // Line break points may vary by minor differences in fonts.
+  // The test is valid as long as we have 3 or more lines and their positions
+  // are correct.
+  EXPECT_GE(text_fragments.size(), 3UL);
 
   auto* text_fragment1 = text_fragments[0];
   // 40 = #left-float1' width 30 + #left-float2 10
   EXPECT_EQ(LayoutUnit(40), text_fragment1->LeftOffset());
-  EXPECT_EQ("The quick ", text_fragment1->Text());
   InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
   EXPECT_EQ(LayoutUnit(40), inline_text_box1->X());
 
   auto* text_fragment2 = text_fragments[1];
   // 40 = #left-float1' width 30
   EXPECT_EQ(LayoutUnit(30), text_fragment2->LeftOffset());
-  EXPECT_EQ("brown fox ", text_fragment2->Text());
   InlineTextBox* inline_text_box2 = inline_text_box1->NextTextBox();
   EXPECT_EQ(LayoutUnit(30), inline_text_box2->X());
 
   auto* text_fragment3 = text_fragments[2];
   EXPECT_EQ(LayoutUnit(), text_fragment3->LeftOffset());
-  EXPECT_EQ("jumps over the lazy ", text_fragment3->Text());
   InlineTextBox* inline_text_box3 = inline_text_box2->NextTextBox();
   EXPECT_EQ(LayoutUnit(), inline_text_box3->X());
 }
