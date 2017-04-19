@@ -24,7 +24,8 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
     /**
      * The delegate that performs embedder-specific behavior.
      */
-    private final MinidumpUploaderDelegate mDelegate;
+    @VisibleForTesting
+    protected final MinidumpUploaderDelegate mDelegate;
 
     /**
      * Manages the set of pending and failed local minidump files.
