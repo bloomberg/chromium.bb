@@ -34,7 +34,8 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
                                         BrowserControlsState current,
                                         bool animate);
   void InitializeCompositorFrameSinkOnImpl(
-      CompositorFrameSink* compositor_frame_sink);
+      CompositorFrameSink* compositor_frame_sink,
+      base::WeakPtr<ProxyMain> proxy_main_frame_sink_bound_weak_ptr);
   void InitializeMutatorOnImpl(std::unique_ptr<LayerTreeMutator> mutator);
   void MainThreadHasStoppedFlingingOnImpl();
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled);
@@ -148,6 +149,10 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
 
   // Used to post tasks to ProxyMain on the main thread.
   base::WeakPtr<ProxyMain> proxy_main_weak_ptr_;
+
+  // A weak pointer to ProxyMain that is invalidated when CompositorFrameSink is
+  // released.
+  base::WeakPtr<ProxyMain> proxy_main_frame_sink_bound_weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyImpl);
 };

@@ -279,6 +279,12 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidRequestImplSideInvalidation(this);
   }
 
+  void DidReceiveCompositorFrameAck() override {
+    test_hooks_->WillReceiveCompositorFrameAckOnThread(this);
+    LayerTreeHostImpl::DidReceiveCompositorFrameAck();
+    test_hooks_->DidReceiveCompositorFrameAckOnThread(this);
+  }
+
   AnimationHost* animation_host() const {
     return static_cast<AnimationHost*>(mutator_host());
   }

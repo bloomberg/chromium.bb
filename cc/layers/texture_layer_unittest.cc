@@ -1188,16 +1188,6 @@ class TextureLayerChangeInvisibleMailboxTest
   void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {
     EXPECT_TRUE(sync_token.HasData());
     ++mailbox_returned_;
-    switch (mailbox_returned_) {
-      case 1:
-        break;
-      case 2:
-        EXPECT_EQ(commit_count_, 5);
-        EndTest();
-        break;
-      default:
-        NOTREACHED();
-    }
   }
 
   void SetupTree() override {
@@ -1227,7 +1217,7 @@ class TextureLayerChangeInvisibleMailboxTest
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void DidCommitAndDrawFrame() override {
+  void DidReceiveCompositorFrameAck() override {
     ++commit_count_;
     switch (commit_count_) {
       case 1:
@@ -1262,6 +1252,8 @@ class TextureLayerChangeInvisibleMailboxTest
         texture_layer_->ClearClient();
         break;
       case 5:
+        EXPECT_EQ(2, mailbox_returned_);
+        EndTest();
         break;
       default:
         NOTREACHED();
@@ -1284,8 +1276,7 @@ class TextureLayerChangeInvisibleMailboxTest
   int commit_count_;
 };
 
-// Flaky when multi-threaded. crbug.com/702868
-SINGLE_THREAD_TEST_F(TextureLayerChangeInvisibleMailboxTest);
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerChangeInvisibleMailboxTest);
 
 // Test that TextureLayerImpl::ReleaseResources can be called which releases
 // the mailbox back to TextureLayerClient.

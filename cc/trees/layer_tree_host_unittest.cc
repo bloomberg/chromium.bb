@@ -7520,5 +7520,86 @@ class LayerTreeHostTestHudLayerWithLayerLists : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestHudLayerWithLayerLists);
 
+// Verifies that LayerTreeHostClient does not receive frame acks from a released
+// CompositorFrameSink.
+class LayerTreeHostTestDiscardAckAfterRelease : public LayerTreeHostTest {
+ protected:
+  void SetupTree() override {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(10, 10));
+    layer_tree_host()->SetRootLayer(std::move(root));
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillReceiveCompositorFrameAckOnThread(
+      LayerTreeHostImpl* host_impl) override {
+    // This method is called before ack is posted to main thread. This ensures
+    // that WillReceiveCompositorFrameAck which we PostTask below will be called
+    // before DidReceiveCompositorFrameAck.
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&LayerTreeHostTestDiscardAckAfterRelease::
+                                  WillReceiveCompositorFrameAck,
+                              base::Unretained(this)));
+  }
+
+  void WillReceiveCompositorFrameAck() {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        // For the first commit, don't release the CompositorFrameSink. We must
+        // receive the ack later on.
+        break;
+      case 2:
+        // Release the CompositorFrameSink for the second commit. We'll later
+        // check that the ack is discarded.
+        layer_tree_host()->SetVisible(false);
+        layer_tree_host()->ReleaseCompositorFrameSink();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void DidReceiveCompositorFrameAckOnThread(
+      LayerTreeHostImpl* host_impl) override {
+    // Since this method is called after ack is posted to main thread, we can be
+    // sure that if the ack is not discarded, it will be definitely received
+    // before we are in CheckFrameAck.
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostTestDiscardAckAfterRelease::CheckFrameAck,
+                   base::Unretained(this)));
+  }
+
+  void DidReceiveCompositorFrameAck() override { received_ack_ = true; }
+
+  void CheckFrameAck() {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        // CompositorFrameSink was not released. We must receive the ack.
+        EXPECT_TRUE(received_ack_);
+        // Cause damage so that we draw and swap.
+        layer_tree_host()->root_layer()->SetBackgroundColor(SK_ColorGREEN);
+        break;
+      case 2:
+        // CompositorFrameSink was released. The ack must be discarded.
+        EXPECT_FALSE(received_ack_);
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+    received_ack_ = false;
+  }
+
+  void AfterTest() override {}
+
+ private:
+  bool received_ack_ = false;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDiscardAckAfterRelease);
+
 }  // namespace
 }  // namespace cc

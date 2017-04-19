@@ -126,9 +126,12 @@ void ProxyImpl::UpdateBrowserControlsStateOnImpl(
 }
 
 void ProxyImpl::InitializeCompositorFrameSinkOnImpl(
-    CompositorFrameSink* compositor_frame_sink) {
+    CompositorFrameSink* compositor_frame_sink,
+    base::WeakPtr<ProxyMain> proxy_main_frame_sink_bound_weak_ptr) {
   TRACE_EVENT0("cc", "ProxyImpl::InitializeCompositorFrameSinkOnImplThread");
   DCHECK(IsImplThread());
+
+  proxy_main_frame_sink_bound_weak_ptr_ = proxy_main_frame_sink_bound_weak_ptr;
 
   LayerTreeHostImpl* host_impl = layer_tree_host_impl_.get();
   bool success = host_impl->InitializeRenderer(compositor_frame_sink);
@@ -314,7 +317,7 @@ void ProxyImpl::DidReceiveCompositorFrameAckOnImplThread() {
   scheduler_->DidReceiveCompositorFrameAck();
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProxyMain::DidReceiveCompositorFrameAck,
-                                proxy_main_weak_ptr_));
+                                proxy_main_frame_sink_bound_weak_ptr_));
 }
 
 void ProxyImpl::OnCanDrawStateChanged(bool can_draw) {
