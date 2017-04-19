@@ -277,10 +277,10 @@ SyncError GenericChangeProcessor::GetAllSyncDataReturnError(
   std::vector<int64_t> child_ids;
   root.GetChildIds(&child_ids);
 
-  for (std::vector<int64_t>::iterator it = child_ids.begin();
-       it != child_ids.end(); ++it) {
+  current_sync_data->reserve(current_sync_data->size() + child_ids.size());
+  for (int64_t child_id : child_ids) {
     ReadNode sync_child_node(&trans);
-    if (sync_child_node.InitByIdLookup(*it) != BaseNode::INIT_OK) {
+    if (sync_child_node.InitByIdLookup(child_id) != BaseNode::INIT_OK) {
       SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
                       "Failed to fetch child node for type " + type_name + ".",
                       type_);

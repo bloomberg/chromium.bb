@@ -1560,9 +1560,9 @@ void Directory::AppendChildHandles(const ScopedKernelLock& lock,
   if (!children)
     return;
 
-  for (OrderedChildSet::const_iterator i = children->begin();
-       i != children->end(); ++i) {
-    result->push_back((*i)->ref(META_HANDLE));
+  result->reserve(result->size() + children->size());
+  for (const EntryKernel* entry : *children) {
+    result->push_back(entry->ref(META_HANDLE));
   }
 }
 
