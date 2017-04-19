@@ -119,7 +119,7 @@ void AffiliationFetcher::StartRequest() {
           chrome_policy {
             SyncDisabled {
               policy_options {mode: MANDATORY}
-              SyncDisabled: True
+              SyncDisabled: true
             }
           }
         })");
