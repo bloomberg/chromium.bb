@@ -15,6 +15,10 @@
         margin-bottom: 2px;
         margin-top: 15px;
       }
+
+      [invisible] {
+        visibility: hidden;
+      }
     </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div class="title">$i18n{addSiteTitle}</div>
@@ -23,7 +27,8 @@
             placeholder="$i18n{addSiteExceptionPlaceholder}"
             value="{{site_}}" on-input="validate_"
             error-message="$i18n{notValidWebAddress}" autofocus></paper-input>
-        <paper-checkbox id="incognito" hidden$="[[!showIncognitoSessionOnly_]]">
+        <paper-checkbox id="incognito"
+            invisible$="[[!showIncognitoSessionOnly_]]">
           $i18n{incognitoSiteOnly}
         </paper-checkbox>
       </div>
@@ -31,8 +36,8 @@
         <paper-button class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button" id="add"
-            on-tap="onSubmit_" disabled>
+        <paper-button class="action-button" id="add" on-tap="onSubmit_"
+            disabled>
           $i18n{add}
         </paper-button>
       </div>
