@@ -687,15 +687,16 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLWithExtraData) {
   // Place the extra data we need into the web contents user data.
   std::string content_type(kFakeContentType);
   std::string content_location(kFakeContentLocation);
+  std::string extra_headers;
 
   // Get the MHTMLExtraParts
   MHTMLExtraParts* extra_parts =
       MHTMLExtraParts::FromWebContents(shell()->web_contents());
 
   // Add two extra data parts to the MHTML.
-  extra_parts->AddExtraMHTMLPart(content_type, content_location,
+  extra_parts->AddExtraMHTMLPart(content_type, content_location, extra_headers,
                                  kFakeSignalData1);
-  extra_parts->AddExtraMHTMLPart(content_type, content_location,
+  extra_parts->AddExtraMHTMLPart(content_type, content_location, extra_headers,
                                  kFakeSignalData2);
   EXPECT_EQ(extra_parts->size(), 2);
   GenerateMHTML(params, url);

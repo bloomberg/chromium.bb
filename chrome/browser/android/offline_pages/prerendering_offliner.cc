@@ -96,10 +96,10 @@ void PrerenderingOffliner::OnLoadPageDone(
 
     if (IsOfflinePagesLoadSignalCollectingEnabled()) {
       // Stash loading signals for writing when we write out the MHTML.
-      std::string headers =
-          base::StringPrintf("%s\r\n%s\r\n\r\n", kContentTransferEncodingBinary,
-                             kXHeaderForSignals);
-      std::string body = headers + SerializeLoadingSignalData();
+      // TODO(petewil): Add this data to the BackgroundLoaderOffliner too.
+      std::string extra_headers = base::StringPrintf(
+          "%s\r\n%s", kContentTransferEncodingBinary, kXHeaderForSignals);
+      std::string body = SerializeLoadingSignalData();
       std::string content_type = kContentType;
       std::string content_location = base::StringPrintf(
           "cid:signal-data-%" PRId64 "@mhtml.blink", request.request_id());
@@ -108,7 +108,8 @@ void PrerenderingOffliner::OnLoadPageDone(
           content::MHTMLExtraParts::FromWebContents(web_contents);
       DCHECK(extra_parts);
       if (extra_parts != nullptr) {
-        extra_parts->AddExtraMHTMLPart(content_type, content_location, body);
+        extra_parts->AddExtraMHTMLPart(content_type, content_location,
+                                       extra_headers, body);
       }
     }
 

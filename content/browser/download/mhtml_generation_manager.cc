@@ -487,12 +487,13 @@ bool MHTMLGenerationManager::Job::WriteExtraDataParts(
   // For each extra part, serialize that part and add to our accumulator
   // string.
   for (auto part : extra_data_parts) {
-    // Write a newline, then a boundary, another newline, then the content
-    // location, another newline, the content type, another newline, the another
-    // newline, the extra data string, and end with a newline.
+    // Write a newline, then a boundary, a newline, then the content
+    // location, a newline, the content type, a newline, extra_headers,
+    // two newlines, the body, and end with a newline.
     std::string serialized_extra_data_part = base::StringPrintf(
-        "--%s\r\n%s%s\r\n%s%s\r\n%s\r\n", boundary.c_str(), kContentLocation,
-        part.content_location.c_str(), kContentType, part.content_type.c_str(),
+        "--%s\r\n%s%s\r\n%s%s\r\n%s\r\n\r\n%s\r\n", boundary.c_str(),
+        kContentLocation, part.content_location.c_str(), kContentType,
+        part.content_type.c_str(), part.extra_headers.c_str(),
         part.body.c_str());
     DCHECK(base::IsStringASCII(serialized_extra_data_part));
 

@@ -11,6 +11,13 @@ const int kMHTMLExtraPartsKey = 0;
 
 namespace content {
 
+MHTMLExtraDataPart::MHTMLExtraDataPart() = default;
+
+MHTMLExtraDataPart::~MHTMLExtraDataPart() = default;
+
+MHTMLExtraDataPart::MHTMLExtraDataPart(const MHTMLExtraDataPart& other) =
+    default;
+
 MHTMLExtraPartsImpl::MHTMLExtraPartsImpl() = default;
 
 MHTMLExtraPartsImpl::~MHTMLExtraPartsImpl() = default;
@@ -37,10 +44,12 @@ int64_t MHTMLExtraPartsImpl::size() {
 
 void MHTMLExtraPartsImpl::AddExtraMHTMLPart(const std::string& content_type,
                                             const std::string& content_location,
+                                            const std::string& extra_headers,
                                             const std::string& body) {
   MHTMLExtraDataPart part;
   part.content_type = content_type;
   part.content_location = content_location;
+  part.extra_headers = extra_headers;
   part.body = body;
 
   // Add this part to the list of parts to be saved out when the file is

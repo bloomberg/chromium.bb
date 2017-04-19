@@ -24,6 +24,7 @@ class CONTENT_EXPORT MHTMLExtraParts : public base::SupportsUserData::Data {
   // use the body provided.
   virtual void AddExtraMHTMLPart(const std::string& content_type,
                                  const std::string& content_location,
+                                 const std::string& extra_headers,
                                  const std::string& body) = 0;
 
   // Returns the number of extra parts added.
