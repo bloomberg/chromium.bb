@@ -447,7 +447,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingLocalhost) {
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
   EXPECT_EQ(AddChangeForForm(form_with_port), db().AddLogin(form_with_port));
 
-  // Match twice.
+  // Match localhost with and without port.
   PasswordStore::FormDigest form_request(PasswordForm::SCHEME_HTML,
                                          "http://localhost/",
                                          GURL("http://localhost/"));
@@ -455,7 +455,6 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingLocalhost) {
   EXPECT_TRUE(db().GetLogins(form_request, &result));
   EXPECT_THAT(result, UnorderedElementsAre(Pointee(form)));
 
-  // Match against the mobile site.
   form_request.origin = GURL("http://localhost:8080/");
   form_request.signon_realm = "http://localhost:8080/";
   EXPECT_TRUE(db().GetLogins(form_request, &result));

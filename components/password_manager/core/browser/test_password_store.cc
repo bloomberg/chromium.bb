@@ -87,7 +87,7 @@ TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> matched_forms;
   for (const auto& elements : stored_passwords_) {
     // The code below doesn't support PSL federated credential. It's doable but
-    // no test need it so far.
+    // no tests need it so far.
     const bool realm_matches = elements.first == form.signon_realm;
     const bool realm_psl_matches =
         IsPublicSuffixDomainMatch(elements.first, form.signon_realm);

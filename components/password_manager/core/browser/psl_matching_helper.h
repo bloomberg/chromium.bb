@@ -36,6 +36,8 @@ enum class MatchResult {
 #if defined(UNIT_TEST)
 std::ostream& operator<<(std::ostream& out, MatchResult result);
 
+// These functions are used in production internally but exposed for testing.
+
 // Returns true iff |form_signon_realm| designates a federated credential for
 // |origin|. It doesn't check the port because |form_signon_realm| doesn't have
 // it.
