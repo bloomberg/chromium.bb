@@ -14,6 +14,8 @@ static_library("internal") {
   ]
 
   sources = [
+    "chrome_variations_configuration.cc",
+    "chrome_variations_configuration.h",
     "condition_validator.h",
     "configuration.cc",
     "configuration.h",
@@ -65,6 +67,7 @@ source_set("unit_tests") {
   visibility = [ "//components/feature_engagement_tracker:unit_tests" ]
 
   sources = [
+    "chrome_variations_configuration_unittest.cc",
     "editable_configuration_unittest.cc",
     "feature_engagement_tracker_impl_unittest.cc",
     "in_memory_store_unittest.cc",

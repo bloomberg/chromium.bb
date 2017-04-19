@@ -27,7 +27,7 @@ class EditableConfigurationTest : public ::testing::Test {
                                     bool valid) {
     FeatureConfig feature_config;
     feature_config.valid = valid;
-    feature_config.feature_used_event = feature_used_event;
+    feature_config.used.name = feature_used_event;
     return feature_config;
   }
 
