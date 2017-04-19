@@ -138,7 +138,6 @@ void RenderWidgetHostViewBase::SetIsInVR(bool is_in_vr) {
 }
 
 bool RenderWidgetHostViewBase::IsInVR() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
