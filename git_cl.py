@@ -2896,12 +2896,16 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           assert len(change_ids) == 1
         change_id = change_ids[0]
 
+      if options.reviewers or options.tbrs or options.add_owners_to:
+        change_desc.update_reviewers(options.reviewers, options.tbrs,
+                                     options.add_owners_to, change)
+
       remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
       parent = self._ComputeParent(remote, upstream_branch, custom_cl_base,
                                    options.force, change_desc)
       tree = RunGit(['rev-parse', 'HEAD:']).strip()
       ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
-                            '-m', message]).strip()
+                            '-m', change_desc.description]).strip()
     else:
       change_desc = ChangeDescription(
           options.message or CreateDescriptionFromLog(git_diff_args))
@@ -2912,6 +2916,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         DownloadGerritHook(False)
         change_desc.set_description(
             self._AddChangeIdToCommitMessage(options, git_diff_args))
+      if options.reviewers or options.tbrs or options.add_owners_to:
+        change_desc.update_reviewers(options.reviewers, options.tbrs,
+                                     options.add_owners_to, change)
       ref_to_push = 'HEAD'
       # For no-squash mode, we assume the remote called "origin" is the one we
       # want. It is not worthwhile to support different workflows for
@@ -2929,10 +2936,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       print('You can also use `git squash-branch` to squash these into a '
             'single commit.')
       confirm_or_exit(action='upload')
-
-    if options.reviewers or options.tbrs or options.add_owners_to:
-      change_desc.update_reviewers(options.reviewers, options.tbrs,
-                                   options.add_owners_to, change)
 
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
