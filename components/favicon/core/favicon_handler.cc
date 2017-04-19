@@ -84,6 +84,12 @@ void RecordDownloadAttemptsForHandlerType(
   NOTREACHED();
 }
 
+void RecordDownloadOutcome(FaviconHandler::DownloadOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Favicons.DownloadOutcome", outcome,
+      FaviconHandler::DownloadOutcome::DOWNLOAD_OUTCOME_COUNT);
+}
+
 // Returns true if |bitmap_results| is non-empty and:
 // - At least one of the bitmaps in |bitmap_results| is expired
 // OR
@@ -384,11 +390,13 @@ void FaviconHandler::OnDidDownloadFavicon(
 
   if (bitmaps.empty() && http_status_code == 404) {
     DVLOG(1) << "Failed to Download Favicon:" << image_url;
+    RecordDownloadOutcome(DownloadOutcome::FAILED);
     service_->UnableToDownloadFavicon(image_url);
   }
 
   bool request_next_icon = true;
   if (!bitmaps.empty()) {
+    RecordDownloadOutcome(DownloadOutcome::SUCCEEDED);
     float score = 0.0f;
     gfx::ImageSkia image_skia;
     if (download_largest_icon_) {
@@ -557,6 +565,7 @@ void FaviconHandler::ScheduleDownload(const GURL& image_url,
   DCHECK(download_request_.IsCancelled()) << "More than one ongoing download";
   if (service_->WasUnableToDownloadFavicon(image_url)) {
     DVLOG(1) << "Skip Failed FavIcon: " << image_url;
+    RecordDownloadOutcome(DownloadOutcome::SKIPPED);
     OnDidDownloadFavicon(icon_type, 0, 0, image_url, std::vector<SkBitmap>(),
                          std::vector<gfx::Size>());
     return;

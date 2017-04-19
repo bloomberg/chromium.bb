@@ -75,6 +75,19 @@ class FaviconService;
 
 class FaviconHandler {
  public:
+  // Outcome of a favicon download.
+  // Recorded as Favicons.DownloadOutcome and public for testing.
+  //
+  // These values must stay in sync with the FaviconDownloadStatus enum
+  // in histograms.xml and should be treated as append-only, since it backs an
+  // UMA histogram..
+  enum class DownloadOutcome {
+    SUCCEEDED = 0,
+    FAILED = 1,
+    SKIPPED = 2,
+    DOWNLOAD_OUTCOME_COUNT = 3
+  };
+
   class Delegate {
    public:
     // Mimics WebContents::ImageDownloadCallback.
