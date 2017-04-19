@@ -22,7 +22,7 @@ function clone {
   cd $TARGET_DIR && git checkout $WPT_HEAD
   echo "WPTHead: " `git rev-parse HEAD`
 
-  # Starting from the 2nd line of WPTWhiteList, we read and checkout submodules.
+  # Starting from the 2nd line of WPTHeads, we read and checkout submodules.
   tail -n+2 $DIR/WPTHeads | while read dir submodule commit; do
     cd $TARGET_DIR/$dir && \
       git submodule update --init $submodule && \
