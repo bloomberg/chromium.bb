@@ -31,8 +31,9 @@ class PrintPreviewDataService {
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent complete preview
   // data. Use |index| to retrieve a specific preview page data. |data| is set
   // to NULL if the requested page is not yet available.
-  void GetDataEntry(int32_t preview_ui_id, int index,
-                    scoped_refptr<base::RefCountedBytes>* data);
+  void GetDataEntry(int32_t preview_ui_id,
+                    int index,
+                    scoped_refptr<base::RefCountedBytes>* data) const;
 
   // Set/Update the data entry in PrintPreviewDataStore. |index| is zero-based
   // or |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent complete
@@ -47,7 +48,7 @@ class PrintPreviewDataService {
   void RemoveEntry(int32_t preview_ui_id);
 
   // Returns the available draft page count.
-  int GetAvailableDraftPageCount(int32_t preview_ui_id);
+  int GetAvailableDraftPageCount(int32_t preview_ui_id) const;
 
  private:
   friend struct base::DefaultSingletonTraits<PrintPreviewDataService>;
@@ -59,7 +60,7 @@ class PrintPreviewDataService {
       std::map<int32_t, scoped_refptr<PrintPreviewDataStore>>;
 
   PrintPreviewDataService();
-  virtual ~PrintPreviewDataService();
+  ~PrintPreviewDataService();
 
   PreviewDataStoreMap data_store_map_;
 

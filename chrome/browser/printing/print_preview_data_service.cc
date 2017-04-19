@@ -30,12 +30,13 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
   PrintPreviewDataStore() {}
 
   // Get the preview page for the specified |index|.
-  void GetPreviewDataForIndex(int index,
-                              scoped_refptr<base::RefCountedBytes>* data) {
+  void GetPreviewDataForIndex(
+      int index,
+      scoped_refptr<base::RefCountedBytes>* data) const {
     if (IsInvalidIndex(index))
       return;
 
-    PreviewPageDataMap::iterator it = page_data_map_.find(index);
+    PreviewPageDataMap::const_iterator it = page_data_map_.find(index);
     if (it != page_data_map_.end())
       *data = it->second.get();
   }
@@ -50,7 +51,7 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
   }
 
   // Returns the available draft page count.
-  int GetAvailableDraftPageCount() {
+  int GetAvailableDraftPageCount() const {
     int page_data_map_size = page_data_map_.size();
     if (base::ContainsKey(page_data_map_,
                           printing::COMPLETE_PREVIEW_DOCUMENT_INDEX))
@@ -95,7 +96,7 @@ PrintPreviewDataService::~PrintPreviewDataService() {
 void PrintPreviewDataService::GetDataEntry(
     int32_t preview_ui_id,
     int index,
-    scoped_refptr<base::RefCountedBytes>* data_bytes) {
+    scoped_refptr<base::RefCountedBytes>* data_bytes) const {
   *data_bytes = nullptr;
   PreviewDataStoreMap::const_iterator it = data_store_map_.find(preview_ui_id);
   if (it != data_store_map_.end())
@@ -119,7 +120,8 @@ void PrintPreviewDataService::RemoveEntry(int32_t preview_ui_id) {
   data_store_map_.erase(preview_ui_id);
 }
 
-int PrintPreviewDataService::GetAvailableDraftPageCount(int32_t preview_ui_id) {
+int PrintPreviewDataService::GetAvailableDraftPageCount(
+    int32_t preview_ui_id) const {
   PreviewDataStoreMap::const_iterator it = data_store_map_.find(preview_ui_id);
   return (it == data_store_map_.end()) ?
       0 : it->second->GetAvailableDraftPageCount();

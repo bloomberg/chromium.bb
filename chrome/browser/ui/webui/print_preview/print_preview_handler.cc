@@ -1019,7 +1019,7 @@ void PrintPreviewHandler::PrintToPdf() {
              !select_file_dialog_->IsRunning(platform_util::GetTopLevel(
                  preview_web_contents()->GetNativeView()))) {
     // Pre-populating select file dialog with print job title.
-    base::string16 print_job_title_utf16 =
+    const base::string16& print_job_title_utf16 =
         print_preview_ui()->initiator_title();
 
 #if defined(OS_WIN)

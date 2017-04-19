@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "printing/features/features.h"
 
-class PrintPreviewDataService;
 class PrintPreviewHandler;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_RequestPrintPreview_Params;
@@ -44,8 +43,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Gets the print preview |data|. |index| is zero-based, and can be
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview
   // document.
-  void GetPrintPreviewDataForIndex(int index,
-                                   scoped_refptr<base::RefCountedBytes>* data);
+  void GetPrintPreviewDataForIndex(
+      int index,
+      scoped_refptr<base::RefCountedBytes>* data) const;
 
   // Sets the print preview |data|. |index| is zero-based, and can be
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview
@@ -57,18 +57,18 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   void ClearAllPreviewData();
 
   // Returns the available draft page count.
-  int GetAvailableDraftPageCount();
+  int GetAvailableDraftPageCount() const;
 
   // Setters
   void SetInitiatorTitle(const base::string16& initiator_title);
 
-  base::string16 initiator_title() { return initiator_title_; }
+  const base::string16& initiator_title() const { return initiator_title_; }
 
-  bool source_is_modifiable() { return source_is_modifiable_; }
+  bool source_is_modifiable() const { return source_is_modifiable_; }
 
-  bool source_has_selection() { return source_has_selection_; }
+  bool source_has_selection() const { return source_has_selection_; }
 
-  bool print_selection_only() { return print_selection_only_; }
+  bool print_selection_only() const { return print_selection_only_; }
 
   // Set initial settings for PrintPreviewUI.
   static void SetInitialParams(
@@ -161,9 +161,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
  private:
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewDialogControllerUnitTest,
                            TitleAfterReload);
-
-  // Returns the Singleton instance of the PrintPreviewDataService.
-  PrintPreviewDataService* print_preview_data_service();
 
   base::TimeTicks initial_preview_start_time_;
 

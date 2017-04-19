@@ -66,6 +66,8 @@ const char kBasicPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
 const char kBasicPrintShortcut[] = "(Ctrl+Shift+P)";
 #endif
 
+PrintPreviewUI::TestingDelegate* g_testing_delegate = nullptr;
+
 // Thread-safe wrapper around a std::map to keep track of mappings from
 // PrintPreviewUI IDs to most recent print preview request IDs.
 class PrintPreviewRequestIdMapWithLock {
@@ -434,8 +436,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   return source;
 }
 
-PrintPreviewUI::TestingDelegate* g_testing_delegate = NULL;
-
 }  // namespace
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
@@ -463,29 +463,31 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
 }
 
 PrintPreviewUI::~PrintPreviewUI() {
-  print_preview_data_service()->RemoveEntry(id_);
+  PrintPreviewDataService::GetInstance()->RemoveEntry(id_);
   g_print_preview_request_id_map.Get().Erase(id_);
   g_print_preview_ui_id_map.Get().Remove(id_);
 }
 
 void PrintPreviewUI::GetPrintPreviewDataForIndex(
     int index,
-    scoped_refptr<base::RefCountedBytes>* data) {
-  print_preview_data_service()->GetDataEntry(id_, index, data);
+    scoped_refptr<base::RefCountedBytes>* data) const {
+  PrintPreviewDataService::GetInstance()->GetDataEntry(id_, index, data);
 }
 
 void PrintPreviewUI::SetPrintPreviewDataForIndex(
     int index,
     scoped_refptr<base::RefCountedBytes> data) {
-  print_preview_data_service()->SetDataEntry(id_, index, std::move(data));
+  PrintPreviewDataService::GetInstance()->SetDataEntry(id_, index,
+                                                       std::move(data));
 }
 
 void PrintPreviewUI::ClearAllPreviewData() {
-  print_preview_data_service()->RemoveEntry(id_);
+  PrintPreviewDataService::GetInstance()->RemoveEntry(id_);
 }
 
-int PrintPreviewUI::GetAvailableDraftPageCount() {
-  return print_preview_data_service()->GetAvailableDraftPageCount(id_);
+int PrintPreviewUI::GetAvailableDraftPageCount() const {
+  return PrintPreviewDataService::GetInstance()->GetAvailableDraftPageCount(
+      id_);
 }
 
 void PrintPreviewUI::SetInitiatorTitle(
@@ -639,10 +641,6 @@ void PrintPreviewUI::OnPrintPreviewFailed() {
 
 void PrintPreviewUI::OnInvalidPrinterSettings() {
   web_ui()->CallJavascriptFunctionUnsafe("invalidPrinterSettings");
-}
-
-PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
-  return PrintPreviewDataService::GetInstance();
 }
 
 void PrintPreviewUI::OnHidePreviewDialog() {
