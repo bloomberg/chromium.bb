@@ -22,13 +22,13 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
-#include "device/vibration/vibration_manager.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/Timer.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
+#include "services/device/public/interfaces/vibration_manager.mojom-blink.h"
 
 namespace blink {
 

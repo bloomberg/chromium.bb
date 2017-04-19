@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "device/vibration/vibration_manager.mojom.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/vibration_manager.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "jni/VibrationManagerImpl_jni.h"
 #else
-#include "device/vibration/vibration_manager_impl.h"
+#include "services/device/vibration/vibration_manager_impl.h"
 #endif
 
 namespace device {

@@ -13,8 +13,8 @@ blink_modules_sources("vibration") {
   ]
 
   deps = [
-    "//device/vibration:mojo_bindings_blink",
     "//services/device/public/interfaces:constants_blink",
+    "//services/device/public/interfaces:interfaces_blink",
     "//services/service_manager/public/cpp",
   ]
 }

@@ -13,14 +13,16 @@ generate_jni("vibration_jni_headers") {
 }
 
 android_library("vibration_manager_java") {
+  visibility = [ "//services/device:*" ]
+
   java_files =
       [ "java/src/org/chromium/device/vibration/VibrationManagerImpl.java" ]
 
   deps = [
     "//base:base_java",
-    "//device/vibration:mojo_bindings_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
+    "//services/device/public/interfaces:interfaces_java",
     "//services/service_manager/public/java:service_manager_java",
   ]
 }

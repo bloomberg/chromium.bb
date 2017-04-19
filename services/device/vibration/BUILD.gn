@@ -7,28 +7,25 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 # On android, VibrationManager mojo interface is implemented directly in Java.
 if (!is_android) {
-  component("vibration") {
-    output_name = "device_vibration"
+  source_set("vibration") {
+    visibility = [
+      "//services/device:lib",
+      "//services/device:tests",
+    ]
 
     sources = [
-      "vibration_export.h",
       "vibration_manager_impl.h",
       "vibration_manager_impl_default.cc",
     ]
 
-    defines = [ "DEVICE_VIBRATION_IMPLEMENTATION" ]
+    public_deps = [
+      "//services/device/public/interfaces",
+    ]
 
     deps = [
-      ":mojo_bindings",
       "//base",
       "//base/third_party/dynamic_annotations",
       "//mojo/public/cpp/bindings",
     ]
   }
-}
-
-mojom("mojo_bindings") {
-  sources = [
-    "vibration_manager.mojom",
-  ]
 }

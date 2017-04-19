@@ -29,11 +29,11 @@ source_set("lib") {
     "//device/generic_sensor",
     "//device/sensors",
     "//device/sensors/public/interfaces",
-    "//device/vibration:mojo_bindings",
     "//device/wake_lock",
     "//services/device/fingerprint",
     "//services/device/power_monitor",
     "//services/device/public/cpp:device_features",
+    "//services/device/public/interfaces",
     "//services/device/screen_orientation",
     "//services/device/time_zone_monitor",
     "//services/service_manager/public/cpp",
@@ -49,7 +49,7 @@ source_set("lib") {
   } else {
     deps += [
       "//device/battery",
-      "//device/vibration",
+      "//services/device/vibration",
     ]
   }
 }
@@ -67,7 +67,6 @@ source_set("tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//device/vibration:mojo_bindings",
     "//mojo/public/cpp/bindings",
     "//services/device/power_monitor",
     "//services/device/public/cpp/power_monitor",
@@ -80,14 +79,11 @@ source_set("tests") {
   }
 
   if (is_android) {
-    deps += [
-      ":device_service_jni_headers",
-      "//device/vibration/android:vibration_jni_headers",
-    ]
+    deps += [ "//services/device/vibration/android:vibration_jni_headers" ]
   } else {
     deps += [
       "//device/battery",
-      "//device/vibration",
+      "//services/device/vibration",
     ]
   }
 }
@@ -152,13 +148,13 @@ if (is_android) {
       "//base:base_java",
       "//device/battery:mojo_bindings_java",
       "//device/battery/android:battery_monitor_java",
-      "//device/vibration:mojo_bindings_java",
-      "//device/vibration/android:vibration_manager_java",
       "//mojo/android:system_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
+      "//services/device/public/interfaces:interfaces_java",
       "//services/device/screen_orientation:java",
       "//services/device/time_zone_monitor:java",
+      "//services/device/vibration/android:vibration_manager_java",
       "//services/service_manager/public/interfaces:interfaces_java",
       "//services/service_manager/public/java:service_manager_java",
     ]

@@ -34,7 +34,7 @@
 #include "services/device/android/register_jni.h"
 #include "services/device/screen_orientation/screen_orientation_listener_android.h"
 #else
-#include "device/vibration/vibration_manager_impl.h"
+#include "services/device/vibration/vibration_manager_impl.h"
 #endif
 
 namespace device {

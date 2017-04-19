@@ -5,10 +5,10 @@ function vibration_mocks(mojo) {
       'VibrationManager mocks',
       [
         'mojo/public/js/bindings',
-        'device/vibration/vibration_manager.mojom',
         'services/device/public/interfaces/constants.mojom',
+        'services/device/public/interfaces/vibration_manager.mojom',
       ],
-      (bindings, vibrationManager, deviceConstants) => {
+      (bindings, deviceConstants, vibrationManager) => {
         class MockVibrationManager {
           constructor() {
             this.bindingSet =

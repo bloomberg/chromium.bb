@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/device/vibration/vibration_manager_impl.h"
+
 #include <stdint.h>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "device/vibration/vibration_manager_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {

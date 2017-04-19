@@ -24,6 +24,6 @@ blink_modules_sources("notifications") {
     "ServiceWorkerRegistrationNotifications.h",
   ]
   deps = [
-    "//device/vibration:mojo_bindings_blink",
+    "//services/device/public/interfaces:interfaces_blink",
   ]
 }

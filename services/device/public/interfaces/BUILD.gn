@@ -9,6 +9,7 @@ mojom("interfaces") {
     "fingerprint.mojom",
     "power_monitor.mojom",
     "time_zone_monitor.mojom",
+    "vibration_manager.mojom",
   ]
 
   public_deps = [

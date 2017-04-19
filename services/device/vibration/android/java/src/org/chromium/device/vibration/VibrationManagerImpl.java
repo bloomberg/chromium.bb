@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Vibrator;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.device.mojom.VibrationManager;
@@ -17,8 +17,8 @@ import org.chromium.mojo.system.MojoException;
 import org.chromium.services.service_manager.InterfaceFactory;
 
 /**
- * Android implementation of the vibration manager service defined in
- * device/vibration/vibration_manager.mojom.
+ * Android implementation of the VibrationManager interface defined in
+ * services/device/public/interfaces/vibration_manager.mojom.
  */
 @JNINamespace("device")
 public class VibrationManagerImpl implements VibrationManager {
