@@ -144,7 +144,8 @@ class APIBindingUnittest : public APIBindingTest {
     request_handler_ = base::MakeUnique<APIRequestHandler>(
         base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-        APILastError(APILastError::GetParent()));
+        APILastError(APILastError::GetParent(),
+                     APILastError::AddConsoleError()));
   }
 
   void TearDown() override {

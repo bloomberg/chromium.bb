@@ -54,31 +54,39 @@ void BoundLogMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ScriptContext* script_context =
       ScriptContextSet::GetContextByV8Context(context);
   // TODO(devlin): Consider (D)CHECK(script_context)
-  content::RenderFrame* render_frame =
-      script_context ? script_context->GetRenderFrame() : nullptr;
   const auto level = static_cast<content::ConsoleMessageLevel>(
       info.Data().As<v8::Int32>()->Value());
-  AddMessage(render_frame, level, message);
+  AddMessage(script_context, level, message);
 }
 
 gin::WrapperInfo kWrapperInfo = {gin::kEmbedderNativeGin};
 
 }  // namespace
 
-void Fatal(content::RenderFrame* render_frame, const std::string& message) {
-  AddMessage(render_frame, content::CONSOLE_MESSAGE_LEVEL_ERROR, message);
+void Fatal(ScriptContext* context, const std::string& message) {
+  AddMessage(context, content::CONSOLE_MESSAGE_LEVEL_ERROR, message);
   CheckWithMinidump(message);
 }
 
-void AddMessage(content::RenderFrame* render_frame,
+void AddMessage(ScriptContext* script_context,
                 content::ConsoleMessageLevel level,
                 const std::string& message) {
+  if (!script_context) {
+    LOG(WARNING) << "Could not log \"" << message
+                 << "\": no ScriptContext found";
+    return;
+  }
+  content::RenderFrame* render_frame = script_context->GetRenderFrame();
   if (!render_frame) {
+    // TODO(lazyboy/devlin): This can happen when this is the context for a
+    // service worker. blink::WebEmbeddedWorker has an AddMessageToConsole
+    // method that we could theoretically hook into.
     LOG(WARNING) << "Could not log \"" << message
                  << "\": no render frame found";
-  } else {
-    render_frame->AddMessageToConsole(level, message);
+    return;
   }
+
+  render_frame->AddMessageToConsole(level, message);
 }
 
 v8::Local<v8::Object> AsV8Object(v8::Isolate* isolate) {

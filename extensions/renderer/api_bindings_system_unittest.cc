@@ -118,7 +118,8 @@ void APIBindingsSystemTest::SetUp() {
       base::Bind(&APIBindingsSystemTest::OnEventListenersChanged,
                  base::Unretained(this)),
       APILastError(base::Bind(&APIBindingsSystemTest::GetLastErrorParent,
-                              base::Unretained(this))));
+                              base::Unretained(this)),
+                   APILastError::AddConsoleError()));
 }
 
 void APIBindingsSystemTest::TearDown() {

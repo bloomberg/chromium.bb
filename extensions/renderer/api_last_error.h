@@ -21,8 +21,12 @@ class APILastError {
   // given context.
   using GetParent =
       base::Callback<v8::Local<v8::Object>(v8::Local<v8::Context>)>;
+  // Adds an error message to the context's console.
+  using AddConsoleError =
+      base::Callback<void(v8::Local<v8::Context>, const std::string& error)>;
 
-  explicit APILastError(const GetParent& get_parent);
+  APILastError(const GetParent& get_parent,
+               const AddConsoleError& add_console_error);
   APILastError(APILastError&& other);
   ~APILastError();
 
@@ -38,6 +42,8 @@ class APILastError {
 
  private:
   GetParent get_parent_;
+
+  AddConsoleError add_console_error_;
 
   DISALLOW_COPY_AND_ASSIGN(APILastError);
 };

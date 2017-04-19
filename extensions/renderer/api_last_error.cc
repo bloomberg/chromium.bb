@@ -53,8 +53,9 @@ gin::WrapperInfo LastErrorObject::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 }  // namespace
 
-APILastError::APILastError(const GetParent& get_parent)
-    : get_parent_(get_parent) {}
+APILastError::APILastError(const GetParent& get_parent,
+                           const AddConsoleError& add_console_error)
+    : get_parent_(get_parent), add_console_error_(add_console_error) {}
 APILastError::APILastError(APILastError&& other) = default;
 APILastError::~APILastError() = default;
 
@@ -133,8 +134,8 @@ void APILastError::ClearError(v8::Local<v8::Context> context,
   }
 
   if (report_if_unchecked && !last_error->accessed()) {
-    isolate->ThrowException(
-        v8::Exception::Error(gin::StringToV8(isolate, last_error->error())));
+    add_console_error_.Run(
+        context, "Unchecked runtime.lastError: " + last_error->error());
   }
 
   // See comment in SetError().

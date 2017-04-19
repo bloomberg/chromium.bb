@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/optional.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "gin/converter.h"
@@ -14,6 +15,9 @@
 namespace extensions {
 
 namespace {
+
+void DoNothingWithError(v8::Local<v8::Context> context,
+                        const std::string& error) {}
 
 std::string GetLastError(v8::Local<v8::Object> parent,
                          v8::Local<v8::Context> context) {
@@ -50,7 +54,8 @@ TEST_F(APILastErrorTest, TestLastError) {
   v8::Local<v8::Object> parent_object = v8::Object::New(isolate());
 
   ParentList parents = {{context, parent_object}};
-  APILastError last_error(base::Bind(&GetParent, parents));
+  APILastError last_error(base::Bind(&GetParent, parents),
+                          base::Bind(&DoNothingWithError));
 
   EXPECT_EQ("undefined", GetLastError(parent_object, context));
   // Check that the key isn't present on the object (as opposed to simply being
@@ -75,27 +80,36 @@ TEST_F(APILastErrorTest, ReportIfUnchecked) {
   v8::Local<v8::Context> context = MainContext();
   v8::Local<v8::Object> parent_object = v8::Object::New(isolate());
 
+  base::Optional<std::string> console_error;
+  auto log_error = [](base::Optional<std::string>* console_error,
+                      v8::Local<v8::Context> context,
+                      const std::string& error) { *console_error = error; };
+
   ParentList parents = {{context, parent_object}};
-  APILastError last_error(base::Bind(&GetParent, parents));
+  APILastError last_error(base::Bind(&GetParent, parents),
+                          base::Bind(log_error, &console_error));
 
   {
     v8::TryCatch try_catch(isolate());
     last_error.SetError(context, "foo");
     // GetLastError() will count as accessing the error property, so we
-    // shouldn't throw an exception.
+    // shouldn't log an error.
     EXPECT_EQ("\"foo\"", GetLastError(parent_object, context));
     last_error.ClearError(context, true);
+    EXPECT_FALSE(console_error);
     EXPECT_FALSE(try_catch.HasCaught());
   }
 
   {
     v8::TryCatch try_catch(isolate());
-    // This time, we should throw an exception.
+    // This time, we should log an error.
     last_error.SetError(context, "A last error");
     last_error.ClearError(context, true);
-    ASSERT_TRUE(try_catch.HasCaught());
-    EXPECT_EQ("Uncaught Error: A last error",
-              gin::V8ToString(try_catch.Message()->Get()));
+    ASSERT_TRUE(console_error);
+    EXPECT_EQ("Unchecked runtime.lastError: A last error", *console_error);
+    // We shouldn't have thrown an exception in order to prevent disrupting
+    // JS execution.
+    EXPECT_FALSE(try_catch.HasCaught());
   }
 }
 
@@ -107,7 +121,8 @@ TEST_F(APILastErrorTest, NonLastErrorObject) {
   v8::Local<v8::Object> parent_object = v8::Object::New(isolate());
 
   ParentList parents = {{context, parent_object}};
-  APILastError last_error(base::Bind(&GetParent, parents));
+  APILastError last_error(base::Bind(&GetParent, parents),
+                          base::Bind(&DoNothingWithError));
 
   auto checked_set = [context](v8::Local<v8::Object> object,
                                base::StringPiece key,
@@ -143,7 +158,8 @@ TEST_F(APILastErrorTest, MultipleContexts) {
   v8::Local<v8::Object> parent_a = v8::Object::New(isolate());
   v8::Local<v8::Object> parent_b = v8::Object::New(isolate());
   ParentList parents = {{context_a, parent_a}, {context_b, parent_b}};
-  APILastError last_error(base::Bind(&GetParent, parents));
+  APILastError last_error(base::Bind(&GetParent, parents),
+                          base::Bind(&DoNothingWithError));
 
   last_error.SetError(context_a, "Last error a");
   EXPECT_EQ("\"Last error a\"", GetLastError(parent_a, context_a));

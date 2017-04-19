@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "content/public/common/console_message_level.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/event_filtering_info.h"
@@ -16,6 +17,7 @@
 #include "extensions/renderer/api_binding_hooks.h"
 #include "extensions/renderer/api_binding_js_util.h"
 #include "extensions/renderer/chrome_setting.h"
+#include "extensions/renderer/console.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
@@ -162,6 +164,14 @@ v8::Global<v8::Value> CallJsFunctionSync(v8::Local<v8::Function> function,
   script_context->SafeCallFunction(function, argc, argv, callback);
   CHECK(did_complete) << "expected script to execute synchronously";
   return result;
+}
+
+void AddConsoleError(v8::Local<v8::Context> context, const std::string& error) {
+  ScriptContext* script_context =
+      ScriptContextSet::GetContextByV8Context(context);
+  CHECK(script_context);
+  console::AddMessage(script_context, content::CONSOLE_MESSAGE_LEVEL_ERROR,
+                      error);
 }
 
 // Returns the API schema indicated by |api_name|.
@@ -335,7 +345,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
                      base::Unretained(this)),
           base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,
                      base::Unretained(this)),
-          APILastError(base::Bind(&GetRuntime))),
+          APILastError(base::Bind(&GetRuntime), base::Bind(&AddConsoleError))),
       weak_factory_(this) {
   api_system_.RegisterCustomType("storage.StorageArea",
                                  base::Bind(&StorageArea::CreateStorageArea));

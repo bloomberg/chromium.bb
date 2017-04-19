@@ -10,23 +10,20 @@
 #include "content/public/common/console_message_level.h"
 #include "v8/include/v8.h"
 
-namespace content {
-class RenderFrame;
-}
-
 namespace extensions {
+class ScriptContext;
 
-// Utility for logging messages to RenderFrames.
+// Utility for logging console messages.
 namespace console {
 
-// Adds |message| to the console of |render_frame|. If |render_frame| is null,
-// LOG()s the message instead.
-void AddMessage(content::RenderFrame* render_frame,
+// Adds |message| to the console of of the |script_context|. If |script_context|
+// is null, LOG()s the message instead.
+void AddMessage(ScriptContext* script_context,
                 content::ConsoleMessageLevel level,
                 const std::string& message);
 
 // Logs an Error then crashes the current process.
-void Fatal(content::RenderFrame* render_frame, const std::string& message);
+void Fatal(ScriptContext* context, const std::string& message);
 
 // Returns a new v8::Object with each standard log method (Debug/Log/Warn/Error)
 // bound to respective debug/log/warn/error methods. This is a direct drop-in

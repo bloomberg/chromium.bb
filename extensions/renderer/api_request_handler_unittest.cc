@@ -67,7 +67,7 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
-      APILastError(APILastError::GetParent()));
+      APILastError(APILastError::GetParent(), APILastError::AddConsoleError()));
 
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
 
@@ -102,7 +102,7 @@ TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
-      APILastError(APILastError::GetParent()));
+      APILastError(APILastError::GetParent(), APILastError::AddConsoleError()));
 
   v8::Local<v8::Function> function = FunctionFromString(context, kEchoArgs);
   ASSERT_FALSE(function.IsEmpty());
@@ -138,7 +138,7 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
-      APILastError(APILastError::GetParent()));
+      APILastError(APILastError::GetParent(), APILastError::AddConsoleError()));
 
   // By having both different arguments and different behaviors in the
   // callbacks, we can easily verify that the right function is called in the
@@ -190,7 +190,7 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArguments) {
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
-      APILastError(APILastError::GetParent()));
+      APILastError(APILastError::GetParent(), APILastError::AddConsoleError()));
 
   v8::Local<v8::Function> custom_callback =
       FunctionFromString(context, kEchoArgs);
@@ -237,7 +237,7 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArgumentsWithEmptyCallback) {
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
-      APILastError(APILastError::GetParent()));
+      APILastError(APILastError::GetParent(), APILastError::AddConsoleError()));
 
   v8::Local<v8::Function> custom_callback =
       FunctionFromString(context, kEchoArgs);
@@ -275,7 +275,7 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
-      APILastError(APILastError::GetParent()));
+      APILastError(APILastError::GetParent(), APILastError::AddConsoleError()));
 
   auto callback = [](base::Optional<bool>* ran_with_user_gesture) {
     *ran_with_user_gesture =
@@ -339,7 +339,7 @@ TEST_F(APIRequestHandlerTest, RequestThread) {
   APIRequestHandler request_handler(
       base::Bind(on_request, &thread),
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
-      APILastError(APILastError::GetParent()));
+      APILastError(APILastError::GetParent(), APILastError::AddConsoleError()));
 
   request_handler.StartRequest(
       context, kMethod, base::MakeUnique<base::ListValue>(),

@@ -202,4 +202,47 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, ContextMenusTest) {
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
+// Tests that unchecked errors don't impede future calls.
+IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, ErrorsInCallbackTest) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "Errors In Callback",
+           "manifest_version": 2,
+           "version": "0.1",
+           "permissions": ["contextMenus"],
+           "background": {
+             "scripts": ["background.js"]
+           }
+         })");
+  test_dir.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      R"(chrome.tabs.query({}, function(tabs) {
+           chrome.tabs.executeScript(tabs[0].id, {code: 'x'}, function() {
+             // There's an error here (we don't have permission to access the
+             // host), but we don't check it so that it gets surfaced as an
+             // unchecked runtime.lastError.
+             // We should still be able to invoke other APIs and get correct
+             // callbacks.
+             chrome.tabs.query({}, function(tabs) {
+               chrome.tabs.query({}, function(tabs) {
+                 chrome.test.sendMessage('callback');
+               });
+             });
+           });
+         });)");
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "example.com", "/native_bindings/simple.html"));
+
+  ExtensionTestMessageListener listener("callback", false);
+  ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+}
+
 }  // namespace extensions
