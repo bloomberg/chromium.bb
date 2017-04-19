@@ -153,12 +153,11 @@ video::-internal-media-remoting-interstitial {
     direction: ltr;
     display: flex;
     flex-direction: column;
-    font-family: Segoe, "Helvetica Neue", Roboto, Arial, Helvetica, sans-serif;
     justify-content: flex-end;
     align-items: center;
-    font-size: 28px;
+    font-size: 16px;
     background-color: black;
-    transition: opacity .2s cubic-bezier (0.4, 0.0, 0.2, 1);
+    transition: opacity .2s ease-in-out;
 }
 
 video::-internal-media-remoting-background-image {
@@ -183,11 +182,11 @@ video::-internal-media-remoting-cast-icon {
     margin: 0px;
     border-width: 0px;
     background-color: transparent;
-    height: 36px;
-    width: 44px;
+    height: 18px;
+    width: 22px;
     padding: 0px;
-    left: calc(50% - 22px);
-    top: calc(50% - 60px);
+    left: calc(50% - 11px);
+    top: calc(50% - 40px);
 }
 
 video::-internal-media-remoting-cast-text-message {
@@ -195,14 +194,13 @@ video::-internal-media-remoting-cast-text-message {
     position: absolute;
     top: calc(50% - 10px);
     border: none;
-    color: #FFFFFF;
-    opacity: 54%
+    color: rgba(255,255,255,.54);
     width: 100%;
     text-wrap: none;
     text-align: center;
     background-color: transparent;
-    font-size: 13pt;
-    font-face: Roboto-Regular, Sans-serif, Segoe, Serif, Helvetica;
+    font-size: 81.25%;
+    font-family: Roboto-Regular, Sans-serif, Segoe, Serif, Helvetica;
     padding: 0px;
     margin: 0px;
 }
@@ -210,20 +208,28 @@ video::-internal-media-remoting-cast-text-message {
 video::-internal-media-remoting-disable-button {
     display: flex;
     position: absolute;
-    top: calc(50% + 55pt);
-    left: calc(50% - 102px);
-    height: 28pt;
-    border: 2pt solid rgba(255,255,255,.54);
+    top: calc(50% + 60px);
+    left: calc(50% - 74px);
+    height: 28px;
+    border: 1pt solid rgba(255,255,255,.54);
     border-radius: 2pt;
     background-color: transparent;
-    color: #FFFFFF;
+    color: rgba(255,255,255,.54);
     margin: 0px;
-    padding: 8pt 16pt 0pt 16pt;
+    padding: 5.5px 16px 0px 16px;
     text-wrap: none;
-    font-size: 13pt;
-    font-face: Roboto-Medium, Sans-serif, Segoe, Serif, Helvetica;
-    opacity: 54%
-    transition: border .5s ease-out;
+    font-size: 75%;
+    font-weight: 500;
+    font-family: Roboto-Medium, Sans-serif, Segoe, Serif, Helvetica;
+    box-sizing: border-box;
+    transition: border,color .5s ease-out;
+    z-index: 1;  /* Set this z-index to make the hover effect work. */
+}
+
+video::-internal-media-remoting-disable-button:hover {
+    border: 1pt solid rgba(255,255,255,.70);
+    color: rgba(255,255,255,.70);
+    cursor: pointer;
 }
 
 video::-internal-media-controls-overlay-cast-button {
