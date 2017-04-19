@@ -179,8 +179,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   BeginFrameTracker begin_impl_frame_tracker_;
   BeginFrameArgs begin_main_frame_args_;
+  BeginFrameArgs missed_begin_frame_args_;
 
-  base::Closure begin_impl_frame_deadline_closure_;
   base::CancelableClosure begin_impl_frame_deadline_task_;
   base::CancelableClosure missed_begin_frame_task_;
 
@@ -196,6 +196,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void ScheduleBeginImplFrameDeadlineIfNeeded();
   void BeginImplFrameNotExpectedSoon();
   void SetupNextBeginFrameIfNeeded();
+  void StartObservingBeginFrameSource();
+  void StopObservingBeginFrameSource();
   void DrawIfPossible();
   void DrawForced();
   void ProcessScheduledActions();
@@ -210,6 +212,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
       base::TimeTicks now) const;
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
+  void BeginImplFrameMissed(const BeginFrameArgs& args);
   void BeginImplFrameWithDeadline(const BeginFrameArgs& args);
   void BeginImplFrameSynchronous(const BeginFrameArgs& args);
   void BeginImplFrame(const BeginFrameArgs& args, base::TimeTicks now);
