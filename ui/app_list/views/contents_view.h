@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/views/view.h"
@@ -42,7 +43,8 @@ class StartPageView;
 // interface for switching between launcher pages, and animates the transition
 // between them.
 class APP_LIST_EXPORT ContentsView : public views::View,
-                                     public PaginationModelObserver {
+                                     public PaginationModelObserver,
+                                     public AppListModelObserver {
  public:
   explicit ContentsView(AppListMainView* app_list_main_view);
   ~ContentsView() override;
@@ -133,6 +135,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void TransitionStarted() override;
   void TransitionChanged() override;
 
+  // Overridden from AppListModelObserver:
+  void OnSearchAnswerAvailableChanged(bool has_answer) override;
+
  private:
   // Sets the active launcher page, accounting for whether the change is for
   // search results.
@@ -175,11 +180,18 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // launcher-page pagination.
   PaginationModel* GetAppsPaginationModel();
 
+  // Unowned pointer to application list model.
+  AppListModel* model_;
+
   // Sub-views of the ContentsView. All owned by the views hierarchy.
   AppsContainerView* apps_container_view_;
   SearchResultPageView* search_results_page_view_;
   StartPageView* start_page_view_;
   CustomLauncherPageView* custom_page_view_;
+
+  // Unowned pointer to the container of the search answer web view. This
+  // container view is a sub-view of search_results_page_view_.
+  View* search_answer_container_view_;
 
   // The child page views. Owned by the views hierarchy.
   std::vector<AppListPage*> app_list_pages_;

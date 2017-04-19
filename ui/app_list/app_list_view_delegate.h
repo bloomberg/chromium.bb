@@ -83,6 +83,10 @@ class APP_LIST_EXPORT AppListViewDelegate {
   virtual std::vector<views::View*> CreateCustomPageWebViews(
       const gfx::Size& size) = 0;
 
+  // Gets the web view for the search answer. The caller doesn't take the
+  // ownership of the returned view.
+  virtual views::View* GetSearchAnswerWebView() = 0;
+
   // Invoked when the custom launcher page's animation changes.
   virtual void CustomLauncherPageAnimationChanged(double progress) = 0;
 

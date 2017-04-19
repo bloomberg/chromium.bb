@@ -166,6 +166,8 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   void SetSearchEngineIsGoogle(bool is_google);
   bool search_engine_is_google() const { return search_engine_is_google_; }
 
+  void SetSearchAnswerAvailable(bool has_answer);
+
   // Filters the given |results| by |display_type|. The returned list is
   // truncated to |max_results|.
   static std::vector<SearchResult*> FilterSearchResultsByDisplayType(

@@ -3289,6 +3289,8 @@ split_static_library("ui") {
       "app_list/search/webstore/webstore_provider.h",
       "app_list/search/webstore/webstore_result.cc",
       "app_list/search/webstore/webstore_result.h",
+      "app_list/search_answer_web_contents_delegate.cc",
+      "app_list/search_answer_web_contents_delegate.h",
       "app_list/speech_auth_helper.cc",
       "app_list/speech_auth_helper.h",
       "app_list/speech_recognizer.cc",

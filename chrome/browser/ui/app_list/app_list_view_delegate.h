@@ -26,6 +26,7 @@
 namespace app_list {
 class CustomLauncherPageContents;
 class LauncherPageEventDispatcher;
+class SearchAnswerWebContentsDelegate;
 class SearchController;
 class SearchResourceManager;
 class SpeechUIModel;
@@ -79,6 +80,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   views::View* CreateStartPageWebView(const gfx::Size& size) override;
   std::vector<views::View*> CreateCustomPageWebViews(
       const gfx::Size& size) override;
+  views::View* GetSearchAnswerWebView() override;
   void CustomLauncherPageAnimationChanged(double progress) override;
   void CustomLauncherPagePopSubpage() override;
   bool IsSpeechRecognitionEnabled() override;
@@ -143,6 +145,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Registers for NOTIFICATION_APP_TERMINATING to unload custom launcher pages.
   content::NotificationRegistrar registrar_;
+
+  std::unique_ptr<app_list::SearchAnswerWebContentsDelegate>
+      search_answer_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };

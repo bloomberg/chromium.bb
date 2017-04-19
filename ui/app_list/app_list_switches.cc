@@ -10,6 +10,10 @@
 namespace app_list {
 namespace switches {
 
+// If empty, search answers in the app app list are disabled, otherwise the URL
+// of the answer server.
+const char kAnswerServerUrl[] = "answer-server-url";
+
 // Specifies the chrome-extension:// URL for the contents of an additional page
 // added to the app launcher.
 const char kCustomLauncherPage[] = "custom-launcher-page";
@@ -72,6 +76,11 @@ bool IsDriveSearchInChromeLauncherEnabled() {
     return false;
 
   return true;
+}
+
+std::string AnswerServerUrl() {
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+      kAnswerServerUrl);
 }
 
 }  // namespace switches

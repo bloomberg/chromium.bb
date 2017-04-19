@@ -361,6 +361,11 @@ void AppListModel::SetSearchEngineIsGoogle(bool is_google) {
     observer.OnSearchEngineIsGoogleChanged(is_google);
 }
 
+void AppListModel::SetSearchAnswerAvailable(bool has_answer) {
+  for (auto& observer : observers_)
+    observer.OnSearchAnswerAvailableChanged(has_answer);
+}
+
 // Private methods
 
 void AppListModel::OnListItemMoved(size_t from_index,
