@@ -123,12 +123,28 @@ void PaymentRequestUpdateEvent::updateWith(ScriptState* script_state,
   stopPropagation();
   stopImmediatePropagation();
   wait_for_update_ = true;
-  abort_timer_.Stop();
 
   promise.Then(
-      UpdatePaymentDetailsFunction::CreateFunction(script_state, updater_),
-      UpdatePaymentDetailsErrorFunction::CreateFunction(script_state,
-                                                        updater_));
+      UpdatePaymentDetailsFunction::CreateFunction(script_state, this),
+      UpdatePaymentDetailsErrorFunction::CreateFunction(script_state, this));
+}
+
+void PaymentRequestUpdateEvent::OnUpdatePaymentDetails(
+    const ScriptValue& details_script_value) {
+  if (!updater_)
+    return;
+  abort_timer_.Stop();
+  updater_->OnUpdatePaymentDetails(details_script_value);
+  updater_ = nullptr;
+}
+
+void PaymentRequestUpdateEvent::OnUpdatePaymentDetailsFailure(
+    const String& error) {
+  if (!updater_)
+    return;
+  abort_timer_.Stop();
+  updater_->OnUpdatePaymentDetailsFailure(error);
+  updater_ = nullptr;
 }
 
 DEFINE_TRACE(PaymentRequestUpdateEvent) {
@@ -137,15 +153,7 @@ DEFINE_TRACE(PaymentRequestUpdateEvent) {
 }
 
 void PaymentRequestUpdateEvent::OnUpdateEventTimeoutForTesting() {
-  OnUpdateEventTimeout(0);
-}
-
-void PaymentRequestUpdateEvent::OnUpdateEventTimeout(TimerBase*) {
-  if (!updater_)
-    return;
-
-  updater_->OnUpdatePaymentDetailsFailure(
-      "Timed out as the page didn't resolve the promise from change event");
+  OnUpdateEventTimeout(nullptr);
 }
 
 PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(
@@ -158,5 +166,10 @@ PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(
           TaskRunnerHelper::Get(TaskType::kUserInteraction, execution_context),
           this,
           &PaymentRequestUpdateEvent::OnUpdateEventTimeout) {}
+
+void PaymentRequestUpdateEvent::OnUpdateEventTimeout(TimerBase*) {
+  OnUpdatePaymentDetailsFailure("Timed out waiting for a response to a '" +
+                                type() + "' event");
+}
 
 }  // namespace blink

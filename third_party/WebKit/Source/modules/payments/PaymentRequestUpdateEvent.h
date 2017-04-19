@@ -10,6 +10,7 @@
 #include "core/events/Event.h"
 #include "modules/ModulesExport.h"
 #include "modules/payments/PaymentRequestUpdateEventInit.h"
+#include "modules/payments/PaymentUpdater.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 
@@ -17,11 +18,12 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class PaymentUpdater;
 class ScriptState;
 
-class MODULES_EXPORT PaymentRequestUpdateEvent final : public Event {
+class MODULES_EXPORT PaymentRequestUpdateEvent final : public Event,
+                                                       public PaymentUpdater {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(PaymentRequestUpdateEvent)
 
  public:
   ~PaymentRequestUpdateEvent() override;
@@ -34,6 +36,10 @@ class MODULES_EXPORT PaymentRequestUpdateEvent final : public Event {
   void SetPaymentDetailsUpdater(PaymentUpdater*);
 
   void updateWith(ScriptState*, ScriptPromise, ExceptionState&);
+
+  // PaymentUpdater:
+  void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;
+  void OnUpdatePaymentDetailsFailure(const String& error) override;
 
   DECLARE_VIRTUAL_TRACE();
 

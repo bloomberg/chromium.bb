@@ -121,7 +121,7 @@ TEST(PaymentRequestUpdateEventTest, UpdaterNotRequired) {
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 }
 
-TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout) {
+TEST(PaymentRequestUpdateEventTest, AddressChangeUpdateWithTimeout) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
@@ -141,9 +141,112 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout) {
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ(
-      "AbortError: Timed out as the page didn't resolve the promise from "
-      "change event",
+      "AbortError: Timed out waiting for a response to a "
+      "'shippingaddresschange' event",
       error_message);
+
+  event->updateWith(
+      scope.GetScriptState(),
+      ScriptPromiseResolver::Create(scope.GetScriptState())->Promise(),
+      scope.GetExceptionState());
+
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+}
+
+TEST(PaymentRequestUpdateEventTest, OptionChangeUpdateWithTimeout) {
+  V8TestingScope scope;
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
+      scope.GetExecutionContext(), EventTypeNames::shippingoptionchange);
+  event->SetPaymentDetailsUpdater(request);
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+
+  String error_message;
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
+
+  event->OnUpdateEventTimeoutForTesting();
+
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+  EXPECT_EQ(
+      "AbortError: Timed out waiting for a response to a "
+      "'shippingoptionchange' event",
+      error_message);
+
+  event->updateWith(
+      scope.GetScriptState(),
+      ScriptPromiseResolver::Create(scope.GetScriptState())->Promise(),
+      scope.GetExceptionState());
+
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+}
+
+TEST(PaymentRequestUpdateEventTest, AddressChangePromiseTimeout) {
+  V8TestingScope scope;
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
+      scope.GetExecutionContext(), EventTypeNames::shippingaddresschange);
+  event->SetPaymentDetailsUpdater(request);
+  event->SetEventPhase(Event::kCapturingPhase);
+  ScriptPromiseResolver* payment_details =
+      ScriptPromiseResolver::Create(scope.GetScriptState());
+  String error_message;
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
+  event->updateWith(scope.GetScriptState(), payment_details->Promise(),
+                    scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+
+  event->OnUpdateEventTimeoutForTesting();
+
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+  EXPECT_EQ(
+      "AbortError: Timed out waiting for a response to a "
+      "'shippingaddresschange' event",
+      error_message);
+
+  payment_details->Resolve("foo");
+}
+
+TEST(PaymentRequestUpdateEventTest, OptionChangePromiseTimeout) {
+  V8TestingScope scope;
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
+      scope.GetExecutionContext(), EventTypeNames::shippingoptionchange);
+  event->SetPaymentDetailsUpdater(request);
+  event->SetEventPhase(Event::kCapturingPhase);
+  ScriptPromiseResolver* payment_details =
+      ScriptPromiseResolver::Create(scope.GetScriptState());
+  String error_message;
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
+  event->updateWith(scope.GetScriptState(), payment_details->Promise(),
+                    scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+
+  event->OnUpdateEventTimeoutForTesting();
+
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+  EXPECT_EQ(
+      "AbortError: Timed out waiting for a response to a "
+      "'shippingoptionchange' event",
+      error_message);
+
+  payment_details->Resolve("foo");
 }
 
 }  // namespace
