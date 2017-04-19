@@ -68,6 +68,10 @@ struct DataReductionProxyInfo {
 // Gets the header used for data reduction proxy requests and responses.
 const char* chrome_proxy_header();
 
+// Gets the chrome-proxy-ect request header that includes the effective
+// connection type.
+const char* chrome_proxy_ect_header();
+
 // Gets the ChromeProxyAcceptTransform header name.
 const char* chrome_proxy_accept_transform_header();
 

@@ -29,6 +29,7 @@ using base::TimeDelta;
 namespace {
 
 const char kChromeProxyHeader[] = "chrome-proxy";
+const char kChromeProxyECTHeader[] = "chrome-proxy-ect";
 const char kChromeProxyAcceptTransformHeader[] =
     "chrome-proxy-accept-transform";
 const char kChromeProxyContentTransformHeader[] =
@@ -124,6 +125,10 @@ namespace data_reduction_proxy {
 
 const char* chrome_proxy_header() {
   return kChromeProxyHeader;
+}
+
+const char* chrome_proxy_ect_header() {
+  return kChromeProxyECTHeader;
 }
 
 const char* chrome_proxy_accept_transform_header() {
