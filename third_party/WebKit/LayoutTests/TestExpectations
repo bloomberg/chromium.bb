@@ -2697,8 +2697,6 @@ crbug.com/708499 virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latchi
 
 crbug.com/706091 [ Linux ] virtual/wheelscrolllatching/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Pass ]
 
-crbug.com/700788 virtual/enable_wasm/http/tests/wasm/wasm_local_iframe_test.html [ Failure ]
-
 # Sheriff failures 2017-04-03
 # Should be [ Crash Pass ], but this has a commented out [ Skip ] expectation
 # for Mac earlier in the file, so just skip it everywhere.

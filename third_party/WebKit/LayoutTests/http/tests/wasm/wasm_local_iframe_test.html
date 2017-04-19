@@ -10,7 +10,7 @@
     var ans = await new Promise((resolve, reject) => {
       var iframe = document.getElementById("iframe").contentWindow;
       iframe.postMessage(mod, '*');
-      iframe.onmessage = event => resolve(event.data);
+      window.addEventListener("message", (reply) => resolve(reply.data), false);
     });
     assert_equals(ans, 43);
   }, "send wasm module to iframe");
