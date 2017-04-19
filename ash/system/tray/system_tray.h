@@ -202,13 +202,13 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   bool PerformAction(const ui::Event& event) override;
 
   // The web notification tray view that appears adjacent to this view.
-  WebNotificationTray* web_notification_tray_;
+  WebNotificationTray* web_notification_tray_ = nullptr;
 
   // Items.
   std::vector<std::unique_ptr<SystemTrayItem>> items_;
 
   // Pointers to members of |items_|.
-  SystemTrayItem* detailed_item_;
+  SystemTrayItem* detailed_item_ = nullptr;
 
   // Mappings of system tray item and it's view in the tray.
   std::map<SystemTrayItem*, views::View*> tray_item_map_;
@@ -218,25 +218,25 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // Keep track of the default view height so that when we create detailed
   // views directly (e.g. from a notification) we know what height to use.
-  int default_bubble_height_;
+  int default_bubble_height_ = 0;
 
   // This is true when the displayed system tray menu is a full tray menu,
   // otherwise a single line item menu like the volume slider is shown.
   // Note that the value is only valid when |system_bubble_| is true.
-  bool full_system_tray_menu_;
+  bool full_system_tray_menu_ = false;
 
   // These objects are not owned by this class.
-  TrayAccessibility* tray_accessibility_;
-  TrayAudio* tray_audio_;  // May be null.
-  TrayCast* tray_cast_;
-  TrayNetwork* tray_network_;
-  TrayTiles* tray_tiles_;  // only used in material design.
-  TraySystemInfo* tray_system_info_;  // only used in material design.
-  TrayUpdate* tray_update_;
+  TrayAccessibility* tray_accessibility_ = nullptr;
+  TrayAudio* tray_audio_ = nullptr;  // May be null.
+  TrayCast* tray_cast_ = nullptr;
+  TrayNetwork* tray_network_ = nullptr;
+  TrayTiles* tray_tiles_ = nullptr;
+  TraySystemInfo* tray_system_info_ = nullptr;
+  TrayUpdate* tray_update_ = nullptr;
 
   // A reference to the Screen share and capture item.
-  ScreenTrayItem* screen_capture_tray_item_;  // not owned
-  ScreenTrayItem* screen_share_tray_item_;    // not owned
+  ScreenTrayItem* screen_capture_tray_item_ = nullptr;  // not owned
+  ScreenTrayItem* screen_share_tray_item_ = nullptr;    // not owned
 
   std::unique_ptr<KeyEventWatcher> key_event_watcher_;
 

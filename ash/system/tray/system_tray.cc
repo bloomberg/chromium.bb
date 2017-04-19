@@ -207,21 +207,7 @@ class SystemTray::ActivationObserver
 
 // SystemTray
 
-SystemTray::SystemTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf, true),
-      web_notification_tray_(nullptr),
-      detailed_item_(nullptr),
-      default_bubble_height_(0),
-      full_system_tray_menu_(false),
-      tray_accessibility_(nullptr),
-      tray_audio_(nullptr),
-      tray_cast_(nullptr),
-      tray_network_(nullptr),
-      tray_tiles_(nullptr),
-      tray_system_info_(nullptr),
-      tray_update_(nullptr),
-      screen_capture_tray_item_(nullptr),
-      screen_share_tray_item_(nullptr) {
+SystemTray::SystemTray(WmShelf* wm_shelf) : TrayBackgroundView(wm_shelf, true) {
   SetInkDropMode(InkDropMode::ON);
 
   // Since user avatar is on the right hand side of System tray of a
@@ -696,9 +682,11 @@ void SystemTray::ActivateBubble() {
 }
 
 bool SystemTray::PerformAction(const ui::Event& event) {
-  // If we're already showing the menu, hide it; otherwise, show it (and hide
-  // any popup that's currently shown).
-  if (HasSystemBubble()) {
+  // If we're already showing the default view or detailed view in system menu,
+  // hide it; otherwise, show it (and hide any popup that's currently shown).
+  if (HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DEFAULT) ||
+      (HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DETAILED) &&
+       full_system_tray_menu_)) {
     system_bubble_->bubble()->Close();
   } else {
     ShowDefaultView(BUBBLE_CREATE_NEW);
