@@ -451,7 +451,9 @@ TEST_F(PrerenderingOfflinerTest, ForegroundTransitionCancelsOnLowEndDevice) {
   EXPECT_EQ(Offliner::RequestStatus::FOREGROUND_CANCELED, request_status());
 }
 
-TEST_F(PrerenderingOfflinerTest, ForegroundTransitionIgnoredOnHighEndDevice) {
+// TODO(crbug.com/712941): Flaky test.
+TEST_F(PrerenderingOfflinerTest,
+       DISABLED_ForegroundTransitionIgnoredOnHighEndDevice) {
   offliner()->SetLowEndDeviceForTesting(false);
 
   base::Time creation_time = base::Time::Now();
