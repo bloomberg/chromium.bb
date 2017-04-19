@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDERER_FRAME_MANAGER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDERER_FRAME_MANAGER_H_
+#ifndef COMPONENTS_VIZ_FRAME_SINKS_FRAME_EVICTION_MANAGER_H_
+#define COMPONENTS_VIZ_FRAME_SINKS_FRAME_EVICTION_MANAGER_H_
 
 #include <stddef.h>
 
@@ -14,15 +14,13 @@
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/singleton.h"
-#include "content/common/content_export.h"
+#include "components/viz/frame_sinks/viz_export.h"
 
-namespace content {
+namespace viz {
 
-class RenderWidgetHostViewAuraTest;
-
-class CONTENT_EXPORT RendererFrameManagerClient {
+class VIZ_EXPORT FrameEvictionManagerClient {
  public:
-  virtual ~RendererFrameManagerClient() {}
+  virtual ~FrameEvictionManagerClient() {}
   virtual void EvictCurrentFrame() = 0;
 };
 
@@ -32,15 +30,14 @@ class CONTENT_EXPORT RendererFrameManagerClient {
 // between a small set of tabs faster. The limit is a soft limit, because
 // clients can lock their frame to prevent it from being discarded, e.g. if the
 // tab is visible, or while capturing a screenshot.
-class CONTENT_EXPORT RendererFrameManager :
-    public base::MemoryCoordinatorClient {
+class VIZ_EXPORT FrameEvictionManager : public base::MemoryCoordinatorClient {
  public:
-  static RendererFrameManager* GetInstance();
+  static FrameEvictionManager* GetInstance();
 
-  void AddFrame(RendererFrameManagerClient*, bool locked);
-  void RemoveFrame(RendererFrameManagerClient*);
-  void LockFrame(RendererFrameManagerClient*);
-  void UnlockFrame(RendererFrameManagerClient*);
+  void AddFrame(FrameEvictionManagerClient*, bool locked);
+  void RemoveFrame(FrameEvictionManagerClient*);
+  void LockFrame(FrameEvictionManagerClient*);
+  void UnlockFrame(FrameEvictionManagerClient*);
 
   size_t GetMaxNumberOfSavedFrames() const;
 
@@ -50,38 +47,36 @@ class CONTENT_EXPORT RendererFrameManager :
   }
   void set_max_handles(float max_handles) { max_handles_ = max_handles; }
 
- private:
-  // Please remove when crbug.com/443824 has been fixed.
-  friend class RenderWidgetHostViewAuraTest;
+  // React on memory pressure events to adjust the number of cached frames.
+  // Please make this private when crbug.com/443824 has been fixed.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  RendererFrameManager();
-  ~RendererFrameManager() override;
+ private:
+  FrameEvictionManager();
+  ~FrameEvictionManager() override;
 
   // base::MemoryCoordinatorClient implementation:
   void OnPurgeMemory() override;
 
   void CullUnlockedFrames(size_t saved_frame_limit);
 
-  // React on memory pressure events to adjust the number of cached frames.
-  void OnMemoryPressure(
-      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
   void PurgeMemory(int percentage);
 
-  friend struct base::DefaultSingletonTraits<RendererFrameManager>;
+  friend struct base::DefaultSingletonTraits<FrameEvictionManager>;
 
   // Listens for system under pressure notifications and adjusts number of
   // cached frames accordingly.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  std::map<RendererFrameManagerClient*, size_t> locked_frames_;
-  std::list<RendererFrameManagerClient*> unlocked_frames_;
+  std::map<FrameEvictionManagerClient*, size_t> locked_frames_;
+  std::list<FrameEvictionManagerClient*> unlocked_frames_;
   size_t max_number_of_saved_frames_;
   float max_handles_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererFrameManager);
+  DISALLOW_COPY_AND_ASSIGN(FrameEvictionManager);
 };
 
-}  // namespace content
+}  // namespace viz
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDERER_FRAME_MANAGER_H_
+#endif  // COMPONENTS_VIZ_FRAME_SINKS_FRAME_EVICTION_MANAGER_H_

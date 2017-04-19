@@ -1438,6 +1438,7 @@ test("content_unittests") {
     "//components/payments/mojom",
     "//components/payments/mojom:mojom_payment_app",
     "//components/rappor:test_support",
+    "//components/viz/frame_sinks",
     "//content:resources",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",

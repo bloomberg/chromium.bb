@@ -111,6 +111,7 @@ using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using ui::WebInputEventTraits;
+using viz::FrameEvictionManager;
 
 namespace content {
 
@@ -673,14 +674,14 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void SimulateMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level) {
     // Here should be base::MemoryPressureListener::NotifyMemoryPressure, but
-    // since the RendererFrameManager is installing a MemoryPressureListener
+    // since the FrameEvictionManager is installing a MemoryPressureListener
     // which uses base::ObserverListThreadSafe, which furthermore remembers the
     // message loop for the thread it was created in. Between tests, the
-    // RendererFrameManager singleton survives and and the MessageLoop gets
+    // FrameEvictionManager singleton survives and and the MessageLoop gets
     // destroyed. The correct fix would be to have base::ObserverListThreadSafe
     // look
     // up the proper message loop every time (see crbug.com/443824.)
-    RendererFrameManager::GetInstance()->OnMemoryPressure(level);
+    FrameEvictionManager::GetInstance()->OnMemoryPressure(level);
   }
 
   void SendInputEventACK(WebInputEvent::Type type,
@@ -2670,7 +2671,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   view_->InitAsChild(nullptr);
 
   size_t max_renderer_frames =
-      RendererFrameManager::GetInstance()->GetMaxNumberOfSavedFrames();
+      FrameEvictionManager::GetInstance()->GetMaxNumberOfSavedFrames();
   ASSERT_LE(2u, max_renderer_frames);
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
@@ -2813,7 +2814,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   // Allocate enough bitmaps so that two frames (proportionally) would be
   // enough hit the handle limit.
   int handles_per_frame = 5;
-  RendererFrameManager::GetInstance()->set_max_handles(handles_per_frame * 2);
+  FrameEvictionManager::GetInstance()->set_max_handles(handles_per_frame * 2);
 
   display_compositor::HostSharedBitmapManagerClient bitmap_client(
       display_compositor::HostSharedBitmapManager::current());
@@ -2831,7 +2832,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
     else
       EXPECT_TRUE(views[i]->HasFrameData());
   }
-  RendererFrameManager::GetInstance()->set_max_handles(
+  FrameEvictionManager::GetInstance()->set_max_handles(
       base::SharedMemory::GetHandleLimit());
 
   for (size_t i = 0; i < renderer_count; ++i) {
@@ -2844,7 +2845,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   view_->InitAsChild(nullptr);
 
   size_t max_renderer_frames =
-      RendererFrameManager::GetInstance()->GetMaxNumberOfSavedFrames();
+      FrameEvictionManager::GetInstance()->GetMaxNumberOfSavedFrames();
   ASSERT_LE(2u, max_renderer_frames);
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
@@ -2916,7 +2917,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   // this value is calculated from total physical memory and causes the test to
   // fail when run on hardware with < 256MB of RAM.
   const size_t kMaxRendererFrames = 5;
-  RendererFrameManager::GetInstance()->set_max_number_of_saved_frames(
+  FrameEvictionManager::GetInstance()->set_max_number_of_saved_frames(
       kMaxRendererFrames);
 
   size_t renderer_count = kMaxRendererFrames;

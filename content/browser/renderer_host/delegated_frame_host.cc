@@ -50,7 +50,7 @@ DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
       skipped_frames_(false),
       background_color_(SK_ColorRED),
       current_scale_factor_(1.f),
-      delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
+      frame_evictor_(new viz::FrameEvictor(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
   factory->GetContextFactoryPrivate()->GetSurfaceManager()->RegisterFrameSinkId(
@@ -59,7 +59,7 @@ DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
-  delegated_frame_evictor_->SetVisible(true);
+  frame_evictor_->SetVisible(true);
 
   if (!has_frame_ && !released_front_lock_.get()) {
     if (compositor_)
@@ -72,11 +72,11 @@ void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
 }
 
 bool DelegatedFrameHost::HasSavedFrame() {
-  return delegated_frame_evictor_->HasFrame();
+  return frame_evictor_->HasFrame();
 }
 
 void DelegatedFrameHost::WasHidden() {
-  delegated_frame_evictor_->SetVisible(false);
+  frame_evictor_->SetVisible(false);
   released_front_lock_ = NULL;
 }
 
@@ -482,8 +482,7 @@ void DelegatedFrameHost::SubmitCompositorFrame(
   }
 
   if (has_frame_) {
-    delegated_frame_evictor_->SwappedFrame(
-        client_->DelegatedFrameHostIsVisible());
+    frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
   }
   // Note: the frame may have been evicted immediately.
 
@@ -525,7 +524,7 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
   client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
   support_->EvictFrame();
   has_frame_ = false;
-  delegated_frame_evictor_->DiscardedFrame();
+  frame_evictor_->DiscardedFrame();
   UpdateGutters();
 }
 
@@ -811,7 +810,7 @@ void DelegatedFrameHost::ResetCompositor() {
 
 void DelegatedFrameHost::LockResources() {
   DCHECK(local_surface_id_.is_valid());
-  delegated_frame_evictor_->LockFrame();
+  frame_evictor_->LockFrame();
 }
 
 void DelegatedFrameHost::RequestCopyOfOutput(
@@ -831,7 +830,7 @@ void DelegatedFrameHost::RequestCopyOfOutput(
 
 void DelegatedFrameHost::UnlockResources() {
   DCHECK(local_surface_id_.is_valid());
-  delegated_frame_evictor_->UnlockFrame();
+  frame_evictor_->UnlockFrame();
 }
 
 void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {

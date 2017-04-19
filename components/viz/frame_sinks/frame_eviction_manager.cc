@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/renderer_frame_manager.h"
+#include "components/viz/frame_sinks/frame_eviction_manager.h"
 
 #include <algorithm>
 
@@ -16,9 +16,8 @@
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "components/display_compositor/host_shared_bitmap_manager.h"
-#include "content/public/common/content_features.h"
 
-namespace content {
+namespace viz {
 namespace {
 
 const int kModeratePressurePercentage = 50;
@@ -26,11 +25,11 @@ const int kCriticalPressurePercentage = 10;
 
 }  // namespace
 
-RendererFrameManager* RendererFrameManager::GetInstance() {
-  return base::Singleton<RendererFrameManager>::get();
+FrameEvictionManager* FrameEvictionManager::GetInstance() {
+  return base::Singleton<FrameEvictionManager>::get();
 }
 
-void RendererFrameManager::AddFrame(RendererFrameManagerClient* frame,
+void FrameEvictionManager::AddFrame(FrameEvictionManagerClient* frame,
                                     bool locked) {
   RemoveFrame(frame);
   if (locked)
@@ -40,17 +39,17 @@ void RendererFrameManager::AddFrame(RendererFrameManagerClient* frame,
   CullUnlockedFrames(GetMaxNumberOfSavedFrames());
 }
 
-void RendererFrameManager::RemoveFrame(RendererFrameManagerClient* frame) {
-  std::map<RendererFrameManagerClient*, size_t>::iterator locked_iter =
+void FrameEvictionManager::RemoveFrame(FrameEvictionManagerClient* frame) {
+  std::map<FrameEvictionManagerClient*, size_t>::iterator locked_iter =
       locked_frames_.find(frame);
   if (locked_iter != locked_frames_.end())
     locked_frames_.erase(locked_iter);
   unlocked_frames_.remove(frame);
 }
 
-void RendererFrameManager::LockFrame(RendererFrameManagerClient* frame) {
-  std::list<RendererFrameManagerClient*>::iterator unlocked_iter =
-    std::find(unlocked_frames_.begin(), unlocked_frames_.end(), frame);
+void FrameEvictionManager::LockFrame(FrameEvictionManagerClient* frame) {
+  std::list<FrameEvictionManagerClient*>::iterator unlocked_iter =
+      std::find(unlocked_frames_.begin(), unlocked_frames_.end(), frame);
   if (unlocked_iter != unlocked_frames_.end()) {
     DCHECK(locked_frames_.find(frame) == locked_frames_.end());
     unlocked_frames_.remove(frame);
@@ -61,7 +60,7 @@ void RendererFrameManager::LockFrame(RendererFrameManagerClient* frame) {
   }
 }
 
-void RendererFrameManager::UnlockFrame(RendererFrameManagerClient* frame) {
+void FrameEvictionManager::UnlockFrame(FrameEvictionManagerClient* frame) {
   DCHECK(locked_frames_.find(frame) != locked_frames_.end());
   size_t locked_count = locked_frames_[frame];
   DCHECK(locked_count);
@@ -74,11 +73,11 @@ void RendererFrameManager::UnlockFrame(RendererFrameManagerClient* frame) {
   }
 }
 
-size_t RendererFrameManager::GetMaxNumberOfSavedFrames() const {
+size_t FrameEvictionManager::GetMaxNumberOfSavedFrames() const {
   int percentage = 100;
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    switch (base::MemoryCoordinatorProxy::GetInstance()->
-            GetCurrentMemoryState()) {
+  auto* memory_coordinator_proxy = base::MemoryCoordinatorProxy::GetInstance();
+  if (memory_coordinator_proxy) {
+    switch (memory_coordinator_proxy->GetCurrentMemoryState()) {
       case base::MemoryState::NORMAL:
         percentage = 100;
         break;
@@ -114,10 +113,10 @@ size_t RendererFrameManager::GetMaxNumberOfSavedFrames() const {
   return std::max(static_cast<size_t>(1), frames);
 }
 
-RendererFrameManager::RendererFrameManager()
-  : memory_pressure_listener_(new base::MemoryPressureListener(
-        base::Bind(&RendererFrameManager::OnMemoryPressure,
-                   base::Unretained(this)))) {
+FrameEvictionManager::FrameEvictionManager()
+    : memory_pressure_listener_(new base::MemoryPressureListener(
+          base::Bind(&FrameEvictionManager::OnMemoryPressure,
+                     base::Unretained(this)))) {
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
   max_number_of_saved_frames_ =
 #if defined(OS_ANDROID)
@@ -130,9 +129,9 @@ RendererFrameManager::RendererFrameManager()
   max_handles_ = base::SharedMemory::GetHandleLimit() / 8.0f;
 }
 
-RendererFrameManager::~RendererFrameManager() {}
+FrameEvictionManager::~FrameEvictionManager() {}
 
-void RendererFrameManager::CullUnlockedFrames(size_t saved_frame_limit) {
+void FrameEvictionManager::CullUnlockedFrames(size_t saved_frame_limit) {
   if (unlocked_frames_.size() + locked_frames_.size() > 0) {
     float handles_per_frame =
         display_compositor::HostSharedBitmapManager::current()
@@ -140,9 +139,8 @@ void RendererFrameManager::CullUnlockedFrames(size_t saved_frame_limit) {
         1.0f / (unlocked_frames_.size() + locked_frames_.size());
 
     saved_frame_limit = std::max(
-        1,
-        static_cast<int>(std::min(static_cast<float>(saved_frame_limit),
-                                  max_handles_ / handles_per_frame)));
+        1, static_cast<int>(std::min(static_cast<float>(saved_frame_limit),
+                                     max_handles_ / handles_per_frame)));
   }
   while (!unlocked_frames_.empty() &&
          unlocked_frames_.size() + locked_frames_.size() > saved_frame_limit) {
@@ -153,7 +151,7 @@ void RendererFrameManager::CullUnlockedFrames(size_t saved_frame_limit) {
   }
 }
 
-void RendererFrameManager::OnMemoryPressure(
+void FrameEvictionManager::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
@@ -168,15 +166,15 @@ void RendererFrameManager::OnMemoryPressure(
   }
 }
 
-void RendererFrameManager::OnPurgeMemory() {
+void FrameEvictionManager::OnPurgeMemory() {
   PurgeMemory(kCriticalPressurePercentage);
 }
 
-void RendererFrameManager::PurgeMemory(int percentage) {
+void FrameEvictionManager::PurgeMemory(int percentage) {
   int saved_frame_limit = max_number_of_saved_frames_;
   if (saved_frame_limit <= 1)
     return;
   CullUnlockedFrames(std::max(1, (saved_frame_limit * percentage) / 100));
 }
 
-}  // namespace content
+}  // namespace viz

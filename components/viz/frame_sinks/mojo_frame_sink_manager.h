@@ -17,6 +17,7 @@
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"
 #include "components/viz/frame_sinks/gpu_compositor_frame_sink_delegate.h"
+#include "components/viz/frame_sinks/viz_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -32,9 +33,10 @@ class DisplayProvider;
 // will be true after the mus process split. For non-mus Chrome this will be
 // created in the browser process, at least until GPU implementations can be
 // unified.
-class MojoFrameSinkManager : public cc::SurfaceObserver,
-                             public GpuCompositorFrameSinkDelegate,
-                             public cc::mojom::FrameSinkManager {
+class VIZ_EXPORT MojoFrameSinkManager
+    : public cc::SurfaceObserver,
+      public NON_EXPORTED_BASE(GpuCompositorFrameSinkDelegate),
+      public NON_EXPORTED_BASE(cc::mojom::FrameSinkManager) {
  public:
   MojoFrameSinkManager(bool use_surface_references,
                        DisplayProvider* display_provider,

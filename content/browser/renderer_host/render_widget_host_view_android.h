@@ -21,9 +21,9 @@
 #include "cc/input/selection.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/frame_sinks/frame_evictor.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/android/content_view_core_impl_observer.h"
-#include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -64,7 +64,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ui::GestureProviderClient,
       public ui::ViewClient,
       public ui::WindowAndroidObserver,
-      public DelegatedFrameEvictorClient,
+      public viz::FrameEvictorClient,
       public StylusTextSelectorClient,
       public ui::TouchSelectionControllerClient,
       public content::ContentViewCoreImplObserver,
@@ -202,7 +202,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnAttachedToWindow() override;
   void OnDetachedFromWindow() override;
 
-  // DelegatedFrameEvictor implementation
+  // viz::FrameEvictor implementation
   void EvictDelegatedFrame() override;
 
   // StylusTextSelectorClient implementation.
@@ -404,7 +404,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   SynchronousCompositorClient* synchronous_compositor_client_;
 
-  std::unique_ptr<DelegatedFrameEvictor> frame_evictor_;
+  std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
   bool observing_root_window_;
 

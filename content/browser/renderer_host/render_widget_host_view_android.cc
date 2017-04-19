@@ -459,7 +459,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       stylus_text_selector_(this),
       using_browser_compositor_(CompositorImpl::IsInitialized()),
       synchronous_compositor_client_(nullptr),
-      frame_evictor_(new DelegatedFrameEvictor(this)),
+      frame_evictor_(new viz::FrameEvictor(this)),
       observing_root_window_(false),
       prev_top_shown_pix_(0.f),
       prev_bottom_shown_pix_(0.f),
