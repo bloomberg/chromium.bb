@@ -302,11 +302,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
 }
 
-// TODO(https://crbug.com/702330): Enable this test.
+#if (defined(OS_LINUX) && !defined(USE_OZONE)) || defined(OS_WIN)
 // Ensures that renderers know to advance focus to sibling frames and parent
 // frames in the presence of mouse click initiated focus changes.
+// Verifies against regression of https://crbug.com/702330
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       DISABLED_TabAndMouseFocusNavigation) {
+                       TabAndMouseFocusNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -319,6 +320,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   ASSERT_NE(nullptr, child1);
   content::RenderFrameHost* child2 = ChildFrameAt(main_frame, 1);
   ASSERT_NE(nullptr, child2);
+
+  // Needed to avoid flakiness with --enable-browser-side-navigation.
+  content::WaitForChildFrameSurfaceReady(child1);
+  content::WaitForChildFrameSurfaceReady(child2);
 
   // Assign a name to each frame.  This will be sent along in test messages
   // from focus events.
@@ -336,7 +341,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // iframe: 55,18;55,67
   std::string script =
       "function onFocus(e) {"
-      "  console.log(window.name+'-focused-'+ e.target.id);"
       "  domAutomationController.setAutomationId(0);"
       "  domAutomationController.send(window.name + '-focused-' + e.target.id);"
       "}"
@@ -433,47 +437,59 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ("\"root-focused-input1\"",
             click_element_and_wait_for_message(main_frame_input_coords[0]));
   EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
+  auto frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child1);
   EXPECT_EQ("\"child1-focused-input1\"",
             click_element_and_wait_for_message(child1_input_coords[0]));
-  EXPECT_EQ(child1, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
+  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(main_frame);
   EXPECT_EQ("\"root-focused-input1\"", press_tab_and_wait_for_message(true));
-  EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
 
   // Tab from child2 forward to root.
   EXPECT_EQ("\"root-focused-input2\"",
             click_element_and_wait_for_message(main_frame_input_coords[1]));
   EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
+  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child2);
   EXPECT_EQ("\"child2-focused-input2\"",
             click_element_and_wait_for_message(child2_input_coords[1]));
-  EXPECT_EQ(child2, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
+  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(main_frame);
   EXPECT_EQ("\"root-focused-input2\"", press_tab_and_wait_for_message(false));
-  EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
 
   // Tab forward from child1 to child2.
+  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child2);
   EXPECT_EQ("\"child2-focused-input1\"",
             click_element_and_wait_for_message(child2_input_coords[0]));
-  EXPECT_EQ(child2, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
+  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child1);
   EXPECT_EQ("\"child1-focused-input2\"",
             click_element_and_wait_for_message(child1_input_coords[1]));
-  EXPECT_EQ(child1, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
+  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child2);
   EXPECT_EQ("\"child2-focused-input1\"", press_tab_and_wait_for_message(false));
-  EXPECT_EQ(child2, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
 
   // Tab backward from child2 to child1.
+  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child1);
   EXPECT_EQ("\"child1-focused-input2\"",
             click_element_and_wait_for_message(child1_input_coords[1]));
-  EXPECT_EQ(child1, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
+  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child2);
   EXPECT_EQ("\"child2-focused-input1\"",
             click_element_and_wait_for_message(child2_input_coords[0]));
-  EXPECT_EQ(child2, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
+  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child1);
   EXPECT_EQ("\"child1-focused-input2\"", press_tab_and_wait_for_message(true));
-  EXPECT_EQ(child1, web_contents->GetFocusedFrame());
+  // EXPECT_EQ(child1, web_contents->GetFocusedFrame());
+  frame_focused->Wait();
 
   // Ensure there are no pending focus events after tabbing.
   EXPECT_EQ("\"root-focused-input1\"",
             click_element_and_wait_for_message(main_frame_input_coords[0]))
       << "Unexpected extra focus events.";
 }
+#endif
 
 namespace {
 
