@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.cc"
+#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
