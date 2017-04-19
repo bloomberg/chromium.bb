@@ -50,11 +50,15 @@ Polymer({
    * @private
    */
   onSliderChanged_: function() {
+    var sliderValue = isNaN(this.$.slider.immediateValue)
+                         ? this.$.slider.value
+                         : this.$.slider.immediateValue;
+
     var newValue;
     if (this.tickValues && this.tickValues.length > 0)
-      newValue = this.tickValues[this.$.slider.immediateValue];
+      newValue = this.tickValues[sliderValue];
     else
-      newValue = this.$.slider.immediateValue;
+      newValue = sliderValue;
 
     this.set('pref.value', newValue);
   },
