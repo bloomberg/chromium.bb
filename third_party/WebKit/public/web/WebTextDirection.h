@@ -53,7 +53,7 @@ inline WebTextDirection ToWebTextDirection(TextDirection direction) {
     case TextDirection::kRtl:
       return kWebTextDirectionRightToLeft;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return kWebTextDirectionDefault;
 }
 #endif

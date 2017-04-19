@@ -305,12 +305,12 @@ class WebPrivatePtr {
   T* Get() const { return Storage().Get(); }
 
   T& operator*() const {
-    ASSERT(storage_);
+    DCHECK(storage_);
     return *Get();
   }
 
   T* operator->() const {
-    ASSERT(storage_);
+    DCHECK(storage_);
     return Get();
   }
 #endif
