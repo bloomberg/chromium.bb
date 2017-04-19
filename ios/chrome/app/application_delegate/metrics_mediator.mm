@@ -144,7 +144,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     GURL ntpUrl = GURL(kChromeUINewTabURL);
 
     Tab* currentTab = [[browserViewInformation currentTabModel] currentTab];
-    if (currentTab && [currentTab url] == ntpUrl) {
+    if (currentTab && currentTab.lastCommittedURL == ntpUrl) {
       startupInformation.firstUserActionRecorder->RecordStartOnNTP();
       [startupInformation resetFirstUserActionRecorder];
     } else {
