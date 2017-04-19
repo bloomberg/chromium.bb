@@ -23,7 +23,7 @@ function initializeHandlers() {
   });
 
   $('close-button').addEventListener('click', function() {
-    window.close();
+    scheduleWindowClose();
   });
 
   $('close-button').addEventListener('mousedown', function(e) {

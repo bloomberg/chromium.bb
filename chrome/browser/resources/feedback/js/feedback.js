@@ -201,7 +201,7 @@ function sendReport() {
   // this window right away. The FeedbackRequest object that represents this
   // report will take care of sending the report in the background.
   sendFeedbackReport(useSystemInfo);
-  window.close();
+  scheduleWindowClose();
   return true;
 }
 
@@ -211,7 +211,7 @@ function sendReport() {
  */
 function cancel(e) {
   e.preventDefault();
-  window.close();
+  scheduleWindowClose();
 }
 
 /**
@@ -281,6 +281,13 @@ function onSystemInformation() {
 }
 
 /**
+ * Close the window after 100ms delay.
+ */
+function scheduleWindowClose() {
+  setTimeout(function() { window.close();}, 100);
+}
+
+/**
  * Initializes our page.
  * Flow:
  * .) DOMContent Loaded        -> . Request feedbackInfo object
@@ -312,7 +319,7 @@ function initialize() {
         $('srt-accept-button').onclick = function() {
           chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.ACCEPTED);
           window.open(SRT_DOWNLOAD_PAGE, '_blank');
-          window.close();
+          scheduleWindowClose();
         };
 
         $('close-button').addEventListener('click', function() {
