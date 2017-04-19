@@ -59,7 +59,6 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       network_domain_(this),
       page_domain_(this),
       profiler_domain_(this),
-      rendering_domain_(this),
       runtime_domain_(this),
       security_domain_(this),
       service_worker_domain_(this),
@@ -327,10 +326,6 @@ page::Domain* HeadlessDevToolsClientImpl::GetPage() {
 
 profiler::Domain* HeadlessDevToolsClientImpl::GetProfiler() {
   return &profiler_domain_;
-}
-
-rendering::Domain* HeadlessDevToolsClientImpl::GetRendering() {
-  return &rendering_domain_;
 }
 
 runtime::Domain* HeadlessDevToolsClientImpl::GetRuntime() {

@@ -7,9 +7,10 @@ function test()
 {
     var nodeInfo = {};
     InspectorTest.eventHandler["DOM.setChildNodes"] = setChildNodes;
-    InspectorTest.eventHandler["DOM.inspectNodeRequested"] = inspectNodeRequested;
+    InspectorTest.eventHandler["Overlay.inspectNodeRequested"] = inspectNodeRequested;
     InspectorTest.sendCommand("DOM.enable", {});
-    InspectorTest.sendCommand("DOM.setInspectMode", { "mode": "searchForNode", highlightConfig: {} }, onSetModeEnabled);
+    InspectorTest.sendCommand("Overlay.enable", {});
+    InspectorTest.sendCommand("Overlay.setInspectMode", { "mode": "searchForNode", highlightConfig: {} }, onSetModeEnabled);
 
     function onSetModeEnabled(message)
     {

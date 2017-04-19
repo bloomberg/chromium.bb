@@ -34,7 +34,6 @@
 #include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/profiler.h"
-#include "headless/public/devtools/domains/rendering.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/devtools/domains/security.h"
 #include "headless/public/devtools/domains/service_worker.h"
@@ -87,7 +86,6 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   network::Domain* GetNetwork() override;
   page::Domain* GetPage() override;
   profiler::Domain* GetProfiler() override;
-  rendering::Domain* GetRendering() override;
   runtime::Domain* GetRuntime() override;
   security::Domain* GetSecurity() override;
   service_worker::Domain* GetServiceWorker() override;
@@ -190,7 +188,6 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   network::ExperimentalDomain network_domain_;
   page::ExperimentalDomain page_domain_;
   profiler::ExperimentalDomain profiler_domain_;
-  rendering::ExperimentalDomain rendering_domain_;
   runtime::ExperimentalDomain runtime_domain_;
   security::ExperimentalDomain security_domain_;
   service_worker::ExperimentalDomain service_worker_domain_;
