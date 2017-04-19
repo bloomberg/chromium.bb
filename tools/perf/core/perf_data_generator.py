@@ -662,14 +662,6 @@ BENCHMARK_SWARMING_TIMEOUTS = {
     'loading.mobile': 14400,
 }
 
-# Certain swarming bots are not sharding correctly with the new device affinity
-# algorithm.  Reverting to legacy algorithm to try and get them to complete.
-# See crbug.com/670284
-LEGACY_DEVICE_AFFIINITY_ALGORITHM = [
-  'Win Zenbook Perf',
-  'Win 10 High-DPI Perf',
-]
-
 # List of benchmarks that are to never be run with reference builds.
 BENCHMARK_REF_BUILD_BLACKLIST = [
   'power.idle_platform',
@@ -773,8 +765,6 @@ def generate_all_tests(waterfall):
         raise Exception('Invalid assumption on number of swarming dimensions')
       # Generate benchmarks
       sharding_map = benchmark_sharding_map
-      if name in LEGACY_DEVICE_AFFIINITY_ALGORITHM:
-        sharding_map = None
       isolated_scripts = generate_telemetry_tests(
           config, benchmark_list, sharding_map, use_whitelist,
           BENCHMARK_REF_BUILD_BLACKLIST)
