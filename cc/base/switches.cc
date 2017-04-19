@@ -58,7 +58,7 @@ const char kEnableSurfaceSynchronization[] = "enable-surface-synchronization";
 // Renders a border around compositor layers to help debug and study
 // layer compositing.
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";
-const char kUIShowCompositedLayerBorders[] = "ui-show-layer-borders";
+const char kUIShowCompositedLayerBorders[] = "ui-show-composited-layer-borders";
 const char kCompositedRenderPassBorders[] = "renderpass";
 const char kCompositedSurfaceBorders[] = "surface";
 const char kCompositedLayerBorders[] = "layer";
