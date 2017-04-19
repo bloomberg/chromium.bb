@@ -290,6 +290,10 @@ class FaviconHandler {
   // This handler's delegate.
   Delegate* delegate_;
 
+  // Captures the number of download requests that were initiated for the
+  // current url_.
+  int num_download_requests_;
+
   // The index of the favicon URL in |image_urls_| which is currently being
   // requested from history or downloaded.
   size_t current_candidate_index_;

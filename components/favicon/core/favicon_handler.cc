@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
@@ -57,6 +58,30 @@ bool IsExpired(const favicon_base::FaviconRawBitmapResult& bitmap_result) {
 // Return true if |bitmap_result| is valid.
 bool IsValid(const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   return bitmap_result.is_valid();
+}
+
+void RecordDownloadAttemptsForHandlerType(
+    FaviconDriverObserver::NotificationIconType handler_type,
+    int attempts) {
+  // If not at least one attempts was recorded or more than 15 attempts were
+  // registered, something went wrong. Underflows are stored in bucket 0 and
+  // overflows in bucket 16.
+  attempts = std::max(0, std::min(attempts, 16));
+  switch (handler_type) {
+    case FaviconDriverObserver::NON_TOUCH_16_DIP:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Favicons.DownloadAttempts.Favicons",
+                                  attempts);
+      return;
+    case FaviconDriverObserver::NON_TOUCH_LARGEST:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Favicons.DownloadAttempts.LargeIcons",
+                                  attempts);
+      return;
+    case FaviconDriverObserver::TOUCH_LARGEST:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Favicons.DownloadAttempts.TouchIcons",
+                                  attempts);
+      return;
+  }
+  NOTREACHED();
 }
 
 // Returns true if |bitmap_results| is non-empty and:
@@ -167,6 +192,7 @@ FaviconHandler::FaviconHandler(
       notification_icon_type_(favicon_base::INVALID_ICON),
       service_(service),
       delegate_(delegate),
+      num_download_requests_(0),
       current_candidate_index_(0u) {
   DCHECK(delegate_);
 }
@@ -199,6 +225,7 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   candidates_.clear();
   notification_icon_url_ = GURL();
   notification_icon_type_ = favicon_base::INVALID_ICON;
+  num_download_requests_ = 0;
   current_candidate_index_ = 0u;
   best_favicon_ = DownloadedFavicon();
 
@@ -308,6 +335,7 @@ void FaviconHandler::OnUpdateFaviconURL(
 
   download_request_.Cancel();
   candidates_ = std::move(sorted_candidates);
+  num_download_requests_ = 0;
   current_candidate_index_ = 0u;
   best_favicon_ = DownloadedFavicon();
 
@@ -395,6 +423,9 @@ void FaviconHandler::OnDidDownloadFavicon(
     ++current_candidate_index_;
     DownloadCurrentCandidateOrAskFaviconService();
   } else {
+    // OnDidDownloadFavicon() can only be called after requesting a download, so
+    // |num_download_requests_| can never be 0.
+    RecordDownloadAttemptsForHandlerType(handler_type_, num_download_requests_);
     // We have either found the ideal candidate or run out of candidates.
     if (best_favicon_.candidate.icon_type != favicon_base::INVALID_ICON) {
       // No more icons to request, set the favicon from the candidate.
@@ -403,6 +434,7 @@ void FaviconHandler::OnDidDownloadFavicon(
     }
     // Clear download related state.
     current_candidate_index_ = candidates_.size();
+    num_download_requests_ = 0;
     best_favicon_ = DownloadedFavicon();
   }
 }
@@ -513,6 +545,8 @@ void FaviconHandler::OnFaviconData(const std::vector<
   if (has_expired_or_incomplete_result) {
     ScheduleDownload(current_candidate()->icon_url,
                      current_candidate()->icon_type);
+  } else if (num_download_requests_ > 0) {
+    RecordDownloadAttemptsForHandlerType(handler_type_, num_download_requests_);
   }
 }
 
@@ -527,6 +561,7 @@ void FaviconHandler::ScheduleDownload(const GURL& image_url,
                          std::vector<gfx::Size>());
     return;
   }
+  ++num_download_requests_;
   download_request_.Reset(base::Bind(&FaviconHandler::OnDidDownloadFavicon,
                                      base::Unretained(this), icon_type));
   // A max bitmap size is specified to avoid receiving huge bitmaps in
