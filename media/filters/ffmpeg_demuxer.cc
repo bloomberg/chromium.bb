@@ -507,7 +507,8 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
 
   // Only allow negative timestamps past if we know they'll be fixed up by the
   // code paths below; otherwise they should be treated as a parse error.
-  if (!fixup_negative_timestamps_ && buffer->timestamp() < base::TimeDelta()) {
+  if ((!fixup_negative_timestamps_ || last_packet_timestamp_ == kNoTimestamp) &&
+      buffer->timestamp() < base::TimeDelta()) {
     MEDIA_LOG(DEBUG, media_log_)
         << "FFmpegDemuxer: unfixable negative timestamp";
     demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
