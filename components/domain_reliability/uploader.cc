@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -83,8 +84,34 @@ class DomainReliabilityUploaderImpl
       return;
     }
 
-    std::unique_ptr<net::URLFetcher> owned_fetcher =
-        net::URLFetcher::Create(0, upload_url, net::URLFetcher::POST, this);
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("domain_reliability_report_upload",
+                                            R"(
+          semantics {
+            sender: "Domain Reliability"
+            description:
+              "If Chromium has trouble reaching certain Google sites or "
+              "services, Domain Reliability may report the problems back to "
+              "Google."
+            trigger: "Failure to load certain Google sites or services."
+            data:
+              "Details of the failed request, including the URL, any IP "
+              "addresses the browser tried to connect to, error(s) "
+              "encountered loading the resource, and other connection details."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: false
+            setting:
+              "Users can enable or disable Domain Reliability on desktop, via "
+              "toggling 'Automatically send usage statistics and crash reports "
+              "to Google' in Chromium's settings under Privacy. On ChromeOS, "
+              "the setting is named 'Automatically send diagnostic and usage "
+              "data to Google'."
+            policy_exception_justification: "Not implemented."
+          })");
+    std::unique_ptr<net::URLFetcher> owned_fetcher = net::URLFetcher::Create(
+        0, upload_url, net::URLFetcher::POST, this, traffic_annotation);
     net::URLFetcher* fetcher = owned_fetcher.get();
     fetcher->SetRequestContext(url_request_context_getter_.get());
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
