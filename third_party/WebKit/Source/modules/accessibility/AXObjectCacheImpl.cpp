@@ -473,7 +473,7 @@ void AXObjectCacheImpl::Remove(AXID ax_id) {
   if (!objects_.Take(ax_id))
     return;
 
-  DCHECK(objects_.size() >= ids_in_use_.size());
+  DCHECK_GE(objects_.size(), ids_in_use_.size());
 }
 
 void AXObjectCacheImpl::Remove(LayoutObject* layout_object) {

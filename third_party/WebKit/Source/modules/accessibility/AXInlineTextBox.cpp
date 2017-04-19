@@ -101,7 +101,7 @@ void AXInlineTextBox::TextCharacterOffsets(Vector<int>& offsets) const {
   unsigned len = inline_text_box_->Len();
   Vector<float> widths;
   inline_text_box_->CharacterWidths(widths);
-  DCHECK(widths.size() == len);
+  DCHECK_EQ(widths.size(), len);
   offsets.Resize(len);
 
   float width_so_far = 0;

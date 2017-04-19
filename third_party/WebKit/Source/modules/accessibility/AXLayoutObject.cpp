@@ -1781,9 +1781,9 @@ AXObject::AXRange AXLayoutObject::Selection() const {
     return AXRange();
 
   int anchor_offset = anchor_object->IndexForVisiblePosition(visible_start);
-  DCHECK(anchor_offset >= 0);
+  DCHECK_GE(anchor_offset, 0);
   int focus_offset = focus_object->IndexForVisiblePosition(visible_end);
-  DCHECK(focus_offset >= 0);
+  DCHECK_GE(focus_offset, 0);
   return AXRange(anchor_object, anchor_offset, start_affinity, focus_object,
                  focus_offset, end_affinity);
 }
@@ -1818,9 +1818,9 @@ AXObject::AXRange AXLayoutObject::SelectionUnderObject() const {
   }
 
   int start = IndexForVisiblePosition(selection.VisibleStart());
-  DCHECK(start >= 0);
+  DCHECK_GE(start, 0);
   int end = IndexForVisiblePosition(selection.VisibleEnd());
-  DCHECK(end >= 0);
+  DCHECK_GE(end, 0);
 
   return AXRange(start, end);
 }

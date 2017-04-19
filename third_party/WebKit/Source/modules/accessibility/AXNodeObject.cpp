@@ -2208,7 +2208,7 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
     for (size_t i = 0; i < length; ++i)
       children_.insert(index + i, children[i]);
   } else {
-    DCHECK(child->ParentObject() == this);
+    DCHECK_EQ(child->ParentObject(), this);
     children_.insert(index, child);
   }
 }
