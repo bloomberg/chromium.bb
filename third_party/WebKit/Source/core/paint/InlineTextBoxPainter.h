@@ -13,7 +13,6 @@ namespace blink {
 
 struct PaintInfo;
 
-class AppliedTextDecoration;
 class Color;
 class CompositionUnderline;
 class ComputedStyle;
@@ -24,7 +23,6 @@ class InlineTextBox;
 class LayoutObject;
 class LayoutPoint;
 class LayoutTextCombine;
-class TextPainter;
 
 enum class DocumentMarkerPaintPhase { kForeground, kBackground };
 
@@ -82,10 +80,7 @@ class InlineTextBoxPainter {
                       const Font&,
                       Color text_color,
                       LayoutTextCombine* = nullptr);
-  void PaintDecorations(TextPainter&,
-                        const PaintInfo&,
-                        const LayoutPoint& box_origin,
-                        const Vector<AppliedTextDecoration>&);
+
   void PaintCompositionUnderline(GraphicsContext&,
                                  const LayoutPoint& box_origin,
                                  const CompositionUnderline&);
