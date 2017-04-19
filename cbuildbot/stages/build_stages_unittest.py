@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import contextlib
 import os
+import tempfile
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import chromeos_config
@@ -321,6 +322,61 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     self._mock_configurator = _HookRunCommandFdtget
     self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
     self.assertTrue(self._run.attrs.metadata.GetDict()['unibuild'])
+
+  def testGoma(self):
+    self.PatchObject(build_stages.BuildPackagesStage,
+                     '_IsGomaUsable', return_value=True)
+    self._Prepare('x86-generic-paladin')
+    # Set dummy dir name to enable goma.
+    self._run.options.goma_dir = 'goma_dir'
+    self._run.options.managed_chrome = True
+    with tempfile.NamedTemporaryFile() as temp_goma_client_json:
+      self._run.options.goma_client_json = temp_goma_client_json.name
+
+      stage = self.ConstructStage()
+      # pylint: disable=protected-access
+      chroot_args = stage._SetupGomaIfNecessary()
+      self.assertEqual(
+          ['--goma_dir', 'goma_dir',
+           '--goma_client_json', temp_goma_client_json.name],
+          chroot_args)
+      # pylint: disable=protected-access
+      portage_env = stage._portage_extra_env
+      self.assertRegexpMatches(
+          portage_env.get('GOMA_DIR', ''), '^/home/.*/goma$')
+      self.assertIn(portage_env.get('USE', ''), 'goma')
+      self.assertEqual(
+          '/creds/service_accounts/service-account-goma-client.json',
+          portage_env.get('GOMA_SERVICE_ACCOUNT_JSON_FILE', ''))
+
+  def testGomaWithMissingCertFile(self):
+    self.PatchObject(build_stages.BuildPackagesStage,
+                     '_IsGomaUsable', return_value=True)
+    self._Prepare('x86-generic-paladin')
+    # Set dummy dir name to enable goma.
+    self._run.options.goma_dir = 'goma_dir'
+    self._run.options.managed_chrome = True
+    self._run.options.goma_client_json = 'dummy-goma-client-json-path'
+
+    stage = self.ConstructStage()
+    with self.assertRaisesRegexp(ValueError, 'json file is missing'):
+      # pylint: disable=protected-access
+      stage._SetupGomaIfNecessary()
+
+  def testGomaOnBotWithoutCertFile(self):
+    self.PatchObject(build_stages.BuildPackagesStage,
+                     '_IsGomaUsable', return_value=True)
+    self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
+    self._Prepare('x86-generic-paladin')
+    # Set dummy dir name to enable goma.
+    self._run.options.goma_dir = 'goma_dir'
+    self._run.options.managed_chrome = True
+    stage = self.ConstructStage()
+
+    with self.assertRaisesRegexp(
+        ValueError, 'goma_client_json is not provided'):
+      # pylint: disable=protected-access
+      stage._SetupGomaIfNecessary()
 
 
 class BuildImageStageMock(partial_mock.PartialMock):
