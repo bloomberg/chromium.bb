@@ -524,7 +524,7 @@ void WindowPortMus::OnPropertyChanged(const void* key,
 void WindowPortMus::UpdatePrimarySurfaceInfo() {
   bool embeds_surface = window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
                         window_mus_type() == WindowMusType::EMBED_IN_OWNER;
-  if (!embeds_surface)
+  if (!embeds_surface || !window_tree_client_->enable_surface_synchronization_)
     return;
 
   if (!frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
