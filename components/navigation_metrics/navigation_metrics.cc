@@ -51,23 +51,12 @@ namespace navigation_metrics {
 
 void RecordMainFrameNavigation(const GURL& url,
                                bool is_in_page,
-                               bool is_off_the_record,
-                               bool have_already_seen_origin) {
+                               bool is_off_the_record) {
   Scheme scheme = SCHEME_UNKNOWN;
   for (int i = 1; i < SCHEME_MAX; ++i) {
     if (url.SchemeIs(kSchemeNames[i])) {
       scheme = static_cast<Scheme>(i);
       break;
-    }
-  }
-
-  if (!have_already_seen_origin) {
-    if (is_off_the_record) {
-      UMA_HISTOGRAM_ENUMERATION("Navigation.SchemePerUniqueOriginOTR", scheme,
-                                SCHEME_MAX);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("Navigation.SchemePerUniqueOrigin", scheme,
-                                SCHEME_MAX);
     }
   }
 

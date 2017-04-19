@@ -11,8 +11,7 @@ namespace navigation_metrics {
 
 void RecordMainFrameNavigation(const GURL& url,
                                bool is_in_page,
-                               bool is_off_the_record,
-                               bool have_already_seen_origin);
+                               bool is_off_the_record);
 
 }  // namespace navigation_metrics
 

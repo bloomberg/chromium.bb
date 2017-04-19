@@ -21,7 +21,7 @@ namespace navigation_metrics {
 TEST(NavigationMetrics, MainFrameSchemeDifferentDocument) {
   base::HistogramTester test;
 
-  RecordMainFrameNavigation(GURL(kTestUrl), false, false, false);
+  RecordMainFrameNavigation(GURL(kTestUrl), false, false);
 
   test.ExpectTotalCount(kMainFrameScheme, 1);
   test.ExpectUniqueSample(kMainFrameScheme, 1 /* http */, 1);
@@ -32,7 +32,7 @@ TEST(NavigationMetrics, MainFrameSchemeDifferentDocument) {
 TEST(NavigationMetrics, MainFrameSchemeSameDocument) {
   base::HistogramTester test;
 
-  RecordMainFrameNavigation(GURL(kTestUrl), true, false, false);
+  RecordMainFrameNavigation(GURL(kTestUrl), true, false);
 
   test.ExpectTotalCount(kMainFrameScheme, 1);
   test.ExpectUniqueSample(kMainFrameScheme, 1 /* http */, 1);

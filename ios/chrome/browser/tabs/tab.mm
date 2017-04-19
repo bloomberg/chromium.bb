@@ -38,7 +38,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/navigation_metrics/navigation_metrics.h"
-#include "components/navigation_metrics/origins_seen_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/template_url_service.h"
@@ -62,7 +61,6 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#include "ios/chrome/browser/metrics/ios_chrome_origins_seen_service_factory.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
@@ -1567,11 +1565,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [fullScreenController_ disableFullScreen];
   }
   [self recordInterfaceOrientation];
-  navigation_metrics::OriginsSeenService* originsSeenService =
-      IOSChromeOriginsSeenServiceFactory::GetForBrowserState(self.browserState);
-  bool alreadySeen = originsSeenService->Insert(url::Origin(lastCommittedURL));
   navigation_metrics::RecordMainFrameNavigation(
-      lastCommittedURL, true, self.browserState->IsOffTheRecord(), alreadySeen);
+      lastCommittedURL, true, self.browserState->IsOffTheRecord());
 
   if (loadSuccess) {
     scoped_refptr<net::HttpResponseHeaders> headers =
