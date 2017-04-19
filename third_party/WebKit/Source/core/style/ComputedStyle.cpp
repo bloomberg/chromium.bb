@@ -1089,6 +1089,8 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
                         ->VisitedLinkTextEmphasisColor() ||
                 rare_inherited_data_->text_emphasis_fill !=
                     other.rare_inherited_data_->text_emphasis_fill ||
+                rare_inherited_data_->text_underline_position_ !=
+                    other.rare_inherited_data_->text_underline_position_ ||
                 rare_inherited_data_->text_decoration_skip_ !=
                     other.rare_inherited_data_->text_decoration_skip_ ||
                 rare_inherited_data_->applied_text_decorations !=
