@@ -747,8 +747,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_CrossProcessFragment) {
       << message_;
 }
 
-// crbug.com/708139.
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_CrossProcessHistory) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // See crossProcessHistory/e.html.
