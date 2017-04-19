@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/test/begin_frame_args_test.cc"
+#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
