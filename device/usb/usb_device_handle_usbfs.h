@@ -50,9 +50,9 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                                     const ResultCallback& callback) override;
   void ResetDevice(const ResultCallback& callback) override;
   void ClearHalt(uint8_t endpoint, const ResultCallback& callback) override;
-  void ControlTransfer(UsbEndpointDirection direction,
-                       TransferRequestType request_type,
-                       TransferRecipient recipient,
+  void ControlTransfer(UsbTransferDirection direction,
+                       UsbControlTransferType request_type,
+                       UsbControlTransferRecipient recipient,
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
@@ -73,7 +73,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
       const IsochronousTransferCallback& callback) override;
   // To support DevTools this function may be called from any thread and on
   // completion |callback| will be run on that thread.
-  void GenericTransfer(UsbEndpointDirection direction,
+  void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
@@ -119,7 +119,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                                    unsigned int timeout,
                                    const IsochronousTransferCallback& callback);
   void GenericTransferInternal(
-      UsbEndpointDirection direction,
+      UsbTransferDirection direction,
       uint8_t endpoint_number,
       scoped_refptr<net::IOBuffer> buffer,
       size_t length,

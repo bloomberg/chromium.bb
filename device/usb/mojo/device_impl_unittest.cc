@@ -307,7 +307,7 @@ class USBDeviceImplTest : public testing::Test {
     scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(length);
     std::copy(bytes.begin(), bytes.end(), buffer->data());
     mock_inbound_data_.pop();
-    callback.Run(USB_TRANSFER_COMPLETED, buffer, length);
+    callback.Run(UsbTransferStatus::COMPLETED, buffer, length);
   }
 
   void OutboundTransfer(scoped_refptr<net::IOBuffer> buffer,
@@ -321,12 +321,12 @@ class USBDeviceImplTest : public testing::Test {
                                              << i;
     }
     mock_outbound_data_.pop();
-    callback.Run(USB_TRANSFER_COMPLETED, buffer, length);
+    callback.Run(UsbTransferStatus::COMPLETED, buffer, length);
   }
 
-  void ControlTransfer(UsbEndpointDirection direction,
-                       UsbDeviceHandle::TransferRequestType request_type,
-                       UsbDeviceHandle::TransferRecipient recipient,
+  void ControlTransfer(UsbTransferDirection direction,
+                       UsbControlTransferType request_type,
+                       UsbControlTransferRecipient recipient,
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
@@ -334,19 +334,19 @@ class USBDeviceImplTest : public testing::Test {
                        size_t length,
                        unsigned int timeout,
                        const UsbDeviceHandle::TransferCallback& callback) {
-    if (direction == USB_DIRECTION_INBOUND)
+    if (direction == UsbTransferDirection::INBOUND)
       InboundTransfer(callback);
     else
       OutboundTransfer(buffer, length, callback);
   }
 
-  void GenericTransfer(UsbEndpointDirection direction,
+  void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint,
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
                        const UsbDeviceHandle::TransferCallback& callback) {
-    if (direction == USB_DIRECTION_INBOUND)
+    if (direction == UsbTransferDirection::INBOUND)
       InboundTransfer(callback);
     else
       OutboundTransfer(buffer, length, callback);
@@ -718,8 +718,10 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
   AddMockInboundData(fake_data);
 
   EXPECT_CALL(mock_handle(),
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 5, 6, 7, _, _, 0, _));
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::DEVICE, 5, 6, 7, _,
+                              _, 0, _));
   EXPECT_CALL(permission_provider(), HasConfigurationPermission(1, _));
 
   {
@@ -741,8 +743,10 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
   AddMockOutboundData(fake_data);
 
   EXPECT_CALL(mock_handle(),
-              ControlTransfer(USB_DIRECTION_OUTBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::INTERFACE, 5, 6, 7, _, _, 0, _));
+              ControlTransfer(UsbTransferDirection::OUTBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::INTERFACE, 5, 6, 7,
+                              _, _, 0, _));
   EXPECT_CALL(permission_provider(), HasFunctionPermission(7, 1, _));
 
   {
@@ -787,8 +791,9 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
   AddMockOutboundData(fake_outbound_data);
   AddMockInboundData(fake_inbound_data);
 
-  EXPECT_CALL(mock_handle(), GenericTransfer(USB_DIRECTION_OUTBOUND, 0x01, _,
-                                             fake_outbound_data.size(), 0, _));
+  EXPECT_CALL(mock_handle(),
+              GenericTransfer(UsbTransferDirection::OUTBOUND, 0x01, _,
+                              fake_outbound_data.size(), 0, _));
 
   {
     base::RunLoop loop;
@@ -799,8 +804,9 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), GenericTransfer(USB_DIRECTION_INBOUND, 0x81, _,
-                                             fake_inbound_data.size(), 0, _));
+  EXPECT_CALL(mock_handle(),
+              GenericTransfer(UsbTransferDirection::INBOUND, 0x81, _,
+                              fake_inbound_data.size(), 0, _));
 
   {
     base::RunLoop loop;
@@ -831,7 +837,7 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
   for (size_t i = 0; i < fake_packets.size(); ++i) {
     fake_packets[i].length = 8;
     fake_packets[i].transferred_length = 8;
-    fake_packets[i].status = USB_TRANSFER_COMPLETED;
+    fake_packets[i].status = UsbTransferStatus::COMPLETED;
   }
   std::vector<uint32_t> fake_packet_lengths(4, 8);
 

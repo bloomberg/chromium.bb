@@ -334,9 +334,7 @@ void DeviceImpl::ControlTransferIn(UsbControlTransferParamsPtr params,
   if (HasControlTransferPermission(params->recipient, params->index)) {
     scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
     device_handle_->ControlTransfer(
-        USB_DIRECTION_INBOUND,
-        mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
-        mojo::ConvertTo<UsbDeviceHandle::TransferRecipient>(params->recipient),
+        UsbTransferDirection::INBOUND, params->type, params->recipient,
         params->request, params->value, params->index, buffer, length, timeout,
         base::Bind(&OnTransferIn, callback));
   } else {
@@ -358,9 +356,7 @@ void DeviceImpl::ControlTransferOut(
     scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
     std::copy(data.begin(), data.end(), buffer->data());
     device_handle_->ControlTransfer(
-        USB_DIRECTION_OUTBOUND,
-        mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
-        mojo::ConvertTo<UsbDeviceHandle::TransferRecipient>(params->recipient),
+        UsbTransferDirection::OUTBOUND, params->type, params->recipient,
         params->request, params->value, params->index, buffer, data.size(),
         timeout, base::Bind(&OnTransferOut, callback));
   } else {
@@ -379,8 +375,8 @@ void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
 
   uint8_t endpoint_address = endpoint_number | 0x80;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
-  device_handle_->GenericTransfer(USB_DIRECTION_INBOUND, endpoint_address,
-                                  buffer, length, timeout,
+  device_handle_->GenericTransfer(UsbTransferDirection::INBOUND,
+                                  endpoint_address, buffer, length, timeout,
                                   base::Bind(&OnTransferIn, callback));
 }
 
@@ -397,9 +393,9 @@ void DeviceImpl::GenericTransferOut(
   uint8_t endpoint_address = endpoint_number;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
   std::copy(data.begin(), data.end(), buffer->data());
-  device_handle_->GenericTransfer(USB_DIRECTION_OUTBOUND, endpoint_address,
-                                  buffer, data.size(), timeout,
-                                  base::Bind(&OnTransferOut, callback));
+  device_handle_->GenericTransfer(
+      UsbTransferDirection::OUTBOUND, endpoint_address, buffer, data.size(),
+      timeout, base::Bind(&OnTransferOut, callback));
 }
 
 void DeviceImpl::IsochronousTransferIn(

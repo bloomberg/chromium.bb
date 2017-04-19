@@ -102,7 +102,6 @@ source_set("api") {
     "//device/hid",
     "//device/power_save_blocker",
     "//device/serial",
-    "//device/usb",
   ]
 
   if (is_chromeos) {

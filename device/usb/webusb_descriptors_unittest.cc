@@ -75,7 +75,7 @@ const uint8_t kExampleUrlDescriptor6[] = {0x11, 0x03, 0x01, 'e', 'x', 'a',
 ACTION_P2(InvokeCallback, data, length) {
   size_t transferred_length = std::min(length, arg7);
   memcpy(arg6->data(), data, transferred_length);
-  arg9.Run(USB_TRANSFER_COMPLETED, arg6, transferred_length);
+  arg9.Run(UsbTransferStatus::COMPLETED, arg6, transferred_length);
 }
 
 void ExpectAllowedOriginsAndLandingPage(
@@ -407,53 +407,61 @@ TEST_F(WebUsbDescriptorsTest, ReadDescriptors) {
       new MockUsbDeviceHandle(nullptr));
 
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0F00, 0x0000, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::DEVICE, 0x06, 0x0F00,
+                              0x0000, _, _, _, _))
       .Times(2)
       .WillRepeatedly(
           InvokeCallback(kExampleBosDescriptor, sizeof(kExampleBosDescriptor)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
-                              UsbDeviceHandle::DEVICE, 0x42, 0x0000, 0x0001, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::VENDOR,
+                              UsbControlTransferRecipient::DEVICE, 0x42, 0x0000,
+                              0x0001, _, _, _, _))
       .Times(2)
       .WillRepeatedly(InvokeCallback(kExampleAllowedOrigins,
                                      sizeof(kExampleAllowedOrigins)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
-                              UsbDeviceHandle::DEVICE, 0x42, 0x0001, 0x0002, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::VENDOR,
+                              UsbControlTransferRecipient::DEVICE, 0x42, 0x0001,
+                              0x0002, _, _, _, _))
       .WillOnce(InvokeCallback(kExampleUrlDescriptor1,
                                sizeof(kExampleUrlDescriptor1)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
-                              UsbDeviceHandle::DEVICE, 0x42, 0x0002, 0x0002, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::VENDOR,
+                              UsbControlTransferRecipient::DEVICE, 0x42, 0x0002,
+                              0x0002, _, _, _, _))
       .WillOnce(InvokeCallback(kExampleUrlDescriptor2,
                                sizeof(kExampleUrlDescriptor2)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
-                              UsbDeviceHandle::DEVICE, 0x42, 0x0003, 0x0002, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::VENDOR,
+                              UsbControlTransferRecipient::DEVICE, 0x42, 0x0003,
+                              0x0002, _, _, _, _))
       .WillOnce(InvokeCallback(kExampleUrlDescriptor3,
                                sizeof(kExampleUrlDescriptor3)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
-                              UsbDeviceHandle::DEVICE, 0x42, 0x0004, 0x0002, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::VENDOR,
+                              UsbControlTransferRecipient::DEVICE, 0x42, 0x0004,
+                              0x0002, _, _, _, _))
       .WillOnce(InvokeCallback(kExampleUrlDescriptor4,
                                sizeof(kExampleUrlDescriptor4)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
-                              UsbDeviceHandle::DEVICE, 0x42, 0x0005, 0x0002, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::VENDOR,
+                              UsbControlTransferRecipient::DEVICE, 0x42, 0x0005,
+                              0x0002, _, _, _, _))
       .WillOnce(InvokeCallback(kExampleUrlDescriptor5,
                                sizeof(kExampleUrlDescriptor5)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
-                              UsbDeviceHandle::DEVICE, 0x42, 0x0006, 0x0002, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::VENDOR,
+                              UsbControlTransferRecipient::DEVICE, 0x42, 0x0006,
+                              0x0002, _, _, _, _))
       .WillOnce(InvokeCallback(kExampleUrlDescriptor6,
                                sizeof(kExampleUrlDescriptor6)));
 

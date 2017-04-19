@@ -136,13 +136,13 @@ function fakeDeviceInitToDeviceInfo(guid, init) {
           }
           switch (endpoint.type) {
           case "bulk":
-            endpointInfo.type = mojo.device.UsbEndpointType.BULK;
+            endpointInfo.type = mojo.device.UsbTransferType.BULK;
             break;
           case "interrupt":
-            endpointInfo.type = mojo.device.UsbEndpointType.INTERRUPT;
+            endpointInfo.type = mojo.device.UsbTransferType.INTERRUPT;
             break;
           case "isochronous":
-            endpointInfo.type = mojo.device.UsbEndpointType.ISOCHRONOUS;
+            endpointInfo.type = mojo.device.UsbTransferType.ISOCHRONOUS;
             break;
           }
           alternateInfo.endpoints.push(endpointInfo);

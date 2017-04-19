@@ -37,10 +37,11 @@ using device::UsbConfigDescriptor;
 using device::UsbDevice;
 using device::UsbDeviceHandle;
 using device::UsbEndpointDescriptor;
-using device::UsbEndpointDirection;
 using device::UsbInterfaceDescriptor;
 using device::UsbService;
 using device::UsbSynchronizationType;
+using device::UsbTransferDirection;
+using device::UsbTransferStatus;
 using device::UsbTransferType;
 using device::UsbUsageType;
 
@@ -183,9 +184,9 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   }
 
   // Async IO. Can be called on any thread.
-  void ControlTransfer(UsbEndpointDirection direction,
-                       TransferRequestType request_type,
-                       TransferRecipient recipient,
+  void ControlTransfer(UsbTransferDirection direction,
+                       device::UsbControlTransferType request_type,
+                       device::UsbControlTransferRecipient recipient,
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
@@ -194,13 +195,13 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                        unsigned int timeout,
                        const TransferCallback& callback) override {}
 
-  void GenericTransfer(UsbEndpointDirection direction,
+  void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint,
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
                        const TransferCallback& callback) override {
-    if (direction == device::USB_DIRECTION_OUTBOUND) {
+    if (direction == device::UsbTransferDirection::OUTBOUND) {
       if (remaining_body_length_ == 0) {
         std::vector<uint32_t> header(6);
         memcpy(&header[0], buffer->data(), length);
@@ -222,12 +223,13 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
         ProcessIncoming();
       }
 
-      device::UsbTransferStatus status =
-          broken_ ? device::USB_TRANSFER_ERROR : device::USB_TRANSFER_COMPLETED;
+      device::UsbTransferStatus status = broken_
+                                             ? UsbTransferStatus::TRANSFER_ERROR
+                                             : UsbTransferStatus::COMPLETED;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback, status, nullptr, 0));
       ProcessQueries();
-    } else if (direction == device::USB_DIRECTION_INBOUND) {
+    } else if (direction == device::UsbTransferDirection::INBOUND) {
       queries_.push(Query(callback, buffer, length));
       ProcessQueries();
     }
@@ -337,8 +339,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     Query query = queries_.front();
     if (broken_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(query.callback, device::USB_TRANSFER_ERROR, nullptr, 0));
+          FROM_HERE, base::Bind(query.callback,
+                                UsbTransferStatus::TRANSFER_ERROR, nullptr, 0));
     }
 
     if (query.size > output_buffer_.size())
@@ -351,7 +353,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     output_buffer_.erase(output_buffer_.begin(),
                          output_buffer_.begin() + query.size);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(query.callback, device::USB_TRANSFER_COMPLETED,
+        FROM_HERE, base::Bind(query.callback, UsbTransferStatus::COMPLETED,
                               query.buffer, query.size));
   }
 

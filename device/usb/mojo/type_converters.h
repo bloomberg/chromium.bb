@@ -25,40 +25,6 @@ class UsbDevice;
 namespace mojo {
 
 template <>
-struct TypeConverter<device::mojom::UsbTransferDirection,
-                     device::UsbEndpointDirection> {
-  static device::mojom::UsbTransferDirection Convert(
-      const device::UsbEndpointDirection& direction);
-};
-
-template <>
-struct TypeConverter<device::mojom::UsbTransferStatus,
-                     device::UsbTransferStatus> {
-  static device::mojom::UsbTransferStatus Convert(
-      const device::UsbTransferStatus& status);
-};
-
-template <>
-struct TypeConverter<device::UsbDeviceHandle::TransferRequestType,
-                     device::mojom::UsbControlTransferType> {
-  static device::UsbDeviceHandle::TransferRequestType Convert(
-      const device::mojom::UsbControlTransferType& type);
-};
-
-template <>
-struct TypeConverter<device::UsbDeviceHandle::TransferRecipient,
-                     device::mojom::UsbControlTransferRecipient> {
-  static device::UsbDeviceHandle::TransferRecipient Convert(
-      const device::mojom::UsbControlTransferRecipient& recipient);
-};
-
-template <>
-struct TypeConverter<device::mojom::UsbEndpointType, device::UsbTransferType> {
-  static device::mojom::UsbEndpointType Convert(
-      const device::UsbTransferType& type);
-};
-
-template <>
 struct TypeConverter<device::mojom::UsbEndpointInfoPtr,
                      device::UsbEndpointDescriptor> {
   static device::mojom::UsbEndpointInfoPtr Convert(

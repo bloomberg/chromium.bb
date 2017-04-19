@@ -15,8 +15,9 @@ enum UsbOpenDeviceError {
   ALREADY_OPEN,
 };
 
+// Corresponds to the USBDirection WebIDL type.
 enum UsbTransferDirection {
-  INBOUND,
+  INBOUND = 0,
   OUTBOUND,
 };
 
@@ -27,6 +28,7 @@ enum UsbControlTransferType {
   RESERVED
 };
 
+// Corresponds to the USBRecipient WebIDL type.
 enum UsbControlTransferRecipient {
   DEVICE,
   INTERFACE,
@@ -34,16 +36,17 @@ enum UsbControlTransferRecipient {
   OTHER
 };
 
-enum UsbEndpointType {
+enum UsbTransferType {
+  CONTROL = 0,
+  ISOCHRONOUS,
   BULK,
   INTERRUPT,
-  ISOCHRONOUS,
 };
 
 struct UsbEndpointInfo {
   uint8 endpoint_number;
   UsbTransferDirection direction;
-  UsbEndpointType type;
+  UsbTransferType type;
   uint32 packet_size;
 };
 
@@ -95,15 +98,14 @@ struct UsbControlTransferParams {
   uint16 index;
 };
 
+// This enum is exposed through the chrome.usb extension API so existing values
+// should not be changed or reordered.
 enum UsbTransferStatus {
   // The transfer completed successfully.
-  COMPLETED,
+  COMPLETED = 0,
 
   // The transfer failed due to a non-specific error.
   TRANSFER_ERROR,
-
-  // The transfer was not allowed.
-  PERMISSION_DENIED,
 
   // The transfer timed out.
   TIMEOUT,
@@ -124,6 +126,9 @@ enum UsbTransferStatus {
   // The transfer succeeded, but the device sent less data than was requested.
   // This applies only to inbound transfers.
   SHORT_PACKET,
+
+  // The transfer was not allowed.
+  PERMISSION_DENIED,
 };
 
 struct UsbIsochronousPacket {

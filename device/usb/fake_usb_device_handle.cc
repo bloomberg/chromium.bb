@@ -55,9 +55,9 @@ void FakeUsbDeviceHandle::ClearHalt(uint8_t endpoint,
 }
 
 void FakeUsbDeviceHandle::ControlTransfer(
-    UsbEndpointDirection direction,
-    UsbDeviceHandle::TransferRequestType request_type,
-    UsbDeviceHandle::TransferRecipient recipient,
+    UsbTransferDirection direction,
+    UsbControlTransferType request_type,
+    UsbControlTransferRecipient recipient,
     uint8_t request,
     uint16_t value,
     uint16_t index,
@@ -66,7 +66,7 @@ void FakeUsbDeviceHandle::ControlTransfer(
     unsigned int timeout,
     const UsbDeviceHandle::TransferCallback& callback) {
   if (position_ == size_) {
-    callback.Run(USB_TRANSFER_DISCONNECT, buffer, 0);
+    callback.Run(UsbTransferStatus::DISCONNECT, buffer, 0);
     return;
   }
 
@@ -79,14 +79,14 @@ void FakeUsbDeviceHandle::ControlTransfer(
       bytes_transferred = std::min(bytes_transferred, size_ - position_);
     }
 
-    if (direction == USB_DIRECTION_INBOUND) {
+    if (direction == UsbTransferDirection::INBOUND) {
       memcpy(buffer->data(), &data_[position_], bytes_transferred);
       position_ += bytes_transferred;
     }
 
-    callback.Run(USB_TRANSFER_COMPLETED, buffer, bytes_transferred);
+    callback.Run(UsbTransferStatus::COMPLETED, buffer, bytes_transferred);
   } else {
-    callback.Run(USB_TRANSFER_ERROR, buffer, 0);
+    callback.Run(UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
   }
 }
 
@@ -107,7 +107,7 @@ void FakeUsbDeviceHandle::IsochronousTransferOut(
   NOTIMPLEMENTED();
 }
 
-void FakeUsbDeviceHandle::GenericTransfer(UsbEndpointDirection direction,
+void FakeUsbDeviceHandle::GenericTransfer(UsbTransferDirection direction,
                                           uint8_t endpoint_number,
                                           scoped_refptr<net::IOBuffer> buffer,
                                           size_t length,

@@ -61,9 +61,9 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   void ResetDevice(const ResultCallback& callback) override;
   void ClearHalt(uint8_t endpoint, const ResultCallback& callback) override;
 
-  void ControlTransfer(UsbEndpointDirection direction,
-                       TransferRequestType request_type,
-                       TransferRecipient recipient,
+  void ControlTransfer(UsbTransferDirection direction,
+                       UsbControlTransferType request_type,
+                       UsbControlTransferRecipient recipient,
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
@@ -85,7 +85,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
       unsigned int timeout,
       const IsochronousTransferCallback& callback) override;
 
-  void GenericTransfer(UsbEndpointDirection direction,
+  void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
@@ -141,9 +141,9 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
       uint8_t endpoint);
 
   void ControlTransferInternal(
-      UsbEndpointDirection direction,
-      TransferRequestType request_type,
-      TransferRecipient recipient,
+      UsbTransferDirection direction,
+      UsbControlTransferType request_type,
+      UsbControlTransferRecipient recipient,
       uint8_t request,
       uint16_t value,
       uint16_t index,

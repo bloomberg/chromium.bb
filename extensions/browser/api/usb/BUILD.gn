@@ -22,6 +22,7 @@ source_set("usb") {
   deps = [
     "//content/public/browser",
     "//content/public/common",
+    "//device/usb",
     "//extensions/common/api",
   ]
 }

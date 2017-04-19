@@ -35,49 +35,48 @@ void HandleTransferCompletion(PlatformUsbTransferHandle transfer);
 
 namespace {
 
-uint8_t ConvertTransferDirection(UsbEndpointDirection direction) {
+uint8_t ConvertTransferDirection(UsbTransferDirection direction) {
   switch (direction) {
-    case USB_DIRECTION_INBOUND:
+    case UsbTransferDirection::INBOUND:
       return LIBUSB_ENDPOINT_IN;
-    case USB_DIRECTION_OUTBOUND:
+    case UsbTransferDirection::OUTBOUND:
       return LIBUSB_ENDPOINT_OUT;
-    default:
-      NOTREACHED();
-      return LIBUSB_ENDPOINT_IN;
   }
+  NOTREACHED();
+  return 0;
 }
 
-uint8_t CreateRequestType(UsbEndpointDirection direction,
-                          UsbDeviceHandle::TransferRequestType request_type,
-                          UsbDeviceHandle::TransferRecipient recipient) {
+uint8_t CreateRequestType(UsbTransferDirection direction,
+                          UsbControlTransferType request_type,
+                          UsbControlTransferRecipient recipient) {
   uint8_t result = ConvertTransferDirection(direction);
 
   switch (request_type) {
-    case UsbDeviceHandle::STANDARD:
+    case UsbControlTransferType::STANDARD:
       result |= LIBUSB_REQUEST_TYPE_STANDARD;
       break;
-    case UsbDeviceHandle::CLASS:
+    case UsbControlTransferType::CLASS:
       result |= LIBUSB_REQUEST_TYPE_CLASS;
       break;
-    case UsbDeviceHandle::VENDOR:
+    case UsbControlTransferType::VENDOR:
       result |= LIBUSB_REQUEST_TYPE_VENDOR;
       break;
-    case UsbDeviceHandle::RESERVED:
+    case UsbControlTransferType::RESERVED:
       result |= LIBUSB_REQUEST_TYPE_RESERVED;
       break;
   }
 
   switch (recipient) {
-    case UsbDeviceHandle::DEVICE:
+    case UsbControlTransferRecipient::DEVICE:
       result |= LIBUSB_RECIPIENT_DEVICE;
       break;
-    case UsbDeviceHandle::INTERFACE:
+    case UsbControlTransferRecipient::INTERFACE:
       result |= LIBUSB_RECIPIENT_INTERFACE;
       break;
-    case UsbDeviceHandle::ENDPOINT:
+    case UsbControlTransferRecipient::ENDPOINT:
       result |= LIBUSB_RECIPIENT_ENDPOINT;
       break;
-    case UsbDeviceHandle::OTHER:
+    case UsbControlTransferRecipient::OTHER:
       result |= LIBUSB_RECIPIENT_OTHER;
       break;
   }
@@ -89,23 +88,22 @@ static UsbTransferStatus ConvertTransferStatus(
     const libusb_transfer_status status) {
   switch (status) {
     case LIBUSB_TRANSFER_COMPLETED:
-      return USB_TRANSFER_COMPLETED;
+      return UsbTransferStatus::COMPLETED;
     case LIBUSB_TRANSFER_ERROR:
-      return USB_TRANSFER_ERROR;
+      return UsbTransferStatus::TRANSFER_ERROR;
     case LIBUSB_TRANSFER_TIMED_OUT:
-      return USB_TRANSFER_TIMEOUT;
+      return UsbTransferStatus::TIMEOUT;
     case LIBUSB_TRANSFER_STALL:
-      return USB_TRANSFER_STALLED;
+      return UsbTransferStatus::STALLED;
     case LIBUSB_TRANSFER_NO_DEVICE:
-      return USB_TRANSFER_DISCONNECT;
+      return UsbTransferStatus::DISCONNECT;
     case LIBUSB_TRANSFER_OVERFLOW:
-      return USB_TRANSFER_OVERFLOW;
+      return UsbTransferStatus::BABBLE;
     case LIBUSB_TRANSFER_CANCELLED:
-      return USB_TRANSFER_CANCELLED;
-    default:
-      NOTREACHED();
-      return USB_TRANSFER_ERROR;
+      return UsbTransferStatus::CANCELLED;
   }
+  NOTREACHED();
+  return UsbTransferStatus::TRANSFER_ERROR;
 }
 
 static void RunTransferCallback(
@@ -298,7 +296,7 @@ UsbDeviceHandleImpl::Transfer::CreateControlTransfer(
     scoped_refptr<base::TaskRunner> callback_task_runner,
     const TransferCallback& callback) {
   std::unique_ptr<Transfer> transfer(new Transfer(
-      device_handle, nullptr, USB_TRANSFER_CONTROL, buffer,
+      device_handle, nullptr, UsbTransferType::CONTROL, buffer,
       length + LIBUSB_CONTROL_SETUP_SIZE, callback_task_runner, callback));
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
@@ -330,7 +328,7 @@ UsbDeviceHandleImpl::Transfer::CreateBulkTransfer(
     const TransferCallback& callback) {
   std::unique_ptr<Transfer> transfer(new Transfer(
       device_handle, device_handle->GetClaimedInterfaceForEndpoint(endpoint),
-      USB_TRANSFER_BULK, buffer, length, callback_task_runner, callback));
+      UsbTransferType::BULK, buffer, length, callback_task_runner, callback));
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
@@ -359,7 +357,8 @@ UsbDeviceHandleImpl::Transfer::CreateInterruptTransfer(
     const TransferCallback& callback) {
   std::unique_ptr<Transfer> transfer(new Transfer(
       device_handle, device_handle->GetClaimedInterfaceForEndpoint(endpoint),
-      USB_TRANSFER_INTERRUPT, buffer, length, callback_task_runner, callback));
+      UsbTransferType::INTERRUPT, buffer, length, callback_task_runner,
+      callback));
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
@@ -433,7 +432,7 @@ UsbDeviceHandleImpl::Transfer::Transfer(
     scoped_refptr<net::IOBuffer> buffer,
     scoped_refptr<base::TaskRunner> callback_task_runner,
     const IsochronousTransferCallback& callback)
-    : transfer_type_(USB_TRANSFER_ISOCHRONOUS),
+    : transfer_type_(UsbTransferType::ISOCHRONOUS),
       device_handle_(device_handle),
       buffer_(buffer),
       claimed_interface_(claimed_interface),
@@ -453,7 +452,7 @@ void UsbDeviceHandleImpl::Transfer::Submit() {
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to submit transfer: "
                    << ConvertPlatformUsbErrorToString(rv);
-    TransferComplete(USB_TRANSFER_ERROR, 0);
+    TransferComplete(UsbTransferStatus::TRANSFER_ERROR, 0);
   }
 }
 
@@ -475,7 +474,7 @@ void UsbDeviceHandleImpl::Transfer::ProcessCompletion() {
       << "data too big for our buffer (libusb failure?)";
 
   switch (transfer_type_) {
-    case USB_TRANSFER_CONTROL:
+    case UsbTransferType::CONTROL:
       // If the transfer is a control transfer we do not expose the control
       // setup header to the caller. This logic strips off the header if
       // present before invoking the callback provided with the transfer.
@@ -495,13 +494,13 @@ void UsbDeviceHandleImpl::Transfer::ProcessCompletion() {
       }
     // Fall through!
 
-    case USB_TRANSFER_BULK:
-    case USB_TRANSFER_INTERRUPT:
+    case UsbTransferType::BULK:
+    case UsbTransferType::INTERRUPT:
       TransferComplete(ConvertTransferStatus(platform_transfer_->status),
                        actual_length);
       break;
 
-    case USB_TRANSFER_ISOCHRONOUS:
+    case UsbTransferType::ISOCHRONOUS:
       IsochronousTransferComplete();
       break;
 
@@ -523,7 +522,7 @@ void LIBUSB_CALL UsbDeviceHandleImpl::Transfer::PlatformCallback(
 void UsbDeviceHandleImpl::Transfer::TransferComplete(UsbTransferStatus status,
                                                      size_t bytes_transferred) {
   base::Closure closure;
-  if (transfer_type_ == USB_TRANSFER_ISOCHRONOUS) {
+  if (transfer_type_ == UsbTransferType::ISOCHRONOUS) {
     DCHECK_NE(LIBUSB_TRANSFER_COMPLETED, platform_transfer_->status);
     std::vector<IsochronousPacket> packets(platform_transfer_->num_iso_packets);
     for (size_t i = 0; i < packets.size(); ++i) {
@@ -697,9 +696,9 @@ void UsbDeviceHandleImpl::ClearHalt(uint8_t endpoint,
                             this, endpoint, callback));
 }
 
-void UsbDeviceHandleImpl::ControlTransfer(UsbEndpointDirection direction,
-                                          TransferRequestType request_type,
-                                          TransferRecipient recipient,
+void UsbDeviceHandleImpl::ControlTransfer(UsbTransferDirection direction,
+                                          UsbControlTransferType request_type,
+                                          UsbControlTransferRecipient recipient,
                                           uint8_t request,
                                           uint16_t value,
                                           uint16_t index,
@@ -726,7 +725,7 @@ void UsbDeviceHandleImpl::IsochronousTransferIn(
     unsigned int timeout,
     const IsochronousTransferCallback& callback) {
   uint8_t endpoint_address =
-      ConvertTransferDirection(USB_DIRECTION_INBOUND) | endpoint_number;
+      ConvertTransferDirection(UsbTransferDirection::INBOUND) | endpoint_number;
   if (task_runner_->BelongsToCurrentThread()) {
     IsochronousTransferInInternal(endpoint_address, packet_lengths, timeout,
                                   task_runner_, callback);
@@ -746,7 +745,8 @@ void UsbDeviceHandleImpl::IsochronousTransferOut(
     unsigned int timeout,
     const IsochronousTransferCallback& callback) {
   uint8_t endpoint_address =
-      ConvertTransferDirection(USB_DIRECTION_OUTBOUND) | endpoint_number;
+      ConvertTransferDirection(UsbTransferDirection::OUTBOUND) |
+      endpoint_number;
   if (task_runner_->BelongsToCurrentThread()) {
     IsochronousTransferOutInternal(endpoint_address, buffer, packet_lengths,
                                    timeout, task_runner_, callback);
@@ -759,7 +759,7 @@ void UsbDeviceHandleImpl::IsochronousTransferOut(
   }
 }
 
-void UsbDeviceHandleImpl::GenericTransfer(UsbEndpointDirection direction,
+void UsbDeviceHandleImpl::GenericTransfer(UsbTransferDirection direction,
                                           uint8_t endpoint_number,
                                           scoped_refptr<net::IOBuffer> buffer,
                                           size_t length,
@@ -969,9 +969,9 @@ UsbDeviceHandleImpl::GetClaimedInterfaceForEndpoint(uint8_t endpoint) {
 }
 
 void UsbDeviceHandleImpl::ControlTransferInternal(
-    UsbEndpointDirection direction,
-    TransferRequestType request_type,
-    TransferRecipient recipient,
+    UsbTransferDirection direction,
+    UsbControlTransferType request_type,
+    UsbControlTransferRecipient recipient,
     uint8_t request,
     uint16_t value,
     uint16_t index,
@@ -983,15 +983,15 @@ void UsbDeviceHandleImpl::ControlTransferInternal(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!device_) {
-    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_DISCONNECT,
-                        buffer, 0);
+    RunTransferCallback(callback_task_runner, callback,
+                        UsbTransferStatus::DISCONNECT, buffer, 0);
     return;
   }
 
   if (!base::IsValueInRangeForNumericType<uint16_t>(length)) {
     USB_LOG(USER) << "Transfer too long.";
-    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
-                        buffer, 0);
+    RunTransferCallback(callback_task_runner, callback,
+                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
     return;
   }
 
@@ -999,8 +999,8 @@ void UsbDeviceHandleImpl::ControlTransferInternal(
   scoped_refptr<net::IOBuffer> resized_buffer =
       new net::IOBufferWithSize(resized_length);
   if (!resized_buffer.get()) {
-    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
-                        buffer, 0);
+    RunTransferCallback(callback_task_runner, callback,
+                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
     return;
   }
   memcpy(resized_buffer->data() + LIBUSB_CONTROL_SETUP_SIZE, buffer->data(),
@@ -1011,8 +1011,8 @@ void UsbDeviceHandleImpl::ControlTransferInternal(
       value, index, static_cast<uint16_t>(length), resized_buffer, timeout,
       callback_task_runner, callback);
   if (!transfer) {
-    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
-                        buffer, 0);
+    RunTransferCallback(callback_task_runner, callback,
+                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
     return;
   }
 
@@ -1029,7 +1029,8 @@ void UsbDeviceHandleImpl::IsochronousTransferInInternal(
 
   if (!device_) {
     ReportIsochronousTransferError(callback_task_runner, callback,
-                                   packet_lengths, USB_TRANSFER_DISCONNECT);
+                                   packet_lengths,
+                                   UsbTransferStatus::DISCONNECT);
     return;
   }
 
@@ -1054,7 +1055,8 @@ void UsbDeviceHandleImpl::IsochronousTransferOutInternal(
 
   if (!device_) {
     ReportIsochronousTransferError(callback_task_runner, callback,
-                                   packet_lengths, USB_TRANSFER_DISCONNECT);
+                                   packet_lengths,
+                                   UsbTransferStatus::DISCONNECT);
     return;
   }
 
@@ -1077,8 +1079,8 @@ void UsbDeviceHandleImpl::GenericTransferInternal(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!device_) {
-    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_DISCONNECT,
-                        buffer, 0);
+    RunTransferCallback(callback_task_runner, callback,
+                        UsbTransferStatus::DISCONNECT, buffer, 0);
     return;
   }
 
@@ -1087,33 +1089,33 @@ void UsbDeviceHandleImpl::GenericTransferInternal(
     USB_LOG(DEBUG) << "Failed to submit transfer because endpoint "
                    << static_cast<int>(endpoint_address)
                    << " not part of a claimed interface.";
-    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
-                        buffer, 0);
+    RunTransferCallback(callback_task_runner, callback,
+                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
     return;
   }
 
   if (!base::IsValueInRangeForNumericType<int>(length)) {
     USB_LOG(DEBUG) << "Transfer too long.";
-    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
-                        buffer, 0);
+    RunTransferCallback(callback_task_runner, callback,
+                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
     return;
   }
 
   std::unique_ptr<Transfer> transfer;
   UsbTransferType transfer_type = endpoint_it->second.endpoint->transfer_type;
-  if (transfer_type == USB_TRANSFER_BULK) {
+  if (transfer_type == UsbTransferType::BULK) {
     transfer = Transfer::CreateBulkTransfer(this, endpoint_address, buffer,
                                             static_cast<int>(length), timeout,
                                             callback_task_runner, callback);
-  } else if (transfer_type == USB_TRANSFER_INTERRUPT) {
+  } else if (transfer_type == UsbTransferType::INTERRUPT) {
     transfer = Transfer::CreateInterruptTransfer(
         this, endpoint_address, buffer, static_cast<int>(length), timeout,
         callback_task_runner, callback);
   } else {
     USB_LOG(DEBUG) << "Endpoint " << static_cast<int>(endpoint_address)
                    << " is not a bulk or interrupt endpoint.";
-    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
-                        buffer, 0);
+    RunTransferCallback(callback_task_runner, callback,
+                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
     return;
   }
 

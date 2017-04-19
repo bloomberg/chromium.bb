@@ -9,7 +9,7 @@
 #include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "modules/webusb/USBAlternateInterface.h"
 
-using device::mojom::blink::UsbEndpointType;
+using device::mojom::blink::UsbTransferType;
 using device::mojom::blink::UsbTransferDirection;
 
 namespace blink {
@@ -28,13 +28,13 @@ String ConvertDirectionToEnum(const UsbTransferDirection& direction) {
   }
 }
 
-String ConvertTypeToEnum(const UsbEndpointType& type) {
+String ConvertTypeToEnum(const UsbTransferType& type) {
   switch (type) {
-    case UsbEndpointType::BULK:
+    case UsbTransferType::BULK:
       return "bulk";
-    case UsbEndpointType::INTERRUPT:
+    case UsbTransferType::INTERRUPT:
       return "interrupt";
-    case UsbEndpointType::ISOCHRONOUS:
+    case UsbTransferType::ISOCHRONOUS:
       return "isochronous";
     default:
       ASSERT_NOT_REACHED();

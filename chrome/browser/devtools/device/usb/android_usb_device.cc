@@ -36,7 +36,9 @@ using device::UsbDeviceHandle;
 using device::UsbInterfaceDescriptor;
 using device::UsbEndpointDescriptor;
 using device::UsbService;
+using device::UsbTransferDirection;
 using device::UsbTransferStatus;
+using device::UsbTransferType;
 
 namespace {
 
@@ -227,9 +229,9 @@ void OpenAndroidDevice(AndroidUsbDevices* devices,
   int zero_mask = 0;
 
   for (const UsbEndpointDescriptor& endpoint : interface.endpoints) {
-    if (endpoint.transfer_type != device::USB_TRANSFER_BULK)
+    if (endpoint.transfer_type != UsbTransferType::BULK)
       continue;
-    if (endpoint.direction == device::USB_DIRECTION_INBOUND)
+    if (endpoint.direction == UsbTransferDirection::INBOUND)
       inbound_address = endpoint.address;
     else
       outbound_address = endpoint.address;
@@ -446,7 +448,7 @@ void AndroidUsbDevice::ProcessOutgoing() {
   DumpMessage(true, message->data(), message->size());
 
   usb_handle_->GenericTransfer(
-      device::USB_DIRECTION_OUTBOUND, outbound_address_, message,
+      UsbTransferDirection::OUTBOUND, outbound_address_, message,
       message->size(), kUsbTimeout,
       base::Bind(&AndroidUsbDevice::OutgoingMessageSent,
                  weak_factory_.GetWeakPtr()));
@@ -455,7 +457,7 @@ void AndroidUsbDevice::ProcessOutgoing() {
 void AndroidUsbDevice::OutgoingMessageSent(UsbTransferStatus status,
                                            scoped_refptr<net::IOBuffer> buffer,
                                            size_t result) {
-  if (status != device::USB_TRANSFER_COMPLETED) {
+  if (status != UsbTransferStatus::COMPLETED) {
     return;
   }
 
@@ -472,7 +474,7 @@ void AndroidUsbDevice::ReadHeader() {
 
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kHeaderSize);
   usb_handle_->GenericTransfer(
-      device::USB_DIRECTION_INBOUND, inbound_address_, buffer, kHeaderSize,
+      UsbTransferDirection::INBOUND, inbound_address_, buffer, kHeaderSize,
       kUsbTimeout,
       base::Bind(&AndroidUsbDevice::ParseHeader, weak_factory_.GetWeakPtr()));
 }
@@ -482,13 +484,13 @@ void AndroidUsbDevice::ParseHeader(UsbTransferStatus status,
                                    size_t result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (status == device::USB_TRANSFER_TIMEOUT) {
+  if (status == UsbTransferStatus::TIMEOUT) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&AndroidUsbDevice::ReadHeader, this));
     return;
   }
 
-  if (status != device::USB_TRANSFER_COMPLETED || result != kHeaderSize) {
+  if (status != UsbTransferStatus::COMPLETED || result != kHeaderSize) {
     TransferError(status);
     return;
   }
@@ -502,7 +504,7 @@ void AndroidUsbDevice::ParseHeader(UsbTransferStatus status,
   uint32_t data_check = header[4];
   uint32_t magic = header[5];
   if ((message->command ^ 0xffffffff) != magic) {
-    TransferError(device::USB_TRANSFER_ERROR);
+    TransferError(UsbTransferStatus::TRANSFER_ERROR);
     return;
   }
 
@@ -529,7 +531,7 @@ void AndroidUsbDevice::ReadBody(std::unique_ptr<AdbMessage> message,
   scoped_refptr<net::IOBuffer> buffer =
       new net::IOBuffer(static_cast<size_t>(data_length));
   usb_handle_->GenericTransfer(
-      device::USB_DIRECTION_INBOUND, inbound_address_, buffer, data_length,
+      UsbTransferDirection::INBOUND, inbound_address_, buffer, data_length,
       kUsbTimeout,
       base::Bind(&AndroidUsbDevice::ParseBody, weak_factory_.GetWeakPtr(),
                  base::Passed(&message), data_length, data_check));
@@ -543,14 +545,14 @@ void AndroidUsbDevice::ParseBody(std::unique_ptr<AdbMessage> message,
                                  size_t result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (status == device::USB_TRANSFER_TIMEOUT) {
+  if (status == UsbTransferStatus::TIMEOUT) {
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&AndroidUsbDevice::ReadBody, this,
                               base::Passed(&message), data_length, data_check));
     return;
   }
 
-  if (status != device::USB_TRANSFER_COMPLETED ||
+  if (status != UsbTransferStatus::COMPLETED ||
       static_cast<uint32_t>(result) != data_length) {
     TransferError(status);
     return;
@@ -559,7 +561,7 @@ void AndroidUsbDevice::ParseBody(std::unique_ptr<AdbMessage> message,
   DumpMessage(false, buffer->data(), data_length);
   message->body = std::string(buffer->data(), result);
   if (Checksum(message->body) != data_check) {
-    TransferError(device::USB_TRANSFER_ERROR);
+    TransferError(UsbTransferStatus::TRANSFER_ERROR);
     return;
   }
 

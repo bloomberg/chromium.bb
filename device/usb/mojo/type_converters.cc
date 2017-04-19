@@ -17,114 +17,14 @@
 namespace mojo {
 
 // static
-device::mojom::UsbTransferDirection TypeConverter<
-    device::mojom::UsbTransferDirection,
-    device::UsbEndpointDirection>::Convert(const device::UsbEndpointDirection&
-                                               direction) {
-  if (direction == device::USB_DIRECTION_INBOUND)
-    return device::mojom::UsbTransferDirection::INBOUND;
-  DCHECK(direction == device::USB_DIRECTION_OUTBOUND);
-  return device::mojom::UsbTransferDirection::OUTBOUND;
-}
-
-// static
-device::mojom::UsbTransferStatus
-TypeConverter<device::mojom::UsbTransferStatus, device::UsbTransferStatus>::
-    Convert(const device::UsbTransferStatus& status) {
-  switch (status) {
-    case device::USB_TRANSFER_COMPLETED:
-      return device::mojom::UsbTransferStatus::COMPLETED;
-    case device::USB_TRANSFER_ERROR:
-      return device::mojom::UsbTransferStatus::TRANSFER_ERROR;
-    case device::USB_TRANSFER_TIMEOUT:
-      return device::mojom::UsbTransferStatus::TIMEOUT;
-    case device::USB_TRANSFER_CANCELLED:
-      return device::mojom::UsbTransferStatus::CANCELLED;
-    case device::USB_TRANSFER_STALLED:
-      return device::mojom::UsbTransferStatus::STALLED;
-    case device::USB_TRANSFER_DISCONNECT:
-      return device::mojom::UsbTransferStatus::DISCONNECT;
-    case device::USB_TRANSFER_OVERFLOW:
-      return device::mojom::UsbTransferStatus::BABBLE;
-    case device::USB_TRANSFER_LENGTH_SHORT:
-      return device::mojom::UsbTransferStatus::SHORT_PACKET;
-    default:
-      NOTREACHED();
-      return device::mojom::UsbTransferStatus::TRANSFER_ERROR;
-  }
-}
-
-// static
-device::UsbDeviceHandle::TransferRequestType
-TypeConverter<device::UsbDeviceHandle::TransferRequestType,
-              device::mojom::UsbControlTransferType>::
-    Convert(const device::mojom::UsbControlTransferType& type) {
-  switch (type) {
-    case device::mojom::UsbControlTransferType::STANDARD:
-      return device::UsbDeviceHandle::STANDARD;
-    case device::mojom::UsbControlTransferType::CLASS:
-      return device::UsbDeviceHandle::CLASS;
-    case device::mojom::UsbControlTransferType::VENDOR:
-      return device::UsbDeviceHandle::VENDOR;
-    case device::mojom::UsbControlTransferType::RESERVED:
-      return device::UsbDeviceHandle::RESERVED;
-    default:
-      NOTREACHED();
-      return device::UsbDeviceHandle::RESERVED;
-  }
-}
-
-// static
-device::UsbDeviceHandle::TransferRecipient
-TypeConverter<device::UsbDeviceHandle::TransferRecipient,
-              device::mojom::UsbControlTransferRecipient>::
-    Convert(const device::mojom::UsbControlTransferRecipient& recipient) {
-  switch (recipient) {
-    case device::mojom::UsbControlTransferRecipient::DEVICE:
-      return device::UsbDeviceHandle::DEVICE;
-    case device::mojom::UsbControlTransferRecipient::INTERFACE:
-      return device::UsbDeviceHandle::INTERFACE;
-    case device::mojom::UsbControlTransferRecipient::ENDPOINT:
-      return device::UsbDeviceHandle::ENDPOINT;
-    case device::mojom::UsbControlTransferRecipient::OTHER:
-      return device::UsbDeviceHandle::OTHER;
-    default:
-      NOTREACHED();
-      return device::UsbDeviceHandle::OTHER;
-  }
-}
-
-// static
-device::mojom::UsbEndpointType
-TypeConverter<device::mojom::UsbEndpointType, device::UsbTransferType>::Convert(
-    const device::UsbTransferType& type) {
-  switch (type) {
-    case device::USB_TRANSFER_ISOCHRONOUS:
-      return device::mojom::UsbEndpointType::ISOCHRONOUS;
-    case device::USB_TRANSFER_BULK:
-      return device::mojom::UsbEndpointType::BULK;
-    case device::USB_TRANSFER_INTERRUPT:
-      return device::mojom::UsbEndpointType::INTERRUPT;
-    // Note that we do not expose control transfer in the public interface
-    // because control endpoints are implied rather than explicitly enumerated
-    // there.
-    default:
-      NOTREACHED();
-      return device::mojom::UsbEndpointType::BULK;
-  }
-}
-
-// static
 device::mojom::UsbEndpointInfoPtr TypeConverter<
     device::mojom::UsbEndpointInfoPtr,
     device::UsbEndpointDescriptor>::Convert(const device::UsbEndpointDescriptor&
                                                 endpoint) {
   auto info = device::mojom::UsbEndpointInfo::New();
   info->endpoint_number = endpoint.address & 0xf;
-  info->direction =
-      ConvertTo<device::mojom::UsbTransferDirection>(endpoint.direction);
-  info->type =
-      ConvertTo<device::mojom::UsbEndpointType>(endpoint.transfer_type);
+  info->direction = endpoint.direction;
+  info->type = endpoint.transfer_type;
   info->packet_size = static_cast<uint32_t>(endpoint.maximum_packet_size);
   return info;
 }
@@ -143,7 +43,7 @@ TypeConverter<device::mojom::UsbAlternateInterfaceInfoPtr,
   // Filter out control endpoints for the public interface.
   info->endpoints.reserve(interface.endpoints.size());
   for (const auto& endpoint : interface.endpoints) {
-    if (endpoint.transfer_type != device::USB_TRANSFER_CONTROL)
+    if (endpoint.transfer_type != device::UsbTransferType::CONTROL)
       info->endpoints.push_back(device::mojom::UsbEndpointInfo::From(endpoint));
   }
 

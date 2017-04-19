@@ -97,7 +97,7 @@ void OnReadConfigDescriptor(UsbDeviceDescriptor* desc,
                             UsbTransferStatus status,
                             scoped_refptr<IOBuffer> buffer,
                             size_t length) {
-  if (status == USB_TRANSFER_COMPLETED) {
+  if (status == UsbTransferStatus::COMPLETED) {
     if (!desc->Parse(
             std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
       LOG(ERROR) << "Failed to parse configuration descriptor.";
@@ -115,13 +115,13 @@ void OnReadConfigDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
                                   UsbTransferStatus status,
                                   scoped_refptr<IOBuffer> header,
                                   size_t length) {
-  if (status == USB_TRANSFER_COMPLETED && length == 4) {
+  if (status == UsbTransferStatus::COMPLETED && length == 4) {
     const uint8_t* data = reinterpret_cast<const uint8_t*>(header->data());
     uint16_t total_length = data[2] | data[3] << 8;
     scoped_refptr<IOBuffer> buffer = new IOBuffer(total_length);
     device_handle->ControlTransfer(
-        USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-        UsbDeviceHandle::DEVICE, kGetDescriptorRequest,
+        UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
+        UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
         kConfigurationDescriptorType << 8 | index, 0, buffer, total_length,
         kControlTransferTimeout,
         base::Bind(&OnReadConfigDescriptor, desc, closure));
@@ -138,7 +138,7 @@ void OnReadDeviceDescriptor(
     UsbTransferStatus status,
     scoped_refptr<IOBuffer> buffer,
     size_t length) {
-  if (status != USB_TRANSFER_COMPLETED) {
+  if (status != UsbTransferStatus::COMPLETED) {
     LOG(ERROR) << "Failed to read device descriptor.";
     callback.Run(nullptr);
     return;
@@ -166,8 +166,8 @@ void OnReadDeviceDescriptor(
   for (uint8_t i = 0; i < num_configurations; ++i) {
     scoped_refptr<IOBufferWithSize> header = new IOBufferWithSize(4);
     device_handle->ControlTransfer(
-        USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-        UsbDeviceHandle::DEVICE, kGetDescriptorRequest,
+        UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
+        UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
         kConfigurationDescriptorType << 8 | i, 0, header, header->size(),
         kControlTransferTimeout,
         base::Bind(&OnReadConfigDescriptorHeader, device_handle, desc_ptr, i,
@@ -188,7 +188,7 @@ void OnReadStringDescriptor(
     scoped_refptr<IOBuffer> buffer,
     size_t length) {
   base::string16 string;
-  if (status == USB_TRANSFER_COMPLETED &&
+  if (status == UsbTransferStatus::COMPLETED &&
       ParseUsbStringDescriptor(
           std::vector<uint8_t>(buffer->data(), buffer->data() + length),
           &string)) {
@@ -205,10 +205,10 @@ void ReadStringDescriptor(
     const base::Callback<void(const base::string16&)>& callback) {
   scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(255);
   device_handle->ControlTransfer(
-      USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
-      kGetDescriptorRequest, kStringDescriptorType << 8 | index, language_id,
-      buffer, buffer->size(), kControlTransferTimeout,
-      base::Bind(&OnReadStringDescriptor, callback));
+      UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
+      UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
+      kStringDescriptorType << 8 | index, language_id, buffer, buffer->size(),
+      kControlTransferTimeout, base::Bind(&OnReadStringDescriptor, callback));
 }
 
 void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
@@ -254,24 +254,24 @@ UsbEndpointDescriptor::UsbEndpointDescriptor(uint8_t address,
   // These fields are defined in Table 9-24 of the USB 3.1 Specification.
   switch (address & 0x80) {
     case 0x00:
-      direction = USB_DIRECTION_OUTBOUND;
+      direction = UsbTransferDirection::OUTBOUND;
       break;
     case 0x80:
-      direction = USB_DIRECTION_INBOUND;
+      direction = UsbTransferDirection::INBOUND;
       break;
   }
   switch (attributes & 0x03) {
     case 0x00:
-      transfer_type = USB_TRANSFER_CONTROL;
+      transfer_type = UsbTransferType::CONTROL;
       break;
     case 0x01:
-      transfer_type = USB_TRANSFER_ISOCHRONOUS;
+      transfer_type = UsbTransferType::ISOCHRONOUS;
       break;
     case 0x02:
-      transfer_type = USB_TRANSFER_BULK;
+      transfer_type = UsbTransferType::BULK;
       break;
     case 0x03:
-      transfer_type = USB_TRANSFER_INTERRUPT;
+      transfer_type = UsbTransferType::INTERRUPT;
       break;
   }
   switch (attributes & 0x0F) {
@@ -500,9 +500,10 @@ void ReadUsbDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
   scoped_refptr<IOBufferWithSize> buffer =
       new IOBufferWithSize(kDeviceDescriptorLength);
   device_handle->ControlTransfer(
-      USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
-      kGetDescriptorRequest, kDeviceDescriptorType << 8, 0, buffer,
-      buffer->size(), kControlTransferTimeout,
+      UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
+      UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
+      kDeviceDescriptorType << 8, 0, buffer, buffer->size(),
+      kControlTransferTimeout,
       base::Bind(&OnReadDeviceDescriptor, device_handle, callback));
 }
 

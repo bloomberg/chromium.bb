@@ -57,11 +57,20 @@ static_library("usb") {
 
   deps = [
     ":usb_device_ids",
-    "//base",
     "//base/third_party/dynamic_annotations",
     "//components/device_event_log",
     "//device/base",
     "//net",
+  ]
+
+  public_deps = [
+    "//base",
+    "//url",
+
+    # Depend on the header generation target only to avoid the circular
+    # dependency caused by both using enums defined in the mojom headers and
+    # typemappings linking against this target.
+    "public/interfaces:interfaces__generator",
   ]
 
   if (use_udev) {

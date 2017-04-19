@@ -28,9 +28,12 @@ using device::MockDeviceClient;
 using device::MockUsbDevice;
 using device::MockUsbDeviceHandle;
 using device::UsbConfigDescriptor;
+using device::UsbControlTransferRecipient;
+using device::UsbControlTransferType;
 using device::UsbDeviceHandle;
-using device::UsbEndpointDirection;
 using device::UsbInterfaceDescriptor;
+using device::UsbTransferDirection;
+using device::UsbTransferStatus;
 
 namespace extensions {
 
@@ -47,7 +50,7 @@ ACTION_TEMPLATE(InvokeUsbTransferCallback,
                 AND_1_VALUE_PARAMS(p1)) {
   net::IOBuffer* io_buffer = nullptr;
   size_t length = 0;
-  if (p1 != device::USB_TRANSFER_ERROR) {
+  if (p1 != UsbTransferStatus::TRANSFER_ERROR) {
     length = 1;
     io_buffer = new net::IOBuffer(length);
     memset(io_buffer->data(), 0, length);  // Avoid uninitialized reads.
@@ -63,10 +66,10 @@ ACTION_P2(InvokeUsbIsochronousTransferOutCallback,
     packets[i].length = arg2[i];
     if (i < success_packets) {
       packets[i].transferred_length = transferred_length;
-      packets[i].status = device::USB_TRANSFER_COMPLETED;
+      packets[i].status = UsbTransferStatus::COMPLETED;
     } else {
       packets[i].transferred_length = 0;
-      packets[i].status = device::USB_TRANSFER_ERROR;
+      packets[i].status = UsbTransferStatus::TRANSFER_ERROR;
     }
   }
   arg4.Run(arg1, packets);
@@ -84,10 +87,10 @@ ACTION_P2(InvokeUsbIsochronousTransferInCallback,
     packets[i].transferred_length = transferred_length;
     if (i < success_packets) {
       packets[i].transferred_length = transferred_length;
-      packets[i].status = device::USB_TRANSFER_COMPLETED;
+      packets[i].status = UsbTransferStatus::COMPLETED;
     } else {
       packets[i].transferred_length = 0;
-      packets[i].status = device::USB_TRANSFER_ERROR;
+      packets[i].status = UsbTransferStatus::TRANSFER_ERROR;
     }
   }
   arg3.Run(io_buffer, packets);
@@ -178,8 +181,8 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
       .WillOnce(InvokeCallback<0>(true))
       .WillOnce(InvokeCallback<0>(false));
   EXPECT_CALL(*mock_device_handle_,
-              GenericTransfer(device::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
+              GenericTransfer(UsbTransferDirection::OUTBOUND, 2, _, 1, _, _))
+      .WillOnce(InvokeUsbTransferCallback<5>(UsbTransferStatus::COMPLETED));
   ASSERT_TRUE(RunAppTest("api_test/usb/reset_device"));
 }
 
@@ -199,15 +202,16 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
   EXPECT_CALL(
       *mock_device_handle_,
-      ControlTransfer(device::USB_DIRECTION_OUTBOUND, UsbDeviceHandle::STANDARD,
-                      UsbDeviceHandle::DEVICE, 1, 2, 3, _, 1, _, _))
-      .WillOnce(InvokeUsbTransferCallback<9>(device::USB_TRANSFER_COMPLETED));
+      ControlTransfer(UsbTransferDirection::OUTBOUND,
+                      UsbControlTransferType::STANDARD,
+                      UsbControlTransferRecipient::DEVICE, 1, 2, 3, _, 1, _, _))
+      .WillOnce(InvokeUsbTransferCallback<9>(UsbTransferStatus::COMPLETED));
   EXPECT_CALL(*mock_device_handle_,
-              GenericTransfer(device::USB_DIRECTION_OUTBOUND, 1, _, 1, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
+              GenericTransfer(UsbTransferDirection::OUTBOUND, 1, _, 1, _, _))
+      .WillOnce(InvokeUsbTransferCallback<5>(UsbTransferStatus::COMPLETED));
   EXPECT_CALL(*mock_device_handle_,
-              GenericTransfer(device::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
+              GenericTransfer(UsbTransferDirection::OUTBOUND, 2, _, 1, _, _))
+      .WillOnce(InvokeUsbTransferCallback<5>(UsbTransferStatus::COMPLETED));
   EXPECT_CALL(*mock_device_handle_, IsochronousTransferOut(3, _, _, _, _))
       .WillOnce(InvokeUsbIsochronousTransferOutCallback(1, 1u));
   EXPECT_CALL(*mock_device_handle_, Close()).Times(AnyNumber());
@@ -216,17 +220,17 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ZeroLengthTransfer) {
   EXPECT_CALL(*mock_device_handle_, GenericTransfer(_, _, _, 0, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
+      .WillOnce(InvokeUsbTransferCallback<5>(UsbTransferStatus::COMPLETED));
   EXPECT_CALL(*mock_device_handle_, Close()).Times(AnyNumber());
   ASSERT_TRUE(RunAppTest("api_test/usb/zero_length_transfer"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
   EXPECT_CALL(*mock_device_handle_,
-              GenericTransfer(device::USB_DIRECTION_OUTBOUND, 1, _, _, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED))
-      .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_ERROR))
-      .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_TIMEOUT));
+              GenericTransfer(UsbTransferDirection::OUTBOUND, 1, _, _, _, _))
+      .WillOnce(InvokeUsbTransferCallback<5>(UsbTransferStatus::COMPLETED))
+      .WillOnce(InvokeUsbTransferCallback<5>(UsbTransferStatus::TRANSFER_ERROR))
+      .WillOnce(InvokeUsbTransferCallback<5>(UsbTransferStatus::TIMEOUT));
   EXPECT_CALL(*mock_device_handle_, IsochronousTransferIn(2, _, _, _))
       .WillOnce(InvokeUsbIsochronousTransferInCallback(8, 10u))
       .WillOnce(InvokeUsbIsochronousTransferInCallback(8, 5u));

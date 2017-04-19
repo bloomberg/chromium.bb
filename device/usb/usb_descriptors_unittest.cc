@@ -22,7 +22,7 @@ namespace {
 ACTION_P2(InvokeCallback, data, length) {
   size_t transferred_length = std::min(length, arg7);
   memcpy(arg6->data(), data, transferred_length);
-  arg9.Run(USB_TRANSFER_COMPLETED, arg6, transferred_length);
+  arg9.Run(UsbTransferStatus::COMPLETED, arg6, transferred_length);
 }
 
 void ExpectStringDescriptors(
@@ -86,33 +86,36 @@ void ExpectConfig1Descriptor(const UsbConfigDescriptor& config) {
   EXPECT_EQ(0, config.interfaces[0].first_interface);
   // Endpoint 1 IN
   EXPECT_EQ(0x81, config.interfaces[0].endpoints[0].address);
-  EXPECT_EQ(USB_DIRECTION_INBOUND, config.interfaces[0].endpoints[0].direction);
+  EXPECT_EQ(UsbTransferDirection::INBOUND,
+            config.interfaces[0].endpoints[0].direction);
   EXPECT_EQ(512, config.interfaces[0].endpoints[0].maximum_packet_size);
   EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
             config.interfaces[0].endpoints[0].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_BULK, config.interfaces[0].endpoints[0].transfer_type);
+  EXPECT_EQ(UsbTransferType::BULK,
+            config.interfaces[0].endpoints[0].transfer_type);
   EXPECT_EQ(USB_USAGE_RESERVED, config.interfaces[0].endpoints[0].usage_type);
   EXPECT_EQ(0, config.interfaces[0].endpoints[0].polling_interval);
   EXPECT_EQ(0u, config.interfaces[0].endpoints[0].extra_data.size());
   // Endpoint 2 IN
   EXPECT_EQ(0x82, config.interfaces[0].endpoints[1].address);
-  EXPECT_EQ(USB_DIRECTION_INBOUND, config.interfaces[0].endpoints[1].direction);
+  EXPECT_EQ(UsbTransferDirection::INBOUND,
+            config.interfaces[0].endpoints[1].direction);
   EXPECT_EQ(512, config.interfaces[0].endpoints[1].maximum_packet_size);
   EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
             config.interfaces[0].endpoints[1].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_INTERRUPT,
+  EXPECT_EQ(UsbTransferType::INTERRUPT,
             config.interfaces[0].endpoints[1].transfer_type);
   EXPECT_EQ(USB_USAGE_PERIODIC, config.interfaces[0].endpoints[1].usage_type);
   EXPECT_EQ(4, config.interfaces[0].endpoints[1].polling_interval);
   EXPECT_EQ(0u, config.interfaces[0].endpoints[1].extra_data.size());
   // Endpoint 3 OUT
   EXPECT_EQ(0x03, config.interfaces[0].endpoints[2].address);
-  EXPECT_EQ(USB_DIRECTION_OUTBOUND,
+  EXPECT_EQ(UsbTransferDirection::OUTBOUND,
             config.interfaces[0].endpoints[2].direction);
   EXPECT_EQ(512, config.interfaces[0].endpoints[2].maximum_packet_size);
   EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
             config.interfaces[0].endpoints[2].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_INTERRUPT,
+  EXPECT_EQ(UsbTransferType::INTERRUPT,
             config.interfaces[0].endpoints[2].transfer_type);
   EXPECT_EQ(USB_USAGE_NOTIFICATION,
             config.interfaces[0].endpoints[2].usage_type);
@@ -157,23 +160,24 @@ void ExpectConfig2Descriptor(const UsbConfigDescriptor& config) {
   EXPECT_EQ(0, config.interfaces[1].first_interface);
   // Endpoint 1 IN
   EXPECT_EQ(0x81, config.interfaces[1].endpoints[0].address);
-  EXPECT_EQ(USB_DIRECTION_INBOUND, config.interfaces[1].endpoints[0].direction);
+  EXPECT_EQ(UsbTransferDirection::INBOUND,
+            config.interfaces[1].endpoints[0].direction);
   EXPECT_EQ(1024, config.interfaces[1].endpoints[0].maximum_packet_size);
   EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
             config.interfaces[1].endpoints[0].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_ISOCHRONOUS,
+  EXPECT_EQ(UsbTransferType::ISOCHRONOUS,
             config.interfaces[1].endpoints[0].transfer_type);
   EXPECT_EQ(USB_USAGE_DATA, config.interfaces[1].endpoints[0].usage_type);
   EXPECT_EQ(8, config.interfaces[1].endpoints[0].polling_interval);
   EXPECT_EQ(0u, config.interfaces[1].endpoints[0].extra_data.size());
   // Endpoint 2 OUT
   EXPECT_EQ(0x02, config.interfaces[1].endpoints[1].address);
-  EXPECT_EQ(USB_DIRECTION_OUTBOUND,
+  EXPECT_EQ(UsbTransferDirection::OUTBOUND,
             config.interfaces[1].endpoints[1].direction);
   EXPECT_EQ(1024, config.interfaces[1].endpoints[1].maximum_packet_size);
   EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
             config.interfaces[1].endpoints[1].synchronization_type);
-  EXPECT_EQ(USB_TRANSFER_ISOCHRONOUS,
+  EXPECT_EQ(UsbTransferType::ISOCHRONOUS,
             config.interfaces[1].endpoints[1].transfer_type);
   EXPECT_EQ(USB_USAGE_FEEDBACK, config.interfaces[1].endpoints[1].usage_type);
   EXPECT_EQ(8, config.interfaces[1].endpoints[1].polling_interval);
@@ -219,21 +223,24 @@ TEST_F(UsbDescriptorsTest, ReadDescriptors) {
   scoped_refptr<MockUsbDeviceHandle> device_handle(
       new MockUsbDeviceHandle(nullptr));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0100, 0x0000, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::DEVICE, 0x06, 0x0100,
+                              0x0000, _, _, _, _))
       .WillOnce(InvokeCallback(kDeviceDescriptor, sizeof(kDeviceDescriptor)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0200, 0x0000, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::DEVICE, 0x06, 0x0200,
+                              0x0000, _, _, _, _))
       .Times(2)
       .WillRepeatedly(
           InvokeCallback(kConfig1Descriptor, sizeof(kConfig1Descriptor)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0201, 0x0000, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::DEVICE, 0x06, 0x0201,
+                              0x0000, _, _, _, _))
       .Times(2)
       .WillRepeatedly(
           InvokeCallback(kConfig2Descriptor, sizeof(kConfig2Descriptor)));
@@ -400,33 +407,37 @@ TEST_F(UsbDescriptorsTest, ReadStringDescriptors) {
       new MockUsbDeviceHandle(nullptr));
   static const uint8_t kStringDescriptor0[] = {0x04, 0x03, 0x21, 0x43};
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0300, 0x0000, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::DEVICE, 0x06, 0x0300,
+                              0x0000, _, _, _, _))
       .WillOnce(InvokeCallback(kStringDescriptor0, sizeof(kStringDescriptor0)));
   static const uint8_t kStringDescriptor1[] = {0x12, 0x03, 'S', 0, 't', 0,
                                                'r',  0,    'i', 0, 'n', 0,
                                                'g',  0,    ' ', 0, '1', 0};
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0301, 0x4321, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::DEVICE, 0x06, 0x0301,
+                              0x4321, _, _, _, _))
       .WillOnce(InvokeCallback(kStringDescriptor1, sizeof(kStringDescriptor1)));
   static const uint8_t kStringDescriptor2[] = {0x12, 0x03, 'S', 0, 't', 0,
                                                'r',  0,    'i', 0, 'n', 0,
                                                'g',  0,    ' ', 0, '2', 0};
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0302, 0x4321, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::DEVICE, 0x06, 0x0302,
+                              0x4321, _, _, _, _))
       .WillOnce(InvokeCallback(kStringDescriptor2, sizeof(kStringDescriptor2)));
   static const uint8_t kStringDescriptor3[] = {0x12, 0x03, 'S', 0, 't', 0,
                                                'r',  0,    'i', 0, 'n', 0,
                                                'g',  0,    ' ', 0, '3', 0};
   EXPECT_CALL(*device_handle,
-              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0303, 0x4321, _,
-                              _, _, _))
+              ControlTransfer(UsbTransferDirection::INBOUND,
+                              UsbControlTransferType::STANDARD,
+                              UsbControlTransferRecipient::DEVICE, 0x06, 0x0303,
+                              0x4321, _, _, _, _))
       .WillOnce(InvokeCallback(kStringDescriptor3, sizeof(kStringDescriptor3)));
 
   ReadUsbStringDescriptors(device_handle, std::move(string_map),

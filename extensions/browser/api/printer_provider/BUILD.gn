@@ -13,6 +13,7 @@ source_set("printer_provider") {
   ]
 
   deps = [
+    "//device/usb",
     "//extensions/common/api",
   ]
 }
