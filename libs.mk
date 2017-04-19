@@ -363,7 +363,7 @@ LIBAOM_TEST_SRCS=$(addprefix test/,$(call enabled,LIBAOM_TEST_SRCS))
 LIBAOM_TEST_BIN=./test_libaom$(EXE_SFX)
 LIBAOM_TEST_DATA=$(addprefix $(LIBAOM_TEST_DATA_PATH)/,\
                      $(call enabled,LIBAOM_TEST_DATA))
-libaom_test_data_url=http://downloads.webmproject.org/test_data/libvpx/$(1)
+libaom_test_data_url=https://storage.googleapis.com/downloads.webmproject.org/test_data/libvpx/$(1)
 
 TEST_INTRA_PRED_SPEED_BIN=./test_intra_pred_speed$(EXE_SFX)
 TEST_INTRA_PRED_SPEED_SRCS=$(addprefix test/,$(call enabled,TEST_INTRA_PRED_SPEED_SRCS))
