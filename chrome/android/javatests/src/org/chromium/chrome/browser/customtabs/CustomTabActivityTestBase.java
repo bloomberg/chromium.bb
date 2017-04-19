@@ -7,23 +7,14 @@ package org.chromium.chrome.browser.customtabs;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.app.Activity;
-import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.PathUtils;
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.DeferredStartupHandler;
-import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.BrowserStartupController.StartupCallback;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -40,38 +31,14 @@ public abstract class CustomTabActivityTestBase extends
 
     protected static final long STARTUP_TIMEOUT_MS = scaleTimeout(5) * 1000;
     protected static final long LONG_TIMEOUT_MS = scaleTimeout(10) * 1000;
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     public CustomTabActivityTestBase() {
         super(CustomTabActivity.class);
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(true);
-            }
-        });
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+    public void startMainActivity() throws InterruptedException {
     }
-
-    @Override
-    protected void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(false);
-            }
-        });
-        super.tearDown();
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {}
 
     @Override
     protected void startActivityCompletely(Intent intent) {
@@ -131,42 +98,5 @@ public abstract class CustomTabActivityTestBase extends
         assertNotNull(tab);
         assertNotNull(tab.getView());
         assertTrue(tab.isCurrentlyACustomTab());
-    }
-
-    /**
-     * Connects to Custom Tabs, calls warmup() and wait for completion.
-     *
-     * @return the connection.
-     */
-    protected CustomTabsConnection warmUpAndWait() {
-        final Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        CustomTabsConnection connection =
-                CustomTabsTestUtils.setUpConnection((Application) context);
-        final CallbackHelper startupCallbackHelper = new CallbackHelper();
-        assertTrue(connection.warmup(0));
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .addStartupCompletedObserver(new StartupCallback() {
-                            @Override
-                            public void onSuccess(boolean alreadyStarted) {
-                                startupCallbackHelper.notifyCalled();
-                            }
-
-                            @Override
-                            public void onFailure() {
-                                fail();
-                            }
-                        });
-            }
-        });
-
-        try {
-            startupCallbackHelper.waitForCallback(0);
-        } catch (TimeoutException | InterruptedException e) {
-            fail();
-        }
-        return connection;
     }
 }
