@@ -33,7 +33,8 @@ def owners_file(*email_addresses, **kwargs):
     s += 'set noparent\n'
   if kwargs.get('file'):
     s += 'file:%s\n' % kwargs.get('file')
-  s += '\n'.join(kwargs.get('lines', [])) + '\n'
+  if kwargs.get('lines'):
+    s += '\n'.join(kwargs.get('lines', [])) + '\n'
   return s + '\n'.join(email_addresses) + '\n'
 
 
@@ -342,6 +343,34 @@ class OwnersDatabaseTest(_BaseTestCase):
                                         comment='OWNERS_STATUS = nonexistant')
     self.files['/foo/DEPS'] = ''
     self.assertRaises(IOError, db.reviewers_for, ['foo/DEPS'], None)
+
+  def test_comment_to_owners_mapping(self):
+    db = self.db()
+    self.files['/OWNERS'] = '\n'.join([
+        '# first comment',
+        ben,
+        brett,
+        '',
+        darin,
+        '',
+        '# comment preceeded by empty line',
+        'per-file bar.*=%s' % jochen,
+        john,
+        '',
+        ken,
+        '# comment in the middle',
+        peter,
+        tom])
+    # Force loading of the OWNERS file.
+    self.files['/bar.cc'] = ''
+    db.reviewers_for(['bar.cc'], None)
+
+    self.assertEqual(db.comments, {
+        ben: {'': 'first comment'},
+        brett: {'': 'first comment'},
+        jochen: {'bar.*': 'comment preceeded by empty line'},
+        john: {'': 'comment preceeded by empty line'},
+        peter: {'': 'comment in the middle'}})
 
 
 class ReviewersForTest(_BaseTestCase):

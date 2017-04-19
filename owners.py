@@ -244,6 +244,9 @@ class Database(object):
     comment = []
     dirpath = self.os_path.dirname(path)
     in_comment = False
+    # We treat the beginning of the file as an blank line.
+    previous_line_was_blank = True
+    reset_comment_after_use = False
     lineno = 0
 
     if path in self.override_files:
@@ -262,13 +265,18 @@ class Database(object):
             continue
         if not in_comment:
           comment = []
+          reset_comment_after_use = not previous_line_was_blank
         comment.append(line[1:].strip())
         in_comment = True
         continue
-      if line == '':
-        continue
       in_comment = False
 
+      if line == '':
+        comment = []
+        previous_line_was_blank = True
+        continue
+
+      previous_line_was_blank = False
       if line == 'set noparent':
         self._stop_looking.add(dirpath)
         continue
@@ -285,6 +293,8 @@ class Database(object):
         relative_glob_string = self.os_path.relpath(full_glob_string, self.root)
         self._add_entry(relative_glob_string, directive, owners_path,
                         lineno, '\n'.join(comment))
+        if reset_comment_after_use:
+          comment = []
         continue
 
       if line.startswith('set '):
@@ -293,6 +303,8 @@ class Database(object):
 
       self._add_entry(dirpath, line, owners_path, lineno,
                       ' '.join(comment))
+      if reset_comment_after_use:
+        comment = []
 
   def _read_global_comments(self):
     if not self._status_file:

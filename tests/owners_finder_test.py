@@ -34,7 +34,6 @@ def owners_file(*email_addresses, **kwargs):
     s += '# %s\n' % kwargs.get('comment')
   if kwargs.get('noparent'):
     s += 'set noparent\n'
-  s += '\n'.join(kwargs.get('lines', [])) + '\n'
   return s + '\n'.join(email_addresses) + '\n'
 
 
