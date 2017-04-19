@@ -893,9 +893,6 @@
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin',
     },
-    'policy_definitions': {
-      'filepath': 'components/policy/resources/policy_templates.json',
-    },
     'polymer': {
       'filepath': 'third_party/polymer/|'\
                   'third_party/web-animations-js/|'\
@@ -2134,7 +2131,6 @@
     'permissions': ['mlamouri+watch-permissions@chromium.org',
                     'raymes+watch@chromium.org'],
     'plugin': ['jam@chromium.org'],
-    'policy_definitions': ['tnagel+watch@chromium.org'],
     'polymer': ['dbeam+watch-polymer@chromium.org',
                 'michaelpg+watch-polymer@chromium.org'],
     'precache': ['wifiprefetch-reviews@google.com'],
