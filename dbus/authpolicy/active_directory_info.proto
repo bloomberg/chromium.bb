@@ -24,7 +24,17 @@ message ActiveDirectoryAccountInfo {
   // Logon name of the user (without @realm). Taken from the sAMAccountName
   // property of the Active Directory user account information.
   optional string sam_account_name = 4;
-  // Next ID to use: 5
+  // Timestamp when the password was last set, see
+  // https://msdn.microsoft.com/en-us/library/ms679430(v=vs.85).aspx. Taken from
+  // the pwdLastSet property of the Active Directory user account information.
+  // Used in authpolicyd only, unused in Chrome.
+  optional uint64 pwd_last_set = 5;
+  // User account control flags, see
+  // https://msdn.microsoft.com/en-us/library/ms680832(v=vs.85).aspx. Taken from
+  // the userAccountControl property of the Active Directory user account
+  // information. Used in authpolicyd only, unused in Chrome.
+  optional uint32 user_account_control = 6;
+  // Next ID to use: 7
 }
 
 // Message sent to Chromium by authpolicy service as a response to a successful
@@ -38,9 +48,21 @@ message ActiveDirectoryUserStatus {
     // Next ID to use: 3
   }
 
+  // Whether the password has to be changed or sync'ed with cryptohome.
+  enum PasswordStatus {
+    PASSWORD_VALID = 0;    // Valid as far as we can tell.
+    PASSWORD_EXPIRED = 1;  // User has to enter a new password on next logon.
+    PASSWORD_CHANGED = 2;  // Changed on server, possibly from other client.
+    // Next ID to use: 3
+  }
+
   // User's account information, see above.
   optional ActiveDirectoryAccountInfo account_info = 1;
   // Status of the user's ticket-granting-ticket (TGT).
   optional TgtStatus tgt_status = 2;
-  // Next ID to use: 3
+  // Status of the user's password.
+  optional PasswordStatus password_status = 3;
+  // Last error returned from AuthenticateUser D-Bus call, see ErrorType.
+  optional int32 last_auth_error = 4;
+  // Next ID to use: 5
 }
