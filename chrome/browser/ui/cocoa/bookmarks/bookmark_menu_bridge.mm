@@ -296,15 +296,14 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
     bool incognito_enabled =
         enabled && incognito_availability != IncognitoModePrefs::DISABLED;
 
-    AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL,
-                  IDS_BOOKMARK_BAR_OPEN_ALL,
+    AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL, IDS_BOOKMARK_BAR_OPEN_ALL_COUNT,
                   node, menu, enabled);
     AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                  IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                  node, menu, enabled);
+                  IDS_BOOKMARK_BAR_OPEN_ALL_COUNT_NEW_WINDOW, node, menu,
+                  enabled);
     AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                  IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                  node, menu, incognito_enabled);
+                  IDS_BOOKMARK_BAR_OPEN_ALL_COUNT_INCOGNITO, node, menu,
+                  incognito_enabled);
   }
 }
 
@@ -313,7 +312,7 @@ void BookmarkMenuBridge::AddItemToMenu(int command_id,
                                        const BookmarkNode* node,
                                        NSMenu* menu,
                                        bool enabled) {
-  int count = (message_id == IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO)
+  int count = (message_id == IDS_BOOKMARK_BAR_OPEN_ALL_COUNT_INCOGNITO)
                   ? chrome::OpenCount(nullptr, node, profile_)
                   : chrome::OpenCount(nullptr, node);
 

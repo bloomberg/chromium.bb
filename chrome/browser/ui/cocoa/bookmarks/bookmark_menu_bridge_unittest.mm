@@ -254,21 +254,21 @@ TEST_F(BookmarkMenuBridgeTest, TestAddItemToMenu) {
   EXPECT_EQ(0, [menu numberOfItems]);
 
   AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL,
-                IDS_BOOKMARK_BAR_OPEN_ALL, root, menu, true);
+                IDS_BOOKMARK_BAR_OPEN_ALL_COUNT, root, menu, true);
   AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW, root, menu, true);
+                IDS_BOOKMARK_BAR_OPEN_ALL_COUNT_NEW_WINDOW, root, menu, true);
   AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
                 IDS_BOOKMARK_BAR_OPEN_INCOGNITO, root, menu, true);
   EXPECT_EQ(3, [menu numberOfItems]);
 
-  title = l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL, 0);
+  title = l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL_COUNT, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(@selector(openAllBookmarks:), [item action]);
   EXPECT_TRUE([item isEnabled]);
 
-  title =
-      l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW, 0);
+  title = l10n_util::GetPluralNSStringF(
+      IDS_BOOKMARK_BAR_OPEN_ALL_COUNT_NEW_WINDOW, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(@selector(openAllBookmarksNewWindow:), [item action]);
@@ -284,21 +284,21 @@ TEST_F(BookmarkMenuBridgeTest, TestAddItemToMenu) {
   EXPECT_EQ(0, [menu numberOfItems]);
 
   AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL,
-                IDS_BOOKMARK_BAR_OPEN_ALL, root, menu, false);
+                IDS_BOOKMARK_BAR_OPEN_ALL_COUNT, root, menu, false);
   AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW, root, menu, false);
+                IDS_BOOKMARK_BAR_OPEN_ALL_COUNT_NEW_WINDOW, root, menu, false);
   AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
                 IDS_BOOKMARK_BAR_OPEN_INCOGNITO, root, menu, false);
   EXPECT_EQ(3, [menu numberOfItems]);
 
-  title = l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL, 0);
+  title = l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL_COUNT, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(nil, [item action]);
   EXPECT_FALSE([item isEnabled]);
 
-  title =
-      l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW, 0);
+  title = l10n_util::GetPluralNSStringF(
+      IDS_BOOKMARK_BAR_OPEN_ALL_COUNT_NEW_WINDOW, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(nil, [item action]);

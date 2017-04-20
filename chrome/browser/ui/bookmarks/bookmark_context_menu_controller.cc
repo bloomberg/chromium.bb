@@ -79,16 +79,17 @@ void BookmarkContextMenuController::BuildMenu() {
   } else {
     int count = chrome::OpenCount(parent_window_, selection_);
     AddItem(IDC_BOOKMARK_BAR_OPEN_ALL,
-            l10n_util::GetPluralStringFUTF16(IDS_BOOKMARK_BAR_OPEN_ALL, count));
+            l10n_util::GetPluralStringFUTF16(IDS_BOOKMARK_BAR_OPEN_ALL_COUNT,
+                                             count));
     AddItem(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
             l10n_util::GetPluralStringFUTF16(
-                IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW, count));
+                IDS_BOOKMARK_BAR_OPEN_ALL_COUNT_NEW_WINDOW, count));
 
     int incognito_count =
         chrome::OpenCount(parent_window_, selection_, profile_);
     AddItem(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
             l10n_util::GetPluralStringFUTF16(
-                IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO, incognito_count));
+                IDS_BOOKMARK_BAR_OPEN_ALL_COUNT_INCOGNITO, incognito_count));
   }
 
   AddSeparator();
