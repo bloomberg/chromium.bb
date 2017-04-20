@@ -99,7 +99,7 @@ class Json5File(object):
         self._process(doc)
 
     @classmethod
-    def load_from_files(cls, file_paths, default_metadata, default_parameters=None):
+    def load_from_files(cls, file_paths, default_metadata=None, default_parameters=None):
         merged_doc = dict()
         for path in file_paths:
             assert path.endswith(".json5")
@@ -198,8 +198,6 @@ class Writer(object):
     def __init__(self, json5_files):
         self._outputs = {}  # file_name -> generator
         self.gperf_path = None
-        if isinstance(json5_files, basestring):
-            json5_files = [json5_files]
         if json5_files:
             self.json5_file = Json5File.load_from_files(json5_files,
                                                         self.default_metadata,

@@ -35,12 +35,12 @@ def get_classname(property):
 
 class CSSPropertyAPIWriter(StyleBuilderWriter):
     def __init__(self, json5_file_paths):
-        super(CSSPropertyAPIWriter, self).__init__(json5_file_paths[0])
+        super(CSSPropertyAPIWriter, self).__init__([json5_file_paths[0]])
         # TODO(aazzam): Move the logic for loading CSSPropertyAPIMethods.json5 into a new class APIMethodsWriter().
         assert len(json5_file_paths) == 2,\
             'CSSPropertyAPIWriter requires 2 input json5 files files, got {}.'.format(len(json5_file_paths))
 
-        self.css_property_api_methods = Json5File.load_from_files([json5_file_paths[1]], {}, {})
+        self.css_property_api_methods = Json5File.load_from_files([json5_file_paths[1]])
 
         self._outputs = {
             'CSSPropertyDescriptor.cpp': self.generate_property_descriptor_cpp,
