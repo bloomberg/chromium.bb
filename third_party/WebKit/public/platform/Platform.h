@@ -53,6 +53,7 @@
 #include "WebStorageQuotaType.h"
 #include "WebString.h"
 #include "WebURLError.h"
+#include "WebURLLoader.h"
 #include "WebVector.h"
 #include "base/metrics/user_metrics_action.h"
 #include "cc/resources/shared_bitmap.h"
@@ -127,7 +128,6 @@ struct WebFloatPoint;
 class WebThemeEngine;
 class WebThread;
 class WebTrialTokenValidator;
-class WebURLLoader;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
@@ -334,7 +334,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Network -------------------------------------------------------------
 
   // Returns a new WebURLLoader instance.
-  virtual WebURLLoader* CreateURLLoader() { return nullptr; }
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader() { return nullptr; }
 
   // May return null.
   virtual WebPrescientNetworking* PrescientNetworking() { return nullptr; }

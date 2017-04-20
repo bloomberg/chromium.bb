@@ -30,7 +30,7 @@ class WebURLLoaderMock : public WebURLLoader {
  public:
   // This object becomes the owner of |default_loader|.
   WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory,
-                   WebURLLoader* default_loader);
+                   std::unique_ptr<WebURLLoader> default_loader);
   ~WebURLLoaderMock() override;
 
   // Simulates the asynchronous request being served.

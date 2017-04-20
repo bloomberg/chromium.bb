@@ -83,7 +83,7 @@ void ResourceLoader::Start(const ResourceRequest& request) {
     return;
   }
 
-  loader_ = WTF::WrapUnique(Platform::Current()->CreateURLLoader());
+  loader_ = Platform::Current()->CreateURLLoader();
   DCHECK(loader_);
   loader_->SetDefersLoading(Context().DefersLoading());
   loader_->SetLoadingTaskRunner(Context().LoadingTaskRunner().Get());

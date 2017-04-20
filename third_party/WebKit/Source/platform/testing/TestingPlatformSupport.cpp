@@ -190,7 +190,7 @@ WebURLLoaderMockFactory* TestingPlatformSupport::GetURLLoaderMockFactory() {
   return old_platform_ ? old_platform_->GetURLLoaderMockFactory() : nullptr;
 }
 
-WebURLLoader* TestingPlatformSupport::CreateURLLoader() {
+std::unique_ptr<WebURLLoader> TestingPlatformSupport::CreateURLLoader() {
   return old_platform_ ? old_platform_->CreateURLLoader() : nullptr;
 }
 

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -32,9 +33,9 @@ WebURLLoaderMockFactoryImpl::WebURLLoaderMockFactoryImpl(
 
 WebURLLoaderMockFactoryImpl::~WebURLLoaderMockFactoryImpl() {}
 
-WebURLLoader* WebURLLoaderMockFactoryImpl::CreateURLLoader(
-    WebURLLoader* default_loader) {
-  return new WebURLLoaderMock(this, default_loader);
+std::unique_ptr<WebURLLoader> WebURLLoaderMockFactoryImpl::CreateURLLoader(
+    std::unique_ptr<WebURLLoader> default_loader) {
+  return base::MakeUnique<WebURLLoaderMock>(this, std::move(default_loader));
 }
 
 void WebURLLoaderMockFactoryImpl::RegisterURL(const WebURL& url,

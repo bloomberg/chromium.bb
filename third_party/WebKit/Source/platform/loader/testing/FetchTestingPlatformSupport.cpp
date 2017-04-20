@@ -45,7 +45,7 @@ FetchTestingPlatformSupport::GetURLLoaderMockFactory() {
   return url_loader_mock_factory_.get();
 }
 
-WebURLLoader* FetchTestingPlatformSupport::CreateURLLoader() {
+std::unique_ptr<WebURLLoader> FetchTestingPlatformSupport::CreateURLLoader() {
   return url_loader_mock_factory_->CreateURLLoader(nullptr);
 }
 

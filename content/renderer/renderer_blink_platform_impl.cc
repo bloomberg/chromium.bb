@@ -302,7 +302,8 @@ void RendererBlinkPlatformImpl::Shutdown() {
 
 //------------------------------------------------------------------------------
 
-blink::WebURLLoader* RendererBlinkPlatformImpl::CreateURLLoader() {
+std::unique_ptr<blink::WebURLLoader>
+RendererBlinkPlatformImpl::CreateURLLoader() {
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
 
   mojom::URLLoaderFactory* factory =
@@ -325,7 +326,7 @@ blink::WebURLLoader* RendererBlinkPlatformImpl::CreateURLLoader() {
 
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
-  return new content::WebURLLoaderImpl(
+  return base::MakeUnique<WebURLLoaderImpl>(
       child_thread ? child_thread->resource_dispatcher() : nullptr, factory);
 }
 

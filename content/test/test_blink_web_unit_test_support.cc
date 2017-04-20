@@ -188,11 +188,12 @@ blink::WebIDBFactory* TestBlinkWebUnitTestSupport::IdbFactory() {
   return NULL;
 }
 
-blink::WebURLLoader* TestBlinkWebUnitTestSupport::CreateURLLoader() {
+std::unique_ptr<blink::WebURLLoader>
+TestBlinkWebUnitTestSupport::CreateURLLoader() {
   // This loader should be used only for process-local resources such as
   // data URLs.
-  blink::WebURLLoader* default_loader = new WebURLLoaderImpl(nullptr, nullptr);
-  return url_loader_factory_->CreateURLLoader(default_loader);
+  auto default_loader = base::MakeUnique<WebURLLoaderImpl>(nullptr, nullptr);
+  return url_loader_factory_->CreateURLLoader(std::move(default_loader));
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {

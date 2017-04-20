@@ -184,7 +184,7 @@ void ResourceFetcherImpl::Start(
 
   client_.reset(new ClientImpl(this, callback));
 
-  loader_.reset(blink::Platform::Current()->CreateURLLoader());
+  loader_ = blink::Platform::Current()->CreateURLLoader();
   loader_->LoadAsynchronously(request_, client_.get());
 
   // No need to hold on to the request; reset it now.
