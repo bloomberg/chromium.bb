@@ -279,7 +279,7 @@ void DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   video_output_size_ = output_size;
 
   video_processor_.Reset();
-  video_processor_enumerator_.Receive();
+  video_processor_enumerator_.Reset();
   D3D11_VIDEO_PROCESSOR_CONTENT_DESC desc = {};
   desc.InputFrameFormat = D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE;
   desc.InputFrameRate.Numerator = 60;
