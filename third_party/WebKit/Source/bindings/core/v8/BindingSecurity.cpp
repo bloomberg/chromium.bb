@@ -32,6 +32,8 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8Location.h"
+#include "bindings/core/v8/WrapperCreationSecurityCheck.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -51,7 +53,7 @@ bool CanAccessFrameInternal(const LocalDOMWindow* accessing_window,
   SECURITY_CHECK(!(target_window && target_window->GetFrame()) ||
                  target_window == target_window->GetFrame()->DomWindow());
 
-  // It's important to check that targetWindow is a LocalDOMWindow: it's
+  // It's important to check that target_window is a LocalDOMWindow: it's
   // possible for a remote frame and local frame to have the same security
   // origin, depending on the model being used to allocate Frames between
   // processes. See https://crbug.com/601629.
@@ -262,6 +264,65 @@ bool BindingSecurity::ShouldAllowNamedAccessTo(
   // so there is no need to worry about URL spoofing.
 
   return true;
+}
+
+bool BindingSecurity::ShouldAllowAccessToCreationContext(
+    v8::Local<v8::Context> creation_context,
+    const WrapperTypeInfo* type) {
+  // According to
+  // https://html.spec.whatwg.org/multipage/browsers.html#security-location,
+  // cross-origin script access to a few properties of Location is allowed.
+  // Location already implements the necessary security checks.
+  if (type->Equals(&V8Location::wrapperTypeInfo))
+    return true;
+
+  v8::Isolate* isolate = creation_context->GetIsolate();
+  LocalFrame* frame = ToLocalFrameIfNotDetached(creation_context);
+  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
+                                 type->interface_name);
+  if (!frame) {
+    // Sandbox detached frames - they can't create cross origin objects.
+    LocalDOMWindow* calling_window = CurrentDOMWindow(isolate);
+    LocalDOMWindow* target_window = ToLocalDOMWindow(creation_context);
+
+    return ShouldAllowAccessToDetachedWindow(calling_window, target_window,
+                                             exception_state);
+  }
+  const DOMWrapperWorld& current_world =
+      DOMWrapperWorld::World(isolate->GetCurrentContext());
+  CHECK_EQ(current_world.GetWorldId(),
+           DOMWrapperWorld::World(creation_context).GetWorldId());
+
+  return !current_world.IsMainWorld() ||
+         ShouldAllowAccessToFrame(CurrentDOMWindow(isolate), frame,
+                                  exception_state);
+}
+
+void BindingSecurity::RethrowCrossContextException(
+    v8::Local<v8::Context> creation_context,
+    const WrapperTypeInfo* type,
+    v8::Local<v8::Value> cross_context_exception) {
+  DCHECK(!cross_context_exception.IsEmpty());
+  v8::Isolate* isolate = creation_context->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
+                                 type->interface_name);
+  if (type->Equals(&V8Location::wrapperTypeInfo)) {
+    // Convert cross-context exception to security error
+    LocalDOMWindow* calling_window = CurrentDOMWindow(isolate);
+    LocalDOMWindow* target_window = ToLocalDOMWindow(creation_context);
+    exception_state.ThrowSecurityError(
+        target_window->SanitizedCrossDomainAccessErrorMessage(calling_window),
+        target_window->CrossDomainAccessErrorMessage(calling_window));
+    return;
+  }
+  exception_state.RethrowV8Exception(cross_context_exception);
+}
+
+void BindingSecurity::InitWrapperCreationSecurityCheck() {
+  WrapperCreationSecurityCheck::SetSecurityCheckFunction(
+      &ShouldAllowAccessToCreationContext);
+  WrapperCreationSecurityCheck::SetRethrowExceptionFunction(
+      &RethrowCrossContextException);
 }
 
 void BindingSecurity::FailedAccessCheckFor(v8::Isolate* isolate,

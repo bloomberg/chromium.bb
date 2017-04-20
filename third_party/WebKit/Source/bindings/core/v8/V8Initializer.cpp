@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/RejectedPromises.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
@@ -501,6 +502,8 @@ void V8Initializer::InitializeMainThread() {
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
       WTF::MakeUnique<MainThreadDebugger>(isolate));
+
+  BindingSecurity::InitWrapperCreationSecurityCheck();
 }
 
 static void ReportFatalErrorInWorker(const char* location,
