@@ -36,7 +36,7 @@ Testing file system mapping.
      - file:///home/username/projects/bar
      - file:///home/username/project/build
      - file:///www/site1
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
 
 Adding file mapping (file:///www/site1, http://www.foo.com/, /foo/)
 Testing file system mapping.
@@ -45,44 +45,44 @@ Testing file system mapping.
      - file:///home/username/projects/bar
      - file:///home/username/project/build
      - file:///www/site1
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/","configurable":true}
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
 
 Adding file mapping (file:///home/username/projects/foo, http://www.example.com/bar/, /foo/)
 Testing file system mapping.
     file system paths:
      - file:///home/username/projects/foo
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
      - file:///home/username/projects/bar
      - file:///home/username/project/build
      - file:///www/site1
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/","configurable":true}
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
 
 Adding file mapping for resource (http://www.bar.com/foo/folder/42.js, file:///home/username/projects/foo, file:///home/username/projects/foo/baz/folder/42.js)
 Testing file system mapping.
     file system paths:
      - file:///home/username/projects/foo
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/","configurable":true}
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.bar.com/foo/","pathPrefix":"/baz/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.bar.com/foo/","pathPrefix":"/baz/"}
      - file:///home/username/projects/bar
      - file:///home/username/project/build
      - file:///www/site1
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/","configurable":true}
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
 
 Adding file mapping for resource (http://localhost:3333/build/layout.css, file:///home/username/project/build, file:///home/username/project/build/layout.css)
 Testing file system mapping.
     file system paths:
      - file:///home/username/projects/foo
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/","configurable":true}
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.bar.com/foo/","pathPrefix":"/baz/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.bar.com/foo/","pathPrefix":"/baz/"}
      - file:///home/username/projects/bar
      - file:///home/username/project/build
-         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/"}
      - file:///www/site1
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/","configurable":true}
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
 
 Testing mappings for url:
     Has mapping for 'http://www.bar.com/foo/folder/42.js': true
@@ -115,46 +115,46 @@ Creating another file system mapping.
 Testing file system mapping.
     file system paths:
      - file:///home/username/projects/foo
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/","configurable":true}
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.bar.com/foo/","pathPrefix":"/baz/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.bar.com/foo/","pathPrefix":"/baz/"}
      - file:///home/username/projects/bar
      - file:///home/username/project/build
-         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/"}
      - file:///www/site1
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/","configurable":true}
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
 
 Removing file mapping for url http://www.bar.com/foo/folder/42.js
 Testing file system mapping.
     file system paths:
      - file:///home/username/projects/foo
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
      - file:///home/username/projects/bar
      - file:///home/username/project/build
-         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/"}
      - file:///www/site1
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/","configurable":true}
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
 
 Removing file mapping (file:///www/site1, http://localhost/, /)
 Testing file system mapping.
     file system paths:
      - file:///home/username/projects/foo
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
      - file:///home/username/projects/bar
      - file:///home/username/project/build
-         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/"}
      - file:///www/site1
-         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
 
 Removing file mapping (file:///www/site1, http://www.foo.com/, /foo/)
 Testing file system mapping.
     file system paths:
      - file:///home/username/projects/foo
-         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
      - file:///home/username/projects/bar
      - file:///home/username/project/build
-         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/"}
      - file:///www/site1
 
 Removing file mapping (file:///home/username/projects/foo, http://www.example.com/bar/, /foo/)
@@ -163,7 +163,7 @@ Testing file system mapping.
      - file:///home/username/projects/foo
      - file:///home/username/projects/bar
      - file:///home/username/project/build
-         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/"}
      - file:///www/site1
 
 Removing file system file:///www/site1
@@ -172,19 +172,19 @@ Testing file system mapping.
      - file:///home/username/projects/foo
      - file:///home/username/projects/bar
      - file:///home/username/project/build
-         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/"}
 
 Removing file system file:///home/username/projects/foo
 Testing file system mapping.
     file system paths:
      - file:///home/username/projects/bar
      - file:///home/username/project/build
-         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/"}
 
 Removing file system file:///home/username/projects/bar
 Testing file system mapping.
     file system paths:
      - file:///home/username/project/build
-         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/","configurable":true}
+         - {"fileSystemPath":"file:///home/username/project/build","urlPrefix":"http://localhost:3333/build/","pathPrefix":"/"}
 
 

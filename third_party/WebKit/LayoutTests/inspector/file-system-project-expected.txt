@@ -53,13 +53,6 @@ Dumping uiSourceCodes origin URLs:
   - file:///var/www3/html/foo.js
   - file:///var/www3/bar.js
 
-Running: testExcludesViaProject
-
--- Excluded /html2/ via .devtools --
-Dumping uiSourceCodes origin URLs:
-  - file:///var/www3/html/foo.js
-  - file:///var/www3/bar.js
-
 Running: testFileAddedExternally
 -- Original tree --
 Dumping uiSourceCodes origin URLs:

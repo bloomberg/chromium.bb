@@ -1,9 +1,0 @@
-Tests file system project mappings.
-
-
-Running: testProjectBasedMapping
-Adding file system.
-UISourceCode uri to url mappings:
-    file:///var/www/html/foo.js -> http://127.0.0.1:8000/inspector/resources/html/foo.js
-    file:///var/www/html2/bar.js -> http://127.0.0.1:8000/inspector/resources/html2/bar.js
-

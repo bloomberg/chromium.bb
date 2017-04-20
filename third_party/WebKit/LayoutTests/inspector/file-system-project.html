@@ -178,26 +178,6 @@ function test()
             }
         },
 
-        function testExcludesViaProject(next)
-        {
-            var fs = new InspectorTest.TestFileSystem("file:///var/www3");
-            fs.root.addFile(".devtools", JSON.stringify({excludes:["/html2/"]}));
-            fs.root.mkdir("html").addFile("foo.js", "");
-            fs.root.mkdir(".git").addFile("foogit.js", "");
-            fs.root.addFile("bar.js", "");
-            fs.root.mkdir("html2").addFile("foo.js", "");
-            fs.reportCreated(dumpExcludes);
-
-            function dumpExcludes()
-            {
-                InspectorTest.addResult("");
-                InspectorTest.addResult("-- Excluded /html2/ via .devtools --");
-                dumpWorkspaceUISourceCodes();
-                fs.reportRemoved();
-                next();
-            }
-        },
-
         function testFileAddedExternally(next)
         {
             var fs = new InspectorTest.TestFileSystem("file:///var/www4");
