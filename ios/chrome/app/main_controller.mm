@@ -2117,6 +2117,17 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                           identity:nil
                         completion:completion];
       break;
+    case AUTHENTICATION_OPERATION_SIGNIN_PROMO_CONTINUE_AS: {
+      NSArray* identities = ios::GetChromeBrowserProvider()
+                                ->GetChromeIdentityService()
+                                ->GetAllIdentitiesSortedForDisplay();
+      DCHECK(identities.count > 0);
+      [_signinInteractionController
+          signInWithViewController:self.mainViewController
+                          identity:identities[0]
+                        completion:completion];
+      break;
+    }
   }
 }
 

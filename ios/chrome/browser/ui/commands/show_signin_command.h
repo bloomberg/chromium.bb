@@ -24,6 +24,10 @@ enum AuthenticationOperation {
   // Operation to start a sign-in operation. The user is presented with the
   // SSOAuth sign in page (SSOAuth account picker or SSOAuth sign-in web page).
   AUTHENTICATION_OPERATION_SIGNIN,
+
+  // Operation to start a sign-in operation based on the first known identity.
+  // The users are presented with the sync confirmation screen.
+  AUTHENTICATION_OPERATION_SIGNIN_PROMO_CONTINUE_AS,
 };
 
 // A command to perform a sign in operation.

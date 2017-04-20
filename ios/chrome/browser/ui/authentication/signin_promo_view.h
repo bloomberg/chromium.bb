@@ -36,6 +36,9 @@ typedef NS_ENUM(NSInteger, SigninPromoViewMode) {
 @property(nonatomic, readonly) UILabel* textLabel;
 @property(nonatomic, readonly) MDCFlatButton* primaryButton;
 @property(nonatomic, readonly) MDCFlatButton* secondaryButton;
+// If set to YES, ShowSigninCommand is sent when primary or secondary buttons
+// are tapped.
+@property(nonatomic, getter=doesSendChromeCommand) BOOL sendChromeCommand;
 
 // Horizontal padding used for |textLabel|, |primaryButton| and
 // |secondaryButton|. Used to compute the preferred max layout width of

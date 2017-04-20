@@ -137,6 +137,7 @@ source_set("authentication_ui") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/commands",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
     "//ui/base",

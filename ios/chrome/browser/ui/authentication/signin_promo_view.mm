@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -39,6 +41,7 @@ const CGFloat kButtonHeight = 36;
 @synthesize textLabel = _textLabel;
 @synthesize primaryButton = _primaryButton;
 @synthesize secondaryButton = _secondaryButton;
+@synthesize sendChromeCommand = _sendChromeCommand;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -58,11 +61,17 @@ const CGFloat kButtonHeight = 36;
     _primaryButton = [[MDCFlatButton alloc] init];
     _primaryButton.translatesAutoresizingMaskIntoConstraints = NO;
     _primaryButton.accessibilityIdentifier = @"signin_promo_primary_button";
+    [_primaryButton addTarget:self
+                       action:@selector(onPrimaryButtonAction:)
+             forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_primaryButton];
 
     _secondaryButton = [[MDCFlatButton alloc] init];
     _secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;
     _secondaryButton.accessibilityIdentifier = @"signin_promo_secondary_button";
+    [_secondaryButton addTarget:self
+                         action:@selector(onSecondaryButtonAction:)
+               forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_secondaryButton];
 
     // Adding style.
@@ -193,6 +202,39 @@ const CGFloat kButtonHeight = 36;
 
 - (CGFloat)horizontalPadding {
   return kHorizontalPadding;
+}
+
+- (void)onPrimaryButtonAction:(id)unused {
+  if (!_sendChromeCommand) {
+    return;
+  }
+  ShowSigninCommand* command = nil;
+  switch (_mode) {
+    case SigninPromoViewModeColdState:
+      command = [[ShowSigninCommand alloc]
+          initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
+          signInAccessPoint:signin_metrics::AccessPoint::
+                                ACCESS_POINT_RECENT_TABS];
+      break;
+    case SigninPromoViewModeWarmState:
+      command = [[ShowSigninCommand alloc]
+          initWithOperation:AUTHENTICATION_OPERATION_SIGNIN_PROMO_CONTINUE_AS
+          signInAccessPoint:signin_metrics::AccessPoint::
+                                ACCESS_POINT_RECENT_TABS];
+      break;
+  }
+  DCHECK(command);
+  [self chromeExecuteCommand:command];
+}
+
+- (void)onSecondaryButtonAction:(id)unused {
+  if (!_sendChromeCommand) {
+    return;
+  }
+  ShowSigninCommand* command = [[ShowSigninCommand alloc]
+      initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
+      signInAccessPoint:signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS];
+  [self chromeExecuteCommand:command];
 }
 
 #pragma mark - NSObject(Accessibility)
