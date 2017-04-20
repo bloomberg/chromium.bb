@@ -9,5 +9,11 @@ Documents here have been imported
 from [the Project site](https://www.chromium.org/developers/design-documents).
 As of this writing, the vast majority of docs have not been imported yet.
 
+* [Sandboxing](sandbox.md) - The Sandboxing architecture, and Windows
+  implementation of sandboxing.
+* [Sandboxing FAQ](sandbox_faq.md) - Frequently asked questions about Chromium
+  sandboxing.
+* [Startup](startup.md) - How browser processes starts up, on different
+  platforms.
 * [Threading](threading.md) - Preferred ways to use threading, and library
   support for concurrency.
