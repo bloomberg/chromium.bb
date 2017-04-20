@@ -1,5 +1,7 @@
 {% import 'fields/base.tmpl' as base %}
-{% macro decl_methods(field) -%}
-{{ base.decl_methods(field) }}
+{% macro decl_public_methods(field) -%}
+{{ base.decl_public_methods(field) }}
 {# TODO(shend): Add special keyword methods like cardinality #}
+{%- endmacro %}
+{% macro decl_protected_methods(field) -%}
 {%- endmacro %}

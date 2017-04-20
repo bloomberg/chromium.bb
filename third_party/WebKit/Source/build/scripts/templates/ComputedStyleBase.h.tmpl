@@ -81,7 +81,7 @@ class CORE_EXPORT ComputedStyleBase {
 
   {% for field in fields %}
   // {{field.property_name}}
-  {{field_templates[field.field_template].decl_methods(field)|indent(2)}}
+  {{field_templates[field.field_template].decl_public_methods(field)|indent(2)}}
 
   {% endfor %}
  protected:
@@ -92,6 +92,14 @@ class CORE_EXPORT ComputedStyleBase {
       {{field.name}}({{encode(field, field.default_value)}}){{print_if(not loop.last, ',')}}
   {% endfor %}
   {}
+
+  {% for field in fields %}
+  {% if field.field_template in ('storage_only', 'monotonic_flag', 'external') %}
+  // {{field.property_name}}
+  {{field_templates[field.field_template].decl_protected_methods(field)|indent(2)}}
+
+  {% endif %}
+  {% endfor %}
 
   ~ComputedStyleBase() = default;
 

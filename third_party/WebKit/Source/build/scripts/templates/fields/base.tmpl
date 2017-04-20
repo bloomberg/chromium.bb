@@ -1,12 +1,12 @@
-{% from 'fields/field.tmpl' import encode, decode, return_type %}
-{% macro decl_methods(field) -%}
-inline static {{field.type_name}} {{field.initial_method_name}}() {
+{% from 'fields/field.tmpl' import encode, decode, return_type, argument_type %}
+{% macro decl_public_methods(field) -%}
+inline static {{return_type(field)}} {{field.initial_method_name}}() {
   return {{field.default_value}};
 }
 {{return_type(field)}} {{field.getter_method_name}}() const {
   return {{decode(field, field.name)}};
 }
-void {{field.setter_method_name}}({{field.type_name}} v) {
+void {{field.setter_method_name}}({{argument_type(field)}} v) {
   {{field.name}} = {{encode(field, "v")}};
 }
 inline void {{field.resetter_method_name}}() {
@@ -14,3 +14,11 @@ inline void {{field.resetter_method_name}}() {
 }
 {%- endmacro %}
 
+{% macro decl_protected_methods(field) -%}
+{{return_type(field)}} {{field.internal_getter_method_name}}() const {
+  return {{decode(field, field.name)}};
+}
+void {{field.internal_setter_method_name}}({{argument_type(field)}} v) {
+  {{field.name}} = {{encode(field, "v")}};
+}
+{%- endmacro %}

@@ -1,5 +1,5 @@
-{% from 'fields/field.tmpl' import encode %}
-{% macro decl_methods(field) %}
+{% from 'fields/field.tmpl' import encode, argument_type %}
+{% macro decl_public_methods(field) %}
 bool {{field.getter_method_name}}() const {
   return {{field.name}};
 }
@@ -7,3 +7,8 @@ void {{field.setter_method_name}}() {
   {{field.name}} = {{encode(field, "true")}};
 }
 {% endmacro %}
+{% macro decl_protected_methods(field) -%}
+void {{field.internal_setter_method_name}}({{argument_type(field)}} v) {
+  {{field.name}} = {{encode(field, "v")}};
+}
+{%- endmacro %}

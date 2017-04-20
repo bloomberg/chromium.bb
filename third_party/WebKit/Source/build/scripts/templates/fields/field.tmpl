@@ -18,6 +18,14 @@ static_cast<{{field.type_name}}>({{value}})
 {% if field.is_bit_field -%}
 {{field.type_name}}
 {%- else -%}
+{{field.type_name}}&
+{%- endif %}
+{% endmacro %}
+
+{% macro argument_type(field) %}
+{% if field.is_bit_field -%}
+{{field.type_name}}
+{%- else -%}
 const {{field.type_name}}&
 {%- endif %}
 {% endmacro %}
