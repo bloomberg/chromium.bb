@@ -20,6 +20,8 @@ PASS MediaCapabilities interface: existence and properties of interface prototyp
 FAIL MediaCapabilities interface: operation decodingInfo(MediaDecodingConfiguration) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
             fn.apply(obj, args);
         }" did not throw
-FAIL MediaCapabilities interface: operation encodingInfo(MediaEncodingConfiguration) assert_own_property: interface prototype object missing non-static operation expected property "encodingInfo" missing
+FAIL MediaCapabilities interface: operation encodingInfo(MediaEncodingConfiguration) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
 Harness: the test ran to completion.
 

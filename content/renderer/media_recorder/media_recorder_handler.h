@@ -61,6 +61,9 @@ class CONTENT_EXPORT MediaRecorderHandler final
   void Stop() override;
   void Pause() override;
   void Resume() override;
+  void EncodingInfo(
+      const blink::WebMediaConfiguration& configuration,
+      std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> cb) override;
 
  private:
   friend class MediaRecorderHandlerTest;

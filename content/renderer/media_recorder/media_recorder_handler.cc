@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "content/child/scoped_web_callbacks.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -25,12 +26,15 @@
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/media_capabilities/WebMediaConfiguration.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
 using base::ToLowerASCII;
 
 namespace content {
+
+using blink::WebMediaCapabilitiesQueryCallbacks;
 
 namespace {
 
@@ -49,6 +53,11 @@ media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
   }
   NOTREACHED() << "Unsupported codec";
   return media::kUnknownVideoCodec;
+}
+
+void OnEncodingInfoError(
+    std::unique_ptr<WebMediaCapabilitiesQueryCallbacks> callbacks) {
+  callbacks->OnError();
 }
 
 }  // anonymous namespace
@@ -265,6 +274,54 @@ void MediaRecorderHandler::Resume() {
   for (const auto& audio_recorder : audio_recorders_)
     audio_recorder->Resume();
   webm_muxer_->Resume();
+}
+
+void MediaRecorderHandler::EncodingInfo(
+    const blink::WebMediaConfiguration& configuration,
+    std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> callbacks) {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK(configuration.video_configuration ||
+         configuration.audio_configuration);
+
+  ScopedWebCallbacks<WebMediaCapabilitiesQueryCallbacks> scoped_callbacks =
+      make_scoped_web_callbacks(callbacks.release(),
+                                base::Bind(&OnEncodingInfoError));
+
+  std::unique_ptr<blink::WebMediaCapabilitiesInfo> info(
+      new blink::WebMediaCapabilitiesInfo());
+
+  // TODO(mcasas): Support the case when both video and audio configurations are
+  // specified: https://crbug.com/709181.
+  std::string content_type;
+  if (configuration.video_configuration)
+    content_type = configuration.video_configuration->content_type.Ascii();
+  else
+    content_type = configuration.audio_configuration->content_type.Ascii();
+
+  // |content_type| should be of the form "bla;codecs=foo", where "bla" is the
+  // type and "codecs=foo" is the parameter ("foo" is the parameter value), see
+  // RFC 2231 [1]. CanSupportMimeType() operates on type and parameter value.
+  // [1] https://tools.ietf.org/html/rfc2231
+  base::StringTokenizer mime_tokenizer(content_type, ";");
+  blink::WebString web_type;
+  blink::WebString web_codecs;
+  if (mime_tokenizer.GetNext())
+    web_type = blink::WebString::FromASCII(mime_tokenizer.token());
+  if (mime_tokenizer.GetNext()) {
+    const std::string parameters = mime_tokenizer.token();
+    base::StringTokenizer parameter_tokenizer(parameters, "=");
+    if (parameter_tokenizer.GetNext() &&
+        base::ToLowerASCII(parameter_tokenizer.token()) == "codecs" &&
+        parameter_tokenizer.GetNext()) {
+      web_codecs = blink::WebString::FromASCII(parameter_tokenizer.token());
+    }
+  }
+
+  info->supported = CanSupportMimeType(web_type, web_codecs);
+  DVLOG(1) << "type: " << web_type.Ascii() << ", params:" << web_codecs.Ascii()
+           << " is" << (info->supported ? " supported" : " NOT supported");
+
+  scoped_callbacks.PassCallbacks()->OnSuccess(std::move(info));
 }
 
 void MediaRecorderHandler::OnEncodedVideo(

@@ -5,11 +5,16 @@
 #ifndef WebMediaRecorderHandler_h
 #define WebMediaRecorderHandler_h
 
+#include <memory>
+
 #include "WebCommon.h"
+
+#include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
 
 namespace blink {
 
 class WebMediaRecorderHandlerClient;
+struct WebMediaConfiguration;
 class WebMediaStream;
 class WebString;
 
@@ -41,6 +46,12 @@ class BLINK_PLATFORM_EXPORT WebMediaRecorderHandler {
                                   const WebString& codecs) {
     return false;
   }
+
+  // Implements WICG Media Capabilities encodingInfo() call for local encoding.
+  // https://wicg.github.io/media-capabilities/#media-capabilities-interface
+  virtual void EncodingInfo(
+      const WebMediaConfiguration&,
+      std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks>) {}
 };
 
 }  // namespace blink

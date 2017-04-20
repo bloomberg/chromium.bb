@@ -8,9 +8,13 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/DOMException.h"
 #include "modules/media_capabilities/MediaCapabilitiesInfo.h"
+#include "modules/media_capabilities/MediaConfiguration.h"
 #include "modules/media_capabilities/MediaDecodingConfiguration.h"
+#include "modules/media_capabilities/MediaEncodingConfiguration.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebMediaRecorderHandler.h"
 #include "public/platform/modules/media_capabilities/WebMediaCapabilitiesClient.h"
 #include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
 #include "public/platform/modules/media_capabilities/WebMediaConfiguration.h"
@@ -65,11 +69,8 @@ WebVideoConfiguration ToWebVideoConfiguration(
 }
 
 WebMediaConfiguration ToWebMediaConfiguration(
-    const MediaDecodingConfiguration& configuration) {
+    const MediaConfiguration& configuration) {
   WebMediaConfiguration web_configuration;
-
-  // |type| is mandatory.
-  DCHECK(configuration.hasType());
 
   if (configuration.hasAudio()) {
     web_configuration.audio_configuration =
@@ -94,11 +95,44 @@ ScriptPromise MediaCapabilities::decodingInfo(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  // |type| is mandatory.
+  DCHECK(configuration.hasType());
+
   Platform::Current()->MediaCapabilitiesClient()->DecodingInfo(
       ToWebMediaConfiguration(configuration),
       WTF::MakeUnique<CallbackPromiseAdapter<MediaCapabilitiesInfo, void>>(
           resolver));
 
+  return promise;
+}
+
+ScriptPromise MediaCapabilities::encodingInfo(
+    ScriptState* script_state,
+    const MediaEncodingConfiguration& configuration) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  if (!configuration.hasVideo() && !configuration.hasAudio()) {
+    resolver->Reject(DOMException::Create(
+        kSyntaxError,
+        "The configuration dictionary has neither |video| nor |audio| "
+        "specified and needs at least one of them."));
+    return promise;
+  }
+
+  WebMediaRecorderHandler* handler =
+      Platform::Current()->CreateMediaRecorderHandler();
+  if (!handler) {
+    resolver->Reject(DOMException::Create(
+        kInvalidStateError,
+        "Platform error: could not create MediaRecorderHandler."));
+    return promise;
+  }
+
+  handler->EncodingInfo(
+      ToWebMediaConfiguration(configuration),
+      WTF::MakeUnique<CallbackPromiseAdapter<MediaCapabilitiesInfo, void>>(
+          resolver));
   return promise;
 }
 

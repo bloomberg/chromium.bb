@@ -9,6 +9,6 @@
     RuntimeEnabled=MediaCapabilities
 ] interface MediaCapabilities {
     [CallWith=ScriptState] Promise<MediaCapabilitiesInfo> decodingInfo(MediaDecodingConfiguration configuration);
-
-    // TODO(mcasas): Implement encodingInfo(), https://crbug.com/709181
+    [CallWith=ScriptState] Promise<MediaCapabilitiesInfo> encodingInfo(
+        MediaEncodingConfiguration configuration);
 };
