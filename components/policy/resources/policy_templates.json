@@ -9490,7 +9490,7 @@
 
           If this setting is 0 or less, there is no maximum length; the user can set a PIN as long as they want.
 
-          If this setting is less than PinUnlockMinimumLength but greater than 0, the maximum length is the same as the minimum length.
+          If this setting is less than <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME">PinUnlockMinimumLength</ph> but greater than 0, the maximum length is the same as the minimum length.
 
           This setting defaults to no maximum length.''',
         },
