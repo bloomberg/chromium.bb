@@ -76,6 +76,7 @@ ios_web_view_sources = [
 ios_web_view_sources += ios_web_view_public_headers
 
 ios_web_view_deps = [
+  ":generate_license",
   ":packed_resources",
   "//base",
   "//components/infobars/core",
@@ -168,5 +169,25 @@ bundle_data("packed_resources") {
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+action("generate_license") {
+  _license_path = "$target_out_dir/LICENSE"
+
+  script = "//tools/licenses.py"
+  inputs = [
+    "//buildtools/$host_os/gn",
+  ]
+  outputs = [
+    _license_path,
+  ]
+  args = [
+    "license_file",
+    rebase_path(_license_path, root_build_dir),
+    "--gn-target",
+    "//ios/web_view",
+    "--gn-out-dir",
+    ".",
   ]
 }
