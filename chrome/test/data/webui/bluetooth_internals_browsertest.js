@@ -307,15 +307,7 @@ BluetoothInternalsTest.prototype = {
   },
 };
 
-// Flaky on Debug and ASAN. See crbug.com/707530
-GEN('#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)');
-GEN('#define MAYBE_Startup_BluetoothInternals ' +
-    'DISABLED_Startup_BluetoothInternals');
-GEN('#else');
-GEN('#define MAYBE_Startup_BluetoothInternals Startup_BluetoothInternals');
-GEN('#endif');
-
-TEST_F('BluetoothInternalsTest', 'MAYBE_Startup_BluetoothInternals',
+TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals',
     function() {
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
@@ -677,7 +669,7 @@ TEST_F('BluetoothInternalsTest', 'MAYBE_Startup_BluetoothInternals',
       whenSnackbarShows(snackbar3).then(next);
       snackbar3.addEventListener('dismissed', next);
 
-      whenSnackbarShows(snackbar1).then(function() {
+      return whenSnackbarShows(snackbar1).then(function() {
         return snackbar.Snackbar.dismiss(true);
       }).then(function() {
         expectEquals(0, snackbar.Snackbar.queue_.length);
