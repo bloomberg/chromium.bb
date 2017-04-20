@@ -750,8 +750,14 @@ void av1_selfguided_restoration_c(uint8_t *dgd, int width, int height,
                                       tmpbuf);
 }
 
-void av1_highpass_filter_c(uint8_t *dgd, int width, int height, int stride,
-                           int32_t *dst, int dst_stride, int corner, int edge) {
+static void highpass_filter_c_helper(void *dgd_void, int width, int height,
+                                     int stride, int32_t *dst, int dst_stride,
+                                     int corner, int edge) {
+#if CONFIG_HIGHBITDEPTH
+  uint16_t *dgd = (uint16_t *)dgd_void;
+#else
+  uint8_t *dgd = (uint8_t *)dgd_void;
+#endif
   int i, j;
   const int center = (1 << SGRPROJ_RST_BITS) - 4 * (corner + edge);
 
@@ -838,6 +844,12 @@ void av1_highpass_filter_c(uint8_t *dgd, int width, int height, int stride,
                     dgd[k - stride + 1] + dgd[k + stride + 1]);
     }
   }
+}
+
+void av1_highpass_filter_c(uint8_t *dgd, int width, int height, int stride,
+                           int32_t *dst, int dst_stride, int corner, int edge) {
+  highpass_filter_c_helper(dgd, width, height, stride, dst, dst_stride, corner,
+                           edge);
 }
 
 void apply_selfguided_restoration_c(uint8_t *dat, int width, int height,
@@ -1030,92 +1042,8 @@ void av1_selfguided_restoration_highbd_c(uint16_t *dgd, int width, int height,
 void av1_highpass_filter_highbd_c(uint16_t *dgd, int width, int height,
                                   int stride, int32_t *dst, int dst_stride,
                                   int corner, int edge) {
-  int i, j;
-  const int center = (1 << SGRPROJ_RST_BITS) - 4 * (corner + edge);
-
-  i = 0;
-  j = 0;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k + 1] + dgd[k + stride] + dgd[k] * 2) +
-        corner * (dgd[k + stride + 1] + dgd[k + 1] + dgd[k + stride] + dgd[k]);
-  }
-  i = 0;
-  j = width - 1;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k - 1] + dgd[k + stride] + dgd[k] * 2) +
-        corner * (dgd[k + stride - 1] + dgd[k - 1] + dgd[k + stride] + dgd[k]);
-  }
-  i = height - 1;
-  j = 0;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k + 1] + dgd[k - stride] + dgd[k] * 2) +
-        corner * (dgd[k - stride + 1] + dgd[k + 1] + dgd[k - stride] + dgd[k]);
-  }
-  i = height - 1;
-  j = width - 1;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k - 1] + dgd[k - stride] + dgd[k] * 2) +
-        corner * (dgd[k - stride - 1] + dgd[k - 1] + dgd[k - stride] + dgd[k]);
-  }
-  i = 0;
-  for (j = 1; j < width - 1; ++j) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - 1] + dgd[k + stride] + dgd[k + 1] + dgd[k]) +
-             corner * (dgd[k + stride - 1] + dgd[k + stride + 1] + dgd[k - 1] +
-                       dgd[k + 1]);
-  }
-  i = height - 1;
-  for (j = 1; j < width - 1; ++j) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - 1] + dgd[k - stride] + dgd[k + 1] + dgd[k]) +
-             corner * (dgd[k - stride - 1] + dgd[k - stride + 1] + dgd[k - 1] +
-                       dgd[k + 1]);
-  }
-  j = 0;
-  for (i = 1; i < height - 1; ++i) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - stride] + dgd[k + 1] + dgd[k + stride] + dgd[k]) +
-             corner * (dgd[k + stride + 1] + dgd[k - stride + 1] +
-                       dgd[k - stride] + dgd[k + stride]);
-  }
-  j = width - 1;
-  for (i = 1; i < height - 1; ++i) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - stride] + dgd[k - 1] + dgd[k + stride] + dgd[k]) +
-             corner * (dgd[k + stride - 1] + dgd[k - stride - 1] +
-                       dgd[k - stride] + dgd[k + stride]);
-  }
-  for (i = 1; i < height - 1; ++i) {
-    for (j = 1; j < width - 1; ++j) {
-      const int k = i * stride + j;
-      const int l = i * dst_stride + j;
-      dst[l] =
-          center * dgd[k] +
-          edge * (dgd[k - stride] + dgd[k - 1] + dgd[k + stride] + dgd[k + 1]) +
-          corner * (dgd[k + stride - 1] + dgd[k - stride - 1] +
-                    dgd[k - stride + 1] + dgd[k + stride + 1]);
-    }
-  }
+  highpass_filter_c_helper(dgd, width, height, stride, dst, dst_stride, corner,
+                           edge);
 }
 
 void apply_selfguided_restoration_highbd_c(uint16_t *dat, int width, int height,
