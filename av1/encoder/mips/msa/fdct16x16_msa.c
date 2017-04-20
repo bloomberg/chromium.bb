@@ -83,9 +83,8 @@ static void fadst16_cols_step1_msa(const int16_t *input, int32_t stride,
   ST_SH4(tp0, tp1, tp2, tp3, int_buf + 2 * 8, 4 * 8);
 }
 
-static void fadst16_cols_step2_msa(int16_t *int_buf, const int32_t *const0,
-                                   int16_t *out) {
-  int16_t *out_ptr = out + 128;
+static void fadst16_step2_msa_helper(int16_t *int_buf, const int32_t *const0,
+                                     int16_t *out, int16_t *out_ptr) {
   v8i16 tp0, tp1, tp2, tp3, g5, g7, g13, g15;
   v8i16 h0, h1, h2, h3, h4, h5, h6, h7, h10, h11;
   v8i16 out0, out1, out2, out3, out4, out5, out6, out7;
@@ -152,6 +151,11 @@ static void fadst16_cols_step2_msa(int16_t *int_buf, const int32_t *const0,
   MADD_SHORT(out14, out15, k1, k2, out14, out15);
   ST_SH(out14, (out + 5 * 16));
   ST_SH(out15, (out_ptr + 2 * 16));
+}
+
+static void fadst16_cols_step2_msa(int16_t *int_buf, const int32_t *const0,
+                                   int16_t *out) {
+  fadst16_step2_msa_helper(int_buf, const0, out, out + 128);
 }
 
 static void fadst16_transpose_postproc_msa(int16_t *input, int16_t *out) {
@@ -263,76 +267,7 @@ static void fadst16_rows_step1_msa(int16_t *input, const int32_t *const0,
 
 static void fadst16_rows_step2_msa(int16_t *int_buf, const int32_t *const0,
                                    int16_t *out) {
-  int16_t *out_ptr = out + 8;
-  v8i16 tp0, tp1, tp2, tp3, g5, g7, g13, g15;
-  v8i16 h0, h1, h2, h3, h4, h5, h6, h7, h10, h11;
-  v8i16 out0, out1, out2, out3, out4, out5, out6, out7;
-  v8i16 out8, out9, out10, out11, out12, out13, out14, out15;
-  v4i32 k0, k1, k2, k3;
-
-  g13 = LD_SH(int_buf + 3 * 8);
-  g15 = LD_SH(int_buf + 7 * 8);
-  g5 = LD_SH(int_buf + 11 * 8);
-  g7 = LD_SH(int_buf + 15 * 8);
-
-  LD_SW2(const0 + 4 * 19, 4, k0, k1);
-  k2 = LD_SW(const0 + 4 * 21);
-  MADD_BF(g7, g5, g15, g13, k0, k1, k2, k0, h4, h5, h6, h7);
-
-  tp0 = LD_SH(int_buf + 4 * 8);
-  tp1 = LD_SH(int_buf + 5 * 8);
-  tp3 = LD_SH(int_buf + 10 * 8);
-  tp2 = LD_SH(int_buf + 14 * 8);
-
-  LD_SW2(const0 + 4 * 22, 4, k0, k1);
-  k2 = LD_SW(const0 + 4 * 24);
-  MADD_BF(tp0, tp1, tp2, tp3, k0, k1, k2, k0, out4, out6, out5, out7);
-  out4 = -out4;
-  ST_SH(out4, (out + 3 * 16));
-  ST_SH(out5, (out_ptr + 4 * 16));
-
-  h1 = LD_SH(int_buf + 9 * 8);
-  h3 = LD_SH(int_buf + 12 * 8);
-  MADD_BF(h1, h3, h5, h7, k0, k1, k2, k0, out12, out14, out13, out15);
-  out13 = -out13;
-  ST_SH(out12, (out + 2 * 16));
-  ST_SH(out13, (out_ptr + 5 * 16));
-
-  tp0 = LD_SH(int_buf);
-  tp1 = LD_SH(int_buf + 8);
-  tp2 = LD_SH(int_buf + 2 * 8);
-  tp3 = LD_SH(int_buf + 6 * 8);
-
-  BUTTERFLY_4(tp0, tp1, tp3, tp2, out0, out1, h11, h10);
-  out1 = -out1;
-  ST_SH(out0, (out));
-  ST_SH(out1, (out_ptr + 7 * 16));
-
-  h0 = LD_SH(int_buf + 8 * 8);
-  h2 = LD_SH(int_buf + 13 * 8);
-  BUTTERFLY_4(h0, h2, h6, h4, out8, out9, out11, out10);
-  out8 = -out8;
-  ST_SH(out8, (out + 16));
-  ST_SH(out9, (out_ptr + 6 * 16));
-
-  /* stage 4 */
-  LD_SW2(const0 + 4 * 25, 4, k0, k1);
-  LD_SW2(const0 + 4 * 27, 4, k2, k3);
-  MADD_SHORT(h10, h11, k1, k2, out2, out3);
-  ST_SH(out2, (out + 7 * 16));
-  ST_SH(out3, (out_ptr));
-
-  MADD_SHORT(out6, out7, k0, k3, out6, out7);
-  ST_SH(out6, (out + 4 * 16));
-  ST_SH(out7, (out_ptr + 3 * 16));
-
-  MADD_SHORT(out10, out11, k0, k3, out10, out11);
-  ST_SH(out10, (out + 6 * 16));
-  ST_SH(out11, (out_ptr + 16));
-
-  MADD_SHORT(out14, out15, k1, k2, out14, out15);
-  ST_SH(out14, (out + 5 * 16));
-  ST_SH(out15, (out_ptr + 2 * 16));
+  fadst16_step2_msa_helper(int_buf, const0, out, out + 8);
 }
 
 static void fadst16_transpose_msa(int16_t *input, int16_t *out) {
