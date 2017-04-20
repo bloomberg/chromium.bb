@@ -84,7 +84,7 @@ void PaintArtifact::Reset() {
 
 size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
   return sizeof(*this) + display_item_list_.MemoryUsageInBytes() +
-         paint_chunks_.Capacity() * sizeof(paint_chunks_[0]);
+         paint_chunks_.capacity() * sizeof(paint_chunks_[0]);
 }
 
 void PaintArtifact::Replay(const FloatRect& bounds,

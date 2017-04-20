@@ -694,7 +694,7 @@ class PersistentHeapVector
     // The PersistentHeapVector is allocated off heap along with its
     // inline buffer (if any.) Maintain the invariant that unused
     // slots are cleared for the off-heap inline buffer also.
-    size_t unused_slots = this->Capacity() - this->size();
+    size_t unused_slots = this->capacity() - this->size();
     if (unused_slots)
       this->ClearUnusedSlots(this->end(), this->end() + unused_slots);
   }

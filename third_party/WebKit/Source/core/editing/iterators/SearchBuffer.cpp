@@ -69,7 +69,7 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
   size_t target_length = target_.size();
   buffer_.ReserveInitialCapacity(
       std::max(target_length * 8, kMinimumSearchBufferSize));
-  overlap_ = buffer_.Capacity() / 4;
+  overlap_ = buffer_.capacity() / 4;
 
   if ((options_ & kAtWordStarts) && target_length) {
     const UChar32 target_first_character =
@@ -103,7 +103,7 @@ inline void SearchBuffer::Append(const CharType* characters, size_t length) {
     buffer_.Shrink(0);
     prefix_length_ = 0;
     at_break_ = false;
-  } else if (buffer_.size() == buffer_.Capacity()) {
+  } else if (buffer_.size() == buffer_.capacity()) {
     memcpy(buffer_.Data(), buffer_.Data() + buffer_.size() - overlap_,
            overlap_ * sizeof(UChar));
     prefix_length_ -= std::min(prefix_length_, buffer_.size() - overlap_);
@@ -111,7 +111,7 @@ inline void SearchBuffer::Append(const CharType* characters, size_t length) {
   }
 
   size_t old_length = buffer_.size();
-  size_t usable_length = std::min(buffer_.Capacity() - old_length, length);
+  size_t usable_length = std::min(buffer_.capacity() - old_length, length);
   DCHECK(usable_length);
   buffer_.Resize(old_length + usable_length);
   UChar* destination = buffer_.Data() + old_length;
@@ -141,12 +141,12 @@ inline void SearchBuffer::PrependContext(const UChar* characters,
         StartOfLastWordBoundaryContext(characters, word_boundary_context_start);
   }
 
-  size_t usable_length = std::min(buffer_.Capacity() - prefix_length_,
+  size_t usable_length = std::min(buffer_.capacity() - prefix_length_,
                                   length - word_boundary_context_start);
   buffer_.push_front(characters + length - usable_length, usable_length);
   prefix_length_ += usable_length;
 
-  if (word_boundary_context_start || prefix_length_ == buffer_.Capacity())
+  if (word_boundary_context_start || prefix_length_ == buffer_.capacity())
     needs_more_context_ = false;
 }
 
@@ -245,7 +245,7 @@ inline size_t SearchBuffer::Search(size_t& start) {
     if (!size)
       return 0;
   } else {
-    if (size != buffer_.Capacity())
+    if (size != buffer_.capacity())
       return 0;
   }
 

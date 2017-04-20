@@ -96,7 +96,7 @@ size_t ContiguousContainerBase::UsedCapacityInBytes() const {
 
 size_t ContiguousContainerBase::MemoryUsageInBytes() const {
   return sizeof(*this) + CapacityInBytes() +
-         elements_.Capacity() * sizeof(elements_[0]);
+         elements_.capacity() * sizeof(elements_[0]);
 }
 
 void ContiguousContainerBase::ReserveInitialCapacity(size_t buffer_size,

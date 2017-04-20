@@ -1512,7 +1512,7 @@ class PreFinalizerBackingShrinkForbidden
     for (int i = 0; i < 32; ++i) {
       vector_.push_back(new IntWrapper(i));
     }
-    EXPECT_LT(31ul, vector_.Capacity());
+    EXPECT_LT(31ul, vector_.capacity());
 
     for (int i = 0; i < 32; ++i) {
       map_.insert(i + 1, new IntWrapper(i + 1));
@@ -1526,10 +1526,10 @@ class PreFinalizerBackingShrinkForbidden
       vector_.pop_back();
     }
     // Check that vector_ hasn't shrunk.
-    EXPECT_LT(31ul, vector_.Capacity());
+    EXPECT_LT(31ul, vector_.capacity());
     // Just releasing the backing is allowed.
     vector_.clear();
-    EXPECT_EQ(0ul, vector_.Capacity());
+    EXPECT_EQ(0ul, vector_.capacity());
 
     // Remove elemets so that map_ will try to shrink.
     for (int i = 0; i < 32; ++i) {
@@ -2343,7 +2343,7 @@ TEST(HeapTest, LargeVector) {
 
   size_t size = (1 << 27) / sizeof(int);
   Persistent<HeapVector<int>> vector = new HeapVector<int>(size);
-  EXPECT_LE(size, vector->Capacity());
+  EXPECT_LE(size, vector->capacity());
 }
 
 typedef std::pair<Member<IntWrapper>, int> PairWrappedUnwrapped;
@@ -2461,23 +2461,23 @@ TEST(HeapTest, HeapVectorShrinkCapacity) {
   HeapVector<Member<IntWrapper>> vector1;
   HeapVector<Member<IntWrapper>> vector2;
   vector1.ReserveCapacity(96);
-  EXPECT_LE(96u, vector1.Capacity());
-  vector1.Grow(vector1.Capacity());
+  EXPECT_LE(96u, vector1.capacity());
+  vector1.Grow(vector1.capacity());
 
   // Assumes none was allocated just after a vector backing of vector1.
   vector1.Shrink(56);
   vector1.ShrinkToFit();
-  EXPECT_GT(96u, vector1.Capacity());
+  EXPECT_GT(96u, vector1.capacity());
 
   vector2.ReserveCapacity(20);
   // Assumes another vector backing was allocated just after the vector
   // backing of vector1.
   vector1.Shrink(10);
   vector1.ShrinkToFit();
-  EXPECT_GT(56u, vector1.Capacity());
+  EXPECT_GT(56u, vector1.capacity());
 
   vector1.Grow(192);
-  EXPECT_LE(192u, vector1.Capacity());
+  EXPECT_LE(192u, vector1.capacity());
 }
 
 TEST(HeapTest, HeapVectorShrinkInlineCapacity) {
@@ -2485,13 +2485,13 @@ TEST(HeapTest, HeapVectorShrinkInlineCapacity) {
   const size_t kInlineCapacity = 64;
   HeapVector<Member<IntWrapper>, kInlineCapacity> vector1;
   vector1.ReserveCapacity(128);
-  EXPECT_LE(128u, vector1.Capacity());
-  vector1.Grow(vector1.Capacity());
+  EXPECT_LE(128u, vector1.capacity());
+  vector1.Grow(vector1.capacity());
 
   // Shrink the external buffer.
   vector1.Shrink(90);
   vector1.ShrinkToFit();
-  EXPECT_GT(128u, vector1.Capacity());
+  EXPECT_GT(128u, vector1.capacity());
 
 // TODO(sof): if the ASan support for 'contiguous containers' is enabled,
 // Vector inline buffers are disabled; that constraint should be attempted
@@ -2501,12 +2501,12 @@ TEST(HeapTest, HeapVectorShrinkInlineCapacity) {
   // Shrinking switches the buffer from the external one to the inline one.
   vector1.Shrink(kInlineCapacity - 1);
   vector1.ShrinkToFit();
-  EXPECT_EQ(kInlineCapacity, vector1.Capacity());
+  EXPECT_EQ(kInlineCapacity, vector1.capacity());
 
   // Try to shrink the inline buffer.
   vector1.Shrink(1);
   vector1.ShrinkToFit();
-  EXPECT_EQ(kInlineCapacity, vector1.Capacity());
+  EXPECT_EQ(kInlineCapacity, vector1.capacity());
 #endif
 }
 
@@ -6186,11 +6186,11 @@ TEST(HeapTest, HeapVectorPartObjects) {
   }
 
   vector1.ReserveCapacity(150);
-  EXPECT_LE(150u, vector1.Capacity());
+  EXPECT_LE(150u, vector1.capacity());
   EXPECT_EQ(10u, vector1.size());
 
   vector2.ReserveCapacity(100);
-  EXPECT_LE(100u, vector2.Capacity());
+  EXPECT_LE(100u, vector2.capacity());
   EXPECT_EQ(10u, vector2.size());
 
   for (int i = 0; i < 4; ++i) {
@@ -6443,7 +6443,7 @@ TEST(HeapTest, CrossThreadWeakPersistent) {
 class TestPersistentHeapVectorWithUnusedSlots
     : public PersistentHeapVector<VectorObject, 16> {
  public:
-  void CheckUnused() { CheckUnusedSlots(end(), end() + (Capacity() - size())); }
+  void CheckUnused() { CheckUnusedSlots(end(), end() + (capacity() - size())); }
 };
 
 TEST(HeapTest, TestPersistentHeapVectorWithUnusedSlots) {
@@ -6462,8 +6462,8 @@ TEST(HeapTest, TestPersistentHeapVectorWithUnusedSlots) {
 // TODO(Oilpan): when Vector.h's contiguous container support no longer disables
 // Vector<>s with inline capacity, remove.
 #if !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
-  EXPECT_EQ(16u, vector1.Capacity());
-  EXPECT_EQ(16u, vector2.Capacity());
+  EXPECT_EQ(16u, vector1.capacity());
+  EXPECT_EQ(16u, vector2.capacity());
 #endif
 }
 

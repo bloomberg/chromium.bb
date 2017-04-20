@@ -40,7 +40,7 @@ TEST(VectorTest, Basic) {
   Vector<int> int_vector;
   EXPECT_TRUE(int_vector.IsEmpty());
   EXPECT_EQ(0ul, int_vector.size());
-  EXPECT_EQ(0ul, int_vector.Capacity());
+  EXPECT_EQ(0ul, int_vector.capacity());
 }
 
 TEST(VectorTest, Reverse) {
@@ -261,7 +261,7 @@ TEST(VectorTest, MoveOnlyType) {
   ASSERT_EQ(2, move_only.Value());
   ASSERT_EQ(0u, vector.size());
 
-  size_t count = vector.Capacity() + 1;
+  size_t count = vector.capacity() + 1;
   for (size_t i = 0; i < count; i++)
     vector.push_back(
         MoveOnly(i + 1));  // +1 to distinguish from default-constructed.
@@ -427,11 +427,11 @@ TEST(VectorTest, AppendFirst) {
   vector.push_back("string");
   // Test passes if it does not crash (reallocation did not make
   // the input reference stale).
-  size_t limit = vector.Capacity() + 1;
+  size_t limit = vector.capacity() + 1;
   for (size_t i = 0; i < limit; i++)
     vector.push_back(vector.front());
 
-  limit = vector.Capacity() + 1;
+  limit = vector.capacity() + 1;
   for (size_t i = 0; i < limit; i++)
     vector.push_back(const_cast<const WTF::String&>(vector.front()));
 }

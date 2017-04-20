@@ -96,8 +96,8 @@ unsigned StringBuilder::Capacity() const {
   if (!HasBuffer())
     return 0;
   if (is8_bit_)
-    return buffer8_->Capacity();
-  return buffer16_->Capacity();
+    return buffer8_->capacity();
+  return buffer16_->capacity();
 }
 
 void StringBuilder::ReserveCapacity(unsigned new_capacity) {

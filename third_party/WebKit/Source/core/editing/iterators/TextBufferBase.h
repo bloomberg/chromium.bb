@@ -19,7 +19,7 @@ class CORE_EXPORT TextBufferBase {
   void Clear() { size_ = 0; }
   size_t Size() const { return size_; }
   bool IsEmpty() const { return size_ == 0; }
-  size_t Capacity() const { return buffer_.Capacity(); }
+  size_t Capacity() const { return buffer_.capacity(); }
   const UChar& operator[](size_t index) const {
     DCHECK_LT(index, size_);
     return Data()[index];
