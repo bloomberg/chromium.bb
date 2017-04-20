@@ -9,6 +9,7 @@
 
 #include "base/android/application_status_listener.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "components/offline_pages/content/background_loader/background_loader_contents.h"
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/offline_page_types.h"
@@ -79,6 +80,12 @@ class BackgroundLoaderOffliner : public Offliner,
   void HandleApplicationStateChangeCancel(const SavePageRequest& request,
                                           int64_t offline_id);
 
+  // Called to remember at what time we started loading.
+  void MarkLoadStartTime();
+
+  // Called to add a loading signal as we observe it.
+  void AddLoadingSignal(const char* signal_name);
+
   std::unique_ptr<background_loader::BackgroundLoaderContents> loader_;
   // Not owned.
   content::BrowserContext* browser_context_;
@@ -111,6 +118,13 @@ class BackgroundLoaderOffliner : public Offliner,
   bool is_low_bar_met_;
   // Whether the snapshot is on the last retry.
   bool did_snapshot_on_last_retry_;
+
+  // Time in ticks of when we start loading the page.
+  base::TimeTicks load_start_time_;
+
+  // Saves loading signals.
+  // TODO(petewil): We will be replacing this with the new snapshot controller.
+  base::DictionaryValue signal_data_;
 
   // Callback for cancel.
   CancelCallback cancel_callback_;

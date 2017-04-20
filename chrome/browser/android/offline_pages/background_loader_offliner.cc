@@ -4,16 +4,20 @@
 
 #include "chrome/browser/android/offline_pages/background_loader_offliner.h"
 
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offliner_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -24,6 +28,10 @@ namespace offline_pages {
 namespace {
 const long kOfflinePageDelayMs = 2000;
 const long kOfflineDomContentLoadedMs = 25000;
+const char kContentType[] = "text/plain";
+const char kContentTransferEncodingBinary[] =
+    "Content-Transfer-Encoding: binary";
+const char kXHeaderForSignals[] = "X-Chrome-Loading-Metrics-Data: 1";
 
 class OfflinerData : public content::WebContentsUserData<OfflinerData> {
  public:
@@ -159,6 +167,8 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   if (!loader_)
     ResetState();
 
+  MarkLoadStartTime();
+
   // Track copy of pending request.
   pending_request_.reset(new SavePageRequest(request));
   completion_callback_ = completion_callback;
@@ -218,9 +228,16 @@ bool BackgroundLoaderOffliner::HandleTimeout(const SavePageRequest& request) {
   return false;
 }
 
+void BackgroundLoaderOffliner::MarkLoadStartTime() {
+  load_start_time_ = base::TimeTicks::Now();
+}
+
 void BackgroundLoaderOffliner::DocumentAvailableInMainFrame() {
   snapshot_controller_->DocumentAvailableInMainFrame();
   is_low_bar_met_ = true;
+
+  // Add this signal to signal_data_.
+  AddLoadingSignal("DocumentAvailableInMainFrame");
 }
 
 void BackgroundLoaderOffliner::DocumentOnLoadCompletedInMainFrame() {
@@ -228,6 +245,9 @@ void BackgroundLoaderOffliner::DocumentOnLoadCompletedInMainFrame() {
     DVLOG(1) << "DidStopLoading called even though no pending request.";
     return;
   }
+
+  // Add this signal to signal_data_.
+  AddLoadingSignal("DocumentOnLoadCompletedInMainFrame");
 
   snapshot_controller_->DocumentOnLoadCompletedInMainFrame();
 }
@@ -296,6 +316,9 @@ void BackgroundLoaderOffliner::StartSnapshot() {
     return;
   }
 
+  // Add this signal to signal_data_.
+  AddLoadingSignal("Snapshotting");
+
   SavePageRequest request(*pending_request_.get());
   // If there was an error navigating to page, return loading failed.
   if (page_load_state_ != SUCCESS) {
@@ -315,6 +338,7 @@ void BackgroundLoaderOffliner::StartSnapshot() {
         NOTREACHED();
         status = Offliner::RequestStatus::LOADING_FAILED;
     }
+
     completion_callback_.Run(request, status);
     ResetState();
     return;
@@ -323,6 +347,27 @@ void BackgroundLoaderOffliner::StartSnapshot() {
   save_state_ = SAVING;
   content::WebContents* web_contents(
       content::WebContentsObserver::web_contents());
+
+  // Add loading signal into the MHTML that will be generated if the command
+  // line flag is set for it.
+  if (IsOfflinePagesLoadSignalCollectingEnabled()) {
+    // Stash loading signals for writing when we write out the MHTML.
+    std::string headers = base::StringPrintf(
+        "%s\r\n%s\r\n\r\n", kContentTransferEncodingBinary, kXHeaderForSignals);
+    std::string body;
+    base::JSONWriter::Write(signal_data_, &body);
+    std::string content_type = kContentType;
+    std::string content_location = base::StringPrintf(
+        "cid:signal-data-%" PRId64 "@mhtml.blink", request.request_id());
+
+    content::MHTMLExtraParts* extra_parts =
+        content::MHTMLExtraParts::FromWebContents(web_contents);
+    DCHECK(extra_parts);
+    if (extra_parts != nullptr) {
+      extra_parts->AddExtraMHTMLPart(content_type, content_location, headers,
+                                     body);
+    }
+  }
 
   std::unique_ptr<OfflinePageArchiver> archiver(
       new OfflinePageMHTMLArchiver(web_contents));
@@ -419,6 +464,18 @@ void BackgroundLoaderOffliner::HandleApplicationStateChangeCancel(
     return;
   completion_callback_.Run(request, RequestStatus::FOREGROUND_CANCELED);
 }
+
+void BackgroundLoaderOffliner::AddLoadingSignal(const char* signal_name) {
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  base::TimeDelta delay_so_far = current_time - load_start_time_;
+  // We would prefer to use int64_t here, but JSON does not support that type.
+  // Given the choice between int and double, we choose to implicitly convert to
+  // a double since it maintains more precision (we can get a longer time in
+  // milliseconds than we can with a 2 bit int, 53 bits vs 32).
+  double delay = delay_so_far.InMilliseconds();
+  signal_data_.SetDouble(signal_name, delay);
+}
+
 }  // namespace offline_pages
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::OfflinerData);

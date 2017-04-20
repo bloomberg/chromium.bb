@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offliner_helper.h"
@@ -18,8 +19,10 @@
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -558,6 +561,47 @@ TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarNoRetryLimit) {
   // Timeout
   EXPECT_FALSE(offliner()->HandleTimeout(request));
   EXPECT_FALSE(SaveInProgress());
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, SignalCollectionDisabled) {
+  // Ensure feature flag for Signal collection is off,
+  EXPECT_FALSE(offline_pages::IsOfflinePagesLoadSignalCollectingEnabled());
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+
+  CompleteLoading();
+  PumpLoop();
+
+  // No extra parts should be added if the flag is off.
+  content::MHTMLExtraParts* extra_parts =
+      content::MHTMLExtraParts::FromWebContents(offliner()->web_contents());
+  EXPECT_EQ(extra_parts->size(), 0);
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, SignalCollectionEnabled) {
+  // Ensure feature flag for signal collection is on.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kOfflinePagesLoadSignalCollectingFeature);
+  EXPECT_TRUE(IsOfflinePagesLoadSignalCollectingEnabled());
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+
+  CompleteLoading();
+  PumpLoop();
+
+  // One extra part should be added if the flag is on.
+  content::MHTMLExtraParts* extra_parts =
+      content::MHTMLExtraParts::FromWebContents(offliner()->web_contents());
+  EXPECT_EQ(extra_parts->size(), 1);
 }
 
 }  // namespace offline_pages
