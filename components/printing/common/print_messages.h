@@ -253,14 +253,8 @@ IPC_STRUCT_END()
 
 // Parameters sent along with the page count.
 IPC_STRUCT_BEGIN(PrintHostMsg_DidGetPreviewPageCount_Params)
-  // Cookie for the document to ensure correctness.
-  IPC_STRUCT_MEMBER(int, document_cookie)
-
   // Total page count.
   IPC_STRUCT_MEMBER(int, page_count)
-
-  // Indicates whether the previewed document is modifiable.
-  IPC_STRUCT_MEMBER(bool, is_modifiable)
 
   // Scaling % to fit to page
   IPC_STRUCT_MEMBER(int, fit_to_page_scaling)

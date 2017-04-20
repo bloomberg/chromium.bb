@@ -1296,11 +1296,10 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
 
   PrintHostMsg_DidGetPreviewPageCount_Params params;
   params.page_count = print_preview_context_.total_page_count();
-  params.is_modifiable = print_preview_context_.IsModifiable();
   params.fit_to_page_scaling = fit_to_page_scaling;
-  params.document_cookie = print_params.document_cookie;
   params.preview_request_id = print_params.preview_request_id;
-  params.clear_preview_data = print_preview_context_.generate_draft_pages();
+  params.clear_preview_data = print_preview_context_.generate_draft_pages() ||
+                              !print_preview_context_.IsModifiable();
   Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), params));
   if (CheckForCancel())
     return false;
