@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("distribution") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "app_distribution_provider.h",
     "app_distribution_provider.mm",
