@@ -156,7 +156,8 @@ SessionsSyncManager::SessionsSyncManager(
       local_event_router_(std::move(router)),
       page_revisit_broadcaster_(this, sessions_client),
       sessions_updated_callback_(sessions_updated_callback),
-      datatype_refresh_callback_(datatype_refresh_callback) {}
+      datatype_refresh_callback_(datatype_refresh_callback),
+      task_tracker_(base::MakeUnique<TaskTracker>()) {}
 
 SessionsSyncManager::~SessionsSyncManager() {}
 
@@ -422,8 +423,9 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab_delegate,
   DCHECK(!tab_delegate->IsPlaceholderTab());
 
   if (tab_delegate->IsBeingDestroyed()) {
-    // Do nothing. By not proactively adding the tab to the session, it will be
-    // removed if necessary during subsequent cleanup.
+    task_tracker_->CleanTabTasks(tab_delegate->GetSessionId());
+    // Do nothing else. By not proactively adding the tab to the session, it
+    // will be removed if necessary during subsequent cleanup.
     return;
   }
 
@@ -464,6 +466,9 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab_delegate,
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_session()->CopyFrom(
       SessionTabToSpecifics(*session_tab, current_machine_tag(), tab_node_id));
+  // Intercept the sync model here to update task tracker and fill navigations
+  // with their ancestor navigations.
+  TrackTasks(tab_delegate, specifics.mutable_session());
   syncer::SyncData data = syncer::SyncData::CreateLocalData(
       TabNodeIdToTag(current_machine_tag(), tab_node_id), current_session_name_,
       specifics);
@@ -480,6 +485,54 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab_delegate,
         new_url, tab_delegate->GetFaviconURLAtIndex(current_index));
     page_revisit_broadcaster_.OnPageVisit(
         new_url, tab_delegate->GetTransitionAtIndex(current_index));
+  }
+}
+
+void SessionsSyncManager::TrackTasks(
+    SyncedTabDelegate* const tab_delegate,
+    sync_pb::SessionSpecifics* session_specifics) {
+  sync_pb::SessionTab* tab_specifics = session_specifics->mutable_tab();
+  // Index in the whole navigations of the tab.
+  int current_navigation_index = tab_delegate->GetCurrentEntryIndex();
+  // Index in the tab_specifics, where the navigations is a -6/+6 window
+  int current_index_in_tab_specifics =
+      tab_specifics->current_navigation_index();
+  int64_t current_navigation_global_id =
+      tab_specifics->navigation(current_index_in_tab_specifics).global_id();
+
+  TabTasks* tab_tasks =
+      task_tracker_->GetTabTasks(tab_delegate->GetSessionId());
+  tab_tasks->UpdateWithNavigation(
+      current_navigation_index,
+      tab_delegate->GetTransitionAtIndex(current_navigation_index),
+      current_navigation_global_id);
+
+  for (int i = 0; i < tab_specifics->navigation_size(); i++) {
+    // Excluding blocked navigations, which are appended at tail.
+    if (tab_specifics->navigation(i).blocked_state() ==
+        sync_pb::TabNavigation::STATE_BLOCKED) {
+      break;
+    }
+
+    int navigation_index =
+        current_navigation_index - current_index_in_tab_specifics + i;
+    // Skipping navigations not been tracked by task_tracker.
+    if (navigation_index < 0 ||
+        navigation_index >= tab_tasks->GetNavigationsCount()) {
+      continue;
+    }
+    std::vector<int64_t> task_ids =
+        tab_tasks->GetTaskIdsForNavigation(navigation_index);
+    if (task_ids.empty())
+      continue;
+
+    tab_specifics->mutable_navigation(i)->set_task_id(task_ids.back());
+    // Pop the task id of navigation self.
+    task_ids.pop_back();
+    for (auto ancestor_task_id : task_ids) {
+      tab_specifics->mutable_navigation(i)->add_ancestor_task_id(
+          ancestor_task_id);
+    }
   }
 }
 

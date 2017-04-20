@@ -155,6 +155,18 @@ message TabNavigation {
   }
   // Whether the Password Manager saw a password field on the page.
   optional PasswordState password_state = 26;
+
+  // The id for the task associated with this navigation, which is globally
+  // unique with high probability.
+  // Similar with global_id, but used to identify a navigation in Chrome Tasks,
+  // so navigations of a page have the same task_id if one is the first visit of
+  // the page, and others are its back/forward visits.
+  optional int64 task_id = 27;
+  // Task ids of all ancestor navigations, which can be from other tabs, from
+  // root to parent. We define navigation A is parent of navigation B if page of
+  // B is got by clicking a link on page of A. This relationship is used to
+  // define a Chrome Task as a tree rooted by a navigation.
+  repeated int64 ancestor_task_id = 28;
 }
 
 // Navigation information for a single redirection within a single navigation.

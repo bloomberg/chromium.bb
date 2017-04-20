@@ -707,21 +707,34 @@ class SessionsSyncManagerTest : public testing::Test {
   }
   TestSyncedTabDelegate* AddTab(SessionID::id_type window_id,
                                 const std::string& url) {
-    return AddTab(window_id, url, base::Time());
+    return AddTab(window_id, url, base::Time::Now());
   }
 
   void NavigateTab(TestSyncedTabDelegate* delegate,
                    const std::string& url,
-                   base::Time time) {
+                   base::Time time,
+                   ui::PageTransition transition) {
     auto entry = base::MakeUnique<sessions::SerializedNavigationEntry>(
         SerializedNavigationEntryTestHelper::CreateNavigation(url, kTitle));
     SerializedNavigationEntryTestHelper::SetTimestamp(time, entry.get());
+    SerializedNavigationEntryTestHelper::SetTransitionType(transition,
+                                                           entry.get());
     delegate->AppendEntry(std::move(entry));
     delegate->set_current_entry_index(delegate->GetCurrentEntryIndex() + 1);
     router_->NotifyNav(delegate);
   }
+  void NavigateTab(TestSyncedTabDelegate* delegate,
+                   const std::string& url,
+                   base::Time time) {
+    NavigateTab(delegate, url, time, ui::PAGE_TRANSITION_TYPED);
+  }
   void NavigateTab(TestSyncedTabDelegate* delegate, const std::string& url) {
-    NavigateTab(delegate, url, base::Time());
+    NavigateTab(delegate, url, base::Time::Now());
+  }
+  void NavigateTab(TestSyncedTabDelegate* delegate,
+                   const std::string& url,
+                   ui::PageTransition transition) {
+    NavigateTab(delegate, url, base::Time::Now(), transition);
   }
 
   void ResetWindows() {
@@ -2530,6 +2543,55 @@ TEST_F(SessionsSyncManagerTest, PlaceholderConflictAcrossWindows) {
             out[1].sync_data().GetSpecifics().session().tab().tab_id());
   EXPECT_EQ(window2->GetSessionId(),
             out[1].sync_data().GetSpecifics().session().tab().window_id());
+}
+
+// Tests that task ids are generated for navigations on local tabs.
+TEST_F(SessionsSyncManagerTest, TrackTasksOnLocalTabModified) {
+  SyncChangeList changes;
+  TestSyncedWindowDelegate* window = AddWindow();
+  InitWithSyncDataTakeOutput(SyncDataList(), &changes);
+  SessionID::id_type window_id = window->GetSessionId();
+  ASSERT_FALSE(manager()->current_machine_tag().empty());
+  changes.clear();
+
+  // Tab 1
+  NavigateTab(AddTab(window_id, kFoo1), kFoo2, ui::PAGE_TRANSITION_TYPED);
+  // Tab 2
+  NavigateTab(AddTab(window_id, kBar1), kBar2, ui::PAGE_TRANSITION_LINK);
+
+  // We only test changes for tab add and tab update, and ignore header updates.
+  FilterOutLocalHeaderChanges(&changes);
+  // Sync data of adding Tab 1 change
+  sync_pb::SessionTab tab =
+      SyncDataLocal(changes[0].sync_data()).GetSpecifics().session().tab();
+  EXPECT_EQ(tab.navigation_size(), 1);
+  EXPECT_EQ(tab.navigation(0).global_id(), tab.navigation(0).task_id());
+  EXPECT_TRUE(tab.navigation(0).ancestor_task_id().empty());
+
+  // Sync data of updating Tab 1 change
+  tab = SyncDataLocal(changes[1].sync_data()).GetSpecifics().session().tab();
+  EXPECT_EQ(tab.navigation_size(), 2);
+  // navigation(0) and navigation(1) are two seperated tasks.
+  EXPECT_EQ(tab.navigation(0).global_id(), tab.navigation(0).task_id());
+  EXPECT_TRUE(tab.navigation(0).ancestor_task_id().empty());
+  EXPECT_EQ(tab.navigation(1).global_id(), tab.navigation(1).task_id());
+  EXPECT_TRUE(tab.navigation(1).ancestor_task_id().empty());
+
+  // Sync data of adding Tab 2 change
+  tab = SyncDataLocal(changes[2].sync_data()).GetSpecifics().session().tab();
+  EXPECT_EQ(tab.navigation_size(), 1);
+  EXPECT_EQ(tab.navigation(0).global_id(), tab.navigation(0).task_id());
+  EXPECT_TRUE(tab.navigation(0).ancestor_task_id().empty());
+
+  // Sync data of updating Tab 2 change
+  tab = SyncDataLocal(changes[3].sync_data()).GetSpecifics().session().tab();
+  EXPECT_EQ(tab.navigation_size(), 2);
+  EXPECT_EQ(tab.navigation(0).global_id(), tab.navigation(0).task_id());
+  EXPECT_TRUE(tab.navigation(0).ancestor_task_id().empty());
+  EXPECT_EQ(tab.navigation(1).global_id(), tab.navigation(1).task_id());
+  // navigation(1) is a subtask of navigation(0).
+  EXPECT_EQ(tab.navigation(1).ancestor_task_id_size(), 1);
+  EXPECT_EQ(tab.navigation(1).ancestor_task_id(0), tab.navigation(0).task_id());
 }
 
 }  // namespace sync_sessions

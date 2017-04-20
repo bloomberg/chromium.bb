@@ -30,6 +30,7 @@
 #include "components/sync_sessions/revisit/page_revisit_broadcaster.h"
 #include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/synced_session_tracker.h"
+#include "components/sync_sessions/task_tracker.h"
 
 namespace syncer {
 class LocalDeviceInfoProvider;
@@ -235,6 +236,11 @@ class SessionsSyncManager : public syncer::SyncableService,
   void LocalTabDelegateToSpecifics(const SyncedTabDelegate& tab_delegate,
                                    sync_pb::SessionSpecifics* specifics);
 
+  // Updates task tracker with current navigation of |tab_delegate|, and fills
+  // TabNavigation's task id related fields in |specifics|.
+  void TrackTasks(SyncedTabDelegate* const tab_delegate,
+                  sync_pb::SessionSpecifics* specifics);
+
   // It's possible that when we associate windows, tabs aren't all loaded
   // into memory yet (e.g on android) and we don't have a WebContents. In this
   // case we can't do a full association, but we still want to update tab IDs
@@ -325,6 +331,10 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   // Callback to inform sync that a sync data refresh is requested.
   base::Closure datatype_refresh_callback_;
+
+  // Tracks Chrome Tasks, which associates navigations, with tab and navigation
+  // changes of current session.
+  std::unique_ptr<TaskTracker> task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionsSyncManager);
 };

@@ -48,6 +48,8 @@ static_library("sync_sessions") {
     "synced_window_delegates_getter.h",
     "tab_node_pool.cc",
     "tab_node_pool.h",
+    "task_tracker.cc",
+    "task_tracker.h",
   ]
 
   public_deps = [
@@ -104,6 +106,7 @@ source_set("unit_tests") {
     "sync_sessions_metrics_unittest.cc",
     "synced_session_tracker_unittest.cc",
     "tab_node_pool_unittest.cc",
+    "task_tracker_unittest.cc",
   ]
 
   deps = [
