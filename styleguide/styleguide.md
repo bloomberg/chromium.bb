@@ -43,6 +43,6 @@ Guidelines](https://sites.google.com/a/chromium.org/dev/chromium-os/python-style
 
 ## Web languages (JavaScript, HTML, CSS)
 
-When working on Web-based UI features, consult the [Web Development Style Guide](https://sites.google.com/a/chromium.org/dev/developers/web-development-style-guide) for the Chromium conventions used in JS/CSS/HTML files.
+When working on Web-based UI features, consult the [Web Development Style Guide](web/web.md) for the Chromium conventions used in JS/CSS/HTML files.
 
 Internal uses of web languages, notably "layout" tests, should preferably follow these style guides, but it is not enforced.
