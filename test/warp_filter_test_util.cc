@@ -101,9 +101,8 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
   uint8_t *input = input_ + border;
 
   // The warp functions always write rows with widths that are multiples of 8.
-  // So to avoid a buffer overflow, we may need to add a "tail" to the buffer
-  // for the last row (round up to the nearest 8 elements)
-  int output_n = ((out_w * out_h) + 7) & ~7;
+  // So to avoid a buffer overflow, we may need to pad rows to a multiple of 8.
+  int output_n = ((out_w + 7) & ~7) * out_h;
   uint8_t *output = new uint8_t[output_n];
   uint8_t *output2 = new uint8_t[output_n];
   int32_t mat[8];
@@ -225,9 +224,8 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
   int i, j, sub_x, sub_y;
 
   // The warp functions always write rows with widths that are multiples of 8.
-  // So to avoid a buffer overflow, we may need to add a "tail" to the buffer
-  // for the last row (round up to the nearest 8 elements)
-  int output_n = ((out_w * out_h) + 7) & ~7;
+  // So to avoid a buffer overflow, we may need to pad rows to a multiple of 8.
+  int output_n = ((out_w + 7) & ~7) * out_h;
   uint16_t *input_ = new uint16_t[h * stride];
   uint16_t *input = input_ + border;
   uint16_t *output = new uint16_t[output_n];
