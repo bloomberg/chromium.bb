@@ -103,7 +103,7 @@ class Git(object):
 
     def in_working_directory(self, path):
         try:
-            self._executive.run_command(
+            return self._executive.run_command(
                 [self._executable_name, 'rev-parse', '--is-inside-work-tree'],
                 cwd=path, error_handler=Executive.ignore_error).rstrip() == 'true'
         except OSError:
