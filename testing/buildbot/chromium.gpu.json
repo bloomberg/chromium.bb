@@ -71,7 +71,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -94,7 +94,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -117,7 +117,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -140,7 +140,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -167,7 +167,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -196,7 +196,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -230,7 +230,7 @@
           "--upload-refimg-to-cloud-storage"
         ],
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
@@ -256,7 +256,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -279,7 +279,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -302,7 +302,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -368,9 +368,6 @@
         "use_xvfb": false
       },
       {
-        "override_compile_targets": [
-          "tab_capture_end2end_tests_run"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -396,7 +393,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -419,7 +416,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -442,7 +439,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -465,7 +462,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -492,7 +489,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -521,7 +518,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -555,7 +552,7 @@
           "--upload-refimg-to-cloud-storage"
         ],
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
@@ -581,7 +578,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -604,7 +601,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -627,7 +624,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -705,7 +702,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -728,7 +725,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -751,7 +748,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -774,7 +771,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -801,7 +798,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -830,7 +827,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -864,7 +861,7 @@
           "--upload-refimg-to-cloud-storage"
         ],
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
@@ -890,7 +887,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -913,7 +910,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -936,7 +933,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1002,9 +999,6 @@
         "use_xvfb": false
       },
       {
-        "override_compile_targets": [
-          "tab_capture_end2end_tests_run"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1030,7 +1024,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1053,7 +1047,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1076,7 +1070,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1099,7 +1093,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1126,7 +1120,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1155,7 +1149,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1189,7 +1183,7 @@
           "--upload-refimg-to-cloud-storage"
         ],
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
@@ -1215,7 +1209,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1238,7 +1232,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1261,7 +1255,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1342,7 +1336,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1366,7 +1360,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1390,7 +1384,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1414,7 +1408,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1442,7 +1436,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1472,7 +1466,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1507,7 +1501,7 @@
           "--upload-refimg-to-cloud-storage"
         ],
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
@@ -1534,7 +1528,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1558,7 +1552,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1582,7 +1576,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1652,9 +1646,6 @@
         "use_xvfb": false
       },
       {
-        "override_compile_targets": [
-          "tab_capture_end2end_tests_run"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1681,7 +1672,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1705,7 +1696,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1729,7 +1720,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1753,7 +1744,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1781,7 +1772,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1811,7 +1802,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1846,7 +1837,7 @@
           "--upload-refimg-to-cloud-storage"
         ],
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
@@ -1873,7 +1864,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1897,7 +1888,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1921,7 +1912,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2019,7 +2010,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2042,7 +2033,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2065,7 +2056,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2088,7 +2079,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2115,7 +2106,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2144,7 +2135,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2178,7 +2169,7 @@
           "--upload-refimg-to-cloud-storage"
         ],
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
@@ -2204,7 +2195,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2227,7 +2218,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2250,7 +2241,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2316,9 +2307,6 @@
         "use_xvfb": false
       },
       {
-        "override_compile_targets": [
-          "tab_capture_end2end_tests_run"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2363,7 +2351,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2386,7 +2374,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2409,7 +2397,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2432,7 +2420,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2459,7 +2447,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2488,7 +2476,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2522,7 +2510,7 @@
           "--upload-refimg-to-cloud-storage"
         ],
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
@@ -2548,7 +2536,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2571,7 +2559,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2594,7 +2582,7 @@
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
         "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
+          "telemetry_gpu_integration_test"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

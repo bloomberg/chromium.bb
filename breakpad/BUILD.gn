@@ -985,13 +985,3 @@ if (is_win) {
     public_configs = [ ":sender_config" ]
   }
 }
-
-if (is_android) {
-  # TODO(GYP_GONE) Delete this after we've converted everything to GN.
-  group("breakpad_unittests_deps") {
-    testonly = true
-    deps = [
-      ":breakpad_unittests",
-    ]
-  }
-}

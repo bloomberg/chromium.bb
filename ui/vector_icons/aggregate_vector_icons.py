@@ -13,18 +13,10 @@ import textwrap
 def AggregateVectorIconsLegacy(working_directory, file_list, output_cc,
                                output_h):
   icon_list = []
-  if file_list is None:
-    # TODO(GYP_GONE): |file_list| is only None for GYP builds (where response
-    # files are not supported), in which case we process all .icon files
-    # contained within |working_directory| and all of its descendant
-    # directories. This logic can be removed when GN is used everywhere.
-    # See crbug.com/535386.
-    for dirpath, dirnames, filenames in os.walk(working_directory):
-      icon_list.extend(glob.glob(os.path.join(dirpath, "*.icon")))
-  else:
-    with open(file_list, 'r') as f:
-      file_list_contents = f.read()
-    icon_list = shlex.split(file_list_contents)
+  assert file_list is not None
+  with open(file_list, 'r') as f:
+    file_list_contents = f.read()
+  icon_list = shlex.split(file_list_contents)
 
   input_header_template = open(os.path.join(working_directory,
                                             "vector_icons.h.template"))
