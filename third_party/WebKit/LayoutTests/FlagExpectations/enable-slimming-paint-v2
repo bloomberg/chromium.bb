@@ -1251,6 +1251,7 @@ Bug(none) fast/scrolling/overflow-scrollability.html [ Failure ]
 Bug(none) fast/scrolling/scrollbar-prevent-default.html [ Failure ]
 Bug(none) compositing/lots-of-img-layers-with-opacity.html [ Failure ]
 Bug(none) compositing/lots-of-img-layers.html [ Failure ]
+Bug(none) compositing/opacity-with-mask.html [ Failure ]
 
 crbug.com/462142 fast/css3-text/css3-text-decoration/text-decoration-style-inherit.html [ Failure ]
 
