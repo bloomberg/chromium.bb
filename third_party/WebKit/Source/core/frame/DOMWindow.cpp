@@ -51,6 +51,12 @@ v8::Local<v8::Object> DOMWindow::Wrap(v8::Isolate* isolate,
   // Notice that we explicitly ignore |creation_context| because the DOMWindow
   // has its own creation context.
 
+  // TODO(yukishiino): Get understanding of why it's possible to initialize
+  // the context after the frame is detached.  And then, remove the following
+  // lines.  See also https://crbug.com/712638 .
+  if (!GetFrame())
+    return v8::Local<v8::Object>();
+
   // TODO(yukishiino): Make this function always return the non-empty handle
   // even if the frame is detached because the global proxy must always exist
   // per spec.
