@@ -78,6 +78,10 @@ class ShippingAddressEditorViewController : public EditorViewController {
   // this controller.
   autofill::AutofillProfile* profile_to_edit_;
 
+  // A temporary profile to keep unsaved data in between relayout (e.g., when
+  // the country is changed and fields set may be different).
+  std::unique_ptr<autofill::AutofillProfile> temporary_profile_;
+
   // List of fields, reset everytime the current country changes.
   std::vector<EditorField> editor_fields_;
 
@@ -98,6 +102,11 @@ class ShippingAddressEditorViewController : public EditorViewController {
 
   // Called when data changes need to force a view update.
   void OnDataChanged();
+
+  // Saves the current state of the |editor_fields_| in |profile| and ignore
+  // errors if |ignore_errors| is true. Return false on errors, ignored or not.
+  bool SaveFieldsToProfile(autofill::AutofillProfile* profile,
+                           bool ignore_errors);
 
   // When a combobox model has changed, a view update might be needed, e.g., if
   // there is no data in the combobox and it must be converted to a text field.

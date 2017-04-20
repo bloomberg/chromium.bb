@@ -52,14 +52,79 @@ class PaymentRequestShippingAddressEditorTest
     return base::MakeUnique<::i18n::addressinput::NullStorage>();
   }
 
-  void SetRequiredFields() {
-    SetEditorTextfieldValue(base::ASCIIToUTF16(kNameFull), autofill::NAME_FULL);
-    SetEditorTextfieldValue(base::ASCIIToUTF16(kHomeAddress),
-                            autofill::ADDRESS_HOME_STREET_ADDRESS);
-    SetEditorTextfieldValue(base::ASCIIToUTF16(kHomeCity),
-                            autofill::ADDRESS_HOME_CITY);
-    SetEditorTextfieldValue(base::ASCIIToUTF16(kHomeZip),
-                            autofill::ADDRESS_HOME_ZIP);
+  void SetFieldTestValue(autofill::ServerFieldType type) {
+    base::string16 textfield_text;
+    switch (type) {
+      case (autofill::NAME_FULL): {
+        textfield_text = base::ASCIIToUTF16(kNameFull);
+        break;
+      }
+      case (autofill::ADDRESS_HOME_STREET_ADDRESS): {
+        textfield_text = base::ASCIIToUTF16(kHomeAddress);
+        break;
+      }
+      case (autofill::ADDRESS_HOME_CITY): {
+        textfield_text = base::ASCIIToUTF16(kHomeCity);
+        break;
+      }
+      case (autofill::ADDRESS_HOME_ZIP): {
+        textfield_text = base::ASCIIToUTF16(kHomeZip);
+        break;
+      }
+      default:
+        ADD_FAILURE() << "Unexpected type: " << type;
+    }
+    SetEditorTextfieldValue(textfield_text, type);
+  }
+
+  void SetCommonFields() {
+    SetFieldTestValue(autofill::NAME_FULL);
+    SetFieldTestValue(autofill::ADDRESS_HOME_STREET_ADDRESS);
+    SetFieldTestValue(autofill::ADDRESS_HOME_CITY);
+    SetFieldTestValue(autofill::ADDRESS_HOME_ZIP);
+  }
+
+  // First check if the requested field of |type| exists, if so set it's value
+  // in |textfield_text| and return true.
+  bool GetEditorTextfieldValueIfExists(autofill::ServerFieldType type,
+                                       base::string16* textfield_text) {
+    ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
+        dialog_view()->GetViewByID(static_cast<int>(type)));
+    if (!textfield)
+      return false;
+    *textfield_text = textfield->text();
+    return true;
+  }
+
+  void ExpectExistingRequiredFields(
+      std::set<autofill::ServerFieldType>* unset_types) {
+    base::string16 textfield_text;
+    if (GetEditorTextfieldValueIfExists(autofill::NAME_FULL, &textfield_text)) {
+      EXPECT_EQ(base::ASCIIToUTF16(kNameFull), textfield_text);
+    } else if (unset_types) {
+      unset_types->insert(autofill::NAME_FULL);
+    }
+
+    if (GetEditorTextfieldValueIfExists(autofill::ADDRESS_HOME_STREET_ADDRESS,
+                                        &textfield_text)) {
+      EXPECT_EQ(base::ASCIIToUTF16(kHomeAddress), textfield_text);
+    } else if (unset_types) {
+      unset_types->insert(autofill::ADDRESS_HOME_STREET_ADDRESS);
+    }
+
+    if (GetEditorTextfieldValueIfExists(autofill::ADDRESS_HOME_CITY,
+                                        &textfield_text)) {
+      EXPECT_EQ(base::ASCIIToUTF16(kHomeCity), textfield_text);
+    } else if (unset_types) {
+      unset_types->insert(autofill::ADDRESS_HOME_CITY);
+    }
+
+    if (GetEditorTextfieldValueIfExists(autofill::ADDRESS_HOME_ZIP,
+                                        &textfield_text)) {
+      EXPECT_EQ(base::ASCIIToUTF16(kHomeZip), textfield_text);
+    } else if (unset_types) {
+      unset_types->insert(autofill::ADDRESS_HOME_ZIP);
+    }
   }
 
   std::string GetSelectedCountryCode() {
@@ -156,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
   std::string country_code(GetSelectedCountryCode());
 
-  SetRequiredFields();
+  SetCommonFields();
 
   ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
@@ -176,18 +241,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   DCHECK(profile);
   EXPECT_EQ(base::ASCIIToUTF16(country_code),
             profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
-  EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
-            profile->GetRawInfo(autofill::NAME_FULL));
-  EXPECT_EQ(base::ASCIIToUTF16(kHomeAddress),
-            profile->GetRawInfo(autofill::ADDRESS_HOME_STREET_ADDRESS));
-  EXPECT_EQ(base::ASCIIToUTF16(kHomeCity),
-            profile->GetRawInfo(autofill::ADDRESS_HOME_CITY));
-  EXPECT_EQ(base::ASCIIToUTF16(kHomeZip),
-            profile->GetRawInfo(autofill::ADDRESS_HOME_ZIP));
+  ExpectExistingRequiredFields(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
-                       SwitchingCountryUpdatesView) {
+                       SwitchingCountryUpdatesViewAndKeepsValues) {
   InvokePaymentRequestUI();
 
   SetDefaultCountryData();
@@ -197,6 +255,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   OpenShippingAddressSectionScreen();
 
   OpenShippingAddressEditorScreen();
+
+  SetCommonFields();
 
   views::Combobox* country_combobox =
       static_cast<views::Combobox*>(dialog_view()->GetViewByID(
@@ -208,6 +268,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   size_t num_countries = model->countries().size();
   ASSERT_GT(num_countries, 10UL);
   bool without_region_data = true;
+  std::set<autofill::ServerFieldType> unset_types;
   for (size_t country_index = 10; country_index < num_countries;
        country_index += num_countries / 10) {
     // The editor updates asynchronously when the country changes.
@@ -223,10 +284,27 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
         AddCountryData(code);
       without_region_data = !without_region_data;
     }
+
     // The view update will invalidate the country_combobox / model pointers.
     country_combobox = nullptr;
     model = nullptr;
     WaitForObservedEvent();
+
+    // Some types could have been lost in previous countries and may now
+    // available in this country.
+    std::set<autofill::ServerFieldType> set_types;
+    for (auto type : unset_types) {
+      ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
+          dialog_view()->GetViewByID(static_cast<int>(type)));
+      if (textfield) {
+        EXPECT_TRUE(textfield->text().empty());
+        SetFieldTestValue(type);
+        set_types.insert(type);
+      }
+    }
+    for (auto type : set_types) {
+      unset_types.erase(type);
+    }
 
     // Make sure the country combo box was properly reset to the chosen country.
     country_combobox = static_cast<views::Combobox*>(dialog_view()->GetViewByID(
@@ -235,12 +313,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
     EXPECT_EQ(country_index,
               static_cast<size_t>(country_combobox->GetSelectedRow()));
 
-    country_combobox = static_cast<views::Combobox*>(dialog_view()->GetViewByID(
-        static_cast<int>(autofill::ADDRESS_HOME_COUNTRY)));
-    DCHECK(country_combobox);
+    // And that the number of countries is still the same.
     model =
         static_cast<autofill::CountryComboboxModel*>(country_combobox->model());
     ASSERT_EQ(num_countries, model->countries().size());
+
+    // And that the fields common between previous and new country have been
+    // properly restored.
+    ExpectExistingRequiredFields(&unset_types);
   }
 }
 
@@ -274,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Now any textual value can be set as the state.
   SetEditorTextfieldValue(base::ASCIIToUTF16("any state"),
                           autofill::ADDRESS_HOME_STATE);
-  SetRequiredFields();
+  SetCommonFields();
   ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
   // Verifying the data is in the DB.

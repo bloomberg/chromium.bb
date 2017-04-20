@@ -96,6 +96,13 @@ ShippingAddressEditorViewController::GetFieldDefinitions() {
 
 base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
     autofill::ServerFieldType type) {
+  // Temporary profile has precedence over profile to edit since its existence
+  // is based on having unsaved stated to restore.
+  if (temporary_profile_.get()) {
+    return temporary_profile_->GetInfo(autofill::AutofillType(type),
+                                       state()->GetApplicationLocale());
+  }
+
   if (!profile_to_edit_)
     return base::string16();
 
@@ -104,36 +111,10 @@ base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
 }
 
 bool ShippingAddressEditorViewController::ValidateModelAndSave() {
-  const std::string& locale = state()->GetApplicationLocale();
   // To validate the profile first, we use a temporary object.
   autofill::AutofillProfile profile;
-  for (const auto& field : text_fields()) {
-    // Force a blur in case the value was left untouched.
-    field.first->OnBlur();
-    // ValidatingTextfield* is the key, EditorField is the value.
-    if (field.first->invalid())
-      return false;
-
-    profile.SetInfo(autofill::AutofillType(field.second.type),
-                    field.first->text(), locale);
-  }
-  for (const auto& field : comboboxes()) {
-    // ValidatingCombobox* is the key, EditorField is the value.
-    ValidatingCombobox* combobox = field.first;
-    if (combobox->invalid())
-      return false;
-
-    if (combobox->id() == autofill::ADDRESS_HOME_COUNTRY) {
-      profile.SetInfo(
-          autofill::AutofillType(field.second.type),
-          base::UTF8ToUTF16(country_codes_[combobox->selected_index()]),
-          locale);
-    } else {
-      profile.SetInfo(autofill::AutofillType(field.second.type),
-                      combobox->GetTextForRow(combobox->selected_index()),
-                      locale);
-    }
-  }
+  if (!SaveFieldsToProfile(&profile, /*ignore_errors=*/false))
+    return false;
 
   if (!profile_to_edit_) {
     // Add the profile (will not add a duplicate).
@@ -144,18 +125,9 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
     // method to copying |profile| into |profile_to_edit_|, because the latter
     // object needs to retain other properties (use count, use date, guid,
     // etc.).
-    for (const auto& field : text_fields()) {
-      profile_to_edit_->SetInfo(
-          autofill::AutofillType(field.second.type),
-          profile.GetInfo(autofill::AutofillType(field.second.type), locale),
-          locale);
-    }
-    for (const auto& field : comboboxes()) {
-      profile_to_edit_->SetInfo(
-          autofill::AutofillType(field.second.type),
-          profile.GetInfo(autofill::AutofillType(field.second.type), locale),
-          locale);
-    }
+    bool success = SaveFieldsToProfile(profile_to_edit_,
+                                       /*ignore_errors=*/false);
+    DCHECK(success);
     profile_to_edit_->set_origin(autofill::kSettingsOrigin);
     state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
   }
@@ -234,6 +206,8 @@ void ShippingAddressEditorViewController::UpdateEditorView() {
     DCHECK(country_combo_box);
     country_combo_box->SetSelectedIndex(chosen_country_index_);
   }
+  // Ignore temporary profile once the editor view has been updated.
+  temporary_profile_.reset(nullptr);
 }
 
 base::string16 ShippingAddressEditorViewController::GetSheetTitle() {
@@ -320,8 +294,9 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
 }
 
 void ShippingAddressEditorViewController::OnDataChanged() {
-  // TODO(crbug.com/703764): save the current state so we can map it to the new
-  // country fields as best we can.
+  temporary_profile_.reset(new autofill::AutofillProfile);
+
+  SaveFieldsToProfile(temporary_profile_.get(), /*ignore_errors*/ true);
   UpdateEditorFields();
 
   // The editor can't be updated while in the middle of a combobox event.
@@ -329,6 +304,46 @@ void ShippingAddressEditorViewController::OnDataChanged() {
       FROM_HERE,
       base::Bind(&ShippingAddressEditorViewController::UpdateEditorView,
                  base::Unretained(this)));
+}
+
+bool ShippingAddressEditorViewController::SaveFieldsToProfile(
+    autofill::AutofillProfile* profile,
+    bool ignore_errors) {
+  const std::string& locale = state()->GetApplicationLocale();
+  bool success = true;
+  for (const auto& field : text_fields()) {
+    // Force a blur in case the value was left untouched.
+    field.first->OnBlur();
+    // ValidatingTextfield* is the key, EditorField is the value.
+    if (field.first->invalid()) {
+      success = false;
+      if (!ignore_errors)
+        return false;
+    }
+    profile->SetInfo(autofill::AutofillType(field.second.type),
+                     field.first->text(), locale);
+  }
+  for (const auto& field : comboboxes()) {
+    // ValidatingCombobox* is the key, EditorField is the value.
+    ValidatingCombobox* combobox = field.first;
+    if (combobox->invalid()) {
+      success = false;
+      if (!ignore_errors)
+        return false;
+    }
+
+    if (combobox->id() == autofill::ADDRESS_HOME_COUNTRY) {
+      profile->SetInfo(
+          autofill::AutofillType(field.second.type),
+          base::UTF8ToUTF16(country_codes_[combobox->selected_index()]),
+          locale);
+    } else {
+      profile->SetInfo(autofill::AutofillType(field.second.type),
+                       combobox->GetTextForRow(combobox->selected_index()),
+                       locale);
+    }
+  }
+  return success;
 }
 
 void ShippingAddressEditorViewController::OnComboboxModelChanged(
