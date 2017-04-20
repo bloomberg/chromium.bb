@@ -135,6 +135,11 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     AllowedPaths allowed_paths;
   };
 
+  // Returns a file path with a base name at most 255 characters long. This
+  // is the limit on Windows and Linux, and on Windows the system file
+  // selection dialog will fail to open if the file name exceeds 255 characters.
+  static base::FilePath GetShortenedFilePath(const base::FilePath& path);
+
   // Selects a File.
   // Before doing anything this function checks if FileBrowsing is forbidden
   // by Policy. If so, it tries to show an InfoBar and behaves as though no File

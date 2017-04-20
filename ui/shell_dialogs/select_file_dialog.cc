@@ -5,6 +5,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #include <stddef.h>
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -74,6 +75,30 @@ scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
   return CreateSelectFileDialog(listener, policy);
 }
 
+base::FilePath SelectFileDialog::GetShortenedFilePath(
+    const base::FilePath& path) {
+  const size_t kMaxNameLength = 255;
+  if (path.BaseName().value().length() <= kMaxNameLength)
+    return path;
+  base::FilePath filename = path.BaseName();
+  base::FilePath::StringType extension = filename.FinalExtension();
+  filename = filename.RemoveFinalExtension();
+  base::FilePath::StringType file_string = filename.value();
+  // 1 for . plus 12 for longest known extension.
+  size_t max_extension_length = 13;
+  if (file_string.length() < kMaxNameLength) {
+    max_extension_length =
+        std::max(max_extension_length, kMaxNameLength - file_string.length());
+  }
+  if (extension.length() > max_extension_length) {
+    // Take the first max_extension_length characters (this will be the
+    // leading '.' plus the next max_extension_length - 1).
+    extension.resize(max_extension_length);
+  }
+  file_string.resize(kMaxNameLength - extension.length());
+  return path.DirName().Append(file_string).AddExtension(extension);
+}
+
 void SelectFileDialog::SelectFile(
     Type type,
     const base::string16& title,
@@ -98,8 +123,10 @@ void SelectFileDialog::SelectFile(
     return;
   }
 
+  base::FilePath path = GetShortenedFilePath(default_path);
+
   // Call the platform specific implementation of the file selection dialog.
-  SelectFileImpl(type, title, default_path, file_types, file_type_index,
+  SelectFileImpl(type, title, path, file_types, file_type_index,
                  default_extension, owning_window, params);
 }
 

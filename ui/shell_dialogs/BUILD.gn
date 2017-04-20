@@ -77,6 +77,7 @@ test("shell_dialogs_unittests") {
     # TODO(karandeepb) : Revisit this once gn gets mac bundle support.
     # "select_file_dialog_mac_unittest.mm",
     "run_all_unittests.cc",
+    "select_file_dialog_unittest.cc",
     "select_file_dialog_win_unittest.cc",
   ]
 
