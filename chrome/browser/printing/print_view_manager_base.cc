@@ -238,9 +238,9 @@ void PrintViewManagerBase::OnPrintingFailed(int cookie) {
 
 void PrintViewManagerBase::OnShowInvalidPrinterSettingsError() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ShowWarningMessageBox,
-                            l10n_util::GetStringUTF16(
-                                IDS_PRINT_INVALID_PRINTER_SETTINGS)));
+      FROM_HERE, base::BindOnce(&ShowWarningMessageBox,
+                                l10n_util::GetStringUTF16(
+                                    IDS_PRINT_INVALID_PRINTER_SETTINGS)));
 }
 
 void PrintViewManagerBase::DidStartLoading() {
@@ -575,7 +575,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
     return;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PrinterQuery::StopWorker, printer_query));
+      base::BindOnce(&PrinterQuery::StopWorker, printer_query));
 }
 
 void PrintViewManagerBase::SendPrintingEnabled(bool enabled,

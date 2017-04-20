@@ -365,7 +365,8 @@ void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {
     timeout_seconds_randomized = 0;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&PrivetURLFetcher::Try, weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&PrivetURLFetcher::Try, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(timeout_seconds_randomized));
 }
 

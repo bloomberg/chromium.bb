@@ -198,7 +198,7 @@ bool PrintJob::FlushJob(base::TimeDelta timeout) {
   scoped_refptr<PrintJob> handle(this);
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&PrintJob::Quit, quit_factory_.GetWeakPtr()),
+      FROM_HERE, base::BindOnce(&PrintJob::Quit, quit_factory_.GetWeakPtr()),
       timeout);
 
   base::MessageLoop::ScopedNestableTaskAllower allow(
@@ -383,7 +383,7 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
     case JobEventDetails::DOC_DONE: {
       // This will call Stop() and broadcast a JOB_DONE message.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&PrintJob::OnDocumentDone, this));
+          FROM_HERE, base::BindOnce(&PrintJob::OnDocumentDone, this));
       break;
     }
     case JobEventDetails::PAGE_DONE:
@@ -449,9 +449,8 @@ void PrintJob::ControlledWorkerShutdown() {
   // thread because it may block.
   base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&PrintJobWorker::Stop, base::Unretained(worker_.get())),
-      base::Bind(&PrintJob::HoldUntilStopIsCalled, this),
-      false);
+      base::BindOnce(&PrintJobWorker::Stop, base::Unretained(worker_.get())),
+      base::BindOnce(&PrintJob::HoldUntilStopIsCalled, this), false);
 
   is_job_pending_ = false;
   registrar_.RemoveAll();

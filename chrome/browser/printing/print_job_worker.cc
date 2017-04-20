@@ -159,18 +159,16 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   if (ask_user_for_settings) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&HoldRefCallback, make_scoped_refptr(owner_),
-                   base::Bind(&PrintJobWorker::GetSettingsWithUI,
-                              base::Unretained(this),
-                              document_page_count,
-                              has_selection,
-                              is_scripted)));
+        base::BindOnce(&HoldRefCallback, make_scoped_refptr(owner_),
+                       base::Bind(&PrintJobWorker::GetSettingsWithUI,
+                                  base::Unretained(this), document_page_count,
+                                  has_selection, is_scripted)));
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&HoldRefCallback, make_scoped_refptr(owner_),
-                   base::Bind(&PrintJobWorker::UseDefaultSettings,
-                              base::Unretained(this))));
+        base::BindOnce(&HoldRefCallback, make_scoped_refptr(owner_),
+                       base::Bind(&PrintJobWorker::UseDefaultSettings,
+                                  base::Unretained(this))));
   }
 }
 
@@ -179,13 +177,11 @@ void PrintJobWorker::SetSettings(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&HoldRefCallback,
-                 make_scoped_refptr(owner_),
-                 base::Bind(&PrintJobWorker::UpdatePrintSettings,
-                            base::Unretained(this),
-                            base::Passed(&new_settings))));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &HoldRefCallback, make_scoped_refptr(owner_),
+          base::Bind(&PrintJobWorker::UpdatePrintSettings,
+                     base::Unretained(this), base::Passed(&new_settings))));
 }
 
 void PrintJobWorker::UpdatePrintSettings(
@@ -320,7 +316,8 @@ void PrintJobWorker::OnNewPage() {
       // We need to wait for the page to be available.
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&PrintJobWorker::OnNewPage, weak_factory_.GetWeakPtr()),
+          base::BindOnce(&PrintJobWorker::OnNewPage,
+                         weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(500));
       break;
     }

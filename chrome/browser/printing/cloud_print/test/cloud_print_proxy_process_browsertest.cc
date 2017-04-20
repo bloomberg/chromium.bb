@@ -486,8 +486,8 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
       FROM_HERE,
       base::TaskTraits().MayBlock().WithPriority(
           base::TaskPriority::BACKGROUND),
-      base::Bind(&ConnectAsync, base::Passed(&pipe.handle1),
-                 GetServiceProcessChannel()));
+      base::BindOnce(&ConnectAsync, base::Passed(&pipe.handle1),
+                     GetServiceProcessChannel()));
   ServiceProcessControl::GetInstance()->SetChannel(
       IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateClientFactory(
                                     std::move(pipe.handle0), IOTaskRunner()),

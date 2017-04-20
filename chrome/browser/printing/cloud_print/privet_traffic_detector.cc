@@ -54,7 +54,7 @@ void GetNetworkListOnFileThread(
                             8,
                             net::IP_ADDRESS_ATTRIBUTE_NONE));
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                   base::Bind(callback, ip4_networks));
+                                   base::BindOnce(callback, ip4_networks));
 }
 
 }  // namespace
@@ -74,10 +74,9 @@ PrivetTrafficDetector::PrivetTrafficDetector(
 
 void PrivetTrafficDetector::Start() {
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PrivetTrafficDetector::StartOnIOThread,
-                 weak_ptr_factory_.GetWeakPtr()));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PrivetTrafficDetector::StartOnIOThread,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 PrivetTrafficDetector::~PrivetTrafficDetector() {
@@ -104,11 +103,10 @@ void PrivetTrafficDetector::ScheduleRestart() {
   socket_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
   content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&GetNetworkListOnFileThread,
-                 base::Bind(&PrivetTrafficDetector::Restart,
-                            weak_ptr_factory_.GetWeakPtr())),
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&GetNetworkListOnFileThread,
+                     base::Bind(&PrivetTrafficDetector::Restart,
+                                weak_ptr_factory_.GetWeakPtr())),
       base::TimeDelta::FromSeconds(3));
 }
 

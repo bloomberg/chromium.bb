@@ -202,7 +202,7 @@ PrivetNotificationService::PrivetNotificationService(
     content::BrowserContext* profile)
     : profile_(profile) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&PrivetNotificationService::Start, AsWeakPtr()),
+      FROM_HERE, base::BindOnce(&PrivetNotificationService::Start, AsWeakPtr()),
       base::TimeDelta::FromSeconds(kStartDelaySeconds +
                                    base::RandInt(0, kStartDelaySeconds / 4)));
 }

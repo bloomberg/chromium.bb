@@ -45,8 +45,8 @@ class SignInObserver : public content::WebContentsObserver {
 
     if (cloud_devices::IsCloudPrintURL(navigation_handle->GetURL())) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&SignInObserver::OnSignIn,
-                                weak_ptr_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&SignInObserver::OnSignIn,
+                                    weak_ptr_factory_.GetWeakPtr()));
     }
   }
 

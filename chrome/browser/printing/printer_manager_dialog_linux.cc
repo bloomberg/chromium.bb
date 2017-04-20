@@ -79,7 +79,7 @@ namespace printing {
 
 void PrinterManagerDialog::ShowPrinterManagerDialog() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&DetectAndOpenPrinterConfigDialog));
+                          base::BindOnce(&DetectAndOpenPrinterConfigDialog));
 }
 
 }  // namespace printing

@@ -149,7 +149,7 @@ void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
     UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvailablePrintersList",
                                printers.size());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, printers));
+        FROM_HERE, base::BindOnce(callback, printers));
   } else {
     InvokeServiceTask(
         base::Bind(&CloudPrintProxyService::GetCloudPrintProxyPrinters,

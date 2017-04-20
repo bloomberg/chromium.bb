@@ -170,9 +170,10 @@ void PwgUtilityProcessHostClient::Convert(
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&FileHandlers::Init, base::Unretained(files_.get()),
-                 base::RetainedRef(data)),
-      base::Bind(&PwgUtilityProcessHostClient::OnFilesReadyOnUIThread, this));
+      base::BindOnce(&FileHandlers::Init, base::Unretained(files_.get()),
+                     base::RetainedRef(data)),
+      base::BindOnce(&PwgUtilityProcessHostClient::OnFilesReadyOnUIThread,
+                     this));
 }
 
 void PwgUtilityProcessHostClient::OnProcessCrashed(int exit_code) {
@@ -211,7 +212,8 @@ void PwgUtilityProcessHostClient::OnFilesReadyOnUIThread() {
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PwgUtilityProcessHostClient::StartProcessOnIOThread, this));
+      base::BindOnce(&PwgUtilityProcessHostClient::StartProcessOnIOThread,
+                     this));
 }
 
 void PwgUtilityProcessHostClient::StartProcessOnIOThread() {
@@ -230,8 +232,8 @@ void PwgUtilityProcessHostClient::StartProcessOnIOThread() {
 void PwgUtilityProcessHostClient::RunCallback(bool success) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PwgUtilityProcessHostClient::RunCallbackOnUIThread, this,
-                 success));
+      base::BindOnce(&PwgUtilityProcessHostClient::RunCallbackOnUIThread, this,
+                     success));
 }
 
 void PwgUtilityProcessHostClient::RunCallbackOnUIThread(bool success) {
@@ -239,8 +241,9 @@ void PwgUtilityProcessHostClient::RunCallbackOnUIThread(bool success) {
   if (callback_.is_null())
     return;
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback_, success, files_->GetPwgPath()));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(callback_, success, files_->GetPwgPath()));
   callback_.Reset();
 }
 

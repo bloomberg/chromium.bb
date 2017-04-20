@@ -28,7 +28,7 @@ void ShowPrintErrorDialogTask() {
 void ShowPrintErrorDialog() {
   // Nested loop may destroy caller.
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(&ShowPrintErrorDialogTask));
+                                   base::BindOnce(&ShowPrintErrorDialogTask));
 }
 
 }  // namespace chrome
