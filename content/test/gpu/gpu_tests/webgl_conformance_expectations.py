@@ -459,21 +459,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=635081)
 
     # Linux failures
-    self.Flaky('conformance/textures/video/' +
-               'tex-2d-rgba-rgba-unsigned_byte.html',
-               ['linux', 'no_passthrough'], bug=627525)
-    self.Flaky('conformance/textures/video/' +
-               'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-               ['linux', 'no_passthrough'], bug=627525)
-    self.Flaky('conformance/textures/video/' +
-               'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-               ['linux', 'no_passthrough'], bug=627525)
-    self.Flaky('conformance/textures/video/' +
-               'tex-2d-rgb-rgb-unsigned_byte.html',
-               ['linux', 'no_passthrough'], bug=627525)
-    self.Flaky('conformance/textures/video/' +
-               'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-               ['linux', 'no_passthrough'], bug=627525)
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
         ['linux', 'intel'], bug=680675)
 
