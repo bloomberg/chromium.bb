@@ -37,6 +37,13 @@ ActiveSheetsChange CompareActiveStyleSheets(
       changed_rule_sets.insert(old_style_sheets[index].second);
   }
 
+  // If we add a sheet for which the media attribute currently doesn't match, we
+  // have a null RuleSet and there's no need to do any style invalidation.
+  // However, we need to tell the StyleEngine to re-collect viewport and device
+  // dependent media query results so that we can correctly update active style
+  // sheets when such media query evaluations change.
+  bool adds_non_matching_mq = false;
+
   if (index == old_style_sheet_count) {
     // The old stylesheet vector is a prefix of the new vector in terms of
     // StyleSheets. If none of the RuleSets changed, we only need to add the new
@@ -45,10 +52,12 @@ ActiveSheetsChange CompareActiveStyleSheets(
     for (; index < new_style_sheet_count; index++) {
       if (new_style_sheets[index].second)
         changed_rule_sets.insert(new_style_sheets[index].second);
+      else if (new_style_sheets[index].first->HasMediaQueryResults())
+        adds_non_matching_mq = true;
     }
     if (rule_sets_changed_in_common_prefix)
       return kActiveSheetsChanged;
-    if (changed_rule_sets.IsEmpty())
+    if (changed_rule_sets.IsEmpty() && !adds_non_matching_mq)
       return kNoActiveSheetsChanged;
     return kActiveSheetsAppended;
   }
@@ -58,9 +67,12 @@ ActiveSheetsChange CompareActiveStyleSheets(
     for (; index < old_style_sheet_count; index++) {
       if (old_style_sheets[index].second)
         changed_rule_sets.insert(old_style_sheets[index].second);
+      else if (old_style_sheets[index].first->HasMediaQueryResults())
+        adds_non_matching_mq = true;
     }
-    return changed_rule_sets.IsEmpty() ? kNoActiveSheetsChanged
-                                       : kActiveSheetsChanged;
+    return changed_rule_sets.IsEmpty() && !adds_non_matching_mq
+               ? kNoActiveSheetsChanged
+               : kActiveSheetsChanged;
   }
 
   DCHECK_LT(index, old_style_sheet_count);
@@ -88,6 +100,8 @@ ActiveSheetsChange CompareActiveStyleSheets(
       // Sheet either removed or inserted.
       if (sheet1.second)
         changed_rule_sets.insert(sheet1.second);
+      else if (sheet1.first->HasMediaQueryResults())
+        adds_non_matching_mq = true;
       continue;
     }
 
@@ -104,8 +118,9 @@ ActiveSheetsChange CompareActiveStyleSheets(
     if (sheet2.second)
       changed_rule_sets.insert(sheet2.second);
   }
-  return changed_rule_sets.IsEmpty() ? kNoActiveSheetsChanged
-                                     : kActiveSheetsChanged;
+  return changed_rule_sets.IsEmpty() && !adds_non_matching_mq
+             ? kNoActiveSheetsChanged
+             : kActiveSheetsChanged;
 }
 
 }  // namespace blink

@@ -102,6 +102,10 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   const MediaQuerySet* MediaQueries() const { return media_queries_; }
   void SetMediaQueries(MediaQuerySet*);
   bool MatchesMediaQueries(const MediaQueryEvaluator&);
+  bool HasMediaQueryResults() const {
+    return !viewport_dependent_media_query_results_.IsEmpty() ||
+           !device_dependent_media_query_results_.IsEmpty();
+  }
   const MediaQueryResultList& ViewportDependentMediaQueryResults() const {
     return viewport_dependent_media_query_results_;
   }

@@ -1099,6 +1099,9 @@ void StyleEngine::ApplyRuleSetChanges(
     return;
   }
 
+  if (changed_rule_sets.IsEmpty())
+    return;
+
   if (changed_rule_flags & kKeyframesRules)
     ScopedStyleResolver::KeyframesRulesAdded(tree_scope);
 
