@@ -62,8 +62,6 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   // is pressed, and only cleared when all keys are released.
   std::set<ui::KeyboardCode> keys_pressed_together_;
 
-  int last_view_storage_id_ = 0;
-
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakEventHandler);
 };
 

@@ -44,6 +44,7 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#include "ui/aura/env.h"
 #endif
 
 namespace extensions {
@@ -177,6 +178,9 @@ class AutomationWebContentsObserver
       params.event_type = event.event_type;
       params.update = event.update;
       params.event_from = event.event_from;
+#if defined(USE_AURA)
+      params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
+#endif
 
       AutomationEventRouter* router = AutomationEventRouter::GetInstance();
       router->DispatchAccessibilityEvent(params);

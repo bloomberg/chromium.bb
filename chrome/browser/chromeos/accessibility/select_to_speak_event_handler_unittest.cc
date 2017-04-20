@@ -219,30 +219,6 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClickTwice) {
   EXPECT_FALSE(event_capturer_.last_key_event());
 }
 
-TEST_F(SelectToSpeakEventHandlerTest, SearchPlusMouseThenCancel) {
-  // If the user holds the Search key and then presses the mouse button,
-  // but then releases the Search key first while the mouse is still down,
-  // a cancel AX event is sent and the subsequent mouse up is canceled too.
-
-  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
-  ASSERT_TRUE(event_capturer_.last_key_event());
-  EXPECT_FALSE(event_capturer_.last_key_event()->handled());
-
-  generator_->set_current_location(gfx::Point(100, 12));
-  generator_->PressLeftButton();
-  EXPECT_FALSE(event_capturer_.last_mouse_event());
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_PRESSED));
-
-  event_capturer_.Reset();
-  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
-  EXPECT_FALSE(event_capturer_.last_key_event());
-
-  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_CANCELED));
-
-  generator_->ReleaseLeftButton();
-  EXPECT_FALSE(event_capturer_.last_mouse_event());
-}
-
 TEST_F(SelectToSpeakEventHandlerTest, SearchPlusKeyIgnoresClicks) {
   // If the user presses the Search key and then some other key,
   // we should assume the user does not want select-to-speak, and

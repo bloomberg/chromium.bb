@@ -233,6 +233,11 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopActions) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopHitTest) {
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "hit_test.html"))
+      << message_;
+}
+
 // Flaky, see http://crbug.com/435449
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopLoadTabs) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "load_tabs.html"))
