@@ -24,6 +24,7 @@
 #include <ws2tcpip.h>
 #elif defined(OS_POSIX) && !defined(OS_NACL)
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #endif
