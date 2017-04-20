@@ -2301,9 +2301,9 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
       // Should we allow a follow on exhaustive search?
       if (is_exhaustive_allowed(cpi, x)) {
-        int64_t exhuastive_thr = sf->exhaustive_searches_thresh;
+        int exhuastive_thr = sf->exhaustive_searches_thresh;
         exhuastive_thr >>=
-            8 - (b_width_log2_lookup[bsize] + b_height_log2_lookup[bsize]);
+            10 - (b_width_log2_lookup[bsize] + b_height_log2_lookup[bsize]);
 
         // Threshold variance for an exhaustive full search.
         if (var > exhuastive_thr) {

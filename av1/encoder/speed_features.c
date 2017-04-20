@@ -424,9 +424,9 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->allow_exhaustive_searches = 1;
   int speed = (oxcf->speed > MAX_MESH_SPEED) ? MAX_MESH_SPEED : oxcf->speed;
   if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
-    sf->exhaustive_searches_thresh = (1 << 22);
+    sf->exhaustive_searches_thresh = (1 << 24);
   else
-    sf->exhaustive_searches_thresh = (1 << 23);
+    sf->exhaustive_searches_thresh = (1 << 25);
   sf->max_exaustive_pct = good_quality_max_mesh_pct[speed];
   if (speed > 0)
     sf->exhaustive_searches_thresh = sf->exhaustive_searches_thresh << 1;
