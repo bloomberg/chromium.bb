@@ -37,9 +37,9 @@ using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 namespace {
 
-class PrintPreviewTest : public InProcessBrowserTest {
+class PrintPreviewBrowserTest : public InProcessBrowserTest {
  public:
-  PrintPreviewTest() {}
+  PrintPreviewBrowserTest() {}
 
   void Print() {
     content::TestNavigationObserver nav_observer(NULL);
@@ -50,7 +50,7 @@ class PrintPreviewTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
+IN_PROC_BROWSER_TEST_F(PrintPreviewBrowserTest, PrintCommands) {
   // We start off at about:blank page.
   // Make sure there is 1 tab and print is enabled.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
@@ -93,7 +93,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
 #else
 #define MAYBE_TaskManagerNewPrintPreview TaskManagerNewPrintPreview
 #endif
-IN_PROC_BROWSER_TEST_F(PrintPreviewTest, MAYBE_TaskManagerNewPrintPreview) {
+IN_PROC_BROWSER_TEST_F(PrintPreviewBrowserTest,
+                       MAYBE_TaskManagerNewPrintPreview) {
   chrome::ShowTaskManager(browser());  // Show task manager BEFORE print dialog.
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
@@ -111,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, MAYBE_TaskManagerNewPrintPreview) {
 }
 
 // http://crbug/367665.
-IN_PROC_BROWSER_TEST_F(PrintPreviewTest,
+IN_PROC_BROWSER_TEST_F(PrintPreviewBrowserTest,
                        DISABLED_TaskManagerExistingPrintPreview) {
   // Create the print preview dialog.
   Print();
@@ -127,7 +128,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest,
 
 #if defined(OS_WIN)
 // http://crbug.com/396360
-IN_PROC_BROWSER_TEST_F(PrintPreviewTest, DISABLED_NoCrashOnCloseWithOtherTabs) {
+IN_PROC_BROWSER_TEST_F(PrintPreviewBrowserTest,
+                       DISABLED_NoCrashOnCloseWithOtherTabs) {
   // Now print preview.
   Print();
 
