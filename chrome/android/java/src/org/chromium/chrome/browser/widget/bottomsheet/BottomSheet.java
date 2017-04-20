@@ -32,6 +32,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -1107,7 +1108,9 @@ public class BottomSheet
         assert mHasRootLayoutOccurred && mTabModelSelector != null
                 && mTabModelSelector.isTabStateInitialized();
 
-        if (mCurrentState != SHEET_STATE_PEEK) return;
+        // If FRE is not complete, the FRE screen is likely covering ChromeTabbedActivity so the
+        // help bubble should not be shown. Also skip showing if the bottom sheet is already open.
+        if (!FirstRunStatus.getFirstRunFlowComplete() || mCurrentState != SHEET_STATE_PEEK) return;
 
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         if (preferences.getBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, false)) return;
