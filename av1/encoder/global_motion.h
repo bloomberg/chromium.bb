@@ -26,13 +26,6 @@ void convert_model_to_params(const double *params, WarpedMotionParams *model);
 
 int is_enough_erroradvantage(double erroradv, int params_cost);
 
-// Adds some offset to a global motion parameter and handles
-// all of the necessary precision shifts, clamping, and
-// zero-centering.
-int32_t add_param_offset(int param_index, int32_t param_value, int32_t offset);
-
-void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype);
-
 double refine_integerized_param(WarpedMotionParams *wm,
                                 TransformationType wmtype,
 #if CONFIG_HIGHBITDEPTH

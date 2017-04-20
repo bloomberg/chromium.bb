@@ -40,7 +40,7 @@ int is_enough_erroradvantage(double best_erroradvantage, int params_cost) {
          best_erroradvantage * params_cost < ERRORADV_COST_PRODUCT_THRESH;
 }
 
-void convert_to_params(const double *params, int32_t *model) {
+static void convert_to_params(const double *params, int32_t *model) {
   int i;
   int alpha_present = 0;
   model[0] = (int32_t)floor(params[0] * (1 << GM_TRANS_PREC_BITS) + 0.5);
@@ -81,7 +81,8 @@ void convert_model_to_params(const double *params, WarpedMotionParams *model) {
 // Adds some offset to a global motion parameter and handles
 // all of the necessary precision shifts, clamping, and
 // zero-centering.
-int32_t add_param_offset(int param_index, int32_t param_value, int32_t offset) {
+static int32_t add_param_offset(int param_index, int32_t param_value,
+                                int32_t offset) {
   const int scale_vals[3] = { GM_TRANS_PREC_DIFF, GM_ALPHA_PREC_DIFF,
                               GM_ROW3HOMO_PREC_DIFF };
   const int clamp_vals[3] = { GM_TRANS_MAX, GM_ALPHA_MAX, GM_ROW3HOMO_MAX };
@@ -107,7 +108,7 @@ int32_t add_param_offset(int param_index, int32_t param_value, int32_t offset) {
   return param_value + (is_one_centered << WARPEDMODEL_PREC_BITS);
 }
 
-void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype) {
+static void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype) {
   switch (wmtype) {
     case IDENTITY: wm->wmmat[0] = 0; wm->wmmat[1] = 0;
     case TRANSLATION:
@@ -237,7 +238,8 @@ static INLINE RansacFunc get_ransac_type(TransformationType type) {
 }
 
 #if CONFIG_HIGHBITDEPTH
-unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth) {
+static unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm,
+                                        int bit_depth) {
   int i, j;
   uint16_t *orig_buf = CONVERT_TO_SHORTPTR(frm->y_buffer);
   uint8_t *buf = malloc(frm->y_height * frm->y_stride * sizeof(*buf));
