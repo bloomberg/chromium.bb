@@ -17,10 +17,8 @@ class LayerTreeImpl;
 
 class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
  public:
-  int ScrollLayerId() const { return scroll_layer_id_; }
   ElementId scroll_element_id() const { return scroll_element_id_; }
-
-  void SetScrollInfo(int scroll_layer_id, ElementId scroll_element_id);
+  void SetScrollElementId(ElementId scroll_element_id);
 
   float current_pos() const { return current_pos_; }
   bool SetCurrentPos(float current_pos);
@@ -77,7 +75,6 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   virtual bool IsThumbResizable() const = 0;
 
  private:
-  int scroll_layer_id_;
   ElementId scroll_element_id_;
   bool is_overlay_scrollbar_;
 

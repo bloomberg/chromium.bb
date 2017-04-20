@@ -14,8 +14,7 @@ namespace cc {
 class CC_EXPORT ScrollbarLayerInterface {
  public:
   virtual ElementId scroll_element_id() const = 0;
-  // TODO(pdr): Remove layer_id and refactor scrollbars to just use element ids.
-  virtual void SetScrollInfo(int layer_id, ElementId element_id) = 0;
+  virtual void SetScrollElementId(ElementId element_id) = 0;
 
   virtual ScrollbarOrientation orientation() const = 0;
 

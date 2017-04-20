@@ -22,7 +22,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
 
   static scoped_refptr<PaintedScrollbarLayer> Create(
       std::unique_ptr<Scrollbar> scrollbar,
-      int scroll_layer_id,
       ElementId element_id = ElementId());
 
   bool OpacityCanAnimateOnImplThread() const override;
@@ -31,8 +30,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
 
   // ScrollbarLayerInterface
   ElementId scroll_element_id() const override;
-  // TODO(pdr): Remove layer_id and refactor scrollbars to just use element ids.
-  void SetScrollInfo(int layer_id, ElementId element_id) override;
+  void SetScrollElementId(ElementId element_id) override;
 
   ScrollbarOrientation orientation() const override;
 
@@ -47,7 +45,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
 
  protected:
   PaintedScrollbarLayer(std::unique_ptr<Scrollbar> scrollbar,
-                        int scroll_layer_id,
                         ElementId scroll_element_id);
   ~PaintedScrollbarLayer() override;
 
@@ -79,7 +76,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
                                           ScrollbarPart part);
 
   std::unique_ptr<Scrollbar> scrollbar_;
-  int scroll_layer_id_;
   ElementId scroll_element_id_;
 
   float internal_contents_scale_;

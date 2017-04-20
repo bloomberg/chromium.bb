@@ -1726,7 +1726,9 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
         scroll_element_id);
   }
 
-  DidUpdateScrollState(scrollbar_layer->ScrollLayerId());
+  // TODO(pdr): Refactor DidUpdateScrollState to use ElementIds instead of
+  // layer ids and remove this use of LayerIdByElementId.
+  DidUpdateScrollState(LayerIdByElementId(scroll_element_id));
 }
 
 void LayerTreeImpl::UnregisterScrollbar(

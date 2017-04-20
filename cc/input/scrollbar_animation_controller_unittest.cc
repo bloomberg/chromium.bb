@@ -107,10 +107,8 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
     clip_layer_->test_properties()->AddChild(std::move(scroll_layer));
     host_impl_.active_tree()->SetRootLayerForTesting(std::move(clip));
 
-    v_scrollbar_layer_->SetScrollInfo(scroll_layer_ptr->id(),
-                                      scroll_layer_ptr->element_id());
-    h_scrollbar_layer_->SetScrollInfo(scroll_layer_ptr->id(),
-                                      scroll_layer_ptr->element_id());
+    v_scrollbar_layer_->SetScrollElementId(scroll_layer_ptr->element_id());
+    h_scrollbar_layer_->SetScrollElementId(scroll_layer_ptr->element_id());
     v_scrollbar_layer_->test_properties()->opacity_can_animate = true;
     h_scrollbar_layer_->test_properties()->opacity_can_animate = true;
     clip_layer_->SetBounds(gfx::Size(100, 100));
@@ -1159,14 +1157,14 @@ class ScrollbarAnimationControllerAndroidTest
     clip_layer_ = clip.get();
     scroll_layer->SetElementId(
         LayerIdToElementIdForTesting(scroll_layer->id()));
+
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
     scroll_layer->test_properties()->AddChild(std::move(scrollbar));
     clip->test_properties()->AddChild(std::move(scroll_layer));
     host_impl_.active_tree()->SetRootLayerForTesting(std::move(clip));
 
-    scrollbar_layer_->SetScrollInfo(scroll_layer_ptr->id(),
-                                    scroll_layer_ptr->element_id());
+    scrollbar_layer_->SetScrollElementId(scroll_layer_ptr->element_id());
     clip_layer_->SetBounds(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
     host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();

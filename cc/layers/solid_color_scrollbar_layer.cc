@@ -27,11 +27,10 @@ scoped_refptr<SolidColorScrollbarLayer> SolidColorScrollbarLayer::Create(
     int thumb_thickness,
     int track_start,
     bool is_left_side_vertical_scrollbar,
-    int scroll_layer_id,
     ElementId scroll_element_id) {
   return make_scoped_refptr(new SolidColorScrollbarLayer(
       orientation, thumb_thickness, track_start,
-      is_left_side_vertical_scrollbar, scroll_layer_id, scroll_element_id));
+      is_left_side_vertical_scrollbar, scroll_element_id));
 }
 
 SolidColorScrollbarLayer::SolidColorScrollbarLayerInputs::
@@ -39,10 +38,8 @@ SolidColorScrollbarLayer::SolidColorScrollbarLayerInputs::
                                    int thumb_thickness,
                                    int track_start,
                                    bool is_left_side_vertical_scrollbar,
-                                   int scroll_layer_id,
                                    ElementId scroll_element_id)
-    : scroll_layer_id(scroll_layer_id),
-      scroll_element_id(scroll_element_id),
+    : scroll_element_id(scroll_element_id),
       orientation(orientation),
       thumb_thickness(thumb_thickness),
       track_start(track_start),
@@ -56,13 +53,11 @@ SolidColorScrollbarLayer::SolidColorScrollbarLayer(
     int thumb_thickness,
     int track_start,
     bool is_left_side_vertical_scrollbar,
-    int scroll_layer_id,
     ElementId scroll_element_id)
     : solid_color_scrollbar_layer_inputs_(orientation,
                                           thumb_thickness,
                                           track_start,
                                           is_left_side_vertical_scrollbar,
-                                          scroll_layer_id,
                                           scroll_element_id) {
   Layer::SetOpacity(0.f);
 }
@@ -84,8 +79,7 @@ void SolidColorScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   SolidColorScrollbarLayerImpl* scrollbar_layer =
       static_cast<SolidColorScrollbarLayerImpl*>(layer);
 
-  scrollbar_layer->SetScrollInfo(
-      solid_color_scrollbar_layer_inputs_.scroll_layer_id,
+  scrollbar_layer->SetScrollElementId(
       solid_color_scrollbar_layer_inputs_.scroll_element_id);
 }
 
@@ -105,13 +99,10 @@ ElementId SolidColorScrollbarLayer::scroll_element_id() const {
   return solid_color_scrollbar_layer_inputs_.scroll_element_id;
 }
 
-void SolidColorScrollbarLayer::SetScrollInfo(int layer_id,
-                                             ElementId element_id) {
-  if (layer_id == solid_color_scrollbar_layer_inputs_.scroll_layer_id &&
-      element_id == solid_color_scrollbar_layer_inputs_.scroll_element_id)
+void SolidColorScrollbarLayer::SetScrollElementId(ElementId element_id) {
+  if (element_id == solid_color_scrollbar_layer_inputs_.scroll_element_id)
     return;
 
-  solid_color_scrollbar_layer_inputs_.scroll_layer_id = layer_id;
   solid_color_scrollbar_layer_inputs_.scroll_element_id = element_id;
   SetNeedsFullTreeSync();
 }

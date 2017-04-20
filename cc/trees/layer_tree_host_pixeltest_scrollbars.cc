@@ -88,7 +88,7 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, NoScale) {
 
   auto scrollbar = base::MakeUnique<PaintedScrollbar>();
   scoped_refptr<PaintedScrollbarLayer> layer =
-      PaintedScrollbarLayer::Create(std::move(scrollbar), Layer::INVALID_ID);
+      PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
   layer->SetBounds(gfx::Size(200, 200));
   background->AddChild(layer);
@@ -107,7 +107,7 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, DeviceScaleFactor) {
 
   auto scrollbar = base::MakeUnique<PaintedScrollbar>();
   scoped_refptr<PaintedScrollbarLayer> layer =
-      PaintedScrollbarLayer::Create(std::move(scrollbar), Layer::INVALID_ID);
+      PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
   layer->SetBounds(gfx::Size(100, 100));
   background->AddChild(layer);
@@ -122,7 +122,7 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, TransformScale) {
 
   auto scrollbar = base::MakeUnique<PaintedScrollbar>();
   scoped_refptr<PaintedScrollbarLayer> layer =
-      PaintedScrollbarLayer::Create(std::move(scrollbar), Layer::INVALID_ID);
+      PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
   layer->SetBounds(gfx::Size(100, 100));
   background->AddChild(layer);
@@ -144,7 +144,7 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, HugeTransformScale) {
   auto scrollbar = base::MakeUnique<PaintedScrollbar>();
   scrollbar->set_paint_scale(1);
   scoped_refptr<PaintedScrollbarLayer> layer =
-      PaintedScrollbarLayer::Create(std::move(scrollbar), Layer::INVALID_ID);
+      PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
   layer->SetBounds(gfx::Size(10, 400));
   background->AddChild(layer);
@@ -239,8 +239,7 @@ TEST_F(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledUp) {
 
   auto scrollbar = base::MakeUnique<PaintedOverlayScrollbar>();
   scoped_refptr<PaintedOverlayScrollbarLayer> layer =
-      PaintedOverlayScrollbarLayer::Create(std::move(scrollbar),
-                                           Layer::INVALID_ID);
+      PaintedOverlayScrollbarLayer::Create(std::move(scrollbar));
 
   scrollbar_layer_id_ = layer->id();
   thickness_scale_ = 5.f;
@@ -264,8 +263,7 @@ TEST_F(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledDown) {
 
   auto scrollbar = base::MakeUnique<PaintedOverlayScrollbar>();
   scoped_refptr<PaintedOverlayScrollbarLayer> layer =
-      PaintedOverlayScrollbarLayer::Create(std::move(scrollbar),
-                                           Layer::INVALID_ID);
+      PaintedOverlayScrollbarLayer::Create(std::move(scrollbar));
 
   scrollbar_layer_id_ = layer->id();
   thickness_scale_ = 0.4f;

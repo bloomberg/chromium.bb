@@ -42,13 +42,11 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
                        base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
                                                        painter,
                                                        std::move(geometry)),
-                       cc::Layer::INVALID_ID,
                        cc::ElementId()))
                  : new WebLayerImpl(PaintedScrollbarLayer::Create(
                        base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
                                                        painter,
                                                        std::move(geometry)),
-                       cc::Layer::INVALID_ID,
                        cc::ElementId()))) {}
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
@@ -61,7 +59,6 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
                                            thumb_thickness,
                                            track_start,
                                            is_left_side_vertical_scrollbar,
-                                           cc::Layer::INVALID_ID,
                                            cc::ElementId()))) {}
 
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {
@@ -73,9 +70,8 @@ blink::WebLayer* WebScrollbarLayerImpl::Layer() {
 
 void WebScrollbarLayerImpl::SetScrollLayer(blink::WebLayer* layer) {
   cc::Layer* scroll_layer =
-      layer ? static_cast<WebLayerImpl*>(layer)->layer() : 0;
-  layer_->layer()->ToScrollbarLayer()->SetScrollInfo(
-      scroll_layer ? scroll_layer->id() : cc::Layer::INVALID_ID,
+      layer ? static_cast<WebLayerImpl*>(layer)->layer() : nullptr;
+  layer_->layer()->ToScrollbarLayer()->SetScrollElementId(
       scroll_layer ? scroll_layer->element_id() : cc::ElementId());
 }
 

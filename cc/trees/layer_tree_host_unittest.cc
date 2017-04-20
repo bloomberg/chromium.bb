@@ -1750,7 +1750,6 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     bool paint_scrollbar = true;
     bool has_thumb = false;
     scrollbar_ = FakePaintedScrollbarLayer::Create(paint_scrollbar, has_thumb,
-                                                   root_layer_->id(),
                                                    root_layer_->element_id());
     scrollbar_->SetPosition(gfx::PointF(0.f, 10.f));
     scrollbar_->SetBounds(gfx::Size(10, 10));
@@ -3738,7 +3737,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
     bool paint_scrollbar = true;
     bool has_thumb = false;
     scrollbar_layer_ = FakePaintedScrollbarLayer::Create(
-        paint_scrollbar, has_thumb, root_->id(), root_->element_id());
+        paint_scrollbar, has_thumb, root_->element_id());
 
     root_->AddChild(scrollbar_layer_);
 

@@ -1041,7 +1041,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithOverlappingNonScrollableLayer) {
                                            false, true);
   scrollbar->SetBounds(scrollbar_size);
   scrollbar->SetPosition(gfx::PointF(345, 0));
-  scrollbar->SetScrollInfo(scroll->id(), scroll->element_id());
+  scrollbar->SetScrollElementId(scroll->element_id());
   scrollbar->SetDrawsContent(true);
   scrollbar->test_properties()->opacity = 1.f;
 
@@ -1113,7 +1113,7 @@ TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {
                                            false, true);
   drawn_scrollbar->SetBounds(scrollbar_size);
   drawn_scrollbar->SetPosition(gfx::PointF(345, 0));
-  drawn_scrollbar->SetScrollInfo(scroll->id(), scroll->element_id());
+  drawn_scrollbar->SetScrollElementId(scroll->element_id());
   drawn_scrollbar->SetDrawsContent(true);
   drawn_scrollbar->test_properties()->opacity = 1.f;
 
@@ -2856,13 +2856,13 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
 
     LayerImpl* scroll = host_impl_->active_tree()->OuterViewportScrollLayer();
     LayerImpl* root = host_impl_->active_tree()->InnerViewportContainerLayer();
-    scrollbar->SetScrollInfo(scroll->id(), scroll->element_id());
+    scrollbar->SetScrollElementId(scroll->element_id());
     root->test_properties()->AddChild(std::move(scrollbar));
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     host_impl_->active_tree()->DidBecomeActive();
     DrawFrame();
 
-    // SetScrollInfo will initialize the scrollbar which will cause it to
+    // SetScrollElementId will initialize the scrollbar which will cause it to
     // show and request a redraw.
     did_request_redraw_ = false;
   }
@@ -3113,7 +3113,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     LayerImpl* scroll = host_impl_->pending_tree()->OuterViewportScrollLayer();
     LayerImpl* container =
         host_impl_->pending_tree()->InnerViewportContainerLayer();
-    scrollbar->SetScrollInfo(scroll->id(), scroll->element_id());
+    scrollbar->SetScrollElementId(scroll->element_id());
     container->test_properties()->AddChild(std::move(scrollbar));
     host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->pending_tree()->BuildPropertyTreesForTesting();
@@ -3208,7 +3208,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarVisibilityChangeCausesRedrawAndCommit) {
   LayerImpl* scroll = host_impl_->pending_tree()->OuterViewportScrollLayer();
   LayerImpl* container =
       host_impl_->pending_tree()->InnerViewportContainerLayer();
-  scrollbar->SetScrollInfo(scroll->id(), scroll->element_id());
+  scrollbar->SetScrollElementId(scroll->element_id());
   container->test_properties()->AddChild(std::move(scrollbar));
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
@@ -3284,7 +3284,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {
       LayerImpl::Create(host_impl_->active_tree(), child_clip_id);
   child->SetBounds(inner_viewport_size);
 
-  horiz_scrollbar->SetScrollInfo(root_scroll->id(), root_scroll->element_id());
+  horiz_scrollbar->SetScrollElementId(root_scroll->element_id());
 
   EXPECT_EQ(300, horiz_scrollbar->clip_layer_length());
 }
@@ -3337,12 +3337,11 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
                          root_scroll->element_id()));
-  vert_1_scrollbar->SetScrollInfo(root_scroll->id(), root_scroll->element_id());
+  vert_1_scrollbar->SetScrollElementId(root_scroll->element_id());
   EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       root_scroll->element_id()));
-  horiz_1_scrollbar->SetScrollInfo(root_scroll->id(),
-                                   root_scroll->element_id());
+  horiz_1_scrollbar->SetScrollElementId(root_scroll->element_id());
   EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       root_scroll->element_id()));
@@ -3372,11 +3371,11 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
                          child_scroll_element_id));
-  vert_2_scrollbar->SetScrollInfo(child_scroll_id, child_scroll_element_id);
+  vert_2_scrollbar->SetScrollElementId(child_scroll_element_id);
   EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       child_scroll_element_id));
-  horiz_2_scrollbar->SetScrollInfo(child_scroll_id, child_scroll_element_id);
+  horiz_2_scrollbar->SetScrollElementId(child_scroll_element_id);
   EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       child_scroll_element_id));
@@ -3446,7 +3445,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
       SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 6,
                                            VERTICAL, 5, 5, true, true);
-  scrollbar->SetScrollInfo(root_scroll->id(), root_scroll->element_id());
+  scrollbar->SetScrollElementId(root_scroll->element_id());
   scrollbar->SetDrawsContent(true);
   scrollbar->SetBounds(scrollbar_size);
   scrollbar->SetTouchEventHandlerRegion(gfx::Rect(scrollbar_size));
@@ -12086,7 +12085,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(),
                                            scrollbar_1_id, VERTICAL, 5, 5, true,
                                            true);
-  scrollbar_1->SetScrollInfo(root_scroll->id(), root_scroll->element_id());
+  scrollbar_1->SetScrollElementId(root_scroll->element_id());
   scrollbar_1->SetDrawsContent(true);
   scrollbar_1->SetBounds(scrollbar_size_1);
   scrollbar_1->SetTouchEventHandlerRegion(gfx::Rect(scrollbar_size_1));
@@ -12159,7 +12158,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
         MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
   }
 
-  scrollbar_2->SetScrollInfo(child_scroll_id, child_element_id);
+  scrollbar_2->SetScrollElementId(child_element_id);
   scrollbar_2->SetDrawsContent(true);
   scrollbar_2->SetBounds(scrollbar_size_2);
 

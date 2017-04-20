@@ -353,7 +353,7 @@ class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
     root_layer->AddChild(scroll_clip_layer);
 
     scoped_refptr<Layer> scrollbar_layer = FakePaintedScrollbarLayer::Create(
-        false, true, content_layer_->id(), content_layer_->element_id());
+        false, true, content_layer_->element_id());
     scrollbar_layer->SetPosition(gfx::PointF(300.f, 300.f));
     scrollbar_layer->SetBounds(gfx::Size(10, 100));
     root_layer->AddChild(scrollbar_layer);

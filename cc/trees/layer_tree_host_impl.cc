@@ -3683,6 +3683,7 @@ void LayerTreeHostImpl::RegisterScrollbarAnimationController(
     return;
   if (ScrollbarAnimationControllerForElementId(scroll_element_id))
     return;
+
   scrollbar_animation_controllers_[scroll_element_id] =
       active_tree_->CreateScrollbarAnimationController(scroll_element_id);
 }

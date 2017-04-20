@@ -18,7 +18,6 @@ ScrollbarLayerImplBase::ScrollbarLayerImplBase(
     bool is_left_side_vertical_scrollbar,
     bool is_overlay)
     : LayerImpl(tree_impl, id),
-      scroll_layer_id_(Layer::INVALID_ID),
       is_overlay_scrollbar_(is_overlay),
       thumb_thickness_scale_factor_(1.f),
       current_pos_(0.f),
@@ -36,25 +35,19 @@ void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   DCHECK(layer->ToScrollbarLayer());
   layer->ToScrollbarLayer()->set_is_overlay_scrollbar(is_overlay_scrollbar_);
-  layer->ToScrollbarLayer()->SetScrollInfo(ScrollLayerId(),
-                                           scroll_element_id());
+  layer->ToScrollbarLayer()->SetScrollElementId(scroll_element_id());
 }
 
 ScrollbarLayerImplBase* ScrollbarLayerImplBase::ToScrollbarLayer() {
   return this;
 }
 
-void ScrollbarLayerImplBase::SetScrollInfo(int scroll_layer_id,
-                                           ElementId scroll_element_id) {
-  if (scroll_layer_id_ == scroll_layer_id &&
-      scroll_element_id == scroll_element_id)
+void ScrollbarLayerImplBase::SetScrollElementId(ElementId scroll_element_id) {
+  if (scroll_element_id_ == scroll_element_id)
     return;
 
   layer_tree_impl()->UnregisterScrollbar(this);
-
-  scroll_layer_id_ = scroll_layer_id;
   scroll_element_id_ = scroll_element_id;
-
   layer_tree_impl()->RegisterScrollbar(this);
 }
 
@@ -67,7 +60,10 @@ bool ScrollbarLayerImplBase::SetCurrentPos(float current_pos) {
 }
 
 bool ScrollbarLayerImplBase::CanScrollOrientation() const {
-  LayerImpl* scroll_layer = layer_tree_impl()->LayerById(scroll_layer_id_);
+  // TODO(pdr): Refactor this to not depend on layers by using the associated
+  // scroll node's user_scrollable values.
+  LayerImpl* scroll_layer =
+      layer_tree_impl()->LayerByElementId(scroll_element_id_);
   if (!scroll_layer)
     return false;
   return scroll_layer->user_scrollable(orientation()) &&

@@ -22,7 +22,6 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
 
   static scoped_refptr<PaintedOverlayScrollbarLayer> Create(
       std::unique_ptr<Scrollbar> scrollbar,
-      int scroll_layer_id,
       ElementId scroll_element_id = ElementId());
 
   bool OpacityCanAnimateOnImplThread() const override;
@@ -31,8 +30,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
 
   // ScrollbarLayerInterface
   ElementId scroll_element_id() const override;
-  // TODO(pdr): Remove layer_id and refactor scrollbars to just use element ids.
-  void SetScrollInfo(int layer_id, ElementId element_id) override;
+  void SetScrollElementId(ElementId element_id) override;
   ScrollbarOrientation orientation() const override;
 
   // Layer interface
@@ -42,7 +40,6 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
 
  protected:
   PaintedOverlayScrollbarLayer(std::unique_ptr<Scrollbar> scrollbar,
-                               int scroll_layer_id,
                                ElementId scroll_element_id);
   ~PaintedOverlayScrollbarLayer() override;
 
@@ -61,7 +58,6 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
   bool PaintThumbIfNeeded();
 
   std::unique_ptr<Scrollbar> scrollbar_;
-  int scroll_layer_id_;
   ElementId scroll_element_id_;
 
   int thumb_thickness_;
