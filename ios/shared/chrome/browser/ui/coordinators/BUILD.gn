@@ -33,7 +33,9 @@ source_set("unit_tests") {
     ":coordinators",
     "//base",
     "//base/test:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/test/base",
+    "//ios/shared/chrome/browser/ui/browser_list",
     "//testing/gtest",
   ]
 }

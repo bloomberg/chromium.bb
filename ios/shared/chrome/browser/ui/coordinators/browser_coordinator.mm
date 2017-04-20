@@ -128,6 +128,7 @@
   [coordinator willBeRemovedFromParentCoordinator];
   [self.childCoordinators removeObject:coordinator];
   coordinator.parentCoordinator = nil;
+  coordinator.browser = nil;
 }
 
 - (void)wasAddedToParentCoordinator:(BrowserCoordinator*)parentCoordinator {

@@ -5,8 +5,12 @@
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
+#include "base/memory/ptr_util.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -74,7 +78,25 @@
 
 namespace {
 
-TEST(BrowserCoordinatorTest, TestDontStopOnDealloc) {
+class BrowserCoordinatorTest : public PlatformTest {
+ protected:
+  BrowserCoordinatorTest() {
+    // Initialize the browser.
+    TestChromeBrowserState::Builder builder;
+    chrome_browser_state_ = builder.Build();
+    browser_ = base::MakeUnique<Browser>(chrome_browser_state_.get());
+  }
+
+  Browser* GetBrowser() { return browser_.get(); };
+
+ private:
+  std::unique_ptr<Browser> browser_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+};
+
+}  // namespace
+
+TEST_F(BrowserCoordinatorTest, TestDontStopOnDealloc) {
   __block BOOL called = NO;
 
   {
@@ -87,7 +109,7 @@ TEST(BrowserCoordinatorTest, TestDontStopOnDealloc) {
   EXPECT_FALSE(called);
 }
 
-TEST(BrowserCoordinatorTest, TestChildren) {
+TEST_F(BrowserCoordinatorTest, TestChildren) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
 
@@ -109,7 +131,7 @@ TEST(BrowserCoordinatorTest, TestChildren) {
   EXPECT_EQ(otherParent, otherChild.parentCoordinator);
 }
 
-TEST(BrowserCoordinatorTest, TestOverlay) {
+TEST_F(BrowserCoordinatorTest, TestOverlay) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
   TestCoordinator* grandchild = [[TestCoordinator alloc] init];
@@ -158,7 +180,7 @@ TEST(BrowserCoordinatorTest, TestOverlay) {
   EXPECT_FALSE(thirdOverlay.overlaying);
 }
 
-TEST(BrowserCoordinatorTest, AddedRemoved) {
+TEST_F(BrowserCoordinatorTest, AddedRemoved) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
 
@@ -174,7 +196,7 @@ TEST(BrowserCoordinatorTest, AddedRemoved) {
   EXPECT_TRUE(child.willBeRemovedCalled);
 }
 
-TEST(BrowserCoordinatorTest, DidStartWillStop) {
+TEST_F(BrowserCoordinatorTest, DidStartWillStop) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
   [parent addChildCoordinator:child];
@@ -190,7 +212,7 @@ TEST(BrowserCoordinatorTest, DidStartWillStop) {
   EXPECT_TRUE(parent.childWillStopCalled);
 }
 
-TEST(BrowserCoordinatorTest, StopStopsStartedChildren) {
+TEST_F(BrowserCoordinatorTest, StopStopsStartedChildren) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
   [parent addChildCoordinator:child];
@@ -209,7 +231,7 @@ TEST(BrowserCoordinatorTest, StopStopsStartedChildren) {
   EXPECT_TRUE(called);
 }
 
-TEST(BrowserCoordinatorTest, StopStopsNonStartedChildren) {
+TEST_F(BrowserCoordinatorTest, StopStopsNonStartedChildren) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
   [parent addChildCoordinator:child];
@@ -227,4 +249,16 @@ TEST(BrowserCoordinatorTest, StopStopsNonStartedChildren) {
   EXPECT_TRUE(called);
 }
 
-}  // namespace
+TEST_F(BrowserCoordinatorTest, BrowserIsNilAfterCoordinatorIsRemoved) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+  parent.browser = GetBrowser();
+  [parent addChildCoordinator:child];
+
+  EXPECT_NE(nil, child.browser);
+
+  // Remove the child.
+  [parent removeChildCoordinator:child];
+
+  EXPECT_EQ(nil, child.browser);
+}
