@@ -60,7 +60,7 @@ enum ErrorType {
   // General network problem.
   ERROR_NETWORK_PROBLEM = 19,
   // Machine name contains restricted characters.
-  ERROR_BAD_MACHINE_NAME = 20,
+  ERROR_INVALID_MACHINE_NAME = 20,
   // Machine name too long.
   ERROR_MACHINE_NAME_TOO_LONG = 21,
   // User joined maximum number of machines to the domain.
@@ -71,12 +71,14 @@ enum ErrorType {
   ERROR_NO_CREDENTIALS_CACHE_FOUND = 24,
   // Kerberos ticket expired while renewing credentials.
   ERROR_KERBEROS_TICKET_EXPIRED = 25,
-  // klist exited with unspecified error.
+  // Klist exited with unspecified error.
   ERROR_KLIST_FAILED = 26,
+  // Kinit failed because of bad machine name.
+  ERROR_BAD_MACHINE_NAME = 27,
   // Should be the last.
   ERROR_COUNT,
 };
 
-}  // namespace authpolicy
+} // namespace authpolicy
 
-#endif  // SYSTEM_API_DBUS_AUTHPOLICY_DBUS_CONSTANTS_H_
+#endif // SYSTEM_API_DBUS_AUTHPOLICY_DBUS_CONSTANTS_H_
