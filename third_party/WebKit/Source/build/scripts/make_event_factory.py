@@ -101,8 +101,8 @@ def measure_name(name):
 
 class EventFactoryWriter(json5_generator.Writer):
     default_parameters = {
-        'ImplementedAs': None,
-        'RuntimeEnabled': None,
+        'ImplementedAs': {},
+        'RuntimeEnabled': {},
     }
     default_metadata = {
         'export': '',

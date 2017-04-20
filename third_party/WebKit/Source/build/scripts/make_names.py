@@ -45,10 +45,10 @@ def _symbol(entry):
 
 class MakeNamesWriter(json5_generator.Writer):
     default_parameters = {
-        'Conditional': None,  # FIXME: Add support for Conditional.
-        'ImplementedAs': None,
-        'RuntimeEnabled': None,  # What should we do for runtime-enabled features?
-        'Symbol': None,
+        'Conditional': {},  # FIXME: Add support for Conditional.
+        'ImplementedAs': {},
+        'RuntimeEnabled': {},  # What should we do for runtime-enabled features?
+        'Symbol': {},
     }
     default_metadata = {
         'export': '',

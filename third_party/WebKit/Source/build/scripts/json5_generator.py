@@ -162,8 +162,9 @@ class Json5File(object):
                 raise Exception(
                     "Unknown parameter: '%s'\nKnown params: %s" %
                     (key, self.parameters.keys()))
-            if self.parameters[key]:
-                self._validate_parameter(self.parameters[key], value)
+            assert self.parameters[key] is not None, \
+                "Specification for parameter 'key' cannot be None. Use {} instead."
+            self._validate_parameter(self.parameters[key], value)
             entry[key] = value
         return entry
 
