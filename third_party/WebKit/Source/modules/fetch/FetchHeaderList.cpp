@@ -69,7 +69,7 @@ String FetchHeaderList::ExtractMIMEType() const {
     return String();
   }
   // 3. Return MIMEType, byte lowercased.
-  return mime_type.DeprecatedLower();
+  return mime_type.LowerASCII();
 }
 
 size_t FetchHeaderList::size() const {
