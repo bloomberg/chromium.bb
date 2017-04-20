@@ -34,6 +34,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
@@ -140,9 +141,11 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
   std::unique_ptr<WebMessagePortChannel> entangled_channel_;
 
-  int pending_dispatch_task_;
-  bool started_;
-  bool closed_;
+  int pending_dispatch_task_ = 0;
+  bool started_ = false;
+  bool closed_ = false;
+
+  RefPtr<WebTaskRunner> task_runner_;
 };
 
 }  // namespace blink
