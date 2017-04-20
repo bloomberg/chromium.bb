@@ -253,7 +253,8 @@ void MaybeShowSettingsResetPromptWithDelay() {
   base::TimeDelta delay = config->delay_before_prompt();
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(MaybeShowSettingsResetPrompt, base::Passed(&config)), delay);
+      base::BindOnce(MaybeShowSettingsResetPrompt, base::Passed(&config)),
+      delay);
 }
 
 }  // namespace safe_browsing

@@ -32,7 +32,7 @@ void SandboxedZipAnalyzer::Start() {
           .WithPriority(base::TaskPriority::BACKGROUND)
           .WithShutdownBehavior(
               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
-      base::Bind(&SandboxedZipAnalyzer::PrepareFileToAnalyze, this));
+      base::BindOnce(&SandboxedZipAnalyzer::PrepareFileToAnalyze, this));
 }
 
 SandboxedZipAnalyzer::~SandboxedZipAnalyzer() = default;
@@ -63,15 +63,15 @@ void SandboxedZipAnalyzer::PrepareFileToAnalyze() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&SandboxedZipAnalyzer::AnalyzeFile, this, base::Passed(&file),
-                 base::Passed(&temp_file)));
+      base::BindOnce(&SandboxedZipAnalyzer::AnalyzeFile, this,
+                     base::Passed(&file), base::Passed(&temp_file)));
 }
 
 void SandboxedZipAnalyzer::ReportFileFailure() {
   DCHECK(!utility_process_mojo_client_);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback_, Results()));
+                                   base::BindOnce(callback_, Results()));
 }
 
 void SandboxedZipAnalyzer::AnalyzeFile(base::File file, base::File temp_file) {

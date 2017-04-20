@@ -54,7 +54,7 @@ void ThreatDetailsCacheCollector::StartCacheCollection(
   // check if we call their callback immediately.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ThreatDetailsCacheCollector::OpenEntry, this));
+      base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
 bool ThreatDetailsCacheCollector::HasStarted() {
@@ -228,7 +228,7 @@ void ThreatDetailsCacheCollector::AdvanceEntry() {
   // Create a task so we don't take over the IO thread for too long.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ThreatDetailsCacheCollector::OpenEntry, this));
+      base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
 void ThreatDetailsCacheCollector::AllDone(bool success) {

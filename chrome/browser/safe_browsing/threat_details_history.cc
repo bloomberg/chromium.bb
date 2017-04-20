@@ -46,8 +46,8 @@ void ThreatDetailsRedirectsCollector::StartHistoryCollection(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ThreatDetailsRedirectsCollector::StartGetRedirects, this,
-                 urls));
+      base::BindOnce(&ThreatDetailsRedirectsCollector::StartGetRedirects, this,
+                     urls));
 }
 
 bool ThreatDetailsRedirectsCollector::HasStarted() const {

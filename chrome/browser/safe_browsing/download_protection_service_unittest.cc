@@ -233,10 +233,9 @@ ACTION_P(CheckDownloadUrlDone, threat_type) {
           std::vector<SBThreatType>(1, SB_THREAT_TYPE_BINARY_MALWARE_URL));
   for (size_t i = 0; i < check->url_results.size(); ++i)
     check->url_results[i] = threat_type;
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&OnSafeBrowsingResult,
-                                     base::Owned(check)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&OnSafeBrowsingResult, base::Owned(check)));
 }
 
 class DownloadProtectionServiceTest : public testing::Test {
@@ -465,16 +464,16 @@ class DownloadProtectionServiceTest : public testing::Test {
                               const base::Closure& quit_closure) {
     BrowserThread::PostTask(
         thread, FROM_HERE,
-        base::Bind(&DownloadProtectionServiceTest::RunAllPendingAndQuitUI,
-                   base::Unretained(this), quit_closure));
+        base::BindOnce(&DownloadProtectionServiceTest::RunAllPendingAndQuitUI,
+                       base::Unretained(this), quit_closure));
   }
 
   void FlushMessageLoop(BrowserThread::ID thread) {
     RunLoop run_loop;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadProtectionServiceTest::PostRunMessageLoopTask,
-                   base::Unretained(this), thread, run_loop.QuitClosure()));
+        base::BindOnce(&DownloadProtectionServiceTest::PostRunMessageLoopTask,
+                       base::Unretained(this), thread, run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -1512,8 +1511,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   // Simulate the request finishing.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                 base::Unretained(this), fetcher));
+      base::BindOnce(&DownloadProtectionServiceTest::SendURLFetchComplete,
+                     base::Unretained(this), fetcher));
   run_loop.Run();
 }
 
@@ -1572,8 +1571,8 @@ TEST_F(DownloadProtectionServiceTest,
   // Simulate the request finishing.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                 base::Unretained(this), fetcher));
+      base::BindOnce(&DownloadProtectionServiceTest::SendURLFetchComplete,
+                     base::Unretained(this), fetcher));
   run_loop.Run();
 }
 
@@ -1660,8 +1659,8 @@ TEST_F(DownloadProtectionServiceTest,
     // Simulate the request finishing.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                   base::Unretained(this), fetcher));
+        base::BindOnce(&DownloadProtectionServiceTest::SendURLFetchComplete,
+                       base::Unretained(this), fetcher));
     run_loop.Run();
   }
 
@@ -1732,8 +1731,8 @@ TEST_F(DownloadProtectionServiceTest,
     // Simulate the request finishing.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                   base::Unretained(this), fetcher));
+        base::BindOnce(&DownloadProtectionServiceTest::SendURLFetchComplete,
+                       base::Unretained(this), fetcher));
     run_loop.Run();
   }
 }

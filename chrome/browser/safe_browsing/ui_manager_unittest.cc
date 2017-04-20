@@ -51,8 +51,8 @@ class SafeBrowsingCallbackWaiter {
      DCHECK_CURRENTLY_ON(BrowserThread::IO);
      BrowserThread::PostTask(
          BrowserThread::UI, FROM_HERE,
-         base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
-                    base::Unretained(this), proceed));
+         base::BindOnce(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
+                        base::Unretained(this), proceed));
    }
 
    void WaitForCallback() {

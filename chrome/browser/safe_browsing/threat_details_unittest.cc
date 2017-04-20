@@ -223,8 +223,8 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
                                       bool did_proceed,
                                       int num_visit) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&ThreatDetails::FinishCollection, report,
-                                       did_proceed, num_visit));
+                            base::BindOnce(&ThreatDetails::FinishCollection,
+                                           report, did_proceed, num_visit));
     // Wait for the callback (SendSerializedThreatDetails).
     DVLOG(1) << "Waiting for SendSerializedThreatDetails";
     base::RunLoop run_loop;
@@ -1079,8 +1079,8 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&FillCache,
-                 base::RetainedRef(profile()->GetRequestContext())));
+      base::BindOnce(&FillCache,
+                     base::RetainedRef(profile()->GetRequestContext())));
 
   // The cache collection starts after the IPC from the DOM is fired.
   std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
@@ -1162,8 +1162,8 @@ TEST_F(ThreatDetailsTest, HttpsResourceSanitization) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&FillCacheHttps,
-                 base::RetainedRef(profile()->GetRequestContext())));
+      base::BindOnce(&FillCacheHttps,
+                     base::RetainedRef(profile()->GetRequestContext())));
 
   // The cache collection starts after the IPC from the DOM is fired.
   std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;

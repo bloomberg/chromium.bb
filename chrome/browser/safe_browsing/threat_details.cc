@@ -454,10 +454,11 @@ void ThreatDetails::OnReceivedThreatDOMDetails(
     const std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>& params) {
   // Schedule this in IO thread, so it doesn't conflict with future users
   // of our data structures (eg GetSerializedReport).
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&ThreatDetails::AddDOMDetails, this,
-                                     sender->GetFrameTreeNodeId(),
-                                     sender->GetLastCommittedURL(), params));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ThreatDetails::AddDOMDetails, this,
+                     sender->GetFrameTreeNodeId(),
+                     sender->GetLastCommittedURL(), params));
 }
 
 void ThreatDetails::AddDOMDetails(

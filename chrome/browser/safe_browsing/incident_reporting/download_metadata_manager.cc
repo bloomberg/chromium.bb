@@ -403,10 +403,11 @@ void DownloadMetadataManager::GetDownloadDetails(
   // Fire off a task to load the details and return them to the caller.
   DownloadMetadata* metadata = new DownloadMetadata();
   read_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&ReadMetadataOnWorkerPool,
-                            GetMetadataPath(browser_context), metadata),
-      base::Bind(&ReturnResults, callback,
-                 base::Passed(base::WrapUnique(metadata))));
+      FROM_HERE,
+      base::BindOnce(&ReadMetadataOnWorkerPool,
+                     GetMetadataPath(browser_context), metadata),
+      base::BindOnce(&ReturnResults, callback,
+                     base::Passed(base::WrapUnique(metadata))));
 }
 
 content::DownloadManager*
@@ -566,18 +567,17 @@ void DownloadMetadataManager::ManagerContext::ReadMetadata() {
   // Do not block shutdown on this read since nothing will come of it.
   read_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&ReadMetadataOnWorkerPool, metadata_path_, metadata),
-      base::Bind(&DownloadMetadataManager::ManagerContext::OnMetadataReady,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(base::WrapUnique(metadata))));
+      base::BindOnce(&ReadMetadataOnWorkerPool, metadata_path_, metadata),
+      base::BindOnce(&DownloadMetadataManager::ManagerContext::OnMetadataReady,
+                     weak_factory_.GetWeakPtr(),
+                     base::Passed(base::WrapUnique(metadata))));
 }
 
 void DownloadMetadataManager::ManagerContext::WriteMetadata() {
   write_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WriteMetadataOnWorkerPool,
-                 metadata_path_,
-                 base::Owned(new DownloadMetadata(*download_metadata_))));
+      base::BindOnce(&WriteMetadataOnWorkerPool, metadata_path_,
+                     base::Owned(new DownloadMetadata(*download_metadata_))));
 }
 
 void DownloadMetadataManager::ManagerContext::RemoveMetadata() {
@@ -591,7 +591,7 @@ void DownloadMetadataManager::ManagerContext::RemoveMetadata() {
   // Remove any metadata.
   download_metadata_.reset();
   write_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeleteMetadataOnWorkerPool, metadata_path_));
+      FROM_HERE, base::BindOnce(&DeleteMetadataOnWorkerPool, metadata_path_));
   // Run callbacks (only present in case of a transition to LOAD_COMPLETE).
   RunCallbacks();
 }

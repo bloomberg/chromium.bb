@@ -35,9 +35,8 @@ void MockPermissionReportSender::Send(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &MockPermissionReportSender::NotifyReportSentOnUIThread,
-          base::Unretained(this)));
+      base::BindOnce(&MockPermissionReportSender::NotifyReportSentOnUIThread,
+                     base::Unretained(this)));
 }
 
 void MockPermissionReportSender::WaitForReportSent() {

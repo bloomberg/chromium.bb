@@ -177,7 +177,7 @@ void DownloadFeedbackService::BeginFeedbackOrDeleteFile(
   } else {
     file_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(&base::DeleteFile), path, false));
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), path, false));
   }
 }
 

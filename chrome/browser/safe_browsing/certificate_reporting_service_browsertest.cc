@@ -90,7 +90,7 @@ class CertificateReportingServiceBrowserTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     test_helper()->ExpectNoRequests(service());
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::Bind(&CleanUpOnIOThread));
+                                     base::BindOnce(&CleanUpOnIOThread));
     EXPECT_GE(num_expected_failed_report_, 0)
         << "Don't forget to set expected failed report count.";
     // Check the histogram as the last thing. This makes sure no in-flight

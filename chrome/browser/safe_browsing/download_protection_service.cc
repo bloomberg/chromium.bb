@@ -254,22 +254,18 @@ class DownloadUrlSBClient
     if (threat_type != SB_THREAT_TYPE_SAFE) {
       UpdateDownloadCheckStats(dangerous_type_);
       BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&DownloadUrlSBClient::ReportMalware,
-                     this, threat_type));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&DownloadUrlSBClient::ReportMalware, this,
+                         threat_type));
     } else if (download_attribution_enabled_) {
         // Identify download referrer chain, which will be used in
         // ClientDownloadRequest.
         BrowserThread::PostTask(
-            BrowserThread::UI,
-            FROM_HERE,
-            base::Bind(&DownloadUrlSBClient::IdentifyReferrerChain,
-                       this));
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&DownloadUrlSBClient::IdentifyReferrerChain, this));
     }
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(callback_, result));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(callback_, result));
   }
 
   void ReportMalware(SBThreatType threat_type) {
@@ -492,10 +488,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
     timeout_start_time_ = base::TimeTicks::Now();
     BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::Cancel,
-                   weakptr_factory_.GetWeakPtr()),
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&CheckClientDownloadRequest::Cancel,
+                       weakptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(
             service_->download_request_timeout_ms()));
   }
@@ -662,17 +657,15 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // every URL in the redirect chain.  We also should check whether the
     // download URL is hosted on the internal network.
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::CheckWhitelists, this));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&CheckClientDownloadRequest::CheckWhitelists, this));
 
     // We wait until after the file checks finish to start the timeout, as
     // windows can cause permissions errors if the timeout fired while we were
     // checking the file signature and we tried to complete the download.
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::StartTimeout, this));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&CheckClientDownloadRequest::StartTimeout, this));
   }
 
   void StartExtractFileFeatures() {
@@ -681,13 +674,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // Since we do blocking I/O, offload this to a worker thread.
     // The task does not need to block shutdown.
     base::PostTaskWithTraits(
-        FROM_HERE, base::TaskTraits()
-                       .MayBlock()
-                       .WithPriority(base::TaskPriority::BACKGROUND)
-                       .WithShutdownBehavior(
-                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
-        base::Bind(&CheckClientDownloadRequest::ExtractFileFeatures, this,
-                   item_->GetFullPath()));
+        FROM_HERE,
+        base::TaskTraits()
+            .MayBlock()
+            .WithPriority(base::TaskPriority::BACKGROUND)
+            .WithShutdownBehavior(
+                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+        base::BindOnce(&CheckClientDownloadRequest::ExtractFileFeatures, this,
+                       item_->GetFullPath()));
   }
 
   void ExtractFileFeatures(const base::FilePath& file_path) {
@@ -901,9 +895,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // The URLFetcher is owned by the UI thread, so post a message to
     // start the pingback.
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::GetTabRedirects, this));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&CheckClientDownloadRequest::GetTabRedirects, this));
   }
 
   void GetTabRedirects() {
@@ -1145,10 +1138,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
   void PostFinishTask(DownloadCheckResult result,
                       DownloadCheckResultReason reason) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::FinishRequest, this, result,
-                   reason));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&CheckClientDownloadRequest::FinishRequest, this, result,
+                       reason));
   }
 
   void FinishRequest(DownloadCheckResult result,
@@ -1388,16 +1380,16 @@ class DownloadProtectionService::PPAPIDownloadRequest
     // execution reaches Finish().
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&PPAPIDownloadRequest::OnRequestTimedOut,
-                   weakptr_factory_.GetWeakPtr()),
+        base::BindOnce(&PPAPIDownloadRequest::OnRequestTimedOut,
+                       weakptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(
             service_->download_request_timeout_ms()));
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PPAPIDownloadRequest::CheckWhitelistsOnIOThread,
-                   requestor_url_, database_manager_,
-                   weakptr_factory_.GetWeakPtr()));
+        base::BindOnce(&PPAPIDownloadRequest::CheckWhitelistsOnIOThread,
+                       requestor_url_, database_manager_,
+                       weakptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -1414,8 +1406,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
         database_manager->MatchDownloadWhitelistUrl(requestor_url);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&PPAPIDownloadRequest::WhitelistCheckComplete,
-                   download_request, url_was_whitelisted));
+        base::BindOnce(&PPAPIDownloadRequest::WhitelistCheckComplete,
+                       download_request, url_was_whitelisted));
   }
 
   void WhitelistCheckComplete(bool was_on_whitelist) {
@@ -1752,9 +1744,8 @@ void DownloadProtectionService::CheckDownloadUrl(
                               database_manager_));
   // The client will release itself once it is done.
   BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&DownloadUrlSBClient::StartCheck, client));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
 }
 
 bool DownloadProtectionService::IsSupportedDownload(

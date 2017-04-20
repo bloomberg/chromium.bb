@@ -457,8 +457,9 @@ TEST_F(LastDownloadFinderTest, AddProfileAfterStarting) {
 
   // Post a task that will create a second profile once the main loop is run.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&LastDownloadFinderTest::CreateProfileWithDownload,
-                 base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&LastDownloadFinderTest::CreateProfileWithDownload,
+                     base::Unretained(this)));
 
   // Create a finder that we expect will find a download in the second profile.
   std::unique_ptr<LastDownloadFinder> finder(LastDownloadFinder::Create(

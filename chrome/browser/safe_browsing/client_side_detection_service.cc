@@ -166,9 +166,10 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ClientSideDetectionService::StartClientReportPhishingRequest,
-                 weak_factory_.GetWeakPtr(), verdict, is_extended_reporting,
-                 callback));
+      base::BindOnce(
+          &ClientSideDetectionService::StartClientReportPhishingRequest,
+          weak_factory_.GetWeakPtr(), verdict, is_extended_reporting,
+          callback));
 }
 
 void ClientSideDetectionService::SendClientReportMalwareRequest(
@@ -177,8 +178,9 @@ void ClientSideDetectionService::SendClientReportMalwareRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ClientSideDetectionService::StartClientReportMalwareRequest,
-                 weak_factory_.GetWeakPtr(), verdict, callback));
+      base::BindOnce(
+          &ClientSideDetectionService::StartClientReportMalwareRequest,
+          weak_factory_.GetWeakPtr(), verdict, callback));
 }
 
 bool ClientSideDetectionService::IsPrivateIPAddress(

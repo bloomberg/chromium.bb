@@ -73,8 +73,8 @@ class ResourceRequestDetectorClient
       , callback_(callback) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ResourceRequestDetectorClient::StartCheck, this,
-                   resource_url));
+        base::BindOnce(&ResourceRequestDetectorClient::StartCheck, this,
+                       resource_url));
   }
 
  private:
@@ -107,7 +107,7 @@ class ResourceRequestDetectorClient
       incident_data->set_digest(threat_hash);
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(callback_, base::Passed(&incident_data)));
+          base::BindOnce(callback_, base::Passed(&incident_data)));
     }
     Release();  // Balanced in StartCheck.
   }

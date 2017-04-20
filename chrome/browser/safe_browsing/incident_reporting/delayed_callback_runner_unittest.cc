@@ -129,8 +129,9 @@ TEST_F(DelayedCallbackRunnerTest, AddWhileRunningRun) {
 
   // Post a task to register a new callback after Start() is called.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DelayedCallbackRunnerTest::RegisterTestCallback,
-                            base::Unretained(this), name2));
+      FROM_HERE,
+      base::BindOnce(&DelayedCallbackRunnerTest::RegisterTestCallback,
+                     base::Unretained(this), name2));
 
   RegisterTestCallback(name);
   instance_->Start();

@@ -51,8 +51,8 @@ class TestingNotificationImageReporter : public NotificationImageReporter {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&TestingNotificationImageReporter::SkippedReportingOnUI,
-                   base::Unretained(this)));
+        base::BindOnce(&TestingNotificationImageReporter::SkippedReportingOnUI,
+                       base::Unretained(this)));
   }
 
  private:
@@ -144,8 +144,8 @@ void NotificationImageReporterTest::SetUp() {
   base::RunLoop run_loop;
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NotificationImageReporterTest::SetUpOnIO,
-                 base::Unretained(this)),
+      base::BindOnce(&NotificationImageReporterTest::SetUpOnIO,
+                     base::Unretained(this)),
       run_loop.QuitClosure());
   run_loop.Run();
 }
@@ -180,8 +180,9 @@ void NotificationImageReporterTest::ReportNotificationImage() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NotificationImageReporterTest::ReportNotificationImageOnIO,
-                 base::Unretained(this)));
+      base::BindOnce(
+          &NotificationImageReporterTest::ReportNotificationImageOnIO,
+          base::Unretained(this)));
 }
 
 void NotificationImageReporterTest::ReportNotificationImageOnIO() {

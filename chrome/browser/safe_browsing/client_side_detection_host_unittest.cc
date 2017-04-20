@@ -567,8 +567,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
-                 ui_manager_, resource.callback));
+      base::BindOnce(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
+                     ui_manager_, resource.callback));
 }
 
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
@@ -653,8 +653,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
-                 ui_manager_, resource.callback));
+      base::BindOnce(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
+                     ui_manager_, resource.callback));
 }
 
 TEST_F(ClientSideDetectionHostTest,
@@ -866,8 +866,8 @@ TEST_F(ClientSideDetectionHostTest,
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
-                 ui_manager_, resource.callback));
+      base::BindOnce(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
+                     ui_manager_, resource.callback));
 }
 
 TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {

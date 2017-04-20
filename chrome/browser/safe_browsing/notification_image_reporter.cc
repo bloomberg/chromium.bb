@@ -113,8 +113,8 @@ void NotificationImageReporter::ReportNotificationImageOnIO(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NotificationImageReporter::ReportNotificationImageOnUI,
-                 weak_factory_on_io_.GetWeakPtr(), profile, origin, image));
+      base::BindOnce(&NotificationImageReporter::ReportNotificationImageOnUI,
+                     weak_factory_on_io_.GetWeakPtr(), profile, origin, image));
 }
 
 double NotificationImageReporter::GetReportChance() const {
@@ -146,14 +146,14 @@ void NotificationImageReporter::ReportNotificationImageOnUI(
   if (GetExtendedReportingLevel(*profile->GetPrefs()) != SBER_LEVEL_SCOUT) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&NotificationImageReporter::SkippedReporting,
-                   weak_this_on_io));
+        base::BindOnce(&NotificationImageReporter::SkippedReporting,
+                       weak_this_on_io));
     return;
   }
 
   BrowserThread::GetBlockingPool()->PostWorkerTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &NotificationImageReporter::DownscaleNotificationImageOnBlockingPool,
           weak_this_on_io, origin, image));
 }
@@ -187,10 +187,11 @@ void NotificationImageReporter::DownscaleNotificationImageOnBlockingPool(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NotificationImageReporter::SendReportOnIO, weak_this_on_io,
-                 origin, base::RefCountedBytes::TakeVector(&png_bytes),
-                 gfx::Size(downscaled_image.width(), downscaled_image.height()),
-                 gfx::Size(image.width(), image.height())));
+      base::BindOnce(
+          &NotificationImageReporter::SendReportOnIO, weak_this_on_io, origin,
+          base::RefCountedBytes::TakeVector(&png_bytes),
+          gfx::Size(downscaled_image.width(), downscaled_image.height()),
+          gfx::Size(image.width(), image.height())));
 }
 
 void NotificationImageReporter::SendReportOnIO(

@@ -203,10 +203,10 @@ CertificateReportingService::CertificateReportingService(
 
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CertificateReportingService::InitializeOnIOThread,
-                 base::Unretained(this), true, url_request_context_getter,
-                 max_queued_report_count_, max_report_age_, clock_,
-                 server_public_key_, server_public_key_version_),
+      base::BindOnce(&CertificateReportingService::InitializeOnIOThread,
+                     base::Unretained(this), true, url_request_context_getter,
+                     max_queued_report_count_, max_report_age_, clock_,
+                     server_public_key_, server_public_key_version_),
       reset_callback_);
 }
 
@@ -220,7 +220,7 @@ void CertificateReportingService::Shutdown() {
   url_request_context_ = nullptr;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CleanupOnIOThread, base::Passed(std::move(reporter_))));
+      base::BindOnce(&CleanupOnIOThread, base::Passed(std::move(reporter_))));
 }
 
 void CertificateReportingService::Send(const std::string& serialized_report) {
@@ -230,8 +230,8 @@ void CertificateReportingService::Send(const std::string& serialized_report) {
   }
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CertificateReportingService::Reporter::Send,
-                 base::Unretained(reporter_.get()), serialized_report));
+      base::BindOnce(&CertificateReportingService::Reporter::Send,
+                     base::Unretained(reporter_.get()), serialized_report));
 }
 
 void CertificateReportingService::SendPending() {
@@ -241,8 +241,8 @@ void CertificateReportingService::SendPending() {
   }
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CertificateReportingService::Reporter::SendPending,
-                 base::Unretained(reporter_.get())));
+      base::BindOnce(&CertificateReportingService::Reporter::SendPending,
+                     base::Unretained(reporter_.get())));
 }
 
 void CertificateReportingService::InitializeOnIOThread(
@@ -269,10 +269,10 @@ void CertificateReportingService::SetEnabled(bool enabled) {
 
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CertificateReportingService::ResetOnIOThread,
-                 base::Unretained(this), enabled, url_request_context_,
-                 max_queued_report_count_, max_report_age_, clock_,
-                 server_public_key_, server_public_key_version_),
+      base::BindOnce(&CertificateReportingService::ResetOnIOThread,
+                     base::Unretained(this), enabled, url_request_context_,
+                     max_queued_report_count_, max_report_age_, clock_,
+                     server_public_key_, server_public_key_version_),
       reset_callback_);
 }
 

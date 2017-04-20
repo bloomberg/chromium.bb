@@ -1568,8 +1568,9 @@ void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
   if (!reset_factory_.HasWeakPtrs()) {
     RecordFailure(FAILURE_DATABASE_CORRUPT);
     db_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&SafeBrowsingDatabaseNew::OnHandleCorruptDatabase,
-                              reset_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&SafeBrowsingDatabaseNew::OnHandleCorruptDatabase,
+                       reset_factory_.GetWeakPtr()));
   }
 }
 

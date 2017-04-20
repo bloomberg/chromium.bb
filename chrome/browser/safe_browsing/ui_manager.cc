@@ -114,8 +114,8 @@ void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
   if (hit_report.extended_reporting_level != SBER_LEVEL_OFF) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread,
-                   this, hit_report));
+        base::BindOnce(&SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread,
+                       this, hit_report));
   }
 }
 
@@ -139,8 +139,8 @@ void SafeBrowsingUIManager::ReportPermissionAction(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingUIManager::ReportPermissionActionOnIOThread, this,
-                 report_info));
+      base::BindOnce(&SafeBrowsingUIManager::ReportPermissionActionOnIOThread,
+                     this, report_info));
 }
 
 // Static.

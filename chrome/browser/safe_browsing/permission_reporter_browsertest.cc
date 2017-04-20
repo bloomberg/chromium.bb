@@ -43,7 +43,7 @@ class PermissionReporterBrowserTest : public SyncTest {
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &PermissionReporterBrowserTest::AttachMockReportSenderOnIOThread,
             base::Unretained(this),
             make_scoped_refptr(g_browser_process->safe_browsing_service())),

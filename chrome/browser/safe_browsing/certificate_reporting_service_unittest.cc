@@ -349,7 +349,7 @@ class CertificateReportingServiceTest : public ::testing::Test {
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &CertificateReportingServiceTest::SetUpURLRequestContextOnIOThread,
             base::Unretained(this)));
     WaitForIOThread();
@@ -378,10 +378,10 @@ class CertificateReportingServiceTest : public ::testing::Test {
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&CertificateReportingServiceTest::TearDownOnIOThread,
-                   base::Unretained(this)));
+        base::BindOnce(&CertificateReportingServiceTest::TearDownOnIOThread,
+                       base::Unretained(this)));
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::Bind(&ClearURLHandlers));
+                                     base::BindOnce(&ClearURLHandlers));
     WaitForIOThread();
 
     histogram_test_helper_.CheckHistogram();
@@ -410,15 +410,15 @@ class CertificateReportingServiceTest : public ::testing::Test {
   void AdvanceClock(base::TimeDelta delta) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&base::SimpleTestClock::Advance,
-                   base::Unretained(clock_.get()), delta));
+        base::BindOnce(&base::SimpleTestClock::Advance,
+                       base::Unretained(clock_.get()), delta));
   }
 
   void SetNow(base::Time now) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&base::SimpleTestClock::SetNow,
-                   base::Unretained(clock_.get()), now));
+        base::BindOnce(&base::SimpleTestClock::SetNow,
+                       base::Unretained(clock_.get()), now));
   }
 
   void SetExpectedFailedReportCountOnTearDown(unsigned int count) {

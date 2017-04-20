@@ -366,8 +366,8 @@ void SafeBrowsingService::ShutDown() {
   // new requests from using it as well.
   BrowserThread::PostNonNestableTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingURLRequestContextGetter::ServiceShuttingDown,
-                 url_request_context_getter_));
+      base::BindOnce(&SafeBrowsingURLRequestContextGetter::ServiceShuttingDown,
+                     url_request_context_getter_));
 
   // Release the URLRequestContextGetter after passing it to the IOThread.  It
   // has to be released now rather than in the destructor because it can only
@@ -468,7 +468,7 @@ void SafeBrowsingService::OnResourceRequest(const net::URLRequest* request) {
   ResourceRequestInfo info = ResourceRequestDetector::GetRequestInfo(request);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&SafeBrowsingService::ProcessResourceRequest, this, info));
+      base::BindOnce(&SafeBrowsingService::ProcessResourceRequest, this, info));
 #endif
 }
 
@@ -625,14 +625,14 @@ void SafeBrowsingService::Start() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingService::StartOnIOThread, this,
-                 base::RetainedRef(url_request_context_getter_)));
+      base::BindOnce(&SafeBrowsingService::StartOnIOThread, this,
+                     base::RetainedRef(url_request_context_getter_)));
 }
 
 void SafeBrowsingService::Stop(bool shutdown) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingService::StopOnIOThread, this, shutdown));
+      base::BindOnce(&SafeBrowsingService::StopOnIOThread, this, shutdown));
 }
 
 void SafeBrowsingService::Observe(int type,
@@ -744,8 +744,8 @@ void SafeBrowsingService::SendSerializedDownloadReport(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingService::OnSendSerializedDownloadReport, this,
-                 report));
+      base::BindOnce(&SafeBrowsingService::OnSendSerializedDownloadReport, this,
+                     report));
 }
 
 void SafeBrowsingService::OnSendSerializedDownloadReport(

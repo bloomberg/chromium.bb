@@ -133,10 +133,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // uses the SafeBrowsing service class.
     if (ShouldClassifyForPhishing() || ShouldClassifyForMalware()) {
       BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&ShouldClassifyUrlRequest::CheckSafeBrowsingDatabase,
-                     this, url_));
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&ShouldClassifyUrlRequest::CheckSafeBrowsingDatabase,
+                         this, url_));
     }
   }
 
@@ -233,12 +232,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       }
     }
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&ShouldClassifyUrlRequest::CheckCache,
-                   this,
-                   phishing_reason,
-                   malware_reason));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&ShouldClassifyUrlRequest::CheckCache, this,
+                       phishing_reason, malware_reason));
   }
 
   void CheckCache(PreClassificationCheckFailures phishing_reason,

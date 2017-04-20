@@ -99,8 +99,8 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
-                   this, gurl, client));
+        base::BindOnce(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
+                       this, gurl, client));
     return false;
   }
 
@@ -165,8 +165,8 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
     // Notify the UI thread that we got a report.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeSafeBrowsingUIManager::OnThreatDetailsDone, this,
-                   serialized));
+        base::BindOnce(&FakeSafeBrowsingUIManager::OnThreatDetailsDone, this,
+                       serialized));
   }
 
   void OnThreatDetailsDone(const std::string& serialized) {
@@ -354,7 +354,7 @@ class SafeBrowsingBlockingPageBrowserTest
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   void SetURLThreatType(const GURL& url, SBThreatType threat_type) {

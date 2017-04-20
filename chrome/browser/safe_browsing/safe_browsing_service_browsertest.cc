@@ -405,7 +405,7 @@ class TestProtocolManager : public SafeBrowsingProtocolManager {
                    ExtendedReportingLevel reporting_level) override {
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(InvokeFullHashCallback, callback, full_hashes_), delay_);
+        base::BindOnce(InvokeFullHashCallback, callback, full_hashes_), delay_);
   }
 
   // Prepare the GetFullHash results for the next request.
@@ -1193,21 +1193,22 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
   void CheckDownloadUrl(const std::vector<GURL>& url_chain) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&TestSBClient::CheckDownloadUrlOnIOThread, this, url_chain));
+        base::BindOnce(&TestSBClient::CheckDownloadUrlOnIOThread, this,
+                       url_chain));
     content::RunMessageLoop();  // Will stop in OnCheckDownloadUrlResult.
   }
 
   void CheckBrowseUrl(const GURL& url) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&TestSBClient::CheckBrowseUrlOnIOThread, this, url));
+        base::BindOnce(&TestSBClient::CheckBrowseUrlOnIOThread, this, url));
     content::RunMessageLoop();  // Will stop in OnCheckBrowseUrlResult.
   }
 
   void CheckResourceUrl(const GURL& url) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&TestSBClient::CheckResourceUrlOnIOThread, this, url));
+        base::BindOnce(&TestSBClient::CheckResourceUrlOnIOThread, this, url));
     content::RunMessageLoop();  // Will stop in OnCheckResourceUrlResult.
   }
 
@@ -1222,7 +1223,7 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
     if (synchronous_safe_signal) {
       threat_type_ = SB_THREAT_TYPE_SAFE;
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(&TestSBClient::CheckDone, this));
+                              base::BindOnce(&TestSBClient::CheckDone, this));
     }
   }
 
@@ -1234,7 +1235,7 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
     if (synchronous_safe_signal) {
       threat_type_ = SB_THREAT_TYPE_SAFE;
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(&TestSBClient::CheckDone, this));
+                              base::BindOnce(&TestSBClient::CheckDone, this));
     }
   }
 
@@ -1244,7 +1245,7 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
     if (synchronous_safe_signal) {
       threat_type_ = SB_THREAT_TYPE_SAFE;
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(&TestSBClient::CheckDone, this));
+                              base::BindOnce(&TestSBClient::CheckDone, this));
     }
   }
 
@@ -1253,7 +1254,7 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
                                 SBThreatType threat_type) override {
     threat_type_ = threat_type;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&TestSBClient::CheckDone, this));
+                            base::BindOnce(&TestSBClient::CheckDone, this));
   }
 
   // Called when the result of checking a browse URL is known.
@@ -1262,7 +1263,7 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
                               const ThreatMetadata& /* metadata */) override {
     threat_type_ = threat_type;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&TestSBClient::CheckDone, this));
+                            base::BindOnce(&TestSBClient::CheckDone, this));
   }
 
   // Called when the result of checking a resource URL is known.
@@ -1272,7 +1273,7 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
     threat_type_ = threat_type;
     threat_hash_ = threat_hash;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&TestSBClient::CheckDone, this));
+                            base::BindOnce(&TestSBClient::CheckDone, this));
   }
 
   void CheckDone() { base::MessageLoopForUI::current()->QuitWhenIdle(); }
@@ -1780,8 +1781,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
           sb_factory_->test_safe_browsing_service()->database_manager().get()));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingDatabaseManagerCookieTest::ForceUpdate,
-                 base::Unretained(this)));
+      base::BindOnce(&SafeBrowsingDatabaseManagerCookieTest::ForceUpdate,
+                     base::Unretained(this)));
   observer.Wait();
 }
 

@@ -374,7 +374,7 @@ class IncidentReportingServiceTest : public testing::Test {
       // Post a task that will provide the response.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&FakeUploader::FinishUpload, base::Unretained(this)));
+          base::BindOnce(&FakeUploader::FinishUpload, base::Unretained(this)));
     }
     ~FakeUploader() override { on_deleted_.Run(); }
 
@@ -405,8 +405,8 @@ class IncidentReportingServiceTest : public testing::Test {
             callback) {
       // Post a task to run the callback.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, base::Passed(&binary_download),
-                                base::Passed(&non_binary_download)));
+          FROM_HERE, base::BindOnce(callback, base::Passed(&binary_download),
+                                    base::Passed(&non_binary_download)));
       return std::unique_ptr<safe_browsing::LastDownloadFinder>(
           new FakeDownloadFinder(on_deleted));
     }
@@ -475,10 +475,9 @@ class IncidentReportingServiceTest : public testing::Test {
   // Posts a task to delete the profile.
   void DelayedDeleteProfile(Profile* profile) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&TestingProfileManager::DeleteTestingProfile,
-                   base::Unretained(&profile_manager_),
-                   profile->GetProfileUserName()));
+        FROM_HERE, base::BindOnce(&TestingProfileManager::DeleteTestingProfile,
+                                  base::Unretained(&profile_manager_),
+                                  profile->GetProfileUserName()));
   }
 
   // A callback run by the test fixture when a profile is added. An incident

@@ -108,7 +108,7 @@ DownloadFeedbackImpl::~DownloadFeedbackImpl() {
 
   file_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::DeleteFile), file_path_, false));
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path_, false));
 }
 
 void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {

@@ -229,8 +229,9 @@ void IncidentReportingService::Receiver::AddIncidentForProcess(
   } else {
     thread_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&IncidentReportingService::Receiver::AddIncidentOnMainThread,
-                   service_, nullptr, base::Passed(&incident)));
+        base::BindOnce(
+            &IncidentReportingService::Receiver::AddIncidentOnMainThread,
+            service_, nullptr, base::Passed(&incident)));
   }
 }
 
@@ -241,7 +242,7 @@ void IncidentReportingService::Receiver::ClearIncidentForProcess(
   } else {
     thread_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &IncidentReportingService::Receiver::ClearIncidentOnMainThread,
             service_, nullptr, base::Passed(&incident)));
   }
@@ -691,10 +692,11 @@ void IncidentReportingService::BeginEnvironmentCollection() {
       new ClientIncidentReport_EnvironmentData();
   environment_collection_pending_ =
       environment_collection_task_runner_->PostTaskAndReply(
-          FROM_HERE, base::Bind(collect_environment_data_fn_, environment_data),
-          base::Bind(&IncidentReportingService::OnEnvironmentDataCollected,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(base::WrapUnique(environment_data))));
+          FROM_HERE,
+          base::BindOnce(collect_environment_data_fn_, environment_data),
+          base::BindOnce(&IncidentReportingService::OnEnvironmentDataCollected,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         base::Passed(base::WrapUnique(environment_data))));
 
   // Posting the task will fail if the runner has been shut down. This should
   // never happen since the blocking pool is shut down after this service.

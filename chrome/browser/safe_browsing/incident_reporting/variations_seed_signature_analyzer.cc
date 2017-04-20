@@ -55,10 +55,9 @@ void RegisterVariationsSeedSignatureAnalysis() {
 void VerifyVariationsSeedSignature(
     std::unique_ptr<IncidentReceiver> incident_receiver) {
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&VerifyVariationsSeedSignatureOnUIThread,
-                 base::Passed(&incident_receiver)));
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&VerifyVariationsSeedSignatureOnUIThread,
+                     base::Passed(&incident_receiver)));
 }
 
 }  // namespace safe_browsing

@@ -205,7 +205,7 @@ void ModelLoader::ScheduleFetch(int64_t delay_ms) {
     return;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ModelLoader::StartFetch, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ModelLoader::StartFetch, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
