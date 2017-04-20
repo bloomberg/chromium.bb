@@ -7831,7 +7831,7 @@
       },
       'example_value': [
         {
-          "toplevel_name": "My managed bookmarks"
+          "toplevel_name": "My managed bookmarks folder"
         }, {
           "name": "Google",
           "url": "google.com"
@@ -7857,11 +7857,11 @@
       'tags': [],
       'desc': '''Configures a list of managed bookmarks.
 
-      The policy consists of a list of bookmarks whereas each bookmark is a dictionary containing the keys <ph name="NAME">"name"</ph> and <ph name="URL_LABEL">"url"</ph> which hold the bookmark's name and its target. A subfolder may be configured by defining a bookmark without an <ph name="URL_LABEL">"url"</ph> key but with an additional <ph name="CHILDREN">"children"</ph> key which itself contains a list of bookmarks as defined above (some of which may be folders again). <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> amends incomplete URLs as if they were submitted via the Omnibox, for example <ph name="GOOGLE_COM">"google.com"</ph> becomes <ph name="HTTPS_GOOGLE_COM">"https://google.com/"</ph>.
+      The policy consists of a list of bookmarks whereas each bookmark is a dictionary containing the keys "<ph name="NAME">name</ph>" and "<ph name="URL_LABEL">url</ph>" which hold the bookmark's name and its target. A subfolder may be configured by defining a bookmark without an "<ph name="URL_LABEL">url</ph>" key but with an additional "<ph name="CHILDREN">children</ph>" key which itself contains a list of bookmarks as defined above (some of which may be folders again). <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> amends incomplete URLs as if they were submitted via the Omnibox, for example "<ph name="GOOGLE_COM">google.com</ph>" becomes "<ph name="HTTPS_GOOGLE_COM">https://google.com/</ph>".
 
-      These bookmarks are placed in a "Managed bookmarks" folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.
+      These bookmarks are placed in a folder that can't be modified by the user (but the user can choose to hide it from the bookmark bar). By default the folder name is "Managed bookmarks" but it can be customized by adding to the list of bookmarks a dictionary containing the key "<ph name="TOPLEVEL_NAME">toplevel_name</ph>" with the desired folder name as the value.
 
-      Starting with release 51, the folder name for the bookmarks is customizable by adding a {"toplevel_name": "some name"} list item.''',
+      Managed bookmarks are not synced to the user account and can't be modified by extensions.''',
     },
     {
       'name': 'DataCompressionProxyEnabled',
