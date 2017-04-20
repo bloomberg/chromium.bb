@@ -162,7 +162,7 @@
     "type": "windowed_test_launcher",
   },
   "motopho_latency_test": {
-    "label": "//chrome/test/vr/perf/latency/:motopho_latency_test",
+    "label": "//chrome/test/vr/perf:motopho_latency_test",
     "type": "script",
     "script": "//chrome/test/vr/perf/latency/run_latency_test.py",
     "args": [

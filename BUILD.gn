@@ -695,7 +695,7 @@ group("gn_all") {
   if (is_android) {
     deps += [
       "//build/android/gyp/test:hello_world",
-      "//chrome/test/vr/perf/latency:motopho_latency_test",
+      "//chrome/test/vr/perf:motopho_latency_test",
     ]
   }
 
