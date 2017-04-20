@@ -13,11 +13,8 @@ import os
 import subprocess
 import sys
 
-_GIT_SVN_ID_REGEX = re.compile(r'.*git-svn-id:\s*([^@]*)@([0-9]+)', re.DOTALL)
-
 class VersionInfo(object):
-  def __init__(self, url, revision):
-    self.url = url
+  def __init__(self, revision):
     self.revision = revision
 
 
@@ -75,21 +72,17 @@ def FetchGitRevision(directory):
         if line.startswith('Cr-Commit-Position:'):
           pos = line.rsplit()[-1].strip()
           break
-  return VersionInfo('git', '%s-%s' % (hsh, pos))
+  return VersionInfo('%s-%s' % (hsh, pos))
 
 
-def FetchVersionInfo(directory=None,
-                     directory_regex_prior_to_src_url='chrome|svn'):
+def FetchVersionInfo(directory=None):
   """
   Returns the last change (in the form of a branch, revision tuple),
   from some appropriate revision control system.
   """
-  svn_url_regex = re.compile(
-      r'.*/(' + directory_regex_prior_to_src_url + r')(/.*)')
-
   version_info = FetchGitRevision(directory)
   if not version_info:
-    version_info = VersionInfo(None, None)
+    version_info = VersionInfo(None)
   return version_info
 
 
@@ -112,8 +105,7 @@ def GetHeaderGuard(path):
 def GetHeaderContents(path, define, version):
   """
   Returns what the contents of the header file should be that indicate the given
-  revision. Note that the #define is specified as a string, even though it's
-  currently always a SVN revision number, in case we need to move to git hashes.
+  revision.
   """
   header_guard = GetHeaderGuard(path)
 
@@ -164,7 +156,7 @@ def main(argv=None):
                     help="Write last change to FILE as a C/C++ header. " +
                     "Can be combined with --output to write both files.")
   parser.add_option("--revision-only", action='store_true',
-                    help="Just print the SVN revision number. Overrides any " +
+                    help="Just print the GIT hash. Overrides any " +
                     "file-output-related options.")
   parser.add_option("-s", "--source-dir", metavar="DIR",
                     help="Use repository in the given directory.")
