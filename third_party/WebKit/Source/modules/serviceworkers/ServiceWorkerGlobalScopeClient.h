@@ -42,6 +42,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerStreamHandle.h"
 
 namespace blink {
 
@@ -96,13 +97,17 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   virtual void DidHandleExtendableMessageEvent(int event_id,
                                                WebServiceWorkerEventResult,
                                                double event_dispatch_time) = 0;
-  // Calling respondToFetchEvent without response means no response was
-  // provided by the service worker in the fetch events, so fallback to native.
-  virtual void RespondToFetchEvent(int fetch_event_id,
-                                   double event_dispatch_time) = 0;
+  virtual void RespondToFetchEventWithNoResponse(
+      int fetch_event_id,
+      double event_dispatch_time) = 0;
   virtual void RespondToFetchEvent(int fetch_event_id,
                                    const WebServiceWorkerResponse&,
                                    double event_dispatch_time) = 0;
+  virtual void RespondToFetchEventWithResponseStream(
+      int fetch_event_id,
+      const WebServiceWorkerResponse&,
+      WebServiceWorkerStreamHandle*,
+      double event_dispatch_time) = 0;
   virtual void RespondToPaymentRequestEvent(int event_id,
                                             const WebPaymentAppResponse&,
                                             double event_dispatch_time) = 0;

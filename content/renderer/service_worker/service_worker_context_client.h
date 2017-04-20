@@ -159,11 +159,16 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void DidHandleInstallEvent(int request_id,
                              blink::WebServiceWorkerEventResult result,
                              double event_dispatch_time) override;
-  void RespondToFetchEvent(int fetch_event_id,
-                           double event_dispatch_time) override;
+  void RespondToFetchEventWithNoResponse(int fetch_event_id,
+                                         double event_dispatch_time) override;
   void RespondToFetchEvent(int fetch_event_id,
                            const blink::WebServiceWorkerResponse& response,
                            double event_dispatch_time) override;
+  void RespondToFetchEventWithResponseStream(
+      int fetch_event_id,
+      const blink::WebServiceWorkerResponse& response,
+      blink::WebServiceWorkerStreamHandle* web_body_as_stream,
+      double event_dispatch_time) override;
   void DidHandleFetchEvent(int fetch_event_id,
                            blink::WebServiceWorkerEventResult result,
                            double dispatch_event_time) override;
@@ -246,10 +251,12 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       const DispatchExtendableMessageEventCallback& callback) override;
-  void DispatchFetchEvent(int fetch_event_id,
-                          const ServiceWorkerFetchRequest& request,
-                          mojom::FetchEventPreloadHandlePtr preload_handle,
-                          const DispatchFetchEventCallback& callback) override;
+  void DispatchFetchEvent(
+      int fetch_event_id,
+      const ServiceWorkerFetchRequest& request,
+      mojom::FetchEventPreloadHandlePtr preload_handle,
+      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      const DispatchFetchEventCallback& callback) override;
   void DispatchNotificationClickEvent(
       const std::string& notification_id,
       const PlatformNotificationData& notification_data,

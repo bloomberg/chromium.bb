@@ -4,4 +4,6 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/fetch",
     "+modules/credentialmanager",
+    "+mojo/public/cpp/system/data_pipe.h",
+    "+mojo/public/cpp/system/simple_watcher.h",
 ]

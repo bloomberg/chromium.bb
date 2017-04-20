@@ -4,6 +4,7 @@
 
 #include "content/renderer/service_worker/service_worker_context_client.h"
 
+#include <map>
 #include <memory>
 #include <utility>
 
@@ -99,6 +100,22 @@ class WebServiceWorkerNetworkProviderImpl
 
  private:
   std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
+};
+
+class StreamHandleListener
+    : public blink::WebServiceWorkerStreamHandle::Listener {
+ public:
+  StreamHandleListener(
+      blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr)
+      : callback_ptr_(std::move(callback_ptr)) {}
+
+  ~StreamHandleListener() override {}
+
+  void OnAborted() override { callback_ptr_->OnAborted(); }
+  void OnCompleted() override { callback_ptr_->OnCompleted(); }
+
+ private:
+  blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr_;
 };
 
 ServiceWorkerStatusCode EventResultToStatus(
@@ -210,7 +227,6 @@ void ToWebServiceWorkerResponse(const ServiceWorkerResponse& response,
     web_response->SetBlob(blink::WebString::FromASCII(response.blob_uuid),
                           response.blob_size);
   }
-  web_response->SetStreamURL(blink::WebURL(response.stream_url));
   web_response->SetError(response.error);
   web_response->SetResponseTime(response.response_time.ToInternalValue());
   if (response.is_in_cache_storage) {
@@ -235,11 +251,19 @@ void AbortPendingEventCallbacks(T& callbacks) {
   }
 }
 
+template <typename Key, typename Callback>
+void AbortPendingEventCallbacks(std::map<Key, Callback>& callbacks) {
+  for (const auto& it : callbacks)
+    it.second.Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
+}
+
 }  // namespace
 
 // Holding data that needs to be bound to the worker context on the
 // worker thread.
 struct ServiceWorkerContextClient::WorkerContextData {
+  using SimpleEventCallback =
+      base::Callback<void(ServiceWorkerStatusCode, base::Time)>;
   using ClientsCallbacksMap =
       IDMap<std::unique_ptr<blink::WebServiceWorkerClientsCallbacks>>;
   using ClaimClientsCallbacksMap =
@@ -265,7 +289,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
       IDMap<std::unique_ptr<const DispatchNotificationCloseEventCallback>>;
   using PushEventCallbacksMap =
       IDMap<std::unique_ptr<const DispatchPushEventCallback>>;
-  using FetchEventCallbacksMap = IDMap<std::unique_ptr<const FetchCallback>>;
   using ExtendableMessageEventCallbacksMap =
       IDMap<std::unique_ptr<const DispatchExtendableMessageEventCallback>>;
   using NavigationPreloadRequestsMap = IDMap<
@@ -332,7 +355,12 @@ struct ServiceWorkerContextClient::WorkerContextData {
   PushEventCallbacksMap push_event_callbacks;
 
   // Pending callbacks for Fetch Events.
-  FetchEventCallbacksMap fetch_event_callbacks;
+  std::map<int /* fetch_event_id */, SimpleEventCallback> fetch_event_callbacks;
+
+  // Pending callbacks for respondWith on each fetch event.
+  std::map<int /* fetch_event_id */,
+           mojom::ServiceWorkerFetchResponseCallbackPtr>
+      fetch_response_callbacks;
 
   // Pending callbacks for Extendable Message Events.
   ExtendableMessageEventCallbacksMap message_event_callbacks;
@@ -872,36 +900,73 @@ void ServiceWorkerContextClient::DidHandleInstallEvent(
       base::Time::FromDoubleT(event_dispatch_time)));
 }
 
-void ServiceWorkerContextClient::RespondToFetchEvent(
+void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
     int fetch_event_id,
     double event_dispatch_time) {
-  Send(new ServiceWorkerHostMsg_FetchEventResponse(
-      GetRoutingID(), fetch_event_id,
-      SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, ServiceWorkerResponse(),
-      base::Time::FromDoubleT(event_dispatch_time)));
+  const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
+      context_->fetch_response_callbacks[fetch_event_id];
+  DCHECK(response_callback.is_bound());
+  response_callback->OnFallback(base::Time::FromDoubleT(event_dispatch_time));
+  context_->fetch_response_callbacks.erase(fetch_event_id);
 }
 
 void ServiceWorkerContextClient::RespondToFetchEvent(
     int fetch_event_id,
     const blink::WebServiceWorkerResponse& web_response,
     double event_dispatch_time) {
-  Send(new ServiceWorkerHostMsg_FetchEventResponse(
-      GetRoutingID(), fetch_event_id,
-      SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-      GetServiceWorkerResponseFromWebResponse(web_response),
-      base::Time::FromDoubleT(event_dispatch_time)));
+  ServiceWorkerResponse response(
+      GetServiceWorkerResponseFromWebResponse(web_response));
+  const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
+      context_->fetch_response_callbacks[fetch_event_id];
+  if (response.blob_uuid.size()) {
+    // Send the legacy IPC due to the ordering issue between respondWith and
+    // blob.
+    // TODO(shimazu): mojofy this IPC after blob starts using sync IPC for
+    // creation or is mojofied: https://crbug.com/611935.
+    Send(new ServiceWorkerHostMsg_FetchEventResponse(
+        GetRoutingID(), fetch_event_id, response,
+        base::Time::FromDoubleT(event_dispatch_time)));
+  } else {
+    response_callback->OnResponse(response,
+                                  base::Time::FromDoubleT(event_dispatch_time));
+  }
+  context_->fetch_response_callbacks.erase(fetch_event_id);
+}
+
+void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
+    int fetch_event_id,
+    const blink::WebServiceWorkerResponse& web_response,
+    blink::WebServiceWorkerStreamHandle* web_body_as_stream,
+    double event_dispatch_time) {
+  ServiceWorkerResponse response(
+      GetServiceWorkerResponseFromWebResponse(web_response));
+  const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
+      context_->fetch_response_callbacks[fetch_event_id];
+  blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream =
+      blink::mojom::ServiceWorkerStreamHandle::New();
+  blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr;
+  body_as_stream->callback_request = mojo::MakeRequest(&callback_ptr);
+  body_as_stream->stream = web_body_as_stream->DrainStreamDataPipe();
+
+  web_body_as_stream->SetListener(
+      base::MakeUnique<StreamHandleListener>(std::move(callback_ptr)));
+
+  response_callback->OnResponseStream(
+      response, std::move(body_as_stream),
+      base::Time::FromDoubleT(event_dispatch_time));
+  context_->fetch_response_callbacks.erase(fetch_event_id);
 }
 
 void ServiceWorkerContextClient::DidHandleFetchEvent(
     int fetch_event_id,
     blink::WebServiceWorkerEventResult result,
     double event_dispatch_time) {
-  const FetchCallback* callback =
-      context_->fetch_event_callbacks.Lookup(fetch_event_id);
+  const WorkerContextData::SimpleEventCallback& callback =
+      context_->fetch_event_callbacks[fetch_event_id];
   DCHECK(callback);
-  callback->Run(EventResultToStatus(result),
-                base::Time::FromDoubleT(event_dispatch_time));
-  context_->fetch_event_callbacks.Remove(fetch_event_id);
+  callback.Run(EventResultToStatus(result),
+               base::Time::FromDoubleT(event_dispatch_time));
+  context_->fetch_event_callbacks.erase(fetch_event_id);
 }
 
 void ServiceWorkerContextClient::DidHandleNotificationClickEvent(
@@ -1251,6 +1316,7 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
     int fetch_event_id,
     const ServiceWorkerFetchRequest& request,
     mojom::FetchEventPreloadHandlePtr preload_handle,
+    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     const DispatchFetchEventCallback& callback) {
   std::unique_ptr<NavigationPreloadRequest> preload_request =
       preload_handle
@@ -1260,8 +1326,10 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
   const bool navigation_preload_sent = !!preload_request;
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchFetchEvent");
-  context_->fetch_event_callbacks.AddWithID(
-      base::MakeUnique<FetchCallback>(callback), fetch_event_id);
+  context_->fetch_response_callbacks.insert(
+      std::make_pair(fetch_event_id, std::move(response_callback)));
+  context_->fetch_event_callbacks.insert(
+      std::make_pair(fetch_event_id, std::move(callback)));
   if (preload_request) {
     context_->preload_requests.AddWithID(std::move(preload_request),
                                          fetch_event_id);

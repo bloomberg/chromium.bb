@@ -39,6 +39,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerStreamHandle.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "v8/include/v8.h"
 
@@ -162,17 +163,28 @@ class WebServiceWorkerContextClient {
       WebServiceWorkerEventResult result,
       double event_dispatch_time) {}
 
-  // ServiceWorker specific methods. respondFetchEvent will be called after
+  // ServiceWorker specific methods. RespondToFetchEvent* will be called after
   // FetchEvent returns a response by the ServiceWorker's script context, and
-  // didHandleFetchEvent will be called after the end of FetchEvent's
+  // DidHandleFetchEvent will be called after the end of FetchEvent's
   // lifecycle. When no response is provided, the browser should fallback to
-  // native fetch. EventIDs are the same with the ids passed from
-  // dispatchFetchEvent respectively.
-  virtual void RespondToFetchEvent(int fetch_event_id,
-                                   double event_dispatch_time) {}
+  // native fetch. |fetch_event_id|s are the same with the ids passed from
+  // DispatchFetchEvent respectively.
+
+  // Used when respondWith() is not called. Tells the browser to fall back to
+  // native fetch.
+  virtual void RespondToFetchEventWithNoResponse(int fetch_event_id,
+                                                 double event_dispatch_time) {}
+  // Responds to the fetch event with |response|.
   virtual void RespondToFetchEvent(int fetch_event_id,
                                    const WebServiceWorkerResponse& response,
                                    double event_dispatch_time) {}
+  // Responds to the fetch event with |response|, where body is
+  // |body_as_stream|.
+  virtual void RespondToFetchEventWithResponseStream(
+      int fetch_event_id,
+      const WebServiceWorkerResponse& response,
+      WebServiceWorkerStreamHandle* body_as_stream,
+      double event_dispatch_time) {}
   virtual void RespondToPaymentRequestEvent(
       int event_id,
       const WebPaymentAppResponse& response,

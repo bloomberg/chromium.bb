@@ -83,7 +83,6 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     std::unique_ptr<ServiceWorkerHeaderMap> headers,
     const std::string& blob_uuid,
     uint64_t blob_size,
-    const GURL& stream_url,
     blink::WebServiceWorkerResponseError error,
     base::Time response_time,
     bool is_in_cache_storage,
@@ -94,7 +93,6 @@ ServiceWorkerResponse::ServiceWorkerResponse(
       response_type(response_type),
       blob_uuid(blob_uuid),
       blob_size(blob_size),
-      stream_url(stream_url),
       error(error),
       response_time(response_time),
       is_in_cache_storage(is_in_cache_storage),
@@ -114,7 +112,6 @@ size_t ServiceWorkerResponse::EstimatedStructSize() {
   for (const auto& url : url_list)
     size += url.spec().size();
   size += blob_uuid.size();
-  size += stream_url.spec().size();
   size += cache_storage_cache_name.size();
   for (const auto& key_and_value : headers) {
     size += key_and_value.first.size();

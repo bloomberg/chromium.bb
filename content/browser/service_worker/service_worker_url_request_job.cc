@@ -29,10 +29,10 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_blob_reader.h"
+#include "content/browser/service_worker/service_worker_data_pipe_reader.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
-#include "content/browser/service_worker/service_worker_stream_reader.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -261,7 +261,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
 }
 
 ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
-  stream_reader_.reset();
+  data_pipe_reader_.reset();
   file_size_resolver_.reset();
 
   if (!ShouldRecordResult())
@@ -312,7 +312,7 @@ void ServiceWorkerURLRequestJob::Start() {
 
 void ServiceWorkerURLRequestJob::Kill() {
   net::URLRequestJob::Kill();
-  stream_reader_.reset();
+  data_pipe_reader_.reset();
   fetch_dispatcher_.reset();
   blob_reader_.reset();
   weak_factory_.InvalidateWeakPtrs();
@@ -367,8 +367,8 @@ int ServiceWorkerURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   DCHECK(buf);
   DCHECK_GE(buf_size, 0);
 
-  if (stream_reader_)
-    return stream_reader_->ReadRawData(buf, buf_size);
+  if (data_pipe_reader_)
+    return data_pipe_reader_->ReadRawData(buf, buf_size);
   if (blob_reader_)
     return blob_reader_->ReadRawData(buf, buf_size);
 
@@ -564,6 +564,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     ServiceWorkerStatusCode status,
     ServiceWorkerFetchEventResult fetch_result,
     const ServiceWorkerResponse& response,
+    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     const scoped_refptr<ServiceWorkerVersion>& version) {
   // Do not clear |fetch_dispatcher_| if it has dispatched a navigation preload
   // request to keep the mojom::URLLoader related objects in it, because the
@@ -629,13 +630,13 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   DCHECK(main_script_http_info);
   http_response_info_.reset(new net::HttpResponseInfo(*main_script_http_info));
 
-  // Set up a request for reading the stream.
-  if (response.stream_url.is_valid()) {
-    DCHECK(response.blob_uuid.empty());
+  // Process stream using Mojo's data pipe.
+  if (!body_as_stream.is_null()) {
     SetResponseBodyType(STREAM);
     SetResponse(response);
-    stream_reader_.reset(new ServiceWorkerStreamReader(this, version));
-    stream_reader_->Start(response.stream_url);
+    data_pipe_reader_.reset(new ServiceWorkerDataPipeReader(
+        this, version, std::move(body_as_stream)));
+    data_pipe_reader_->Start();
     return;
   }
 

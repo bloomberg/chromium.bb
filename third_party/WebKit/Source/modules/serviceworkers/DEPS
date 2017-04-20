@@ -5,4 +5,5 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/fetch",
     "+modules/serviceworkers",
+    "+mojo/public/cpp/system/data_pipe.h",
 ]

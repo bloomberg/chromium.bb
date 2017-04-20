@@ -179,7 +179,6 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
       std::unique_ptr<ServiceWorkerHeaderMap> headers,
       const std::string& blob_uuid,
       uint64_t blob_size,
-      const GURL& stream_url,
       blink::WebServiceWorkerResponseError error,
       base::Time response_time,
       bool is_in_cache_storage,
@@ -195,9 +194,11 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   std::string status_text;
   blink::WebServiceWorkerResponseType response_type;
   ServiceWorkerHeaderMap headers;
+  // |blob_uuid| and |blob_size| are set when the body is a blob. For other
+  // types of responses, the body is provided separately in Mojo IPC via
+  // ServiceWorkerFetchResponseCallback.
   std::string blob_uuid;
   uint64_t blob_size;
-  GURL stream_url;
   blink::WebServiceWorkerResponseError error;
   base::Time response_time;
   bool is_in_cache_storage = false;

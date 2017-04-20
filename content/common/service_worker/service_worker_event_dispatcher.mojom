@@ -11,6 +11,7 @@ import "mojo/common/time.mojom";
 import "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom";
+import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom";
 import "url/mojo/origin.mojom";
 
 [Native]
@@ -50,6 +51,26 @@ struct ExtendableMessageEvent {
   ExtendableMessageEventSource source;
 };
 
+// Browser-side interface which is passed through DispatchFetchEvent. The
+// renderer uses this interface to respond to a fetch event. This interface is
+// only used for responses where the body is a stream or doesn't exist. When the
+// body is a blob, the legacy IPC (ServiceWorkerHostMsg_FetchEventResponse) is
+// used.
+// TODO(shimazu): Use this interface for all responses after the blob system is
+// mojoified: https://crbug.com/611935.
+interface ServiceWorkerFetchResponseCallback {
+  // Responds to the request with |response|. The body is empty.
+  OnResponse(ServiceWorkerResponse response,
+             mojo.common.mojom.Time dispatch_event_time);
+  // Responds to the request with |response|. The body is returned as a stream.
+  OnResponseStream(ServiceWorkerResponse response,
+                   blink.mojom.ServiceWorkerStreamHandle body_as_stream,
+                   mojo.common.mojom.Time dispatch_event_time);
+  // Provides no response to the request. The browser will fall back to the
+  // network.
+  OnFallback(mojo.common.mojom.Time dispatch_event_time);
+};
+
 // Renderer-side interface bound to ServiceWorkerContextClient for dispatching
 // events.
 // Those events expecting such response
@@ -74,10 +95,16 @@ interface ServiceWorkerEventDispatcher {
                                  array<BackgroundFetchSettledFetch> fetches)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
-  // |fetch_event_id| is used internally when sending the response back to the
-  // browser process.
+  // The callback is called once the event finishes, which means the event
+  // handler ran and all outstanding respondWith() and waitUntil() promises have
+  // settled. |response_callback| is called once the promise to respondWith()
+  // settles, or when the event handler ran without calling respondWith().
+  // |fetch_event_id| is used internally when sending the response with a blob
+  // body back to the browser process. In that case, |response_callback| won't
+  // be called.
   DispatchFetchEvent(int32 fetch_event_id, blink.mojom.FetchAPIRequest request,
-                     FetchEventPreloadHandle? preload_handle)
+                     FetchEventPreloadHandle? preload_handle,
+                     ServiceWorkerFetchResponseCallback response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   DispatchNotificationClickEvent(string notification_id,

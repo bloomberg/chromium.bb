@@ -20,11 +20,13 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -47,10 +49,9 @@ namespace content {
 class ResourceContext;
 class ResourceRequestBodyImpl;
 class ServiceWorkerBlobReader;
-class ServiceWorkerStreamReader;
+class ServiceWorkerDataPipeReader;
 class ServiceWorkerFetchDispatcher;
 class ServiceWorkerVersion;
-class Stream;
 
 class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
  public:
@@ -139,10 +140,10 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   int ReadRawData(net::IOBuffer* buf, int buf_size) override;
 
   //----------------------------------------------------------------------------
-  // The following are intended for use by ServiceWorker(Blob|Stream)Reader.
-  void OnResponseStarted();
-  void OnReadRawDataComplete(int bytes_read);
-  void RecordResult(ServiceWorkerMetrics::URLRequestJobResult result);
+  // The following are intended for use by ServiceWorker(Blob|DataPipe)Reader.
+  virtual void OnResponseStarted();
+  virtual void OnReadRawDataComplete(int bytes_read);
+  virtual void RecordResult(ServiceWorkerMetrics::URLRequestJobResult result);
   //----------------------------------------------------------------------------
 
   base::WeakPtr<ServiceWorkerURLRequestJob> GetWeakPtr();
@@ -187,6 +188,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       ServiceWorkerStatusCode status,
       ServiceWorkerFetchEventResult fetch_result,
       const ServiceWorkerResponse& response,
+      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       const scoped_refptr<ServiceWorkerVersion>& version);
   void SetResponse(const ServiceWorkerResponse& response);
 
@@ -302,9 +304,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   std::string client_id_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   const ResourceContext* resource_context_;
-  // Only one of |blob_reader_| and |stream_reader_| can be non-null.
+  // Only one of |blob_reader_| and |data_pipe_reader_| can be non-null.
   std::unique_ptr<ServiceWorkerBlobReader> blob_reader_;
-  std::unique_ptr<ServiceWorkerStreamReader> stream_reader_;
+  std::unique_ptr<ServiceWorkerDataPipeReader> data_pipe_reader_;
 
   FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;

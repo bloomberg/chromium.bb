@@ -52,9 +52,9 @@ class BodyStreamBuffer::LoaderClient final
     client_->DidFetchDataLoadedString(string);
   }
 
-  void DidFetchDataLoadedStream() override {
+  void DidFetchDataLoadedDataPipe() override {
     buffer_->EndLoading();
-    client_->DidFetchDataLoadedStream();
+    client_->DidFetchDataLoadedDataPipe();
   }
 
   void DidFetchDataLoadedCustomFormat() override {

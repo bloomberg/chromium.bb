@@ -70,9 +70,6 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
   WebString BlobUUID() const;
   uint64_t BlobSize() const;
 
-  void SetStreamURL(const WebURL&);
-  const WebURL& StreamURL() const;
-
   // Provides a more detailed error when status() is zero.
   void SetError(WebServiceWorkerResponseError);
   WebServiceWorkerResponseError GetError() const;

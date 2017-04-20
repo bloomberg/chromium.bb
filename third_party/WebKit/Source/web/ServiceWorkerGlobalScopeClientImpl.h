@@ -81,12 +81,17 @@ class ServiceWorkerGlobalScopeClientImpl final
   void DidHandleExtendableMessageEvent(int event_id,
                                        WebServiceWorkerEventResult,
                                        double event_dispatch_time) override;
-  void RespondToFetchEvent(int response_id,
-                           double event_dispatch_time) override;
-  void RespondToFetchEvent(int response_id,
+  void RespondToFetchEventWithNoResponse(int fetch_event_id,
+                                         double event_dispatch_time) override;
+  void RespondToFetchEvent(int fetch_event_id,
                            const WebServiceWorkerResponse&,
                            double event_dispatch_time) override;
-  void RespondToPaymentRequestEvent(int response_id,
+  void RespondToFetchEventWithResponseStream(
+      int fetch_event_id,
+      const WebServiceWorkerResponse&,
+      WebServiceWorkerStreamHandle*,
+      double event_dispatch_time) override;
+  void RespondToPaymentRequestEvent(int event_id,
                                     const WebPaymentAppResponse&,
                                     double event_dispatch_time) override;
   void DidHandleFetchEvent(int fetch_event_id,

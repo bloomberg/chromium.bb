@@ -24,4 +24,5 @@ type_mappings = [
   "content.mojom.PlatformNotificationData=::content::PlatformNotificationData",
   "content.mojom.PushEventPayload=::content::PushEventPayload",
   "content.mojom.ServiceWorkerFetchRequest=::content::ServiceWorkerFetchRequest",
+  "content.mojom.ServiceWorkerResponse=::content::ServiceWorkerResponse",
 ]

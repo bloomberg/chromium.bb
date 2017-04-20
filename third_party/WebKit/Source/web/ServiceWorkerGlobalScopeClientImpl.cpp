@@ -127,17 +127,11 @@ void ServiceWorkerGlobalScopeClientImpl::DidHandleExtendableMessageEvent(
                                           event_dispatch_time);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::RespondToFetchEvent(
+void ServiceWorkerGlobalScopeClientImpl::RespondToFetchEventWithNoResponse(
     int fetch_event_id,
     double event_dispatch_time) {
-  client_.RespondToFetchEvent(fetch_event_id, event_dispatch_time);
-}
-
-void ServiceWorkerGlobalScopeClientImpl::RespondToPaymentRequestEvent(
-    int event_id,
-    const WebPaymentAppResponse& response,
-    double event_dispatch_time) {
-  client_.RespondToPaymentRequestEvent(event_id, response, event_dispatch_time);
+  client_.RespondToFetchEventWithNoResponse(fetch_event_id,
+                                            event_dispatch_time);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::RespondToFetchEvent(
@@ -145,6 +139,22 @@ void ServiceWorkerGlobalScopeClientImpl::RespondToFetchEvent(
     const WebServiceWorkerResponse& response,
     double event_dispatch_time) {
   client_.RespondToFetchEvent(fetch_event_id, response, event_dispatch_time);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::RespondToFetchEventWithResponseStream(
+    int fetch_event_id,
+    const WebServiceWorkerResponse& response,
+    WebServiceWorkerStreamHandle* stream_handle,
+    double event_dispatch_time) {
+  client_.RespondToFetchEventWithResponseStream(
+      fetch_event_id, response, stream_handle, event_dispatch_time);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::RespondToPaymentRequestEvent(
+    int event_id,
+    const WebPaymentAppResponse& response,
+    double event_dispatch_time) {
+  client_.RespondToPaymentRequestEvent(event_id, response, event_dispatch_time);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::DidHandleFetchEvent(

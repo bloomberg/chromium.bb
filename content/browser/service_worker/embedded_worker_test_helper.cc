@@ -200,14 +200,17 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
     helper_->OnBackgroundFetchedEventStub(tag, fetches, callback);
   }
 
-  void DispatchFetchEvent(int fetch_event_id,
-                          const ServiceWorkerFetchRequest& request,
-                          mojom::FetchEventPreloadHandlePtr preload_handle,
-                          const DispatchFetchEventCallback& callback) override {
+  void DispatchFetchEvent(
+      int fetch_event_id,
+      const ServiceWorkerFetchRequest& request,
+      mojom::FetchEventPreloadHandlePtr preload_handle,
+      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      const DispatchFetchEventCallback& callback) override {
     if (!helper_)
       return;
     helper_->OnFetchEventStub(thread_id_, fetch_event_id, request,
-                              std::move(preload_handle), callback);
+                              std::move(preload_handle),
+                              std::move(response_callback), callback);
   }
 
   void DispatchNotificationClickEvent(
@@ -481,25 +484,24 @@ void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
-    int embedded_worker_id,
-    int fetch_event_id,
-    const ServiceWorkerFetchRequest& request,
-    mojom::FetchEventPreloadHandlePtr preload_handle,
-    const FetchCallback& callback) {
-  SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
-      embedded_worker_id, fetch_event_id,
-      SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+    int /* embedded_worker_id */,
+    int /* fetch_event_id */,
+    const ServiceWorkerFetchRequest& /* request */,
+    mojom::FetchEventPreloadHandlePtr /* preload_handle */,
+    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    const FetchCallback& finish_callback) {
+  response_callback->OnResponse(
       ServiceWorkerResponse(
           base::MakeUnique<std::vector<GURL>>(), 200, "OK",
           blink::kWebServiceWorkerResponseTypeDefault,
-          base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0, GURL(),
+          base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0,
           blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
           false /* is_in_cache_storage */,
           std::string() /* cache_storage_cache_name */,
           base::MakeUnique<
               ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-      base::Time::Now()));
-  callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+      base::Time::Now());
+  finish_callback.Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnPushEvent(
@@ -745,12 +747,14 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
     int fetch_event_id,
     const ServiceWorkerFetchRequest& request,
     mojom::FetchEventPreloadHandlePtr preload_handle,
-    const FetchCallback& callback) {
+    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    const FetchCallback& finish_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
                  thread_id_embedded_worker_id_map_[thread_id], fetch_event_id,
-                 request, base::Passed(&preload_handle), callback));
+                 request, base::Passed(&preload_handle),
+                 base::Passed(&response_callback), finish_callback));
 }
 
 void EmbeddedWorkerTestHelper::OnNotificationClickEventStub(

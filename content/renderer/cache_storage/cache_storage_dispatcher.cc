@@ -104,9 +104,6 @@ CacheStorageCacheOperationType CacheOperationTypeFromWebCacheOperationType(
 
 CacheStorageBatchOperation BatchOperationFromWebBatchOperation(
     const blink::WebServiceWorkerCache::BatchOperation& web_operation) {
-  // We don't support streaming for cache.
-  DCHECK(web_operation.response.StreamURL().IsEmpty());
-
   CacheStorageBatchOperation operation;
   operation.operation_type =
       CacheOperationTypeFromWebCacheOperationType(web_operation.operation_type);

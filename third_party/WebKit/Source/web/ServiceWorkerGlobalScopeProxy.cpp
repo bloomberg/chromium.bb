@@ -331,7 +331,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchForeignFetchEvent(
     // TODO(mek): Ideally the browser wouldn't even start the service worker
     // if its tokens have expired.
     ServiceWorkerGlobalScopeClient::From(WorkerGlobalScope())
-        ->RespondToFetchEvent(fetch_event_id, WTF::CurrentTime());
+        ->RespondToFetchEventWithNoResponse(fetch_event_id, WTF::CurrentTime());
     ServiceWorkerGlobalScopeClient::From(WorkerGlobalScope())
         ->DidHandleFetchEvent(fetch_event_id,
                               kWebServiceWorkerEventResultCompleted,

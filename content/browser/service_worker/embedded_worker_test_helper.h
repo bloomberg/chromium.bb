@@ -213,11 +213,13 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchExtendableMessageEventCallback& callback);
   virtual void OnInstallEvent(int embedded_worker_id, int request_id);
-  virtual void OnFetchEvent(int embedded_worker_id,
-                            int fetch_event_id,
-                            const ServiceWorkerFetchRequest& request,
-                            mojom::FetchEventPreloadHandlePtr preload_handle,
-                            const FetchCallback& callback);
+  virtual void OnFetchEvent(
+      int embedded_worker_id,
+      int fetch_event_id,
+      const ServiceWorkerFetchRequest& request,
+      mojom::FetchEventPreloadHandlePtr preload_handle,
+      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      const FetchCallback& finish_callback);
   virtual void OnNotificationClickEvent(
       const std::string& notification_id,
       const PlatformNotificationData& notification_data,
@@ -294,11 +296,13 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchExtendableMessageEventCallback& callback);
   void OnInstallEventStub(int request_id);
-  void OnFetchEventStub(int thread_id,
-                        int fetch_event_id,
-                        const ServiceWorkerFetchRequest& request,
-                        mojom::FetchEventPreloadHandlePtr preload_handle,
-                        const FetchCallback& callback);
+  void OnFetchEventStub(
+      int thread_id,
+      int fetch_event_id,
+      const ServiceWorkerFetchRequest& request,
+      mojom::FetchEventPreloadHandlePtr preload_handle,
+      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      const FetchCallback& finish_callback);
   void OnNotificationClickEventStub(
       const std::string& notification_id,
       const PlatformNotificationData& notification_data,

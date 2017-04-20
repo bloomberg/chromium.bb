@@ -26,7 +26,6 @@ class WebServiceWorkerResponsePrivate
   WebServiceWorkerResponseType response_type;
   HTTPHeaderMap headers;
   RefPtr<BlobDataHandle> blob_data_handle;
-  WebURL stream_url;
   WebServiceWorkerResponseError error;
   int64_t response_time;
   WebString cache_storage_cache_name;
@@ -126,14 +125,6 @@ uint64_t WebServiceWorkerResponse::BlobSize() const {
   if (!private_->blob_data_handle)
     return 0;
   return private_->blob_data_handle->size();
-}
-
-void WebServiceWorkerResponse::SetStreamURL(const WebURL& url) {
-  private_->stream_url = url;
-}
-
-const WebURL& WebServiceWorkerResponse::StreamURL() const {
-  return private_->stream_url;
 }
 
 void WebServiceWorkerResponse::SetError(WebServiceWorkerResponseError error) {

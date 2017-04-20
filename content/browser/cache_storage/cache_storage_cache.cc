@@ -240,8 +240,7 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
       std::move(url_list), metadata.response().status_code(),
       metadata.response().status_text(),
       ProtoResponseTypeToWebResponseType(metadata.response().response_type()),
-      std::move(headers), "", 0, GURL(),
-      blink::kWebServiceWorkerResponseErrorUnknown,
+      std::move(headers), "", 0, blink::kWebServiceWorkerResponseErrorUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       true /* is_in_cache_storage */, cache_name,
       base::MakeUnique<ServiceWorkerHeaderList>(
@@ -1016,9 +1015,6 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
           operation.request.url, operation.request.method,
           operation.request.headers, operation.request.referrer,
           operation.request.is_reload));
-
-  // We don't support streaming for cache.
-  DCHECK(operation.response.stream_url.is_empty());
 
   std::unique_ptr<ServiceWorkerResponse> response =
       base::MakeUnique<ServiceWorkerResponse>(operation.response);

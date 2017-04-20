@@ -21,6 +21,7 @@
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/log/net_log_with_source.h"
 
 namespace net {
@@ -38,6 +39,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
       base::Callback<void(ServiceWorkerStatusCode,
                           ServiceWorkerFetchEventResult,
                           const ServiceWorkerResponse&,
+                          blink::mojom::ServiceWorkerStreamHandlePtr,
                           const scoped_refptr<ServiceWorkerVersion>&)>;
 
   ServiceWorkerFetchDispatcher(
@@ -75,10 +77,12 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   void DidFail(ServiceWorkerStatusCode status);
   void DidFinish(int request_id,
                  ServiceWorkerFetchEventResult fetch_result,
-                 const ServiceWorkerResponse& response);
+                 const ServiceWorkerResponse& response,
+                 blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
   void Complete(ServiceWorkerStatusCode status,
                 ServiceWorkerFetchEventResult fetch_result,
-                const ServiceWorkerResponse& response);
+                const ServiceWorkerResponse& response,
+                blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
 
   static void OnFetchEventFinished(
       ServiceWorkerVersion* version,
