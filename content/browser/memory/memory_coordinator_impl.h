@@ -233,6 +233,9 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // The current memory condition.
   MemoryCondition memory_condition_ = MemoryCondition::NORMAL;
 
+  // |memory_condition_| won't be updated until this time ticks is passed.
+  base::TimeTicks suppress_condition_change_until_;
+
   // The memory state of the browser process.
   MemoryState browser_memory_state_ = MemoryState::NORMAL;
 

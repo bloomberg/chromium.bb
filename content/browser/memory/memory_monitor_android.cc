@@ -65,7 +65,6 @@ static void GetMemoryInfoCallback(
 
 // The maximum level of onTrimMemory (TRIM_MEMORY_COMPLETE).
 const int kTrimMemoryLevelMax = 80;
-const int kTrimMemoryRunningLow = 10;
 const int kTrimMemoryRunningCritical = 15;
 
 // Called by JNI.
@@ -74,14 +73,14 @@ static void OnTrimMemory(JNIEnv* env,
                          jint level) {
   DCHECK(level >= 0 && level <= kTrimMemoryLevelMax);
   auto* coordinator = MemoryCoordinatorImpl::GetInstance();
+  DCHECK(coordinator);
 
-  if (level >= kTrimMemoryRunningCritical) {
-    coordinator->ForceSetMemoryCondition(MemoryCondition::CRITICAL,
-                                         base::TimeDelta::FromMinutes(1));
-  } else if (level >= kTrimMemoryRunningLow) {
-    coordinator->ForceSetMemoryCondition(MemoryCondition::WARNING,
-                                         base::TimeDelta::FromMinutes(1));
-  }
+  MemoryCondition condition = MemoryCondition::WARNING;
+  if (level >= kTrimMemoryRunningCritical ||
+      coordinator->GetMemoryCondition() == MemoryCondition::CRITICAL)
+    condition = MemoryCondition::CRITICAL;
+  coordinator->ForceSetMemoryCondition(condition,
+                                       base::TimeDelta::FromMinutes(1));
 }
 
 // static

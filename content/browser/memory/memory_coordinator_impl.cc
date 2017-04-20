@@ -261,7 +261,7 @@ MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
 void MemoryCoordinatorImpl::ForceSetMemoryCondition(MemoryCondition condition,
                                                     base::TimeDelta duration) {
   UpdateConditionIfNeeded(condition);
-  condition_observer_->ScheduleUpdateCondition(duration);
+  suppress_condition_change_until_ = tick_clock_->NowTicks() + duration;
 }
 
 void MemoryCoordinatorImpl::Observe(int type,
@@ -302,6 +302,9 @@ void MemoryCoordinatorImpl::UpdateConditionIfNeeded(
     OnCriticalCondition();
 
   if (memory_condition_ == next_condition)
+    return;
+
+  if (suppress_condition_change_until_ > tick_clock_->NowTicks())
     return;
 
   MemoryCondition prev_condition = memory_condition_;
