@@ -139,6 +139,20 @@ bool LayoutGrid::NamedGridLinesDefinitionDidChange(
          old_style.NamedGridColumnLines() != StyleRef().NamedGridColumnLines();
 }
 
+// This method optimizes the gutters computation by skiping the available size
+// call if gaps are fixed size (it's only needed for percentages).
+Optional<LayoutUnit> LayoutGrid::AvailableSpaceForGutters(
+    GridTrackSizingDirection direction) const {
+  bool is_row_axis = direction == kForColumns;
+  const Length& gap =
+      is_row_axis ? StyleRef().GridColumnGap() : StyleRef().GridRowGap();
+  if (!gap.IsPercent())
+    return WTF::kNullopt;
+
+  return is_row_axis ? AvailableLogicalWidth()
+                     : AvailableLogicalHeightForPercentageComputation();
+}
+
 LayoutUnit LayoutGrid::ComputeTrackBasedLogicalHeight() const {
   LayoutUnit logical_height;
 
@@ -146,8 +160,8 @@ LayoutUnit LayoutGrid::ComputeTrackBasedLogicalHeight() const {
   for (const auto& row : all_rows)
     logical_height += row.BaseSize();
 
-  logical_height +=
-      GuttersSize(grid_, kForRows, 0, all_rows.size(), kTrackSizing);
+  logical_height += GuttersSize(grid_, kForRows, 0, all_rows.size(),
+                                AvailableSpaceForGutters(kForRows));
 
   return logical_height;
 }
@@ -157,7 +171,8 @@ void LayoutGrid::ComputeTrackSizesForDefiniteSize(
     LayoutUnit available_space) {
   LayoutUnit free_space =
       available_space - GuttersSize(grid_, direction, 0,
-                                    grid_.NumTracks(direction), kTrackSizing);
+                                    grid_.NumTracks(direction),
+                                    available_space);
   track_sizing_algorithm_.Setup(direction, NumTracks(direction, grid_),
                                 kTrackSizing, available_space, free_space);
   track_sizing_algorithm_.Run();
@@ -232,6 +247,7 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutState state(*this);
 
     LayoutSize previous_size = Size();
+    has_definite_logical_height_ = HasDefiniteLogicalHeight();
 
     // We need to clear both own and containingBlock override sizes to
     // ensure we get the same result when grid's intrinsic size is
@@ -249,11 +265,11 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     }
 
     UpdateLogicalWidth();
-    has_definite_logical_height_ = HasDefiniteLogicalHeight();
 
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this, &layout_scope);
 
-    PlaceItemsOnGrid(grid_, kTrackSizing);
+    LayoutUnit available_space_for_columns = AvailableLogicalWidth();
+    PlaceItemsOnGrid(grid_, available_space_for_columns);
 
     // 1- First, the track sizing algorithm is used to resolve the sizes of the
     // grid columns.
@@ -262,7 +278,6 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     // same for heights though because many code paths inside
     // updateLogicalHeight() require a previous call to setLogicalHeight() to
     // resolve heights properly (like for positioned items for example).
-    LayoutUnit available_space_for_columns = AvailableLogicalWidth();
     ComputeTrackSizesForDefiniteSize(kForColumns, available_space_for_columns);
 
     // 2- Next, the track sizing algorithm resolves the sizes of the grid rows,
@@ -331,14 +346,20 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
   ClearNeedsLayout();
 }
 
-LayoutUnit LayoutGrid::GridGapForDirection(
-    GridTrackSizingDirection direction,
-    SizingOperation sizing_operation) const {
-  LayoutUnit available_size;
+LayoutUnit LayoutGrid::GridGap(GridTrackSizingDirection direction,
+                               Optional<LayoutUnit> available_size) const {
   const Length& gap = direction == kForColumns ? StyleRef().GridColumnGap()
                                                : StyleRef().GridRowGap();
-  if (sizing_operation == kTrackSizing && gap.IsPercent())
-    available_size = direction == kForColumns
+  return ValueForLength(gap, available_size.value_or(LayoutUnit()));
+}
+
+LayoutUnit LayoutGrid::GridGap(GridTrackSizingDirection direction) const {
+  LayoutUnit available_size;
+  bool is_row_axis = direction == kForColumns;
+  const Length& gap =
+      is_row_axis ? StyleRef().GridColumnGap() : StyleRef().GridRowGap();
+  if (gap.IsPercent())
+    available_size = is_row_axis
                          ? AvailableLogicalWidth()
                          : AvailableLogicalHeightForPercentageComputation();
 
@@ -351,11 +372,11 @@ LayoutUnit LayoutGrid::GuttersSize(const Grid& grid,
                                    GridTrackSizingDirection direction,
                                    size_t start_line,
                                    size_t span,
-                                   SizingOperation sizing_operation) const {
+                                   Optional<LayoutUnit> available_size) const {
   if (span <= 1)
     return LayoutUnit();
 
-  LayoutUnit gap = GridGapForDirection(direction, sizing_operation);
+  LayoutUnit gap = GridGap(direction, available_size);
 
   // Fast path, no collapsing tracks.
   if (!grid.HasAutoRepeatEmptyTracks(direction))
@@ -421,7 +442,7 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   Grid grid(this);
-  PlaceItemsOnGrid(grid, kIntrinsicSizeComputation);
+  PlaceItemsOnGrid(grid, WTF::kNullopt);
 
   GridTrackSizingAlgorithm algorithm(this, grid);
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, grid,
@@ -446,8 +467,8 @@ void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
   max_intrinsic_size = algo.MaxContentSize();
 
   size_t number_of_tracks = algo.Tracks(direction).size();
-  LayoutUnit total_gutters_size = GuttersSize(
-      grid, direction, 0, number_of_tracks, kIntrinsicSizeComputation);
+  LayoutUnit total_gutters_size =
+      GuttersSize(grid, direction, 0, number_of_tracks, WTF::kNullopt);
   min_intrinsic_size += total_gutters_size;
   max_intrinsic_size += total_gutters_size;
 
@@ -496,9 +517,18 @@ bool LayoutGrid::IsOrthogonalChild(const LayoutBox& child) const {
   return child.IsHorizontalWritingMode() != IsHorizontalWritingMode();
 }
 
+// Unfortunately there are still many layout methods that return -1 for
+// non-resolvable sizes. We prefer to represent them with WTF::nullopt.
+static Optional<LayoutUnit> ConvertLayoutUnitToOptional(LayoutUnit size) {
+  if (size == -1)
+    return WTF::kNullopt;
+  return size;
+}
+
 size_t LayoutGrid::ComputeAutoRepeatTracksCount(
     GridTrackSizingDirection direction,
-    SizingOperation sizing_operation) const {
+    Optional<LayoutUnit> available_size) const {
+  DCHECK(!available_size || available_size.value() != -1);
   bool is_row_axis = direction == kForColumns;
   const auto& auto_repeat_tracks = is_row_axis
                                        ? StyleRef().GridAutoRepeatColumns()
@@ -508,27 +538,21 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
   if (!auto_repeat_track_list_length)
     return 0;
 
-  LayoutUnit available_size;
-  if (is_row_axis) {
-    available_size = sizing_operation == kIntrinsicSizeComputation
-                         ? LayoutUnit(-1)
-                         : AvailableLogicalWidth();
-  } else {
-    available_size = AvailableLogicalHeightForPercentageComputation();
-    if (available_size == -1) {
+  if (!is_row_axis) {
+    if (!available_size) {
       const Length& max_length = StyleRef().LogicalMaxHeight();
       if (!max_length.IsMaxSizeNone()) {
-        available_size = ConstrainContentBoxLogicalHeightByMinMax(
-            AvailableLogicalHeightUsing(max_length,
-                                        kExcludeMarginBorderPadding),
-            LayoutUnit(-1));
+        available_size = ConvertLayoutUnitToOptional(
+            ConstrainContentBoxLogicalHeightByMinMax(
+                AvailableLogicalHeightUsing(max_length,
+                                            kExcludeMarginBorderPadding),
+                LayoutUnit(-1)));
       }
     }
   }
 
   bool needs_to_fulfill_minimum_size = false;
-  bool indefinite_main_and_max_sizes = available_size == LayoutUnit(-1);
-  if (indefinite_main_and_max_sizes) {
+  if (!available_size) {
     const Length& min_size = is_row_axis ? StyleRef().LogicalMinWidth()
                                          : StyleRef().LogicalMinHeight();
     if (!min_size.IsSpecified())
@@ -552,7 +576,8 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
     auto track_length = has_definite_max_track_sizing_function
                             ? auto_track_size.MaxTrackBreadth().length()
                             : auto_track_size.MinTrackBreadth().length();
-    auto_repeat_tracks_size += ValueForLength(track_length, available_size);
+    auto_repeat_tracks_size +=
+        ValueForLength(track_length, available_size.value());
   }
   // For the purpose of finding the number of auto-repeated tracks, the UA must
   // floor the track size to a UA-specified value to avoid division by zero. It
@@ -577,15 +602,15 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
     tracks_size += ValueForLength(has_definite_max_track_breadth
                                       ? track.MaxTrackBreadth().length()
                                       : track.MinTrackBreadth().length(),
-                                  available_size);
+                                  available_size.value());
   }
 
   // Add gutters as if there where only 1 auto repeat track. Gaps between auto
   // repeat tracks will be added later when computing the repetitions.
-  LayoutUnit gap_size = GridGapForDirection(direction, sizing_operation);
+  LayoutUnit gap_size = GridGap(direction, available_size);
   tracks_size += gap_size * track_sizes.size();
 
-  LayoutUnit free_space = available_size - tracks_size;
+  LayoutUnit free_space = available_size.value() - tracks_size;
   if (free_space <= 0)
     return auto_repeat_track_list_length;
 
@@ -659,12 +684,19 @@ size_t LayoutGrid::ClampAutoRepeatTracks(GridTrackSizingDirection direction,
                   static_cast<size_t>(kGridMaxTracks) - insertion_point);
 }
 
-void LayoutGrid::PlaceItemsOnGrid(Grid& grid,
-                                  SizingOperation sizing_operation) const {
-  size_t auto_repeat_rows =
-      ComputeAutoRepeatTracksCount(kForRows, sizing_operation);
+// TODO(svillar): we shouldn't have to pass the available logical width as
+// argument. The problem is that availableLogicalWidth() does always return a
+// value even if we cannot resolve it like when computing the intrinsic size
+// (preferred widths). That's why we pass the responsibility to the caller who
+// does know whether the available logical width is indefinite or not.
+void LayoutGrid::PlaceItemsOnGrid(
+    Grid& grid,
+    Optional<LayoutUnit> available_logical_width) const {
+  size_t auto_repeat_rows = ComputeAutoRepeatTracksCount(
+      kForRows, ConvertLayoutUnitToOptional(
+                    AvailableLogicalHeightForPercentageComputation()));
   size_t auto_repeat_columns =
-      ComputeAutoRepeatTracksCount(kForColumns, sizing_operation);
+      ComputeAutoRepeatTracksCount(kForColumns, available_logical_width);
 
   auto_repeat_rows = ClampAutoRepeatTracks(kForRows, auto_repeat_rows);
   auto_repeat_columns = ClampAutoRepeatTracks(kForColumns, auto_repeat_columns);
@@ -1023,9 +1055,7 @@ Vector<LayoutUnit> LayoutGrid::TrackSizesForComputedStyle(
 
   DCHECK(!grid_.NeedsItemsPlacement());
   bool has_collapsed_tracks = grid_.HasAutoRepeatEmptyTracks(direction);
-  LayoutUnit gap = !has_collapsed_tracks
-                       ? GridGapForDirection(direction, kTrackSizing)
-                       : LayoutUnit();
+  LayoutUnit gap = !has_collapsed_tracks ? GridGap(direction) : LayoutUnit();
   tracks.ReserveCapacity(num_positions - 1);
   for (size_t i = 0; i < num_positions - 2; ++i)
     tracks.push_back(positions[i + 1] - positions[i] - offset_between_tracks -
@@ -1038,7 +1068,7 @@ Vector<LayoutUnit> LayoutGrid::TrackSizesForComputedStyle(
   size_t remaining_empty_tracks =
       grid_.AutoRepeatEmptyTracks(direction)->size();
   size_t last_line = tracks.size();
-  gap = GridGapForDirection(direction, kTrackSizing);
+  gap = GridGap(direction);
   for (size_t i = 1; i < last_line; ++i) {
     if (grid_.IsEmptyAutoRepeatTrack(direction, i - 1)) {
       --remaining_empty_tracks;
@@ -1082,7 +1112,7 @@ void LayoutGrid::ApplyStretchAlignmentToTracksIfNeeded(
   Vector<unsigned> auto_sized_tracks_index;
   for (unsigned i = 0; i < all_tracks.size(); ++i) {
     const GridTrackSize& track_size =
-        track_sizing_algorithm_.GetGridTrackSize(direction, i, kTrackSizing);
+        track_sizing_algorithm_.GetGridTrackSize(direction, i);
     if (track_size.HasAutoMaxTrackBreadth())
       auto_sized_tracks_index.push_back(i);
   }
@@ -1273,6 +1303,8 @@ void LayoutGrid::OffsetAndBreadthForPositionedChild(
            GridPositionsResolver::FinalPositionSide(direction))) ||
       (end_line < 0) || (end_line > last_line);
 
+  Optional<LayoutUnit> available_size_for_gutters =
+      AvailableSpaceForGutters(direction);
   LayoutUnit start;
   if (!start_is_auto) {
     if (is_for_columns) {
@@ -1305,7 +1337,8 @@ void LayoutGrid::OffsetAndBreadthForPositionedChild(
     // consider them for the edges of the grid.
     if (end_line > 0 && end_line < last_line) {
       DCHECK(!grid_.NeedsItemsPlacement());
-      end -= GuttersSize(grid_, direction, end_line - 1, 2, kTrackSizing);
+      end -= GuttersSize(grid_, direction, end_line - 1, 2,
+                         available_size_for_gutters);
       end -= is_for_columns ? offset_between_columns_ : offset_between_rows_;
     }
   }
@@ -1327,7 +1360,8 @@ void LayoutGrid::OffsetAndBreadthForPositionedChild(
 
       if (end_line > 0 && end_line < last_line) {
         DCHECK(!grid_.NeedsItemsPlacement());
-        offset += GuttersSize(grid_, direction, end_line - 1, 2, kTrackSizing);
+        offset += GuttersSize(grid_, direction, end_line - 1, 2,
+                              available_size_for_gutters);
         offset +=
             is_for_columns ? offset_between_columns_ : offset_between_rows_;
       }
@@ -1385,9 +1419,7 @@ void LayoutGrid::PopulateGridPositionsForDirection(
     // as we might not compute the gap between two consecutive tracks without
     // examining the surrounding ones.
     bool has_collapsed_tracks = grid.HasAutoRepeatEmptyTracks(direction);
-    LayoutUnit gap = !has_collapsed_tracks
-                         ? GridGapForDirection(direction, kTrackSizing)
-                         : LayoutUnit();
+    LayoutUnit gap = !has_collapsed_tracks ? GridGap(direction) : LayoutUnit();
     size_t next_to_last_line = number_of_lines - 2;
     for (size_t i = 0; i < next_to_last_line; ++i)
       positions[i + 1] = positions[i] + offset.distribution_offset +
@@ -1399,7 +1431,7 @@ void LayoutGrid::PopulateGridPositionsForDirection(
     // collapse (they coincide exactly) except on the edges of the grid where
     // they become 0.
     if (has_collapsed_tracks) {
-      gap = GridGapForDirection(direction, kTrackSizing);
+      gap = GridGap(direction);
       size_t remaining_empty_tracks =
           grid.AutoRepeatEmptyTracks(direction)->size();
       LayoutUnit gap_accumulator;
@@ -2098,7 +2130,7 @@ LayoutUnit LayoutGrid::ColumnAxisOffsetForChild(const LayoutBox& child) const {
       // alignment) and gutters so we need to subtract them to get the actual
       // end position for a given row (this does not have to be done for the
       // last track as there are no more m_columnPositions after it).
-      LayoutUnit track_gap = GridGapForDirection(kForRows, kTrackSizing);
+      LayoutUnit track_gap = GridGap(kForRows);
       if (child_end_line < row_positions_.size() - 1) {
         end_of_row -= track_gap;
         end_of_row -= offset_between_rows_;
@@ -2140,7 +2172,7 @@ LayoutUnit LayoutGrid::RowAxisOffsetForChild(const LayoutBox& child) const {
       // alignment) and gutters so we need to subtract them to get the actual
       // end position for a given column (this does not have to be done for the
       // last track as there are no more m_columnPositions after it).
-      LayoutUnit track_gap = GridGapForDirection(kForColumns, kTrackSizing);
+      LayoutUnit track_gap = GridGap(kForColumns);
       if (child_end_line < column_positions_.size() - 1) {
         end_of_column -= track_gap;
         end_of_column -= offset_between_columns_;

@@ -97,24 +97,25 @@ class GridTrackSizingAlgorithm final {
   // Required by LayoutGrid. Try to minimize the exposed surface.
   const Grid& GetGrid() const { return grid_; }
   GridTrackSize GetGridTrackSize(GridTrackSizingDirection,
-                                 size_t translated_index,
-                                 SizingOperation) const;
+                                 size_t translated_index) const;
   LayoutUnit MinContentSize() const { return min_content_size_; };
   LayoutUnit MaxContentSize() const { return max_content_size_; };
 
   Vector<GridTrack>& Tracks(GridTrackSizingDirection);
   const Vector<GridTrack>& Tracks(GridTrackSizingDirection) const;
 
-  Optional<LayoutUnit> FreeSpace(GridTrackSizingDirection);
+  Optional<LayoutUnit> FreeSpace(GridTrackSizingDirection) const;
   void SetFreeSpace(GridTrackSizingDirection, Optional<LayoutUnit>);
+
+  Optional<LayoutUnit> AvailableSpace(GridTrackSizingDirection) const;
+  void SetAvailableSpace(GridTrackSizingDirection, Optional<LayoutUnit>);
 
 #if DCHECK_IS_ON()
   bool TracksAreWiderThanMinTrackBreadth() const;
 #endif
 
  private:
-  GridTrackSize GetGridTrackSize(GridTrackSizingDirection,
-                                 size_t translated_index) const;
+  Optional<LayoutUnit> AvailableSpace() const;
   GridTrackSize RawGridTrackSize(GridTrackSizingDirection,
                                  size_t translated_index) const;
   LayoutUnit AssumedRowsSizeForOrthogonalChild(const LayoutBox&) const;
@@ -177,7 +178,8 @@ class GridTrackSizingAlgorithm final {
 
   // Data.
   bool needs_setup_{true};
-  Optional<LayoutUnit> available_space_;
+  Optional<LayoutUnit> available_space_columns_;
+  Optional<LayoutUnit> available_space_rows_;
 
   Optional<LayoutUnit> free_space_columns_;
   Optional<LayoutUnit> free_space_rows_;
@@ -274,6 +276,9 @@ class GridTrackSizingAlgorithmStrategy {
   void DistributeSpaceToTracks(Vector<GridTrack*>& tracks,
                                LayoutUnit& available_logical_space) const;
   const LayoutGrid* GetLayoutGrid() const { return algorithm_.layout_grid_; }
+  Optional<LayoutUnit> AvailableSpace() const {
+    return algorithm_.AvailableSpace();
+  }
 
   // Helper functions
   static LayoutUnit ComputeMarginLogicalSizeForChild(

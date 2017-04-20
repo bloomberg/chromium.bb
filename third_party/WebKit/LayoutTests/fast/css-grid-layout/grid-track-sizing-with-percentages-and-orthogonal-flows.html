@@ -17,6 +17,16 @@ body {
     grid-template-columns: 100px 25%;
     grid-template-rows: 50% 150px;
 }
+
+.definiteGridWithPercentageGaps {
+    grid-template: 5px 5px / auto;
+    grid-row-gap: 80%;
+    grid-column-gap: 20%;
+    height: 200px;
+    width: 100px;
+    justify-content: start;
+    align-content: start;
+}
 </style>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -72,6 +82,11 @@ body {
             XXX<br>XX<br>X
         </div>
     </div>
+</div>
+
+<p>HORIZONTAL-TB container with VERTICAL-LR item with percentage gaps.</p>
+<div class="grid definiteGridWithPercentageGaps" data-expected-width="100" data-expected-height="200">
+    <div class="bothRowFirstColumn verticalLR" style="background: cyan;" data-expected-width="10" data-expected-height="170">XXXX XXXXX</div>
 </div>
 
 </body>

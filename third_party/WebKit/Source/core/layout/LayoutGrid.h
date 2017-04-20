@@ -94,7 +94,7 @@ class LayoutGrid final : public LayoutBlock {
                          GridTrackSizingDirection,
                          size_t start_line,
                          size_t span,
-                         SizingOperation) const;
+                         Optional<LayoutUnit> available_size) const;
   bool CachedHasDefiniteLogicalHeight() const;
   bool IsOrthogonalChild(const LayoutBox&) const;
   bool IsBaselineContextComputed(GridAxis) const;
@@ -130,11 +130,14 @@ class LayoutGrid final : public LayoutBlock {
 
   void StyleDidChange(StyleDifference, const ComputedStyle*) override;
 
+  Optional<LayoutUnit> AvailableSpaceForGutters(GridTrackSizingDirection) const;
+
   bool ExplicitGridDidResize(const ComputedStyle&) const;
   bool NamedGridLinesDefinitionDidChange(const ComputedStyle&) const;
 
-  size_t ComputeAutoRepeatTracksCount(GridTrackSizingDirection,
-                                      SizingOperation) const;
+  size_t ComputeAutoRepeatTracksCount(
+      GridTrackSizingDirection,
+      Optional<LayoutUnit> available_size) const;
   size_t ClampAutoRepeatTracks(GridTrackSizingDirection,
                                size_t auto_repeat_tracks) const;
 
@@ -142,7 +145,8 @@ class LayoutGrid final : public LayoutBlock {
       Grid&,
       GridTrackSizingDirection) const;
 
-  void PlaceItemsOnGrid(Grid&, SizingOperation) const;
+  void PlaceItemsOnGrid(Grid&,
+                        Optional<LayoutUnit> available_logical_width) const;
   void PopulateExplicitGridAndOrderIterator(Grid&) const;
   std::unique_ptr<GridArea> CreateEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
       const Grid&,
@@ -259,8 +263,9 @@ class LayoutGrid final : public LayoutBlock {
   LayoutUnit ColumnAxisBaselineOffsetForChild(const LayoutBox&) const;
   LayoutUnit RowAxisBaselineOffsetForChild(const LayoutBox&) const;
 
-  LayoutUnit GridGapForDirection(GridTrackSizingDirection,
-                                 SizingOperation) const;
+  LayoutUnit GridGap(GridTrackSizingDirection,
+                     Optional<LayoutUnit> available_size) const;
+  LayoutUnit GridGap(GridTrackSizingDirection) const;
 
   size_t GridItemSpan(const LayoutBox&, GridTrackSizingDirection);
 
