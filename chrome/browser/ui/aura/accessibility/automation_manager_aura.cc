@@ -15,11 +15,9 @@
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/render_frame_host.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
-#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
@@ -27,7 +25,6 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/shell.h"           // nogncheck
 #include "ash/wm/window_util.h"  // nogncheck
 #endif
 
@@ -84,15 +81,9 @@ void AutomationManagerAura::HandleAlert(content::BrowserContext* context,
   SendEvent(context, obj, ui::AX_EVENT_ALERT);
 }
 
-void AutomationManagerAura::PerformAction(const ui::AXActionData& data) {
+void AutomationManagerAura::PerformAction(
+    const ui::AXActionData& data) {
   CHECK(enabled_);
-
-  // Unlike all of the other actions, a hit test requires determining the
-  // node to perform the action on first.
-  if (data.action == ui::AX_ACTION_HIT_TEST) {
-    PerformHitTest(data);
-    return;
-  }
 
   current_tree_->HandleAccessibleAction(data);
 }
@@ -169,61 +160,4 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
               pending_events_copy[i].first,
               pending_events_copy[i].second);
   }
-}
-
-void AutomationManagerAura::PerformHitTest(
-    const ui::AXActionData& original_action) {
-#if defined(OS_CHROMEOS)
-  ui::AXActionData action = original_action;
-  aura::Window* root_window = ash::Shell::Get()->GetPrimaryRootWindow();
-  if (!root_window)
-    return;
-
-  // Determine which aura Window is associated with the target point.
-  aura::Window* window =
-      root_window->GetEventHandlerForPoint(action.target_point);
-  if (!window)
-    return;
-
-  // Convert point to local coordinates of the hit window.
-  aura::Window::ConvertPointToTarget(root_window, window, &action.target_point);
-
-  // If the window has a child AX tree ID, forward the action to the
-  // associated AXHostDelegate or RenderFrameHost.
-  ui::AXTreeIDRegistry::AXTreeID child_ax_tree_id =
-      window->GetProperty(ui::kChildAXTreeID);
-  if (child_ax_tree_id != ui::AXTreeIDRegistry::kNoAXTreeID) {
-    ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
-    ui::AXHostDelegate* delegate = registry->GetHostDelegate(child_ax_tree_id);
-    if (delegate) {
-      delegate->PerformAction(action);
-      return;
-    }
-
-    content::RenderFrameHost* rfh =
-        content::RenderFrameHost::FromAXTreeID(child_ax_tree_id);
-    if (rfh)
-      rfh->AccessibilityPerformAction(action);
-    return;
-  }
-
-  // If the window doesn't have a child tree ID, try to fire the event
-  // on a View.
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
-  if (widget) {
-    views::View* root_view = widget->GetRootView();
-    views::View* hit_view =
-        root_view->GetEventHandlerForPoint(action.target_point);
-    if (hit_view) {
-      hit_view->NotifyAccessibilityEvent(action.hit_test_event_to_fire, true);
-      return;
-    }
-  }
-
-  // Otherwise, fire the event directly on the Window.
-  views::AXAuraObjWrapper* window_wrapper =
-      views::AXAuraObjCache::GetInstance()->GetOrCreate(window);
-  if (window_wrapper)
-    SendEvent(nullptr, window_wrapper, action.hit_test_event_to_fire);
-#endif
 }
