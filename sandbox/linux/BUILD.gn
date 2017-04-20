@@ -434,3 +434,13 @@ if (compile_suid_client || is_nacl_nonsfi) {
     }
   }
 }
+
+if (is_android) {
+  # TODO(GYP_GONE) Delete this after we've converted everything to GN.
+  group("sandbox_linux_unittests_deps") {
+    testonly = true
+    deps = [
+      ":sandbox_linux_unittests",
+    ]
+  }
+}

@@ -1470,6 +1470,9 @@ COMMON_GTESTS = {
         'os_types': ['android'],
       },
     ],
+    'override_compile_targets': [
+      'tab_capture_end2end_tests_run',
+    ],
   },
   'video_decode_accelerator_d3d11_unittest': {
     'tester_configs': [
@@ -2310,7 +2313,7 @@ def generate_telemetry_test(tester_name, tester_config,
   return generate_isolated_test(tester_name, tester_config, test,
                                 test_config, extra_browser_args,
                                 'telemetry_gpu_integration_test',
-                                ['telemetry_gpu_integration_test'],
+                                ['telemetry_gpu_integration_test_run'],
                                 prefix_args)
 
 def generate_telemetry_tests(tester_name, tester_config,

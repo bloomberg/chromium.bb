@@ -433,6 +433,15 @@ group("gl_unittests_ozone") {
   ]
 }
 
+# TODO(GYP_GONE): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("gl_unittests_ozone_run") {
+  testonly = true
+  deps = [
+    ":gl_unittests_ozone",
+  ]
+}
+
 if (is_android) {
   generate_jar_jni("surface_jni_headers") {
     jni_package = "ui/gl"
