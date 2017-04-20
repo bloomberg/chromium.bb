@@ -30,6 +30,8 @@ class DirectoryOwnersExtractor(object):
             if owners:
                 current_owners = owners
             directory = self.extract_directory(line)
+            if not owners and not directory:
+                current_owners = []
             if current_owners and directory:
                 owner_map[directory] = current_owners
         return owner_map

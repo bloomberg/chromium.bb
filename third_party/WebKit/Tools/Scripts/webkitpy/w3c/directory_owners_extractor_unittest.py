@@ -26,7 +26,6 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
             '# external/wpt/webstorage [ Pass ]',
             'external/wpt/webvtt [ Skip ]',
         ]
-
         self.assertEqual(
             self.extractor.lines_to_owner_map(lines),
             {
@@ -34,6 +33,20 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
                 'external/wpt/webrtc': ['hta@chromium.org'],
                 'external/wpt/webstorage': ['michaeln@chromium.org', 'jsbell@chromium.org'],
             })
+
+    def test_lines_to_owner_map_no_owners(self):
+        lines = [
+            '## Owners: someone@chromium.org',
+            '# external/wpt/something [ Pass ]',
+            '## Owners: explicitly no owners but still enabled',
+            '# external/wpt/common [ Pass ]',
+        ]
+        self.assertEqual(
+            self.extractor.lines_to_owner_map(lines),
+            {
+                'external/wpt/something': ['someone@chromium.org'],
+            })
+
 
     def test_list_owners(self):
         self.extractor.owner_map = {
