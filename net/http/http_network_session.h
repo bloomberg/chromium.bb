@@ -101,6 +101,7 @@ class NET_EXPORT HttpNetworkSession
     uint16_t testing_fixed_http_port;
     uint16_t testing_fixed_https_port;
     bool enable_tcp_fast_open_for_ssl;
+    bool enable_user_alternate_protocol_ports;
 
     // Use SPDY ping frames to test for connection health after idle.
     bool enable_spdy_ping_based_connection_checking;
@@ -116,33 +117,37 @@ class NET_EXPORT HttpNetworkSession
 
     // Enables QUIC support.
     bool enable_quic;
+
+    // QUIC runtime configuration options.
+
+    // Versions of QUIC which may be used.
+    QuicVersionVector quic_supported_versions;
+    // User agent description to send in the QUIC handshake.
+    std::string quic_user_agent_id;
+    // Limit on the size of QUIC packets.
+    size_t quic_max_packet_length;
+    // Source of time for QUIC connections.
+    QuicClock* quic_clock;
+    // Source of entropy for QUIC connections.
+    QuicRandom* quic_random;
+    // Optional factory to use for creating QuicCryptoClientStreams.
+    QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
+    // Maximum number of server configs that are to be stored in
+    // HttpServerProperties, instead of the disk cache.
+    size_t quic_max_server_configs_stored_in_properties;
+    // QUIC will be used for all connections in this set.
+    std::set<HostPortPair> origins_to_force_quic_on;
+    // Set of QUIC tags to send in the handshake's connection options.
+    QuicTagVector quic_connection_options;
+
+    // Active QUIC experiments
+
     // Marks a QUIC server broken when a connection blackholes after the
     // handshake is confirmed.
     bool mark_quic_broken_when_network_blackholes;
     // Retry requests which fail with QUIC_PROTOCOL_ERROR, and mark QUIC
     // broken if the retry succeeds.
     bool retry_without_alt_svc_on_quic_errors;
-    // Maximum number of server configs that are to be stored in
-    // HttpServerProperties, instead of the disk cache.
-    size_t quic_max_server_configs_stored_in_properties;
-    // If not empty, QUIC will be used for all connections to the set of
-    // origins in |origins_to_force_quic_on|.
-    std::set<HostPortPair> origins_to_force_quic_on;
-    // Source of time for QUIC connections.
-    QuicClock* quic_clock;
-    // Source of entropy for QUIC connections.
-    QuicRandom* quic_random;
-    // Limit on the size of QUIC packets.
-    size_t quic_max_packet_length;
-    // User agent description to send in the QUIC handshake.
-    std::string quic_user_agent_id;
-    bool enable_user_alternate_protocol_ports;
-    // Optional factory to use for creating QuicCryptoClientStreams.
-    QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
-    // Versions of QUIC which may be used.
-    QuicVersionVector quic_supported_versions;
-    // Set of QUIC tags to send in the handshake's connection options.
-    QuicTagVector quic_connection_options;
     // If true, all QUIC sessions are closed when any local IP address changes.
     bool quic_close_sessions_on_ip_change;
     // Specifies QUIC idle connection state lifetime.
