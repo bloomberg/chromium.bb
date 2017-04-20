@@ -134,12 +134,11 @@ class AvxEncoderParmsGetToDecoder
 TEST_P(AvxEncoderParmsGetToDecoder, BitstreamParms) {
   init_flags_ = AOM_CODEC_USE_PSNR;
 
-  libaom_test::VideoSource *const video =
-      new libaom_test::Y4mVideoSource(test_video_.name, 0, test_video_.frames);
-  ASSERT_TRUE(video != NULL);
+  testing::internal::scoped_ptr<libaom_test::VideoSource> video(
+      new libaom_test::Y4mVideoSource(test_video_.name, 0, test_video_.frames));
+  ASSERT_TRUE(video.get() != NULL);
 
-  ASSERT_NO_FATAL_FAILURE(RunLoop(video));
-  delete video;
+  ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
 }
 
 AV1_INSTANTIATE_TEST_CASE(AvxEncoderParmsGetToDecoder,

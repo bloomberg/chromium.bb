@@ -171,20 +171,20 @@ TEST_P(EndToEndTestLarge, EndtoEndPSNRTest) {
   init_flags_ = AOM_CODEC_USE_PSNR;
   if (cfg_.g_bit_depth > 8) init_flags_ |= AOM_CODEC_USE_HIGHBITDEPTH;
 
-  libaom_test::VideoSource *video;
+  testing::internal::scoped_ptr<libaom_test::VideoSource> video;
   if (is_extension_y4m(test_video_param_.filename)) {
-    video =
-        new libaom_test::Y4mVideoSource(test_video_param_.filename, 0, kFrames);
+    video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
+                                                kFrames));
   } else {
-    video = new libaom_test::YUVVideoSource(test_video_param_.filename,
-                                            test_video_param_.fmt, kWidth,
-                                            kHeight, kFramerate, 1, 0, kFrames);
+    video.reset(new libaom_test::YUVVideoSource(
+        test_video_param_.filename, test_video_param_.fmt, kWidth, kHeight,
+        kFramerate, 1, 0, kFrames));
   }
+  ASSERT_TRUE(video.get() != NULL);
 
-  ASSERT_NO_FATAL_FAILURE(RunLoop(video));
+  ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
   const double psnr = GetAveragePsnr();
   EXPECT_GT(psnr, GetPsnrThreshold());
-  delete (video);
 }
 
 AV1_INSTANTIATE_TEST_CASE(EndToEndTestLarge,
