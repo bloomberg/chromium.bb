@@ -64,8 +64,8 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   }
 
   // ContentBrowserTest
-  void SetUpInProcessBrowserTestFixture() override;
-  void TearDownInProcessBrowserTestFixture() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
  protected:
   std::string GetAttr(const ui::AXNode* node,
@@ -83,15 +83,14 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CrossPlatformAccessibilityBrowserTest);
 };
 
-void CrossPlatformAccessibilityBrowserTest::SetUpInProcessBrowserTestFixture() {
+void CrossPlatformAccessibilityBrowserTest::SetUpOnMainThread() {
 #if defined(OS_WIN)
   ui::win::CreateATLModuleIfNeeded();
   com_initializer_.reset(new base::win::ScopedCOMInitializer());
 #endif
 }
 
-void
-CrossPlatformAccessibilityBrowserTest::TearDownInProcessBrowserTestFixture() {
+void CrossPlatformAccessibilityBrowserTest::TearDownOnMainThread() {
 #if defined(OS_WIN)
   com_initializer_.reset();
 #endif

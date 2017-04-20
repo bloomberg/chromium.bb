@@ -111,15 +111,13 @@ class SpeechRecognitionBrowserTest :
 
  protected:
   // ContentBrowserTest methods.
-  void SetUpInProcessBrowserTestFixture() override {
+  void SetUpOnMainThread() override {
     test_audio_input_controller_factory_.set_delegate(this);
     media::AudioInputController::set_factory_for_testing(
         &test_audio_input_controller_factory_);
     mock_streaming_server_.reset(new MockGoogleStreamingServer(this));
     streaming_server_state_ = kIdle;
-  }
 
-  void SetUpOnMainThread() override {
     ASSERT_TRUE(SpeechRecognitionManagerImpl::GetInstance());
     media::AudioManager::StartHangMonitorIfNeeded(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
@@ -138,9 +136,7 @@ class SpeechRecognitionBrowserTest :
     // Deleting AudioManager on audio thread,
     audio_system_.reset();
     audio_manager_.reset();
-  }
 
-  void TearDownInProcessBrowserTestFixture() override {
     test_audio_input_controller_factory_.set_delegate(nullptr);
     mock_streaming_server_.reset();
   }
