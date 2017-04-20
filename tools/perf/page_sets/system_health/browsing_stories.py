@@ -645,3 +645,138 @@ class GoogleMapsMobileStory(system_health_story.SystemHealthStory):
   def _ClickLink(self, selector, action_runner):
     action_runner.WaitForElement(selector=selector)
     action_runner.ClickElement(selector=selector)
+
+
+# crbug.com/712694 on all platforms.
+@decorators.Disabled('all')
+class GoogleMapsStory(_BrowsingStory):
+  """
+  Google maps story:
+    _ Start at https://www.maps.google.com/maps
+    _ Search for "restaurents near me" and wait for 4 sec.
+    _ Click ZoomIn two times, waiting for 3 sec in between.
+    _ Scroll the map horizontally and vertically.
+    _ Pick a restaurant and ask for directions.
+  """
+  # When recording this story:
+  # Force tactile using this: http://google.com/maps?force=tt
+  # Force webgl using this: http://google.com/maps?force=webgl
+  # Reduce the speed as mentioned in the comment below for
+  # RepeatableBrowserDrivenScroll
+  NAME = 'browse:tools:maps'
+  URL = 'https://www.maps.google.com/maps'
+  _MAPS_SEARCH_BOX_SELECTOR = 'input[aria-label="Search Google Maps"]'
+  _MAPS_ZOOM_IN_SELECTOR = '[aria-label="Zoom in"]'
+  _RESTAURANTS_LOADING = ('[class="searchbox searchbox-shadow noprint '
+                          'clear-button-shown loading"]')
+  _RESTAURANTS_LOADED = ('[class="searchbox searchbox-shadow noprint '
+                         'clear-button-shown"]')
+  _RESTAURANTS_LINK = '[data-result-index="1"]'
+  _DIRECTIONS_LINK = '[class="section-hero-header-directions-icon"]'
+  _DIRECTIONS_FROM_BOX = '[class="tactile-searchbox-input"]'
+  _DIRECTIONS_LOADED = '[class="section-directions-trip clearfix selected"]'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.JAVASCRIPT_HEAVY]
+
+  def _DidLoadDocument(self, action_runner):
+    # Click on the search box.
+    action_runner.WaitForElement(selector=self._MAPS_SEARCH_BOX_SELECTOR)
+    action_runner.ClickElement(selector=self._MAPS_SEARCH_BOX_SELECTOR)
+
+    # Submit search query.
+    action_runner.EnterText('restaurants near me')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
+    action_runner.WaitForElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+    action_runner.Wait(1)
+
+    # ZoomIn two times.
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADING)
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
+    # This wait is required to fetch the data for all the tiles in the map.
+    action_runner.Wait(1)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADING)
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
+    # This wait is required to fetch the data for all the tiles in the map.
+    action_runner.Wait(1)
+
+    # Reduce the speed (the current wpr is recorded with speed set to 50)  when
+    # recording the wpr. If we scroll too fast, the data will not be recorded
+    # well. After recording reset it back to the original value to have a more
+    # realistic scroll.
+    action_runner.RepeatableBrowserDrivenScroll(
+        x_scroll_distance_ratio = 0.0, y_scroll_distance_ratio = 0.5,
+        repeat_count=2, speed=500, timeout=120, repeat_delay_ms=2000)
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADING)
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
+    action_runner.RepeatableBrowserDrivenScroll(
+        x_scroll_distance_ratio = 0.5, y_scroll_distance_ratio = 0,
+        repeat_count=2, speed=500, timeout=120, repeat_delay_ms=2000)
+
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADING)
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
+    # To make the recording more realistic.
+    action_runner.Wait(1)
+    action_runner.ClickElement(selector=self._RESTAURANTS_LINK)
+    # To make the recording more realistic.
+    action_runner.Wait(1)
+    action_runner.WaitForElement(selector=self._DIRECTIONS_LINK)
+    action_runner.ClickElement(selector=self._DIRECTIONS_LINK)
+    action_runner.ClickElement(selector=self._DIRECTIONS_FROM_BOX)
+    action_runner.EnterText('6 Pancras Road London')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._DIRECTIONS_LOADED)
+    action_runner.Wait(2)
+
+
+# crbug.com/708590 on all platforms.
+@decorators.Disabled('all')
+class GoogleEarthStory(_BrowsingStory):
+  """
+  Google Earth story:
+    _ Start at https://www.maps.google.com/maps
+    _ Click on the Earth link
+    _ Click ZoomIn three times, waiting for 3 sec in between.
+
+  """
+  # When recording this story:
+  # Force tactile using this: http://google.com/maps?force=tt
+  # Force webgl using this: http://google.com/maps?force=webgl
+  # Change the speed as mentioned in the comment below for
+  # RepeatableBrowserDrivenScroll
+  NAME = 'browse:tools:earth'
+  # Randomly picked location.
+  URL = 'https://www.google.co.uk/maps/@51.4655936,-0.0985949,3329a,35y,40.58t/data=!3m1!1e3'
+  _EARTH_BUTTON_SELECTOR = '[aria-labelledby="widget-minimap-caption"]'
+  _EARTH_ZOOM_IN_SELECTOR = '[aria-label="Zoom in"]'
+  _MAPS_SEARCH_BOX_SELECTOR = 'input[aria-label="Search Google Maps"]'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.JAVASCRIPT_HEAVY]
+
+  def _DidLoadDocument(self, action_runner):
+    # Zommin three times.
+    action_runner.WaitForElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
+    action_runner.ClickElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
+    # To make the recording more realistic.
+    action_runner.Wait(1)
+    action_runner.ClickElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
+    # To make the recording more realistic.
+    action_runner.Wait(1)
+    action_runner.ClickElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
+    # To make the recording more realistic.
+    action_runner.Wait(1)
+    action_runner.ClickElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
+    action_runner.Wait(4)
+
+    # Reduce the speed (the current wpr is recorded with speed set to 50)  when
+    # recording the wpr. If we scroll too fast, the data will not be recorded
+    # well. After recording reset it back to the original value to have a more
+    # realistic scroll.
+    action_runner.RepeatableBrowserDrivenScroll(
+        x_scroll_distance_ratio = 0.0, y_scroll_distance_ratio = 1,
+        repeat_count=3, speed=400, timeout=120)
+    action_runner.RepeatableBrowserDrivenScroll(
+        x_scroll_distance_ratio = 1, y_scroll_distance_ratio = 0,
+        repeat_count=3, speed=500, timeout=120)
