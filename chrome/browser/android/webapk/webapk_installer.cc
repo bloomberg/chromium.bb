@@ -399,8 +399,8 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  GURL signed_download_url(response->signed_download_url());
-  if (task_type_ == UPDATE && signed_download_url.is_empty()) {
+  const std::string& token = response->token();
+  if (task_type_ == UPDATE && token.empty()) {
     // https://crbug.com/680131. The server sends an empty URL if the server
     // does not have a newer WebAPK to update to.
     relax_updates_ = response->relax_updates();
@@ -408,7 +408,7 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  if (!signed_download_url.is_valid() || response->package_name().empty()) {
+  if (token.empty() || response->package_name().empty()) {
     LOG(WARNING) << "WebAPK server returned incomplete proto.";
     OnResult(WebApkInstallResult::FAILURE);
     return;
@@ -421,7 +421,7 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
 
   int version = 1;
   base::StringToInt(response->version(), &version);
-  InstallOrUpdateWebApk(response->package_name(), version, response->token());
+  InstallOrUpdateWebApk(response->package_name(), version, token);
 }
 
 void WebApkInstaller::OnGotPrimaryIconMurmur2Hash(

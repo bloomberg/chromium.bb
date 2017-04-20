@@ -16,13 +16,6 @@ message WebApkResponse {
   // Version code of the WebAPK.
   optional string version = 2;
 
-  // URL to download WebAPK. If the URL is empty, the client should not attempt
-  // to download or install anything. For example, this may be empty when the
-  // client requests an update even though no content has changed. The WebAPK
-  // server can then let the client know that it is up-to-date already and does
-  // not need to spend bandwidth re-downloading a WebAPK it has.
-  optional string signed_download_url = 3;
-
   // Unique id identifying session with WebAPK server.
   optional string token = 6;
 
@@ -34,7 +27,7 @@ message WebApkResponse {
   // from spamming update requests too often.
   optional bool relax_updates = 8;
 
-  reserved 4, 5, 7;
+  reserved 3, 4, 5, 7;
 }
 
 // Sent as part of request to create or update a WebAPK.

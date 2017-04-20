@@ -47,9 +47,10 @@ const char* kServerUrl = "/webapkserver/";
 const char* kBestPrimaryIconUrl = "/simple.html";
 const char* kBestBadgeIconUrl = "/nostore.html";
 
-// URL of file to download from the WebAPK server. We use a random file in the
-// test data directory.
-const char* kDownloadUrl = "/simple.html";
+// Token from the WebAPK server. In production, the token is sent to Google
+// Play. Google Play uses the token to retrieve the WebAPK from the WebAPK
+// server.
+const char* kToken = "token";
 
 // The package name of the downloaded WebAPK.
 const char* kDownloadedWebApkPackageName = "party.unicode";
@@ -180,14 +181,14 @@ class WebApkInstallerRunner {
   DISALLOW_COPY_AND_ASSIGN(WebApkInstallerRunner);
 };
 
-// Builds a webapk::WebApkResponse with |download_url| as the WebAPK download
-// URL.
+// Builds a webapk::WebApkResponse with |token| as the token from the WebAPK
+// server.
 std::unique_ptr<net::test_server::HttpResponse> BuildValidWebApkResponse(
-    const GURL& download_url) {
+    const std::string& token) {
   std::unique_ptr<webapk::WebApkResponse> response_proto(
       new webapk::WebApkResponse);
   response_proto->set_package_name(kDownloadedWebApkPackageName);
-  response_proto->set_signed_download_url(download_url.spec());
+  response_proto->set_token(token);
   std::string response_content;
   response_proto->SerializeToString(&response_content);
 
@@ -316,8 +317,7 @@ class WebApkInstallerTest : public ::testing::Test {
     SetBestPrimaryIconUrl(test_server_.GetURL(kBestPrimaryIconUrl));
     SetBestBadgeIconUrl(test_server_.GetURL(kBestBadgeIconUrl));
     SetWebApkServerUrl(test_server_.GetURL(kServerUrl));
-    SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse,
-                                        test_server_.GetURL(kDownloadUrl)));
+    SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, kToken));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleWebApkRequest(
@@ -411,14 +411,14 @@ TEST_F(WebApkInstallerTest, UpdateSuccess) {
 }
 
 // Test that an update suceeds if the WebAPK server returns a HTTP response with
-// an empty download URL. The WebAPK server sends an empty download URL when:
+// an empty token. The WebAPK server sends an empty download URL when:
 // - The server is unable to update the WebAPK in the way that the client
 //   requested.
 // AND
 // - The most up to date version of the WebAPK on the server is identical to the
 //   one installed on the client.
 TEST_F(WebApkInstallerTest, UpdateSuccessWithEmptyDownloadUrlInResponse) {
-  SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, GURL()));
+  SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, ""));
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
   runner->RunUpdateWebApk();
