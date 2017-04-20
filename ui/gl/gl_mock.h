@@ -46,6 +46,21 @@ class MockGLInterface {
     NOTREACHED();
   }
 
+  void CompressedTexSubImage3DRobustANGLE(GLenum /*target*/,
+                                          GLint /*level*/,
+                                          GLint /*xoffset*/,
+                                          GLint /*yoffset*/,
+                                          GLint /*zoffset*/,
+                                          GLsizei /*width*/,
+                                          GLsizei /*height*/,
+                                          GLsizei /*depth*/,
+                                          GLenum /*format*/,
+                                          GLsizei /*imageSize*/,
+                                          GLsizei /*dataSize*/,
+                                          const void* /*data*/) {
+    NOTREACHED();
+  }
+
   void CopySubTextureCHROMIUM(GLuint /*sourceId*/,
                               GLint /*sourceLevel*/,
                               GLenum /*destTarget*/,

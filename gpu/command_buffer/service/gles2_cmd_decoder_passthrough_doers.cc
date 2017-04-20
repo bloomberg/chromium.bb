@@ -469,10 +469,9 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexImage2D(
     GLsizei image_size,
     GLsizei data_size,
     const void* data) {
-  // TODO(cwallez@chromium.org): Use data_size with the robust version of the
-  // entry point
-  glCompressedTexImage2D(target, level, internalformat, width, height, border,
-                         image_size, data);
+  glCompressedTexImage2DRobustANGLE(target, level, internalformat, width,
+                                    height, border, image_size, data_size,
+                                    data);
   return error::kNoError;
 }
 
@@ -487,10 +486,9 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexSubImage2D(
     GLsizei image_size,
     GLsizei data_size,
     const void* data) {
-  // TODO(cwallez@chromium.org): Use data_size with the robust version of the
-  // entry point
-  glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height,
-                            format, image_size, data);
+  glCompressedTexSubImage2DRobustANGLE(target, level, xoffset, yoffset, width,
+                                       height, format, image_size, data_size,
+                                       data);
   return error::kNoError;
 }
 
@@ -505,10 +503,9 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexImage3D(
     GLsizei image_size,
     GLsizei data_size,
     const void* data) {
-  // TODO(cwallez@chromium.org): Use data_size with the robust version of the
-  // entry point
-  glCompressedTexImage3D(target, level, internalformat, width, height, depth,
-                         border, image_size, data);
+  glCompressedTexImage3DRobustANGLE(target, level, internalformat, width,
+                                    height, depth, border, image_size,
+                                    data_size, data);
   return error::kNoError;
 }
 
@@ -525,10 +522,9 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexSubImage3D(
     GLsizei image_size,
     GLsizei data_size,
     const void* data) {
-  // TODO(cwallez@chromium.org): Use data_size with the robust version of the
-  // entry point
-  glCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
-                            height, depth, format, image_size, data);
+  glCompressedTexSubImage3DRobustANGLE(target, level, xoffset, yoffset, zoffset,
+                                       width, height, depth, format, image_size,
+                                       data_size, data);
   return error::kNoError;
 }
 

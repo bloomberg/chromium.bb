@@ -640,9 +640,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x78EF, "GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM",
     },
     {
-        0x78F2, "GL_READ_WRITE_CHROMIUM",
-    },
-    {
         0x78FA, "GL_RGB_YCRCB_420_CHROMIUM",
     },
     {
@@ -1595,6 +1592,9 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x8905, "GL_MAX_PROGRAM_TEXEL_OFFSET",
+    },
+    {
+        0x8914, "GL_SAMPLES_PASSED_ARB",
     },
     {
         0x8916, "GL_GEOMETRY_LINKED_VERTICES_OUT_EXT",
