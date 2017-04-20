@@ -2202,11 +2202,14 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
   const struct buf_2d *const in_what = &xd->plane[0].pre[0];
   const MV fcenter_mv = { center_mv->row >> 3, center_mv->col >> 3 };
   MV *best_mv = &x->best_mv.as_mv;
-  unsigned int best_sad =
+  unsigned int best_sad = INT_MAX;
+  int i, j;
+
+  clamp_mv(best_mv, x->mv_col_min, x->mv_col_max, x->mv_row_min, x->mv_row_max);
+  best_sad =
       fn_ptr->sdaf(what->buf, what->stride, get_buf_from_mv(in_what, best_mv),
                    in_what->stride, second_pred) +
       mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
-  int i, j;
 
   for (i = 0; i < search_range; ++i) {
     int best_site = -1;
