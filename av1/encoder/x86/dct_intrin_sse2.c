@@ -2456,104 +2456,6 @@ void av1_fht16x16_sse2(const int16_t *input, tran_low_t *output, int stride,
   }
 }
 
-static INLINE void scale_sqrt2_8x4(__m128i *in) {
-  // Implements fdct_round_shift(input * Sqrt2), which is equivalent to
-  // ROUND_POWER_OF_TWO(input * Sqrt2, DCT_CONST_BITS),
-  // for 32 consecutive elements.
-  const __m128i v_scale_w = _mm_set1_epi16((int16_t)Sqrt2);
-
-  const __m128i v_p0l_w = _mm_mullo_epi16(in[0], v_scale_w);
-  const __m128i v_p0h_w = _mm_mulhi_epi16(in[0], v_scale_w);
-  const __m128i v_p1l_w = _mm_mullo_epi16(in[1], v_scale_w);
-  const __m128i v_p1h_w = _mm_mulhi_epi16(in[1], v_scale_w);
-  const __m128i v_p2l_w = _mm_mullo_epi16(in[2], v_scale_w);
-  const __m128i v_p2h_w = _mm_mulhi_epi16(in[2], v_scale_w);
-  const __m128i v_p3l_w = _mm_mullo_epi16(in[3], v_scale_w);
-  const __m128i v_p3h_w = _mm_mulhi_epi16(in[3], v_scale_w);
-
-  const __m128i v_p0a_d = _mm_unpacklo_epi16(v_p0l_w, v_p0h_w);
-  const __m128i v_p0b_d = _mm_unpackhi_epi16(v_p0l_w, v_p0h_w);
-  const __m128i v_p1a_d = _mm_unpacklo_epi16(v_p1l_w, v_p1h_w);
-  const __m128i v_p1b_d = _mm_unpackhi_epi16(v_p1l_w, v_p1h_w);
-  const __m128i v_p2a_d = _mm_unpacklo_epi16(v_p2l_w, v_p2h_w);
-  const __m128i v_p2b_d = _mm_unpackhi_epi16(v_p2l_w, v_p2h_w);
-  const __m128i v_p3a_d = _mm_unpacklo_epi16(v_p3l_w, v_p3h_w);
-  const __m128i v_p3b_d = _mm_unpackhi_epi16(v_p3l_w, v_p3h_w);
-
-  in[0] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p0a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p0b_d, DCT_CONST_BITS));
-  in[1] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p1a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p1b_d, DCT_CONST_BITS));
-  in[2] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p2a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p2b_d, DCT_CONST_BITS));
-  in[3] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p3a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p3b_d, DCT_CONST_BITS));
-}
-
-static INLINE void scale_sqrt2_8x8_unsigned(__m128i *in) {
-  // Implements 'ROUND_POWER_OF_TWO_SIGNED(input * Sqrt2, DCT_CONST_BITS)'
-  // for each element
-  const __m128i v_scale_w = _mm_set1_epi16((int16_t)Sqrt2);
-
-  const __m128i v_p0l_w = _mm_mullo_epi16(in[0], v_scale_w);
-  const __m128i v_p0h_w = _mm_mulhi_epi16(in[0], v_scale_w);
-  const __m128i v_p1l_w = _mm_mullo_epi16(in[1], v_scale_w);
-  const __m128i v_p1h_w = _mm_mulhi_epi16(in[1], v_scale_w);
-  const __m128i v_p2l_w = _mm_mullo_epi16(in[2], v_scale_w);
-  const __m128i v_p2h_w = _mm_mulhi_epi16(in[2], v_scale_w);
-  const __m128i v_p3l_w = _mm_mullo_epi16(in[3], v_scale_w);
-  const __m128i v_p3h_w = _mm_mulhi_epi16(in[3], v_scale_w);
-  const __m128i v_p4l_w = _mm_mullo_epi16(in[4], v_scale_w);
-  const __m128i v_p4h_w = _mm_mulhi_epi16(in[4], v_scale_w);
-  const __m128i v_p5l_w = _mm_mullo_epi16(in[5], v_scale_w);
-  const __m128i v_p5h_w = _mm_mulhi_epi16(in[5], v_scale_w);
-  const __m128i v_p6l_w = _mm_mullo_epi16(in[6], v_scale_w);
-  const __m128i v_p6h_w = _mm_mulhi_epi16(in[6], v_scale_w);
-  const __m128i v_p7l_w = _mm_mullo_epi16(in[7], v_scale_w);
-  const __m128i v_p7h_w = _mm_mulhi_epi16(in[7], v_scale_w);
-
-  const __m128i v_p0a_d = _mm_unpacklo_epi16(v_p0l_w, v_p0h_w);
-  const __m128i v_p0b_d = _mm_unpackhi_epi16(v_p0l_w, v_p0h_w);
-  const __m128i v_p1a_d = _mm_unpacklo_epi16(v_p1l_w, v_p1h_w);
-  const __m128i v_p1b_d = _mm_unpackhi_epi16(v_p1l_w, v_p1h_w);
-  const __m128i v_p2a_d = _mm_unpacklo_epi16(v_p2l_w, v_p2h_w);
-  const __m128i v_p2b_d = _mm_unpackhi_epi16(v_p2l_w, v_p2h_w);
-  const __m128i v_p3a_d = _mm_unpacklo_epi16(v_p3l_w, v_p3h_w);
-  const __m128i v_p3b_d = _mm_unpackhi_epi16(v_p3l_w, v_p3h_w);
-  const __m128i v_p4a_d = _mm_unpacklo_epi16(v_p4l_w, v_p4h_w);
-  const __m128i v_p4b_d = _mm_unpackhi_epi16(v_p4l_w, v_p4h_w);
-  const __m128i v_p5a_d = _mm_unpacklo_epi16(v_p5l_w, v_p5h_w);
-  const __m128i v_p5b_d = _mm_unpackhi_epi16(v_p5l_w, v_p5h_w);
-  const __m128i v_p6a_d = _mm_unpacklo_epi16(v_p6l_w, v_p6h_w);
-  const __m128i v_p6b_d = _mm_unpackhi_epi16(v_p6l_w, v_p6h_w);
-  const __m128i v_p7a_d = _mm_unpacklo_epi16(v_p7l_w, v_p7h_w);
-  const __m128i v_p7b_d = _mm_unpackhi_epi16(v_p7l_w, v_p7h_w);
-
-  in[0] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p0a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p0b_d, DCT_CONST_BITS));
-  in[1] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p1a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p1b_d, DCT_CONST_BITS));
-  in[2] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p2a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p2b_d, DCT_CONST_BITS));
-  in[3] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p3a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p3b_d, DCT_CONST_BITS));
-  in[4] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p4a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p4b_d, DCT_CONST_BITS));
-  in[5] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p5a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p5b_d, DCT_CONST_BITS));
-  in[6] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p6a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p6b_d, DCT_CONST_BITS));
-  in[7] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p7a_d, DCT_CONST_BITS),
-                          xx_roundn_epi32_unsigned(v_p7b_d, DCT_CONST_BITS));
-}
-
-static INLINE void scale_sqrt2_8x16(__m128i *in) {
-  scale_sqrt2_8x4(in);
-  scale_sqrt2_8x4(in + 4);
-  scale_sqrt2_8x4(in + 8);
-  scale_sqrt2_8x4(in + 12);
-}
-
 static INLINE void prepare_4x8_row_first(__m128i *in) {
   in[0] = _mm_unpacklo_epi64(in[0], in[2]);
   in[1] = _mm_unpacklo_epi64(in[1], in[3]);
@@ -2942,9 +2844,9 @@ static INLINE void load_buffer_8x16(const int16_t *input, __m128i *in,
   }
 
   load_buffer_8x8(t, in, stride, flipud, fliplr);
-  scale_sqrt2_8x8_unsigned(in);
+  scale_sqrt2_8x8(in);
   load_buffer_8x8(b, in + 8, stride, flipud, fliplr);
-  scale_sqrt2_8x8_unsigned(in + 8);
+  scale_sqrt2_8x8(in + 8);
 }
 
 static INLINE void round_power_of_two_signed(__m128i *x, int n) {
@@ -3135,9 +3037,9 @@ static INLINE void load_buffer_16x8(const int16_t *input, __m128i *in,
 
   // load first 8 columns
   load_buffer_8x8(l, in, stride, flipud, fliplr);
-  scale_sqrt2_8x8_unsigned(in);
+  scale_sqrt2_8x8(in);
   load_buffer_8x8(r, in + 8, stride, flipud, fliplr);
-  scale_sqrt2_8x8_unsigned(in + 8);
+  scale_sqrt2_8x8(in + 8);
 }
 
 #define col_16x8_rounding row_8x16_rounding

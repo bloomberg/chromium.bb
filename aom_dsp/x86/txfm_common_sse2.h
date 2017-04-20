@@ -14,6 +14,7 @@
 
 #include <emmintrin.h>
 #include "aom/aom_integer.h"
+#include "aom_dsp/x86/synonyms.h"
 
 #define pair_set_epi16(a, b)                                            \
   _mm_set_epi16((int16_t)(b), (int16_t)(a), (int16_t)(b), (int16_t)(a), \
@@ -226,5 +227,100 @@ static INLINE void idtx16_8col(__m128i *in) {
   in[15] = _mm_packs_epi32(u7, y7);
 }
 #endif  // CONFIG_EXT_TX
+
+static INLINE void scale_sqrt2_8x4(__m128i *in) {
+  // Implements ROUND_POWER_OF_TWO(input * Sqrt2, DCT_CONST_BITS), for 32
+  // consecutive elements.
+  const __m128i v_scale_w = _mm_set1_epi16((int16_t)Sqrt2);
+
+  const __m128i v_p0l_w = _mm_mullo_epi16(in[0], v_scale_w);
+  const __m128i v_p0h_w = _mm_mulhi_epi16(in[0], v_scale_w);
+  const __m128i v_p1l_w = _mm_mullo_epi16(in[1], v_scale_w);
+  const __m128i v_p1h_w = _mm_mulhi_epi16(in[1], v_scale_w);
+  const __m128i v_p2l_w = _mm_mullo_epi16(in[2], v_scale_w);
+  const __m128i v_p2h_w = _mm_mulhi_epi16(in[2], v_scale_w);
+  const __m128i v_p3l_w = _mm_mullo_epi16(in[3], v_scale_w);
+  const __m128i v_p3h_w = _mm_mulhi_epi16(in[3], v_scale_w);
+
+  const __m128i v_p0a_d = _mm_unpacklo_epi16(v_p0l_w, v_p0h_w);
+  const __m128i v_p0b_d = _mm_unpackhi_epi16(v_p0l_w, v_p0h_w);
+  const __m128i v_p1a_d = _mm_unpacklo_epi16(v_p1l_w, v_p1h_w);
+  const __m128i v_p1b_d = _mm_unpackhi_epi16(v_p1l_w, v_p1h_w);
+  const __m128i v_p2a_d = _mm_unpacklo_epi16(v_p2l_w, v_p2h_w);
+  const __m128i v_p2b_d = _mm_unpackhi_epi16(v_p2l_w, v_p2h_w);
+  const __m128i v_p3a_d = _mm_unpacklo_epi16(v_p3l_w, v_p3h_w);
+  const __m128i v_p3b_d = _mm_unpackhi_epi16(v_p3l_w, v_p3h_w);
+
+  in[0] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p0a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p0b_d, DCT_CONST_BITS));
+  in[1] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p1a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p1b_d, DCT_CONST_BITS));
+  in[2] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p2a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p2b_d, DCT_CONST_BITS));
+  in[3] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p3a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p3b_d, DCT_CONST_BITS));
+}
+
+static INLINE void scale_sqrt2_8x8(__m128i *in) {
+  // Implements 'ROUND_POWER_OF_TWO_SIGNED(input * Sqrt2, DCT_CONST_BITS)'
+  // for each element.
+  const __m128i v_scale_w = _mm_set1_epi16((int16_t)Sqrt2);
+
+  const __m128i v_p0l_w = _mm_mullo_epi16(in[0], v_scale_w);
+  const __m128i v_p0h_w = _mm_mulhi_epi16(in[0], v_scale_w);
+  const __m128i v_p1l_w = _mm_mullo_epi16(in[1], v_scale_w);
+  const __m128i v_p1h_w = _mm_mulhi_epi16(in[1], v_scale_w);
+  const __m128i v_p2l_w = _mm_mullo_epi16(in[2], v_scale_w);
+  const __m128i v_p2h_w = _mm_mulhi_epi16(in[2], v_scale_w);
+  const __m128i v_p3l_w = _mm_mullo_epi16(in[3], v_scale_w);
+  const __m128i v_p3h_w = _mm_mulhi_epi16(in[3], v_scale_w);
+  const __m128i v_p4l_w = _mm_mullo_epi16(in[4], v_scale_w);
+  const __m128i v_p4h_w = _mm_mulhi_epi16(in[4], v_scale_w);
+  const __m128i v_p5l_w = _mm_mullo_epi16(in[5], v_scale_w);
+  const __m128i v_p5h_w = _mm_mulhi_epi16(in[5], v_scale_w);
+  const __m128i v_p6l_w = _mm_mullo_epi16(in[6], v_scale_w);
+  const __m128i v_p6h_w = _mm_mulhi_epi16(in[6], v_scale_w);
+  const __m128i v_p7l_w = _mm_mullo_epi16(in[7], v_scale_w);
+  const __m128i v_p7h_w = _mm_mulhi_epi16(in[7], v_scale_w);
+
+  const __m128i v_p0a_d = _mm_unpacklo_epi16(v_p0l_w, v_p0h_w);
+  const __m128i v_p0b_d = _mm_unpackhi_epi16(v_p0l_w, v_p0h_w);
+  const __m128i v_p1a_d = _mm_unpacklo_epi16(v_p1l_w, v_p1h_w);
+  const __m128i v_p1b_d = _mm_unpackhi_epi16(v_p1l_w, v_p1h_w);
+  const __m128i v_p2a_d = _mm_unpacklo_epi16(v_p2l_w, v_p2h_w);
+  const __m128i v_p2b_d = _mm_unpackhi_epi16(v_p2l_w, v_p2h_w);
+  const __m128i v_p3a_d = _mm_unpacklo_epi16(v_p3l_w, v_p3h_w);
+  const __m128i v_p3b_d = _mm_unpackhi_epi16(v_p3l_w, v_p3h_w);
+  const __m128i v_p4a_d = _mm_unpacklo_epi16(v_p4l_w, v_p4h_w);
+  const __m128i v_p4b_d = _mm_unpackhi_epi16(v_p4l_w, v_p4h_w);
+  const __m128i v_p5a_d = _mm_unpacklo_epi16(v_p5l_w, v_p5h_w);
+  const __m128i v_p5b_d = _mm_unpackhi_epi16(v_p5l_w, v_p5h_w);
+  const __m128i v_p6a_d = _mm_unpacklo_epi16(v_p6l_w, v_p6h_w);
+  const __m128i v_p6b_d = _mm_unpackhi_epi16(v_p6l_w, v_p6h_w);
+  const __m128i v_p7a_d = _mm_unpacklo_epi16(v_p7l_w, v_p7h_w);
+  const __m128i v_p7b_d = _mm_unpackhi_epi16(v_p7l_w, v_p7h_w);
+
+  in[0] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p0a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p0b_d, DCT_CONST_BITS));
+  in[1] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p1a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p1b_d, DCT_CONST_BITS));
+  in[2] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p2a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p2b_d, DCT_CONST_BITS));
+  in[3] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p3a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p3b_d, DCT_CONST_BITS));
+  in[4] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p4a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p4b_d, DCT_CONST_BITS));
+  in[5] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p5a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p5b_d, DCT_CONST_BITS));
+  in[6] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p6a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p6b_d, DCT_CONST_BITS));
+  in[7] = _mm_packs_epi32(xx_roundn_epi32_unsigned(v_p7a_d, DCT_CONST_BITS),
+                          xx_roundn_epi32_unsigned(v_p7b_d, DCT_CONST_BITS));
+}
+
+static INLINE void scale_sqrt2_8x16(__m128i *in) {
+  scale_sqrt2_8x8(in);
+  scale_sqrt2_8x8(in + 8);
+}
 
 #endif  // AOM_DSP_X86_TXFM_COMMON_SSE2_H_
