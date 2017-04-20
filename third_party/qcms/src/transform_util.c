@@ -340,7 +340,8 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
         // Does the curve belong to this case?
         if (NumZeroes > 1 || NumPoles > 1)
         {
-                int a, b, sample;
+                float a, b;
+                int sample;
 
                 // Identify if value fall downto 0 or FFFF zone
                 if (Value == 0) return 0;
@@ -351,11 +352,11 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
 
                 // else restrict to valid zone
 
-                a = ((NumZeroes-1) * 0xFFFF) / (length-1);
-                b = ((length-1 - NumPoles) * 0xFFFF) / (length-1);
+                a = ((NumZeroes-1) * 65535.f) / (length-1);
+                b = ((length-1 - NumPoles) * 65535.f) / (length-1);
 
-                l = a - 1;
-                r = b + 1;
+                l = ((int)a) - 1;
+                r = ((int)b) + 1;
 
                 // Ensure a valid binary search range
 

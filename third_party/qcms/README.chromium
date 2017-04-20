@@ -167,6 +167,8 @@ The following changes have been made since qcms was imported:
    - https://bugs.chromium.org/p/chromium/issues/detail?id=708143
  - Disable some asserts when running in libfuzzer
    - https://bugs.chromium.org/p/chromium/issues/detail?id=711418
+ - Fix integer overflow in lut_inverse_interp16
+   - https://bugs.chromium.org/p/chromium/issues/detail?id=711751
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
