@@ -161,7 +161,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                std::string());
 #endif
 
-#if defined(ENABLE_MEDIA_ROUTER)
   registry->RegisterBooleanPref(
       prefs::kMediaRouterCloudServicesPrefSet,
       false,
@@ -175,7 +174,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kMediaRouterTabMirroringSources);
-#endif
 
 #if defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(prefs::kAllowScreenLock, true);

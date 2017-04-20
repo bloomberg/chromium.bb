@@ -10,14 +10,11 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/toolbar/media_router_action.h"
+#include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "extensions/browser/extension_registry.h"
-
-#if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/ui/toolbar/media_router_action.h"
-#include "chrome/browser/ui/toolbar/media_router_action_controller.h"
-#endif
 
 // static
 const char ComponentToolbarActionsFactory::kCastBetaExtensionId[] =
@@ -29,12 +26,10 @@ const char ComponentToolbarActionsFactory::kMediaRouterActionId[] =
 
 ComponentToolbarActionsFactory::ComponentToolbarActionsFactory(Profile* profile)
     : profile_(profile) {
-#if defined(ENABLE_MEDIA_ROUTER)
   if (media_router::MediaRouterEnabled(profile_) &&
       MediaRouterActionController::IsActionShownByPolicy(profile_)) {
     initial_ids_.insert(kMediaRouterActionId);
   }
-#endif
 }
 
 ComponentToolbarActionsFactory::~ComponentToolbarActionsFactory() {}
@@ -64,11 +59,9 @@ ComponentToolbarActionsFactory::GetComponentToolbarActionForId(
   // (since each will have an action in the toolbar or overflow menu), this
   // should be okay. If this changes, we should rethink this design to have,
   // e.g., RegisterChromeAction().
-#if defined(ENABLE_MEDIA_ROUTER)
   if (action_id == kMediaRouterActionId)
     return std::unique_ptr<ToolbarActionViewController>(
         new MediaRouterAction(browser, bar));
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 
   NOTREACHED();
   return std::unique_ptr<ToolbarActionViewController>();

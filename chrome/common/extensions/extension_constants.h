@@ -100,10 +100,8 @@ extern const char kYoutubeAppId[];
 // The extension id of the in-app payments support application.
 extern const char kInAppPaymentsSupportAppId[];
 
-#if defined(ENABLE_MEDIA_ROUTER)
 // The extension id of the stable media router extension.
 extern const char kMediaRouterStableExtensionId[];
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 
 // The buckets used for app launches.
 enum AppLaunchBucket {

@@ -20,6 +20,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/media/router/media_router_dialog_controller.h"  // nogncheck
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -114,10 +115,6 @@
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"  // nogncheck
-#endif
-
-#if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/media/router/media_router_dialog_controller.h"  // nogncheck
 #endif
 
 namespace {
@@ -963,7 +960,6 @@ bool CanRouteMedia(Browser* browser) {
 }
 
 void RouteMedia(Browser* browser) {
-#if defined(ENABLE_MEDIA_ROUTER)
   DCHECK(CanRouteMedia(browser));
 
   media_router::MediaRouterDialogController* dialog_controller =
@@ -973,7 +969,6 @@ void RouteMedia(Browser* browser) {
     return;
 
   dialog_controller->ShowMediaRouterDialog();
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 void EmailPageLocation(Browser* browser) {

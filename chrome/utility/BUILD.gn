@@ -179,7 +179,7 @@ static_library("utility") {
     deps += [ "//chrome/utility/safe_browsing/mac" ]
   }
 
-  if (enable_media_router && !is_android) {
+  if (!is_android) {
     sources += [
       "media_router/dial_device_description_parser_impl.cc",
       "media_router/dial_device_description_parser_impl.h",

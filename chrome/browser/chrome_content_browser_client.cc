@@ -47,6 +47,9 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/font_family_cache.h"
+#include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/router/presentation_service_delegate_impl.h"
+#include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
@@ -347,9 +350,9 @@
 #include "extensions/common/switches.h"
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(ENABLE_MEDIA_ROUTER)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/media/cast_transport_host_filter.h"
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && defined(ENABLE_MEDIA_ROUTER)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
@@ -373,13 +376,7 @@
 #include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #endif
 
-#if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/media/router/presentation_service_delegate_impl.h"
-#include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"
-#endif  // defined(ENABLE_MEDIA_ROUTER)
-
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING) && defined(ENABLE_MEDIA_ROUTER)
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 #include "chrome/browser/media/cast_remoting_connector.h"
 #endif
 
@@ -1214,7 +1211,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   int id = host->GetID();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   host->AddFilter(new ChromeRenderMessageFilter(id, profile));
-#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(ENABLE_MEDIA_ROUTER)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   host->AddFilter(new cast::CastTransportHostFilter);
 #endif
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -3362,19 +3359,16 @@ void ChromeContentBrowserClient::OpenURL(
 content::ControllerPresentationServiceDelegate*
 ChromeContentBrowserClient::GetControllerPresentationServiceDelegate(
     content::WebContents* web_contents) {
-#if defined(ENABLE_MEDIA_ROUTER)
   if (media_router::MediaRouterEnabled(web_contents->GetBrowserContext())) {
     return media_router::PresentationServiceDelegateImpl::
         GetOrCreateForWebContents(web_contents);
   }
-#endif  // defined(ENABLE_MEDIA_ROUTER)
   return nullptr;
 }
 
 content::ReceiverPresentationServiceDelegate*
 ChromeContentBrowserClient::GetReceiverPresentationServiceDelegate(
     content::WebContents* web_contents) {
-#if defined(ENABLE_MEDIA_ROUTER)
   if (media_router::MediaRouterEnabled(web_contents->GetBrowserContext())) {
     // ReceiverPresentationServiceDelegateImpl exists only for WebContents
     // created for offscreen presentations. The WebContents must belong to
@@ -3385,7 +3379,6 @@ ChromeContentBrowserClient::GetReceiverPresentationServiceDelegate(
       return impl;
     }
   }
-#endif  // defined(ENABLE_MEDIA_ROUTER)
   return nullptr;
 }
 
@@ -3608,16 +3601,8 @@ void ChromeContentBrowserClient::CreateMediaRemoter(
     content::RenderFrameHost* render_frame_host,
     media::mojom::RemotingSourcePtr source,
     media::mojom::RemoterRequest request) {
-#if defined(ENABLE_MEDIA_ROUTER)
   CastRemotingConnector::CreateMediaRemoter(
       render_frame_host, std::move(source), std::move(request));
-#else
-  // Chrome's media remoting implementation depends on the Media Router
-  // infrastructure to identify remote sinks and provide the user interface for
-  // sink selection. In the case where the Media Router is not present, simply
-  // drop the interface request. This will prevent code paths for media remoting
-  // in the renderer process from activating.
-#endif
 }
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 

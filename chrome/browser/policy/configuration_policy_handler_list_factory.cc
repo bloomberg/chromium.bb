@@ -431,7 +431,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kNTPContentSuggestionsEnabled,
     ntp_snippets::prefs::kEnableSnippets,
     base::Value::Type::BOOLEAN },
-#if defined(ENABLE_MEDIA_ROUTER)
   { key::kEnableMediaRouter,
     prefs::kEnableMediaRouter,
     base::Value::Type::BOOLEAN },
@@ -440,7 +439,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kShowCastIconInToolbar,
     base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_ANDROID)
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 #if BUILDFLAG(ENABLE_WEBRTC)
   { key::kWebRtcUdpPortRange,
     prefs::kWebRTCUDPPortRange,

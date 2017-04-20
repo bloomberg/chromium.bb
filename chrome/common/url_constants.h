@@ -139,11 +139,9 @@ extern const char kChromeUITabModalConfirmDialogURL[];
 extern const char kChromeUIWebRtcLogsURL[];
 #endif
 
-#if defined(ENABLE_MEDIA_ROUTER)
 extern const char kChromeUIMediaRouterURL[];
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 extern const char kChromeUICastURL[];
-#endif
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -326,11 +324,9 @@ extern const char kChromeUITabModalConfirmDialogHost[];
 extern const char kChromeUIWebRtcLogsHost[];
 #endif
 
-#if defined(ENABLE_MEDIA_ROUTER)
 extern const char kChromeUIMediaRouterHost[];
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 extern const char kChromeUICastHost[];
-#endif
 #endif
 
 // Options sub-pages.

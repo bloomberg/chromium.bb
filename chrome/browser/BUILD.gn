@@ -554,6 +554,12 @@ split_static_library("browser") {
     "manifest/manifest_icon_downloader.h",
     "manifest/manifest_icon_selector.cc",
     "manifest/manifest_icon_selector.h",
+    "media/cast_remoting_connector.cc",
+    "media/cast_remoting_connector.h",
+    "media/cast_remoting_connector_messaging.cc",
+    "media/cast_remoting_connector_messaging.h",
+    "media/cast_remoting_sender.cc",
+    "media/cast_remoting_sender.h",
     "media/media_access_handler.cc",
     "media/media_access_handler.h",
     "media/media_device_id_salt.cc",
@@ -1435,6 +1441,7 @@ split_static_library("browser") {
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/budget_service:budget_proto",
     "//chrome/browser/devtools",
+    "//chrome/browser/media/router",
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
     "//chrome/browser/net:probe_message_proto",
     "//chrome/browser/ssl:proto",
@@ -1604,7 +1611,9 @@ split_static_library("browser") {
     "//gpu/config",
     "//media",
     "//media:media_features",
+    "//media/cast:net",
     "//media/midi",
+    "//media/mojo/interfaces:remoting",
     "//mojo/common",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
@@ -1755,6 +1764,8 @@ split_static_library("browser") {
       "guest_view/web_view/context_menu_content_type_web_view.h",
       "media/capture_access_handler_base.cc",
       "media/capture_access_handler_base.h",
+      "media/cast_transport_host_filter.cc",
+      "media/cast_transport_host_filter.h",
       "media/extension_media_access_handler.cc",
       "media/extension_media_access_handler.h",
       "media/webrtc/desktop_capture_access_handler.cc",
@@ -1933,12 +1944,6 @@ split_static_library("browser") {
       "sync_file_system/task_logger.cc",
       "sync_file_system/task_logger.h",
     ]
-    if (enable_media_router) {
-      sources += [
-        "media/cast_transport_host_filter.cc",
-        "media/cast_transport_host_filter.h",
-      ]
-    }
     public_deps += [
       "//chrome/browser/apps",
       "//chrome/browser/extensions",
@@ -3995,22 +4000,6 @@ split_static_library("browser") {
       "local_discovery/service_discovery_client_mdns.h",
       "printing/cloud_print/privet_traffic_detector.cc",
       "printing/cloud_print/privet_traffic_detector.h",
-    ]
-  }
-
-  if (enable_media_router) {
-    deps += [
-      "//chrome/browser/media/router",
-      "//media/cast:net",
-      "//media/mojo/interfaces:remoting",
-    ]
-    sources += [
-      "media/cast_remoting_connector.cc",
-      "media/cast_remoting_connector.h",
-      "media/cast_remoting_connector_messaging.cc",
-      "media/cast_remoting_connector_messaging.h",
-      "media/cast_remoting_sender.cc",
-      "media/cast_remoting_sender.h",
     ]
   }
 

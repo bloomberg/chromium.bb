@@ -6,17 +6,14 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/media/router/media_router_feature.h"  // nogncheck
+#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"  // nogncheck
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-
-#if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/media/router/media_router_feature.h"  // nogncheck
-#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"  // nogncheck
-#endif
 
 namespace extensions {
 
@@ -25,7 +22,6 @@ void RegisterChromeServicesForFrame(content::RenderFrameHost* render_frame_host,
   DCHECK(render_frame_host);
   DCHECK(extension);
 
-#if defined(ENABLE_MEDIA_ROUTER)
   content::BrowserContext* context =
       render_frame_host->GetProcess()->GetBrowserContext();
   if (media_router::MediaRouterEnabled(context)) {
@@ -36,7 +32,6 @@ void RegisterChromeServicesForFrame(content::RenderFrameHost* render_frame_host,
                      extension, context));
     }
   }
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 }  // namespace extensions

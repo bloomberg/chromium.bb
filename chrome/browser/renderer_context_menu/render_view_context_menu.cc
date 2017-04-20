@@ -32,6 +32,9 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_stats.h"
+#include "chrome/browser/media/router/media_router_dialog_controller.h"
+#include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -145,12 +148,6 @@
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #endif  // BUILDFLAG(ENABLE_PRINTING)
-
-#if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/media/router/media_router_dialog_controller.h"
-#include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/media/router/media_router_metrics.h"
-#endif
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/grit/theme_resources.h"
@@ -1292,12 +1289,10 @@ void RenderViewContextMenu::AppendPrintItem() {
 }
 
 void RenderViewContextMenu::AppendMediaRouterItem() {
-#if defined(ENABLE_MEDIA_ROUTER)
   if (media_router::MediaRouterEnabled(browser_context_)) {
     menu_model_.AddItemWithStringId(IDC_ROUTE_MEDIA,
                                     IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   }
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 void RenderViewContextMenu::AppendRotationItems() {
@@ -2135,7 +2130,6 @@ bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
 }
 
 bool RenderViewContextMenu::IsRouteMediaEnabled() const {
-#if defined(ENABLE_MEDIA_ROUTER)
   if (!media_router::MediaRouterEnabled(browser_context_))
     return false;
 
@@ -2155,9 +2149,6 @@ bool RenderViewContextMenu::IsRouteMediaEnabled() const {
   const web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
   return !manager || !manager->IsDialogActive();
-#else
-  return false;
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
@@ -2425,7 +2416,6 @@ void RenderViewContextMenu::ExecPrint() {
 }
 
 void RenderViewContextMenu::ExecRouteMedia() {
-#if defined(ENABLE_MEDIA_ROUTER)
   if (!media_router::MediaRouterEnabled(browser_context_))
     return;
 
@@ -2438,7 +2428,6 @@ void RenderViewContextMenu::ExecRouteMedia() {
   dialog_controller->ShowMediaRouterDialog();
   media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
       media_router::MediaRouterDialogOpenOrigin::CONTEXTUAL_MENU);
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 void RenderViewContextMenu::ExecTranslate() {

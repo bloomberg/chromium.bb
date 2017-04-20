@@ -624,10 +624,8 @@
         </if>
         <include name="IDR_BRAILLE_MANIFEST" file="resources\chromeos\braille_ime\manifest.json" type="BINDATA" />
       </if>
-      <if expr="enable_media_router">
-        <part file="media_router_resources.grdp" />
-      </if>
-      <if expr="enable_media_router and (chromeos or is_win or is_macosx)">
+      <part file="media_router_resources.grdp" />
+      <if expr="chromeos or is_win or is_macosx">
         <include name="IDR_CAST_HTML" file="resources\cast\cast.html" type="BINDATA" />
         <include name="IDR_CAST_CSS" file="resources\cast\cast.css" type="BINDATA" />
         <include name="IDR_CAST_JS" file="resources\cast\cast.js" type="BINDATA" />

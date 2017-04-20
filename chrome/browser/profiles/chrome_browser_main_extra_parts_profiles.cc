@@ -28,6 +28,7 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/notifications/extension_welcome_notification_factory.h"
@@ -126,6 +127,7 @@
 #include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 #else
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
+#include "chrome/browser/media/router/media_router_ui_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #endif
@@ -141,13 +143,6 @@
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/printing/cloud_print/privet_notifications_factory.h"
-#endif
-
-#if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/media/router/media_router_factory.h"
-#if !defined(OS_ANDROID)
-#include "chrome/browser/media/router/media_router_ui_service_factory.h"
-#endif
 #endif
 
 namespace chrome {
@@ -273,12 +268,10 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
       ->SetUIDelegateFactory(std::move(networking_private_ui_delegate_factory));
 #endif
 #endif
-#if defined(ENABLE_MEDIA_ROUTER)
   media_router::MediaRouterFactory::GetInstance();
 #if !defined(OS_ANDROID)
   media_router::MediaRouterUIServiceFactory::GetInstance();
 #endif
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();

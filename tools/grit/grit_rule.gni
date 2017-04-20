@@ -231,13 +231,6 @@ if (current_toolchain != host_toolchain) {
   }
 }
 
-if (enable_media_router) {
-  grit_defines += [
-    "-D",
-    "enable_media_router",
-  ]
-}
-
 # TODO(aberent): Enable for other platforms once the build machines have
 #                Java on them (and hence can run the closure compiler).
 _strip_resource_files = is_android

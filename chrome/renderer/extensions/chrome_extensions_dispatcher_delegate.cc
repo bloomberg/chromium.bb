@@ -264,7 +264,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("chromeWebView", IDR_CHROME_WEB_VIEW_JS);
 
-#if defined(ENABLE_MEDIA_ROUTER)
+  // Media router.
   source_map->RegisterSource(
       "chrome/common/media_router/mojo/media_controller.mojom",
       IDR_MEDIA_CONTROLLER_MOJOM_JS);
@@ -281,7 +281,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_MOJO_IP_ADDRESS_MOJOM_JS);
   source_map->RegisterSource("url/mojo/origin.mojom", IDR_ORIGIN_MOJOM_JS);
   source_map->RegisterSource("url/mojo/url.mojom", IDR_MOJO_URL_MOJOM_JS);
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(

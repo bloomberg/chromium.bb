@@ -53,9 +53,7 @@ const char kHotwordNewExtensionId[] = "nbpagnldghgfoolbancepceaanlmhfmd";
 const char kHotwordSharedModuleId[] = "lccekmodgklaepjeofjdjpbminllajkg";
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
-#if defined(ENABLE_MEDIA_ROUTER)
 const char kMediaRouterStableExtensionId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 
 #if defined(OS_CHROMEOS)
 // The extension id for the built-in component extension.

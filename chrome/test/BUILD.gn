@@ -1012,6 +1012,7 @@ if (!is_android) {
       "data/webui/md_downloads/downloads_browsertest.js",
       "data/webui/md_history/md_history_browsertest.js",
       "data/webui/md_user_manager/user_manager_browsertest.js",
+      "data/webui/media_router/media_router_elements_browsertest.js",
       "data/webui/mock4js_browsertest.js",
       "data/webui/net_internals/bandwidth_view.js",
       "data/webui/net_internals/chromeos_view.js",
@@ -1085,10 +1086,6 @@ if (!is_android) {
     }
     if (!enable_print_preview) {
       sources -= [ "data/webui/print_preview.js" ]
-    }
-    if (enable_media_router) {
-      sources +=
-          [ "data/webui/media_router/media_router_elements_browsertest.js" ]
     }
     deps = [
       "//chrome/browser/ui",
@@ -1714,7 +1711,6 @@ test("browser_tests") {
       "../browser/sessions/session_restore_browsertest_chromeos.cc",
       "../browser/sessions/tab_restore_browsertest.cc",
       "../browser/site_details_browsertest.cc",
-      "../browser/ui/ask_google_for_suggestions_dialog_browsertest.cc",
 
       # If this list is used on Android in the future, these browser/speech/*
       # files will probably not be applicable.
@@ -1756,6 +1752,7 @@ test("browser_tests") {
       "../browser/tracing/chrome_tracing_delegate_browsertest.cc",
       "../browser/translate/translate_browsertest.cc",
       "../browser/translate/translate_manager_browsertest.cc",
+      "../browser/ui/ask_google_for_suggestions_dialog_browsertest.cc",
       "../browser/ui/autofill/card_unmask_prompt_view_browsertest.cc",
       "../browser/ui/autofill/card_unmask_prompt_view_tester.h",
       "../browser/ui/autofill/password_generation_popup_view_browsertest.cc",
@@ -1823,6 +1820,7 @@ test("browser_tests") {
       "../browser/ui/webui/inspect_ui_browsertest.cc",
       "../browser/ui/webui/interstitials/interstitial_ui_browsertest.cc",
       "../browser/ui/webui/log_web_ui_url_browsertest.cc",
+      "../browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc",
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.cc",
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.h",
       "../browser/ui/webui/ntp/new_tab_ui_browsertest.cc",
@@ -1912,6 +1910,7 @@ test("browser_tests") {
       "//chrome:strings",
       "//chrome/browser",
       "//chrome/renderer",
+      "//chrome/test/media_router:media_router_browsertests",
       "//components/autofill/content/browser:risk_proto",
       "//components/autofill/content/renderer:test_support",
       "//components/captive_portal:test_support",
@@ -2119,6 +2118,7 @@ test("browser_tests") {
         "../browser/ui/ash/shelf_browsertest.cc",
         "../browser/ui/ash/system_tray_client_browsertest.cc",
         "../browser/ui/ash/system_tray_delegate_chromeos_browsertest_chromeos.cc",
+        "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
         "../browser/ui/ash/volume_controller_browsertest.cc",
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
       ]
@@ -2129,10 +2129,6 @@ test("browser_tests") {
 
       if (enable_app_list) {
         deps += [ ":test_support_applist_ash" ]
-      }
-
-      if (enable_media_router) {
-        sources += [ "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc" ]
       }
     }
     if (use_aura || toolkit_views) {
@@ -2190,6 +2186,7 @@ test("browser_tests") {
           "../browser/ui/views/frame/browser_non_client_frame_view_browsertest.cc",
           "../browser/ui/views/frame/browser_view_browsertest.cc",
           "../browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc",
+          "../browser/ui/views/media_router/media_router_ui_browsertest.cc",
           "../browser/ui/views/passwords/manage_passwords_bubble_view_browsertest.cc",
           "../browser/ui/views/passwords/password_dialog_view_browsertest.cc",
           "../browser/ui/views/session_crashed_bubble_view_browsertest.cc",
@@ -2198,9 +2195,6 @@ test("browser_tests") {
           "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
           "../browser/ui/views/web_dialog_view_browsertest.cc",
         ]
-        if (enable_media_router) {
-          sources += [ "../browser/ui/views/media_router/media_router_ui_browsertest.cc" ]
-        }
       }
     }
 
@@ -2474,10 +2468,6 @@ test("browser_tests") {
         "../browser/media/webrtc/webrtc_video_quality_browsertest.cc",
         "../browser/media/webrtc/webrtc_webcam_browsertest.cc",
       ]
-    }
-    if (enable_media_router) {
-      sources += [ "../browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc" ]
-      deps += [ "//chrome/test/media_router:media_router_browsertests" ]
     }
     if (is_win) {
       deps += [
@@ -3240,7 +3230,22 @@ test("unit_tests") {
     "../browser/mac/keystone_glue_unittest.mm",
     "../browser/manifest/manifest_icon_downloader_unittest.cc",
     "../browser/manifest/manifest_icon_selector_unittest.cc",
+    "../browser/media/android/router/media_router_android_unittest.cc",
+    "../browser/media/cast_remoting_connector_unittest.cc",
     "../browser/media/midi_permission_context_unittest.cc",
+    "../browser/media/router/browser_presentation_connection_proxy_unittest.cc",
+    "../browser/media/router/create_presentation_connection_request_unittest.cc",
+    "../browser/media/router/issue_manager_unittest.cc",
+    "../browser/media/router/media_router_base_unittest.cc",
+    "../browser/media/router/media_router_dialog_controller_unittest.cc",
+    "../browser/media/router/media_router_factory_unittest.cc",
+    "../browser/media/router/media_router_metrics_unittest.cc",
+    "../browser/media/router/media_sinks_observer_unittest.cc",
+    "../browser/media/router/offscreen_presentation_manager_factory_unittest.cc",
+    "../browser/media/router/offscreen_presentation_manager_unittest.cc",
+    "../browser/media/router/presentation_media_sinks_observer_unittest.cc",
+    "../browser/media/router/presentation_request_unittest.cc",
+    "../browser/media/router/presentation_service_delegate_impl_unittest.cc",
     "../browser/media/webrtc/media_stream_device_permission_context_unittest.cc",
     "../browser/metrics/antivirus_metrics_provider_win_unittest.cc",
     "../browser/metrics/chrome_browser_main_extra_parts_metrics_unittest.cc",
@@ -3440,6 +3445,12 @@ test("unit_tests") {
     "../common/mac/cfbundle_blocker_unittest.mm",
     "../common/mac/mock_launchd.cc",
     "../common/mac/mock_launchd.h",
+    "../common/media_router/discovery/media_sink_internal_unittest.cc",
+    "../common/media_router/issue_unittest.cc",
+    "../common/media_router/media_route_unittest.cc",
+    "../common/media_router/media_sink_unittest.cc",
+    "../common/media_router/media_source_helper_unittest.cc",
+    "../common/media_router/media_source_unittest.cc",
     "../common/origin_trials/chrome_origin_trial_policy_unittest.cc",
     "../common/partial_circular_buffer_unittest.cc",
     "../common/pref_names_util_unittest.cc",
@@ -3526,6 +3537,7 @@ test("unit_tests") {
     "//chrome:child_dependencies",
     "//chrome:resources",
     "//chrome:strings",
+    "//chrome/browser/media/router:test_support",
     "//chrome/common:test_support",
     "//components/autofill/content/renderer:test_support",
     "//components/browser_sync:test_support",
@@ -3815,11 +3827,37 @@ test("unit_tests") {
       "../browser/devtools/serialize_host_descriptions_unittest.cc",
       "../browser/download/download_dir_policy_handler_unittest.cc",
       "../browser/lifetime/keep_alive_registry_unittest.cc",
+      "../browser/media/router/discovery/dial/device_description_fetcher_unittest.cc",
+      "../browser/media/router/discovery/dial/dial_device_data_unittest.cc",
+      "../browser/media/router/discovery/dial/dial_registry_unittest.cc",
+      "../browser/media/router/discovery/dial/dial_service_unittest.cc",
+
+      # TODO(crbug.com/646627):
+      # Move media_router_ui_service_factory_unittest.cc to chrome/browser/ui.
+      "../browser/media/router/media_router_ui_service_factory_unittest.cc",
+      "../browser/media/router/mojo/media_route_controller_unittest.cc",
+      "../browser/media/router/mojo/media_router_mojo_impl_unittest.cc",
+      "../browser/media/router/mojo/media_router_mojo_metrics_unittest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.h",
       "../browser/ui/autofill/save_card_bubble_controller_impl_unittest.cc",
       "../browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc",
       "../browser/ui/passwords/manage_passwords_ui_controller_unittest.cc",
+      "../browser/ui/toolbar/media_router_action_controller_unittest.cc",
+      "../browser/ui/toolbar/media_router_action_unittest.cc",
+      "../browser/ui/toolbar/media_router_contextual_menu_unittest.cc",
+      "../browser/ui/toolbar/mock_media_router_action_controller.cc",
+      "../browser/ui/toolbar/mock_media_router_action_controller.h",
+      "../browser/ui/webui/media_router/cast_modes_with_media_sources_unittest.cc",
+      "../browser/ui/webui/media_router/media_cast_mode_unittest.cc",
+      "../browser/ui/webui/media_router/media_router_dialog_controller_impl_unittest.cc",
+      "../browser/ui/webui/media_router/media_router_ui_unittest.cc",
+      "../browser/ui/webui/media_router/media_router_web_ui_test.cc",
+      "../browser/ui/webui/media_router/media_router_web_ui_test.h",
+      "../browser/ui/webui/media_router/media_router_webui_message_handler_unittest.cc",
+      "../browser/ui/webui/media_router/query_result_manager_unittest.cc",
+      "../common/media_router/mojo/media_router_struct_traits_unittest.cc",
+      "../utility/media_router/dial_device_description_parser_impl_unittest.cc",
     ]
     deps += [
       ":unit_tests_js",
@@ -4032,6 +4070,8 @@ test("unit_tests") {
       "../browser/extensions/webstore_inline_installer_unittest.cc",
       "../browser/extensions/webstore_installer_unittest.cc",
       "../browser/extensions/zipfile_installer_unittest.cc",
+      "../browser/media/cast_remoting_sender_unittest.cc",
+      "../browser/media/cast_transport_host_filter_unittest.cc",
       "../browser/media_galleries/chromeos/mtp_device_object_enumerator_unittest.cc",
       "../browser/metrics/extensions_metrics_provider_unittest.cc",
       "../browser/notifications/extension_welcome_notification_unittest.cc",
@@ -4189,12 +4229,6 @@ test("unit_tests") {
         "../browser/extensions/api/messaging/native_message_process_host_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc",
-      ]
-    }
-    if (enable_media_router) {
-      sources += [
-        "../browser/media/cast_remoting_sender_unittest.cc",
-        "../browser/media/cast_transport_host_filter_unittest.cc",
       ]
     }
   }
@@ -4425,62 +4459,6 @@ test("unit_tests") {
     ]
   }
 
-  if (enable_media_router) {
-    sources += [
-      "../browser/media/android/router/media_router_android_unittest.cc",
-      "../browser/media/cast_remoting_connector_unittest.cc",
-      "../browser/media/router/browser_presentation_connection_proxy_unittest.cc",
-      "../browser/media/router/create_presentation_connection_request_unittest.cc",
-      "../browser/media/router/issue_manager_unittest.cc",
-      "../browser/media/router/media_router_base_unittest.cc",
-      "../browser/media/router/media_router_dialog_controller_unittest.cc",
-      "../browser/media/router/media_router_factory_unittest.cc",
-      "../browser/media/router/media_router_metrics_unittest.cc",
-      "../browser/media/router/media_sinks_observer_unittest.cc",
-      "../browser/media/router/offscreen_presentation_manager_factory_unittest.cc",
-      "../browser/media/router/offscreen_presentation_manager_unittest.cc",
-      "../browser/media/router/presentation_media_sinks_observer_unittest.cc",
-      "../browser/media/router/presentation_request_unittest.cc",
-      "../browser/media/router/presentation_service_delegate_impl_unittest.cc",
-      "../common/media_router/discovery/media_sink_internal_unittest.cc",
-      "../common/media_router/issue_unittest.cc",
-      "../common/media_router/media_route_unittest.cc",
-      "../common/media_router/media_sink_unittest.cc",
-      "../common/media_router/media_source_helper_unittest.cc",
-      "../common/media_router/media_source_unittest.cc",
-    ]
-    deps += [ "//chrome/browser/media/router:test_support" ]
-    if (!is_android) {
-      sources += [
-        "../browser/media/router/discovery/dial/device_description_fetcher_unittest.cc",
-        "../browser/media/router/discovery/dial/dial_device_data_unittest.cc",
-        "../browser/media/router/discovery/dial/dial_registry_unittest.cc",
-        "../browser/media/router/discovery/dial/dial_service_unittest.cc",
-
-        # TODO(crbug.com/646627):
-        # Move media_router_ui_service_factory_unittest.cc to chrome/browser/ui.
-        "../browser/media/router/media_router_ui_service_factory_unittest.cc",
-        "../browser/media/router/mojo/media_route_controller_unittest.cc",
-        "../browser/media/router/mojo/media_router_mojo_impl_unittest.cc",
-        "../browser/media/router/mojo/media_router_mojo_metrics_unittest.cc",
-        "../browser/ui/toolbar/media_router_action_controller_unittest.cc",
-        "../browser/ui/toolbar/media_router_action_unittest.cc",
-        "../browser/ui/toolbar/media_router_contextual_menu_unittest.cc",
-        "../browser/ui/toolbar/mock_media_router_action_controller.cc",
-        "../browser/ui/toolbar/mock_media_router_action_controller.h",
-        "../browser/ui/webui/media_router/cast_modes_with_media_sources_unittest.cc",
-        "../browser/ui/webui/media_router/media_cast_mode_unittest.cc",
-        "../browser/ui/webui/media_router/media_router_dialog_controller_impl_unittest.cc",
-        "../browser/ui/webui/media_router/media_router_ui_unittest.cc",
-        "../browser/ui/webui/media_router/media_router_web_ui_test.cc",
-        "../browser/ui/webui/media_router/media_router_web_ui_test.h",
-        "../browser/ui/webui/media_router/media_router_webui_message_handler_unittest.cc",
-        "../browser/ui/webui/media_router/query_result_manager_unittest.cc",
-        "../common/media_router/mojo/media_router_struct_traits_unittest.cc",
-        "../utility/media_router/dial_device_description_parser_impl_unittest.cc",
-      ]
-    }
-  }
   if (enable_captive_portal_detection) {
     sources += [
       "../browser/captive_portal/captive_portal_service_unittest.cc",

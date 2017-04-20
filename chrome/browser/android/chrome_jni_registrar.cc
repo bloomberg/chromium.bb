@@ -269,11 +269,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ChromeFeatureList", chrome::android::RegisterChromeFeatureListJni},
     {"ChromeHttpAuthHandler",
      ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler},
-#if defined(ENABLE_MEDIA_ROUTER)
     {"ChromeMediaRouter", media_router::MediaRouterAndroidBridge::Register},
     {"ChromeMediaRouterDialogController",
      media_router::MediaRouterDialogControllerAndroid::Register},
-#endif
     {"ChromePayments", payments::android::RegisterChromePayments},
     {"ChromeWebApkHost", ChromeWebApkHost::Register},
     {"CompositorView", RegisterCompositorView},

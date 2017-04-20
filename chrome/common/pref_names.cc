@@ -2002,7 +2002,6 @@ const char kSystemTimezoneAutomaticDetectionPolicy[] =
     "settings.resolve_device_timezone_by_geolocation_policy";
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_MEDIA_ROUTER)
 // Pref name for the policy controlling whether to enable Media Router.
 const char kEnableMediaRouter[] = "media_router.enable_media_router";
 #if !defined(OS_ANDROID)
@@ -2010,7 +2009,6 @@ const char kEnableMediaRouter[] = "media_router.enable_media_router";
 // shown in the toolbar/overflow menu.
 const char kShowCastIconInToolbar[] = "media_router.show_cast_icon_in_toolbar";
 #endif  // !defined(OS_ANDROID)
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
@@ -2350,7 +2348,6 @@ const char kLatestVersionWhenClickedUpdateMenuItem[] =
     "omaha.latest_version_when_clicked_upate_menu_item";
 #endif
 
-#if defined(ENABLE_MEDIA_ROUTER)
 // Whether or not the user has explicitly set the cloud services preference
 // through the first run flow.
 const char kMediaRouterCloudServicesPrefSet[] =
@@ -2365,7 +2362,6 @@ const char kMediaRouterFirstRunFlowAcknowledged[] =
 // A list of website origins on which the user has chosen to use tab mirroring.
 const char kMediaRouterTabMirroringSources[] =
     "media_router.tab_mirroring_sources";
-#endif
 
 // The base64-encoded representation of the public key to use to validate origin
 // trial token signatures.

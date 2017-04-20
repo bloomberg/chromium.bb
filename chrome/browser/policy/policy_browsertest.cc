@@ -230,11 +230,11 @@
 #include "ui/base/window_open_disposition.h"
 #endif
 
-#if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#endif  // defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 using content::BrowserThread;
 using net::URLRequestMockHTTPJob;
@@ -3647,7 +3647,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
   EXPECT_TRUE(task_manager::TaskManagerInterface::IsEndProcessEnabled());
 }
 
-#if defined(ENABLE_MEDIA_ROUTER)
 // Sets the proper policy before the browser is started.
 template<bool enable>
 class MediaRouterPolicyTest : public PolicyTest {
@@ -3715,7 +3714,6 @@ IN_PROC_BROWSER_TEST_F(MediaRouterActionDisabledPolicyTest,
   EXPECT_FALSE(HasMediaRouterActionAtInit());
 }
 #endif  // !defined(OS_ANDROID)
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 // Sets the proper policy before the browser is started.

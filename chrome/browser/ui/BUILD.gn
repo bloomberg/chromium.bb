@@ -3427,7 +3427,7 @@ split_static_library("ui") {
       "webui/options/geolocation_options_handler.h",
     ]
   }
-  if (enable_media_router && !is_android) {
+  if (!is_android) {
     sources += [
       "toolbar/media_router_action.cc",
       "toolbar/media_router_action.h",

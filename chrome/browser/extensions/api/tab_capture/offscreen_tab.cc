@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
+#include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"  // nogncheck
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -19,10 +20,6 @@
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
-
-#if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"  // nogncheck
-#endif
 
 using content::WebContents;
 
@@ -122,7 +119,6 @@ void OffscreenTab::Start(const GURL& start_url,
   // automatically unmuted, but will be captured into the MediaStream.
   offscreen_tab_web_contents_->SetAudioMuted(true);
 
-#if defined(ENABLE_MEDIA_ROUTER)
   if (!optional_presentation_id.empty()) {
     DVLOG(1) << " Register with ReceiverPresentationServiceDelegateImpl, "
              << "[presentation_id]: " << optional_presentation_id;
@@ -139,7 +135,6 @@ void OffscreenTab::Start(const GURL& start_url,
       render_view_host->UpdateWebkitPreferences(web_prefs);
     }
   }
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 
   // Navigate to the initial URL.
   content::NavigationController::LoadURLParams load_params(start_url_);

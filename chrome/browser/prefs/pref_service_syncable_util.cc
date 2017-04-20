@@ -36,9 +36,7 @@ sync_preferences::PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
   // or behavior of the user should have this property.
   std::vector<const char*> overlay_pref_names;
   overlay_pref_names.push_back(prefs::kBrowserWindowPlacement);
-#if defined(ENABLE_MEDIA_ROUTER)
   overlay_pref_names.push_back(prefs::kMediaRouterTabMirroringSources);
-#endif
   overlay_pref_names.push_back(prefs::kSaveFileDefaultDirectory);
 #if defined(OS_ANDROID)
   overlay_pref_names.push_back(proxy_config::prefs::kProxy);

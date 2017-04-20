@@ -209,10 +209,6 @@ group("gn_all") {
     deps += [ "//extensions/shell:app_shell_unittests" ]
   }
 
-  if (enable_media_router) {
-    deps += [ "//chrome/browser/media/router" ]
-  }
-
   if (enable_remoting) {
     deps += [ "//remoting:remoting_all" ]
   }

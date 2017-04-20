@@ -50,7 +50,7 @@ KeyedService* MediaRouterUIServiceFactory::BuildServiceInstanceFor(
 }
 
 bool MediaRouterUIServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-#if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
   return true;
 #else
   return false;

@@ -1840,7 +1840,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(
          switches::kSyncServiceURL,
          "https://chrome-sync.sandbox.google.com/chrome-sync/alpha")},
-#if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
     {"load-media-router-component-extension",
      flag_descriptions::kLoadMediaRouterComponentExtensionName,
      flag_descriptions::kLoadMediaRouterComponentExtensionDescription,
@@ -1850,7 +1850,7 @@ const FeatureEntry kFeatureEntries[] = {
          "1",
          switches::kLoadMediaRouterComponentExtension,
          "0")},
-#endif  // ENABLE_MEDIA_ROUTER && !OS_ANDROID
+#endif  // !OS_ANDROID
 // Since Drive Search is not available when app list is disabled, flag guard
 // enable-drive-search-in-chrome-launcher flag.
 #if BUILDFLAG(ENABLE_APP_LIST)

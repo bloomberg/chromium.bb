@@ -154,11 +154,9 @@ const char kChromeUITabModalConfirmDialogURL[] =
 const char kChromeUIWebRtcLogsURL[] = "chrome://webrtc-logs/";
 #endif
 
-#if defined(ENABLE_MEDIA_ROUTER)
 const char kChromeUIMediaRouterURL[] = "chrome://media-router/";
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 const char kChromeUICastURL[] = "chrome://cast/";
-#endif
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -348,11 +346,9 @@ const char kChromeUITabModalConfirmDialogHost[] = "tab-modal-confirm-dialog";
 const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
 #endif
 
-#if defined(ENABLE_MEDIA_ROUTER)
 const char kChromeUIMediaRouterHost[] = "media-router";
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 const char kChromeUICastHost[] = "cast";
-#endif
 #endif
 
 // Settings sub pages.

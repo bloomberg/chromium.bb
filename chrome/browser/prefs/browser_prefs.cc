@@ -134,14 +134,12 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "extensions/browser/api/audio/audio_api.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_prefs.h"
-#if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -780,7 +778,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   //  - MediaRouterUIBrowserTest.MigrateToolbarIconShownPref
   //  - MediaRouterUIBrowserTest.MigrateToolbarIconUnshownPref
   {
-#if defined(ENABLE_MEDIA_ROUTER)
     bool show_cast_icon = false;
     const base::DictionaryValue* action_migration_dict =
         profile_prefs->GetDictionary(kToolbarMigratedComponentActionStatus);
@@ -790,7 +787,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
             &show_cast_icon)) {
       profile_prefs->SetBoolean(prefs::kShowCastIconInToolbar, show_cast_icon);
     }
-#endif  // defined(ENABLE_MEDIA_ROUTER)
     profile_prefs->ClearPref(kToolbarMigratedComponentActionStatus);
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

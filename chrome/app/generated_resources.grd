@@ -185,9 +185,7 @@ are declared in build/common.gypi.
       </if>
 
       <!-- Media Router specific strings -->
-      <if expr="enable_media_router">
-        <part file="media_router_strings.grdp" />
-      </if>
+      <part file="media_router_strings.grdp" />
 
       <!-- Settings specific strings -->
       <if expr="not is_android">
@@ -3500,11 +3498,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           PWG Raster Convertor
         </message>
       </if>
-      <if expr="enable_media_router">
-        <message name="IDS_UTILITY_PROCESS_DIAL_DEVICE_DESCRIPTION_PARSER_NAME" desc="The name of the utility process used for parsing XML of uPnP device descriptions of DIAL devices.">
-          DIAL Device Description Parser
-        </message>
-      </if>
+      <message name="IDS_UTILITY_PROCESS_DIAL_DEVICE_DESCRIPTION_PARSER_NAME" desc="The name of the utility process used for parsing XML of uPnP device descriptions of DIAL devices.">
+        DIAL Device Description Parser
+      </message>
 
       <!-- Theme preview info bar -->
       <message name="IDS_THEME_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when a theme has been installed.">
