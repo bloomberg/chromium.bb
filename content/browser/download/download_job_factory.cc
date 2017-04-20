@@ -78,6 +78,7 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info) {
 
 }  // namespace
 
+// static
 std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     DownloadItemImpl* download_item,
     std::unique_ptr<DownloadRequestHandleInterface> req_handle,

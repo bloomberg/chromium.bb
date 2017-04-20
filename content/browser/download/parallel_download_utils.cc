@@ -14,29 +14,12 @@ namespace content {
 
 namespace {
 
-// Finch parameter key value for minimum slice size in bytes to use parallel
-// download.
-const char kMinSliceSizeFinchKey[] = "min_slice_size";
-
 // Default value for |kMinSliceSizeFinchKey|, when no parameter is specified.
 const int64_t kMinSliceSizeParallelDownload = 2097152;
-
-// Finch parameter key value for number of parallel requests in a parallel
-// download, including the original request.
-const char kParallelRequestCountFinchKey[] = "request_count";
 
 // Default value for |kParallelRequestCountFinchKey|, when no parameter is
 // specified.
 const int kParallelRequestCount = 2;
-
-// Finch parameter key value for the delay time in milliseconds to send
-// parallel requests after response of the original request is handled.
-const char kParallelRequestDelayFinchKey[] = "parallel_request_delay";
-
-// Finch parameter key value for the remaining time in seconds that is required
-// to send parallel requests.
-const char kParallelRequestRemainingTimeFinchKey[] =
-    "parallel_request_remaining_time";
 
 // The default remaining download time in seconds required for parallel request
 // creation.

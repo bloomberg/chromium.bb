@@ -18,9 +18,13 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -32,6 +36,7 @@
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
+#include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/download_danger_type.h"
@@ -81,6 +86,9 @@ class NetLogWithSource;
 namespace content {
 
 namespace {
+
+// Default request count for parallel download tests.
+constexpr int kTestRequestCount = 3;
 
 class MockDownloadItemObserver : public DownloadItem::Observer {
  public:
@@ -589,8 +597,8 @@ class DownloadContentTest : public ContentBrowserTest {
             make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
   }
 
-  void SetUpCommandLine(base::CommandLine* commnad_line) override {
-    IsolateAllSitesForTesting(commnad_line);
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
   }
 
   TestShellDownloadManagerDelegate* GetDownloadManagerDelegate() {
@@ -745,6 +753,45 @@ class DownloadContentTest : public ContentBrowserTest {
   // Location of the downloads directory for these tests
   base::ScopedTempDir downloads_directory_;
   std::unique_ptr<TestShellDownloadManagerDelegate> test_delegate_;
+};
+
+// Test fixture for parallel downloading.
+class ParallelDownloadTest : public DownloadContentTest {
+ protected:
+  void SetUp() override {
+    field_trial_list_ = base::MakeUnique<base::FieldTrialList>(
+        base::MakeUnique<base::MockEntropyProvider>());
+    SetupConfig();
+    DownloadContentTest::SetUp();
+  }
+
+ private:
+  // TODO(xingliu): Use this technique in parallel download unit tests to load
+  // the finch configuration.
+  void SetupConfig() {
+    const std::string kTrialName = "trial_name";
+    const std::string kGroupName = "group_name";
+
+    std::map<std::string, std::string> params;
+    params[content::kMinSliceSizeFinchKey] = "1";
+    params[content::kParallelRequestCountFinchKey] =
+        base::IntToString(kTestRequestCount);
+    params[content::kParallelRequestDelayFinchKey] = "0";
+    params[content::kParallelRequestRemainingTimeFinchKey] = "0";
+
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
+    std::unique_ptr<base::FeatureList> feature_list =
+        base::MakeUnique<base::FeatureList>();
+    feature_list->RegisterFieldTrialOverride(
+        features::kParallelDownloading.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace
@@ -2653,6 +2700,32 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   EXPECT_STREQ(FILE_PATH_LITERAL("download-test.lib"),
                download->GetTargetFilePath().BaseName().value().c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
+
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+  parameters.etag = "ABC";
+  parameters.size = 5097152;
+  // Only parallel download needs to specify the connection type to http 1.1,
+  // other tests will automatically fall back to non-parallel download even if
+  // the ParallelDownloading feature is enabled based on
+  // fieldtrial_testing_config.json.
+  parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
+  request_handler.StartServing(parameters);
+
+  DownloadItem* download =
+      StartDownloadAndReturnItem(shell(), request_handler.url());
+  WaitForCompletion(download);
+
+  TestDownloadRequestHandler::CompletedRequests completed_requests;
+  request_handler.GetCompletedRequestInfo(&completed_requests);
+  EXPECT_EQ(kTestRequestCount, static_cast<int>(completed_requests.size()));
+
+  ReadAndVerifyFileContents(parameters.pattern_generator_seed, parameters.size,
+                            download->GetTargetFilePath());
 }
 
 }  // namespace content

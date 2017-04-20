@@ -13,6 +13,23 @@
 
 namespace content {
 
+// Finch parameter key value for minimum slice size in bytes to use parallel
+// download.
+constexpr char kMinSliceSizeFinchKey[] = "min_slice_size";
+
+// Finch parameter key value for number of parallel requests in a parallel
+// download, including the original request.
+constexpr char kParallelRequestCountFinchKey[] = "request_count";
+
+// Finch parameter key value for the delay time in milliseconds to send
+// parallel requests after response of the original request is handled.
+constexpr char kParallelRequestDelayFinchKey[] = "parallel_request_delay";
+
+// Finch parameter key value for the remaining time in seconds that is required
+// to send parallel requests.
+constexpr char kParallelRequestRemainingTimeFinchKey[] =
+    "parallel_request_remaining_time";
+
 // Chunks the content that starts from |current_offset|, into at most
 // std::max(|request_count|, 1) smaller slices.
 // Each slice contains at least |min_slice_size| bytes unless |total_length|
