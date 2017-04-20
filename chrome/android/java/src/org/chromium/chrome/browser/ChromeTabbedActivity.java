@@ -1528,13 +1528,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             return true;
         }
 
-        // Close the bottom sheet before trying to navigate back.
+        // Close the bottom sheet before trying to navigate back. If the tab is on the NTP, fall
+        // through to decide if the browser should be sent into the background.
         if (getBottomSheet() != null
-                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK) {
+                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK
+                && !(currentTab.getNativePage() instanceof ChromeHomeNewTabPage)) {
             getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
-            if (currentTab.getNativePage() instanceof ChromeHomeNewTabPage) {
-                getCurrentTabModel().closeTab(currentTab, true, false, false);
-            }
             return true;
         }
 
