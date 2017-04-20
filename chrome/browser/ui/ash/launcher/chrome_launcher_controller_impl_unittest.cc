@@ -273,6 +273,59 @@ class TestV2AppLauncherItemController : public ash::ShelfItemDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestV2AppLauncherItemController);
 };
 
+// A test ShelfController implementation that tracks alignment and auto-hide.
+class TestShelfController : public ash::mojom::ShelfController {
+ public:
+  TestShelfController() : binding_(this) {}
+  ~TestShelfController() override {}
+
+  ash::ShelfAlignment alignment() const { return alignment_; }
+  ash::ShelfAutoHideBehavior auto_hide() const { return auto_hide_; }
+
+  size_t alignment_change_count() const { return alignment_change_count_; }
+  size_t auto_hide_change_count() const { return auto_hide_change_count_; }
+
+  ash::mojom::ShelfControllerPtr CreateInterfacePtrAndBind() {
+    return binding_.CreateInterfacePtrAndBind();
+  }
+
+  // ash::mojom::ShelfController:
+  void AddObserver(
+      ash::mojom::ShelfObserverAssociatedPtrInfo observer) override {
+    observer_.Bind(std::move(observer));
+  }
+  void SetAlignment(ash::ShelfAlignment alignment,
+                    int64_t display_id) override {
+    alignment_change_count_++;
+    alignment_ = alignment;
+    observer_->OnAlignmentChanged(alignment_, display_id);
+  }
+  void SetAutoHideBehavior(ash::ShelfAutoHideBehavior auto_hide,
+                           int64_t display_id) override {
+    auto_hide_change_count_++;
+    auto_hide_ = auto_hide;
+    observer_->OnAutoHideBehaviorChanged(auto_hide_, display_id);
+  }
+  void PinItem(
+      const ash::ShelfItem& item,
+      ash::mojom::ShelfItemDelegateAssociatedPtrInfo delegate) override {}
+  void UnpinItem(const std::string& app_id) override {}
+  void SetItemImage(const std::string& app_id, const SkBitmap& image) override {
+  }
+
+ private:
+  ash::ShelfAlignment alignment_ = ash::SHELF_ALIGNMENT_BOTTOM_LOCKED;
+  ash::ShelfAutoHideBehavior auto_hide_ = ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+
+  size_t alignment_change_count_ = 0;
+  size_t auto_hide_change_count_ = 0;
+
+  ash::mojom::ShelfObserverAssociatedPtr observer_;
+  mojo::Binding<ash::mojom::ShelfController> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestShelfController);
+};
+
 // A callback that does nothing after shelf item selection handling.
 void NoopCallback(ash::ShelfAction action, base::Optional<ash::MenuItemList>) {}
 
@@ -287,6 +340,65 @@ void SelectItem(ash::ShelfItemDelegate* delegate) {
 
 }  // namespace
 
+// A test ChromeLauncherControllerImpl subclass that uses TestShelfController.
+class TestChromeLauncherControllerImpl : public ChromeLauncherControllerImpl {
+ public:
+  TestChromeLauncherControllerImpl(Profile* profile, ash::ShelfModel* model)
+      : ChromeLauncherControllerImpl(profile, model) {}
+
+  // ChromeLauncherControllerImpl:
+  using ChromeLauncherControllerImpl::ReleaseProfile;
+  bool ConnectToShelfController() override {
+    // Set the shelf controller pointer to a test instance; this is run in init.
+    if (!shelf_controller_.is_bound())
+      shelf_controller_ = test_shelf_controller_.CreateInterfacePtrAndBind();
+    return true;
+  }
+
+  TestShelfController* test_shelf_controller() {
+    return &test_shelf_controller_;
+  }
+
+ private:
+  TestShelfController test_shelf_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherControllerImpl);
+};
+
+// A shell delegate that owns a ChromeLauncherController, like production.
+// TODO(msw): Refine ChromeLauncherControllerImpl lifetime management.
+// TODO(msw): Avoid relying on TestShellDelegate's ShelfInitializer.
+class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
+ public:
+  ChromeLauncherTestShellDelegate() {}
+
+  // Create a ChromeLauncherControllerImpl instance.
+  ChromeLauncherControllerImpl* CreateLauncherController(Profile* profile) {
+    launcher_controller_ = base::MakeUnique<ChromeLauncherControllerImpl>(
+        profile, ash::Shell::Get()->shelf_model());
+    return launcher_controller_.get();
+  }
+
+  // Create a TestChromeLauncherControllerImpl instance.
+  TestChromeLauncherControllerImpl* CreateTestLauncherController(
+      Profile* profile) {
+    auto controller = base::MakeUnique<TestChromeLauncherControllerImpl>(
+        profile, ash::Shell::Get()->shelf_model());
+    TestChromeLauncherControllerImpl* controller_weak = controller.get();
+    launcher_controller_ = std::move(controller);
+    launcher_controller_->Init();
+    return controller_weak;
+  }
+
+  // ash::test::TestShellDelegate:
+  void ShelfShutdown() override { launcher_controller_.reset(); }
+
+ private:
+  std::unique_ptr<ChromeLauncherControllerImpl> launcher_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherTestShellDelegate);
+};
+
 class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
  protected:
   ChromeLauncherControllerImplTest()
@@ -299,6 +411,9 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
 
     app_list::AppListSyncableServiceFactory::SetUseInTesting();
+
+    shell_delegate_ = new ChromeLauncherTestShellDelegate();
+    ash_test_helper()->set_test_shell_delegate(shell_delegate_);
 
     BrowserWithTestWindowTest::SetUp();
 
@@ -485,21 +600,14 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     model_->Add(app_list);
   }
 
-  // Create a launcher controller instance and register it as the ShelfDelegate.
-  // Returns a pointer to the uninitialized controller, which is owned by Shell.
+  // Create a launcher controller instance, owned by the test shell delegate.
+  // Returns a pointer to the uninitialized controller.
   ChromeLauncherControllerImpl* CreateLauncherController() {
-    // Shell owns ChromeLauncherController as its ShelfDelegate. The lifetime
-    // of this instance should match production behavior as closely as possible.
-    DCHECK(!ChromeLauncherController::instance());
-    std::unique_ptr<ChromeLauncherControllerImpl> launcher_controller =
-        base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_);
-    launcher_controller_ = launcher_controller.get();
-    ash::test::ShellTestApi().SetShelfDelegate(std::move(launcher_controller));
+    launcher_controller_ = shell_delegate_->CreateLauncherController(profile());
     return launcher_controller_;
   }
 
-  // Create and initialize the controller.
-  // Returns a pointer to the initialized controller, which is owned by Shell.
+  // Create and initialize the controller, owned by the test shell delegate.
   void InitLauncherController() { CreateLauncherController()->Init(); }
 
   // Create and initialize the controller; create a tab and show the browser.
@@ -509,14 +617,14 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     browser()->window()->Show();
   }
 
-  // Destroy Shell's controller instance and clear the local pointer.
+  // Destroy the launcher controller instance and clear the local pointer.
   void ResetLauncherController() {
     launcher_controller_ = nullptr;
-    ash::test::ShellTestApi().SetShelfDelegate(nullptr);
+    shell_delegate_->ShelfShutdown();
   }
 
   // Destroy and recreate the controller; clear and reinitialize the ShelfModel.
-  // Returns a pointer to the uninitialized controller, which is owned by Shell.
+  // Returns a pointer to the uninitialized controller, owned by shell delegate.
   // TODO(msw): This does not accurately represent ChromeLauncherControllerImpl
   // lifetime or usage in production, and does not accurately simulate restarts.
   ChromeLauncherControllerImpl* RecreateLauncherController() {
@@ -939,6 +1047,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   ArcAppTest arc_test_;
   bool auto_start_arc_test_ = false;
   ChromeLauncherControllerImpl* launcher_controller_ = nullptr;
+  ChromeLauncherTestShellDelegate* shell_delegate_ = nullptr;
   std::unique_ptr<TestShelfModelObserver> model_observer_;
   ash::ShelfModel* model_ = nullptr;
   std::unique_ptr<TestingProfileManager> profile_manager_;
@@ -1108,10 +1217,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
 
     // Initialize the rest.
     ChromeLauncherControllerImplTest::SetUp();
-
-    // Get some base objects.
-    shell_delegate_ = static_cast<ash::test::TestShellDelegate*>(
-        ash::Shell::Get()->shell_delegate());
     shell_delegate_->set_multi_profiles_enabled(true);
   }
 
@@ -1196,8 +1301,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
     return v1_app;
   }
 
-  ash::test::TestShellDelegate* shell_delegate() { return shell_delegate_; }
-
   // Override BrowserWithTestWindowTest:
   TestingProfile* CreateProfile() override {
     return CreateMultiUserProfile("user1");
@@ -1220,8 +1323,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
   }
 
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
-
-  ash::test::TestShellDelegate* shell_delegate_;
 
   ProfileToNameMap created_profiles_;
 
@@ -4145,105 +4246,24 @@ TEST_F(ChromeLauncherControllerImplTest, SyncOffLocalUpdate) {
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 }
 
-// A test ShelfController implementation that tracks alignment and auto-hide.
-class TestShelfController : public ash::mojom::ShelfController {
- public:
-  TestShelfController() : binding_(this) {}
-  ~TestShelfController() override {}
-
-  ash::ShelfAlignment alignment() const { return alignment_; }
-  ash::ShelfAutoHideBehavior auto_hide() const { return auto_hide_; }
-
-  size_t alignment_change_count() const { return alignment_change_count_; }
-  size_t auto_hide_change_count() const { return auto_hide_change_count_; }
-
-  ash::mojom::ShelfControllerPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
-  }
-
-  // ash::mojom::ShelfController:
-  void AddObserver(
-      ash::mojom::ShelfObserverAssociatedPtrInfo observer) override {
-    observer_.Bind(std::move(observer));
-  }
-  void SetAlignment(ash::ShelfAlignment alignment,
-                    int64_t display_id) override {
-    alignment_change_count_++;
-    alignment_ = alignment;
-    observer_->OnAlignmentChanged(alignment_, display_id);
-  }
-  void SetAutoHideBehavior(ash::ShelfAutoHideBehavior auto_hide,
-                           int64_t display_id) override {
-    auto_hide_change_count_++;
-    auto_hide_ = auto_hide;
-    observer_->OnAutoHideBehaviorChanged(auto_hide_, display_id);
-  }
-  void PinItem(
-      const ash::ShelfItem& item,
-      ash::mojom::ShelfItemDelegateAssociatedPtrInfo delegate) override {}
-  void UnpinItem(const std::string& app_id) override {}
-  void SetItemImage(const std::string& app_id, const SkBitmap& image) override {
-  }
-
- private:
-  ash::ShelfAlignment alignment_ = ash::SHELF_ALIGNMENT_BOTTOM_LOCKED;
-  ash::ShelfAutoHideBehavior auto_hide_ = ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
-
-  size_t alignment_change_count_ = 0;
-  size_t auto_hide_change_count_ = 0;
-
-  ash::mojom::ShelfObserverAssociatedPtr observer_;
-  mojo::Binding<ash::mojom::ShelfController> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestShelfController);
-};
-
-// A test ChromeLauncherControllerImpl sublcass that uses TestShelfController.
-class TestChromeLauncherControllerImpl : public ChromeLauncherControllerImpl {
- public:
-  TestChromeLauncherControllerImpl(Profile* profile, ash::ShelfModel* model)
-      : ChromeLauncherControllerImpl(profile, model) {}
-
-  // ChromeLauncherControllerImpl:
-  using ChromeLauncherControllerImpl::ReleaseProfile;
-  bool ConnectToShelfController() override {
-    // Set the shelf controller pointer to a test instance; this is run in init.
-    if (!shelf_controller_.is_bound())
-      shelf_controller_ = test_shelf_controller_.CreateInterfacePtrAndBind();
-    return true;
-  }
-
-  TestShelfController* test_shelf_controller() {
-    return &test_shelf_controller_;
-  }
-
- private:
-  TestShelfController test_shelf_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherControllerImpl);
-};
-
-using ChromeLauncherControllerImplPrefTest = BrowserWithTestWindowTest;
-
 // Tests that shelf profile preferences are loaded on login.
-TEST_F(ChromeLauncherControllerImplPrefTest, PrefsLoadedOnLogin) {
+TEST_F(ChromeLauncherControllerImplTest, PrefsLoadedOnLogin) {
   PrefService* prefs = profile()->GetTestingPrefService();
   prefs->SetString(prefs::kShelfAlignmentLocal, "Left");
   prefs->SetString(prefs::kShelfAlignment, "Left");
   prefs->SetString(prefs::kShelfAutoHideBehaviorLocal, "Always");
   prefs->SetString(prefs::kShelfAutoHideBehavior, "Always");
 
-  ash::ShelfModel* model = ash::Shell::Get()->shelf_controller()->model();
-  TestChromeLauncherControllerImpl test_launcher_controller(profile(), model);
-  test_launcher_controller.Init();
+  TestChromeLauncherControllerImpl* test_launcher_controller =
+      shell_delegate_->CreateTestLauncherController(profile());
 
   // Simulate login for the test controller.
-  test_launcher_controller.ReleaseProfile();
-  test_launcher_controller.AttachProfile(profile());
+  test_launcher_controller->ReleaseProfile();
+  test_launcher_controller->AttachProfile(profile());
   base::RunLoop().RunUntilIdle();
 
   TestShelfController* shelf_controller =
-      test_launcher_controller.test_shelf_controller();
+      test_launcher_controller->test_shelf_controller();
   ASSERT_TRUE(shelf_controller);
   EXPECT_EQ(ash::SHELF_ALIGNMENT_LEFT, shelf_controller->alignment());
   EXPECT_EQ(1u, shelf_controller->alignment_change_count());
@@ -4253,18 +4273,17 @@ TEST_F(ChromeLauncherControllerImplPrefTest, PrefsLoadedOnLogin) {
 }
 
 // Tests that the shelf controller's changes are not wastefully echoed back.
-TEST_F(ChromeLauncherControllerImplPrefTest, DoNotEchoShelfControllerChanges) {
-  ash::ShelfModel* model = ash::Shell::Get()->shelf_controller()->model();
-  TestChromeLauncherControllerImpl test_launcher_controller(profile(), model);
-  test_launcher_controller.Init();
+TEST_F(ChromeLauncherControllerImplTest, DoNotEchoShelfControllerChanges) {
+  TestChromeLauncherControllerImpl* test_launcher_controller =
+      shell_delegate_->CreateTestLauncherController(profile());
 
   // Simulate login for the test controller.
-  test_launcher_controller.ReleaseProfile();
-  test_launcher_controller.AttachProfile(profile());
+  test_launcher_controller->ReleaseProfile();
+  test_launcher_controller->AttachProfile(profile());
   base::RunLoop().RunUntilIdle();
 
   TestShelfController* shelf_controller =
-      test_launcher_controller.test_shelf_controller();
+      test_launcher_controller->test_shelf_controller();
   ASSERT_TRUE(shelf_controller);
   EXPECT_EQ(ash::SHELF_ALIGNMENT_BOTTOM, shelf_controller->alignment());
   EXPECT_EQ(1u, shelf_controller->alignment_change_count());

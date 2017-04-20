@@ -76,8 +76,8 @@
 #endif  // defined(OS_WIN)
 
 #if defined(USE_ASH)
-#include "ash/shelf/shelf_delegate.h"  // nogncheck
-#include "ash/shell.h"                        // nogncheck
+#include "ash/shelf/shelf_model.h"  // nogncheck
+#include "ash/shell.h"              // nogncheck
 #endif
 
 namespace {
@@ -732,9 +732,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
                            creation_locations, current_profile, extension);
 #else
-  ash::ShelfDelegate* shelf_delegate = ash::Shell::Get()->shelf_delegate();
-  DCHECK(shelf_delegate);
-  shelf_delegate->PinAppWithID(extension->id());
+  ash::Shell::Get()->shelf_model()->PinAppWithID(extension->id());
 #endif  // !defined(USE_ASH)
 #endif  // !defined(OS_MACOSX)
 

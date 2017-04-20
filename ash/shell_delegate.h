@@ -36,8 +36,6 @@ class AccessibilityDelegate;
 class GPUSupport;
 class PaletteDelegate;
 class SessionStateDelegate;
-class ShelfDelegate;
-class ShelfModel;
 class SystemTrayDelegate;
 struct ShelfItem;
 class WallpaperDelegate;
@@ -89,8 +87,10 @@ class ASH_EXPORT ShellDelegate {
   // Opens the |url| in a new browser tab.
   virtual void OpenUrlFromArc(const GURL& url) = 0;
 
-  // Creates a new ShelfDelegate. Shell takes ownership of the returned value.
-  virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) = 0;
+  // Functions called when the shelf is initialized and shut down.
+  // TODO(msw): Refine ChromeLauncherControllerImpl lifetime management.
+  virtual void ShelfInit() = 0;
+  virtual void ShelfShutdown() = 0;
 
   // Creates a system-tray delegate. Shell takes ownership of the delegate.
   virtual SystemTrayDelegate* CreateSystemTrayDelegate() = 0;

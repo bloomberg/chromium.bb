@@ -42,7 +42,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   void Exit() override;
   keyboard::KeyboardUI* CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
-  ash::ShelfDelegate* CreateShelfDelegate(ash::ShelfModel* model) override;
+  void ShelfInit() override;
+  void ShelfShutdown() override;
   ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
   std::unique_ptr<ash::WallpaperDelegate> CreateWallpaperDelegate() override;
   ash::SessionStateDelegate* CreateSessionStateDelegate() override;
@@ -70,7 +71,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  ChromeLauncherControllerImpl* shelf_delegate_;
+  std::unique_ptr<ChromeLauncherControllerImpl> launcher_controller_;
 
   std::unique_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;

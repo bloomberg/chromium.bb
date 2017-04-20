@@ -21,8 +21,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
-#include "ash/shelf/shelf_delegate.h"  // nogncheck
-#include "ash/shell.h"                        // nogncheck
+#include "ash/shelf/shelf_model.h"  // nogncheck
+#include "ash/shell.h"              // nogncheck
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"  // nogncheck
 #endif
 
@@ -89,8 +89,7 @@ void AppInfoFooterPanel::LayoutButtons() {
 void AppInfoFooterPanel::UpdatePinButtons(bool focus_visible_button) {
 #if defined(USE_ASH)
   if (pin_to_shelf_button_ && unpin_from_shelf_button_) {
-    bool is_pinned =
-        !ash::Shell::Get()->shelf_delegate()->IsAppPinned(app_->id());
+    bool is_pinned = !ash::Shell::Get()->shelf_model()->IsAppPinned(app_->id());
     pin_to_shelf_button_->SetVisible(is_pinned);
     unpin_from_shelf_button_->SetVisible(!is_pinned);
 
@@ -152,12 +151,12 @@ bool AppInfoFooterPanel::CanCreateShortcuts() const {
 #if defined(USE_ASH)
 void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
   DCHECK(CanSetPinnedToShelf());
-  ash::ShelfDelegate* shelf_delegate = ash::Shell::Get()->shelf_delegate();
-  DCHECK(shelf_delegate);
+  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
+  DCHECK(shelf_model);
   if (value)
-    shelf_delegate->PinAppWithID(app_->id());
+    shelf_model->PinAppWithID(app_->id());
   else
-    shelf_delegate->UnpinAppWithID(app_->id());
+    shelf_model->UnpinAppWithID(app_->id());
 
   UpdatePinButtons(true);
   Layout();

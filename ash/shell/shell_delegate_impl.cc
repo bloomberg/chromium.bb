@@ -16,7 +16,6 @@
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/test_keyboard_ui.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/ptr_util.h"
@@ -122,9 +121,9 @@ keyboard::KeyboardUI* ShellDelegateImpl::CreateKeyboardUI() {
 
 void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
 
-ShelfDelegate* ShellDelegateImpl::CreateShelfDelegate(ShelfModel* model) {
-  return new test::TestShelfDelegate();
-}
+void ShellDelegateImpl::ShelfInit() {}
+
+void ShellDelegateImpl::ShelfShutdown() {}
 
 SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {
   return new test::TestSystemTrayDelegate;

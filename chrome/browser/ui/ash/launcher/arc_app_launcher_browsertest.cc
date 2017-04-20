@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/shelf_item_delegate.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -106,10 +105,6 @@ std::vector<arc::mojom::AppInfoPtr> GetTestAppsList(
 
 ChromeLauncherController* chrome_controller() {
   return ChromeLauncherController::instance();
-}
-
-ash::ShelfDelegate* shelf_delegate() {
-  return ash::Shell::Get()->shelf_delegate();
 }
 
 class AppAnimatedWaiter {
@@ -258,9 +253,9 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
     app_instance_observer()->OnInstanceClosed();
   }
 
-  ash::ShelfItemDelegate* GetAppItemController(const std::string& id) {
-    const ash::ShelfID shelf_id = shelf_delegate()->GetShelfIDForAppID(id);
-    return ash::Shell::Get()->shelf_model()->GetShelfItemDelegate(shelf_id);
+  ash::ShelfItemDelegate* GetShelfItemDelegate(const std::string& id) {
+    ash::ShelfModel* model = ash::Shell::Get()->shelf_model();
+    return model->GetShelfItemDelegate(model->GetShelfIDForAppID(id));
   }
 
   ArcAppListPrefs* app_prefs() { return ArcAppListPrefs::Get(profile()); }
@@ -308,14 +303,15 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   SendPackageAdded(kTestAppPackage, false);
 
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
+  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
   if (is_pinned()) {
-    shelf_delegate()->PinAppWithID(app_id);
-    const ash::ShelfID shelf_id = shelf_delegate()->GetShelfIDForAppID(app_id);
+    shelf_model->PinAppWithID(app_id);
+    const ash::ShelfID shelf_id = shelf_model->GetShelfIDForAppID(app_id);
     EXPECT_TRUE(shelf_id);
     const ash::ShelfItem* item = chrome_controller()->GetItem(shelf_id);
     EXPECT_EQ(base::UTF8ToUTF16(kTestAppName), item->title);
   } else {
-    EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id));
+    EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id));
   }
 
   StopInstance();
@@ -330,13 +326,13 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   ASSERT_TRUE(app_info);
   EXPECT_FALSE(app_info->ready);
   if (is_pinned())
-    EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id));
+    EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id));
   else
-    EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id));
+    EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id));
 
   // Launching non-ready ARC app creates item on shelf and spinning animation.
   arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
-  const ash::ShelfID shelf_id = shelf_delegate()->GetShelfIDForAppID(app_id);
+  const ash::ShelfID shelf_id = shelf_model->GetShelfIDForAppID(app_id);
   EXPECT_TRUE(shelf_id);
   const ash::ShelfItem* item = chrome_controller()->GetItem(shelf_id);
   EXPECT_EQ(base::UTF8ToUTF16(kTestAppName), item->title);
@@ -353,9 +349,9 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
                       ->GetActiveTime(app_id)
                       .is_zero());
       if (is_pinned())
-        EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id));
+        EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id));
       else
-        EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id));
+        EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id));
       break;
     case TEST_ACTION_EXIT:
       // Just exist Chrome.
@@ -363,17 +359,17 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
     case TEST_ACTION_CLOSE:
       // Close item during animation.
       {
-        ash::ShelfItemDelegate* controller = GetAppItemController(app_id);
-        ASSERT_TRUE(controller);
-        controller->Close();
+        ash::ShelfItemDelegate* delegate = GetShelfItemDelegate(app_id);
+        ASSERT_TRUE(delegate);
+        delegate->Close();
         EXPECT_TRUE(chrome_controller()
                         ->GetArcDeferredLauncher()
                         ->GetActiveTime(app_id)
                         .is_zero());
         if (is_pinned())
-          EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id));
+          EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id));
         else
-          EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id));
+          EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id));
       }
       break;
   }
@@ -396,30 +392,31 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
 
   const std::string app_id1 = GetTestApp1Id(kTestAppPackage);
   const std::string app_id2 = GetTestApp2Id(kTestAppPackage);
-  shelf_delegate()->PinAppWithID(app_id1);
-  shelf_delegate()->PinAppWithID(app_id2);
+  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
+  shelf_model->PinAppWithID(app_id1);
+  shelf_model->PinAppWithID(app_id2);
   const ash::ShelfID shelf_id1_before =
-      shelf_delegate()->GetShelfIDForAppID(app_id1);
+      shelf_model->GetShelfIDForAppID(app_id1);
   EXPECT_TRUE(shelf_id1_before);
-  EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id2));
+  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id2));
 
   // Package contains only one app. App list is not shown for updated package.
   SendPackageUpdated(kTestAppPackage, false);
   // Second pin should gone.
-  EXPECT_EQ(shelf_id1_before, shelf_delegate()->GetShelfIDForAppID(app_id1));
-  EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
+  EXPECT_EQ(shelf_id1_before, shelf_model->GetShelfIDForAppID(app_id1));
+  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id2));
 
   // Package contains two apps. App list is not shown for updated package.
   SendPackageUpdated(kTestAppPackage, true);
   // Second pin should not appear.
-  EXPECT_EQ(shelf_id1_before, shelf_delegate()->GetShelfIDForAppID(app_id1));
-  EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
+  EXPECT_EQ(shelf_id1_before, shelf_model->GetShelfIDForAppID(app_id1));
+  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id2));
 
   // Package removed.
   SendPackageRemoved(kTestAppPackage);
   // No pin is expected.
-  EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id1));
-  EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
+  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id1));
+  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id2));
 }
 
 // This test validates that app list is shown on new package and not shown
@@ -507,48 +504,48 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, ShelfGroup) {
   app_host()->OnTaskCreated(1, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroup(kTestShelfGroup));
 
-  ash::ShelfItemDelegate* controller1 = GetAppItemController(shelf_id1);
-  ASSERT_TRUE(controller1);
+  ash::ShelfItemDelegate* delegate1 = GetShelfItemDelegate(shelf_id1);
+  ASSERT_TRUE(delegate1);
 
   // 2 tasks for group 2
   app_host()->OnTaskCreated(2, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroup(kTestShelfGroup2));
 
-  ash::ShelfItemDelegate* controller2 = GetAppItemController(shelf_id2);
-  ASSERT_TRUE(controller2);
-  ASSERT_NE(controller1, controller2);
+  ash::ShelfItemDelegate* delegate2 = GetShelfItemDelegate(shelf_id2);
+  ASSERT_TRUE(delegate2);
+  ASSERT_NE(delegate1, delegate2);
 
   app_host()->OnTaskCreated(3, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroup(kTestShelfGroup2));
 
-  ASSERT_EQ(controller2, GetAppItemController(shelf_id2));
+  ASSERT_EQ(delegate2, GetShelfItemDelegate(shelf_id2));
 
   // 2 tasks for group 3 which does not have shortcut.
   app_host()->OnTaskCreated(4, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroup(kTestShelfGroup3));
 
-  ash::ShelfItemDelegate* controller3 = GetAppItemController(shelf_id3);
-  ASSERT_TRUE(controller3);
-  ASSERT_NE(controller1, controller3);
-  ASSERT_NE(controller2, controller3);
+  ash::ShelfItemDelegate* delegate3 = GetShelfItemDelegate(shelf_id3);
+  ASSERT_TRUE(delegate3);
+  ASSERT_NE(delegate1, delegate3);
+  ASSERT_NE(delegate2, delegate3);
 
   app_host()->OnTaskCreated(5, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroup(kTestShelfGroup3));
 
-  ASSERT_EQ(controller3, GetAppItemController(shelf_id3));
+  ASSERT_EQ(delegate3, GetShelfItemDelegate(shelf_id3));
 
   // Destroy task #0, this kills shelf group 1
   app_host()->OnTaskDestroyed(1);
-  EXPECT_FALSE(GetAppItemController(shelf_id1));
+  EXPECT_FALSE(GetShelfItemDelegate(shelf_id1));
 
   // Destroy task #1, shelf group 2 is still alive
   app_host()->OnTaskDestroyed(2);
-  EXPECT_EQ(controller2, GetAppItemController(shelf_id2));
+  EXPECT_EQ(delegate2, GetShelfItemDelegate(shelf_id2));
   // Destroy task #2, this kills shelf group 2
   app_host()->OnTaskDestroyed(3);
-  EXPECT_FALSE(GetAppItemController(shelf_id2));
+  EXPECT_FALSE(GetShelfItemDelegate(shelf_id2));
 
   // Disable ARC, this removes app and as result kills shelf group 3.
   arc::SetArcPlayStoreEnabledForProfile(profile(), false);
-  EXPECT_FALSE(GetAppItemController(shelf_id3));
+  EXPECT_FALSE(GetShelfItemDelegate(shelf_id3));
 }

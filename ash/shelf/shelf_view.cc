@@ -18,7 +18,6 @@
 #include "ash/shelf/shelf_application_menu_model.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
@@ -239,11 +238,9 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
 const int ShelfView::kMinimumDragDistance = 8;
 
 ShelfView::ShelfView(ShelfModel* model,
-                     ShelfDelegate* delegate,
                      WmShelf* wm_shelf,
                      ShelfWidget* shelf_widget)
     : model_(model),
-      delegate_(delegate),
       wm_shelf_(wm_shelf),
       shelf_widget_(shelf_widget),
       view_model_(new views::ViewModel),
@@ -271,7 +268,6 @@ ShelfView::ShelfView(ShelfModel* model,
       last_pressed_index_(-1),
       weak_factory_(this) {
   DCHECK(model_);
-  DCHECK(delegate_);
   DCHECK(wm_shelf_);
   DCHECK(shelf_widget_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
@@ -560,18 +556,16 @@ bool ShelfView::StartDrag(const std::string& app_id,
   CancelDrag(-1);
   drag_and_drop_item_pinned_ = false;
   drag_and_drop_app_id_ = app_id;
-  drag_and_drop_shelf_id_ =
-      delegate_->GetShelfIDForAppID(drag_and_drop_app_id_);
+  drag_and_drop_shelf_id_ = model_->GetShelfIDForAppID(drag_and_drop_app_id_);
   // Check if the application is known and pinned - if not, we have to pin it so
   // that we can re-arrange the shelf order accordingly. Note that items have
   // to be pinned to give them the same (order) possibilities as a shortcut.
   // When an item is dragged from overflow to shelf, IsShowingOverflowBubble()
   // returns true. At this time, we don't need to pin the item.
   if (!IsShowingOverflowBubble() &&
-      (!drag_and_drop_shelf_id_ || !delegate_->IsAppPinned(app_id))) {
-    delegate_->PinAppWithID(app_id);
-    drag_and_drop_shelf_id_ =
-        delegate_->GetShelfIDForAppID(drag_and_drop_app_id_);
+      (!drag_and_drop_shelf_id_ || !model_->IsAppPinned(app_id))) {
+    model_->PinAppWithID(app_id);
+    drag_and_drop_shelf_id_ = model_->GetShelfIDForAppID(drag_and_drop_app_id_);
     if (!drag_and_drop_shelf_id_)
       return false;
     drag_and_drop_item_pinned_ = true;
@@ -629,7 +623,7 @@ void ShelfView::EndDrag(bool cancel) {
 
   // Either destroy the temporarily created item - or - make the item visible.
   if (drag_and_drop_item_pinned_ && cancel) {
-    delegate_->UnpinAppWithID(drag_and_drop_app_id_);
+    model_->UnpinAppWithID(drag_and_drop_app_id_);
   } else if (drag_and_drop_view) {
     if (cancel) {
       // When a hosted drag gets canceled, the item can remain in the same slot
@@ -1063,7 +1057,7 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
   std::string dragged_app_id =
-      delegate_->GetAppIDForShelfID(model_->items()[current_index].id);
+      model_->GetAppIDForShelfID(model_->items()[current_index].id);
 
   gfx::Point screen_location =
       WmWindow::Get(GetWidget()->GetNativeWindow())
@@ -1186,8 +1180,8 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
       // Make sure the item stays invisible upon removal.
       drag_view_->SetVisible(false);
       std::string app_id =
-          delegate_->GetAppIDForShelfID(model_->items()[current_index].id);
-      delegate_->UnpinAppWithID(app_id);
+          model_->GetAppIDForShelfID(model_->items()[current_index].id);
+      model_->UnpinAppWithID(app_id);
     }
   }
   if (cancel || snap_back) {
@@ -1229,10 +1223,9 @@ ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
     return NOT_REMOVABLE;
 
   // Note: Only pinned app shortcuts can be removed!
-  std::string app_id = delegate_->GetAppIDForShelfID(model_->items()[index].id);
-  return (type == TYPE_PINNED_APP && delegate_->IsAppPinned(app_id))
-             ? REMOVABLE
-             : DRAGGABLE;
+  std::string app_id = model_->GetAppIDForShelfID(model_->items()[index].id);
+  return (type == TYPE_PINNED_APP && model_->IsAppPinned(app_id)) ? REMOVABLE
+                                                                  : DRAGGABLE;
 }
 
 bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
@@ -1281,8 +1274,7 @@ void ShelfView::ToggleOverflowBubble() {
   if (!overflow_bubble_)
     overflow_bubble_.reset(new OverflowBubble(wm_shelf_));
 
-  ShelfView* overflow_view =
-      new ShelfView(model_, delegate_, wm_shelf_, shelf_widget_);
+  ShelfView* overflow_view = new ShelfView(model_, wm_shelf_, shelf_widget_);
   overflow_view->overflow_mode_ = true;
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
@@ -1538,6 +1530,13 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
 
 void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
   const ShelfItem& item(model_->items()[model_index]);
+
+  // Bail if the view and shelf sizes do not match. ShelfItemChanged may be
+  // called here before ShelfItemAdded, due to ChromeLauncherController's
+  // item initialization, which calls SetItem during ShelfItemAdded.
+  if (static_cast<int>(model_->items().size()) != view_model_->view_size())
+    return;
+
   if (old_item.type != item.type) {
     // Type changed, swap the views.
     model_index = CancelDrag(model_index);

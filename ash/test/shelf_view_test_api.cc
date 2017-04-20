@@ -150,10 +150,6 @@ bool ShelfViewTestAPI::SameDragType(ShelfItemType typea,
   return shelf_view_->SameDragType(typea, typeb);
 }
 
-void ShelfViewTestAPI::SetShelfDelegate(ShelfDelegate* delegate) {
-  shelf_view_->delegate_ = delegate;
-}
-
 gfx::Rect ShelfViewTestAPI::GetBoundsForDragInsertInScreen() {
   return shelf_view_->GetBoundsForDragInsertInScreen();
 }

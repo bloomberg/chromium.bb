@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
@@ -131,22 +130,9 @@ void ExtensionAppWindowLauncherController::OnWindowDestroying(
 void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   // Windows created by IME extension should be treated the same way as the
   // virtual keyboard window, which does not register itself in launcher.
-  if (app_window->is_ime_window())
-    return;
-
   // Ash's ShelfWindowWatcher handles app panel windows separately.
-  if (app_window->window_type_is_panel()) {
-    // Load panel app icons now. ShelfWindowWatcher cannot easily trigger this,
-    // and ShelfModel::Set cannot be called in ShelfItemAdded, since ShelfView
-    // may not have added a view for the new shelf item at that point.
-    const std::string& app_id = app_window->extension_id();
-    AppIconLoader* app_icon_loader = owner()->GetAppIconLoaderForApp(app_id);
-    if (app_icon_loader) {
-      app_icon_loader->FetchImage(app_id);
-      app_icon_loader->UpdateImage(app_id);
-    }
+  if (app_window->is_ime_window() || app_window->window_type_is_panel())
     return;
-  }
 
   aura::Window* window = app_window->GetNativeWindow();
   // Get the app's shelf identifier and add an entry to the map.
@@ -182,9 +168,8 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     controller->AddAppWindow(app_window);
     // If there is already a shelf id mapped to this AppLaunchId (e.g. pinned),
     // use that shelf item.
-    shelf_id =
-        ash::Shell::Get()->shelf_delegate()->GetShelfIDForAppIDAndLaunchID(
-            app_id, launch_id);
+    shelf_id = ash::Shell::Get()->shelf_model()->GetShelfIDForAppIDAndLaunchID(
+        app_id, launch_id);
 
     if (shelf_id == 0) {
       shelf_id = owner()->CreateAppLauncherItem(std::move(controller), status);

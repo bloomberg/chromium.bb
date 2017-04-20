@@ -41,8 +41,9 @@ class TestShellDelegate : public ShellDelegate {
   void PreShutdown() override;
   void Exit() override;
   keyboard::KeyboardUI* CreateKeyboardUI() override;
+  void ShelfInit() override;
+  void ShelfShutdown() override;
   void OpenUrlFromArc(const GURL& url) override;
-  ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   TestSessionStateDelegate* CreateSessionStateDelegate() override;

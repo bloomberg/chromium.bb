@@ -22,7 +22,6 @@
 #include "ash/root_window_settings.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_targeter.h"

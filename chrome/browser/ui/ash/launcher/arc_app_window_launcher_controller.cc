@@ -7,7 +7,6 @@
 
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shared/app_types.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -249,9 +248,8 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 };
 
 ArcAppWindowLauncherController::ArcAppWindowLauncherController(
-    ChromeLauncherController* owner,
-    ash::ShelfDelegate* shelf_delegate)
-    : AppWindowLauncherController(owner), shelf_delegate_(shelf_delegate) {
+    ChromeLauncherController* owner)
+    : AppWindowLauncherController(owner) {
   if (arc::IsArcAllowedForProfile(owner->profile())) {
     observed_profile_ = owner->profile();
     StartObserving(observed_profile_);
@@ -655,12 +653,12 @@ ArcAppWindowLauncherController::AttachControllerToTask(
       base::MakeUnique<ArcAppWindowLauncherItemController>(
           app_shelf_id.ToString());
   ArcAppWindowLauncherItemController* item_controller = controller.get();
+  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
   const ash::ShelfID shelf_id =
-      shelf_delegate_->GetShelfIDForAppID(app_shelf_id.ToString());
-  if (!shelf_id) {
+      shelf_model->GetShelfIDForAppID(app_shelf_id.ToString());
+  if (shelf_id == ash::kInvalidShelfID) {
     owner()->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
   } else {
-    ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
     shelf_model->SetShelfItemDelegate(shelf_id, std::move(controller));
     owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
   }
@@ -677,8 +675,9 @@ void ArcAppWindowLauncherController::RegisterApp(
   DCHECK(controller);
 
   const ash::ShelfID shelf_id =
-      shelf_delegate_->GetShelfIDForAppID(controller->app_id());
-  DCHECK(shelf_id);
+      ash::Shell::Get()->shelf_model()->GetShelfIDForAppID(
+          controller->app_id());
+  DCHECK_NE(shelf_id, ash::kInvalidShelfID);
 
   controller->AddWindow(app_window);
   owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);

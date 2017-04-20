@@ -9,7 +9,6 @@
 #include "ash/gpu_support_stub.h"
 #include "ash/mus/accessibility_delegate_mus.h"
 #include "ash/mus/context_menu_mus.h"
-#include "ash/mus/shelf_delegate_mus.h"
 #include "ash/mus/system_tray_delegate_mus.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "ash/palette_delegate.h"
@@ -103,8 +102,12 @@ void ShellDelegateMus::OpenUrlFromArc(const GURL& url) {
   NOTIMPLEMENTED();
 }
 
-ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
-  return new ShelfDelegateMus();
+void ShellDelegateMus::ShelfInit() {
+  NOTIMPLEMENTED();
+}
+
+void ShellDelegateMus::ShelfShutdown() {
+  NOTIMPLEMENTED();
 }
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {

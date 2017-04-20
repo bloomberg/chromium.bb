@@ -10,7 +10,9 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/test/test_shell_delegate.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -34,28 +36,47 @@
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+// A shell delegate that owns a ChromeLauncherController, like production.
+class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
+ public:
+  explicit ChromeLauncherTestShellDelegate(Profile* profile)
+      : profile_(profile) {}
+
+  ChromeLauncherControllerImpl* controller() { return controller_.get(); }
+
+  // ash::test::TestShellDelegate:
+  void ShelfInit() override {
+    if (!controller_) {
+      controller_ = base::MakeUnique<ChromeLauncherControllerImpl>(
+          profile_, ash::Shell::Get()->shelf_model());
+      controller_->Init();
+    }
+  }
+  void ShelfShutdown() override { controller_.reset(); }
+
+ private:
+  Profile* profile_;
+  std::unique_ptr<ChromeLauncherControllerImpl> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherTestShellDelegate);
+};
+
 class LauncherContextMenuTest : public ash::test::AshTestBase {
  protected:
   static bool IsItemPresentInMenu(LauncherContextMenu* menu, int command_id) {
     return menu->GetIndexOfCommandId(command_id) != -1;
   }
 
-  LauncherContextMenuTest() : profile_(new TestingProfile()) {}
+  LauncherContextMenuTest() {}
 
   void SetUp() override {
-    arc_test_.SetUp(profile_.get());
+    arc_test_.SetUp(&profile_);
     session_manager_ = base::MakeUnique<session_manager::SessionManager>();
+    shell_delegate_ = new ChromeLauncherTestShellDelegate(&profile_);
+    ash_test_helper()->set_test_shell_delegate(shell_delegate_);
     ash::test::AshTestBase::SetUp();
-    std::unique_ptr<ChromeLauncherControllerImpl> controller =
-        base::MakeUnique<ChromeLauncherControllerImpl>(
-            profile(), ash::Shell::Get()->shelf_model());
-    controller_ = controller.get();
-    controller_->Init();
-    ash::test::ShellTestApi().SetShelfDelegate(std::move(controller));
-  }
-
-  void TearDown() override {
-    ash::test::AshTestBase::TearDown();
   }
 
   ash::WmShelf* GetWmShelf(int64_t display_id) {
@@ -71,13 +92,12 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     ash::ShelfItem item;
     item.id = 123;  // dummy id
     item.type = shelf_item_type;
-    return LauncherContextMenu::Create(controller_, &item, wm_shelf);
+    return LauncherContextMenu::Create(controller(), &item, wm_shelf);
   }
 
   LauncherContextMenu* CreateLauncherContextMenuForDesktopShell(
       ash::WmShelf* wm_shelf) {
-    ash::ShelfItem* item = nullptr;
-    return LauncherContextMenu::Create(controller_, item, wm_shelf);
+    return LauncherContextMenu::Create(controller(), nullptr, wm_shelf);
   }
 
   // Creates app window and set optional ARC application id.
@@ -94,13 +114,15 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
 
   ArcAppTest& arc_test() { return arc_test_; }
 
-  Profile* profile() { return profile_.get(); }
+  Profile* profile() { return &profile_; }
 
-  ChromeLauncherControllerImpl* controller() { return controller_; }
+  ChromeLauncherControllerImpl* controller() {
+    return shell_delegate_->controller();
+  }
 
  private:
-  std::unique_ptr<TestingProfile> profile_;
-  ChromeLauncherControllerImpl* controller_ = nullptr;
+  TestingProfile profile_;
+  ChromeLauncherTestShellDelegate* shell_delegate_ = nullptr;
   ArcAppTest arc_test_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 
@@ -310,3 +332,5 @@ TEST_F(LauncherContextMenuTest, AutohideShelfOptionOnExternalDisplay) {
   EXPECT_TRUE(IsItemPresentInMenu(secondary_menu.get(),
                                   LauncherContextMenu::MENU_AUTO_HIDE));
 }
+
+}  // namespace

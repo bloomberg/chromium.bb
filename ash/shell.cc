@@ -55,7 +55,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_controller.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_window_watcher.h"
 #include "ash/shelf/wm_shelf.h"
@@ -408,8 +407,13 @@ void Shell::CreateShelfView() {
   // Must occur after SessionController creation and user login.
   DCHECK(session_controller());
   DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
-  CreateShelfDelegate();
 
+  // Notify the ShellDelegate that the shelf is being initialized.
+  // TODO(msw): Refine ChromeLauncherControllerImpl lifetime management.
+  shell_delegate_->ShelfInit();
+
+  if (!shelf_window_watcher_)
+    shelf_window_watcher_ = base::MakeUnique<ShelfWindowWatcher>(shelf_model());
   for (WmWindow* root_window : shell_port_->GetAllRootWindows())
     root_window->GetRootWindowController()->CreateShelfView();
 }
@@ -724,8 +728,9 @@ Shell::~Shell() {
   // shelf items in Chrome) so explicitly shutdown early.
   shelf_model()->DestroyItemDelegates();
 
-  // Must be destroyed before FocusController.
-  shelf_delegate_.reset();
+  // Notify the ShellDelegate that the shelf is shutting down.
+  // TODO(msw): Refine ChromeLauncherControllerImpl lifetime management.
+  shell_delegate_->ShelfShutdown();
 
   // Removes itself as an observer of |pref_service_|.
   shelf_controller_.reset();
@@ -1159,19 +1164,6 @@ void Shell::CloseAllRootWindowChildWindows() {
       }
     }
   }
-}
-
-void Shell::CreateShelfDelegate() {
-  // May be called multiple times as shelves are created and destroyed.
-  if (shelf_delegate_)
-    return;
-  // Must occur after SessionController creation and user login because
-  // Chrome's implementation of ShelfDelegate assumes it can get information
-  // about multi-profile login state.
-  DCHECK(session_controller());
-  DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
-  shelf_delegate_.reset(shell_delegate_->CreateShelfDelegate(shelf_model()));
-  shelf_window_watcher_ = base::MakeUnique<ShelfWindowWatcher>(shelf_model());
 }
 
 bool Shell::CanWindowReceiveEvents(aura::Window* window) {

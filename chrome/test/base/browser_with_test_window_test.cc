@@ -47,20 +47,19 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest(Browser::Type browser_type,
                                                      bool hosted_app)
-    : browser_type_(browser_type), hosted_app_(hosted_app) {}
-
-BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
+    : browser_type_(browser_type), hosted_app_(hosted_app) {
+#if defined(OS_CHROMEOS)
+  ash_test_environment_ = base::MakeUnique<AshTestEnvironmentChrome>();
+  ash_test_helper_ =
+      base::MakeUnique<ash::test::AshTestHelper>(ash_test_environment_.get());
+#endif
 }
+
+BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {}
 
 void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 #if defined(OS_CHROMEOS)
-  // TODO(jamescook): Windows Ash support. This will require refactoring
-  // AshTestHelper and AuraTestHelper so they can be used at the same time,
-  // perhaps by AshTestHelper owning an AuraTestHelper.
-  ash_test_environment_ = base::MakeUnique<AshTestEnvironmentChrome>();
-  ash_test_helper_.reset(
-      new ash::test::AshTestHelper(ash_test_environment_.get()));
   ash_test_helper_->SetUp(true);
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset(new views::ScopedViewsTestHelper());

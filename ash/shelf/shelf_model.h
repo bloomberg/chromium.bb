@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/macros.h"
@@ -24,6 +25,35 @@ class ASH_EXPORT ShelfModel {
  public:
   ShelfModel();
   ~ShelfModel();
+
+  // Get the shelf ID from an application ID. Returns kInvalidShelfID if the
+  // app id is unknown, or has no associated ShelfID.
+  ShelfID GetShelfIDForAppID(const std::string& app_id);
+
+  // Get the shelf ID from an application ID and a launch ID.
+  // The launch ID can be passed to an app when launched in order to support
+  // multiple shelf items per app. This id is used together with the app_id to
+  // uniquely identify each shelf item that has the same app_id.
+  // For example, a single virtualization app might want to show different
+  // shelf icons for different remote apps. Returns kInvalidShelfID if the app
+  // id is unknown or has no associated ShelfID.
+  ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
+                                        const std::string& launch_id);
+
+  // Get the application ID for a given shelf ID. Returns an empty string for
+  // an unknown or invalid ShelfID.
+  const std::string& GetAppIDForShelfID(ShelfID id);
+
+  // Pins an app with |app_id| to shelf. A running instance will get pinned.
+  // In case there is no running instance a new shelf item is created and
+  // pinned.
+  void PinAppWithID(const std::string& app_id);
+
+  // Check if the app with |app_id_| is pinned to the shelf.
+  bool IsAppPinned(const std::string& app_id);
+
+  // Unpins app item with |app_id|.
+  void UnpinAppWithID(const std::string& app_id);
 
   // Cleans up the ShelfItemDelegates.
   void DestroyItemDelegates();
@@ -65,9 +95,6 @@ class ASH_EXPORT ShelfModel {
 
   // Returns the id assigned to the next item added.
   ShelfID next_id() const { return next_id_; }
-
-  // Returns a reserved id which will not be used by the |ShelfModel|.
-  ShelfID reserve_external_id() { return next_id_++; }
 
   // Returns an iterator into items() for the item with the specified id, or
   // items().end() if there is no item with the specified id.

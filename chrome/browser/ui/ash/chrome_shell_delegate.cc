@@ -389,13 +389,11 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
 
 }  // namespace
 
-ChromeShellDelegate::ChromeShellDelegate()
-    : shelf_delegate_(NULL) {
+ChromeShellDelegate::ChromeShellDelegate() {
   PlatformInit();
 }
 
-ChromeShellDelegate::~ChromeShellDelegate() {
-}
+ChromeShellDelegate::~ChromeShellDelegate() {}
 
 service_manager::Connector* ChromeShellDelegate::GetShellConnector() const {
   return content::ServiceManagerConnection::GetForProcess()->GetConnector();
@@ -499,13 +497,16 @@ void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
       displayer.browser()->window()->GetNativeWindow());
 }
 
-ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
-    ash::ShelfModel* model) {
-  if (!shelf_delegate_) {
-    shelf_delegate_ = new ChromeLauncherControllerImpl(nullptr, model);
-    shelf_delegate_->Init();
+void ChromeShellDelegate::ShelfInit() {
+  if (!launcher_controller_) {
+    launcher_controller_ = base::MakeUnique<ChromeLauncherControllerImpl>(
+        nullptr, ash::Shell::Get()->shelf_model());
+    launcher_controller_->Init();
   }
-  return shelf_delegate_;
+}
+
+void ChromeShellDelegate::ShelfShutdown() {
+  launcher_controller_.reset();
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
@@ -515,14 +516,15 @@ ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
   if (chrome::IsRunningInAppMode())
     return nullptr;
 
-  // No context menu before |shelf_delegate_| is created. This is possible
-  // now because CreateShelfDelegate is called by session state change
-  // via mojo asynchronously. Context menu could be triggered when the
-  // mojo message is still in-fly and crashes.
-  if (!shelf_delegate_)
+  // No context menu before |launcher_controller_| is created. This is possible
+  // now because ShelfInit() is called by session state change via mojo
+  // asynchronously. Context menu could be triggered when the mojo message is
+  // still in-fly and crashes.
+  if (!launcher_controller_)
     return nullptr;
 
-  return LauncherContextMenu::Create(shelf_delegate_, item, wm_shelf);
+  return LauncherContextMenu::Create(launcher_controller_.get(), item,
+                                     wm_shelf);
 }
 
 ash::GPUSupport* ChromeShellDelegate::CreateGPUSupport() {
@@ -618,8 +620,8 @@ void ChromeShellDelegate::Observe(int type,
       // Do not use chrome::NOTIFICATION_PROFILE_ADDED because the
       // profile is not fully initialized by user_manager.  Use
       // chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED instead.
-      if (shelf_delegate_)
-        shelf_delegate_->OnUserProfileReadyToSwitch(profile);
+      if (launcher_controller_)
+        launcher_controller_->OnUserProfileReadyToSwitch(profile);
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED:

@@ -33,7 +33,8 @@ class ShellDelegateMus : public ShellDelegate {
   void Exit() override;
   keyboard::KeyboardUI* CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
-  ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
+  void ShelfInit() override;
+  void ShelfShutdown() override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   SessionStateDelegate* CreateSessionStateDelegate() override;

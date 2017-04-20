@@ -44,7 +44,6 @@ class OverflowBubble;
 class OverflowButton;
 class ScopedRootWindowForNewWindows;
 class ShelfButton;
-class ShelfDelegate;
 class ShelfModel;
 struct ShelfItem;
 class ShelfWidget;
@@ -71,7 +70,6 @@ class ASH_EXPORT ShelfView : public views::View,
                              public app_list::ApplicationDragAndDropHost {
  public:
   ShelfView(ShelfModel* model,
-            ShelfDelegate* delegate,
             WmShelf* wm_shelf,
             ShelfWidget* shelf_widget);
   ~ShelfView() override;
@@ -351,9 +349,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The model; owned by Launcher.
   ShelfModel* model_;
-
-  // Delegate; owned by Launcher.
-  ShelfDelegate* delegate_;
 
   // The shelf controller; owned by RootWindowController.
   WmShelf* wm_shelf_;

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/shelf/shelf_model_observer.h"
 
@@ -41,11 +42,116 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
   return ShelfItemTypeToWeight(a.type) < ShelfItemTypeToWeight(b.type);
 }
 
+// Returns shelf app id. Play Store app is mapped to ARC platform host app.
+// TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+std::string GetShelfAppIdFromArcAppId(const std::string& arc_app_id) {
+  static const char kPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
+  static const char kArcHostAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
+  return arc_app_id == kPlayStoreAppId ? kArcHostAppId : arc_app_id;
+}
+
 }  // namespace
 
 ShelfModel::ShelfModel() : next_id_(1) {}
 
 ShelfModel::~ShelfModel() {}
+
+ShelfID ShelfModel::GetShelfIDForAppID(const std::string& app_id) {
+  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+
+  if (shelf_app_id.empty())
+    return ash::kInvalidShelfID;
+
+  for (const ShelfItem& item : items_) {
+    // ShelfWindowWatcher handles app panel windows separately.
+    if (item.type != TYPE_APP_PANEL &&
+        item.app_launch_id.app_id() == shelf_app_id) {
+      return item.id;
+    }
+  }
+  return kInvalidShelfID;
+}
+
+ShelfID ShelfModel::GetShelfIDForAppIDAndLaunchID(
+    const std::string& app_id,
+    const std::string& launch_id) {
+  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+
+  if (shelf_app_id.empty())
+    return ash::kInvalidShelfID;
+
+  for (const ShelfItem& item : items_) {
+    // ShelfWindowWatcher handles app panel windows separately.
+    if (item.type != TYPE_APP_PANEL &&
+        item.app_launch_id.app_id() == shelf_app_id &&
+        item.app_launch_id.launch_id() == launch_id) {
+      return item.id;
+    }
+  }
+  return kInvalidShelfID;
+}
+
+const std::string& ShelfModel::GetAppIDForShelfID(ShelfID id) {
+  ShelfItems::const_iterator item = ItemByID(id);
+  return item != items().end() ? item->app_launch_id.app_id()
+                               : base::EmptyString();
+}
+
+void ShelfModel::PinAppWithID(const std::string& app_id) {
+  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+
+  // If the app is already pinned, do nothing and return.
+  if (IsAppPinned(shelf_app_id))
+    return;
+
+  // Convert an existing item to be pinned, or create a new pinned item.
+  const int index = ItemIndexByID(GetShelfIDForAppID(shelf_app_id));
+  if (index >= 0) {
+    ShelfItem item = items_[index];
+    DCHECK_EQ(item.type, TYPE_APP);
+    DCHECK(!item.pinned_by_policy);
+    item.type = TYPE_PINNED_APP;
+    Set(index, item);
+  } else if (!shelf_app_id.empty()) {
+    ash::ShelfItem item;
+    item.type = ash::TYPE_PINNED_APP;
+    item.app_launch_id = AppLaunchId(shelf_app_id);
+    Add(item);
+  }
+}
+
+bool ShelfModel::IsAppPinned(const std::string& app_id) {
+  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+
+  const int index = ItemIndexByID(GetShelfIDForAppID(shelf_app_id));
+  return index >= 0 && (items_[index].type == TYPE_PINNED_APP ||
+                        items_[index].type == TYPE_BROWSER_SHORTCUT);
+}
+
+void ShelfModel::UnpinAppWithID(const std::string& app_id) {
+  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+
+  // If the app is already not pinned, do nothing and return.
+  if (!IsAppPinned(shelf_app_id))
+    return;
+
+  // Remove the item if it is closed, or mark it as unpinned.
+  const int index = ItemIndexByID(GetShelfIDForAppID(shelf_app_id));
+  ShelfItem item = items_[index];
+  DCHECK_EQ(item.type, TYPE_PINNED_APP);
+  DCHECK(!item.pinned_by_policy);
+  if (item.status == ash::STATUS_CLOSED) {
+    RemoveItemAt(index);
+  } else {
+    item.type = TYPE_APP;
+    Set(index, item);
+  }
+}
 
 void ShelfModel::DestroyItemDelegates() {
   // Some ShelfItemDelegates access this model in their destructors and hence

@@ -10,7 +10,6 @@
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -37,19 +36,12 @@ class ChromeLauncherPrefsObserver;
 }
 }
 
-namespace content {
-class BrowserContext;
-}
-
 class ChromeLauncherControllerUserSwitchObserver;
 
 // Implementation of ChromeLauncherController, used for classic Ash.
-// In addition to implementing ChromeLauncherController, this class performs
-// a lot of other responsibilities, such as implementing ash::ShelfDelegate,
-// updating the UI state and the shelf model when apps are uninstalled, etc.
+// This class manipulates Ash's ShelfModel to support Chrome and its apps.
 class ChromeLauncherControllerImpl
     : public ChromeLauncherController,
-      public ash::ShelfDelegate,
       public LauncherAppUpdater::Delegate,
       private ash::ShelfModelObserver,
       private ash::WindowTreeHostManager::Observer,
@@ -123,15 +115,14 @@ class ChromeLauncherControllerImpl
     return app_window_controllers_;
   }
 
-  // ash::ShelfDelegate:
-  ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override;
-  ash::ShelfID GetShelfIDForAppIDAndLaunchID(
-      const std::string& app_id,
-      const std::string& launch_id) override;
-  const std::string& GetAppIDForShelfID(ash::ShelfID id) override;
-  void PinAppWithID(const std::string& app_id) override;
-  bool IsAppPinned(const std::string& app_id) override;
-  void UnpinAppWithID(const std::string& app_id) override;
+  // Helpers that call through to corresponding ShelfModel functions.
+  ash::ShelfID GetShelfIDForAppID(const std::string& app_id);
+  ash::ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
+                                             const std::string& launch_id);
+  const std::string& GetAppIDForShelfID(ash::ShelfID id);
+  void PinAppWithID(const std::string& app_id);
+  bool IsAppPinned(const std::string& app_id);
+  void UnpinAppWithID(const std::string& app_id);
 
   // LauncherAppUpdater::Delegate:
   void OnAppInstalled(content::BrowserContext* browser_context,

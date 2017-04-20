@@ -18,7 +18,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/test_keyboard_ui.h"
 #include "ash/test/test_session_state_delegate.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_wallpaper_delegate.h"
 #include "ash/wm/window_state.h"
@@ -101,11 +100,13 @@ keyboard::KeyboardUI* TestShellDelegate::CreateKeyboardUI() {
 
 void TestShellDelegate::OpenUrlFromArc(const GURL& url) {}
 
-ShelfDelegate* TestShellDelegate::CreateShelfDelegate(ShelfModel* model) {
+void TestShellDelegate::ShelfInit() {
   // Create a separate shelf initializer that mimics ChromeLauncherController.
-  shelf_initializer_ = base::MakeUnique<ShelfInitializer>();
-  return new TestShelfDelegate();
+  if (!shelf_initializer_)
+    shelf_initializer_ = base::MakeUnique<ShelfInitializer>();
 }
+
+void TestShellDelegate::ShelfShutdown() {}
 
 SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
   return new TestSystemTrayDelegate;

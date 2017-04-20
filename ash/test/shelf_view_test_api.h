@@ -28,7 +28,6 @@ class OverflowBubble;
 class OverflowButton;
 class ShelfButton;
 class ShelfButtonPressedMetricTracker;
-class ShelfDelegate;
 class ShelfTooltipManager;
 class ShelfView;
 
@@ -106,9 +105,6 @@ class ShelfViewTestAPI {
 
   // Wrapper for ShelfView::SameDragType.
   bool SameDragType(ShelfItemType typea, ShelfItemType typeb) const;
-
-  // Sets ShelfDelegate.
-  void SetShelfDelegate(ShelfDelegate* delegate);
 
   // Returns re-insertable bounds in screen.
   gfx::Rect GetBoundsForDragInsertInScreen();

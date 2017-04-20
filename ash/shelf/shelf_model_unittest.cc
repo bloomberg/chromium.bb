@@ -255,19 +255,11 @@ TEST_F(ShelfModelTest, ShelfIDTests) {
   // Calling this function multiple times does not change the returned ID.
   EXPECT_EQ(model_->next_id(), id);
 
-  // Check that when we reserve a value it will be the previously retrieved ID,
-  // but it will not change the item count and retrieving the next ID should
-  // produce something new.
-  EXPECT_EQ(model_->reserve_external_id(), id);
-  EXPECT_EQ(1, model_->item_count());
-  ShelfID id2 = model_->next_id();
-  EXPECT_NE(id2, id);
-
-  // Adding another item to the list should also produce a new ID.
+  // Adding another item to the list should produce a new ID.
   ShelfItem item;
   item.type = TYPE_APP;
   model_->Add(item);
-  EXPECT_NE(model_->next_id(), id2);
+  EXPECT_NE(model_->next_id(), id);
 }
 
 // This verifies that converting an existing item into a lower weight category
@@ -298,6 +290,149 @@ TEST_F(ShelfModelTest, CorrectMoveItemsWhenStateChange) {
 
   // The item should have moved in front of the app launcher.
   EXPECT_EQ(TYPE_APP, model_->items()[4].type);
+}
+
+// Test conversion between ShelfID and application [launch] ids.
+TEST_F(ShelfModelTest, IdentifierConversion) {
+  const std::string app_id1("app_id1");
+  const std::string launch_id("launch_id");
+  const ShelfID unknown_shelf_id = 123;
+
+  // Expect kInvalidShelfID and empty app ids for input not found in the model.
+  EXPECT_EQ(kInvalidShelfID, model_->GetShelfIDForAppID(std::string()));
+  EXPECT_EQ(kInvalidShelfID, model_->GetShelfIDForAppID(app_id1));
+  EXPECT_EQ(kInvalidShelfID,
+            model_->GetShelfIDForAppIDAndLaunchID(app_id1, std::string()));
+  EXPECT_EQ(kInvalidShelfID,
+            model_->GetShelfIDForAppIDAndLaunchID(app_id1, launch_id));
+  EXPECT_TRUE(model_->GetAppIDForShelfID(kInvalidShelfID).empty());
+  EXPECT_TRUE(model_->GetAppIDForShelfID(unknown_shelf_id).empty());
+
+  // Add an example app with an app id and a launch id.
+  ShelfItem item;
+  item.type = TYPE_PINNED_APP;
+  item.app_launch_id = AppLaunchId(app_id1, launch_id);
+  const ShelfID assigned_shelf_id1 = model_->next_id();
+  const int index = model_->Add(item);
+
+  // Ensure the item ids can be found and converted as expected.
+  EXPECT_NE(kInvalidShelfID, assigned_shelf_id1);
+  EXPECT_EQ(assigned_shelf_id1, model_->GetShelfIDForAppID(app_id1));
+  EXPECT_EQ(assigned_shelf_id1,
+            model_->GetShelfIDForAppIDAndLaunchID(app_id1, launch_id));
+  EXPECT_EQ(app_id1, model_->GetAppIDForShelfID(assigned_shelf_id1));
+
+  // Removing the example app should again yield invalid ids.
+  model_->RemoveItemAt(index);
+  EXPECT_EQ(kInvalidShelfID, model_->GetShelfIDForAppID(app_id1));
+  EXPECT_EQ(kInvalidShelfID,
+            model_->GetShelfIDForAppIDAndLaunchID(app_id1, launch_id));
+  EXPECT_TRUE(model_->GetAppIDForShelfID(assigned_shelf_id1).empty());
+
+  // Add an example app with a different app id and no launch id.
+  const std::string app_id2("app_id2");
+  item.app_launch_id = AppLaunchId(app_id2);
+  const ShelfID assigned_shelf_id2 = model_->next_id();
+  model_->Add(item);
+
+  // Ensure the item ids can be found and converted as expected.
+  EXPECT_NE(kInvalidShelfID, assigned_shelf_id2);
+  EXPECT_NE(assigned_shelf_id1, assigned_shelf_id2);
+  EXPECT_EQ(assigned_shelf_id2, model_->GetShelfIDForAppID(app_id2));
+  EXPECT_EQ(assigned_shelf_id2,
+            model_->GetShelfIDForAppIDAndLaunchID(app_id2, std::string()));
+  EXPECT_EQ(kInvalidShelfID,
+            model_->GetShelfIDForAppIDAndLaunchID(app_id2, launch_id));
+  EXPECT_EQ(app_id2, model_->GetAppIDForShelfID(assigned_shelf_id2));
+}
+
+// Test pinning and unpinning a closed app, and checking if it is pinned.
+TEST_F(ShelfModelTest, ClosedAppPinning) {
+  const std::string app_id("app_id");
+
+  // Check the initial state.
+  EXPECT_FALSE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(1, model_->item_count());
+
+  // Pinning a previously unknown app should add an item.
+  model_->PinAppWithID(app_id);
+  EXPECT_TRUE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(TYPE_PINNED_APP, model_->items()[1].type);
+  EXPECT_EQ(app_id, model_->items()[1].app_launch_id.app_id());
+
+  // Pinning the same app id again should have no change.
+  model_->PinAppWithID(app_id);
+  EXPECT_TRUE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(TYPE_PINNED_APP, model_->items()[1].type);
+  EXPECT_EQ(app_id, model_->items()[1].app_launch_id.app_id());
+
+  // Unpinning the app should remove the item.
+  model_->UnpinAppWithID(app_id);
+  EXPECT_FALSE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(1, model_->item_count());
+
+  // Unpinning the same app id again should have no change.
+  model_->UnpinAppWithID(app_id);
+  EXPECT_FALSE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(1, model_->item_count());
+}
+
+// Test pinning and unpinning a running app, and checking if it is pinned.
+TEST_F(ShelfModelTest, RunningAppPinning) {
+  const std::string app_id("app_id");
+
+  // Check the initial state.
+  EXPECT_FALSE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(1, model_->item_count());
+
+  // Add an example running app.
+  ShelfItem item;
+  item.type = TYPE_APP;
+  item.status = STATUS_RUNNING;
+  item.app_launch_id = AppLaunchId(app_id);
+  const ShelfID assigned_shelf_id = model_->next_id();
+  const int index = model_->Add(item);
+
+  // The item should be added but not pinned.
+  EXPECT_FALSE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(TYPE_APP, model_->items()[index].type);
+  EXPECT_EQ(app_id, model_->items()[index].app_launch_id.app_id());
+  EXPECT_EQ(assigned_shelf_id, model_->items()[index].id);
+
+  // Pinning the item should just change its type.
+  model_->PinAppWithID(app_id);
+  EXPECT_TRUE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(TYPE_PINNED_APP, model_->items()[index].type);
+  EXPECT_EQ(app_id, model_->items()[index].app_launch_id.app_id());
+  EXPECT_EQ(assigned_shelf_id, model_->items()[index].id);
+
+  // Pinning the same app id again should have no change.
+  model_->PinAppWithID(app_id);
+  EXPECT_TRUE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(TYPE_PINNED_APP, model_->items()[index].type);
+  EXPECT_EQ(app_id, model_->items()[index].app_launch_id.app_id());
+  EXPECT_EQ(assigned_shelf_id, model_->items()[index].id);
+
+  // Unpinning the app should leave the item unpinnned but running.
+  model_->UnpinAppWithID(app_id);
+  EXPECT_FALSE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(TYPE_APP, model_->items()[index].type);
+  EXPECT_EQ(app_id, model_->items()[index].app_launch_id.app_id());
+  EXPECT_EQ(assigned_shelf_id, model_->items()[index].id);
+
+  // Unpinning the same app id again should have no change.
+  model_->UnpinAppWithID(app_id);
+  EXPECT_FALSE(model_->IsAppPinned(app_id));
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(TYPE_APP, model_->items()[index].type);
+  EXPECT_EQ(app_id, model_->items()[index].app_launch_id.app_id());
+  EXPECT_EQ(assigned_shelf_id, model_->items()[index].id);
 }
 
 }  // namespace ash

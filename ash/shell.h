@@ -140,7 +140,6 @@ class ScreenPositionController;
 class SessionController;
 class SessionStateDelegate;
 class ShelfController;
-class ShelfDelegate;
 class ShelfModel;
 class ShelfWindowWatcher;
 class ShellDelegate;
@@ -328,7 +327,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   SessionController* session_controller() { return session_controller_.get(); }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
-  ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
   ShelfModel* shelf_model();
   ShutdownController* shutdown_controller() {
     return shutdown_controller_.get();
@@ -609,8 +607,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
   void DeleteSystemTrayDelegate();
 
-  void CreateShelfDelegate();
-
   // Destroys all child windows including widgets across all roots.
   void CloseAllRootWindowChildWindows();
 
@@ -677,7 +673,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<ShelfController> shelf_controller_;
-  std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
   std::unique_ptr<ShutdownController> shutdown_controller_;

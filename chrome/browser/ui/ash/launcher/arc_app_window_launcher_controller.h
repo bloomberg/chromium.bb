@@ -18,10 +18,6 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 
-namespace ash {
-class ShelfDelegate;
-}
-
 namespace aura {
 class Window;
 }
@@ -37,8 +33,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                                        public ash::ShellObserver,
                                        public ArcAppListPrefs::Observer {
  public:
-  ArcAppWindowLauncherController(ChromeLauncherController* owner,
-                                 ash::ShelfDelegate* shelf_delegate);
+  explicit ArcAppWindowLauncherController(ChromeLauncherController* owner);
   ~ArcAppWindowLauncherController() override;
 
   // Returns shelf app id. Play Store app is mapped to ARC platform host app.
@@ -118,8 +113,6 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) override;
 
-  // Not owned
-  ash::ShelfDelegate* shelf_delegate_;
   int active_task_id_ = -1;
   TaskIdToAppWindowInfo task_id_to_app_window_info_;
   ShelfGroupToAppControllerMap app_shelf_group_to_controller_map_;

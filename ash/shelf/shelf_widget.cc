@@ -11,7 +11,6 @@
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/wm_shelf.h"
@@ -229,9 +228,7 @@ void ShelfWidget::OnShelfAlignmentChanged() {
 
 ShelfView* ShelfWidget::CreateShelfView() {
   DCHECK(!shelf_view_);
-
-  shelf_view_ = new ShelfView(Shell::Get()->shelf_model(),
-                              Shell::Get()->shelf_delegate(), wm_shelf_, this);
+  shelf_view_ = new ShelfView(Shell::Get()->shelf_model(), wm_shelf_, this);
   shelf_view_->Init();
   GetContentsView()->AddChildView(shelf_view_);
   return shelf_view_;

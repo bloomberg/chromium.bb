@@ -107,6 +107,10 @@ class BrowserWithTestWindowTest : public testing::Test {
     return window_.release();
   }
 
+#if defined(OS_CHROMEOS)
+  ash::test::AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
+#endif
+
   // The context to help determine desktop type when creating new Widgets.
   gfx::NativeWindow GetContext();
 

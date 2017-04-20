@@ -16,7 +16,6 @@ class MaximizeModeWindowManager;
 class PaletteDelegate;
 class SessionStateDelegate;
 class ScreenPositionController;
-class ShelfDelegate;
 class Shell;
 class SystemGestureEventFilter;
 class WorkspaceController;
@@ -38,7 +37,6 @@ class ShellTestApi {
 
   void SetPaletteDelegate(std::unique_ptr<PaletteDelegate> palette_delegate);
   void SetSessionStateDelegate(SessionStateDelegate* session_state_delegate);
-  void SetShelfDelegate(std::unique_ptr<ShelfDelegate> test_delegate);
 
  private:
   Shell* shell_;  // not owned
