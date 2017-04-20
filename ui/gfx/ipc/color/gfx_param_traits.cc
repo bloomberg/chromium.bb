@@ -17,9 +17,9 @@ void ParamTraits<gfx::ColorSpace>::GetSize(base::PickleSizer* s,
   GetParamSize(s, p.range_);
   GetParamSize(s, p.icc_profile_id_);
   if (p.primaries_ == gfx::ColorSpace::PrimaryID::CUSTOM)
-    s->AddData(sizeof(p.custom_primary_matrix_));
+    s->AddBytes(sizeof(p.custom_primary_matrix_));
   if (p.transfer_ == gfx::ColorSpace::TransferID::CUSTOM)
-    s->AddData(sizeof(p.custom_transfer_params_));
+    s->AddBytes(sizeof(p.custom_transfer_params_));
 }
 
 void ParamTraits<gfx::ColorSpace>::Write(base::Pickle* m,
