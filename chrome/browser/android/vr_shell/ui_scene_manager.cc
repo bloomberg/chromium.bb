@@ -68,8 +68,8 @@ UiSceneManager::UiSceneManager(UiScene* scene)
   element->id = id++;
   element->name = "Content";
   element->fill = vr_shell::Fill::CONTENT;
-  element->size = {(1.6f * (16 / 9)), 1.6f, 1};
-  element->translation = {0, 0, -2};
+  element->size = {2.4f, 1.6f, 1};
+  element->translation = {0, -0.1f, -2.5f};
   element->visible = false;
   main_content_ = element.get();
   scene_->AddUiElement(std::move(element));
