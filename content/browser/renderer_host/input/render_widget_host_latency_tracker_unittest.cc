@@ -198,7 +198,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
           tracker()->latency_component_id(), nullptr));
       EXPECT_TRUE(wheel_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
-      EXPECT_EQ(1U, wheel_latency.input_coordinates_size());
       tracker()->OnInputEventAck(wheel, &wheel_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
       tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
@@ -290,7 +289,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
           tracker()->latency_component_id(), nullptr));
       EXPECT_TRUE(wheel_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
-      EXPECT_EQ(1U, wheel_latency.input_coordinates_size());
       tracker()->OnInputEventAck(wheel, &wheel_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
       tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
@@ -366,7 +364,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
           tracker()->latency_component_id(), nullptr));
       EXPECT_TRUE(scroll_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
-      EXPECT_EQ(1U, scroll_latency.input_coordinates_size());
       tracker()->OnInputEventAck(scroll, &scroll_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     }
@@ -388,7 +385,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
           tracker()->latency_component_id(), nullptr));
       EXPECT_TRUE(touch_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
-      EXPECT_EQ(2U, touch_latency.input_coordinates_size());
       tracker()->OnInputEventAck(touch, &touch_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
       tracker()->OnGpuSwapBuffersCompleted(touch_latency);
@@ -486,7 +482,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
           tracker()->latency_component_id(), nullptr));
       EXPECT_TRUE(scroll_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
-      EXPECT_EQ(1U, scroll_latency.input_coordinates_size());
       tracker()->OnInputEventAck(scroll, &scroll_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     }
@@ -508,7 +503,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
           tracker()->latency_component_id(), nullptr));
       EXPECT_TRUE(touch_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
-      EXPECT_EQ(2U, touch_latency.input_coordinates_size());
       tracker()->OnInputEventAck(touch, &touch_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
       tracker()->OnGpuSwapBuffersCompleted(touch_latency);
@@ -664,66 +658,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
   EXPECT_TRUE(HistogramSizeEq(
       "Event.Latency.ScrollUpdate.BrowserNotifiedToBeforeGpuSwap", 0));
   EXPECT_TRUE(HistogramSizeEq("Event.Latency.ScrollUpdate.GpuSwap", 0));
-}
-
-TEST_F(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
-  {
-    auto event =
-        SyntheticWebMouseWheelEventBuilder::Build(0, 0, -5, 0, 0, true);
-    event.SetPositionInWidget(100, 200);
-    ui::LatencyInfo latency_info;
-    tracker()->OnInputEvent(event, &latency_info);
-    EXPECT_EQ(1u, latency_info.input_coordinates_size());
-    EXPECT_EQ(100, latency_info.input_coordinates()[0].x());
-    EXPECT_EQ(200, latency_info.input_coordinates()[0].y());
-  }
-
-  {
-    auto event =
-        SyntheticWebMouseEventBuilder::Build(WebInputEvent::kMouseMove);
-    event.SetPositionInWidget(300, 400);
-    ui::LatencyInfo latency_info;
-    tracker()->OnInputEvent(event, &latency_info);
-    EXPECT_EQ(1u, latency_info.input_coordinates_size());
-    EXPECT_EQ(300, latency_info.input_coordinates()[0].x());
-    EXPECT_EQ(400, latency_info.input_coordinates()[0].y());
-  }
-
-  {
-    auto event = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::kGestureScrollBegin,
-        blink::kWebGestureDeviceTouchscreen);
-    event.x = 500;
-    event.y = 600;
-    ui::LatencyInfo latency_info;
-    tracker()->OnInputEvent(event, &latency_info);
-    EXPECT_EQ(1u, latency_info.input_coordinates_size());
-    EXPECT_EQ(500, latency_info.input_coordinates()[0].x());
-    EXPECT_EQ(600, latency_info.input_coordinates()[0].y());
-  }
-
-  {
-    SyntheticWebTouchEvent event;
-    event.PressPoint(700, 800);
-    event.PressPoint(900, 1000);
-    event.PressPoint(1100, 1200);  // LatencyInfo only holds two coordinates.
-    ui::LatencyInfo latency_info;
-    tracker()->OnInputEvent(event, &latency_info);
-    EXPECT_EQ(2u, latency_info.input_coordinates_size());
-    EXPECT_EQ(700, latency_info.input_coordinates()[0].x());
-    EXPECT_EQ(800, latency_info.input_coordinates()[0].y());
-    EXPECT_EQ(900, latency_info.input_coordinates()[1].x());
-    EXPECT_EQ(1000, latency_info.input_coordinates()[1].y());
-  }
-
-  {
-    NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kKeyDown,
-                                 blink::WebInputEvent::kNoModifiers,
-                                 base::TimeTicks::Now());
-    ui::LatencyInfo latency_info;
-    tracker()->OnInputEvent(event, &latency_info);
-    EXPECT_EQ(0u, latency_info.input_coordinates_size());
-  }
 }
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {

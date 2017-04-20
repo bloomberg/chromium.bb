@@ -11,8 +11,6 @@
 
 namespace mojo {
 
-using InputCoordinateArray = CArray<gfx::PointF>;
-
 template <>
 struct ArrayTraits<ui::LatencyInfo::LatencyMap> {
   using Element = ui::LatencyInfo::LatencyMap::value_type;
@@ -85,8 +83,6 @@ struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
   static const std::string& trace_name(const ui::LatencyInfo& info);
   static const ui::LatencyInfo::LatencyMap& latency_components(
       const ui::LatencyInfo& info);
-  static uint32_t input_coordinates_size(const ui::LatencyInfo& info);
-  static InputCoordinateArray input_coordinates(const ui::LatencyInfo& info);
   static int64_t trace_id(const ui::LatencyInfo& info);
   static bool coalesced(const ui::LatencyInfo& info);
   static bool terminated(const ui::LatencyInfo& info);

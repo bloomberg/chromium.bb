@@ -133,8 +133,7 @@ namespace ui {
 LatencyInfo::LatencyInfo() : LatencyInfo(SourceEventType::UNKNOWN) {}
 
 LatencyInfo::LatencyInfo(SourceEventType type)
-    : input_coordinates_size_(0),
-      trace_id_(-1),
+    : trace_id_(-1),
       coalesced_(false),
       terminated_(false),
       source_event_type_(type) {}
@@ -144,8 +143,7 @@ LatencyInfo::LatencyInfo(const LatencyInfo& other) = default;
 LatencyInfo::~LatencyInfo() {}
 
 LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
-    : input_coordinates_size_(0),
-      trace_id_(trace_id),
+    : trace_id_(trace_id),
       terminated_(terminated),
       source_event_type_(SourceEventType::UNKNOWN) {}
 
@@ -295,11 +293,9 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     terminated_ = true;
 
     if (*latency_info_enabled) {
-      TRACE_EVENT_COPY_ASYNC_END2(kTraceCategoriesForAsyncEvents,
-                                  trace_name_.c_str(),
-                                  TRACE_ID_DONT_MANGLE(trace_id_),
-                                  "data", AsTraceableData(),
-                                  "coordinates", CoordinatesAsTraceableData());
+      TRACE_EVENT_COPY_ASYNC_END1(
+          kTraceCategoriesForAsyncEvents, trace_name_.c_str(),
+          TRACE_ID_DONT_MANGLE(trace_id_), "data", AsTraceableData());
     }
 
     TRACE_EVENT_WITH_FLOW0("input,benchmark",
@@ -328,19 +324,6 @@ LatencyInfo::AsTraceableData() {
   }
   record_data->SetDouble("trace_id", static_cast<double>(trace_id_));
   return LatencyInfoTracedValue::FromValue(std::move(record_data));
-}
-
-std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-LatencyInfo::CoordinatesAsTraceableData() {
-  std::unique_ptr<base::ListValue> coordinates(new base::ListValue());
-  for (size_t i = 0; i < input_coordinates_size_; i++) {
-    std::unique_ptr<base::DictionaryValue> coordinate_pair(
-        new base::DictionaryValue());
-    coordinate_pair->SetDouble("x", input_coordinates_[i].x());
-    coordinate_pair->SetDouble("y", input_coordinates_[i].y());
-    coordinates->Append(std::move(coordinate_pair));
-  }
-  return LatencyInfoTracedValue::FromValue(std::move(coordinates));
 }
 
 bool LatencyInfo::FindLatency(LatencyComponentType type,
@@ -377,13 +360,6 @@ void LatencyInfo::RemoveLatency(LatencyComponentType type) {
     else
       it++;
   }
-}
-
-bool LatencyInfo::AddInputCoordinate(const gfx::PointF& input_coordinate) {
-  if (input_coordinates_size_ >= kMaxInputCoordinates)
-    return false;
-  input_coordinates_[input_coordinates_size_++] = input_coordinate;
-  return true;
 }
 
 }  // namespace ui

@@ -27,58 +27,6 @@ using ui::LatencyInfo;
 namespace content {
 namespace {
 
-void UpdateLatencyCoordinatesImpl(const blink::WebTouchEvent& touch,
-                                  LatencyInfo* latency,
-                                  float device_scale_factor) {
-  for (uint32_t i = 0; i < touch.touches_length; ++i) {
-    gfx::PointF coordinate(touch.touches[i].position.x * device_scale_factor,
-                           touch.touches[i].position.y * device_scale_factor);
-    if (!latency->AddInputCoordinate(coordinate))
-      break;
-  }
-}
-
-void UpdateLatencyCoordinatesImpl(const WebGestureEvent& gesture,
-                                  LatencyInfo* latency,
-                                  float device_scale_factor) {
-  latency->AddInputCoordinate(gfx::PointF(gesture.x * device_scale_factor,
-                                          gesture.y * device_scale_factor));
-}
-
-void UpdateLatencyCoordinatesImpl(const WebMouseEvent& mouse,
-                                  LatencyInfo* latency,
-                                  float device_scale_factor) {
-  latency->AddInputCoordinate(
-      gfx::PointF(mouse.PositionInWidget().x * device_scale_factor,
-                  mouse.PositionInWidget().y * device_scale_factor));
-}
-
-void UpdateLatencyCoordinatesImpl(const WebMouseWheelEvent& wheel,
-                                  LatencyInfo* latency,
-                                  float device_scale_factor) {
-  latency->AddInputCoordinate(
-      gfx::PointF(wheel.PositionInWidget().x * device_scale_factor,
-                  wheel.PositionInWidget().y * device_scale_factor));
-}
-
-void UpdateLatencyCoordinates(const WebInputEvent& event,
-                              float device_scale_factor,
-                              LatencyInfo* latency) {
-  if (WebInputEvent::IsMouseEventType(event.GetType())) {
-    UpdateLatencyCoordinatesImpl(static_cast<const WebMouseEvent&>(event),
-                                 latency, device_scale_factor);
-  } else if (WebInputEvent::IsGestureEventType(event.GetType())) {
-    UpdateLatencyCoordinatesImpl(static_cast<const WebGestureEvent&>(event),
-                                 latency, device_scale_factor);
-  } else if (WebInputEvent::IsTouchEventType(event.GetType())) {
-    UpdateLatencyCoordinatesImpl(static_cast<const WebTouchEvent&>(event),
-                                 latency, device_scale_factor);
-  } else if (event.GetType() == WebInputEvent::kMouseWheel) {
-    UpdateLatencyCoordinatesImpl(static_cast<const WebMouseWheelEvent&>(event),
-                                 latency, device_scale_factor);
-  }
-}
-
 std::string WebInputEventTypeToInputModalityString(WebInputEvent::Type type) {
   if (type == blink::WebInputEvent::kMouseWheel) {
     return "Wheel";
@@ -271,8 +219,6 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   latency->AddLatencyNumberWithTraceName(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, latency_component_id_,
       ++last_event_id_, WebInputEvent::GetName(event.GetType()));
-
-  UpdateLatencyCoordinates(event, device_scale_factor_, latency);
 
   if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
     has_seen_first_gesture_scroll_update_ = false;

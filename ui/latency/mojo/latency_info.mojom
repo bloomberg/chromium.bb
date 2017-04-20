@@ -104,7 +104,6 @@ struct LatencyComponentPair {
 struct LatencyInfo {
   string trace_name;
   array<LatencyComponentPair> latency_components;
-  array<gfx.mojom.PointF> input_coordinates;
   int64 trace_id;
   bool coalesced;
   bool terminated;

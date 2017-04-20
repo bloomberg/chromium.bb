@@ -198,13 +198,6 @@ class LatencyInfo {
 
   void RemoveLatency(LatencyComponentType type);
 
-  // Returns true if there is still room for keeping the |input_coordinate|,
-  // false otherwise.
-  bool AddInputCoordinate(const gfx::PointF& input_coordinate);
-
-  uint32_t input_coordinates_size() const { return input_coordinates_size_; }
-  const gfx::PointF* input_coordinates() const { return input_coordinates_; }
-
   const LatencyMap& latency_components() const { return latency_components_; }
 
   const SourceEventType& source_event_type() const {
@@ -230,18 +223,12 @@ class LatencyInfo {
   // Converts latencyinfo into format that can be dumped into trace buffer.
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   AsTraceableData();
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-  CoordinatesAsTraceableData();
 
   // Shown as part of the name of the trace event for this LatencyInfo.
   // String is empty if no tracing is enabled.
   std::string trace_name_;
 
   LatencyMap latency_components_;
-
-  // These coordinates represent window coordinates of the original input event.
-  uint32_t input_coordinates_size_;
-  gfx::PointF input_coordinates_[kMaxInputCoordinates];
 
   // The unique id for matching the ASYNC_BEGIN/END trace event.
   int64_t trace_id_;

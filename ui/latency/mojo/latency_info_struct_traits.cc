@@ -242,12 +242,6 @@ StructTraits<ui::mojom::LatencyInfoDataView,
              ui::LatencyInfo>::latency_components(const ui::LatencyInfo& info) {
   return info.latency_components();
 }
-InputCoordinateArray
-StructTraits<ui::mojom::LatencyInfoDataView,
-             ui::LatencyInfo>::input_coordinates(const ui::LatencyInfo& info) {
-  return {info.input_coordinates_size_, ui::LatencyInfo::kMaxInputCoordinates,
-          const_cast<gfx::PointF*>(info.input_coordinates_)};
-}
 
 int64_t StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::trace_id(
     const ui::LatencyInfo& info) {
@@ -282,14 +276,6 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
     if (!component_pair.ReadValue(&value))
       return false;
   }
-
-  InputCoordinateArray input_coordinate_array = {
-      0, ui::LatencyInfo::kMaxInputCoordinates, out->input_coordinates_};
-  if (!data.ReadInputCoordinates(&input_coordinate_array))
-    return false;
-  // TODO(fsamuel): ui::LatencyInfo::input_coordinates_size_ should be a size_t.
-  out->input_coordinates_size_ =
-      static_cast<uint32_t>(input_coordinate_array.size);
 
   out->trace_id_ = data.trace_id();
   out->coalesced_ = data.coalesced();
