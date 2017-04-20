@@ -31,6 +31,7 @@ source_set("infobars") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "infobar_view_unittest.mm",

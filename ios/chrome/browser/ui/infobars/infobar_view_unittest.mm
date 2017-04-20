@@ -8,6 +8,10 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface InfoBarView (Testing)
 - (CGFloat)buttonsHeight;
 - (CGFloat)buttonMargin;
@@ -29,9 +33,9 @@ class InfoBarViewTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
-    infobarView_.reset([[InfoBarView alloc]
-        initWithFrame:CGRectMake(0, 0, screenWidth, 0)
-             delegate:NULL]);
+    infobarView_ =
+        [[InfoBarView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, 0)
+                                  delegate:NULL];
     [infobarView_ addCloseButtonWithTag:0 target:nil action:nil];
   }
 
@@ -75,7 +79,7 @@ class InfoBarViewTest : public PlatformTest {
     }
   }
 
-  base::scoped_nsobject<InfoBarView> infobarView_;
+  InfoBarView* infobarView_;
 };
 
 TEST_F(InfoBarViewTest, TestLayoutWithNoLabel) {
