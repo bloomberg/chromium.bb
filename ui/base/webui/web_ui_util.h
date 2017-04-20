@@ -11,6 +11,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "ui/base/template_expressions.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -49,6 +50,9 @@ UI_BASE_EXPORT void ParsePathAndScale(const GURL& url,
 UI_BASE_EXPORT void SetLoadTimeDataDefaults(
     const std::string& app_locale,
     base::DictionaryValue* localized_strings);
+UI_BASE_EXPORT void SetLoadTimeDataDefaults(
+    const std::string& app_locale,
+    ui::TemplateReplacements* replacements);
 
 // Get a CSS declaration for common text styles using provided template.
 UI_BASE_EXPORT std::string GetWebUiCssTextDefaults(

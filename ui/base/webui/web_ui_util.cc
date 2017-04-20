@@ -123,6 +123,14 @@ void SetLoadTimeDataDefaults(const std::string& app_locale,
   localized_strings->SetString("textdirection", GetTextDirection());
 }
 
+void SetLoadTimeDataDefaults(const std::string& app_locale,
+                             ui::TemplateReplacements* replacements) {
+  (*replacements)["fontfamily"] = GetFontFamily();
+  (*replacements)["fontsize"] = GetFontSize();
+  (*replacements)["language"] = l10n_util::GetLanguage(app_locale);
+  (*replacements)["textdirection"] = GetTextDirection();
+}
+
 std::string GetWebUiCssTextDefaults(base::StringPiece css_template) {
   ui::TemplateReplacements placeholders;
   placeholders["textDirection"] = GetTextDirection();

@@ -272,52 +272,38 @@ void NTPResourceCache::Invalidate() {
 }
 
 void NTPResourceCache::CreateNewTabIncognitoHTML() {
-  base::DictionaryValue localized_strings;
-  localized_strings.SetString("title",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
-  int new_tab_description_ids = IDS_NEW_TAB_OTR_DESCRIPTION;
-  int new_tab_heading_ids = IDS_NEW_TAB_OTR_HEADING;
-  int new_tab_link_ids = IDS_NEW_TAB_OTR_LEARN_MORE_LINK;
-  int new_tab_warning_ids = IDS_NEW_TAB_OTR_MESSAGE_WARNING;
-  int new_tab_html_idr = IDR_INCOGNITO_TAB_HTML;
-  const char* new_tab_link = kLearnMoreIncognitoUrl;
-
-  if (profile_->IsGuestSession()) {
-    localized_strings.SetString("guestTabDescription",
-        l10n_util::GetStringUTF16(new_tab_description_ids));
-    localized_strings.SetString("guestTabHeading",
-        l10n_util::GetStringUTF16(new_tab_heading_ids));
-  } else {
-    localized_strings.SetString("incognitoTabDescription",
-        l10n_util::GetStringUTF16(new_tab_description_ids));
-    localized_strings.SetString("incognitoTabHeading",
-        l10n_util::GetStringUTF16(new_tab_heading_ids));
-    localized_strings.SetString("incognitoTabWarning",
-        l10n_util::GetStringUTF16(new_tab_warning_ids));
-  }
-
-  localized_strings.SetString("learnMore",
-      l10n_util::GetStringUTF16(new_tab_link_ids));
-  localized_strings.SetString("learnMoreLink", new_tab_link);
-
-  bool bookmark_bar_attached =
-      profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
-  localized_strings.SetBoolean("bookmarkbarattached", bookmark_bar_attached);
+  ui::TemplateReplacements replacements;
+  // Note: there's specific rules in CSS that look for this attribute's content
+  // being equal to "true" as a string.
+  replacements["bookmarkbarattached"] =
+      profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar)
+          ? "true"
+          : "false";
+  replacements["incognitoTabDescription"] =
+      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_DESCRIPTION);
+  replacements["incognitoTabHeading"] =
+      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_HEADING);
+  replacements["incognitoTabWarning"] =
+      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_MESSAGE_WARNING);
+  replacements["learnMore"] =
+      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_LEARN_MORE_LINK);
+  replacements["learnMoreLink"] = kLearnMoreIncognitoUrl;
+  replacements["title"] = l10n_util::GetStringUTF8(IDS_NEW_TAB_TITLE);
 
   const ui::ThemeProvider& tp =
       ThemeService::GetThemeProviderForProfile(profile_);
-  localized_strings.SetBoolean("hasCustomBackground",
-                               tp.HasCustomImage(IDR_THEME_NTP_BACKGROUND));
+  replacements["hasCustomBackground"] =
+      tp.HasCustomImage(IDR_THEME_NTP_BACKGROUND) ? "true" : "false";
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
+  webui::SetLoadTimeDataDefaults(app_locale, &replacements);
 
   static const base::StringPiece incognito_tab_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          new_tab_html_idr));
+          IDR_INCOGNITO_TAB_HTML));
 
-  std::string full_html = webui::GetI18nTemplateHtml(
-      incognito_tab_html, &localized_strings);
+  std::string full_html =
+      ui::ReplaceTemplateExpressions(incognito_tab_html, replacements);
 
   new_tab_incognito_html_ = base::RefCountedString::TakeString(&full_html);
 }
@@ -391,8 +377,9 @@ void NTPResourceCache::CreateNewTabHTML() {
   // profile is not the default.
   PrefService* prefs = profile_->GetPrefs();
   base::DictionaryValue load_time_data;
-  load_time_data.SetBoolean("bookmarkbarattached",
-      prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
+  load_time_data.SetString(
+      "bookmarkbarattached",
+      prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar) ? "true" : "false");
   load_time_data.SetBoolean("showAppLauncherPromo",
       ShouldShowAppLauncherPromo());
   load_time_data.SetString("title",
