@@ -39,8 +39,7 @@ public class ApplicationTestUtils {
 
     // TODO(jbudorick): fix deprecation warning crbug.com/537347
     @SuppressWarnings("deprecation")
-    public static void setUp(Context context, boolean clearAppData)
-            throws Exception {
+    public static void setUp(Context context, boolean clearAppData) {
         if (clearAppData) {
             // Clear data and remove any tasks listed in Android's Overview menu between test runs.
             clearAppData(context);
@@ -158,7 +157,7 @@ public class ApplicationTestUtils {
 
     /** Finishes all tasks Chrome has listed in Android's Overview. */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static void finishAllChromeTasks(final Context context) throws Exception {
+    public static void finishAllChromeTasks(final Context context) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

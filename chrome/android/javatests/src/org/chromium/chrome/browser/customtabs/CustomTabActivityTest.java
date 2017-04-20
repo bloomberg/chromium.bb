@@ -1606,7 +1606,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertNotNull("Main activity did not start", activity);
         ChromeTabbedActivity tabbedActivity =
                 (ChromeTabbedActivity) monitor.waitForActivityWithTimeout(
-                        ACTIVITY_START_TIMEOUT_MS);
+                        getActivityStartTimeoutMs());
         assertNotNull("ChromeTabbedActivity did not start", tabbedActivity);
         assertNotNull("Should have a tab switcher button.",
                 tabbedActivity.findViewById(R.id.tab_switcher_button));

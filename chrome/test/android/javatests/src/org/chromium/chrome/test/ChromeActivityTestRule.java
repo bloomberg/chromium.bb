@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,78 +8,99 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.view.View;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.ActivityTestRule;
 
-import org.chromium.base.test.BaseActivityInstrumentationTestCase;
-import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.parameter.BaseParameter;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCommon.ChromeTestCommonCallback;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
-import org.chromium.chrome.test.util.parameters.AddFakeAccountToAppParameter;
-import org.chromium.chrome.test.util.parameters.AddFakeAccountToOsParameter;
-import org.chromium.chrome.test.util.parameters.AddGoogleAccountToOsParameter;
-import org.chromium.content.browser.test.util.TestTouchUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-/**
- * Base class for all Chrome instrumentation tests.
- * All tests must inherit from this class and define their own test methods
- * See ChromeTabbedActivityTestBase.java for example.
- * @param <T> A {@link ChromeActivity} class
- */
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        // Preconnect causes issues with the single-threaded Java test server.
-        "--disable-features=NetworkPrediction"})
-public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
-        extends BaseActivityInstrumentationTestCase<T> implements ChromeTestCommonCallback<T> {
+//TODO(yolandyan): break this test rule down to smaller rules once the junit4 migration is over
+public class ChromeActivityTestRule<T extends ChromeActivity>
+        extends ActivityTestRule<T> implements ChromeTestCommonCallback<T> {
     private final ChromeActivityTestCommon<T> mTestCommon;
+    private String mCurrentTestName;
 
-    public ChromeActivityTestCaseBase(Class<T> activityClass) {
-        super(activityClass);
-        mTestCommon = new ChromeActivityTestCommon<>(activityClass, this);
-    }
+    public static final String DISABLE_NETWORK_PREDICTION_FLAG =
+            "--disable-features=NetworkPrediction";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestCommon.setUp();
-        startMainActivity();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        mTestCommon.tearDown();
-    }
+    // ChromeActivityTestRule
+    private T mSetActivity;
 
     /**
-     * Called to start the Main Activity, the subclass should implemented with it desired start
-     * method.
-     * TODO: Make startMainActivityFromLauncher the default.
+     * @param activityClass
      */
-    public abstract void startMainActivity() throws InterruptedException;
+    public ChromeActivityTestRule(Class<T> activityClass) {
+        this(activityClass, false);
+    }
+
+    public ChromeActivityTestRule(Class<T> activityClass, boolean initialTouchMode) {
+        super(activityClass, initialTouchMode, false);
+        mTestCommon = new ChromeActivityTestCommon<T>(activityClass, this);
+    }
+
+    @Override
+    public Statement apply(final Statement base, Description description) {
+        mCurrentTestName = description.getMethodName();
+        final Statement superBase = super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                mTestCommon.setUp();
+                base.evaluate();
+            }
+        }, description);
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                String perfTagAnalysisString = mTestCommon.setupPotentialPerfTest();
+                superBase.evaluate();
+                mTestCommon.endPerfTest(perfTagAnalysisString);
+            }
+        };
+    }
 
     /**
      * Return the timeout limit for Chrome activty start in tests
      */
-    protected static int getActivityStartTimeoutMs() {
+    public static int getActivityStartTimeoutMs() {
         return ChromeActivityTestCommon.ACTIVITY_START_TIMEOUT_MS;
+    }
+
+    @Override
+    protected void afterActivityFinished() {
+        try {
+            mTestCommon.tearDown();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to tearDown", e);
+        }
+        super.afterActivityFinished();
+    }
+
+    // TODO(yolandyan): remove this once startActivityCompletely is refactored out of
+    // ChromeActivityTestRule
+    @Override
+    public T getActivity() {
+        if (mSetActivity != null) {
+            return mSetActivity;
+        }
+        return super.getActivity();
     }
 
     /**
      * Matches testString against baseString.
      * Returns 0 if there is no match, 1 if an exact match and 2 if a fuzzy match.
      */
-    protected static int matchUrl(String baseString, String testString) {
+    public static int matchUrl(String baseString, String testString) {
         return ChromeActivityTestCommon.matchUrl(baseString, testString);
     }
 
@@ -90,12 +111,12 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * return, but generally speaking the activity's "onCreate" has completed
      * and the activity's main looper has become idle.
      */
-    protected void startActivityCompletely(Intent intent) {
+    public void startActivityCompletely(Intent intent) {
         mTestCommon.startActivityCompletely(intent);
     }
 
     /** Convenience function for {@link ApplicationTestUtils#clearAppData(Context)}. */
-    protected void clearAppData() {
+    public void clearAppData() {
         mTestCommon.clearAppData();
     }
 
@@ -103,65 +124,8 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * Enables or disables network predictions, i.e. prerendering, prefetching, DNS preresolution,
      * etc. Network predictions are enabled by default.
      */
-    protected void setNetworkPredictionEnabled(final boolean enabled) {
+    public void setNetworkPredictionEnabled(final boolean enabled) {
         mTestCommon.setNetworkPredictionEnabled(enabled);
-    }
-
-    /**
-     * Starts (synchronously) a drag motion. Normally followed by dragTo() and dragEnd().
-     *
-     * @param x
-     * @param y
-     * @param downTime (in ms)
-     * @see TestTouchUtils
-     */
-    public void dragStart(float x, float y, long downTime) {
-        TouchCommon.dragStart(getActivity(), x, y, downTime);
-    }
-
-    /**
-     * Drags / moves (synchronously) to the specified coordinates. Normally preceeded by
-     * dragStart() and followed by dragEnd()
-     *
-     * @param fromX
-     * @param toX
-     * @param fromY
-     * @param toY
-     * @param stepCount
-     * @param downTime (in ms)
-     * @see TestTouchUtils
-     */
-    public void dragTo(
-            float fromX, float toX, float fromY, float toY, int stepCount, long downTime) {
-        TouchCommon.dragTo(getActivity(), fromX, toX, fromY, toY, stepCount, downTime);
-    }
-
-    /**
-     * Finishes (synchronously) a drag / move at the specified coordinate.
-     * Normally preceeded by dragStart() and dragTo().
-     *
-     * @param x
-     * @param y
-     * @param downTime (in ms)
-     * @see TestTouchUtils
-     */
-    public void dragEnd(float x, float y, long downTime) {
-        TouchCommon.dragEnd(getActivity(), x, y, downTime);
-    }
-
-    /**
-     * Sends (synchronously) a single click to the center of the View.
-     *
-     * <p>
-     * Differs from
-     * {@link TestTouchUtils#singleClickView(android.app.Instrumentation, View)}
-     * as this does not rely on injecting events into the different activity.  Injecting events has
-     * been unreliable for us and simulating the touch events in this manner is just as effective.
-     *
-     * @param v The view to be clicked.
-     */
-    public void singleClickView(View v) {
-        TouchCommon.singleClickView(v);
     }
 
     /**
@@ -248,7 +212,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     /**
      * Simulates starting Main Activity from launcher, blocks until it is started.
      */
-    protected void startMainActivityFromLauncher() throws InterruptedException {
+    public void startMainActivityFromLauncher() throws InterruptedException {
         startMainActivityWithURL(null);
     }
 
@@ -256,7 +220,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * Starts the Main activity on the specified URL. Passing a null URL ensures the default page is
      * loaded, which is the NTP with a new profile .
      */
-    protected void startMainActivityWithURL(String url) throws InterruptedException {
+    public void startMainActivityWithURL(String url) throws InterruptedException {
         // Only launch Chrome.
         mTestCommon.startMainActivityWithURL(url);
     }
@@ -265,7 +229,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * Starts the Main activity and open a blank page.
      * This is faster and less flakyness-prone than starting on the NTP.
      */
-    protected void startMainActivityOnBlankPage() throws InterruptedException {
+    public void startMainActivityOnBlankPage() throws InterruptedException {
         mTestCommon.startMainActivityOnBlankPage();
     }
 
@@ -273,7 +237,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * Starts the Main activity as if it was started from an external application, on the specified
      * URL.
      */
-    protected void startMainActivityFromExternalApp(String url, String appId)
+    public void startMainActivityFromExternalApp(String url, String appId)
             throws InterruptedException {
         mTestCommon.startMainActivityFromExternalApp(url, appId);
     }
@@ -284,8 +248,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * idle-sync of the main looper thread, and the initial tab must either
      * complete its load or it must crash before this method will return.
      */
-    protected void startMainActivityFromIntent(Intent intent, String url)
-            throws InterruptedException {
+    public void startMainActivityFromIntent(Intent intent, String url) throws InterruptedException {
         mTestCommon.startMainActivityFromIntent(intent, url);
     }
 
@@ -294,31 +257,34 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * @param intent the intent to be modified
      * @param url the URL to be used (may be null)
      */
-    protected Intent prepareUrlIntent(Intent intent, String url) {
+    public Intent prepareUrlIntent(Intent intent, String url) {
         return mTestCommon.prepareUrlIntent(intent, url);
     }
 
     /**
      * Open an incognito tab by invoking the 'new incognito' menu item.
      * Returns when receiving the 'PAGE_LOAD_FINISHED' notification.
+     *
+     * TODO(yolandyan): split this into the seperate test rule, this only applies to tabbed mode
      */
-    protected void newIncognitoTabFromMenu() throws InterruptedException {
+    public void newIncognitoTabFromMenu() throws InterruptedException {
         mTestCommon.newIncognitoTabFromMenu();
     }
 
     /**
      * New multiple incognito tabs by invoking the 'new incognito' menu item n times.
      * @param n The number of tabs you want to create.
+     *
+     * TODO(yolandyan): split this into the seperate test rule, this only applies to tabbed mode
      */
-    protected void newIncognitoTabsFromMenu(int n)
-            throws InterruptedException {
+    public void newIncognitoTabsFromMenu(int n) throws InterruptedException {
         mTestCommon.newIncognitoTabsFromMenu(n);
     }
 
     /**
      * @return The number of incognito tabs currently open.
      */
-    protected int incognitoTabsCount() {
+    public int incognitoTabsCount() {
         return mTestCommon.incognitoTabsCount();
     }
 
@@ -330,6 +296,8 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * @param oneCharAtATime Whether to type text one character at a time or all at once.
      *
      * @throws InterruptedException
+     *
+     * TODO(yolandyan): split this into the seperate test rule, this only applies to tabbed mode
      */
     public void typeInOmnibox(String text, boolean oneCharAtATime) throws InterruptedException {
         mTestCommon.typeInOmnibox(text, oneCharAtATime);
@@ -345,15 +313,15 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      *
      * @throws InterruptedException
      */
-    protected OmniboxSuggestion findOmniboxSuggestion(String inputText, String displayText,
-            String url, int type) throws InterruptedException {
+    public OmniboxSuggestion findOmniboxSuggestion(String inputText, String displayText, String url,
+            int type) throws InterruptedException {
         return mTestCommon.findOmniboxSuggestion(inputText, displayText, url, type);
     }
 
     /**
      * Returns the infobars being displayed by the current tab, or null if they don't exist.
      */
-    protected List<InfoBar> getInfoBars() {
+    public List<InfoBar> getInfoBars() {
         return mTestCommon.getInfoBars();
     }
 
@@ -361,7 +329,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * Launches the preferences menu and starts the preferences activity named fragmentName.
      * Returns the activity that was started.
      */
-    protected Preferences startPreferences(String fragmentName) {
+    public Preferences startPreferences(String fragmentName) {
         return mTestCommon.startPreferences(fragmentName);
     }
 
@@ -370,45 +338,41 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * its execution in JSON format.
      * @throws InterruptedException
      */
-    protected String runJavaScriptCodeInCurrentTab(String code) throws InterruptedException,
-            TimeoutException {
+    public String runJavaScriptCodeInCurrentTab(String code)
+            throws InterruptedException, TimeoutException {
         return mTestCommon.runJavaScriptCodeInCurrentTab(code);
-    }
-
-    @Override
-    protected void runTest() throws Throwable {
-        String perfTagAnalysisString = mTestCommon.setupPotentialPerfTest();
-        super.runTest();
-        mTestCommon.endPerfTest(perfTagAnalysisString);
-    }
-
-    @Override
-    protected Map<String, BaseParameter> createAvailableParameters() {
-        Map<String, BaseParameter> availableParameters = super.createAvailableParameters();
-        availableParameters.put(AddFakeAccountToAppParameter.PARAMETER_TAG,
-                new AddFakeAccountToAppParameter(getParameterReader(), getInstrumentation()));
-        availableParameters.put(AddFakeAccountToOsParameter.PARAMETER_TAG,
-                new AddFakeAccountToOsParameter(getParameterReader(), getInstrumentation()));
-        availableParameters.put(AddGoogleAccountToOsParameter.PARAMETER_TAG,
-                new AddGoogleAccountToOsParameter(getParameterReader(), getInstrumentation()));
-        return availableParameters;
     }
 
     /**
      * Waits till the ContentViewCore receives the expected page scale factor
      * from the compositor and asserts that this happens.
      */
-    protected void assertWaitForPageScaleFactorMatch(float expectedScale) {
+    public void assertWaitForPageScaleFactorMatch(float expectedScale) {
         mTestCommon.assertWaitForPageScaleFactorMatch(expectedScale);
+    }
+
+    public String getName() {
+        return mCurrentTestName;
     }
 
     @Override
     public String getTestName() {
-        return getName();
+        return mCurrentTestName;
     }
 
     @Override
-    public void setActivity(T t) {
-        super.setActivity(t);
+    public Instrumentation getInstrumentation() {
+        return InstrumentationRegistry.getInstrumentation();
+    }
+
+    /**
+     * ActitivityTestRule already set initial touch mode in constructor.
+     */
+    @Override
+    public void setActivityInitialTouchMode(boolean touchMode) {}
+
+    @Override
+    public void setActivity(T chromeActivity) {
+        mSetActivity = chromeActivity;
     }
 }
