@@ -103,7 +103,8 @@ void IdleSpellCheckCallback::SetNeedsInvocation() {
 }
 
 void IdleSpellCheckCallback::SetNeedsColdModeInvocation() {
-  if (!IsSpellCheckingEnabled()) {
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled() ||
+      !IsSpellCheckingEnabled()) {
     Deactivate();
     return;
   }
@@ -121,6 +122,7 @@ void IdleSpellCheckCallback::SetNeedsColdModeInvocation() {
 }
 
 void IdleSpellCheckCallback::ColdModeTimerFired(TimerBase*) {
+  DCHECK(RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled());
   DCHECK_EQ(State::kColdModeTimerStarted, state_);
 
   if (!IsSpellCheckingEnabled()) {
@@ -174,6 +176,7 @@ void IdleSpellCheckCallback::handleEvent(IdleDeadline* deadline) {
     HotModeInvocation(deadline);
     SetNeedsColdModeInvocation();
   } else if (state_ == State::kColdModeRequested) {
+    DCHECK(RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled());
     state_ = State::kInColdModeInvocation;
     cold_mode_requester_->Invoke(deadline);
     if (cold_mode_requester_->FullDocumentChecked())

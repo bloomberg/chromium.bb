@@ -28,8 +28,10 @@ class IdleSpellCheckCallbackTest : public SpellCheckTestBase {
         IdleChecker().SetNeedsInvocation();
         break;
       case State::kColdModeTimerStarted:
+        DCHECK(RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled());
         break;
       case State::kColdModeRequested:
+        DCHECK(RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled());
         IdleChecker().SkipColdModeTimerForTesting();
         break;
       case State::kInHotModeInvocation:
@@ -41,11 +43,22 @@ class IdleSpellCheckCallbackTest : public SpellCheckTestBase {
 
 // Test cases for lifecycle state transitions.
 
-TEST_F(IdleSpellCheckCallbackTest, Initialization) {
+TEST_F(IdleSpellCheckCallbackTest, InitializationWithColdMode) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
     return;
 
   EXPECT_EQ(State::kColdModeTimerStarted, IdleChecker().GetState());
+}
+
+TEST_F(IdleSpellCheckCallbackTest, InitializationWithoutColdMode) {
+  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+  if (RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+    return;
+
+  EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenInactive) {
@@ -73,6 +86,8 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenHotModeRequested) {
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeTimerStarted) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+    return;
 
   TransitTo(State::kColdModeTimerStarted);
   IdleChecker().SetNeedsInvocation();
@@ -83,6 +98,8 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeTimerStarted) {
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeRequested) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+    return;
 
   TransitTo(State::kColdModeRequested);
   int handle = IdleChecker().IdleCallbackHandle();
@@ -92,8 +109,21 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeRequested) {
   EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
+TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToInactive) {
+  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+  if (RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+    return;
+
+  TransitTo(State::kHotModeRequested);
+  IdleChecker().ForceInvocationForTesting();
+  EXPECT_EQ(State::kInactive, IdleChecker().GetState());
+}
+
 TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToColdMode) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kHotModeRequested);
@@ -103,6 +133,8 @@ TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToColdMode) {
 
 TEST_F(IdleSpellCheckCallbackTest, ColdModeTimerStartedToRequested) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeTimerStarted);
@@ -114,6 +146,8 @@ TEST_F(IdleSpellCheckCallbackTest, ColdModeTimerStartedToRequested) {
 TEST_F(IdleSpellCheckCallbackTest, ColdModeStayAtColdMode) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+    return;
 
   TransitTo(State::kColdModeRequested);
   IdleChecker().SetNeedsMoreColdModeInvocationForTesting();
@@ -123,6 +157,8 @@ TEST_F(IdleSpellCheckCallbackTest, ColdModeStayAtColdMode) {
 
 TEST_F(IdleSpellCheckCallbackTest, ColdModeToInactive) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeRequested);
@@ -151,6 +187,8 @@ TEST_F(IdleSpellCheckCallbackTest, DetachWhenHotModeRequested) {
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeTimerStarted) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+    return;
 
   TransitTo(State::kColdModeTimerStarted);
   GetDocument().Shutdown();
@@ -159,6 +197,8 @@ TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeTimerStarted) {
 
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeRequested) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeRequested);

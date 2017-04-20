@@ -494,6 +494,11 @@
       status: "experimental",
     },
     {
+      name: "IdleTimeColdModeSpellChecking",
+      depends_on: ["IdleTimeSpellChecking"],
+      status: "test",
+    },
+    {
       name: "IdleTimeSpellChecking",
       status: "test",
     },
