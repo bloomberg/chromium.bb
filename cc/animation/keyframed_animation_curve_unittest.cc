@@ -818,13 +818,13 @@ TEST(KeyframedAnimationCurveTest, CurveTimingInputsOutsideZeroOneRange) {
 
 // Tests that a step timing function works as expected for inputs outside of
 // range [0,1]
-TEST(KeyframedAnimationCurveTest, StepsTimingInputsOutsideZeroOneRange) {
+TEST(KeyframedAnimationCurveTest, StepsTimingStartInputsOutsideZeroOneRange) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta(), 0.f,
                             StepsTimingFunction::Create(
-                                4, StepsTimingFunction::StepPosition::MIDDLE)));
+                                4, StepsTimingFunction::StepPosition::START)));
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 2.f, nullptr));
   // Curve timing function producing timing outputs outside of range [0,1].
@@ -832,6 +832,22 @@ TEST(KeyframedAnimationCurveTest, StepsTimingInputsOutsideZeroOneRange) {
       CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f));
 
   EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.25f)));
+  EXPECT_FLOAT_EQ(2.5f, curve->GetValue(base::TimeDelta::FromSecondsD(0.75f)));
+}
+
+TEST(KeyframedAnimationCurveTest, StepsTimingEndInputsOutsideZeroOneRange) {
+  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  curve->AddKeyframe(FloatKeyframe::Create(
+      base::TimeDelta(), 0.f,
+      StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::END)));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 2.f, nullptr));
+  // Curve timing function producing timing outputs outside of range [0,1].
+  curve->SetTimingFunction(
+      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f));
+
+  EXPECT_FLOAT_EQ(-0.5f, curve->GetValue(base::TimeDelta::FromSecondsD(0.25f)));
   EXPECT_FLOAT_EQ(2.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.75f)));
 }
 

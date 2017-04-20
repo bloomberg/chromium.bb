@@ -109,8 +109,12 @@ float StepsTimingFunction::Velocity(double x) const {
 
 double StepsTimingFunction::GetPreciseValue(double t) const {
   const double steps = static_cast<double>(steps_);
-  return MathUtil::ClampToRange(
-      std::floor((steps * t) + GetStepsStartOffset()) / steps, 0.0, 1.0);
+  double current_step = std::floor((steps * t) + GetStepsStartOffset());
+  if (t >= 0 && current_step < 0)
+    current_step = 0;
+  if (t <= 1 && current_step > steps)
+    current_step = steps;
+  return current_step / steps;
 }
 
 float StepsTimingFunction::GetStepsStartOffset() const {
