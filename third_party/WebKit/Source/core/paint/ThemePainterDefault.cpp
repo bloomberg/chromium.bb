@@ -290,7 +290,7 @@ void ThemePainterDefault::SetupMenuListArrow(
 
   extra_params.menu_list.arrow_y = middle;
   float arrow_box_width = theme_.ClampedMenuListArrowPaddingSize(
-      box.GetFrameView()->GetHostWindow(), box.StyleRef());
+      box.GetFrameView()->GetChromeClient(), box.StyleRef());
   float arrow_scale_factor = arrow_box_width / theme_.MenuListArrowWidthInDIP();
   if (UseMockTheme()) {
     // The size and position of the drop-down button is different between

@@ -160,7 +160,7 @@ bool HasOffscreenRect(Node* node, WebFocusType type) {
   // If the container has overflow:hidden, we cannot scroll, so we do not pass
   // direction and we do not adjust for scrolling.
   int pixels_per_line_step =
-      ScrollableArea::PixelsPerLineStep(frame_view->GetHostWindow());
+      ScrollableArea::PixelsPerLineStep(frame_view->GetChromeClient());
   switch (type) {
     case kWebFocusTypeLeft:
       container_viewport_rect.SetX(container_viewport_rect.X() -
@@ -204,7 +204,7 @@ bool ScrollInDirection(LocalFrame* frame, WebFocusType type) {
     int dx = 0;
     int dy = 0;
     int pixels_per_line_step =
-        ScrollableArea::PixelsPerLineStep(frame->View()->GetHostWindow());
+        ScrollableArea::PixelsPerLineStep(frame->View()->GetChromeClient());
     switch (type) {
       case kWebFocusTypeLeft:
         dx = -pixels_per_line_step;
@@ -243,7 +243,7 @@ bool ScrollInDirection(Node* container, WebFocusType type) {
     // TODO(leviw): Why are these values truncated (toInt) instead of rounding?
     FrameView* frame_view = container->GetDocument().View();
     int pixels_per_line_step = ScrollableArea::PixelsPerLineStep(
-        frame_view ? frame_view->GetHostWindow() : nullptr);
+        frame_view ? frame_view->GetChromeClient() : nullptr);
     switch (type) {
       case kWebFocusTypeLeft:
         dx = -pixels_per_line_step;

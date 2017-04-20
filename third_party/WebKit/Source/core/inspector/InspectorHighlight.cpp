@@ -12,7 +12,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "platform/HostWindow.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/graphics/Path.h"
 
 namespace blink {
@@ -253,7 +253,7 @@ InspectorHighlight::InspectorHighlight(
       scale_(1.f) {
   FrameView* frame_view = node->GetDocument().View();
   if (frame_view)
-    scale_ = 1.f / frame_view->GetHostWindow()->WindowToViewportScalar(1.f);
+    scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(1.f);
   AppendPathsForShapeOutside(node, highlight_config);
   AppendNodeHighlight(node, highlight_config);
   if (append_element_info && node->IsElementNode())

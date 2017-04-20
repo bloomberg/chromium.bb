@@ -13,7 +13,7 @@
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "platform/HostWindow.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -77,7 +77,7 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
   // value of 1 in the call for |windowToViewportScalar|. Since zoom-for-dsf is
   // disabled on MAC, |windowToViewportScalar| will be a no-op on it.
   float device_scale_factor =
-      GetScrollableArea().GetHostWindow()->WindowToViewportScalar(
+      GetScrollableArea().GetChromeClient()->WindowToViewportScalar(
           old_device_scale_factor);
 
   RefPtr<Image> resize_corner_image;

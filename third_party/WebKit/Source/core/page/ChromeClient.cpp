@@ -40,7 +40,7 @@ namespace blink {
 
 DEFINE_TRACE(ChromeClient) {
   visitor->Trace(last_mouse_over_node_);
-  HostWindow::Trace(visitor);
+  PlatformChromeClient::Trace(visitor);
 }
 
 void ChromeClient::SetWindowRectWithAdjustment(const IntRect& pending_rect,

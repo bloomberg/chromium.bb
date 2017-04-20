@@ -45,10 +45,10 @@ namespace blink {
 class CompositorAnimationHost;
 class CompositorAnimationTimeline;
 class GraphicsLayer;
-class HostWindow;
 class LayoutBox;
 class LayoutObject;
 class PaintLayer;
+class PlatformChromeClient;
 class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
 class ScrollAnchor;
@@ -65,7 +65,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   WTF_MAKE_NONCOPYABLE(ScrollableArea);
 
  public:
-  static int PixelsPerLineStep(HostWindow*);
+  static int PixelsPerLineStep(PlatformChromeClient*);
   static float MinFractionToStepWhenPaging();
   static int MaxOverlapBetweenPages();
 
@@ -75,10 +75,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
     return std::isfinite(value) ? value : 0.0;
   }
 
-  // The window that hosts the ScrollableArea. The ScrollableArea will
-  // communicate scrolls and repaints to the host window in the window's
-  // coordinate space.
-  virtual HostWindow* GetHostWindow() const { return 0; }
+  virtual PlatformChromeClient* GetChromeClient() const { return 0; }
 
   virtual ScrollResult UserScroll(ScrollGranularity, const ScrollOffset&);
 

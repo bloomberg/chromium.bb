@@ -467,7 +467,7 @@ class CORE_EXPORT FrameView final
 
   // The window that hosts the FrameView. The FrameView will communicate scrolls
   // and repaints to the host window in the window's coordinate space.
-  HostWindow* GetHostWindow() const;
+  PlatformChromeClient* GetChromeClient() const;
 
   typedef HeapHashSet<Member<FrameViewBase>> ChildrenSet;
   typedef HeapHashSet<Member<PluginView>> PluginsSet;

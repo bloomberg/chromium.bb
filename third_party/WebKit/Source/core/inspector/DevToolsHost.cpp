@@ -49,7 +49,7 @@
 #include "core/page/Page.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
-#include "platform/HostWindow.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
@@ -159,8 +159,9 @@ float DevToolsHost::zoomFactor() {
   float zoom_factor = frontend_frame_->PageZoomFactor();
   // Cancel the device scale factor applied to the zoom factor in
   // use-zoom-for-dsf mode.
-  const HostWindow* host_window = frontend_frame_->View()->GetHostWindow();
-  float window_to_viewport_ratio = host_window->WindowToViewportScalar(1.0f);
+  const PlatformChromeClient* client =
+      frontend_frame_->View()->GetChromeClient();
+  float window_to_viewport_ratio = client->WindowToViewportScalar(1.0f);
   return zoom_factor / window_to_viewport_ratio;
 }
 

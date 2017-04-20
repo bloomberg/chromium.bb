@@ -26,7 +26,7 @@
 #include "platform/scroll/Scrollbar.h"
 
 #include <algorithm>
-#include "platform/HostWindow.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
@@ -40,13 +40,13 @@ namespace blink {
 Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
                      ScrollbarOrientation orientation,
                      ScrollbarControlSize control_size,
-                     HostWindow* host_window,
+                     PlatformChromeClient* chrome_client,
                      ScrollbarTheme* theme)
     : scrollable_area_(scrollable_area),
       orientation_(orientation),
       control_size_(control_size),
       theme_(theme ? *theme : ScrollbarTheme::GetTheme()),
-      host_window_(host_window),
+      chrome_client_(chrome_client),
       visible_size_(0),
       total_size_(0),
       current_pos_(0),
@@ -72,8 +72,8 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
   // sizing).
   int thickness = theme_.ScrollbarThickness(control_size);
   theme_scrollbar_thickness_ = thickness;
-  if (host_window_)
-    thickness = host_window_->WindowToViewportScalar(thickness);
+  if (chrome_client_)
+    thickness = chrome_client_->WindowToViewportScalar(thickness);
   FrameViewBase::SetFrameRect(IntRect(0, 0, thickness, thickness));
 
   current_pos_ = ScrollableAreaCurrentPos();
@@ -85,7 +85,7 @@ Scrollbar::~Scrollbar() {
 
 DEFINE_TRACE(Scrollbar) {
   visitor->Trace(scrollable_area_);
-  visitor->Trace(host_window_);
+  visitor->Trace(chrome_client_);
   FrameViewBase::Trace(visitor);
 }
 
@@ -549,9 +549,9 @@ void Scrollbar::SetEnabled(bool e) {
 
 int Scrollbar::ScrollbarThickness() const {
   int thickness = Orientation() == kHorizontalScrollbar ? Height() : Width();
-  if (!thickness || !host_window_)
+  if (!thickness || !chrome_client_)
     return thickness;
-  return host_window_->WindowToViewportScalar(theme_scrollbar_thickness_);
+  return chrome_client_->WindowToViewportScalar(theme_scrollbar_thickness_);
 }
 
 bool Scrollbar::IsOverlayScrollbar() const {

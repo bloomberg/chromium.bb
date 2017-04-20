@@ -38,8 +38,8 @@ namespace blink {
 
 class CullRect;
 class GraphicsContext;
-class HostWindow;
 class IntRect;
+class PlatformChromeClient;
 class ScrollableArea;
 class ScrollbarTheme;
 class WebGestureEvent;
@@ -52,8 +52,8 @@ class PLATFORM_EXPORT Scrollbar : public FrameViewBase,
   static Scrollbar* Create(ScrollableArea* scrollable_area,
                            ScrollbarOrientation orientation,
                            ScrollbarControlSize size,
-                           HostWindow* host_window) {
-    return new Scrollbar(scrollable_area, orientation, size, host_window);
+                           PlatformChromeClient* chrome_client) {
+    return new Scrollbar(scrollable_area, orientation, size, chrome_client);
   }
 
   // Theme object ownership remains with the caller and it must outlive the
@@ -209,7 +209,7 @@ class PLATFORM_EXPORT Scrollbar : public FrameViewBase,
   Scrollbar(ScrollableArea*,
             ScrollbarOrientation,
             ScrollbarControlSize,
-            HostWindow* = 0,
+            PlatformChromeClient* = 0,
             ScrollbarTheme* = 0);
 
   void AutoscrollTimerFired(TimerBase*);
@@ -223,7 +223,7 @@ class PLATFORM_EXPORT Scrollbar : public FrameViewBase,
   ScrollbarOrientation orientation_;
   ScrollbarControlSize control_size_;
   ScrollbarTheme& theme_;
-  Member<HostWindow> host_window_;
+  Member<PlatformChromeClient> chrome_client_;
 
   int visible_size_;
   int total_size_;

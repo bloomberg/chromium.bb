@@ -28,7 +28,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameView.h"
-#include "platform/HostWindow.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
@@ -73,8 +73,8 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   IntRect anchor_in_viewport =
       CurrentView()->ContentsToViewport(anchor.PixelSnappedBoundingBox());
   last_anchor_rect_in_screen_ =
-      CurrentView()->GetHostWindow()->ViewportToScreen(anchor_in_viewport,
-                                                       CurrentView());
+      CurrentView()->GetChromeClient()->ViewportToScreen(anchor_in_viewport,
+                                                         CurrentView());
   last_page_scale_factor_ = web_view_.PageScaleFactor();
   message_ = message;
   const double kMinimumSecondToShowValidationMessage = 5.0;
@@ -137,7 +137,7 @@ void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   }
 
   IntRect new_anchor_rect_in_viewport_in_screen =
-      CurrentView()->GetHostWindow()->ViewportToScreen(
+      CurrentView()->GetChromeClient()->ViewportToScreen(
           new_anchor_rect_in_viewport, CurrentView());
   if (new_anchor_rect_in_viewport_in_screen == last_anchor_rect_in_screen_ &&
       web_view_.PageScaleFactor() == last_page_scale_factor_)

@@ -50,7 +50,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/resource/ImageResource.h"
 #include "core/page/Page.h"
-#include "platform/HostWindow.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace {
@@ -313,7 +313,7 @@ float ImageDocument::Scale() const {
   // We want to pretend the viewport is larger when the user has zoomed the
   // page in (but not when the zoom is coming from device scale).
   const float manual_zoom =
-      zoom / view->GetHostWindow()->WindowToViewportScalar(1.f);
+      zoom / view->GetChromeClient()->WindowToViewportScalar(1.f);
   float width_scale =
       view->Width() * manual_zoom / image_size.Width().ToFloat();
   float height_scale =

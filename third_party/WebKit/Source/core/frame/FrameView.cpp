@@ -105,8 +105,8 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/Histogram.h"
-#include "platform/HostWindow.h"
 #include "platform/Language.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/WebFrameScheduler.h"
@@ -398,7 +398,7 @@ void FrameView::DetachScrollbars() {
   // Document::detachLayoutTree() is forbidden
   // now, so it's not clear if these edge cases can still happen.
   // However, for Oilpan, we still need to remove the native scrollbars before
-  // we lose the connection to the HostWindow, so we just unconditionally
+  // we lose the connection to the ChromeClient, so we just unconditionally
   // detach any scrollbars now.
   scrollbar_manager_.Dispose();
 
@@ -2125,7 +2125,7 @@ void FrameView::UpdateCompositedSelectionIfNeeded() {
   }
 }
 
-HostWindow* FrameView::GetHostWindow() const {
+PlatformChromeClient* FrameView::GetChromeClient() const {
   Page* page = GetFrame().GetPage();
   if (!page)
     return nullptr;
@@ -2748,8 +2748,8 @@ void FrameView::ScrollbarStyleChanged() {
 }
 
 bool FrameView::ScheduleAnimation() {
-  if (HostWindow* window = GetHostWindow()) {
-    window->ScheduleAnimation(frame_);
+  if (PlatformChromeClient* client = GetChromeClient()) {
+    client->ScheduleAnimation(frame_);
     return true;
   }
   return false;
@@ -4383,8 +4383,8 @@ void FrameView::ScrollContentsIfNeeded() {
 }
 
 void FrameView::ScrollContents(const IntSize& scroll_delta) {
-  HostWindow* window = GetHostWindow();
-  if (!window)
+  PlatformChromeClient* client = GetChromeClient();
+  if (!client)
     return;
 
   TRACE_EVENT0("blink", "FrameView::scrollContents");
@@ -4486,10 +4486,10 @@ IntPoint FrameView::ContentsToViewport(
 }
 
 IntRect FrameView::ContentsToScreen(const IntRect& rect) const {
-  HostWindow* window = GetHostWindow();
-  if (!window)
+  PlatformChromeClient* client = GetChromeClient();
+  if (!client)
     return IntRect();
-  return window->ViewportToScreen(ContentsToViewport(rect), this);
+  return client->ViewportToScreen(ContentsToViewport(rect), this);
 }
 
 IntPoint FrameView::SoonToBeRemovedUnscaledViewportToContents(
@@ -5353,7 +5353,7 @@ void FrameView::SetAnimationHost(
 }
 
 LayoutUnit FrameView::CaretWidth() const {
-  return LayoutUnit(GetHostWindow()->WindowToViewportScalar(1));
+  return LayoutUnit(GetChromeClient()->WindowToViewportScalar(1));
 }
 
 }  // namespace blink

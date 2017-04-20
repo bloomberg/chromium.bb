@@ -31,7 +31,7 @@
 
 #include "platform/scroll/ScrollableArea.h"
 
-#include "platform/HostWindow.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
@@ -43,7 +43,7 @@ static const float kMinFractionToStepWhenPaging = 0.875f;
 
 namespace blink {
 
-int ScrollableArea::PixelsPerLineStep(HostWindow* host) {
+int ScrollableArea::PixelsPerLineStep(PlatformChromeClient* host) {
   if (!host)
     return kPixelsPerLineStep;
   return host->WindowToViewportScalar(kPixelsPerLineStep);
@@ -615,7 +615,7 @@ ScrollOffset ScrollableArea::ClampScrollOffset(
 }
 
 int ScrollableArea::LineStep(ScrollbarOrientation) const {
-  return PixelsPerLineStep(GetHostWindow());
+  return PixelsPerLineStep(GetChromeClient());
 }
 
 int ScrollableArea::PageStep(ScrollbarOrientation orientation) const {

@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HostWindow_h
-#define HostWindow_h
+#ifndef PlatformChromeClient_h
+#define PlatformChromeClient_h
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
@@ -36,13 +36,13 @@ class IntRect;
 class FrameViewBase;
 class LocalFrame;
 
-class PLATFORM_EXPORT HostWindow
-    : public GarbageCollectedFinalized<HostWindow> {
-  WTF_MAKE_NONCOPYABLE(HostWindow);
+class PLATFORM_EXPORT PlatformChromeClient
+    : public GarbageCollectedFinalized<PlatformChromeClient> {
+  WTF_MAKE_NONCOPYABLE(PlatformChromeClient);
 
  public:
-  HostWindow() {}
-  virtual ~HostWindow() {}
+  PlatformChromeClient() {}
+  virtual ~PlatformChromeClient() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   // Requests the host invalidate the contents.
@@ -61,4 +61,4 @@ class PLATFORM_EXPORT HostWindow
 
 }  // namespace blink
 
-#endif  // HostWindow_h
+#endif  // PlatformChromeClient_h

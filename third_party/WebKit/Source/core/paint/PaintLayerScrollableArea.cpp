@@ -203,7 +203,7 @@ DEFINE_TRACE(PaintLayerScrollableArea) {
   ScrollableArea::Trace(visitor);
 }
 
-HostWindow* PaintLayerScrollableArea::GetHostWindow() const {
+PlatformChromeClient* PaintLayerScrollableArea::GetChromeClient() const {
   if (Page* page = Box().GetFrame()->GetPage())
     return &page->GetChromeClient();
   return nullptr;
@@ -1902,8 +1902,8 @@ bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {
 }
 
 bool PaintLayerScrollableArea::ScheduleAnimation() {
-  if (HostWindow* window = GetHostWindow()) {
-    window->ScheduleAnimation(Box().GetFrame());
+  if (PlatformChromeClient* client = GetChromeClient()) {
+    client->ScheduleAnimation(Box().GetFrame());
     return true;
   }
   return false;

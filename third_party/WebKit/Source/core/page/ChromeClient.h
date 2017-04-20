@@ -33,7 +33,7 @@
 #include "core/loader/NavigationPolicy.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
-#include "platform/HostWindow.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/PopupMenu.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -86,7 +86,7 @@ struct WebPoint;
 struct WebScreenInfo;
 struct WindowFeatures;
 
-class CORE_EXPORT ChromeClient : public HostWindow {
+class CORE_EXPORT ChromeClient : public PlatformChromeClient {
  public:
   virtual void ChromeDestroyed() = 0;
 
@@ -181,10 +181,10 @@ class CORE_EXPORT ChromeClient : public HostWindow {
 
   virtual void* WebView() const = 0;
 
-  // Methods used by HostWindow.
+  // Methods used by PlatformChromeClient.
   virtual WebScreenInfo GetScreenInfo() const = 0;
   virtual void SetCursor(const Cursor&, LocalFrame* local_root) = 0;
-  // End methods used by HostWindow.
+  // End methods used by PlatformChromeClient.
 
   virtual Cursor LastSetCursorForTesting() const = 0;
   Node* LastSetTooltipNodeForTesting() const {

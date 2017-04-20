@@ -494,7 +494,7 @@ bool VisualViewport::ScrollAnimatorEnabled() const {
   return GetPage().GetSettings().GetScrollAnimatorEnabled();
 }
 
-HostWindow* VisualViewport::GetHostWindow() const {
+PlatformChromeClient* VisualViewport::GetChromeClient() const {
   return &GetPage().GetChromeClient();
 }
 
@@ -675,8 +675,8 @@ LocalFrame* VisualViewport::MainFrame() const {
 }
 
 bool VisualViewport::ScheduleAnimation() {
-  if (HostWindow* window = GetHostWindow()) {
-    window->ScheduleAnimation(MainFrame());
+  if (PlatformChromeClient* client = GetChromeClient()) {
+    client->ScheduleAnimation(MainFrame());
     return true;
   }
   return false;

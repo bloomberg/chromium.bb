@@ -28,8 +28,8 @@
 #include "core/layout/LayoutThemeFontProvider.h"
 #include "core/paint/MediaControlsPainter.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/HostWindow.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -318,12 +318,12 @@ int LayoutThemeDefault::PopupInternalPaddingStart(
 }
 
 int LayoutThemeDefault::PopupInternalPaddingEnd(
-    const HostWindow* host,
+    const PlatformChromeClient* client,
     const ComputedStyle& style) const {
   if (style.Appearance() == kNoControlPart)
     return 0;
   return 1 * style.EffectiveZoom() +
-         ClampedMenuListArrowPaddingSize(host, style);
+         ClampedMenuListArrowPaddingSize(client, style);
 }
 
 int LayoutThemeDefault::PopupInternalPaddingTop(
@@ -345,7 +345,7 @@ int LayoutThemeDefault::MenuListArrowWidthInDIP() const {
 }
 
 float LayoutThemeDefault::ClampedMenuListArrowPaddingSize(
-    const HostWindow* host,
+    const PlatformChromeClient* client,
     const ComputedStyle& style) const {
   if (cached_menu_list_arrow_padding_size_ > 0 &&
       style.EffectiveZoom() == cached_menu_list_arrow_zoom_level_)
@@ -353,7 +353,7 @@ float LayoutThemeDefault::ClampedMenuListArrowPaddingSize(
   cached_menu_list_arrow_zoom_level_ = style.EffectiveZoom();
   int original_size = MenuListArrowWidthInDIP();
   int scaled_size =
-      host ? host->WindowToViewportScalar(original_size) : original_size;
+      client ? client->WindowToViewportScalar(original_size) : original_size;
   // The result should not be samller than the scrollbar thickness in order to
   // secure space for scrollbar in popup.
   float device_scale = 1.0f * scaled_size / original_size;

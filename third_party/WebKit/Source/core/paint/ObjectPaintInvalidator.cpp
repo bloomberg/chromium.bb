@@ -12,7 +12,7 @@
 #include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/PaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
-#include "platform/HostWindow.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/graphics/GraphicsLayer.h"
 
 namespace blink {
@@ -297,8 +297,8 @@ static void InvalidatePaintRectangleOnWindow(
   if (paint_rect.IsEmpty())
     return;
 
-  if (HostWindow* window = frame_view->GetHostWindow())
-    window->InvalidateRect(frame_view->ContentsToRootFrame(paint_rect));
+  if (PlatformChromeClient* client = frame_view->GetChromeClient())
+    client->InvalidateRect(frame_view->ContentsToRootFrame(paint_rect));
 }
 
 void ObjectPaintInvalidator::SetBackingNeedsPaintInvalidationInRect(

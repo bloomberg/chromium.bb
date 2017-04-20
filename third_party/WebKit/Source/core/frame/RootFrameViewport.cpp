@@ -427,8 +427,8 @@ bool RootFrameViewport::ScrollAnimatorEnabled() const {
   return LayoutViewport().ScrollAnimatorEnabled();
 }
 
-HostWindow* RootFrameViewport::GetHostWindow() const {
-  return LayoutViewport().GetHostWindow();
+PlatformChromeClient* RootFrameViewport::GetChromeClient() const {
+  return LayoutViewport().GetChromeClient();
 }
 
 void RootFrameViewport::ServiceScrollAnimations(double monotonic_time) {

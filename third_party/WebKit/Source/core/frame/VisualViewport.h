@@ -181,7 +181,7 @@ class CORE_EXPORT VisualViewport final
   IntPoint RootFrameToViewport(const IntPoint&) const;
 
   // ScrollableArea implementation
-  HostWindow* GetHostWindow() const override;
+  PlatformChromeClient* GetChromeClient() const override;
   bool ShouldUseIntegerScrollOffset() const override;
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
