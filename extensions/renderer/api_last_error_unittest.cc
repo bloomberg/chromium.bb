@@ -19,10 +19,18 @@ namespace {
 void DoNothingWithError(v8::Local<v8::Context> context,
                         const std::string& error) {}
 
-std::string GetLastError(v8::Local<v8::Object> parent,
-                         v8::Local<v8::Context> context) {
-  v8::Local<v8::Value> last_error =
-      GetPropertyFromObject(parent, context, "lastError");
+// Returns the v8 object for the lastError.
+v8::Local<v8::Value> GetLastError(v8::Local<v8::Object> parent,
+                                  v8::Local<v8::Context> context) {
+  return GetPropertyFromObject(parent, context, "lastError");
+}
+
+// Returns a stringified version of the lastError message, if one exists, and
+// otherwise a stringified version of whatever the lastError property is (e.g.
+// undefined).
+std::string GetLastErrorMessage(v8::Local<v8::Object> parent,
+                                v8::Local<v8::Context> context) {
+  v8::Local<v8::Value> last_error = GetLastError(parent, context);
   if (last_error.IsEmpty() || !last_error->IsObject())
     return V8ToString(last_error, context);
   v8::Local<v8::Value> message =
@@ -57,7 +65,8 @@ TEST_F(APILastErrorTest, TestLastError) {
   APILastError last_error(base::Bind(&GetParent, parents),
                           base::Bind(&DoNothingWithError));
 
-  EXPECT_EQ("undefined", GetLastError(parent_object, context));
+  EXPECT_FALSE(last_error.HasError(context));
+  EXPECT_EQ("undefined", GetLastErrorMessage(parent_object, context));
   // Check that the key isn't present on the object (as opposed to simply being
   // undefined).
   EXPECT_FALSE(
@@ -65,10 +74,12 @@ TEST_F(APILastErrorTest, TestLastError) {
           .ToChecked());
 
   last_error.SetError(context, "Some last error");
-  EXPECT_EQ("\"Some last error\"", GetLastError(parent_object, context));
+  EXPECT_TRUE(last_error.HasError(context));
+  EXPECT_EQ("\"Some last error\"", GetLastErrorMessage(parent_object, context));
 
   last_error.ClearError(context, false);
-  EXPECT_EQ("undefined", GetLastError(parent_object, context));
+  EXPECT_FALSE(last_error.HasError(context));
+  EXPECT_EQ("undefined", GetLastErrorMessage(parent_object, context));
   EXPECT_FALSE(
       parent_object->Has(context, gin::StringToV8(isolate(), "lastError"))
           .ToChecked());
@@ -92,9 +103,24 @@ TEST_F(APILastErrorTest, ReportIfUnchecked) {
   {
     v8::TryCatch try_catch(isolate());
     last_error.SetError(context, "foo");
-    // GetLastError() will count as accessing the error property, so we
-    // shouldn't log an error.
-    EXPECT_EQ("\"foo\"", GetLastError(parent_object, context));
+    // GetLastErrorMessage() will count as accessing the error property, so we
+    // shouldn't throw an exception.
+    EXPECT_EQ("\"foo\"", GetLastErrorMessage(parent_object, context));
+    last_error.ClearError(context, true);
+    EXPECT_FALSE(console_error);
+    EXPECT_FALSE(try_catch.HasCaught());
+  }
+
+  {
+    v8::TryCatch try_catch(isolate());
+    last_error.SetError(context, "foo");
+    // GetLastError() only accesses the error object, and not the message
+    // directly (e.g. chrome.runtime.lastError vs
+    // chrome.runtime.lastError.message), but should still count as access and
+    // shouldn't throw an exception.
+    v8::Local<v8::Value> v8_error = GetLastError(parent_object, context);
+    ASSERT_FALSE(v8_error.IsEmpty());
+    EXPECT_TRUE(v8_error->IsObject());
     last_error.ClearError(context, true);
     EXPECT_FALSE(console_error);
     EXPECT_FALSE(try_catch.HasCaught());
@@ -109,6 +135,17 @@ TEST_F(APILastErrorTest, ReportIfUnchecked) {
     EXPECT_EQ("Unchecked runtime.lastError: A last error", *console_error);
     // We shouldn't have thrown an exception in order to prevent disrupting
     // JS execution.
+    EXPECT_FALSE(try_catch.HasCaught());
+  }
+
+  {
+    v8::TryCatch try_catch(isolate());
+    last_error.SetError(context, "A last error");
+    // Access through the internal HasError() should not count as access.
+    EXPECT_TRUE(last_error.HasError(context));
+    last_error.ClearError(context, true);
+    ASSERT_TRUE(console_error);
+    EXPECT_EQ("Unchecked runtime.lastError: A last error", *console_error);
     EXPECT_FALSE(try_catch.HasCaught());
   }
 }
@@ -139,14 +176,21 @@ TEST_F(APILastErrorTest, NonLastErrorObject) {
               gin::StringToV8(isolate(), "fake error"));
   checked_set(parent_object, "lastError", fake_last_error);
 
-  EXPECT_EQ("\"fake error\"", GetLastError(parent_object, context));
+  EXPECT_EQ("\"fake error\"", GetLastErrorMessage(parent_object, context));
 
   // The bindings shouldn't mangle an existing property (or maybe we should -
   // see the TODO in api_last_error.cc).
   last_error.SetError(context, "Real last error");
-  EXPECT_EQ("\"fake error\"", GetLastError(parent_object, context));
+  EXPECT_EQ("\"fake error\"", GetLastErrorMessage(parent_object, context));
   last_error.ClearError(context, false);
-  EXPECT_EQ("\"fake error\"", GetLastError(parent_object, context));
+  EXPECT_EQ("\"fake error\"", GetLastErrorMessage(parent_object, context));
+
+  checked_set(parent_object, "lastError", v8::Undefined(isolate()));
+  EXPECT_EQ("undefined", GetLastErrorMessage(parent_object, context));
+  last_error.SetError(context, "a last error");
+  EXPECT_EQ("\"a last error\"", GetLastErrorMessage(parent_object, context));
+  checked_set(parent_object, "lastError", fake_last_error);
+  EXPECT_EQ("\"fake error\"", GetLastErrorMessage(parent_object, context));
 }
 
 // Test lastError in multiple different contexts.
@@ -162,20 +206,20 @@ TEST_F(APILastErrorTest, MultipleContexts) {
                           base::Bind(&DoNothingWithError));
 
   last_error.SetError(context_a, "Last error a");
-  EXPECT_EQ("\"Last error a\"", GetLastError(parent_a, context_a));
-  EXPECT_EQ("undefined", GetLastError(parent_b, context_b));
+  EXPECT_EQ("\"Last error a\"", GetLastErrorMessage(parent_a, context_a));
+  EXPECT_EQ("undefined", GetLastErrorMessage(parent_b, context_b));
 
   last_error.SetError(context_b, "Last error b");
-  EXPECT_EQ("\"Last error a\"", GetLastError(parent_a, context_a));
-  EXPECT_EQ("\"Last error b\"", GetLastError(parent_b, context_b));
+  EXPECT_EQ("\"Last error a\"", GetLastErrorMessage(parent_a, context_a));
+  EXPECT_EQ("\"Last error b\"", GetLastErrorMessage(parent_b, context_b));
 
   last_error.ClearError(context_b, false);
-  EXPECT_EQ("\"Last error a\"", GetLastError(parent_a, context_a));
-  EXPECT_EQ("undefined", GetLastError(parent_b, context_b));
+  EXPECT_EQ("\"Last error a\"", GetLastErrorMessage(parent_a, context_a));
+  EXPECT_EQ("undefined", GetLastErrorMessage(parent_b, context_b));
 
   last_error.ClearError(context_a, false);
-  EXPECT_EQ("undefined", GetLastError(parent_a, context_a));
-  EXPECT_EQ("undefined", GetLastError(parent_b, context_b));
+  EXPECT_EQ("undefined", GetLastErrorMessage(parent_a, context_a));
+  EXPECT_EQ("undefined", GetLastErrorMessage(parent_b, context_b));
 }
 
 }  // namespace extensions

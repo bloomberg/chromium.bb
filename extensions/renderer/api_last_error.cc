@@ -14,7 +14,12 @@ namespace extensions {
 namespace {
 
 const char kLastErrorProperty[] = "lastError";
+const char kScriptSuppliedValueKey[] = "script_supplied_value";
 
+// The object corresponding to the lastError property, containing a single
+// property ('message') with the last error. This object is stored on the parent
+// (chrome.runtime in production) as a private property, and is returned via an
+// accessor which marks the error as accessed.
 class LastErrorObject final : public gin::Wrappable<LastErrorObject> {
  public:
   explicit LastErrorObject(const std::string& error) : error_(error) {}
@@ -26,7 +31,7 @@ class LastErrorObject final : public gin::Wrappable<LastErrorObject> {
       v8::Isolate* isolate) override {
     DCHECK(isolate);
     return Wrappable<LastErrorObject>::GetObjectTemplateBuilder(isolate)
-        .SetProperty("message", &LastErrorObject::GetLastError);
+        .SetProperty("message", &LastErrorObject::error);
   }
 
   void Reset(const std::string& error) {
@@ -36,13 +41,9 @@ class LastErrorObject final : public gin::Wrappable<LastErrorObject> {
 
   const std::string& error() const { return error_; }
   bool accessed() const { return accessed_; }
+  void set_accessed() { accessed_ = true; }
 
  private:
-  std::string GetLastError() {
-    accessed_ = true;
-    return error_;
-  }
-
   std::string error_;
   bool accessed_ = false;
 
@@ -50,6 +51,63 @@ class LastErrorObject final : public gin::Wrappable<LastErrorObject> {
 };
 
 gin::WrapperInfo LastErrorObject::kWrapperInfo = {gin::kEmbedderNativeGin};
+
+// An accessor to retrieve the last error property (curried in through data),
+// and mark it as accessed.
+void LastErrorGetter(v8::Local<v8::Name> property,
+                     const v8::PropertyCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Object> holder = info.Holder();
+  v8::Local<v8::Context> context = holder->CreationContext();
+
+  v8::Local<v8::Value> last_error;
+  v8::Local<v8::Private> last_error_key = v8::Private::ForApi(
+      isolate, gin::StringToSymbol(isolate, kLastErrorProperty));
+  if (!holder->GetPrivate(context, last_error_key).ToLocal(&last_error) ||
+      last_error != info.Data()) {
+    // Something funny happened - our private properties aren't set right.
+    NOTREACHED();
+    return;
+  }
+
+  v8::Local<v8::Value> return_value;
+
+  // It's possible that some script has set their own value for the last error
+  // property. If so, return that. Otherwise, return the real last error.
+  v8::Local<v8::Private> script_value_key = v8::Private::ForApi(
+      isolate, gin::StringToSymbol(isolate, kScriptSuppliedValueKey));
+  v8::Local<v8::Value> script_value;
+  if (holder->GetPrivate(context, script_value_key).ToLocal(&script_value) &&
+      !script_value->IsUndefined()) {
+    return_value = script_value;
+  } else {
+    LastErrorObject* last_error_obj = nullptr;
+    CHECK(gin::Converter<LastErrorObject*>::FromV8(isolate, last_error,
+                                                   &last_error_obj));
+    last_error_obj->set_accessed();
+    return_value = last_error;
+  }
+
+  info.GetReturnValue().Set(return_value);
+}
+
+// Allow script to set the last error property.
+void LastErrorSetter(v8::Local<v8::Name> property,
+                     v8::Local<v8::Value> value,
+                     const v8::PropertyCallbackInfo<void>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Object> holder = info.Holder();
+  v8::Local<v8::Context> context = holder->CreationContext();
+
+  v8::Local<v8::Private> script_value_key = v8::Private::ForApi(
+      isolate, gin::StringToSymbol(isolate, kScriptSuppliedValueKey));
+  v8::Maybe<bool> set_private =
+      holder->SetPrivate(context, script_value_key, value);
+  if (!set_private.IsJust() || !set_private.FromJust())
+    NOTREACHED();
+}
 
 }  // namespace
 
@@ -79,14 +137,20 @@ void APILastError::SetError(v8::Local<v8::Context> context,
     return;
   v8::Local<v8::String> key = gin::StringToSymbol(isolate, kLastErrorProperty);
   v8::Local<v8::Value> v8_error;
+  // Two notes: this Get() is visible to external script, and this will actually
+  // mark the lastError as accessed, if one exists. These shouldn't be a
+  // problem (lastError is meant to be helpful, but isn't designed to handle
+  // crazy chaining, etc). However, if we decide we needed to be fancier, we
+  // could detect the presence of a current error through a GetPrivate(), and
+  // optionally throw it if one exists.
   if (!parent->Get(context, key).ToLocal(&v8_error))
     return;
 
   if (!v8_error->IsUndefined()) {
     // There may be an existing last error to overwrite.
     LastErrorObject* last_error = nullptr;
-    if (!gin::Converter<LastErrorObject*>::FromV8(context->GetIsolate(),
-                                                  v8_error, &last_error)) {
+    if (!gin::Converter<LastErrorObject*>::FromV8(isolate, v8_error,
+                                                  &last_error)) {
       // If it's not a real lastError (e.g. if a script manually set it), don't
       // do anything. We shouldn't mangle a property set by other script.
       // TODO(devlin): Or should we? If someone sets chrome.runtime.lastError,
@@ -95,15 +159,19 @@ void APILastError::SetError(v8::Local<v8::Context> context,
     }
     last_error->Reset(error);
   } else {
-    DCHECK(context->GetIsolate());
     v8::Local<v8::Value> last_error =
-        gin::CreateHandle(context->GetIsolate(), new LastErrorObject(error))
-            .ToV8();
+        gin::CreateHandle(isolate, new LastErrorObject(error)).ToV8();
+    v8::Maybe<bool> set_private = parent->SetPrivate(
+        context, v8::Private::ForApi(isolate, key), last_error);
+    if (!set_private.IsJust() || !set_private.FromJust()) {
+      NOTREACHED();
+      return;
+    }
     DCHECK(!last_error.IsEmpty());
     // This Set() can fail, but there's nothing to do if it does (the exception
     // will be caught by the TryCatch above).
-    ignore_result(parent->Set(
-        context, gin::StringToSymbol(isolate, kLastErrorProperty), last_error));
+    ignore_result(parent->SetAccessor(context, key, &LastErrorGetter,
+                                      &LastErrorSetter, last_error));
   }
 }
 
@@ -115,6 +183,7 @@ void APILastError::ClearError(v8::Local<v8::Context> context,
   v8::Local<v8::Object> parent;
   LastErrorObject* last_error = nullptr;
   v8::Local<v8::String> key;
+  v8::Local<v8::Private> private_key;
   {
     // See comment in SetError().
     v8::TryCatch try_catch(isolate);
@@ -124,8 +193,10 @@ void APILastError::ClearError(v8::Local<v8::Context> context,
     if (parent.IsEmpty())
       return;
     key = gin::StringToSymbol(isolate, kLastErrorProperty);
+    private_key = v8::Private::ForApi(isolate, key);
     v8::Local<v8::Value> error;
-    if (!parent->Get(context, key).ToLocal(&error))
+    // Access through GetPrivate() so that we don't trigger accessed().
+    if (!parent->GetPrivate(context, private_key).ToLocal(&error))
       return;
     if (!gin::Converter<LastErrorObject*>::FromV8(context->GetIsolate(), error,
                                                   &last_error)) {
@@ -142,9 +213,14 @@ void APILastError::ClearError(v8::Local<v8::Context> context,
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
+  v8::Maybe<bool> delete_private = parent->DeletePrivate(context, private_key);
+  if (!delete_private.IsJust() || !delete_private.FromJust()) {
+    NOTREACHED();
+    return;
+  }
   // This Delete() can fail, but there's nothing to do if it does (the exception
   // will be caught by the TryCatch above).
-  parent->Delete(context, key).ToChecked();
+  ignore_result(parent->Delete(context, key));
 }
 
 bool APILastError::HasError(v8::Local<v8::Context> context) {
@@ -159,10 +235,11 @@ bool APILastError::HasError(v8::Local<v8::Context> context) {
   if (parent.IsEmpty())
     return false;
   v8::Local<v8::Value> error;
-  if (!parent->Get(context, gin::StringToSymbol(isolate, kLastErrorProperty))
-           .ToLocal(&error)) {
+  v8::Local<v8::Private> key = v8::Private::ForApi(
+      isolate, gin::StringToSymbol(isolate, kLastErrorProperty));
+  // Access through GetPrivate() so we don't trigger accessed().
+  if (!parent->GetPrivate(context, key).ToLocal(&error))
     return false;
-  }
 
   LastErrorObject* last_error = nullptr;
   return gin::Converter<LastErrorObject*>::FromV8(context->GetIsolate(), error,
