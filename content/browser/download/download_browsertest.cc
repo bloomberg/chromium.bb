@@ -324,11 +324,12 @@ class CountingDownloadFile : public DownloadFileImpl {
   void Initialize(
       const InitializeCallback& callback,
       const CancelRequestCallback& cancel_request_callback,
-      const DownloadItem::ReceivedSlices& received_slices) override {
+      const DownloadItem::ReceivedSlices& received_slices,
+      bool is_parallelizable) override {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     active_files_++;
     DownloadFileImpl::Initialize(callback, cancel_request_callback,
-                                 received_slices);
+                                 received_slices, is_parallelizable);
   }
 
   static void GetNumberActiveFiles(int* result) {

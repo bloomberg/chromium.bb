@@ -55,7 +55,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // DownloadFile functions.
   void Initialize(const InitializeCallback& initialize_callback,
                   const CancelRequestCallback& cancel_request_callback,
-                  const DownloadItem::ReceivedSlices& received_slices) override;
+                  const DownloadItem::ReceivedSlices& received_slices,
+                  bool is_parallelizable) override;
 
   void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                      int64_t offset,

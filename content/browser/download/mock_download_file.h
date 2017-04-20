@@ -28,10 +28,11 @@ class MockDownloadFile : public DownloadFile {
   virtual ~MockDownloadFile();
 
   // DownloadFile functions.
-  MOCK_METHOD3(Initialize,
+  MOCK_METHOD4(Initialize,
                void(const InitializeCallback&,
                     const CancelRequestCallback&,
-                    const DownloadItem::ReceivedSlices& received_slices));
+                    const DownloadItem::ReceivedSlices& received_slices,
+                    bool is_parallelizable));
   void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                      int64_t offset,
                      int64_t length) override;

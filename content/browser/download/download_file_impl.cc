@@ -106,7 +106,7 @@ DownloadFileImpl::DownloadFileImpl(
       potential_file_length_(kUnknownContentLength),
       bytes_seen_(0),
       num_active_streams_(0),
-      record_stream_bandwidth_(true),
+      record_stream_bandwidth_(false),
       bytes_seen_with_parallel_streams_(0),
       bytes_seen_without_parallel_streams_(0),
       observer_(observer),
@@ -130,7 +130,8 @@ DownloadFileImpl::~DownloadFileImpl() {
 void DownloadFileImpl::Initialize(
     const InitializeCallback& initialize_callback,
     const CancelRequestCallback& cancel_request_callback,
-    const DownloadItem::ReceivedSlices& received_slices) {
+    const DownloadItem::ReceivedSlices& received_slices,
+    bool is_parallelizable) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   update_timer_.reset(new base::RepeatingTimer());
@@ -157,6 +158,7 @@ void DownloadFileImpl::Initialize(
 
   download_start_ = base::TimeTicks::Now();
   last_update_time_ = download_start_;
+  record_stream_bandwidth_ = is_parallelizable;
 
   // Primarily to make reset to zero in restart visible to owner.
   SendUpdate();
@@ -488,11 +490,12 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
     if (IsDownloadCompleted()) {
       RecordFileBandwidth(bytes_seen_, disk_writes_time_,
                           base::TimeTicks::Now() - download_start_);
-      if (IsSparseFile() && record_stream_bandwidth_) {
-        RecordParallelDownloadStats(bytes_seen_with_parallel_streams_,
-                                    download_time_with_parallel_streams_,
-                                    bytes_seen_without_parallel_streams_,
-                                    download_time_without_parallel_streams_);
+      if (record_stream_bandwidth_) {
+        RecordParallelizableDownloadStats(
+            bytes_seen_with_parallel_streams_,
+            download_time_with_parallel_streams_,
+            bytes_seen_without_parallel_streams_,
+            download_time_without_parallel_streams_, IsSparseFile());
       }
       weak_factory_.InvalidateWeakPtrs();
       std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();

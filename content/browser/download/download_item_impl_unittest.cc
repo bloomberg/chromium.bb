@@ -310,7 +310,7 @@ class DownloadItemTest : public testing::Test {
     if (create_info_->result == DOWNLOAD_INTERRUPT_REASON_NONE) {
       mock_download_file = new StrictMock<MockDownloadFile>;
       download_file.reset(mock_download_file);
-      EXPECT_CALL(*mock_download_file, Initialize(_, _, _))
+      EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _))
           .WillOnce(ScheduleCallbackWithParam(DOWNLOAD_INTERRUPT_REASON_NONE));
       EXPECT_CALL(*mock_download_file, FullPath())
           .WillRepeatedly(ReturnRefOfCopy(base::FilePath()));
@@ -602,7 +602,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
   std::unique_ptr<DownloadRequestHandleInterface> request_handle(
       new NiceMock<MockRequestHandle>);
 
-  EXPECT_CALL(*mock_download_file, Initialize(_, _, _));
+  EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _));
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(_, _));
   item->Start(std::move(download_file), std::move(request_handle),
               *create_info());
@@ -1069,7 +1069,7 @@ TEST_F(DownloadItemTest, Start) {
   MockDownloadFile* mock_download_file(new MockDownloadFile);
   std::unique_ptr<DownloadFile> download_file(mock_download_file);
   DownloadItemImpl* item = CreateDownloadItem();
-  EXPECT_CALL(*mock_download_file, Initialize(_, _, _));
+  EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _));
   std::unique_ptr<DownloadRequestHandleInterface> request_handle(
       new NiceMock<MockRequestHandle>);
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _));
@@ -1090,7 +1090,7 @@ TEST_F(DownloadItemTest, InitDownloadFileFails) {
 
   EXPECT_CALL(*file, Cancel());
   EXPECT_CALL(*request_handle, CancelRequest());
-  EXPECT_CALL(*file, Initialize(_, _, _))
+  EXPECT_CALL(*file, Initialize(_, _, _, _))
       .WillOnce(ScheduleCallbackWithParam(
           DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED));
 
@@ -2127,7 +2127,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
 
   base::RunLoop download_start_loop;
   DownloadFile::InitializeCallback initialize_callback;
-  EXPECT_CALL(*file_, Initialize(_, _, _))
+  EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&initialize_callback),
                       ScheduleClosure(download_start_loop.QuitClosure())));
   item_->Start(std::move(file_), std::move(request_handle_), *create_info());
@@ -2180,7 +2180,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
 
   base::RunLoop download_start_loop;
   DownloadFile::InitializeCallback initialize_callback;
-  EXPECT_CALL(*file_, Initialize(_, _, _))
+  EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&initialize_callback),
                       ScheduleClosure(download_start_loop.QuitClosure())));
 
@@ -2250,7 +2250,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
 
   base::RunLoop download_start_loop;
   DownloadFile::InitializeCallback initialize_callback;
-  EXPECT_CALL(*file_, Initialize(_, _, _))
+  EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&initialize_callback),
                       ScheduleClosure(download_start_loop.QuitClosure())));
 

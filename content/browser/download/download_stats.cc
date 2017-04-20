@@ -389,17 +389,20 @@ void RecordDownloadCompleted(const base::TimeTicks& start,
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t received,
                                int64_t total,
-                               bool uses_parallel_requests) {
+                               bool is_parallelizable,
+                               bool is_parallel_download_enabled) {
   RecordDownloadCount(INTERRUPTED_COUNT);
-  if (uses_parallel_requests)
-    RecordParallelDownloadCount(INTERRUPTED_COUNT);
+  if (is_parallelizable) {
+    RecordParallelizableDownloadCount(INTERRUPTED_COUNT,
+                                      is_parallel_download_enabled);
+  }
 
   std::vector<base::HistogramBase::Sample> samples =
       base::CustomHistogram::ArrayToCustomRanges(
           kAllInterruptReasonCodes, arraysize(kAllInterruptReasonCodes));
   UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.InterruptedReason", reason,
                                    samples);
-  if (uses_parallel_requests) {
+  if (is_parallel_download_enabled) {
     UMA_HISTOGRAM_CUSTOM_ENUMERATION(
         "Download.InterruptedReason.ParallelDownload", reason, samples);
   }
@@ -417,7 +420,7 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                               1,
                               kMaxKb,
                               kBuckets);
-  if (uses_parallel_requests) {
+  if (is_parallel_download_enabled) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Download.InterruptedReceivedSizeK.ParallelDownload", received_kb, 1,
         kMaxKb, kBuckets);
@@ -429,7 +432,7 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                 1,
                                 kMaxKb,
                                 kBuckets);
-    if (uses_parallel_requests) {
+    if (is_parallel_download_enabled) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Download.InterruptedTotalSizeK.ParallelDownload", total_kb, 1,
           kMaxKb, kBuckets);
@@ -439,8 +442,9 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
       UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.InterruptedAtEndReason",
                                        reason, samples);
 
-      if (uses_parallel_requests) {
-        RecordParallelDownloadCount(INTERRUPTED_AT_END_COUNT);
+      if (is_parallelizable) {
+        RecordParallelizableDownloadCount(INTERRUPTED_AT_END_COUNT,
+                                          is_parallel_download_enabled);
         UMA_HISTOGRAM_CUSTOM_ENUMERATION(
             "Download.InterruptedAtEndReason.ParallelDownload", reason,
             samples);
@@ -451,7 +455,7 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                   1,
                                   kMaxKb,
                                   kBuckets);
-      if (uses_parallel_requests) {
+      if (is_parallel_download_enabled) {
         UMA_HISTOGRAM_CUSTOM_COUNTS(
             "Download.InterruptedOverrunBytes.ParallelDownload", delta_bytes, 1,
             kMaxKb, kBuckets);
@@ -462,7 +466,7 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                   1,
                                   kMaxKb,
                                   kBuckets);
-      if (uses_parallel_requests) {
+      if (is_parallel_download_enabled) {
         UMA_HISTOGRAM_CUSTOM_COUNTS(
             "Download.InterruptedUnderrunBytes.ParallelDownload", -delta_bytes,
             1, kMaxKb, kBuckets);
@@ -767,9 +771,13 @@ void RecordFileBandwidth(size_t length,
       CalculateBandwidthBytesPerSecond(length, disk_write_time));
 }
 
-void RecordParallelDownloadCount(DownloadCountTypes type) {
-  UMA_HISTOGRAM_ENUMERATION("Download.Counts.ParallelDownload", type,
-                            DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
+void RecordParallelizableDownloadCount(DownloadCountTypes type,
+                                       bool is_parallel_download_enabled) {
+  std::string histogram_name = is_parallel_download_enabled
+                                   ? "Download.Counts.ParallelDownload"
+                                   : "Download.Counts.ParallelizableDownload";
+  base::UmaHistogramEnumeration(histogram_name, type,
+                                DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
 void RecordParallelDownloadRequestCount(int request_count) {
@@ -781,20 +789,40 @@ void RecordParallelDownloadAddStreamSuccess(bool success) {
   UMA_HISTOGRAM_BOOLEAN("Download.ParallelDownloadAddStreamSuccess", success);
 }
 
-void RecordParallelDownloadStats(
+void RecordParallelizableDownloadStats(
     size_t bytes_downloaded_with_parallel_streams,
     base::TimeDelta time_with_parallel_streams,
     size_t bytes_downloaded_without_parallel_streams,
-    base::TimeDelta time_without_parallel_streams) {
-  int64_t bandwidth_without_parallel_streams = CalculateBandwidthBytesPerSecond(
-      bytes_downloaded_without_parallel_streams, time_without_parallel_streams);
-  RecordBandwidthMetric(
-      "Download.BandwidthWithoutParallelStreamsBytesPerSecond",
-      bandwidth_without_parallel_streams);
-  RecordBandwidthMetric(
-      "Download.BandwidthWithParallelStreamsBytesPerSecond",
-      CalculateBandwidthBytesPerSecond(bytes_downloaded_with_parallel_streams,
-                                       time_with_parallel_streams));
+    base::TimeDelta time_without_parallel_streams,
+    bool uses_parallel_requests) {
+  int64_t bandwidth_without_parallel_streams = 0;
+  if (bytes_downloaded_without_parallel_streams > 0) {
+    bandwidth_without_parallel_streams = CalculateBandwidthBytesPerSecond(
+        bytes_downloaded_without_parallel_streams,
+        time_without_parallel_streams);
+    if (uses_parallel_requests) {
+      RecordBandwidthMetric(
+          "Download.ParallelizableDownloadBandwidth."
+          "WithParallelRequestsSingleStream",
+          bandwidth_without_parallel_streams);
+    } else {
+      RecordBandwidthMetric(
+          "Download.ParallelizableDownloadBandwidth."
+          "WithoutParallelRequests",
+          bandwidth_without_parallel_streams);
+    }
+  }
+
+  if (!uses_parallel_requests)
+    return;
+
+  if (bytes_downloaded_with_parallel_streams > 0) {
+    RecordBandwidthMetric(
+        "Download.ParallelizableDownloadBandwidth."
+        "WithParallelRequestsMultipleStreams",
+        CalculateBandwidthBytesPerSecond(bytes_downloaded_with_parallel_streams,
+                                         time_with_parallel_streams));
+  }
 
   base::TimeDelta time_saved;
   if (bandwidth_without_parallel_streams > 0) {

@@ -17,7 +17,8 @@ class CONTENT_EXPORT DownloadJobImpl : public DownloadJob {
  public:
   DownloadJobImpl(
       DownloadItemImpl* download_item,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle);
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      bool is_parallizable);
   ~DownloadJobImpl() override;
 
   // DownloadJob implementation.
@@ -26,11 +27,15 @@ class CONTENT_EXPORT DownloadJobImpl : public DownloadJob {
   void Pause() override;
   void Resume(bool resume_request) override;
   WebContents* GetWebContents() const override;
+  bool IsParallelizable() const override;
 
  private:
   // Used to perform operations on network request.
   // Can be null on interrupted download.
   std::unique_ptr<DownloadRequestHandleInterface> request_handle_;
+
+  // Whether the download can be parallized.
+  bool is_parallizable_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadJobImpl);
 };

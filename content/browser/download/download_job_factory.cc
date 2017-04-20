@@ -19,8 +19,8 @@ namespace content {
 
 namespace {
 
-// Returns if the download should be a parallel download.
-bool ShouldUseParallelDownload(const DownloadCreateInfo& create_info) {
+// Returns if the download can be parallelized.
+bool IsParallelizableDownload(const DownloadCreateInfo& create_info) {
   // To enable parallel download, following conditions need to be satisfied.
   // 1. Feature |kParallelDownloading| enabled.
   // 2. Strong validators response headers. i.e. ETag and Last-Modified.
@@ -28,8 +28,6 @@ bool ShouldUseParallelDownload(const DownloadCreateInfo& create_info) {
   // 4. Content-Length header.
   // 5. Content-Length is no less than the minimum slice size configuration.
   // 6. HTTP/1.1 protocol, not QUIC nor HTTP/1.0.
-  if (!base::FeatureList::IsEnabled(features::kParallelDownloading))
-    return false;
 
   // Etag and last modified are stored into DownloadCreateInfo in
   // DownloadRequestCore only if the response header complies to the strong
@@ -42,12 +40,15 @@ bool ShouldUseParallelDownload(const DownloadCreateInfo& create_info) {
   bool satisfy_connection_type = create_info.connection_info ==
                                  net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
 
-  bool should_use_parallel_download =
-      has_strong_validator && create_info.accept_range && has_content_length &&
-      satisfy_min_file_size && satisfy_connection_type;
+  bool is_parallelizable = has_strong_validator && create_info.accept_range &&
+                           has_content_length && satisfy_min_file_size &&
+                           satisfy_connection_type;
+
+  if (!IsParallelDownloadEnabled())
+    return is_parallelizable;
 
   RecordParallelDownloadCreationEvent(
-      should_use_parallel_download
+      is_parallelizable
           ? ParallelDownloadCreationEvent::STARTED_PARALLEL_DOWNLOAD
           : ParallelDownloadCreationEvent::FELL_BACK_TO_NORMAL_DOWNLOAD);
 
@@ -72,7 +73,7 @@ bool ShouldUseParallelDownload(const DownloadCreateInfo& create_info) {
         ParallelDownloadCreationEvent::FALLBACK_REASON_CONNECTION_TYPE);
   }
 
-  return should_use_parallel_download;
+  return is_parallelizable;
 }
 
 }  // namespace
@@ -81,16 +82,17 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     DownloadItemImpl* download_item,
     std::unique_ptr<DownloadRequestHandleInterface> req_handle,
     const DownloadCreateInfo& create_info) {
+  bool is_parallelizable = IsParallelizableDownload(create_info);
   // Build parallel download job.
-  if (ShouldUseParallelDownload(create_info)) {
+  if (IsParallelDownloadEnabled() && is_parallelizable) {
     return base::MakeUnique<ParallelDownloadJob>(download_item,
                                                  std::move(req_handle),
                                                  create_info);
   }
 
   // An ordinary download job.
-  return base::MakeUnique<DownloadJobImpl>(download_item,
-                                           std::move(req_handle));
+  return base::MakeUnique<DownloadJobImpl>(download_item, std::move(req_handle),
+                                           is_parallelizable);
 }
 
 }  // namespace

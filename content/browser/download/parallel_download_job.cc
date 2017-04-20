@@ -26,7 +26,7 @@ ParallelDownloadJob::ParallelDownloadJob(
     DownloadItemImpl* download_item,
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const DownloadCreateInfo& create_info)
-    : DownloadJobImpl(download_item, std::move(request_handle)),
+    : DownloadJobImpl(download_item, std::move(request_handle), true),
       initial_request_offset_(create_info.offset),
       content_length_(create_info.total_bytes),
       requests_sent_(false),
@@ -91,10 +91,6 @@ int64_t ParallelDownloadJob::GetMinSliceSize() const {
 
 int ParallelDownloadJob::GetMinRemainingTimeInSeconds() const {
   return GetParallelRequestRemainingTimeConfig().InSeconds();
-}
-
-bool ParallelDownloadJob::UsesParallelRequests() const {
-  return true;
 }
 
 void ParallelDownloadJob::CancelRequestWithOffset(int64_t offset) {

@@ -14,7 +14,8 @@ namespace {
 void SuccessRun(
     const DownloadFile::InitializeCallback& initialize_callback,
     const DownloadFile::CancelRequestCallback& cancel_request_callback,
-    const DownloadItem::ReceivedSlices& received_slices) {
+    const DownloadItem::ReceivedSlices& received_slices,
+    bool is_parallelizable) {
   initialize_callback.Run(DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
@@ -23,7 +24,7 @@ void SuccessRun(
 MockDownloadFile::MockDownloadFile() {
   // This is here because |Initialize()| is normally called right after
   // construction.
-  ON_CALL(*this, Initialize(_, _, _))
+  ON_CALL(*this, Initialize(_, _, _, _))
       .WillByDefault(::testing::Invoke(SuccessRun));
 }
 

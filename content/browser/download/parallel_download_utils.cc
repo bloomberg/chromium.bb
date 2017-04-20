@@ -167,7 +167,7 @@ void DebugSlicesInfo(const DownloadItem::ReceivedSlices& slices) {
   }
 }
 
-CONTENT_EXPORT int64_t GetMaxContiguousDataBlockSizeFromBeginning(
+int64_t GetMaxContiguousDataBlockSizeFromBeginning(
     const DownloadItem::ReceivedSlices& slices) {
   std::vector<DownloadItem::ReceivedSlice>::const_iterator iter =
       slices.begin();
@@ -178,6 +178,10 @@ CONTENT_EXPORT int64_t GetMaxContiguousDataBlockSizeFromBeginning(
     iter++;
   }
   return size;
+}
+
+bool IsParallelDownloadEnabled() {
+  return base::FeatureList::IsEnabled(features::kParallelDownloading);
 }
 
 }  // namespace content

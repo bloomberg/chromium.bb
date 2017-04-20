@@ -51,10 +51,10 @@ class CONTENT_EXPORT DownloadFile {
   // Upon completion, |initialize_callback| will be called on the UI
   // thread as per the comment above, passing DOWNLOAD_INTERRUPT_REASON_NONE
   // on success, or a network download interrupt reason on failure.
-  virtual void Initialize(
-      const InitializeCallback& initialize_callback,
-      const CancelRequestCallback& cancel_request_callback,
-      const DownloadItem::ReceivedSlices& received_slices) = 0;
+  virtual void Initialize(const InitializeCallback& initialize_callback,
+                          const CancelRequestCallback& cancel_request_callback,
+                          const DownloadItem::ReceivedSlices& received_slices,
+                          bool is_parallelizable) = 0;
 
   // Add a byte stream reader to write into a slice of the file, used for
   // parallel download. Called on the file thread.

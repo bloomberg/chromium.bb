@@ -10,8 +10,11 @@ namespace content {
 
 DownloadJobImpl::DownloadJobImpl(
     DownloadItemImpl* download_item,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle)
-    : DownloadJob(download_item), request_handle_(std::move(request_handle)) {}
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+    bool is_parallizable)
+    : DownloadJob(download_item),
+      request_handle_(std::move(request_handle)),
+      is_parallizable_(is_parallizable) {}
 
 DownloadJobImpl::~DownloadJobImpl() = default;
 
@@ -41,6 +44,10 @@ void DownloadJobImpl::Resume(bool resume_request) {
 
 WebContents* DownloadJobImpl::GetWebContents() const {
   return request_handle_ ? request_handle_->GetWebContents() : nullptr;
+}
+
+bool DownloadJobImpl::IsParallelizable() const {
+  return is_parallizable_;
 }
 
 }  // namespace content

@@ -40,8 +40,9 @@ class CONTENT_EXPORT DownloadJob {
   // WebContents.
   virtual WebContents* GetWebContents() const = 0;
 
-  // Returns whether the download uses parallel requests.
-  virtual bool UsesParallelRequests() const;
+  // Returns whether the download is parallelizable. The download may not send
+  // parallel requests as it can be disabled through flags.
+  virtual bool IsParallelizable() const;
 
   // Cancel a particular request starts from |offset|, while the download is not
   // canceled. Used in parallel download.

@@ -195,7 +195,8 @@ void RecordDownloadCompleted(const base::TimeTicks& start,
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t received,
                                int64_t total,
-                               bool uses_parallel_requests);
+                               bool is_parallelizable,
+                               bool is_parallel_download_enabled);
 
 // Record that a download has been classified as malicious.
 void RecordMaliciousDownloadClassified(DownloadDangerType danger_type);
@@ -254,8 +255,9 @@ void RecordFileBandwidth(size_t length,
                          base::TimeDelta disk_write_time,
                          base::TimeDelta elapsed_time);
 
-// Increment one of the count for parallel download.
-void RecordParallelDownloadCount(DownloadCountTypes type);
+// Increment one of the count for parallelizable download.
+void RecordParallelizableDownloadCount(DownloadCountTypes type,
+                                       bool is_parallel_download_enabled);
 
 // Records the actual total number of requests sent for a parallel download,
 // including the initial request.
@@ -264,13 +266,15 @@ void RecordParallelDownloadRequestCount(int request_count);
 // Records if each byte stream is successfully added to download sink.
 void RecordParallelDownloadAddStreamSuccess(bool success);
 
-// Records the bandwidth for parallel download and estimates the saved time at
-// the file end. Does not count in any hash computation or file open/close time.
-void RecordParallelDownloadStats(
+// Records the bandwidth for parallelizable download and estimates the saved
+// time at the file end. Does not count in any hash computation or file
+// open/close time.
+void RecordParallelizableDownloadStats(
     size_t bytes_downloaded_with_parallel_streams,
     base::TimeDelta time_with_parallel_streams,
     size_t bytes_downloaded_without_parallel_streams,
-    base::TimeDelta time_without_parallel_streams);
+    base::TimeDelta time_without_parallel_streams,
+    bool uses_parallel_requests);
 
 // Records the parallel download creation counts and the reasons why the
 // download falls back to non-parallel download.

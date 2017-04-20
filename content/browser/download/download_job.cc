@@ -62,10 +62,10 @@ void DownloadJob::SetPotentialFileLength(int64_t length) {
   }
 }
 
-bool DownloadJob::UsesParallelRequests() const {
+void DownloadJob::CancelRequestWithOffset(int64_t offset) {}
+
+bool DownloadJob::IsParallelizable() const {
   return false;
 }
-
-void DownloadJob::CancelRequestWithOffset(int64_t offset) {}
 
 }  // namespace content

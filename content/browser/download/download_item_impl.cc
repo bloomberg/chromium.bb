@@ -271,7 +271,8 @@ DownloadItemImpl::DownloadItemImpl(
       current_path_(path),
       net_log_(net_log),
       weak_ptr_factory_(this) {
-  job_ = base::MakeUnique<DownloadJobImpl>(this, std::move(request_handle));
+  job_ =
+      base::MakeUnique<DownloadJobImpl>(this, std::move(request_handle), false);
   delegate_->Attach();
   Init(true /* actively downloading */, SRC_SAVE_PAGE_AS);
 }
@@ -1230,8 +1231,9 @@ void DownloadItemImpl::Start(
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(this, std::move(req_handle),
                                        new_create_info);
-  if (job_->UsesParallelRequests())
-    RecordParallelDownloadCount(START_COUNT);
+  if (job_->IsParallelizable()) {
+    RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());
+  }
 
   deferred_interrupt_reason_ = DOWNLOAD_INTERRUPT_REASON_NONE;
 
@@ -1282,8 +1284,10 @@ void DownloadItemImpl::Start(
 
   if (state_ == INITIAL_INTERNAL) {
     RecordDownloadCount(NEW_DOWNLOAD_COUNT);
-    if (job_->UsesParallelRequests())
-      RecordParallelDownloadCount(NEW_DOWNLOAD_COUNT);
+    if (job_->IsParallelizable()) {
+      RecordParallelizableDownloadCount(NEW_DOWNLOAD_COUNT,
+                                        IsParallelDownloadEnabled());
+    }
     RecordDownloadMimeType(mime_type_);
     if (!GetBrowserContext()->IsOffTheRecord()) {
       RecordDownloadCount(NEW_DOWNLOAD_COUNT_NORMAL_PROFILE);
@@ -1300,7 +1304,7 @@ void DownloadItemImpl::Start(
 
   // If the download uses parallel requests, and choose not to create parallel
   // request during resumption, clear the received_slices_ vector.
-  if (!job_->UsesParallelRequests() && !received_slices_.empty()) {
+  if (!IsParallelDownloadEnabled() && !received_slices_.empty()) {
     received_bytes_ =
         GetMaxContiguousDataBlockSizeFromBeginning(received_slices_);
     received_slices_.clear();
@@ -1321,7 +1325,7 @@ void DownloadItemImpl::StartDownload() {
                             weak_ptr_factory_.GetWeakPtr()),
                  base::Bind(&DownloadItemImpl::CancelRequestWithOffset,
                             weak_ptr_factory_.GetWeakPtr()),
-                 received_slices_));
+                 received_slices_, job_ && job_->IsParallelizable()));
 }
 
 void DownloadItemImpl::OnDownloadFileInitialized(
@@ -1629,8 +1633,10 @@ void DownloadItemImpl::Completed() {
   if (!GetBrowserContext()->IsOffTheRecord()) {
     RecordDownloadCount(COMPLETED_COUNT_NORMAL_PROFILE);
   }
-  if (job_ && job_->UsesParallelRequests())
-    RecordParallelDownloadCount(COMPLETED_COUNT);
+  if (job_ && job_->IsParallelizable()) {
+    RecordParallelizableDownloadCount(COMPLETED_COUNT,
+                                      IsParallelDownloadEnabled());
+  }
 
   if (auto_opened_) {
     // If it was already handled by the delegate, do nothing.
@@ -1778,15 +1784,18 @@ void DownloadItemImpl::InterruptWithPartialState(
     }
 
     RecordDownloadCount(CANCELLED_COUNT);
-    if (job_ && job_->UsesParallelRequests())
-      RecordParallelDownloadCount(CANCELLED_COUNT);
+    if (job_ && job_->IsParallelizable()) {
+      RecordParallelizableDownloadCount(CANCELLED_COUNT,
+                                        IsParallelDownloadEnabled());
+    }
     DCHECK_EQ(last_reason_, reason);
     TransitionTo(CANCELLED_INTERNAL);
     return;
   }
 
   RecordDownloadInterrupted(reason, received_bytes_, total_bytes_,
-                            job_ && job_->UsesParallelRequests());
+                            job_ && job_->IsParallelizable(),
+                            IsParallelDownloadEnabled());
   if (!GetWebContents())
     RecordDownloadCount(INTERRUPTED_WITHOUT_WEBCONTENTS);
 

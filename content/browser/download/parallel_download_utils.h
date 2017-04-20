@@ -62,6 +62,10 @@ CONTENT_EXPORT void DebugSlicesInfo(const DownloadItem::ReceivedSlices& slices);
 // 0, return 0.
 CONTENT_EXPORT int64_t GetMaxContiguousDataBlockSizeFromBeginning(
     const DownloadItem::ReceivedSlices& slices);
+
+// Returns whether parallel download is enabled.
+CONTENT_EXPORT bool IsParallelDownloadEnabled();
+
 }  //  namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_PARALLEL_DOWNLOAD_UTILS_H_
