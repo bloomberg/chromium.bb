@@ -105,6 +105,8 @@ blink_core_sources("frame") {
     "SmartClip.h",
     "SubresourceIntegrity.cpp",
     "SubresourceIntegrity.h",
+    "SuspendableScriptExecutor.cpp",
+    "SuspendableScriptExecutor.h",
     "SuspendableTimer.cpp",
     "SuspendableTimer.h",
     "UseCounter.cpp",

@@ -125,8 +125,6 @@ component("web") {
     "StorageClientImpl.h",
     "StorageQuotaClientImpl.cpp",
     "StorageQuotaClientImpl.h",
-    "SuspendableScriptExecutor.cpp",
-    "SuspendableScriptExecutor.h",
     "TextCheckerClientImpl.cpp",
     "TextCheckerClientImpl.h",
     "TextFinder.cpp",

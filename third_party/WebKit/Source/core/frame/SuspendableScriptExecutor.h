@@ -6,6 +6,7 @@
 #define SuspendableScriptExecutor_h
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "core/CoreExport.h"
 #include "core/frame/SuspendableTimer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
@@ -20,7 +21,7 @@ class ScriptSourceCode;
 class ScriptState;
 class WebScriptExecutionCallback;
 
-class SuspendableScriptExecutor final
+class CORE_EXPORT SuspendableScriptExecutor final
     : public GarbageCollectedFinalized<SuspendableScriptExecutor>,
       public SuspendableTimer {
   USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
