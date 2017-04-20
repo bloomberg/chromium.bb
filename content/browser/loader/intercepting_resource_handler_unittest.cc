@@ -26,6 +26,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -41,7 +42,8 @@ class InterceptingResourceHandlerTest : public testing::Test {
   InterceptingResourceHandlerTest()
       : request_(context_.CreateRequest(GURL("http://www.google.com"),
                                         net::DEFAULT_PRIORITY,
-                                        nullptr)),
+                                        nullptr,
+                                        TRAFFIC_ANNOTATION_FOR_TESTS)),
         old_handler_status_(
             net::URLRequestStatus::FromError(net::ERR_IO_PENDING)) {
     ResourceRequestInfo::AllocateForTesting(request_.get(),

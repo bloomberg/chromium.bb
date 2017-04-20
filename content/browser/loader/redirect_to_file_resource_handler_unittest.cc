@@ -34,6 +34,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -209,7 +210,8 @@ class RedirectToFileResourceHandlerTest
         url_request_(
             url_request_context_.CreateRequest(GURL("foo://bar/"),
                                                net::DEFAULT_PRIORITY,
-                                               &url_request_delegate_)) {
+                                               &url_request_delegate_,
+                                               TRAFFIC_ANNOTATION_FOR_TESTS)) {
     base::CreateTemporaryFile(&temp_file_path_);
     std::unique_ptr<TestResourceHandler> test_handler =
         base::MakeUnique<TestResourceHandler>();

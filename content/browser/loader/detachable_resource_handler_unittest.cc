@@ -20,6 +20,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -58,7 +59,8 @@ class DetachableResourceHandlerTest
   DetachableResourceHandlerTest()
       : request_(context_.CreateRequest(GURL("http://foo/"),
                                         net::DEFAULT_PRIORITY,
-                                        nullptr)) {
+                                        nullptr,
+                                        TRAFFIC_ANNOTATION_FOR_TESTS)) {
     ResourceRequestInfo::AllocateForTesting(request_.get(),
                                             RESOURCE_TYPE_MAIN_FRAME,
                                             nullptr,  // context

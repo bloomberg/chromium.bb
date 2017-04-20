@@ -22,6 +22,7 @@
 #include "net/quic/core/quic_types.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_netlog_params.h"
 #include "net/url_request/url_request_test_util.h"
@@ -62,7 +63,7 @@ class NetLogObserverTest : public testing::Test {
     context_.set_net_log(&net_log_);
     NetLogObserver::Attach(context_.net_log());
     request_ = context_.CreateRequest(GURL(kDefaultURL), net::DEFAULT_PRIORITY,
-                                      nullptr);
+                                      nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
     resource_context_ = base::MakeUnique<MockResourceContext>(&context_);
     requester_info_ = ResourceRequesterInfo::CreateForRendererTesting(1);
     ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(

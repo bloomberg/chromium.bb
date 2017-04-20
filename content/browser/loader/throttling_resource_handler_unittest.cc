@@ -17,6 +17,7 @@
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -175,10 +176,11 @@ class TestResourceThrottle : public ResourceThrottle {
 class ThrottlingResourceHandlerTest : public testing::Test {
  public:
   ThrottlingResourceHandlerTest()
-      : never_started_url_request_(request_context_.CreateRequest(
-            GURL(kInitialUrl),
-            net::DEFAULT_PRIORITY,
-            &never_started_url_request_delegate_)),
+      : never_started_url_request_(
+            request_context_.CreateRequest(GURL(kInitialUrl),
+                                           net::DEFAULT_PRIORITY,
+                                           &never_started_url_request_delegate_,
+                                           TRAFFIC_ANNOTATION_FOR_TESTS)),
         throttle1_(new TestResourceThrottle(nullptr)),
         throttle2_(new TestResourceThrottle(throttle1_)),
         test_handler_(new TestResourceHandler()) {

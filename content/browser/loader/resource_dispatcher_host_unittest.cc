@@ -70,6 +70,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -1216,8 +1217,8 @@ void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
     const GURL& url) {
   net::URLRequestContext* request_context =
       browser_context_->GetResourceContext()->GetRequestContext();
-  std::unique_ptr<net::URLRequest> request(
-      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
+  std::unique_ptr<net::URLRequest> request(request_context->CreateRequest(
+      url, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
   DownloadManagerImpl::BeginDownloadRequest(
       std::move(request), Referrer(), browser_context_->GetResourceContext(),
       false,  // is_content_initiated
@@ -2211,7 +2212,8 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> req(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(4425, ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
                       req.get()));
 

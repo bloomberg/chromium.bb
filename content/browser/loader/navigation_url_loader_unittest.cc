@@ -32,6 +32,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -129,8 +130,8 @@ class NavigationURLLoaderTest : public testing::Test {
     net::TestDelegate delegate;
     net::URLRequestContext* request_context =
         browser_context_->GetResourceContext()->GetRequestContext();
-    std::unique_ptr<net::URLRequest> request(
-        request_context->CreateRequest(url, net::DEFAULT_PRIORITY, &delegate));
+    std::unique_ptr<net::URLRequest> request(request_context->CreateRequest(
+        url, net::DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->Start();
     base::RunLoop().Run();
 

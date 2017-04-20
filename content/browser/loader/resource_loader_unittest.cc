@@ -49,6 +49,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -423,7 +424,8 @@ class ResourceLoaderTest : public testing::Test,
   void SetUpResourceLoaderForUrl(const GURL& test_url) {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            test_url, net::DEFAULT_PRIORITY, nullptr /* delegate */));
+            test_url, net::DEFAULT_PRIORITY, nullptr /* delegate */,
+            TRAFFIC_ANNOTATION_FOR_TESTS));
     SetUpResourceLoader(std::move(request), RESOURCE_TYPE_MAIN_FRAME, true);
   }
 
@@ -1517,8 +1519,8 @@ class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {
     // Start the request and wait for it to finish.
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            test_redirect_url(), net::DEFAULT_PRIORITY,
-            nullptr /* delegate */));
+            test_redirect_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */,
+            TRAFFIC_ANNOTATION_FOR_TESTS));
     SetUpResourceLoader(std::move(request), resource_type,
                         belongs_to_main_frame);
 

@@ -27,6 +27,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/fake_plugin_service.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -215,7 +216,8 @@ std::string MimeSniffingResourceHandlerTest::TestAcceptHeaderSetting(
     ResourceType request_resource_type) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   return TestAcceptHeaderSettingWithURLRequest(request_resource_type,
                                                request.get());
 }
@@ -259,7 +261,8 @@ bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
     ResourceType request_resource_type) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   bool is_main_frame = request_resource_type == RESOURCE_TYPE_MAIN_FRAME;
   ResourceRequestInfo::AllocateForTesting(request.get(), request_resource_type,
                                           nullptr,        // context
@@ -319,7 +322,8 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
     bool defer_read_completed) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   ResourceRequestInfo::AllocateForTesting(request.get(),
                                           RESOURCE_TYPE_MAIN_FRAME,
                                           nullptr,  // context
@@ -481,7 +485,8 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
     bool defer_read_completed) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   ResourceRequestInfo::AllocateForTesting(request.get(),
                                           RESOURCE_TYPE_MAIN_FRAME,
                                           nullptr,  // context
@@ -650,7 +655,8 @@ TEST_F(MimeSniffingResourceHandlerTest, AcceptHeaders) {
   // Ensure that if an Accept header is already set, it is not overwritten.
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   request->SetExtraRequestHeaderByName("Accept", "*", true);
   EXPECT_EQ("*", TestAcceptHeaderSettingWithURLRequest(RESOURCE_TYPE_XHR,
                                                        request.get()));
@@ -860,7 +866,8 @@ TEST_F(MimeSniffingResourceHandlerTest, Sniffing) {
 TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   ResourceRequestInfo::AllocateForTesting(request.get(),
                                           RESOURCE_TYPE_MAIN_FRAME,
                                           nullptr,  // context
@@ -911,7 +918,8 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
 TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   ResourceRequestInfo::AllocateForTesting(request.get(),
                                           RESOURCE_TYPE_MAIN_FRAME,
                                           nullptr,  // context

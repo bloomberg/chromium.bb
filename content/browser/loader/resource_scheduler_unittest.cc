@@ -27,6 +27,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -167,8 +168,8 @@ class ResourceSchedulerTest : public testing::Test {
       net::RequestPriority priority,
       int child_id,
       int route_id) {
-    std::unique_ptr<net::URLRequest> url_request(
-        context_.CreateRequest(GURL(url), priority, NULL));
+    std::unique_ptr<net::URLRequest> url_request(context_.CreateRequest(
+        GURL(url), priority, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
     return url_request;
   }
 

@@ -50,6 +50,7 @@
 #include "net/http/http_util.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -334,7 +335,8 @@ class MojoAsyncResourceHandlerTestBase {
     net::URLRequestContext* request_context =
         browser_context_->GetResourceContext()->GetRequestContext();
     request_ = request_context->CreateRequest(
-        GURL("http://foo/"), net::DEFAULT_PRIORITY, &url_request_delegate_);
+        GURL("http://foo/"), net::DEFAULT_PRIORITY, &url_request_delegate_,
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     request_->set_upload(std::move(upload_stream));
     ResourceRequestInfo::AllocateForTesting(
         request_.get(),                          // request
