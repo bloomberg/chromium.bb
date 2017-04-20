@@ -5,6 +5,7 @@
 #include "core/loader/ThreadableLoader.h"
 
 #include <memory>
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/ThreadableLoadingContext.h"
@@ -332,7 +333,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
       const WebTraceLocation& location,
       std::unique_ptr<WTF::CrossThreadClosure> task) override {
     DCHECK(worker_thread_);
-    worker_thread_->PostTask(location, std::move(task));
+    TaskRunnerHelper::Get(TaskType::kNetworking, worker_thread_.get())
+        ->PostTask(location, std::move(task));
   }
 
   ThreadableLoadingContext* GetThreadableLoadingContext() override {

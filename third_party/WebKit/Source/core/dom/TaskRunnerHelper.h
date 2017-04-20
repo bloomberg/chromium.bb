@@ -16,6 +16,8 @@ class ExecutionContext;
 class LocalFrame;
 class ScriptState;
 class WebTaskRunner;
+class WorkerOrWorkletGlobalScope;
+class WorkerThread;
 
 enum class TaskType : unsigned {
   // Speced tasks and related internal tasks should be posted to one of
@@ -146,6 +148,14 @@ class CORE_EXPORT TaskRunnerHelper final {
   static RefPtr<WebTaskRunner> Get(TaskType, Document*);
   static RefPtr<WebTaskRunner> Get(TaskType, ExecutionContext*);
   static RefPtr<WebTaskRunner> Get(TaskType, ScriptState*);
+  static RefPtr<WebTaskRunner> Get(TaskType, WorkerOrWorkletGlobalScope*);
+
+  // Returns a WebTaskRunner that is associated to the worker / worklet global
+  // scope that corresponds to the given WorkerThread. Note that WorkerThread is
+  // a per-global-scope object while the naming might sound differently.
+  // TODO(nhiroki): Rename WorkerThread to something that clarifies it's a
+  // per-global-scope object.
+  static RefPtr<WebTaskRunner> Get(TaskType, WorkerThread*);
 };
 
 }  // namespace blink

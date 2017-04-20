@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
@@ -121,8 +122,12 @@ void InProcessWorkerObjectProxy::DidCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* global_scope) {
   DCHECK(!worker_global_scope_);
   worker_global_scope_ = ToWorkerGlobalScope(global_scope);
+  // This timer task should be unthrottled in order to prevent GC timing from
+  // being delayed.
+  // TODO(nhiroki): Consider making a special task type for GC.
+  // (https://crbug.com/712504)
   timer_ = WTF::MakeUnique<TaskRunnerTimer<InProcessWorkerObjectProxy>>(
-      Platform::Current()->CurrentThread()->GetWebTaskRunner(), this,
+      TaskRunnerHelper::Get(TaskType::kUnthrottled, global_scope), this,
       &InProcessWorkerObjectProxy::CheckPendingActivity);
 }
 

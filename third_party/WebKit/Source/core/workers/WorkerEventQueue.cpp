@@ -26,6 +26,7 @@
 
 #include "core/workers/WorkerEventQueue.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -57,10 +58,16 @@ bool WorkerEventQueue::EnqueueEvent(Event* event) {
   probe::AsyncTaskScheduled(event->target()->GetExecutionContext(),
                             event->type(), event);
   pending_events_.insert(event);
-  worker_global_scope_->GetThread()->PostTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&WorkerEventQueue::DispatchEvent, WrapPersistent(this),
-                WrapWeakPersistent(event)));
+  // This queue is unthrottled because throttling event tasks may break existing
+  // web pages. For example, throttling IndexedDB events may break scenarios
+  // where several tabs, some of which are backgrounded, access the same
+  // database concurrently. See also comments in the ctor of
+  // DOMWindowEventQueueTimer.
+  // TODO(nhiroki): Callers of enqueueEvent() should specify the task type.
+  TaskRunnerHelper::Get(TaskType::kUnthrottled, worker_global_scope_.Get())
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&WorkerEventQueue::DispatchEvent,
+                           WrapPersistent(this), WrapWeakPersistent(event)));
   return true;
 }
 

@@ -317,8 +317,7 @@ WorkerGlobalScope::WorkerGlobalScope(
       closing_(false),
       event_queue_(WorkerEventQueue::Create(this)),
       worker_clients_(worker_clients),
-      timers_(
-          Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner()),
+      timers_(TaskRunnerHelper::Get(TaskType::kTimer, this)),
       time_origin_(time_origin),
       last_pending_error_event_id_(0) {
   InstanceCounters::IncrementCounter(

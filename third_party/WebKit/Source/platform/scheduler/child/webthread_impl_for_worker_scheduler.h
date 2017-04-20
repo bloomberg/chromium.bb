@@ -48,8 +48,15 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   // base::MessageLoop::DestructionObserver implementation.
   void WillDestroyCurrentMessageLoop() override;
 
+  scheduler::WorkerScheduler* GetWorkerScheduler() {
+    return worker_scheduler_.get();
+  }
+
  protected:
   base::Thread* GetThread() const { return thread_.get(); }
+  SchedulerTqmDelegate* task_runner_delegate() const {
+    return task_runner_delegate_.get();
+  }
 
  private:
   virtual std::unique_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler();

@@ -9,7 +9,6 @@
 #include "platform/scheduler/base/thread_load_tracker.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
-#include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/child/worker_scheduler.h"
 #include "public/platform/scheduler/base/task_time_observer.h"
 
@@ -59,7 +58,6 @@ class BLINK_PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
  private:
   void MaybeStartLongIdlePeriod();
 
-  SchedulerHelper helper_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
   ThreadLoadTracker load_tracker_;

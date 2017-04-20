@@ -15,6 +15,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
@@ -62,34 +63,37 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
 
   void RunBasicTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    thread->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(
-            &AudioWorkletGlobalScopeTest::RunBasicTestOnWorkletThread,
-            CrossThreadUnretained(this), CrossThreadUnretained(thread),
-            CrossThreadUnretained(&waitable_event)));
+    TaskRunnerHelper::Get(TaskType::kUnthrottled, thread)
+        ->PostTask(
+            BLINK_FROM_HERE,
+            CrossThreadBind(
+                &AudioWorkletGlobalScopeTest::RunBasicTestOnWorkletThread,
+                CrossThreadUnretained(this), CrossThreadUnretained(thread),
+                CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 
   void RunSimpleProcessTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    thread->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(
-            &AudioWorkletGlobalScopeTest::RunSimpleProcessTestOnWorkletThread,
-            CrossThreadUnretained(this), CrossThreadUnretained(thread),
-            CrossThreadUnretained(&waitable_event)));
+    TaskRunnerHelper::Get(TaskType::kUnthrottled, thread)
+        ->PostTask(BLINK_FROM_HERE,
+                   CrossThreadBind(&AudioWorkletGlobalScopeTest::
+                                       RunSimpleProcessTestOnWorkletThread,
+                                   CrossThreadUnretained(this),
+                                   CrossThreadUnretained(thread),
+                                   CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 
   void RunParsingTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    thread->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(
-            &AudioWorkletGlobalScopeTest::RunParsingTestOnWorkletThread,
-            CrossThreadUnretained(this), CrossThreadUnretained(thread),
-            CrossThreadUnretained(&waitable_event)));
+    TaskRunnerHelper::Get(TaskType::kUnthrottled, thread)
+        ->PostTask(
+            BLINK_FROM_HERE,
+            CrossThreadBind(
+                &AudioWorkletGlobalScopeTest::RunParsingTestOnWorkletThread,
+                CrossThreadUnretained(this), CrossThreadUnretained(thread),
+                CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 
