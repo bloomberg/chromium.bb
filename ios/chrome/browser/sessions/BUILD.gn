@@ -11,23 +11,27 @@ source_set("sessions") {
     "ios_chrome_tab_restore_service_client.mm",
     "ios_chrome_tab_restore_service_factory.cc",
     "ios_chrome_tab_restore_service_factory.h",
+    "tab_restore_service_delegate_impl_ios.h",
+    "tab_restore_service_delegate_impl_ios.mm",
+    "tab_restore_service_delegate_impl_ios_factory.h",
+    "tab_restore_service_delegate_impl_ios_factory.mm",
   ]
   deps = [
     ":serialisation",
     "//base",
+    "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/sessions",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/web_state_list",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
+    "//net",
     "//url",
   ]
-  public_deps = [
-    ":sessions_non_arc",
-  ]
-  allow_circular_includes_from = [ ":sessions_non_arc" ]
+  libs = [ "UIKit.framework" ]
 }
 
 source_set("serialisation") {
@@ -48,28 +52,6 @@ source_set("serialisation") {
     "//ios/web",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("sessions_non_arc") {
-  visibility = [ ":sessions" ]
-  sources = [
-    "tab_restore_service_delegate_impl_ios.h",
-    "tab_restore_service_delegate_impl_ios.mm",
-    "tab_restore_service_delegate_impl_ios_factory.h",
-    "tab_restore_service_delegate_impl_ios_factory.mm",
-  ]
-  deps = [
-    "//base",
-    "//components/keyed_service/core",
-    "//components/keyed_service/ios",
-    "//components/sessions",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/web_state_list",
-    "//ios/web",
-    "//net",
-  ]
-  libs = [ "UIKit.framework" ]
 }
 
 source_set("test_support") {

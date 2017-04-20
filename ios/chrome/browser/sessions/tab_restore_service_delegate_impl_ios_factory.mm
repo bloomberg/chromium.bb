@@ -12,6 +12,10 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // static
 TabRestoreServiceDelegateImplIOS*
 TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
