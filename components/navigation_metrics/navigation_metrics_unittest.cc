@@ -13,6 +13,9 @@ const char* const kTestUrl = "http://www.example.com";
 const char* const kMainFrameScheme = "Navigation.MainFrameScheme";
 const char* const kMainFrameSchemeDifferentPage =
     "Navigation.MainFrameSchemeDifferentPage";
+const char* const kMainFrameSchemeOTR = "Navigation.MainFrameSchemeOTR";
+const char* const kMainFrameSchemeDifferentPageOTR =
+    "Navigation.MainFrameSchemeDifferentPageOTR";
 
 }  // namespace
 
@@ -27,6 +30,8 @@ TEST(NavigationMetrics, MainFrameSchemeDifferentDocument) {
   test.ExpectUniqueSample(kMainFrameScheme, 1 /* http */, 1);
   test.ExpectTotalCount(kMainFrameSchemeDifferentPage, 1);
   test.ExpectUniqueSample(kMainFrameSchemeDifferentPage, 1 /* http */, 1);
+  test.ExpectTotalCount(kMainFrameSchemeOTR, 0);
+  test.ExpectTotalCount(kMainFrameSchemeDifferentPageOTR, 0);
 }
 
 TEST(NavigationMetrics, MainFrameSchemeSameDocument) {
@@ -37,6 +42,36 @@ TEST(NavigationMetrics, MainFrameSchemeSameDocument) {
   test.ExpectTotalCount(kMainFrameScheme, 1);
   test.ExpectUniqueSample(kMainFrameScheme, 1 /* http */, 1);
   test.ExpectTotalCount(kMainFrameSchemeDifferentPage, 0);
+  test.ExpectTotalCount(kMainFrameSchemeOTR, 0);
+  test.ExpectTotalCount(kMainFrameSchemeDifferentPageOTR, 0);
+}
+
+TEST(NavigationMetrics, MainFrameSchemeDifferentDocumentOTR) {
+  base::HistogramTester test;
+
+  RecordMainFrameNavigation(GURL(kTestUrl), false, true);
+
+  test.ExpectTotalCount(kMainFrameScheme, 1);
+  test.ExpectUniqueSample(kMainFrameScheme, 1 /* http */, 1);
+  test.ExpectTotalCount(kMainFrameSchemeDifferentPage, 1);
+  test.ExpectUniqueSample(kMainFrameSchemeDifferentPage, 1 /* http */, 1);
+  test.ExpectTotalCount(kMainFrameSchemeOTR, 1);
+  test.ExpectUniqueSample(kMainFrameSchemeOTR, 1 /* http */, 1);
+  test.ExpectTotalCount(kMainFrameSchemeDifferentPageOTR, 1);
+  test.ExpectUniqueSample(kMainFrameSchemeDifferentPageOTR, 1 /* http */, 1);
+}
+
+TEST(NavigationMetrics, MainFrameSchemeSameDocumentOTR) {
+  base::HistogramTester test;
+
+  RecordMainFrameNavigation(GURL(kTestUrl), true, true);
+
+  test.ExpectTotalCount(kMainFrameScheme, 1);
+  test.ExpectUniqueSample(kMainFrameScheme, 1 /* http */, 1);
+  test.ExpectTotalCount(kMainFrameSchemeDifferentPage, 0);
+  test.ExpectTotalCount(kMainFrameSchemeOTR, 1);
+  test.ExpectUniqueSample(kMainFrameSchemeOTR, 1 /* http */, 1);
+  test.ExpectTotalCount(kMainFrameSchemeDifferentPageOTR, 0);
 }
 
 }  // namespace navigation_metrics

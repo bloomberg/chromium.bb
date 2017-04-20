@@ -65,6 +65,15 @@ void RecordMainFrameNavigation(const GURL& url,
     UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPage", scheme,
                               SCHEME_MAX);
   }
+
+  if (is_off_the_record) {
+    UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeOTR", scheme,
+                              SCHEME_MAX);
+    if (!is_in_page) {
+      UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPageOTR",
+                                scheme, SCHEME_MAX);
+    }
+  }
 }
 
 }  // namespace navigation_metrics
