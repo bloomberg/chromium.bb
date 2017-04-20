@@ -717,13 +717,12 @@ class CrashReporterTest : public HeadlessBrowserTest,
   base::FilePath crash_dumps_dir_;
 };
 
-// TODO(skyostil): Minidump generation currently is only supported on Linux and
-// Mac.
-#if defined(HEADLESS_USE_BREAKPAD) || defined(OS_MACOSX)
+// TODO(skyostil): Minidump generation currently is only supported on Linux.
+#if defined(HEADLESS_USE_BREAKPAD)
 #define MAYBE_GenerateMinidump GenerateMinidump
 #else
 #define MAYBE_GenerateMinidump DISABLED_GenerateMinidump
-#endif  // defined(HEADLESS_USE_BREAKPAD) || defined(OS_MACOSX)
+#endif  // defined(HEADLESS_USE_BREAKPAD)
 IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
   // Navigates a tab to chrome://crash and checks that a minidump is generated.
   // Note that we only test renderer crashes here -- browser crashes need to be
@@ -745,10 +744,6 @@ IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
 
   // Check that one minidump got created.
   {
-#if defined(OS_MACOSX)
-    // Mac outputs dumps in the 'completed' directory.
-    crash_dumps_dir_ = crash_dumps_dir_.Append("completed");
-#endif
     base::ThreadRestrictions::SetIOAllowed(true);
     base::FileEnumerator it(crash_dumps_dir_, /* recursive */ false,
                             base::FileEnumerator::FILES);
