@@ -517,8 +517,8 @@ TEST_F(ThreadWatcherTest, ThreadNotResponding) {
   // to finish.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CustomThreadWatcher::VeryLongMethod,
-                 base::Unretained(io_watcher_), kUnresponsiveTime * 10));
+      base::BindOnce(&CustomThreadWatcher::VeryLongMethod,
+                     base::Unretained(io_watcher_), kUnresponsiveTime * 10));
 
   // Activate thread watching.
   WatchDogThread::PostTask(
@@ -600,8 +600,8 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
   // to finish.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CustomThreadWatcher::VeryLongMethod,
-                 base::Unretained(io_watcher_), kUnresponsiveTime * 10));
+      base::BindOnce(&CustomThreadWatcher::VeryLongMethod,
+                     base::Unretained(io_watcher_), kUnresponsiveTime * 10));
 
   // Activate watching of DB thread.
   WatchDogThread::PostTask(

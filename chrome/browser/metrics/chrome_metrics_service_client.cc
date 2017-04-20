@@ -190,8 +190,8 @@ void RegisterOrRemovePreviousRunMetricsFile(
     // When metrics reporting is not enabled, any existing file should be
     // deleted in order to preserve user privacy.
     task_runner->PostTask(FROM_HERE,
-                          base::Bind(base::IgnoreResult(&base::DeleteFile),
-                                     metrics_file, /*recursive=*/false));
+                          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                         metrics_file, /*recursive=*/false));
   }
 }
 
@@ -831,7 +831,7 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
   // Merge histograms from metrics providers into StatisticsRecorder.
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&base::StatisticsRecorder::ImportProvidedHistograms),
+      base::BindOnce(&base::StatisticsRecorder::ImportProvidedHistograms),
       callback);
 
   // Set up the callback task to call after we receive histograms from all

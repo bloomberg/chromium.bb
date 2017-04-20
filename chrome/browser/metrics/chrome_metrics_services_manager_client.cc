@@ -67,12 +67,12 @@ void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
   // ensures that the blocking pool is ready to accept tasks at that time.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](const metrics::ClientInfo& client_info) {
             content::BrowserThread::PostBlockingPoolTask(
                 FROM_HERE,
-                base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo,
-                           client_info));
+                base::BindOnce(&GoogleUpdateSettings::StoreMetricsClientInfo,
+                               client_info));
           },
           client_info));
 }

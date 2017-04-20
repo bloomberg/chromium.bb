@@ -405,7 +405,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   constexpr base::TimeDelta kStartupMetricsGatheringDelay =
       base::TimeDelta::FromSeconds(45);
   content::BrowserThread::GetBlockingPool()->PostDelayedTask(
-      FROM_HERE, base::Bind(&RecordStartupMetricsOnBlockingPool),
+      FROM_HERE, base::BindOnce(&RecordStartupMetricsOnBlockingPool),
       kStartupMetricsGatheringDelay);
 #if defined(OS_WIN)
   content::BrowserThread::PostDelayedTask(

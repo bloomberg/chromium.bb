@@ -110,8 +110,8 @@ void ThreadWatcher::ActivateThreadWatching() {
   ping_count_ = unresponsive_threshold_;
   ResetHangCounters();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ThreadWatcher::PostPingMessage,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ThreadWatcher::PostPingMessage,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ThreadWatcher::DeActivateThreadWatching() {
@@ -160,15 +160,14 @@ void ThreadWatcher::PostPingMessage() {
       base::Bind(&ThreadWatcher::OnPongMessage, weak_ptr_factory_.GetWeakPtr(),
                  ping_sequence_number_));
   if (watched_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&ThreadWatcher::OnPingMessage, thread_id_,
-                     callback))) {
-      // Post a task to check the responsiveness of watched thread.
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&ThreadWatcher::OnCheckResponsiveness,
-                     weak_ptr_factory_.GetWeakPtr(), ping_sequence_number_),
-          unresponsive_time_);
+          FROM_HERE, base::BindOnce(&ThreadWatcher::OnPingMessage, thread_id_,
+                                    callback))) {
+    // Post a task to check the responsiveness of watched thread.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ThreadWatcher::OnCheckResponsiveness,
+                       weak_ptr_factory_.GetWeakPtr(), ping_sequence_number_),
+        unresponsive_time_);
   } else {
     // Watched thread might have gone away, stop watching it.
     DeActivateThreadWatching();
@@ -201,8 +200,9 @@ void ThreadWatcher::OnPongMessage(uint64_t ping_sequence_number) {
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ThreadWatcher::PostPingMessage,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&ThreadWatcher::PostPingMessage,
+                     weak_ptr_factory_.GetWeakPtr()),
       sleep_time_);
 }
 
@@ -230,8 +230,8 @@ void ThreadWatcher::OnCheckResponsiveness(uint64_t ping_sequence_number) {
   // Post a task to check the responsiveness of watched thread.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ThreadWatcher::OnCheckResponsiveness,
-                 weak_ptr_factory_.GetWeakPtr(), ping_sequence_number_),
+      base::BindOnce(&ThreadWatcher::OnCheckResponsiveness,
+                     weak_ptr_factory_.GetWeakPtr(), ping_sequence_number_),
       unresponsive_time_);
   responsive_ = false;
 }
@@ -537,9 +537,8 @@ void ThreadWatcherList::InitializeAndStartWatching(
 
   // Disarm the startup timebomb, even if stop has been called.
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&StartupTimeBomb::DisarmStartupTimeBomb));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&StartupTimeBomb::DisarmStartupTimeBomb));
 
   // This method is deferred in relationship to its StopWatchingAll()
   // counterpart. If a previous initialization has already happened, or if
@@ -917,8 +916,9 @@ void StartupTimeBomb::DeleteStartupWatchdog(
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&StartupTimeBomb::DeleteStartupWatchdog, thread_id,
-                            base::Unretained(startup_watchdog)),
+      FROM_HERE,
+      base::BindOnce(&StartupTimeBomb::DeleteStartupWatchdog, thread_id,
+                     base::Unretained(startup_watchdog)),
       base::TimeDelta::FromSeconds(10));
 }
 

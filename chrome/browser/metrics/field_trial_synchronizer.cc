@@ -57,10 +57,8 @@ void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
     const std::string& group_name) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&FieldTrialSynchronizer::NotifyAllRenderers,
-                 this,
-                 field_trial_name,
-                 group_name));
+      base::BindOnce(&FieldTrialSynchronizer::NotifyAllRenderers, this,
+                     field_trial_name, group_name));
   variations::SetVariationListCrashKeys();
 }
 
