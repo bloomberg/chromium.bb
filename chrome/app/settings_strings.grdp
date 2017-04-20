@@ -1865,8 +1865,8 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_PDF_DOCUMENTS" desc="Label for the PDF documents site settings.">
     PDF documents
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_PDF_DIFFERENT_APPLICATION" desc="Label for opening PDF documents in a different application.">
-    Open PDFs using a different application
+  <message name="IDS_SETTINGS_SITE_SETTINGS_PDF_DOWNLOAD_PDFS" desc="Label for downloading PDF documents instead of automatically opening them in Chrome.">
+    Download PDF files instead of automatically opening them in Chrome
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_POPUPS" desc="Label for the popups site settings.">
     Popups
