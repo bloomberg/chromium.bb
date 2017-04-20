@@ -2746,6 +2746,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kColorCorrectRenderingDescription, kOsAll,
      MULTI_VALUE_TYPE(kColorCorrectRenderingChoices)},
 
+#if defined(OS_CHROMEOS)
+    {"quick-unlock-pin-signin", flag_descriptions::kQuickUnlockPinSignin,
+     flag_descriptions::kQuickUnlockPinSigninDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kQuickUnlockPinSignin)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

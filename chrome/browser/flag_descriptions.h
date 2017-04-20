@@ -3162,11 +3162,17 @@ extern const char kWakeOnPacketsName[];
 // Description for the flag to enable wake on packets.
 extern const char kWakeOnPacketsDescription[];
 
-// Title of the flag used to enable quick unlock pin.
+// Title of the flag used to enable quick unlock PIN.
 extern const char kQuickUnlockPin[];
 
-// Description of the flag used to enable quick unlock pin.
+// Description of the flag used to enable quick unlock PIN.
 extern const char kQuickUnlockPinDescription[];
+
+// Title of the flag used to enable PIN on signin.
+extern const char kQuickUnlockPinSignin[];
+
+// Description of the flag used to enable PIN on signin.
+extern const char kQuickUnlockPinSigninDescription[];
 
 // Title of the flag used to enable quick unlock fingerprint.
 extern const char kQuickUnlockFingerprint[];

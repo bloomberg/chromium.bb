@@ -2915,8 +2915,14 @@ const char kWakeOnPacketsDescription[] =
 const char kQuickUnlockPin[] = "Quick Unlock (PIN)";
 
 const char kQuickUnlockPinDescription[] =
-    "Enabling PIN quick unlock allows you to use a PIN to unlock your "
-    "Chromebook on the lock screen after you have signed into your device.";
+    "Enabling PIN quick unlock allows you to use a PIN to unlock your ChromeOS "
+    "device on the lock screen after you have signed into your device.";
+
+const char kQuickUnlockPinSignin[] = "Enable PIN when logging in.";
+
+const char kQuickUnlockPinSigninDescription[] =
+    "Enabling PIN allows you to use a PIN to sign in and unlock your ChromeOS "
+    "device. After changing this flag PIN needs to be set up again.";
 
 const char kQuickUnlockFingerprint[] = "Quick Unlock (Fingerprint)";
 

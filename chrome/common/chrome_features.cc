@@ -311,9 +311,13 @@ const base::Feature kUseGroupedPermissionInfobars{
 const base::Feature kOptInImeMenu{"OptInImeMenu",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables PIN quick unlock.
+// Enables or disables pin quick unlock.
 const base::Feature kQuickUnlockPin{"QuickUnlockPin",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables pin on the login screen.
+const base::Feature kQuickUnlockPinSignin{"QuickUnlockPinSignin",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables fingerprint quick unlock.
 const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
