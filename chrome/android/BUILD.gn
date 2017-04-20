@@ -326,7 +326,7 @@ java_cpp_template("resource_id_javagen") {
   sources = [
     "java/ResourceId.template",
   ]
-  package_name = "org/chromium/chrome/browser"
+  package_path = "org/chromium/chrome/browser"
   inputs = [
     "../browser/android/resource_id.h",
   ]

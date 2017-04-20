@@ -2664,7 +2664,7 @@ if (is_android) {
     sources = [
       "android/java/templates/BuildConfig.template",
     ]
-    package_name = "org/chromium/base"
+    package_path = "org/chromium/base"
 
     defines = []
     if (is_java_debug || dcheck_always_on) {
@@ -2676,7 +2676,7 @@ if (is_android) {
     sources = [
       "android/java/templates/NativeLibraries.template",
     ]
-    package_name = "org/chromium/base/library_loader"
+    package_path = "org/chromium/base/library_loader"
   }
 
   android_library("base_java_unittest_support") {

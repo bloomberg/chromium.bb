@@ -21,7 +21,7 @@ android_library("dom_distiller_core_java") {
 }
 
 java_cpp_template("dom_distiller_core_font_family_javagen") {
-  package_name = "org/chromium/components/dom_distiller/core"
+  package_path = "org/chromium/components/dom_distiller/core"
   sources = [
     "java/src/org/chromium/components/dom_distiller/core/FontFamily.template",
   ]
@@ -31,7 +31,7 @@ java_cpp_template("dom_distiller_core_font_family_javagen") {
 }
 
 java_cpp_template("dom_distiller_core_theme_javagen") {
-  package_name = "org/chromium/components/dom_distiller/core"
+  package_path = "org/chromium/components/dom_distiller/core"
   sources = [
     "java/src/org/chromium/components/dom_distiller/core/Theme.template",
   ]

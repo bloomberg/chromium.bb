@@ -72,7 +72,7 @@ java_cpp_template("load_states_list") {
   inputs = [
     "//net/base/load_states_list.h",
   ]
-  package_name = "org/chromium/net/impl"
+  package_path = "org/chromium/net/impl"
 }
 
 _generated_api_version_java_dir =

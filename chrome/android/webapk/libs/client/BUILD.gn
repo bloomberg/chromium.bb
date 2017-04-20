@@ -24,7 +24,7 @@ android_library("client_java") {
 }
 
 java_cpp_template("runtime_library_version_java") {
-  package_name = "org/chromium/webapk/lib/client"
+  package_path = "org/chromium/webapk/lib/client"
   sources = [
     "src/org/chromium/webapk/lib/client/WebApkVersion.template",
   ]
