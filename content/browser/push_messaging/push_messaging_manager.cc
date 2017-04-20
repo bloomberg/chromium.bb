@@ -765,6 +765,11 @@ void PushMessagingManager::DidGetSubscription(
       ServiceWorkerRegistration* registration =
           service_worker_context_->GetLiveRegistration(
               service_worker_registration_id);
+      if (!registration) {
+        get_status = PUSH_GETREGISTRATION_STATUS_NO_LIVE_SERVICE_WORKER;
+        break;
+      }
+
       const GURL origin = registration->pattern().GetOrigin();
 
       const bool uses_standard_protocol = IsApplicationServerKey(sender_info);

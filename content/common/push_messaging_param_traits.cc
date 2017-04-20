@@ -205,6 +205,13 @@ static_assert(
 
 static_assert(
     content::PushGetRegistrationStatus::
+            PUSH_GETREGISTRATION_STATUS_NO_LIVE_SERVICE_WORKER ==
+        static_cast<content::PushGetRegistrationStatus>(
+            content::mojom::PushGetRegistrationStatus::NO_LIVE_SERVICE_WORKER),
+    "PushGetRegistrationStatus enums must match, NO_LIVE_SERVICE_WORKER");
+
+static_assert(
+    content::PushGetRegistrationStatus::
             PUSH_GETREGISTRATION_STATUS_RENDERER_SHUTDOWN ==
         static_cast<content::PushGetRegistrationStatus>(
             content::mojom::PushGetRegistrationStatus::RENDERER_SHUTDOWN),

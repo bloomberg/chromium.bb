@@ -122,12 +122,15 @@ enum PushGetRegistrationStatus {
   // Getting the registration failed because the renderer was shut down.
   RENDERER_SHUTDOWN = 7,
 
+  // Getting the registration failed because there was no live service worker.
+  NO_LIVE_SERVICE_WORKER = 8,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update LAST below.
 
-  LAST = RENDERER_SHUTDOWN
+  LAST = NO_LIVE_SERVICE_WORKER
 };
 
 enum PushPermissionStatus {
