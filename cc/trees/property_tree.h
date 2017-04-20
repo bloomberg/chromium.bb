@@ -504,6 +504,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void CopyCompleteTreeState(const ScrollTree& other);
 #endif
 
+  ScrollNode* FindNodeFromElementId(ElementId id);
+
  private:
   using ScrollOffsetMap = std::unordered_map<int, gfx::ScrollOffset>;
   using SyncedScrollOffsetMap =
