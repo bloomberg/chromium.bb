@@ -20,6 +20,7 @@ source_set("utils") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "fake_observable_boolean.h",
