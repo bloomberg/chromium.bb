@@ -519,32 +519,34 @@ TEST_F(LoggingTest, NestedLogAssertHandlers) {
   EXPECT_CALL(
       handler_a,
       HandleLogAssert(
-          _, _, base::StringPiece("First assert must be catched by handler_a"),
+          _, _, base::StringPiece("First assert must be caught by handler_a"),
           _));
   EXPECT_CALL(
       handler_b,
       HandleLogAssert(
-          _, _, base::StringPiece("Second assert must be catched by handler_b"),
+          _, _, base::StringPiece("Second assert must be caught by handler_b"),
           _));
   EXPECT_CALL(
       handler_a,
       HandleLogAssert(
           _, _,
-          base::StringPiece("Last assert must be catched by handler_a again"),
+          base::StringPiece("Last assert must be caught by handler_a again"),
           _));
 
   logging::ScopedLogAssertHandler scoped_handler_a(base::Bind(
       &MockLogAssertHandler::HandleLogAssert, base::Unretained(&handler_a)));
 
-  LOG(FATAL) << "First assert must be catched by handler_a";
+  // Using LOG(FATAL) rather than CHECK(false) here since log messages aren't
+  // preserved for CHECKs in official builds.
+  LOG(FATAL) << "First assert must be caught by handler_a";
 
   {
     logging::ScopedLogAssertHandler scoped_handler_b(base::Bind(
         &MockLogAssertHandler::HandleLogAssert, base::Unretained(&handler_b)));
-    LOG(FATAL) << "Second assert must be catched by handler_b";
+    LOG(FATAL) << "Second assert must be caught by handler_b";
   }
 
-  LOG(FATAL) << "Last assert must be catched by handler_a again";
+  LOG(FATAL) << "Last assert must be caught by handler_a again";
 }
 
 // Test that defining an operator<< for a type in a namespace doesn't prevent
