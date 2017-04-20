@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "components/translate/core/browser/translate_ranker.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 class GURL;
 
@@ -31,23 +32,31 @@ class MockTranslateRanker : public TranslateRanker {
   void set_is_logging_enabled(bool val) { is_logging_enabled_ = val; }
   void set_is_query_enabled(bool val) { is_query_enabled_ = val; }
   void set_is_enforcement_enabled(bool val) { is_enforcement_enabled_ = val; }
+  void set_is_decision_override_enabled(bool val) {
+    is_decision_override_enabled_ = val;
+  }
   void set_model_version(int val) { model_version_ = val; }
   void set_should_offer_translation(bool val) {
     should_offer_translation_ = val;
   }
 
   // TranslateRanker Implementation:
-  bool IsLoggingEnabled() override;
-  bool IsQueryEnabled() override;
-  bool IsEnforcementEnabled() override;
-  int GetModelVersion() const override;
-  bool ShouldOfferTranslation(const TranslatePrefs& translate_prefs,
-                              const std::string& src_lang,
-                              const std::string& dst_lang) override;
-  void AddTranslateEvent(const metrics::TranslateEventProto& translate_event,
-                         const GURL& url) override;
+  uint32_t GetModelVersion() const override;
+  bool ShouldOfferTranslation(
+      const TranslatePrefs& translate_prefs,
+      const std::string& src_lang,
+      const std::string& dst_lang,
+      metrics::TranslateEventProto* translate_events) override;
   void FlushTranslateEvents(
       std::vector<metrics::TranslateEventProto>* events) override;
+  MOCK_METHOD3(RecordTranslateEvent,
+               void(int event_type,
+                    const GURL& url,
+                    metrics::TranslateEventProto* translate_event));
+  MOCK_METHOD3(ShouldOverrideDecision,
+               bool(int event_type,
+                    const GURL& url,
+                    metrics::TranslateEventProto* translate_event));
 
  private:
   std::vector<metrics::TranslateEventProto> event_cache_;
@@ -55,6 +64,7 @@ class MockTranslateRanker : public TranslateRanker {
   bool is_logging_enabled_ = false;
   bool is_query_enabled_ = false;
   bool is_enforcement_enabled_ = false;
+  bool is_decision_override_enabled_ = false;
   bool model_version_ = 0;
   bool should_offer_translation_ = true;
 

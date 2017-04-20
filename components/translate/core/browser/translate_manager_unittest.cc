@@ -13,6 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
+#include "components/metrics/proto/translate_event.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/mock_translate_driver.h"
@@ -30,6 +31,7 @@
 using testing::_;
 using testing::Return;
 using testing::SetArgPointee;
+using testing::Pointee;
 
 namespace translate {
 
@@ -45,7 +47,8 @@ const char* kLanguagePreferredLanguages = nullptr;
 #endif
 const char kAcceptLanguages[] = "intl.accept_languages";
 
-// Overrides NetworkChangeNotifier, simulatng connection type changes for tests.
+// Overrides NetworkChangeNotifier, simulating connection type changes
+// for tests.
 // TODO(groby): Combine with similar code in ResourceRequestAllowedNotifierTest.
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
@@ -65,7 +68,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   }
 
   void SimulateOffline() {
-    connection_type_to_return_ =net::NetworkChangeNotifier::CONNECTION_NONE;
+    connection_type_to_return_ = net::NetworkChangeNotifier::CONNECTION_NONE;
   }
 
   void SimulateOnline() {
@@ -127,6 +130,14 @@ class MockTranslateClient : public TranslateClient {
   TranslateDriver* driver_;
   PrefService* prefs_;
 };
+
+// Compares TranslateEventProto on a restricted set of fields.
+MATCHER_P(EqualsTranslateEventProto, translate_event, "") {
+  const metrics::TranslateEventProto& tep(translate_event);
+  return (arg.source_language() == tep.source_language() &&
+          arg.target_language() == tep.target_language() &&
+          arg.event_type() == tep.event_type());
+}
 
 }  // namespace
 
@@ -190,9 +201,9 @@ class TranslateManagerTest : public ::testing::Test {
     std::unique_ptr<base::Value> profile(base::JSONReader::ReadAndReturnError(
         json, 0, &error_code, &error_msg, &error_line, &error_column));
 
-    EXPECT_EQ(0, error_code) << error_msg << " at " << error_line << ":"
-                             << error_column << std::endl
-                             << json;
+    EXPECT_EQ(0, error_code)
+        << error_msg << " at " << error_line << ":" << error_column << std::endl
+        << json;
     return profile;
   }
 
@@ -217,13 +228,42 @@ class TranslateManagerTest : public ::testing::Test {
         base::FieldTrial::SESSION_RANDOMIZED, default_group_number);
   }
 
+  void SetHasLanguageChanged(bool has_language_changed) {
+    translate_manager_->GetLanguageState().LanguageDetermined("de", true);
+    translate_manager_->GetLanguageState().DidNavigate(false, true, false);
+    translate_manager_->GetLanguageState().LanguageDetermined(
+        has_language_changed ? "en" : "de", true);
+    EXPECT_EQ(has_language_changed,
+              translate_manager_->GetLanguageState().HasLanguageChanged());
+  }
+
+  void SetLanguageTooOftenDenied(const std::string& language) {
+    if (base::FeatureList::IsEnabled(kTranslateUI2016Q2)) {
+      translate_prefs_.ResetDenialState();
+      for (int i = 0; i < 4; i++) {
+        translate_prefs_.IncrementTranslationDeniedCount(language);
+      }
+    } else {
+      translate_prefs_.UpdateLastDeniedTime(language);
+      translate_prefs_.UpdateLastDeniedTime(language);
+    }
+
+    EXPECT_TRUE(translate_prefs_.IsTooOftenDenied(language));
+    EXPECT_FALSE(translate_prefs_.IsTooOftenDenied("other_language"));
+  }
+
   // Functions to help TEST_F in subclass to access private functions in
-  // TranslteManager so we can unit test them.
+  // TranslateManager so we can unit test them.
   std::string CallGetTargetLanguageFromULP() {
     return TranslateManager::GetTargetLanguageFromULP(&translate_prefs_);
   }
   bool CallLanguageInULP(const std::string& language) {
     return translate_manager_->LanguageInULP(language);
+  }
+  void InitTranslateEvent(const std::string& src_lang,
+                          const std::string& dst_lang) {
+    translate_manager_->InitTranslateEvent(src_lang, dst_lang,
+                                           translate_prefs_);
   }
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
@@ -240,7 +280,6 @@ class TranslateManagerTest : public ::testing::Test {
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
-
 
 // Target language comes from application locale if the locale's language
 // is supported.
@@ -336,14 +375,15 @@ void ChangeThresholdInParams(
     const char* target_language_confidence_threshold,
     const char* target_language_probability_threshold) {
   ASSERT_TRUE(variations::AssociateVariationParams(
-      kTrialName, "Enabled", {{"initiate_translation_ulp_confidence_threshold",
-                               initiate_translation_confidence_threshold},
-                              {"initiate_translation_ulp_probability_threshold",
-                               initiate_translation_probability_threshold},
-                              {"target_language_ulp_confidence_threshold",
-                               target_language_confidence_threshold},
-                              {"target_language_ulp_probability_threshold",
-                               target_language_probability_threshold}}));
+      kTrialName, "Enabled",
+      {{"initiate_translation_ulp_confidence_threshold",
+        initiate_translation_confidence_threshold},
+       {"initiate_translation_ulp_probability_threshold",
+        initiate_translation_probability_threshold},
+       {"target_language_ulp_confidence_threshold",
+        target_language_confidence_threshold},
+       {"target_language_ulp_probability_threshold",
+        target_language_probability_threshold}}));
 }
 
 // Normal ULP in Json
@@ -463,12 +503,114 @@ TEST_F(TranslateManagerTest,
        TestLanguageInULPLowConfidenceThresholdFromConfig) {
   PrepareULPTest(ulp_1, true);
   ChangeThresholdInParams("0.79", "0.39", "", "");
-  // Both "fr" and "pt" should reutrn true because the confidence threshold is
+  // Both "fr" and "pt" should return true because the confidence threshold is
   // 0.79 and lower than 0.8 and the probability threshold is lower than both
   // the one with "fr" (0.6) and "pt-PT" (0.4).
   EXPECT_TRUE(CallLanguageInULP("fr"));
   EXPECT_TRUE(CallLanguageInULP("pt"));
   EXPECT_FALSE(CallLanguageInULP("zh-TW"));
+}
+
+TEST_F(TranslateManagerTest, TestRecordTranslateEvent) {
+  PrepareTranslateManager();
+  const std::string locale = "zh-TW";
+  const std::string page_lang = "zh-CN";
+  metrics::TranslateEventProto expected_tep;
+  expected_tep.set_target_language(locale);
+  expected_tep.set_source_language(page_lang);
+  EXPECT_CALL(
+      mock_translate_ranker_,
+      RecordTranslateEvent(metrics::TranslateEventProto::USER_ACCEPT, _,
+                           Pointee(EqualsTranslateEventProto(expected_tep))))
+      .Times(1);
+
+  InitTranslateEvent(page_lang, locale);
+  translate_manager_->RecordTranslateEvent(
+      metrics::TranslateEventProto::USER_ACCEPT);
+}
+
+TEST_F(TranslateManagerTest, TestShouldOverrideDecision) {
+  PrepareTranslateManager();
+  const int kEventType = 1;
+  EXPECT_CALL(
+      mock_translate_ranker_,
+      ShouldOverrideDecision(
+          kEventType, _,
+          Pointee(EqualsTranslateEventProto(metrics::TranslateEventProto()))))
+      .WillOnce(Return(false));
+  EXPECT_FALSE(translate_manager_->ShouldOverrideDecision(kEventType));
+
+  EXPECT_CALL(
+      mock_translate_ranker_,
+      ShouldOverrideDecision(
+          kEventType, _,
+          Pointee(EqualsTranslateEventProto(metrics::TranslateEventProto()))))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(translate_manager_->ShouldOverrideDecision(kEventType));
+}
+
+TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_Default) {
+  PrepareTranslateManager();
+  SetHasLanguageChanged(true);
+  EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
+  EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(true, "en"));
+}
+
+TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_HasLanguageChangedFalse) {
+  PrepareTranslateManager();
+  SetHasLanguageChanged(false);
+  EXPECT_CALL(
+      mock_translate_ranker_,
+      ShouldOverrideDecision(
+          metrics::TranslateEventProto::MATCHES_PREVIOUS_LANGUAGE, _, _))
+      .WillOnce(Return(false));
+  EXPECT_TRUE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
+
+  EXPECT_CALL(mock_translate_ranker_, ShouldOverrideDecision(_, _, _))
+      .WillOnce(Return(false));
+
+  EXPECT_TRUE(translate_manager_->ShouldSuppressBubbleUI(true, "en"));
+}
+
+TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_NewUI) {
+  PrepareTranslateManager();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(translate::kTranslateUI2016Q2);
+  SetHasLanguageChanged(false);
+  EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
+}
+
+TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_IsTooOftenDenied) {
+  PrepareTranslateManager();
+  SetHasLanguageChanged(true);
+  SetLanguageTooOftenDenied("en");
+  EXPECT_CALL(
+      mock_translate_ranker_,
+      ShouldOverrideDecision(
+          metrics::TranslateEventProto::LANGUAGE_DISABLED_BY_AUTO_BLACKLIST, _,
+          _))
+      .WillOnce(Return(false));
+  EXPECT_TRUE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
+  EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(false, "de"));
+  EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(true, "en"));
+}
+
+TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_Override) {
+  PrepareTranslateManager();
+  EXPECT_CALL(
+      mock_translate_ranker_,
+      ShouldOverrideDecision(
+          metrics::TranslateEventProto::MATCHES_PREVIOUS_LANGUAGE, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(
+      mock_translate_ranker_,
+      ShouldOverrideDecision(
+          metrics::TranslateEventProto::LANGUAGE_DISABLED_BY_AUTO_BLACKLIST, _,
+          _))
+      .WillOnce(Return(true));
+  SetHasLanguageChanged(false);
+  SetLanguageTooOftenDenied("en");
+  EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
 }
 
 }  // namespace testing

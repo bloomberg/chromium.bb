@@ -85,6 +85,9 @@ const base::Feature kTranslateRankerEnforcement{
 const base::Feature kTranslateRankerLogging{"TranslateRankerLogging",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kTranslateRankerDecisionOverride{
+    "TranslateRankerDecisionOverride", base::FEATURE_DISABLED_BY_DEFAULT};
+
 TranslateRankerFeatures::TranslateRankerFeatures() {}
 
 TranslateRankerFeatures::TranslateRankerFeatures(int accepted,
@@ -143,8 +146,11 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
       is_query_enabled_(base::FeatureList::IsEnabled(kTranslateRankerQuery)),
       is_enforcement_enabled_(
           base::FeatureList::IsEnabled(kTranslateRankerEnforcement)),
+      is_decision_override_enabled_(base::FeatureList::IsEnabled(
+          translate::kTranslateRankerDecisionOverride)),
       weak_ptr_factory_(this) {
-  if (IsQueryEnabled() || IsEnforcementEnabled()) {
+  if (is_query_enabled_ || is_enforcement_enabled_ ||
+      is_decision_override_enabled_) {
     model_loader_ = base::MakeUnique<RankerModelLoader>(
         base::Bind(&ValidateModel),
         base::Bind(&TranslateRankerImpl::OnModelAvailable,
@@ -189,26 +195,15 @@ void TranslateRankerImpl::EnableLogging(bool value) {
   is_logging_enabled_ = value;
 }
 
-bool TranslateRankerImpl::IsLoggingEnabled() {
-  return is_logging_enabled_;
-}
-
-bool TranslateRankerImpl::IsQueryEnabled() {
-  return is_query_enabled_;
-}
-
-bool TranslateRankerImpl::IsEnforcementEnabled() {
-  return is_enforcement_enabled_;
-}
-
-int TranslateRankerImpl::GetModelVersion() const {
+uint32_t TranslateRankerImpl::GetModelVersion() const {
   return model_ ? model_->proto().translate().version() : 0;
 }
 
 bool TranslateRankerImpl::ShouldOfferTranslation(
     const TranslatePrefs& translate_prefs,
     const std::string& src_lang,
-    const std::string& dst_lang) {
+    const std::string& dst_lang,
+    metrics::TranslateEventProto* translate_event) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   // The ranker is a gate in the "show a translation prompt" flow. To retain
   // the pre-existing functionality, it defaults to returning true in the
@@ -217,11 +212,24 @@ bool TranslateRankerImpl::ShouldOfferTranslation(
   // (or become False).
   const bool kDefaultResponse = true;
 
+  translate_event->set_ranker_request_timestamp_sec(
+      (base::TimeTicks::Now() - base::TimeTicks()).InSeconds());
+  translate_event->set_ranker_version(GetModelVersion());
+
+  if (!is_query_enabled_ && !is_enforcement_enabled_ &&
+      !is_decision_override_enabled_) {
+    translate_event->set_ranker_response(
+        metrics::TranslateEventProto::NOT_QUERIED);
+    return kDefaultResponse;
+  }
+
   if (model_loader_)
     model_loader_->NotifyOfRankerActivity();
 
   // If we don't have a model, request one and return the default.
   if (model_ == nullptr) {
+    translate_event->set_ranker_response(
+        metrics::TranslateEventProto::NOT_QUERIED);
     return kDefaultResponse;
   }
 
@@ -244,6 +252,14 @@ bool TranslateRankerImpl::ShouldOfferTranslation(
   bool result = (score >= kTranslationOfferThreshold);
 
   UMA_HISTOGRAM_BOOLEAN("Translate.Ranker.QueryResult", result);
+
+  translate_event->set_ranker_response(
+      result ? metrics::TranslateEventProto::SHOW
+             : metrics::TranslateEventProto::DONT_SHOW);
+
+  if (!is_enforcement_enabled_ && !is_decision_override_enabled_) {
+    return kDefaultResponse;
+  }
 
   return result;
 }
@@ -311,7 +327,7 @@ void TranslateRankerImpl::AddTranslateEvent(
     const metrics::TranslateEventProto& event,
     const GURL& url) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  if (IsLoggingEnabled()) {
+  if (is_logging_enabled_) {
     DVLOG(3) << "Adding translate ranker event.";
     if (url.is_valid()) {
       SendEventToUKM(event, url);
@@ -327,6 +343,34 @@ void TranslateRankerImpl::OnModelAvailable(std::unique_ptr<RankerModel> model) {
 
 bool TranslateRankerImpl::CheckModelLoaderForTesting() {
   return model_loader_ != nullptr;
+}
+
+void TranslateRankerImpl::RecordTranslateEvent(
+    int event_type,
+    const GURL& url,
+    metrics::TranslateEventProto* translate_event) {
+  DCHECK(metrics::TranslateEventProto::EventType_IsValid(event_type));
+  translate_event->set_event_type(
+      static_cast<metrics::TranslateEventProto::EventType>(event_type));
+  translate_event->set_event_timestamp_sec(
+      (base::TimeTicks::Now() - base::TimeTicks()).InSeconds());
+  AddTranslateEvent(*translate_event, url);
+}
+
+bool TranslateRankerImpl::ShouldOverrideDecision(
+    int event_type,
+    const GURL& url,
+    metrics::TranslateEventProto* translate_event) {
+  DCHECK(metrics::TranslateEventProto::EventType_IsValid(event_type));
+  if (is_decision_override_enabled_) {
+    translate_event->add_decision_overrides(
+        static_cast<metrics::TranslateEventProto::EventType>(event_type));
+    DVLOG(3) << "Overriding decision of type: " << event_type;
+    return true;
+  } else {
+    RecordTranslateEvent(event_type, url, translate_event);
+    return false;
+  }
 }
 
 }  // namespace translate

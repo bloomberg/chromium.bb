@@ -124,6 +124,15 @@ class TranslateManager {
   // testing, set to true to offer anyway.
   static void SetIgnoreMissingKeyForTesting(bool ignore);
 
+  // Returns true if the decision should be overridden and logs the event
+  // appropriately. |event_type| must be one of the
+  // values defined by metrics::TranslateEventProto::EventType.
+  bool ShouldOverrideDecision(int event_type);
+
+  // Returns true if the BubbleUI should be suppressed.
+  bool ShouldSuppressBubbleUI(bool triggered_from_menu,
+                              const std::string& source_language);
+
  private:
   friend class translate::testing::TranslateManagerTest;
 

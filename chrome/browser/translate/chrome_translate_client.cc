@@ -220,25 +220,12 @@ void ChromeTranslateClient::ShowTranslateUI(
 #endif
 
   // Bubble UI.
-  if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
-    // TODO(droger): Move this logic out of UI code.
-    GetLanguageState().SetTranslateEnabled(true);
-    // In the new UI, continue offering translation after the user navigates to
-    // another page.
-    if (!base::FeatureList::IsEnabled(translate::kTranslateUI2016Q2) &&
-        !GetLanguageState().HasLanguageChanged()) {
-      translate_manager_->RecordTranslateEvent(
-          metrics::TranslateEventProto::MATCHES_PREVIOUS_LANGUAGE);
-      return;
-    }
-
-    if (!triggered_from_menu &&
-        GetTranslatePrefs()->IsTooOftenDenied(source_language)) {
-      translate_manager_->RecordTranslateEvent(
-          metrics::TranslateEventProto::LANGUAGE_DISABLED_BY_AUTO_BLACKLIST);
-      return;
-    }
+  if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE &&
+      translate_manager_->ShouldSuppressBubbleUI(triggered_from_menu,
+                                                 source_language)) {
+    return;
   }
+
   ShowTranslateBubbleResult result = ShowBubble(step, error_type);
   if (result != ShowTranslateBubbleResult::SUCCESS &&
       step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {

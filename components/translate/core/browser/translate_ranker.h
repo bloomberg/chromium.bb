@@ -28,36 +28,43 @@ class TranslateRanker : public KeyedService {
  public:
   TranslateRanker() = default;
 
-  // Returns true if translate events logging is enabled.
-  virtual bool IsLoggingEnabled() = 0;
-
-  // Returns true if enforcement is enabled.
-  virtual bool IsEnforcementEnabled() = 0;
-
-  // Returns true if querying is enabled. Enabling enforcement will
-  // automatically enable Query.
-  virtual bool IsQueryEnabled() = 0;
-
   // Returns the version id for the ranker model.
-  virtual int GetModelVersion() const = 0;
+  virtual uint32_t GetModelVersion() const = 0;
 
   // Returns true if executing the ranker model in the translation prompt
   // context described by |translate_prefs|, |src_lang|, |dst_lang| and possibly
   // other global browser context attributes suggests that the user should be
   // prompted as to whether translation should be performed.
-  virtual bool ShouldOfferTranslation(const TranslatePrefs& translate_prefs,
-                                      const std::string& src_lang,
-                                      const std::string& dst_lang) = 0;
-
-  // Caches the translate event.
-  virtual void AddTranslateEvent(
-      const metrics::TranslateEventProto& translate_event,
-      const GURL& url) = 0;
+  // TODO(hamelphi): Take only the proto as input and extract features from it.
+  virtual bool ShouldOfferTranslation(
+      const TranslatePrefs& translate_prefs,
+      const std::string& src_lang,
+      const std::string& dst_lang,
+      metrics::TranslateEventProto* translate_event) = 0;
 
   // Transfers cached translate events to the given vector pointer and clears
   // the cache.
   virtual void FlushTranslateEvents(
       std::vector<metrics::TranslateEventProto>* events) = 0;
+
+  // Record |translate_event| with the given |event_type| and |url|.
+  // |event_type| must be one of the values defined by
+  // metrics::TranslateEventProto::EventType.
+  virtual void RecordTranslateEvent(
+      int event_type,
+      const GURL& url,
+      metrics::TranslateEventProto* translate_event) = 0;
+
+  // If override is enabled, will return true and add |event_type| to
+  // |translate_event.decision_overrides()|. If override is disabled,
+  // returns false and finalize and record |translate_event| with
+  // |event_type| as |translate_event.event_type()|.  |event_type|
+  // must be one of the values defined by
+  // metrics::TranslateEventProto::EventType.
+  virtual bool ShouldOverrideDecision(
+      int event_type,
+      const GURL& url,
+      metrics::TranslateEventProto* translate_event) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateRanker);
