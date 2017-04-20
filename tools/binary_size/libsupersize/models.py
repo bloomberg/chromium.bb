@@ -47,6 +47,12 @@ SECTION_TO_SECTION_NAME = {
     't': '.text',
 }
 
+FLAG_ANONYMOUS = 1
+FLAG_STARTUP = 2
+FLAG_UNLIKELY = 4
+FLAG_REL = 8
+FLAG_REL_LOCAL = 16
+
 
 class SizeInfo(object):
   """Represents all size information for a single binary.
@@ -122,6 +128,28 @@ class BaseSymbol(object):
   def end_address(self):
     return self.address + self.size_without_padding
 
+  @property
+  def is_anonymous(self):
+    return bool(self.flags & FLAG_ANONYMOUS)
+
+  def FlagsString(self):
+    # Most flags are 0.
+    flags = self.flags
+    if not flags:
+      return '{}'
+    parts = []
+    if flags & FLAG_ANONYMOUS:
+      parts.append('anon')
+    if flags & FLAG_STARTUP:
+      parts.append('startup')
+    if flags & FLAG_UNLIKELY:
+      parts.append('unlikely')
+    if flags & FLAG_REL:
+      parts.append('rel')
+    if flags & FLAG_REL_LOCAL:
+      parts.append('rel.loc')
+    return '{%s}' % ','.join(parts)
+
   def IsBss(self):
     return self.section_name == '.bss'
 
@@ -156,7 +184,7 @@ class Symbol(BaseSymbol):
   __slots__ = (
       'address',
       'full_name',
-      'is_anonymous',
+      'flags',
       'object_path',
       'name',
       'padding',
@@ -166,8 +194,8 @@ class Symbol(BaseSymbol):
   )
 
   def __init__(self, section_name, size_without_padding, address=None,
-               name=None, source_path=None, object_path=None,
-               full_name=None, is_anonymous=False):
+               name=None, source_path=None, object_path=None, full_name=None,
+               flags=0):
     self.section_name = section_name
     self.address = address or 0
     self.name = name or ''
@@ -175,16 +203,14 @@ class Symbol(BaseSymbol):
     self.source_path = source_path or ''
     self.object_path = object_path or ''
     self.size = size_without_padding
-    # Change this to be a bitfield of flags if ever there is a need to add
-    # another similar thing.
-    self.is_anonymous = is_anonymous
+    self.flags = flags
     self.padding = 0
 
   def __repr__(self):
-    return ('%s@%x(size_without_padding=%d,padding=%d,name=%s,path=%s,anon=%d)'
+    return ('%s@%x(size_without_padding=%d,padding=%d,name=%s,path=%s,flags=%s)'
             % (self.section_name, self.address, self.size_without_padding,
                self.padding, self.name, self.source_path or self.object_path,
-               int(self.is_anonymous)))
+               self.FlagsString()))
 
 
 class SymbolGroup(BaseSymbol):
@@ -269,10 +295,9 @@ class SymbolGroup(BaseSymbol):
     return first if all(s.address == first for s in self._symbols) else 0
 
   @property
-  def is_anonymous(self):
-    first = self._symbols[0].is_anonymous
-    return first if all(
-        s.is_anonymous == first for s in self._symbols) else False
+  def flags(self):
+    first = self._symbols[0].flags
+    return first if all(s.flags == first for s in self._symbols) else 0
 
   @property
   def object_path(self):
@@ -651,7 +676,7 @@ def _DiffSymbols(before, after):
                             source_path=after_sym.source_path,
                             object_path=after_sym.object_path,
                             full_name=after_sym.full_name,
-                            is_anonymous=after_sym.is_anonymous)
+                            flags=after_sym.flags)
 
         # Diffs are more stable when comparing size without padding, except when
         # the symbol is a padding-only symbol.

@@ -38,6 +38,27 @@ def _OpenMaybeGz(path, mode=None):
   return open(path, mode or 'r')
 
 
+def _StripLinkerAddedSymbolPrefixes(symbols):
+  """Removes prefixes sometimes added to symbol names during link
+
+  Removing prefixes make symbol names match up with those found in .o files.
+  """
+  for symbol in symbols:
+    name = symbol.name
+    if name.startswith('startup.'):
+      symbol.flags |= models.FLAG_STARTUP
+      symbol.name = name[8:]
+    elif name.startswith('unlikely.'):
+      symbol.flags |= models.FLAG_UNLIKELY
+      symbol.name = name[9:]
+    elif name.startswith('rel.local.'):
+      symbol.flags |= models.FLAG_REL_LOCAL
+      symbol.name = name[10:]
+    elif name.startswith('rel.'):
+      symbol.flags |= models.FLAG_REL
+      symbol.name = name[4:]
+
+
 def _UnmangleRemainingSymbols(symbols, tool_prefix):
   """Uses c++filt to unmangle any symbols that need it."""
   to_process = [s for s in symbols if s.name.startswith('_Z')]
@@ -89,7 +110,7 @@ def _NormalizeNames(symbols):
     # Remove anonymous namespaces (they just harm clustering).
     non_anonymous = symbol.name.replace('(anonymous namespace)::', '')
     if symbol.name != non_anonymous:
-      symbol.is_anonymous = True
+      symbol.flags |= models.FLAG_ANONYMOUS
       symbol.name = non_anonymous
       symbol.full_name = symbol.full_name.replace(
           '(anonymous namespace)::', '')
@@ -344,6 +365,9 @@ def CreateSizeInfo(map_path, lazy_paths=None, no_source_paths=False,
     assert all_found, (
         'One or more source file paths could not be found. Likely caused by '
         '.ninja files being generated at a different time than the .map file.')
+
+  logging.info('Stripping linker prefixes from symbol names')
+  _StripLinkerAddedSymbolPrefixes(raw_symbols)
   # Map file for some reason doesn't unmangle all names.
   # Unmangle prints its own log statement.
   _UnmangleRemainingSymbols(raw_symbols, lazy_paths.tool_prefix)

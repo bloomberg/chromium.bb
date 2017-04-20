@@ -81,13 +81,12 @@ class Describer(object):
       yield '    source_path={} \tobject_path={}'.format(
           sym.source_path, sym.object_path)
       if sym.name:
-        yield '    is_anonymous={}  name={}'.format(
-            int(sym.is_anonymous), sym.name)
+        yield '    flags={}  name={}'.format(sym.FlagsString(), sym.name)
         if sym.full_name:
           yield '               full_name={}'.format(sym.full_name)
       elif sym.full_name:
-        yield '    is_anonymous={}  full_name={}'.format(
-            int(sym.is_anonymous), sym.full_name)
+        yield '    flags={}  full_name={}'.format(
+            sym.FlagsString(), sym.full_name)
     else:
       yield '{}@{:<9s}  {:<7} {}'.format(
           sym.section, address, sym.size,

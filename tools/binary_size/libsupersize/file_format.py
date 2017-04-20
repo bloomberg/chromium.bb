@@ -84,8 +84,8 @@ def _SaveSizeInfoToFile(size_info, file_obj):
     for symbol in group:
       # Do not write name when full_name exists. It will be derived on load.
       file_obj.write(symbol.full_name or symbol.name)
-      if symbol.is_anonymous:
-        file_obj.write('\t1')
+      if symbol.flags:
+        file_obj.write('\t%x' % symbol.flags)
       file_obj.write('\n')
   _LogSize(file_obj, 'names (final)')  # For libchrome: adds 3.5mb.
 
@@ -134,8 +134,12 @@ def _LoadSizeInfoFromFile(file_obj):
   for section_index, cur_section_name in enumerate(section_names):
     for i in xrange(section_counts[section_index]):
       line = next(lines)[:-1]
-      is_anonymous = line.endswith('\t1')
-      name = line[:-2] if is_anonymous else line
+      name = line
+      flags = 0
+      last_tab_idx = line.find('\t', -3)  # Allows for two digits of flags.
+      if last_tab_idx != -1:
+        flags = int(line[last_tab_idx + 1:], 16)
+        name = line[:last_tab_idx]
 
       new_sym = models.Symbol.__new__(models.Symbol)
       new_sym.section_name = cur_section_name
@@ -145,7 +149,7 @@ def _LoadSizeInfoFromFile(file_obj):
       paths = path_tuples[path_indices[section_index][i]]
       new_sym.object_path = paths[0]
       new_sym.source_path = paths[1]
-      new_sym.is_anonymous = is_anonymous
+      new_sym.flags = flags
       new_sym.padding = 0  # Derived
       new_sym.full_name = None  # Derived
       raw_symbols[symbol_idx] = new_sym

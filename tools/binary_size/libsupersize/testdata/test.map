@@ -87,7 +87,7 @@ Memory map
                 0x0028f000      0x1c0 obj/third_party/icu/icuuc/ucnv_ext.o
  .text.startup._GLOBAL__sub_I_SkDeviceProfile.cpp
                 0x0028f1c8       0x14 obj/third_party/icu/icuuc/ucnv_ext.o
- .text.startup._GLOBAL__sub_I_SkDiscardableMemoryPool.cpp
+ .text.unlikely.foo_bar
                 0x0028f1e0       0x14 obj/third_party/icu/icuuc/ucnv_ext.o
  .text._ZN5blink23ContiguousContainerBase11shrinkToFitEv
                 0x002a0000       0x10 obj/third_party/WebKit.a(PaintChunker.o)
