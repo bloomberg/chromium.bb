@@ -17,9 +17,9 @@ from name_utilities import (
 from collections import OrderedDict
 
 
-# Temporary hard-coded list of fields that are not CSS properties.
+# Temporary hard-coded list of extra fields.
 # TODO(shend): Put this into its own JSON5 file.
-NONPROPERTIES = [
+EXTRA_FIELDS = [
     {'name': 'IsLink', 'field_template': 'monotonic_flag',
      'inherited': False, 'independent': False, 'default_value': False},
     {'name': 'OriginalDisplay', 'field_template': 'keyword', 'default_value': 'inline',
@@ -253,7 +253,7 @@ def _create_inherited_flag_field(property_):
     )
 
 
-def _create_fields(field_role, properties):
+def _create_fields(properties):
     """
     Create ComputedStyle fields from properties or nonproperties and return a list of Field objects.
     """
@@ -266,6 +266,10 @@ def _create_fields(field_role, properties):
             if property_['independent']:
                 fields.append(_create_inherited_flag_field(property_))
 
+            # TODO(shend): Get rid of the property/nonproperty field roles.
+            # If the field has_custom_compare_and_copy, then it does not appear in
+            # ComputedStyle::operator== and ComputedStyle::CopyNonInheritedFromCached.
+            field_role = 'nonproperty' if property_['has_custom_compare_and_copy'] else 'property'
             fields.append(_create_field(field_role, property_))
 
     return fields
@@ -307,21 +311,6 @@ def _pack_fields(fields):
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def __init__(self, json5_file_path):
         super(ComputedStyleBaseWriter, self).__init__(json5_file_path)
-        self._outputs = {
-            'ComputedStyleBase.h': self.generate_base_computed_style_h,
-            'ComputedStyleBase.cpp': self.generate_base_computed_style_cpp,
-            'ComputedStyleBaseConstants.h': self.generate_base_computed_style_constants,
-        }
-
-        # TODO(shend): Remove this once we move NONPROPERTIES to its own JSON file,
-        # since the JSON5 reader will handle missing fields and defaults.
-        for property_ in NONPROPERTIES:
-            for parameter in self.json5_file.parameters:
-                if parameter not in property_:
-                    property_[parameter] = None
-
-        for property_ in NONPROPERTIES:
-            make_style_builder.apply_property_naming_defaults(property_)
 
         # Ignore shorthand properties
         for property_ in self._properties.values():
@@ -329,19 +318,37 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 assert not property_['longhands'], \
                     "Shorthand '{}' cannot have a field_template.".format(property_['name'])
 
-        property_values = [value for value in self._properties.values() if not value['longhands']]
+        css_properties = [value for value in self._properties.values() if not value['longhands']]
 
-        for property_ in property_values:
-            # Override the type name when field_type_path is specified
-            if property_['field_type_path']:
-                property_['type_name'] = property_['field_type_path'].split('/')[-1]
+        for property_ in css_properties:
+            # All CSS properties that are generated do not have custom comparison and copy logic.
+            property_['has_custom_compare_and_copy'] = False
             # CSS properties are not allowed to explicitly specify their field_size.
             property_['field_size'] = None
 
-        self._generated_enums = _create_enums(property_values + NONPROPERTIES)
+        # TODO(shend): Remove this once we move EXTRA_FIELDS to its own JSON file,
+        # since the JSON5 reader will handle missing fields and defaults.
+        for property_ in EXTRA_FIELDS:
+            for parameter in self.json5_file.parameters:
+                if parameter not in property_:
+                    property_[parameter] = None
 
-        all_fields = (_create_fields('property', property_values) +
-                      _create_fields('nonproperty', NONPROPERTIES))
+        for property_ in EXTRA_FIELDS:
+            # TODO(shend): Remove the line below once we move EXTRA_FIELDS to its
+            # own file which would enforce defaults.
+            property_['has_custom_compare_and_copy'] = True
+            make_style_builder.apply_property_naming_defaults(property_)
+
+        all_properties = css_properties + EXTRA_FIELDS
+
+        # Override the type name when field_type_path is specified
+        for property_ in all_properties:
+            if property_['field_type_path']:
+                property_['type_name'] = property_['field_type_path'].split('/')[-1]
+
+        self._generated_enums = _create_enums(all_properties)
+
+        all_fields = _create_fields(all_properties)
 
         # Separate the normal fields from the bit fields
         bit_fields = [field for field in all_fields if field.is_bit_field]
@@ -378,8 +385,12 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             for field in bucket:
                 self._fields.append(field)
 
-        self._include_paths = _get_include_paths(property_values + NONPROPERTIES)
-
+        self._include_paths = _get_include_paths(all_properties)
+        self._outputs = {
+            'ComputedStyleBase.h': self.generate_base_computed_style_h,
+            'ComputedStyleBase.cpp': self.generate_base_computed_style_cpp,
+            'ComputedStyleBaseConstants.h': self.generate_base_computed_style_constants,
+        }
 
     @template_expander.use_jinja('ComputedStyleBase.h.tmpl')
     def generate_base_computed_style_h(self):
