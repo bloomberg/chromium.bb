@@ -155,6 +155,7 @@ class Json5File(object):
         if not self.parameters:
             entry.update(item)
             return entry
+        assert "name" not in self.parameters, "The parameter 'name' is reserved, use a different name."
         entry["name"] = item.pop("name")
         # Validate parameters if it's specified.
         for key, value in item.items():

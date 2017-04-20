@@ -2,13 +2,6 @@
   // This file specifies all the methods in CSSPropertyAPI.h and the necessary
   // information for code generation of the API and it's related classes.
   parameters: {
-    // - name
-    // The name of this method in camel case.
-    name: {
-      default: "",
-      valid_type: "str",
-    },
-
     // - return_type
     // Return type of this method.
     return_type: {
