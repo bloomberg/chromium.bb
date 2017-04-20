@@ -25,7 +25,9 @@
       <!-- iOS uses es-MX for es-419 -->
       <output filename="remoting/resources/es-MX.pak" lang="es-419" type="data_package"/>
     </if>
-    <output filename="remoting/resources/es-419.pak" lang="es-419" type="data_package"/>
+    <if expr="not is_ios">
+      <output filename="remoting/resources/es-419.pak" lang="es-419" type="data_package"/>
+    </if>
     <output filename="remoting/resources/es.pak" lang="es" type="data_package"/>
     <output filename="remoting/resources/et.pak" lang="et" type="data_package"/>
     <output filename="remoting/resources/fa.pak" lang="fa" type="data_package"/>
@@ -56,7 +58,9 @@
       <!-- iOS uses pt for pt-BR -->
       <output filename="remoting/resources/pt.pak" lang="pt-BR" type="data_package"/>
     </if>
-    <output filename="remoting/resources/pt-BR.pak" lang="pt-BR" type="data_package"/>
+    <if expr="not is_ios">
+      <output filename="remoting/resources/pt-BR.pak" lang="pt-BR" type="data_package"/>
+    </if>
     <output filename="remoting/resources/pt-PT.pak" lang="pt-PT" type="data_package"/>
     <output filename="remoting/resources/ro.pak" lang="ro" type="data_package"/>
     <output filename="remoting/resources/ru.pak" lang="ru" type="data_package"/>
@@ -86,10 +90,18 @@
     <output filename="remoting/webapp/_locales/fake_bidi/messages.json" lang="fake_bidi" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/en_US/messages.json" lang="en-US" type="chrome_messages_json"/>
+    <if expr="chromeos or is_ios">
+      <output filename="remoting/webapp/_locales/en_US/messages.json" lang="en-US" type="chrome_messages_json"/>
+    </if>
     <output filename="remoting/webapp/_locales/en_GB/messages.json" lang="en-GB" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/es/messages.json" lang="es" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/es_419/messages.json" lang="es-419" type="chrome_messages_json"/>
+    <if expr="is_ios">
+      <!-- iOS uses es-MX for es-419 -->
+      <output filename="remoting/webapp/_locales/es_MX/messages.json" lang="es-419" type="chrome_messages_json"/>
+    </if>
+    <if expr="not is_ios">
+      <output filename="remoting/webapp/_locales/es_419/messages.json" lang="es-419" type="chrome_messages_json"/>
+    </if>
     <output filename="remoting/webapp/_locales/et/messages.json" lang="et" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/fi/messages.json" lang="fi" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/fil/messages.json" lang="fil" type="chrome_messages_json"/>
@@ -113,7 +125,13 @@
     <output filename="remoting/webapp/_locales/nb/messages.json" lang="no" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/nl/messages.json" lang="nl" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/pl/messages.json" lang="pl" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/pt_BR/messages.json" lang="pt-BR" type="chrome_messages_json"/>
+    <if expr="is_ios">
+      <!-- iOS uses pt for pt-BR -->
+      <output filename="remoting/webapp/_locales/pt/messages.json" lang="pt-BR" type="chrome_messages_json"/>
+    </if>
+    <if expr="not is_ios">
+      <output filename="remoting/webapp/_locales/pt_BR/messages.json" lang="pt-BR" type="chrome_messages_json"/>
+    </if>
     <output filename="remoting/webapp/_locales/pt_PT/messages.json" lang="pt-PT" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/ro/messages.json" lang="ro" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/ru/messages.json" lang="ru" type="chrome_messages_json"/>

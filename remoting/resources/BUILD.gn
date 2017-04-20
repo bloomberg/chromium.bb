@@ -47,7 +47,7 @@ action("verify_resources") {
 
   inputs = [ "remoting_strings.grd" ] + sources_to_verify
 
-  stampfile = "$root_build_dir/remoting_resources_verified_stamp"
+  stampfile = "$root_out_dir/remoting_resources_verified_stamp"
   outputs = [
     stampfile,
   ]
@@ -115,8 +115,9 @@ action("copy_locales") {
   # replacement over the locales. Here, we can do this in GN script by
   # pretending the locale list is a list of files. The {{source_name_part}}
   # will just expand to the locale name.
-  inputs = process_file_template(remoting_locales,
-                                 [ "$target_gen_dir/{{source_name_part}}.pak" ])
+  inputs = process_file_template(
+          remoting_locales,
+          [ "$root_gen_dir/remoting/resources/{{source_name_part}}.pak" ])
 
   # Likewise, process the outputs in the same way as the inputs.
   if (is_mac || is_ios) {
@@ -124,11 +125,11 @@ action("copy_locales") {
     # different place.
     outputs = process_file_template(
             remoting_locales_with_underscores,
-            [ "$root_build_dir/remoting/resources/{{source_name_part}}.lproj/locale.pak" ])
+            [ "$root_out_dir/remoting/resources/{{source_name_part}}.lproj/locale.pak" ])
   } else {
     outputs = process_file_template(
             remoting_locales,
-            [ "$root_build_dir/remoting_locales/{{source_name_part}}.pak" ])
+            [ "$root_out_dir/remoting_locales/{{source_name_part}}.pak" ])
   }
 
   args = [
