@@ -1084,9 +1084,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that scrolling a nested out-of-process iframe bubbles unused scroll
 // delta to a parent frame.
-// Flaky: https://crbug.com/627238
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#define MAYBE_ScrollBubblingFromOOPIFTest DISABLED_ScrollBubblingFromOOPIFTest
+#else
+#define MAYBE_ScrollBubblingFromOOPIFTest ScrollBubblingFromOOPIFTest
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_ScrollBubblingFromOOPIFTest) {
+                       MAYBE_ScrollBubblingFromOOPIFTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1154,6 +1158,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_event.SetPositionInWidget(1, 1);
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = -5.0f;
+  // Set has_precise_scroll_deltas to keep these events off the animated scroll
+  // pathways, which currently break this test.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=710513
+  scroll_event.has_precise_scrolling_deltas = true;
   rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // Ensure that the view position is propagated to the child properly.
