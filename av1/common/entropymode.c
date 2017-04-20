@@ -772,6 +772,21 @@ static const aom_prob default_inter_compound_mode_probs
       { 25, 29, 50, 192, 64, 192, 128, 180, 180 },   // 6 = two intra neighbours
     };
 
+#if CONFIG_COMPOUND_SINGLEREF
+// TODO(zoeliu): Default values to be further adjusted based on the collected
+//               stats.
+static const aom_prob default_inter_singleref_comp_mode_probs
+    [INTER_MODE_CONTEXTS][INTER_SINGLEREF_COMP_MODES - 1] = {
+      { 2, 173, 68, 180 },   // 0 = both zero mv
+      { 7, 145, 160, 180 },  // 1 = 1 zero + 1 predicted
+      { 7, 166, 126, 180 },  // 2 = two predicted mvs
+      { 7, 94, 132, 180 },   // 3 = 1 pred/zero, 1 new
+      { 8, 64, 64, 180 },    // 4 = two new mvs
+      { 17, 81, 52, 180 },   // 5 = one intra neighbour
+      { 25, 29, 50, 180 },   // 6 = two intra neighbours
+    };
+#endif  // CONFIG_COMPOUND_SINGLEREF
+
 #if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 static const aom_prob
     default_compound_type_probs[BLOCK_SIZES][COMPOUND_TYPES - 1] = {
@@ -992,6 +1007,17 @@ const aom_tree_index av1_inter_compound_mode_tree
   -INTER_COMPOUND_OFFSET(NEAR_NEWMV), -INTER_COMPOUND_OFFSET(NEW_NEARMV)
 };
 
+#if CONFIG_COMPOUND_SINGLEREF
+const aom_tree_index av1_inter_singleref_comp_mode_tree
+    [TREE_SIZE(INTER_SINGLEREF_COMP_MODES)] = {
+  -INTER_SINGLEREF_COMP_OFFSET(SR_ZERO_NEWMV), 2,
+  -INTER_SINGLEREF_COMP_OFFSET(SR_NEAREST_NEARMV), 4,
+  6, -INTER_SINGLEREF_COMP_OFFSET(SR_NEW_NEWMV),
+  -INTER_SINGLEREF_COMP_OFFSET(SR_NEAREST_NEWMV),
+  -INTER_SINGLEREF_COMP_OFFSET(SR_NEAR_NEWMV)
+};
+#endif  // CONFIG_COMPOUND_SINGLEREF
+
 #if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
   -COMPOUND_AVERAGE, 2, -COMPOUND_WEDGE, -COMPOUND_SEG
@@ -1065,6 +1091,14 @@ static const aom_prob default_single_ref_p[REF_CONTEXTS][SINGLE_REFS - 1] = {
   { 33, 16 }, { 77, 74 }, { 142, 142 }, { 172, 170 }, { 238, 247 }
 #endif  // CONFIG_EXT_REFS
 };
+
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+// TODO(zoeliu): Default values to be further adjusted based on the collected
+//               stats.
+static const aom_prob default_comp_inter_mode_p[COMP_INTER_MODE_CONTEXTS] = {
+  41, 119, 187, 225
+};
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
 #if CONFIG_PALETTE
 
@@ -3226,6 +3260,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->comp_bwdref_prob, default_comp_bwdref_p);
 #endif  // CONFIG_EXT_REFS
   av1_copy(fc->single_ref_prob, default_single_ref_p);
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+  av1_copy(fc->comp_inter_mode_prob, default_comp_inter_mode_p);
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->tx_size_probs, default_tx_size_prob);
 #if CONFIG_VAR_TX
   av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);
@@ -3246,6 +3283,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_EXT_INTER
   av1_copy(fc->inter_compound_mode_probs, default_inter_compound_mode_probs);
+#if CONFIG_COMPOUND_SINGLEREF
+  av1_copy(fc->inter_singleref_comp_mode_probs,
+           default_inter_singleref_comp_mode_probs);
+#endif  // CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->compound_type_prob, default_compound_type_probs);
   av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);
@@ -3420,6 +3461,7 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
     fc->intra_inter_prob[i] = av1_mode_mv_merge_probs(
         pre_fc->intra_inter_prob[i], counts->intra_inter[i]);
+
   for (i = 0; i < COMP_INTER_CONTEXTS; i++)
     fc->comp_inter_prob[i] = av1_mode_mv_merge_probs(pre_fc->comp_inter_prob[i],
                                                      counts->comp_inter[i]);
@@ -3444,6 +3486,13 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     for (j = 0; j < (SINGLE_REFS - 1); j++)
       fc->single_ref_prob[i][j] = av1_mode_mv_merge_probs(
           pre_fc->single_ref_prob[i][j], counts->single_ref[i][j]);
+
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+  for (i = 0; i < COMP_INTER_MODE_CONTEXTS; i++)
+    fc->comp_inter_mode_prob[i] = av1_mode_mv_merge_probs(
+        pre_fc->comp_inter_mode_prob[i], counts->comp_inter_mode[i]);
+
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
 #if CONFIG_REF_MV
   for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i)
@@ -3490,6 +3539,13 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     aom_tree_merge_probs(
         av1_inter_compound_mode_tree, pre_fc->inter_compound_mode_probs[i],
         counts->inter_compound_mode[i], fc->inter_compound_mode_probs[i]);
+#if CONFIG_COMPOUND_SINGLEREF
+  for (i = 0; i < INTER_MODE_CONTEXTS; i++)
+    aom_tree_merge_probs(av1_inter_singleref_comp_mode_tree,
+                         pre_fc->inter_singleref_comp_mode_probs[i],
+                         counts->inter_singleref_comp_mode[i],
+                         fc->inter_singleref_comp_mode_probs[i]);
+#endif  // CONFIG_COMPOUND_SINGLEREF
   for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
     if (is_interintra_allowed_bsize_group(i))
       fc->interintra_prob[i] = av1_mode_mv_merge_probs(

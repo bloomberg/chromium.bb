@@ -177,6 +177,35 @@ int av1_get_intra_inter_context(const MACROBLOCKD *xd) {
   }
 }
 
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+// The compound/single mode info data structure has one element border above and
+// to the left of the entries corresponding to real macroblocks.
+// The prediction flags in these dummy entries are initialized to 0.
+// 0 - single/single
+// 1 - single/--, --/single, --/--
+// 2 - single/comp, comp/single
+// 3 - comp/comp, comp/--, --/comp
+int av1_get_inter_mode_context(const MACROBLOCKD *xd) {
+  const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
+  const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
+  const int has_above = xd->up_available;
+  const int has_left = xd->left_available;
+
+  if (has_above && has_left) {  // both edges available (0/2/3)
+    const int above_inter_comp_mode = is_inter_compound_mode(above_mbmi->mode);
+    const int left_inter_comp_mode = is_inter_compound_mode(left_mbmi->mode);
+    return (above_inter_comp_mode && left_inter_comp_mode)
+               ? 3
+               : (above_inter_comp_mode || left_inter_comp_mode) * 2;
+  } else if (has_above || has_left) {  // one edge available (1/3)
+    const MB_MODE_INFO *const edge_mbmi = has_above ? above_mbmi : left_mbmi;
+    return is_inter_compound_mode(edge_mbmi->mode) ? 3 : 1;
+  } else {  // no edge available (1)
+    return 1;
+  }
+}
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+
 #if CONFIG_EXT_REFS
 #define CHECK_BACKWARD_REFS(ref_frame) \
   (((ref_frame) >= BWDREF_FRAME) && ((ref_frame) <= ALTREF_FRAME))

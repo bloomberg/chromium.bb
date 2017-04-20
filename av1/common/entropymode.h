@@ -34,6 +34,9 @@ extern "C" {
 
 #define INTER_OFFSET(mode) ((mode)-NEARESTMV)
 #if CONFIG_EXT_INTER
+#if CONFIG_COMPOUND_SINGLEREF
+#define INTER_SINGLEREF_COMP_OFFSET(mode) ((mode)-SR_NEAREST_NEARMV)
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #define INTER_COMPOUND_OFFSET(mode) ((mode)-NEAREST_NEARESTMV)
 #endif  // CONFIG_EXT_INTER
 
@@ -193,6 +196,10 @@ typedef struct frame_contexts {
 #if CONFIG_EXT_INTER
   aom_prob inter_compound_mode_probs[INTER_MODE_CONTEXTS]
                                     [INTER_COMPOUND_MODES - 1];
+#if CONFIG_COMPOUND_SINGLEREF
+  aom_prob inter_singleref_comp_mode_probs[INTER_MODE_CONTEXTS]
+                                          [INTER_SINGLEREF_COMP_MODES - 1];
+#endif  // CONFIG_COMPOUND_SINGLEREF
   aom_prob compound_type_prob[BLOCK_SIZES][COMPOUND_TYPES - 1];
   aom_prob interintra_prob[BLOCK_SIZE_GROUPS];
   aom_prob interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1];
@@ -213,6 +220,9 @@ typedef struct frame_contexts {
 #else
   aom_prob comp_ref_prob[REF_CONTEXTS][COMP_REFS - 1];
 #endif  // CONFIG_EXT_REFS
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+  aom_prob comp_inter_mode_prob[COMP_INTER_MODE_CONTEXTS];
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
   aom_prob tx_size_probs[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][MAX_TX_DEPTH];
 #if CONFIG_VAR_TX
   aom_prob txfm_partition_prob[TXFM_PARTITION_CONTEXTS];
@@ -360,6 +370,10 @@ typedef struct FRAME_COUNTS {
   unsigned int inter_mode[INTER_MODE_CONTEXTS][INTER_MODES];
 #if CONFIG_EXT_INTER
   unsigned int inter_compound_mode[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
+#if CONFIG_COMPOUND_SINGLEREF
+  unsigned int inter_singleref_comp_mode[INTER_MODE_CONTEXTS]
+                                        [INTER_SINGLEREF_COMP_MODES];
+#endif  // CONFIG_COMPOUND_SINGLEREF
   unsigned int interintra[BLOCK_SIZE_GROUPS][2];
   unsigned int interintra_mode[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
   unsigned int wedge_interintra[BLOCK_SIZES][2];
@@ -380,6 +394,9 @@ typedef struct FRAME_COUNTS {
 #else
   unsigned int comp_ref[REF_CONTEXTS][COMP_REFS - 1][2];
 #endif  // CONFIG_EXT_REFS
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+  unsigned int comp_inter_mode[COMP_INTER_MODE_CONTEXTS][2];
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
   // TODO(any): tx_size_totals is only used by the encoder to decide whether
   // to use forward updates for the coeff probs, and as such it does not really
   // belong into this structure.
@@ -475,6 +492,10 @@ extern const aom_tree_index
     av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)];
 extern const aom_tree_index
     av1_inter_compound_mode_tree[TREE_SIZE(INTER_COMPOUND_MODES)];
+#if CONFIG_COMPOUND_SINGLEREF
+extern const aom_tree_index
+    av1_inter_singleref_comp_mode_tree[TREE_SIZE(INTER_SINGLEREF_COMP_MODES)];
+#endif  // CONFIG_COMPOUND_SINGLEREF
 extern const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)];
 #endif  // CONFIG_EXT_INTER
 extern const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)];
