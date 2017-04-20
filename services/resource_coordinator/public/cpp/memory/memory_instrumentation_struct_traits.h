@@ -5,7 +5,9 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_
 #define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_
 
+#include "base/process/process_handle.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "mojo/common/common_custom_types_struct_traits.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
 namespace mojo {
@@ -94,6 +96,12 @@ struct StructTraits<
   static base::trace_event::MemoryDumpCallbackResult::ChromeMemDump chrome_dump(
       const base::trace_event::MemoryDumpCallbackResult& args) {
     return args.chrome_dump;
+  }
+  static const std::map<base::ProcessId,
+                        base::trace_event::MemoryDumpCallbackResult::OSMemDump>&
+  extra_processes_dump(
+      const base::trace_event::MemoryDumpCallbackResult& args) {
+    return args.extra_processes_dump;
   }
   static bool Read(
       memory_instrumentation::mojom::MemoryDumpCallbackResultDataView input,
