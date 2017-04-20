@@ -60,12 +60,14 @@ bool TrayUpdate::update_required_ = false;
 mojom::UpdateSeverity TrayUpdate::severity_ = mojom::UpdateSeverity::NONE;
 // static
 bool TrayUpdate::factory_reset_required_ = false;
+mojom::UpdateType TrayUpdate::update_type_ = mojom::UpdateType::SYSTEM;
 
 // The "restart to update" item in the system tray menu.
 class TrayUpdate::UpdateView : public ActionableView {
  public:
   explicit UpdateView(TrayUpdate* owner)
-      : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS) {
+      : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
+        update_label_(nullptr) {
     SetLayoutManager(new views::FillLayout);
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -77,22 +79,30 @@ class TrayUpdate::UpdateView : public ActionableView {
         IconColorForUpdateSeverity(owner->severity_, true)));
     tri_view->AddView(TriView::Container::START, image);
 
-    base::string16 label_text =
-        owner->factory_reset_required_
-            ? bundle.GetLocalizedString(
-                  IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE)
-            : bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE);
+    base::string16 label_text;
+    if (owner->factory_reset_required_) {
+      label_text = bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE);
+    } else if (owner->update_type_ == mojom::UpdateType::FLASH) {
+      label_text = bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE_FLASH);
+    } else {
+      label_text = bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE);
+    }
+
     SetAccessibleName(label_text);
-    auto* label = TrayPopupUtils::CreateDefaultLabel();
-    label->SetText(label_text);
+    update_label_ = TrayPopupUtils::CreateDefaultLabel();
+    update_label_->SetText(label_text);
+
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
-    style.SetupLabel(label);
-    tri_view->AddView(TriView::Container::CENTER, label);
+    style.SetupLabel(update_label_);
+    tri_view->AddView(TriView::Container::CENTER, update_label_);
 
     SetInkDropMode(InkDropHostView::InkDropMode::ON);
   }
 
   ~UpdateView() override {}
+
+  views::Label* update_label_;
 
  private:
   // Overridden from ActionableView.
@@ -119,19 +129,33 @@ bool TrayUpdate::GetInitialVisibility() {
 }
 
 views::View* TrayUpdate::CreateDefaultView(LoginStatus status) {
-  return update_required_ ? new UpdateView(this) : nullptr;
+  if (update_required_) {
+    update_view_ = new UpdateView(this);
+    return update_view_;
+  }
+  return nullptr;
+}
+
+void TrayUpdate::DestroyDefaultView() {
+  update_view_ = nullptr;
 }
 
 void TrayUpdate::ShowUpdateIcon(mojom::UpdateSeverity severity,
-                                bool factory_reset_required) {
+                                bool factory_reset_required,
+                                mojom::UpdateType update_type) {
   // Cache update info so we can create the default view when the menu opens.
   update_required_ = true;
   severity_ = severity;
   factory_reset_required_ = factory_reset_required;
+  update_type_ = update_type;
 
   // Show the icon in the tray.
   SetIconColor(IconColorForUpdateSeverity(severity_, false));
   tray_view()->SetVisible(true);
+}
+
+views::Label* TrayUpdate::GetLabelForTesting() {
+  return update_view_ ? update_view_->update_label_ : nullptr;
 }
 
 }  // namespace ash

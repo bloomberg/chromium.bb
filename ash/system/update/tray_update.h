@@ -7,9 +7,12 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 
 namespace views {
+class Label;
 class View;
 }
 
@@ -17,6 +20,7 @@ namespace ash {
 
 namespace mojom {
 enum class UpdateSeverity;
+enum class UpdateType;
 }
 
 // The system update tray item. The tray icon stays visible once an update
@@ -31,14 +35,23 @@ class ASH_EXPORT TrayUpdate : public TrayImageItem {
   // available. Once shown the icon persists until reboot. |severity| and
   // |factory_reset_required| are used to set the icon, color, and tooltip.
   void ShowUpdateIcon(mojom::UpdateSeverity severity,
-                      bool factory_reset_required);
+                      bool factory_reset_required,
+                      mojom::UpdateType update_type);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TrayUpdateTest, VisibilityAfterUpdate);
+  FRIEND_TEST_ALL_PREFIXES(TrayUpdateTest, VisibilityAfterFlashUpdate);
+
   class UpdateView;
 
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;
   views::View* CreateDefaultView(LoginStatus status) override;
+  void DestroyDefaultView() override;
+
+  // Expose label information for testing.
+  views::Label* GetLabelForTesting();
+  UpdateView* update_view_;
 
   // If an external monitor is connected then the system tray may be created
   // after the update data is sent from chrome, so share the update info between
@@ -46,6 +59,7 @@ class ASH_EXPORT TrayUpdate : public TrayImageItem {
   static bool update_required_;
   static mojom::UpdateSeverity severity_;
   static bool factory_reset_required_;
+  static mojom::UpdateType update_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUpdate);
 };

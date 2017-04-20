@@ -67,7 +67,8 @@ class ASH_EXPORT SystemTrayController
   void SetPrimaryTrayVisible(bool visible) override;
   void SetUse24HourClock(bool use_24_hour) override;
   void ShowUpdateIcon(mojom::UpdateSeverity severity,
-                      bool factory_reset_required) override;
+                      bool factory_reset_required,
+                      mojom::UpdateType update_type) override;
 
  private:
   // Client interface in chrome browser. May be null in tests.

@@ -184,14 +184,16 @@ void SystemTrayController::SetUse24HourClock(bool use_24_hour) {
 }
 
 void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
-                                          bool factory_reset_required) {
+                                          bool factory_reset_required,
+                                          mojom::UpdateType update_type) {
   // Show the icon on all displays.
   for (WmWindow* root : ShellPort::Get()->GetAllRootWindows()) {
     ash::SystemTray* tray = root->GetRootWindowController()->GetSystemTray();
     // External monitors might not have a tray yet.
     if (!tray)
       continue;
-    tray->tray_update()->ShowUpdateIcon(severity, factory_reset_required);
+    tray->tray_update()->ShowUpdateIcon(severity, factory_reset_required,
+                                        update_type);
   }
 }
 

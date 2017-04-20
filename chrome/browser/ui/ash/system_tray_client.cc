@@ -381,7 +381,10 @@ void SystemTrayClient::RequestRestartForUpdate() {
 void SystemTrayClient::HandleUpdateAvailable() {
   // Show an update icon for Chrome updates and Flash component updates.
   UpgradeDetector* detector = UpgradeDetector::GetInstance();
-  DCHECK(detector->notify_upgrade() || flash_update_available_);
+  bool update_available = detector->notify_upgrade() || flash_update_available_;
+  DCHECK(update_available);
+  if (!update_available)
+    return;
 
   // Get the Chrome update severity.
   ash::mojom::UpdateSeverity severity = GetUpdateSeverity(detector);
@@ -390,7 +393,14 @@ void SystemTrayClient::HandleUpdateAvailable() {
   if (flash_update_available_)
     severity = std::max(severity, ash::mojom::UpdateSeverity::LOW);
 
-  system_tray_->ShowUpdateIcon(severity, detector->is_factory_reset_required());
+  // Show a string specific to updating flash player if there is no system
+  // update.
+  ash::mojom::UpdateType update_type = detector->notify_upgrade()
+                                           ? ash::mojom::UpdateType::SYSTEM
+                                           : ash::mojom::UpdateType::FLASH;
+
+  system_tray_->ShowUpdateIcon(severity, detector->is_factory_reset_required(),
+                               update_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

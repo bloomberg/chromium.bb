@@ -26,7 +26,9 @@ interface SystemTray {
   // Shows an icon in the system tray indicating that a software update is
   // available. Once shown the icon persists until reboot. |severity| and
   // |factory_reset_required| are used to set the icon, color, and tooltip.
-  ShowUpdateIcon(UpdateSeverity severity, bool factory_reset_required);
+  ShowUpdateIcon(UpdateSeverity severity,
+                 bool factory_reset_required,
+                 UpdateType update_type);
 };
 
 // Allows ash system tray to control a client (e.g. Chrome browser). Requests

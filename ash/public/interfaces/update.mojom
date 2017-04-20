@@ -15,3 +15,9 @@ enum UpdateSeverity {
   SEVERE,
   CRITICAL,
 };
+
+// The type of update being applied. Sets the string in the system tray.
+enum UpdateType {
+  FLASH,
+  SYSTEM,
+};
