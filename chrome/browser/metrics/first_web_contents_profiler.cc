@@ -99,7 +99,7 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
 void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   if (collected_paint_metric_)
     return;
-  if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
+  if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
     FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
     return;
   }
@@ -118,7 +118,7 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
 void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
   if (collected_load_metric_)
     return;
-  if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
+  if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
     FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
     return;
   }
@@ -135,7 +135,7 @@ void FirstWebContentsProfiler::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (collected_main_navigation_start_metric_)
     return;
-  if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
+  if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
     FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
     return;
   }
@@ -172,7 +172,7 @@ void FirstWebContentsProfiler::DidFinishNavigation(
     return;
   }
 
-  if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
+  if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
     FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
     return;
   }

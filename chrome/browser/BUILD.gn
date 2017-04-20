@@ -604,6 +604,8 @@ split_static_library("browser") {
     "memory_details_win.cc",
     "metrics/antivirus_metrics_provider_win.cc",
     "metrics/antivirus_metrics_provider_win.h",
+    "metrics/browser_window_histogram_helper.cc",
+    "metrics/browser_window_histogram_helper.h",
     "metrics/chrome_browser_main_extra_parts_metrics.cc",
     "metrics/chrome_browser_main_extra_parts_metrics.h",
     "metrics/chrome_browser_main_extra_parts_metrics_mac.mm",

@@ -419,8 +419,7 @@ BrowserView::BrowserView()
       handling_theme_changed_(false),
       in_process_fullscreen_(false),
       force_location_bar_focus_(false),
-      activate_modal_dialog_factory_(this) {
-}
+      activate_modal_dialog_factory_(this) {}
 
 BrowserView::~BrowserView() {
   // All the tabs should have been destroyed already. If we were closed by the
@@ -1997,6 +1996,16 @@ void BrowserView::ViewHierarchyChanged(
   if (!initialized_ && details.is_add && details.child == this && GetWidget()) {
     InitViews();
     initialized_ = true;
+  }
+}
+
+void BrowserView::PaintChildren(const ui::PaintContext& context) {
+  views::ClientView::PaintChildren(context);
+  // Don't reset the instance before it had a chance to get compositor callback.
+  if (!histogram_helper_) {
+    histogram_helper_ = BrowserWindowHistogramHelper::
+        MaybeRecordValueAndCreateInstanceOnBrowserPaint(
+            GetWidget()->GetCompositor());
   }
 }
 

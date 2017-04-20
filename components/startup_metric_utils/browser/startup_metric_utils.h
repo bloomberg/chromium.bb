@@ -30,10 +30,9 @@ enum class WebContentsWorkload {
 // Registers startup related prefs in |registry|.
 void RegisterPrefs(PrefRegistrySimple* registry);
 
-// Returns true if any UI other than the browser window has been displayed
-// so far.  Useful to test if UI has been displayed before the first browser
-// window was shown, which would invalidate any surrounding timing metrics.
-bool WasNonBrowserUIDisplayed();
+// Returns true when browser UI was not launched normally: some other UI was
+// shown first or browser was launched in background mode.
+bool WasMainWindowStartupInterrupted();
 
 // Call this when displaying UI that might potentially delay startup events.
 //
@@ -43,54 +42,66 @@ bool WasNonBrowserUIDisplayed();
 // been displayed or not.
 void SetNonBrowserUIDisplayed();
 
+// Call this when background mode gets enabled, as it might delay startup
+// events.
+void SetBackgroundModeEnabled();
+
 // Call this with the creation time of the startup (initial/main) process.
-void RecordStartupProcessCreationTime(const base::Time& time);
+void RecordStartupProcessCreationTime(base::Time time);
 
 // Call this with a time recorded as early as possible in the startup process.
 // On Android, the entry point time is the time at which the Java code starts.
 // In Mojo, the entry point time is the time at which the shell starts.
-void RecordMainEntryPointTime(const base::Time& time);
+void RecordMainEntryPointTime(base::Time time);
 
 // Call this with the time when the executable is loaded and main() is entered.
 // Can be different from |RecordMainEntryPointTime| when the startup process is
 // contained in a separate dll, such as with chrome.exe / chrome.dll on Windows.
-void RecordExeMainEntryPointTicks(const base::TimeTicks& time);
+void RecordExeMainEntryPointTicks(base::TimeTicks time);
 
 // Call this with the time recorded just before the message loop is started.
 // |is_first_run| - is the current launch part of a first run. |pref_service| is
 // used to store state for stats that span multiple startups.
-void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
+void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
                                        bool is_first_run,
                                        PrefService* pref_service);
 
 // Call this with the time when the first browser window became visible.
-void RecordBrowserWindowDisplay(const base::TimeTicks& ticks);
+void RecordBrowserWindowDisplay(base::TimeTicks ticks);
 
 // Call this with the time delta that the browser spent opening its tabs.
-void RecordBrowserOpenTabsDelta(const base::TimeDelta& delta);
+void RecordBrowserOpenTabsDelta(base::TimeDelta delta);
 
 // Call this with a renderer main entry time. The value provided for the first
 // call to this function is used to compute
 // Startup.LoadTime.BrowserMainToRendererMain. Further calls to this
 // function are ignored.
-void RecordRendererMainEntryTime(const base::TimeTicks& ticks);
+void RecordRendererMainEntryTime(base::TimeTicks ticks);
 
 // Call this with the time when the first web contents loaded its main frame,
 // only if the first web contents was unimpended in its attempt to do so.
-void RecordFirstWebContentsMainFrameLoad(const base::TimeTicks& ticks);
+void RecordFirstWebContentsMainFrameLoad(base::TimeTicks ticks);
 
 // Call this with the time when the first web contents had a non-empty paint,
 // only if the first web contents was unimpended in its attempt to do so.
-void RecordFirstWebContentsNonEmptyPaint(const base::TimeTicks& ticks);
+void RecordFirstWebContentsNonEmptyPaint(base::TimeTicks ticks);
 
 // Call this with the time when the first web contents began navigating its main
 // frame. Adds a suffix to its metrics according to |workload|.
-void RecordFirstWebContentsMainNavigationStart(const base::TimeTicks& ticks,
+void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
                                                WebContentsWorkload workload);
 
 // Call this with the time when the first web contents successfully committed
 // its navigation for the main frame.
-void RecordFirstWebContentsMainNavigationFinished(const base::TimeTicks& ticks);
+void RecordFirstWebContentsMainNavigationFinished(base::TimeTicks ticks);
+
+// Call this with the time when the Browser window painted its children for the
+// first time.
+void RecordBrowserWindowFirstPaint(base::TimeTicks ticks);
+
+// Call this with the time when the Browser window painted its children for the
+// first time and we got a CompositingEnded after that.
+void RecordBrowserWindowFirstPaintCompositingEnded(base::TimeTicks ticks);
 
 // Returns the TimeTicks corresponding to main entry as recorded by
 // RecordMainEntryPointTime. Returns a null TimeTicks if a value has not been

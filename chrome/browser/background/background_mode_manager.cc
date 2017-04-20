@@ -57,6 +57,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -716,6 +717,8 @@ void BackgroundModeManager::StartBackgroundMode() {
   // or if background mode is disabled.
   if (in_background_mode_)
     return;
+
+  startup_metric_utils::SetBackgroundModeEnabled();
 
   // Mark ourselves as running in background mode.
   in_background_mode_ = true;

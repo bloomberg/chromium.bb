@@ -822,8 +822,8 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
 
 void ChromeBrowserMainParts::RecordBrowserStartupTime() {
   // Don't record any metrics if UI was displayed before this point e.g.
-  // warning dialogs.
-  if (startup_metric_utils::WasNonBrowserUIDisplayed())
+  // warning dialogs or browser was started in background mode.
+  if (startup_metric_utils::WasMainWindowStartupInterrupted())
     return;
 
   bool is_first_run = false;

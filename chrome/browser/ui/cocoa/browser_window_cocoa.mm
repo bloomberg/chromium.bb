@@ -16,6 +16,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/metrics/browser_window_histogram_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/shell_integration.h"
@@ -175,6 +176,12 @@ void BrowserWindowCocoa::Show() {
     // substantial part of startup time when any CALayers are part of the
     // window's NSView heirarchy.
     [window() makeKeyAndOrderFront:controller_];
+
+    // At this point all the Browser's UI is painted on the screen. There's no
+    // need to wait for the compositor, so pass the nullptr instead and don't
+    // store the returned instance.
+    BrowserWindowHistogramHelper::
+        MaybeRecordValueAndCreateInstanceOnBrowserPaint(nullptr);
   }
 
   // When creating windows from nibs it is necessary to |makeKeyAndOrderFront:|
