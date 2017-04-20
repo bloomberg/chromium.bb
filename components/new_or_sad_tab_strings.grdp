@@ -149,11 +149,12 @@
       <message name="IDS_NEW_TAB_OTR_SUBTITLE" desc="Subtitle of the Incognito new tab page, explaining to the user that the Incognito mode hides their browsing activity from other people using the same device. The second sentence clarifies that there are two important exceptions from this rule - downloaded files and added bookmarks will be persisted even after the Incognito session is closed." formatter_data="android_java" translateable="false">
         Now you can browse privately, and other people who use this device won’t see your activity. However, downloads and bookmarks will be saved.
       </message>
-      <message name="IDS_NEW_TAB_OTR_NOT_SAVED" desc="Bullet points listing data that are not saved in the Incognito mode. 'Browsing history' means a history of visited websites. 'Cookies and site data' refers to data saved by websites on the user's device (e.g. sign-in state, preferences, etc.)." formatter_data="android_java" translateable="false">
+      <message name="IDS_NEW_TAB_OTR_NOT_SAVED" desc="Bullet points listing data that are not saved in the Incognito mode. 'Browsing history' means a history of visited websites. 'Cookies and site data' refers to data saved by websites on the user's device (e.g. sign-in state, preferences, etc.). 'Information entered in forms' refers to names, addresses, passwords etc. that users enter into forms on the web." formatter_data="android_java" translateable="false">
         Chrome <ph name="BEGIN_EMPHASIS">&lt;em&gt;</ph>won’t save<ph name="END_EMPHASIS">&lt;/em&gt;</ph> the following information:
         <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
           <ph name="LIST_ITEM">&lt;li&gt;</ph>Your browsing history
           <ph name="LIST_ITEM">&lt;li&gt;</ph>Cookies and site data
+          <ph name="LIST_ITEM">&lt;li&gt;</ph>Information entered in forms
         <ph name="END_LIST">&lt;/ul&gt;</ph>
       </message>
       <message name="IDS_NEW_TAB_OTR_VISIBLE" desc="Bullet points listing entities that might be able to see the user's Incognito activity. The bullet points elaborate on the fact that Incognito only provides privacy with respect to other users on the same device. Websites you visit still know that you visited them. Your employer, school, and/or internet service provider can still monitor network traffic, even if it comes from the Incognito mode." formatter_data="android_java" translateable="false">
