@@ -193,6 +193,7 @@ int check_full(const char *tableList, const char *str,
          information about outbuf */
       if (typeform != NULL) print_typeform(typeform, inlen);
       if (cursorPos != NULL) fprintf(stderr, "Cursor:   %d\n", *cursorPos);
+      fprintf(stderr, "Expected: '%s' (length %d)\n", expected, expectedlen);
       fprintf(stderr, "Received: '");
       print_widechars(outbuf, outlen);
       fprintf(stderr, "' (length %d)\n", outlen);
