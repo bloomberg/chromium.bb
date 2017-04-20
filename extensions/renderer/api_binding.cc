@@ -139,9 +139,11 @@ struct APIBinding::EventData {
 struct APIBinding::CustomPropertyData {
   CustomPropertyData(const std::string& type_name,
                      const std::string& property_name,
+                     const base::ListValue* property_values,
                      const CreateCustomType& create_custom_type)
       : type_name(type_name),
         property_name(property_name),
+        property_values(property_values),
         create_custom_type(create_custom_type) {}
 
   // The type of the property, e.g. 'storage.StorageArea'.
@@ -149,6 +151,8 @@ struct APIBinding::CustomPropertyData {
   // The name of the property on the object, e.g. 'local' for
   // chrome.storage.local.
   std::string property_name;
+  // Values curried into this particular type from the schema.
+  const base::ListValue* property_values;
 
   CreateCustomType create_custom_type;
 };
@@ -387,8 +391,10 @@ void APIBinding::DecorateTemplateWithProperties(
     v8::Local<v8::String> v8_key = gin::StringToSymbol(isolate, iter.key());
     std::string ref;
     if (dict->GetString("$ref", &ref)) {
+      const base::ListValue* property_values = nullptr;
+      CHECK(dict->GetList("value", &property_values));
       auto property_data = base::MakeUnique<CustomPropertyData>(
-          ref, iter.key(), create_custom_type_);
+          ref, iter.key(), property_values, create_custom_type_);
       object_template->SetLazyDataProperty(
           v8_key, &APIBinding::GetCustomPropertyObject,
           v8::External::New(isolate, property_data.get()));
@@ -473,7 +479,8 @@ void APIBinding::GetCustomPropertyObject(
       static_cast<CustomPropertyData*>(info.Data().As<v8::External>()->Value());
 
   v8::Local<v8::Object> property = property_data->create_custom_type.Run(
-      context, property_data->type_name, property_data->property_name);
+      context, property_data->type_name, property_data->property_name,
+      property_data->property_values);
   if (property.IsEmpty())
     return;
 

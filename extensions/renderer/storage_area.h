@@ -11,6 +11,10 @@
 #include "base/strings/string_piece.h"
 #include "v8/include/v8.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace gin {
 class Arguments;
 }
@@ -33,6 +37,7 @@ class StorageArea {
   static v8::Local<v8::Object> CreateStorageArea(
       v8::Local<v8::Context> context,
       const std::string& property_name,
+      const base::ListValue* property_values,
       APIRequestHandler* request_handler,
       APIEventHandler* event_handler,
       APITypeReferenceMap* type_refs);

@@ -33,12 +33,13 @@ class APIBindingsSystem {
  public:
   using GetAPISchemaMethod =
       base::Callback<const base::DictionaryValue&(const std::string&)>;
-  using CustomTypeHandler =
-      base::Callback<v8::Local<v8::Object>(v8::Local<v8::Context> context,
-                                           const std::string& property_name,
-                                           APIRequestHandler* request_handler,
-                                           APIEventHandler* event_handler,
-                                           APITypeReferenceMap* type_refs)>;
+  using CustomTypeHandler = base::Callback<v8::Local<v8::Object>(
+      v8::Local<v8::Context> context,
+      const std::string& property_name,
+      const base::ListValue* property_values,
+      APIRequestHandler* request_handler,
+      APIEventHandler* event_handler,
+      APITypeReferenceMap* type_refs)>;
 
   APIBindingsSystem(const binding::RunJSFunction& call_js,
                     const binding::RunJSFunctionSync& call_js_sync,
@@ -101,9 +102,11 @@ class APIBindingsSystem {
   void InitializeType(const std::string& name);
 
   // Handles creating the type for the specified property.
-  v8::Local<v8::Object> CreateCustomType(v8::Local<v8::Context> context,
-                                         const std::string& type_name,
-                                         const std::string& property_name);
+  v8::Local<v8::Object> CreateCustomType(
+      v8::Local<v8::Context> context,
+      const std::string& type_name,
+      const std::string& property_name,
+      const base::ListValue* property_values);
 
   // The map of cached API reference types.
   APITypeReferenceMap type_reference_map_;

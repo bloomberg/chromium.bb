@@ -192,7 +192,7 @@ var tests = [
       cookiePolicy.get({}, (details) => {
         chrome.test.assertTrue(!!details, 'get details');
         chrome.test.assertTrue(details.value, 'details value true');
-        cookiePolicy.set({value: false}, () => {
+        cookiePolicy.set({value: false, scope: 'regular'}, () => {
           cookiePolicy.get({}, (details) => {
             chrome.test.assertTrue(!!details, 'get details');
             chrome.test.assertFalse(details.value, 'details value false');

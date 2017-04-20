@@ -623,25 +623,30 @@ TEST_F(APIBindingUnittest, TestRefProperties) {
   SetProperties(
       "{"
       "  'alpha': {"
-      "    '$ref': 'AlphaRef'"
+      "    '$ref': 'AlphaRef',"
+      "    'value': ['a']"
       "  },"
       "  'beta': {"
-      "    '$ref': 'BetaRef'"
+      "    '$ref': 'BetaRef',"
+      "    'value': ['b']"
       "  }"
       "}");
   auto create_custom_type = [](v8::Local<v8::Context> context,
                                const std::string& type_name,
-                               const std::string& property_name) {
+                               const std::string& property_name,
+                               const base::ListValue* property_values) {
     v8::Isolate* isolate = context->GetIsolate();
     v8::Local<v8::Object> result = v8::Object::New(isolate);
     if (type_name == "AlphaRef") {
       EXPECT_EQ("alpha", property_name);
+      EXPECT_EQ("[\"a\"]", ValueToString(*property_values));
       result
           ->Set(context, gin::StringToSymbol(isolate, "alphaProp"),
                 gin::StringToV8(isolate, "alphaVal"))
           .ToChecked();
     } else if (type_name == "BetaRef") {
       EXPECT_EQ("beta", property_name);
+      EXPECT_EQ("[\"b\"]", ValueToString(*property_values));
       result
           ->Set(context, gin::StringToSymbol(isolate, "betaProp"),
                 gin::StringToV8(isolate, "betaVal"))

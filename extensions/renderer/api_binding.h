@@ -41,10 +41,11 @@ class APITypeReferenceMap;
 // contexts.
 class APIBinding {
  public:
-  using CreateCustomType =
-      base::Callback<v8::Local<v8::Object>(v8::Local<v8::Context> context,
-                                           const std::string& type_name,
-                                           const std::string& property_name)>;
+  using CreateCustomType = base::Callback<v8::Local<v8::Object>(
+      v8::Local<v8::Context> context,
+      const std::string& type_name,
+      const std::string& property_name,
+      const base::ListValue* property_values)>;
 
   // The callback for determining if a given API method (specified by |name|)
   // is available.

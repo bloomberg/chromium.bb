@@ -133,11 +133,13 @@ void APIBindingsSystem::WillReleaseContext(v8::Local<v8::Context> context) {
 v8::Local<v8::Object> APIBindingsSystem::CreateCustomType(
     v8::Local<v8::Context> context,
     const std::string& type_name,
-    const std::string& property_name) {
+    const std::string& property_name,
+    const base::ListValue* property_values) {
   auto iter = custom_types_.find(type_name);
   DCHECK(iter != custom_types_.end()) << "Custom type not found: " << type_name;
-  return iter->second.Run(context, property_name, &request_handler_,
-                          &event_handler_, &type_reference_map_);
+  return iter->second.Run(context, property_name, property_values,
+                          &request_handler_, &event_handler_,
+                          &type_reference_map_);
 }
 
 }  // namespace extensions
