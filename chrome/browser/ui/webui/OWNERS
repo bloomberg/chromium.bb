@@ -1,4 +1,4 @@
-file://ui/webui/OWNERS
+file://ui/webui/PLATFORM_OWNERS
 
 per-file devtools_ui*=dgozman@chromium.org
 per-file devtools_ui*=pfeldman@chromium.org

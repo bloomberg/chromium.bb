@@ -1,4 +1,5 @@
-dbeam@chromium.org
-estade@chromium.org
+file://ui/webui/PLATFORM_OWNERS
+
+dschuyler@chromium.org
 
 # COMPONENT: UI>Browser>WebUI

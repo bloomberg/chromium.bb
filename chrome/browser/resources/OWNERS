@@ -1,4 +1,4 @@
-file://ui/webui/OWNERS
+file://ui/webui/PLATFORM_OWNERS
 
 per-file component_extension_resources.grd=dgozman@chromium.org
 per-file options_resources.grd=file://chrome/browser/resources/options/OWNERS
