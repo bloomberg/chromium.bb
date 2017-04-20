@@ -551,6 +551,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd', 'intel'], bug=679691)
 
     # Mac Intel
+    self.Flaky('conformance/context/context-release-upon-reload.html',
+      ['sierra', 'intel'], bug=713829)
     self.Fail(
       'conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-float.html',
       ['sierra', 'intel'], bug=663188)
