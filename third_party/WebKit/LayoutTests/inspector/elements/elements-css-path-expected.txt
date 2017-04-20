@@ -41,9 +41,11 @@ Tests DOMNode.cssPath()
         #classes > div.\2d
         #classes > div.-a
         #classes > div.\2d 0
+        #classes > div.--a
+        #classes > div.\2d --a
         #classes > div.\37
         #classes > div.класс
-        #classes > div:nth-child(10)
+        #classes > div:nth-child(12)
         #classes > div.__proto__.foo
         #classes > span
         #id-with-class
