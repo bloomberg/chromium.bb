@@ -124,7 +124,7 @@ static INLINE void obmc_variance_w8n(const uint8_t *pre, const int pre_stride,
     } else {                                                           \
       obmc_variance_w8n(pre, pre_stride, wsrc, mask, sse, &sum, W, H); \
     }                                                                  \
-    return *sse - (((int64_t)sum * sum) / (W * H));                    \
+    return *sse - (unsigned int)(((int64_t)sum * sum) / (W * H));      \
   }
 
 #if CONFIG_EXT_PARTITION

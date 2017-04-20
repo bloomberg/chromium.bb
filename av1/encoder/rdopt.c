@@ -11410,6 +11410,11 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   mbmi->pred_mv[0].as_int = 0;
 #endif  // CONFIG_REF_MV
 
+  mbmi->motion_mode = SIMPLE_TRANSLATION;
+#if CONFIG_MOTION_VAR
+  av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
+#endif
+
   if (cm->interp_filter != BILINEAR) {
     best_filter = EIGHTTAP_REGULAR;
     if (cm->interp_filter == SWITCHABLE &&

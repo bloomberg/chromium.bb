@@ -986,13 +986,13 @@ static INLINE void obmc_variance(const uint8_t *pre, int pre_stride,
   }
 }
 
-#define OBMC_VAR(W, H)                                           \
-  unsigned int aom_obmc_variance##W##x##H##_c(                   \
-      const uint8_t *pre, int pre_stride, const int32_t *wsrc,   \
-      const int32_t *mask, unsigned int *sse) {                  \
-    int sum;                                                     \
-    obmc_variance(pre, pre_stride, wsrc, mask, W, H, sse, &sum); \
-    return *sse - (((int64_t)sum * sum) / (W * H));              \
+#define OBMC_VAR(W, H)                                            \
+  unsigned int aom_obmc_variance##W##x##H##_c(                    \
+      const uint8_t *pre, int pre_stride, const int32_t *wsrc,    \
+      const int32_t *mask, unsigned int *sse) {                   \
+    int sum;                                                      \
+    obmc_variance(pre, pre_stride, wsrc, mask, W, H, sse, &sum);  \
+    return *sse - (unsigned int)(((int64_t)sum * sum) / (W * H)); \
   }
 
 #define OBMC_SUBPIX_VAR(W, H)                                               \
