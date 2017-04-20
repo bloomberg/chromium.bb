@@ -11,7 +11,6 @@ import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +27,7 @@ import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
+import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -244,7 +244,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
     /**
      * See {@link SelectableListLayout#detachToolbarView()}.
      */
-    public Toolbar detachToolbarView() {
+    public SelectableListToolbar detachToolbarView() {
         return mSelectableListLayout.detachToolbarView();
     }
 

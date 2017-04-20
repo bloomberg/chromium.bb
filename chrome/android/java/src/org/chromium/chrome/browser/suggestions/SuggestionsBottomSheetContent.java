@@ -139,6 +139,11 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     }
 
     @Override
+    public boolean isUsingLightToolbarTheme() {
+        return false;
+    }
+
+    @Override
     public int getVerticalScrollOffset() {
         return mRecyclerView.computeVerticalScrollOffset();
     }

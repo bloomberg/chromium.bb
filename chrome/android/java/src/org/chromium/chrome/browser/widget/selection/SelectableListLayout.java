@@ -17,7 +17,6 @@ import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.support.v7.widget.RecyclerView.ItemAnimator;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
-import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -315,7 +314,7 @@ public class SelectableListLayout<E>
      * elsewhere.
      * @return The toolbar view.
      */
-    public Toolbar detachToolbarView() {
+    public SelectableListToolbar detachToolbarView() {
         removeView(mToolbar);
 
         // The top margin for the content and shadow needs to be removed now that the toolbar

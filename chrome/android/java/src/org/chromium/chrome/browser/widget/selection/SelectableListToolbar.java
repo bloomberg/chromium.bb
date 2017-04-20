@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.NumberRollView;
@@ -68,6 +69,18 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         void onEndSearch();
     }
 
+    /**
+     * An interface to observe events on this toolbar.
+     */
+    public interface SelectableListToolbarObserver {
+        /**
+         * A notification that the theme color of the toolbar has changed.
+         * @param isLightTheme Whether or not the toolbar is using a light theme. When this
+         *                     parameter is true, it indicates that dark drawables should be used.
+         */
+        void onThemeColorChanged(boolean isLightTheme);
+    }
+
     /** No navigation button is displayed. **/
     protected static final int NAVIGATION_BUTTON_NONE = 0;
     /** Button to open the DrawerLayout. Only valid if mDrawerLayout is set. **/
@@ -76,6 +89,9 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     protected static final int NAVIGATION_BUTTON_BACK = 2;
     /** Button to clear the selection. **/
     protected static final int NAVIGATION_BUTTON_SELECTION_BACK = 3;
+
+    /** An observer list for this toolbar. */
+    private final ObserverList<SelectableListToolbarObserver> mObservers = new ObserverList<>();
 
     protected boolean mIsSelectionEnabled;
     protected SelectionDelegate<E> mSelectionDelegate;
@@ -86,6 +102,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     private EditText mSearchEditText;
     private TintedImageButton mClearTextButton;
     private SearchDelegate mSearchDelegate;
+    private boolean mIsLightTheme = true;
 
     protected NumberRollView mNumberRollView;
     private DrawerLayout mDrawerLayout;
@@ -128,6 +145,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     void destroy() {
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
+        mObservers.clear();
         UiUtils.hideKeyboard(mSearchEditText);
     }
 
@@ -483,6 +501,20 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     }
 
     /**
+     * @return Whether or not the toolbar is currently using a light theme.
+     */
+    public boolean isLightTheme() {
+        return mIsLightTheme;
+    }
+
+    /**
+     * @param observer The observer to add to this toolbar.
+     */
+    public void addObserver(SelectableListToolbarObserver observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
      * Set up ActionBarDrawerToggle, a.k.a. hamburger button.
      */
     private void initActionBarDrawerToggle() {
@@ -509,6 +541,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         mNumberRollView.setVisibility(View.GONE);
         mNumberRollView.setNumber(0, false);
 
+        onThemeChanged(true);
         updateDisplayStyleIfNecessary();
     }
 
@@ -528,6 +561,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
         if (mIsSearching) UiUtils.hideKeyboard(mSearchEditText);
 
+        onThemeChanged(false);
         updateDisplayStyleIfNecessary();
     }
 
@@ -539,7 +573,17 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         setNavigationButton(NAVIGATION_BUTTON_BACK);
         setBackgroundColor(mSearchBackgroundColor);
 
+        onThemeChanged(true);
         updateDisplayStyleIfNecessary();
+    }
+
+    /**
+     * Update internal state and notify observers that the theme color changed.
+     * @param isLightTheme Whether or not the theme color is light.
+     */
+    private void onThemeChanged(boolean isLightTheme) {
+        mIsLightTheme = isLightTheme;
+        for (SelectableListToolbarObserver o : mObservers) o.onThemeColorChanged(isLightTheme);
     }
 
     private void updateDisplayStyleIfNecessary() {

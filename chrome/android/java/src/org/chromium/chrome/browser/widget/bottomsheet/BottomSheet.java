@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
@@ -193,7 +194,7 @@ public class BottomSheet
      * The default toolbar view. This is shown when the current bottom sheet content doesn't have
      * its own toolbar and when the bottom sheet is closed.
      */
-    private View mDefaultToolbarView;
+    private BottomToolbarPhone mDefaultToolbarView;
 
     /** Whether the {@link BottomSheet} and its children should react to touch events. */
     private boolean mIsTouchEnabled = true;
@@ -225,6 +226,11 @@ public class BottomSheet
          */
         @Nullable
         View getToolbarView();
+
+        /**
+         * @return Whether or not the toolbar is currently using a lightly colored background.
+         */
+        boolean isUsingLightToolbarTheme();
 
         /**
          * @return The vertical scroll offset of the content view.
@@ -555,7 +561,22 @@ public class BottomSheet
         mBottomSheetContentContainer.addView(mPlaceholder, placeHolderParams);
 
         mToolbarHolder = (FrameLayout) mControlContainer.findViewById(R.id.toolbar_holder);
-        mDefaultToolbarView = mControlContainer.findViewById(R.id.toolbar);
+        mDefaultToolbarView = (BottomToolbarPhone) mControlContainer.findViewById(R.id.toolbar);
+    }
+
+    /**
+     * Set the color of the pull handle used by the toolbar.
+     */
+    public void updateHandleTint() {
+        boolean isLightToolbarTheme = mDefaultToolbarView.isLightTheme();
+
+        // If the current sheet content's toolbar is using a special theme, use that.
+        if (mSheetContent != null && mSheetContent.getToolbarView() != null) {
+            isLightToolbarTheme = mSheetContent.isUsingLightToolbarTheme();
+        }
+
+        // A light toolbar theme means the handle should be dark.
+        mDefaultToolbarView.updateHandleTint(!isLightToolbarTheme);
     }
 
     @Override
@@ -696,6 +717,7 @@ public class BottomSheet
                     currentToolbar.setVisibility(View.GONE);
                 }
                 mToolbarFadeAnimator = null;
+                updateHandleTint();
             }
         });
 

@@ -119,6 +119,21 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 context.getResources(), R.drawable.toolbar_handle_light);
     }
 
+    /**
+     * Set the color of the pull handle used by the toolbar.
+     * @param useLightDrawable If the handle color should be light.
+     */
+    public void updateHandleTint(boolean useLightDrawable) {
+        mToolbarHandleView.setImageDrawable(useLightDrawable ? mHandleLight : mHandleDark);
+    }
+
+    /**
+     * @return Whether or not the toolbar is currently using a light theme color.
+     */
+    public boolean isLightTheme() {
+        return !ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
+    }
+
     @Override
     protected int getProgressBarTopMargin() {
         // In the case where the toolbar is at the bottom of the screen, the progress bar should
@@ -235,8 +250,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         // The tab switcher's background color should not affect the toolbar handle; it should only
         // switch color based on the static tab's theme color. This is done so fade in/out looks
         // correct.
-        boolean isLight = ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
-        mToolbarHandleView.setImageDrawable(isLight ? mHandleLight : mHandleDark);
+        mToolbarHandleView.setImageDrawable(isLightTheme() ? mHandleDark : mHandleLight);
     }
 
     @Override

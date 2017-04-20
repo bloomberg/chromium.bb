@@ -71,6 +71,11 @@ public class IncognitoBottomSheetContent implements BottomSheetContent {
     }
 
     @Override
+    public boolean isUsingLightToolbarTheme() {
+        return false;
+    }
+
+    @Override
     public int getVerticalScrollOffset() {
         return mScrollView.getScrollY();
     }
