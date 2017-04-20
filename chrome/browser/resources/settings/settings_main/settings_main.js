@@ -76,7 +76,9 @@ Polymer({
      */
     pageVisibility: {
       type: Object,
-      value: function() { return {}; },
+      value: function() {
+        return {};
+      },
     },
 
     showAndroidApps: Boolean,
@@ -196,7 +198,7 @@ Polymer({
    * @private
    */
   updateOverscrollForPage_: function() {
-    if (this.showPages_.about) {
+    if (this.showPages_.about || this.inSearchMode_) {
       // Set overscroll directly to remove any existing overscroll that
       // setOverscroll_ would otherwise preserve.
       this.overscroll_ = 0;
