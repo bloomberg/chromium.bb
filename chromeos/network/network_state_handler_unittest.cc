@@ -28,6 +28,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/tether_constants.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -73,8 +74,8 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
         device_count_(0),
         network_list_changed_count_(0),
         network_count_(0),
-        default_network_change_count_(0) {
-  }
+        default_network_change_count_(0),
+        scan_completed_count_(0) {}
 
   ~TestObserver() override {}
 
@@ -125,6 +126,11 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
     device_property_updates_[device->path()]++;
   }
 
+  void ScanCompleted(const DeviceState* device) override {
+    DCHECK(device);
+    scan_completed_count_++;
+  }
+
   size_t device_list_changed_count() { return device_list_changed_count_; }
   size_t device_count() { return device_count_; }
   size_t network_list_changed_count() { return network_list_changed_count_; }
@@ -132,11 +138,13 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   size_t default_network_change_count() {
     return default_network_change_count_;
   }
+  size_t scan_completed_count() { return scan_completed_count_; }
   void reset_change_counts() {
     DVLOG(1) << "=== RESET CHANGE COUNTS ===";
     default_network_change_count_ = 0;
     device_list_changed_count_ = 0;
     network_list_changed_count_ = 0;
+    scan_completed_count_ = 0;
     connection_state_changes_.clear();
   }
   void reset_updates() {
@@ -172,6 +180,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   size_t network_list_changed_count_;
   size_t network_count_;
   size_t default_network_change_count_;
+  size_t scan_completed_count_;
   std::string default_network_;
   std::string default_network_connection_state_;
   std::map<std::string, int> property_updates_;
@@ -330,6 +339,9 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
 }
 
 TEST_F(NetworkStateHandlerTest, GetNetworkList) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
   // Ensure that the network list is the expected size.
   const size_t kNumShillManagerClientStubImplServices = 4;
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
@@ -415,6 +427,9 @@ TEST_F(NetworkStateHandlerTest, GetNetworkList) {
 }
 
 TEST_F(NetworkStateHandlerTest, GetTetherNetworkList) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
   NetworkStateHandler::NetworkStateList tether_networks;
 
   GetTetherNetworkList(0 /* no limit */, &tether_networks);
@@ -568,13 +583,80 @@ TEST_F(NetworkStateHandlerTest, TetherTechnologyState) {
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::Tether()));
+  EXPECT_FALSE(network_state_handler_->GetDeviceState(kTetherDevicePath));
+  EXPECT_FALSE(network_state_handler_->GetDeviceStateByType(
+      NetworkTypePattern::Tether()));
 
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableTether);
+  // Test SetTetherTechnologyState():
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_AVAILABLE);
+  EXPECT_EQ(1u, test_observer_->device_list_changed_count());
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_AVAILABLE,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Tether()));
+  const DeviceState* tether_device_state =
+      network_state_handler_->GetDeviceState(kTetherDevicePath);
+  EXPECT_TRUE(tether_device_state);
+  EXPECT_EQ(tether_device_state, network_state_handler_->GetDeviceStateByType(
+                                     NetworkTypePattern::Tether()));
 
+  // Test SetTechnologyEnabled() with a tether network:
+  network_state_handler_->SetTechnologyEnabled(
+      NetworkTypePattern::Tether(), true, network_handler::ErrorCallback());
+  EXPECT_EQ(2u, test_observer_->device_list_changed_count());
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_ENABLED,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::Tether()));
+  EXPECT_EQ(tether_device_state,
+            network_state_handler_->GetDeviceState(kTetherDevicePath));
+  EXPECT_EQ(tether_device_state, network_state_handler_->GetDeviceStateByType(
+                                     NetworkTypePattern::Tether()));
+
+  // Test SetProhibitedTechnologies() with a tether network:
+  network_state_handler_->SetProhibitedTechnologies(
+      std::vector<std::string>{kTypeTether}, network_handler::ErrorCallback());
+  EXPECT_EQ(3u, test_observer_->device_list_changed_count());
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_PROHIBITED,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Tether()));
+  EXPECT_EQ(tether_device_state,
+            network_state_handler_->GetDeviceState(kTetherDevicePath));
+  EXPECT_EQ(tether_device_state, network_state_handler_->GetDeviceStateByType(
+                                     NetworkTypePattern::Tether()));
+
+  // Set back to TECHNOLOGY_UNAVAILABLE; this should result in nullptr being
+  // returned by getters.
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_UNAVAILABLE);
+  EXPECT_FALSE(network_state_handler_->GetDeviceState(kTetherDevicePath));
+  EXPECT_FALSE(network_state_handler_->GetDeviceStateByType(
+      NetworkTypePattern::Tether()));
+}
+
+TEST_F(NetworkStateHandlerTest, TetherScanningState) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
+  const DeviceState* tether_device_state =
+      network_state_handler_->GetDeviceStateByType(
+          NetworkTypePattern::Tether());
+  EXPECT_TRUE(tether_device_state);
+  EXPECT_FALSE(tether_device_state->scanning());
+  EXPECT_EQ(0u, test_observer_->scan_completed_count());
+
+  network_state_handler_->SetTetherScanState(true /* is_scanning */);
+  tether_device_state = network_state_handler_->GetDeviceStateByType(
+      NetworkTypePattern::Tether());
+  EXPECT_TRUE(tether_device_state);
+  EXPECT_TRUE(tether_device_state->scanning());
+  EXPECT_EQ(0u, test_observer_->scan_completed_count());
+
+  network_state_handler_->SetTetherScanState(false /* is_scanning */);
+  tether_device_state = network_state_handler_->GetDeviceStateByType(
+      NetworkTypePattern::Tether());
+  EXPECT_TRUE(tether_device_state);
+  EXPECT_FALSE(tether_device_state->scanning());
+  EXPECT_EQ(1u, test_observer_->scan_completed_count());
 }
 
 TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
@@ -625,6 +707,9 @@ TEST_F(NetworkStateHandlerTest, GetState) {
 }
 
 TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
   EXPECT_EQ(0u, test_observer_->network_list_changed_count());
 
   network_state_handler_->AddTetherNetworkState(
@@ -671,6 +756,9 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
 }
 
 TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
   EXPECT_EQ(0u, test_observer_->network_list_changed_count());
 
   const std::string profile = "/profile/profile1";
@@ -712,6 +800,9 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation) {
 }
 
 TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociationWifiRemoved) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
   const std::string profile = "/profile/profile1";
   const std::string wifi_path = "/service/wifi_with_guid";
   AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
@@ -744,6 +835,9 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociationWifiRemoved) {
 }
 
 TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoWifiNetwork) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
       kTetherSignalStrength1);
@@ -754,6 +848,9 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoWifiNetwork) {
 }
 
 TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoTetherNetwork) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
   const std::string profile = "/profile/profile1";
   const std::string wifi_path = "/service/wifi_with_guid";
   AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
@@ -768,6 +865,9 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoTetherNetwork) {
 }
 
 TEST_F(NetworkStateHandlerTest, SetTetherNetworkStateConnectionState) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
       kTetherSignalStrength1);

@@ -118,6 +118,8 @@ const char NetworkConnectionHandler::kErrorCertLoadTimeout[] =
 const char NetworkConnectionHandler::kErrorUnmanagedNetwork[] =
     "unmanaged-network";
 const char NetworkConnectionHandler::kErrorActivateFailed[] = "activate-failed";
+const char NetworkConnectionHandler::kEnabledOrDisabledWhenNotAvailable[] =
+    "not-available";
 
 struct NetworkConnectionHandler::ConnectRequest {
   ConnectRequest(const std::string& service_path,

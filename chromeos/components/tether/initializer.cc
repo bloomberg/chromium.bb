@@ -15,6 +15,7 @@
 #include "chromeos/components/tether/local_device_data_provider.h"
 #include "chromeos/components/tether/notification_presenter.h"
 #include "chromeos/components/tether/tether_connector.h"
+#include "chromeos/components/tether/tether_device_state_manager.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/components/tether/wifi_hotspot_connector.h"
 #include "chromeos/network/network_connect.h"
@@ -152,6 +153,8 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   PA_LOG(INFO) << "Successfully set Bluetooth advertisement interval. "
                << "Initializing tether feature.";
 
+  tether_device_state_manager_ =
+      base::MakeUnique<TetherDeviceStateManager>(network_state_handler_);
   tether_host_fetcher_ =
       base::MakeUnique<TetherHostFetcher>(cryptauth_service_);
   local_device_data_provider_ =

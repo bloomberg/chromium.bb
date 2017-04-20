@@ -35,6 +35,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   // Accessors
   const std::string& mac_address() const { return mac_address_; }
   bool scanning() const { return scanning_; }
+  void set_scanning(bool scanning) { scanning_ = scanning; }
 
   // Cellular specific accessors
   const std::string& home_provider_id() const { return home_provider_id_; }
