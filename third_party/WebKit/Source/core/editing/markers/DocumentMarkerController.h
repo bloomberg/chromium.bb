@@ -59,6 +59,11 @@ class DocumentMarkerListEditor {
 
   static void AddMarker(MarkerList*, const DocumentMarker*);
 
+  // Returns true if a marker was moved, false otherwise.
+  static bool MoveMarkers(MarkerList* src_list,
+                          int length,
+                          MarkerList* dst_list);
+
   // Returns true if a marker was removed, false otherwise.
   static bool RemoveMarkers(MarkerList*, unsigned start_offset, int length);
 

@@ -322,25 +322,8 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
       dst_markers->at(marker_list_index) = new MarkerList;
     MarkerList* dst_list = dst_markers->at(marker_list_index);
 
-    unsigned end_offset = length - 1;
-    MarkerList::iterator it;
-    for (it = src_list->begin(); it != src_list->end(); ++it) {
-      DocumentMarker* marker = it->Get();
-
-      // stop if we are now past the specified range
-      if (marker->StartOffset() > end_offset)
-        break;
-
-      // pin the marker to the specified range
+    if (DocumentMarkerListEditor::MoveMarkers(src_list, length, dst_list))
       doc_dirty = true;
-      if (marker->EndOffset() > end_offset)
-        marker->SetEndOffset(end_offset);
-
-      DocumentMarkerListEditor::AddMarker(dst_list, marker);
-    }
-
-    // Remove the range of markers that were moved to dst_node
-    src_list->erase(0, it - src_list->begin());
   }
 
   // repaint the affected node
@@ -348,6 +331,35 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
     dst_node->GetLayoutObject()->SetShouldDoFullPaintInvalidation(
         kPaintInvalidationDocumentMarkerChange);
   }
+}
+
+// TODO(rlanday): move DocumentMarkerListEditor into its own .h/.cpp files
+bool DocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
+                                           int length,
+                                           MarkerList* dst_list) {
+  DCHECK_GT(length, 0);
+  bool doc_dirty = false;
+  const unsigned end_offset = length - 1;
+  MarkerList::iterator it;
+  for (it = src_list->begin(); it != src_list->end(); ++it) {
+    DocumentMarker* marker = it->Get();
+
+    // stop if we are now past the specified range
+    if (marker->StartOffset() > end_offset)
+      break;
+
+    // pin the marker to the specified range
+    doc_dirty = true;
+    if (marker->EndOffset() > end_offset)
+      marker->SetEndOffset(end_offset);
+
+    DocumentMarkerListEditor::AddMarker(dst_list, marker);
+  }
+
+  // Remove the range of markers that were moved to dst_node
+  src_list->erase(0, it - src_list->begin());
+
+  return doc_dirty;
 }
 
 void DocumentMarkerController::RemoveMarkers(
