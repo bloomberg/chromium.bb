@@ -66,38 +66,52 @@ declare_args() {
   use_pic = true
 }
 
-# Whether to emit frame pointers by default.
+# Determine the default setting for enable_frame_pointers, based on the platform
+# and build arguments.
 if (is_mac || is_ios) {
-  enabled_frame_pointers = true
+  _default_enable_frame_pointers = true
 } else if (is_win) {
   # 64-bit Windows ABI doesn't support frame pointers.
   if (target_cpu == "x64") {
-    enabled_frame_pointers = false
+    _default_enable_frame_pointers = false
   } else {
-    enabled_frame_pointers = true
+    _default_enable_frame_pointers = true
   }
+} else if (current_cpu == "arm64") {
+  # Ensure that stacks from arm64 crash dumps are usable (crbug.com/391706).
+  _default_enable_frame_pointers = true
+} else if (is_chromeos && current_cpu == "arm" && arm_use_thumb) {
+  # TODO(711784): Building ARM Thumb without frame pointers can lead to code
+  # in ChromeOS which triggers some ARM A12/A17 errata.
+  _default_enable_frame_pointers = true
 } else {
   # Explicitly ask for frame pointers, otherwise:
   # * Stacks may be missing for sanitizer and profiling builds.
   # * Debug tcmalloc can crash (crbug.com/636489).
-  # * Stacks may be missing for arm64 crash dumps (crbug.com/391706).
-  enabled_frame_pointers =
-      using_sanitizer || enable_profiling || is_debug || current_cpu == "arm64"
+  _default_enable_frame_pointers =
+      using_sanitizer || enable_profiling || is_debug
 }
 
-# Unwinding with frame pointers requires that they are enabled by default for
+declare_args() {
+  # True if frame pointers should be generated, false otherwise.
+  enable_frame_pointers = _default_enable_frame_pointers
+}
+
+# In general assume that if we have frame pointers then we can use them to
+# unwind the stack. However, this requires that they are enabled by default for
 # most translation units, that they are emitted correctly, and that the
 # compiler or platform provides a way to access them.
+can_unwind_with_frame_pointers = enable_frame_pointers
 if (current_cpu == "arm" && arm_use_thumb) {
-  # ARM Thumb builds do not emit frame pointers correctly.
+  # We cannot currently unwind ARM Thumb frame pointers correctly.
   can_unwind_with_frame_pointers = false
 } else if (is_win) {
   # Windows 32-bit does provide frame pointers, but the compiler does not
   # provide intrinsics to access them, so we don't use them.
   can_unwind_with_frame_pointers = false
-} else {
-  can_unwind_with_frame_pointers = enabled_frame_pointers
 }
+
+assert(!can_unwind_with_frame_pointers || enable_frame_pointers)
 
 declare_args() {
   # Whether or not the official builds should be built with full WPO. Enabled by

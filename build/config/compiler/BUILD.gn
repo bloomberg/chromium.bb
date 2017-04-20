@@ -1382,15 +1382,10 @@ if (is_win) {
 
 config("default_stack_frames") {
   if (is_posix) {
-    if (enabled_frame_pointers) {
+    if (enable_frame_pointers) {
       cflags = [ "-fno-omit-frame-pointer" ]
     } else {
-      if (is_android || current_cpu != "arm") {
-        # TODO(710131): Remove this special-casing for ARM 32 bit once we
-        # have determined why -fomit-frame-pointer triggers CPU errata in
-        # ARM A12/A17 devices.
-        cflags = [ "-fomit-frame-pointer" ]
-      }
+      cflags = [ "-fomit-frame-pointer" ]
     }
   }
   # On Windows, the flag to enable framepointers "/Oy-" must always come after
