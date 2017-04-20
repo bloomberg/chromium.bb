@@ -160,13 +160,7 @@ void SubframeLogger::DidFinishNavigation(
 }
 
 UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  if (!content::IsBrowserSideNavigationEnabled()) {
-    // This isn't needed with PlzNavigate because when
-    // CreateWebUIControllerForURL is called there's always a RenderFrame
-    // and the logging happens there.
-    subframe_logger_ =
-        base::MakeUnique<SubframeLogger>(web_ui->GetWebContents());
-  }
+  subframe_logger_ = base::MakeUnique<SubframeLogger>(web_ui->GetWebContents());
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 CreateUberHTMLSource());
 

@@ -721,8 +721,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
 
-  bool notify_webui_of_rf_creation = false;
-
   // Reuse the current RenderFrameHost if its SiteInstance matches the
   // navigation's.
   bool no_renderer_swap = current_site_instance == dest_site_instance.get();
@@ -751,6 +749,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         request.dest_site_instance(), was_server_redirect);
   }
 
+  bool notify_webui_of_rf_creation = false;
   if (no_renderer_swap) {
     // GetFrameHostForNavigation will be called more than once during a
     // navigation (currently twice, on request and when it's about to commit in
@@ -761,8 +760,14 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     if (speculative_render_frame_host_)
       DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
 
-    UpdatePendingWebUIOnCurrentFrameHost(request.common_params().url,
-                                         request.bindings());
+    // Short-term solution: avoid creating a WebUI for subframes because
+    // non-PlzNavigate code path doesn't do it and some WebUI pages don't
+    // support it.
+    // TODO(crbug.com/713313): Make WebUI objects always be per-frame instead.
+    if (frame_tree_node_->IsMainFrame()) {
+      UpdatePendingWebUIOnCurrentFrameHost(request.common_params().url,
+                                           request.bindings());
+    }
 
     navigation_rfh = render_frame_host_.get();
 
@@ -787,13 +792,18 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     }
     DCHECK(speculative_render_frame_host_);
 
-    bool changed_web_ui = speculative_render_frame_host_->UpdatePendingWebUI(
-        request.common_params().url, request.bindings());
-    speculative_render_frame_host_->CommitPendingWebUI();
-    DCHECK_EQ(GetNavigatingWebUI(), speculative_render_frame_host_->web_ui());
-    notify_webui_of_rf_creation =
-        changed_web_ui && speculative_render_frame_host_->web_ui();
-
+    // Short-term solution: avoid creating a WebUI for subframes because
+    // non-PlzNavigate code path doesn't do it and some WebUI pages don't
+    // support it.
+    // TODO(crbug.com/713313): Make WebUI objects always be per-frame instead.
+    if (frame_tree_node_->IsMainFrame()) {
+      bool changed_web_ui = speculative_render_frame_host_->UpdatePendingWebUI(
+          request.common_params().url, request.bindings());
+      speculative_render_frame_host_->CommitPendingWebUI();
+      DCHECK_EQ(GetNavigatingWebUI(), speculative_render_frame_host_->web_ui());
+      notify_webui_of_rf_creation =
+          changed_web_ui && speculative_render_frame_host_->web_ui();
+    }
     navigation_rfh = speculative_render_frame_host_.get();
 
     // Check if our current RFH is live.
@@ -854,8 +864,15 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // If a WebUI was created in a speculative RenderFrameHost or a new
   // RenderFrame was created then the WebUI never interacted with the
   // RenderFrame or its RenderView. Notify using RenderFrameCreated.
-  if (notify_webui_of_rf_creation && GetNavigatingWebUI())
+  //
+  // Short-term solution: avoid creating a WebUI for subframes because
+  // non-PlzNavigate code path doesn't do it and some WebUI pages don't
+  // support it.
+  // TODO(crbug.com/713313): Make WebUI objects always be per-frame instead.
+  if (notify_webui_of_rf_creation && GetNavigatingWebUI() &&
+      frame_tree_node_->IsMainFrame()) {
     GetNavigatingWebUI()->RenderFrameCreated(navigation_rfh);
+  }
 
   return navigation_rfh;
 }

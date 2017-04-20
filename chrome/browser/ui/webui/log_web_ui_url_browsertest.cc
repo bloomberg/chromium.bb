@@ -124,6 +124,35 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestUberPage) {
                                         Bucket(uber_frame_url_hash, 2),
                                         Bucket(uber_url_hash, 2)));
 }
+
+IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestExtensionsPage) {
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  base::string16 extension_title =
+      l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
+
+  {
+    content::TitleWatcher title_watcher(tab, extension_title);
+    ui_test_utils::NavigateToURL(browser(),
+                                 GURL(chrome::kChromeUIExtensionsURL));
+    ASSERT_EQ(extension_title, title_watcher.WaitAndGetTitle());
+  }
+
+  std::string scheme(content::kChromeUIScheme);
+  GURL uber_url(scheme + "://" + chrome::kChromeUIUberHost);
+  uint32_t uber_url_hash = base::Hash(uber_url.spec());
+
+  GURL uber_frame_url(chrome::kChromeUIUberFrameURL);
+  uint32_t uber_frame_url_hash = base::Hash(uber_frame_url.spec());
+
+  GURL extensions_frame_url(chrome::kChromeUIExtensionsFrameURL);
+  uint32_t extensions_frame_url_hash = base::Hash(extensions_frame_url.spec());
+
+  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(extensions_frame_url_hash, 1),
+                                        Bucket(uber_frame_url_hash, 1),
+                                        Bucket(uber_url_hash, 1)));
+}
 #endif
 
 }  // namespace webui
