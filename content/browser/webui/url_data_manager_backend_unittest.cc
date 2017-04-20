@@ -12,6 +12,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -60,7 +61,7 @@ class UrlDataManagerBackendTest : public testing::Test {
         url_request_context_.CreateRequest(
             GURL(
                 "chrome://resources/polymer/v1_0/polymer/polymer-extracted.js"),
-            net::HIGHEST, delegate);
+            net::HIGHEST, delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
     request->SetExtraRequestHeaderByName("Origin", origin, true);
     return request;
   }
@@ -119,7 +120,8 @@ TEST_F(UrlDataManagerBackendTest, CancelAfterFirstReadStarted) {
 TEST_F(UrlDataManagerBackendTest, ChromeNetworkErrorPageRequest) {
   std::unique_ptr<net::URLRequest> error_request =
       url_request_context_.CreateRequest(GURL("chrome://network-error/-105"),
-                                         net::HIGHEST, &delegate_);
+                                         net::HIGHEST, &delegate_,
+                                         TRAFFIC_ANNOTATION_FOR_TESTS);
   error_request->Start();
   base::RunLoop().Run();
   EXPECT_EQ(net::URLRequestStatus::FAILED, error_request->status().status());
@@ -130,7 +132,8 @@ TEST_F(UrlDataManagerBackendTest, ChromeNetworkErrorPageRequest) {
 TEST_F(UrlDataManagerBackendTest, ChromeNetworkErrorPageRequestFailed) {
   std::unique_ptr<net::URLRequest> error_request =
       url_request_context_.CreateRequest(
-          GURL("chrome://network-error/-123456789"), net::HIGHEST, &delegate_);
+          GURL("chrome://network-error/-123456789"), net::HIGHEST, &delegate_,
+          TRAFFIC_ANNOTATION_FOR_TESTS);
   error_request->Start();
   base::RunLoop().Run();
   EXPECT_EQ(net::URLRequestStatus::FAILED, error_request->status().status());

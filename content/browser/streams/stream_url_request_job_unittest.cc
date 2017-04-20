@@ -14,6 +14,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -80,7 +81,7 @@ class StreamURLRequestJobTest : public testing::Test {
                    const std::string& expected_response) {
     net::TestDelegate delegate;
     request_ = url_request_context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, &delegate);
+        url, net::DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
     request_->set_method(method);
     if (!extra_headers.IsEmpty())
       request_->SetExtraRequestHeaders(extra_headers);
@@ -141,7 +142,8 @@ TEST_F(StreamURLRequestJobTest, TestGetLargeStreamRequest) {
 TEST_F(StreamURLRequestJobTest, TestGetNonExistentStreamRequest) {
   net::TestDelegate delegate;
   request_ = url_request_context_.CreateRequest(
-      kStreamURL, net::DEFAULT_PRIORITY, &delegate);
+      kStreamURL, net::DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
 
