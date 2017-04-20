@@ -8677,14 +8677,8 @@ static int64_t handle_inter_mode(
   }
   for (i = 0; i < is_comp_pred + 1; ++i) {
     cur_mv[i] = frame_mv[refs[i]];
-// Clip "next_nearest" so that it does not extend to far out of image
-#if CONFIG_EXT_INTER
-    if (this_mode != NEWMV)
-#else
-    if (this_mode != NEWMV)
-#endif  // CONFIG_EXT_INTER
-      clamp_mv2(&cur_mv[i].as_mv, xd);
-
+    // Clip "next_nearest" so that it does not extend to far out of image
+    if (this_mode != NEWMV) clamp_mv2(&cur_mv[i].as_mv, xd);
     if (mv_check_bounds(x, &cur_mv[i].as_mv)) return INT64_MAX;
     mbmi->mv[i].as_int = cur_mv[i].as_int;
   }
