@@ -32,6 +32,10 @@
         padding-top: 24px;
       }
 
+      iron-icon {
+        flex-shrink: 0;  /* Prevent distortion of icons in cramped UI. */
+      }
+
       iron-icon[icon='cr:check'],
       iron-icon[icon='settings:done'] {
        --iron-icon-fill-color: var(--google-green-500);
