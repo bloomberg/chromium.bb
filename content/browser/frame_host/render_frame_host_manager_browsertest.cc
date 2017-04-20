@@ -1939,6 +1939,68 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_FALSE(handler->IsJavascriptAllowed());
 }
 
+// Test for http://crbug.com/703303.  Ensures that the renderer process does not
+// try to select files whose paths cannot be converted to WebStrings.  This
+// check is done in the renderer because it is hard to predict which paths will
+// turn into empty WebStrings, and the behavior varies by platform.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DontSelectInvalidFiles) {
+  StartServer();
+
+  // Use a file path with an invalid encoding, such that it can't be converted
+  // to a WebString (on all platforms but Windows).
+  base::FilePath file;
+  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file));
+  file = file.Append(FILE_PATH_LITERAL("foo\337bar"));
+
+  // Navigate and try to get page to reference this file in its PageState.
+  GURL url1(embedded_test_server()->GetURL("/file_input.html"));
+  NavigateToURL(shell(), url1);
+  int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+  std::unique_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
+  shell()->web_contents()->SetDelegate(delegate.get());
+  EXPECT_TRUE(
+      ExecuteScript(shell(), "document.getElementById('fileinput').click();"));
+  EXPECT_TRUE(delegate->file_chosen());
+
+  // The browser process grants access to the file whether or not the renderer
+  // process realizes that it can't use it.  This is ok, since the user actually
+  // did select the file from the chooser.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      process_id, file));
+
+  // Disable the swap out timer so we wait for the UpdateState message.
+  static_cast<WebContentsImpl*>(shell()->web_contents())
+      ->GetMainFrame()
+      ->DisableSwapOutTimerForTesting();
+
+  // Navigate to a different process and wait for the old process to exit.
+  RenderProcessHostWatcher exit_observer(
+      shell()->web_contents()->GetRenderProcessHost(),
+      RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+  NavigateToURL(shell(), GetCrossSiteURL("/title1.html"));
+  exit_observer.Wait();
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
+
+  // The renderer process should not have been killed.  This is the important
+  // part of the test.  If this fails, then we didn't get a PageState to check
+  // below, so use an assert (since the test can't meaningfully proceed).
+  ASSERT_TRUE(exit_observer.did_exit_normally());
+
+  // Ensure that the file did not end up in the PageState of the previous entry,
+  // except on Windows where the path is valid and WebString can handle it.
+  NavigationEntry* prev_entry =
+      shell()->web_contents()->GetController().GetEntryAtIndex(0);
+  EXPECT_EQ(url1, prev_entry->GetURL());
+  const std::vector<base::FilePath>& files =
+      prev_entry->GetPageState().GetReferencedFiles();
+#if defined(OS_WIN)
+  EXPECT_EQ(1U, files.size());
+#else
+  EXPECT_EQ(0U, files.size());
+#endif
+}
+
 // Test for http://crbug.com/262948.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        RestoreFileAccessForHistoryNavigation) {

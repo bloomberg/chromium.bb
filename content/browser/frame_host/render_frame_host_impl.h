@@ -659,6 +659,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CreateRenderViewAfterProcessKillAndClosedProxy);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, DontSelectInvalidFiles);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            RestoreFileAccessForHistoryNavigation);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,

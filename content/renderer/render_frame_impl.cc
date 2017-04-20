@@ -5762,9 +5762,17 @@ void RenderFrameImpl::OnFileChooserResponse(
   // Convert Chrome's SelectedFileInfo list to WebKit's.
   WebVector<blink::WebFileChooserCompletion::SelectedFileInfo> selected_files(
       files.size());
+  size_t current_size = 0;
   for (size_t i = 0; i < files.size(); ++i) {
     blink::WebFileChooserCompletion::SelectedFileInfo selected_file;
     selected_file.path = blink::FilePathToWebString(files[i].file_path);
+
+    // Exclude files whose paths can't be converted into WebStrings. Blink won't
+    // be able to handle these, and the browser process would kill the renderer
+    // when it claims to have chosen an empty file path.
+    if (selected_file.path.IsEmpty())
+      continue;
+
     selected_file.display_name =
         blink::FilePathToWebString(base::FilePath(files[i].display_name));
     if (files[i].file_system_url.is_valid()) {
@@ -5773,7 +5781,16 @@ void RenderFrameImpl::OnFileChooserResponse(
       selected_file.modification_time = files[i].modification_time.ToDoubleT();
       selected_file.is_directory = files[i].is_directory;
     }
-    selected_files[i] = selected_file;
+
+    selected_files[current_size] = selected_file;
+    current_size++;
+  }
+
+  // If not all files were included, truncate the WebVector.
+  if (current_size < selected_files.size()) {
+    WebVector<blink::WebFileChooserCompletion::SelectedFileInfo> truncated_list(
+        selected_files.Data(), current_size);
+    selected_files.Swap(truncated_list);
   }
 
   if (file_chooser_completions_.front()->completion) {
