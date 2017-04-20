@@ -409,7 +409,7 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
           "removal and may be removed no earlier than %s. If you depend on it, "
           "please see https://www.chromestatus.com/features/5654810086866944 "
           "for more details.",
-          milestoneString(M60));
+          milestoneString(M62));
 
     case UseCounter::kV8IDBFactory_WebkitGetDatabaseNames_Method:
       return willBeRemoved("indexedDB.webkitGetDatabaseNames()", M60,
