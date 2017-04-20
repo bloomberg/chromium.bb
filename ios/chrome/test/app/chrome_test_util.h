@@ -68,22 +68,25 @@ void SetWWANStateTo(bool value);
 // Sets the state of first launch.
 void SetFirstLaunchStateTo(bool value);
 
-// Check whether metrics recording is enabled or not.
+// Checks whether metrics recording is enabled or not.
 bool IsMetricsRecordingEnabled();
 
-// Check whether metrics reporting is enabled or not.
+// Checks whether metrics reporting is enabled or not.
 bool IsMetricsReportingEnabled();
 
-// Check whether breakpad recording is enabled or not.
+// Checks whether breakpad recording is enabled or not.
 bool IsBreakpadEnabled();
 
-// Check whether breakpad reporting is enabled or not.
+// Checks whether breakpad reporting is enabled or not.
 bool IsBreakpadReportingEnabled();
 
-// Check whether this is the first launch after upgrade or not.
+// Checks whether this is the first launch after upgrade or not.
 bool IsFirstLaunchAfterUpgrade();
 
-// Simulate launching Chrome from another application.
+// Waits for Breakpad to process the queued updates.
+void WaitForBreakpadQueue();
+
+// Simulates launching Chrome from another application.
 void OpenChromeFromExternalApp(const GURL& url);
 
 }  // namespace chrome_test_util

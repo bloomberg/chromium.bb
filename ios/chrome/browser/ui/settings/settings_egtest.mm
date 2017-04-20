@@ -470,7 +470,7 @@ bool IsCertificateCleared() {
                                              wifiOnly);
   // Breakpad uses dispatch_async to update its state. Wait to get to a
   // consistent state.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  chrome_test_util::WaitForBreakpadQueue();
 }
 
 // Checks for a given service that it is both recording and uploading, where
@@ -595,12 +595,12 @@ bool IsCertificateCleared() {
   // Set the network to use a cellular network, which should disable uploading
   // when the wifi-only flag is set.
   chrome_test_util::SetWWANStateTo(YES);
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  chrome_test_util::WaitForBreakpadQueue();
   [self assertMetricsServiceEnabledButNotUploading:serviceType];
 
   // Turn off cellular network usage, which should enable uploading.
   chrome_test_util::SetWWANStateTo(NO);
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  chrome_test_util::WaitForBreakpadQueue();
   [self assertMetricsServiceEnabled:serviceType];
 
   // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF

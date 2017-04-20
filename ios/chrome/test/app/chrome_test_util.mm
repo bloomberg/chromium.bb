@@ -31,6 +31,7 @@
 @interface BreakpadController (Testing)
 - (BOOL)isEnabled;
 - (BOOL)isUploadingEnabled;
+- (dispatch_queue_t)queue;
 @end
 @implementation BreakpadController (Testing)
 - (BOOL)isEnabled {
@@ -38,6 +39,9 @@
 }
 - (BOOL)isUploadingEnabled {
   return enableUploads_;
+}
+- (dispatch_queue_t)queue {
+  return queue_;
 }
 @end
 
@@ -199,6 +203,12 @@ bool IsBreakpadReportingEnabled() {
 
 bool IsFirstLaunchAfterUpgrade() {
   return [chrome_test_util::GetMainController() isFirstLaunchAfterUpgrade];
+}
+
+void WaitForBreakpadQueue() {
+  dispatch_queue_t queue = [[BreakpadController sharedInstance] queue];
+  dispatch_barrier_sync(queue, ^{
+                        });
 }
 
 void OpenChromeFromExternalApp(const GURL& url) {
