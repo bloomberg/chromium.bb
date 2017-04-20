@@ -288,7 +288,7 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   if (shipping_option) {
     std::unique_ptr<views::Label> shipping_label =
         base::MakeUnique<views::Label>(
-            base::ASCIIToUTF16(shipping_option->label));
+            base::UTF8ToUTF16(shipping_option->label));
     shipping_label->set_id(
         static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
     container->AddChildView(shipping_label.release());

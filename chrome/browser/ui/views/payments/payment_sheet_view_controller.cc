@@ -429,7 +429,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   for (size_t i = 0; i < items.size() && i < kMaxNumberOfItemsShown; ++i) {
     item_summaries_layout->StartRow(0, 0);
     item_summaries_layout->AddView(
-        new views::Label(base::ASCIIToUTF16(items[i]->label)));
+        new views::Label(base::UTF8ToUTF16(items[i]->label)));
 
     item_amounts_layout->StartRow(0, 0);
     item_amounts_layout->AddView(new views::Label(
@@ -453,7 +453,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
 
   item_summaries_layout->StartRow(0, 0);
   item_summaries_layout->AddView(
-      CreateBoldLabel(base::ASCIIToUTF16(spec()->details().total->label))
+      CreateBoldLabel(base::UTF8ToUTF16(spec()->details().total->label))
           .release());
 
   item_amounts_layout->StartRow(0, 0);
