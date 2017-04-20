@@ -2263,42 +2263,19 @@
           APIs. (These two APIs are not available to apps/extensions that are
           not force-installed.)
 
-          This policy takes precedence over a potentially conflicting
-          ExtensionsInstallBlacklist policy. If an app or extension that
-          previously had been force-installed is removed from this list, it is
-          automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           For Windows instances that are not joined to an Active Directory
           domain, forced installation is limited to apps and extensions listed
           in the Chrome Web Store.
 
-          Note that the source code of any extension may be altered by users via
-          Developer Tools (potentially rendering the extension
-          dysfunctional). If this is a concern, the DeveloperToolsDisabled
-          policy should be set.
+          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY">DeveloperToolsDisabled</ph> policy should be set.
 
-          Each list item of the policy is a string that contains an extension ID
-          and an "update" URL separated by a semicolon (<ph
-          name="SEMICOLON">;</ph>). The extension ID is the 32-letter string
-          found e.g. on <ph
-          name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in
-          developer mode. The "update" URL should point to an Update Manifest
-          XML document as described at <ph
-          name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note
-          that the "update" URL set in this policy is only used for the initial
-          installation; subsequent updates of the extension employ the update
-          URL indicated in the extension's manifest.
+          Each list item of the policy is a string that contains an extension ID and an "update" URL separated by a semicolon (<ph name="SEMICOLON">;</ph>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in developer mode. The "update" URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note that the "update" URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest.
 
-          For example, <ph
-          name="EXTENSION_POLICY_EXAMPLE">gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx</ph>
-          installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME">Chrome
-          Remote Desktop</ph> app from the standard Chrome Web Store "update"
-          URL. For more information about hosting extensions, see: <ph
-          name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.
+          For example, <ph name="EXTENSION_POLICY_EXAMPLE">gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx</ph> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME">Chrome Remote Desktop</ph> app from the standard Chrome Web Store "update" URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.
 
-          If this policy is left not set, no apps or extensions are installed
-          automatically and the user can uninstall any app or extension in <ph
-          name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
           'label': '''Extension/App IDs and update URLs to be silently installed''',
           'arc_support': 'Android apps can be force-installed from the Google Admin console using Google Play. They do not use this policy.',
         },
@@ -2325,7 +2302,7 @@
 
           Each item in this list is an extension-style match pattern (see https://developer.chrome.com/extensions/match_patterns). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
 
-          ExtensionInstallBlacklist takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.''',
+          <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.''',
           'label': '''URL patterns to allow extension, app, and user script installs from''',
         },
         {
@@ -3846,14 +3823,11 @@
           'tags': [],
           'desc': '''Enables user-level installation of Native Messaging hosts.
 
-          If this setting is enabled then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows
-          usage of Native Messaging hosts installed on user level.
+          If this setting is enabled then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows usage of Native Messaging hosts installed on user level.
 
-          If this setting is disabled then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will
-          only use Native Messaging hosts installed on system level.
+          If this setting is disabled then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will only use Native Messaging hosts installed on system level.
 
-          If this setting is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-          will allow usage of user-level Native Messaging hosts.''',
+          If this setting is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow usage of user-level Native Messaging hosts.''',
         },
       ],
     },
@@ -3923,9 +3897,7 @@
       'type': 'group',
       'caption': '''Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
       'desc': '''Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> is installed.
-      The default setting is to allow the host browser do the rendering, but you
-      can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>
-      Google Chrome Frame</ex></ph> render HTML pages by default.''',
+      The default setting is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> render HTML pages by default.''',
       'policies': [
         {
           'name': 'ChromeFrameRendererSettings',
