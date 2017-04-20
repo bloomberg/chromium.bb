@@ -120,7 +120,7 @@ class VIEWS_EXPORT MenuDelegate {
   virtual void ExecuteCommand(int id, int mouse_event_flags);
 
   // Returns true if ExecuteCommand() should be invoked while leaving the
-  // menu open. Default implementation returns true.
+  // menu open. Default implementation returns false.
   virtual bool ShouldExecuteCommandWithoutClosingMenu(int id,
                                                       const ui::Event& e);
 

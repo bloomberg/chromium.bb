@@ -98,6 +98,8 @@ class AppMenu : public views::MenuDelegate,
   bool ShouldCloseOnDragComplete() override;
   void OnMenuClosed(views::MenuItemView* menu,
                     views::MenuRunner::RunResult result) override;
+  bool ShouldExecuteCommandWithoutClosingMenu(int command_id,
+                                              const ui::Event& event) override;
 
   // bookmarks::BaseBookmarkModelObserver overrides:
   void BookmarkModelChanged() override;

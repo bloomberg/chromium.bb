@@ -1047,6 +1047,16 @@ void AppMenu::OnMenuClosed(views::MenuItemView* menu,
     selected_menu_model_->ActivatedAt(selected_index_);
 }
 
+bool AppMenu::ShouldExecuteCommandWithoutClosingMenu(int command_id,
+                                                     const ui::Event& event) {
+  if (IsRecentTabsCommand(command_id) && event.IsMouseEvent()) {
+    const auto disposition = ui::DispositionFromEventFlags(event.flags());
+    if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
+      return true;
+  }
+  return false;
+}
+
 void AppMenu::BookmarkModelChanged() {
   DCHECK(bookmark_menu_delegate_.get());
   if (!bookmark_menu_delegate_->is_mutating_model())
