@@ -76,10 +76,10 @@ class PythonChecker(object):
         executive = Executive()
         env = os.environ.copy()
         env['PYTHONPATH'] = os.pathsep.join([
-            wkf.path_from_webkit_base('Tools', 'Scripts'),
-            wkf.path_from_webkit_base('Source', 'build', 'scripts'),
-            wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty'),
-            wkf.path_from_webkit_base('Source', 'bindings', 'scripts'),
+            wkf.path_from_tools_scripts(),
+            wkf.path_from_blink_source('build', 'scripts'),
+            wkf.path_from_tools_scripts('webkitpy', 'thirdparty'),
+            wkf.path_from_blink_source('bindings', 'scripts'),
             wkf.path_from_chromium_base('build', 'android'),
             wkf.path_from_chromium_base('third_party', 'catapult', 'devil'),
             wkf.path_from_chromium_base('third_party', 'pymock'),

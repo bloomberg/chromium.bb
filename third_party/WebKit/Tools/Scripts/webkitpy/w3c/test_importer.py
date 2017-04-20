@@ -67,7 +67,7 @@ class TestImporter(object):
 
         # TODO(qyearsley): Simplify this to use LocalWPT.fetch when csswg-test
         # is merged into web-platform-tests (crbug.com/706118).
-        temp_repo_path = self.path_from_webkit_base(dest_dir_name)
+        temp_repo_path = self.finder.path_from_webkit_base(dest_dir_name)
         _log.info('Cloning repo: %s', repo_url)
         _log.info('Local path: %s', temp_repo_path)
         self.run(['git', 'clone', repo_url, temp_repo_path])
@@ -139,7 +139,7 @@ class TestImporter(object):
             _log.warning('Checkout has local commits; aborting. Use --allow-local-commits to allow this.')
             return False
 
-        if self.fs.exists(self.path_from_webkit_base(WPT_DEST_NAME)):
+        if self.fs.exists(self.finder.path_from_webkit_base(WPT_DEST_NAME)):
             _log.warning('WebKit/%s exists; aborting.', WPT_DEST_NAME)
             return False
 
@@ -178,8 +178,8 @@ class TestImporter(object):
             ('testharness.js', 'resources'),
         ]
         for filename, wpt_subdir in resources_to_copy_from_wpt:
-            source = self.path_from_webkit_base('LayoutTests', 'external', WPT_DEST_NAME, wpt_subdir, filename)
-            destination = self.path_from_webkit_base('LayoutTests', 'resources', filename)
+            source = self.finder.path_from_layout_tests('external', WPT_DEST_NAME, wpt_subdir, filename)
+            destination = self.finder.path_from_layout_tests('resources', filename)
             self.copyfile(source, destination)
             self.run(['git', 'add', destination])
 
@@ -222,7 +222,7 @@ class TestImporter(object):
         _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=temp_repo_path)
         master_commitish = show_ref_output.split()[0]
 
-        dest_path = self.path_from_webkit_base('LayoutTests', 'external', dest_dir_name)
+        dest_path = self.finder.path_from_layout_tests('external', dest_dir_name)
         self._clear_out_dest_path(dest_path)
 
         _log.info('Importing the tests.')
@@ -312,17 +312,14 @@ class TestImporter(object):
         self.fs.copyfile(source, destination)
 
     def remove(self, *comps):
-        dest = self.path_from_webkit_base(*comps)
+        dest = self.finder.path_from_webkit_base(*comps)
         _log.debug('rm %s', dest)
         self.fs.remove(dest)
 
     def rmtree(self, *comps):
-        dest = self.path_from_webkit_base(*comps)
+        dest = self.finder.path_from_webkit_base(*comps)
         _log.debug('rm -fr %s', dest)
         self.fs.rmtree(dest)
-
-    def path_from_webkit_base(self, *comps):
-        return self.finder.path_from_webkit_base(*comps)
 
     def do_auto_update(self):
         """Attempts to upload a CL, make any required adjustments, and commit.

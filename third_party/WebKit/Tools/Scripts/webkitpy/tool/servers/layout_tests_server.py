@@ -55,7 +55,7 @@ class LayoutTestsServerHTTPRequestHandler(ReflectionHandler):
             test_list += each + ' '
         filesystem = FileSystem()
         webkit_finder = WebKitFinder(filesystem)
-        script_dir = webkit_finder.path_from_webkit_base('Tools', 'Scripts')
+        script_dir = webkit_finder.path_from_tools_scripts()
         executable_path = script_dir + '/run-webkit-tests'
         cmd = 'python ' + executable_path + ' --no-show-results '
         cmd += test_list

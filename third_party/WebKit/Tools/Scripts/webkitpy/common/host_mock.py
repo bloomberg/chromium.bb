@@ -80,7 +80,7 @@ class MockHost(MockSystemHost):
     def _add_base_manifest_to_mock_filesystem(self, filesystem):
         webkit_finder = WebKitFinder(filesystem)
 
-        external_dir = webkit_finder.path_from_webkit_base('LayoutTests', 'external')
+        external_dir = webkit_finder.path_from_layout_tests('external')
         filesystem.maybe_make_directory(filesystem.join(external_dir, 'wpt'))
 
         manifest_base_path = filesystem.join(external_dir, 'WPT_BASE_MANIFEST.json')

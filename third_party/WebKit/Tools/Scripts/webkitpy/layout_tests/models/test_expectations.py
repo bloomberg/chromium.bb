@@ -33,6 +33,7 @@ from collections import defaultdict
 import logging
 import re
 
+from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_configuration import TestConfigurationConverter
 
 _log = logging.getLogger(__name__)
@@ -1095,8 +1096,10 @@ class TestExpectations(object):
         return REBASELINE in self._model.get_expectations(test)
 
     def _shorten_filename(self, filename):
-        if filename.startswith(self._port.path_from_webkit_base()):
-            return self._port.host.filesystem.relpath(filename, self._port.path_from_webkit_base())
+        finder = WebKitFinder(self._port.host.filesystem)
+        # TODO(tkent): Can we use path_from_layout_tests() instead?
+        if filename.startswith(finder.path_from_webkit_base()):
+            return self._port.host.filesystem.relpath(filename, finder.path_from_webkit_base())
         return filename
 
     def _report_warnings(self):

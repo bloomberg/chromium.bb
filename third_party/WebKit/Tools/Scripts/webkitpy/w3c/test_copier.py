@@ -61,7 +61,7 @@ class TestCopier(object):
         self.filesystem = self.host.filesystem
         self.webkit_finder = WebKitFinder(self.filesystem)
         self._webkit_root = self.webkit_finder.webkit_base()
-        self.layout_tests_dir = self.webkit_finder.path_from_webkit_base('LayoutTests')
+        self.layout_tests_dir = self.webkit_finder.layout_tests_dir()
         self.destination_directory = self.filesystem.normpath(
             self.filesystem.join(
                 self.layout_tests_dir,
@@ -142,7 +142,7 @@ class TestCopier(object):
     def find_paths_to_skip(self):
         paths_to_skip = set()
         port = self.host.port_factory.get()
-        w3c_import_expectations_path = self.webkit_finder.path_from_webkit_base('LayoutTests', 'W3CImportExpectations')
+        w3c_import_expectations_path = self.webkit_finder.path_from_layout_tests('W3CImportExpectations')
         w3c_import_expectations = self.filesystem.read_text_file(w3c_import_expectations_path)
         parser = TestExpectationParser(port, all_tests=(), is_lint_mode=False)
         expectation_lines = parser.parse(w3c_import_expectations_path, w3c_import_expectations)

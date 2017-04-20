@@ -18,7 +18,7 @@ class DirectoryOwnersExtractor(object):
 
     def read_owner_map(self):
         """Reads the W3CImportExpectations file and returns a map of directories to owners."""
-        input_path = self.finder.path_from_webkit_base('LayoutTests', 'W3CImportExpectations')
+        input_path = self.finder.path_from_layout_tests('W3CImportExpectations')
         input_contents = self.filesystem.read_text_file(input_path)
         self.owner_map = self.lines_to_owner_map(input_contents.splitlines())
 

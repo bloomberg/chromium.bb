@@ -91,8 +91,8 @@ class WPTManifest(object):
     def ensure_manifest(host):
         """Checks whether the manifest exists, and then generates it if necessary."""
         finder = WebKitFinder(host.filesystem)
-        manifest_path = finder.path_from_webkit_base('LayoutTests', 'external', 'wpt', 'MANIFEST.json')
-        base_manifest_path = finder.path_from_webkit_base('LayoutTests', 'external', 'WPT_BASE_MANIFEST.json')
+        manifest_path = finder.path_from_layout_tests('external', 'wpt', 'MANIFEST.json')
+        base_manifest_path = finder.path_from_layout_tests('external', 'WPT_BASE_MANIFEST.json')
 
         if not host.filesystem.exists(base_manifest_path):
             _log.error('Manifest base not found at "%s".', base_manifest_path)
@@ -102,7 +102,7 @@ class WPTManifest(object):
             _log.debug('Manifest not found, copying from base "%s".', base_manifest_path)
             host.filesystem.copyfile(base_manifest_path, manifest_path)
 
-        wpt_path = manifest_path = finder.path_from_webkit_base('LayoutTests', 'external', 'wpt')
+        wpt_path = manifest_path = finder.path_from_layout_tests('external', 'wpt')
         WPTManifest.generate_manifest(host, wpt_path)
 
     @staticmethod
@@ -110,7 +110,7 @@ class WPTManifest(object):
         """Generates MANIFEST.json on the specified directory."""
         executive = host.executive
         finder = WebKitFinder(host.filesystem)
-        manifest_exec_path = finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty', 'wpt', 'wpt', 'manifest')
+        manifest_exec_path = finder.path_from_tools_scripts('webkitpy', 'thirdparty', 'wpt', 'wpt', 'manifest')
 
         cmd = ['python', manifest_exec_path, '--work', '--tests-root', dest_path]
         _log.debug('Running command: %s', ' '.join(cmd))

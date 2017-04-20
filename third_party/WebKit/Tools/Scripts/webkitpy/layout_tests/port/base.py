@@ -178,7 +178,7 @@ class Port(object):
         self._dump_reader = None
 
         # FIXME: prettypatch.py knows this path; it should not be copied here.
-        self._pretty_patch_path = self.path_from_webkit_base('Tools', 'Scripts', 'webkitruby', 'PrettyPatch', 'prettify.rb')
+        self._pretty_patch_path = self._webkit_finder.path_from_tools_scripts('webkitruby', 'PrettyPatch', 'prettify.rb')
         self._pretty_patch_available = None
 
         if not hasattr(options, 'configuration') or not options.configuration:
@@ -869,12 +869,9 @@ class Port(object):
         self._filesystem.write_binary_file(baseline_path, data)
 
     # TODO(qyearsley): Update callers to create a finder and call it instead
-    # of these next five routines (which should be protected).
+    # of these next three routines (which should be protected).
     def webkit_base(self):
         return self._webkit_finder.webkit_base()
-
-    def path_from_webkit_base(self, *comps):
-        return self._webkit_finder.path_from_webkit_base(*comps)
 
     def path_from_chromium_base(self, *comps):
         return self._webkit_finder.path_from_chromium_base(*comps)
@@ -1029,7 +1026,7 @@ class Port(object):
         return self._build_path('resources', 'inspector')
 
     def apache_config_directory(self):
-        return self.path_from_webkit_base('Tools', 'Scripts', 'apache_config')
+        return self._webkit_finder.path_from_tools_scripts('apache_config')
 
     def default_results_directory(self):
         """Returns the absolute path to the default place to store the test results."""

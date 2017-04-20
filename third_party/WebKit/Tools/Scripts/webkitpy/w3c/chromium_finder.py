@@ -9,7 +9,7 @@ from webkitpy.common.webkit_finder import WebKitFinder
 @memoized
 def absolute_chromium_wpt_dir(host):
     finder = WebKitFinder(host.filesystem)
-    return finder.path_from_webkit_base('LayoutTests', 'external', 'wpt')
+    return finder.path_from_layout_tests('external', 'wpt')
 
 
 @memoized
