@@ -1295,27 +1295,30 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Padding properties.
-  static Length InitialPadding() { return Length(kFixed); }
 
   // padding-bottom
+  static Length InitialPaddingBottom() { return Length(kFixed); }
   const Length& PaddingBottom() const { return surround_->padding_.Bottom(); }
   void SetPaddingBottom(const Length& v) {
     SET_VAR(surround_, padding_.bottom_, v);
   }
 
   // padding-left
+  static Length InitialPaddingLeft() { return Length(kFixed); }
   const Length& PaddingLeft() const { return surround_->padding_.Left(); }
   void SetPaddingLeft(const Length& v) {
     SET_VAR(surround_, padding_.left_, v);
   }
 
   // padding-right
+  static Length InitialPaddingRight() { return Length(kFixed); }
   const Length& PaddingRight() const { return surround_->padding_.Right(); }
   void SetPaddingRight(const Length& v) {
     SET_VAR(surround_, padding_.right_, v);
   }
 
   // padding-top
+  static Length InitialPaddingTop() { return Length(kFixed); }
   const Length& PaddingTop() const { return surround_->padding_.Top(); }
   void SetPaddingTop(const Length& v) { SET_VAR(surround_, padding_.top_, v); }
 

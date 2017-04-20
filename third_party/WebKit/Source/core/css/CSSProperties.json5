@@ -1507,7 +1507,6 @@
       api_class: "CSSPropertyAPIPadding",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
-      initial: "InitialPadding",
       interpolable: true,
     },
     {
@@ -1515,7 +1514,6 @@
       api_class: "CSSPropertyAPIPadding",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
-      initial: "InitialPadding",
       interpolable: true,
     },
     {
@@ -1523,7 +1521,6 @@
       api_class: "CSSPropertyAPIPadding",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
-      initial: "InitialPadding",
       interpolable: true,
     },
     {
@@ -1531,7 +1528,6 @@
       api_class: "CSSPropertyAPIPadding",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
-      initial: "InitialPadding",
       interpolable: true,
     },
     {
