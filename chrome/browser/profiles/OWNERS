@@ -1,5 +1,6 @@
 anthonyvd@chromium.org
-mlerman@chromium.org
+bauerb@chromium.org
+msarda@chromium.org
 
 # ProfileKeyedServiceFactory and related
 per-file chrome_browser_main_extra_parts_profiles*=erg@chromium.org
