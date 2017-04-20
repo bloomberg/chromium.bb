@@ -92,8 +92,11 @@ component("freetype") {
     "DARWIN_NO_CARBON",
 
     # Long directory name to avoid accidentally using wrong headers.
-    "FT_CONFIG_MODULES_H=<freetype-custom-config/ftmodule.h>",
-    "FT_CONFIG_OPTIONS_H=<freetype-custom-config/ftoption.h>",
+    # GN currently does not escape '<' and '>' when generating xml based Visual
+    # Studio project files. As a result, use quotes instead of pointy brackets
+    # in these defines.
+    "FT_CONFIG_MODULES_H=\"freetype-custom-config/ftmodule.h\"",
+    "FT_CONFIG_OPTIONS_H=\"freetype-custom-config/ftoption.h\"",
   ]
 
   if (is_win && is_component_build) {
