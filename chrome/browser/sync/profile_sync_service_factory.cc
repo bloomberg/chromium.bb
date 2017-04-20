@@ -88,8 +88,8 @@ void UpdateNetworkTime(const base::Time& network_time,
                        const base::TimeDelta& latency) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&UpdateNetworkTimeOnUIThread, network_time, resolution,
-                 latency, base::TimeTicks::Now()));
+      base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time, resolution,
+                     latency, base::TimeTicks::Now()));
 }
 
 }  // anonymous namespace

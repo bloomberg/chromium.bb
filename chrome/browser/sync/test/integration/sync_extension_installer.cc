@@ -40,8 +40,8 @@ void SyncedExtensionInstaller::Observe(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&SyncedExtensionInstaller::DoInstallSyncedExtensions,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&SyncedExtensionInstaller::DoInstallSyncedExtensions,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SyncedExtensionInstaller::DoInstallSyncedExtensions() {

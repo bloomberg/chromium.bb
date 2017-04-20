@@ -70,9 +70,8 @@ void RunOnDBThreadAndSignal(base::Closure task,
 void RunOnDBThreadAndBlock(base::Closure task) {
   WaitableEvent done_event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  BrowserThread::PostTask(BrowserThread::DB,
-                          FROM_HERE,
-                          Bind(&RunOnDBThreadAndSignal, task, &done_event));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+                          BindOnce(&RunOnDBThreadAndSignal, task, &done_event));
   done_event.Wait();
 }
 

@@ -56,7 +56,7 @@ void SignalEvent(base::WaitableEvent* e) {
 bool WaitForExistingTasksOnLoop(base::MessageLoop* loop) {
   base::WaitableEvent e(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED);
-  loop->task_runner()->PostTask(FROM_HERE, base::Bind(&SignalEvent, &e));
+  loop->task_runner()->PostTask(FROM_HERE, base::BindOnce(&SignalEvent, &e));
   // Timeout stolen from StatusChangeChecker::GetTimeoutDuration().
   return e.TimedWait(base::TimeDelta::FromSeconds(45));
 }
