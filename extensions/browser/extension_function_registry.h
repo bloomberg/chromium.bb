@@ -46,10 +46,10 @@ class ExtensionFunctionRegistry {
   explicit ExtensionFunctionRegistry();
   virtual ~ExtensionFunctionRegistry();
 
-  // Allows overriding of specific functions (e.g. for testing).  Functions
-  // must be previously registered.  Returns true if successful.
-  bool OverrideFunction(const std::string& name,
-                        ExtensionFunctionFactory factory);
+  // Allows overriding of specific functions for testing.  Functions must be
+  // previously registered.  Returns true if successful.
+  bool OverrideFunctionForTesting(const std::string& name,
+                                  ExtensionFunctionFactory factory);
 
   // Factory method for the ExtensionFunction registered as 'name'.
   ExtensionFunction* NewFunction(const std::string& name);

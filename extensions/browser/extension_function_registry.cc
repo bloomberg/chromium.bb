@@ -23,7 +23,7 @@ ExtensionFunctionRegistry::ExtensionFunctionRegistry() {
 
 ExtensionFunctionRegistry::~ExtensionFunctionRegistry() {}
 
-bool ExtensionFunctionRegistry::OverrideFunction(
+bool ExtensionFunctionRegistry::OverrideFunctionForTesting(
     const std::string& name,
     ExtensionFunctionFactory factory) {
   FactoryMap::iterator iter = factories_.find(name);

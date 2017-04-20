@@ -70,11 +70,6 @@ class ExtensionFunctionDispatcher
     virtual ~Delegate() {}
   };
 
-  // Override a previously registered function. Returns true if successful,
-  // false if no such function was registered.
-  static bool OverrideFunction(const std::string& name,
-                               ExtensionFunctionFactory factory);
-
   // Dispatches an IO-thread extension function. Only used for specific
   // functions that must be handled on the IO-thread.
   static void DispatchOnIOThread(

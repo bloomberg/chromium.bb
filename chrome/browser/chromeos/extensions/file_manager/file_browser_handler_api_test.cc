@@ -23,6 +23,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api_test_utils.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -67,6 +68,12 @@ void ExpectFileContentEquals(const base::FilePath& selected_path,
   std::string test_file_contents;
   ASSERT_TRUE(base::ReadFileToString(selected_path, &test_file_contents));
   EXPECT_EQ(expected_contents, test_file_contents);
+}
+
+bool OverrideFunction(const std::string& name,
+                      extensions::ExtensionFunctionFactory factory) {
+  return ExtensionFunctionRegistry::GetInstance()->OverrideFunctionForTesting(
+      name, factory);
 }
 
 // Mocks FileSelector used by FileBrowserHandlerInternalSelectFileFunction.
@@ -267,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
   SetTestCases(&test_cases);
 
   // Override extension function that will be used during the test.
-  ASSERT_TRUE(extensions::ExtensionFunctionDispatcher::OverrideFunction(
+  ASSERT_TRUE(OverrideFunction(
       "fileBrowserHandlerInternal.selectFile",
       FileBrowserHandlerExtensionTest::TestSelectFileFunctionFactory));
 

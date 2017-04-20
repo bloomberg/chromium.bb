@@ -14,6 +14,7 @@
 #include "extensions/browser/api/serial/serial_api.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/common/api/serial.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
@@ -122,6 +123,12 @@ ExtensionFunction* FakeSerialConnectFunctionFactory() {
   return new FakeSerialConnectFunction();
 }
 
+bool OverrideFunction(const std::string& name,
+                      ExtensionFunctionFactory factory) {
+  return ExtensionFunctionRegistry::GetInstance()->OverrideFunctionForTesting(
+      name, factory);
+}
+
 }  // namespace
 
 // Disable SIMULATE_SERIAL_PORTS only if all the following are true:
@@ -149,10 +156,10 @@ IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialFakeHardware) {
   catcher.RestrictToBrowserContext(browser()->profile());
 
 #if SIMULATE_SERIAL_PORTS
-  ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
-      "serial.getDevices", FakeSerialGetDevicesFunctionFactory));
-  ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
-      "serial.connect", FakeSerialConnectFunctionFactory));
+  ASSERT_TRUE(OverrideFunction("serial.getDevices",
+                               FakeSerialGetDevicesFunctionFactory));
+  ASSERT_TRUE(
+      OverrideFunction("serial.connect", FakeSerialConnectFunctionFactory));
 #endif
 
   ASSERT_TRUE(RunExtensionTest("serial/api")) << message_;

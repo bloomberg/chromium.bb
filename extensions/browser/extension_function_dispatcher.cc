@@ -272,12 +272,6 @@ ExtensionFunctionDispatcher::Delegate::GetVisibleWebContents() const {
   return GetAssociatedWebContents();
 }
 
-bool ExtensionFunctionDispatcher::OverrideFunction(
-    const std::string& name, ExtensionFunctionFactory factory) {
-  return ExtensionFunctionRegistry::GetInstance()->OverrideFunction(name,
-                                                                    factory);
-}
-
 // static
 void ExtensionFunctionDispatcher::DispatchOnIOThread(
     InfoMap* extension_info_map,
