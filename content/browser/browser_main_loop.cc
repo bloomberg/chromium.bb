@@ -217,14 +217,17 @@ namespace {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void SetupSandbox(const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "SetupSandbox");
+  // RenderSandboxHostLinux needs to be initialized even if the sandbox and
+  // zygote are both disabled. It initializes the renderer socket.
+  RenderSandboxHostLinux::GetInstance()->Init();
+
   if (parsed_command_line.HasSwitch(switches::kNoZygote)) {
     CHECK(parsed_command_line.HasSwitch(switches::kNoSandbox))
         << "--no-sandbox should be used together with --no--zygote";
     return;
   }
 
-  // Tickle the sandbox host and zygote host so they fork now.
-  RenderSandboxHostLinux::GetInstance()->Init();
+  // Tickle the zygote host so it forks now.
   ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
   *GetGenericZygote() = CreateZygote();
   RenderProcessHostImpl::EarlyZygoteLaunch();

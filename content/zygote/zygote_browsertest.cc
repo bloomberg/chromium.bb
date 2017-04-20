@@ -5,7 +5,9 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/strings/string_split.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -37,5 +39,30 @@ IN_PROC_BROWSER_TEST_F(LinuxZygoteBrowserTest, GetLocalTimeHasTimeZone) {
   EXPECT_FALSE(parts[1].empty());
   EXPECT_TRUE(parts[2].empty());
 }
+
+class LinuxZygoteDisabledBrowserTest : public ContentBrowserTest {
+ public:
+  LinuxZygoteDisabledBrowserTest() {}
+  ~LinuxZygoteDisabledBrowserTest() override {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kNoZygote);
+    command_line->AppendSwitch(switches::kNoSandbox);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LinuxZygoteDisabledBrowserTest);
+};
+
+// https://crbug.com/712779
+#if !defined(THREAD_SANITIZER)
+// Test that the renderer doesn't crash during launch if zygote is disabled.
+IN_PROC_BROWSER_TEST_F(LinuxZygoteDisabledBrowserTest,
+                       NoCrashWhenZygoteDisabled) {
+  NavigateToURL(shell(), GURL("data:text/html,start page"));
+}
+#endif
 
 }  // namespace content
