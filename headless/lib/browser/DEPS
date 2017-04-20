@@ -5,7 +5,6 @@ include_rules = [
   "+printing",
   "+storage/browser/quota",
   "+ui/aura",
-  "+sandbox/win/src",
 ]
 specific_include_rules = {
   "headless_clipboard.h": [

@@ -11,6 +11,7 @@ namespace headless {
 namespace switches {
 
 extern const char kDefaultBackgroundColor[];
+extern const char kEnableCrashReporter[];
 extern const char kCrashDumpsDir[];
 extern const char kDeterministicFetch[];
 extern const char kDumpDom[];
