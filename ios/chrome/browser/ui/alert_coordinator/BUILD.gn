@@ -49,6 +49,7 @@ source_set("unit_tests") {
 }
 
 source_set("alert_coordinator_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "loading_alert_coordinator.h",
     "loading_alert_coordinator.mm",

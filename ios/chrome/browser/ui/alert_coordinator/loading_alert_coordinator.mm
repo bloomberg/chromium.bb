@@ -7,9 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
-#import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/material_components/activity_indicator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -18,6 +16,10 @@
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -41,11 +43,11 @@ const CGFloat kPrefHeight = 300;
 
 @interface LoadingAlertCoordinator () {
   // Title of the alert.
-  base::scoped_nsobject<NSString> _title;
+  NSString* _title;
   // Callback for the cancel button.
-  base::mac::ScopedBlock<ProceduralBlock> _cancelHandler;
+  ProceduralBlock _cancelHandler;
   // View Controller which will be displayed on |baseViewController|.
-  base::scoped_nsobject<UIViewController> _presentedViewController;
+  UIViewController* _presentedViewController;
 }
 
 // Callback called when the cancel button is pressed.
@@ -56,13 +58,13 @@ const CGFloat kPrefHeight = 300;
 // View Controller handling the layout of the dialog.
 @interface LoadingViewController : UIViewController {
   // Title of the dialog.
-  base::scoped_nsobject<NSString> _title;
+  NSString* _title;
   // View containing the elements of the dialog.
-  base::scoped_nsobject<UIView> _contentView;
+  UIView* _contentView;
   // Coordinator used for the cancel callback.
-  base::WeakNSObject<LoadingAlertCoordinator> _coordinator;
+  __weak LoadingAlertCoordinator* _coordinator;
   // Transitioning delegate for this ViewController.
-  base::scoped_nsobject<MDCDialogTransitionController> _transitionDelegate;
+  MDCDialogTransitionController* _transitionDelegate;
 }
 
 // Initializes with the |title| of the dialog and the |coordinator| which will
@@ -84,10 +86,10 @@ const CGFloat kPrefHeight = 300;
                   coordinator:(LoadingAlertCoordinator*)coordinator {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _title.reset([title copy]);
-    _coordinator.reset(coordinator);
+    _title = [title copy];
+    _coordinator = coordinator;
     self.modalPresentationStyle = UIModalPresentationCustom;
-    _transitionDelegate.reset([[MDCDialogTransitionController alloc] init]);
+    _transitionDelegate = [[MDCDialogTransitionController alloc] init];
     self.transitioningDelegate = _transitionDelegate;
   }
   return self;
@@ -101,7 +103,7 @@ const CGFloat kPrefHeight = 300;
 
   // Cancel button.
   NSString* cancelTitle = l10n_util::GetNSString(IDS_CANCEL);
-  MDCFlatButton* cancelButton = [[[MDCFlatButton alloc] init] autorelease];
+  MDCFlatButton* cancelButton = [[MDCFlatButton alloc] init];
   [cancelButton sizeToFit];
   [cancelButton setCustomTitleColor:[UIColor blackColor]];
   [cancelButton setTitle:cancelTitle forState:UIControlStateNormal];
@@ -110,8 +112,8 @@ const CGFloat kPrefHeight = 300;
          forControlEvents:UIControlEventTouchUpInside];
 
   // Activity indicator.
-  base::scoped_nsobject<MDCActivityIndicator> activityIndicator(
-      [[MDCActivityIndicator alloc] initWithFrame:CGRectZero]);
+  MDCActivityIndicator* activityIndicator =
+      [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
   [activityIndicator setCycleColors:ActivityIndicatorBrandedCycleColors()];
   [activityIndicator startAnimating];
 
@@ -123,15 +125,15 @@ const CGFloat kPrefHeight = 300;
   [attrsDictionary setObject:UIColorFromRGB(kTitleLabelFontColor)
                       forKey:NSForegroundColorAttributeName];
 
-  NSMutableAttributedString* string = [[[NSMutableAttributedString alloc]
-      initWithString:_title
-          attributes:attrsDictionary] autorelease];
+  NSMutableAttributedString* string =
+      [[NSMutableAttributedString alloc] initWithString:_title
+                                             attributes:attrsDictionary];
 
-  UILabel* title = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
+  UILabel* title = [[UILabel alloc] initWithFrame:CGRectZero];
   title.attributedText = string;
 
   // Content view.
-  _contentView.reset([[UIView alloc] initWithFrame:CGRectZero]);
+  _contentView = [[UIView alloc] initWithFrame:CGRectZero];
 
   // Constraints.
   [activityIndicator setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -149,7 +151,7 @@ const CGFloat kPrefHeight = 300;
     @"spinner" : activityIndicator,
     @"cancel" : cancelButton,
     @"title" : title,
-    @"contentView" : _contentView.get()
+    @"contentView" : _contentView
   };
   NSDictionary* metrics = @{
     @"padding" : @(kMDCPadding),
@@ -208,15 +210,15 @@ const CGFloat kPrefHeight = 300;
                              cancelHandler:(ProceduralBlock)cancelHandler {
   self = [super initWithBaseViewController:viewController];
   if (self) {
-    _title.reset([title copy]);
-    _cancelHandler.reset(cancelHandler, base::scoped_policy::RETAIN);
+    _title = [title copy];
+    _cancelHandler = cancelHandler;
   }
   return self;
 }
 
 - (void)start {
-  _presentedViewController.reset(
-      [[LoadingViewController alloc] initWithTitle:_title coordinator:self]);
+  _presentedViewController =
+      [[LoadingViewController alloc] initWithTitle:_title coordinator:self];
   [self.baseViewController presentViewController:_presentedViewController
                                         animated:YES
                                       completion:nil];
@@ -226,13 +228,13 @@ const CGFloat kPrefHeight = 300;
   [[_presentedViewController presentingViewController]
       dismissViewControllerAnimated:NO
                          completion:nil];
-  _presentedViewController.reset();
-  _cancelHandler.reset();
+  _presentedViewController = nil;
+  _cancelHandler = nil;
 }
 
 - (void)cancelCallback {
   if (_cancelHandler)
-    _cancelHandler.get()();
+    _cancelHandler();
   [self stop];
 }
 
