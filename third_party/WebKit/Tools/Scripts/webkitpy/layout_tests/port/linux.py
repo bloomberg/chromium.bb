@@ -65,6 +65,7 @@ class LinuxPort(base.Port):
         if not self.get_option('disable_breakpad'):
             self._dump_reader = DumpReaderLinux(host, self._build_path())
         self._original_home = None
+        self._original_display = None
         self._xvfb_process = None
 
     def additional_driver_flag(self):
@@ -159,6 +160,7 @@ class LinuxPort(base.Port):
         # By setting DISPLAY here, the individual worker processes will
         # get the right DISPLAY. Note, if this environment could be passed
         # when creating workers, then we wouldn't need to modify DISPLAY here.
+        self._original_display = self.host.environ.get('DISPLAY')
         self.host.environ['DISPLAY'] = display
 
         # The poll() method will return None if the process has not terminated:
@@ -178,11 +180,14 @@ class LinuxPort(base.Port):
         return None
 
     def _stop_xvfb(self):
+        if self._original_display:
+            self.host.environ['DISPLAY'] = self._original_display
         if not self._xvfb_process:
             return
         _log.debug('Killing Xvfb process pid %d.', self._xvfb_process.pid)
         self._xvfb_process.kill()
         self._xvfb_process.wait()
+
 
     def _path_to_driver(self, target=None):
         binary_name = self.driver_name()
