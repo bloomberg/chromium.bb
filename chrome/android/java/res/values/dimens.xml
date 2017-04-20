@@ -134,9 +134,6 @@
     <!-- Search engine preference dimensions -->
     <dimen name="search_engine_list_margin_top">6dp</dimen>
 
-    <!-- Site Settings dimensions -->
-    <dimen name="site_setttings_icon_padding">4.6dp</dimen>
-
     <!-- Minimum height/width for a touchable item -->
     <dimen name="min_touch_target_size">48dp</dimen>
 
@@ -420,6 +417,8 @@
     <dimen name="pref_autofill_dropdown_bottom_margin">16dp</dimen>
     <dimen name="pref_autofill_touch_target_padding">15dp</dimen>
     <dimen name="pref_child_account_reduced_padding">4dp</dimen>
+
+    <dimen name="pref_icon_padding">4.6dp</dimen>
 
     <!-- Dialog dimensions.
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
