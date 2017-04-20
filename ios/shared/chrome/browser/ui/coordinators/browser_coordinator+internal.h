@@ -58,8 +58,9 @@
 // Called when this coordinator is added to a parent coordinator.
 - (void)wasAddedToParentCoordinator:(BrowserCoordinator*)parentCoordinator;
 
-// Called when this coordinator is removed from its parent coordinator.
-- (void)wasRemovedFromParentCoordinator;
+// Called when this coordinator is going to be removed from its parent
+// coordinator.
+- (void)willBeRemovedFromParentCoordinator;
 
 // Called when a child coordinator did start. This is a blank template method.
 // Subclasses can override this method when they need to know when their

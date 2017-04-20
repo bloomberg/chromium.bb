@@ -72,7 +72,7 @@
                            forSelector:@selector(findPreviousInPage)];
 }
 
-- (void)wasRemovedFromParentCoordinator {
+- (void)willBeRemovedFromParentCoordinator {
   CommandDispatcher* dispatcher = self.browser->dispatcher();
   [dispatcher stopDispatchingToTarget:self];
   [dispatcher stopDispatchingToTarget:self.mediator];

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -16,7 +16,7 @@
 @property(nonatomic) UIViewController* viewController;
 @property(nonatomic, copy) void (^stopHandler)();
 @property(nonatomic) BOOL wasAddedCalled;
-@property(nonatomic) BOOL wasRemovedCalled;
+@property(nonatomic) BOOL willBeRemovedCalled;
 @property(nonatomic) BOOL childDidStartCalled;
 @property(nonatomic) BOOL childWillStopCalled;
 @end
@@ -25,7 +25,7 @@
 @synthesize viewController = _viewController;
 @synthesize stopHandler = _stopHandler;
 @synthesize wasAddedCalled = _wasAddedCalled;
-@synthesize wasRemovedCalled = _wasRemovedCalled;
+@synthesize willBeRemovedCalled = _willBeRemovedCalled;
 @synthesize childDidStartCalled = _childDidStartCalled;
 @synthesize childWillStopCalled = _childWillStopCalled;
 
@@ -47,8 +47,8 @@
   self.wasAddedCalled = YES;
 }
 
-- (void)wasRemovedFromParentCoordinator {
-  self.wasRemovedCalled = YES;
+- (void)willBeRemovedFromParentCoordinator {
+  self.willBeRemovedCalled = YES;
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
@@ -164,14 +164,14 @@ TEST(BrowserCoordinatorTest, AddedRemoved) {
 
   // Add to the parent.
   EXPECT_FALSE(child.wasAddedCalled);
-  EXPECT_FALSE(child.wasRemovedCalled);
+  EXPECT_FALSE(child.willBeRemovedCalled);
   [parent addChildCoordinator:child];
   EXPECT_TRUE(child.wasAddedCalled);
-  EXPECT_FALSE(child.wasRemovedCalled);
+  EXPECT_FALSE(child.willBeRemovedCalled);
 
   // Remove from the parent.
   [parent removeChildCoordinator:child];
-  EXPECT_TRUE(child.wasRemovedCalled);
+  EXPECT_TRUE(child.willBeRemovedCalled);
 }
 
 TEST(BrowserCoordinatorTest, DidStartWillStop) {

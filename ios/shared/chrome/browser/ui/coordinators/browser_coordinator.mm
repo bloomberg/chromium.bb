@@ -125,16 +125,16 @@
 - (void)removeChildCoordinator:(BrowserCoordinator*)coordinator {
   if (![self.childCoordinators containsObject:coordinator])
     return;
+  [coordinator willBeRemovedFromParentCoordinator];
   [self.childCoordinators removeObject:coordinator];
   coordinator.parentCoordinator = nil;
-  [coordinator wasRemovedFromParentCoordinator];
 }
 
 - (void)wasAddedToParentCoordinator:(BrowserCoordinator*)parentCoordinator {
   // Default implementation is a no-op.
 }
 
-- (void)wasRemovedFromParentCoordinator {
+- (void)willBeRemovedFromParentCoordinator {
   // Default implementation is a no-op.
 }
 
