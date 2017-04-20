@@ -23,7 +23,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
-#include "components/autofill/content/renderer/page_click_tracker.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
@@ -148,12 +147,12 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       form_cache_(*render_frame->GetWebFrame()),
       password_autofill_agent_(password_autofill_agent),
       password_generation_agent_(password_generation_agent),
-      legacy_(render_frame->GetRenderView(), this),
       autofill_query_id_(0),
       was_query_node_autofilled_(false),
       ignore_text_changes_(false),
       is_popup_possibly_visible_(false),
       is_generation_popup_possibly_visible_(false),
+      page_click_tracker_(new PageClickTracker(render_frame, this)),
       binding_(this),
       weak_ptr_factory_(this) {
   render_frame->GetWebFrame()->SetAutofillClient(this);
@@ -162,12 +161,6 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
   // AutofillAgent is guaranteed to outlive |render_frame|.
   render_frame->GetInterfaceRegistry()->AddInterface(
       base::Bind(&AutofillAgent::BindRequest, base::Unretained(this)));
-
-  // This owns itself, and will delete itself when |render_frame| is destructed
-  // (same as AutofillAgent). This object must be constructed after
-  // AutofillAgent so that password generation UI is shown before password
-  // manager UI (see https://crbug.com/498545).
-  new PageClickTracker(render_frame, this);
 }
 
 AutofillAgent::~AutofillAgent() {}
@@ -221,6 +214,8 @@ void AutofillAgent::DidChangeScrollOffset() {
 }
 
 void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
+  page_click_tracker_->FocusedNodeChanged(node);
+
   HidePopup();
 
   if (node.IsNull() || !node.IsElementNode()) {
@@ -281,33 +276,13 @@ void AutofillAgent::FireHostSubmitEvents(const FormData& form_data,
 
 void AutofillAgent::Shutdown() {
   binding_.Close();
-  legacy_.Shutdown();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void AutofillAgent::FocusChangeComplete() {
-  WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
-  WebElement focused_element;
-  if (!doc.IsNull())
-    focused_element = doc.FocusedElement();
-  // PasswordGenerationAgent needs to know about focus changes, even if there is
-  // no focused element.
-  if (password_generation_agent_ &&
-      password_generation_agent_->FocusedNodeHasChanged(focused_element)) {
-    is_generation_popup_possibly_visible_ = true;
-    is_popup_possibly_visible_ = true;
-  }
-  if (!focused_element.IsNull() && password_autofill_agent_)
-    password_autofill_agent_->FocusedNodeHasChanged(focused_element);
-}
 
 void AutofillAgent::FormControlElementClicked(
     const WebFormControlElement& element,
     bool was_focused) {
-  // TODO(estade): Remove this check when PageClickTracker is per-frame.
-  if (element.GetDocument().GetFrame() != render_frame()->GetWebFrame())
-    return;
-
   const WebInputElement* input_element = ToWebInputElement(&element);
   if (!input_element && !form_util::IsTextAreaElement(element))
     return;
@@ -774,6 +749,31 @@ void AutofillAgent::DidAssociateFormControlsDynamically() {
   }
 }
 
+void AutofillAgent::DidCompleteFocusChangeInFrame() {
+  WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
+  WebElement focused_element;
+  if (!doc.IsNull())
+    focused_element = doc.FocusedElement();
+  // PasswordGenerationAgent needs to know about focus changes, even if there is
+  // no focused element.
+  if (password_generation_agent_ &&
+      password_generation_agent_->FocusedNodeHasChanged(focused_element)) {
+    is_generation_popup_possibly_visible_ = true;
+    is_popup_possibly_visible_ = true;
+  }
+  if (!focused_element.IsNull() && password_autofill_agent_)
+    password_autofill_agent_->FocusedNodeHasChanged(focused_element);
+
+  // PageClickTracker needs to be notified after
+  // |is_generation_popup_possibly_visible_| has been updated.
+  page_click_tracker_->DidCompleteFocusChangeInFrame();
+}
+
+void AutofillAgent::DidReceiveLeftMouseDownOrGestureTapInNode(
+    const WebNode& node) {
+  page_click_tracker_->DidReceiveLeftMouseDownOrGestureTapInNode(node);
+}
+
 void AutofillAgent::AjaxSucceeded() {
   OnSameDocumentNavigationCompleted();
   password_autofill_agent_->AJAXSucceeded();
@@ -792,30 +792,6 @@ const mojom::PasswordManagerDriverPtr&
 AutofillAgent::GetPasswordManagerDriver() {
   DCHECK(password_autofill_agent_);
   return password_autofill_agent_->GetPasswordManagerDriver();
-}
-
-// LegacyAutofillAgent ---------------------------------------------------------
-
-AutofillAgent::LegacyAutofillAgent::LegacyAutofillAgent(
-    content::RenderView* render_view,
-    AutofillAgent* agent)
-    : content::RenderViewObserver(render_view), agent_(agent) {
-}
-
-AutofillAgent::LegacyAutofillAgent::~LegacyAutofillAgent() {
-}
-
-void AutofillAgent::LegacyAutofillAgent::Shutdown() {
-  agent_ = nullptr;
-}
-
-void AutofillAgent::LegacyAutofillAgent::OnDestruct() {
-  // No-op. Don't delete |this|.
-}
-
-void AutofillAgent::LegacyAutofillAgent::FocusChangeComplete() {
-  if (agent_)
-    agent_->FocusChangeComplete();
 }
 
 }  // namespace autofill

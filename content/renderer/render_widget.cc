@@ -77,6 +77,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/render_widget_scheduling_state.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebInputMethodController.h"
@@ -981,8 +982,15 @@ std::unique_ptr<cc::SwapPromise> RenderWidget::RequestCopyOfOutputForLayoutTest(
 // RenderWidgetInputHandlerDelegate
 
 void RenderWidget::FocusChangeComplete() {
-  if (owner_delegate_)
-    owner_delegate_->RenderWidgetFocusChangeComplete();
+  if (!GetWebWidget()->IsWebFrameWidget())
+    return;
+  blink::WebLocalFrame* focused =
+      static_cast<blink::WebFrameWidget*>(GetWebWidget())
+          ->LocalRoot()
+          ->View()
+          ->FocusedFrame();
+  if (focused && focused->AutofillClient())
+    focused->AutofillClient()->DidCompleteFocusChangeInFrame();
 }
 
 bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {

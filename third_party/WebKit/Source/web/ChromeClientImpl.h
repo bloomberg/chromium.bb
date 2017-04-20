@@ -209,7 +209,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void RegisterViewportLayers() const override;
 
   void ShowUnhandledTapUIIfNeeded(IntPoint, Node*, bool) override;
-  void OnMouseDown(Node*) override;
+  void OnMouseDown(Node&) override;
   void DidUpdateBrowserControls() const override;
 
   CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient(

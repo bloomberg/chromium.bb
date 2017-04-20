@@ -257,7 +257,6 @@ class CONTENT_EXPORT RenderViewImpl
   void Show(blink::WebNavigationPolicy policy) override;
   void DidHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
-  void OnMouseDown(const blink::WebNode& mouse_down_node) override;
   blink::WebLayerTreeView* InitializeLayerTreeView() override;
 
   bool CanHandleGestureEvent() override;
@@ -478,7 +477,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // RenderWidgetOwnerDelegate implementation ----------------------------------
 
-  void RenderWidgetFocusChangeComplete() override;
   bool DoesRenderWidgetHaveTouchEventHandlersAt(
       const gfx::Point& point) const override;
   bool RenderWidgetWillHandleMouseEvent(

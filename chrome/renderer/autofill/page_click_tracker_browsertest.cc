@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/page_click_listener.h"
 #include "components/autofill/content/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_view.h"
@@ -48,10 +49,13 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
 
-    // RenderView creates PageClickTracker but it doesn't keep it around.
-    // Rather than make it do so for the test, we create a new object.
-    page_click_tracker_.reset(new PageClickTracker(view_->GetMainRenderFrame(),
-                                                   &test_listener_));
+    // PageClickTracker is created and owned by AutofillAgent. To setup our test
+    // listener we need to use our copy of PageClickTracker and set it up for
+    // testing. The ownership will be transfered to AutofillAgent.
+    auto page_click_tracker = base::MakeUnique<PageClickTracker>(
+        view_->GetMainRenderFrame(), &test_listener_);
+    autofill_agent_->set_page_click_tracker_for_testing(
+        std::move(page_click_tracker));
 
     // Must be set before loading HTML.
     view_->GetWebView()->SetDefaultPageScaleLimits(1, 4);
@@ -82,11 +86,9 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
     text_.Reset();
     textarea_.Reset();
     test_listener_.ClearResults();
-    page_click_tracker_.reset();
     ChromeRenderViewTest::TearDown();
   }
 
-  std::unique_ptr<PageClickTracker> page_click_tracker_;
   TestPageClickListener test_listener_;
   blink::WebElement text_;
   blink::WebElement textarea_;

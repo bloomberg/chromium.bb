@@ -1830,4 +1830,40 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
   EXPECT_EQ("Milton", value);
 }
 
+// This test verifies that credit card (payment card list) popup works when the
+// form is inside an OOPIF.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, CrossSitePaymentForms) {
+  // Ensure that |embedded_test_server()| serves both domains used below.
+  host_resolver()->AddRule("*", "127.0.0.1");
+
+  // Main frame is on a.com, iframe is on b.com.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/cross_origin_iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "b.com", "/autofill/autofill_creditcard_form.html");
+  EXPECT_TRUE(
+      content::NavigateIframeToURL(GetWebContents(), "crossFrame", iframe_url));
+
+  // Let |test_delegate()| also observe autofill events in the iframe.
+  content::RenderFrameHost* cross_frame =
+      RenderFrameHostForName(GetWebContents(), "crossFrame");
+  ASSERT_TRUE(cross_frame);
+  ContentAutofillDriver* cross_driver =
+      ContentAutofillDriverFactory::FromWebContents(GetWebContents())
+          ->DriverForFrame(cross_frame);
+  ASSERT_TRUE(cross_driver);
+  cross_driver->autofill_manager()->SetTestDelegate(test_delegate());
+
+  // Focus the form in the iframe and simulate choosing a suggestion via
+  // keyboard.
+  std::string script_focus(
+      "window.focus();"
+      "document.getElementById('CREDIT_CARD_NUMBER').focus();");
+  ASSERT_TRUE(content::ExecuteScript(cross_frame, script_focus));
+
+  // Send an arrow dow keypress in order to trigger the autofill popup.
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+}
+
 }  // namespace autofill

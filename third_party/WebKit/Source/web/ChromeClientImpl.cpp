@@ -1093,9 +1093,13 @@ void ChromeClientImpl::ShowUnhandledTapUIIfNeeded(
         page_changed);
 }
 
-void ChromeClientImpl::OnMouseDown(Node* mouse_down_node) {
-  if (web_view_->Client())
-    web_view_->Client()->OnMouseDown(WebNode(mouse_down_node));
+void ChromeClientImpl::OnMouseDown(Node& mouse_down_node) {
+  if (auto* fill_client =
+          WebLocalFrameImpl::FromFrame(mouse_down_node.GetDocument().GetFrame())
+              ->AutofillClient()) {
+    fill_client->DidReceiveLeftMouseDownOrGestureTapInNode(
+        WebNode(&mouse_down_node));
+  }
 }
 
 void ChromeClientImpl::HandleKeyboardEventOnTextField(

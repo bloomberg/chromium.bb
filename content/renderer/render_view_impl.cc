@@ -130,6 +130,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/public_features.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebDOMEvent.h"
 #include "third_party/WebKit/public/web/WebDOMMessageEvent.h"
@@ -1167,11 +1168,6 @@ void RenderViewImpl::TransferActiveWheelFlingAnimation(
 
 // RenderWidgetInputHandlerDelegate -----------------------------------------
 
-void RenderViewImpl::RenderWidgetFocusChangeComplete() {
-  for (auto& observer : observers_)
-    observer.FocusChangeComplete();
-}
-
 bool RenderViewImpl::DoesRenderWidgetHaveTouchEventHandlersAt(
     const gfx::Point& point) const {
   if (!webview())
@@ -1310,9 +1306,13 @@ void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
 
 void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
+  blink::WebAutofillClient* autofill_client = nullptr;
+  if (auto* focused_frame = GetWebView()->FocusedFrame())
+    autofill_client = focused_frame->AutofillClient();
+
   if (has_scrolled_focused_editable_node_into_rect_ &&
-      rect == rect_for_scrolled_focused_editable_node_) {
-    GetWidget()->FocusChangeComplete();
+      rect == rect_for_scrolled_focused_editable_node_ && autofill_client) {
+    autofill_client->DidCompleteFocusChangeInFrame();
     return;
   }
 
@@ -1321,8 +1321,8 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
 
   rect_for_scrolled_focused_editable_node_ = rect;
   has_scrolled_focused_editable_node_into_rect_ = true;
-  if (!compositor()->HasPendingPageScaleAnimation())
-    GetWidget()->FocusChangeComplete();
+  if (!compositor()->HasPendingPageScaleAnimation() && autofill_client)
+    autofill_client->DidCompleteFocusChangeInFrame();
 }
 
 void RenderViewImpl::OnSetHistoryOffsetAndLength(int history_offset,
@@ -1801,10 +1801,6 @@ void RenderViewImpl::Show(WebNavigationPolicy policy) {
   RenderWidget::Show(policy);
 }
 
-void RenderViewImpl::OnMouseDown(const WebNode& mouse_down_node) {
-  for (auto& observer : observers_)
-    observer.OnMouseDown(mouse_down_node);
-}
 
 bool RenderViewImpl::CanHandleGestureEvent() {
   return true;
@@ -2325,7 +2321,10 @@ void RenderViewImpl::SetFocus(bool enable) {
 }
 
 void RenderViewImpl::DidCompletePageScaleAnimation() {
-  GetWidget()->FocusChangeComplete();
+  if (auto* focused_frame = GetWebView()->FocusedFrame()) {
+    if (focused_frame->AutofillClient())
+      focused_frame->AutofillClient()->DidCompleteFocusChangeInFrame();
+  }
 }
 
 void RenderViewImpl::OnDeviceScaleFactorChanged() {

@@ -231,7 +231,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
     DCHECK(gesture_event.GetType() == WebInputEvent::kGestureTap);
     HitTestResult result = current_hit_test;
     result.SetToShadowHostIfInRestrictedShadowRoot();
-    frame_->GetChromeClient().OnMouseDown(result.InnerNode());
+    frame_->GetChromeClient().OnMouseDown(*result.InnerNode());
   }
 
   // FIXME: Use a hit-test cache to avoid unnecessary hit tests.

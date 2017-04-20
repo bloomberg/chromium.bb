@@ -17,8 +17,8 @@
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/page_click_listener.h"
+#include "components/autofill/content/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/public/renderer/render_view_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
@@ -84,6 +84,11 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   void ShowNotSecureWarning(const blink::WebInputElement& element);
 
+  void set_page_click_tracker_for_testing(
+      std::unique_ptr<PageClickTracker> page_click_tracker) {
+    page_click_tracker_ = std::move(page_click_tracker);
+  }
+
  protected:
   // blink::WebAutofillClient:
   void DidAssociateFormControlsDynamically() override;
@@ -94,29 +99,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   struct FormDataCompare {
     bool operator()(const FormData& lhs, const FormData& rhs) const;
   };
-
-  // Thunk class for RenderViewObserver methods that haven't yet been migrated
-  // to RenderFrameObserver. Should eventually be removed.
-  // http://crbug.com/433486
-  class LegacyAutofillAgent : public content::RenderViewObserver {
-   public:
-    LegacyAutofillAgent(content::RenderView* render_view, AutofillAgent* agent);
-    ~LegacyAutofillAgent() override;
-
-    // Shuts the LegacyAutofillAgent down on RenderFrame deletion. Safe to call
-    // multiple times.
-    void Shutdown();
-
-   private:
-    // content::RenderViewObserver:
-    void OnDestruct() override;
-    void FocusChangeComplete() override;
-
-    AutofillAgent* agent_;
-
-    DISALLOW_COPY_AND_ASSIGN(LegacyAutofillAgent);
-  };
-  friend class LegacyAutofillAgent;
 
   // Flags passed to ShowSuggestions.
   struct ShowSuggestionsOptions {
@@ -169,10 +151,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // times.
   void Shutdown();
 
-  // Pass-through from LegacyAutofillAgent. This correlates with the
-  // RenderViewObserver method.
-  void FocusChangeComplete();
-
   // PageClickListener:
   void FormControlElementClicked(const blink::WebFormControlElement& element,
                                  bool was_focused) override;
@@ -187,6 +165,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   void DataListOptionsChanged(const blink::WebInputElement& element) override;
   void UserGestureObserved() override;
   void AjaxSucceeded() override;
+  void DidCompleteFocusChangeInFrame() override;
+  void DidReceiveLeftMouseDownOrGestureTapInNode(
+      const blink::WebNode& node) override;
 
   // Called when a same-document navigation is detected.
   void OnSameDocumentNavigationCompleted();
@@ -259,9 +240,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   PasswordAutofillAgent* password_autofill_agent_;  // Weak reference.
   PasswordGenerationAgent* password_generation_agent_;  // Weak reference.
 
-  // Passes through RenderViewObserver methods to |this|.
-  LegacyAutofillAgent legacy_;
-
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
   int autofill_query_id_;
@@ -297,6 +275,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   // This is needed because generation is shown on field focus vs. field click
   // for the password manager. TODO(gcasto): Have both UIs show on focus.
   bool is_generation_popup_possibly_visible_;
+
+  std::unique_ptr<PageClickTracker> page_click_tracker_;
 
   mojo::Binding<mojom::AutofillAgent> binding_;
 

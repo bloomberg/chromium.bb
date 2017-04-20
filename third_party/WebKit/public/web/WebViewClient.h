@@ -195,14 +195,6 @@ class WebViewClient : protected WebWidgetClient {
   // Called when the View acquires focus.
   virtual void DidFocus() {}
 
-  // TODO(lfg): The callback below is exposed in RenderViewObserver and only
-  // used to implement autofill. We should figure out a better way to plumb
-  // this.
-  // Called immediately after a mousedown event is dispatched due to a mouse
-  // press or gesture tap.
-  // Note: This is called even when the mouse down event is prevent default.
-  virtual void OnMouseDown(const WebNode& mouse_down_node) {}
-
   // Session history -----------------------------------------------------
 
   // Tells the embedder to navigate back or forward in session history by

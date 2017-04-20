@@ -36,6 +36,7 @@ namespace blink {
 class WebFormControlElement;
 class WebInputElement;
 class WebKeyboardEvent;
+class WebNode;
 
 class WebAutofillClient {
  public:
@@ -53,6 +54,9 @@ class WebAutofillClient {
 
   virtual void DidAssociateFormControlsDynamically() {}
   virtual void AjaxSucceeded() {}
+
+  virtual void DidCompleteFocusChangeInFrame() {}
+  virtual void DidReceiveLeftMouseDownOrGestureTapInNode(const WebNode&) {}
 
  protected:
   virtual ~WebAutofillClient() {}
