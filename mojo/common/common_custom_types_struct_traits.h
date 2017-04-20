@@ -7,13 +7,11 @@
 
 #include "base/files/file.h"
 #include "base/i18n/rtl.h"
-#include "base/process/process_handle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "base/version.h"
 #include "mojo/common/file.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
-#include "mojo/common/process_id.mojom-shared.h"
 #include "mojo/common/string16.mojom-shared.h"
 #include "mojo/common/text_direction.mojom-shared.h"
 #include "mojo/common/time.mojom-shared.h"
@@ -62,19 +60,6 @@ struct StructTraits<common::mojom::UnguessableTokenDataView,
 
   static bool Read(common::mojom::UnguessableTokenDataView data,
                    base::UnguessableToken* out);
-};
-
-template <>
-struct StructTraits<common::mojom::ProcessIdDataView, base::ProcessId> {
-  static uint32_t pid(const base::ProcessId& process_id) {
-    return static_cast<uint32_t>(process_id);
-  }
-
-  static bool Read(common::mojom::ProcessIdDataView data,
-                   base::ProcessId* process_id) {
-    *process_id = static_cast<base::ProcessId>(data.pid());
-    return true;
-  }
 };
 
 template <>

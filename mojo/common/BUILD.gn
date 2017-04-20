@@ -16,7 +16,6 @@ mojom("common_custom_types") {
   sources = [
     "file.mojom",
     "file_path.mojom",
-    "process_id.mojom",
     "string16.mojom",
     "text_direction.mojom",
     "time.mojom",

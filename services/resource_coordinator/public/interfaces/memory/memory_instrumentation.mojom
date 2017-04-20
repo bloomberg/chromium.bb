@@ -4,8 +4,6 @@
 
 module memory_instrumentation.mojom;
 
-import "mojo/common/process_id.mojom";
-
 enum DumpType {
   PERIODIC_INTERVAL,
   EXPLICITLY_TRIGGERED,
@@ -38,8 +36,7 @@ struct ChromeMemDump {
 struct MemoryDumpCallbackResult {
   OSMemDump os_dump;
   ChromeMemDump chrome_dump;
-  map<mojo.common.mojom.ProcessId, OSMemDump> extra_processes_dump;
-};
+}; 
 
 // There should be at most one implementation of this interface per process.
 interface ProcessLocalDumpManager {

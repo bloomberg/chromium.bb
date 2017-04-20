@@ -5,7 +5,6 @@
 #include "services/resource_coordinator/public/cpp/memory/memory_instrumentation_struct_traits.h"
 
 #include "base/trace_event/memory_dump_request_args.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
 namespace mojo {
@@ -135,8 +134,6 @@ bool StructTraits<
   if (!input.ReadChromeDump(&out->chrome_dump))
     return false;
   if (!input.ReadOsDump(&out->os_dump))
-    return false;
-  if (!input.ReadExtraProcessesDump(&out->extra_processes_dump))
     return false;
   return true;
 }
