@@ -51,6 +51,8 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
 
   static PassRefPtr<OscillatorHandler> Create(AudioNode&,
                                               float sample_rate,
+                                              const String& oscillator_type,
+                                              PeriodicWave* wave_table,
                                               AudioParamHandler& frequency,
                                               AudioParamHandler& detune);
   ~OscillatorHandler() override;
@@ -66,6 +68,8 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
  private:
   OscillatorHandler(AudioNode&,
                     float sample_rate,
+                    const String& oscillator_type,
+                    PeriodicWave* wave_table,
                     AudioParamHandler& frequency,
                     AudioParamHandler& detune);
   bool SetType(unsigned);  // Returns true on success.
@@ -105,7 +109,10 @@ class OscillatorNode final : public AudioScheduledSourceNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OscillatorNode* Create(BaseAudioContext&, ExceptionState&);
+  static OscillatorNode* Create(BaseAudioContext&,
+                                const String& oscillator_type,
+                                PeriodicWave* wave_table,
+                                ExceptionState&);
   static OscillatorNode* Create(BaseAudioContext*,
                                 const OscillatorOptions&,
                                 ExceptionState&);
@@ -118,7 +125,9 @@ class OscillatorNode final : public AudioScheduledSourceNode {
   void setPeriodicWave(PeriodicWave*);
 
  private:
-  OscillatorNode(BaseAudioContext&);
+  OscillatorNode(BaseAudioContext&,
+                 const String& oscillator_type,
+                 PeriodicWave* wave_table);
   OscillatorHandler& GetOscillatorHandler() const;
 
   Member<AudioParam> frequency_;

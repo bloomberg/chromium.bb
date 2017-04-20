@@ -41,18 +41,33 @@ using namespace VectorMath;
 
 OscillatorHandler::OscillatorHandler(AudioNode& node,
                                      float sample_rate,
+                                     const String& oscillator_type,
+                                     PeriodicWave* wave_table,
                                      AudioParamHandler& frequency,
                                      AudioParamHandler& detune)
     : AudioScheduledSourceHandler(kNodeTypeOscillator, node, sample_rate),
-      type_(SINE),
       frequency_(frequency),
       detune_(detune),
       first_render_(true),
       virtual_read_index_(0),
       phase_increments_(AudioUtilities::kRenderQuantumFrames),
       detune_values_(AudioUtilities::kRenderQuantumFrames) {
-  // Sets up default wavetable.
-  SetType(type_);
+  if (wave_table) {
+    // A PeriodicWave overrides any value for the oscillator type,
+    // forcing the type to be 'custom".
+    SetPeriodicWave(wave_table);
+  } else {
+    if (oscillator_type == "sine")
+      SetType(SINE);
+    else if (oscillator_type == "square")
+      SetType(SQUARE);
+    else if (oscillator_type == "sawtooth")
+      SetType(SAWTOOTH);
+    else if (oscillator_type == "triangle")
+      SetType(TRIANGLE);
+    else
+      NOTREACHED();
+  }
 
   // An oscillator is always mono.
   AddOutput(1);
@@ -63,9 +78,12 @@ OscillatorHandler::OscillatorHandler(AudioNode& node,
 PassRefPtr<OscillatorHandler> OscillatorHandler::Create(
     AudioNode& node,
     float sample_rate,
+    const String& oscillator_type,
+    PeriodicWave* wave_table,
     AudioParamHandler& frequency,
     AudioParamHandler& detune) {
-  return AdoptRef(new OscillatorHandler(node, sample_rate, frequency, detune));
+  return AdoptRef(new OscillatorHandler(node, sample_rate, oscillator_type,
+                                        wave_table, frequency, detune));
 }
 
 OscillatorHandler::~OscillatorHandler() {
@@ -366,7 +384,9 @@ bool OscillatorHandler::PropagatesSilence() const {
 
 // ----------------------------------------------------------------
 
-OscillatorNode::OscillatorNode(BaseAudioContext& context)
+OscillatorNode::OscillatorNode(BaseAudioContext& context,
+                               const String& oscillator_type,
+                               PeriodicWave* wave_table)
     : AudioScheduledSourceNode(context),
       // Use musical pitch standard A440 as a default.
       frequency_(AudioParam::Create(context,
@@ -377,10 +397,13 @@ OscillatorNode::OscillatorNode(BaseAudioContext& context)
       // Default to no detuning.
       detune_(AudioParam::Create(context, kParamTypeOscillatorDetune, 0)) {
   SetHandler(OscillatorHandler::Create(
-      *this, context.sampleRate(), frequency_->Handler(), detune_->Handler()));
+      *this, context.sampleRate(), oscillator_type, wave_table,
+      frequency_->Handler(), detune_->Handler()));
 }
 
 OscillatorNode* OscillatorNode::Create(BaseAudioContext& context,
+                                       const String& oscillator_type,
+                                       PeriodicWave* wave_table,
                                        ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -389,26 +412,26 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new OscillatorNode(context);
+  return new OscillatorNode(context, oscillator_type, wave_table);
 }
 
 OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
                                        const OscillatorOptions& options,
                                        ExceptionState& exception_state) {
-  OscillatorNode* node = Create(*context, exception_state);
+  if (options.type() == "custom" && !options.hasPeriodicWave()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "A PeriodicWave must be specified if the type is set to \"custom\"");
+    return nullptr;
+  }
+
+  OscillatorNode* node =
+      Create(*context, options.type(), options.periodicWave(), exception_state);
 
   if (!node)
     return nullptr;
 
   node->HandleChannelOptions(options, exception_state);
-
-  if (options.hasPeriodicWave()) {
-    // Set up the custom wave; this also sets the type to "custom",
-    // overriding any |type| option the user may have set.  Per spec.
-    node->setPeriodicWave(options.periodicWave());
-  } else {
-    node->setType(options.type(), exception_state);
-  }
 
   node->detune()->setValue(options.detune());
   node->frequency()->setValue(options.frequency());
