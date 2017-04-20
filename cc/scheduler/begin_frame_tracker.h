@@ -67,7 +67,8 @@ class CC_EXPORT BeginFrameTracker {
   // any time.
   base::TimeDelta Interval() const;
 
-  void AsValueInto(base::trace_event::TracedValue* dict) const;
+  void AsValueInto(base::TimeTicks now,
+                   base::trace_event::TracedValue* dict) const;
 
   // The following methods violate principles of how BeginFrameArgs should be
   // used. These methods should only be used when there is no other choice.
