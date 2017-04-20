@@ -15,7 +15,9 @@ ReportingPolicy::ReportingPolicy()
       persist_clients_across_restarts(true),
       garbage_collection_interval(base::TimeDelta::FromMinutes(5)),
       max_report_age(base::TimeDelta::FromMinutes(15)),
-      max_report_attempts(5) {
+      max_report_attempts(5),
+      clear_reports_on_network_changes(true),
+      clear_clients_on_network_changes(false) {
   endpoint_backoff_policy.num_errors_to_ignore = 0;
   endpoint_backoff_policy.initial_delay_ms = 60 * 1000;  // 1 minute
   endpoint_backoff_policy.multiply_factor = 2.0;
@@ -33,7 +35,10 @@ ReportingPolicy::ReportingPolicy(const ReportingPolicy& other)
       persist_clients_across_restarts(other.persist_clients_across_restarts),
       garbage_collection_interval(other.garbage_collection_interval),
       max_report_age(other.max_report_age),
-      max_report_attempts(other.max_report_attempts) {}
+      max_report_attempts(other.max_report_attempts),
+      clear_reports_on_network_changes(other.clear_reports_on_network_changes),
+      clear_clients_on_network_changes(other.clear_clients_on_network_changes) {
+}
 
 ReportingPolicy::~ReportingPolicy() {}
 

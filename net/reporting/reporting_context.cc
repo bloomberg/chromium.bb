@@ -19,6 +19,7 @@
 #include "net/reporting/reporting_delivery_agent.h"
 #include "net/reporting/reporting_endpoint_manager.h"
 #include "net/reporting/reporting_garbage_collector.h"
+#include "net/reporting/reporting_network_change_observer.h"
 #include "net/reporting/reporting_observer.h"
 #include "net/reporting/reporting_persister.h"
 #include "net/reporting/reporting_policy.h"
@@ -103,6 +104,7 @@ ReportingContext::ReportingContext(const ReportingPolicy& policy,
       endpoint_manager_(base::MakeUnique<ReportingEndpointManager>(this)),
       delivery_agent_(ReportingDeliveryAgent::Create(this)),
       persister_(ReportingPersister::Create(this)),
-      garbage_collector_(ReportingGarbageCollector::Create(this)) {}
+      garbage_collector_(ReportingGarbageCollector::Create(this)),
+      network_change_observer_(ReportingNetworkChangeObserver::Create(this)) {}
 
 }  // namespace net

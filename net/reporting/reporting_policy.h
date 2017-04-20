@@ -44,6 +44,14 @@ struct NET_EXPORT ReportingPolicy {
   // Maximum number of delivery attempts a report can have before being
   // discarded as failed.
   int max_report_attempts;
+
+  // Whether to clear reports when the network changes to avoid leaking browsing
+  // data between networks.
+  bool clear_reports_on_network_changes;
+
+  // Whether to clear clients when the network changes to avoid leaking browsing
+  // data between networks.
+  bool clear_clients_on_network_changes;
 };
 
 }  // namespace net

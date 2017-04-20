@@ -25,6 +25,7 @@ class ReportingDelegate;
 class ReportingDeliveryAgent;
 class ReportingEndpointManager;
 class ReportingGarbageCollector;
+class ReportingNetworkChangeObserver;
 class ReportingObserver;
 class ReportingPersister;
 class ReportingUploader;
@@ -107,6 +108,9 @@ class NET_EXPORT ReportingContext {
 
   // |garbage_collector_| must come after |tick_clock_| and |cache_|.
   std::unique_ptr<ReportingGarbageCollector> garbage_collector_;
+
+  // |network_change_observer_| must come after |cache_|.
+  std::unique_ptr<ReportingNetworkChangeObserver> network_change_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingContext);
 };
