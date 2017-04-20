@@ -1,0 +1,10 @@
+Tests that the lux value is rounded to avoid fingerprinting risk.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS deviceLightEvent.value is mockLightRounded
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -4,8 +4,21 @@
 
 #include "modules/device_light/DeviceLightDispatcher.h"
 
+#include <cmath>
+
 #include "modules/device_light/DeviceLightController.h"
 #include "public/platform/Platform.h"
+
+namespace {
+double EnsureRoundedLuxValue(double lux) {
+  // Make sure to round the lux value to nearest integer, to
+  // avoid too precise values and hence reduce fingerprinting risk.
+  // The special case when the lux value is infinity (no data can be
+  // provided) is simply returned as is.
+  // TODO(timvolodine): consider reducing the lux value precision further.
+  return std::isinf(lux) ? lux : std::round(lux);
+}
+}  // namespace
 
 namespace blink {
 
@@ -33,8 +46,11 @@ void DeviceLightDispatcher::StopListening() {
 }
 
 void DeviceLightDispatcher::DidChangeDeviceLight(double value) {
-  last_device_light_data_ = value;
-  NotifyControllers();
+  double newValue = EnsureRoundedLuxValue(value);
+  if (last_device_light_data_ != newValue) {
+    last_device_light_data_ = newValue;
+    NotifyControllers();
+  }
 }
 
 double DeviceLightDispatcher::LatestDeviceLightData() const {

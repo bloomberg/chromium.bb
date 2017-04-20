@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description('Tests that the lux value is rounded to avoid fingerprinting risk.');
+
+var mockLightFullPrecision = 10.123456789;
+var mockLightRounded = 10;
+
+if (window.testRunner)
+    testRunner.setMockDeviceLight(mockLightFullPrecision);
+else
+    debug('This test can not be run without the TestRunner');
+
+var deviceLightEvent;
+function checkLight(event) {
+    deviceLightEvent = event;
+    shouldBe('deviceLightEvent.value', 'mockLightRounded');
+}
+
+function listener(event) {
+    checkLight(event);
+    finishJSTest();
+}
+
+window.addEventListener('devicelight', listener);
+window.jsTestIsAsync = true;
+</script>
+</body>
+</html>
