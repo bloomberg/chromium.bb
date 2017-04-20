@@ -13,6 +13,7 @@
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -49,6 +50,10 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
   // we resolved MarginStrut, adjusted the offset to clearance line etc.
   NGLogicalOffset origin_offset;
   NGLogicalOffset from_offset;
+
+  // Calculated logical offset. It's never {@code nullopt} for a positioned
+  // float.
+  WTF::Optional<NGLogicalOffset> logical_offset;
 
   // Writing mode of the float's constraint space.
   NGWritingMode writing_mode;

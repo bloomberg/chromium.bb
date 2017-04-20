@@ -17,11 +17,11 @@ namespace blink {
 CORE_EXPORT NGLogicalOffset PositionFloat(NGFloatingObject*,
                                           NGConstraintSpace* new_parent_space);
 
-// Positions pending floats stored on the fragment builder starting from
-// {@code origin_block_offset}.
-void PositionPendingFloats(const LayoutUnit& origin_block_offset,
-                           NGConstraintSpace* space,
-                           NGFragmentBuilder* builder);
+// Positions the list of floats by updating their {@code logical_offset}.
+void PositionFloats(LayoutUnit origin_block_offset,
+                    LayoutUnit from_block_offset,
+                    const Vector<RefPtr<NGFloatingObject>>&,
+                    NGConstraintSpace*);
 }  // namespace blink
 
 #endif  // NGFloatsUtils_h

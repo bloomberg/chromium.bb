@@ -1906,8 +1906,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionEmptyBlocksInNewBfc) {
   ASSERT_EQ(1UL, floating_objects.size());
   auto floating_object = floating_objects.TakeFirst();
   // left-float's margin = 15.
-  EXPECT_THAT(LayoutUnit(15), floating_object->X());
-  EXPECT_THAT(LayoutUnit(15), floating_object->Y());
+  EXPECT_THAT(floating_object->X(), LayoutUnit(15));
+  EXPECT_THAT(floating_object->Y(), LayoutUnit(15));
 
   RefPtr<const NGPhysicalBoxFragment> html_fragment;
   std::tie(html_fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
@@ -1919,14 +1919,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionEmptyBlocksInNewBfc) {
   auto* empty_block1 =
       ToNGPhysicalBoxFragment(container_fragment->Children()[0].Get());
   // empty-block1's margin == 8
-  EXPECT_THAT(NGPhysicalOffset(LayoutUnit(8), LayoutUnit(8)),
-              empty_block1->Offset());
+  EXPECT_THAT(empty_block1->Offset(),
+              NGPhysicalOffset(LayoutUnit(8), LayoutUnit(8)));
 
   auto* empty_block2 =
       ToNGPhysicalBoxFragment(container_fragment->Children()[1].Get());
   // empty-block2's margin == 50
-  EXPECT_THAT(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(50)),
-              empty_block2->Offset());
+  EXPECT_THAT(empty_block2->Offset(),
+              NGPhysicalOffset(LayoutUnit(0), LayoutUnit(50)));
 }
 
 // Verifies that we can correctly position blocks with clearance and
@@ -2270,7 +2270,66 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentationSmallHeight) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-TEST_F(NGBlockLayoutAlgorithmTest, NewFormattingContextBlock) {}
+// Verifies that we correctly position a new FC block with the Layout
+// Opportunity iterator.
+TEST_F(NGBlockLayoutAlgorithmTest,
+       NewFcBlockWithAdjoiningFloatCollapsesMargins) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container {
+        width: 200px; outline: solid purple 1px;
+      }
+      #float {
+        float: left; width: 100px; height: 30px; background: red;
+      }
+      #new-fc {
+        contain: paint; margin-top: 20px; background: purple;
+        height: 50px;
+      }
+    </style>
+    <div id="container">
+      <div id="float"></div>
+      <div id="new-fc"></div>
+    </div>
+  )HTML");
 
+  const NGPhysicalBoxFragment* body_fragment;
+  const NGPhysicalBoxFragment* container_fragment;
+  const NGPhysicalBoxFragment* new_fc_fragment;
+  RefPtr<const NGPhysicalBoxFragment> fragment;
+  auto run_test = [&](const Length& block_width) {
+    Element* new_fc_block = GetDocument().GetElementById("new-fc");
+    new_fc_block->MutableComputedStyle()->SetWidth(block_width);
+    std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
+        GetDocument().getElementsByTagName("html")->item(0));
+    ASSERT_EQ(1UL, fragment->Children().size());
+    body_fragment = ToNGPhysicalBoxFragment(fragment->Children()[0].Get());
+    container_fragment =
+        ToNGPhysicalBoxFragment(body_fragment->Children()[0].Get());
+    ASSERT_EQ(1UL, container_fragment->Children().size());
+    new_fc_fragment =
+        ToNGPhysicalBoxFragment(container_fragment->Children()[0].Get());
+  };
+
+  // #new-fc is small enough to fit on the same line with #float.
+  run_test(Length(80, kFixed));
+  // 100 = float's width, 0 = no margin collapsing
+  EXPECT_THAT(new_fc_fragment->Offset(),
+              NGPhysicalOffset(LayoutUnit(100), LayoutUnit(0)));
+  // 8 = body's margins, 20 = new-fc's margin top(20) collapses with
+  // body's margin(8)
+  EXPECT_THAT(body_fragment->Offset(),
+              NGPhysicalOffset(LayoutUnit(8), LayoutUnit(20)));
+
+  // #new-fc is too wide to be positioned on the same line with #float
+  run_test(Length(120, kFixed));
+  // 30 = #float's height
+  EXPECT_THAT(new_fc_fragment->Offset(),
+              NGPhysicalOffset(LayoutUnit(0), LayoutUnit(30)));
+  // 8 = body's margins, no margin collapsing
+  EXPECT_THAT(body_fragment->Offset(),
+              NGPhysicalOffset(LayoutUnit(8), LayoutUnit(8)));
+}
 }  // namespace
 }  // namespace blink

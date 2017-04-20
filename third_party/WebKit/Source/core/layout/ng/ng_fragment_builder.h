@@ -38,9 +38,6 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                               const NGLogicalOffset&);
 
-  NGFragmentBuilder& AddFloatingObject(RefPtr<NGFloatingObject>,
-                                       const NGLogicalOffset&);
-
   NGFragmentBuilder& SetBfcOffset(const NGLogicalOffset& offset);
 
   NGFragmentBuilder& AddUnpositionedFloat(
@@ -114,6 +111,11 @@ class CORE_EXPORT NGFragmentBuilder final {
     return unpositioned_floats_;
   }
 
+  // Mutable list of positioned floats, i.e. floats with logical_offset set.
+  Vector<RefPtr<NGFloatingObject>>& MutablePositionedFloats() {
+    return positioned_floats_;
+  }
+
   const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
     return bfc_offset_;
   }
@@ -171,7 +173,6 @@ class CORE_EXPORT NGFragmentBuilder final {
   // determine its block position in space.
   Vector<RefPtr<NGFloatingObject>> unpositioned_floats_;
 
-  Vector<NGLogicalOffset> floating_object_offsets_;
   Vector<RefPtr<NGFloatingObject>> positioned_floats_;
 
   WTF::Optional<NGLogicalOffset> bfc_offset_;

@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_floats_utils.h"
 
 #include "core/layout/ng/ng_box_fragment.h"
+#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 
 namespace blink {
 namespace {
@@ -28,42 +29,15 @@ NGLogicalOffset AdjustToTopEdgeAlignmentRule(const NGConstraintSpace& space,
   return adjusted_offset;
 }
 
-// Finds a layout opportunity for the fragment.
-// It iterates over all layout opportunities in the constraint space and returns
-// the first layout opportunity that is wider than the fragment or returns the
-// last one which is always the widest.
-//
-// @param space Constraint space that is used to find layout opportunity for
-//              the fragment.
-// @param fragment Fragment that needs to be placed.
-// @param floating_object Floating object for which we need to find a layout
-//                        opportunity.
-// @return Layout opportunity for the fragment.
-const NGLayoutOpportunity FindLayoutOpportunityForFragment(
+NGLayoutOpportunity FindLayoutOpportunityForFloat(
     const NGConstraintSpace* space,
     const NGFragment& fragment,
     const NGFloatingObject* floating_object) {
   NGLogicalOffset adjusted_origin_point =
       AdjustToTopEdgeAlignmentRule(*space, floating_object->origin_offset);
-
-  NGLayoutOpportunityIterator opportunity_iter(space->Exclusions().get(),
-                                               floating_object->available_size,
-                                               adjusted_origin_point);
-  NGLayoutOpportunity opportunity;
-  NGLayoutOpportunity opportunity_candidate = opportunity_iter.Next();
-
-  NGBoxStrut margins = floating_object->margins;
-  while (!opportunity_candidate.IsEmpty()) {
-    opportunity = opportunity_candidate;
-    // Checking opportunity's block size is not necessary as a float cannot be
-    // positioned on top of another float inside of the same constraint space.
-    auto fragment_inline_size = fragment.InlineSize() + margins.InlineSum();
-    if (opportunity.size.inline_size >= fragment_inline_size)
-      break;
-
-    opportunity_candidate = opportunity_iter.Next();
-  }
-  return opportunity;
+  return FindLayoutOpportunityForFragment(
+      space->Exclusions().get(), floating_object->available_size,
+      adjusted_origin_point, floating_object->margins, fragment);
 }
 
 // Calculates the logical offset for opportunity.
@@ -128,7 +102,7 @@ NGLogicalOffset PositionFloat(NGFloatingObject* floating_object,
       ToNGPhysicalBoxFragment(floating_object->fragment.Get()));
 
   // Find a layout opportunity that will fit our float.
-  NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
+  NGLayoutOpportunity opportunity = FindLayoutOpportunityForFloat(
       new_parent_space, float_fragment, floating_object);
 
   // TODO(glebl): This should check for infinite opportunity instead.
@@ -163,21 +137,16 @@ NGLogicalOffset PositionFloat(NGFloatingObject* floating_object,
   return logical_offset;
 }
 
-void PositionPendingFloats(const LayoutUnit& origin_block_offset,
-                           NGConstraintSpace* space,
-                           NGFragmentBuilder* builder) {
-  DCHECK(builder) << "Builder cannot be null here";
-  DCHECK(builder->BfcOffset()) << "Parent BFC offset should be known here";
-  LayoutUnit bfc_block_offset = builder->BfcOffset().value().block_offset;
-
-  for (auto& floating_object : builder->UnpositionedFloats()) {
+void PositionFloats(LayoutUnit origin_block_offset,
+                    LayoutUnit from_block_offset,
+                    const Vector<RefPtr<NGFloatingObject>>& floating_objects,
+                    NGConstraintSpace* space) {
+  for (auto& floating_object : floating_objects) {
     floating_object->origin_offset.block_offset = origin_block_offset;
-    floating_object->from_offset.block_offset = bfc_block_offset;
-
-    NGLogicalOffset offset = PositionFloat(floating_object.Get(), space);
-    builder->AddFloatingObject(floating_object, offset);
+    floating_object->from_offset.block_offset = from_block_offset;
+    floating_object->logical_offset =
+        PositionFloat(floating_object.Get(), space);
   }
-  builder->MutableUnpositionedFloats().clear();
 }
 
 }  // namespace blink

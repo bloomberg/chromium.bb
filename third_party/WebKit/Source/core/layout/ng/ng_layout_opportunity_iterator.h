@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_exclusion.h"
+#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -15,6 +16,13 @@ namespace blink {
 
 typedef NGLogicalRect NGLayoutOpportunity;
 typedef Vector<NGLayoutOpportunity> NGLayoutOpportunities;
+
+NGLayoutOpportunity FindLayoutOpportunityForFragment(
+    const NGExclusions* exclusions,
+    const NGLogicalSize& size,
+    const NGLogicalOffset& origin_point,
+    const NGBoxStrut& margins,
+    const NGFragment& fragment);
 
 class CORE_EXPORT NGLayoutOpportunityIterator final {
  public:

@@ -259,6 +259,28 @@ bool CompareNGLayoutOpportunitesByStartPoint(const NGLayoutOpportunity& lhs,
 }
 }  // namespace
 
+NGLayoutOpportunity FindLayoutOpportunityForFragment(
+    const NGExclusions* exclusions,
+    const NGLogicalSize& available_size,
+    const NGLogicalOffset& origin_point,
+    const NGBoxStrut& margins,
+    const NGFragment& fragment) {
+  NGLayoutOpportunityIterator opportunity_iter(exclusions, available_size,
+                                               origin_point);
+  NGLayoutOpportunity opportunity;
+  NGLayoutOpportunity opportunity_candidate = opportunity_iter.Next();
+  while (!opportunity_candidate.IsEmpty()) {
+    opportunity = opportunity_candidate;
+    // Checking opportunity's block size is not necessary as a float cannot be
+    // positioned on top of another float inside of the same constraint space.
+    auto fragment_inline_size = fragment.InlineSize() + margins.InlineSum();
+    if (opportunity.size.inline_size >= fragment_inline_size)
+      break;
+    opportunity_candidate = opportunity_iter.Next();
+  }
+  return opportunity;
+}
+
 NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
     const NGExclusions* exclusions,
     const NGLogicalSize& available_size,

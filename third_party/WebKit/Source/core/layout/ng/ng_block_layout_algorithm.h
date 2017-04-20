@@ -9,6 +9,7 @@
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "platform/wtf/RefPtr.h"
@@ -22,6 +23,12 @@ class NGLayoutResult;
 void MaybeUpdateFragmentBfcOffset(const NGConstraintSpace&,
                                   const NGLogicalOffset&,
                                   NGFragmentBuilder* builder);
+
+// Positions pending floats starting from {@origin_block_offset} and relative
+// to container's BFC offset.
+void PositionPendingFloats(LayoutUnit origin_block_offset,
+                           NGFragmentBuilder* container_builder,
+                           NGConstraintSpace* space);
 
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.
@@ -45,11 +52,52 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                               const NGConstraintSpace& space);
 
   // Creates a new constraint space for the current child.
-  RefPtr<NGConstraintSpace> CreateConstraintSpaceForChild(NGLayoutInputNode*);
-  void PrepareChildLayout(NGLayoutInputNode*);
-  void FinishChildLayout(NGLayoutInputNode*,
-                         NGConstraintSpace*,
-                         RefPtr<NGLayoutResult>);
+  RefPtr<NGConstraintSpace> CreateConstraintSpaceForChild(
+      const NGLogicalOffset& child_bfc_offset,
+      NGLayoutInputNode*);
+
+  // @return Estimated BFC offset for the "to be layout" child.
+  NGLogicalOffset PrepareChildLayout(NGLayoutInputNode*);
+
+  void FinishChildLayout(const NGConstraintSpace*, NGLayoutResult*);
+
+  // Positions the fragment that establishes a new formatting context.
+  //
+  // This uses Layout Opportunity iterator to position the fragment.
+  // That's because an element that establishes a new block formatting context
+  // must not overlap the margin box of any floats in the same block formatting
+  // context as the element itself.
+  //
+  // So if necessary, we clear the new BFC by placing it below any preceding
+  // floats or place it adjacent to such floats if there is sufficient space.
+  //
+  // Example:
+  // <div id="container">
+  //   <div id="float"></div>
+  //   <div id="new-fc" style="margin-top: 20px;"></div>
+  // </div>
+  // 1) If #new-fc is small enough to fit the available space right from #float
+  //    then it will be placed there and we collapse its margin.
+  // 2) If #new-fc is too big then we need to clear its position and place it
+  //    below #float ignoring its vertical margin.
+  NGLogicalOffset PositionNewFc(const NGBoxFragment&,
+                                const NGConstraintSpace& child_space);
+
+  // Positions the fragment that knows its BFC offset.
+  NGLogicalOffset PositionWithBfcOffset(const NGBoxFragment&);
+
+  // Positions using the parent BFC offset.
+  // Fragment doesn't know its offset but we can still calculate its BFC
+  // position because the parent fragment's BFC is known.
+  // Example:
+  //   BFC Offset is known here because of the padding.
+  //   <div style="padding: 1px">
+  //     <div id="empty-div" style="margins: 1px"></div>
+  NGLogicalOffset PositionWithParentBfc();
+
+  void FinishFloatChildLayout(const ComputedStyle&,
+                              const NGConstraintSpace&,
+                              const NGLayoutResult*);
 
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break

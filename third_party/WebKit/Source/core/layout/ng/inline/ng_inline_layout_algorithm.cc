@@ -285,8 +285,8 @@ bool NGInlineLayoutAlgorithm::CreateLineUpToLastBreakOpportunity() {
 
   NGLogicalOffset origin_point =
       GetOriginPointForFloats(ConstraintSpace(), content_size_);
-  PositionPendingFloats(origin_point.block_offset, MutableConstraintSpace(),
-                        &container_builder_);
+  PositionPendingFloats(origin_point.block_offset, &container_builder_,
+                        MutableConstraintSpace());
   FindNextLayoutOpportunity();
   return true;
 }
@@ -383,9 +383,9 @@ void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
       float_does_not_fit) {
     container_builder_.AddUnpositionedFloat(floating_object);
   } else {
-    NGLogicalOffset offset =
+    floating_object->logical_offset =
         PositionFloat(floating_object.Get(), MutableConstraintSpace());
-    container_builder_.AddFloatingObject(floating_object, offset);
+    container_builder_.MutablePositionedFloats().push_back(floating_object);
     FindNextLayoutOpportunity();
   }
 }

@@ -269,8 +269,8 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip 
 # LayoutNG - is a new layout system for Blink.
 
 ### external/wpt/css/CSS2/positioning
-#### Passed: 264 50%
-#### Skipped: 259
+#### Passed: 263 50%
+#### Skipped: 260
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-non-replaced-height-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-non-replaced-height-003.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-non-replaced-height-004.xht [ Skip ]
@@ -397,6 +397,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-00
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-absolute-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-absolute-004.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-absolute-006.xht [ Skip ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-absolute-007.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-applies-to-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-applies-to-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-applies-to-003.xht [ Skip ]

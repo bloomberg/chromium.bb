@@ -109,14 +109,6 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::AddFloatingObject(
-    RefPtr<NGFloatingObject> floating_object,
-    const NGLogicalOffset& floating_object_offset) {
-  positioned_floats_.push_back(floating_object);
-  floating_object_offsets_.push_back(floating_object_offset);
-  return *this;
-}
-
 NGFragmentBuilder& NGFragmentBuilder::SetBfcOffset(
     const NGLogicalOffset& offset) {
   bfc_offset_ = offset;
@@ -204,11 +196,14 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
     break_token = NGBlockBreakToken::Create(node_.Get());
   }
 
-  for (size_t i = 0; i < positioned_floats_.size(); ++i) {
-    RefPtr<NGFloatingObject>& floating_object = positioned_floats_[i];
+  for (auto& floating_object : positioned_floats_) {
+    DCHECK(floating_object->logical_offset)
+        << "logical_offset should be set for a positioned float.";
     NGPhysicalFragment* floating_fragment = floating_object->fragment.Get();
-    floating_fragment->SetOffset(floating_object_offsets_[i].ConvertToPhysical(
-        writing_mode_, direction_, physical_size, floating_fragment->Size()));
+    floating_fragment->SetOffset(
+        floating_object->logical_offset.value().ConvertToPhysical(
+            writing_mode_, direction_, physical_size,
+            floating_fragment->Size()));
   }
 
   RefPtr<NGPhysicalBoxFragment> fragment = AdoptRef(new NGPhysicalBoxFragment(

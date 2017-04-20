@@ -6,11 +6,11 @@
 #define NGLayoutInputNode_h
 
 #include "core/CoreExport.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class ComputedStyle;
 class LayoutObject;
 class NGBreakToken;
 class NGConstraintSpace;
@@ -28,6 +28,8 @@ class CORE_EXPORT NGLayoutInputNode
   bool IsInline() const { return type_ == kLegacyInline; }
 
   bool IsBlock() const { return type_ == kLegacyBlock; }
+
+  bool IsFloating() const { return IsBlock() && Style().IsFloating(); }
 
   virtual ~NGLayoutInputNode(){};
 
