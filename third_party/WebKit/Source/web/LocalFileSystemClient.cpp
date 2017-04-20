@@ -33,13 +33,13 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/frame/ContentSettingsClient.h"
+#include "core/workers/WorkerContentSettingsClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/ContentSettingCallbacks.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WorkerContentSettingsClient.h"
 
 namespace blink {
 

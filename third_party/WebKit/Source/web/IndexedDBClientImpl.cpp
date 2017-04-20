@@ -32,12 +32,12 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/ContentSettingsClient.h"
+#include "core/workers/WorkerContentSettingsClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebKit.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WorkerContentSettingsClient.h"
 
 namespace blink {
 

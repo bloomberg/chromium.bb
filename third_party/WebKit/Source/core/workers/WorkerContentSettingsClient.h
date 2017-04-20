@@ -32,6 +32,7 @@
 #define WorkerContentSettingsClient_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "core/workers/WorkerClients.h"
 #include "platform/wtf/Forward.h"
 
@@ -41,7 +42,7 @@ class ExecutionContext;
 class WebString;
 class WebWorkerContentSettingsClientProxy;
 
-class WorkerContentSettingsClient final
+class CORE_EXPORT WorkerContentSettingsClient final
     : public GarbageCollectedFinalized<WorkerContentSettingsClient>,
       public Supplement<WorkerClients> {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
@@ -66,7 +67,7 @@ class WorkerContentSettingsClient final
   std::unique_ptr<WebWorkerContentSettingsClientProxy> proxy_;
 };
 
-void ProvideContentSettingsClientToWorker(
+void CORE_EXPORT ProvideContentSettingsClientToWorker(
     WorkerClients*,
     std::unique_ptr<WebWorkerContentSettingsClientProxy>);
 

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WorkerContentSettingsClient.h"
+#include "core/workers/WorkerContentSettingsClient.h"
 
+#include <memory>
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
-#include <memory>
 
 namespace blink {
 
