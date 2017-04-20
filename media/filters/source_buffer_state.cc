@@ -256,7 +256,7 @@ void SourceBufferState::Remove(TimeDelta start,
   }
 }
 
-bool SourceBufferState::EvictCodedFrames(DecodeTimestamp media_time,
+bool SourceBufferState::EvictCodedFrames(base::TimeDelta media_time,
                                          size_t newDataSize) {
   size_t total_buffered_size = 0;
   for (const auto& it : audio_streams_)

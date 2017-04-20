@@ -65,7 +65,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // the "Coded Frame Eviction Algorithm" in the Media Source Extensions Spec.
   // Returns false iff buffer is still full after running eviction.
   // https://w3c.github.io/media-source/#sourcebuffer-coded-frame-eviction
-  bool EvictCodedFrames(DecodeTimestamp media_time, size_t newDataSize);
+  bool EvictCodedFrames(base::TimeDelta media_time, size_t newDataSize);
 
   void OnMemoryPressure(
       DecodeTimestamp media_time,

@@ -119,10 +119,25 @@ void ChunkDemuxerStream::Remove(TimeDelta start, TimeDelta end,
   stream_->Remove(start, end, duration);
 }
 
-bool ChunkDemuxerStream::EvictCodedFrames(DecodeTimestamp media_time,
+bool ChunkDemuxerStream::EvictCodedFrames(base::TimeDelta media_time,
                                           size_t newDataSize) {
   base::AutoLock auto_lock(lock_);
-  return stream_->GarbageCollectIfNeeded(media_time, newDataSize);
+
+  // If the stream is disabled, then the renderer is not reading from it and
+  // thus the read position might be stale. MSE GC algorithm uses the read
+  // position to determine when to stop removing data from the front of buffered
+  // ranges, so do a Seek in order to update the read position and allow the GC
+  // to collect unnecessary data that is earlier than the GOP containing
+  // |media_time|.
+  if (!is_enabled_)
+    stream_->Seek(media_time);
+
+  // Note: The direct conversion from PTS to DTS is safe here, since we don't
+  // need to know currentTime precisely for GC. GC only needs to know which GOP
+  // currentTime points to.
+  DecodeTimestamp media_time_dts =
+      DecodeTimestamp::FromPresentationTime(media_time);
+  return stream_->GarbageCollectIfNeeded(media_time_dts, newDataSize);
 }
 
 void ChunkDemuxerStream::OnMemoryPressure(
@@ -783,19 +798,13 @@ bool ChunkDemuxer::EvictCodedFrames(const std::string& id,
            << " newDataSize=" << newDataSize;
   base::AutoLock auto_lock(lock_);
 
-  // Note: The direct conversion from PTS to DTS is safe here, since we don't
-  // need to know currentTime precisely for GC. GC only needs to know which GOP
-  // currentTime points to.
-  DecodeTimestamp media_time_dts =
-      DecodeTimestamp::FromPresentationTime(currentMediaTime);
-
   DCHECK(!id.empty());
   auto itr = source_state_map_.find(id);
   if (itr == source_state_map_.end()) {
     LOG(WARNING) << __func__ << " stream " << id << " not found";
     return false;
   }
-  return itr->second->EvictCodedFrames(media_time_dts, newDataSize);
+  return itr->second->EvictCodedFrames(currentMediaTime, newDataSize);
 }
 
 bool ChunkDemuxer::AppendData(const std::string& id,

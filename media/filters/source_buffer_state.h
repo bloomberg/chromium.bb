@@ -74,7 +74,7 @@ class MEDIA_EXPORT SourceBufferState {
   // the "Coded Frame Eviction Algorithm" in the Media Source Extensions Spec.
   // Returns false iff buffer is still full after running eviction.
   // https://w3c.github.io/media-source/#sourcebuffer-coded-frame-eviction
-  bool EvictCodedFrames(DecodeTimestamp media_time, size_t newDataSize);
+  bool EvictCodedFrames(base::TimeDelta media_time, size_t newDataSize);
 
   // Gets invoked when the system is experiencing memory pressure, i.e. there's
   // not enough free memory. The |media_time| is the media playback position at
