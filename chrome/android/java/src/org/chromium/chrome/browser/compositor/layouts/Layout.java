@@ -356,11 +356,19 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
-     * Informs this cache of the relevant {@link Tab} {@code id}s that will be used in the
-     * near future.
+     * Informs this cache of the visible {@link Tab} {@code id}s, as well as the
+     * primary screen-filling tab.
      */
-    protected void updateCacheVisibleIds(List<Integer> priority) {
-        if (mTabContentManager != null) mTabContentManager.updateVisibleIds(priority);
+    protected void updateCacheVisibleIdsAndPrimary(List<Integer> visible, int primaryTabId) {
+        if (mTabContentManager != null) mTabContentManager.updateVisibleIds(visible, primaryTabId);
+    }
+
+    /**
+     * Informs this cache of the visible {@link Tab} {@code id}s, in cases where there
+     * is no primary screen-filling tab.
+     */
+    protected void updateCacheVisibleIds(List<Integer> visible) {
+        if (mTabContentManager != null) mTabContentManager.updateVisibleIds(visible, -1);
     }
 
     /**

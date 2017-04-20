@@ -278,7 +278,8 @@ void TabContentManager::InvalidateIfChanged(JNIEnv* env,
 void TabContentManager::UpdateVisibleIds(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jintArray>& priority) {
+    const JavaParamRef<jintArray>& priority,
+    jint primary_tab_id) {
   std::list<int> priority_ids;
   jsize length = env->GetArrayLength(priority);
   jint* ints = env->GetIntArrayElements(priority, nullptr);
@@ -286,7 +287,7 @@ void TabContentManager::UpdateVisibleIds(
     priority_ids.push_back(static_cast<int>(ints[i]));
 
   env->ReleaseIntArrayElements(priority, ints, JNI_ABORT);
-  thumbnail_cache_->UpdateVisibleIds(priority_ids);
+  thumbnail_cache_->UpdateVisibleIds(priority_ids, primary_tab_id);
 }
 
 void TabContentManager::RemoveTabThumbnail(JNIEnv* env,

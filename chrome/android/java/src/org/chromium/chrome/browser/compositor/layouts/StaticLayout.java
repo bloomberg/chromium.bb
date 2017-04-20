@@ -158,7 +158,9 @@ public class StaticLayout extends Layout {
         }
         TabModel model = mTabModelSelector.getModelForTabId(id);
         if (model == null) return;
-        updateCacheVisibleIds(new LinkedList<Integer>(Arrays.asList(id)));
+
+        updateCacheVisibleIdsAndPrimary(new LinkedList<Integer>(Arrays.asList(id)), id);
+
         if (mLayoutTabs == null || mLayoutTabs.length != 1) mLayoutTabs = new LayoutTab[1];
         mLayoutTabs[0] = createLayoutTab(id, model.isIncognito(), NO_CLOSE_BUTTON, NO_TITLE);
         mLayoutTabs[0].setDrawDecoration(false);

@@ -62,7 +62,7 @@ class ThumbnailCache : ThumbnailDelegate {
 
   void InvalidateThumbnailIfChanged(TabId tab_id, const GURL& url);
   bool CheckAndUpdateThumbnailMetaData(TabId tab_id, const GURL& url);
-  void UpdateVisibleIds(const TabIdList& priority);
+  void UpdateVisibleIds(const TabIdList& priority, TabId primary_tab_id);
   void DecompressThumbnailFromFile(
       TabId tab_id,
       const base::Callback<void(bool, SkBitmap)>&
@@ -160,6 +160,7 @@ class ThumbnailCache : ThumbnailDelegate {
   ThumbnailMetaDataMap thumbnail_meta_data_;
   TabIdList read_queue_;
   TabIdList visible_ids_;
+  TabId primary_tab_id_ = -1;
 
   ui::UIResourceProvider* ui_resource_provider_;
 

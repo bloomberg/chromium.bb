@@ -209,7 +209,8 @@ Thumbnail* ThumbnailCache::Get(TabId tab_id,
     return thumbnail;
   }
 
-  if (force_disk_read && base::ContainsValue(visible_ids_, tab_id) &&
+  if (force_disk_read && primary_tab_id_ != tab_id &&
+      base::ContainsValue(visible_ids_, tab_id) &&
       !base::ContainsValue(read_queue_, tab_id)) {
     read_queue_.push_back(tab_id);
     ReadNextThumbnail();
@@ -264,17 +265,23 @@ bool ThumbnailCache::CheckAndUpdateThumbnailMetaData(TabId tab_id,
   return true;
 }
 
-void ThumbnailCache::UpdateVisibleIds(const TabIdList& priority) {
-  if (priority.empty()) {
-    visible_ids_.clear();
-    return;
+void ThumbnailCache::UpdateVisibleIds(const TabIdList& priority,
+                                      TabId primary_tab_id) {
+  bool needs_update = false;
+  if (primary_tab_id_ != primary_tab_id) {
+    // The primary screen-filling tab (if any) is not pushed onto the read
+    // queue, under the assumption that it either has a live layer or will have
+    // one very soon.
+    primary_tab_id_ = primary_tab_id;
+    needs_update = true;
   }
 
   size_t ids_size = std::min(priority.size(), cache_.MaximumCacheSize());
-  if (visible_ids_.size() == ids_size) {
+  if (visible_ids_.size() != ids_size) {
+    needs_update = true;
+  } else {
     // Early out if called with the same input as last time (We only care
     // about the first mCache.MaximumCacheSize() entries).
-    bool needs_update = false;
     TabIdList::const_iterator visible_iter = visible_ids_.begin();
     TabIdList::const_iterator priority_iter = priority.begin();
     while (visible_iter != visible_ids_.end() &&
@@ -286,10 +293,10 @@ void ThumbnailCache::UpdateVisibleIds(const TabIdList& priority) {
       visible_iter++;
       priority_iter++;
     }
-
-    if (!needs_update)
-      return;
   }
+
+  if (!needs_update)
+    return;
 
   read_queue_.clear();
   visible_ids_.clear();
@@ -298,7 +305,8 @@ void ThumbnailCache::UpdateVisibleIds(const TabIdList& priority) {
   while (iter != priority.end() && count < ids_size) {
     TabId tab_id = *iter;
     visible_ids_.push_back(tab_id);
-    if (!cache_.Get(tab_id) && !base::ContainsValue(read_queue_, tab_id))
+    if (!cache_.Get(tab_id) && primary_tab_id_ != tab_id &&
+        !base::ContainsValue(read_queue_, tab_id))
       read_queue_.push_back(tab_id);
     iter++;
     count++;

@@ -90,7 +90,8 @@ class TabContentManager : public ThumbnailCacheObserver {
                            const base::android::JavaParamRef<jstring>& jurl);
   void UpdateVisibleIds(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        const base::android::JavaParamRef<jintArray>& priority);
+                        const base::android::JavaParamRef<jintArray>& priority,
+                        jint primary_tab_id);
   void RemoveTabThumbnail(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jint tab_id);
