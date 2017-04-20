@@ -18,7 +18,6 @@
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/local_sync_test_server.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 
@@ -62,7 +61,6 @@ class FakeServerInvalidationService;
 
 namespace net {
 class FakeURLFetcherFactory;
-class ScopedDefaultHostResolverProc;
 class URLFetcherImplFactory;
 }  // namespace net
 
@@ -264,17 +262,9 @@ class SyncTest : public InProcessBrowserTest {
   // on by default yet.
   virtual void AddOptionalTypesToCommandLine(base::CommandLine* cl);
 
-  // BrowserTestBase override. Destroys all the sync clients and sync
-  // profiles created by a test.
+  // BrowserTestBase implementation:
+  void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
-
-  // InProcessBrowserTest override. Changes behavior of the default host
-  // resolver to avoid DNS lookup errors.
-  void SetUpInProcessBrowserTestFixture() override;
-
-  // InProcessBrowserTest override. Resets the host resolver its default
-  // behavior.
-  void TearDownInProcessBrowserTestFixture() override;
 
   // Implementations of the EnableNotifications() and DisableNotifications()
   // functions defined above.
@@ -455,12 +445,6 @@ class SyncTest : public InProcessBrowserTest {
   // set if tests are run against external servers with support for user
   // creation via http requests.
   bool create_gaia_account_at_runtime_;
-
-  // Sync integration tests need to make live DNS requests for access to
-  // GAIA and sync server URLs under google.com. We use a scoped version
-  // to override the default resolver while the test is active.
-  std::unique_ptr<net::ScopedDefaultHostResolverProc>
-      mock_host_resolver_override_;
 
   // Used to start and stop the local test server.
   base::Process test_server_;
