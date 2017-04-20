@@ -238,7 +238,7 @@ class WindowedNotificationObserver : public NotificationObserver {
 
   NotificationSource source_;
   NotificationDetails details_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserver);
 };

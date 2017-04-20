@@ -211,12 +211,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, NavigationOnBackspace) {
   content::RunAllPendingInMessageLoop();
   content::WaitForLoadStop(web_contents);
 
-  // When Widget::Close is called, a task is posted that will destroy the
-  // widget. Here the widget is closed when the navigation commits. Load stop
-  // may occur right after the commit, before the widget is destroyed.
-  // Execute pending tasks to account for this.
-  base::RunLoop().RunUntilIdle();
-
   EXPECT_EQ(nullptr, dialog->GetWidget());
   EXPECT_EQ(original_url, web_contents->GetURL());
 }

@@ -99,7 +99,6 @@ const char kPrefetchAuthPage[] = "/login/prefetch.html";
 
 const char kMultiRealmTestPage[] = "/login/multi_realm.html";
 const int  kMultiRealmTestRealmCount = 2;
-const int kMultiRealmTestAuthRequestsCount = 4;
 
 const char kSingleRealmTestPage[] = "/login/single_realm.html";
 
@@ -463,102 +462,104 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnForward) {
 // Test handling of resources that require authentication even though
 // the page they are included on doesn't.  In this case we should only
 // present the minimal number of prompts necessary for successfully
-// displaying the page.
-class MultiRealmLoginPromptBrowserTest : public LoginPromptBrowserTest {
- public:
-  void TearDownOnMainThread() override {
-    login_prompt_observer_.UnregisterAll();
-    LoginPromptBrowserTest::TearDownOnMainThread();
-  }
-
-  // Load the multi-realm test page, waits for LoginHandlers to be created, then
-  // calls |for_each_realm_func| once for each authentication realm, passing a
-  // LoginHandler for the realm as an argument. The page should stop loading
-  // after that.
-  template <class F>
-  void RunTest(const F& for_each_realm_func);
-
-  NavigationController* GetNavigationController() {
-    return &browser()
-                ->tab_strip_model()
-                ->GetActiveWebContents()
-                ->GetController();
-  }
-
-  LoginPromptBrowserTestObserver* login_prompt_observer() {
-    return &login_prompt_observer_;
-  }
-
- private:
-  LoginPromptBrowserTestObserver login_prompt_observer_;
-};
-
-template <class F>
-void MultiRealmLoginPromptBrowserTest::RunTest(const F& for_each_realm_func) {
+// displaying the page.  First we check whether cancelling works as
+// expected.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmCancellation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_page = embedded_test_server()->GetURL(kMultiRealmTestPage);
 
-  NavigationController* controller = GetNavigationController();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
 
-  login_prompt_observer_.Register(
-      content::Source<NavigationController>(controller));
+  observer.Register(content::Source<NavigationController>(controller));
 
   WindowedLoadStopObserver load_stop_waiter(controller, 1);
 
-  browser()->OpenURL(OpenURLParams(test_page, Referrer(),
-                                   WindowOpenDisposition::CURRENT_TAB,
-                                   ui::PAGE_TRANSITION_TYPED, false));
+  {
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(OpenURLParams(test_page, Referrer(),
+                                     WindowOpenDisposition::CURRENT_TAB,
+                                     ui::PAGE_TRANSITION_TYPED, false));
+    auth_needed_waiter.Wait();
+  }
 
-  // Need to have LoginHandlers created for all requests that need
-  // authentication.
-  while (login_prompt_observer_.handlers().size() <
-         kMultiRealmTestAuthRequestsCount)
-    WindowedAuthNeededObserver(controller).Wait();
+  int n_handlers = 0;
 
-  // Now confirm or cancel auth once per realm.
-  std::set<std::string> seen_realms;
-  for (int i = 0; i < kMultiRealmTestRealmCount; ++i) {
-    auto it = std::find_if(
-        login_prompt_observer_.handlers().begin(),
-        login_prompt_observer_.handlers().end(),
-        [&seen_realms](LoginHandler* handler) {
-          return seen_realms.count(handler->auth_info()->realm) == 0;
-        });
-    ASSERT_TRUE(it != login_prompt_observer_.handlers().end());
-    seen_realms.insert((*it)->auth_info()->realm);
+  while (n_handlers < kMultiRealmTestRealmCount) {
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
 
-    for_each_realm_func(*it);
+    while (!observer.handlers().empty()) {
+      WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+      LoginHandler* handler = *observer.handlers().begin();
+
+      ASSERT_TRUE(handler);
+      n_handlers++;
+      handler->CancelAuth();
+      auth_cancelled_waiter.Wait();
+    }
+
+    if (n_handlers < kMultiRealmTestRealmCount)
+      auth_needed_waiter.Wait();
   }
 
   load_stop_waiter.Wait();
+
+  EXPECT_EQ(kMultiRealmTestRealmCount, n_handlers);
+  EXPECT_EQ(0, observer.auth_supplied_count());
+  EXPECT_LT(0, observer.auth_needed_count());
+  EXPECT_LT(0, observer.auth_cancelled_count());
 }
 
-// Checks that cancelling works as expected.
-IN_PROC_BROWSER_TEST_F(MultiRealmLoginPromptBrowserTest,
-                       MultipleRealmCancellation) {
-  RunTest([this](LoginHandler* handler) {
-    WindowedAuthCancelledObserver waiter(GetNavigationController());
-    handler->CancelAuth();
-    waiter.Wait();
-  });
+// Similar to the MultipleRealmCancellation test above, but tests
+// whether supplying credentials work as exepcted.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmConfirmation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_page = embedded_test_server()->GetURL(kMultiRealmTestPage);
 
-  EXPECT_EQ(0, login_prompt_observer()->auth_supplied_count());
-  EXPECT_LT(0, login_prompt_observer()->auth_needed_count());
-  EXPECT_LT(0, login_prompt_observer()->auth_cancelled_count());
-}
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
 
-// Checks that supplying credentials works as expected.
-IN_PROC_BROWSER_TEST_F(MultiRealmLoginPromptBrowserTest,
-                       MultipleRealmConfirmation) {
-  RunTest([this](LoginHandler* handler) {
-    WindowedAuthSuppliedObserver waiter(GetNavigationController());
-    SetAuthFor(handler);
-    waiter.Wait();
-  });
+  observer.Register(content::Source<NavigationController>(controller));
 
-  EXPECT_LT(0, login_prompt_observer()->auth_needed_count());
-  EXPECT_LT(0, login_prompt_observer()->auth_supplied_count());
-  EXPECT_EQ(0, login_prompt_observer()->auth_cancelled_count());
+  WindowedLoadStopObserver load_stop_waiter(controller, 1);
+  int n_handlers = 0;
+
+  {
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+
+    browser()->OpenURL(OpenURLParams(test_page, Referrer(),
+                                     WindowOpenDisposition::CURRENT_TAB,
+                                     ui::PAGE_TRANSITION_TYPED, false));
+    auth_needed_waiter.Wait();
+  }
+
+  while (n_handlers < kMultiRealmTestRealmCount) {
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+
+    while (!observer.handlers().empty()) {
+      WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
+      LoginHandler* handler = *observer.handlers().begin();
+
+      ASSERT_TRUE(handler);
+      n_handlers++;
+      SetAuthFor(handler);
+      auth_supplied_waiter.Wait();
+    }
+
+    if (n_handlers < kMultiRealmTestRealmCount)
+      auth_needed_waiter.Wait();
+  }
+
+  load_stop_waiter.Wait();
+
+  EXPECT_EQ(kMultiRealmTestRealmCount, n_handlers);
+  EXPECT_LT(0, observer.auth_needed_count());
+  EXPECT_LT(0, observer.auth_supplied_count());
+  EXPECT_EQ(0, observer.auth_cancelled_count());
 }
 
 // Testing for recovery from an incorrect password for the case where

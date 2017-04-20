@@ -201,8 +201,6 @@ void LoginManagerTest::LoginUser(const std::string& user_id) {
   const UserContext user_context = CreateUserContext(user_id);
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(TryToLogin(user_context));
-  // Let LoginDisplayHostImpl delete itself.
-  content::RunAllPendingInMessageLoop();
 }
 
 void LoginManagerTest::AddUser(const std::string& user_id) {

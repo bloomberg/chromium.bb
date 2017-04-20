@@ -151,15 +151,10 @@ class UnloadTest : public InProcessBrowserTest {
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
-  void CheckTitle(const char* expected_title, bool wait = false) {
-    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  void CheckTitle(const char* expected_title) {
     base::string16 expected = base::ASCIIToUTF16(expected_title);
-    base::string16 actual;
-    if (wait)
-      actual = content::TitleWatcher(web_contents, expected).WaitAndGetTitle();
-    else
-      actual = web_contents->GetTitle();
-    EXPECT_EQ(expected, actual);
+    EXPECT_EQ(expected,
+              browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
   }
 
   void NavigateToDataURL(const char* html_content, const char* expected_title) {
@@ -617,13 +612,15 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   content::SimulateMouseClick(
       browser()->tab_strip_model()->GetActiveWebContents(), 0,
       blink::WebMouseEvent::Button::kLeft);
   observer.Wait();
-  // Need to wait for the title, because the initial page (about:blank) can stop
-  // loading before the click handler calls document.write.
-  CheckTitle("popup", true);
+  load_stop_observer.Wait();
+  CheckTitle("popup");
 
   content::WebContentsDestroyedWatcher destroyed_watcher(
       browser()->tab_strip_model()->GetActiveWebContents());

@@ -194,15 +194,16 @@ void ExtensionTestNotificationObserver::WaitForCondition(
     return;
   condition_ = condition;
 
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
+  scoped_refptr<content::MessageLoopRunner> runner(
+      new content::MessageLoopRunner);
+  quit_closure_ = runner->QuitClosure();
 
   std::unique_ptr<base::CallbackList<void()>::Subscription> subscription;
   if (notification_set) {
     subscription = notification_set->callback_list().Add(base::Bind(
         &ExtensionTestNotificationObserver::MaybeQuit, base::Unretained(this)));
   }
-  run_loop.Run();
+  runner->Run();
 
   condition_.Reset();
   quit_closure_.Reset();
