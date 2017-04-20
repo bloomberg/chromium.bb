@@ -23,11 +23,10 @@ class ContextualSearchFieldTrial {
 
   // Gets the size of the surrounding text to return for normal Resolve requests
   // when a Contextual Search is being performed.
-  int GetSurroundingSize();
+  int GetResolveSurroundingSize();
 
-  // Gets the size of the surrounding text to return for Icing when a Contextual
-  // Search is being performed.
-  int GetIcingSurroundingSize();
+  // Gets the size of the surrounding text to return as a sample to Java.
+  int GetSampleSurroundingSize();
 
   // Gets whether sending the URL of the base page is disabled.
   bool IsSendBasePageURLDisabled();
@@ -46,7 +45,7 @@ class ContextualSearchFieldTrial {
   void DisableCache();
 
   // Constant used in tests.
-  static const int kContextualSearchDefaultIcingSurroundingSize;
+  static const int kContextualSearchDefaultSampleSurroundingSize;
 
  protected:
   // Checks if command-line switch of the given name exists.
@@ -82,8 +81,8 @@ class ContextualSearchFieldTrial {
   bool is_surrounding_size_cached_;
   int surrounding_size_;
 
-  bool is_icing_surrounding_size_cached_;
-  int icing_surrounding_size_;
+  bool is_sample_surrounding_size_cached_;
+  int sample_surrounding_size_;
 
   bool is_send_base_page_url_disabled_cached_;
   bool is_send_base_page_url_disabled_;

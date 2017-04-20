@@ -71,14 +71,13 @@ class ContextualSearchManager
   void OnSearchTermResolutionResponse(
       const ResolvedSearchTerm& resolved_search_term);
 
-  // Calls back to Java with the surrounding text to be displayed.
-  void OnSurroundingTextAvailable(const std::string& after_text);
-
-  // Calls back to Java with notification for Icing selection.
-  void OnIcingSelectionAvailable(const std::string& encoding,
-                                 const base::string16& surrounding_text,
-                                 size_t start_offset,
-                                 size_t end_offset);
+  // Calls back to Java with notification when a sample of text surrounding the
+  // selection is available.
+  void OnTextSurroundingSelectionAvailable(
+      const std::string& encoding,
+      const base::string16& surrounding_text,
+      size_t start_offset,
+      size_t end_offset);
 
   // Our global reference to the Java ContextualSearchManager.
   base::android::ScopedJavaGlobalRef<jobject> java_manager_;

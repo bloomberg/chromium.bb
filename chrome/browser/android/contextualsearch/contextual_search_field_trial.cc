@@ -16,8 +16,8 @@ const char kFalseValue[] = "false";
 const char kAnyNonEmptyValue[] = "1";
 const char kContextualSearchResolverUrl[] = "contextual-search-resolver-url";
 const char kContextualSearchSurroundingSizeParamName[] = "surrounding_size";
-const char kContextualSearchIcingSurroundingSizeParamName[] =
-    "icing_surrounding_size";
+const char kContextualSearchSampleSurroundingSizeParamName[] =
+    "sample_surrounding_size";
 const char kContextualSearchSendURLDisabledParamName[] = "disable_send_url";
 const char kContextualSearchDecodeMentionsDisabledParamName[] =
     "disable_decode_mentions";
@@ -31,15 +31,15 @@ const int kContextualSearchDefaultContentSize = 1536;
 
 // static
 const int
-    ContextualSearchFieldTrial::kContextualSearchDefaultIcingSurroundingSize =
+    ContextualSearchFieldTrial::kContextualSearchDefaultSampleSurroundingSize =
         400;
 
 ContextualSearchFieldTrial::ContextualSearchFieldTrial()
     : is_resolver_url_prefix_cached_(false),
       is_surrounding_size_cached_(false),
       surrounding_size_(0),
-      is_icing_surrounding_size_cached_(false),
-      icing_surrounding_size_(0),
+      is_sample_surrounding_size_cached_(false),
+      sample_surrounding_size_(0),
       is_send_base_page_url_disabled_cached_(false),
       is_send_base_page_url_disabled_(false),
       is_decode_mentions_disabled_cached_(false),
@@ -59,18 +59,18 @@ std::string ContextualSearchFieldTrial::GetResolverURLPrefix() {
   return resolver_url_prefix_;
 }
 
-int ContextualSearchFieldTrial::GetSurroundingSize() {
+int ContextualSearchFieldTrial::GetResolveSurroundingSize() {
   return GetIntParamValueOrDefault(kContextualSearchSurroundingSizeParamName,
                                    kContextualSearchDefaultContentSize,
                                    &is_surrounding_size_cached_,
                                    &surrounding_size_);
 }
 
-int ContextualSearchFieldTrial::GetIcingSurroundingSize() {
+int ContextualSearchFieldTrial::GetSampleSurroundingSize() {
   return GetIntParamValueOrDefault(
-      kContextualSearchIcingSurroundingSizeParamName,
-      kContextualSearchDefaultIcingSurroundingSize,
-      &is_icing_surrounding_size_cached_, &icing_surrounding_size_);
+      kContextualSearchSampleSurroundingSizeParamName,
+      kContextualSearchDefaultSampleSurroundingSize,
+      &is_sample_surrounding_size_cached_, &sample_surrounding_size_);
 }
 
 bool ContextualSearchFieldTrial::IsSendBasePageURLDisabled() {

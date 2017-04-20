@@ -51,10 +51,9 @@ class ContextualSearchDelegateTest : public testing::Test {
         base::Bind(
             &ContextualSearchDelegateTest::recordSearchTermResolutionResponse,
             base::Unretained(this)),
-        base::Bind(&ContextualSearchDelegateTest::recordSurroundingText,
-                   base::Unretained(this)),
-        base::Bind(&ContextualSearchDelegateTest::recordIcingSelectionAvailable,
-                   base::Unretained(this))));
+        base::Bind(
+            &ContextualSearchDelegateTest::recordSampleSelectionAvailable,
+            base::Unretained(this))));
   }
 
   void TearDown() override {
@@ -231,7 +230,6 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string caption() { return caption_; }
   std::string thumbnail_url() { return thumbnail_url_; }
   bool do_prevent_preload() { return prevent_preload_; }
-  std::string after_text() { return after_text_; }
   int start_adjust() { return start_adjust_; }
   int end_adjust() { return end_adjust_; }
   std::string context_language() { return context_language_; }
@@ -256,14 +254,10 @@ class ContextualSearchDelegateTest : public testing::Test {
     context_language_ = resolved_search_term.context_language;
   }
 
-  void recordSurroundingText(const std::string& after_text) {
-    after_text_ = after_text;
-  }
-
-  void recordIcingSelectionAvailable(const std::string& encoding,
-                                     const base::string16& surrounding_text,
-                                     size_t start_offset,
-                                     size_t end_offset) {
+  void recordSampleSelectionAvailable(const std::string& encoding,
+                                      const base::string16& surrounding_text,
+                                      size_t start_offset,
+                                      size_t end_offset) {
     // unused.
   }
 
@@ -278,7 +272,6 @@ class ContextualSearchDelegateTest : public testing::Test {
   bool prevent_preload_;
   int start_adjust_;
   int end_adjust_;
-  std::string after_text_;
   std::string context_language_;
 
   base::MessageLoopForIO io_message_loop_;
@@ -488,35 +481,6 @@ TEST_F(ContextualSearchDelegateTest, ContractSelectionInvalid) {
   EXPECT_EQ(0, end_adjust());
 }
 
-TEST_F(ContextualSearchDelegateTest, SurroundingTextHighMaximum) {
-  base::string16 surrounding = base::ASCIIToUTF16("aa bb Bogus dd ee");
-  SetSurroundingContext(surrounding, 6, 11);
-  delegate_->SendSurroundingText(30);  // High maximum # of surrounding chars.
-  EXPECT_EQ("dd ee", after_text());
-}
-
-TEST_F(ContextualSearchDelegateTest, SurroundingTextLowMaximum) {
-  base::string16 surrounding = base::ASCIIToUTF16("aa bb Bogus dd ee");
-  SetSurroundingContext(surrounding, 6, 11);
-  delegate_->SendSurroundingText(3);  // Low maximum # of surrounding chars.
-  // Whitespaces are trimmed.
-  EXPECT_EQ("dd", after_text());
-}
-
-TEST_F(ContextualSearchDelegateTest, SurroundingTextNoBeforeText) {
-  base::string16 surrounding = base::ASCIIToUTF16("Bogus ee ff gg");
-  SetSurroundingContext(surrounding, 0, 5);
-  delegate_->SendSurroundingText(5);
-  EXPECT_EQ("ee f", after_text());
-}
-
-TEST_F(ContextualSearchDelegateTest, SurroundingTextNoAfterText) {
-  base::string16 surrounding = base::ASCIIToUTF16("aa bb Bogus");
-  SetSurroundingContext(surrounding, 6, 11);
-  delegate_->SendSurroundingText(5);
-  EXPECT_EQ("", after_text());
-}
-
 TEST_F(ContextualSearchDelegateTest, ExtractMentionsStartEnd) {
   ListValue mentions_list;
   mentions_list.AppendInteger(1);
@@ -528,28 +492,43 @@ TEST_F(ContextualSearchDelegateTest, ExtractMentionsStartEnd) {
   EXPECT_EQ(2, end);
 }
 
-TEST_F(ContextualSearchDelegateTest, SurroundingTextForIcing) {
+TEST_F(ContextualSearchDelegateTest, SampleSurroundingText) {
   base::string16 sample = base::ASCIIToUTF16("this is Barack Obama in office.");
   int limit_each_side = 3;
   size_t start = 8;
   size_t end = 20;
   base::string16 result =
-      delegate_->SurroundingTextForIcing(sample, limit_each_side, &start, &end);
+      delegate_->SampleSurroundingText(sample, limit_each_side, &start, &end);
   EXPECT_EQ(static_cast<size_t>(3), start);
   EXPECT_EQ(static_cast<size_t>(15), end);
   EXPECT_EQ(base::ASCIIToUTF16("is Barack Obama in"), result);
 }
 
-TEST_F(ContextualSearchDelegateTest, SurroundingTextForIcingNegativeLimit) {
+TEST_F(ContextualSearchDelegateTest, SampleSurroundingTextNegativeLimit) {
   base::string16 sample = base::ASCIIToUTF16("this is Barack Obama in office.");
   int limit_each_side = -2;
   size_t start = 8;
   size_t end = 20;
   base::string16 result =
-      delegate_->SurroundingTextForIcing(sample, limit_each_side, &start, &end);
+      delegate_->SampleSurroundingText(sample, limit_each_side, &start, &end);
   EXPECT_EQ(static_cast<size_t>(0), start);
   EXPECT_EQ(static_cast<size_t>(12), end);
   EXPECT_EQ(base::ASCIIToUTF16("Barack Obama"), result);
+}
+
+TEST_F(ContextualSearchDelegateTest, SampleSurroundingTextSameStartEnd) {
+  base::string16 sample = base::ASCIIToUTF16("this is Barack Obama in office.");
+  int limit_each_side = 3;
+  size_t start = 11;
+  size_t end = 11;
+  base::string16 result =
+      delegate_->SampleSurroundingText(sample, limit_each_side, &start, &end);
+  VLOG(0) << "start " << start;
+  VLOG(0) << "end " << end;
+  VLOG(0) << "result " << result;
+  EXPECT_EQ(static_cast<size_t>(3), start);
+  EXPECT_EQ(static_cast<size_t>(3), end);
+  EXPECT_EQ(base::ASCIIToUTF16("Barack"), result);
 }
 
 TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {

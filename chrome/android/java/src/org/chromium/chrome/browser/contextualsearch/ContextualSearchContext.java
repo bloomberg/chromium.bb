@@ -17,6 +17,9 @@ public class ContextualSearchContext {
     // Pointer to the native instance of this class.
     private long mNativePointer;
 
+    // Whether this context can Resolve a Search Term.
+    private boolean mCanResolve;
+
     /**
      * Constructs a context that cannot resolve a search term and has a small amount of
      * page content.
@@ -24,6 +27,7 @@ public class ContextualSearchContext {
     ContextualSearchContext() {
         mNativePointer = nativeInit();
         mSelection = null;
+        mCanResolve = false;
     }
 
     /**
@@ -37,6 +41,7 @@ public class ContextualSearchContext {
     ContextualSearchContext(String selection, String homeCountry, boolean maySendBasePageUrl) {
         mNativePointer = nativeInit();
         mSelection = selection;
+        mCanResolve = true;
         nativeSetResolveProperties(getNativePointer(), selection, homeCountry, maySendBasePageUrl);
     }
 
@@ -55,6 +60,14 @@ public class ContextualSearchContext {
      */
     String getSelection() {
         return mSelection;
+    }
+
+    /**
+     * @return Whether this context can "Resolve" the Search Term or is just used for a
+     *         non-resolving Tap gesture or a Long-press gesture.
+     */
+    boolean canResolve() {
+        return mCanResolve;
     }
 
     // ============================================================================================

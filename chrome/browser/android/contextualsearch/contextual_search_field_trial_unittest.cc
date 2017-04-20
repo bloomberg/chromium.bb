@@ -79,29 +79,29 @@ ContextualSearchFieldTrialTest::ContextualSearchFieldTrialStubbed::GetParam(
 TEST_F(ContextualSearchFieldTrialTest, IntegerDefaultValue) {
   // Should return this default value.
   EXPECT_EQ(
-      ContextualSearchFieldTrial::kContextualSearchDefaultIcingSurroundingSize,
-      field_trial_->GetIcingSurroundingSize());
+      ContextualSearchFieldTrial::kContextualSearchDefaultSampleSurroundingSize,
+      field_trial_->GetSampleSurroundingSize());
 }
 
 TEST_F(ContextualSearchFieldTrialTest, IntegerParamOverrides) {
   // Params override defaults.
   field_trial_->SetParamValue("500");
-  EXPECT_EQ(500, field_trial_->GetIcingSurroundingSize());
+  EXPECT_EQ(500, field_trial_->GetSampleSurroundingSize());
 }
 
 TEST_F(ContextualSearchFieldTrialTest, IntegerSwitchOverrides) {
   field_trial_->SetParamValue("500");
   // Switches override params.
   field_trial_->SetSwitchValue("200");
-  EXPECT_EQ(200, field_trial_->GetIcingSurroundingSize());
+  EXPECT_EQ(200, field_trial_->GetSampleSurroundingSize());
 }
 
 TEST_F(ContextualSearchFieldTrialTest, IntegerJunkIgnored) {
   // A junk value effectively resets the switch.
   field_trial_->SetSwitchValue("foo");
   EXPECT_EQ(
-      ContextualSearchFieldTrial::kContextualSearchDefaultIcingSurroundingSize,
-      field_trial_->GetIcingSurroundingSize());
+      ContextualSearchFieldTrial::kContextualSearchDefaultSampleSurroundingSize,
+      field_trial_->GetSampleSurroundingSize());
 }
 
 TEST_F(ContextualSearchFieldTrialTest, BooleanDefaultValue) {

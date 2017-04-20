@@ -38,15 +38,13 @@ class ContextualSearchDelegate
     : public net::URLFetcherDelegate,
       public base::SupportsWeakPtr<ContextualSearchDelegate> {
  public:
-  // Callback that provides the surrounding text past the selection for the UX.
-  typedef base::Callback<void(const std::string&)> SurroundingTextCallback;
   // Provides the Resolved Search Term, called when the Resolve Request returns.
   typedef base::Callback<void(const ResolvedSearchTerm&)>
       SearchTermResolutionCallback;
-  // Provides limited surrounding text for icing.
+  // Provides text surrounding the selection to Java.
   typedef base::Callback<
       void(const std::string&, const base::string16&, size_t, size_t)>
-      IcingCallback;
+      SurroundingTextCallback;
 
   // ID used in creating URLFetcher for Contextual Search results.
   static const int kContextualSearchURLFetcherID;
@@ -57,8 +55,7 @@ class ContextualSearchDelegate
       net::URLRequestContextGetter* url_request_context,
       TemplateURLService* template_url_service,
       const SearchTermResolutionCallback& search_term_callback,
-      const SurroundingTextCallback& surrounding_callback,
-      const IcingCallback& icing_callback);
+      const SurroundingTextCallback& surrounding_callback);
   ~ContextualSearchDelegate() override;
 
   // Gathers surrounding text and saves it locally in the given context.
@@ -97,10 +94,11 @@ class ContextualSearchDelegate
                            SurroundingTextNoAfterText);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
                            ExtractMentionsStartEnd);
+  FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest, SampleSurroundingText);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
-                           SurroundingTextForIcing);
+                           SampleSurroundingTextNegativeLimit);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
-                           SurroundingTextForIcingNegativeLimit);
+                           SampleSurroundingTextSameStartEnd);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
                            DecodeSearchTermFromJsonResponse);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest, DecodeStringMentions);
@@ -123,22 +121,10 @@ class ContextualSearchDelegate
       const std::string& base_page_url,
       const bool may_send_base_page_url);
 
-  // Callback for GatherAndSaveSurroundingText, called when surrounding text is
-  // available.
   void OnTextSurroundingSelectionAvailable(
-      const base::string16& surrounding_text,
-      int start_offset,
-      int end_offset);
-
-  void SaveSurroundingText(
     const base::string16& surrounding_text,
     int start_offset,
     int end_offset);
-
-  // Will call back to the manager with the proper surrounding text to be shown
-  // in the UI. Will return a maximum of |max_surrounding_chars| characters for
-  // each of the segments.
-  void SendSurroundingText(int max_surrounding_chars);
 
   // Populates the discourse context and adds it to the HTTP header of the
   // search term resolution request.
@@ -183,8 +169,8 @@ class ContextualSearchDelegate
                                int* startResult,
                                int* endResult);
 
-  // Generates a subset of the given surrounding_text string, for Icing
-  // integration.
+  // Generates a subset of the given surrounding_text string, for usage from
+  // Java.
   // |surrounding_text| the entire text context that contains the selection.
   // |padding_each_side| the number of characters of padding desired on each
   // side of the selection (negative values treated as 0).
@@ -195,10 +181,10 @@ class ContextualSearchDelegate
   // of the selection in the function result.
   // |return| the trimmed surrounding text with selection at the
   // updated start/end offsets.
-  base::string16 SurroundingTextForIcing(const base::string16& surrounding_text,
-                                         int padding_each_side,
-                                         size_t* start,
-                                         size_t* end);
+  base::string16 SampleSurroundingText(const base::string16& surrounding_text,
+                                       int padding_each_side,
+                                       size_t* start,
+                                       size_t* end);
 
   // For testing.
   void SetContextForTesting(
@@ -222,10 +208,7 @@ class ContextualSearchDelegate
   SearchTermResolutionCallback search_term_callback_;
 
   // The callback for notifications of surrounding text being available.
-  SurroundingTextCallback surrounding_callback_;
-
-  // The callback for notifications of Icing selection being available.
-  IcingCallback icing_callback_;
+  SurroundingTextCallback surrounding_text_callback_;
 
   // Used to hold the context until an upcoming search term request is started.
   // Owned by the Java ContextualSearchContext.

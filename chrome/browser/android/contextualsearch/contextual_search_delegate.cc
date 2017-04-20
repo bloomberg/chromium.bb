@@ -65,9 +65,6 @@ const char kXssiEscape[] = ")]}'\n";
 const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
 const char kDoPreventPreloadValue[] = "1";
 
-// The number of characters that should be shown after the selected expression.
-const int kSurroundingSizeForUI = 60;
-
 // The version of the Contextual Cards API that we want to invoke.
 const int kContextualCardsBarIntegration = 1;
 const int kContextualCardsSingleAction = 2;
@@ -85,13 +82,11 @@ ContextualSearchDelegate::ContextualSearchDelegate(
     const ContextualSearchDelegate::SearchTermResolutionCallback&
         search_term_callback,
     const ContextualSearchDelegate::SurroundingTextCallback&
-        surrounding_callback,
-    const ContextualSearchDelegate::IcingCallback& icing_callback)
+        surrounding_text_callback)
     : url_request_context_(url_request_context),
       template_url_service_(template_url_service),
       search_term_callback_(search_term_callback),
-      surrounding_callback_(surrounding_callback),
-      icing_callback_(icing_callback) {
+      surrounding_text_callback_(surrounding_text_callback) {
   field_trial_.reset(new ContextualSearchFieldTrial());
 }
 
@@ -111,8 +106,8 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
 
   context_->SetBasePageEncoding(web_contents->GetEncoding());
   int surroundingTextSize = context_->CanResolve()
-                                ? field_trial_->GetSurroundingSize()
-                                : field_trial_->GetIcingSurroundingSize();
+                                ? field_trial_->GetResolveSurroundingSize()
+                                : field_trial_->GetSampleSurroundingSize();
   RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
   if (focused_frame) {
     focused_frame->RequestTextSurroundingSelection(callback,
@@ -301,16 +296,6 @@ void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
   if (context_ == nullptr)
     return;
 
-  SaveSurroundingText(surrounding_text, start_offset, end_offset);
-  if (context_->CanResolve())
-    SendSurroundingText(kSurroundingSizeForUI);
-}
-
-void ContextualSearchDelegate::SaveSurroundingText(
-    const base::string16& surrounding_text,
-    int start_offset,
-    int end_offset) {
-  DCHECK(context_ != nullptr);
   // Sometimes the surroundings are 0, 0, '', so fall back on the selection.
   // See crbug.com/393100.
   bool use_selection = false;
@@ -330,35 +315,21 @@ void ContextualSearchDelegate::SaveSurroundingText(
   context_->SetSelectionSurroundings(start_offset, end_offset,
                                      surrounding_text_or_selection);
 
-  // Call the Icing callback with a shortened copy of the surroundings.
-  int icing_surrounding_size = field_trial_->GetIcingSurroundingSize();
+  // Call the Java surrounding callback with a shortened copy of the
+  // surroundings to use as a sample of the surrounding text.
+  int sample_surrounding_size = field_trial_->GetSampleSurroundingSize();
+  DCHECK(sample_surrounding_size >= 0);
+  DCHECK(start_offset <= end_offset);
   size_t selection_start = start_offset;
   size_t selection_end = end_offset;
-  if (icing_surrounding_size >= 0 && selection_start <= selection_end) {
-    int icing_padding_each_side = icing_surrounding_size / 2;
-    base::string16 icing_surrounding_text = SurroundingTextForIcing(
-        surrounding_text_or_selection, icing_padding_each_side,
-        &selection_start, &selection_end);
-    if (selection_start <= selection_end)
-      icing_callback_.Run(context_->GetBasePageEncoding(),
-                          icing_surrounding_text, selection_start,
-                          selection_end);
-  }
-}
-
-void ContextualSearchDelegate::SendSurroundingText(int max_surrounding_chars) {
-  DCHECK(context_ != nullptr);
-  const base::string16& surrounding = context_->GetSurroundingText();
-
-  // Determine the text after the selection.
-  int surrounding_length = surrounding.length();  // Cast to int.
-  int num_after_characters = std::min(
-      surrounding_length - context_->GetEndOffset(), max_surrounding_chars);
-  base::string16 after_text =
-      surrounding.substr(context_->GetEndOffset(), num_after_characters);
-
-  base::TrimWhitespace(after_text, base::TRIM_ALL, &after_text);
-  surrounding_callback_.Run(UTF16ToUTF8(after_text));
+  int sample_padding_each_side = sample_surrounding_size / 2;
+  base::string16 sample_surrounding_text = SampleSurroundingText(
+      surrounding_text_or_selection, sample_padding_each_side, &selection_start,
+      &selection_end);
+  DCHECK(selection_start <= selection_end);
+  surrounding_text_callback_.Run(context_->GetBasePageEncoding(),
+                                 sample_surrounding_text, selection_start,
+                                 selection_end);
 }
 
 void ContextualSearchDelegate::SetDiscourseContextAndAddToHeader(
@@ -564,7 +535,7 @@ void ContextualSearchDelegate::ExtractMentionsStartEnd(
     *endResult = std::max(0, int_value);
 }
 
-base::string16 ContextualSearchDelegate::SurroundingTextForIcing(
+base::string16 ContextualSearchDelegate::SampleSurroundingText(
     const base::string16& surrounding_text,
     int padding_each_side,
     size_t* start,

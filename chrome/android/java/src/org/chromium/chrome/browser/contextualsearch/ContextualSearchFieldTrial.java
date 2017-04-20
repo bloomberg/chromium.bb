@@ -60,6 +60,8 @@ public class ContextualSearchFieldTrial {
 
     // Privacy-related flags
     private static final String DISABLE_SEND_HOME_COUNTRY = "disable_send_home_country";
+    private static final String DISABLE_PAGE_CONTENT_NOTIFICATION =
+            "disable_page_content_notification";
 
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
@@ -78,6 +80,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsAmpAsSeparateTabDisabled;
     private static Boolean sContextualSearchSingleActionsEnabled;
     private static Boolean sIsSendHomeCountryDisabled;
+    private static Boolean sIsPageContentNotificationDisabled;
     private static Boolean sContextualSearchUrlActionsEnabled;
 
     /**
@@ -285,6 +288,17 @@ public class ContextualSearchFieldTrial {
             sIsSendHomeCountryDisabled = getBooleanParam(DISABLE_SEND_HOME_COUNTRY);
         }
         return sIsSendHomeCountryDisabled.booleanValue();
+    }
+
+    /**
+     * @return Whether sending the page content notifications to observers (e.g. icing for
+     *         conversational search) is disabled.
+     */
+    static boolean isPageContentNotificationDisabled() {
+        if (sIsPageContentNotificationDisabled == null) {
+            sIsPageContentNotificationDisabled = getBooleanParam(DISABLE_PAGE_CONTENT_NOTIFICATION);
+        }
+        return sIsPageContentNotificationDisabled.booleanValue();
     }
 
     // ---------------

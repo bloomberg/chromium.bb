@@ -46,9 +46,7 @@ ContextualSearchManager::ContextualSearchManager(JNIEnv* env,
       TemplateURLServiceFactory::GetForProfile(profile),
       base::Bind(&ContextualSearchManager::OnSearchTermResolutionResponse,
                  base::Unretained(this)),
-      base::Bind(&ContextualSearchManager::OnSurroundingTextAvailable,
-                 base::Unretained(this)),
-      base::Bind(&ContextualSearchManager::OnIcingSelectionAvailable,
+      base::Bind(&ContextualSearchManager::OnTextSurroundingSelectionAvailable,
                  base::Unretained(this))));
 }
 
@@ -148,16 +146,7 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
       resolved_search_term.quick_action_category);
 }
 
-void ContextualSearchManager::OnSurroundingTextAvailable(
-    const std::string& after_text) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> j_after_text =
-      base::android::ConvertUTF8ToJavaString(env, after_text.c_str());
-  Java_ContextualSearchManager_onSurroundingTextAvailable(env, java_manager_,
-                                                          j_after_text);
-}
-
-void ContextualSearchManager::OnIcingSelectionAvailable(
+void ContextualSearchManager::OnTextSurroundingSelectionAvailable(
     const std::string& encoding,
     const base::string16& surrounding_text,
     size_t start_offset,
@@ -167,7 +156,7 @@ void ContextualSearchManager::OnIcingSelectionAvailable(
       base::android::ConvertUTF8ToJavaString(env, encoding.c_str());
   base::android::ScopedJavaLocalRef<jstring> j_surrounding_text =
       base::android::ConvertUTF16ToJavaString(env, surrounding_text.c_str());
-  Java_ContextualSearchManager_onIcingSelectionAvailable(
+  Java_ContextualSearchManager_onTextSurroundingSelectionAvailable(
       env, java_manager_, j_encoding, j_surrounding_text, start_offset,
       end_offset);
 }

@@ -609,31 +609,32 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     }
 
     /**
-     * Called when surrounding text is available.
-     * @param afterText to be shown after the selected word.
+     * Called by native code when the surrounding text and selection range are available.
+     * @param encoding The original encoding used on the base page.
+     * @param surroundingText The Text surrounding the selection.
+     * @param startOffset The start offset of the selection.
+     * @param endOffset The end offset of the selection.
      */
     @CalledByNative
-    private void onSurroundingTextAvailable(final String afterText) {
-        String selection = mSelectionController.getSelectedText();
-        // TODO(donnd): check if panel has been requested to show.
-        // We used to call mSearchPanel.isShowing() here, but that's unreliable (crbug.com/669600).
-        mSearchPanel.setContextDetails(selection, afterText);
-        mNetworkCommunicator.startSearchTermResolutionRequest(selection);
-    }
-
-    /**
-     * Called by native code when a selection is available to share with Icing (for Conversational
-     * Search).
-     */
-    @CalledByNative
-    private void onIcingSelectionAvailable(
+    private void onTextSurroundingSelectionAvailable(
             final String encoding, final String surroundingText, int startOffset, int endOffset) {
-        GSAContextDisplaySelection selection =
-                new GSAContextDisplaySelection(encoding, surroundingText, startOffset, endOffset);
+        if (mContext != null && mContext.canResolve() && endOffset <= surroundingText.length()) {
+            String afterText = surroundingText.substring(endOffset);
+            String selection = mSelectionController.getSelectedText();
+            // TODO(donnd): check if panel has been requested to show.
+            // We used to call mSearchPanel.isShowing() here, but that's unreliable
+            // (crbug.com/669600).
+            mSearchPanel.setContextDetails(selection, afterText);
+            mNetworkCommunicator.startSearchTermResolutionRequest(selection);
+        }
+        if (!ContextualSearchFieldTrial.isPageContentNotificationDisabled()) {
+            GSAContextDisplaySelection selection = new GSAContextDisplaySelection(
+                    encoding, surroundingText, startOffset, endOffset);
+            notifyShowContextualSearch(selection);
+        }
         mSearchPanel.setWasSelectionPartOfUrl(
                 ContextualSearchSelectionController.isSelectionPartOfUrl(
                         surroundingText, startOffset, endOffset));
-        notifyShowContextualSearch(selection);
     }
 
     /**
@@ -906,8 +907,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     @Override
     public String getTranslateServiceTargetLanguage() {
         // TODO(donnd): remove once issue 607127 has been resolved.
-        if (mNativeContextualSearchManagerPtr == 0)
+        if (mNativeContextualSearchManagerPtr == 0) {
             throw new RuntimeException("mNativeContextualSearchManagerPtr is 0!");
+        }
         return nativeGetTargetLanguage(mNativeContextualSearchManagerPtr);
     }
 
