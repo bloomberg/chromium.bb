@@ -50,7 +50,7 @@ class DevToolsTargetsUIHandler {
 
  protected:
   std::unique_ptr<base::DictionaryValue> Serialize(
-      scoped_refptr<content::DevToolsAgentHost> host);
+      content::DevToolsAgentHost* host);
   void SendSerializedTargets(const base::ListValue& list);
 
   using TargetMap =

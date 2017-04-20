@@ -3811,6 +3811,7 @@ test("unit_tests") {
   if (!is_android) {
     sources += [
       "../browser/devtools/devtools_ui_bindings_unittest.cc",
+      "../browser/devtools/serialize_host_descriptions_unittest.cc",
       "../browser/download/download_dir_policy_handler_unittest.cc",
       "../browser/lifetime/keep_alive_registry_unittest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",

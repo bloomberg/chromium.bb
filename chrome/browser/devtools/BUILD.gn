@@ -132,6 +132,8 @@ static_library("devtools") {
       "global_confirm_info_bar.h",
       "remote_debugging_server.cc",
       "remote_debugging_server.h",
+      "serialize_host_descriptions.cc",
+      "serialize_host_descriptions.h",
       "url_constants.cc",
       "url_constants.h",
     ]
