@@ -494,7 +494,7 @@ int av1_rc_regulate_q(const AV1_COMP *cpi, int target_bits_per_frame,
   // Calculate required scaling factor based on target frame size and size of
   // frame produced using previous Q.
   target_bits_per_mb =
-      ((uint64_t)target_bits_per_frame << BPER_MB_NORMBITS) / cm->MBs;
+      (int)((uint64_t)target_bits_per_frame << BPER_MB_NORMBITS) / cm->MBs;
 
   i = active_best_quality;
 
@@ -1165,8 +1165,8 @@ void av1_rc_set_frame_target(AV1_COMP *cpi, int target) {
                                   rate_thresh_mult[rc->frame_size_selector]);
 
   // Target rate per SB64 (including partial SB64s.
-  rc->sb64_target_rate =
-      ((int64_t)rc->this_frame_target * 64 * 64) / (cm->width * cm->height);
+  rc->sb64_target_rate = (int)((int64_t)rc->this_frame_target * 64 * 64) /
+                         (cm->width * cm->height);
 }
 
 static void update_alt_ref_frame_stats(AV1_COMP *cpi) {

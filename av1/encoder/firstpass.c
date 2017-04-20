@@ -1186,7 +1186,8 @@ static int get_twopass_worst_quality(const AV1_COMP *cpi,
     const double speed_term = 1.0 + 0.04 * oxcf->speed;
     double ediv_size_correction;
     const int target_norm_bits_per_mb =
-        ((uint64_t)section_target_bandwidth << BPER_MB_NORMBITS) / active_mbs;
+        (int)((uint64_t)section_target_bandwidth << BPER_MB_NORMBITS) /
+        active_mbs;
     int q;
 
     // Larger image formats are expected to be a little harder to code
