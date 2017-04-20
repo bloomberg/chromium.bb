@@ -93,8 +93,8 @@ class NoStatePrefetchBrowserTest
         base::FilePath(), base::FilePath::FromUTF8Unsafe(path_str));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&prerender::test_utils::CreateCountingInterceptorOnIO, url,
-                   url_file, counter->AsWeakPtr()));
+        base::BindOnce(&prerender::test_utils::CreateCountingInterceptorOnIO,
+                       url, url_file, counter->AsWeakPtr()));
   }
 
   base::SimpleTestTickClock* OverridePrerenderManagerTimeTicks() {
@@ -117,8 +117,8 @@ class NoStatePrefetchBrowserTest
       base::RunLoop wait_loop;
       content::BrowserThread::PostTask(
           content::BrowserThread::IO, FROM_HERE,
-          base::Bind(WaitForAppcacheOnIO, manifest_url, appcache_service,
-                     wait_loop.QuitClosure(), &found_manifest));
+          base::BindOnce(WaitForAppcacheOnIO, manifest_url, appcache_service,
+                         wait_loop.QuitClosure(), &found_manifest));
       wait_loop.Run();
     } while (!found_manifest);
   }

@@ -120,10 +120,10 @@ void PrerenderResourceThrottle::WillStartRequest(bool* defer) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrerenderResourceThrottle::WillStartRequestOnUI, AsWeakPtr(),
-                 request_->method(), info->GetResourceType(), request_->url(),
-                 info->GetWebContentsGetterForRequest(),
-                 prerender_throttle_info_));
+      base::BindOnce(&PrerenderResourceThrottle::WillStartRequestOnUI,
+                     AsWeakPtr(), request_->method(), info->GetResourceType(),
+                     request_->url(), info->GetWebContentsGetterForRequest(),
+                     prerender_throttle_info_));
 }
 
 void PrerenderResourceThrottle::WillRedirectRequest(
@@ -138,10 +138,11 @@ void PrerenderResourceThrottle::WillRedirectRequest(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrerenderResourceThrottle::WillRedirectRequestOnUI,
-                 AsWeakPtr(), header, info->GetResourceType(), info->IsAsync(),
-                 IsNoStoreResponse(*request_), redirect_info.new_url,
-                 info->GetWebContentsGetterForRequest()));
+      base::BindOnce(&PrerenderResourceThrottle::WillRedirectRequestOnUI,
+                     AsWeakPtr(), header, info->GetResourceType(),
+                     info->IsAsync(), IsNoStoreResponse(*request_),
+                     redirect_info.new_url,
+                     info->GetWebContentsGetterForRequest()));
 }
 
 void PrerenderResourceThrottle::WillProcessResponse(bool* defer) {
@@ -157,10 +158,10 @@ void PrerenderResourceThrottle::WillProcessResponse(bool* defer) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrerenderResourceThrottle::WillProcessResponseOnUI,
-                 content::IsResourceTypeFrame(info->GetResourceType()),
-                 IsNoStoreResponse(*request_), redirect_count,
-                 prerender_throttle_info_));
+      base::BindOnce(&PrerenderResourceThrottle::WillProcessResponseOnUI,
+                     content::IsResourceTypeFrame(info->GetResourceType()),
+                     IsNoStoreResponse(*request_), redirect_count,
+                     prerender_throttle_info_));
 }
 
 const char* PrerenderResourceThrottle::GetNameForLogging() const {
@@ -202,8 +203,8 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
                                  prerender_contents->prerender_manager());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PrerenderResourceThrottle::SetPrerenderMode, throttle,
-                   prerender_contents->prerender_mode()));
+        base::BindOnce(&PrerenderResourceThrottle::SetPrerenderMode, throttle,
+                       prerender_contents->prerender_mode()));
 
     // Abort any prerenders that spawn requests that use unsupported HTTP
     // methods or schemes.
@@ -250,9 +251,9 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(cancel ? &PrerenderResourceThrottle::Cancel
-                        : &PrerenderResourceThrottle::ResumeHandler,
-                 throttle));
+      base::BindOnce(cancel ? &PrerenderResourceThrottle::Cancel
+                            : &PrerenderResourceThrottle::ResumeHandler,
+                     throttle));
 }
 
 // static
@@ -297,9 +298,9 @@ void PrerenderResourceThrottle::WillRedirectRequestOnUI(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(cancel ? &PrerenderResourceThrottle::Cancel
-                        : &PrerenderResourceThrottle::ResumeHandler,
-                 throttle));
+      base::BindOnce(cancel ? &PrerenderResourceThrottle::Cancel
+                            : &PrerenderResourceThrottle::ResumeHandler,
+                     throttle));
 }
 
 // static

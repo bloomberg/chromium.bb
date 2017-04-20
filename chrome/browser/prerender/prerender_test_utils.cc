@@ -99,7 +99,7 @@ class CountingInterceptor : public net::URLRequestInterceptor {
   void RequestStarted() {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&RequestCounter::RequestStarted, counter_));
+        base::BindOnce(&RequestCounter::RequestStarted, counter_));
   }
 
  private:
@@ -119,8 +119,8 @@ class CountingInterceptorWithCallback : public net::URLRequestInterceptor {
                          base::Callback<void(net::URLRequest*)> callback_io) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&CountingInterceptorWithCallback::CreateAndAddOnIO, url,
-                   counter->AsWeakPtr(), callback_io));
+        base::BindOnce(&CountingInterceptorWithCallback::CreateAndAddOnIO, url,
+                       counter->AsWeakPtr(), callback_io));
   }
 
   // net::URLRequestInterceptor:
@@ -133,7 +133,7 @@ class CountingInterceptorWithCallback : public net::URLRequestInterceptor {
     // Ping the request counter.
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&RequestCounter::RequestStarted, counter_));
+        base::BindOnce(&RequestCounter::RequestStarted, counter_));
     return nullptr;
   }
 
@@ -295,8 +295,8 @@ bool FakeSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& gurl,
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone, this,
-                 gurl, client));
+      base::BindOnce(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
+                     this, gurl, client));
   return false;
 }
 
@@ -827,8 +827,8 @@ void CreateHangingFirstRequestInterceptor(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, url, file,
-                 callback_io));
+      base::BindOnce(&CreateHangingFirstRequestInterceptorOnIO, url, file,
+                     callback_io));
 }
 
 }  // namespace test_utils

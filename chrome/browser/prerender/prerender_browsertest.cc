@@ -314,8 +314,8 @@ class ChannelDestructionWatcher {
     ~DestructionMessageFilter() override {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&ChannelDestructionWatcher::OnChannelDestroyed,
-                     base::Unretained(watcher_)));
+          base::BindOnce(&ChannelDestructionWatcher::OnChannelDestroyed,
+                         base::Unretained(watcher_)));
     }
 
     bool OnMessageReceived(const IPC::Message& message) override {
@@ -2462,8 +2462,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
   RequestCounter unload_counter;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingInterceptorOnIO,
-                 unload_url, empty_file, unload_counter.AsWeakPtr()));
+      base::BindOnce(&CreateCountingInterceptorOnIO, unload_url, empty_file,
+                     unload_counter.AsWeakPtr()));
 
   set_loader_path("/prerender/prerender_loader_with_unload.html");
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
@@ -2484,8 +2484,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBeforeUnload) {
   RequestCounter request_counter;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingInterceptorOnIO,
-                 beforeunload_url, empty_file, request_counter.AsWeakPtr()));
+      base::BindOnce(&CreateCountingInterceptorOnIO, beforeunload_url,
+                     empty_file, request_counter.AsWeakPtr()));
 
   set_loader_path("/prerender/prerender_loader_with_beforeunload.html");
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
@@ -3003,7 +3003,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   base::FilePath file(GetTestPath("prerender_page.html"));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateMockInterceptorOnIO, webstore_url, file));
+      base::BindOnce(&CreateMockInterceptorOnIO, webstore_url, file));
 
   PrerenderTestURL(CreateClientRedirect(webstore_url.spec()),
                    FINAL_STATUS_OPEN_URL, 1);
@@ -3196,8 +3196,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPing) {
   RequestCounter ping_counter;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingInterceptorOnIO,
-                 kPingURL, empty_file, ping_counter.AsWeakPtr()));
+      base::BindOnce(&CreateCountingInterceptorOnIO, kPingURL, empty_file,
+                     ping_counter.AsWeakPtr()));
 
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   OpenDestURLViaClickPing(kPingURL);
@@ -3288,8 +3288,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
   RequestCounter done_counter;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingInterceptorOnIO,
-                 done_url, empty_file, done_counter.AsWeakPtr()));
+      base::BindOnce(&CreateCountingInterceptorOnIO, done_url, empty_file,
+                     done_counter.AsWeakPtr()));
   // Loading may finish or be interrupted. The final result is important only.
   DisableLoadEventCheck();
   // TestPrenderContents is always created before the Autosignin JS can run, so
@@ -3365,7 +3365,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourcePriorityOverlappingSwap) {
       *out_request = request;
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             [](net::RequestPriority priority,
                net::RequestPriority* out_priority, base::Closure closure) {
               *out_priority = priority;
@@ -3408,8 +3408,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourcePriorityOverlappingSwap) {
     base::RunLoop loop;
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(io_lambda, nullptr, base::Unretained(&priority),
-                   loop.QuitClosure(), base::Unretained(url_request)));
+        base::BindOnce(io_lambda, nullptr, base::Unretained(&priority),
+                       loop.QuitClosure(), base::Unretained(url_request)));
     loop.Run();
   } while (priority <= net::IDLE);
   EXPECT_GT(priority, net::IDLE);

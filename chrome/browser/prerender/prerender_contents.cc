@@ -763,7 +763,7 @@ void PrerenderContents::PrepareForUse() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResumeThrottles, resource_throttles_, idle_resources_));
+      base::BindOnce(&ResumeThrottles, resource_throttles_, idle_resources_));
   resource_throttles_.clear();
   idle_resources_.clear();
 }

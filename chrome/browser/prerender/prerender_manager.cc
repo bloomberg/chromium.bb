@@ -121,8 +121,9 @@ class PrerenderManager::OnCloseWebContentsDeleter
     tab_->SetDelegate(this);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&OnCloseWebContentsDeleter::ScheduleWebContentsForDeletion,
-                   AsWeakPtr(), true),
+        base::BindOnce(
+            &OnCloseWebContentsDeleter::ScheduleWebContentsForDeletion,
+            AsWeakPtr(), true),
         base::TimeDelta::FromSeconds(kDeleteWithExtremePrejudiceSeconds));
   }
 
@@ -1081,8 +1082,8 @@ void PrerenderManager::PeriodicCleanup() {
 void PrerenderManager::PostCleanupTask() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PrerenderManager::PeriodicCleanup,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&PrerenderManager::PeriodicCleanup,
+                                weak_factory_.GetWeakPtr()));
 }
 
 base::TimeTicks PrerenderManager::GetExpiryTimeForNewPrerender(

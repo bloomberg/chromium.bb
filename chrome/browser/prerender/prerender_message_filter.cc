@@ -95,7 +95,8 @@ void PrerenderMessageFilter::OverrideThreadForMessage(
 void PrerenderMessageFilter::OnChannelClosing() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrerenderMessageFilter::OnChannelClosingInUIThread, this));
+      base::BindOnce(&PrerenderMessageFilter::OnChannelClosingInUIThread,
+                     this));
 }
 
 void PrerenderMessageFilter::OnDestruct() const {
