@@ -8,6 +8,7 @@ group("all_tests") {
   testonly = true
   deps = [
     ":ios_chrome_device_check_egtests",
+    ":ios_chrome_external_url_egtests",
     ":ios_chrome_flaky_egtests",
     ":ios_chrome_integration_egtests",
     ":ios_chrome_multitasking_egtests",
@@ -26,7 +27,6 @@ chrome_ios_eg_test("ios_chrome_integration_egtests") {
     "//ios/chrome/browser/device_sharing:eg_tests",
     "//ios/chrome/browser/metrics:eg_tests",
     "//ios/chrome/browser/net:eg_tests",
-    "//ios/chrome/browser/translate:eg_tests",
   ]
 }
 
@@ -133,6 +133,12 @@ chrome_ios_eg_test("ios_chrome_smoke_egtests") {
     "//ios/third_party/earl_grey",
   ]
   libs = [ "XCTest.framework" ]
+}
+
+chrome_ios_eg_test("ios_chrome_external_url_egtests") {
+  deps = [
+    "//ios/chrome/browser/translate:external_url_eg_tests",
+  ]
 }
 
 source_set("test_support") {

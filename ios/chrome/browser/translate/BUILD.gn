@@ -73,7 +73,12 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_tests") {
+# Those tests do not use external URLs but fail if the network is unavailable
+# as they explicitly check whether the network is up or not; it is not possible
+# to safely instantiate a net::NetworkChangeNotifier::DisableForTest to disable
+# those checks as this in not thread-safe. See http://crbug.com/709131 for more
+# details.
+source_set("external_url_eg_tests") {
   testonly = true
   sources = [
     "translate_egtest.mm",
