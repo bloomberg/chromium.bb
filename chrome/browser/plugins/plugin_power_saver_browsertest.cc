@@ -13,7 +13,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -569,10 +568,6 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BlockTinyPlugins) {
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_1");
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_2");
   VerifyPluginIsPlaceholderOnly("completely_obscured");
-
-  TabSpecificContentSettings* tab_specific_content_settings =
-      TabSpecificContentSettings::FromWebContents(GetActiveWebContents());
-  EXPECT_FALSE(tab_specific_content_settings->blocked_plugin_names().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabTinyPlugins) {
@@ -616,16 +611,10 @@ class PluginPowerSaverFilterSameOriginTinyPluginsBrowserTest
   base::test::ScopedFeatureList feature_list;
 };
 
-// Flaky on every platform. crbug.com/680544, crbug.com/682039
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverFilterSameOriginTinyPluginsBrowserTest,
-                       DISABLED_BlockSameOriginTinyPlugin) {
+                       BlockSameOriginTinyPlugin) {
   LoadHTML("/same_origin_tiny_plugin.html");
-
   VerifyPluginIsPlaceholderOnly("tiny_same_origin");
-
-  TabSpecificContentSettings* tab_specific_content_settings =
-      TabSpecificContentSettings::FromWebContents(GetActiveWebContents());
-  EXPECT_FALSE(tab_specific_content_settings->blocked_plugin_names().empty());
 }
 
 // Separate test case with HTML By Default feature flag on.
