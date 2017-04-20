@@ -6,7 +6,7 @@
 
 function logToConsole()
 {
-    var obj = {a: 1, b: "foo", c: null};
+    var obj = {a: 1, b: "foo", c: null, d: 2};
     console.log(obj);
 }
 
@@ -41,6 +41,13 @@ var test = function()
     }
 
     function step5()
+    {
+        var valueElements = getValueElements();
+        doubleClickTypeAndEnter(valueElements[3], "{x: 2}");
+        InspectorTest.waitForRemoteObjectsConsoleMessages(step6);
+    }
+
+    function step6()
     {
         InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
         InspectorTest.completeTest();
