@@ -41,6 +41,10 @@ void ScreenshotCallback(
 }  // namespace
 
 // static
+const char ArcVoiceInteractionFrameworkService::kArcServiceName[] =
+    "arc::ArcVoiceInteractionFrameworkService";
+
+// static
 bool ArcVoiceInteractionFrameworkService::IsVoiceInteractionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableVoiceInteraction);
@@ -75,6 +79,8 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
 void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ash::Shell::Get()->accelerator_controller()->UnregisterAll(this);
+  if (!metalayer_closed_callback_.is_null())
+    base::ResetAndReturn(&metalayer_closed_callback_).Run();
 }
 
 bool ArcVoiceInteractionFrameworkService::AcceleratorPressed(
@@ -82,12 +88,14 @@ bool ArcVoiceInteractionFrameworkService::AcceleratorPressed(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (accelerator.IsShiftDown()) {
+    // Temporary, used for debugging.
+    // Does not take into account or update the palette state.
     mojom::VoiceInteractionFrameworkInstance* framework_instance =
         ARC_GET_INSTANCE_FOR_METHOD(
             arc_bridge_service()->voice_interaction_framework(),
-            ToggleMetalayer);
+            SetMetalayerVisibility);
     DCHECK(framework_instance);
-    framework_instance->ToggleMetalayer();
+    framework_instance->SetMetalayerVisibility(true);
   } else {
     mojom::VoiceInteractionFrameworkInstance* framework_instance =
         ARC_GET_INSTANCE_FOR_METHOD(
@@ -134,6 +142,56 @@ void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
                                      base::TaskTraits().MayBlock().WithPriority(
                                          base::TaskPriority::USER_BLOCKING)),
                                  base::Bind(&ScreenshotCallback, callback));
+}
+
+void ArcVoiceInteractionFrameworkService::OnMetalayerClosed() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!metalayer_closed_callback_.is_null())
+    base::ResetAndReturn(&metalayer_closed_callback_).Run();
+}
+
+bool ArcVoiceInteractionFrameworkService::IsMetalayerSupported() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  mojom::VoiceInteractionFrameworkInstance* framework_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service()->voice_interaction_framework(),
+          SetMetalayerVisibility);
+  return framework_instance;
+}
+
+void ArcVoiceInteractionFrameworkService::ShowMetalayer(
+    const base::Closure& closed) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!metalayer_closed_callback_.is_null()) {
+    LOG(ERROR) << "Metalayer is already enabled";
+    return;
+  }
+  metalayer_closed_callback_ = closed;
+  SetMetalayerVisibility(true);
+}
+
+void ArcVoiceInteractionFrameworkService::HideMetalayer() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (metalayer_closed_callback_.is_null()) {
+    LOG(ERROR) << "Metalayer is already hidden";
+    return;
+  }
+  metalayer_closed_callback_ = base::Closure();
+  SetMetalayerVisibility(false);
+}
+
+void ArcVoiceInteractionFrameworkService::SetMetalayerVisibility(bool visible) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  mojom::VoiceInteractionFrameworkInstance* framework_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service()->voice_interaction_framework(),
+          SetMetalayerVisibility);
+  if (!framework_instance) {
+    if (!metalayer_closed_callback_.is_null())
+      base::ResetAndReturn(&metalayer_closed_callback_).Run();
+    return;
+  }
+  framework_instance->SetMetalayerVisibility(visible);
 }
 
 }  // namespace arc

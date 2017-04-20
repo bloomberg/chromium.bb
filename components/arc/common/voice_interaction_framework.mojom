@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 2
+// Next MinVersion: 3
 
 module arc.mojom;
 
 import "screen_rect.mojom";
 
 // Handles voice interaction queries from Android.
-// Next method ID: 2
+// Next method ID: 3
 interface VoiceInteractionFrameworkHost {
   // Returns a screenshot of currently focused window or empty array if
   // no window is focused.
@@ -17,10 +17,13 @@ interface VoiceInteractionFrameworkHost {
 
   // Returns a fullscreen screenshot of the primary display.
   [MinVersion=1]CaptureFullscreen@1() => (array<uint8> png_data);
+
+  // Notifies the host that the metalayer has closed or could not open.
+  [MinVersion=2]OnMetalayerClosed@2();
 };
 
 // Connects with Android system server.
-// Next method ID:4
+// Next method ID: 4
 interface VoiceInteractionFrameworkInstance {
   Init@0(VoiceInteractionFrameworkHost host_ptr);
 
@@ -31,6 +34,6 @@ interface VoiceInteractionFrameworkInstance {
   // selected.
   [MinVersion=1] StartVoiceInteractionSessionForRegion@2(ScreenRect region);
 
-  // Toggles the metalayer.
-  [MinVersion=1] ToggleMetalayer@3();
+  // Shows/hides the metalayer in the container.
+  [MinVersion=1] SetMetalayerVisibility@3([MinVersion=2] bool visible);
 };

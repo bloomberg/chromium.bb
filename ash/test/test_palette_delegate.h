@@ -51,6 +51,9 @@ class TestPaletteDelegate : public PaletteDelegate {
   void TakeScreenshot() override;
   void TakePartialScreenshot(const base::Closure& done) override;
   void CancelPartialScreenshot() override;
+  bool IsMetalayerSupported() override;
+  void ShowMetalayer(const base::Closure& closed) override;
+  void HideMetalayer() override;
 
   int create_note_count_ = 0;
   int has_note_app_count_ = 0;

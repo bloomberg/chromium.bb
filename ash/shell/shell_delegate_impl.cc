@@ -51,6 +51,9 @@ class PaletteDelegateImpl : public PaletteDelegate {
       done.Run();
   }
   void CancelPartialScreenshot() override {}
+  bool IsMetalayerSupported() override { return false; }
+  void ShowMetalayer(const base::Closure& closed) override {}
+  void HideMetalayer() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaletteDelegateImpl);

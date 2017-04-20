@@ -179,8 +179,7 @@ void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
   auto* screenshot_controller = ash::Shell::Get()->screenshot_controller();
 
   ash::ScreenshotDelegate* screenshot_delegate;
-  if (arc::ArcVoiceInteractionFrameworkService::IsVoiceInteractionEnabled() &&
-      arc::IsArcAllowedForProfile(profile_)) {
+  if (IsMetalayerSupported()) {
     // This is an experimental mode. It will be either taken out or grow
     // into a separate tool next to "Capture region".
     if (!voice_interaction_screenshot_delegate_) {
@@ -204,6 +203,37 @@ void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
 
 void PaletteDelegateChromeOS::CancelPartialScreenshot() {
   ash::Shell::Get()->screenshot_controller()->CancelScreenshotSession();
+}
+
+bool PaletteDelegateChromeOS::IsMetalayerSupported() {
+  if (!arc::IsArcAllowedForProfile(profile_))
+    return false;
+
+  arc::ArcVoiceInteractionFrameworkService* service =
+      arc::ArcServiceManager::Get()
+          ->GetService<arc::ArcVoiceInteractionFrameworkService>();
+  return service && service->IsMetalayerSupported();
+}
+
+void PaletteDelegateChromeOS::ShowMetalayer(const base::Closure& closed) {
+  arc::ArcVoiceInteractionFrameworkService* service =
+      arc::ArcServiceManager::Get()
+          ->GetService<arc::ArcVoiceInteractionFrameworkService>();
+  if (!service) {
+    if (!closed.is_null())
+      closed.Run();
+    return;
+  }
+  service->ShowMetalayer(closed);
+}
+
+void PaletteDelegateChromeOS::HideMetalayer() {
+  arc::ArcVoiceInteractionFrameworkService* service =
+      arc::ArcServiceManager::Get()
+          ->GetService<arc::ArcVoiceInteractionFrameworkService>();
+  if (!service)
+    return;
+  service->HideMetalayer();
 }
 
 }  // namespace chromeos

@@ -394,6 +394,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STYLUS_TOOLS_MAGNIFIER_MODE" desc="Title of the magnification mode in the stylus tools. Clicking this button opens up a magnifier. The magnifier remains active until the user turns it off by tapping the same button again.">
         Magnifying glass mode
       </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_METALAYER_MODE" desc="Title of the metalayer mode in the stylus tools. Clicking this button opens up the voice interaction overlay. The overlay remains active until the user completes the interaction.">
+        Metalayer mode
+      </message>
       <message name="IDS_ASH_STYLUS_TOOLS_TITLE" desc="The title of the stylus tools dialog in the ash shelf.">
         Stylus tools
       </message>

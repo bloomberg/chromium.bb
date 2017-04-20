@@ -428,6 +428,8 @@ component("ash") {
     "system/palette/tools/laser_pointer_mode.h",
     "system/palette/tools/magnifier_mode.cc",
     "system/palette/tools/magnifier_mode.h",
+    "system/palette/tools/metalayer_mode.cc",
+    "system/palette/tools/metalayer_mode.h",
     "system/power/battery_notification.cc",
     "system/power/battery_notification.h",
     "system/power/dual_role_notification.cc",

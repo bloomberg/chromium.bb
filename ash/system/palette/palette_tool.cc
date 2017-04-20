@@ -11,6 +11,7 @@
 #include "ash/system/palette/tools/create_note_action.h"
 #include "ash/system/palette/tools/laser_pointer_mode.h"
 #include "ash/system/palette/tools/magnifier_mode.h"
+#include "ash/system/palette/tools/metalayer_mode.h"
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -21,6 +22,7 @@ void PaletteTool::RegisterToolInstances(PaletteToolManager* tool_manager) {
   tool_manager->AddTool(base::MakeUnique<CaptureRegionMode>(tool_manager));
   tool_manager->AddTool(base::MakeUnique<CaptureScreenAction>(tool_manager));
   tool_manager->AddTool(base::MakeUnique<CreateNoteAction>(tool_manager));
+  tool_manager->AddTool(base::MakeUnique<MetalayerMode>(tool_manager));
   tool_manager->AddTool(base::MakeUnique<LaserPointerMode>(tool_manager));
   tool_manager->AddTool(base::MakeUnique<MagnifierMode>(tool_manager));
 }

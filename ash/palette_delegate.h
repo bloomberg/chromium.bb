@@ -54,6 +54,17 @@ class PaletteDelegate {
   // Cancels any active partial screenshot session.
   virtual void CancelPartialScreenshot() = 0;
 
+  // Returns true if the metalayer is available.
+  virtual bool IsMetalayerSupported() = 0;
+
+  // Shows the metalayer.
+  // |closed| will be invoked when the metalayer is closed or
+  // if the metalayer could not be shown.
+  virtual void ShowMetalayer(const base::Closure& closed) = 0;
+
+  // Hides the metalayer.
+  virtual void HideMetalayer() = 0;
+
  private:
   DISALLOW_ASSIGN(PaletteDelegate);
 };

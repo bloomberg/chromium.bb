@@ -44,4 +44,12 @@ void TestPaletteDelegate::TakePartialScreenshot(const base::Closure& done) {
 
 void TestPaletteDelegate::CancelPartialScreenshot() {}
 
+bool TestPaletteDelegate::IsMetalayerSupported() {
+  return false;
+}
+
+void TestPaletteDelegate::ShowMetalayer(const base::Closure& closed) {}
+
+void TestPaletteDelegate::HideMetalayer() {}
+
 }  // namespace ash
