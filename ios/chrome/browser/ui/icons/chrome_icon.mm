@@ -7,9 +7,12 @@
 #import <CoreGraphics/CoreGraphics.h>
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -73,14 +76,14 @@ UIImage* ImageFlippedForRightToLeftLayoutDirection(UIImage* image) {
                                             action:(SEL)action {
   UIImage* templateImage =
       [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  base::scoped_nsobject<UIBarButtonItem> barButtonItem([[UIBarButtonItem alloc]
-      initWithImage:templateImage
-              style:UIBarButtonItemStylePlain
-             target:target
-             action:action]);
+  UIBarButtonItem* barButtonItem =
+      [[UIBarButtonItem alloc] initWithImage:templateImage
+                                       style:UIBarButtonItemStylePlain
+                                      target:target
+                                      action:action];
   [barButtonItem setAccessibilityIdentifier:image.accessibilityIdentifier];
   [barButtonItem setAccessibilityLabel:image.accessibilityLabel];
-  return barButtonItem.autorelease();
+  return barButtonItem;
 }
 
 @end

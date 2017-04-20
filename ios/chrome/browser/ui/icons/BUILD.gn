@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("icons") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "chrome_icon.h",
     "chrome_icon.mm",
