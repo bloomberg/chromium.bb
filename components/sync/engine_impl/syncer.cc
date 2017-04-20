@@ -21,26 +21,29 @@
 #include "components/sync/engine_impl/get_updates_processor.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/mutable_entry.h"
 
 namespace syncer {
 
-// TODO(akalin): We may want to propagate this switch up
-// eventually.
+namespace {
+
+// TODO(akalin): We may want to propagate this switch up eventually.
 #if defined(OS_ANDROID) || defined(OS_IOS)
 static const bool kCreateMobileBookmarksFolder = true;
 #else
 static const bool kCreateMobileBookmarksFolder = false;
 #endif
 
+void HandleCycleBegin(SyncCycle* cycle) {
+  cycle->mutable_status_controller()->UpdateStartTime();
+  cycle->SendEventNotification(SyncCycleEvent::SYNC_CYCLE_BEGIN);
+}
+
+}  // namespace
+
 Syncer::Syncer(CancelationSignal* cancelation_signal)
     : cancelation_signal_(cancelation_signal), is_syncing_(false) {}
 
 Syncer::~Syncer() {}
-
-bool Syncer::ExitRequested() {
-  return cancelation_signal_->IsSignalled();
-}
 
 bool Syncer::IsSyncing() const {
   return is_syncing_;
@@ -54,11 +57,8 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
   if (nudge_tracker->IsGetUpdatesRequired() ||
       cycle->context()->ShouldFetchUpdatesBeforeCommit()) {
     VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
-    NormalGetUpdatesDelegate normal_delegate(*nudge_tracker);
-    GetUpdatesProcessor get_updates_processor(
-        cycle->context()->model_type_registry()->update_handler_map(),
-        normal_delegate);
-    if (!DownloadAndApplyUpdates(&request_types, cycle, &get_updates_processor,
+    if (!DownloadAndApplyUpdates(&request_types, cycle,
+                                 NormalGetUpdatesDelegate(*nudge_tracker),
                                  kCreateMobileBookmarksFolder)) {
       return HandleCycleEnd(cycle, nudge_tracker->GetLegacySource());
     }
@@ -89,12 +89,8 @@ bool Syncer::ConfigureSyncShare(
   request_types.RetainAll(cycle->context()->GetEnabledTypes());
   VLOG(1) << "Configuring types " << ModelTypeSetToString(request_types);
   HandleCycleBegin(cycle);
-  ConfigureGetUpdatesDelegate configure_delegate(source);
-
-  GetUpdatesProcessor get_updates_processor(
-      cycle->context()->model_type_registry()->update_handler_map(),
-      configure_delegate);
-  DownloadAndApplyUpdates(&request_types, cycle, &get_updates_processor,
+  DownloadAndApplyUpdates(&request_types, cycle,
+                          ConfigureGetUpdatesDelegate(source),
                           kCreateMobileBookmarksFolder);
   return HandleCycleEnd(cycle, source);
 }
@@ -103,22 +99,26 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types, SyncCycle* cycle) {
   base::AutoReset<bool> is_syncing(&is_syncing_, true);
   VLOG(1) << "Polling types " << ModelTypeSetToString(request_types);
   HandleCycleBegin(cycle);
-  PollGetUpdatesDelegate poll_delegate;
-  GetUpdatesProcessor get_updates_processor(
-      cycle->context()->model_type_registry()->update_handler_map(),
-      poll_delegate);
-  DownloadAndApplyUpdates(&request_types, cycle, &get_updates_processor,
+  DownloadAndApplyUpdates(&request_types, cycle, PollGetUpdatesDelegate(),
                           kCreateMobileBookmarksFolder);
   return HandleCycleEnd(cycle, sync_pb::GetUpdatesCallerInfo::PERIODIC);
 }
 
+bool Syncer::PostClearServerData(SyncCycle* cycle) {
+  DCHECK(cycle);
+  ClearServerData clear_server_data(cycle->context()->account_name());
+  return clear_server_data.SendRequest(cycle) == SYNCER_OK;
+}
+
 bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
                                      SyncCycle* cycle,
-                                     GetUpdatesProcessor* get_updates_processor,
+                                     const GetUpdatesDelegate& delegate,
                                      bool create_mobile_bookmarks_folder) {
+  GetUpdatesProcessor get_updates_processor(
+      cycle->context()->model_type_registry()->update_handler_map(), delegate);
   SyncerError download_result = UNSET;
   do {
-    download_result = get_updates_processor->DownloadUpdates(
+    download_result = get_updates_processor.DownloadUpdates(
         request_types, cycle, create_mobile_bookmarks_folder);
   } while (download_result == SERVER_MORE_TO_DOWNLOAD);
 
@@ -132,11 +132,11 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
     // Control type updates always get applied first.
     ApplyControlDataUpdates(cycle->context()->directory());
 
-    // Apply upates to the other types.  May or may not involve cross-thread
+    // Apply updates to the other types. May or may not involve cross-thread
     // traffic, depending on the underlying update handlers and the GU type's
     // delegate.
-    get_updates_processor->ApplyUpdates(*request_types,
-                                        cycle->mutable_status_controller());
+    get_updates_processor.ApplyUpdates(*request_types,
+                                       cycle->mutable_status_controller());
 
     cycle->context()->set_hierarchy_conflict_detected(
         cycle->status_controller().num_hierarchy_conflicts() > 0);
@@ -178,9 +178,8 @@ SyncerError Syncer::BuildAndPostCommits(ModelTypeSet request_types,
   return SYNCER_OK;
 }
 
-void Syncer::HandleCycleBegin(SyncCycle* cycle) {
-  cycle->mutable_status_controller()->UpdateStartTime();
-  cycle->SendEventNotification(SyncCycleEvent::SYNC_CYCLE_BEGIN);
+bool Syncer::ExitRequested() {
+  return cancelation_signal_->IsSignalled();
 }
 
 bool Syncer::HandleCycleEnd(
@@ -197,13 +196,6 @@ bool Syncer::HandleCycleEnd(
   }
 
   return success;
-}
-
-bool Syncer::PostClearServerData(SyncCycle* cycle) {
-  DCHECK(cycle);
-  ClearServerData clear_server_data(cycle->context()->account_name());
-  const SyncerError post_result = clear_server_data.SendRequest(cycle);
-  return post_result == SYNCER_OK;
 }
 
 }  // namespace syncer

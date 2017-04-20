@@ -6,7 +6,6 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_id.h"
@@ -16,7 +15,8 @@ namespace syncer {
 namespace syncable {
 
 // Returns the number of unsynced entries.
-int GetUnsyncedEntries(BaseTransaction* trans, std::vector<int64_t>* handles) {
+int GetUnsyncedEntries(BaseTransaction* trans,
+                       Directory::Metahandles* handles) {
   trans->directory()->GetUnsyncedMetaHandles(trans, handles);
   DVLOG_IF(1, !handles->empty()) << "Have " << handles->size()
                                  << " unsynced items.";

@@ -569,10 +569,10 @@ class SyncerTest : public testing::Test,
 
 TEST_F(SyncerTest, TestCallGatherUnsyncedEntries) {
   {
-    Syncer::UnsyncedMetaHandles handles;
+    syncable::Directory::Metahandles handles;
     {
       syncable::ReadTransaction trans(FROM_HERE, directory());
-      GetUnsyncedEntries(&trans, &handles);
+      syncable::GetUnsyncedEntries(&trans, &handles);
     }
     ASSERT_EQ(0u, handles.size());
   }

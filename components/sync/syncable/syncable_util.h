@@ -9,6 +9,8 @@
 
 #include <vector>
 
+#include "components/sync/syncable/directory.h"
+
 namespace tracked_objects {
 class Location;
 }
@@ -32,7 +34,7 @@ bool SyncAssert(bool condition,
                 const char* msg,
                 BaseTransaction* trans);
 
-int GetUnsyncedEntries(BaseTransaction* trans, std::vector<int64_t>* handles);
+int GetUnsyncedEntries(BaseTransaction* trans, Directory::Metahandles* handles);
 
 }  // namespace syncable
 }  // namespace syncer
