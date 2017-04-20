@@ -439,9 +439,9 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   int hidden_item_count = items.size() - kMaxNumberOfItemsShown;
   if (hidden_item_count > 0) {
     item_summaries_layout->StartRow(0, 0);
-    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
-        l10n_util::GetStringFUTF16(IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS,
-                                   base::IntToString16(hidden_item_count)));
+    std::unique_ptr<views::Label> label =
+        base::MakeUnique<views::Label>(l10n_util::GetPluralStringFUTF16(
+            IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS, hidden_item_count));
     label->SetDisabledColor(label->GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_LabelDisabledColor));
     label->SetEnabled(false);

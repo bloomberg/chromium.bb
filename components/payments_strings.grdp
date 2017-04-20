@@ -198,8 +198,10 @@
   <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT" desc="The format specifier of the Total label in the Order Summary Sheet of the Payment Request dialog.">
     <ph name="CURRENCY_CODE">$1<ex>USD</ex></ph> <ph name="FORMATTED_TOTAL_AMOUNT">$2<ex>$ 12.34</ex></ph>
   </message>
-  <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS" desc="The label in the Order Summary section of the Payment Sheet that indicates how many display items are hidden.">
-    <ph name="ITEM_COUNT">$1<ex>2</ex></ph> more items...
+  <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS" desc="The label in the Order Summary section of the Payment Sheet that indicates how many display items are hidden. [ICU Syntax]">
+    {MORE_ITEMS, plural,
+      =1 {<ph name="ITEM_COUNT">#<ex>1</ex></ph> more item&#x2026;}
+      other {<ph name="ITEM_COUNT">#<ex>2</ex></ph> more items&#x2026;}}
   </message>
   <message name="IDS_PAYMENT_REQUEST_SHIPPING_SECTION_NAME" desc="The name of the Shipping Address section in the Payment Sheet of the Payment Request dialog.">
     Shipping address
