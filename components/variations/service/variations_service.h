@@ -128,6 +128,10 @@ class VariationsService
   // reason.
   bool OverrideStoredPermanentCountry(const std::string& override_country);
 
+  // Returns what variations will consider to be the latest country. Returns
+  // empty if it is not available.
+  std::string GetLatestCountry() const;
+
   // Exposed for testing.
   static std::string GetDefaultVariationsServerURLForTesting();
 

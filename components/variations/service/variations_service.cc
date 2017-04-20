@@ -929,4 +929,8 @@ bool VariationsService::OverrideStoredPermanentCountry(
   return true;
 }
 
+std::string VariationsService::GetLatestCountry() const {
+  return local_state_->GetString(prefs::kVariationsCountry);
+}
+
 }  // namespace variations

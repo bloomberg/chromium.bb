@@ -39,6 +39,21 @@ static void StartVariationsSession(
   }
 }
 
+static base::android::ScopedJavaLocalRef<jstring> GetLatestCountry(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  if (!variations_service)
+    return nullptr;
+
+  std::string latest_country = variations_service->GetLatestCountry();
+  if (latest_country.empty())
+    return nullptr;
+
+  return base::android::ConvertUTF8ToJavaString(env, latest_country);
+}
+
 namespace chrome {
 namespace android {
 

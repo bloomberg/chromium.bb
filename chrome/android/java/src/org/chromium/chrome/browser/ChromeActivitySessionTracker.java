@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationState;
@@ -80,6 +81,14 @@ public class ChromeActivitySessionTracker {
      */
     public void getVariationsRestrictModeValue(Callback<String> callback) {
         mVariationsSession.getRestrictModeValue(mApplication, callback);
+    }
+
+    /**
+     * @return The latest country according to the current variations state. Null if not available.
+     */
+    @Nullable
+    public String getVariationsLatestCountry() {
+        return mVariationsSession.getLatestCountry();
     }
 
     /**
