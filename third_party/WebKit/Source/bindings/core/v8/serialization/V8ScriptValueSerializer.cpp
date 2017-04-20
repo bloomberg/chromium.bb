@@ -14,6 +14,7 @@
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8OffscreenCanvas.h"
 #include "bindings/core/v8/V8SharedArrayBuffer.h"
+#include "bindings/core/v8/V8ThrowDOMException.h"
 #include "core/dom/DOMArrayBufferBase.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -363,9 +364,8 @@ void V8ScriptValueSerializer::ThrowDataCloneError(
   DCHECK(exception_state_);
   String message = exception_state_->AddExceptionContext(
       V8StringToWebCoreString<String>(v8_message, kDoNotExternalize));
-  v8::Local<v8::Value> exception = V8ThrowException::CreateDOMException(
-      script_state_->GetIsolate(), kDataCloneError, message);
-  V8ThrowException::ThrowException(script_state_->GetIsolate(), exception);
+  V8ThrowDOMException::ThrowDOMException(script_state_->GetIsolate(),
+                                         kDataCloneError, message);
 }
 
 v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(

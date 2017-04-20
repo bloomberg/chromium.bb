@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8ThrowException.h"
+#include "bindings/core/v8/V8ThrowDOMException.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
@@ -263,7 +263,7 @@ void SetMediaKeysHandler::Fail(ExceptionCode code,
   // Reject promise with an appropriate error.
   ScriptState::Scope scope(GetScriptState());
   v8::Isolate* isolate = GetScriptState()->GetIsolate();
-  Reject(V8ThrowException::CreateDOMException(isolate, code, error_message));
+  Reject(V8ThrowDOMException::CreateDOMException(isolate, code, error_message));
 }
 
 void SetMediaKeysHandler::ClearFailed(ExceptionCode code,

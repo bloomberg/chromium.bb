@@ -32,8 +32,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8ThrowException.h"
-#include "core/dom/ExceptionCode.h"
+#include "bindings/core/v8/V8ThrowDOMException.h"
 
 namespace blink {
 
@@ -64,7 +63,7 @@ void ExceptionState::ThrowDOMException(ExceptionCode ec,
   const String& processed_message = AddExceptionContext(message);
   SetException(
       ec, processed_message,
-      V8ThrowException::CreateDOMException(isolate_, ec, processed_message));
+      V8ThrowDOMException::CreateDOMException(isolate_, ec, processed_message));
 }
 
 void ExceptionState::ThrowRangeError(const String& message) {
@@ -79,8 +78,8 @@ void ExceptionState::ThrowSecurityError(const String& sanitized_message,
   const String& final_unsanitized = AddExceptionContext(unsanitized_message);
   SetException(
       kSecurityError, final_sanitized,
-      V8ThrowException::CreateDOMException(isolate_, kSecurityError,
-                                           final_sanitized, final_unsanitized));
+      V8ThrowDOMException::CreateDOMException(
+          isolate_, kSecurityError, final_sanitized, final_unsanitized));
 }
 
 void ExceptionState::ThrowTypeError(const String& message) {

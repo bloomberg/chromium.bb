@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8ThrowException.h"
+#include "bindings/core/v8/V8ThrowDOMException.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/wtf/Assertions.h"
@@ -95,7 +95,7 @@ void ContentDecryptionModuleResultPromise::Reject(ExceptionCode code,
   ScriptState::Scope scope(resolver_->GetScriptState());
   v8::Isolate* isolate = resolver_->GetScriptState()->GetIsolate();
   resolver_->Reject(
-      V8ThrowException::CreateDOMException(isolate, code, error_message));
+      V8ThrowDOMException::CreateDOMException(isolate, code, error_message));
   resolver_.Clear();
 }
 

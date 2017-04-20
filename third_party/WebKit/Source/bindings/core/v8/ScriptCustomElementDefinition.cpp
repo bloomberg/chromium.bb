@@ -12,7 +12,7 @@
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "bindings/core/v8/V8ThrowException.h"
+#include "bindings/core/v8/V8ThrowDOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/custom/CustomElement.h"
@@ -259,7 +259,7 @@ bool ScriptCustomElementDefinition::RunConstructor(Element* element) {
     const String& message =
         "custom element constructors must call super() first and must "
         "not return a different object";
-    v8::Local<v8::Value> exception = V8ThrowException::CreateDOMException(
+    v8::Local<v8::Value> exception = V8ThrowDOMException::CreateDOMException(
         script_state_->GetIsolate(), kInvalidStateError, message);
     DispatchErrorEvent(isolate, exception, Constructor());
     return false;

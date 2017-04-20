@@ -26,27 +26,17 @@
 #define V8ThrowException_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ExceptionCode.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
-// Provides utility functions to create and/or throw a V8 exception.
-// Mostly a set of wrapper functions for v8::Exception class.
+// Provides utility functions to create and/or throw JS built-in errors.
 class CORE_EXPORT V8ThrowException {
   STATIC_ONLY(V8ThrowException);
 
  public:
-  // Creates and returns an exception object, or returns an empty handle if
-  // failed.  |unsanitizedMessage| should not be specified unless it's
-  // SecurityError.
-  static v8::Local<v8::Value> CreateDOMException(
-      v8::Isolate*,
-      ExceptionCode,
-      const String& sanitized_message,
-      const String& unsanitized_message = String());
 
   static void ThrowException(v8::Isolate* isolate,
                              v8::Local<v8::Value> exception) {
