@@ -20,10 +20,10 @@ extern "C" {
 
 struct aom_write_bit_buffer {
   uint8_t *bit_buffer;
-  size_t bit_offset;
+  uint32_t bit_offset;
 };
 
-size_t aom_wb_bytes_written(const struct aom_write_bit_buffer *wb);
+uint32_t aom_wb_bytes_written(const struct aom_write_bit_buffer *wb);
 
 void aom_wb_write_bit(struct aom_write_bit_buffer *wb, int bit);
 

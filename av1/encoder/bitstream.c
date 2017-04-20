@@ -3998,14 +3998,14 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   int tile_row, tile_col;
   TOKENEXTRA *(*const tok_buffers)[MAX_TILE_COLS] = cpi->tile_tok;
   TileBufferEnc(*const tile_buffers)[MAX_TILE_COLS] = cpi->tile_buffers;
-  size_t total_size = 0;
+  uint32_t total_size = 0;
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
   unsigned int tile_size = 0;
 #if CONFIG_TILE_GROUPS
   const int n_log2_tiles = cm->log2_tile_rows + cm->log2_tile_cols;
   const int have_tiles = n_log2_tiles > 0;
-  size_t comp_hdr_size;
+  uint32_t comp_hdr_size;
   // Fixed size tile groups for the moment
   const int num_tg_hdrs = cm->num_tg;
   const int tg_size = (tile_rows * tile_cols + num_tg_hdrs - 1) / num_tg_hdrs;
@@ -4013,12 +4013,12 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   int tg_count = 1;
   int tile_size_bytes = 4;
   int tile_col_size_bytes;
-  int uncompressed_hdr_size = 0;
+  uint32_t uncompressed_hdr_size = 0;
   uint8_t *dst = NULL;
   struct aom_write_bit_buffer comp_hdr_len_wb;
   struct aom_write_bit_buffer tg_params_wb;
   struct aom_write_bit_buffer tile_size_bytes_wb;
-  int saved_offset;
+  uint32_t saved_offset;
   int mtu_size = cpi->oxcf.mtu;
   int curr_tg_data_size = 0;
   int hdr_size;
@@ -4188,7 +4188,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
              should therefore be tile_count-1.
              Move the last tile and insert headers before it
            */
-          int old_total_size = total_size - tile_size - 4;
+          uint32_t old_total_size = total_size - tile_size - 4;
           memmove(dst + old_total_size + hdr_size, dst + old_total_size,
                   (tile_size + 4) * sizeof(uint8_t));
           // Copy uncompressed header

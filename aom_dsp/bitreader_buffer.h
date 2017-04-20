@@ -25,7 +25,7 @@ typedef void (*aom_rb_error_handler)(void *data);
 struct aom_read_bit_buffer {
   const uint8_t *bit_buffer;
   const uint8_t *bit_buffer_end;
-  size_t bit_offset;
+  uint32_t bit_offset;
 
   void *error_handler_data;
   aom_rb_error_handler error_handler;

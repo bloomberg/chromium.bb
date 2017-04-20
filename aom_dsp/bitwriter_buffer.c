@@ -15,7 +15,7 @@
 #include "./aom_config.h"
 #include "./bitwriter_buffer.h"
 
-size_t aom_wb_bytes_written(const struct aom_write_bit_buffer *wb) {
+uint32_t aom_wb_bytes_written(const struct aom_write_bit_buffer *wb) {
   return wb->bit_offset / CHAR_BIT + (wb->bit_offset % CHAR_BIT > 0);
 }
 
