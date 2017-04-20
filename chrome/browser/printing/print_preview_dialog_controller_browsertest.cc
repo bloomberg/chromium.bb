@@ -266,6 +266,11 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
+  // When Widget::Close is called, a task is posted that will destroy the
+  // widget. Here the widget is closed when the navigation commits. Load stop
+  // may occur right after the commit, before the widget is destroyed.
+  // Execute pending tasks to account for this.
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(dialog_destroyed_observer.dialog_destroyed());
 
   // Try printing again.

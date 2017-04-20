@@ -104,6 +104,12 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
  private:
   void RegisterMessages() override;
 
+  void RegisterMessage(const std::string& message,
+                       const content::WebUI::MessageCallback& handler);
+
+  void HandleMessage(const content::WebUI::MessageCallback& handler,
+                     const base::ListValue* data);
+
   // Runs NetInternalsTest.callback with the given value.
   void RunJavascriptCallback(base::Value* value);
 
@@ -162,39 +168,59 @@ NetInternalsTest::MessageHandler::MessageHandler(
 }
 
 void NetInternalsTest::MessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getTestServerURL",
+  RegisterMessage(
+      "getTestServerURL",
       base::Bind(&NetInternalsTest::MessageHandler::GetTestServerURL,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("addCacheEntry",
-      base::Bind(&NetInternalsTest::MessageHandler::AddCacheEntry,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "changeNetwork",
-      base::Bind(&NetInternalsTest::MessageHandler::ChangeNetwork,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loadPage",
-      base::Bind(&NetInternalsTest::MessageHandler::LoadPage,
-                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("prerenderPage",
-      base::Bind(&NetInternalsTest::MessageHandler::PrerenderPage,
-                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("navigateToPrerender",
+  RegisterMessage("addCacheEntry",
+                  base::Bind(&NetInternalsTest::MessageHandler::AddCacheEntry,
+                             base::Unretained(this)));
+  RegisterMessage("changeNetwork",
+                  base::Bind(&NetInternalsTest::MessageHandler::ChangeNetwork,
+                             base::Unretained(this)));
+  RegisterMessage("loadPage",
+                  base::Bind(&NetInternalsTest::MessageHandler::LoadPage,
+                             base::Unretained(this)));
+  RegisterMessage("prerenderPage",
+                  base::Bind(&NetInternalsTest::MessageHandler::PrerenderPage,
+                             base::Unretained(this)));
+  RegisterMessage(
+      "navigateToPrerender",
       base::Bind(&NetInternalsTest::MessageHandler::NavigateToPrerender,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("createIncognitoBrowser",
+  RegisterMessage(
+      "createIncognitoBrowser",
       base::Bind(&NetInternalsTest::MessageHandler::CreateIncognitoBrowser,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("closeIncognitoBrowser",
+  RegisterMessage(
+      "closeIncognitoBrowser",
       base::Bind(&NetInternalsTest::MessageHandler::CloseIncognitoBrowser,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getNetLogFileContents",
-      base::Bind(
-          &NetInternalsTest::MessageHandler::GetNetLogFileContents,
-          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("enableDataReductionProxy",
-      base::Bind(
-          &NetInternalsTest::MessageHandler::EnableDataReductionProxy,
-          base::Unretained(this)));
+  RegisterMessage(
+      "getNetLogFileContents",
+      base::Bind(&NetInternalsTest::MessageHandler::GetNetLogFileContents,
+                 base::Unretained(this)));
+  RegisterMessage(
+      "enableDataReductionProxy",
+      base::Bind(&NetInternalsTest::MessageHandler::EnableDataReductionProxy,
+                 base::Unretained(this)));
+}
+
+void NetInternalsTest::MessageHandler::RegisterMessage(
+    const std::string& message,
+    const content::WebUI::MessageCallback& handler) {
+  web_ui()->RegisterMessageCallback(
+      message, base::Bind(&NetInternalsTest::MessageHandler::HandleMessage,
+                          base::Unretained(this), handler));
+}
+
+void NetInternalsTest::MessageHandler::HandleMessage(
+    const content::WebUI::MessageCallback& handler,
+    const base::ListValue* data) {
+  // The handler might run a nested loop to wait for something.
+  base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
+      base::MessageLoop::current());
+  handler.Run(data);
 }
 
 void NetInternalsTest::MessageHandler::RunJavascriptCallback(

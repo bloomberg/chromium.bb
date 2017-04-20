@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -80,6 +81,10 @@ bool ChromeExtensionTestNotificationObserver::
 }
 
 bool ChromeExtensionTestNotificationObserver::WaitForExtensionViewsToLoad() {
+  // Some views might be not created yet. This call may become insufficient if
+  // e.g. implementation of ExtensionHostQueue changes.
+  content::RunAllPendingInMessageLoop();
+
   ProcessManager* manager = ProcessManager::Get(GetBrowserContext());
   NotificationSet notification_set;
   notification_set.Add(content::NOTIFICATION_WEB_CONTENTS_DESTROYED);

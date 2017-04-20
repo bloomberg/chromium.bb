@@ -312,10 +312,8 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
   loader_->StopCache(shutdown_run_loop.QuitClosure());
   VerifyAndResetVisitorCallExpectations();
 
-  // Spin the loop until the cache shutdown callback is invoked. Verify that at
-  // that point, no further file I/O tasks are pending.
+  // Spin the loop until the cache shutdown callback is invoked.
   shutdown_run_loop.Run();
-  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
 }
 
 }  // namespace chromeos

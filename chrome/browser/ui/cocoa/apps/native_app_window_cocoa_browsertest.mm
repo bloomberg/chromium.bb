@@ -43,6 +43,37 @@ using ::testing::Return;
 
 namespace {
 
+class AppWindowObserver : public extensions::AppWindowRegistry::Observer {
+ public:
+  AppWindowObserver(Profile* profile)
+      : registry_(extensions::AppWindowRegistry::Get(profile)) {
+    registry_->AddObserver(this);
+  }
+
+  ~AppWindowObserver() override { registry_->RemoveObserver(this); }
+
+  void Wait(int window_count) {
+    if (windows_added_count_ < window_count) {
+      windows_added_count_expected_ = window_count;
+      run_loop_.Run();
+    }
+  }
+
+ private:
+  void OnAppWindowAdded(AppWindow* app_window) override {
+    ++windows_added_count_;
+    if (windows_added_count_expected_ > 0 &&
+        windows_added_count_ >= windows_added_count_expected_) {
+      run_loop_.Quit();
+    }
+  }
+
+  extensions::AppWindowRegistry* registry_;
+  int windows_added_count_ = 0;
+  int windows_added_count_expected_ = 0;
+  base::RunLoop run_loop_;
+};
+
 // The param selects whether to use ChromeNativeAppWindowViewsMac, otherwise it
 // will use NativeAppWindowCocoa.
 class NativeAppWindowCocoaBrowserTest
@@ -63,15 +94,13 @@ class NativeAppWindowCocoaBrowserTest
         test_data_dir_.AppendASCII("platform_apps").AppendASCII("minimal"), 1);
     EXPECT_TRUE(app_);
 
+    AppWindowObserver window_observer(profile());
     for (int i = 0; i < num_windows; ++i) {
-      content::WindowedNotificationObserver app_loaded_observer(
-          content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-          content::NotificationService::AllSources());
       OpenApplication(AppLaunchParams(
           profile(), app_, extensions::LAUNCH_CONTAINER_NONE,
           WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
-      app_loaded_observer.Wait();
     }
+    window_observer.Wait(num_windows);
   }
 
   const extensions::Extension* app_;

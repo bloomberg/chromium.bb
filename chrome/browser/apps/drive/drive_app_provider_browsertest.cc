@@ -277,11 +277,11 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, MatchingChromeAppInstalled) {
       kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
 
   // An Url app should be created.
-  const Extension* url_app =
-      ExtensionRegistry::Get(profile())->GetExtensionById(
-          mapping()->GetChromeApp(kDriveAppId), ExtensionRegistry::EVERYTHING);
+  const Extension* url_app = registry->GetExtensionById(
+      mapping()->GetChromeApp(kDriveAppId), ExtensionRegistry::EVERYTHING);
   EXPECT_TRUE(url_app->is_hosted_app());
   EXPECT_TRUE(url_app->from_bookmark());
 
@@ -290,16 +290,20 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, MatchingChromeAppInstalled) {
   EXPECT_EQ(url_app_id, mapping()->GetChromeApp(kDriveAppId));
   EXPECT_TRUE(mapping()->IsChromeAppGenerated(url_app_id));
 
-  // Installs a chrome app with matching id.
-  InstallChromeApp(0);
+  // Install a chrome app with matching id.
+  size_t num_before = registry->enabled_extensions().size();
+  InstallChromeApp(1);
+  // Url app should be auto uninstalled. This happens asynchronously after the
+  // installation of the app that replaces it, so the task might still be
+  // pending.
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(
+      registry->GetExtensionById(url_app_id, ExtensionRegistry::EVERYTHING));
+  EXPECT_EQ(num_before, registry->enabled_extensions().size());
 
   // The Drive app should be mapped to chrome app.
   EXPECT_EQ(kChromeAppId, mapping()->GetChromeApp(kDriveAppId));
   EXPECT_FALSE(mapping()->IsChromeAppGenerated(kChromeAppId));
-
-  // Url app should be auto uninstalled.
-  EXPECT_FALSE(ExtensionRegistry::Get(profile())->GetExtensionById(
-      url_app_id, ExtensionRegistry::EVERYTHING));
 }
 
 // Tests that the corresponding URL app is uninstalled when a Drive app is

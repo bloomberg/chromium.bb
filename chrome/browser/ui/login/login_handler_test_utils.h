@@ -31,6 +31,7 @@ class LoginPromptBrowserTestObserver : public content::NotificationObserver {
   void RemoveHandler(LoginHandler* handler);
 
   void Register(const content::NotificationSource& source);
+  void UnregisterAll();
 
   const std::list<LoginHandler*>& handlers() const { return handlers_; }
 
