@@ -915,6 +915,16 @@ hooks = [
     ],
   },
   {
+    'name': 'checkstyle',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-android-tools/checkstyle',
+                '-s', 'src/third_party/checkstyle/checkstyle-7.6.1-all.jar.sha1'
+    ],
+  },
+  {
     'name': 'gvr_static_shim_android_arm',
     'pattern': '\\.sha1',
     'action': [ 'download_from_google_storage',
