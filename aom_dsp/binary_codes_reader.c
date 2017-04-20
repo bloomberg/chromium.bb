@@ -57,12 +57,10 @@ uint16_t aom_read_primitive_refbilevel(aom_reader *r, uint16_t n, uint16_t p,
   assert(p > 0 && p <= n);
   assert(ref < n);
   int lolimit = ref - p / 2;
-  int hilimit = lolimit + p - 1;
+  const int hilimit = lolimit + p - 1;
   if (lolimit < 0) {
     lolimit = 0;
-    hilimit = p - 1;
   } else if (hilimit >= n) {
-    hilimit = n - 1;
     lolimit = n - p;
   }
   int v;
