@@ -31,7 +31,7 @@
 
 namespace test {
 class MediaStreamDevicesControllerTestApi
-    : public internal::PermissionPromptDelegate {
+    : public MediaStreamDevicesController::PermissionPromptDelegate {
  public:
   static void AddRequestToManager(
       PermissionRequestManager* manager,
@@ -48,8 +48,8 @@ class MediaStreamDevicesControllerTestApi
   void ShowPrompt(
       bool user_gesture,
       content::WebContents* web_contents,
-      std::unique_ptr<MediaStreamDevicesController> controller) override {
-    manager_->AddRequest(controller.release());
+      std::unique_ptr<MediaStreamDevicesController::Request> request) override {
+    manager_->AddRequest(request.release());
   }
 
   explicit MediaStreamDevicesControllerTestApi(

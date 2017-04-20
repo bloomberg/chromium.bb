@@ -33,19 +33,66 @@ namespace test {
 class MediaStreamDevicesControllerTestApi;
 }
 
-namespace internal {
-// Delegate showing permission prompts.
-class PermissionPromptDelegate {
+class MediaStreamDevicesController {
  public:
-  virtual void ShowPrompt(
-      bool user_gesture,
-      content::WebContents* web_contents,
-      std::unique_ptr<MediaStreamDevicesController> controller) = 0;
-};
-}
+  // This class is only needed until we unify the codepaths for permission
+  // requests. It can be removed once crbug.com/606138 is fixed.
+  class Request : public PermissionRequest {
+   public:
+    using PromptAnsweredCallback =
+        base::Callback<void(ContentSetting, bool /* persist */)>;
 
-class MediaStreamDevicesController : public PermissionRequest {
- public:
+    Request(Profile* profile,
+            bool is_asking_for_audio,
+            bool is_asking_for_video,
+            const GURL& security_origin,
+            PromptAnsweredCallback prompt_answered_callback);
+
+    ~Request() override;
+
+    bool IsAskingForAudio() const;
+    bool IsAskingForVideo() const;
+    base::string16 GetMessageText() const;
+
+    // PermissionRequest:
+    IconId GetIconId() const override;
+    base::string16 GetMessageTextFragment() const override;
+    GURL GetOrigin() const override;
+    void PermissionGranted() override;
+    void PermissionDenied() override;
+    void Cancelled() override;
+    void RequestFinished() override;
+    PermissionRequestType GetPermissionRequestType() const override;
+    bool ShouldShowPersistenceToggle() const override;
+
+   private:
+    Profile* profile_;
+
+    bool is_asking_for_audio_;
+    bool is_asking_for_video_;
+
+    GURL security_origin_;
+
+    PromptAnsweredCallback prompt_answered_callback_;
+
+    // Whether the prompt has been answered.
+    bool responded_;
+
+    DISALLOW_COPY_AND_ASSIGN(Request);
+  };
+
+  // This class is only needed interally and for tests. It can be removed once
+  // crbug.com/606138 is fixed. Delegate for showing permission prompts. It's
+  // only public because subclassing from a friend class doesn't work in gcc
+  // (see https://codereview.chromium.org/2768923003).
+  class PermissionPromptDelegate {
+   public:
+    virtual void ShowPrompt(
+        bool user_gesture,
+        content::WebContents* web_contents,
+        std::unique_ptr<MediaStreamDevicesController::Request> request) = 0;
+  };
+
   static void RequestPermissions(
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback);
@@ -53,28 +100,19 @@ class MediaStreamDevicesController : public PermissionRequest {
   // Registers the prefs backing the audio and video policies.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  ~MediaStreamDevicesController() override;
+  ~MediaStreamDevicesController();
 
   bool IsAskingForAudio() const;
   bool IsAskingForVideo() const;
-  base::string16 GetMessageText() const;
+
+  // Called when a permission prompt has been answered, with the |response| and
+  // whether the choice should be persisted.
+  void PromptAnswered(ContentSetting response, bool persist);
 
 #if defined(OS_ANDROID)
   // Called when the Android OS-level prompt is answered.
   void AndroidOSPromptAnswered(bool allowed);
 #endif  // defined(OS_ANDROID)
-
-  bool ShouldShowPersistenceToggle() const override;
-
-  // PermissionRequest:
-  IconId GetIconId() const override;
-  base::string16 GetMessageTextFragment() const override;
-  GURL GetOrigin() const override;
-  void PermissionGranted() override;
-  void PermissionDenied() override;
-  void Cancelled() override;
-  void RequestFinished() override;
-  PermissionRequestType GetPermissionRequestType() const override;
 
  private:
   friend class MediaStreamDevicesControllerTest;
@@ -86,7 +124,7 @@ class MediaStreamDevicesController : public PermissionRequest {
   static void RequestPermissionsWithDelegate(
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
-      internal::PermissionPromptDelegate* delegate);
+      PermissionPromptDelegate* delegate);
 
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
@@ -158,7 +196,7 @@ class MediaStreamDevicesController : public PermissionRequest {
   // audio/video devices was granted or not.
   content::MediaResponseCallback callback_;
 
-  std::unique_ptr<internal::PermissionPromptDelegate> delegate_;
+  std::unique_ptr<PermissionPromptDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };

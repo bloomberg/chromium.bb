@@ -190,31 +190,134 @@ bool HasAvailableDevices(ContentSettingsType content_type,
 
 }  // namespace
 
+MediaStreamDevicesController::Request::Request(
+    Profile* profile,
+    bool is_asking_for_audio,
+    bool is_asking_for_video,
+    const GURL& security_origin,
+    PromptAnsweredCallback prompt_answered_callback)
+    : profile_(profile),
+      is_asking_for_audio_(is_asking_for_audio),
+      is_asking_for_video_(is_asking_for_video),
+      security_origin_(security_origin),
+      prompt_answered_callback_(prompt_answered_callback),
+      responded_(false) {}
+
+MediaStreamDevicesController::Request::~Request() {
+  if (!responded_) {
+    RecordPermissionAction(is_asking_for_audio_, is_asking_for_video_,
+                           security_origin_, profile_,
+                           base::Bind(PermissionUmaUtil::PermissionIgnored));
+  }
+}
+
+bool MediaStreamDevicesController::Request::IsAskingForAudio() const {
+  return is_asking_for_audio_;
+}
+
+bool MediaStreamDevicesController::Request::IsAskingForVideo() const {
+  return is_asking_for_video_;
+}
+
+base::string16 MediaStreamDevicesController::Request::GetMessageText() const {
+  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
+  if (!IsAskingForAudio())
+    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
+  else if (!IsAskingForVideo())
+    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
+  return l10n_util::GetStringFUTF16(
+      message_id,
+      url_formatter::FormatUrlForSecurityDisplay(
+          GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+}
+
+PermissionRequest::IconId MediaStreamDevicesController::Request::GetIconId()
+    const {
+#if defined(OS_ANDROID)
+  return IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
+                            : IDR_INFOBAR_MEDIA_STREAM_MIC;
+#else
+  return IsAskingForVideo() ? ui::kVideocamIcon : ui::kMicrophoneIcon;
+#endif
+}
+
+base::string16 MediaStreamDevicesController::Request::GetMessageTextFragment()
+    const {
+  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_PERMISSION_FRAGMENT;
+  if (!IsAskingForAudio())
+    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT;
+  else if (!IsAskingForVideo())
+    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT;
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+GURL MediaStreamDevicesController::Request::GetOrigin() const {
+  return security_origin_;
+}
+
+void MediaStreamDevicesController::Request::PermissionGranted() {
+  RecordPermissionAction(is_asking_for_audio_, is_asking_for_video_,
+                         security_origin_, profile_,
+                         base::Bind(PermissionUmaUtil::PermissionGranted));
+  responded_ = true;
+  prompt_answered_callback_.Run(CONTENT_SETTING_ALLOW, persist());
+}
+
+void MediaStreamDevicesController::Request::PermissionDenied() {
+  RecordPermissionAction(is_asking_for_audio_, is_asking_for_video_,
+                         security_origin_, profile_,
+                         base::Bind(PermissionUmaUtil::PermissionDenied));
+  responded_ = true;
+  prompt_answered_callback_.Run(CONTENT_SETTING_BLOCK, persist());
+}
+
+void MediaStreamDevicesController::Request::Cancelled() {
+  RecordPermissionAction(is_asking_for_audio_, is_asking_for_video_,
+                         security_origin_, profile_,
+                         base::Bind(PermissionUmaUtil::PermissionDismissed));
+  responded_ = true;
+  prompt_answered_callback_.Run(CONTENT_SETTING_ASK, false /* persist */);
+}
+
+void MediaStreamDevicesController::Request::RequestFinished() {
+  delete this;
+}
+
+PermissionRequestType
+MediaStreamDevicesController::Request::GetPermissionRequestType() const {
+  return PermissionRequestType::MEDIA_STREAM;
+}
+
+bool MediaStreamDevicesController::Request::ShouldShowPersistenceToggle()
+    const {
+  return PermissionUtil::ShouldShowPersistenceToggle();
+}
+
 // Implementation of PermissionPromptDelegate which actually shows a permission
 // prompt.
 class MediaStreamDevicesController::PermissionPromptDelegateImpl
-    : public internal::PermissionPromptDelegate {
+    : public MediaStreamDevicesController::PermissionPromptDelegate {
  public:
   void ShowPrompt(
       bool user_gesture,
       content::WebContents* web_contents,
-      std::unique_ptr<MediaStreamDevicesController> controller) override {
+      std::unique_ptr<MediaStreamDevicesController::Request> request) override {
 #if defined(OS_ANDROID)
     PermissionUmaUtil::RecordPermissionPromptShown(
-        controller->GetPermissionRequestType(),
+        request->GetPermissionRequestType(),
         PermissionUtil::GetGestureType(user_gesture));
     if (PermissionDialogDelegate::ShouldShowDialog(user_gesture)) {
       PermissionDialogDelegate::CreateMediaStreamDialog(
-          web_contents, user_gesture, std::move(controller));
+          web_contents, user_gesture, std::move(request));
     } else {
       MediaStreamInfoBarDelegateAndroid::Create(web_contents, user_gesture,
-                                                std::move(controller));
+                                                std::move(request));
     }
 #else
     PermissionRequestManager* permission_request_manager =
         PermissionRequestManager::FromWebContents(web_contents);
     if (permission_request_manager)
-      permission_request_manager->AddRequest(controller.release());
+      permission_request_manager->AddRequest(request.release());
 #endif
   }
 };
@@ -238,9 +341,6 @@ void MediaStreamDevicesController::RegisterProfilePrefs(
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {
   if (!callback_.is_null()) {
-    RecordPermissionAction(IsAskingForAudio(), IsAskingForVideo(), GetOrigin(),
-                           profile_,
-                           base::Bind(PermissionUmaUtil::PermissionIgnored));
     callback_.Run(content::MediaStreamDevices(),
                   content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                   std::unique_ptr<content::MediaStreamUI>());
@@ -255,16 +355,23 @@ bool MediaStreamDevicesController::IsAskingForVideo() const {
   return old_video_setting_ == CONTENT_SETTING_ASK;
 }
 
-base::string16 MediaStreamDevicesController::GetMessageText() const {
-  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
-  if (!IsAskingForAudio())
-    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-  else if (!IsAskingForVideo())
-    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
-  return l10n_util::GetStringFUTF16(
-      message_id,
-      url_formatter::FormatUrlForSecurityDisplay(
-          GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+void MediaStreamDevicesController::PromptAnswered(ContentSetting setting,
+                                                  bool persist) {
+  ContentSetting audio_setting = GetNewSetting(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, old_audio_setting_, setting);
+  ContentSetting video_setting = GetNewSetting(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, old_video_setting_, setting);
+
+  if (persist)
+    StorePermission(audio_setting, video_setting);
+
+  content::MediaStreamRequestResult denial_reason = content::MEDIA_DEVICE_OK;
+  if (setting == CONTENT_SETTING_ASK)
+    denial_reason = content::MEDIA_DEVICE_PERMISSION_DISMISSED;
+  else if (setting == CONTENT_SETTING_BLOCK)
+    denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
+
+  RunCallback(audio_setting, video_setting, denial_reason);
 }
 
 #if defined(OS_ANDROID)
@@ -290,76 +397,11 @@ void MediaStreamDevicesController::AndroidOSPromptAnswered(bool allowed) {
 }
 #endif  // defined(OS_ANDROID)
 
-PermissionRequest::IconId MediaStreamDevicesController::GetIconId() const {
-#if defined(OS_ANDROID)
-  return IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
-                            : IDR_INFOBAR_MEDIA_STREAM_MIC;
-#else
-  return IsAskingForVideo() ? ui::kVideocamIcon : ui::kMicrophoneIcon;
-#endif
-}
-
-base::string16 MediaStreamDevicesController::GetMessageTextFragment() const {
-  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_PERMISSION_FRAGMENT;
-  if (!IsAskingForAudio())
-    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT;
-  else if (!IsAskingForVideo())
-    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT;
-  return l10n_util::GetStringUTF16(message_id);
-}
-
-GURL MediaStreamDevicesController::GetOrigin() const {
-  return request_.security_origin;
-}
-
-void MediaStreamDevicesController::PermissionGranted() {
-  RecordPermissionAction(IsAskingForAudio(), IsAskingForVideo(), GetOrigin(),
-                         profile_,
-                         base::Bind(PermissionUmaUtil::PermissionGranted));
-  RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                            old_audio_setting_, CONTENT_SETTING_ALLOW),
-              GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                            old_video_setting_, CONTENT_SETTING_ALLOW),
-              content::MEDIA_DEVICE_PERMISSION_DENIED);
-}
-
-void MediaStreamDevicesController::PermissionDenied() {
-  RecordPermissionAction(IsAskingForAudio(), IsAskingForVideo(), GetOrigin(),
-                         profile_,
-                         base::Bind(PermissionUmaUtil::PermissionDenied));
-  RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                            old_audio_setting_, CONTENT_SETTING_BLOCK),
-              GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                            old_video_setting_, CONTENT_SETTING_BLOCK),
-              content::MEDIA_DEVICE_PERMISSION_DENIED);
-}
-
-bool MediaStreamDevicesController::ShouldShowPersistenceToggle() const {
-  return PermissionUtil::ShouldShowPersistenceToggle();
-}
-
-void MediaStreamDevicesController::Cancelled() {
-  RecordPermissionAction(IsAskingForAudio(), IsAskingForVideo(), GetOrigin(),
-                         profile_,
-                         base::Bind(PermissionUmaUtil::PermissionDismissed));
-  RunCallback(old_audio_setting_, old_video_setting_,
-              content::MEDIA_DEVICE_PERMISSION_DISMISSED);
-}
-
-void MediaStreamDevicesController::RequestFinished() {
-  delete this;
-}
-
-PermissionRequestType MediaStreamDevicesController::GetPermissionRequestType()
-    const {
-  return PermissionRequestType::MEDIA_STREAM;
-}
-
 // static
 void MediaStreamDevicesController::RequestPermissionsWithDelegate(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
-    internal::PermissionPromptDelegate* delegate) {
+    PermissionPromptDelegate* delegate) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(
           content::RenderFrameHost::FromID(request.render_process_id,
@@ -397,8 +439,15 @@ void MediaStreamDevicesController::RequestPermissionsWithDelegate(
     return;
   }
 
-  delegate->ShowPrompt(request.user_gesture, web_contents,
-                       std::move(controller));
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  delegate->ShowPrompt(
+      request.user_gesture, web_contents,
+      base::MakeUnique<MediaStreamDevicesController::Request>(
+          profile, controller->IsAskingForAudio(),
+          controller->IsAskingForVideo(), request.security_origin,
+          base::Bind(&MediaStreamDevicesController::PromptAnswered,
+                     base::Passed(&controller))));
 }
 
 MediaStreamDevicesController::MediaStreamDevicesController(
@@ -547,13 +596,9 @@ void MediaStreamDevicesController::RunCallback(
     content::MediaStreamRequestResult denial_reason) {
   CHECK(!callback_.is_null());
 
-  // If the kill switch is on we don't update the tab context or persist the
-  // setting.
-  if (denial_reason != content::MEDIA_DEVICE_KILL_SWITCH_ON) {
-    if (persist())
-      StorePermission(audio_setting, video_setting);
+  // If the kill switch is on we don't update the tab context.
+  if (denial_reason != content::MEDIA_DEVICE_KILL_SWITCH_ON)
     UpdateTabSpecificContentSettings(audio_setting, video_setting);
-  }
 
   content::MediaStreamDevices devices =
       GetDevices(audio_setting, video_setting);
@@ -694,8 +739,6 @@ ContentSetting MediaStreamDevicesController::GetNewSetting(
     ContentSettingsType content_type,
     ContentSetting old_setting,
     ContentSetting user_decision) const {
-  DCHECK(user_decision == CONTENT_SETTING_ALLOW ||
-         user_decision == CONTENT_SETTING_BLOCK);
   ContentSetting result = old_setting;
   if (old_setting == CONTENT_SETTING_ASK)
     result = user_decision;

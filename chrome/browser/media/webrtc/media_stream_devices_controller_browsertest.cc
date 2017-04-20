@@ -36,21 +36,21 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   // we should remove PermissionPromptDelegate and just use
   // MockPermissionPromptFactory instead. The APIs are the same.
   class TestPermissionPromptDelegate
-      : public internal::PermissionPromptDelegate {
+      : public MediaStreamDevicesController::PermissionPromptDelegate {
    public:
-    void ShowPrompt(
-        bool user_gesture,
-        content::WebContents* web_contents,
-        std::unique_ptr<MediaStreamDevicesController> controller) override {
-      if (controller->IsAskingForAudio())
+    void ShowPrompt(bool user_gesture,
+                    content::WebContents* web_contents,
+                    std::unique_ptr<MediaStreamDevicesController::Request>
+                        request) override {
+      if (request->IsAskingForAudio())
         last_requests_.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-      if (controller->IsAskingForVideo())
+      if (request->IsAskingForVideo())
         last_requests_.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 
       if (response_type_ == PermissionRequestManager::ACCEPT_ALL)
-        controller->PermissionGranted();
+        request->PermissionGranted();
       else if (response_type_ == PermissionRequestManager::DENY_ALL)
-        controller->PermissionDenied();
+        request->PermissionDenied();
     }
 
     void set_response_type(

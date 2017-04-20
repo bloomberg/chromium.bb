@@ -23,14 +23,16 @@ class MediaStreamInfoBarDelegateAndroid : public PermissionInfoBarDelegate {
   // then checks for an existing infobar for |web_contents| and replaces it if
   // found, or just adds the new infobar otherwise.  Returns whether an infobar
   // was created.
-  static bool Create(content::WebContents* web_contents,
-                     bool user_gesture,
-                     std::unique_ptr<MediaStreamDevicesController> controller);
+  static bool Create(
+      content::WebContents* web_contents,
+      bool user_gesture,
+      std::unique_ptr<MediaStreamDevicesController::Request> request);
 
   MediaStreamInfoBarDelegateAndroid(
       Profile* profile,
       bool user_gesture,
-      std::unique_ptr<MediaStreamDevicesController> controller);
+      std::unique_ptr<MediaStreamDevicesController::Request> request);
+
  private:
   friend class WebRtcTestBase;
 
@@ -52,7 +54,7 @@ class MediaStreamInfoBarDelegateAndroid : public PermissionInfoBarDelegate {
   int GetMessageResourceId() const override;
   std::vector<int> content_settings_types() const override;
 
-  std::unique_ptr<MediaStreamDevicesController> controller_;
+  std::unique_ptr<MediaStreamDevicesController::Request> request_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamInfoBarDelegateAndroid);
 };

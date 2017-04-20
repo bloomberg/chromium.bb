@@ -34,13 +34,13 @@ void DoNothing(bool update_content_setting, PermissionAction decision) {}
 bool MediaStreamInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents,
     bool user_gesture,
-    std::unique_ptr<MediaStreamDevicesController> controller) {
+    std::unique_ptr<MediaStreamDevicesController::Request> request) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   if (!infobar_service) {
     // Deny the request if there is no place to show the infobar, e.g. when
     // the request comes from a background extension page.
-    controller->Cancelled();
+    request->Cancelled();
     return false;
   }
 
@@ -48,8 +48,7 @@ bool MediaStreamInfoBarDelegateAndroid::Create(
       CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
           new MediaStreamInfoBarDelegateAndroid(
               Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-              user_gesture,
-              std::move(controller)))));
+              user_gesture, std::move(request)))));
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     infobars::InfoBar* old_infobar = infobar_service->infobar_at(i);
     if (old_infobar->delegate()->AsMediaStreamInfoBarDelegateAndroid()) {
@@ -72,16 +71,16 @@ MediaStreamInfoBarDelegateAndroid::GetInfoBarType() const {
 }
 
 int MediaStreamInfoBarDelegateAndroid::GetIconId() const {
-  return controller_->IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
-                                         : IDR_INFOBAR_MEDIA_STREAM_MIC;
+  return request_->IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
+                                      : IDR_INFOBAR_MEDIA_STREAM_MIC;
 }
 
 MediaStreamInfoBarDelegateAndroid::MediaStreamInfoBarDelegateAndroid(
     Profile* profile,
     bool user_gesture,
-    std::unique_ptr<MediaStreamDevicesController> controller)
+    std::unique_ptr<MediaStreamDevicesController::Request> request)
     : PermissionInfoBarDelegate(
-          controller->GetOrigin(),
+          request->GetOrigin(),
           // The content setting type and permission type here are only passed
           // in to fit into PermissionInfoBarDelegate, even though media infobar
           // controls both mic and camera. This is a temporary state for easy
@@ -92,12 +91,12 @@ MediaStreamInfoBarDelegateAndroid::MediaStreamInfoBarDelegateAndroid(
           user_gesture,
           profile,
           // This is only passed in to fit into PermissionInfoBarDelegate.
-          // Infobar accepted/denied/dismissed is handled by controller, not via
+          // Infobar accepted/denied/dismissed is handled by |request|, not via
           // callbacks.
           base::Bind(&DoNothing)),
-      controller_(std::move(controller)) {
-  DCHECK(controller_.get());
-  DCHECK(controller_->IsAskingForAudio() || controller_->IsAskingForVideo());
+      request_(std::move(request)) {
+  DCHECK(request_.get());
+  DCHECK(request_->IsAskingForAudio() || request_->IsAskingForVideo());
 }
 
 MediaStreamInfoBarDelegateAndroid::~MediaStreamInfoBarDelegateAndroid() {}
@@ -105,7 +104,7 @@ MediaStreamInfoBarDelegateAndroid::~MediaStreamInfoBarDelegateAndroid() {}
 void MediaStreamInfoBarDelegateAndroid::InfoBarDismissed() {
   // Deny the request if the infobar was closed with the 'x' button, since
   // we don't want WebRTC to be waiting for an answer that will never come.
-  controller_->Cancelled();
+  request_->Cancelled();
 }
 
 MediaStreamInfoBarDelegateAndroid*
@@ -114,7 +113,7 @@ MediaStreamInfoBarDelegateAndroid::AsMediaStreamInfoBarDelegateAndroid() {
 }
 
 base::string16 MediaStreamInfoBarDelegateAndroid::GetMessageText() const {
-  return controller_->GetMessageText();
+  return request_->GetMessageText();
 }
 
 base::string16 MediaStreamInfoBarDelegateAndroid::GetButtonLabel(
@@ -131,9 +130,9 @@ base::string16 MediaStreamInfoBarDelegateAndroid::GetButtonLabel(
 }
 
 int MediaStreamInfoBarDelegateAndroid::GetMessageResourceId() const {
-  if (!controller_->IsAskingForAudio())
+  if (!request_->IsAskingForAudio())
     return IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-  else if (!controller_->IsAskingForVideo())
+  else if (!request_->IsAskingForVideo())
     return IDS_MEDIA_CAPTURE_AUDIO_ONLY;
   return IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
 }
@@ -142,25 +141,25 @@ bool MediaStreamInfoBarDelegateAndroid::Accept() {
   // TODO(dominickn): fold these metrics calls into
   // PermissionUmaUtil::PermissionGranted. See crbug.com/638076.
   PermissionUmaUtil::RecordPermissionPromptAccepted(
-      controller_->GetPermissionRequestType(),
+      request_->GetPermissionRequestType(),
       PermissionUtil::GetGestureType(user_gesture()));
 
   bool persist_permission = true;
   if (ShouldShowPersistenceToggle()) {
     persist_permission = persist();
 
-    if (controller_->IsAskingForAudio()) {
+    if (request_->IsAskingForAudio()) {
       PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, persist_permission);
     }
-    if (controller_->IsAskingForVideo()) {
+    if (request_->IsAskingForVideo()) {
       PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, persist_permission);
     }
   }
 
-  controller_->set_persist(persist_permission);
-  controller_->PermissionGranted();
+  request_->set_persist(persist_permission);
+  request_->PermissionGranted();
   return true;
 }
 
@@ -168,24 +167,24 @@ bool MediaStreamInfoBarDelegateAndroid::Cancel() {
   // TODO(dominickn): fold these metrics calls into
   // PermissionUmaUtil::PermissionDenied. See crbug.com/638076.
   PermissionUmaUtil::RecordPermissionPromptDenied(
-      controller_->GetPermissionRequestType(),
+      request_->GetPermissionRequestType(),
       PermissionUtil::GetGestureType(user_gesture()));
 
   bool persist_permission = true;
   if (ShouldShowPersistenceToggle()) {
     persist_permission = persist();
 
-    if (controller_->IsAskingForAudio()) {
+    if (request_->IsAskingForAudio()) {
       PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, persist_permission);
     }
-    if (controller_->IsAskingForVideo()) {
+    if (request_->IsAskingForVideo()) {
       PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, persist_permission);
     }
   }
-  controller_->set_persist(persist_permission);
-  controller_->PermissionDenied();
+  request_->set_persist(persist_permission);
+  request_->PermissionDenied();
   return true;
 }
 
@@ -200,9 +199,9 @@ GURL MediaStreamInfoBarDelegateAndroid::GetLinkURL() const {
 std::vector<int> MediaStreamInfoBarDelegateAndroid::content_settings_types()
     const {
   std::vector<int> types;
-  if (controller_->IsAskingForAudio())
+  if (request_->IsAskingForAudio())
     types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  if (controller_->IsAskingForVideo())
+  if (request_->IsAskingForVideo())
     types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   return types;
 }
