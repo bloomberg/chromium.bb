@@ -175,7 +175,7 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
                                                 bool extend_border_to_edge) {
   // Tray views are laid out right-to-left or bottom-to-top.
   const bool horizontal_alignment = IsHorizontalAlignment(alignment_);
-  const int padding = (GetShelfConstant(SHELF_SIZE) - kTrayItemSize) / 2;
+  const int padding = (kShelfSize - kTrayItemSize) / 2;
 
   const int top_edge = horizontal_alignment ? padding : 0;
   const int left_edge = horizontal_alignment ? 0 : padding;

@@ -22,6 +22,10 @@ extern const int kBubblePaddingHorizontalSide;
 extern const int kBubblePaddingVerticalBottom;
 extern const int kBubblePaddingVerticalSide;
 
+// The size delta between the default font and the font size found in tray
+// items like labels and buttons.
+extern const int kTrayTextFontSizeIncrease;
+
 extern const int kTrayBubbleAnchorTopInsetBottomAnchor;
 
 extern const int kTrayImageItemHorizontalPaddingVerticalAlignment;

@@ -220,9 +220,8 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   // is inside 2nd display.
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ(
-      gfx::Rect(300, 0, 400, 500 - GetShelfConstant(SHELF_SIZE)).ToString(),
-      window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(gfx::Rect(300, 0, 400, 500 - kShelfSize).ToString(),
+            window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
@@ -233,9 +232,8 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   window_state->SetRestoreBoundsInScreen(gfx::Rect(295, 0, 30, 40));
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ(
-      gfx::Rect(300, 0, 400, 500 - GetShelfConstant(SHELF_SIZE)).ToString(),
-      window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(gfx::Rect(300, 0, 400, 500 - kShelfSize).ToString(),
+            window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
@@ -254,9 +252,8 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   EXPECT_TRUE(w1->IsMaximized());
   EXPECT_EQ(root_windows[1],
             WmWindow::Get(w1->GetNativeWindow())->GetRootWindow());
-  EXPECT_EQ(
-      gfx::Rect(300, 0, 400, 500 - GetShelfConstant(SHELF_SIZE)).ToString(),
-      w1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(gfx::Rect(300, 0, 400, 500 - kShelfSize).ToString(),
+            w1->GetWindowBoundsInScreen().ToString());
   w1->Restore();
   EXPECT_EQ(root_windows[1],
             WmWindow::Get(w1->GetNativeWindow())->GetRootWindow());

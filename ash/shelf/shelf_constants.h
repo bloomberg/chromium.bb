@@ -10,14 +10,9 @@
 
 namespace ash {
 
-enum ShelfConstant {
-  // Size of the shelf when visible (height when the shelf is horizontal and
-  // width when the shelf is vertical).
-  SHELF_SIZE,
-
-  // Insets allocated for shelf when it is auto hidden.
-  SHELF_INSETS_FOR_AUTO_HIDE
-};
+// Size of the shelf when visible (height when the shelf is horizontal and
+// width when the shelf is vertical).
+ASH_EXPORT constexpr int kShelfSize = 48;
 
 // We reserve a small area on the edge of the workspace area to ensure that
 // the resize handle at the edge of the window can be hit.
@@ -82,8 +77,6 @@ constexpr int kAppListButtonRadius = kOverflowButtonSize / 2;
 
 // The direction of the focus cycling.
 enum CycleDirection { CYCLE_FORWARD, CYCLE_BACKWARD };
-
-ASH_EXPORT int GetShelfConstant(ShelfConstant shelf_constant);
 
 }  // namespace ash
 

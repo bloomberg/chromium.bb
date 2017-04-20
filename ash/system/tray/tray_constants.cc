@@ -22,6 +22,8 @@ const int kBubblePaddingHorizontalSide = 10;
 const int kBubblePaddingVerticalBottom = 3;
 const int kBubblePaddingVerticalSide = 15;
 
+const int kTrayTextFontSizeIncrease = 2;
+
 // Top inset of system tray bubble for bottom anchor alignment.
 const int kTrayBubbleAnchorTopInsetBottomAnchor = 3;
 

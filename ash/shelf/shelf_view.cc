@@ -1334,11 +1334,9 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
     }
 
     if (wm_shelf_->IsHorizontalAlignment()) {
-      preferred_size =
-          gfx::Size(last_button_bounds.right(), GetShelfConstant(SHELF_SIZE));
+      preferred_size = gfx::Size(last_button_bounds.right(), kShelfSize);
     } else {
-      preferred_size =
-          gfx::Size(GetShelfConstant(SHELF_SIZE), last_button_bounds.bottom());
+      preferred_size = gfx::Size(kShelfSize, last_button_bounds.bottom());
     }
   }
   gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
@@ -1387,7 +1385,6 @@ int ShelfView::CancelDrag(int modified_index) {
 gfx::Size ShelfView::GetPreferredSize() const {
   gfx::Rect overflow_bounds;
   CalculateIdealBounds(&overflow_bounds);
-  const int shelf_size = GetShelfConstant(SHELF_SIZE);
 
   int last_button_index = last_visible_index_;
   if (!is_overflow_mode()) {
@@ -1410,12 +1407,12 @@ gfx::Size ShelfView::GetPreferredSize() const {
   const gfx::Rect last_button_bounds =
       last_button_index >= first_visible_index_
           ? view_model_->ideal_bounds(last_button_index)
-          : gfx::Rect(gfx::Size(shelf_size, shelf_size));
+          : gfx::Rect(gfx::Size(kShelfSize, kShelfSize));
 
   if (wm_shelf_->IsHorizontalAlignment())
-    return gfx::Size(last_button_bounds.right(), shelf_size);
+    return gfx::Size(last_button_bounds.right(), kShelfSize);
 
-  return gfx::Size(shelf_size, last_button_bounds.bottom());
+  return gfx::Size(kShelfSize, last_button_bounds.bottom());
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

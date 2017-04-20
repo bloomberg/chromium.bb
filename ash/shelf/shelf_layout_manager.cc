@@ -191,13 +191,12 @@ bool ShelfLayoutManager::IsVisible() const {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
-  const int shelf_size = GetShelfConstant(SHELF_SIZE);
   WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
   gfx::Rect rect(wm::GetDisplayBoundsInParent(shelf_window));
   return SelectValueForShelfAlignment(
-      gfx::Rect(rect.x(), rect.bottom() - shelf_size, rect.width(), shelf_size),
-      gfx::Rect(rect.x(), rect.y(), shelf_size, rect.height()),
-      gfx::Rect(rect.right() - shelf_size, rect.y(), shelf_size,
+      gfx::Rect(rect.x(), rect.bottom() - kShelfSize, rect.width(), kShelfSize),
+      gfx::Rect(rect.x(), rect.y(), kShelfSize, rect.height()),
+      gfx::Rect(rect.right() - kShelfSize, rect.y(), kShelfSize,
                 rect.height()));
 }
 
@@ -659,7 +658,7 @@ void ShelfLayoutManager::StopAnimating() {
 
 void ShelfLayoutManager::CalculateTargetBounds(const State& state,
                                                TargetBounds* target_bounds) {
-  int shelf_size = GetShelfConstant(SHELF_SIZE);
+  int shelf_size = kShelfSize;
   if (state.visibility_state == SHELF_AUTO_HIDE &&
       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
     // Auto-hidden shelf always starts with the default size. If a gesture-drag
@@ -693,9 +692,9 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   gfx::Size status_size(
       shelf_widget_->status_area_widget()->GetWindowBoundsInScreen().size());
   if (wm_shelf_->IsHorizontalAlignment())
-    status_size.set_height(GetShelfConstant(SHELF_SIZE));
+    status_size.set_height(kShelfSize);
   else
-    status_size.set_width(GetShelfConstant(SHELF_SIZE));
+    status_size.set_width(kShelfSize);
 
   gfx::Point status_origin = SelectValueForShelfAlignment(
       gfx::Point(0, 0), gfx::Point(shelf_width - status_size.width(),
@@ -769,7 +768,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     // changed since then, e.g. because the tray-menu was shown because of the
     // drag), then allow the drag some resistance-free region at first to make
     // sure the shelf sticks with the finger until the shelf is visible.
-    resistance_free_region = GetShelfConstant(SHELF_SIZE) - kShelfAutoHideSize;
+    resistance_free_region = kShelfSize - kShelfAutoHideSize;
   }
 
   bool resist = SelectValueForShelfAlignment(
@@ -788,11 +787,10 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   } else {
     translate = gesture_drag_amount_;
   }
-  int shelf_insets = GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
   if (horizontal) {
     // Move and size the shelf with the gesture.
     int shelf_height = target_bounds->shelf_bounds_in_root.height() - translate;
-    shelf_height = std::max(shelf_height, shelf_insets);
+    shelf_height = std::max(shelf_height, 0);
     target_bounds->shelf_bounds_in_root.set_height(shelf_height);
     if (wm_shelf_->IsHorizontalAlignment()) {
       target_bounds->shelf_bounds_in_root.set_y(available_bounds.bottom() -
@@ -808,7 +806,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       shelf_width -= translate;
     else
       shelf_width += translate;
-    shelf_width = std::max(shelf_width, shelf_insets);
+    shelf_width = std::max(shelf_width, 0);
     target_bounds->shelf_bounds_in_root.set_width(shelf_width);
     if (right_aligned) {
       target_bounds->shelf_bounds_in_root.set_x(available_bounds.right() -
@@ -819,8 +817,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       target_bounds->status_bounds_in_shelf.set_x(0);
     } else {
       target_bounds->status_bounds_in_shelf.set_x(
-          target_bounds->shelf_bounds_in_root.width() -
-          GetShelfConstant(SHELF_SIZE));
+          target_bounds->shelf_bounds_in_root.width() - kShelfSize);
     }
   }
 }
@@ -976,8 +973,6 @@ bool ShelfLayoutManager::IsShelfWindow(WmWindow* window) {
 int ShelfLayoutManager::GetWorkAreaInsets(const State& state, int size) const {
   if (state.visibility_state == SHELF_VISIBLE)
     return size;
-  if (state.visibility_state == SHELF_AUTO_HIDE)
-    return GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
   return 0;
 }
 

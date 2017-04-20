@@ -171,7 +171,7 @@ gfx::Rect OverflowButton::CalculateButtonBounds() const {
   gfx::Rect content_bounds = GetContentsBounds();
   // Align the button to the top of a bottom-aligned shelf, to the right edge
   // a left-aligned shelf, and to the left edge of a right-aligned shelf.
-  const int inset = (GetShelfConstant(SHELF_SIZE) - kOverflowButtonSize) / 2;
+  const int inset = (kShelfSize - kOverflowButtonSize) / 2;
   const int x = alignment == SHELF_ALIGNMENT_LEFT
                     ? content_bounds.right() - inset - kOverflowButtonSize
                     : content_bounds.x() + inset;

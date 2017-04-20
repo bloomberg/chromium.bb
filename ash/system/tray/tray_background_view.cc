@@ -478,11 +478,11 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
   if (IsHorizontalAlignment(shelf_alignment_)) {
     const gfx::PointF point(
         base::i18n::IsRTL() ? 0 : (local_bounds.width() - kSeparatorWidth),
-        (GetShelfConstant(SHELF_SIZE) - kTrayItemSize) / 2);
+        (kShelfSize - kTrayItemSize) / 2);
     const gfx::Vector2dF vector(0, kTrayItemSize);
     canvas->Draw1pxLine(point, point + vector, color);
   } else {
-    const gfx::PointF point((GetShelfConstant(SHELF_SIZE) - kTrayItemSize) / 2,
+    const gfx::PointF point((kShelfSize - kTrayItemSize) / 2,
                             local_bounds.height() - kSeparatorWidth);
     const gfx::Vector2dF vector(kTrayItemSize, 0);
     canvas->Draw1pxLine(point, point + vector, color);

@@ -702,13 +702,12 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   // LayoutShelf() forces the animation to completion, at which point the
   // shelf should go off the screen.
   layout_manager->LayoutShelf();
-  const int shelf_insets = GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
 
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   const int display_bottom = display.bounds().bottom();
   EXPECT_EQ(display_bottom - kShelfAutoHideSize,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
-  EXPECT_EQ(display_bottom - shelf_insets, display.work_area().bottom());
+  EXPECT_EQ(display_bottom, display.work_area().bottom());
 
   // Move the mouse to the bottom of the screen.
   generator.MoveMouseTo(0, display_bottom - 1);
@@ -719,7 +718,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   layout_manager->LayoutShelf();
   EXPECT_EQ(display_bottom - layout_manager->GetIdealBounds().height(),
             GetShelfWidget()->GetWindowBoundsInScreen().y());
-  EXPECT_EQ(display_bottom - shelf_insets, display.work_area().bottom());
+  EXPECT_EQ(display_bottom, display.work_area().bottom());
 
   // Move mouse back up.
   generator.MoveMouseTo(0, 0);
@@ -1297,10 +1296,8 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_EQ(display.bounds().height(), shelf_bounds.height());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  EXPECT_EQ(GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE),
-            display.GetWorkAreaInsets().left());
-  EXPECT_EQ(GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE),
-            display.work_area().x());
+  EXPECT_EQ(0, display.GetWorkAreaInsets().left());
+  EXPECT_EQ(0, display.work_area().x());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
@@ -1327,10 +1324,8 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_EQ(display.bounds().height(), shelf_bounds.height());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  EXPECT_EQ(GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE),
-            display.GetWorkAreaInsets().right());
-  EXPECT_EQ(GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE),
-            display.bounds().right() - display.work_area().right());
+  EXPECT_EQ(0, display.GetWorkAreaInsets().right());
+  EXPECT_EQ(0, display.bounds().right() - display.work_area().right());
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureDrag) {

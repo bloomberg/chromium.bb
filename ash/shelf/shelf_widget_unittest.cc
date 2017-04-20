@@ -48,7 +48,6 @@ void TestLauncherAlignment(WmWindow* root,
 }
 
 TEST_F(ShelfWidgetTest, TestAlignment) {
-  const int kShelfSize = GetShelfConstant(SHELF_SIZE);
   UpdateDisplay("400x400");
   {
     SCOPED_TRACE("Single Bottom");
@@ -75,7 +74,6 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
 }
 
 TEST_F(ShelfWidgetTest, TestAlignmentForMultipleDisplays) {
-  const int kShelfSize = GetShelfConstant(SHELF_SIZE);
   UpdateDisplay("300x300,500x500");
   std::vector<WmWindow*> root_windows = ShellPort::Get()->GetAllRootWindows();
   {

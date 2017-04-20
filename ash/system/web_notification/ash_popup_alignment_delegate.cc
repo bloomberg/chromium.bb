@@ -62,8 +62,7 @@ void AshPopupAlignmentDelegate::SetTrayBubbleHeight(int height) {
   // should be reduced by the height of shelf's shown height.
   if (shelf_->GetVisibilityState() == SHELF_AUTO_HIDE &&
       shelf_->GetAutoHideState() == SHELF_AUTO_HIDE_SHOWN) {
-    tray_bubble_height_ -= GetShelfConstant(SHELF_SIZE) -
-                           GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
+    tray_bubble_height_ -= kShelfSize;
   }
 
   if (tray_bubble_height_ > 0)

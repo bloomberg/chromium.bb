@@ -1025,19 +1025,11 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
   resizer->Drag(CalculateDragPoint(*resizer, distance_to_right + 33, 0), 0);
   EXPECT_EQ("513,112 320x160", window_->bounds().ToString());
 
-  int auto_hidden_shelf_height = GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
-
   // And the bottom should snap too.
-  resizer->Drag(
-      CalculateDragPoint(*resizer, 0,
-                         distance_to_bottom - auto_hidden_shelf_height - 7),
-      0);
+  resizer->Drag(CalculateDragPoint(*resizer, 0, distance_to_bottom - 7), 0);
   EXPECT_EQ(gfx::Rect(96, 440, 320, 160).ToString(),
             window_->bounds().ToString());
-  resizer->Drag(
-      CalculateDragPoint(*resizer, 0,
-                         distance_to_bottom - auto_hidden_shelf_height + 15),
-      0);
+  resizer->Drag(CalculateDragPoint(*resizer, 0, distance_to_bottom + 15), 0);
   EXPECT_EQ(gfx::Rect(96, 440, 320, 160).ToString(),
             window_->bounds().ToString());
   resizer->Drag(CalculateDragPoint(*resizer, 0, distance_to_bottom - 2 + 32),
@@ -1054,16 +1046,14 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
   EXPECT_EQ("96,0 320x160", window_->bounds().ToString());
 
   // And bottom/left should snap too.
-  resizer->Drag(
-      CalculateDragPoint(*resizer, 7 - distance_to_left,
-                         distance_to_bottom - auto_hidden_shelf_height - 7),
-      0);
+  resizer->Drag(CalculateDragPoint(*resizer, 7 - distance_to_left,
+                                   distance_to_bottom - 7),
+                0);
   EXPECT_EQ(gfx::Rect(0, 440, 320, 160).ToString(),
             window_->bounds().ToString());
-  resizer->Drag(
-      CalculateDragPoint(*resizer, -15 - distance_to_left,
-                         distance_to_bottom - auto_hidden_shelf_height + 15),
-      0);
+  resizer->Drag(CalculateDragPoint(*resizer, -15 - distance_to_left,
+                                   distance_to_bottom + 15),
+                0);
   EXPECT_EQ(gfx::Rect(0, 440, 320, 160).ToString(),
             window_->bounds().ToString());
   // should move past snap points.

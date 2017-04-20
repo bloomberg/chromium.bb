@@ -42,10 +42,7 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
       views::MdTextButton::Create(this, base::string16());
   button->SetProminent(true);
   button->SetBgColorOverride(gfx::kGoogleRed700);
-  // Base font size + 2 = 14.
-  // TODO(estade): should this 2 be shared with other tray views? See
-  // crbug.com/623987
-  button->AdjustFontSize(2);
+  button->AdjustFontSize(kTrayTextFontSizeIncrease);
   button_ = button;
 
   // Since LogoutButtonTray has a red background and it is distinguished
