@@ -290,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowWebUIBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), GURL(url_to_test));
   EXPECT_TRUE(RunJavascriptTest("testPodFocused",
-                                new base::Value(expected_path.AsUTF8Unsafe())));
+                                base::Value(expected_path.AsUTF8Unsafe())));
 }
 
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

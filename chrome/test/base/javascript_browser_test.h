@@ -5,8 +5,9 @@
 #ifndef CHROME_TEST_BASE_JAVASCRIPT_BROWSER_TEST_H_
 #define CHROME_TEST_BASE_JAVASCRIPT_BROWSER_TEST_H_
 
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -19,8 +20,6 @@ class JavaScriptBrowserTest : public InProcessBrowserTest {
   static const base::FilePath::CharType kMockJSPath[];
   static const base::FilePath::CharType kWebUILibraryJS[];
   static const base::FilePath::CharType kWebUITestFolder[];
-
-  typedef ScopedVector<const base::Value> ConstValueVector;
 
   // Add a custom helper JS library for your test.
   // If a relative path is specified, it'll be read
@@ -45,7 +44,7 @@ class JavaScriptBrowserTest : public InProcessBrowserTest {
   // |RunJavaScriptBrowserTestF| call.
   base::string16 BuildRunTestJSCall(bool is_async,
                                     const std::string& test_name,
-                                    const ConstValueVector& args);
+                                    std::vector<base::Value> args);
 
  private:
   // User added libraries.

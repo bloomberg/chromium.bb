@@ -39,9 +39,9 @@ class InspectUITest : public WebUIBrowserTest {
 IN_PROC_BROWSER_TEST_F(InspectUITest, InspectUIPage) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIInspectURL));
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
-      "testTargetListed", new base::Value("#pages"),
-      new base::Value("populateWebContentsTargets"),
-      new base::Value(chrome::kChromeUIInspectURL)));
+      "testTargetListed", base::Value("#pages"),
+      base::Value("populateWebContentsTargets"),
+      base::Value(chrome::kChromeUIInspectURL)));
 }
 
 IN_PROC_BROWSER_TEST_F(InspectUITest, SharedWorker) {
@@ -55,14 +55,13 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, SharedWorker) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
-      "testTargetListed", new base::Value("#workers"),
-      new base::Value("populateWorkerTargets"),
-      new base::Value(kSharedWorkerJs)));
+      "testTargetListed", base::Value("#workers"),
+      base::Value("populateWorkerTargets"), base::Value(kSharedWorkerJs)));
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
-      "testTargetListed", new base::Value("#pages"),
-      new base::Value("populateWebContentsTargets"),
-      new base::Value(kSharedWorkerTestPage)));
+      "testTargetListed", base::Value("#pages"),
+      base::Value("populateWebContentsTargets"),
+      base::Value(kSharedWorkerTestPage)));
 }
 
 // Flaky due to failure to bind a hardcoded port. crbug.com/566057

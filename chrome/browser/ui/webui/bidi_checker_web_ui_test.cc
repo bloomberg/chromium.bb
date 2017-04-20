@@ -103,8 +103,8 @@ void WebUIBidiCheckerBrowserTest::SetUpInProcessBrowserTestFixture() {
 void WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(
     const std::string& page_url, bool is_rtl) {
   ui_test_utils::NavigateToURL(browser(), GURL(page_url));
-  ASSERT_TRUE(RunJavascriptTest("runBidiChecker", new base::Value(page_url),
-                                new base::Value(is_rtl)));
+  ASSERT_TRUE(RunJavascriptTest("runBidiChecker", base::Value(page_url),
+                                base::Value(is_rtl)));
 }
 
 void DISABLED_WebUIBidiCheckerBrowserTestLTR::RunBidiCheckerOnPage(
