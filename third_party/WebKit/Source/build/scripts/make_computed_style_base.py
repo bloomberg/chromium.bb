@@ -316,14 +316,12 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         # TODO(shend): Remove this once we move NONPROPERTIES to its own JSON file,
         # since the JSON5 reader will handle missing fields and defaults.
         for property_ in NONPROPERTIES:
-            property_['name_for_methods'] = property_['name']
-            if 'field_type_path' not in property_:
-                property_['field_type_path'] = None
-            if 'type_name' not in property_:
-                property_['type_name'] = 'E' + enum_type_name(property_['name_for_methods'])
-            property_['getter'] = method_name(property_['name_for_methods'])
-            property_['setter'] = method_name(join_name('set', property_['name_for_methods']))
-            property_['initial'] = method_name(join_name('initial', property_['name_for_methods']))
+            for parameter in self.json5_file.parameters:
+                if parameter not in property_:
+                    property_[parameter] = None
+
+        for property_ in NONPROPERTIES:
+            make_style_builder.apply_property_naming_defaults(property_)
 
         # Ignore shorthand properties
         for property_ in self._properties.values():

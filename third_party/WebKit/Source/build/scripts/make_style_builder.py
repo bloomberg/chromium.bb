@@ -31,8 +31,36 @@ import sys
 
 import css_properties
 import json5_generator
-from name_utilities import lower_first
+from name_utilities import lower_first, upper_camel_case
 import template_expander
+
+
+def apply_property_naming_defaults(property_):
+    def set_if_none(property_, key, value):
+        if property_[key] is None:
+            property_[key] = value
+
+    # TODO(shend): Use name_utilities for manipulating names.
+    # TODO(shend): Rearrange the code below to separate assignment and set_if_none
+    upper_camel = upper_camel_case(property_['name'])
+    set_if_none(property_, 'name_for_methods', upper_camel.replace('Webkit', ''))
+    name = property_['name_for_methods']
+    simple_type_name = str(property_['type_name']).split('::')[-1]
+    set_if_none(property_, 'type_name', 'E' + name)
+    set_if_none(property_, 'getter', name if simple_type_name != name else 'Get' + name)
+    set_if_none(property_, 'setter', 'Set' + name)
+    set_if_none(property_, 'inherited', False)
+    set_if_none(property_, 'initial', 'Initial' + name)
+
+    if property_['custom_all']:
+        property_['custom_initial'] = True
+        property_['custom_inherit'] = True
+        property_['custom_value'] = True
+    if property_['inherited']:
+        property_['is_inherited_setter'] = 'Set' + name + 'IsInherited'
+    property_['should_declare_functions'] = not property_['use_handlers_for'] and not property_['longhands'] \
+        and not property_['direction_aware'] and not property_['builder_skip'] \
+        and property_['is_property']
 
 
 class StyleBuilderWriter(css_properties.CSSProperties):
@@ -47,29 +75,8 @@ class StyleBuilderWriter(css_properties.CSSProperties):
                          ('StyleBuilder.cpp'): self.generate_style_builder,
                         }
 
-        def set_if_none(property, key, value):
-            if property[key] is None:
-                property[key] = value
-
         for property in self._properties.values():
-            upper_camel = property['upper_camel_name']
-            set_if_none(property, 'name_for_methods', upper_camel.replace('Webkit', ''))
-            name = property['name_for_methods']
-            simple_type_name = str(property['type_name']).split('::')[-1]
-            set_if_none(property, 'type_name', 'E' + name)
-            set_if_none(property, 'getter', name if simple_type_name != name else 'Get' + name)
-            set_if_none(property, 'setter', 'Set' + name)
-            set_if_none(property, 'inherited', False)
-            set_if_none(property, 'initial', 'Initial' + name)
-            if property['custom_all']:
-                property['custom_initial'] = True
-                property['custom_inherit'] = True
-                property['custom_value'] = True
-            if property['inherited']:
-                property['is_inherited_setter'] = 'Set' + name + 'IsInherited'
-            property['should_declare_functions'] = not property['use_handlers_for'] and not property['longhands'] \
-                and not property['direction_aware'] and not property['builder_skip'] \
-                and property['is_property']
+            apply_property_naming_defaults(property)
 
     @template_expander.use_jinja('StyleBuilderFunctions.h.tmpl',
                                  filters=filters)
