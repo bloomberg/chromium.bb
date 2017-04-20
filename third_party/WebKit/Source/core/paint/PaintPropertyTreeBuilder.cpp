@@ -879,14 +879,11 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
       auto ancestor_reasons =
           context.current.scroll->GetMainThreadScrollingReasons();
       auto reasons = GetMainThreadScrollingReasons(object, ancestor_reasons);
-      bool scroll_node_needed_for_main_thread_reasons =
-          ancestor_reasons != reasons;
 
       const LayoutBox& box = ToLayoutBox(object);
       auto* scrollable_area = box.GetScrollableArea();
       IntSize scroll_offset = box.ScrolledContentOffset();
-      if (scroll_node_needed_for_main_thread_reasons ||
-          !scroll_offset.IsZero() || scrollable_area->ScrollsOverflow()) {
+      if (!scroll_offset.IsZero() || scrollable_area->ScrollsOverflow()) {
         needs_scroll_properties = true;
         auto& properties =
             object.GetMutableForPainting().EnsurePaintProperties();
