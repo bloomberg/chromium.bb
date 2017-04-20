@@ -18,14 +18,6 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   TestSystemTrayDelegate();
   ~TestSystemTrayDelegate() override;
 
-  // Changes the current login status in the test. This also invokes
-  // UpdateAfterLoginStatusChange(). Usually this is called in the test code to
-  // set up a login status. This will fit to most of the test cases, but this
-  // cannot be set during the initialization. To test the initialization,
-  // consider using SetInitialLoginStatus() instead.
-  // TODO(jamescook): Eliminate this method and |login_status_|.
-  void SetLoginStatus(LoginStatus login_status);
-
   // Updates the session length limit so that the limit will come from now in
   // |new_limit|.
   void SetSessionLengthLimitForTest(const base::TimeDelta& new_limit);
@@ -48,9 +40,8 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   void GetAvailableIMEList(IMEInfoList* list) override;
 
  private:
-  LoginStatus login_status_;
   base::TimeDelta session_length_limit_;
-  bool session_length_limit_set_;
+  bool session_length_limit_set_ = false;
   IMEInfo current_ime_;
   IMEInfoList ime_list_;
 

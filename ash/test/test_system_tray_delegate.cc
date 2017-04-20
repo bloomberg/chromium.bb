@@ -14,15 +14,9 @@
 namespace ash {
 namespace test {
 
-TestSystemTrayDelegate::TestSystemTrayDelegate()
-    : login_status_(LoginStatus::USER), session_length_limit_set_(false) {}
+TestSystemTrayDelegate::TestSystemTrayDelegate() = default;
 
-TestSystemTrayDelegate::~TestSystemTrayDelegate() {}
-
-void TestSystemTrayDelegate::SetLoginStatus(LoginStatus login_status) {
-  login_status_ = login_status;
-  Shell::Get()->UpdateAfterLoginStatusChange(login_status);
-}
+TestSystemTrayDelegate::~TestSystemTrayDelegate() = default;
 
 void TestSystemTrayDelegate::SetSessionLengthLimitForTest(
     const base::TimeDelta& new_limit) {
@@ -43,15 +37,7 @@ void TestSystemTrayDelegate::SetAvailableIMEList(const IMEInfoList& list) {
 }
 
 LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
-  // At new user image screen manager->IsUserLoggedIn() would return true
-  // but there's no browser session available yet so use SessionStarted().
-  SessionController* controller = Shell::Get()->session_controller();
-
-  if (!controller->IsActiveUserSessionStarted())
-    return LoginStatus::NOT_LOGGED_IN;
-  if (controller->IsScreenLocked())
-    return LoginStatus::LOCKED;
-  return login_status_;
+  return Shell::Get()->session_controller()->login_status();
 }
 
 std::string TestSystemTrayDelegate::GetSupervisedUserManager() const {
