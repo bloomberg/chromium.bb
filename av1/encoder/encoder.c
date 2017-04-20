@@ -2717,10 +2717,10 @@ static void generate_psnr_packet(AV1_COMP *cpi) {
   int i;
   PSNR_STATS psnr;
 #if CONFIG_HIGHBITDEPTH
-  aom_calc_highbd_psnr(cpi->Source, cpi->common.frame_to_show, &psnr,
+  aom_calc_highbd_psnr(cpi->source, cpi->common.frame_to_show, &psnr,
                        cpi->td.mb.e_mbd.bd, cpi->oxcf.input_bit_depth);
 #else
-  aom_calc_psnr(cpi->Source, cpi->common.frame_to_show, &psnr);
+  aom_calc_psnr(cpi->source, cpi->common.frame_to_show, &psnr);
 #endif
 
   for (i = 0; i < 4; ++i) {
@@ -3507,7 +3507,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
     aom_usec_timer_start(&timer);
 
-    av1_pick_filter_level(cpi->Source, cpi, cpi->sf.lpf_pick);
+    av1_pick_filter_level(cpi->source, cpi, cpi->sf.lpf_pick);
 
     aom_usec_timer_mark(&timer);
     cpi->time_pick_lpf += aom_usec_timer_elapsed(&timer);
@@ -3532,14 +3532,14 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     cm->nb_cdef_strengths = 1;
   } else {
     // Find cm->dering_level, cm->clpf_strength_u and cm->clpf_strength_v
-    av1_cdef_search(cm->frame_to_show, cpi->Source, cm, xd);
+    av1_cdef_search(cm->frame_to_show, cpi->source, cm, xd);
 
     // Apply the filter
     av1_cdef_frame(cm->frame_to_show, cm, xd);
   }
 #endif
 #if CONFIG_LOOP_RESTORATION
-  av1_pick_filter_restoration(cpi->Source, cpi, cpi->sf.lpf_pick);
+  av1_pick_filter_restoration(cpi->source, cpi, cpi->sf.lpf_pick);
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
@@ -3749,7 +3749,7 @@ static void output_frame_level_debug_stats(AV1_COMP *cpi) {
 
   aom_clear_system_state();
 
-  recon_err = aom_get_y_sse(cpi->Source, get_frame_new_buffer(cm));
+  recon_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
 
   if (cpi->twopass.total_left_stats.coded_error != 0.0)
     fprintf(f, "%10u %dx%d %d %d %10d %10d %10d %10d"
@@ -4031,16 +4031,16 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
       cpi->oxcf.resize_mode == RESIZE_DYNAMIC &&
       cpi->un_scaled_source->y_width == (cm->width << 1) &&
       cpi->un_scaled_source->y_height == (cm->height << 1)) {
-    cpi->Source = av1_scale_if_required_fast(cm, cpi->un_scaled_source,
+    cpi->source = av1_scale_if_required_fast(cm, cpi->un_scaled_source,
                                              &cpi->scaled_source);
     if (cpi->unscaled_last_source != NULL)
-      cpi->Last_Source = av1_scale_if_required_fast(
+      cpi->last_source = av1_scale_if_required_fast(
           cm, cpi->unscaled_last_source, &cpi->scaled_last_source);
   } else {
-    cpi->Source =
+    cpi->source =
         av1_scale_if_required(cm, cpi->un_scaled_source, &cpi->scaled_source);
     if (cpi->unscaled_last_source != NULL)
-      cpi->Last_Source = av1_scale_if_required(cm, cpi->unscaled_last_source,
+      cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
                                                &cpi->scaled_last_source);
   }
 
@@ -4159,11 +4159,11 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
                                        &frame_over_shoot_limit);
     }
 
-    cpi->Source =
+    cpi->source =
         av1_scale_if_required(cm, cpi->un_scaled_source, &cpi->scaled_source);
 
     if (cpi->unscaled_last_source != NULL)
-      cpi->Last_Source = av1_scale_if_required(cm, cpi->unscaled_last_source,
+      cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
                                                &cpi->scaled_last_source);
 
     if (frame_is_intra_only(cm) == 0) {
@@ -4256,12 +4256,12 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
 #if CONFIG_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
-          kf_err = aom_highbd_get_y_sse(cpi->Source, get_frame_new_buffer(cm));
+          kf_err = aom_highbd_get_y_sse(cpi->source, get_frame_new_buffer(cm));
         } else {
-          kf_err = aom_get_y_sse(cpi->Source, get_frame_new_buffer(cm));
+          kf_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
         }
 #else
-        kf_err = aom_get_y_sse(cpi->Source, get_frame_new_buffer(cm));
+        kf_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
 #endif  // CONFIG_HIGHBITDEPTH
 
         // Prevent possible divide by zero error below for perfect KF
@@ -4871,13 +4871,13 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       int lsb, msb;
 /* quasi-random initialization of current_frame_id for a key frame */
 #if CONFIG_HIGHBITDEPTH
-      if (cpi->Source->flags & YV12_FLAG_HIGHBITDEPTH) {
-        lsb = CONVERT_TO_SHORTPTR(cpi->Source->y_buffer)[0] & 0xff;
-        msb = CONVERT_TO_SHORTPTR(cpi->Source->y_buffer)[1] & 0xff;
+      if (cpi->source->flags & YV12_FLAG_HIGHBITDEPTH) {
+        lsb = CONVERT_TO_SHORTPTR(cpi->source->y_buffer)[0] & 0xff;
+        msb = CONVERT_TO_SHORTPTR(cpi->source->y_buffer)[1] & 0xff;
       } else {
 #endif
-        lsb = cpi->Source->y_buffer[0] & 0xff;
-        msb = cpi->Source->y_buffer[1] & 0xff;
+        lsb = cpi->source->y_buffer[0] & 0xff;
+        msb = cpi->source->y_buffer[1] & 0xff;
 #if CONFIG_HIGHBITDEPTH
       }
 #endif
@@ -4909,12 +4909,12 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #if CONFIG_HIGHBITDEPTH
     if (cm->use_highbitdepth) {
       cpi->ambient_err =
-          aom_highbd_get_y_sse(cpi->Source, get_frame_new_buffer(cm));
+          aom_highbd_get_y_sse(cpi->source, get_frame_new_buffer(cm));
     } else {
-      cpi->ambient_err = aom_get_y_sse(cpi->Source, get_frame_new_buffer(cm));
+      cpi->ambient_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
     }
 #else
-    cpi->ambient_err = aom_get_y_sse(cpi->Source, get_frame_new_buffer(cm));
+    cpi->ambient_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
 #endif  // CONFIG_HIGHBITDEPTH
   }
 
@@ -5391,7 +5391,7 @@ static void compute_internal_stats(AV1_COMP *cpi) {
   }
 #endif
   if (cm->show_frame) {
-    const YV12_BUFFER_CONFIG *orig = cpi->Source;
+    const YV12_BUFFER_CONFIG *orig = cpi->source;
     const YV12_BUFFER_CONFIG *recon = cpi->common.frame_to_show;
     double y, u, v, frame_all;
 
@@ -5539,7 +5539,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       *size = 0;
       return -1;
     }
-    cpi->Source = &source->img;
+    cpi->source = &source->img;
     // TODO(zoeliu): To track down to determine whether it's needed to adjust
     // the frame rate.
     *time_stamp = source->ts_start;
@@ -5661,7 +5661,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 
   if (source) {
-    cpi->un_scaled_source = cpi->Source =
+    cpi->un_scaled_source = cpi->source =
         force_src_buffer ? force_src_buffer : &source->img;
 
     cpi->unscaled_last_source = last_source != NULL ? &last_source->img : NULL;

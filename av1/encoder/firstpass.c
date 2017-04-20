@@ -527,7 +527,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
   av1_setup_block_planes(&x->e_mbd, cm->subsampling_x, cm->subsampling_y);
 
-  av1_setup_src_planes(x, cpi->Source, 0, 0);
+  av1_setup_src_planes(x, cpi->source, 0, 0);
   av1_setup_dst_planes(xd->plane, new_yv12, 0, 0);
 
   if (!frame_is_intra_only(cm)) {

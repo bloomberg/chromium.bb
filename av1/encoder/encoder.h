@@ -363,8 +363,8 @@ typedef struct AV1_COMP {
   struct lookahead_ctx *lookahead;
   struct lookahead_entry *alt_ref_source;
 
-  YV12_BUFFER_CONFIG *Source;
-  YV12_BUFFER_CONFIG *Last_Source;  // NULL for first frame and alt_ref frames
+  YV12_BUFFER_CONFIG *source;
+  YV12_BUFFER_CONFIG *last_source;  // NULL for first frame and alt_ref frames
   YV12_BUFFER_CONFIG *un_scaled_source;
   YV12_BUFFER_CONFIG scaled_source;
   YV12_BUFFER_CONFIG *unscaled_last_source;

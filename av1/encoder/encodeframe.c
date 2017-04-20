@@ -307,7 +307,7 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
 #endif
 
   // Set up source buffers.
-  av1_setup_src_planes(x, cpi->Source, mi_row, mi_col);
+  av1_setup_src_planes(x, cpi->source, mi_row, mi_col);
 
   // R/D setup.
   x->rddiv = cpi->rd.RDDIV;
@@ -4778,7 +4778,7 @@ static void init_encode_frame_mb_context(AV1_COMP *cpi) {
   MACROBLOCKD *const xd = &x->e_mbd;
 
   // Copy data over into macro block data structures.
-  av1_setup_src_planes(x, cpi->Source, 0, 0);
+  av1_setup_src_planes(x, cpi->source, 0, 0);
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
 }
@@ -5168,7 +5168,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
 #if CONFIG_GLOBAL_MOTION
   av1_zero(cpi->global_motion_used);
-  if (cpi->common.frame_type == INTER_FRAME && cpi->Source &&
+  if (cpi->common.frame_type == INTER_FRAME && cpi->source &&
       !cpi->global_motion_search_done) {
     YV12_BUFFER_CONFIG *ref_buf;
     int frame;
@@ -5196,7 +5196,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           }
 
           compute_global_motion_feature_based(
-              model, cpi->Source, ref_buf,
+              model, cpi->source, ref_buf,
 #if CONFIG_HIGHBITDEPTH
               cpi->common.bit_depth,
 #endif  // CONFIG_HIGHBITDEPTH
@@ -5215,9 +5215,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                   xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_HIGHBITDEPTH
                   ref_buf->y_buffer, ref_buf->y_width, ref_buf->y_height,
-                  ref_buf->y_stride, cpi->Source->y_buffer,
-                  cpi->Source->y_width, cpi->Source->y_height,
-                  cpi->Source->y_stride, 3);
+                  ref_buf->y_stride, cpi->source->y_buffer,
+                  cpi->source->y_width, cpi->source->y_height,
+                  cpi->source->y_stride, 3);
               if (erroradv_this_motion < best_erroradvantage) {
                 best_erroradvantage = erroradv_this_motion;
                 // Save the wm_params modified by refine_integerized_param()

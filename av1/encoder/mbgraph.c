@@ -395,7 +395,7 @@ void av1_update_mbgraph_stats(AV1_COMP *cpi) {
     assert(q_cur != NULL);
 
     update_mbgraph_frame_stats(cpi, frame_stats, &q_cur->img, golden_ref,
-                               cpi->Source);
+                               cpi->source);
   }
 
   aom_clear_system_state();
