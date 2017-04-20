@@ -185,7 +185,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   bool IsSpellCheckingEnabled() const override;
   void ReplaceMisspelledRange(const WebString&) override;
   void RemoveSpellingMarkers() override;
-  void SpellingMarkerOffsetsForTest(WebVector<unsigned>* offsets) override;
   void RemoveSpellingMarkersUnderWords(
       const WebVector<WebString>& words) override;
   void SetContentSettingsClient(WebContentSettingsClient*) override;

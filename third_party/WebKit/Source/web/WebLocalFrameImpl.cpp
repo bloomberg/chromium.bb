@@ -1115,16 +1115,6 @@ void WebLocalFrameImpl::RemoveSpellingMarkers() {
   GetFrame()->GetSpellChecker().RemoveSpellingMarkers();
 }
 
-void WebLocalFrameImpl::SpellingMarkerOffsetsForTest(
-    WebVector<unsigned>* offsets) {
-  Vector<unsigned> result;
-  const DocumentMarkerVector& document_markers =
-      GetFrame()->GetDocument()->Markers().Markers();
-  for (size_t i = 0; i < document_markers.size(); ++i)
-    result.push_back(document_markers[i]->StartOffset());
-  offsets->Assign(result);
-}
-
 void WebLocalFrameImpl::RemoveSpellingMarkersUnderWords(
     const WebVector<WebString>& words) {
   Vector<String> converted_words;
