@@ -37,7 +37,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -532,22 +531,15 @@ DrawingBuffer::GpuMemoryBufferColorBufferParameters() {
   parameters.target = GC3D_TEXTURE_RECTANGLE_ARB;
 
   if (want_alpha_channel_) {
-    parameters.creation_internal_color_format = GL_RGBA;
-    parameters.internal_color_format = GL_RGBA;
+    parameters.allocate_alpha_channel = true;
   } else if (ContextProvider()
                  ->GetCapabilities()
                  .chromium_image_rgb_emulation) {
-    parameters.creation_internal_color_format = GL_RGB;
-    parameters.internal_color_format = GL_RGBA;
+    parameters.allocate_alpha_channel = false;
   } else {
-    GLenum format =
-        DefaultBufferRequiresAlphaChannelToBePreserved() ? GL_RGBA : GL_RGB;
-    parameters.creation_internal_color_format = format;
-    parameters.internal_color_format = format;
+    parameters.allocate_alpha_channel =
+        DefaultBufferRequiresAlphaChannelToBePreserved();
   }
-
-  // Unused when CHROMIUM_image is being used.
-  parameters.color_format = 0;
   return parameters;
 #else
   return TextureColorBufferParameters();
@@ -559,21 +551,14 @@ DrawingBuffer::TextureColorBufferParameters() {
   ColorBufferParameters parameters;
   parameters.target = GL_TEXTURE_2D;
   if (want_alpha_channel_) {
-    parameters.internal_color_format = GL_RGBA;
-    parameters.creation_internal_color_format = GL_RGBA;
-    parameters.color_format = GL_RGBA;
+    parameters.allocate_alpha_channel = true;
   } else if (ContextProvider()
                  ->GetCapabilities()
                  .emulate_rgb_buffer_with_rgba) {
-    parameters.internal_color_format = GL_RGBA;
-    parameters.creation_internal_color_format = GL_RGBA;
-    parameters.color_format = GL_RGBA;
+    parameters.allocate_alpha_channel = true;
   } else {
-    GLenum format =
-        DefaultBufferRequiresAlphaChannelToBePreserved() ? GL_RGBA : GL_RGB;
-    parameters.creation_internal_color_format = format;
-    parameters.internal_color_format = format;
-    parameters.color_format = format;
+    parameters.allocate_alpha_channel =
+        DefaultBufferRequiresAlphaChannelToBePreserved();
   }
   return parameters;
 }
@@ -1156,17 +1141,24 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
       Platform::Current()->GetGpuMemoryBufferManager();
   if (ShouldUseChromiumImage() && gpu_memory_buffer_manager) {
     parameters = GpuMemoryBufferColorBufferParameters();
-    gfx::BufferFormat buffer_format = gpu::DefaultBufferFormatForImageFormat(
-        parameters.creation_internal_color_format);
+    gfx::BufferFormat buffer_format;
+    GLenum gl_format = GL_NONE;
+    if (parameters.allocate_alpha_channel) {
+      buffer_format = gfx::BufferFormat::RGBA_8888;
+      gl_format = GL_RGBA;
+    } else {
+      buffer_format = gfx::BufferFormat::BGRX_8888;
+      gl_format = GL_RGB;
+    }
     gpu_memory_buffer = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
         gfx::Size(size), buffer_format, gfx::BufferUsage::SCANOUT,
         gpu::kNullSurfaceHandle);
     if (gpu_memory_buffer) {
       if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
         gpu_memory_buffer->SetColorSpaceForScanout(color_space_);
-      image_id = gl_->CreateImageCHROMIUM(
-          gpu_memory_buffer->AsClientBuffer(), size.Width(), size.Height(),
-          parameters.creation_internal_color_format);
+      image_id =
+          gl_->CreateImageCHROMIUM(gpu_memory_buffer->AsClientBuffer(),
+                                   size.Width(), size.Height(), gl_format);
       if (!image_id)
         gpu_memory_buffer.reset();
     }
@@ -1191,21 +1183,14 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     gl_->BindTexImage2DCHROMIUM(parameters.target, image_id);
   } else {
     if (storage_texture_supported_) {
-      GLenum internal_storage_format = GL_NONE;
-      if (parameters.creation_internal_color_format == GL_RGB) {
-        internal_storage_format = GL_RGB8;
-      } else if (parameters.creation_internal_color_format == GL_RGBA) {
-        internal_storage_format = GL_RGBA8;
-      } else {
-        NOTREACHED();
-      }
+      GLenum internal_storage_format =
+          parameters.allocate_alpha_channel ? GL_RGBA8 : GL_RGB8;
       gl_->TexStorage2DEXT(GL_TEXTURE_2D, 1, internal_storage_format,
                            size.Width(), size.Height());
     } else {
-      gl_->TexImage2D(parameters.target, 0,
-                      parameters.creation_internal_color_format, size.Width(),
-                      size.Height(), 0, parameters.color_format,
-                      GL_UNSIGNED_BYTE, 0);
+      GLenum gl_format = parameters.allocate_alpha_channel ? GL_RGBA : GL_RGB;
+      gl_->TexImage2D(parameters.target, 0, gl_format, size.Width(),
+                      size.Height(), 0, gl_format, GL_UNSIGNED_BYTE, 0);
     }
   }
 

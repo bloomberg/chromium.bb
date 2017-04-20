@@ -293,13 +293,7 @@ class PLATFORM_EXPORT DrawingBuffer
   struct ColorBufferParameters {
     DISALLOW_NEW();
     GLenum target = 0;
-    GLenum internal_color_format = 0;
-
-    // The internal color format used when allocating storage for the
-    // texture. This may be different from internalColorFormat if RGB
-    // emulation is required.
-    GLenum creation_internal_color_format = 0;
-    GLenum color_format = 0;
+    bool allocate_alpha_channel = false;
   };
 
   struct ColorBuffer : public RefCounted<ColorBuffer> {

@@ -50,18 +50,6 @@ gfx::BufferFormat BufferFormatForInternalFormat(unsigned internalformat) {
 
 }  // namespace
 
-gfx::BufferFormat DefaultBufferFormatForImageFormat(unsigned internalformat) {
-  switch (internalformat) {
-    case GL_RGB:
-      return gfx::BufferFormat::BGRX_8888;
-    case GL_RGBA:
-      return gfx::BufferFormat::RGBA_8888;
-    default:
-      NOTREACHED();
-      return gfx::BufferFormat::RGBA_8888;
-  }
-}
-
 bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     unsigned internalformat,
     gfx::BufferFormat format) {
