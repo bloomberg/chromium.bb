@@ -28,6 +28,7 @@ The quickest way to understand how the mergers, helper functions and match
 objects work together is to look at the unit tests.
 """
 
+import collections
 import json
 import logging
 import pprint
@@ -65,7 +66,7 @@ class TypeMatch(Match):
         return isinstance(obj, self.types)
 
 
-class NameMatch(Match):
+class NameRegexMatch(Match):
     """Match based on regex being found in name.
 
     Use start line (^) and end of line ($) anchors if you want to match on
@@ -94,22 +95,23 @@ class ValueMatch(Match):
 class MergeFailure(Exception):
     """Base exception for merge failing."""
 
-    def __init__(self, msg, name, obj_a, obj_b):
+    def __init__(self, msg, name, objs):
         emsg = (
             "Failure merging {name}: "
-            " {msg}\nTrying to merge {a} and {b}."
+            " {msg}\nTrying to merge {objs}."
         ).format(
             name=name,
             msg=msg,
-            a=obj_a,
-            b=obj_b,
+            objs=objs,
         )
         Exception.__init__(self, emsg)
 
     @classmethod
-    def assert_type_eq(cls, name, obj_a, obj_b):
-        if type(obj_a) != type(obj_b):
-            raise cls("Types don't match", name, obj_a, obj_b)
+    def assert_type_eq(cls, name, objs):
+        obj_0 = objs[0]
+        for obj_n in objs[1:]:
+            if type(obj_0) != type(obj_n):
+                raise cls("Types don't match", name, (obj_0, obj_n))
 
 
 class Merger(object):
@@ -131,7 +133,7 @@ class Merger(object):
 
 
 class JSONMerger(Merger):
-    """Merge two JSON-like objects.
+    """Merge JSON-like objects.
 
     For adding helpers;
 
@@ -140,7 +142,7 @@ class JSONMerger(Merger):
         When the function returns true, the merge_func will be called.
 
         merge_func is a function of the form
-            def f(obj_a, obj_b, name=None) -> obj_merged
+            def f(list_of_objs, name=None) -> obj_merged
         Merge functions should *never* modify the input arguments.
     """
 
@@ -152,46 +154,60 @@ class JSONMerger(Merger):
         self.add_helper(
             TypeMatch(types.DictType), self.merge_dictlike)
 
-    def fallback_matcher(self, obj_a, obj_b, name=None):
+    def fallback_matcher(self, objs, name=None):
         raise MergeFailure(
-            "No merge helper found!", name, obj_a, obj_b)
+            "No merge helper found!", name, objs)
 
-    def merge_equal(self, obj_a, obj_b, name=None):
-        """Merge two equal objects together."""
-        if obj_a != obj_b:
-            raise MergeFailure(
-                "Unable to merge!", name, obj_a, obj_b)
-        return obj_a
+    def merge_equal(self, objs, name=None):
+        """Merge equal objects together."""
+        obj_0 = objs[0]
+        for obj_n in objs[1:]:
+            if obj_0 != obj_n:
+                raise MergeFailure(
+                    "Unable to merge!", name, (obj_0, obj_n))
+        return obj_0
 
-    def merge_listlike(self, list_a, list_b, name=None):  # pylint: disable=unused-argument
-        """Merge two things which are "list like" (tuples, lists, sets)."""
-        assert type(list_a) == type(list_b), (
-            "Types of %r and %r don't match, refusing to merge." % (
-                list_a, list_b))
-        output = list(list_a)
-        output.extend(list_b)
-        return list_a.__class__(output)
+    def merge_listlike(self, lists, name=None):  # pylint: disable=unused-argument
+        """Merge things which are "list like" (tuples, lists, sets)."""
+        MergeFailure.assert_type_eq(name, lists)
+        output = list(lists[0])
+        for list_n in lists[1:]:
+            output.extend(list_n)
+        return lists[0].__class__(output)
 
-    def merge_dictlike(self, dict_a, dict_b, name=None):
-        """Merge two things which are dictionaries."""
-        assert type(dict_a) == type(dict_b), (
-            "Types of %r and %r don't match, refusing to merge." % (
-                dict_a, dict_b))
-        dict_out = dict_a.__class__({})
-        for key in dict_a.keys() + dict_b.keys():
-            if key in dict_a and key in dict_b:
-                dict_out[key] = self.merge(
-                    dict_a[key], dict_b[key],
-                    name=join_name(name, key))
-            elif key in dict_a:
-                dict_out[key] = dict_a[key]
-            elif key in dict_b:
-                dict_out[key] = dict_b[key]
-            else:
-                assert False
+    def merge_dictlike(self, dicts, name=None, order_cls=collections.OrderedDict):
+        """Merge things which are dictionaries.
+
+        Args:
+            dicts (list of dict): Dictionary like objects to merge (should all
+                be the same type).
+            name (str): Name of the objects being merged (used for error
+                messages).
+            order_cls: Dict like object class used to produce key ordering.
+                Defaults to collections.OrderedDict which means all keys in
+                dicts[0] come before all keys in dicts[1], etc.
+
+        Returns:
+            dict: Merged dictionary object of same type as the objects in
+            dicts.
+        """
+        MergeFailure.assert_type_eq(name, dicts)
+
+        dict_mid = order_cls()
+        for dobj in dicts:
+            for key in dobj:
+                dict_mid.setdefault(key, []).append(dobj[key])
+
+        dict_out = dicts[0].__class__({})
+        for k, v in dict_mid.iteritems():
+            assert v
+            if len(v) == 1:
+                dict_out[k] = v[0]
+            elif len(v) > 1:
+                dict_out[k] = self.merge(v, name=join_name(name, k))
         return dict_out
 
-    def merge(self, obj_a, obj_b, name=""):
+    def merge(self, objs, name=""):
         """Generic merge function.
 
         name is a string representing the current key value separated by
@@ -201,30 +217,27 @@ class JSONMerger(Merger):
 
         Then the name of the value 3 is 'file.json:key1:key2'
         """
-        if obj_a is None and obj_b is None:
-            return None
-        elif obj_b is None:
-            return obj_a
-        elif obj_a is None:
-            return obj_b
+        objs = [o for o in objs if o is not None]
 
-        MergeFailure.assert_type_eq(name, obj_a, obj_b)
+        if not objs:
+            return None
+
+        MergeFailure.assert_type_eq(name, objs)
 
         # Try the merge helpers.
         for match_func, merge_func in reversed(self.helpers):
-            if match_func(obj_a, name):
-                return merge_func(obj_a, obj_b, name=name)
-            if match_func(obj_b, name):
-                return merge_func(obj_a, obj_b, name=name)
+            for obj in objs:
+                if match_func(obj, name):
+                    return merge_func(objs, name=name)
 
-        return self.fallback_matcher(obj_a, obj_b, name=name)
+        return self.fallback_matcher(objs, name=name)
 
 
 # Classes for recursively merging a directory together.
 # ------------------------------------------------------------------------
 
 
-class FilenameMatch(object):
+class FilenameRegexMatch(object):
     """Match based on name matching a regex."""
 
     def __init__(self, regex):
@@ -234,7 +247,7 @@ class FilenameMatch(object):
         return self.regex.search(filename) is not None
 
     def __str__(self):
-        return "FilenameMatch(%r)" % self.regex.pattern
+        return "FilenameRegexMatch(%r)" % self.regex.pattern
 
     __repr__ = __str__
 
@@ -275,7 +288,7 @@ class MergeFilesMatchingContents(MergeFiles):
                 '\n'.join(
                     ['File contents don\'t match:'] + nonmatching),
                 out_filename,
-                to_merge[0], to_merge[1:])
+                to_merge)
 
         self.filesystem.write_binary_file(out_filename, data)
 
@@ -322,37 +335,39 @@ class MergeFilesJSONP(MergeFiles):
 
     def __call__(self, out_filename, to_merge):
         try:
-            before_a, output_data, after_a = self.load_jsonp(
+            before_0, new_json_data_0, after_0 = self.load_jsonp(
                 self.filesystem.open_binary_file_for_reading(to_merge[0]))
         except ValueError as e:
-            raise MergeFailure(e.message, to_merge[0], None, None)
+            raise MergeFailure(e.message, to_merge[0], None)
 
-        for filename in to_merge[1:]:
+        input_data = [new_json_data_0]
+        for filename_n in to_merge[1:]:
             try:
-                before_b, new_json_data, after_b = self.load_jsonp(
-                    self.filesystem.open_binary_file_for_reading(filename))
+                before_n, new_json_data_n, after_n = self.load_jsonp(
+                    self.filesystem.open_binary_file_for_reading(filename_n))
             except ValueError as e:
-                raise MergeFailure(e.message, filename, None, None)
+                raise MergeFailure(e.message, filename_n, None)
 
-            if before_a != before_b:
+            if before_0 != before_n:
                 raise MergeFailure(
-                    "jsonp starting data from %s doesn't match." % filename,
+                    "jsonp starting data from %s doesn't match." % filename_n,
                     out_filename,
-                    before_a, before_b)
+                    [before_0, before_n])
 
-            if after_a != after_b:
+            if after_0 != after_n:
                 raise MergeFailure(
-                    "jsonp ending data from %s doesn't match." % filename,
+                    "jsonp ending data from %s doesn't match." % filename_n,
                     out_filename,
-                    after_a, after_b)
+                    [after_0, after_n])
 
-            output_data = self._json_data_merger.merge(output_data, new_json_data, filename)
+            input_data.append(new_json_data_n)
 
+        output_data = self._json_data_merger.merge(input_data, name=out_filename)
         output_data.update(self._json_data_value_overrides)
 
         self.dump_jsonp(
             self.filesystem.open_binary_file_for_writing(out_filename),
-            before_a, output_data, after_a)
+            before_0, output_data, after_0)
 
     @staticmethod
     def load_jsonp(fd):
@@ -465,7 +480,7 @@ class DirMerger(Merger):
             out_path = self.filesystem.join(output_dir, partial_file_path)
             if self.filesystem.exists(out_path):
                 raise MergeFailure(
-                    'File %s already exist in output.', out_path, None, None)
+                    'File %s already exist in output.', out_path, None)
 
             dirname = self.filesystem.dirname(out_path)
             if not self.filesystem.exists(dirname):
@@ -519,7 +534,7 @@ class JSONTestResultsMerger(JSONMerger):
         ]
         for match_name in matching:
             self.add_helper(
-                NameMatch(match_name),
+                NameRegexMatch(match_name),
                 self.merge_equal)
 
         # These keys are accumulated sums we want to add together.
@@ -535,31 +550,31 @@ class JSONTestResultsMerger(JSONMerger):
         ]
         for match_name in addable:
             self.add_helper(
-                NameMatch(match_name),
-                lambda a, b, name=None: a + b)
+                NameRegexMatch(match_name),
+                lambda o, name=None: sum(o))
 
         # If any shard is interrupted, mark the whole thing as interrupted.
         self.add_helper(
-            NameMatch(':interrupted$'),
-            lambda a, b, name=None: a or b)
+            NameRegexMatch(':interrupted$'),
+            lambda o, name=None: bool(sum(o)))
 
         # Layout test directory value is randomly created on each shard, so
         # clear it.
         self.add_helper(
-            NameMatch(':layout_tests_dir$'),
-            lambda a, b, name=None: None)
+            NameRegexMatch(':layout_tests_dir$'),
+            lambda o, name=None: None)
 
         # seconds_since_epoch is the start time, so we just take the earliest.
         self.add_helper(
-            NameMatch(':seconds_since_epoch$'),
-            lambda a, b, name=None: min(a, b))
+            NameRegexMatch(':seconds_since_epoch$'),
+            lambda o, name=None: min(*o))
 
-    def fallback_matcher(self, obj_a, obj_b, name=None):
+    def fallback_matcher(self, objs, name=None):
         if self.allow_unknown_if_matching:
-            result = self.merge_equal(obj_a, obj_b, name)
+            result = self.merge_equal(objs, name)
             _log.warning('Unknown value %s, accepting anyway as it matches.', name)
             return result
-        return JSONMerger.fallback_matcher(self, obj_a, obj_b, name)
+        return JSONMerger.fallback_matcher(self, objs, name)
 
 
 class LayoutTestDirMerger(DirMerger):
@@ -574,20 +589,20 @@ class LayoutTestDirMerger(DirMerger):
         basic_json_data_merger = JSONMerger()
         basic_json_data_merger.fallback_matcher = basic_json_data_merger.merge_equal
         self.add_helper(
-            FilenameMatch('\\.json'),
+            FilenameRegexMatch(r'\.json$'),
             MergeFilesJSONP(self.filesystem, basic_json_data_merger))
 
         # access_log and error_log are httpd log files which are sortable.
         self.add_helper(
-            FilenameMatch('access_log\\.txt'),
+            FilenameRegexMatch(r'access_log\.txt$'),
             MergeFilesLinesSorted(self.filesystem))
         self.add_helper(
-            FilenameMatch('error_log\\.txt'),
+            FilenameRegexMatch(r'error_log\.txt$'),
             MergeFilesLinesSorted(self.filesystem))
 
         # pywebsocket files aren't particularly useful, so just save them.
         self.add_helper(
-            FilenameMatch('pywebsocket\\.ws\\.log-.*-err.txt'),
+            FilenameRegexMatch(r'pywebsocket\.ws\.log-.*-err\.txt$'),
             MergeFilesKeepFiles(self.filesystem))
 
         # These JSON files have "result style" JSON in them.
@@ -598,11 +613,11 @@ class LayoutTestDirMerger(DirMerger):
             json_data_value_overrides=results_json_value_overrides or {})
 
         self.add_helper(
-            FilenameMatch('failing_results.json'),
+            FilenameRegexMatch(r'failing_results\.json$'),
             results_json_file_merger)
         self.add_helper(
-            FilenameMatch('full_results.json'),
+            FilenameRegexMatch(r'full_results\.json$'),
             results_json_file_merger)
         self.add_helper(
-            FilenameMatch('output.json'),
+            FilenameRegexMatch(r'output\.json$'),
             results_json_file_merger)

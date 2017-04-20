@@ -44,16 +44,16 @@ class JSONMergerTests(unittest.TestCase):
 
         for expected, (inputa, inputb) in tests:
             self.assertListEqual(
-                expected, m.merge_listlike(inputa, inputb))
+                expected, m.merge_listlike([inputa, inputb]))
             self.assertListEqual(
-                expected, m.merge(inputa, inputb))
+                expected, m.merge([inputa, inputb]))
             self.assertSequenceEqual(
                 expected,
-                m.merge_listlike(tuple(inputa), tuple(inputb)),
+                m.merge_listlike([tuple(inputa), tuple(inputb)]),
                 types.TupleType)
             self.assertSequenceEqual(
                 expected,
-                m.merge(tuple(inputa), tuple(inputb)),
+                m.merge([tuple(inputa), tuple(inputb)]),
                 types.TupleType)
 
     def test_merge_simple_dict(self):
@@ -75,10 +75,10 @@ class JSONMergerTests(unittest.TestCase):
         ]
 
         for expected, (inputa, inputb) in tests:
-            self.assertDictEqual(expected, m.merge_dictlike(inputa, inputb))
+            self.assertDictEqual(expected, m.merge_dictlike([inputa, inputb]))
 
         self.assertRaises(
-            merge_results.MergeFailure, m.merge_dictlike, {'a': 1}, {'a': 2})
+            merge_results.MergeFailure, m.merge_dictlike, [{'a': 1}, {'a': 2}])
 
     def test_merge_compound_dict(self):
         m = merge_results.JSONMerger()
@@ -91,7 +91,7 @@ class JSONMergerTests(unittest.TestCase):
             ({'a': {'b': 1, 'c': 2}}, ({'a': {'b': 1}}, {'a': {'c': 2}})),
         ]
         for expected, (inputa, inputb) in tests:
-            self.assertDictEqual(expected, m.merge_dictlike(inputa, inputb))
+            self.assertDictEqual(expected, m.merge_dictlike([inputa, inputb]))
 
     def test_merge(self):
         m = merge_results.JSONMerger()
@@ -143,10 +143,10 @@ class JSONMergerTests(unittest.TestCase):
         ]
 
         for expected, (inputa, inputb) in tests:
-            self.assertEqual(expected, m.merge(inputa, inputb))
+            self.assertEqual(expected, m.merge([inputa, inputb]))
 
         self.assertRaises(
-            merge_results.MergeFailure, m.merge, {'a': 1}, {'a': 2})
+            merge_results.MergeFailure, m.merge, [{'a': 1}, {'a': 2}])
 
         # Ordered values
         a = OrderedDict({'a': 1})
@@ -160,49 +160,49 @@ class JSONMergerTests(unittest.TestCase):
         b_before_a['b'] = 2
         b_before_a['a'] = 1
 
-        r1 = m.merge(a, b)
+        r1 = m.merge([a, b])
         self.assertSequenceEqual(a_before_b.items(), r1.items())
         self.assertIsInstance(r1, OrderedDict)
 
-        r2 = m.merge(b, a)
+        r2 = m.merge([b, a])
         self.assertSequenceEqual(b_before_a.items(), r2.items())
         self.assertIsInstance(r2, OrderedDict)
 
     def test_custom_match_on_name(self):
         m = merge_results.JSONMerger()
         m.add_helper(
-            merge_results.NameMatch('a'),
-            lambda a, b, name=None: a + b)
+            merge_results.NameRegexMatch('a'),
+            lambda o, name=None: sum(o))
 
-        self.assertDictEqual({'a': 3}, m.merge({'a': 1}, {'a': 2}))
+        self.assertDictEqual({'a': 3}, m.merge([{'a': 1}, {'a': 2}]))
         self.assertRaises(
-            merge_results.MergeFailure, m.merge, {'b': 1}, {'b': 2})
+            merge_results.MergeFailure, m.merge, [{'b': 1}, {'b': 2}])
 
         # Test that helpers that are added later have precedence.
         m.add_helper(
-            merge_results.NameMatch('b'),
-            lambda a, b, name=None: a + b)
+            merge_results.NameRegexMatch('b'),
+            lambda o, name=None: sum(o))
         m.add_helper(
-            merge_results.NameMatch('b'),
-            lambda a, b, name=None: a - b)
-        self.assertDictEqual({'b': -1}, m.merge({'b': 1}, {'b': 2}))
+            merge_results.NameRegexMatch('b'),
+            lambda o, name=None: o[0] - o[1])
+        self.assertDictEqual({'b': -1}, m.merge([{'b': 1}, {'b': 2}]))
 
     def test_custom_match_on_obj_type(self):
         m = merge_results.JSONMerger()
         m.add_helper(
             merge_results.TypeMatch(int),
-            lambda a, b, name=None: a + b)
-        self.assertDictEqual({'a': 3}, m.merge({'a': 1}, {'a': 2}))
-        self.assertDictEqual({'b': 3}, m.merge({'b': 1}, {'b': 2}))
+            lambda o, name=None: sum(o))
+        self.assertDictEqual({'a': 3}, m.merge([{'a': 1}, {'a': 2}]))
+        self.assertDictEqual({'b': 3}, m.merge([{'b': 1}, {'b': 2}]))
 
     def test_custom_match_on_obj_value(self):
         m = merge_results.JSONMerger()
         m.add_helper(
             merge_results.ValueMatch(3),
-            lambda a, b, name=None: a + b)
-        self.assertDictEqual({'a': 6}, m.merge({'a': 3}, {'a': 3}))
-        self.assertDictEqual({'a': 5}, m.merge({'a': 2}, {'a': 3}))
-        self.assertDictEqual({'a': 7}, m.merge({'a': 3}, {'a': 4}))
+            lambda o, name=None: sum(o))
+        self.assertDictEqual({'a': 6}, m.merge([{'a': 3}, {'a': 3}]))
+        self.assertDictEqual({'a': 5}, m.merge([{'a': 2}, {'a': 3}]))
+        self.assertDictEqual({'a': 7}, m.merge([{'a': 3}, {'a': 4}]))
         self.assertRaises(
             merge_results.MergeFailure, m.merge, {'a': 1}, {'a': 2})
 
@@ -494,50 +494,51 @@ class JSONTestResultsMerger(unittest.TestCase):
         merger = merge_results.JSONTestResultsMerger(allow_unknown_if_matching=False)
         self.assertEqual(
             {'version': 3.0},
-            merger.merge({'version': 3.0}, {'version': 3.0}))
+            merger.merge([{'version': 3.0}, {'version': 3.0}]))
 
         with self.assertRaises(merge_results.MergeFailure):
-            merger.merge({'random': 'hello'}, {'random': 'hello'})
+            merger.merge([{'random': 'hello'}, {'random': 'hello'}])
 
         merger = merge_results.JSONTestResultsMerger(allow_unknown_if_matching=True)
         self.assertEqual(
             {'random': 'hello'},
-            merger.merge({'random': 'hello'}, {'random': 'hello'}))
+            merger.merge([{'random': 'hello'}, {'random': 'hello'}]))
 
     def test_summable(self):
         merger = merge_results.JSONTestResultsMerger()
         self.assertEqual(
             {'fixable': 5},
-            merger.merge({'fixable': 2}, {'fixable': 3}))
+            merger.merge([{'fixable': 2}, {'fixable': 3}]))
         self.assertEqual(
             {'num_failures_by_type': {'A': 4, 'B': 3, 'C': 2}},
-            merger.merge(
+            merger.merge([
                 {'num_failures_by_type': {'A': 3, 'B': 1}},
-                {'num_failures_by_type': {'A': 1, 'B': 2, 'C': 2}}))
+                {'num_failures_by_type': {'A': 1, 'B': 2, 'C': 2}},
+            ]))
 
     def test_interrupted(self):
         merger = merge_results.JSONTestResultsMerger()
         self.assertEqual(
             {'interrupted': False},
-            merger.merge({'interrupted': False}, {'interrupted': False}))
+            merger.merge([{'interrupted': False}, {'interrupted': False}]))
         self.assertEqual(
             {'interrupted': True},
-            merger.merge({'interrupted': True}, {'interrupted': False}))
+            merger.merge([{'interrupted': True}, {'interrupted': False}]))
         self.assertEqual(
             {'interrupted': True},
-            merger.merge({'interrupted': False}, {'interrupted': True}))
+            merger.merge([{'interrupted': False}, {'interrupted': True}]))
 
     def test_seconds_since_epoch(self):
         merger = merge_results.JSONTestResultsMerger()
         self.assertEqual(
             {'seconds_since_epoch': 2},
-            merger.merge({'seconds_since_epoch': 3}, {'seconds_since_epoch': 2}))
+            merger.merge([{'seconds_since_epoch': 3}, {'seconds_since_epoch': 2}]))
         self.assertEqual(
             {'seconds_since_epoch': 2},
-            merger.merge({'seconds_since_epoch': 2}, {'seconds_since_epoch': 3}))
+            merger.merge([{'seconds_since_epoch': 2}, {'seconds_since_epoch': 3}]))
         self.assertEqual(
             {'seconds_since_epoch': 12},
-            merger.merge({'seconds_since_epoch': 12}, {}))
+            merger.merge([{'seconds_since_epoch': 12}, {}]))
 
 
 class LayoutTestDirMergerTests(unittest.TestCase):
