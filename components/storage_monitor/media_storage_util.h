@@ -50,13 +50,6 @@ class MediaStorageUtil {
   // the device is connected.
   static base::FilePath FindDevicePathById(const std::string& device_id);
 
-  // Record device information histogram for the given |device_uuid| and
-  // |device_label|. |mass_storage| indicates whether the current device is a
-  // mass storage device, as defined by IsMassStorageDevice().
-  static void RecordDeviceInfoHistogram(bool mass_storage,
-                                        const std::string& device_uuid,
-                                        const base::string16& device_label);
-
   // Returns true if the |id| is both a removable device and also
   // currently attached.
   static bool IsRemovableStorageAttached(const std::string& id);

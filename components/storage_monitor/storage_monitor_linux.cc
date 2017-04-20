@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -104,12 +105,6 @@ uint64_t GetDeviceStorageSize(const base::FilePath& device_path,
   const std::string partition_size =
       device::UdevDeviceGetSysattrValue(device, kSizeSysAttr);
 
-  // Keep track of device size, to see how often this information is
-  // unavailable.
-  UMA_HISTOGRAM_BOOLEAN(
-      "RemovableDeviceNotificationsLinux.device_partition_size_available",
-      !partition_size.empty());
-
   uint64_t total_size_in_bytes = 0;
   if (!base::StringToUint64(partition_size, &total_size_in_bytes))
     return 0;
@@ -158,10 +153,6 @@ std::unique_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
       device::UdevDeviceGetPropertyValue(device.get(), kModel));
 
   std::string unique_id = MakeDeviceUniqueId(device.get());
-
-  // Keep track of device info details to see how often we get invalid values.
-  MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, volume_label);
-
   const char* value =
       device::udev_device_get_sysattr_value(device.get(), kRemovableSysAttr);
   if (!value) {
@@ -179,21 +170,17 @@ std::unique_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
 
   StorageInfo::Type type = StorageInfo::FIXED_MASS_STORAGE;
   if (is_removable) {
-    if (MediaStorageUtil::HasDcim(mount_point))
-      type = StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
-    else
-      type = StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
+    type = MediaStorageUtil::HasDcim(mount_point)
+               ? StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM
+               : StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
   }
 
   results_recorder.set_result(true);
 
-  storage_info.reset(new StorageInfo(
-      StorageInfo::MakeDeviceId(type, unique_id),
-      mount_point.value(),
-      volume_label,
-      vendor_name,
-      model_name,
-      GetDeviceStorageSize(device_path, device.get())));
+  storage_info = base::MakeUnique<StorageInfo>(
+      StorageInfo::MakeDeviceId(type, unique_id), mount_point.value(),
+      volume_label, vendor_name, model_name,
+      GetDeviceStorageSize(device_path, device.get()));
   return storage_info;
 }
 

@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -22,19 +21,6 @@ using content::BrowserThread;
 namespace storage_monitor {
 
 namespace {
-
-// MediaDeviceNotification.DeviceInfo histogram values.
-enum DeviceInfoHistogramBuckets {
-  MASS_STORAGE_DEVICE_NAME_AND_UUID_AVAILABLE,
-  MASS_STORAGE_DEVICE_UUID_MISSING,
-  MASS_STORAGE_DEVICE_NAME_MISSING,
-  MASS_STORAGE_DEVICE_NAME_AND_UUID_MISSING,
-  MTP_STORAGE_DEVICE_NAME_AND_UUID_AVAILABLE,
-  MTP_STORAGE_DEVICE_UUID_MISSING,
-  MTP_STORAGE_DEVICE_NAME_MISSING,
-  MTP_STORAGE_DEVICE_NAME_AND_UUID_MISSING,
-  DEVICE_INFO_BUCKET_BOUNDARY
-};
 
 #if !defined(OS_WIN)
 const char kRootPath[] = "/";
@@ -210,30 +196,6 @@ base::FilePath MediaStorageUtil::FindDevicePathById(
          type == StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM ||
          type == StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM);
   return base::FilePath(FindRemovableStorageLocationById(device_id));
-}
-
-// static
-void MediaStorageUtil::RecordDeviceInfoHistogram(
-    bool mass_storage,
-    const std::string& device_uuid,
-    const base::string16& device_label) {
-  unsigned int event_number = 0;
-  if (!mass_storage)
-    event_number = 4;
-
-  if (device_label.empty())
-    event_number += 2;
-
-  if (device_uuid.empty())
-    event_number += 1;
-  enum DeviceInfoHistogramBuckets event =
-      static_cast<enum DeviceInfoHistogramBuckets>(event_number);
-  if (event >= DEVICE_INFO_BUCKET_BOUNDARY) {
-    NOTREACHED();
-    return;
-  }
-  UMA_HISTOGRAM_ENUMERATION("MediaDeviceNotifications.DeviceInfo", event,
-                            DEVICE_INFO_BUCKET_BOUNDARY);
 }
 
 // static

@@ -238,8 +238,6 @@ void StorageMonitorMac::UpdateDisk(
       disk_info_map_.erase(it);
   } else {
     disk_info_map_[bsd_name] = info;
-    MediaStorageUtil::RecordDeviceInfoHistogram(true, info.device_id(),
-                                                info.storage_label());
     if (ShouldPostNotificationForDisk(info))
       receiver()->ProcessAttach(info);
   }

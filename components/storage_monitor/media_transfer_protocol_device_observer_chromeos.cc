@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/storage_monitor/media_storage_util.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 
@@ -202,10 +201,6 @@ void MediaTransferProtocolDeviceObserverChromeOS::StorageChanged(
                            &storage_label, &location, &vendor_name,
                            &product_name);
 
-    // Keep track of device id and device name to see how often we receive
-    // empty values.
-    MediaStorageUtil::RecordDeviceInfoHistogram(false, device_id,
-                                                storage_label);
     if (device_id.empty() || storage_label.empty())
       return;
 

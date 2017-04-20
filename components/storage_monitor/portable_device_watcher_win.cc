@@ -20,7 +20,6 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
-#include "components/storage_monitor/media_storage_util.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "components/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -632,9 +631,6 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
     const std::string& storage_id = storage_iter->object_persistent_id;
     DCHECK(!base::ContainsKey(storage_map_, storage_id));
 
-    // Keep track of storage id and storage name to see how often we receive
-    // empty values.
-    MediaStorageUtil::RecordDeviceInfoHistogram(false, storage_id, name);
     if (storage_id.empty() || name.empty())
       return;
 
