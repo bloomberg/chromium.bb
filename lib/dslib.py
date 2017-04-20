@@ -9,6 +9,7 @@ from __future__ import print_function
 from gcloud import datastore
 import json
 
+from chromite.lib import cros_logging as logging
 from chromite.lib import iter_utils
 
 
@@ -48,7 +49,13 @@ def ChunkedBatchWrite(entities, client, batch_size=_BATCH_CHUNK_SIZE):
     batch_size: (default: 500) Maximum number of entities per batch.
   """
   for chunk in iter_utils.SplitToChunks(entities, batch_size):
+    entities = list(chunk)
+
     batch = client.batch()
-    for e in chunk:
-      batch.put(e)
-    batch.commit()
+    for entity in entities:
+      batch.put(entity)
+    try:
+      batch.commit()
+    except gcloud.exceptions.BadRequest:
+      logging.warn('Unexportable entities:\n%s', entities)
+      raise
