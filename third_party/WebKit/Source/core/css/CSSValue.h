@@ -129,6 +129,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool IsStepsTimingFunctionValue() const {
     return class_type_ == kStepsTimingFunctionClass;
   }
+  bool IsFramesTimingFunctionValue() const {
+    return class_type_ == kFramesTimingFunctionClass;
+  }
   bool IsGridTemplateAreasValue() const {
     return class_type_ == kGridTemplateAreasClass;
   }
@@ -202,6 +205,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     // Timing function classes.
     kCubicBezierTimingFunctionClass,
     kStepsTimingFunctionClass,
+    kFramesTimingFunctionClass,
 
     // Other class types.
     kBorderImageSliceClass,

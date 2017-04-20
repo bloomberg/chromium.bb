@@ -6,7 +6,7 @@ PASS A step-end function on a keyframe affects the resulting style
 PASS A steps(1) function on a keyframe affects the resulting style 
 PASS A steps(1, end) function on a keyframe affects the resulting style 
 PASS A steps(2, end) function on a keyframe affects the resulting style 
-FAIL A frames function on a keyframe affects the resulting style Failed to execute 'animate' on 'Element': 'frames(5)' is not a valid value for easing
+PASS A frames function on a keyframe affects the resulting style 
 PASS A linear function on a keyframe affects the resulting style 
 FAIL A ease function on a keyframe affects the resulting style assert_approx_equals: The width should be approximately 109.47963055884654 at 1100ms expected 109.47963055884654 +/- 0.01 but got 109.313
 PASS A ease-in function on a keyframe affects the resulting style 
@@ -21,7 +21,7 @@ PASS Linear-equivalent cubic-bezier keyframe easing applied to an effect with a 
 PASS Linear-equivalent cubic-bezier keyframe easing applied to an effect with a steps(1) function does not alter the result 
 PASS Linear-equivalent cubic-bezier keyframe easing applied to an effect with a steps(1, end) function does not alter the result 
 FAIL Linear-equivalent cubic-bezier keyframe easing applied to an effect with a steps(2, end) function does not alter the result assert_equals: The 'width' of the animated elements should be equal at 500ms expected "50.3438px" but got "50px"
-FAIL Linear-equivalent cubic-bezier keyframe easing applied to an effect with a frames function does not alter the result Failed to execute 'animate' on 'Element': 'frames(5)' is not a valid value for easing
+FAIL Linear-equivalent cubic-bezier keyframe easing applied to an effect with a frames function does not alter the result assert_equals: The 'width' of the animated elements should be equal at 250ms expected "25.0938px" but got "25px"
 FAIL Linear-equivalent cubic-bezier keyframe easing applied to an effect with a linear function does not alter the result assert_equals: The 'width' of the animated elements should be equal at 250ms expected "25.0938px" but got "25px"
 FAIL Linear-equivalent cubic-bezier keyframe easing applied to an effect with a ease function does not alter the result assert_equals: The 'width' of the animated elements should be equal at 250ms expected "41.875px" but got "41.8594px"
 FAIL Linear-equivalent cubic-bezier keyframe easing applied to an effect with a ease-in function does not alter the result assert_equals: The 'width' of the animated elements should be equal at 250ms expected "8.95313px" but got "9.32813px"

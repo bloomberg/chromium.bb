@@ -65,14 +65,17 @@
     #box8 {
       animation-timing-function: steps(3, end);
     }
+    #box9 {
+      animation-timing-function: frames(3);
+    }
     /*
      * The step-middle functions are invalid except through the Web Animations API
      * and should behave like 'ease', unless step-middle has been added to the CSS specification.
      */
-    #box9 {
+    #middlebox1 {
       animation-timing-function: steps(3, middle);
     }
-    #box10 {
+    #middlebox2 {
       animation-timing-function: step-middle;
     }
     
@@ -106,12 +109,15 @@
       [0.25, "box8", "left", 100, 5],
       [0.50, "box8", "left", 133, 5],
       [0.75, "box8", "left", 166, 5],
-      [0.25, "box9", "left", 141, 5],
-      [0.50, "box9", "left", 180, 5],
-      [0.75, "box9", "left", 196, 5],
-      [0.25, "box10", "left", 141, 5],
-      [0.50, "box10", "left", 180, 5],
-      [0.75, "box10", "left", 196, 5],
+      [0.25, "box9", "left", 100, 5],
+      [0.50, "box9", "left", 150, 5],
+      [0.75, "box9", "left", 200, 5],
+      [0.25, "middlebox1", "left", 141, 5],
+      [0.50, "middlebox1", "left", 180, 5],
+      [0.75, "middlebox1", "left", 196, 5],
+      [0.25, "middlebox2", "left", 141, 5],
+      [0.50, "middlebox2", "left", 180, 5],
+      [0.75, "middlebox2", "left", 196, 5],
     ];
     
     runAnimationTest(expectedValues);
@@ -137,9 +143,11 @@ It takes 3 snapshots and expects each result to be within a specified range.
 </div>
 <div class="box" id="box8">
 </div>
-<div class="box-step-middle" id="box9">
+<div class="box" id="box9">
 </div>
-<div class="box-step-middle" id="box10">
+<div class="box-step-middle" id="middlebox1">
+</div>
+<div class="box-step-middle" id="middlebox2">
 </div>
 <div id="result">
 </div>

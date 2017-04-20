@@ -6,7 +6,7 @@ PASS Transformed progress for step-end function
 PASS Transformed progress for steps(1) function 
 PASS Transformed progress for steps(1, end) function 
 PASS Transformed progress for steps(2, end) function 
-FAIL Transformed progress for frames function Failed to execute 'animate' on 'Element': 'frames(5)' is not a valid value for easing
+PASS Transformed progress for frames function 
 PASS Transformed progress for linear function 
 FAIL Transformed progress for ease function assert_approx_equals: The progress should be approximately 0.40851059137130497 at 250ms expected 0.40851059137130497 +/- 0.01 but got 0.41869212962962965
 PASS Transformed progress for ease-in function 
@@ -25,7 +25,7 @@ FAIL Test bounds point of step-start easing with alternate-reverse direction ass
 PASS Test bounds point of step-end easing 
 FAIL Test bounds point of step-end easing with iterationStart and delay assert_equals: Progress at 0ms expected 0 but got 0.5
 PASS Test bounds point of step-end easing with iterationStart not at a transition point 
-FAIL Test bounds point of frames easing Failed to execute 'animate' on 'Element': 'frames(2)' is not a valid value for easing
-FAIL Test bounds point of frames easing with iterationStart and delay Failed to execute 'animate' on 'Element': 'frames(2)' is not a valid value for easing
+PASS Test bounds point of frames easing 
+PASS Test bounds point of frames easing with iterationStart and delay 
 Harness: the test ran to completion.
 

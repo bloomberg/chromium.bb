@@ -400,6 +400,26 @@ static CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
   return CSSStepsTimingFunctionValue::Create(steps->GetIntValue(), position);
 }
 
+static CSSValue* ConsumeFrames(CSSParserTokenRange& range) {
+  DCHECK_EQ(range.Peek().FunctionId(), CSSValueFrames);
+  CSSParserTokenRange range_copy = range;
+  CSSParserTokenRange args = ConsumeFunction(range_copy);
+
+  CSSPrimitiveValue* frames = ConsumePositiveInteger(args);
+  if (!frames)
+    return nullptr;
+
+  int frames_int = frames->GetIntValue();
+  if (frames_int <= 1)
+    return nullptr;
+
+  if (!args.AtEnd())
+    return nullptr;
+
+  range = range_copy;
+  return CSSFramesTimingFunctionValue::Create(frames_int);
+}
+
 static CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
   DCHECK_EQ(range.Peek().FunctionId(), CSSValueCubicBezier);
   CSSParserTokenRange range_copy = range;
@@ -429,6 +449,8 @@ static CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range) {
   CSSValueID function = range.Peek().FunctionId();
   if (function == CSSValueSteps)
     return ConsumeSteps(range);
+  if (function == CSSValueFrames)
+    return ConsumeFrames(range);
   if (function == CSSValueCubicBezier)
     return ConsumeCubicBezier(range);
   return nullptr;

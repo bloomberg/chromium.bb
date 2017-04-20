@@ -217,6 +217,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
                                                                    other);
       case kStepsTimingFunctionClass:
         return CompareCSSValues<CSSStepsTimingFunctionValue>(*this, other);
+      case kFramesTimingFunctionClass:
+        return CompareCSSValues<CSSFramesTimingFunctionValue>(*this, other);
       case kUnicodeRangeClass:
         return CompareCSSValues<CSSUnicodeRangeValue>(*this, other);
       case kURIClass:
@@ -314,6 +316,8 @@ String CSSValue::CssText() const {
       return ToCSSCubicBezierTimingFunctionValue(this)->CustomCSSText();
     case kStepsTimingFunctionClass:
       return ToCSSStepsTimingFunctionValue(this)->CustomCSSText();
+    case kFramesTimingFunctionClass:
+      return ToCSSFramesTimingFunctionValue(this)->CustomCSSText();
     case kUnicodeRangeClass:
       return ToCSSUnicodeRangeValue(this)->CustomCSSText();
     case kURIClass:
@@ -444,6 +448,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kStepsTimingFunctionClass:
       ToCSSStepsTimingFunctionValue(this)->~CSSStepsTimingFunctionValue();
+      return;
+    case kFramesTimingFunctionClass:
+      ToCSSFramesTimingFunctionValue(this)->~CSSFramesTimingFunctionValue();
       return;
     case kUnicodeRangeClass:
       ToCSSUnicodeRangeValue(this)->~CSSUnicodeRangeValue();
@@ -582,6 +589,9 @@ DEFINE_TRACE(CSSValue) {
       return;
     case kStepsTimingFunctionClass:
       ToCSSStepsTimingFunctionValue(this)->TraceAfterDispatch(visitor);
+      return;
+    case kFramesTimingFunctionClass:
+      ToCSSFramesTimingFunctionValue(this)->TraceAfterDispatch(visitor);
       return;
     case kUnicodeRangeClass:
       ToCSSUnicodeRangeValue(this)->TraceAfterDispatch(visitor);

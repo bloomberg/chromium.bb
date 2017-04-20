@@ -459,6 +459,13 @@ PassRefPtr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
   if (value.IsInitialValue())
     return CSSTimingData::InitialTimingFunction();
 
+  if (value.IsFramesTimingFunctionValue()) {
+    const CSSFramesTimingFunctionValue& frames_timing_function =
+        ToCSSFramesTimingFunctionValue(value);
+    return FramesTimingFunction::Create(
+        frames_timing_function.NumberOfFrames());
+  }
+
   const CSSStepsTimingFunctionValue& steps_timing_function =
       ToCSSStepsTimingFunctionValue(value);
   if (steps_timing_function.GetStepPosition() ==

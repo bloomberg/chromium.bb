@@ -66,6 +66,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
   RefPtr<TimingFunction> cubic_ease_timing_function_;
   RefPtr<TimingFunction> cubic_custom_timing_function_;
   RefPtr<TimingFunction> step_timing_function_;
+  RefPtr<TimingFunction> frames_timing_function_;
 
   Timing timing_;
   CompositorAnimations::CompositorTiming compositor_timing_;
@@ -87,6 +88,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
         CubicBezierTimingFunction::Create(1, 2, 3, 4);
     step_timing_function_ =
         StepsTimingFunction::Create(1, StepsTimingFunction::StepPosition::END);
+    frames_timing_function_ = FramesTimingFunction::Create(2);
 
     timing_ = CreateCompositableTiming();
     compositor_timing_ = CompositorAnimations::CompositorTiming();
@@ -610,6 +612,15 @@ TEST_F(AnimationCompositorAnimationsTest,
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
+       isCandidateForAnimationOnCompositorTimingFunctionFrames) {
+  timing_.timing_function = frames_timing_function_;
+  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
+      timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
+      timing_, *keyframe_animation_effect5_));
+}
+
+TEST_F(AnimationCompositorAnimationsTest,
        isCandidateForAnimationOnCompositorTimingFunctionChainedLinear) {
   EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
       timing_, *keyframe_animation_effect2_));
@@ -679,8 +690,14 @@ TEST_F(AnimationCompositorAnimationsTest,
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorTimingFunctionWithStepOkay) {
+       isCandidateForAnimationOnCompositorTimingFunctionWithStepOrFrameOkay) {
   (*keyframe_vector2_)[0]->SetEasing(step_timing_function_.Get());
+  keyframe_animation_effect2_ =
+      AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
+  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
+      timing_, *keyframe_animation_effect2_));
+
+  (*keyframe_vector2_)[0]->SetEasing(frames_timing_function_.Get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
   EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
@@ -689,13 +706,13 @@ TEST_F(AnimationCompositorAnimationsTest,
   (*keyframe_vector5_)[0]->SetEasing(step_timing_function_.Get());
   (*keyframe_vector5_)[1]->SetEasing(linear_timing_function_.Get());
   (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.Get());
-  (*keyframe_vector5_)[3]->SetEasing(linear_timing_function_.Get());
+  (*keyframe_vector5_)[3]->SetEasing(frames_timing_function_.Get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
       timing_, *keyframe_animation_effect5_));
 
-  (*keyframe_vector5_)[0]->SetEasing(linear_timing_function_.Get());
+  (*keyframe_vector5_)[0]->SetEasing(frames_timing_function_.Get());
   (*keyframe_vector5_)[1]->SetEasing(step_timing_function_.Get());
   (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.Get());
   (*keyframe_vector5_)[3]->SetEasing(linear_timing_function_.Get());
@@ -705,7 +722,7 @@ TEST_F(AnimationCompositorAnimationsTest,
       timing_, *keyframe_animation_effect5_));
 
   (*keyframe_vector5_)[0]->SetEasing(linear_timing_function_.Get());
-  (*keyframe_vector5_)[1]->SetEasing(cubic_ease_timing_function_.Get());
+  (*keyframe_vector5_)[1]->SetEasing(frames_timing_function_.Get());
   (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.Get());
   (*keyframe_vector5_)[3]->SetEasing(step_timing_function_.Get());
   keyframe_animation_effect5_ =

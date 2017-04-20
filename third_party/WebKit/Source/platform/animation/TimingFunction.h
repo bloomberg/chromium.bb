@@ -222,6 +222,30 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
   std::unique_ptr<cc::StepsTimingFunction> steps_;
 };
 
+class PLATFORM_EXPORT FramesTimingFunction final : public TimingFunction {
+ public:
+  static PassRefPtr<FramesTimingFunction> Create(int frames) {
+    return AdoptRef(new FramesTimingFunction(frames));
+  }
+
+  ~FramesTimingFunction() override {}
+
+  // TimingFunction implementation.
+  String ToString() const override;
+  double Evaluate(double fraction, double) const override;
+  void Range(double* min_value, double* max_value) const override;
+  std::unique_ptr<cc::TimingFunction> CloneToCC() const override;
+
+  int NumberOfFrames() const { return frames_->frames(); }
+
+ private:
+  FramesTimingFunction(int frames)
+      : TimingFunction(Type::FRAMES),
+        frames_(cc::FramesTimingFunction::Create(frames)) {}
+
+  std::unique_ptr<cc::FramesTimingFunction> frames_;
+};
+
 PLATFORM_EXPORT PassRefPtr<TimingFunction> CreateCompositorTimingFunctionFromCC(
     const cc::TimingFunction*);
 
@@ -230,6 +254,8 @@ PLATFORM_EXPORT bool operator==(const LinearTimingFunction&,
 PLATFORM_EXPORT bool operator==(const CubicBezierTimingFunction&,
                                 const TimingFunction&);
 PLATFORM_EXPORT bool operator==(const StepsTimingFunction&,
+                                const TimingFunction&);
+PLATFORM_EXPORT bool operator==(const FramesTimingFunction&,
                                 const TimingFunction&);
 
 PLATFORM_EXPORT bool operator==(const TimingFunction&, const TimingFunction&);
@@ -243,6 +269,7 @@ PLATFORM_EXPORT bool operator!=(const TimingFunction&, const TimingFunction&);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(Linear, LINEAR);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(CubicBezier, CUBIC_BEZIER);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(Steps, STEPS);
+DEFINE_TIMING_FUNCTION_TYPE_CASTS(Frames, FRAMES);
 
 }  // namespace blink
 

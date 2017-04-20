@@ -288,6 +288,12 @@ shouldBe("computedStyle.animationTimingFunction", "'steps(5, start)'");
 shouldBe("style.webkitAnimationTimingFunction", "'steps(5, start)'");
 shouldBe("computedStyle.webkitAnimationTimingFunction", "'steps(5, start)'");
 
+style.animationTimingFunction = "frames(5)";
+shouldBe("style.animationTimingFunction", "'frames(5)'");
+shouldBe("computedStyle.animationTimingFunction", "'frames(5)'");
+shouldBe("style.webkitAnimationTimingFunction", "'frames(5)'");
+shouldBe("computedStyle.webkitAnimationTimingFunction", "'frames(5)'");
+
 style.animationName = "anim1, anim2";
 
 style.animationTimingFunction = "ease-in-out, ease-in";
@@ -373,6 +379,24 @@ shouldBe("style.webkitAnimationTimingFunction", "''");
 shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
 
 style.animationTimingFunction = "step(5)";
+shouldBe("style.animationTimingFunction", "''");
+shouldBe("computedStyle.animationTimingFunction", "'ease'");
+shouldBe("style.webkitAnimationTimingFunction", "''");
+shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
+
+style.animationTimingFunction = "frame(5)";
+shouldBe("style.animationTimingFunction", "''");
+shouldBe("computedStyle.animationTimingFunction", "'ease'");
+shouldBe("style.webkitAnimationTimingFunction", "''");
+shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
+
+style.animationTimingFunction = "frames(1)";
+shouldBe("style.animationTimingFunction", "''");
+shouldBe("computedStyle.animationTimingFunction", "'ease'");
+shouldBe("style.webkitAnimationTimingFunction", "''");
+shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
+
+style.animationTimingFunction = "frames(2, 3)";
 shouldBe("style.animationTimingFunction", "''");
 shouldBe("computedStyle.animationTimingFunction", "'ease'");
 shouldBe("style.webkitAnimationTimingFunction", "''");
