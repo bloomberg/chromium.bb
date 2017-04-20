@@ -2,11 +2,19 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="wasm_response_apis.js"></script>
+<script src="../wasm/resources/wasm-constants.js"></script>
+<script src="../wasm/resources/wasm-module-builder.js"></script>
 <script>
   promise_test(TestStreamedCompile, "test streamed compile");
   promise_test(TestShortFormStreamedCompile, "test streamed compile with promise parameter");
   promise_test(NegativeTestStreamedCompilePromise, "promise must produce a Response");
-  promise_test(BlankResponse, "blank response");
-  promise_test(FromArrayBuffer, "from array buffer");
-  promise_test(FromInvalidArrayBuffer, "from an invalid array buffer");
+  promise_test(CompileBlankResponse, "compile blank response");
+  promise_test(InstantiateBlankResponse, "instantiate blank response");
+  promise_test(CompileFromArrayBuffer, "compile from array buffer");
+  promise_test(CompileFromInvalidArrayBuffer, "compile from an invalid array buffer");
+  promise_test(TestStreamedInstantiate, "test streamed instantiate");
+  promise_test(InstantiateFromArrayBuffer, "test regular instantiate");
+  promise_test(InstantiateFromInvalidArrayBuffer, "test instantiate from invalid buffer");
+  promise_test(TestShortFormStreamedInstantiate, "test streamed instantiate with promise parameter");
+  promise_test(TestInstantiateComplexModule, "instantiate locally built module");
 </script>
