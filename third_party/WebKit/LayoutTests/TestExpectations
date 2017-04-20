@@ -3260,6 +3260,10 @@ crbug.com/707689 shapedetection/detection-HTMLCanvasElement.html [ Skip ]
 # Sheriff failures 2017-04-19
 crbug.com/713094 [ Win ] virtual/sharedarraybuffer/fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
+# Fails when run in isolation. Passes when run as part of the directory
+# depending on test order.
+crbug.com/713419 virtual/gpu/fast/canvas/painting-on-bad-canvas.html [ Crash Pass ]
+
 # Tests to be run only under virtual/experimental-canvas-features/
 crbug.com/682753 fast/canvas-experimental [ Skip ]
 
