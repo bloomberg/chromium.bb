@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 391 tests; 368 PASS, 23 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 391 tests; 369 PASS, 22 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS DOMImplementation.createDocument(namespace, qualifiedName, doctype) 
 PASS createDocument test: null,null,null,null 
 PASS createDocument test: metadata for null,null,null 
@@ -33,7 +33,7 @@ PASS createDocument test: null,"fo o",null,"INVALID_CHARACTER_ERR"
 PASS createDocument test: null,"-foo",null,"INVALID_CHARACTER_ERR" 
 PASS createDocument test: null,".foo",null,"INVALID_CHARACTER_ERR" 
 FAIL createDocument test: null,":foo",null,"INVALID_CHARACTER_ERR" assert_throws: function "function () { document.implementation.createDocument(namespace, qualifiedName, doctype) }" threw object "NamespaceError: Failed to execute 'createDocument' on 'DOMImplementation': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
-FAIL createDocument test: null,"f:oo",null,"INVALID_CHARACTER_ERR" assert_throws: function "function () { document.implementation.createDocument(namespace, qualifiedName, doctype) }" threw object "NamespaceError: Failed to execute 'createDocument' on 'DOMImplementation': The namespace URI provided ('') is not valid for the qualified name provided ('f:oo')." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+PASS createDocument test: null,"f:oo",null,"NAMESPACE_ERR" 
 FAIL createDocument test: null,"foo:",null,"INVALID_CHARACTER_ERR" assert_throws: function "function () { document.implementation.createDocument(namespace, qualifiedName, doctype) }" threw object "NamespaceError: Failed to execute 'createDocument' on 'DOMImplementation': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 FAIL createDocument test: null,"f:o:o",null,"INVALID_CHARACTER_ERR" assert_throws: function "function () { document.implementation.createDocument(namespace, qualifiedName, doctype) }" threw object "NamespaceError: Failed to execute 'createDocument' on 'DOMImplementation': The qualified name provided ('f:o:o') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 FAIL createDocument test: null,":",null,"INVALID_CHARACTER_ERR" assert_throws: function "function () { document.implementation.createDocument(namespace, qualifiedName, doctype) }" threw object "NamespaceError: Failed to execute 'createDocument' on 'DOMImplementation': The qualified name provided (':') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
