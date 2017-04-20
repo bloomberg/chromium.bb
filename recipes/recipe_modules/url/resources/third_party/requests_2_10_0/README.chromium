@@ -1,0 +1,9 @@
+URL: http://python-requests.org
+Sources: https://github.com/kennethreitz/requests
+Version: 2.10.0
+License file: LICENSE
+
+This is needed for improved web access without urllib/urllib2.
+
+The bundled certificate set is replaced by the Mozilla root cetificate set in
+requests/roots.pem.

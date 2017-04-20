@@ -1,0 +1,76 @@
+[
+  {
+    "cmd": [
+      "/bin/echo",
+      "foo/bar/baz"
+    ],
+    "name": "step1"
+  },
+  {
+    "cmd": [
+      "/bin/echo",
+      "foo/bar/baz"
+    ],
+    "name": "step2"
+  },
+  {
+    "cmd": [
+      "/bin/echo",
+      "foo/bar/baz"
+    ],
+    "name": "step3"
+  },
+  {
+    "cmd": [
+      "/bin/echo",
+      "foo/bar/baz"
+    ],
+    "name": "step4"
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::url]/resources/pycurl.py",
+      "fake://foo/bar",
+      "--outfile",
+      "/path/to/tmp/",
+      "--attempts",
+      "5"
+    ],
+    "name": "fetch fake://foo/bar"
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::url]/resources/pycurl.py",
+      "fake://foo/bar (w/ auth)",
+      "--outfile",
+      "/path/to/tmp/",
+      "--headers-json",
+      "{\"Authorization\": \"thing\"}"
+    ],
+    "name": "fetch fake://foo/bar (w/ auth)"
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::url]/resources/pycurl.py",
+      "fake://foo/bar",
+      "--outfile",
+      "[START_DIR]",
+      "--headers-json",
+      "{\"Authorization\": \"thing\"}",
+      "--attempts",
+      "10"
+    ],
+    "name": "fetch fake://foo/bar (2)"
+  },
+  {
+    "name": "$result",
+    "recipe_result": null,
+    "status_code": 0
+  }
+]
