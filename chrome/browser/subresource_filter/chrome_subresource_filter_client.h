@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_SUBRESOURCE_FILTER_CHROME_SUBRESOURCE_FILTER_CLIENT_H_
 #define CHROME_BROWSER_SUBRESOURCE_FILTER_CHROME_SUBRESOURCE_FILTER_CLIENT_H_
 
+#include <set>
+#include <string>
+
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
@@ -12,6 +15,7 @@
 class GURL;
 
 namespace content {
+class NavigationHandle;
 class WebContents;
 }  // namespace content
 
@@ -65,8 +69,10 @@ class ChromeSubresourceFilterClient
 
   // SubresourceFilterClient:
   void ToggleNotificationVisibility(bool visibility) override;
-  bool IsWhitelistedByContentSettings(const GURL& url) override;
+  bool ShouldSuppressActivation(
+      content::NavigationHandle* navigation_handle) override;
   void WhitelistByContentSettings(const GURL& url) override;
+  void WhitelistInCurrentWebContents(const GURL& url) override;
   subresource_filter::VerifiedRulesetDealer::Handle* GetRulesetDealer()
       override;
 
@@ -74,6 +80,7 @@ class ChromeSubresourceFilterClient
 
  private:
   ContentSetting GetContentSettingForUrl(const GURL& url);
+  std::set<std::string> whitelisted_hosts_;
   content::WebContents* web_contents_;
   bool shown_for_navigation_;
 

@@ -100,12 +100,6 @@ ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
 ContentSubresourceFilterDriverFactory::
     ~ContentSubresourceFilterDriverFactory() {}
 
-bool ContentSubresourceFilterDriverFactory::IsWhitelisted(
-    const GURL& url) const {
-  return whitelisted_hosts_.find(url.host()) != whitelisted_hosts_.end() ||
-         client_->IsWhitelistedByContentSettings(url);
-}
-
 void ContentSubresourceFilterDriverFactory::
     OnMainResourceMatchedSafeBrowsingBlacklist(
         const GURL& url,
@@ -116,15 +110,11 @@ void ContentSubresourceFilterDriverFactory::
       url, GetListForThreatTypeAndMetadata(threat_type, threat_type_metadata));
 }
 
-void ContentSubresourceFilterDriverFactory::AddHostOfURLToWhitelistSet(
-    const GURL& url) {
-  if (url.has_host() && url.SchemeIsHTTPOrHTTPS())
-    whitelisted_hosts_.insert(url.host());
-}
-
 ContentSubresourceFilterDriverFactory::ActivationDecision
-ContentSubresourceFilterDriverFactory::ComputeActivationDecisionForMainFrameURL(
-    const GURL& url) const {
+ContentSubresourceFilterDriverFactory::
+    ComputeActivationDecisionForMainFrameNavigation(
+        content::NavigationHandle* navigation_handle) const {
+  const GURL& url(navigation_handle->GetURL());
   if (configuration_.activation_level == ActivationLevel::DISABLED)
     return ActivationDecision::ACTIVATION_DISABLED;
 
@@ -133,7 +123,10 @@ ContentSubresourceFilterDriverFactory::ComputeActivationDecisionForMainFrameURL(
 
   if (!url.SchemeIsHTTPOrHTTPS())
     return ActivationDecision::UNSUPPORTED_SCHEME;
-  if (IsWhitelisted(url))
+  // TODO(csharrison): The throttle manager also performs this check. Remove
+  // this one when the activation decision is sent directly to the throttle
+  // manager.
+  if (client_->ShouldSuppressActivation(navigation_handle))
     return ActivationDecision::URL_WHITELISTED;
 
   switch (configuration_.activation_scope) {
@@ -173,7 +166,7 @@ void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
           subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {
     client_->WhitelistByContentSettings(whitelist_url);
   } else {
-    AddHostOfURLToWhitelistSet(whitelist_url);
+    client_->WhitelistInCurrentWebContents(whitelist_url);
   }
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
@@ -195,10 +188,11 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
   if (configuration_.should_whitelist_site_on_reload &&
       NavigationIsPageReload(url, referrer, transition)) {
     // Whitelist this host for the current as well as subsequent navigations.
-    AddHostOfURLToWhitelistSet(url);
+    client_->WhitelistInCurrentWebContents(url);
   }
 
-  activation_decision_ = ComputeActivationDecisionForMainFrameURL(url);
+  activation_decision_ =
+      ComputeActivationDecisionForMainFrameNavigation(navigation_handle);
   DCHECK(activation_decision_ != ActivationDecision::UNKNOWN);
   if (activation_decision_ != ActivationDecision::ACTIVATED) {
     ResetActivationState();
@@ -224,9 +218,7 @@ void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
 
 bool ContentSubresourceFilterDriverFactory::ShouldSuppressActivation(
     content::NavigationHandle* navigation_handle) {
-  // Never suppress subframe navigations.
-  return navigation_handle->IsInMainFrame() &&
-         IsWhitelisted(navigation_handle->GetURL());
+  return client_->ShouldSuppressActivation(navigation_handle);
 }
 
 void ContentSubresourceFilterDriverFactory::ResetActivationState() {

@@ -36,7 +36,6 @@ class SubresourceFilterClient;
 enum class ActivationLevel;
 enum class ActivationList;
 
-using HostPathSet = std::set<std::string>;
 using URLToActivationListsMap =
     std::unordered_map<std::string, std::set<ActivationList>>;
 
@@ -91,11 +90,6 @@ class ContentSubresourceFilterDriverFactory
       std::unique_ptr<SubresourceFilterClient> client);
   ~ContentSubresourceFilterDriverFactory() override;
 
-  // Whitelists the host of |url|, so that page loads with the main-frame
-  // document being loaded from this host will be exempted from subresource
-  // filtering for the lifetime of this WebContents.
-  void AddHostOfURLToWhitelistSet(const GURL& url);
-
   // Called when Safe Browsing detects that the |url| corresponding to the load
   // of the main frame belongs to the blacklist with |threat_type|. If the
   // blacklist is the Safe Browsing Social Engineering ads landing, then |url|
@@ -134,13 +128,13 @@ class ContentSubresourceFilterDriverFactory
     configuration_ = std::move(configuration);
   }
 
+  SubresourceFilterClient* client() { return client_.get(); }
+
  private:
   friend class ContentSubresourceFilterDriverFactoryTest;
   friend class safe_browsing::SafeBrowsingServiceTest;
 
   void ResetActivationState();
-
-  bool IsWhitelisted(const GURL& url) const;
 
   // content::WebContentsObserver:
   void DidStartNavigation(
@@ -150,8 +144,8 @@ class ContentSubresourceFilterDriverFactory
 
   // Checks base on the value of |url| and current activation scope if
   // activation signal should be sent.
-  ActivationDecision ComputeActivationDecisionForMainFrameURL(
-      const GURL& url) const;
+  ActivationDecision ComputeActivationDecisionForMainFrameNavigation(
+      content::NavigationHandle* navigation_handle) const;
 
   bool DidURLMatchActivationList(const GURL& url,
                                  ActivationList activation_list) const;
@@ -169,10 +163,6 @@ class ContentSubresourceFilterDriverFactory
   std::unique_ptr<SubresourceFilterClient> client_;
 
   std::unique_ptr<ContentSubresourceFilterThrottleManager> throttle_manager_;
-
-  // Hosts to whitelist. This is only used for per-WebContents whitelisting and
-  // is distinct from content settings whitelisting.
-  HostPathSet whitelisted_hosts_;
 
   ActivationLevel activation_level_;
   ActivationDecision activation_decision_;

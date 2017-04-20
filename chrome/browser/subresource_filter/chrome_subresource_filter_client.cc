@@ -17,6 +17,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
+#include "content/public/browser/navigation_handle.h"
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
@@ -53,9 +54,12 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
   }
 }
 
-bool ChromeSubresourceFilterClient::IsWhitelistedByContentSettings(
-    const GURL& url) {
-  return GetContentSettingForUrl(url) == CONTENT_SETTING_BLOCK;
+bool ChromeSubresourceFilterClient::ShouldSuppressActivation(
+    content::NavigationHandle* navigation_handle) {
+  const GURL& url(navigation_handle->GetURL());
+  return navigation_handle->IsInMainFrame() &&
+         (whitelisted_hosts_.find(url.host()) != whitelisted_hosts_.end() ||
+          GetContentSettingForUrl(url) == CONTENT_SETTING_BLOCK);
 }
 
 void ChromeSubresourceFilterClient::WhitelistByContentSettings(
@@ -71,6 +75,12 @@ void ChromeSubresourceFilterClient::WhitelistByContentSettings(
       std::string(), CONTENT_SETTING_BLOCK);
 
   LogAction(kActionContentSettingsBlockedFromUI);
+}
+
+void ChromeSubresourceFilterClient::WhitelistInCurrentWebContents(
+    const GURL& url) {
+  if (url.SchemeIsHTTPOrHTTPS())
+    whitelisted_hosts_.insert(url.host());
 }
 
 // static

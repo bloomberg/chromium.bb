@@ -4,6 +4,9 @@
 
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 
+#include <set>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -190,11 +193,17 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
 
   ~MockSubresourceFilterClient() override = default;
 
-  bool IsWhitelistedByContentSettings(const GURL& url) override {
-    return false;
+  bool ShouldSuppressActivation(content::NavigationHandle* handle) override {
+    return handle->IsInMainFrame() &&
+           whitelisted_hosts_.find(handle->GetURL().host()) !=
+               whitelisted_hosts_.end();
   }
 
   void WhitelistByContentSettings(const GURL& url) override {}
+  void WhitelistInCurrentWebContents(const GURL& url) override {
+    if (url.SchemeIsHTTPOrHTTPS())
+      whitelisted_hosts_.insert(url.host());
+  }
 
   VerifiedRulesetDealer::Handle* GetRulesetDealer() override {
     return ruleset_dealer_;
@@ -203,6 +212,7 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
   MOCK_METHOD1(ToggleNotificationVisibility, void(bool));
 
  private:
+  std::set<std::string> whitelisted_hosts_;
   // Owned by the test harness.
   VerifiedRulesetDealer::Handle* ruleset_dealer_;
 
@@ -524,7 +534,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   const GURL url(kExampleUrlWithParams);
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
                               ActivationDecision::ACTIVATION_DISABLED);
-  factory()->AddHostOfURLToWhitelistSet(url);
+  factory()->client()->WhitelistInCurrentWebContents(url);
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
                               ActivationDecision::ACTIVATION_DISABLED);
 }
@@ -779,7 +789,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationLevelTest,
   const GURL url(kExampleUrlWithParams);
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
                               test_data.expected_activation_decision);
-  factory()->AddHostOfURLToWhitelistSet(url);
+  factory()->client()->WhitelistInCurrentWebContents(url);
   NavigateAndExpectActivation(
       {true}, {GURL(kExampleUrlWithParams)}, NO_REDIRECTS_HIT,
       GetActiveConfiguration().activation_level == ActivationLevel::DISABLED
@@ -830,7 +840,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
                               {test_url}, expected_pattern,
                               test_data.expected_activation_decision);
   if (test_data.url_matches_activation_list) {
-    factory()->AddHostOfURLToWhitelistSet(test_url);
+    factory()->client()->WhitelistInCurrentWebContents(test_url);
     NavigateAndExpectActivation(
         {test_data.url_matches_activation_list}, {GURL(kExampleUrlWithParams)},
         expected_pattern,

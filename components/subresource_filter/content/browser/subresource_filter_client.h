@@ -6,8 +6,13 @@
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
 
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
+#include "content/public/browser/web_contents.h"
 
 class GURL;
+
+namespace content {
+class NavigationHandle;
+}  // namespace content
 
 namespace subresource_filter {
 
@@ -23,13 +28,18 @@ class SubresourceFilterClient {
   // off.
   virtual void ToggleNotificationVisibility(bool visibility) = 0;
 
-  // Returns true if the given URL is whitelisted from activation via content
-  // settings. This should only be called for main frame URLs.
-  virtual bool IsWhitelistedByContentSettings(const GURL& url) = 0;
+  // Returns true if the navigation is in a main frame and the URL is
+  // whitelisted from activation via content settings or by the per-tab
+  // whitelist.
+  virtual bool ShouldSuppressActivation(
+      content::NavigationHandle* navigation_handle) = 0;
 
   // Adds |url| to the BLOCKED state via content settings for the current
   // profile.
   virtual void WhitelistByContentSettings(const GURL& url) = 0;
+
+  // Adds |url| to a per-WebContents whitelist.
+  virtual void WhitelistInCurrentWebContents(const GURL& url) = 0;
 
   virtual VerifiedRulesetDealer::Handle* GetRulesetDealer() = 0;
 };
