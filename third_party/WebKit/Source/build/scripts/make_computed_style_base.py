@@ -17,66 +17,6 @@ from name_utilities import (
 from collections import OrderedDict
 
 
-# Temporary hard-coded list of extra fields.
-# TODO(shend): Put this into its own JSON5 file.
-EXTRA_FIELDS = [
-    {'name': 'IsLink', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False, 'default_value': False},
-    {'name': 'OriginalDisplay', 'field_template': 'keyword', 'default_value': 'inline',
-     'type_name': 'EDisplay', 'inherited': False, 'independent': False,
-     'keywords': [
-         "inline", "block", "list-item", "inline-block", "table", "inline-table", "table-row-group", "table-header-group",
-         "table-footer-group", "table-row", "table-column-group", "table-column", "table-cell", "table-caption", "-webkit-box",
-         "-webkit-inline-box", "flex", "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none"
-     ]},
-    {'name': 'InsideLink', 'field_template': 'keyword', 'default_value': 'not-inside-link',
-     'keywords': ['not-inside-link', 'inside-unvisited-link', 'inside-visited-link'],
-     'inherited': True, 'independent': False},
-    # Style can not be shared.
-    {'name': 'Unique', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False, 'default_value': False},
-    # Whether this style is affected by these pseudo-classes.
-    {'name': 'AffectedByFocus', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False, 'default_value': False},
-    {'name': 'AffectedByFocusWithin', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False, 'default_value': False},
-    {'name': 'AffectedByHover', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False, 'default_value': False},
-    {'name': 'AffectedByActive', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False, 'default_value': False},
-    {'name': 'AffectedByDrag', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False, 'default_value': False},
-    # A non-inherited property references a variable or @apply is used
-    {'name': 'HasVariableReferenceFromNonInheritedProperty', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False, 'default_value': False},
-    # Explicitly inherits a non-inherited property
-    {'name': 'HasExplicitlyInheritedProperties', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False, 'default_value': False},
-    # These are set if we used viewport or rem units when resolving a length.
-    # TODO(shend): HasViewportUnits should be a monotonic_flag.
-    {'name': 'HasViewportUnits', 'field_template': 'primitive', 'default_value': 'false',
-     'type_name': 'bool', 'inherited': False, 'independent': False},
-    {'name': 'HasRemUnits', 'field_template': 'monotonic_flag', 'default_value': 'false',
-     'inherited': False, 'independent': False},
-    # These properties only have generated storage, and their methods are handwritten in ComputedStyle.
-    # TODO(shend): Remove these fields and delete the 'storage_only' template.
-    {'name': 'EmptyState', 'field_template': 'storage_only', 'field_size': 1, 'default_value': 'false',
-     'type_name': 'bool', 'inherited': False, 'independent': False},
-    {'name': 'StyleType', 'field_template': 'storage_only', 'field_size': 6, 'default_value': '0',
-     'type_name': 'PseudoId', 'inherited': False, 'independent': False},
-    {'name': 'PseudoBits', 'field_template': 'storage_only', 'field_size': 8, 'default_value': 'kPseudoIdNone',
-     'type_name': 'PseudoId', 'inherited': False, 'independent': False},
-    # True if 'underline solid' is the only text decoration on this element.
-    {'name': 'HasSimpleUnderline', 'field_template': 'storage_only', 'field_size': 1, 'default_value': 'false',
-     'type_name': 'bool', 'inherited': True, 'independent': False},
-    # TODO(shend): vertical align is actually a CSS property, but since we don't support union fields
-    # which can be either a keyword or Length, this is generated as a nonproperty for now. Remove this
-    # once we can support union fields and groups.
-    {'name': 'VerticalAlign', 'field_template': 'storage_only', 'field_size': 4, 'default_value': 'EVerticalAlign::kBaseline',
-     'type_name': 'EVerticalAlign', 'inherited': False, 'independent': False},
-]
-
-
 class Field(object):
     """
     The generated ComputedStyle object is made up of a series of Fields.
@@ -267,8 +207,6 @@ def _create_fields(properties):
                 fields.append(_create_inherited_flag_field(property_))
 
             # TODO(shend): Get rid of the property/nonproperty field roles.
-            # If the field has_custom_compare_and_copy, then it does not appear in
-            # ComputedStyle::operator== and ComputedStyle::CopyNonInheritedFromCached.
             field_role = 'nonproperty' if property_['has_custom_compare_and_copy'] else 'property'
             fields.append(_create_field(field_role, property_))
 
@@ -309,8 +247,9 @@ def _pack_fields(fields):
 
 
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
-    def __init__(self, json5_file_path):
-        super(ComputedStyleBaseWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_paths):
+        # Read CSS properties
+        super(ComputedStyleBaseWriter, self).__init__([json5_file_paths[0]])
 
         # Ignore shorthand properties
         for property_ in self._properties.values():
@@ -326,20 +265,16 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             # CSS properties are not allowed to explicitly specify their field_size.
             property_['field_size'] = None
 
-        # TODO(shend): Remove this once we move EXTRA_FIELDS to its own JSON file,
-        # since the JSON5 reader will handle missing fields and defaults.
-        for property_ in EXTRA_FIELDS:
-            for parameter in self.json5_file.parameters:
-                if parameter not in property_:
-                    property_[parameter] = None
+        # Read extra fields using the parameter specification from the CSS properties file.
+        extra_fields = json5_generator.Json5File.load_from_files(
+            [json5_file_paths[1]],
+            default_parameters=self.json5_file.parameters
+        ).name_dictionaries
 
-        for property_ in EXTRA_FIELDS:
-            # TODO(shend): Remove the line below once we move EXTRA_FIELDS to its
-            # own file which would enforce defaults.
-            property_['has_custom_compare_and_copy'] = True
+        for property_ in extra_fields:
             make_style_builder.apply_property_naming_defaults(property_)
 
-        all_properties = css_properties + EXTRA_FIELDS
+        all_properties = css_properties + extra_fields
 
         # Override the type name when field_type_path is specified
         for property_ in all_properties:

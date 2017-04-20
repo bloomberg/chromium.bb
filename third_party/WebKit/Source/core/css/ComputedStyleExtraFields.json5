@@ -1,0 +1,168 @@
+{
+// This file specifies fields in ComputedStyle that we would like to
+// generate, but are not CSS properties.
+
+  parameters: {
+    // - field_size
+    // Number of bits needed to store this field. Only used for storage_only
+    // fields. If specified, the field will be stored as bit field. Otherwise
+    // it will be stored as a normal data member.
+    field_size: {
+      valid_type: "int",
+    },
+
+    // If the field has_custom_compare_and_copy, then it does not appear in
+    // ComputedStyle::operator== and ComputedStyle::CopyNonInheritedFromCached.
+    has_custom_compare_and_copy: {
+      default: false,
+    },
+
+    // The rest is the same as CSSProperties.json5, but the only relevant ones in
+    // this file are:
+    // name, field_template, field_type_path, default_value, type_name, keyword,
+    // inherited
+  },
+
+  data: [
+    {
+      name: "IsLink",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    {
+      name: "OriginalDisplay",
+      field_template: "keyword",
+      default_value: "inline",
+      type_name: "EDisplay",
+      keywords: [
+          "inline", "block", "list-item", "inline-block", "table", "inline-table", "table-row-group", "table-header-group",
+          "table-footer-group", "table-row", "table-column-group", "table-column", "table-cell", "table-caption", "-webkit-box",
+          "-webkit-inline-box", "flex", "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none",
+      ],
+      has_custom_compare_and_copy: true,
+    },
+    {
+      name: "InsideLink",
+      field_template: "keyword",
+      default_value: "not-inside-link",
+      keywords: ["not-inside-link", "inside-unvisited-link", "inside-visited-link"],
+      inherited: true,
+      has_custom_compare_and_copy: true,
+    },
+    // Style can not be shared.
+    {
+      name: "Unique",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    // Whether this style is affected by these pseudo-classes.
+    {
+      name: "AffectedByFocus",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    {
+      name: "AffectedByFocusWithin",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    {
+      name: "AffectedByHover",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    {
+      name: "AffectedByActive",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    {
+      name: "AffectedByDrag",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    // A non-inherited property references a variable or @apply is used
+    {
+      name: "HasVariableReferenceFromNonInheritedProperty",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    // Explicitly inherits a non-inherited property
+    {
+      name: "HasExplicitlyInheritedProperties",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    // These are set if we used viewport or rem units when resolving a length.
+    // TODO(shend): HasViewportUnits should be a monotonic_flag.
+    {
+      name: "HasViewportUnits",
+      field_template: "primitive",
+      default_value: "false",
+      type_name: "bool",
+      has_custom_compare_and_copy: true,
+    },
+    {
+      name: "HasRemUnits",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      has_custom_compare_and_copy: true,
+    },
+    // These properties only have generated storage, and their methods are handwritten in ComputedStyle.
+    // TODO(shend): Remove these fields and delete the 'storage_only' template.
+    {
+      name: "EmptyState",
+      field_template: "storage_only",
+      field_size: 1,
+      default_value: "false",
+      type_name: "bool",
+      has_custom_compare_and_copy: true,
+    },
+    {
+      name: "StyleType",
+      field_template: "storage_only",
+      field_size: 6,
+      default_value: "0",
+      type_name: "PseudoId",
+      has_custom_compare_and_copy: true,
+    },
+    {
+      name: "PseudoBits",
+      field_template: "storage_only",
+      field_size: 8,
+      default_value: "kPseudoIdNone",
+      type_name: "PseudoId",
+      has_custom_compare_and_copy: true,
+    },
+    // True if 'underline solid' is the only text decoration on this element.
+    {
+      name: "HasSimpleUnderline",
+      field_template: "storage_only",
+      field_size: 1,
+      default_value: "false",
+      type_name: "bool",
+      inherited: true,
+      has_custom_compare_and_copy: true,
+    },
+    // TODO(shend): vertical align is actually a CSS property, but since we don't support union fields
+    // which can be either a keyword or Length, this is generated as a nonproperty for now. Remove this
+    // once we can support union fields and groups.
+    {
+      name: "VerticalAlign",
+      field_template: "storage_only",
+      field_size: 4,
+      default_value: "EVerticalAlign::kBaseline",
+      type_name: "EVerticalAlign",
+      has_custom_compare_and_copy: true,
+    },
+  ],
+}

@@ -410,6 +410,7 @@ action("generated_testing_idls_internal_runtime_flags") {
 
 css_properties("make_core_generated_computed_style_base") {
   script = "../build/scripts/make_computed_style_base.py"
+  in_files = [ "css/ComputedStyleExtraFields.json5" ]
   other_inputs = [
     "../build/scripts/templates/fields/field.tmpl",
     "../build/scripts/templates/fields/base.tmpl",
