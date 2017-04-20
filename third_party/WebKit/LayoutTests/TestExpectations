@@ -3288,3 +3288,6 @@ crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-disabled
 crbug.com/713462 [ Mac ] virtual/gpu/fast/canvas/canvas-ImageData-neutered-source.html [ Failure Pass ]
 
 crbug.com/713509 crypto/subtle/worker-subtle-crypto-concurrent.html [ Pass Timeout ]
+
+crbug.com/713685 [ Linux ] fast/workers/termination-early.html [ Crash Pass ]
+crbug.com/713685 [ Linux ] virtual/sharedarraybuffer/fast/workers/termination-early.html [ Crash Pass ]
