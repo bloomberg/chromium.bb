@@ -1085,8 +1085,8 @@ bool OutputCues(const mkvparser::Segment& segment,
   indent->Adjust(libwebm::kIncreaseIndent);
 
   do {
-    for (int track_num = 1; track_num <= num_tracks; ++track_num) {
-      const mkvparser::Track* const track = tracks.GetTrackByNumber(track_num);
+    for (int track_num = 0; track_num < num_tracks; ++track_num) {
+      const mkvparser::Track* const track = tracks.GetTrackByIndex(track_num);
       const mkvparser::CuePoint::TrackPosition* const track_pos =
           cue_point->Find(track);
 
@@ -1095,7 +1095,7 @@ bool OutputCues(const mkvparser::Segment& segment,
             (track->GetType() == mkvparser::Track::kVideo) ? 'V' : 'A';
         fprintf(o, "%sCue Point:%d type:%c track:%d",
                 indent->indent_str().c_str(), cue_point_num, track_type,
-                track_num);
+                static_cast<int>(track->GetNumber()));
 
         if (options.output_seconds) {
           fprintf(o, " secs:%g",
