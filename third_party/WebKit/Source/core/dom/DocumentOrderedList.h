@@ -42,12 +42,32 @@ class DocumentOrderedList final {
   DISALLOW_NEW();
 
  public:
-  DocumentOrderedList() {}
+  DocumentOrderedList() : mutation_forbidden_(false) {}
+
+  // Forbids changes to DocumentOrderedList. Used to check if we are
+  // unintentionally changing DocumentOrderedList while iterating. Added for
+  // crbug.com/699269 diagnosis.
+  class MutationForbiddenScope final {
+    STACK_ALLOCATED();
+
+   public:
+    explicit MutationForbiddenScope(DocumentOrderedList* list) : list_(list) {
+      list_->mutation_forbidden_ = true;
+    }
+    ~MutationForbiddenScope() { list_->mutation_forbidden_ = false; }
+
+   private:
+    DocumentOrderedList* list_;
+  };
 
   void Add(Node*);
   void Remove(const Node*);
   bool IsEmpty() const { return nodes_.IsEmpty(); }
-  void Clear() { nodes_.clear(); }
+  void Clear() {
+    // TODO(keishi): CHECK() added for crbug.com/699269 diagnosis.
+    CHECK(!mutation_forbidden_);
+    nodes_.clear();
+  }
   size_t size() const { return nodes_.size(); }
 
   using iterator = HeapListHashSet<Member<Node>, 32>::iterator;
@@ -67,6 +87,7 @@ class DocumentOrderedList final {
 
  private:
   HeapListHashSet<Member<Node>, 32> nodes_;
+  bool mutation_forbidden_;
 };
 
 }  // namespace blink

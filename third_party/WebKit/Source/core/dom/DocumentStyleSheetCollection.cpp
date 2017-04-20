@@ -48,6 +48,8 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(
 void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
     StyleEngine& master_engine,
     DocumentStyleSheetCollector& collector) {
+  DocumentOrderedList::MutationForbiddenScope mutation_forbidden_(
+      &style_sheet_candidate_nodes_);
   for (Node* n : style_sheet_candidate_nodes_) {
     StyleSheetCandidate candidate(*n);
 

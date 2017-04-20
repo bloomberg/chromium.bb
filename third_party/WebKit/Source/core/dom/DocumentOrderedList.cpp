@@ -34,6 +34,8 @@
 namespace blink {
 
 void DocumentOrderedList::Add(Node* node) {
+  // TODO(keishi): CHECK() added for crbug.com/699269 diagnosis.
+  CHECK(!mutation_forbidden_);
   if (nodes_.IsEmpty()) {
     nodes_.insert(node);
     return;
@@ -60,6 +62,8 @@ void DocumentOrderedList::Add(Node* node) {
 }
 
 void DocumentOrderedList::Remove(const Node* node) {
+  // TODO(keishi): CHECK() added for crbug.com/699269 diagnosis.
+  CHECK(!mutation_forbidden_);
   nodes_.erase(const_cast<Node*>(node));
 }
 
