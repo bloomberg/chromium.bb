@@ -15,6 +15,7 @@
 #include "content/public/common/previews_state.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,8 +81,8 @@ TEST(WebRequestConditionTest, CreateCondition) {
 
   net::TestURLRequestContext context;
   const GURL http_url("http://www.example.com");
-  std::unique_ptr<net::URLRequest> match_request(
-      context.CreateRequest(http_url, net::DEFAULT_PRIORITY, NULL));
+  std::unique_ptr<net::URLRequest> match_request(context.CreateRequest(
+      http_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   WebRequestData data(match_request.get(), ON_BEFORE_REQUEST);
   WebRequestDataWithMatchIds request_data(&data);
   request_data.url_match_ids = matcher.MatchURL(http_url);
@@ -100,8 +101,8 @@ TEST(WebRequestConditionTest, CreateCondition) {
   EXPECT_TRUE(result->IsFulfilled(request_data));
 
   const GURL https_url("https://www.example.com");
-  std::unique_ptr<net::URLRequest> wrong_resource_type(
-      context.CreateRequest(https_url, net::DEFAULT_PRIORITY, NULL));
+  std::unique_ptr<net::URLRequest> wrong_resource_type(context.CreateRequest(
+      https_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   data.request = wrong_resource_type.get();
   request_data.url_match_ids = matcher.MatchURL(http_url);
   // Make sure IsFulfilled does not fail because of URL matching.
@@ -147,8 +148,8 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   net::TestURLRequestContext context;
   const GURL http_url("http://www.example.com");
   const GURL first_party_url("http://fpfc.example.com");
-  std::unique_ptr<net::URLRequest> match_request(
-      context.CreateRequest(http_url, net::DEFAULT_PRIORITY, NULL));
+  std::unique_ptr<net::URLRequest> match_request(context.CreateRequest(
+      http_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   WebRequestData data(match_request.get(), ON_BEFORE_REQUEST);
   WebRequestDataWithMatchIds request_data(&data);
   request_data.url_match_ids = matcher.MatchURL(http_url);
@@ -228,7 +229,8 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
 
   net::TestURLRequestContext context;
   std::unique_ptr<net::URLRequest> https_request(context.CreateRequest(
-      GURL("https://www.example.com"), net::DEFAULT_PRIORITY, NULL));
+      GURL("https://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // 1. A non-empty condition without UrlFilter attributes is fulfilled iff its
   //    attributes are fulfilled.
@@ -288,8 +290,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   // https://www.example.com
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
-  std::unique_ptr<net::URLRequest> http_request(
-      context.CreateRequest(http_url, net::DEFAULT_PRIORITY, NULL));
+  std::unique_ptr<net::URLRequest> http_request(context.CreateRequest(
+      http_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   WebRequestData data(http_request.get(), ON_BEFORE_REQUEST);
   WebRequestDataWithMatchIds request_data(&data);
   request_data.url_match_ids = matcher.MatchURL(http_url);
@@ -300,8 +302,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   GURL https_url("https://www.example.com");
   request_data.url_match_ids = matcher.MatchURL(https_url);
   EXPECT_EQ(1u, request_data.url_match_ids.size());
-  std::unique_ptr<net::URLRequest> https_request(
-      context.CreateRequest(https_url, net::DEFAULT_PRIORITY, NULL));
+  std::unique_ptr<net::URLRequest> https_request(context.CreateRequest(
+      https_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   data.request = https_request.get();
   EXPECT_TRUE(result->IsFulfilled(*(request_data.url_match_ids.begin()),
                                   request_data));
@@ -311,7 +313,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   request_data.url_match_ids = matcher.MatchURL(https_foo_url);
   EXPECT_EQ(0u, request_data.url_match_ids.size());
   std::unique_ptr<net::URLRequest> https_foo_request(
-      context.CreateRequest(https_foo_url, net::DEFAULT_PRIORITY, NULL));
+      context.CreateRequest(https_foo_url, net::DEFAULT_PRIORITY, nullptr,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
   data.request = https_foo_request.get();
   EXPECT_FALSE(result->IsFulfilled(-1, request_data));
 }
@@ -350,26 +353,29 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   // Test various URLs.
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
-  std::unique_ptr<net::URLRequest> http_request(
-      context.CreateRequest(http_url, net::DEFAULT_PRIORITY, NULL));
+  std::unique_ptr<net::URLRequest> http_request(context.CreateRequest(
+      http_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   url_match_ids = matcher.MatchURL(http_url);
   ASSERT_EQ(1u, url_match_ids.size());
 
   GURL http_url_80("http://www.example.com:80");
   std::unique_ptr<net::URLRequest> http_request_80(
-      context.CreateRequest(http_url_80, net::DEFAULT_PRIORITY, NULL));
+      context.CreateRequest(http_url_80, net::DEFAULT_PRIORITY, nullptr,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
   url_match_ids = matcher.MatchURL(http_url_80);
   ASSERT_EQ(1u, url_match_ids.size());
 
   GURL http_url_1000("http://www.example.com:1000");
   std::unique_ptr<net::URLRequest> http_request_1000(
-      context.CreateRequest(http_url_1000, net::DEFAULT_PRIORITY, NULL));
+      context.CreateRequest(http_url_1000, net::DEFAULT_PRIORITY, nullptr,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
   url_match_ids = matcher.MatchURL(http_url_1000);
   ASSERT_EQ(1u, url_match_ids.size());
 
   GURL http_url_2000("http://www.example.com:2000");
   std::unique_ptr<net::URLRequest> http_request_2000(
-      context.CreateRequest(http_url_2000, net::DEFAULT_PRIORITY, NULL));
+      context.CreateRequest(http_url_2000, net::DEFAULT_PRIORITY, nullptr,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
   url_match_ids = matcher.MatchURL(http_url_2000);
   ASSERT_EQ(0u, url_match_ids.size());
 }

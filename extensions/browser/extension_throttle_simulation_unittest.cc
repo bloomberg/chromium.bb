@@ -28,6 +28,7 @@
 #include "extensions/browser/extension_throttle_manager.h"
 #include "extensions/browser/extension_throttle_test_support.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -131,8 +132,10 @@ class Server : public DiscreteTimeSimulation::Actor {
         num_current_tick_queries_(0),
         num_overloaded_ticks_(0),
         max_experienced_queries_per_tick_(0),
-        mock_request_(
-            context_.CreateRequest(GURL(), net::DEFAULT_PRIORITY, NULL)) {}
+        mock_request_(context_.CreateRequest(GURL(),
+                                             net::DEFAULT_PRIORITY,
+                                             nullptr,
+                                             TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetDowntime(const TimeTicks& start_time, const TimeDelta& duration) {
     start_downtime_ = start_time;

@@ -17,6 +17,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -167,7 +168,10 @@ struct GurlAndString {
 class ExtensionThrottleEntryTest : public testing::Test {
  protected:
   ExtensionThrottleEntryTest()
-      : request_(context_.CreateRequest(GURL(), net::DEFAULT_PRIORITY, NULL)) {}
+      : request_(context_.CreateRequest(GURL(),
+                                        net::DEFAULT_PRIORITY,
+                                        nullptr,
+                                        TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetUp() override;
 
@@ -327,7 +331,10 @@ TEST_F(ExtensionThrottleEntryTest, ExplicitUserRequest) {
 class ExtensionThrottleManagerTest : public testing::Test {
  protected:
   ExtensionThrottleManagerTest()
-      : request_(context_.CreateRequest(GURL(), net::DEFAULT_PRIORITY, NULL)) {}
+      : request_(context_.CreateRequest(GURL(),
+                                        net::DEFAULT_PRIORITY,
+                                        nullptr,
+                                        TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetUp() override { request_->SetLoadFlags(0); }
 

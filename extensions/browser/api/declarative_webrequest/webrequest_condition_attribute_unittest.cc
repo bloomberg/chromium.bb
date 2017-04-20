@@ -21,6 +21,7 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "net/base/request_priority.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,7 +103,8 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
 
   net::TestURLRequestContext context;
   std::unique_ptr<net::URLRequest> url_request_ok(context.CreateRequest(
-      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL));
+      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
       url_request_ok.get(), content::RESOURCE_TYPE_SUB_FRAME,
       NULL,   // context
@@ -118,7 +120,8 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       WebRequestData(url_request_ok.get(), ON_BEFORE_REQUEST)));
 
   std::unique_ptr<net::URLRequest> url_request_fail(context.CreateRequest(
-      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL));
+      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
       url_request_fail.get(), content::RESOURCE_TYPE_MAIN_FRAME,
       NULL,   // context
@@ -149,7 +152,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
   std::unique_ptr<net::URLRequest> url_request(context.CreateRequest(
-      test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate));
+      test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   url_request->Start();
   base::RunLoop().Run();
 
@@ -232,8 +236,8 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   const GURL url_b("http://b.com");
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  std::unique_ptr<net::URLRequest> url_request(
-      context.CreateRequest(url_a, net::DEFAULT_PRIORITY, &delegate));
+  std::unique_ptr<net::URLRequest> url_request(context.CreateRequest(
+      url_a, net::DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   for (unsigned int i = 1; i <= kLastActiveStage; i <<= 1) {
     if (!(kActiveStages & i))
@@ -324,7 +328,8 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
   std::unique_ptr<net::URLRequest> url_request(
-      context.CreateRequest(url_empty, net::DEFAULT_PRIORITY, &delegate));
+      context.CreateRequest(url_empty, net::DEFAULT_PRIORITY, &delegate,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
 
   for (size_t i = 0; i < arraysize(active_stages); ++i) {
     EXPECT_FALSE(empty_attribute->IsFulfilled(
@@ -449,9 +454,9 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  std::unique_ptr<net::URLRequest> url_request(
-      context.CreateRequest(GURL("http://example.com"),  // Dummy URL.
-                            net::DEFAULT_PRIORITY, &delegate));
+  std::unique_ptr<net::URLRequest> url_request(context.CreateRequest(
+      GURL("http://example.com"),  // Dummy URL.
+      net::DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   url_request->SetExtraRequestHeaderByName(
       "Custom-header", "custom/value", true /* overwrite */);
   url_request->Start();
@@ -538,7 +543,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
   std::unique_ptr<net::URLRequest> url_request(context.CreateRequest(
-      test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate));
+      test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   url_request->Start();
   base::RunLoop().Run();
 
