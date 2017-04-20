@@ -3027,6 +3027,10 @@ const char kEnableCopylessPasteDescription[] =
     "to enter into the search bar. The data is indexed locally, and never sent "
     "to the server. It's disabled in incognito mode.";
 
+const char kEnableWebNfcName[] = "WebNFC";
+
+const char kEnableWebNfcDescription[] = "Enable WebNFC support.";
+
 #endif  // defined(OS_ANDROID)
 
 }  // namespace flag_descriptions

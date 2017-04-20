@@ -2752,6 +2752,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kQuickUnlockPinSignin)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_ANDROID)
+    {"enable-webnfc", flag_descriptions::kEnableWebNfcName,
+     flag_descriptions::kEnableWebNfcDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kWebNfc)},
+#endif
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

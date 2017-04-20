@@ -3287,6 +3287,12 @@ extern const char kEnableCopylessPasteName[];
 // Description of the flag that enables Copyless Paste.
 extern const char kEnableCopylessPasteDescription[];
 
+// Title for the flag to enable WebNFC.
+extern const char kEnableWebNfcName[];
+
+// Description for the flag to enable WebNFC.
+extern const char kEnableWebNfcDescription[];
+
 #endif  // defined(OS_ANDROID)
 
 }  // namespace flag_descriptions

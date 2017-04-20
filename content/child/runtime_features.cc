@@ -370,6 +370,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
                                                 false);
   }
 
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebNfc))
+    WebRuntimeFeatures::EnableWebNfc(true);
+#endif
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

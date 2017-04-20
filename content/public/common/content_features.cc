@@ -303,7 +303,13 @@ const base::Feature kServiceWorkerPaymentApps{
 // The JavaScript API for payments on the web.
 const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
-#else
+
+// Controls whether the WebNFC API is enabled:
+// https://w3c.github.io/web-nfc/
+const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if !defined(OS_ANDROID)
 // The JavaScript API for payments on the web.
 const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_DISABLED_BY_DEFAULT};

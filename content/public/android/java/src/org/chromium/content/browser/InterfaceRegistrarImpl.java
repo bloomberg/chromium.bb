@@ -80,7 +80,9 @@ class InterfaceRegistrarImpl {
             implements InterfaceRegistrar<WebContents> {
         @Override
         public void registerInterfaces(InterfaceRegistry registry, final WebContents webContents) {
-            registry.addInterface(Nfc.MANAGER, new NfcFactory(webContents));
+            if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
+                registry.addInterface(Nfc.MANAGER, new NfcFactory(webContents));
+            }
         }
     }
 

@@ -81,6 +81,7 @@ CONTENT_EXPORT extern const base::Feature kNativeAndroidHistoryManager;
 CONTENT_EXPORT extern const base::Feature kImeThread;
 CONTENT_EXPORT extern const base::Feature kSeccompSandboxAndroid;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
+CONTENT_EXPORT extern const base::Feature kWebNfc;
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)

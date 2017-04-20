@@ -132,6 +132,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void EnableWebFontsInterventionTrigger(bool);
   BLINK_EXPORT static void EnableWebGLDraftExtensions(bool);
   BLINK_EXPORT static void EnableWebGLImageChromium(bool);
+  BLINK_EXPORT static void EnableWebNfc(bool);
   BLINK_EXPORT static void EnableWebUsb(bool);
   BLINK_EXPORT static void EnableWebVR(bool);
   BLINK_EXPORT static void EnableWebVRExperimentalRendering(bool);

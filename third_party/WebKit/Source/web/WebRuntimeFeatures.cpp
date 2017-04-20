@@ -47,6 +47,10 @@ void WebRuntimeFeatures::EnableWebAssemblyStreaming(bool enable) {
   RuntimeEnabledFeatures::setWebAssemblyStreamingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebNfc(bool enable) {
+  RuntimeEnabledFeatures::setWebNFCEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebUsb(bool enable) {
   RuntimeEnabledFeatures::setWebUSBEnabled(enable);
 }

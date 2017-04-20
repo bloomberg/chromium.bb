@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "content/public/common/content_features.h"
 #include "jni/ContentFeatureList_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -21,7 +22,7 @@ namespace {
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. content_features.h).
 const base::Feature* kFeaturesExposedToJava[] = {
-    &kRequestUnbufferedDispatch,
+    &kRequestUnbufferedDispatch, &features::kWebNfc,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
