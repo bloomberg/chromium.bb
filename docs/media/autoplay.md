@@ -14,6 +14,13 @@ There are two ways of initiating autoplay:
 * Autoplay by `play()` method: Explicitly calling the `play()` method without
   user gesture.
 
+All the autoplay logic is handled by the AutoplayPolicy class. When the media
+element wants to perform some action (like unmute, autoplay by attribute or
+`play()` method), it will send a request to AutoplayPolicy, and if the request
+is approved, the element can autoplay, otherwise it should be paused. Also the
+media element should inform the AutoplayPolicy about relevant changes such as
+"the element has been moved to a new document".
+
 ## User gesture lock
 
 Each media element has a user gesture lock. If the element is allowed to

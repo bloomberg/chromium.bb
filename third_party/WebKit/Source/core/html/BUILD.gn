@@ -389,6 +389,8 @@ blink_core_sources("html") {
     "imports/HTMLImportsController.h",
     "imports/LinkImport.cpp",
     "imports/LinkImport.h",
+    "media/AutoplayPolicy.cpp",
+    "media/AutoplayPolicy.h",
     "media/AutoplayUmaHelper.cpp",
     "media/AutoplayUmaHelper.h",
     "media/HTMLMediaElementControlsList.cpp",

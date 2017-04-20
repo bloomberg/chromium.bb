@@ -75,6 +75,7 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   void RecordCrossOriginAutoplayResult(CrossOriginAutoplayResult);
   void RecordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus);
 
+  void VideoWillBeDrawnToCanvas();
   void DidMoveToNewDocument(Document& old_document);
 
   bool IsVisible() const { return is_visible_; }

@@ -51,10 +51,9 @@ namespace blink {
 class AudioSourceProviderClient;
 class AudioTrack;
 class AudioTrackList;
-class AutoplayUmaHelper;
+class AutoplayPolicy;
 class ContentType;
 class CueTimeline;
-class ElementVisibilityObserver;
 class EnumerationHistogram;
 class Event;
 class ExceptionState;
@@ -330,6 +329,8 @@ class CORE_EXPORT HTMLMediaElement
     return remote_playback_client_;
   }
 
+  const AutoplayPolicy& GetAutoplayPolicy() const { return *autoplay_policy_; }
+
  protected:
   HTMLMediaElement(const QualifiedName&, Document&);
   ~HTMLMediaElement() override;
@@ -524,33 +525,6 @@ class CORE_EXPORT HTMLMediaElement
   // transition to kHaveMetadata.
   void SelectInitialTracksIfNecessary();
 
-  // Return true if and only if a user gesture is required to unlock this
-  // media element for unrestricted autoplay / script control.  Don't confuse
-  // this with isGestureNeededForPlayback().  The latter is usually what one
-  // should use, if checking to see if an action is allowed.
-  bool IsLockedPendingUserGesture() const;
-
-  bool IsLockedPendingUserGestureIfCrossOriginExperimentEnabled() const;
-
-  // If the user gesture is required, then this will remove it.  Note that
-  // one should not generally call this method directly; use the one on
-  // m_helper and give it a reason.
-  void UnlockUserGesture();
-
-  // Return true if and only if a user gesture is requried for playback.  Even
-  // if isLockedPendingUserGesture() return true, this might return false if
-  // the requirement is currently overridden.  This does not check if a user
-  // gesture is currently being processed.
-  bool IsGestureNeededForPlayback() const;
-
-  bool IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled() const;
-
-  bool IsGestureNeededForPlaybackIfPendingUserGestureIsLocked() const;
-
-  // Return true if and only if the settings allow autoplay of media on this
-  // frame.
-  bool IsAutoplayAllowedPerSettings() const;
-
   void SetNetworkState(NetworkState);
 
   void AudioTracksTimerFired(TimerBase*);
@@ -564,8 +538,6 @@ class CORE_EXPORT HTMLMediaElement
   void RejectPlayPromisesInternal(ExceptionCode, const String&);
 
   EnumerationHistogram& ShowControlsHistogram() const;
-
-  void OnVisibilityChangedForAutoplay(bool is_visible);
 
   void ViewportFillDebouncerTimerFired(TimerBase*);
 
@@ -652,8 +624,6 @@ class CORE_EXPORT HTMLMediaElement
   PendingActionFlags pending_action_flags_;
 
   // FIXME: HTMLMediaElement has way too many state bits.
-  bool locked_pending_user_gesture_ : 1;
-  bool locked_pending_user_gesture_if_cross_origin_experiment_enabled_ : 1;
   bool playing_ : 1;
   bool should_delay_load_event_ : 1;
   bool have_fired_loaded_data_ : 1;
@@ -745,7 +715,7 @@ class CORE_EXPORT HTMLMediaElement
 
   AudioSourceProviderImpl audio_source_provider_;
 
-  friend class AutoplayUmaHelper;  // for isAutoplayAllowedPerSettings
+  friend class AutoplayPolicy;
   friend class AutoplayUmaHelperTest;
   friend class Internals;
   friend class TrackDisplayUpdateScope;
@@ -755,12 +725,9 @@ class CORE_EXPORT HTMLMediaElement
   friend class HTMLVideoElement;
   friend class MediaControlsOrientationLockDelegateTest;
 
-  Member<AutoplayUmaHelper> autoplay_uma_helper_;
+  Member<AutoplayPolicy> autoplay_policy_;
 
   WebRemotePlaybackClient* remote_playback_client_;
-
-  // class AutoplayVisibilityObserver;
-  Member<ElementVisibilityObserver> autoplay_visibility_observer_;
 
   IntRect current_intersect_rect_;
 

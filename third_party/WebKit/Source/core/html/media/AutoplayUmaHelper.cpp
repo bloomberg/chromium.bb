@@ -8,7 +8,9 @@
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/events/Event.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/media/AutoplayPolicy.h"
 #include "platform/Histogram.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
@@ -110,7 +112,8 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
     bool data_saver_enabled =
         element_->GetDocument().GetSettings() &&
         element_->GetDocument().GetSettings()->GetDataSaverEnabled();
-    bool blocked_by_setting = !element_->IsAutoplayAllowedPerSettings();
+    bool blocked_by_setting =
+        !element_->GetAutoplayPolicy().IsAutoplayAllowedPerSettings();
 
     if (data_saver_enabled && blocked_by_setting) {
       blocked_muted_video_histogram.Count(
@@ -211,6 +214,13 @@ void AutoplayUmaHelper::RecordAutoplayUnmuteStatus(
        static_cast<int>(AutoplayUnmuteActionStatus::kNumberOfStatus)));
 
   autoplay_unmute_histogram.Count(static_cast<int>(status));
+}
+
+void AutoplayUmaHelper::VideoWillBeDrawnToCanvas() {
+  if (HasSource() && !IsVisible()) {
+    UseCounter::Count(element_->GetDocument(),
+                      UseCounter::kHiddenAutoplayedVideoInCanvas);
+  }
 }
 
 void AutoplayUmaHelper::DidMoveToNewDocument(Document& old_document) {

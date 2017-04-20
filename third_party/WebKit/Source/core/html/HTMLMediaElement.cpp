@@ -36,14 +36,11 @@
 #include "core/css/MediaList.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
-#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -53,7 +50,7 @@
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/HTMLTrackElement.h"
 #include "core/html/TimeRanges.h"
-#include "core/html/media/AutoplayUmaHelper.h"
+#include "core/html/media/AutoplayPolicy.h"
 #include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/media/HTMLMediaSource.h"
 #include "core/html/media/MediaControls.h"
@@ -78,7 +75,6 @@
 #include "platform/Histogram.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -338,36 +334,6 @@ bool IsDocumentCrossOrigin(Document& document) {
   return frame && frame->IsCrossOriginSubframe();
 }
 
-bool IsDocumentWhitelisted(Document& document) {
-  DCHECK(document.GetSettings());
-
-  const String& whitelist_scope =
-      document.GetSettings()->GetMediaPlaybackGestureWhitelistScope();
-  if (whitelist_scope.IsNull() || whitelist_scope.IsEmpty())
-    return false;
-
-  return document.Url().GetString().StartsWith(whitelist_scope);
-}
-
-// Return true if and only if the document settings specifies media playback
-// requires user gesture.
-bool ComputeLockedPendingUserGesture(Document& document) {
-  if (!document.GetSettings())
-    return false;
-
-  if (IsDocumentWhitelisted(document)) {
-    return false;
-  }
-
-  if (document.GetSettings()
-          ->GetCrossOriginMediaPlaybackRequiresUserGesture() &&
-      IsDocumentCrossOrigin(document)) {
-    return true;
-  }
-
-  return document.GetSettings()->GetMediaPlaybackRequiresUserGesture();
-}
-
 std::unique_ptr<MediaControls::Factory>& MediaControlsFactory() {
   DEFINE_STATIC_LOCAL(std::unique_ptr<MediaControls::Factory>,
                       media_controls_factory, ());
@@ -505,8 +471,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       official_playback_position_needs_update_(true),
       fragment_end_time_(std::numeric_limits<double>::quiet_NaN()),
       pending_action_flags_(0),
-      locked_pending_user_gesture_(false),
-      locked_pending_user_gesture_if_cross_origin_experiment_enabled_(true),
       playing_(false),
       should_delay_load_event_(false),
       have_fired_loaded_data_(false),
@@ -527,16 +491,11 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       video_tracks_(this, VideoTrackList::Create(*this)),
       text_tracks_(this, nullptr),
       audio_source_node_(nullptr),
-      autoplay_uma_helper_(AutoplayUmaHelper::Create(this)),
+      autoplay_policy_(new AutoplayPolicy(this)),
       remote_playback_client_(nullptr),
-      autoplay_visibility_observer_(nullptr),
       media_controls_(nullptr),
       controls_list_(HTMLMediaElementControlsList::Create(this)) {
   BLINK_MEDIA_LOG << "HTMLMediaElement(" << (void*)this << ")";
-
-  locked_pending_user_gesture_ = ComputeLockedPendingUserGesture(document);
-  locked_pending_user_gesture_if_cross_origin_experiment_enabled_ =
-      IsDocumentCrossOrigin(document);
 
   LocalFrame* frame = document.GetFrame();
   if (frame) {
@@ -591,15 +550,7 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   deferred_load_timer_.MoveToNewTaskRunner(
       TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
 
-  autoplay_uma_helper_->DidMoveToNewDocument(old_document);
-  // If any experiment is enabled, then we want to enable a user gesture by
-  // default, otherwise the experiment does nothing.
-  bool old_document_requires_user_gesture =
-      ComputeLockedPendingUserGesture(old_document);
-  bool new_document_requires_user_gesture =
-      ComputeLockedPendingUserGesture(GetDocument());
-  if (new_document_requires_user_gesture && !old_document_requires_user_gesture)
-    locked_pending_user_gesture_ = true;
+  autoplay_policy_->DidMoveToNewDocument(old_document);
 
   if (should_delay_load_event_) {
     GetDocument().IncrementLoadEventDelayCount();
@@ -611,10 +562,6 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
     // m_webMediaPlayer can not cause load event dispatching in oldDocument.
     old_document.IncrementLoadEventDelayCount();
   }
-
-  if (IsDocumentCrossOrigin(GetDocument()) &&
-      !IsDocumentCrossOrigin(old_document))
-    locked_pending_user_gesture_if_cross_origin_experiment_enabled_ = true;
 
   RemoveElementFromDocumentMap(this, &old_document);
   AddElementToDocumentMap(this, &GetDocument());
@@ -845,10 +792,7 @@ String HTMLMediaElement::canPlayType(const String& mime_type) const {
 void HTMLMediaElement::load() {
   BLINK_MEDIA_LOG << "load(" << (void*)this << ")";
 
-  if (IsLockedPendingUserGesture() &&
-      UserGestureIndicator::UtilizeUserGesture()) {
-    UnlockUserGesture();
-  }
+  autoplay_policy_->TryUnlockingUserGesture();
 
   ignore_preload_none_ = true;
   InvokeLoadAlgorithm();
@@ -1839,40 +1783,11 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
         ScheduleNotifyPlaying();
     }
 
-    // Check for autoplay, and record metrics about it if needed.
-    if (ShouldAutoplay()) {
-      autoplay_uma_helper_->OnAutoplayInitiated(AutoplaySource::kAttribute);
-
-      if (!IsGestureNeededForPlayback()) {
-        if (IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled()) {
-          autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-              CrossOriginAutoplayResult::kAutoplayBlocked);
-        } else {
-          autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-              CrossOriginAutoplayResult::kAutoplayAllowed);
-        }
-        if (IsHTMLVideoElement() && muted() &&
-            RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
-          // We might end up in a situation where the previous
-          // observer didn't had time to fire yet. We can avoid
-          // creating a new one in this case.
-          if (!autoplay_visibility_observer_) {
-            autoplay_visibility_observer_ = new ElementVisibilityObserver(
-                this,
-                WTF::Bind(&HTMLMediaElement::OnVisibilityChangedForAutoplay,
-                          WrapWeakPersistent(this)));
-            autoplay_visibility_observer_->Start();
-          }
-        } else {
-          paused_ = false;
-          ScheduleEvent(EventTypeNames::play);
-          ScheduleNotifyPlaying();
-          can_autoplay_ = false;
-        }
-      } else {
-        autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-            CrossOriginAutoplayResult::kAutoplayBlocked);
-      }
+    if (autoplay_policy_->RequestAutoplayByAttribute()) {
+      paused_ = false;
+      ScheduleEvent(EventTypeNames::play);
+      ScheduleNotifyPlaying();
+      can_autoplay_ = false;
     }
 
     ScheduleEvent(EventTypeNames::canplaythrough);
@@ -2213,12 +2128,6 @@ bool HTMLMediaElement::Autoplay() const {
   return FastHasAttribute(autoplayAttr);
 }
 
-bool HTMLMediaElement::ShouldAutoplay() {
-  if (GetDocument().IsSandboxed(kSandboxAutomaticFeatures))
-    return false;
-  return can_autoplay_ && paused_ && Autoplay();
-}
-
 String HTMLMediaElement::preload() const {
   return PreloadTypeToString(PreloadType());
 }
@@ -2283,7 +2192,7 @@ String HTMLMediaElement::EffectivePreload() const {
 }
 
 WebMediaPlayer::Preload HTMLMediaElement::EffectivePreloadType() const {
-  if (Autoplay() && !IsGestureNeededForPlayback())
+  if (Autoplay() && !autoplay_policy_->IsGestureNeededForPlayback())
     return WebMediaPlayer::kPreloadAuto;
 
   WebMediaPlayer::Preload preload = PreloadType();
@@ -2329,47 +2238,29 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
 Nullable<ExceptionCode> HTMLMediaElement::Play() {
   BLINK_MEDIA_LOG << "play(" << (void*)this << ")";
 
-  if (!UserGestureIndicator::ProcessingUserGesture()) {
-    autoplay_uma_helper_->OnAutoplayInitiated(AutoplaySource::kMethod);
-    if (IsGestureNeededForPlayback()) {
-      // If we're already playing, then this play would do nothing anyway.
-      // Call playInternal to handle scheduling the promise resolution.
-      if (!paused_) {
-        PlayInternal();
-        return nullptr;
-      }
+  Nullable<ExceptionCode> exception_code = autoplay_policy_->RequestPlay();
 
-      autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-          CrossOriginAutoplayResult::kAutoplayBlocked);
-      String message = ExceptionMessages::FailedToExecute(
-          "play", "HTMLMediaElement",
-          "API can only be initiated by a user gesture.");
-      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kWarningMessageLevel, message));
-      return kNotAllowedError;
-    } else {
-      if (IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled()) {
-        autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-            CrossOriginAutoplayResult::kAutoplayBlocked);
-      } else {
-        autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-            CrossOriginAutoplayResult::kAutoplayAllowed);
-      }
+  if (exception_code == kNotAllowedError) {
+    // If we're already playing, then this play would do nothing anyway.
+    // Call playInternal to handle scheduling the promise resolution.
+    if (!paused_) {
+      PlayInternal();
+      return nullptr;
     }
-  } else {
-    autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-        CrossOriginAutoplayResult::kPlayedWithGesture);
-    UserGestureIndicator::UtilizeUserGesture();
-    UnlockUserGesture();
+    String message = ExceptionMessages::FailedToExecute(
+        "play", "HTMLMediaElement",
+        "API can only be initiated by a user gesture.");
+    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel, message));
+    return exception_code;
   }
+
+  autoplay_policy_->StopAutoplayMutedWhenVisible();
 
   if (error_ && error_->code() == MediaError::kMediaErrSrcNotSupported)
     return kNotSupportedError;
 
-  if (autoplay_visibility_observer_) {
-    autoplay_visibility_observer_->Stop();
-    autoplay_visibility_observer_ = nullptr;
-  }
+  DCHECK(exception_code.IsNull());
 
   PlayInternal();
 
@@ -2410,11 +2301,7 @@ void HTMLMediaElement::PlayInternal() {
 void HTMLMediaElement::pause() {
   BLINK_MEDIA_LOG << "pause(" << (void*)this << ")";
 
-  if (autoplay_visibility_observer_) {
-    autoplay_visibility_observer_->Stop();
-    autoplay_visibility_observer_ = nullptr;
-  }
-
+  autoplay_policy_->StopAutoplayMutedWhenVisible();
   PauseInternal();
 }
 
@@ -2562,41 +2449,21 @@ void HTMLMediaElement::setMuted(bool muted) {
   if (muted_ == muted)
     return;
 
-  bool was_autoplaying_muted = IsAutoplayingMuted();
-  bool was_pending_autoplay_muted = autoplay_visibility_observer_ && paused() &&
-                                    muted_ && IsLockedPendingUserGesture();
-
-  if (UserGestureIndicator::ProcessingUserGesture())
-    UnlockUserGesture();
-
   muted_ = muted;
 
   ScheduleEvent(EventTypeNames::volumechange);
 
-  // If an element autoplayed while muted, it needs to be unlocked to unmute,
-  // otherwise, it will be paused.
-  if (was_autoplaying_muted) {
-    if (IsGestureNeededForPlayback()) {
-      pause();
-      autoplay_uma_helper_->RecordAutoplayUnmuteStatus(
-          AutoplayUnmuteActionStatus::kFailure);
-    } else {
-      autoplay_uma_helper_->RecordAutoplayUnmuteStatus(
-          AutoplayUnmuteActionStatus::kSuccess);
-    }
-  }
+  // If it is unmute and AutoplayPolicy doesn't want the playback to continue,
+  // pause the playback.
+  if (!muted_ && !autoplay_policy_->RequestAutoplayUnmute())
+    pause();
 
   // This is called after the volumechange event to make sure isAutoplayingMuted
   // returns the right value when webMediaPlayer receives the volume update.
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->SetVolume(EffectiveMediaVolume());
 
-  // If an element was a candidate for autoplay muted but not visible, it will
-  // have a visibility observer ready to start its playback.
-  if (was_pending_autoplay_muted) {
-    autoplay_visibility_observer_->Stop();
-    autoplay_visibility_observer_ = nullptr;
-  }
+  autoplay_policy_->StopAutoplayMutedWhenVisible();
 }
 
 double HTMLMediaElement::EffectiveMediaVolume() const {
@@ -3318,15 +3185,6 @@ WebMediaPlayer::TrackId HTMLMediaElement::GetSelectedVideoTrackId() {
   return track->id();
 }
 
-bool HTMLMediaElement::IsAutoplayingMuted() {
-  if (!IsHTMLVideoElement() ||
-      !RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
-    return false;
-  }
-
-  return !paused() && muted() && IsLockedPendingUserGesture();
-}
-
 void HTMLMediaElement::RequestReload(const WebURL& new_url) {
   DCHECK(GetWebMediaPlayer());
   DCHECK(!src_object_);
@@ -3334,6 +3192,10 @@ void HTMLMediaElement::RequestReload(const WebURL& new_url) {
   DCHECK(IsSafeToLoadURL(new_url, kComplain));
   ResetMediaPlayerAndMediaSource();
   StartPlayerLoad(new_url);
+}
+
+bool HTMLMediaElement::IsAutoplayingMuted() {
+  return autoplay_policy_->IsAutoplayingMuted();
 }
 
 // MediaPlayerPresentation methods
@@ -3931,9 +3793,8 @@ DEFINE_TRACE(HTMLMediaElement) {
   visitor->Trace(play_promise_resolve_list_);
   visitor->Trace(play_promise_reject_list_);
   visitor->Trace(audio_source_provider_);
-  visitor->Trace(autoplay_uma_helper_);
   visitor->Trace(src_object_);
-  visitor->Trace(autoplay_visibility_observer_);
+  visitor->Trace(autoplay_policy_);
   visitor->Trace(media_controls_);
   visitor->Trace(controls_list_);
   visitor->template RegisterWeakMembers<HTMLMediaElement,
@@ -3983,60 +3844,6 @@ void HTMLMediaElement::SelectInitialTracksIfNecessary() {
     videoTracks().AnonymousIndexedGetter(0)->setSelected(true);
 }
 
-bool HTMLMediaElement::IsLockedPendingUserGesture() const {
-  return locked_pending_user_gesture_;
-}
-
-void HTMLMediaElement::UnlockUserGesture() {
-  locked_pending_user_gesture_ = false;
-  locked_pending_user_gesture_if_cross_origin_experiment_enabled_ = false;
-}
-
-bool HTMLMediaElement::IsGestureNeededForPlayback() const {
-  if (!locked_pending_user_gesture_)
-    return false;
-
-  return IsGestureNeededForPlaybackIfPendingUserGestureIsLocked();
-}
-
-bool HTMLMediaElement::
-    IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled() const {
-  if (!locked_pending_user_gesture_if_cross_origin_experiment_enabled_)
-    return false;
-
-  return IsGestureNeededForPlaybackIfPendingUserGestureIsLocked();
-}
-
-bool HTMLMediaElement::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
-    const {
-  if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
-    return false;
-
-  // We want to allow muted video to autoplay if:
-  // - the flag is enabled;
-  // - Data Saver is not enabled;
-  // - Preload was not disabled (low end devices);
-  // - Autoplay is enabled in settings;
-  if (IsHTMLVideoElement() && muted() &&
-      RuntimeEnabledFeatures::autoplayMutedVideosEnabled() &&
-      !(GetDocument().GetSettings() &&
-        GetDocument().GetSettings()->GetDataSaverEnabled()) &&
-      !(GetDocument().GetSettings() &&
-        GetDocument().GetSettings()->GetForcePreloadNoneForMediaElements()) &&
-      IsAutoplayAllowedPerSettings()) {
-    return false;
-  }
-
-  return true;
-}
-
-bool HTMLMediaElement::IsAutoplayAllowedPerSettings() const {
-  LocalFrame* frame = GetDocument().GetFrame();
-  if (!frame)
-    return false;
-  return frame->GetContentSettingsClient()->AllowAutoplay(true);
-}
-
 void HTMLMediaElement::SetNetworkState(NetworkState state) {
   if (network_state_ == state)
     return;
@@ -4049,9 +3856,7 @@ void HTMLMediaElement::SetNetworkState(NetworkState state) {
 void HTMLMediaElement::VideoWillBeDrawnToCanvas() const {
   DCHECK(IsHTMLVideoElement());
   UseCounter::Count(GetDocument(), UseCounter::kVideoInCanvas);
-  if (autoplay_uma_helper_->HasSource() && !autoplay_uma_helper_->IsVisible())
-    UseCounter::Count(GetDocument(),
-                      UseCounter::kHiddenAutoplayedVideoInCanvas);
+  autoplay_policy_->VideoWillBeDrawnToCanvas();
 }
 
 void HTMLMediaElement::ScheduleResolvePlayPromises() {
@@ -4164,24 +3969,6 @@ EnumerationHistogram& HTMLMediaElement::ShowControlsHistogram() const {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
                       ("Media.Controls.Show.Audio", kMediaControlsShowMax));
   return histogram;
-}
-
-void HTMLMediaElement::OnVisibilityChangedForAutoplay(bool is_visible) {
-  if (!is_visible) {
-    if (can_autoplay_ && Autoplay()) {
-      PauseInternal();
-      can_autoplay_ = true;
-    }
-    return;
-  }
-
-  if (ShouldAutoplay()) {
-    paused_ = false;
-    ScheduleEvent(EventTypeNames::play);
-    ScheduleNotifyPlaying();
-
-    UpdatePlayState();
-  }
 }
 
 void HTMLMediaElement::ClearWeakMembers(Visitor* visitor) {
