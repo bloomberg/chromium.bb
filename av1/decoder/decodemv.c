@@ -1985,7 +1985,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
         if (xd->ref_mv_count[ref_frame_type] > 1) {
           ref_mv[0] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-          clamp_mv_ref(&ref_mv[ref].as_mv, xd->n8_w << MI_SIZE_LOG2,
+          clamp_mv_ref(&ref_mv[0].as_mv, xd->n8_w << MI_SIZE_LOG2,
                        xd->n8_h << MI_SIZE_LOG2, xd);
         }
 #endif
@@ -1996,7 +1996,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
         if (xd->ref_mv_count[ref_frame_type] > 1) {
           ref_mv[1] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
-          clamp_mv_ref(&ref_mv[ref].as_mv, xd->n8_w << MI_SIZE_LOG2,
+          clamp_mv_ref(&ref_mv[1].as_mv, xd->n8_w << MI_SIZE_LOG2,
                        xd->n8_h << MI_SIZE_LOG2, xd);
         }
 #endif
