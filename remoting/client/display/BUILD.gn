@@ -27,8 +27,10 @@ source_set("display") {
     "sys_opengl.h",
   ]
 
-  deps = [
+  public_deps = [
     "//remoting/proto",
+  ]
+  deps = [
     "//third_party/libyuv",
     "//third_party/webrtc/base:rtc_base_approved",
   ]

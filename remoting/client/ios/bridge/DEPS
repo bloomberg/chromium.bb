@@ -1,9 +1,0 @@
-include_rules = [
-  "+google/protobuf",
-  "+remoting/codec",
-  "+remoting/client/ios",
-  "+remoting/signaling",
-  "+third_party/libjingle_xmpp",
-  "+third_party/webrtc",
-  "+third_party/protobuf/src",
-]

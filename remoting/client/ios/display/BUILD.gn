@@ -27,7 +27,6 @@ source_set("display") {
   public_deps = [
     "//remoting/client",
     "//remoting/client/display",
-    "//remoting/client/ios/bridge",
     "//third_party/webrtc/base:rtc_base_approved",
   ]
 
