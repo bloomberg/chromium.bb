@@ -5042,19 +5042,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self registerLoadRequest:navigationURL
                      referrer:self.currentNavItemReferrer
                    transition:self.currentTransition];
+    WKNavigation* navigation = nil;
     if (navigationURL == net::GURLWithNSURL([_webView URL])) {
-      [_navigationStates setState:web::WKNavigationState::REQUESTED
-                    forNavigation:[_webView reload]];
+      navigation = [_webView reload];
     } else {
       // |didCommitNavigation:| may not be called for fast navigation, so update
       // the navigation type now as it is already known.
       holder->set_navigation_type(WKNavigationTypeBackForward);
-      WKNavigation* navigation =
+      navigation =
           [_webView goToBackForwardListItem:holder->back_forward_list_item()];
-      [_navigationStates setState:web::WKNavigationState::REQUESTED
-                    forNavigation:navigation];
       [self reportBackForwardNavigationTypeForFastNavigation:YES];
     }
+    [_navigationStates setState:web::WKNavigationState::REQUESTED
+                  forNavigation:navigation];
   };
 
   // If the request is not a form submission or resubmission, or the user
