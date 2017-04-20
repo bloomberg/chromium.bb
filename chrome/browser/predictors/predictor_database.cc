@@ -132,8 +132,9 @@ void PredictorDatabaseInternal::LogDatabaseStats() {
 
 PredictorDatabase::PredictorDatabase(Profile* profile)
     : db_(new PredictorDatabaseInternal(profile)) {
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&PredictorDatabaseInternal::Initialize, db_));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::BindOnce(&PredictorDatabaseInternal::Initialize, db_));
 }
 
 PredictorDatabase::~PredictorDatabase() {

@@ -579,16 +579,16 @@ void ResourcePrefetchPredictor::StartInitialization() {
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&ResourcePrefetchPredictorTables::GetAllData, tables_,
-                 url_data_map_ptr, host_data_map_ptr, url_redirect_data_map_ptr,
-                 host_redirect_data_map_ptr, manifest_data_map_ptr,
-                 origin_data_map_ptr),
-      base::Bind(&ResourcePrefetchPredictor::CreateCaches, AsWeakPtr(),
-                 base::Passed(&url_data_map), base::Passed(&host_data_map),
-                 base::Passed(&url_redirect_data_map),
-                 base::Passed(&host_redirect_data_map),
-                 base::Passed(&manifest_data_map),
-                 base::Passed(&origin_data_map)));
+      base::BindOnce(&ResourcePrefetchPredictorTables::GetAllData, tables_,
+                     url_data_map_ptr, host_data_map_ptr,
+                     url_redirect_data_map_ptr, host_redirect_data_map_ptr,
+                     manifest_data_map_ptr, origin_data_map_ptr),
+      base::BindOnce(&ResourcePrefetchPredictor::CreateCaches, AsWeakPtr(),
+                     base::Passed(&url_data_map), base::Passed(&host_data_map),
+                     base::Passed(&url_redirect_data_map),
+                     base::Passed(&host_redirect_data_map),
+                     base::Passed(&manifest_data_map),
+                     base::Passed(&origin_data_map)));
 }
 
 void ResourcePrefetchPredictor::RecordURLRequest(
@@ -666,8 +666,8 @@ void ResourcePrefetchPredictor::StartPrefetching(const GURL& url,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
-                 prefetch_manager_, url, prediction.subresource_urls));
+      base::BindOnce(&ResourcePrefetcherManager::MaybeAddPrefetch,
+                     prefetch_manager_, url, prediction.subresource_urls));
 
   if (observer_)
     observer_->OnPrefetchingStarted(url);
@@ -688,8 +688,8 @@ void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResourcePrefetcherManager::MaybeRemovePrefetch,
-                 prefetch_manager_, url));
+      base::BindOnce(&ResourcePrefetcherManager::MaybeRemovePrefetch,
+                     prefetch_manager_, url));
 
   if (observer_)
     observer_->OnPrefetchingStopped(url);
@@ -1091,8 +1091,9 @@ void ResourcePrefetchPredictor::DeleteAllUrls() {
   manifest_table_cache_->clear();
   origin_table_cache_->clear();
 
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&ResourcePrefetchPredictorTables::DeleteAllData, tables_));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::BindOnce(&ResourcePrefetchPredictorTables::DeleteAllData, tables_));
 }
 
 void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
@@ -1144,29 +1145,30 @@ void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
   if (!urls_to_delete.empty() || !hosts_to_delete.empty()) {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::DeleteResourceData,
-                   tables_, urls_to_delete, hosts_to_delete));
+        base::BindOnce(&ResourcePrefetchPredictorTables::DeleteResourceData,
+                       tables_, urls_to_delete, hosts_to_delete));
   }
 
   if (!url_redirects_to_delete.empty() || !host_redirects_to_delete.empty()) {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::DeleteRedirectData,
-                   tables_, url_redirects_to_delete, host_redirects_to_delete));
+        base::BindOnce(&ResourcePrefetchPredictorTables::DeleteRedirectData,
+                       tables_, url_redirects_to_delete,
+                       host_redirects_to_delete));
   }
 
   if (!manifest_hosts_to_delete.empty()) {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::DeleteManifestData,
-                   tables_, manifest_hosts_to_delete));
+        base::BindOnce(&ResourcePrefetchPredictorTables::DeleteManifestData,
+                       tables_, manifest_hosts_to_delete));
   }
 
   if (!origin_hosts_to_delete.empty()) {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::DeleteOriginData, tables_,
-                   origin_hosts_to_delete));
+        base::BindOnce(&ResourcePrefetchPredictorTables::DeleteOriginData,
+                       tables_, origin_hosts_to_delete));
   }
 }
 
@@ -1189,7 +1191,7 @@ void ResourcePrefetchPredictor::RemoveOldestEntryInPrefetchDataMap(
   data_map->erase(key_to_delete);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &ResourcePrefetchPredictorTables::DeleteSingleResourceDataPoint,
           tables_, key_to_delete, key_type));
 }
@@ -1213,7 +1215,7 @@ void ResourcePrefetchPredictor::RemoveOldestEntryInRedirectDataMap(
   data_map->erase(key_to_delete);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &ResourcePrefetchPredictorTables::DeleteSingleRedirectDataPoint,
           tables_, key_to_delete, key_type));
 }
@@ -1234,8 +1236,8 @@ void ResourcePrefetchPredictor::RemoveOldestEntryInManifestDataMap(
   data_map->erase(oldest_entry);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&ResourcePrefetchPredictorTables::DeleteManifestData, tables_,
-                 std::vector<std::string>({key_to_delete})));
+      base::BindOnce(&ResourcePrefetchPredictorTables::DeleteManifestData,
+                     tables_, std::vector<std::string>({key_to_delete})));
 }
 
 void ResourcePrefetchPredictor::RemoveOldestEntryInOriginDataMap(
@@ -1256,8 +1258,8 @@ void ResourcePrefetchPredictor::RemoveOldestEntryInOriginDataMap(
   data_map->erase(key_to_delete);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&ResourcePrefetchPredictorTables::DeleteOriginData, tables_,
-                 std::vector<std::string>({key_to_delete})));
+      base::BindOnce(&ResourcePrefetchPredictorTables::DeleteOriginData,
+                     tables_, std::vector<std::string>({key_to_delete})));
 }
 
 void ResourcePrefetchPredictor::OnVisitCountLookup(
@@ -1444,14 +1446,14 @@ void ResourcePrefetchPredictor::LearnNavigation(
     data_map->erase(key);
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &ResourcePrefetchPredictorTables::DeleteSingleResourceDataPoint,
             tables_, key, key_type));
   } else {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::UpdateResourceData,
-                   tables_, data, key_type));
+        base::BindOnce(&ResourcePrefetchPredictorTables::UpdateResourceData,
+                       tables_, data, key_type));
   }
 
   // Predictor learns about both redirected and non-redirected destinations to
@@ -1515,14 +1517,14 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
     redirect_map->erase(cache_entry);
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &ResourcePrefetchPredictorTables::DeleteSingleRedirectDataPoint,
             tables_, key, key_type));
   } else {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::UpdateRedirectData,
-                   tables_, data, key_type));
+        base::BindOnce(&ResourcePrefetchPredictorTables::UpdateRedirectData,
+                       tables_, data, key_type));
   }
 }
 
@@ -1623,14 +1625,14 @@ void ResourcePrefetchPredictor::LearnOrigins(
     if (!new_entry) {
       BrowserThread::PostTask(
           BrowserThread::DB, FROM_HERE,
-          base::Bind(&ResourcePrefetchPredictorTables::DeleteOriginData,
-                     tables_, std::vector<std::string>({host})));
+          base::BindOnce(&ResourcePrefetchPredictorTables::DeleteOriginData,
+                         tables_, std::vector<std::string>({host})));
     }
   } else {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::UpdateOriginData, tables_,
-                   data));
+        base::BindOnce(&ResourcePrefetchPredictorTables::UpdateOriginData,
+                       tables_, data));
   }
 }
 
@@ -1730,8 +1732,8 @@ void ResourcePrefetchPredictor::OnManifestFetched(
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&ResourcePrefetchPredictorTables::UpdateManifestData, tables_,
-                 host, cache_entry->second));
+      base::BindOnce(&ResourcePrefetchPredictorTables::UpdateManifestData,
+                     tables_, host, cache_entry->second));
 }
 
 void ResourcePrefetchPredictor::UpdatePrefetchDataByManifest(
@@ -1772,8 +1774,8 @@ void ResourcePrefetchPredictor::UpdatePrefetchDataByManifest(
   if (was_updated) {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::UpdateResourceData,
-                   tables_, data, key_type));
+        base::BindOnce(&ResourcePrefetchPredictorTables::UpdateResourceData,
+                       tables_, data, key_type));
   }
 }
 
