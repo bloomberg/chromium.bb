@@ -44,6 +44,7 @@
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #endif
 
@@ -66,7 +67,7 @@ const unsigned char kPngScaleChunkType[4] = { 'c', 's', 'C', 'l' };
 const unsigned char kPngDataChunkType[4] = { 'I', 'D', 'A', 'T' };
 
 #if !defined(OS_MACOSX)
-const char kPakFileSuffix[] = ".pak";
+const char kPakFileExtension[] = ".pak";
 #endif
 
 ResourceBundle* g_shared_instance_ = NULL;
@@ -304,8 +305,22 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
   PathService::Get(ui::DIR_LOCALES, &locale_file_path);
 
   if (!locale_file_path.empty()) {
+#if defined(OS_ANDROID)
+    if (locale_file_path.value().find("chromium_tests") == std::string::npos) {
+      std::string extracted_file_suffix =
+          base::android::BuildInfo::GetInstance()->extracted_file_suffix();
+      locale_file_path = locale_file_path.AppendASCII(
+          app_locale + kPakFileExtension + extracted_file_suffix);
+    } else {
+      // TODO(agrieve): Update tests to not side-load pak files and remove
+      //     this special-case. https://crbug.com/691719
+      locale_file_path =
+          locale_file_path.AppendASCII(app_locale + kPakFileExtension);
+    }
+#else
     locale_file_path =
-        locale_file_path.AppendASCII(app_locale + kPakFileSuffix);
+        locale_file_path.AppendASCII(app_locale + kPakFileExtension);
+#endif
   }
 
   if (delegate_) {
