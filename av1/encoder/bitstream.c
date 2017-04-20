@@ -5068,7 +5068,7 @@ static void mem_put_varsize(uint8_t *const dst, const int sz, const int val) {
     case 2: mem_put_le16(dst, val); break;
     case 3: mem_put_le24(dst, val); break;
     case 4: mem_put_le32(dst, val); break;
-    default: assert("Invalid size" && 0); break;
+    default: assert(0 && "Invalid size"); break;
   }
 }
 static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
