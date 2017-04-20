@@ -137,6 +137,7 @@ source_set("tab_switcher") {
 }
 
 source_set("utils") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "tab_switcher_utils.h",
     "tab_switcher_utils.mm",

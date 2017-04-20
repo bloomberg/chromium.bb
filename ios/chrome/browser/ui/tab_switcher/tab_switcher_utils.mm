@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
@@ -17,6 +16,10 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -74,8 +77,7 @@ void TabSwitcherGetFavicon(GURL const& url,
     dispatch_async(queue, ^{
       NSData* pngData =
           [NSData dataWithBytes:favicon->front() length:favicon->size()];
-      base::scoped_nsobject<UIImage> image(
-          [[UIImage alloc] initWithData:pngData]);
+      UIImage* image = [[UIImage alloc] initWithData:pngData];
       dispatch_async(dispatch_get_main_queue(), ^{
         // |UIImage initWithData:| may return nil.
         if (image) {
