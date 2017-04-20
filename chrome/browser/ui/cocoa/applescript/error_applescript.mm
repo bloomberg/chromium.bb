@@ -8,6 +8,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+namespace {
+NSString* kJavaScriptUnsupportedUrlString =
+    @"\n\nhttps://support.google.com/chrome/?p=applescript";
+}
+
 void AppleScript::SetError(AppleScript::ErrorCode errorCode) {
   using l10n_util::GetNSString;
   NSScriptCommand* current_command = [NSScriptCommand currentCommand];
@@ -52,6 +57,8 @@ void AppleScript::SetError(AppleScript::ErrorCode errorCode) {
     case errJavaScriptUnsupported:
       error_string =
           GetNSString(IDS_JAVASCRIPT_UNSUPPORTED_ERROR_APPLESCRIPT_MAC);
+      error_string = [error_string
+          stringByAppendingString:kJavaScriptUnsupportedUrlString];
       break;
     default:
       NOTREACHED();
