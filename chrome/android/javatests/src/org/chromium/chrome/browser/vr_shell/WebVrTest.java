@@ -13,13 +13,13 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED;
 
 import android.os.Build;
-import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -255,8 +255,11 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * Tests that screen touches are not registered when the viewer is a
      * Daydream View.
      */
+    /*
     @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    */
+    @DisabledTest(message = "crbug.com/713781")
     public void testScreenTapsNotRegisteredOnDaydream() throws InterruptedException {
         String testName = "test_screen_taps_not_registered_on_daydream";
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
