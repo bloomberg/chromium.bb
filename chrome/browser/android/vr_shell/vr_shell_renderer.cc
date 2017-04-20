@@ -77,6 +77,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
     case vr_shell::ShaderID::CONTROLLER_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
+          precision mediump float;
           uniform mat4 u_ModelViewProjMatrix;
           attribute vec4 a_Position;
           attribute vec2 a_TexCoordinate;
@@ -91,6 +92,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
     case vr_shell::ShaderID::GRADIENT_GRID_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
+          precision mediump float;
           uniform mat4 u_ModelViewProjMatrix;
           uniform float u_SceneRadius;
           attribute vec4 a_Position;
@@ -122,9 +124,10 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
     case vr_shell::ShaderID::WEBVR_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
+          precision mediump float;
           attribute vec3 a_Position;
           attribute vec2 a_TexCoordinate;
-          varying vec2 v_TexCoordinate;
+          varying highp vec2 v_TexCoordinate;
 
           void main() {
             v_TexCoordinate = a_TexCoordinate;
@@ -145,6 +148,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
     case vr_shell::ShaderID::RETICLE_FRAGMENT_SHADER:
       return SHADER(
           /* clang-format off */
+          precision mediump float;
           varying mediump vec2 v_TexCoordinate;
           uniform lowp vec4 color;
           uniform mediump float ring_diameter;
@@ -218,6 +222,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
     case vr_shell::ShaderID::CONTROLLER_FRAGMENT_SHADER:
       return SHADER(
           /* clang-format off */
+          precision mediump float;
           uniform sampler2D u_texture;
           varying vec2 v_TexCoordinate;
 
