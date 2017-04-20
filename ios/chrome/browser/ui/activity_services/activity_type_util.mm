@@ -40,7 +40,9 @@ bool IsPasswordManagerActivity(NSString* activity_string) {
       // LastPass
       {"com.lastpass.ilastpass.LastPassExt", true},
       // Dashlane
-      {"com.dashlane.dashlanephonefinal.", false}};
+      {"com.dashlane.dashlanephonefinal.", false},
+      // Enpass
+      {"in.sinew.Walletx.WalletxExt", true}};
 
   std::string activity = base::SysNSStringToUTF8(activity_string);
   for (const auto& app : kAllPasswordManagerApps) {
