@@ -1,0 +1,17 @@
+Verifies JavaScript pretty-printing functionality.
+
+
+Running: parenthesizedExpressions
+====== 8< ------
+if ((a))
+    ((b));
+else
+    (c);
+
+------ >8 ======
+Correct mapping for <if>
+Correct mapping for <((a))>
+Correct mapping for <((b));>
+Correct mapping for <else>
+Correct mapping for <(c)>
+
