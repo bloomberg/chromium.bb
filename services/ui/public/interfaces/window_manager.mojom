@@ -16,6 +16,7 @@ import "ui/display/mojo/display.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/display/mojo/display.mojom";
 
 // WindowManager is used when a WindowTreeClient attempts to modify
 // a property of the embed root. When this happens WindowTree calls the
@@ -273,8 +274,13 @@ interface WindowManagerClient {
   // Sets the root of a particular display. This is only applicable when the
   // WindowTree was created with a value of false for
   // |automatically_create_display_roots| (see
-  // WindowManagerWindowTreeFactory::CreateWindowTree() for details).
-  SetDisplayRoot(int64 display_id, uint32 window_id) => (bool success);
+  // WindowManagerWindowTreeFactory::CreateWindowTree() for details). On success
+  // this responds with the FrameSinkId of the root. On failure the FrameSinkId
+  // is not valid.
+  SetDisplayRoot(display.mojom.Display display,
+                 WmViewportMetrics viewport_metrics,
+                 bool is_primary_display,
+                 uint32 window_id) => (cc.mojom.FrameSinkId? frame_sink_id);
 
   // The window manager has completed a request with the specific change id.
   WmResponse(uint32 change_id, bool response);

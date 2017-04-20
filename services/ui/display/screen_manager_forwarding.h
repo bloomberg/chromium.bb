@@ -36,6 +36,7 @@ class ScreenManagerForwarding
   void AddInterfaces(service_manager::BinderRegistry* registry) override;
   void Init(ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override;
+  display::ScreenBase* GetScreen() override;
 
   // NativeDisplayObserver:
   void OnConfigurationChanged() override;
@@ -80,6 +81,7 @@ class ScreenManagerForwarding
       const mojom::NativeDisplayDelegate::ConfigureCallback& callback,
       bool status);
 
+  std::unique_ptr<display::ScreenBase> screen_;
   mojo::Binding<mojom::NativeDisplayDelegate> binding_;
   mojom::NativeDisplayObserverPtr observer_;
 

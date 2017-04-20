@@ -52,6 +52,7 @@
 #include "ui/base/x/x11_util.h"  // nogncheck
 #include "ui/platform_window/x11/x11_window.h"
 #elif defined(USE_OZONE)
+#include "services/ui/display/screen_manager_forwarding.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -86,7 +87,6 @@ struct Service::UserState {
 
 Service::Service()
     : test_config_(false),
-      screen_manager_(display::ScreenManager::Create()),
       ime_registrar_(&ime_server_) {}
 
 Service::~Service() {
@@ -220,8 +220,6 @@ void Service::OnStart() {
   if (input_device_server_.IsRegisteredAsObserver())
     input_device_server_.AddInterface(&registry_);
 
-  screen_manager_->AddInterfaces(&registry_);
-
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()->AddInterfaces(&registry_);
 #endif
@@ -235,7 +233,10 @@ void Service::OnBindInterface(const service_manager::ServiceInfo& source_info,
 }
 
 void Service::StartDisplayInit() {
-  screen_manager_->Init(window_server_->display_manager());
+  DCHECK(!is_gpu_ready_);  // This should only be called once.
+  is_gpu_ready_ = true;
+  if (screen_manager_)
+    screen_manager_->Init(window_server_->display_manager());
 }
 
 void Service::OnFirstDisplayReady() {
@@ -259,6 +260,30 @@ void Service::OnNoMoreDisplays() {
 
 bool Service::IsTestConfig() const {
   return test_config_;
+}
+
+void Service::OnWillCreateTreeForWindowManager(
+    bool automatically_create_display_roots) {
+  if (screen_manager_config_ != ScreenManagerConfig::UNKNOWN)
+    return;
+
+  DVLOG(3) << "OnWillCreateTreeForWindowManager "
+           << automatically_create_display_roots;
+  screen_manager_config_ = automatically_create_display_roots
+                               ? ScreenManagerConfig::INTERNAL
+                               : ScreenManagerConfig::FORWARDING;
+  if (screen_manager_config_ == ScreenManagerConfig::FORWARDING) {
+#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+    screen_manager_ = base::MakeUnique<display::ScreenManagerForwarding>();
+#else
+    CHECK(false);
+#endif
+  } else {
+    screen_manager_ = display::ScreenManager::Create();
+  }
+  screen_manager_->AddInterfaces(&registry_);
+  if (is_gpu_ready_)
+    screen_manager_->Init(window_server_->display_manager());
 }
 
 void Service::Create(const service_manager::Identity& remote_identity,

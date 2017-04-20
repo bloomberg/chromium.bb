@@ -65,3 +65,10 @@ enum WindowType {
   DRAG,
   UNKNOWN,
 };
+
+// Used when the window manager explicitly adds a new display.
+struct WmViewportMetrics {
+  gfx.mojom.Rect bounds_in_pixels;
+  float device_scale_factor;
+  float ui_scale_factor;
+};

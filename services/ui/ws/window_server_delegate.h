@@ -53,6 +53,12 @@ class WindowServerDelegate {
       mojom::WindowTreeRequest* tree_request,
       mojom::WindowTreeClientPtr* client);
 
+  // Called prior to a new WindowTree being created for a
+  // WindowManagerWindowTreeFactory. |automatically_create_display_roots|
+  // mirrors that of CreateWindowTree(). See it for details.
+  virtual void OnWillCreateTreeForWindowManager(
+      bool automatically_create_display_roots);
+
  protected:
   virtual ~WindowServerDelegate() {}
 };

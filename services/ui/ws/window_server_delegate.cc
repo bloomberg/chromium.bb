@@ -21,5 +21,8 @@ WindowServerDelegate::CreateWindowTreeBinding(
   return nullptr;
 }
 
+void WindowServerDelegate::OnWillCreateTreeForWindowManager(
+    bool automatically_create_display_roots) {}
+
 }  // namespace ws
 }  // namespace ui

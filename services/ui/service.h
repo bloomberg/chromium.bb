@@ -83,6 +83,20 @@ class Service
   ~Service() override;
 
  private:
+  // How the ScreenManager is configured.
+  enum ScreenManagerConfig {
+    // Initial state.
+    UNKNOWN,
+
+    // ScreenManager runs locally.
+    INTERNAL,
+
+    // Used when the window manager supplies a value of false for
+    // |automatically_create_display_roots|. In this config the ScreenManager
+    // is configured to forward calls.
+    FORWARDING,
+  };
+
   // Holds InterfaceRequests received before the first WindowTreeHost Display
   // has been established.
   struct PendingRequest;
@@ -111,6 +125,8 @@ class Service
   void OnFirstDisplayReady() override;
   void OnNoMoreDisplays() override;
   bool IsTestConfig() const override;
+  void OnWillCreateTreeForWindowManager(
+      bool automatically_create_display_roots) override;
 
   // service_manager::InterfaceFactory<mojom::AccessibilityManager>
   // implementation.
@@ -197,6 +213,10 @@ class Service
       discardable_shared_memory_manager_;
 
   service_manager::BinderRegistry registry_;
+
+  // Set to true in StartDisplayInit().
+  bool is_gpu_ready_ = false;
+  ScreenManagerConfig screen_manager_config_ = ScreenManagerConfig::UNKNOWN;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

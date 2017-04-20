@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set.h"
 #include "services/ui/ws/window_server.h"
+#include "services/ui/ws/window_server_delegate.h"
 #include "services/ui/ws/window_tree.h"
 
 namespace ui {
@@ -37,6 +38,10 @@ void WindowManagerWindowTreeFactory::CreateWindowTree(
   // the binding around.
   if (binding_.is_bound())
     binding_.Close();
+
+  window_manager_window_tree_factory_set_->window_server()
+      ->delegate()
+      ->OnWillCreateTreeForWindowManager(automatically_create_display_roots);
 
   SetWindowTree(GetWindowServer()->CreateTreeForWindowManager(
       user_id_, std::move(window_tree_request), std::move(window_tree_client),

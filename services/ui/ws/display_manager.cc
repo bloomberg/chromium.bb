@@ -77,6 +77,12 @@ void DisplayManager::AddDisplay(Display* display) {
   pending_displays_.insert(display);
 }
 
+void DisplayManager::AddDisplayForWindowManager(
+    const display::Display& display,
+    const display::ViewportMetrics& metrics) {
+  OnDisplayAdded(display, metrics);
+}
+
 void DisplayManager::DestroyDisplay(Display* display) {
   if (pending_displays_.count(display)) {
     pending_displays_.erase(display);

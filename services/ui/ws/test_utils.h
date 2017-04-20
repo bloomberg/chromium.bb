@@ -68,6 +68,7 @@ class TestScreenManager : public display::ScreenManager {
   void AddInterfaces(service_manager::BinderRegistry* registry) override {}
   void Init(display::ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override {}
+  display::ScreenBase* GetScreen() override;
 
  private:
   display::ScreenManagerDelegate* delegate_ = nullptr;
@@ -127,9 +128,12 @@ class WindowTreeTestApi {
   void StartPointerWatcher(bool want_moves);
   void StopPointerWatcher();
 
-  bool ProcessSetDisplayRoot(int64_t display_id,
+  bool ProcessSetDisplayRoot(const display::Display& display_to_create,
+                             const mojom::WmViewportMetrics& viewport_metrics,
+                             bool is_primary_display,
                              const ClientWindowId& client_window_id) {
-    return tree_->ProcessSetDisplayRoot(display_id, client_window_id);
+    return tree_->ProcessSetDisplayRoot(display_to_create, viewport_metrics,
+                                        is_primary_display, client_window_id);
   }
 
  private:

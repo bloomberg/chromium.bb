@@ -383,9 +383,13 @@ class WindowTree : public mojom::WindowTree,
   // waiting for the last move to be acknowledged.
   void OnWmMoveDragImageAck();
 
-  // Called from SetDisplayRoot(), see mojom for details.
-  bool ProcessSetDisplayRoot(int64_t display_id,
-                             const ClientWindowId& client_window_id);
+  // Called from SetDisplayRoot(), see mojom for details. Returns the root
+  // of the display if successful, otherwise null.
+  ServerWindow* ProcessSetDisplayRoot(
+      const display::Display& display_to_create,
+      const mojom::WmViewportMetrics& transport_viewport_metrics,
+      bool is_primary_display,
+      const ClientWindowId& client_window_id);
 
   // WindowTree:
   void NewWindow(uint32_t change_id,
@@ -496,7 +500,9 @@ class WindowTree : public mojom::WindowTree,
   void RemoveActivationParent(Id transport_window_id) override;
   void ActivateNextWindow() override;
   void SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) override;
-  void SetDisplayRoot(int64_t display_id,
+  void SetDisplayRoot(const display::Display& display,
+                      mojom::WmViewportMetricsPtr viewport_metrics,
+                      bool is_primary_display,
                       Id window_id,
                       const SetDisplayRootCallback& callback) override;
   void WmResponse(uint32_t change_id, bool response) override;

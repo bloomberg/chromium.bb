@@ -142,6 +142,10 @@ void TestScreenManager::Init(display::ScreenManagerDelegate* delegate) {
   display::Screen::SetScreenInstance(screen_.get());
 }
 
+display::ScreenBase* TestScreenManager::GetScreen() {
+  return screen_.get();
+}
+
 // TestPlatformDisplayFactory  -------------------------------------------------
 
 TestPlatformDisplayFactory::TestPlatformDisplayFactory(

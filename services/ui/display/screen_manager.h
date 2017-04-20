@@ -16,6 +16,8 @@ class BinderRegistry;
 
 namespace display {
 
+class ScreenBase;
+
 // ScreenManager provides the necessary functionality to configure all
 // attached physical displays.
 class ScreenManager {
@@ -39,6 +41,8 @@ class ScreenManager {
 
   // Handle requests from the platform to close a display.
   virtual void RequestCloseDisplay(int64_t display_id) = 0;
+
+  virtual display::ScreenBase* GetScreen() = 0;
 
  private:
   static ScreenManager* instance_;  // Instance is not owned.

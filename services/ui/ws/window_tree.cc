@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/map.h"
+#include "services/ui/display/screen_manager.h"
 #include "services/ui/ws/cursor_location_manager.h"
 #include "services/ui/ws/default_access_policy.h"
 #include "services/ui/ws/display.h"
@@ -29,6 +30,8 @@
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree_binding.h"
 #include "ui/display/display.h"
+#include "ui/display/display_list.h"
+#include "ui/display/screen_base.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/platform_window/mojo/ime_type_converters.h"
 #include "ui/platform_window/text_input_state.h"
@@ -263,20 +266,26 @@ void WindowTree::OnWmMoveDragImageAck() {
   }
 }
 
-bool WindowTree::ProcessSetDisplayRoot(int64_t display_id,
-                                       const ClientWindowId& client_window_id) {
+ServerWindow* WindowTree::ProcessSetDisplayRoot(
+    const display::Display& display_to_create,
+    const mojom::WmViewportMetrics& transport_viewport_metrics,
+    bool is_primary_display,
+    const ClientWindowId& client_window_id) {
   DCHECK(window_manager_state_);  // Only called for window manager.
+  DVLOG(3) << "SetDisplayRoot client=" << id_
+           << " global window_id=" << client_window_id.id;
   Display* display =
-      window_server_->display_manager()->GetDisplayById(display_id);
-  if (!display) {
-    DVLOG(1) << "SetDisplayRoot called with unknown display " << display_id;
-    return false;
+      window_server_->display_manager()->GetDisplayById(display_to_create.id());
+  if (display) {
+    DVLOG(1) << "SetDisplayRoot called with existing display "
+             << display_to_create.id();
+    return nullptr;
   }
 
   if (automatically_create_display_roots_) {
     DVLOG(1) << "SetDisplayRoot is only applicable when "
              << "automatically_create_display_roots is false";
-    return false;
+    return nullptr;
   }
 
   ServerWindow* window = GetWindowByClientId(client_window_id);
@@ -284,29 +293,44 @@ bool WindowTree::ProcessSetDisplayRoot(int64_t display_id,
   if (!window || window->parent()) {
     DVLOG(1) << "SetDisplayRoot called with invalid window id "
              << client_window_id.id;
-    return false;
-  }
-
-  WindowManagerDisplayRoot* display_root =
-      display->GetWindowManagerDisplayRootForUser(
-          window_manager_state_->user_id());
-  DCHECK(display_root);
-  if (!display_root->root()->children().empty()) {
-    DVLOG(1) << "SetDisplayRoot called more than once";
-    return false;
+    return nullptr;
   }
 
   if (base::ContainsValue(roots_, window)) {
     DVLOG(1) << "SetDisplayRoot called with existing root";
-    return false;
+    return nullptr;
   }
+
+  const display::DisplayList::Type display_type =
+      is_primary_display ? display::DisplayList::Type::PRIMARY
+                         : display::DisplayList::Type::NOT_PRIMARY;
+  display::ScreenManager::GetInstance()->GetScreen()->display_list().AddDisplay(
+      display_to_create, display_type);
+  display::ViewportMetrics viewport_metrics;
+  viewport_metrics.bounds_in_pixels =
+      transport_viewport_metrics.bounds_in_pixels;
+  viewport_metrics.device_scale_factor =
+      transport_viewport_metrics.device_scale_factor;
+  viewport_metrics.ui_scale_factor = transport_viewport_metrics.ui_scale_factor;
+  window_server_->display_manager()->AddDisplayForWindowManager(
+      display_to_create, viewport_metrics);
+
+  // OnDisplayAdded() should trigger creation of the Display.
+  display =
+      window_server_->display_manager()->GetDisplayById(display_to_create.id());
+  DCHECK(display);
+  WindowManagerDisplayRoot* display_root =
+      display->GetWindowManagerDisplayRootForUser(
+          window_manager_state_->user_id());
+  DCHECK(display_root);
+  DCHECK(display_root->root()->children().empty());
 
   // NOTE: this doesn't resize the window in anyway. We assume the client takes
   // care of any modifications it needs to do.
   roots_.insert(window);
   Operation op(this, window_server_, OperationType::ADD_WINDOW);
   display_root->root()->Add(window);
-  return true;
+  return window;
 }
 
 bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
@@ -347,8 +371,12 @@ bool WindowTree::ReleaseCapture(const ClientWindowId& client_window_id) {
 bool WindowTree::NewWindow(
     const ClientWindowId& client_window_id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
-  if (!IsValidIdForNewWindow(client_window_id))
+  DVLOG(3) << "new window client=" << id_
+           << " window_id=" << client_window_id.id;
+  if (!IsValidIdForNewWindow(client_window_id)) {
+    DVLOG(1) << "new window failed, id is not valid for client";
     return false;
+  }
   const WindowId window_id = GenerateNewWindowId();
   DCHECK(!GetWindow(window_id));
   ServerWindow* window =
@@ -497,8 +525,17 @@ std::vector<const ServerWindow*> WindowTree::GetWindowTree(
 bool WindowTree::SetWindowVisibility(const ClientWindowId& window_id,
                                      bool visible) {
   ServerWindow* window = GetWindowByClientId(window_id);
-  if (!window || !access_policy_->CanChangeWindowVisibility(window))
+  DVLOG(3) << "SetWindowVisibility client=" << id_
+           << " client window_id= " << window_id.id << " global window_id="
+           << (window ? WindowIdToTransportId(window->id()) : 0);
+  if (!window) {
+    DVLOG(1) << "SetWindowVisibility failure, no window";
     return false;
+  }
+  if (!access_policy_->CanChangeWindowVisibility(window)) {
+    DVLOG(1) << "SetWindowVisibility failure, access policy denied change";
+    return false;
+  }
   if (window->visible() == visible)
     return true;
   Operation op(this, window_server_, OperationType::SET_WINDOW_VISIBILITY);
@@ -2105,10 +2142,20 @@ void WindowTree::SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) {
   window->set_extended_hit_test_region(hit_area);
 }
 
-void WindowTree::SetDisplayRoot(int64_t display_id,
+void WindowTree::SetDisplayRoot(const display::Display& display,
+                                mojom::WmViewportMetricsPtr viewport_metrics,
+                                bool is_primary_display,
                                 Id window_id,
                                 const SetDisplayRootCallback& callback) {
-  callback.Run(ProcessSetDisplayRoot(display_id, ClientWindowId(window_id)));
+  ServerWindow* display_root =
+      ProcessSetDisplayRoot(display, *viewport_metrics, is_primary_display,
+                            ClientWindowId(window_id));
+  if (!display_root) {
+    callback.Run(base::Optional<cc::FrameSinkId>());
+    return;
+  }
+  display_root->parent()->SetVisible(true);
+  callback.Run(display_root->frame_sink_id());
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {

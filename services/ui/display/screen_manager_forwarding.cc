@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "ui/display/screen_base.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot_mojo.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -35,10 +36,8 @@ const DisplayMode* GetCorrespondingMode(const DisplaySnapshot& snapshot,
 
 }  // namespace
 
-// TODO(sky/kylechar): Change ScreenManager::Create() to make a
-// ScreenManagerForwarding in mus mode.
-
-ScreenManagerForwarding::ScreenManagerForwarding() : binding_(this) {}
+ScreenManagerForwarding::ScreenManagerForwarding()
+    : screen_(base::MakeUnique<display::ScreenBase>()), binding_(this) {}
 
 ScreenManagerForwarding::~ScreenManagerForwarding() {
   if (native_display_delegate_)
@@ -55,6 +54,10 @@ void ScreenManagerForwarding::Init(ScreenManagerDelegate* delegate) {
 }
 
 void ScreenManagerForwarding::RequestCloseDisplay(int64_t display_id) {}
+
+display::ScreenBase* ScreenManagerForwarding::GetScreen() {
+  return screen_.get();
+}
 
 void ScreenManagerForwarding::OnConfigurationChanged() {
   if (observer_.is_bound())

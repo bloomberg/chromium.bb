@@ -170,6 +170,10 @@ void ScreenManagerOzoneInternal::RequestCloseDisplay(int64_t display_id) {
   fake_display_controller_->RemoveDisplay(display_id);
 }
 
+display::ScreenBase* ScreenManagerOzoneInternal::GetScreen() {
+  return screen_;
+}
+
 void ScreenManagerOzoneInternal::ToggleAddRemoveDisplay() {
   if (!fake_display_controller_)
     return;
