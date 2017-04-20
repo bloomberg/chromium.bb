@@ -3283,3 +3283,5 @@ crbug.com/710850 virtual/feature-policy/http/tests/feature-policy/vibrate-disabl
 crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-enabledforall.php [ Skip ]
 crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-enabledforself.php [ Skip ]
 crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-disabled.php [ Skip ]
+
+crbug.com/713462 [ Mac ] virtual/gpu/fast/canvas/canvas-ImageData-neutered-source.html [ Failure Pass ]
