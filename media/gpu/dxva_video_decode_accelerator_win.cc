@@ -798,7 +798,7 @@ bool DXVAVideoDecodeAccelerator::CreateVideoProcessor() {
 
 bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // The device may exist if the last state was a config change.
-  if (d3d11_device_.Get())
+  if (D3D11Device())
     return true;
   HRESULT hr = create_dxgi_device_manager_(&dx11_dev_manager_reset_token_,
                                            d3d11_device_manager_.Receive());
@@ -811,8 +811,9 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
     RETURN_ON_FAILURE(angle_device_.Get(), "Failed to get d3d11 device", false);
 
     using_angle_device_ = true;
-    d3d11_device_ = angle_device_;
-  } else {
+  }
+
+  if (use_fp16_ || !share_nv12_textures_) {
     // This array defines the set of DirectX hardware feature levels we support.
     // The ordering MUST be preserved. All applications are assumed to support
     // 9.1 unless otherwise stated by the application.
@@ -855,7 +856,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   }
 
   D3D11_FEATURE_DATA_D3D11_OPTIONS options;
-  hr = d3d11_device_->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &options,
+  hr = D3D11Device()->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &options,
                                           sizeof(options));
   RETURN_ON_HR_FAILURE(hr, "Failed to retrieve D3D11 options", false);
 
@@ -866,14 +867,14 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
 
   UINT nv12_format_support = 0;
   hr =
-      d3d11_device_->CheckFormatSupport(DXGI_FORMAT_NV12, &nv12_format_support);
+      D3D11Device()->CheckFormatSupport(DXGI_FORMAT_NV12, &nv12_format_support);
   RETURN_ON_HR_FAILURE(hr, "Failed to check NV12 format support", false);
 
   if (!(nv12_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
     copy_nv12_textures_ = false;
 
   UINT fp16_format_support = 0;
-  hr = d3d11_device_->CheckFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT,
+  hr = D3D11Device()->CheckFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT,
                                          &fp16_format_support);
   if (FAILED(hr) ||
       !(fp16_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
@@ -883,18 +884,18 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // context are synchronized across threads. We have multiple threads
   // accessing the context, the media foundation decoder threads and the
   // decoder thread via the video format conversion transform.
-  hr = multi_threaded_.QueryFrom(d3d11_device_.Get());
+  hr = multi_threaded_.QueryFrom(D3D11Device());
   RETURN_ON_HR_FAILURE(hr, "Failed to query ID3D10Multithread", false);
   multi_threaded_->SetMultithreadProtected(TRUE);
 
-  hr = d3d11_device_manager_->ResetDevice(d3d11_device_.Get(),
+  hr = d3d11_device_manager_->ResetDevice(D3D11Device(),
                                           dx11_dev_manager_reset_token_);
   RETURN_ON_HR_FAILURE(hr, "Failed to reset device", false);
 
   D3D11_QUERY_DESC query_desc;
   query_desc.Query = D3D11_QUERY_EVENT;
   query_desc.MiscFlags = 0;
-  hr = d3d11_device_->CreateQuery(&query_desc, d3d11_query_.Receive());
+  hr = D3D11Device()->CreateQuery(&query_desc, d3d11_query_.Receive());
   RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device query", false);
 
   return true;
@@ -1759,8 +1760,8 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
       (state == kNormal || state == kFlushing || state == kStopped),
       "DoDecode: not in normal/flushing/stopped state", ILLEGAL_STATE, );
 
-  if (d3d11_device_)
-    g_last_device_removed_reason = d3d11_device_->GetDeviceRemovedReason();
+  if (D3D11Device())
+    g_last_device_removed_reason = D3D11Device()->GetDeviceRemovedReason();
 
   MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
   DWORD status = 0;
@@ -2990,6 +2991,10 @@ void DXVAVideoDecodeAccelerator::ConfigChanged(const Config& config) {
 uint32_t DXVAVideoDecodeAccelerator::GetTextureTarget() const {
   bool provide_nv12_textures = share_nv12_textures_ || copy_nv12_textures_;
   return provide_nv12_textures ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
+}
+
+ID3D11Device* DXVAVideoDecodeAccelerator::D3D11Device() const {
+  return share_nv12_textures_ ? angle_device_.Get() : d3d11_device_.Get();
 }
 
 }  // namespace media

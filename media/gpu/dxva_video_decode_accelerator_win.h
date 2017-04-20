@@ -374,6 +374,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   uint32_t GetTextureTarget() const;
 
+  ID3D11Device* D3D11Device() const;
+
   // To expose client callbacks from VideoDecodeAccelerator.
   VideoDecodeAccelerator::Client* client_;
 
