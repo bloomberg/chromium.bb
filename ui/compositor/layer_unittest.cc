@@ -2230,7 +2230,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ReportMetrics) {
   animation_sequence->SetAnimationMetricsReporter(&reporter);
   animator->StartAnimation(animation_sequence);
   while (!reporter.report_called())
-    WaitForDraw();
+    WaitForSwap();
   ResetCompositor();
   // Even though most of the time 100% smooth animations are expected, on the
   // test bots this cannot be guaranteed. Therefore simply check that some
