@@ -111,8 +111,9 @@ class VIEWS_EXPORT TooltipController
   // this timer fires.
   base::OneShotTimer tooltip_shown_timer_;
 
-  // Location of the last event in |tooltip_window_|'s coordinates.
+  // Location of the last events in |tooltip_window_|'s coordinates.
   gfx::Point curr_mouse_loc_;
+  gfx::Point last_touch_loc_;
 
   bool tooltips_enabled_;
 
