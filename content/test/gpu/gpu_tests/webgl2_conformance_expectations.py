@@ -61,11 +61,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
         bug=1966) # angle bug ID
 
-    self.Fail('conformance2/textures/misc/copy-texture-cube-map-AMD-bug.html',
-        bug=712584)
-    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
-        bug=712584)
-
     # Windows only.
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win', 'd3d11'], bug=644740)
@@ -750,6 +745,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', ('nvidia', 0x1cb3)], bug=709320)
 
     # Linux Intel
+    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
+        ['linux', 'intel'], bug=640389)
     self.Fail('WebglExtension_EXT_disjoint_timer_query_webgl2',
         ['linux', 'intel'], bug=687210)
 
@@ -1019,6 +1016,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'no_angle'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['linux', 'amd', 'no_angle'], bug=483282)
+    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
+        ['linux', 'amd'], bug=633022)
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
 
