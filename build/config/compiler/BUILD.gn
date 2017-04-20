@@ -20,6 +20,9 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
 if (is_mac) {
   import("//build/config/mac/symbols.gni")
 }
+if (is_ios) {
+  import("//build/config/ios/ios_sdk.gni")
+}
 
 declare_args() {
   # Default to warnings as errors for default workflow, where we catch
@@ -1101,6 +1104,17 @@ config("default_warnings") {
 
         # TODO(thakis ): https://crbug.com/683349
         "-Wno-user-defined-warnings",
+      ]
+    } else if (use_xcode_clang &&
+               (xcode_version == "0830" || xcode_version == "0831" ||
+                xcode_version == "0832")) {
+      # This is necessary to allow a progressive transition from using xcode 8 to 8.3. Remove when all bots are migrated to 8.3.
+      cflags += [
+        # TODO(thakis): https://crbug.com/604888
+        "-Wno-undefined-var-template",
+
+        # TODO(hans): https://crbug.com/637306
+        "-Wno-address-of-packed-member",
       ]
     }
   }
