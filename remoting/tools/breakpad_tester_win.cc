@@ -17,10 +17,13 @@ const char kHelpSwitchName[] = "help";
 const char kQuestionSwitchName[] = "?";
 
 const char kUsageMessage[] =
-  "\n"
-  "Usage: %s <pid>\n"
-  "\n"
-  "  pid  - PID of the process to be crashed.\n";
+    "\n"
+    "Usage: %s <pid>\n"
+    "\n"
+    "  pid  - PID of the process to be crashed.\n"
+    "\n\n"
+    "Note: You may need to run this tool as SYSTEM\n"
+    "      to prevent access denied errors.\n";
 
 // Exit codes:
 const int kSuccessExitCode = 0;
