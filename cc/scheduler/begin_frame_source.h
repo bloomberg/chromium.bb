@@ -283,7 +283,7 @@ class CC_EXPORT BeginFrameObserverAckTracker {
   base::flat_set<BeginFrameObserver*> observers_;
   base::flat_set<BeginFrameObserver*> finished_observers_;
   bool observers_had_damage_ = false;
-  base::SmallMap<std::map<BeginFrameObserver*, uint64_t>, 4>
+  base::flat_map<BeginFrameObserver*, uint64_t>
       latest_confirmed_sequence_numbers_;
 
   DISALLOW_COPY_AND_ASSIGN(BeginFrameObserverAckTracker);

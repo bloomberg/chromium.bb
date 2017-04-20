@@ -115,7 +115,7 @@ void TraceEventMemoryOverhead::AddValue(const Value& value) {
 
 void TraceEventMemoryOverhead::AddSelf() {
   size_t estimated_size = sizeof(*this);
-  // If the SmallMap did overflow its static capacity, its elements will be
+  // If the small_map did overflow its static capacity, its elements will be
   // allocated on the heap and have to be accounted separately.
   if (allocated_objects_.UsingFullMap())
     estimated_size += sizeof(map_type::value_type) * allocated_objects_.size();

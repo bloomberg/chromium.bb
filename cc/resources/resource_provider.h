@@ -800,7 +800,7 @@ class CC_EXPORT ResourceProvider
   // immediately.
   bool batch_return_resources_ = false;
   // Maps from a child id to the set of resources to be returned to it.
-  base::SmallMap<std::map<int, ResourceIdArray>> batched_returning_resources_;
+  base::small_map<std::map<int, ResourceIdArray>> batched_returning_resources_;
 
   base::ThreadChecker thread_checker_;
 

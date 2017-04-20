@@ -245,7 +245,7 @@ uint64_t GetTotalSizeAndFileSizes(
         unreserved_file_items,
     std::vector<uint64_t>* file_sizes_output) {
   uint64_t total_size_output = 0;
-  base::SmallMap<std::map<uint64_t, uint64_t>> file_id_to_sizes;
+  base::small_map<std::map<uint64_t, uint64_t>> file_id_to_sizes;
   for (const auto& item : unreserved_file_items) {
     const DataElement& element = item->item()->data_element();
     uint64_t file_id = BlobDataBuilder::GetFutureFileID(element);

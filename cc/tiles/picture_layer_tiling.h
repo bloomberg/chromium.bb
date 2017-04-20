@@ -63,6 +63,9 @@ struct TileMapKey {
   bool operator==(const TileMapKey& other) const {
     return index_x == other.index_x && index_y == other.index_y;
   }
+  bool operator<(const TileMapKey& other) const {
+    return std::tie(index_x, index_y) < std::tie(other.index_x, other.index_y);
+  }
 
   int index_x;
   int index_y;

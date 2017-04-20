@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/small_map.h"
+#include "base/containers/flat_map.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -130,16 +130,12 @@ class LatencyInfo {
     base::TimeTicks last_event_time;
   };
 
-  // Empirically determined constant based on a typical scroll sequence.
-  enum { kTypicalMaxComponentsPerLatencyInfo = 10 };
-
   enum : size_t { kMaxInputCoordinates = 2 };
 
   // Map a Latency Component (with a component-specific int64_t id) to a
   // component info.
-  typedef base::SmallMap<
-      std::map<std::pair<LatencyComponentType, int64_t>, LatencyComponent>,
-      kTypicalMaxComponentsPerLatencyInfo> LatencyMap;
+  using LatencyMap = base::flat_map<std::pair<LatencyComponentType, int64_t>,
+                                    LatencyComponent>;
 
   LatencyInfo();
   LatencyInfo(const LatencyInfo& other);

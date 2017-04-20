@@ -215,5 +215,25 @@ TEST(IPCMessageUtilsTest, UnguessableTokenTest) {
   EXPECT_EQ(token, deserialized_token);
 }
 
+TEST(IPCMessageUtilsTest, FlatMap) {
+  base::flat_map<std::string, int> input;
+  input["foo"] = 42;
+  input["bar"] = 96;
+
+  base::Pickle pickle;
+  IPC::WriteParam(&pickle, input);
+
+  base::PickleSizer sizer;
+  IPC::GetParamSize(&sizer, input);
+
+  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+
+  base::PickleIterator iter(pickle);
+  base::flat_map<std::string, int> output;
+  EXPECT_TRUE(IPC::ReadParam(&pickle, &iter, &output));
+
+  EXPECT_EQ(input, output);
+}
+
 }  // namespace
 }  // namespace IPC

@@ -164,8 +164,8 @@ class PresentationFrame {
  private:
   MediaSource GetMediaSourceFromListener(
       content::PresentationScreenAvailabilityListener* listener) const;
-  base::SmallMap<std::map<std::string, MediaRoute>> presentation_id_to_route_;
-  base::SmallMap<
+  base::small_map<std::map<std::string, MediaRoute>> presentation_id_to_route_;
+  base::small_map<
       std::map<std::string, std::unique_ptr<PresentationMediaSinksObserver>>>
       url_to_sinks_observer_;
   std::unordered_map<

@@ -17,10 +17,12 @@
 #include <tuple>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/small_map.h"
 #include "base/containers/stack_container.h"
 #include "base/files/file.h"
 #include "base/format_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -899,10 +901,10 @@ template <typename NormalMap,
           int kArraySize,
           typename EqualKey,
           typename MapInit>
-struct ParamTraits<base::SmallMap<NormalMap, kArraySize, EqualKey, MapInit> > {
-  typedef base::SmallMap<NormalMap, kArraySize, EqualKey, MapInit> param_type;
-  typedef typename param_type::key_type K;
-  typedef typename param_type::data_type V;
+struct ParamTraits<base::small_map<NormalMap, kArraySize, EqualKey, MapInit>> {
+  using param_type = base::small_map<NormalMap, kArraySize, EqualKey, MapInit>;
+  using K = typename param_type::key_type;
+  using V = typename param_type::data_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
     GetParamSize(sizer, static_cast<int>(p.size()));
     typename param_type::const_iterator iter;
@@ -936,7 +938,53 @@ struct ParamTraits<base::SmallMap<NormalMap, kArraySize, EqualKey, MapInit> > {
     return true;
   }
   static void Log(const param_type& p, std::string* l) {
-    l->append("<base::SmallMap>");
+    l->append("<base::small_map>");
+  }
+};
+
+template <class Key, class Mapped, class Compare>
+struct ParamTraits<base::flat_map<Key, Mapped, Compare>> {
+  using param_type = base::flat_map<Key, Mapped, Compare>;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    DCHECK(base::IsValueInRangeForNumericType<int>(p.size()));
+    GetParamSize(sizer, static_cast<int>(p.size()));
+    for (const auto& iter : p) {
+      GetParamSize(sizer, iter.first);
+      GetParamSize(sizer, iter.second);
+    }
+  }
+  static void Write(base::Pickle* m, const param_type& p) {
+    DCHECK(base::IsValueInRangeForNumericType<int>(p.size()));
+    WriteParam(m, static_cast<int>(p.size()));
+    for (const auto& iter : p) {
+      WriteParam(m, iter.first);
+      WriteParam(m, iter.second);
+    }
+  }
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r) {
+    int size;
+    if (!iter->ReadLength(&size))
+      return false;
+
+    // Construct by creating in a vector and moving into the flat_map. Properly
+    // serialized flat_maps will be in-order so this will be O(n). Incorrectly
+    // serialized ones will still be handled properly.
+    std::vector<typename param_type::value_type> vect;
+    vect.resize(size);
+    for (int i = 0; i < size; ++i) {
+      if (!ReadParam(m, iter, &vect[i].first))
+        return false;
+      if (!ReadParam(m, iter, &vect[i].second))
+        return false;
+    }
+
+    *r = param_type(std::move(vect), base::KEEP_FIRST_OF_DUPES);
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<base::flat_map>");
   }
 };
 

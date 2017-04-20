@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/small_map.h"
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
@@ -401,8 +401,7 @@ class TextureUploadPerfTest : public testing::Test {
                                      const GLenum format,
                                      const bool subimage) {
     std::vector<uint8_t> pixels;
-    base::SmallMap<std::map<std::string, Measurement>>
-        aggregates;  // indexed by name
+    base::flat_map<std::string, Measurement> aggregates;  // indexed by name
     int successful_runs = 0;
     GLuint texture_id = CreateGLTexture(format, size, subimage);
     for (int i = 0; i < kUploadPerfWarmupRuns + kUploadPerfTestRuns; ++i) {

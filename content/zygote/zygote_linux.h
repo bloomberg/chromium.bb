@@ -51,14 +51,13 @@ class Zygote {
     // Notes whether the zygote has sent SIGKILL to this process.
     bool sent_sigkill;
   };
-  typedef base::SmallMap< std::map<base::ProcessHandle, ZygoteProcessInfo> >
-      ZygoteProcessMap;
+  using ZygoteProcessMap =
+      base::small_map<std::map<base::ProcessHandle, ZygoteProcessInfo>>;
 
   // Retrieve a ZygoteProcessInfo from the process_info_map_.
   // Returns true and write to process_info if |pid| can be found, return
   // false otherwise.
-  bool GetProcessInfo(base::ProcessHandle pid,
-                      ZygoteProcessInfo* process_info);
+  bool GetProcessInfo(base::ProcessHandle pid, ZygoteProcessInfo* process_info);
 
   // Returns true if the SUID sandbox is active.
   bool UsingSUIDSandbox() const;

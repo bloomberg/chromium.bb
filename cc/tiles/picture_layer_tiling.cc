@@ -11,7 +11,7 @@
 #include <limits>
 #include <set>
 
-#include "base/containers/small_map.h"
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
@@ -257,12 +257,8 @@ void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_invalidation,
   // twin, so it's slated for removal in the future.
   if (live_tiles_rect_.IsEmpty())
     return;
-  // Pick 16 for the size of the SmallMap before it promotes to a unordered_map.
-  // 4x4 tiles should cover most small invalidations, and walking a vector of
-  // 16 is fast enough. If an invalidation is huge we will fall back to a
-  // unordered_map instead of a vector in the SmallMap.
-  base::SmallMap<std::unordered_map<TileMapKey, gfx::Rect, TileMapKeyHash>, 16>
-      remove_tiles;
+
+  base::flat_map<TileMapKey, gfx::Rect> remove_tiles;
   gfx::Rect expanded_live_tiles_rect =
       tiling_data_.ExpandRectToTileBounds(live_tiles_rect_);
   for (Region::Iterator iter(layer_invalidation); iter.has_rect();

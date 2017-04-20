@@ -345,8 +345,6 @@ uint64_t BeginFrameObserverAckTracker::LatestConfirmedSequenceNumber() const {
 
 void BeginFrameObserverAckTracker::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  base::SmallMap<std::map<BeginFrameObserver*, uint64_t>, 4>
-      latest_confirmed_sequence_numbers_;
   state->SetInteger("current_source_id", current_source_id_);
   state->SetInteger("current_sequence_number", current_sequence_number_);
   state->SetInteger("num_observers", observers_.size());
