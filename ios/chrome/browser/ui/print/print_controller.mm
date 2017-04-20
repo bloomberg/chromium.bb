@@ -11,12 +11,10 @@
 
 #include "base/callback_helpers.h"
 #import "base/ios/ios_util.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -31,6 +29,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using net::URLFetcher;
 using net::URLFetcherDelegate;
@@ -98,8 +100,8 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
   }
 
  private:
-  __unsafe_unretained PrintController* owner_;
-  __unsafe_unretained UIViewController* view_controller_;
+  __weak PrintController* owner_;
+  __weak UIViewController* view_controller_;
   DISALLOW_COPY_AND_ASSIGN(PrintPDFFetcherDelegate);
 };
 }  // namespace
@@ -118,10 +120,10 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
   // offers a cancel button which will cancel the download. It is created when
   // downloading begins and is released when downloading ends (either due to
   // cancellation or completion).
-  base::scoped_nsobject<LoadingAlertCoordinator> _PDFDownloadingDialog;
+  LoadingAlertCoordinator* _PDFDownloadingDialog;
 
   // A dialog which indicates that the print preview failed.
-  base::scoped_nsobject<AlertCoordinator> _PDFDownloadingErrorDialog;
+  AlertCoordinator* _PDFDownloadingErrorDialog;
 }
 
 #pragma mark - Class methods.
@@ -144,7 +146,7 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
     // and |printingItem| will no longer be used.
     if (!base::ios::IsRunningOnIOS10OrLater() && isPDF) {
       web::WebThread::PostBlockingPoolTask(
-          FROM_HERE, base::BindBlock(^{
+          FROM_HERE, base::BindBlockArc(^{
             NSFileManager* manager = [NSFileManager defaultManager];
             NSString* tempDir = NSTemporaryDirectory();
             NSError* tempDirError = nil;
@@ -235,8 +237,7 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
   }
 
   if (!isPDFURL) {
-    base::scoped_nsobject<UIPrintPageRenderer> renderer(
-        [[UIPrintPageRenderer alloc] init]);
+    UIPrintPageRenderer* renderer = [[UIPrintPageRenderer alloc] init];
     [renderer addPrintFormatter:[view viewPrintFormatter]
           startingAtPageAtIndex:0];
     printInteractionController.printPageRenderer = renderer;
@@ -250,7 +251,7 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
   _fetcher.reset();
   [self dismissPDFDownloadingDialog];
   [_PDFDownloadingErrorDialog stop];
-  _PDFDownloadingErrorDialog.reset();
+  _PDFDownloadingErrorDialog = nil;
   [[UIPrintInteractionController sharedPrintController]
       dismissAnimated:animated];
 }
@@ -263,31 +264,31 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
 
   NSString* title = l10n_util::GetNSString(IDS_IOS_PRINT_PDF_PREPARATION);
 
-  base::WeakNSObject<PrintController> weakSelf(self);
+  __weak PrintController* weakSelf = self;
   ProceduralBlock cancelHandler = ^{
-    base::scoped_nsobject<PrintController> strongSelf([weakSelf retain]);
+    PrintController* strongSelf = weakSelf;
     if (strongSelf)
-      strongSelf.get()->_fetcher.reset();
+      strongSelf->_fetcher.reset();
   };
 
-  _PDFDownloadingDialog.reset([[LoadingAlertCoordinator alloc]
+  _PDFDownloadingDialog = [[LoadingAlertCoordinator alloc]
       initWithBaseViewController:viewController
                            title:title
-                   cancelHandler:cancelHandler]);
+                   cancelHandler:cancelHandler];
 
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, kPDFDownloadDialogDelay * NSEC_PER_SEC),
       dispatch_get_main_queue(), ^{
-        base::scoped_nsobject<PrintController> strongSelf([weakSelf retain]);
+        PrintController* strongSelf = weakSelf;
         if (!strongSelf)
           return;
-        [strongSelf.get()->_PDFDownloadingDialog start];
+        [strongSelf->_PDFDownloadingDialog start];
       });
 }
 
 - (void)dismissPDFDownloadingDialog {
   [_PDFDownloadingDialog stop];
-  _PDFDownloadingDialog.reset();
+  _PDFDownloadingDialog = nil;
 }
 
 - (void)showPDFDownloadErrorWithURL:(const GURL)URL
@@ -295,12 +296,12 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
   NSString* title = l10n_util::GetNSString(IDS_IOS_PRINT_PDF_ERROR_TITLE);
   NSString* message = l10n_util::GetNSString(IDS_IOS_PRINT_PDF_ERROR_SUBTITLE);
 
-  _PDFDownloadingErrorDialog.reset([[AlertCoordinator alloc]
-      initWithBaseViewController:viewController
-                           title:title
-                         message:message]);
+  _PDFDownloadingErrorDialog =
+      [[AlertCoordinator alloc] initWithBaseViewController:viewController
+                                                     title:title
+                                                   message:message];
 
-  base::WeakNSObject<PrintController> weakSelf(self);
+  __weak PrintController* weakSelf = self;
 
   [_PDFDownloadingErrorDialog
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_PRINT_PDF_TRY_AGAIN)
@@ -331,7 +332,7 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
 - (void)finishedDownloadingPDF:(UIViewController*)viewController {
   [self dismissPDFDownloadingDialog];
   DCHECK(_fetcher);
-  base::ScopedClosureRunner fetcherResetter(base::BindBlock(^{
+  base::ScopedClosureRunner fetcherResetter(base::BindBlockArc(^{
     _fetcher.reset();
   }));
   int responseCode = _fetcher->GetResponseCode();

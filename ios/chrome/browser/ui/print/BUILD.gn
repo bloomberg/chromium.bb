@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("print") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "print_controller.h",
     "print_controller.mm",
