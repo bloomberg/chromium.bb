@@ -8,6 +8,7 @@
 #include "base/supports_user_data.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -92,6 +93,8 @@ DownloadFeedbackDialogView::DownloadFeedbackDialogView(
       cancel_button_text_(l10n_util::GetStringUTF16(
           IDS_FEEDBACK_SERVICE_DIALOG_CANCEL_BUTTON_LABEL)) {
   link_view_->set_listener(this);
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::SAFE_BROWSING_DOWNLOAD_FEEDBACK);
 }
 
 DownloadFeedbackDialogView::~DownloadFeedbackDialogView() {}

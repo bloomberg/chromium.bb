@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_nonchromeos.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
@@ -119,6 +120,7 @@ ImeWarningBubbleView::ImeWarningBubbleView(
   }
   views::BubbleDialogDelegateView::CreateBubble(this)->Show();
   bubble_has_shown_ = true;
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::IME_WARNING);
 }
 
 ImeWarningBubbleView::~ImeWarningBubbleView() {

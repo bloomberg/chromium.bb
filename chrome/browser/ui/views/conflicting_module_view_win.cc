@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -52,6 +53,8 @@ ConflictingModuleView::ConflictingModuleView(views::View* anchor_view,
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
   observer_.Add(EnumerateModulesModel::GetInstance());
+
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::CONFLICTING_MODULE);
 }
 
 // static

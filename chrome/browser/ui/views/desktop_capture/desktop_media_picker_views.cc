@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
@@ -217,6 +218,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     widget = DialogDelegate::CreateDialogWidget(this, context, nullptr);
     widget->Show();
   }
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::DESKTOP_MEDIA_PICKER);
 
   // If the picker is not modal to the calling web contents then it is displayed
   // in its own top-level window, so in that case it needs to be filtered out of

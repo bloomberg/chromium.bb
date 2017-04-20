@@ -17,6 +17,7 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/sessions/session_restore.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -172,6 +173,7 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
       offer_uma_optin_(offer_uma_optin),
       ignored_(true) {
   set_close_on_deactivate(false);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::SESSION_CRASHED);
 }
 
 SessionCrashedBubbleView::~SessionCrashedBubbleView() {

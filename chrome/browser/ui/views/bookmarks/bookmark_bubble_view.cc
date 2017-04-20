@@ -303,7 +303,9 @@ BookmarkBubbleView::BookmarkBubbleView(
       ios_promo_view_(nullptr),
       remove_bookmark_(false),
       apply_edits_(true),
-      is_showing_ios_promotion_(false) {}
+      is_showing_ios_promotion_(false) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);
+}
 
 base::string16 BookmarkBubbleView::GetTitle() {
   BookmarkModel* bookmark_model =

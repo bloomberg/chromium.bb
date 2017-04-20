@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -38,6 +39,7 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
   params.message_width = kDialogWidth;
   // Also deleted when the window closes.
   message_box_view_ = new views::MessageBoxView(params);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::UPDATE_RECOMMENDED);
 }
 
 UpdateRecommendedMessageBox::~UpdateRecommendedMessageBox() {

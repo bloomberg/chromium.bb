@@ -10,6 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -48,7 +49,10 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
     : browser_(browser),
       username_(username),
       delegate_(std::move(delegate)),
-      prompt_for_new_profile_(true) {}
+      prompt_for_new_profile_(true) {
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::PROFILE_SIGNIN_CONFIRMATION);
+}
 
 ProfileSigninConfirmationDialogViews::~ProfileSigninConfirmationDialogViews() {}
 

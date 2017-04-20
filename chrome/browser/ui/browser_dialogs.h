@@ -188,7 +188,28 @@ class ContentSettingBubbleViewsBridge {
 // different type of dialog box.
 // These values are written to logs. New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
-enum class DialogIdentifier { UNKNOWN = 0, TRANSLATE = 1, MAX_VALUE };
+enum class DialogIdentifier {
+  UNKNOWN = 0,
+  TRANSLATE = 1,
+  BOOKMARK = 2,
+  BOOKMARK_EDITOR = 3,
+  DESKTOP_MEDIA_PICKER = 4,
+  OUTDATED_UPGRADE = 5,
+  ONE_CLICK_SIGNIN = 6,
+  PROFILE_SIGNIN_CONFIRMATION = 7,
+  HUNG_RENDERER = 8,
+  SESSION_CRASHED = 9,
+  CONFIRM_BUBBLE = 10,
+  UPDATE_RECOMMENDED = 11,
+  CRYPTO_PASSWORD = 12,
+  SAFE_BROWSING_DOWNLOAD_FEEDBACK = 13,
+  FIRST_RUN = 14,
+  NETWORK_SHARE_PROFILE_WARNING = 15,
+  CONFLICTING_MODULE = 16,
+  CRITICAL_NOTIFICATION = 17,
+  IME_WARNING = 18,
+  MAX_VALUE
+};
 
 // Record an UMA metric counting the creation of a dialog box of this type.
 void RecordDialogCreation(DialogIdentifier identifier);
