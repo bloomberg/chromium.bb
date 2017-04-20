@@ -1197,8 +1197,6 @@ source_set("chromeos") {
     "policy/user_network_configuration_updater_factory.h",
     "policy/user_policy_manager_factory_chromeos.cc",
     "policy/user_policy_manager_factory_chromeos.h",
-    "policy/user_policy_token_loader.cc",
-    "policy/user_policy_token_loader.h",
     "policy/wildcard_login_checker.cc",
     "policy/wildcard_login_checker.h",
     "power/cpu_data_collector.cc",

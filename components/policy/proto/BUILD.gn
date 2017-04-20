@@ -24,9 +24,6 @@ proto_library("proto_internal") {
   if (!is_android && !is_ios) {
     sources += [ "chrome_extension_policy.proto" ]
   }
-  if (is_chromeos) {
-    sources += [ "device_management_local.proto" ]
-  }
 
   cc_generator_options = "dllexport_decl=POLICY_PROTO_EXPORT:"
   cc_include = "components/policy/proto/policy_proto_export.h"
