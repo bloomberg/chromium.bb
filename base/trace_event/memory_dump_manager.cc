@@ -742,8 +742,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
 
   // The results struct to fill.
   // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
-  base::Optional<MemoryDumpCallbackResult> result_opt;
-
+  base::Optional<MemoryDumpCallbackResult> result;
   for (const auto& kv : pmd_async_state->process_dumps) {
     ProcessId pid = kv.first;  // kNullProcessId for the current process.
     ProcessMemoryDump* process_memory_dump = kv.second.get();
@@ -771,28 +770,28 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     if (pmd_async_state->req_args.level_of_detail ==
         MemoryDumpLevelOfDetail::DETAILED)
       continue;
-    MemoryDumpCallbackResult result;
+    if (!result.has_value())
+      result = MemoryDumpCallbackResult();
     // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
     if (pid == kNullProcessId) {
-      result.chrome_dump.malloc_total_kb =
+      result->chrome_dump.malloc_total_kb =
           GetDumpsSumKb("malloc", process_memory_dump);
-      result.chrome_dump.v8_total_kb =
+      result->chrome_dump.v8_total_kb =
           GetDumpsSumKb("v8/*", process_memory_dump);
 
       // partition_alloc reports sizes for both allocated_objects and
       // partitions. The memory allocated_objects uses is a subset of
       // the partitions memory so to avoid double counting we only
       // count partitions memory.
-      result.chrome_dump.partition_alloc_total_kb =
+      result->chrome_dump.partition_alloc_total_kb =
           GetDumpsSumKb("partition_alloc/partitions/*", process_memory_dump);
-      result.chrome_dump.blink_gc_total_kb =
+      result->chrome_dump.blink_gc_total_kb =
           GetDumpsSumKb("blink_gc", process_memory_dump);
-      FillOsDumpFromProcessMemoryDump(process_memory_dump, &result.os_dump);
+      FillOsDumpFromProcessMemoryDump(process_memory_dump, &result->os_dump);
     } else {
-      auto& os_dump = result.extra_processes_dump[pid];
+      auto& os_dump = result->extra_processes_dump[pid];
       FillOsDumpFromProcessMemoryDump(process_memory_dump, &os_dump);
     }
-    result_opt = result;
   }
 
   bool tracing_still_enabled;
@@ -805,7 +804,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
 
   if (!pmd_async_state->callback.is_null()) {
     pmd_async_state->callback.Run(dump_guid, pmd_async_state->dump_successful,
-                                  result_opt);
+                                  result);
     pmd_async_state->callback.Reset();
   }
 
