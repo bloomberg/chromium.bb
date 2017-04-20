@@ -337,7 +337,8 @@ TEST_F(NetworkConnectTest, ConnectToTetherNetwork) {
   EXPECT_CALL(*mock_tether_delegate_, ConnectToNetwork(kTether1Guid));
 
   NetworkHandler::Get()->network_state_handler()->AddTetherNetworkState(
-      kTether1Guid, "TetherNetwork");
+      kTether1Guid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
+      100 /* signal_strength */);
 
   NetworkConnect::Get()->SetTetherDelegate(mock_tether_delegate_.get());
   NetworkConnect::Get()->ConnectToNetworkId(kTether1Guid);
@@ -354,7 +355,8 @@ TEST_F(NetworkConnectTest, ConnectToTetherNetwork_TetherDelegateNotSet) {
   EXPECT_CALL(*mock_tether_delegate_, ConnectToNetwork(_)).Times(0);
 
   NetworkHandler::Get()->network_state_handler()->AddTetherNetworkState(
-      kTether1Guid, "TetherNetwork");
+      kTether1Guid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
+      100 /* signal_strength */);
 
   NetworkConnect::Get()->ConnectToNetworkId(kTether1Guid);
 }

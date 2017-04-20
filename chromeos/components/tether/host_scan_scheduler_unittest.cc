@@ -23,7 +23,7 @@ class HostScanSchedulerTest : public testing::Test {
  protected:
   class TestDelegate : public HostScanScheduler::Delegate {
    public:
-    TestDelegate(HostScanSchedulerTest* test)
+    explicit TestDelegate(HostScanSchedulerTest* test)
         : test_(test),
           observer_(nullptr),
           is_authenticated_user_logged_in(true),
@@ -82,7 +82,7 @@ class HostScanSchedulerTest : public testing::Test {
   class FakeHostScanner : public HostScanner {
    public:
     FakeHostScanner()
-        : HostScanner(nullptr, nullptr, nullptr, nullptr, nullptr),
+        : HostScanner(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
           num_scans_started_(0) {}
     ~FakeHostScanner() override {}
 

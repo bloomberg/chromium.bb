@@ -26,7 +26,6 @@ namespace {
 const char kFakeDeviceId[] = "fakeDeviceId";
 const char kWifiNetworkGuid[] = "wifiNetworkGuid";
 const char kTetherNetworkGuid[] = "tetherNetworkGuid";
-const char kTetherNetworkName[] = "tetherNetworkName";
 
 std::string CreateWifiConfigurationJsonString(const std::string& guid) {
   std::stringstream ss;
@@ -59,8 +58,9 @@ class ActiveHostNetworkStateUpdaterTest : public NetworkStateTest {
 
   void SetUpTetherNetwork() {
     // Add tether network whose status will be changed during the test.
-    network_state_handler()->AddTetherNetworkState(kTetherNetworkGuid,
-                                                   kTetherNetworkName);
+    network_state_handler()->AddTetherNetworkState(
+        kTetherNetworkGuid, "TetherNetworkName", "TetherNetworkCarrier",
+        100 /* battery_percentage */, 100 /* signal_strength */);
   }
 
   void SetUpWifiNetwork() {
@@ -123,4 +123,4 @@ TEST_F(ActiveHostNetworkStateUpdaterTest, TestActiveHostUpdates) {
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

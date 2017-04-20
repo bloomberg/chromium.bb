@@ -182,7 +182,7 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   host_scanner_ = base::MakeUnique<HostScanner>(
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
       host_scan_device_prioritizer_.get(), network_state_handler_,
-      notification_presenter_.get());
+      notification_presenter_.get(), device_id_tether_network_guid_map_.get());
 
   // TODO(khorimoto): Hook up HostScanScheduler. Currently, we simply start a
   // new scan once the user logs in.

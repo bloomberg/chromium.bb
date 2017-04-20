@@ -15,6 +15,7 @@
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
+#include "chromeos/network/tether_constants.h"
 #include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -259,6 +260,15 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
     }
     dictionary->SetWithoutPathExpansion(shill::kProviderProperty,
                                         provider_property.release());
+  }
+
+  // Tether properties
+  if (NetworkTypePattern::Tether().MatchesType(type())) {
+    dictionary->SetIntegerWithoutPathExpansion(kTetherBatteryPercentage,
+                                               battery_percentage());
+    dictionary->SetStringWithoutPathExpansion(kTetherCarrier, carrier());
+    dictionary->SetIntegerWithoutPathExpansion(kTetherSignalStrength,
+                                               signal_strength());
   }
 
   // Wireless properties

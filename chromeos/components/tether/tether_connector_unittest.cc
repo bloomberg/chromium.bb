@@ -36,9 +36,6 @@ const char kPassword[] = "password";
 
 const char kWifiNetworkGuid[] = "wifiNetworkGuid";
 
-const char kTetherNetwork1Name[] = "tetherNetwork1Name";
-const char kTetherNetwork2Name[] = "tetherNetwork2Name";
-
 std::string CreateWifiConfigurationJsonString() {
   std::stringstream ss;
   ss << "{"
@@ -201,10 +198,12 @@ class TetherConnectorTest : public NetworkStateTest {
     // its ConnectToNetwork() callback.
     network_state_handler()->AddTetherNetworkState(
         GetTetherNetworkGuid(test_devices_[0].GetDeviceId()),
-        kTetherNetwork1Name);
+        "TetherNetworkName1", "TetherNetworkCarrier1",
+        85 /* battery_percentage */, 75 /* signal_strength */);
     network_state_handler()->AddTetherNetworkState(
         GetTetherNetworkGuid(test_devices_[1].GetDeviceId()),
-        kTetherNetwork2Name);
+        "TetherNetworkName2", "TetherNetworkCarrier2",
+        90 /* battery_percentage */, 50 /* signal_strength */);
   }
 
   void SuccessfullyJoinWifiNetwork() {
@@ -476,4 +475,4 @@ TEST_F(TetherConnectorTest,
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

@@ -18,6 +18,7 @@ namespace chromeos {
 namespace tether {
 
 class BleConnectionManager;
+class DeviceIdTetherNetworkGuidMap;
 class HostScanDevicePrioritizer;
 class TetherHostFetcher;
 
@@ -31,7 +32,8 @@ class HostScanner : public HostScannerOperation::Observer {
               BleConnectionManager* connection_manager,
               HostScanDevicePrioritizer* host_scan_device_prioritizer,
               NetworkStateHandler* network_state_handler,
-              NotificationPresenter* notification_presenter);
+              NotificationPresenter* notification_presenter,
+              DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
   virtual ~HostScanner();
 
   // Starts a host scan if there is no current scan. If a scan is ongoing, this
@@ -62,6 +64,7 @@ class HostScanner : public HostScannerOperation::Observer {
   HostScanDevicePrioritizer* host_scan_device_prioritizer_;
   NetworkStateHandler* network_state_handler_;
   NotificationPresenter* notification_presenter_;
+  DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
 
   bool is_fetching_hosts_;
   std::unique_ptr<HostScannerOperation> host_scanner_operation_;

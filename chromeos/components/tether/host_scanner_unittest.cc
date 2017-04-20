@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
@@ -20,6 +21,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -145,19 +147,21 @@ class HostScannerTest : public NetworkStateTest {
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
     fake_host_scan_device_prioritizer_ =
         base::MakeUnique<FakeHostScanDevicePrioritizer>();
+    fake_notification_presenter_ =
+        base::MakeUnique<FakeNotificationPresenter>();
+    device_id_tether_network_guid_map_ =
+        base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
 
     fake_host_scanner_operation_factory_ =
         base::WrapUnique(new FakeHostScannerOperationFactory(test_devices_));
     HostScannerOperation::Factory::SetInstanceForTesting(
         fake_host_scanner_operation_factory_.get());
 
-    fake_notification_presenter_ =
-        base::MakeUnique<FakeNotificationPresenter>();
-
     host_scanner_ = base::WrapUnique(new HostScanner(
         fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
         fake_host_scan_device_prioritizer_.get(), network_state_handler(),
-        fake_notification_presenter_.get()));
+        fake_notification_presenter_.get(),
+        device_id_tether_network_guid_map_.get()));
   }
 
   void TearDown() override {
@@ -183,8 +187,8 @@ class HostScannerTest : public NetworkStateTest {
               host_scanner_->most_recent_scan_results());
 
     NetworkStateHandler::NetworkStateList tether_networks;
-    network_state_handler()->GetTetherNetworkList(0 /* no limit */,
-                                                  &tether_networks);
+    network_state_handler()->GetVisibleNetworkListByType(
+        NetworkTypePattern::Tether(), &tether_networks);
     EXPECT_EQ(scanned_device_infos_so_far_.size(), tether_networks.size());
     for (auto& scanned_device_info : scanned_device_infos_so_far_) {
       cryptauth::RemoteDevice remote_device = scanned_device_info.remote_device;
@@ -215,6 +219,10 @@ class HostScannerTest : public NetworkStateTest {
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<HostScanDevicePrioritizer> fake_host_scan_device_prioritizer_;
+  std::unique_ptr<FakeNotificationPresenter> fake_notification_presenter_;
+  // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
+  std::unique_ptr<DeviceIdTetherNetworkGuidMap>
+      device_id_tether_network_guid_map_;
 
   std::unique_ptr<FakeHostScannerOperationFactory>
       fake_host_scanner_operation_factory_;
@@ -223,8 +231,6 @@ class HostScannerTest : public NetworkStateTest {
       scanned_device_infos_so_far_;
 
   std::unique_ptr<HostScanner> host_scanner_;
-
-  std::unique_ptr<FakeNotificationPresenter> fake_notification_presenter_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostScannerTest);

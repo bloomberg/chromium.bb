@@ -308,7 +308,8 @@ void NetworkListView::Update() {
 
   // Add Tether networks.
   NetworkStateHandler::NetworkStateList tether_network_list;
-  handler->GetTetherNetworkList(0 /* no limit */, &tether_network_list);
+  handler->GetVisibleNetworkListByType(NetworkTypePattern::Tether(),
+                                       &tether_network_list);
   for (const auto* tether_network : tether_network_list) {
     network_list_.push_back(
         base::MakeUnique<NetworkInfo>(tether_network->guid()));

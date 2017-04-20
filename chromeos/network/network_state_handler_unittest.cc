@@ -54,6 +54,12 @@ const char kTetherGuid1[] = "tether1";
 const char kTetherGuid2[] = "tether2";
 const char kTetherName1[] = "Device1";
 const char kTetherName2[] = "Device2";
+const char kTetherCarrier1[] = "Carrier1";
+const char kTetherCarrier2[] = "Carrier2";
+const int kTetherBatteryPercentage1 = 85;
+const int kTetherBatteryPercentage2 = 90;
+const int kTetherSignalStrength1 = 75;
+const int kTetherSignalStrength2 = 80;
 
 using chromeos::DeviceState;
 using chromeos::NetworkState;
@@ -275,6 +281,11 @@ class NetworkStateHandlerTest : public testing::Test {
         base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   }
 
+  void GetTetherNetworkList(int limit,
+                            NetworkStateHandler::NetworkStateList* list) {
+    network_state_handler_->GetTetherNetworkList(limit, list);
+  }
+
   base::MessageLoopForUI message_loop_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<TestObserver> test_observer_;
@@ -339,6 +350,17 @@ TEST_F(NetworkStateHandlerTest, GetNetworkList) {
   EXPECT_EQ(kNumShillManagerClientStubImplServices + 1,
             test_observer_->network_count());
 
+  // Add two Tether networks.
+  const size_t kNumTetherNetworks = 2;
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid2, kTetherName2, kTetherCarrier2, kTetherBatteryPercentage2,
+      kTetherSignalStrength2);
+  EXPECT_EQ(kNumShillManagerClientStubImplServices + 3,
+            test_observer_->network_count());
+
   // Get all networks.
   NetworkStateHandler::NetworkStateList networks;
   network_state_handler_->GetNetworkListByType(NetworkTypePattern::Default(),
@@ -346,13 +368,24 @@ TEST_F(NetworkStateHandlerTest, GetNetworkList) {
                                                false /* visible_only */,
                                                0 /* no limit */,
                                                &networks);
-  EXPECT_EQ(kNumShillManagerClientStubImplServices + 1, networks.size());
-  // Limit number of results.
+  EXPECT_EQ(kNumShillManagerClientStubImplServices + kNumTetherNetworks + 1,
+            networks.size());
+  // Limit number of results, including only tether networks.
   network_state_handler_->GetNetworkListByType(NetworkTypePattern::Default(),
                                                false /* configured_only */,
                                                false /* visible_only */,
                                                2 /* limit */,
                                                &networks);
+  EXPECT_EQ(2u, networks.size());
+  // Limit number of results, including more than only tether networks.
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Default(), false /* configured_only */,
+      false /* visible_only */, 4 /* limit */, &networks);
+  EXPECT_EQ(4u, networks.size());
+  // Get all tether networks.
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Tether(), false /* configured_only */,
+      false /* visible_only */, 0 /* no limit */, &networks);
   EXPECT_EQ(2u, networks.size());
   // Get all wifi networks.
   network_state_handler_->GetNetworkListByType(NetworkTypePattern::WiFi(),
@@ -367,39 +400,41 @@ TEST_F(NetworkStateHandlerTest, GetNetworkList) {
                                                true /* visible_only */,
                                                0 /* no limit */,
                                                &networks);
-  EXPECT_EQ(kNumShillManagerClientStubImplServices, networks.size());
+  EXPECT_EQ(kNumShillManagerClientStubImplServices + kNumTetherNetworks,
+            networks.size());
   network_state_handler_->GetVisibleNetworkList(&networks);
-  EXPECT_EQ(kNumShillManagerClientStubImplServices, networks.size());
+  EXPECT_EQ(kNumShillManagerClientStubImplServices + kNumTetherNetworks,
+            networks.size());
   // Get configured (profile) networks.
   network_state_handler_->GetNetworkListByType(NetworkTypePattern::Default(),
                                                true /* configured_only */,
                                                false /* visible_only */,
                                                0 /* no limit */,
                                                &networks);
-  EXPECT_EQ(1u, networks.size());
+  EXPECT_EQ(kNumTetherNetworks + 1u, networks.size());
 }
 
 TEST_F(NetworkStateHandlerTest, GetTetherNetworkList) {
   NetworkStateHandler::NetworkStateList tether_networks;
 
-  network_state_handler_->GetTetherNetworkList(0 /* no limit */,
-                                               &tether_networks);
+  GetTetherNetworkList(0 /* no limit */, &tether_networks);
   EXPECT_EQ(0u, tether_networks.size());
 
-  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1);
 
-  network_state_handler_->GetTetherNetworkList(0 /* no limit */,
-                                               &tether_networks);
+  GetTetherNetworkList(0 /* no limit */, &tether_networks);
   EXPECT_EQ(1u, tether_networks.size());
 
-  network_state_handler_->AddTetherNetworkState(kTetherGuid2, kTetherName2);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid2, kTetherName2, kTetherCarrier2, kTetherBatteryPercentage2,
+      kTetherSignalStrength2);
 
-  network_state_handler_->GetTetherNetworkList(0 /* no limit */,
-                                               &tether_networks);
+  GetTetherNetworkList(0 /* no limit */, &tether_networks);
   EXPECT_EQ(2u, tether_networks.size());
 
-  network_state_handler_->GetTetherNetworkList(1 /* no limit */,
-                                               &tether_networks);
+  GetTetherNetworkList(1 /* no limit */, &tether_networks);
   EXPECT_EQ(1u, tether_networks.size());
 }
 
@@ -592,7 +627,9 @@ TEST_F(NetworkStateHandlerTest, GetState) {
 TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   EXPECT_EQ(0u, test_observer_->network_list_changed_count());
 
-  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1);
 
   EXPECT_EQ(1u, test_observer_->network_list_changed_count());
 
@@ -601,12 +638,36 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   ASSERT_TRUE(tether_network);
   EXPECT_EQ(kTetherName1, tether_network->name());
   EXPECT_EQ(kTetherGuid1, tether_network->path());
+  EXPECT_EQ(kTetherCarrier1, tether_network->carrier());
+  EXPECT_EQ(kTetherBatteryPercentage1, tether_network->battery_percentage());
+  EXPECT_EQ(kTetherSignalStrength1, tether_network->signal_strength());
 
-  network_state_handler_->RemoveTetherNetworkState(kTetherGuid1);
+  // Update the tether properties and verify the changes.
+  EXPECT_TRUE(network_state_handler_->UpdateTetherNetworkProperties(
+      kTetherGuid1, "NewCarrier", 5 /* battery_percentage */,
+      10 /* signal_strength */));
 
   EXPECT_EQ(2u, test_observer_->network_list_changed_count());
 
+  tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
+  ASSERT_TRUE(tether_network);
+  EXPECT_EQ(kTetherName1, tether_network->name());
+  EXPECT_EQ(kTetherGuid1, tether_network->path());
+  EXPECT_EQ("NewCarrier", tether_network->carrier());
+  EXPECT_EQ(5, tether_network->battery_percentage());
+  EXPECT_EQ(10, tether_network->signal_strength());
+
+  network_state_handler_->RemoveTetherNetworkState(kTetherGuid1);
+
+  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
+
   ASSERT_FALSE(network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1));
+
+  // Updating tether properties should fail since the network was removed.
+  EXPECT_FALSE(network_state_handler_->UpdateTetherNetworkProperties(
+      kTetherGuid1, "NewNewCarrier", 15 /* battery_percentage */,
+      20 /* signal_strength */));
 }
 
 TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation) {
@@ -622,7 +683,9 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation) {
 
   EXPECT_EQ(1u, test_observer_->network_list_changed_count());
 
-  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1);
 
   EXPECT_EQ(2u, test_observer_->network_list_changed_count());
 
@@ -657,7 +720,9 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociationWifiRemoved) {
   EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
   UpdateManagerProperties();
 
-  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1);
   EXPECT_TRUE(
       network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
           kTetherGuid1, kWifiGuid1));
@@ -679,7 +744,9 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociationWifiRemoved) {
 }
 
 TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoWifiNetwork) {
-  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1);
 
   EXPECT_FALSE(
       network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
@@ -701,7 +768,22 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoTetherNetwork) {
 }
 
 TEST_F(NetworkStateHandlerTest, SetTetherNetworkStateConnectionState) {
-  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1);
+
+  // Add corresponding Wi-Fi network.
+  const std::string profile = "/profile/profile1";
+  const std::string wifi_path = "/service/wifi_with_guid";
+  AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
+             shill::kStateOnline);
+  profile_test_->AddProfile(profile, "" /* userhash */);
+  EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
+  UpdateManagerProperties();
+
+  // Associate tether and Wi-Fi networks.
+  network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+      kTetherGuid1, kWifiGuid1);
 
   const NetworkState* tether_network =
       network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);

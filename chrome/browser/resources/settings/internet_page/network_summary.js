@@ -302,7 +302,9 @@ Polymer({
           firstConnectedNetwork = networkState;
         }
       }
-      newNetworkStateLists[type].push(networkState);
+      if (newNetworkStateLists.hasOwnProperty(type)) {
+        newNetworkStateLists[type].push(networkState);
+      }
     }, this);
 
     this.defaultNetwork = firstConnectedNetwork;
