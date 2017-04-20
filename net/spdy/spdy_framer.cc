@@ -1665,31 +1665,29 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
   return true;
 }
 
-SpdyFramer::SpdyHeaderFrameIterator::SpdyHeaderFrameIterator(
-    SpdyFramer* framer,
-    std::unique_ptr<SpdyHeadersIR> headers_ir)
-    : headers_ir_(std::move(headers_ir)),
-      framer_(framer),
-      debug_total_size_(0),
+SpdyFramer::SpdyFrameIterator::SpdyFrameIterator(SpdyFramer* framer)
+    : framer_(framer),
       is_first_frame_(true),
-      has_next_frame_(true) {
-  encoder_ =
-      framer_->GetHpackEncoder()->EncodeHeaderSet(headers_ir_->header_block());
-}
+      has_next_frame_(true),
+      debug_total_size_(0) {}
 
-SpdyFramer::SpdyHeaderFrameIterator::~SpdyHeaderFrameIterator() {}
+SpdyFramer::SpdyFrameIterator::~SpdyFrameIterator() {}
 
-bool SpdyFramer::SpdyHeaderFrameIterator::NextFrame(
-    ZeroCopyOutputBuffer* output) {
+bool SpdyFramer::SpdyFrameIterator::NextFrame(ZeroCopyOutputBuffer* output) {
+  SpdyFrameWithHeaderBlockIR* frame_ir = GetIR();
+  if (frame_ir == nullptr) {
+    LOG(WARNING) << "frame_ir doesn't exist.";
+    return false;
+  }
   if (!has_next_frame_) {
-    SPDY_BUG << "SpdyFramer::SpdyHeaderFrameIterator::NextFrame called without "
+    SPDY_BUG << "SpdyFramer::SpdyFrameIterator::NextFrame called without "
              << "a next frame.";
     return false;
   }
 
-  size_t size_without_block =
-      is_first_frame_ ? framer_->GetHeaderFrameSizeSansBlock(*headers_ir_)
-                      : framer_->GetContinuationMinimumSize();
+  size_t size_without_block = is_first_frame_
+                                  ? GetFrameSizeSansBlock()
+                                  : framer_->GetContinuationMinimumSize();
   auto encoding = base::MakeUnique<SpdyString>();
   encoder_->Next(kMaxControlFrameSize - size_without_block, encoding.get());
   has_next_frame_ = encoder_->HasNext();
@@ -1703,24 +1701,76 @@ bool SpdyFramer::SpdyHeaderFrameIterator::NextFrame(
       // use GetSerializedLength() for an apples-to-apples comparision of
       // compression performance between HPACK and SPDY w/ deflate.
       size_t debug_payload_len =
-          framer_->GetSerializedLength(&headers_ir_->header_block());
+          framer_->GetSerializedLength(&frame_ir->header_block());
       framer_->debug_visitor_->OnSendCompressedFrame(
-          headers_ir_->stream_id(), SpdyFrameType::HEADERS, debug_payload_len,
+          frame_ir->stream_id(), frame_ir->frame_type(), debug_payload_len,
           debug_total_size_);
     }
   }
 
   if (is_first_frame_) {
     is_first_frame_ = false;
-    headers_ir_->set_end_headers(!has_next_frame_);
-    return framer_->SerializeHeadersGivenEncoding(*headers_ir_, *encoding,
-                                                  output);
+    frame_ir->set_end_headers(!has_next_frame_);
+    return SerializeGivenEncoding(*encoding, output);
   } else {
-    SpdyContinuationIR continuation_ir(headers_ir_->stream_id());
+    SpdyContinuationIR continuation_ir(frame_ir->stream_id());
     continuation_ir.set_end_headers(!has_next_frame_);
     continuation_ir.take_encoding(std::move(encoding));
     return framer_->SerializeContinuation(continuation_ir, output);
   }
+}
+
+bool SpdyFramer::SpdyFrameIterator::HasNextFrame() const {
+  return has_next_frame_;
+}
+
+SpdyFramer::SpdyHeaderFrameIterator::SpdyHeaderFrameIterator(
+    SpdyFramer* framer,
+    std::unique_ptr<SpdyHeadersIR> headers_ir)
+    : SpdyFrameIterator(framer), headers_ir_(std::move(headers_ir)) {
+  SetEncoder(headers_ir_.get());
+}
+
+SpdyFramer::SpdyHeaderFrameIterator::~SpdyHeaderFrameIterator() {}
+
+SpdyFrameWithHeaderBlockIR* SpdyFramer::SpdyHeaderFrameIterator::GetIR() const {
+  return headers_ir_.get();
+}
+
+size_t SpdyFramer::SpdyHeaderFrameIterator::GetFrameSizeSansBlock() const {
+  return GetFramer()->GetHeaderFrameSizeSansBlock(*headers_ir_);
+}
+
+bool SpdyFramer::SpdyHeaderFrameIterator::SerializeGivenEncoding(
+    const SpdyString& encoding,
+    ZeroCopyOutputBuffer* output) const {
+  return GetFramer()->SerializeHeadersGivenEncoding(*headers_ir_, encoding,
+                                                    output);
+}
+
+SpdyFramer::SpdyPushPromiseFrameIterator::SpdyPushPromiseFrameIterator(
+    SpdyFramer* framer,
+    std::unique_ptr<SpdyPushPromiseIR> push_promise_ir)
+    : SpdyFrameIterator(framer), push_promise_ir_(std::move(push_promise_ir)) {
+  SetEncoder(push_promise_ir_.get());
+}
+
+SpdyFramer::SpdyPushPromiseFrameIterator::~SpdyPushPromiseFrameIterator() {}
+
+SpdyFrameWithHeaderBlockIR* SpdyFramer::SpdyPushPromiseFrameIterator::GetIR()
+    const {
+  return push_promise_ir_.get();
+}
+
+size_t SpdyFramer::SpdyPushPromiseFrameIterator::GetFrameSizeSansBlock() const {
+  return GetFramer()->GetPushPromiseFrameSizeSansBlock(*push_promise_ir_);
+}
+
+bool SpdyFramer::SpdyPushPromiseFrameIterator::SerializeGivenEncoding(
+    const SpdyString& encoding,
+    ZeroCopyOutputBuffer* output) const {
+  return GetFramer()->SerializePushPromiseGivenEncoding(*push_promise_ir_,
+                                                        encoding, output);
 }
 
 void SpdyFramer::SerializeDataBuilderHelper(const SpdyDataIR& data_ir,
@@ -2571,6 +2621,33 @@ bool SpdyFramer::SerializePushPromise(const SpdyPushPromiseIR& push_promise,
   return ok;
 }
 
+bool SpdyFramer::SerializePushPromiseGivenEncoding(
+    const SpdyPushPromiseIR& push_promise,
+    const SpdyString& encoding,
+    ZeroCopyOutputBuffer* output) const {
+  size_t const frame_size =
+      GetPushPromiseFrameSizeSansBlock(push_promise) + encoding.size();
+  SpdyFrameBuilder builder(frame_size, output);
+  bool ok = builder.BeginNewFrame(*this, SpdyFrameType::PUSH_PROMISE,
+                                  SerializePushPromiseFrameFlags(push_promise),
+                                  push_promise.stream_id(),
+                                  frame_size - GetFrameHeaderSize());
+
+  if (push_promise.padded()) {
+    ok = ok && builder.WriteUInt8(push_promise.padding_payload_len());
+  }
+  ok = ok && builder.WriteUInt32(push_promise.promised_stream_id()) &&
+       builder.WriteBytes(encoding.data(), encoding.size());
+  if (ok && push_promise.padding_payload_len() > 0) {
+    SpdyString padding(push_promise.padding_payload_len(), 0);
+    ok = builder.WriteBytes(padding.data(), padding.length());
+  }
+
+  DLOG_IF(ERROR, !ok) << "Failed to write PUSH_PROMISE encoding, not enough "
+                      << "space in output";
+  return ok;
+}
+
 bool SpdyFramer::SerializeContinuation(const SpdyContinuationIR& continuation,
                                        ZeroCopyOutputBuffer* output) const {
   const SpdyString& encoding = continuation.encoding();
@@ -2578,7 +2655,8 @@ bool SpdyFramer::SerializeContinuation(const SpdyContinuationIR& continuation,
   SpdyFrameBuilder builder(frame_size, output);
   uint8_t flags = continuation.end_headers() ? HEADERS_FLAG_END_HEADERS : 0;
   bool ok = builder.BeginNewFrame(*this, SpdyFrameType::CONTINUATION, flags,
-                                  continuation.stream_id());
+                                  continuation.stream_id(),
+                                  frame_size - GetFrameHeaderSize());
   DCHECK_EQ(GetFrameHeaderSize(), builder.length());
 
   ok = ok && builder.WriteBytes(encoding.data(), encoding.size());
@@ -2702,6 +2780,17 @@ size_t SpdyFramer::GetHeaderFrameSizeSansBlock(
   return min_size;
 }
 
+size_t SpdyFramer::GetPushPromiseFrameSizeSansBlock(
+    const SpdyPushPromiseIR& push_promise_ir) const {
+  size_t size = GetPushPromiseMinimumSize();
+
+  if (push_promise_ir.padded()) {
+    size += kPadLengthFieldSize + push_promise_ir.padding_payload_len();
+  }
+
+  return size;
+}
+
 uint8_t SpdyFramer::SerializeHeaderFrameFlags(
     const SpdyHeadersIR& header_ir) const {
   uint8_t flags = 0;
@@ -2717,6 +2806,21 @@ uint8_t SpdyFramer::SerializeHeaderFrameFlags(
   if (header_ir.has_priority()) {
     flags |= HEADERS_FLAG_PRIORITY;
   }
+  return flags;
+}
+
+uint8_t SpdyFramer::SerializePushPromiseFrameFlags(
+    const SpdyPushPromiseIR& push_promise_ir) const {
+  uint8_t flags = 0;
+
+  if (push_promise_ir.padded()) {
+    flags = flags | PUSH_PROMISE_FLAG_PADDED;
+  }
+
+  if (push_promise_ir.end_headers()) {
+    flags |= PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
+  }
+
   return flags;
 }
 

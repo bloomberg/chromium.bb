@@ -443,6 +443,8 @@ class NET_EXPORT_PRIVATE SpdyFrameWithHeaderBlockIR
   void SetHeader(SpdyStringPiece name, SpdyStringPiece value) {
     header_block_[name] = value;
   }
+  bool end_headers() const { return end_headers_; }
+  void set_end_headers(bool end_headers) { end_headers_ = end_headers; }
 
  protected:
   SpdyFrameWithHeaderBlockIR(SpdyStreamId stream_id,
@@ -450,6 +452,7 @@ class NET_EXPORT_PRIVATE SpdyFrameWithHeaderBlockIR
 
  private:
   SpdyHeaderBlock header_block_;
+  bool end_headers_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyFrameWithHeaderBlockIR);
 };
@@ -663,8 +666,6 @@ class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
     // The pad field takes one octet on the wire.
     padding_payload_len_ = padding_len - 1;
   }
-  bool end_headers() const { return end_headers_; }
-  void set_end_headers(bool end_headers) { end_headers_ = end_headers; }
 
  private:
   bool has_priority_ = false;
@@ -673,7 +674,6 @@ class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
   bool exclusive_ = false;
   bool padded_ = false;
   int padding_payload_len_ = 0;
-  bool end_headers_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyHeadersIR);
 };

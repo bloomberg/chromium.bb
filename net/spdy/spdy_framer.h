@@ -391,33 +391,89 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                 size_t header_length,
                                 SpdyHeaderBlock* block) const;
 
-  // Iteratively converts a SpdyHeadersIR (with a possibly huge SpdyHeaderBlock)
-  // into an appropriate sequence of SpdySerializedFrames.
-  class NET_EXPORT_PRIVATE SpdyHeaderFrameIterator {
+  // Iteratively converts a SpdyFrameWithHeaderBlockIR into an appropriate
+  // sequence of SpdySerializedFrames.
+  class NET_EXPORT_PRIVATE SpdyFrameIterator {
    public:
-    SpdyHeaderFrameIterator(SpdyFramer* framer,
-                            std::unique_ptr<SpdyHeadersIR> headers_ir);
-    ~SpdyHeaderFrameIterator();
+    // Creates an iterator with the provided framer.
+    // Does not take ownership of |framer|.
+    // |framer| must outlive this instance.
+    explicit SpdyFrameIterator(SpdyFramer* framer);
+    virtual ~SpdyFrameIterator();
 
-    // SpdyHeaderFrameIterator is neither copyable nor movable.
-    SpdyHeaderFrameIterator(const SpdyHeaderFrameIterator&) = delete;
-    SpdyHeaderFrameIterator& operator=(const SpdyHeaderFrameIterator&) = delete;
+    // Serializes the next frame in the sequence to |output|. Returns the number
+    // of bytes written to |output|.
+    virtual bool NextFrame(ZeroCopyOutputBuffer* output);
 
-    // Write the next frame to |output|. Return false if the write fails.
-    // |output| can't be nullptr.
-    bool NextFrame(ZeroCopyOutputBuffer* output);
-    bool HasNextFrame() const { return has_next_frame_; }
+    // Returns true iff there is at least one more frame in the sequence.
+    virtual bool HasNextFrame() const;
+
+    // SpdyFrameIterator is neither copyable nor movable.
+    SpdyFrameIterator(const SpdyFrameIterator&) = delete;
+    SpdyFrameIterator& operator=(const SpdyFrameIterator&) = delete;
+
+   protected:
+    virtual SpdyFrameWithHeaderBlockIR* GetIR() const = 0;
+    virtual size_t GetFrameSizeSansBlock() const = 0;
+    virtual bool SerializeGivenEncoding(const SpdyString& encoding,
+                                        ZeroCopyOutputBuffer* output) const = 0;
+
+    SpdyFramer* GetFramer() const { return framer_; }
+    void SetEncoder(SpdyFrameWithHeaderBlockIR* ir) {
+      encoder_ =
+          framer_->GetHpackEncoder()->EncodeHeaderSet(ir->header_block());
+    }
 
    private:
-    std::unique_ptr<SpdyHeadersIR> headers_ir_;
+    SpdyFramer* const framer_;
     std::unique_ptr<HpackEncoder::ProgressiveEncoder> encoder_;
-    SpdyFramer* framer_;
+    bool is_first_frame_;
+    bool has_next_frame_;
 
     // Field for debug reporting.
     size_t debug_total_size_;
+  };
 
-    bool is_first_frame_;
-    bool has_next_frame_;
+  // Iteratively converts a SpdyHeadersIR (with a possibly huge
+  // SpdyHeaderBlock) into an appropriate sequence of SpdySerializedFrames, and
+  // write to the output.
+  class NET_EXPORT_PRIVATE SpdyHeaderFrameIterator : public SpdyFrameIterator {
+   public:
+    // Does not take ownership of |framer|. Take ownership of |headers_ir|.
+    SpdyHeaderFrameIterator(SpdyFramer* framer,
+                            std::unique_ptr<SpdyHeadersIR> headers_ir);
+
+    ~SpdyHeaderFrameIterator() override;
+
+   private:
+    SpdyFrameWithHeaderBlockIR* GetIR() const override;
+    size_t GetFrameSizeSansBlock() const override;
+    bool SerializeGivenEncoding(const SpdyString& encoding,
+                                ZeroCopyOutputBuffer* output) const override;
+
+    const std::unique_ptr<SpdyHeadersIR> headers_ir_;
+  };
+
+  // Iteratively converts a SpdyPushPromiseIR (with a possibly huge
+  // SpdyHeaderBlock) into an appropriate sequence of SpdySerializedFrames, and
+  // write to the output.
+  class NET_EXPORT_PRIVATE SpdyPushPromiseFrameIterator
+      : public SpdyFrameIterator {
+   public:
+    // Does not take ownership of |framer|. Take ownership of |push_promise_ir|.
+    SpdyPushPromiseFrameIterator(
+        SpdyFramer* framer,
+        std::unique_ptr<SpdyPushPromiseIR> push_promise_ir);
+
+    ~SpdyPushPromiseFrameIterator() override;
+
+   private:
+    SpdyFrameWithHeaderBlockIR* GetIR() const override;
+    size_t GetFrameSizeSansBlock() const override;
+    bool SerializeGivenEncoding(const SpdyString& encoding,
+                                ZeroCopyOutputBuffer* output) const override;
+
+    const std::unique_ptr<SpdyPushPromiseIR> push_promise_ir_;
   };
 
   // Serialize a data frame.
@@ -738,12 +794,28 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                      const SpdyString& encoding,
                                      ZeroCopyOutputBuffer* output) const;
 
+  // Serializes a PUSH_PROMISE frame from the given SpdyPushPromiseIR and
+  // encoded header block. Does not need or use the SpdyHeaderBlock inside
+  // SpdyHeadersIR.
+  bool SerializePushPromiseGivenEncoding(const SpdyPushPromiseIR& push_promise,
+                                         const SpdyString& encoding,
+                                         ZeroCopyOutputBuffer* output) const;
+
   // Calculates the number of bytes required to serialize a SpdyHeadersIR, not
   // including the bytes to be used for the encoded header set.
   size_t GetHeaderFrameSizeSansBlock(const SpdyHeadersIR& header_ir) const;
 
+  // Calculates the number of bytes required to serialize a SpdyPushPromiseIR,
+  // not including the bytes to be used for the encoded header set.
+  size_t GetPushPromiseFrameSizeSansBlock(
+      const SpdyPushPromiseIR& push_promise_ir) const;
+
   // Serializes the flags octet for a given SpdyHeadersIR.
   uint8_t SerializeHeaderFrameFlags(const SpdyHeadersIR& header_ir) const;
+
+  // Serializes the flags octet for a given SpdyPushPromiseIR.
+  uint8_t SerializePushPromiseFrameFlags(
+      const SpdyPushPromiseIR& push_promise_ir) const;
 
   // Set the error code and moves the framer into the error state.
   void set_error(SpdyFramerError error);
