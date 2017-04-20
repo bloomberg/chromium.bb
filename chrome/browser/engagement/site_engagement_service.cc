@@ -132,10 +132,11 @@ double SiteEngagementService::GetScoreFromSettings(
 SiteEngagementService::SiteEngagementService(Profile* profile)
     : SiteEngagementService(profile, base::MakeUnique<base::DefaultClock>()) {
   content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
-                     content::BrowserThread::UI),
-      base::Bind(&SiteEngagementService::AfterStartupTask,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE,
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI),
+      base::BindOnce(&SiteEngagementService::AfterStartupTask,
+                     weak_factory_.GetWeakPtr()));
 
   if (!g_updated_from_variations) {
     SiteEngagementScore::UpdateFromVariations(kEngagementParams);

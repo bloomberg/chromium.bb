@@ -165,8 +165,8 @@ class ContextMenuCallCountObserver {
     ++num_times_shown_;
     auto* context_menu = content::Source<RenderViewContextMenu>(source).ptr();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&RenderViewContextMenuBase::Cancel,
-                              base::Unretained(context_menu)));
+        FROM_HERE, base::BindOnce(&RenderViewContextMenuBase::Cancel,
+                                  base::Unretained(context_menu)));
     return true;
   }
 
@@ -310,8 +310,8 @@ class LeftMouseClick {
         mouse_event_);
 
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&LeftMouseClick::SendMouseUp,
-                              base::Unretained(this)),
+        FROM_HERE,
+        base::BindOnce(&LeftMouseClick::SendMouseUp, base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(duration_ms));
   }
 
@@ -2209,8 +2209,8 @@ static bool ContextMenuNotificationCallback(
     const content::NotificationDetails& details) {
   auto* context_menu = content::Source<RenderViewContextMenu>(source).ptr();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RenderViewContextMenuBase::Cancel,
-                            base::Unretained(context_menu)));
+      FROM_HERE, base::BindOnce(&RenderViewContextMenuBase::Cancel,
+                                base::Unretained(context_menu)));
   return true;
 }
 

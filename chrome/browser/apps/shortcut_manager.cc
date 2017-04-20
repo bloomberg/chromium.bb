@@ -138,8 +138,8 @@ void AppShortcutManager::OnProfileWillBeRemoved(
     return;
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&web_app::internals::DeleteAllShortcutsForProfile,
-                 profile_path));
+      base::BindOnce(&web_app::internals::DeleteAllShortcutsForProfile,
+                     profile_path));
 }
 
 void AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded() {
@@ -151,10 +151,8 @@ void AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded() {
     return;
 
   content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&web_app::UpdateShortcutsForAllApps,
-                 profile_,
-                 base::Bind(&SetCurrentAppShortcutsVersion, prefs_)),
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&web_app::UpdateShortcutsForAllApps, profile_,
+                     base::Bind(&SetCurrentAppShortcutsVersion, prefs_)),
       base::TimeDelta::FromSeconds(kUpdateShortcutsForAllAppsDelay));
 }

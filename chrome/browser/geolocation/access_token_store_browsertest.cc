@@ -55,9 +55,8 @@ void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
 
   BrowserThread::PostTask(
       kExpectedClientThreadId, FROM_HERE,
-      base::Bind(
-          &AccessTokenStore::LoadAccessTokens,
-          token_store_,
+      base::BindOnce(
+          &AccessTokenStore::LoadAccessTokens, token_store_,
           base::Bind(
               &GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded,
               base::Unretained(this))));

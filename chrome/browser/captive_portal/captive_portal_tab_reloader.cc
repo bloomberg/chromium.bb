@@ -103,8 +103,8 @@ void CaptivePortalTabReloader::OnLoadCommitted(int net_error) {
   // issues.
   if (state_ == STATE_NEEDS_RELOAD) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&CaptivePortalTabReloader::ReloadTabIfNeeded,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&CaptivePortalTabReloader::ReloadTabIfNeeded,
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 

@@ -104,9 +104,9 @@ void FakeGCMProfileService::CustomFakeGCMDriver::RegisterImpl(
   ++registration_count_;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&CustomFakeGCMDriver::DoRegister, weak_factory_.GetWeakPtr(),
-                 app_id, sender_ids, registration_id));
+      FROM_HERE, base::BindOnce(&CustomFakeGCMDriver::DoRegister,
+                                weak_factory_.GetWeakPtr(), app_id, sender_ids,
+                                registration_id));
 }
 
 void FakeGCMProfileService::CustomFakeGCMDriver::DoRegister(
@@ -131,8 +131,8 @@ void FakeGCMProfileService::CustomFakeGCMDriver::UnregisterImpl(
     service_->unregister_responses_.pop_front();
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CustomFakeGCMDriver::UnregisterFinished,
-                            weak_factory_.GetWeakPtr(), app_id, result));
+      FROM_HERE, base::BindOnce(&CustomFakeGCMDriver::UnregisterFinished,
+                                weak_factory_.GetWeakPtr(), app_id, result));
 }
 
 void FakeGCMProfileService::CustomFakeGCMDriver::UnregisterWithSenderIdImpl(
@@ -150,8 +150,8 @@ void FakeGCMProfileService::CustomFakeGCMDriver::SendImpl(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&CustomFakeGCMDriver::DoSend, weak_factory_.GetWeakPtr(),
-                 app_id, receiver_id, message));
+      base::BindOnce(&CustomFakeGCMDriver::DoSend, weak_factory_.GetWeakPtr(),
+                     app_id, receiver_id, message));
 }
 
 void FakeGCMProfileService::CustomFakeGCMDriver::DoSend(

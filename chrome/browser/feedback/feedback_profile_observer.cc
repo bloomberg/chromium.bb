@@ -51,9 +51,9 @@ void FeedbackProfileObserver::Observe(
 void FeedbackProfileObserver::QueueSingleReport(
     feedback::FeedbackUploader* uploader,
     const std::string& data) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(&FeedbackUploader::QueueReport,
-                                               uploader->AsWeakPtr(), data));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&FeedbackUploader::QueueReport,
+                                         uploader->AsWeakPtr(), data));
 }
 
 void FeedbackProfileObserver::QueueUnsentReports(
@@ -61,9 +61,10 @@ void FeedbackProfileObserver::QueueUnsentReports(
   feedback::FeedbackUploader* uploader =
       feedback::FeedbackUploaderFactory::GetForBrowserContext(context);
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
-      base::Bind(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
+      base::BindOnce(
           &FeedbackReport::LoadReportsAndQueue,
           uploader->GetFeedbackReportsPath(),
           base::Bind(&FeedbackProfileObserver::QueueSingleReport, uploader)));

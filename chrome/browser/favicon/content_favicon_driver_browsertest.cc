@@ -147,8 +147,8 @@ class PendingTaskWaiter : public content::NotificationObserver,
       // immediately after OnFaviconUpdated() is called. Post a task to check if
       // we can stop waiting.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&PendingTaskWaiter::EndLoopIfCanStopWaiting,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&PendingTaskWaiter::EndLoopIfCanStopWaiting,
+                                    weak_factory_.GetWeakPtr()));
     }
   }
 

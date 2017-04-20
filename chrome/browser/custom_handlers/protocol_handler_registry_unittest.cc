@@ -54,11 +54,9 @@ void AssertIntercepted(
     const GURL& url,
     net::URLRequestJobFactory* interceptor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(AssertInterceptedIO,
-                                     url,
-                                     base::Unretained(interceptor)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(AssertInterceptedIO, url, base::Unretained(interceptor)));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -113,12 +111,9 @@ void AssertWillHandle(
     bool expected,
     ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(AssertWillHandleIO,
-                                     scheme,
-                                     expected,
-                                     base::Unretained(interceptor)));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(AssertWillHandleIO, scheme, expected,
+                                         base::Unretained(interceptor)));
   base::RunLoop().RunUntilIdle();
 }
 

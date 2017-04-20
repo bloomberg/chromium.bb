@@ -90,8 +90,9 @@ void ScheduleCloseBalloon(const std::string& extension_id, Profile* profile) {
   if (g_disable_close_balloon_for_testing)
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CloseBalloon, kNotificationPrefix + extension_id,
-                            NotificationUIManager::GetProfileID(profile)));
+      FROM_HERE,
+      base::BindOnce(&CloseBalloon, kNotificationPrefix + extension_id,
+                     NotificationUIManager::GetProfileID(profile)));
 }
 
 // Delegate for the app/extension crash notification balloon. Restarts the
@@ -480,10 +481,11 @@ void BackgroundContentsService::OnExtensionLoaded(
         component_backoff_map_.find(extension->id());
     if (it != component_backoff_map_.end()) {
       net::BackoffEntry* entry = component_backoff_map_[extension->id()].get();
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE,
-          base::Bind(&BackgroundContentsService::MaybeClearBackoffEntry,
-              weak_ptr_factory_.GetWeakPtr(), extension->id(),
-              entry->failure_count()),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&BackgroundContentsService::MaybeClearBackoffEntry,
+                         weak_ptr_factory_.GetWeakPtr(), extension->id(),
+                         entry->failure_count()),
           base::TimeDelta::FromSeconds(60));
     }
   }
@@ -570,7 +572,7 @@ void BackgroundContentsService::RestartForceInstalledExtensionOnCrash(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ReloadExtension, extension->id(), profile),
+      FROM_HERE, base::BindOnce(&ReloadExtension, extension->id(), profile),
       base::TimeDelta::FromMilliseconds(restart_delay));
 }
 

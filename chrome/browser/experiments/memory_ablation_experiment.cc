@@ -58,8 +58,8 @@ void MemoryAblationExperiment::Start(
     size_t memory_size) {
   task_runner->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&MemoryAblationExperiment::AllocateMemory,
-                 base::Unretained(this), memory_size),
+      base::BindOnce(&MemoryAblationExperiment::AllocateMemory,
+                     base::Unretained(this), memory_size),
       base::TimeDelta::FromSeconds(kMemoryAblationDelaySeconds));
 }
 

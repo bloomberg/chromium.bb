@@ -335,7 +335,7 @@ void ReadLastShutdownInfo() {
   // Read and delete the file on the file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ReadLastShutdownFile, type, num_procs, num_procs_slow));
+      base::BindOnce(&ReadLastShutdownFile, type, num_procs, num_procs_slow));
 }
 
 void SetTryingToQuit(bool quitting) {

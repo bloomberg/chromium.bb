@@ -80,7 +80,7 @@ void ExpectDataUseAndQuit(base::RunLoop* ui_run_loop,
   // aren't thread safe.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&base::RunLoop::Quit, base::Unretained(ui_run_loop)));
+      base::BindOnce(&base::RunLoop::Quit, base::Unretained(ui_run_loop)));
 }
 
 // Tests that for a sample URLRequest, associated with the given
@@ -137,9 +137,9 @@ TEST_F(TabIdAnnotatorTest, AnnotateWithNoRenderFrame) {
   base::RunLoop ui_run_loop;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&TestAnnotateOnIOThread, &ui_run_loop,
-                 -1 /* render_process_id */, -1 /* render_frame_id */,
-                 -1 /* expected_tab_id */));
+      base::BindOnce(&TestAnnotateOnIOThread, &ui_run_loop,
+                     -1 /* render_process_id */, -1 /* render_frame_id */,
+                     -1 /* expected_tab_id */));
   ui_run_loop.Run();
 }
 
@@ -150,10 +150,10 @@ TEST_F(TabIdAnnotatorTest, AnnotateWithRenderFrameAndNoTab) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&TestAnnotateOnIOThread, &ui_run_loop,
-                 web_contents()->GetMainFrame()->GetProcess()->GetID(),
-                 web_contents()->GetMainFrame()->GetRoutingID(),
-                 -1 /* expected_tab_id */));
+      base::BindOnce(&TestAnnotateOnIOThread, &ui_run_loop,
+                     web_contents()->GetMainFrame()->GetProcess()->GetID(),
+                     web_contents()->GetMainFrame()->GetRoutingID(),
+                     -1 /* expected_tab_id */));
   ui_run_loop.Run();
 }
 
@@ -167,10 +167,10 @@ TEST_F(TabIdAnnotatorTest, AnnotateWithRenderFrameAndTab) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&TestAnnotateOnIOThread, &ui_run_loop,
-                 web_contents()->GetMainFrame()->GetProcess()->GetID(),
-                 web_contents()->GetMainFrame()->GetRoutingID(),
-                 expected_tab_id));
+      base::BindOnce(&TestAnnotateOnIOThread, &ui_run_loop,
+                     web_contents()->GetMainFrame()->GetProcess()->GetID(),
+                     web_contents()->GetMainFrame()->GetRoutingID(),
+                     expected_tab_id));
   ui_run_loop.Run();
 }
 

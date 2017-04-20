@@ -238,8 +238,8 @@ void URLRequestTimeoutOnDemandJob::Start() {
 void URLRequestTimeoutOnDemandJob::WaitForJobs(int num_jobs) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLRequestTimeoutOnDemandJob::WaitForJobsOnIOThread,
-                 num_jobs));
+      base::BindOnce(&URLRequestTimeoutOnDemandJob::WaitForJobsOnIOThread,
+                     num_jobs));
   content::RunMessageLoop();
 }
 
@@ -247,8 +247,8 @@ void URLRequestTimeoutOnDemandJob::WaitForJobs(int num_jobs) {
 void URLRequestTimeoutOnDemandJob::FailJobs(int expected_num_jobs) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
-                 expected_num_jobs, FAIL_JOBS, net::SSLInfo()));
+      base::BindOnce(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
+                     expected_num_jobs, FAIL_JOBS, net::SSLInfo()));
 }
 
 // static
@@ -257,16 +257,16 @@ void URLRequestTimeoutOnDemandJob::FailJobsWithCertError(
     const net::SSLInfo& ssl_info) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
-                 expected_num_jobs, FAIL_JOBS_WITH_CERT_ERROR, ssl_info));
+      base::BindOnce(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
+                     expected_num_jobs, FAIL_JOBS_WITH_CERT_ERROR, ssl_info));
 }
 
 // static
 void URLRequestTimeoutOnDemandJob::AbandonJobs(int expected_num_jobs) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
-                 expected_num_jobs, ABANDON_JOBS, net::SSLInfo()));
+      base::BindOnce(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
+                     expected_num_jobs, ABANDON_JOBS, net::SSLInfo()));
 }
 
 URLRequestTimeoutOnDemandJob::URLRequestTimeoutOnDemandJob(
@@ -429,7 +429,7 @@ class URLRequestMockCaptivePortalJobFactory {
 void URLRequestMockCaptivePortalJobFactory::AddUrlHandlers() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &URLRequestMockCaptivePortalJobFactory::AddUrlHandlersOnIOThread,
           base::Unretained(this)));
 }
@@ -438,9 +438,9 @@ void URLRequestMockCaptivePortalJobFactory::SetBehindCaptivePortal(
     bool behind_captive_portal) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLRequestMockCaptivePortalJobFactory::
-                     SetBehindCaptivePortalOnIOThread,
-                 base::Unretained(this), behind_captive_portal));
+      base::BindOnce(&URLRequestMockCaptivePortalJobFactory::
+                         SetBehindCaptivePortalOnIOThread,
+                     base::Unretained(this), behind_captive_portal));
 }
 
 std::unique_ptr<net::URLRequestInterceptor>
@@ -1106,7 +1106,7 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
   // Enable mock requests.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+      base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   factory_.AddUrlHandlers();
 
   // Double-check that the captive portal service isn't enabled by default for
@@ -2801,9 +2801,10 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HstsLogin) {
   URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_TIMED_OUT);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&AddHstsHost,
-                 base::RetainedRef(browser()->profile()->GetRequestContext()),
-                 http_timeout_url.host()));
+      base::BindOnce(
+          &AddHstsHost,
+          base::RetainedRef(browser()->profile()->GetRequestContext()),
+          http_timeout_url.host()));
 
   SlowLoadBehindCaptivePortal(browser(), true, http_timeout_url, 1, 1);
   Login(browser(), 1, 0);

@@ -355,10 +355,9 @@ void ProtocolHandlerRegistry::ClearDefault(const std::string& scheme) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   default_handlers_.erase(scheme);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&IOThreadDelegate::ClearDefault, io_thread_delegate_, scheme));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&IOThreadDelegate::ClearDefault,
+                                         io_thread_delegate_, scheme));
   Save();
   NotifyChanged();
 }
@@ -588,8 +587,8 @@ void ProtocolHandlerRegistry::RemoveHandler(
     } else {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&IOThreadDelegate::ClearDefault, io_thread_delegate_,
-                     q->second.protocol()));
+          base::BindOnce(&IOThreadDelegate::ClearDefault, io_thread_delegate_,
+                         q->second.protocol()));
 
       default_handlers_.erase(q);
     }
@@ -623,9 +622,8 @@ void ProtocolHandlerRegistry::Enable() {
   }
   enabled_ = true;
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&IOThreadDelegate::Enable, io_thread_delegate_));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&IOThreadDelegate::Enable, io_thread_delegate_));
 
   ProtocolHandlerMap::const_iterator p;
   for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
@@ -642,9 +640,8 @@ void ProtocolHandlerRegistry::Disable() {
   }
   enabled_ = false;
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&IOThreadDelegate::Disable, io_thread_delegate_));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&IOThreadDelegate::Disable, io_thread_delegate_));
 
   ProtocolHandlerMap::const_iterator p;
   for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
@@ -725,10 +722,9 @@ void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
   default_handlers_.erase(handler.protocol());
   default_handlers_.insert(std::make_pair(handler.protocol(), handler));
   PromoteHandler(handler);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&IOThreadDelegate::SetDefault, io_thread_delegate_, handler));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&IOThreadDelegate::SetDefault,
+                                         io_thread_delegate_, handler));
 }
 
 void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {

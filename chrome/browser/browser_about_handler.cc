@@ -147,11 +147,11 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
     // Call AttemptRestart after chrome::Navigate() completes to avoid access of
     // gtk objects after they are destroyed by BrowserWindowGtk::Close().
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&chrome::AttemptRestart));
+        FROM_HERE, base::BindOnce(&chrome::AttemptRestart));
     return true;
   } else if (base::LowerCaseEqualsASCII(spec, chrome::kChromeUIQuitURL)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&chrome::AttemptExit));
+        FROM_HERE, base::BindOnce(&chrome::AttemptExit));
     return true;
   }
 

@@ -50,9 +50,10 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   // g_browser_process.  This happens in PreCreateThreads.
   // base::GetLinuxDistro() will initialize its value if needed.
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
-      base::Bind(base::IgnoreResult(&base::GetLinuxDistro)));
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
+      base::BindOnce(base::IgnoreResult(&base::GetLinuxDistro)));
 #endif
 
   media::AudioManager::SetGlobalAppName(

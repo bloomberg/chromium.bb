@@ -705,8 +705,8 @@ void BackgroundModeManager::ReleaseStartupKeepAlive() {
     // alive by the browser process until after the callback is called.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BackgroundModeManager::ReleaseStartupKeepAliveCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&BackgroundModeManager::ReleaseStartupKeepAliveCallback,
+                       base::Unretained(this)));
   }
 }
 

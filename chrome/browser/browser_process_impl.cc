@@ -447,8 +447,8 @@ void RundownTaskCounter::Post(base::SequencedTaskRunner* task_runner) {
 
   // The task must be non-nestable to guarantee that it runs after all tasks
   // currently scheduled on |task_runner| have completed.
-  task_runner->PostNonNestableTask(FROM_HERE,
-      base::Bind(&RundownTaskCounter::Decrement, this));
+  task_runner->PostNonNestableTask(
+      FROM_HERE, base::BindOnce(&RundownTaskCounter::Decrement, this));
 }
 
 void RundownTaskCounter::Decrement() {
@@ -1319,7 +1319,7 @@ void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
 #if !defined(OS_ANDROID)
   CHECK(BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           base::IgnoreResult(&GoogleUpdateSettings::SetCollectStatsConsent),
           ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())));
 #endif

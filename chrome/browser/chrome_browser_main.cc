@@ -1397,9 +1397,8 @@ void ChromeBrowserMainParts::PostBrowserStart() {
   // Set up a task to delete old WebRTC log files for all profiles. Use a delay
   // to reduce the impact on startup time.
   BrowserThread::PostDelayedTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles),
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles),
       base::TimeDelta::FromMinutes(1));
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
@@ -1408,8 +1407,8 @@ void ChromeBrowserMainParts::PostBrowserStart() {
     web_usb_detector_.reset(new WebUsbDetector());
     BrowserThread::PostAfterStartupTask(
         FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-        base::Bind(&WebUsbDetector::Initialize,
-                   base::Unretained(web_usb_detector_.get())));
+        base::BindOnce(&WebUsbDetector::Initialize,
+                       base::Unretained(web_usb_detector_.get())));
   }
 #endif
 
@@ -1446,11 +1445,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       "LightSpeed", "EarlyInitStartup").empty()) {
     // Try to compute this early on another thread so that we don't spend time
     // during profile load initializing the extensions APIs.
-    BrowserThread::PostTask(
-        BrowserThread::FILE_USER_BLOCKING,
-        FROM_HERE,
-        base::Bind(
-            base::IgnoreResult(&extensions::FeatureProvider::GetAPIFeatures)));
+    BrowserThread::PostTask(BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
+                            base::BindOnce(base::IgnoreResult(
+                                &extensions::FeatureProvider::GetAPIFeatures)));
   }
 #endif
 
@@ -1812,10 +1809,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // defined(OS_ANDROID)
 
 #if !defined(DISABLE_NACL)
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(nacl::NaClProcessHost::EarlyStartup));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(nacl::NaClProcessHost::EarlyStartup));
 #endif  // !defined(DISABLE_NACL)
 
   // Make sure initial prefs are recorded

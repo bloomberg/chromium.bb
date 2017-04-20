@@ -70,7 +70,7 @@ void ScheduleTask(std::unique_ptr<AfterStartupTask> queued_task) {
   scoped_refptr<base::TaskRunner> target_runner = queued_task->task_runner;
   tracked_objects::Location from_here = queued_task->from_here;
   target_runner->PostDelayedTask(
-      from_here, base::Bind(&RunTask, base::Passed(std::move(queued_task))),
+      from_here, base::BindOnce(&RunTask, base::Passed(std::move(queued_task))),
       base::TimeDelta::FromSeconds(base::RandInt(kMinDelaySec, kMaxDelaySec)));
 }
 
@@ -84,7 +84,7 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(QueueTask, base::Passed(std::move(queued_task))));
+        base::BindOnce(QueueTask, base::Passed(std::move(queued_task))));
     return;
   }
 
@@ -190,10 +190,11 @@ void StartupObserver::Start() {
   delay = base::TimeDelta::FromMinutes(kLongerDelayMins);
 #endif  // !defined(OS_ANDROID)
 
-  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-                                 base::Bind(&StartupObserver::OnFailsafeTimeout,
-                                            weak_factory_.GetWeakPtr()),
-                                 delay);
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&StartupObserver::OnFailsafeTimeout,
+                     weak_factory_.GetWeakPtr()),
+      delay);
 }
 
 }  // namespace

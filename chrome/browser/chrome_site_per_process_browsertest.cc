@@ -553,8 +553,8 @@ class TestSpellCheckMessageFilter : public content::BrowserMessageFilter {
   void HandleMessage(int, int, const base::string16& text) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&TestSpellCheckMessageFilter::HandleMessageOnUI, this,
-                   text));
+        base::BindOnce(&TestSpellCheckMessageFilter::HandleMessageOnUI, this,
+                       text));
   }
 
   void HandleMessageOnUI(const base::string16& text) {

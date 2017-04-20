@@ -87,7 +87,7 @@ void ExitHandler::OnSessionRestoreDone(int /* num_tabs */) {
     // gotten through browser startup, but are close). Post the task to at which
     // point the message loop is running.
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&ExitHandler::Exit));
+                            base::BindOnce(&ExitHandler::Exit));
     delete this;
   }
 }

@@ -249,8 +249,8 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&ChromeQuotaPermissionContext::RequestQuotaPermission, this,
-                   params, render_process_id, callback));
+        base::BindOnce(&ChromeQuotaPermissionContext::RequestQuotaPermission,
+                       this, params, render_process_id, callback));
     return;
   }
 
@@ -299,8 +299,9 @@ void ChromeQuotaPermissionContext::DispatchCallbackOnIOThread(
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromeQuotaPermissionContext::DispatchCallbackOnIOThread,
-                   this, callback, response));
+        base::BindOnce(
+            &ChromeQuotaPermissionContext::DispatchCallbackOnIOThread, this,
+            callback, response));
     return;
   }
 

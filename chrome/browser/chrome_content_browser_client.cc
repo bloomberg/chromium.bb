@@ -1055,8 +1055,9 @@ void ChromeContentBrowserClient::SetApplicationLocale(
   // changes the pref). In this case, there will be no threads created and
   // posting will fail. When there are no threads, we can just set the string
   // without worrying about threadsafety.
-  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-          base::Bind(&SetApplicationLocaleOnIOThread, locale))) {
+  if (!BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&SetApplicationLocaleOnIOThread, locale))) {
     g_io_thread_application_locale.Get() = locale;
   }
 }
@@ -2089,8 +2090,9 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
   if (!wc_getter.is_null()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&TabSpecificContentSettings::ServiceWorkerAccessed,
-                   wc_getter, scope, !allow_javascript, !allow_serviceworker));
+        base::BindOnce(&TabSpecificContentSettings::ServiceWorkerAccessed,
+                       wc_getter, scope, !allow_javascript,
+                       !allow_serviceworker));
   }
   return allow_javascript && allow_serviceworker;
 }
@@ -2111,8 +2113,8 @@ bool ChromeContentBrowserClient::AllowGetCookie(
       base::Bind(&GetWebContents, render_process_id, render_frame_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
-                 first_party, cookie_list, !allow));
+      base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
+                     first_party, cookie_list, !allow));
   return allow;
 }
 
@@ -2134,8 +2136,8 @@ bool ChromeContentBrowserClient::AllowSetCookie(
       base::Bind(&GetWebContents, render_process_id, render_frame_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&TabSpecificContentSettings::CookieChanged, wc_getter, url,
-                 first_party, cookie_line, options, !allow));
+      base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter, url,
+                     first_party, cookie_line, options, !allow));
   return allow;
 }
 
@@ -2198,19 +2200,13 @@ void ChromeContentBrowserClient::GuestPermissionRequestHelper(
   DCHECK_EQ(1U, process_map.size());
   it = process_map.begin();
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ChromeContentBrowserClient::
-                  RequestFileSystemPermissionOnUIThread,
-                  it->first,
-                  it->second,
-                  url,
-                  allow,
-                  base::Bind(&ChromeContentBrowserClient::FileSystemAccessed,
-                            weak_factory_.GetWeakPtr(),
-                            url,
-                            render_frames,
-                            callback)));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread,
+          it->first, it->second, url, allow,
+          base::Bind(&ChromeContentBrowserClient::FileSystemAccessed,
+                     weak_factory_.GetWeakPtr(), url, render_frames,
+                     callback)));
 }
 
 void ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread(
@@ -2238,10 +2234,9 @@ void ChromeContentBrowserClient::FileSystemAccessed(
   std::vector<std::pair<int, int> >::const_iterator i;
   for (i = render_frames.begin(); i != render_frames.end(); ++i) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
-                   i->first, i->second, url, !allow));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&TabSpecificContentSettings::FileSystemAccessed,
+                       i->first, i->second, url, !allow));
   }
   callback.Run(allow);
 }
@@ -2262,8 +2257,8 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
   for (i = render_frames.begin(); i != render_frames.end(); ++i) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&TabSpecificContentSettings::IndexedDBAccessed,
-                   i->first, i->second, url, name, !allow));
+        base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed, i->first,
+                       i->second, url, name, !allow));
   }
 
   return allow;
@@ -2544,9 +2539,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
           user_gesture)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&HandleFlashDownloadActionOnUIThread,
-                   opener_render_process_id, opener_render_frame_id,
-                   opener_top_level_frame_url));
+        base::BindOnce(&HandleFlashDownloadActionOnUIThread,
+                       opener_render_process_id, opener_render_frame_id,
+                       opener_top_level_frame_url));
     return false;
   }
 #endif
@@ -2563,10 +2558,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                                             CONTENT_SETTINGS_TYPE_POPUPS,
                                             std::string()) !=
         CONTENT_SETTING_ALLOW) {
-      BrowserThread::PostTask(BrowserThread::UI,
-                              FROM_HERE,
-                              base::Bind(&HandleBlockedPopupOnUIThread,
-                                         blocked_params));
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&HandleBlockedPopupOnUIThread, blocked_params));
       return false;
     }
   }

@@ -111,9 +111,8 @@ class ChromePluginTest : public InProcessBrowserTest {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&CrashFlashInternal, runner->QuitClosure()));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&CrashFlashInternal, runner->QuitClosure()));
     runner->Run();
   }
 
@@ -142,9 +141,8 @@ class ChromePluginTest : public InProcessBrowserTest {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&CountPluginProcesses, &actual, runner->QuitClosure()));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&CountPluginProcesses, &actual, runner->QuitClosure()));
     runner->Run();
     ASSERT_EQ(expected, actual);
   }

@@ -83,13 +83,10 @@ void CertificateManagerModel::Create(
 #endif
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&CertificateManagerModel::GetCertDBOnIOThread,
-                 browser_context->GetResourceContext(),
-                 observer,
-                 base::Passed(&extension_certificate_provider),
-                 callback));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&CertificateManagerModel::GetCertDBOnIOThread,
+                     browser_context->GetResourceContext(), observer,
+                     base::Passed(&extension_certificate_provider), callback));
 }
 
 CertificateManagerModel::CertificateManagerModel(
@@ -300,15 +297,10 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
   is_tpm_available = crypto::IsTPMTokenEnabledForNSS();
 #endif
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&CertificateManagerModel::DidGetCertDBOnUIThread,
-                 cert_db,
-                 is_user_db_available,
-                 is_tpm_available,
-                 observer,
-                 base::Passed(&extension_certificate_provider),
-                 callback));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&CertificateManagerModel::DidGetCertDBOnUIThread, cert_db,
+                     is_user_db_available, is_tpm_available, observer,
+                     base::Passed(&extension_certificate_provider), callback));
 }
 
 // static
