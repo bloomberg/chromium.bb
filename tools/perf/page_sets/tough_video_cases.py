@@ -12,7 +12,6 @@ _PAGE_TAGS_LIST = [
     'vorbis',
     'opus',
     # Video codecs:
-    'theora',
     'h264',
     'vp8',
     'vp9',
@@ -56,20 +55,6 @@ class ToughVideoCasesPage(page_module.Page):
                             label='seek_cold')
 
 
-class Page1(ToughVideoCasesPage):
-
-  def __init__(self, page_set):
-    super(Page1, self).__init__(
-      url='file://tough_video_cases/video.html?src=crowd.wav&type=audio',
-      page_set=page_set,
-      tags=['pcm', 'audio_only'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
-
-
 class Page2(ToughVideoCasesPage):
 
   def __init__(self, page_set):
@@ -84,23 +69,6 @@ class Page2(ToughVideoCasesPage):
     self.PlayAction(action_runner)
 
 
-class Page3(ToughVideoCasesPage):
-
-  # Note that ffprobe reports about this file:
-  # "[ogg @ 0x31a3ba0] Broken file, keyframe not correctly marked."
-  # This media file should probably be removed or replaced.
-  def __init__(self, page_set):
-    super(Page3, self).__init__(
-      url='file://tough_video_cases/video.html?src=crowd1080.ogv',
-      page_set=page_set,
-      tags=['is_50fps', 'theora', 'vorbis', 'audio_video'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
-
-
 class Page4(ToughVideoCasesPage):
 
   def __init__(self, page_set):
@@ -108,34 +76,6 @@ class Page4(ToughVideoCasesPage):
       url='file://tough_video_cases/video.html?src=crowd1080.webm',
       page_set=page_set,
       tags=['is_50fps', 'vp8', 'vorbis', 'audio_video'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
-
-
-class Page5(ToughVideoCasesPage):
-
-  def __init__(self, page_set):
-    super(Page5, self).__init__(
-      url='file://tough_video_cases/video.html?src=crowd2160.ogv',
-      page_set=page_set,
-      tags=['is_4k', 'is_50fps', 'theora', 'vorbis', 'audio_video'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
-
-
-class Page6(ToughVideoCasesPage):
-
-  def __init__(self, page_set):
-    super(Page6, self).__init__(
-      url='file://tough_video_cases/video.html?src=crowd2160.webm',
-      page_set=page_set,
-      tags=['is_4k', 'is_50fps', 'vp8', 'vorbis', 'audio_video'])
 
     self.add_browser_metrics = True
 
@@ -164,34 +104,6 @@ class Page8(ToughVideoCasesPage):
       url='file://tough_video_cases/video.html?src=tulip2.wav&type=audio',
       page_set=page_set,
       tags=['pcm', 'audio_only'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
-
-
-class Page9(ToughVideoCasesPage):
-
-  def __init__(self, page_set):
-    super(Page9, self).__init__(
-      url='file://tough_video_cases/video.html?src=tulip2.ogv',
-      page_set=page_set,
-      tags=['theora', 'vorbis', 'audio_video'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
-
-
-class Page10(ToughVideoCasesPage):
-
-  def __init__(self, page_set):
-    super(Page10, self).__init__(
-      url='file://tough_video_cases/video.html?src=tulip2.webm',
-      page_set=page_set,
-      tags=['vp8', 'vorbis', 'audio_video'])
 
     self.add_browser_metrics = True
 
@@ -297,20 +209,6 @@ class Page17(ToughVideoCasesPage):
     self.PlayAction(action_runner)
 
 
-class Page18(ToughVideoCasesPage):
-
-  def __init__(self, page_set):
-    super(Page18, self).__init__(
-      url='file://tough_video_cases/video.html?src=garden2_10s.ogv',
-      page_set=page_set,
-      tags=['is_4k', 'theora', 'vorbis', 'audio_video'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
-
-
 class Page19(ToughVideoCasesPage):
 
   def __init__(self, page_set):
@@ -332,37 +230,6 @@ class Page20(ToughVideoCasesPage):
       url='file://tough_video_cases/video.html?src=tulip2.wav&type=audio',
       page_set=page_set,
       tags=['pcm', 'audio_only'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
-
-
-class Page21(ToughVideoCasesPage):
-
-  # Note that ffprobe reports about this file:
-  # "[ogg @ 0x39adba0] Broken file, keyframe not correctly marked."
-  # This media file should probably be removed or replaced.
-  def __init__(self, page_set):
-    super(Page21, self).__init__(
-      url='file://tough_video_cases/video.html?src=tulip2.ogv',
-      page_set=page_set,
-      tags=['theora', 'vorbis', 'audio_video'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
-
-
-class Page22(ToughVideoCasesPage):
-
-  def __init__(self, page_set):
-    super(Page22, self).__init__(
-      url='file://tough_video_cases/video.html?src=tulip2.webm',
-      page_set=page_set,
-      tags=['vp8', 'vorbis', 'audio_video'])
 
     self.skip_basic_metrics = True
 
@@ -419,20 +286,6 @@ class Page26(ToughVideoCasesPage):
       url='file://tough_video_cases/video.html?src=garden2_10s.mp4',
       page_set=page_set,
       tags=['is_4k', 'h264', 'aac', 'audio_video'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
-
-
-class Page27(ToughVideoCasesPage):
-
-  def __init__(self, page_set):
-    super(Page27, self).__init__(
-      url='file://tough_video_cases/video.html?src=garden2_10s.ogv',
-      page_set=page_set,
-      tags=['is_4k', 'theora', 'vorbis', 'audio_video'])
 
     self.skip_basic_metrics = True
 
@@ -574,22 +427,6 @@ class Page39(ToughVideoCasesPage):
   def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
-class Page40(ToughVideoCasesPage):
-
-  # Note that ffprobe reports about this file:
-  # "[ogg @ 0x31a3ba0] Broken file, keyframe not correctly marked."
-  # This media file should probably be removed or replaced.
-  def __init__(self, page_set):
-    super(Page40, self).__init__(
-      url='file://tough_video_cases/video.html?src=crowd1080.ogv&canvas=true',
-      page_set=page_set,
-      tags=['is_50fps', 'theora', 'vorbis', 'audio_video'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
-
 class ToughVideoCasesPageSet(story.StorySet):
   """
   Description: Video Stack Perf pages that report time_to_play and many other
@@ -603,16 +440,10 @@ class ToughVideoCasesPageSet(story.StorySet):
     # This may be a non-issue because we plan to merge these two page sets back
     # together and use tags to allow teams to filter which pages they want.
 
-    self.AddStory(Page1(self))
     self.AddStory(Page2(self))
-    self.AddStory(Page3(self))
     self.AddStory(Page4(self))
-    self.AddStory(Page5(self))
-    self.AddStory(Page6(self))
     self.AddStory(Page7(self))
     self.AddStory(Page8(self))
-    self.AddStory(Page9(self))
-    self.AddStory(Page10(self))
     self.AddStory(Page11(self))
     self.AddStory(Page12(self))
     self.AddStory(Page13(self))
@@ -620,7 +451,6 @@ class ToughVideoCasesPageSet(story.StorySet):
     self.AddStory(Page15(self))
     self.AddStory(Page16(self))
     self.AddStory(Page17(self))
-    self.AddStory(Page18(self))
     self.AddStory(Page30(self))
     self.AddStory(Page32(self))
     self.AddStory(Page34(self))
@@ -628,7 +458,6 @@ class ToughVideoCasesPageSet(story.StorySet):
     self.AddStory(Page37(self))
     self.AddStory(Page38(self))
     self.AddStory(Page39(self))
-    self.AddStory(Page40(self))
 
 
 class ToughVideoCasesExtraPageSet(story.StorySet):
@@ -641,13 +470,10 @@ class ToughVideoCasesExtraPageSet(story.StorySet):
 
     self.AddStory(Page19(self))
     self.AddStory(Page20(self))
-    self.AddStory(Page21(self))
-    self.AddStory(Page22(self))
     self.AddStory(Page23(self))
     self.AddStory(Page24(self))
     self.AddStory(Page25(self))
     self.AddStory(Page26(self))
-    self.AddStory(Page27(self))
     self.AddStory(Page31(self))
     self.AddStory(Page33(self))
     self.AddStory(Page35(self))
