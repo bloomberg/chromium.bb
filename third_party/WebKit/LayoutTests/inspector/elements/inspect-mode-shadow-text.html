@@ -19,7 +19,7 @@ function click()
 
 function test()
 {
-    InspectorTest.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
+    InspectorTest.domModel.setInspectMode(Protocol.DOM.InspectMode.SearchForNode, step2);
 
     function step2()
     {

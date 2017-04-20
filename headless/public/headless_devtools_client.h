@@ -84,6 +84,9 @@ class Domain;
 namespace profiler {
 class Domain;
 }
+namespace rendering {
+class Domain;
+}
 namespace runtime {
 class Domain;
 }
@@ -136,6 +139,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
   virtual network::Domain* GetNetwork() = 0;
   virtual page::Domain* GetPage() = 0;
   virtual profiler::Domain* GetProfiler() = 0;
+  virtual rendering::Domain* GetRendering() = 0;
   virtual runtime::Domain* GetRuntime() = 0;
   virtual security::Domain* GetSecurity() = 0;
   virtual service_worker::Domain* GetServiceWorker() = 0;
