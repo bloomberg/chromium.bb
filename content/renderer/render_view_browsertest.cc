@@ -86,7 +86,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
-#include "ui/native_theme/native_theme_features.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

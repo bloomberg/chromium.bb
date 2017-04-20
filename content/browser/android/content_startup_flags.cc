@@ -14,6 +14,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 namespace content {
 
@@ -37,6 +38,7 @@ void SetContentCommandLineFlags(bool single_process,
 
   parsed_command_line->AppendSwitch(switches::kEnablePinch);
   parsed_command_line->AppendSwitch(switches::kEnableViewport);
+  parsed_command_line->AppendSwitch(switches::kEnableOverlayScrollbar);
   parsed_command_line->AppendSwitch(switches::kValidateInputEventStream);
 
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=

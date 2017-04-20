@@ -91,7 +91,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/native_theme/native_theme_features.h"
+#include "ui/native_theme/native_theme_switches.h"
 #include "url/url_constants.h"
 
 #if defined(OS_WIN)

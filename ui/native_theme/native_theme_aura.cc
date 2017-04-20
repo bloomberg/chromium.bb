@@ -24,7 +24,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
-#include "ui/native_theme/native_theme_features.h"
+#include "ui/native_theme/native_theme_switches.h"
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
 namespace ui {

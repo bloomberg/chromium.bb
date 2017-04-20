@@ -18,7 +18,7 @@
 #include "services/device/public/cpp/device_features.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/native_theme/native_theme_features.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 using blink::WebRuntimeFeatures;
 

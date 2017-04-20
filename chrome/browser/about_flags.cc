@@ -97,7 +97,7 @@
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/keyboard/keyboard_switches.h"
-#include "ui/native_theme/native_theme_features.h"
+#include "ui/native_theme/native_theme_switches.h"
 #include "ui/views/views_switches.h"
 
 #if defined(OS_ANDROID)
@@ -1067,7 +1067,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOverlayScrollbarsDescription,
      // Uses the system preference on Mac (a different implementation).
      // On Android, this is always enabled.
-     kOsAura, FEATURE_VALUE_TYPE(features::kOverlayScrollbar)},
+     kOsAura,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOverlayScrollbar,
+                               switches::kDisableOverlayScrollbar)},
 #endif  // USE_AURA
     {   // See http://crbug.com/120416 for how to remove this flag.
      "save-page-as-mhtml", flag_descriptions::kSavePageAsMhtmlName,
