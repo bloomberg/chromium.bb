@@ -73,7 +73,7 @@ BluetoothLowEnergyConnectionFinder::~BluetoothLowEnergyConnectionFinder() {
 void BluetoothLowEnergyConnectionFinder::Find(
     const cryptauth::ConnectionFinder::ConnectionCallback&
         connection_callback) {
-  if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+  if (!device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     PA_LOG(WARNING) << "Bluetooth is unsupported on this platform. Aborting.";
     return;
   }

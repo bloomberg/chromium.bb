@@ -201,7 +201,7 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest, Find_NoBluetoothAdapter) {
   // Some platforms do not support Bluetooth. This test is only meaningful on
   // those platforms.
   adapter_ = NULL;
-  if (device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable())
+  if (device::BluetoothAdapterFactory::IsBluetoothSupported())
     return;
 
   // The StrictMock will verify that no connection is created.

@@ -42,7 +42,7 @@ void BluetoothConnection::Connect() {
     return;
   }
 
-  if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+  if (!device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     PA_LOG(WARNING)
         << "Connection failed: Bluetooth is unsupported on this platform.";
     return;

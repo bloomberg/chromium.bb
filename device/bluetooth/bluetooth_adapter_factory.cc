@@ -16,6 +16,9 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace device {
 
@@ -54,7 +57,7 @@ void RunAdapterCallbacks() {
 }  // namespace
 
 // static
-bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
+bool BluetoothAdapterFactory::IsBluetoothSupported() {
   // SetAdapterForTesting() may be used to provide a test or mock adapter
   // instance even on platforms that would otherwise not support it.
   if (default_adapter.Get())
@@ -68,27 +71,31 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
 }
 
 // static
-bool BluetoothAdapterFactory::IsLowEnergyAvailable() {
-  DCHECK(IsBluetoothAdapterAvailable());
-
+bool BluetoothAdapterFactory::IsLowEnergySupported() {
   // SetAdapterForTesting() may be used to provide a test or mock adapter
   // instance even on platforms that would otherwise not support it.
   if (default_adapter.Get())
     return true;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    defined(OS_LINUX)
+
+#if defined(OS_ANDROID) && __ANDROID_API__ >= 23
   return true;
+#elif defined(OS_WIN)
+  // Windows 8 supports Low Energy GATT operations but it does not support
+  // scanning, initiating connections and GATT Server. To keep the API
+  // consistent we consider Windows 8 as lacking Low Energy support.
+  return base::win::GetVersion() >= base::win::VERSION_WIN10;
 #elif defined(OS_MACOSX)
   return base::mac::IsAtLeastOS10_10();
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+  return true;
 #else
   return false;
-#endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN) ||
-        // defined(OS_LINUX)
+#endif
 }
 
 // static
 void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
-  DCHECK(IsBluetoothAdapterAvailable());
+  DCHECK(IsBluetoothSupported());
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (!default_adapter.Get()) {

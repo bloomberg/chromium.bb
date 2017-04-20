@@ -102,7 +102,7 @@ UnlockManagerImpl::UnlockManagerImpl(
 #endif  // defined(OS_CHROMEOS)
   SetWakingUpState(true);
 
-  if (device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+  if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&UnlockManagerImpl::OnBluetoothAdapterInitialized,
                    weak_ptr_factory_.GetWeakPtr()));

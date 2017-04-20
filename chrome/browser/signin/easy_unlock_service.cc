@@ -119,7 +119,7 @@ class EasyUnlockService::BluetoothDetector
   }
 
   void Initialize() {
-    if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable())
+    if (!device::BluetoothAdapterFactory::IsBluetoothSupported())
       return;
 
     device::BluetoothAdapterFactory::GetAdapter(

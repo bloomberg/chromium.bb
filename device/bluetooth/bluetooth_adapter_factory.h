@@ -20,13 +20,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   typedef base::Callback<void(scoped_refptr<BluetoothAdapter> adapter)>
       AdapterCallback;
 
-  // Returns true if the Bluetooth adapter is available for the current
-  // platform.
-  static bool IsBluetoothAdapterAvailable();
+  // Returns true if the platform supports Bluetooth. It does not imply that
+  // there is a Bluetooth radio. Use BluetoothAdapter::IsPresent to know
+  // if there is a Bluetooth radio present.
+  static bool IsBluetoothSupported();
 
-  // Returns true if Bluetooth Low Energy is available for the current
-  // platform.
-  static bool IsLowEnergyAvailable();
+  // Returns true if the platform supports Bluetooth Low Energy. This is
+  // independent of whether or not there is a Bluetooth radio present e.g.
+  // Windows 7 does not support BLE so IsLowEnergySupported would return
+  // false. Windows 10, on the other hand, supports BLE so this function
+  // returns true even if there is no Bluetooth radio on the system.
+  static bool IsLowEnergySupported();
 
   // Returns the shared instance of the default adapter, creating and
   // initializing it if necessary. |callback| is called with the adapter

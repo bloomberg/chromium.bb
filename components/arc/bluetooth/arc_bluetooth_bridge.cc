@@ -251,12 +251,12 @@ namespace arc {
 
 ArcBluetoothBridge::ArcBluetoothBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this), weak_factory_(this) {
-  if (BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+  if (BluetoothAdapterFactory::IsBluetoothSupported()) {
     VLOG(1) << "Registering bluetooth adapter.";
     BluetoothAdapterFactory::GetAdapter(base::Bind(
         &ArcBluetoothBridge::OnAdapterInitialized, weak_factory_.GetWeakPtr()));
   } else {
-    VLOG(1) << "No bluetooth adapter available.";
+    VLOG(1) << "Bluetooth not supported.";
   }
   arc_bridge_service()->bluetooth()->AddObserver(this);
 }

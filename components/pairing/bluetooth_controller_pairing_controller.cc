@@ -241,7 +241,7 @@ void BluetoothControllerPairingController::StartPairing() {
          current_stage_ == STAGE_DEVICE_NOT_FOUND ||
          current_stage_ == STAGE_ESTABLISHING_CONNECTION_ERROR ||
          current_stage_ == STAGE_HOST_ENROLLMENT_ERROR);
-  if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+  if (!device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     ChangeStage(STAGE_INITIALIZATION_ERROR);
     return;
   }

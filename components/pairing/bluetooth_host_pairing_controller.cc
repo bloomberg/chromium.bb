@@ -471,9 +471,9 @@ HostPairingController::Stage BluetoothHostPairingController::GetCurrentStage() {
 
 void BluetoothHostPairingController::StartPairing() {
   DCHECK_EQ(current_stage_, STAGE_NONE);
-  bool bluetooth_available =
-      device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable();
-  if (!bluetooth_available) {
+  const bool bluetooth_supported =
+      device::BluetoothAdapterFactory::IsBluetoothSupported();
+  if (!bluetooth_supported) {
     ChangeStage(STAGE_INITIALIZATION_ERROR);
     return;
   }

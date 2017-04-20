@@ -22,7 +22,7 @@ void AdapterFactory::Create(mojom::AdapterFactoryRequest request) {
 }
 
 void AdapterFactory::GetAdapter(const GetAdapterCallback& callback) {
-  if (device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+  if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&AdapterFactory::OnGetAdapter,
                    weak_ptr_factory_.GetWeakPtr(), callback));

@@ -79,8 +79,7 @@ BluetoothEventRouter::~BluetoothEventRouter() {
 }
 
 bool BluetoothEventRouter::IsBluetoothSupported() const {
-  return adapter_.get() ||
-         device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable();
+  return device::BluetoothAdapterFactory::IsBluetoothSupported();
 }
 
 void BluetoothEventRouter::GetAdapter(

@@ -278,8 +278,7 @@ BluetoothLowEnergyEventRouter::~BluetoothLowEnergyEventRouter() {
 
 bool BluetoothLowEnergyEventRouter::IsBluetoothSupported() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return adapter_.get() ||
-         BluetoothAdapterFactory::IsBluetoothAdapterAvailable();
+  return BluetoothAdapterFactory::IsBluetoothSupported();
 }
 
 bool BluetoothLowEnergyEventRouter::InitializeAdapterAndInvokeCallback(

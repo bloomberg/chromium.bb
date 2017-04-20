@@ -42,7 +42,7 @@ ProximityMonitorImpl::ProximityMonitorImpl(
       clock_(std::move(clock)),
       polling_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
-  if (device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+  if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&ProximityMonitorImpl::OnAdapterInitialized,
                    weak_ptr_factory_.GetWeakPtr()));

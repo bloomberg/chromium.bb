@@ -296,7 +296,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
 
   TimezoneSettings::GetInstance()->AddObserver(this);
 
-  if (device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+  if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&ArcSettingsServiceImpl::OnBluetoothAdapterInitialized,
                    weak_factory_.GetWeakPtr()));

@@ -31,7 +31,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactoryWrapper {
 
   // Returns true if the platform supports Bluetooth Low Energy or if
   // SetBluetoothAdapterForTesting has been called.
-  bool IsLowEnergyAvailable();
+  bool IsLowEnergySupported();
 
   // Adds |observer| to the set of adapter observers. If another observer has
   // acquired the adapter in the past it adds |observer| as an observer to that

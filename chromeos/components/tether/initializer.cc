@@ -51,8 +51,8 @@ void Initializer::Init(
     ProfileOAuth2TokenService* token_service,
     NetworkStateHandler* network_state_handler,
     NetworkConnect* network_connect) {
-  if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
-    PA_LOG(WARNING) << "Bluetooth is unavailable on this device; cannot "
+  if (!device::BluetoothAdapterFactory::IsBluetoothSupported()) {
+    PA_LOG(WARNING) << "Bluetooth is not supported on this device; cannot "
                     << "initialize tether feature.";
     return;
   }

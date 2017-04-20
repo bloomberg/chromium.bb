@@ -295,7 +295,7 @@ void WebBluetoothServiceImpl::RequestDevice(
   RecordRequestDeviceOptions(options);
 
   if (!GetAdapter()) {
-    if (BluetoothAdapterFactoryWrapper::Get().IsLowEnergyAvailable()) {
+    if (BluetoothAdapterFactoryWrapper::Get().IsLowEnergySupported()) {
       BluetoothAdapterFactoryWrapper::Get().AcquireAdapter(
           this, base::Bind(&WebBluetoothServiceImpl::RequestDeviceImpl,
                            weak_ptr_factory_.GetWeakPtr(),
