@@ -15,8 +15,6 @@
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_manager.h"
 #include "device/vr/vr_service.mojom.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_controller.h"
 
 namespace device {
 
