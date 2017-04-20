@@ -178,7 +178,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
   // The renderer should be done calculating the number of rendered pages
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
-  void VerifyPageCount(int count) {
+  void VerifyPageCount(int expected_count) {
 #if defined(OS_CHROMEOS)
     // The DidGetPrintedPagesCount message isn't sent on ChromeOS. Right now we
     // always print all pages, and there are checks to that effect built into
@@ -191,7 +191,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
     PrintHostMsg_DidGetPrintedPagesCount::Param post_page_count_param;
     PrintHostMsg_DidGetPrintedPagesCount::Read(page_cnt_msg,
                                                &post_page_count_param);
-    EXPECT_EQ(count, std::get<1>(post_page_count_param));
+    EXPECT_EQ(expected_count, std::get<1>(post_page_count_param));
 #endif  // defined(OS_CHROMEOS)
   }
 
@@ -199,7 +199,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
   // The renderer should be done calculating the number of rendered pages
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
-  void VerifyPreviewPageCount(int count) {
+  void VerifyPreviewPageCount(int expected_count) {
     const IPC::Message* page_cnt_msg =
         render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_DidGetPreviewPageCount::ID);
@@ -207,13 +207,13 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
     PrintHostMsg_DidGetPreviewPageCount::Param post_page_count_param;
     PrintHostMsg_DidGetPreviewPageCount::Read(page_cnt_msg,
                                               &post_page_count_param);
-    EXPECT_EQ(count, std::get<0>(post_page_count_param).page_count);
+    EXPECT_EQ(expected_count, std::get<0>(post_page_count_param).page_count);
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #if defined(OS_WIN)
   // Verifies that the correct page size was returned.
-  void VerifyPrintedPageSize(const gfx::Size& page_size) {
+  void VerifyPrintedPageSize(const gfx::Size& expected_page_size) {
     const IPC::Message* print_msg =
         render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_DidPrintPage::ID);
@@ -221,18 +221,18 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
     PrintHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
     gfx::Size page_size_received =
         std::get<0>(post_did_print_page_param).page_size;
-    EXPECT_EQ(page_size, page_size_received);
+    EXPECT_EQ(expected_page_size, page_size_received);
   }
 #endif
 
   // Verifies whether the pages printed or not.
-  void VerifyPagesPrinted(bool printed) {
+  void VerifyPagesPrinted(bool expect_printed) {
     const IPC::Message* print_msg =
         render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_DidPrintPage::ID);
-    bool did_print_msg = !!print_msg;
-    ASSERT_EQ(printed, did_print_msg);
-    if (printed) {
+    bool did_print = !!print_msg;
+    ASSERT_EQ(expect_printed, did_print);
+    if (did_print) {
       PrintHostMsg_DidPrintPage::Param post_did_print_page_param;
       PrintHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
       EXPECT_EQ(0, std::get<0>(post_did_print_page_param).page_number);
@@ -247,12 +247,12 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void VerifyPreviewRequest(bool requested) {
+  void VerifyPreviewRequest(bool expect_request) {
     const IPC::Message* print_msg =
         render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_SetupScriptedPrintPreview::ID);
-    bool did_print_msg = !!print_msg;
-    ASSERT_EQ(requested, did_print_msg);
+    bool got_preview_request = !!print_msg;
+    EXPECT_EQ(expect_request, got_preview_request);
   }
 
   void OnPrintPreview(const base::DictionaryValue& dict) {
@@ -550,27 +550,27 @@ class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   ~MAYBE_PrintWebViewHelperPreviewTest() override {}
 
  protected:
-  void VerifyPrintPreviewCancelled(bool did_cancel) {
+  void VerifyPrintPreviewCancelled(bool expect_cancel) {
     bool print_preview_cancelled =
         !!render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_PrintPreviewCancelled::ID);
-    EXPECT_EQ(did_cancel, print_preview_cancelled);
+    EXPECT_EQ(expect_cancel, print_preview_cancelled);
   }
 
-  void VerifyPrintPreviewFailed(bool did_fail) {
+  void VerifyPrintPreviewFailed(bool expect_fail) {
     bool print_preview_failed =
         !!render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_PrintPreviewFailed::ID);
-    EXPECT_EQ(did_fail, print_preview_failed);
+    EXPECT_EQ(expect_fail, print_preview_failed);
   }
 
-  void VerifyPrintPreviewGenerated(bool generated_preview) {
+  void VerifyPrintPreviewGenerated(bool expect_generated) {
     const IPC::Message* preview_msg =
         render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_MetafileReadyForPrinting::ID);
-    bool did_get_preview_msg = !!preview_msg;
-    ASSERT_EQ(generated_preview, did_get_preview_msg);
-    if (did_get_preview_msg) {
+    bool got_preview_msg = !!preview_msg;
+    ASSERT_EQ(expect_generated, got_preview_msg);
+    if (got_preview_msg) {
       PrintHostMsg_MetafileReadyForPrinting::Param preview_param;
       PrintHostMsg_MetafileReadyForPrinting::Read(preview_msg, &preview_param);
       EXPECT_NE(0, std::get<0>(preview_param).document_cookie);
@@ -579,22 +579,23 @@ class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
     }
   }
 
-  void VerifyPrintFailed(bool did_fail) {
+  void VerifyPrintFailed(bool expect_fail) {
     bool print_failed = !!render_thread_->sink().GetUniqueMessageMatching(
         PrintHostMsg_PrintingFailed::ID);
-    EXPECT_EQ(did_fail, print_failed);
+    EXPECT_EQ(expect_fail, print_failed);
   }
 
-  void VerifyPrintPreviewInvalidPrinterSettings(bool settings_invalid) {
+  void VerifyPrintPreviewInvalidPrinterSettings(bool expect_invalid_settings) {
     bool print_preview_invalid_printer_settings =
         !!render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_PrintPreviewInvalidPrinterSettings::ID);
-    EXPECT_EQ(settings_invalid, print_preview_invalid_printer_settings);
+    EXPECT_EQ(expect_invalid_settings, print_preview_invalid_printer_settings);
   }
 
   // |page_number| is 0-based.
-  void VerifyDidPreviewPage(bool generate_draft_pages, int page_number) {
+  void VerifyDidPreviewPage(bool expect_generated, int page_number) {
     bool msg_found = false;
+    uint32_t data_size = 0;
     size_t msg_count = render_thread_->sink().message_count();
     for (size_t i = 0; i < msg_count; ++i) {
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(i);
@@ -603,40 +604,40 @@ class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
         PrintHostMsg_DidPreviewPage::Read(msg, &page_param);
         if (std::get<0>(page_param).page_number == page_number) {
           msg_found = true;
-          if (generate_draft_pages)
-            EXPECT_NE(0U, std::get<0>(page_param).data_size);
-          else
-            EXPECT_EQ(0U, std::get<0>(page_param).data_size);
+          data_size = std::get<0>(page_param).data_size;
           break;
         }
       }
     }
-    ASSERT_EQ(generate_draft_pages, msg_found);
+    EXPECT_EQ(expect_generated, msg_found) << "For page " << page_number;
+    if (expect_generated)
+      EXPECT_NE(0U, data_size) << "For page " << page_number;
   }
 
-  void VerifyDefaultPageLayout(int content_width,
-                               int content_height,
-                               int margin_top,
-                               int margin_bottom,
-                               int margin_left,
-                               int margin_right,
-                               bool page_has_print_css) {
+  void VerifyDefaultPageLayout(int expected_content_width,
+                               int expected_content_height,
+                               int expected_margin_top,
+                               int expected_margin_bottom,
+                               int expected_margin_left,
+                               int expected_margin_right,
+                               bool expected_page_has_print_css) {
     const IPC::Message* default_page_layout_msg =
         render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_DidGetDefaultPageLayout::ID);
     bool did_get_default_page_layout_msg = !!default_page_layout_msg;
-    if (did_get_default_page_layout_msg) {
-      PrintHostMsg_DidGetDefaultPageLayout::Param param;
-      PrintHostMsg_DidGetDefaultPageLayout::Read(default_page_layout_msg,
-                                                 &param);
-      EXPECT_EQ(content_width, std::get<0>(param).content_width);
-      EXPECT_EQ(content_height, std::get<0>(param).content_height);
-      EXPECT_EQ(margin_top, std::get<0>(param).margin_top);
-      EXPECT_EQ(margin_right, std::get<0>(param).margin_right);
-      EXPECT_EQ(margin_left, std::get<0>(param).margin_left);
-      EXPECT_EQ(margin_bottom, std::get<0>(param).margin_bottom);
-      EXPECT_EQ(page_has_print_css, std::get<2>(param));
-    }
+    EXPECT_TRUE(did_get_default_page_layout_msg);
+    if (!did_get_default_page_layout_msg)
+      return;
+
+    PrintHostMsg_DidGetDefaultPageLayout::Param param;
+    PrintHostMsg_DidGetDefaultPageLayout::Read(default_page_layout_msg, &param);
+    EXPECT_EQ(expected_content_width, std::get<0>(param).content_width);
+    EXPECT_EQ(expected_content_height, std::get<0>(param).content_height);
+    EXPECT_EQ(expected_margin_top, std::get<0>(param).margin_top);
+    EXPECT_EQ(expected_margin_right, std::get<0>(param).margin_right);
+    EXPECT_EQ(expected_margin_left, std::get<0>(param).margin_left);
+    EXPECT_EQ(expected_margin_bottom, std::get<0>(param).margin_bottom);
+    EXPECT_EQ(expected_page_has_print_css, std::get<2>(param));
   }
 
  private:
@@ -687,6 +688,8 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreview) {
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
   VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -718,6 +721,8 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 
   EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(519, 432, 216, 144, 21, 72, false);
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
@@ -739,6 +744,8 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 
   EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(612, 792, 0, 0, 0, 0, true);
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
@@ -761,8 +768,12 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
   // Since PRINT_TO_PDF is selected, pdf page size is equal to print media page
   // size.
   VerifyDefaultPageLayout(252, 252, 18, 18, 18, 18, true);
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
 }
 
 // Test to verify that print preview honor print margin css when PRINT_TO_PDF
@@ -794,8 +805,12 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
   // Since PRINT_TO_PDF is selected, pdf page size is equal to print media page
   // size.
   VerifyDefaultPageLayout(915, 648, 216, 144, 21, 72, true);
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
 }
 
 // Test to verify that print preview workflow center the html page contents to
@@ -812,9 +827,12 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
 
   EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(216, 216, 288, 288, 198, 198, true);
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
 }
 
 // Test to verify that print preview workflow scale the html page contents to
@@ -842,8 +860,12 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
 
   EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(571, 652, 69, 71, 20, 21, true);
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
 }
 
 // Test to verify that print preview workflow honor the orientation settings
@@ -860,8 +882,12 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
 
   EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(792, 612, 0, 0, 0, 0, true);
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
 }
 
 // Test to verify that print preview workflow honors the orientation settings
@@ -879,35 +905,49 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 
   EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(748, 568, 21, 23, 21, 23, true);
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
 }
 
-// Test to verify that complete metafile is generated for a subset of pages
-// without creating draft pages.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewForMultiplePages) {
   LoadHTML(kMultipageHTML);
 
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
 
-  // Set a page range and update the dictionary to generate only the complete
-  // metafile with the selected pages. Page numbers used in the dictionary
-  // are 1-based.
-  std::unique_ptr<base::DictionaryValue> page_range(
-      new base::DictionaryValue());
-  page_range->SetInteger(kSettingPageRangeFrom, 2);
-  page_range->SetInteger(kSettingPageRangeTo, 3);
+  OnPrintPreview(dict);
 
-  base::ListValue* page_range_array = new base::ListValue();
-  page_range_array->Append(std::move(page_range));
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  VerifyDidPreviewPage(true, 0);
+  VerifyDidPreviewPage(true, 1);
+  VerifyDidPreviewPage(true, 2);
+  VerifyPreviewPageCount(3);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
+}
 
-  dict.Set(kSettingPageRange, page_range_array);
+// Test to verify that complete metafile is generated for a subset of pages
+// without creating draft pages.
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+       PrintPreviewForMultiplePagesWithoutDraftMode) {
+  LoadHTML(kMultipageHTML);
+
+  // Fill in some dummy values.
+  base::DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+
   dict.SetBoolean(kSettingGenerateDraftData, false);
 
   OnPrintPreview(dict);
 
+  EXPECT_EQ(3, print_render_thread_->print_preview_pages_remaining());
   VerifyDidPreviewPage(false, 0);
   VerifyDidPreviewPage(false, 1);
   VerifyDidPreviewPage(false, 2);
@@ -919,7 +959,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
 }
 
 // Test to verify that preview generated only for one page.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewForSelectedText) {
   LoadHTML(kMultipageHTML);
   GetMainFrame()->SelectRange(blink::WebRange(1, 3));
 
@@ -930,6 +970,8 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
 
   OnPrintPreview(dict);
 
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -939,7 +981,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
 
 // Tests that print preview fails and receiving error messages through
 // that channel all works.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewFail) {
   LoadHTML(kHelloWorldHTML);
 
   // An empty dictionary should fail.
@@ -954,7 +996,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
 }
 
 // Tests that cancelling print preview works.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewCancel) {
   LoadHTML(kLongPageHTML);
 
   const int kCancelPage = 3;
