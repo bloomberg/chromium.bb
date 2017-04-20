@@ -78,7 +78,6 @@ base::TimeDelta BeginFrameTracker::Interval() const {
 }
 
 void BeginFrameTracker::AsValueInto(
-    base::TimeTicks now,
     base::trace_event::TracedValue* state) const {
   state->SetDouble("updated_at_ms",
                    (current_updated_at_ - base::TimeTicks()).InMillisecondsF());
@@ -95,6 +94,7 @@ void BeginFrameTracker::AsValueInto(
   current_args_.AsValueInto(state);
   state->EndDictionary();
 
+  base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks frame_time = current_args_.frame_time;
   base::TimeTicks deadline = current_args_.deadline;
   base::TimeDelta interval = current_args_.interval;
