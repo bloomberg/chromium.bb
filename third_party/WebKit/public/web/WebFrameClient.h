@@ -542,7 +542,7 @@ class BLINK_EXPORT WebFrameClient {
   // A request is about to be sent out, and the client may modify it.  Request
   // is writable, and changes to the URL, for example, will change the request
   // made.
-  virtual void WillSendRequest(WebLocalFrame*, WebURLRequest&) {}
+  virtual void WillSendRequest(WebURLRequest&) {}
 
   // Response headers have been received.
   virtual void DidReceiveResponse(const WebURLResponse&) {}

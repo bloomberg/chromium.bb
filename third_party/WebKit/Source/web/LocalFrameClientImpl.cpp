@@ -294,7 +294,7 @@ void LocalFrameClientImpl::DispatchWillSendRequest(ResourceRequest& request) {
   // Give the WebFrameClient a crack at the request.
   if (web_frame_->Client()) {
     WrappedResourceRequest webreq(request);
-    web_frame_->Client()->WillSendRequest(web_frame_, webreq);
+    web_frame_->Client()->WillSendRequest(webreq);
   }
 }
 

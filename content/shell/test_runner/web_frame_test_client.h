@@ -86,8 +86,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void DidDetectXSS(const blink::WebURL& insecure_url,
                     bool did_block_entire_page) override;
   void DidDispatchPingLoader(const blink::WebURL& url) override;
-  void WillSendRequest(blink::WebLocalFrame* frame,
-                       blink::WebURLRequest& request) override;
+  void WillSendRequest(blink::WebURLRequest& request) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   blink::WebNavigationPolicy DecidePolicyForNavigation(
       const blink::WebFrameClient::NavigationPolicyInfo& info) override;

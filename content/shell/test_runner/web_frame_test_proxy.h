@@ -232,10 +232,9 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::DidDispatchPingLoader(url);
   }
 
-  void WillSendRequest(blink::WebLocalFrame* frame,
-                       blink::WebURLRequest& request) override {
-    Base::WillSendRequest(frame, request);
-    test_client()->WillSendRequest(frame, request);
+  void WillSendRequest(blink::WebURLRequest& request) override {
+    Base::WillSendRequest(request);
+    test_client()->WillSendRequest(request);
   }
 
   void DidReceiveResponse(const blink::WebURLResponse& response) override {

@@ -542,8 +542,7 @@ void WebFrameTestClient::DidDispatchPingLoader(const blink::WebURL& url) {
                             URLDescription(url).c_str() + "'.\n");
 }
 
-void WebFrameTestClient::WillSendRequest(blink::WebLocalFrame* frame,
-                                         blink::WebURLRequest& request) {
+void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
   // PlzNavigate
   // Navigation requests initiated by the renderer will have been logged when
   // the navigation was sent to the browser. Please see

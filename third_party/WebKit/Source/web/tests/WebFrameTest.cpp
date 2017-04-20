@@ -7333,7 +7333,7 @@ class TestCachePolicyWebFrameClient
     TestWebFrameClient::DidStopLoading();
   }
 
-  void WillSendRequest(WebLocalFrame*, WebURLRequest& request) override {
+  void WillSendRequest(WebURLRequest& request) override {
     policy_ = request.GetCachePolicy();
     will_send_request_call_count_++;
   }
@@ -7390,9 +7390,9 @@ class TestSameDocumentWebFrameClient
  public:
   TestSameDocumentWebFrameClient() : frame_load_type_reload_seen_(false) {}
 
-  virtual void WillSendRequest(WebLocalFrame* frame, WebURLRequest&) {
+  virtual void WillSendRequest(WebURLRequest&) {
     FrameLoader& frame_loader =
-        ToWebLocalFrameImpl(frame)->GetFrame()->Loader();
+        ToWebLocalFrameImpl(Frame())->GetFrame()->Loader();
     if (frame_loader.ProvisionalDocumentLoader()->LoadType() ==
         kFrameLoadTypeReload)
       frame_load_type_reload_seen_ = true;
@@ -7431,7 +7431,7 @@ class TestSameDocumentWithImageWebFrameClient
  public:
   TestSameDocumentWithImageWebFrameClient() : num_of_image_requests_(0) {}
 
-  virtual void WillSendRequest(WebLocalFrame*, WebURLRequest& request) {
+  virtual void WillSendRequest(WebURLRequest& request) {
     if (request.GetRequestContext() == WebURLRequest::kRequestContextImage) {
       num_of_image_requests_++;
       EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
@@ -10723,7 +10723,7 @@ class TestResourcePriorityWebFrameClient
 
   TestResourcePriorityWebFrameClient() {}
 
-  void WillSendRequest(WebLocalFrame*, WebURLRequest& request) override {
+  void WillSendRequest(WebURLRequest& request) override {
     ExpectedRequest* expected_request = expected_requests_.at(request.Url());
     DCHECK(expected_request);
     EXPECT_EQ(expected_request->priority, request.GetPriority());
