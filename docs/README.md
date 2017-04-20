@@ -57,6 +57,9 @@ git cl patch <CL number or URL>
     hide some of the tools used for working on Chromium behind an abstraction
     layer
 
+### Design Docs
+*   See [design/README.md](design/README.md)
+
 ### Integrated Development Environment (IDE) Set Up Guides
 *   [Android Studio](android_studio.md) - Android Studio for Android builds
 *   [Eclipse for Android](eclipse.md) - Eclipse for Android
