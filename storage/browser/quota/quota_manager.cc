@@ -847,7 +847,8 @@ void QuotaManager::GetUsageAndQuotaForWebApps(
   }
   LazyInitialize();
 
-  bool is_session_only = special_storage_policy_ &&
+  bool is_session_only = type == kStorageTypeTemporary &&
+                         special_storage_policy_ &&
                          special_storage_policy_->IsStorageSessionOnly(origin);
   UsageAndQuotaHelper* helper = new UsageAndQuotaHelper(
       this, origin, type, IsStorageUnlimited(origin, type), is_session_only,
