@@ -20,7 +20,6 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
-#include "core/css/CSSPathValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
@@ -47,11 +46,11 @@
 #include "core/css/properties/CSSPropertyFontUtils.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
 #include "core/css/properties/CSSPropertyMarginUtils.h"
+#include "core/css/properties/CSSPropertyOffsetPathUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
 #include "core/css/properties/CSSPropertyShapeUtils.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/svg/SVGPathUtilities.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -708,39 +707,6 @@ static CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
   return list;
 }
 
-static CSSValue* ConsumePath(CSSParserTokenRange& range) {
-  // FIXME: Add support for <url>, <basic-shape>, <geometry-box>.
-  if (range.Peek().FunctionId() != CSSValuePath)
-    return nullptr;
-
-  CSSParserTokenRange function_range = range;
-  CSSParserTokenRange function_args = ConsumeFunction(function_range);
-
-  if (function_args.Peek().GetType() != kStringToken)
-    return nullptr;
-  String path_string =
-      function_args.ConsumeIncludingWhitespace().Value().ToString();
-
-  std::unique_ptr<SVGPathByteStream> byte_stream = SVGPathByteStream::Create();
-  if (BuildByteStreamFromString(path_string, *byte_stream) !=
-          SVGParseStatus::kNoError ||
-      !function_args.AtEnd())
-    return nullptr;
-
-  range = function_range;
-  if (byte_stream->IsEmpty())
-    return CSSIdentifierValue::Create(CSSValueNone);
-  return CSSPathValue::Create(std::move(byte_stream));
-}
-
-static CSSValue* ConsumePathOrNone(CSSParserTokenRange& range) {
-  CSSValueID id = range.Peek().Id();
-  if (id == CSSValueNone)
-    return ConsumeIdent(range);
-
-  return ConsumePath(range);
-}
-
 static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range) {
   CSSValue* angle = ConsumeAngle(range);
   CSSValue* keyword = ConsumeIdent<CSSValueAuto, CSSValueReverse>(range);
@@ -758,25 +724,10 @@ static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range) {
   return list;
 }
 
-static CSSValue* ConsumeOffsetPath(CSSParserTokenRange& range,
-                                   const CSSParserContext* context,
-                                   bool is_motion_path) {
-  CSSValue* value = ConsumePathOrNone(range);
-
-  // Count when we receive a valid path other than 'none'.
-  if (value && !value->IsIdentifierValue()) {
-    if (is_motion_path) {
-      context->Count(UseCounter::kCSSMotionInEffect);
-    } else {
-      context->Count(UseCounter::kCSSOffsetInEffect);
-    }
-  }
-  return value;
-}
-
 // offset: <offset-path> <offset-distance> <offset-rotation>
 bool CSSPropertyParser::ConsumeOffsetShorthand(bool important) {
-  const CSSValue* offset_path = ConsumeOffsetPath(range_, context_, false);
+  const CSSValue* offset_path =
+      CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range_, context_, false);
   const CSSValue* offset_distance =
       ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
   const CSSValue* offset_rotation = ConsumeOffsetRotate(range_);
@@ -1948,9 +1899,9 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyTextDecorationLine:
       return ConsumeTextDecorationLine(range_);
     case CSSPropertyD:
-      return ConsumePathOrNone(range_);
+      return CSSPropertyOffsetPathUtils::ConsumePathOrNone(range_);
     case CSSPropertyOffsetPath:
-      return ConsumeOffsetPath(
+      return CSSPropertyOffsetPathUtils::ConsumeOffsetPath(
           range_, context_, unresolved_property == CSSPropertyAliasMotionPath);
     case CSSPropertyOffsetDistance:
       return ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);

@@ -500,6 +500,8 @@ blink_core_sources("css") {
     "properties/CSSPropertyLengthUtils.h",
     "properties/CSSPropertyMarginUtils.cpp",
     "properties/CSSPropertyMarginUtils.h",
+    "properties/CSSPropertyOffsetPathUtils.cpp",
+    "properties/CSSPropertyOffsetPathUtils.h",
     "properties/CSSPropertyPositionUtils.h",
     "properties/CSSPropertyShapeUtils.cpp",
     "properties/CSSPropertyShapeUtils.h",
