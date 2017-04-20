@@ -36,12 +36,19 @@ extern const char kChromeVersionSwitch[];
 // Indicates that crash reporting is enabled for the current user.
 extern const char kEnableCrashReportingSwitch[];
 
+// Specifies the name of experiment group in the alternate engine field trial
+// for a Software Reporter run.
+extern const char kEngineExperimentGroupSwitch[];
+
 // Indicates the execution mode for the Chrome Cleanup Tool. Possible values
 // defined in enum ExecutionMode.
 extern const char kExecutionModeSwitch[];
 
 // Indicates that the current user opted into Safe Browsing Extended Reporting.
 extern const char kExtendedSafeBrowsingEnabledSwitch[];
+
+// Specifies the suffix to the registry path where metrics data will be saved.
+extern const char kRegistrySuffixSwitch[];
 
 // Identifier used to group all reports generated during the same run of the
 // software reporter (which may include multiple invocations of the reporter

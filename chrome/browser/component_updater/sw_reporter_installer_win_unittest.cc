@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/safe_browsing/srt_fetcher_win.h"
+#include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/variations/variations_params_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,10 +33,6 @@ namespace component_updater {
 namespace {
 
 constexpr char kExperimentGroupName[] = "my_test_engine_group";
-
-constexpr char kEngineExperimentGroupSwitch[] = "engine-experiment-group";
-constexpr char kRegistrySuffixSwitch[] = "registry-suffix";
-constexpr char kSessionIdSwitch[] = "session-id";
 
 constexpr char kErrorHistogramName[] = "SoftwareReporter.ExperimentErrors";
 constexpr char kExperimentTag[] = "experiment_tag";
@@ -85,9 +82,9 @@ class SwReporterInstallerTest : public ::testing::Test {
     EXPECT_EQ(MakeTestFilePath(default_path_),
               invocation.command_line.GetProgram());
     EXPECT_EQ(1U, invocation.command_line.GetSwitches().size());
-    EXPECT_EQ(
-        40U,
-        invocation.command_line.GetSwitchValueASCII(kSessionIdSwitch).size());
+    EXPECT_EQ(40U, invocation.command_line
+                       .GetSwitchValueASCII(chrome_cleaner::kSessionIdSwitch)
+                       .size());
     EXPECT_TRUE(invocation.command_line.GetArgs().empty());
     EXPECT_TRUE(invocation.suffix.empty());
     EXPECT_EQ(SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS |
@@ -174,11 +171,12 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
     const SwReporterInvocation& invocation = launched_invocations_.front();
     EXPECT_EQ(MakeTestFilePath(default_path_),
               invocation.command_line.GetProgram());
-    EXPECT_EQ(
-        40U,
-        invocation.command_line.GetSwitchValueASCII(kSessionIdSwitch).size());
-    EXPECT_EQ(kExperimentGroupName, invocation.command_line.GetSwitchValueASCII(
-                                        kEngineExperimentGroupSwitch));
+    EXPECT_EQ(40U, invocation.command_line
+                       .GetSwitchValueASCII(chrome_cleaner::kSessionIdSwitch)
+                       .size());
+    EXPECT_EQ(kExperimentGroupName,
+              invocation.command_line.GetSwitchValueASCII(
+                  chrome_cleaner::kEngineExperimentGroupSwitch));
 
     if (expected_suffix.empty()) {
       EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
@@ -186,7 +184,7 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
     } else {
       EXPECT_EQ(3U, invocation.command_line.GetSwitches().size());
       EXPECT_EQ(expected_suffix, invocation.command_line.GetSwitchValueASCII(
-                                     kRegistrySuffixSwitch));
+                                     chrome_cleaner::kRegistrySuffixSwitch));
       EXPECT_EQ(expected_suffix, invocation.suffix);
     }
 
@@ -221,12 +219,13 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
     EXPECT_EQ(expected_engine,
               invocation.command_line.GetSwitchValueASCII("engine"));
     EXPECT_EQ(expected_suffix, invocation.command_line.GetSwitchValueASCII(
-                                   kRegistrySuffixSwitch));
-    *out_session_id =
-        invocation.command_line.GetSwitchValueASCII(kSessionIdSwitch);
+                                   chrome_cleaner::kRegistrySuffixSwitch));
+    *out_session_id = invocation.command_line.GetSwitchValueASCII(
+        chrome_cleaner::kSessionIdSwitch);
     EXPECT_EQ(40U, out_session_id->size());
-    EXPECT_EQ(kExperimentGroupName, invocation.command_line.GetSwitchValueASCII(
-                                        kEngineExperimentGroupSwitch));
+    EXPECT_EQ(kExperimentGroupName,
+              invocation.command_line.GetSwitchValueASCII(
+                  chrome_cleaner::kEngineExperimentGroupSwitch));
     ASSERT_TRUE(invocation.command_line.GetArgs().empty());
     EXPECT_EQ(expected_suffix, invocation.suffix);
     EXPECT_EQ(expected_behaviours, invocation.supported_behaviours);
@@ -336,13 +335,14 @@ TEST_F(ExperimentalSwReporterInstallerTest, SingleInvocation) {
   EXPECT_EQ(4U, invocation.command_line.GetSwitches().size());
   EXPECT_EQ("experimental",
             invocation.command_line.GetSwitchValueASCII("engine"));
-  EXPECT_EQ("TestSuffix",
-            invocation.command_line.GetSwitchValueASCII(kRegistrySuffixSwitch));
-  EXPECT_EQ(
-      40U,
-      invocation.command_line.GetSwitchValueASCII(kSessionIdSwitch).size());
-  EXPECT_EQ(kExperimentGroupName, invocation.command_line.GetSwitchValueASCII(
-                                      kEngineExperimentGroupSwitch));
+  EXPECT_EQ("TestSuffix", invocation.command_line.GetSwitchValueASCII(
+                              chrome_cleaner::kRegistrySuffixSwitch));
+  EXPECT_EQ(40U, invocation.command_line
+                     .GetSwitchValueASCII(chrome_cleaner::kSessionIdSwitch)
+                     .size());
+  EXPECT_EQ(kExperimentGroupName,
+            invocation.command_line.GetSwitchValueASCII(
+                chrome_cleaner::kEngineExperimentGroupSwitch));
   ASSERT_EQ(1U, invocation.command_line.GetArgs().size());
   EXPECT_EQ(L"random argument", invocation.command_line.GetArgs()[0]);
   EXPECT_EQ("TestSuffix", invocation.suffix);
