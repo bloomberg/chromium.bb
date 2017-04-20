@@ -54,6 +54,8 @@ class CORE_EXPORT PaintLayerPainter {
                               const GlobalPaintFlags);
 
  private:
+  friend class PaintLayerPainterTest;
+
   enum ClipState { kHasNotClipped, kHasClipped };
 
   inline bool IsFixedPositionObjectInPagedMedia();
@@ -149,17 +151,6 @@ class CORE_EXPORT PaintLayerPainter {
   bool PaintedOutputInvisible(const PaintLayerPaintingInfo&);
 
   PaintLayer& paint_layer_;
-
-  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest, DontPaintWithTinyOpacity);
-  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest,
-                           DontPaintWithTinyOpacityAndBackdropFilter);
-  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest,
-                           DoPaintWithCompositedTinyOpacity);
-  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest, DoPaintWithNonTinyOpacity);
-  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest,
-                           DoPaintWithEffectAnimationZeroOpacity);
-  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest,
-                           DoNotPaintWithTransformAnimationZeroOpacity);
 };
 
 }  // namespace blink

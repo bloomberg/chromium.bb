@@ -70,6 +70,12 @@ bool PaintLayerPainter::PaintedOutputInvisible(
   if (layout_object.HasBackdropFilter())
     return false;
 
+  // Always paint when 'will-change: opacity' is present. Reduces jank for
+  // common animation implementation approaches, for example, an element that
+  // starts with opacity zero and later begins to animate.
+  if (layout_object.StyleRef().HasWillChangeOpacityHint())
+    return false;
+
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     if (layout_object.StyleRef().Opacity())
       return false;
