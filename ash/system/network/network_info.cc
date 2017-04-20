@@ -8,7 +8,6 @@ namespace ash {
 
 NetworkInfo::NetworkInfo()
     : disable(false),
-      highlight(false),
       connected(false),
       connecting(false),
       type(Type::UNKNOWN) {}
@@ -16,7 +15,6 @@ NetworkInfo::NetworkInfo()
 NetworkInfo::NetworkInfo(const std::string& guid)
     : guid(guid),
       disable(false),
-      highlight(false),
       connected(false),
       connecting(false),
       type(Type::UNKNOWN) {}
@@ -26,9 +24,8 @@ NetworkInfo::~NetworkInfo() = default;
 bool NetworkInfo::operator==(const NetworkInfo& other) const {
   return guid == other.guid && label == other.label &&
          tooltip == other.tooltip && image.BackedBySameObjectAs(other.image) &&
-         disable == other.disable && highlight == other.highlight &&
-         connected == other.connected && connecting == other.connecting &&
-         type == other.type;
+         disable == other.disable && connected == other.connected &&
+         connecting == other.connecting && type == other.type;
 }
 
 }  // namespace ash

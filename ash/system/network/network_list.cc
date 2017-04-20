@@ -371,8 +371,6 @@ void NetworkListView::OrderNetworks() {
         return network1->connected;
       if (network1->connecting != network2->connecting)
         return network1->connecting;
-      if (network1->highlight != network2->highlight)
-        return network1->highlight;
       return network1->guid.compare(network2->guid) < 0;
     }
 
@@ -419,7 +417,6 @@ void NetworkListView::UpdateNetworkIcons() {
         prohibited_by_policy;
     info->connected = network->IsConnectedState();
     info->connecting = network->IsConnectingState();
-    info->highlight = info->connected || info->connecting;
     if (network->Matches(NetworkTypePattern::WiFi()))
       info->type = NetworkInfo::Type::WIFI;
     else if (network->Matches(NetworkTypePattern::Cellular()))
