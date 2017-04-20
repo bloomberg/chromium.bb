@@ -32,7 +32,8 @@ POLICY_EXPORT extern const char kPRegFileHeader[8];
 
 // Reads the PReg file at |file_path| and writes the registry data to |dict|.
 // |root| specifies the registry subtree the caller is interested in, everything
-// else gets ignored.
+// else gets ignored. It may be empty if all keys should be returned, but it
+// must NOT end with a backslash.
 POLICY_EXPORT bool ReadFile(const base::FilePath& file_path,
                             const base::string16& root,
                             RegistryDict* dict,

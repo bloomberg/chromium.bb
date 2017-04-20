@@ -178,6 +178,21 @@ bool DecodePRegValue(uint32_t type,
   return false;
 }
 
+// Returns true if the registry key |key_name| belongs to the sub-tree specified
+// by the key |root|.
+bool KeyRootEquals(const base::string16& key_name, const base::string16& root) {
+  if (root.empty())
+    return true;
+
+  if (!base::StartsWith(key_name, root, base::CompareCase::INSENSITIVE_ASCII))
+    return false;
+
+  // Handle the case where |root| == "ABC" and |key_name| == "ABCDE\FG". This
+  // should not be interpreted as a match.
+  return key_name.length() == root.length() ||
+         key_name.at(root.length()) == kRegistryPathSeparator[0];
+}
+
 // Adds |value| and |data| to |dict| or an appropriate sub-dictionary indicated
 // by |key_name|. Creates sub-dictionaries if necessary. Also handles special
 // action triggers, see |kActionTrigger*|, that can, for instance, remove an
@@ -284,6 +299,7 @@ POLICY_EXPORT bool ReadDataInternal(const uint8_t* data,
                                     PolicyLoadStatus* status,
                                     const std::string& debug_name) {
   DCHECK(status);
+  DCHECK(root.empty() || root.back() != kRegistryPathSeparator[0]);
 
   // Check data size.
   if (data_size > kMaxPRegFileSize) {
@@ -355,7 +371,7 @@ POLICY_EXPORT bool ReadDataInternal(const uint8_t* data,
       break;
 
     // Process the record if it is within the |root| subtree.
-    if (base::StartsWith(key_name, root, base::CompareCase::INSENSITIVE_ASCII))
+    if (KeyRootEquals(key_name, root))
       HandleRecord(key_name.substr(root.size()), value, type, data, dict);
   }
 
