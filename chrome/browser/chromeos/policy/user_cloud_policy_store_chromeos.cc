@@ -153,7 +153,7 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
 
   // Create and configure a validator.
   std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED);
+      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_VALIDATED);
   validator->ValidateUsername(account_id_.GetUserEmail(), true);
   if (cached_policy_key_.empty()) {
     validator->ValidateInitialKey(ExtractDomain(account_id_.GetUserEmail()));
@@ -359,11 +359,10 @@ std::unique_ptr<UserCloudPolicyValidator>
 UserCloudPolicyStoreChromeOS::CreateValidatorForLoad(
     std::unique_ptr<em::PolicyFetchResponse> policy) {
   std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
+      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_VALIDATED);
   if (is_active_directory_) {
     validator->ValidateTimestamp(
-        base::Time(), base::Time(),
-        CloudPolicyValidatorBase::TIMESTAMP_NOT_VALIDATED);
+        base::Time(), CloudPolicyValidatorBase::TIMESTAMP_NOT_VALIDATED);
     validator->ValidateDMToken(std::string(),
                                CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED);
     validator->ValidateDeviceId(

@@ -43,10 +43,10 @@ ACTION_P(CheckStatus, expected_status) {
 class CloudPolicyValidatorTest : public testing::Test {
  public:
   CloudPolicyValidatorTest()
-      : timestamp_(base::Time::UnixEpoch() +
-                   base::TimeDelta::FromMilliseconds(
-                       PolicyBuilder::kFakeTimestamp)),
-        timestamp_option_(CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED),
+      : timestamp_(
+            base::Time::UnixEpoch() +
+            base::TimeDelta::FromMilliseconds(PolicyBuilder::kFakeTimestamp)),
+        timestamp_option_(CloudPolicyValidatorBase::TIMESTAMP_VALIDATED),
         dm_token_option_(CloudPolicyValidatorBase::DM_TOKEN_REQUIRED),
         device_id_option_(CloudPolicyValidatorBase::DEVICE_ID_REQUIRED),
         allow_key_rotation_(true),
@@ -88,8 +88,7 @@ class CloudPolicyValidatorTest : public testing::Test {
     std::unique_ptr<UserCloudPolicyValidator> validator =
         UserCloudPolicyValidator::Create(std::move(policy_response),
                                          base::ThreadTaskRunnerHandle::Get());
-    validator->ValidateTimestamp(timestamp_, timestamp_,
-                                 timestamp_option_);
+    validator->ValidateTimestamp(timestamp_, timestamp_option_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername, true);
     if (!owning_domain_.empty())
       validator->ValidateDomain(owning_domain_);
@@ -178,6 +177,14 @@ TEST_F(CloudPolicyValidatorTest, SuccessfulRunValidationWithNoDeviceId) {
   Validate(Invoke(this, &CloudPolicyValidatorTest::CheckSuccessfulValidation));
 }
 
+TEST_F(CloudPolicyValidatorTest,
+       SuccessfulRunValidationWithTimestampFromTheFuture) {
+  base::Time timestamp(timestamp_ + base::TimeDelta::FromHours(3));
+  policy_.policy_data().set_timestamp(
+      (timestamp - base::Time::UnixEpoch()).InMilliseconds());
+  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
+}
+
 TEST_F(CloudPolicyValidatorTest, UsernameCanonicalization) {
   policy_.policy_data().set_username(
       base::ToUpperASCII(PolicyBuilder::kFakeUsername));
@@ -210,22 +217,6 @@ TEST_F(CloudPolicyValidatorTest, ErrorOldTimestamp) {
   policy_.policy_data().set_timestamp(
       (timestamp - base::Time::UnixEpoch()).InMilliseconds());
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_TIMESTAMP));
-}
-
-TEST_F(CloudPolicyValidatorTest, ErrorTimestampFromTheFuture) {
-  base::Time timestamp(timestamp_ + base::TimeDelta::FromHours(3));
-  policy_.policy_data().set_timestamp(
-      (timestamp - base::Time::UnixEpoch()).InMilliseconds());
-  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_TIMESTAMP));
-}
-
-TEST_F(CloudPolicyValidatorTest, IgnoreErrorTimestampFromTheFuture) {
-  base::Time timestamp(timestamp_ + base::TimeDelta::FromMinutes(5));
-  timestamp_option_ =
-      CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE;
-  policy_.policy_data().set_timestamp(
-      (timestamp - base::Time::UnixEpoch()).InMilliseconds());
-  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorNoDMToken) {

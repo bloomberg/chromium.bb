@@ -68,7 +68,7 @@ void DeviceCloudPolicyStoreChromeOS::Store(
       public_key->as_string(), install_attributes_->GetDomain());
   validator->ValidateAgainstCurrentPolicy(
       device_settings_service_->policy_data(),
-      CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED,
+      CloudPolicyValidatorBase::TIMESTAMP_VALIDATED,
       CloudPolicyValidatorBase::DM_TOKEN_REQUIRED,
       CloudPolicyValidatorBase::DEVICE_ID_REQUIRED);
   DeviceCloudPolicyValidator::StartValidation(

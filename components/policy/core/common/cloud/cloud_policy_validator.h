@@ -70,7 +70,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     VALIDATION_WRONG_POLICY_TYPE,
     // Unexpected settings entity id.
     VALIDATION_WRONG_SETTINGS_ENTITY_ID,
-    // Time stamp outside expected range.
+    // Timestamp is missing or is older than expected.
     VALIDATION_BAD_TIMESTAMP,
     // DM token is empty or doesn't match.
     VALIDATION_BAD_DM_TOKEN,
@@ -110,14 +110,8 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
 
   enum ValidateTimestampOption {
     // The policy must have a timestamp field and the timestamp is checked
-    // against both start and end times.
-    TIMESTAMP_FULLY_VALIDATED,
-
-    // The timestamp is only checked against the |not_before| value. (This is
-    // appropriate for platforms with unreliable system times where we want to
-    // ensure that fresh policy is newer than existing policy, but we can't do
-    // any other validation).
-    TIMESTAMP_NOT_BEFORE,
+    // against the |not_before| value.
+    TIMESTAMP_VALIDATED,
 
     // The timestamp is not validated.
     TIMESTAMP_NOT_VALIDATED,
@@ -138,11 +132,11 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     return policy_data_;
   }
 
-  // Instruct the validator to check that the policy timestamp is not before
-  // |not_before| and not after |not_after| + grace interval. Depending on
-  // |timestamp_option|, some or all of the checks may be waived.
+  // Instruct the validator to check that the policy timestamp is present and is
+  // not before |not_before| if |timestamp_option| is TIMESTAMP_VALIDATED, or to
+  // not check the policy timestamp if |timestamp_option| is
+  // TIMESTAMP_NOT_VALIDATED.
   void ValidateTimestamp(base::Time not_before,
-                         base::Time not_after,
                          ValidateTimestampOption timestamp_option);
 
   // Instruct the validator to check that the username in the policy blob
@@ -320,7 +314,6 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
 
   int validation_flags_;
   int64_t timestamp_not_before_;
-  int64_t timestamp_not_after_;
   ValidateTimestampOption timestamp_option_;
   ValidateDMTokenOption dm_token_option_;
   ValidateDeviceIdOption device_id_option_;

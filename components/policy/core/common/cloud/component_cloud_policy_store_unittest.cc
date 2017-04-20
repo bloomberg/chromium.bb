@@ -181,15 +181,6 @@ TEST_F(ComponentCloudPolicyStoreTest, ValidatePolicyWrongTimestamp) {
   EXPECT_FALSE(store_->ValidatePolicy(kTestPolicyNS, CreateResponse(),
                                       nullptr /* policy_data */,
                                       nullptr /* payload */));
-
-  const int64_t kFutureTimestamp =
-      (base::Time::NowFromSystemTime() + base::TimeDelta::FromDays(1) -
-       base::Time::UnixEpoch())
-          .InMilliseconds();
-  builder_.policy_data().set_timestamp(kFutureTimestamp);
-  EXPECT_FALSE(store_->ValidatePolicy(kTestPolicyNS, CreateResponse(),
-                                      nullptr /* policy_data */,
-                                      nullptr /* payload */));
 }
 
 TEST_F(ComponentCloudPolicyStoreTest, ValidatePolicyWrongUsername) {

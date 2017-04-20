@@ -27,9 +27,6 @@ namespace policy {
 
 namespace {
 
-// Grace interval for policy-from-the-future timestamp checks.
-const int kTimestampGraceIntervalHours = 2;
-
 const char kMetricPolicyKeyVerification[] = "Enterprise.PolicyKeyVerification";
 
 enum MetricPolicyKeyVerification {
@@ -54,14 +51,10 @@ CloudPolicyValidatorBase::~CloudPolicyValidatorBase() {}
 
 void CloudPolicyValidatorBase::ValidateTimestamp(
     base::Time not_before,
-    base::Time now,
     ValidateTimestampOption timestamp_option) {
   validation_flags_ |= VALIDATE_TIMESTAMP;
   timestamp_not_before_ =
       (not_before - base::Time::UnixEpoch()).InMilliseconds();
-  timestamp_not_after_ =
-      ((now + base::TimeDelta::FromHours(kTimestampGraceIntervalHours)) -
-          base::Time::UnixEpoch()).InMillisecondsRoundedUp();
   timestamp_option_ = timestamp_option;
 }
 
@@ -159,8 +152,7 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
     expected_dm_token = policy_data->request_token();
     expected_device_id = policy_data->device_id();
   }
-  ValidateTimestamp(last_policy_timestamp, base::Time::NowFromSystemTime(),
-                    timestamp_option);
+  ValidateTimestamp(last_policy_timestamp, timestamp_option);
   ValidateDMToken(expected_dm_token, dm_token_option);
   ValidateDeviceId(expected_device_id, device_id_option);
 }
@@ -174,8 +166,7 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
       payload_(payload),
       validation_flags_(0),
       timestamp_not_before_(0),
-      timestamp_not_after_(0),
-      timestamp_option_(TIMESTAMP_FULLY_VALIDATED),
+      timestamp_option_(TIMESTAMP_VALIDATED),
       dm_token_option_(DM_TOKEN_REQUIRED),
       device_id_option_(DEVICE_ID_REQUIRED),
       canonicalize_user_(false),
@@ -433,16 +424,6 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
 
   if (policy_data_->timestamp() < timestamp_not_before_) {
     LOG(ERROR) << "Policy too old: " << policy_data_->timestamp();
-    return VALIDATION_BAD_TIMESTAMP;
-  }
-
-  // Limit the damage in case of an unlikely server bug: If the server
-  // accidentally sends a time from the distant future, this time is stored
-  // locally and after the server time is corrected, due to rollback prevention
-  // the client could not receive policy updates until that future date.
-  if (timestamp_option_ == TIMESTAMP_FULLY_VALIDATED &&
-      policy_data_->timestamp() > timestamp_not_after_) {
-    LOG(ERROR) << "Policy from the future: " << policy_data_->timestamp();
     return VALIDATION_BAD_TIMESTAMP;
   }
 

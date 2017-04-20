@@ -338,7 +338,7 @@ void UserCloudPolicyStore::Validate(
     const UserCloudPolicyValidator::CompletionCallback& callback) {
   // Configure the validator.
   std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
+      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_VALIDATED);
 
   // Extract the owning domain from the signed-in user (if any is set yet).
   // If there's no owning domain, then the code just ensures that the policy

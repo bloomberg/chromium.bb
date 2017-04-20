@@ -195,7 +195,7 @@ void DeviceLocalAccountPolicyStore::Validate(
   validator->ValidateAgainstCurrentPolicy(
       policy(),
       valid_timestamp_required
-          ? CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED
+          ? CloudPolicyValidatorBase::TIMESTAMP_VALIDATED
           : CloudPolicyValidatorBase::TIMESTAMP_NOT_VALIDATED,
       CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED,
       CloudPolicyValidatorBase::DEVICE_ID_NOT_REQUIRED);
