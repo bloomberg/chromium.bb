@@ -52,7 +52,7 @@ void SyncSessionsRouterTabHelper::WebContentsDestroyed() {
 void SyncSessionsRouterTabHelper::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  NotifyRouter();
+  NotifyRouter(true);
 }
 
 void SyncSessionsRouterTabHelper::DidOpenRequestedURL(
@@ -74,9 +74,9 @@ void SyncSessionsRouterTabHelper::DidOpenRequestedURL(
   NotifyRouter();
 }
 
-void SyncSessionsRouterTabHelper::NotifyRouter() {
+void SyncSessionsRouterTabHelper::NotifyRouter(bool page_load_completed) {
   if (router_)
-    router_->NotifyTabModified(web_contents());
+    router_->NotifyTabModified(web_contents(), page_load_completed);
 }
 
 }  // namespace sync_sessions

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 
 namespace sync_sessions {
@@ -52,15 +53,17 @@ SyncSessionsWebContentsRouter::SyncSessionsWebContentsRouter(Profile* profile) {
 SyncSessionsWebContentsRouter::~SyncSessionsWebContentsRouter() {}
 
 void SyncSessionsWebContentsRouter::NotifyTabModified(
-    content::WebContents* web_contents) {
-  if (handler_ && web_contents) {
-    SyncedTabDelegate* delegate =
-        GetSyncedTabDelegateFromWebContents(web_contents);
-    if (delegate)
-      handler_->OnLocalTabModified(delegate);
+    content::WebContents* web_contents,
+    bool page_load_completed) {
+  SyncedTabDelegate* delegate = nullptr;
+  if (web_contents)
+    delegate = GetSyncedTabDelegateFromWebContents(web_contents);
+
+  if (handler_ && delegate) {
+    handler_->OnLocalTabModified(delegate);
   }
 
-  if (!flare_.is_null()) {
+  if (!flare_.is_null() && delegate && page_load_completed) {
     flare_.Run(syncer::SESSIONS);
     flare_.Reset();
   }

@@ -60,7 +60,7 @@ class SyncSessionsRouterTabHelper
                            bool started_from_context_menu,
                            bool renderer_initiated) override;
 
-  void NotifyRouter();
+  void NotifyRouter(bool page_load_completed = false);
 
   // |router_| is a KeyedService and is guaranteed to outlive |this|.
   SyncSessionsWebContentsRouter* router_;

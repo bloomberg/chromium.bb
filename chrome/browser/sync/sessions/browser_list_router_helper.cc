@@ -39,7 +39,7 @@ void BrowserListRouterHelper::TabInsertedAt(TabStripModel* model,
                                             content::WebContents* web_contents,
                                             int index,
                                             bool foreground) {
-  router_->NotifyTabModified(web_contents);
+  router_->NotifyTabModified(web_contents, false);
 }
 
 }  // namespace sync_sessions
