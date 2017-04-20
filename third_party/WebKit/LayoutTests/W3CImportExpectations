@@ -40,10 +40,12 @@ external/wpt/battery-status [ Skip ]
 # external/wpt/bluetooth [ Pass ]
 ## Owners: none; No tests in the directory.
 # external/wpt/common [ Pass ]
-external/wpt/compat [ Skip ]
+## Owners: foolip@chromium.org
+# external/wpt/compat [ Pass ]
 external/wpt/config.default.json [ Skip ]
 external/wpt/conformance-checkers [ Skip ]
-external/wpt/console [ Skip ]
+## Owners: kozyatinskiy@chromium.org
+# external/wpt/console [ Pass ]
 ## Owners: mkwst@chromium.org
 # external/wpt/content-security-policy [ Pass ]
 external/wpt/cookies [ Skip ]
@@ -257,7 +259,7 @@ external/wpt/dom [ Pass ]
 external/wpt/dpub-aam [ Skip ]
 external/wpt/dpub-aria [ Skip ]
 ## Owners: dom-dev@chromium.org
-# external/wpt/editing [ Skip ]
+# external/wpt/editing [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/encoding [ Pass ]
 ## Owners: jrummell@chromium.org
@@ -287,7 +289,7 @@ external/wpt/http [ Skip ]
 # external/wpt/images [ Pass ]
 external/wpt/imagebitmap-renderingcontext [ Skip ]
 ## Owners: smcgruer@chromium.org
-# external/wpt/infrastructure [ Skip ]
+# external/wpt/infrastructure [ Pass ]
 ## Owners: dom-dev@chromium.org
 # external/wpt/innerText [ Pass ]
 external/wpt/js [ Skip ]
@@ -295,7 +297,7 @@ external/wpt/lint [ Skip ]
 external/wpt/manifest [ Skip ]
 external/wpt/mathml [ Skip ]
 ## Owners: none; No tests in the directory.
-# external/wpt/media [ Skip ]
+# external/wpt/media [ Pass ]
 ## Owners: mlamouri@chromium.org,zqzhang@chromium.org
 # external/wpt/mediasession [ Pass ]
 ## Owners: chcunningham@chromium.org,mlamouri@chromium.org
@@ -310,7 +312,8 @@ external/wpt/microdata [ Skip ]
 # external/wpt/mixed-content [ Pass ]
 ## Owners: sunjian@chromium.org,panicker@chromium.org
 external/wpt/navigation-timing [ Pass ]
-external/wpt/notifications [ Skip ]
+## Owners: platform-capabilities@chromium.org
+# external/wpt/notifications [ Pass ]
 external/wpt/offscreen-canvas [ Skip ]
 external/wpt/old-tests [ Skip ]
 ## Owners: timvolodine@chromium.org,reillyg@chromium.org
@@ -326,7 +329,7 @@ external/wpt/presentation-api [ Skip ]
 external/wpt/progress-events [ Skip ]
 external/wpt/proximity [ Skip ]
 ## Owners: rob.buis@samsung.com
-# external/wpt/quirks-mode [ Skip ]
+# external/wpt/quirks-mode [ Pass ]
 ## Owners: avayvod@chromium.org,mlamouri@chromium.org
 # external/wpt/remote-playback [ Pass ]
 ## Owners: jochen@chromium.org,estark@chromium.org
@@ -388,7 +391,7 @@ external/wpt/webgl [ Skip ]
 external/wpt/websockets [ Skip ]
 ## Owners: michaeln@chromium.org,jsbell@chromium.org
 # external/wpt/webstorage [ Pass ]
-## Owners: foolip@chromium.org, maksim.sisov@intel.com
+## Owners: foolip@chromium.org,maksim.sisov@intel.com
 # external/wpt/webvtt [ Pass ]
 external/wpt/web-nfc [ Skip ]
 ## Owners: nhiroki@chromium.org
