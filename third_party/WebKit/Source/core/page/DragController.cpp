@@ -560,7 +560,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
   }
 
   if (page_->GetDragCaret().HasCaret()) {
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
     page_->GetDragCaret()
         .CaretPosition()

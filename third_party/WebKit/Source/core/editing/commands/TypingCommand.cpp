@@ -284,7 +284,7 @@ void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
   if (!IsIncrementalInsertion())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
   frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -340,7 +340,7 @@ void TypingCommand::InsertText(
   if (selection_for_insertion.IsCaret() && new_text.IsEmpty())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
   document.UpdateStyleAndLayoutIgnorePendingStylesheets();
 

@@ -543,7 +543,7 @@ void WebFrameWidgetImpl::SetFocus(bool enable) {
     if (focused_frame) {
       // Finish an ongoing composition to delete the composition node.
       if (focused_frame->GetInputMethodController().HasComposition()) {
-        // TODO(xiaochengh): The use of
+        // TODO(editing-dev): The use of
         // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
         // See http://crbug.com/590369 for more details.
         focused_frame->GetDocument()
@@ -573,7 +573,7 @@ WebRange WebFrameWidgetImpl::CompositionRange() {
       focused->Selection().RootEditableElementOrDocumentElement();
   DCHECK(editable);
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   editable->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -601,7 +601,7 @@ bool WebFrameWidgetImpl::SelectionBounds(WebRect& anchor,
   if (selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsNone())
     return false;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   local_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -643,7 +643,7 @@ bool WebFrameWidgetImpl::SelectionTextDirection(WebTextDirection& start,
   if (!frame)
     return false;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -681,7 +681,7 @@ WebRange WebFrameWidgetImpl::CaretOrSelectionRange() {
   if (!focused)
     return WebRange();
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   focused->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 

@@ -2333,9 +2333,9 @@ void WebViewImpl::SetFocus(bool enable) {
     if (focused_frame) {
       // Finish an ongoing composition to delete the composition node.
       if (focused_frame->GetInputMethodController().HasComposition()) {
-        // TODO(xiaochengh): The use of
-        // updateStyleAndLayoutIgnorePendingStylesheets
-        // needs to be audited.  See http://crbug.com/590369 for more details.
+        // TODO(editing-dev): The use of
+        // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+        // See http://crbug.com/590369 for more details.
         focused_frame->GetDocument()
             ->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -2363,7 +2363,7 @@ WebRange WebViewImpl::CompositionRange() {
       focused->Selection().RootEditableElementOrDocumentElement();
   DCHECK(editable);
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   editable->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -2384,7 +2384,7 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor, WebRect& focus) const {
   if (!selection.IsAvailable() || selection.GetSelectionInDOMTree().IsNone())
     return false;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   local_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (selection.ComputeVisibleSelectionInDOMTree().IsNone()) {
@@ -2441,7 +2441,7 @@ bool WebViewImpl::SelectionTextDirection(WebTextDirection& start,
     return false;
   }
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -2501,7 +2501,7 @@ WebRange WebViewImpl::CaretOrSelectionRange() {
   if (!focused)
     return WebRange();
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   focused->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 

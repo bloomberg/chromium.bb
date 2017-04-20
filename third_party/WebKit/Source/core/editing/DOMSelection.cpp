@@ -675,7 +675,7 @@ void DOMSelection::deleteFromDocument() {
   if (selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsNone())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // |VisibleSelection::toNormalizedEphemeralRange| requires clean layout.
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -701,7 +701,7 @@ bool DOMSelection::containsNode(const Node* n, bool allow_partial) const {
 
   unsigned node_index = n->NodeIndex();
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // |VisibleSelection::toNormalizedEphemeralRange| requires clean layout.
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -762,7 +762,7 @@ String DOMSelection::toString() {
   if (!IsAvailable())
     return String();
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 

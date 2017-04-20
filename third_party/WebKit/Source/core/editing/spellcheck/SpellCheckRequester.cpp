@@ -256,7 +256,7 @@ void SpellCheckRequester::DidCheck(int sequence,
 void SpellCheckRequester::DidCheckSucceed(
     int sequence,
     const Vector<TextCheckingResult>& results) {
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 

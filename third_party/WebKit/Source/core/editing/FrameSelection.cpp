@@ -152,7 +152,7 @@ ContainerNode* RootEditableElementOrTreeScopeRootNodeOf(
 
 const VisibleSelection&
 FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated() const {
-  // TODO(yosin): We should hoist updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
   // to caller. See http://crbug.com/590369 for more details.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   return ComputeVisibleSelectionInDOMTree();
@@ -554,7 +554,7 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
     return;
   }
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -577,7 +577,7 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
   if (!owner_element_parent)
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   owner_element_parent->GetDocument()
       .UpdateStyleAndLayoutIgnorePendingStylesheets();

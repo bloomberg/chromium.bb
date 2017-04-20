@@ -71,7 +71,7 @@ static NSAttributedString* attributedSubstringFromRange(
 
   unsigned position = 0;
 
-  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  see http://crbug.com/590369 for more details.
   range.StartPosition()
       .GetDocument()

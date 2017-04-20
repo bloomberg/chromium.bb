@@ -72,7 +72,7 @@ void WebSurroundingText::InitializeFromCurrentSelection(WebLocalFrame* frame,
                                                         size_t max_length) {
   LocalFrame* web_frame = ToWebLocalFrameImpl(frame)->GetFrame();
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   web_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 

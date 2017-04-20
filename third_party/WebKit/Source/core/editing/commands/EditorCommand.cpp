@@ -2812,7 +2812,7 @@ bool Editor::ExecuteCommand(const String& command_name) {
   if (command_name == "DeleteForward")
     return CreateCommand(AtomicString("ForwardDelete")).Execute();
   if (command_name == "AdvanceToNextMisspelling") {
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
     GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -2822,7 +2822,7 @@ bool Editor::ExecuteCommand(const String& command_name) {
     return true;
   }
   if (command_name == "ToggleSpellPanel") {
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.
     // see http://crbug.com/590369 for more details.
     GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -2845,7 +2845,7 @@ bool Editor::ExecuteCommand(const String& command_name, const String& value) {
         kScrollDownIgnoringWritingMode, kScrollByDocument);
 
   if (command_name == "showGuessPanel") {
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
     GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 

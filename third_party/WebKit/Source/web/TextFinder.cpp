@@ -333,7 +333,7 @@ void TextFinder::ScopeStringMatches(int identifier,
       return;
   }
 
-  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  see http://crbug.com/590369 for more details.
   search_start.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 

@@ -144,7 +144,7 @@ void SpellChecker::DidBeginEditing(Element* element) {
   if (!IsSpellCheckingEnabled())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // In the long term we should use idle time spell checker to prevent
   // synchronous layout caused by spell checking (see crbug.com/517298).
@@ -326,7 +326,7 @@ void SpellChecker::MarkMisspellingsForMovingParagraphs(
   if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // In the long term we should use idle time spell checker to prevent
   // synchronous layout caused by spell checking (see crbug.com/517298).
@@ -366,7 +366,7 @@ void SpellChecker::MarkMisspellingsAfterApplyingCommand(
   if (!IsSpellCheckingEnabledFor(cmd.EndingSelection()))
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // In the long term we should use idle time spell checker to prevent
   // synchronous layout caused by spell checking (see crbug.com/517298).
@@ -569,7 +569,7 @@ void SpellChecker::MarkAndReplaceFor(
     return;
   }
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -834,7 +834,7 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
   if (current_document != GetFrame().GetDocument())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -852,7 +852,7 @@ static bool ShouldCheckOldSelection(const Position& old_selection_start) {
   if (IsPositionInTextArea(old_selection_start))
     return true;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // In the long term we should use idle time spell checker to prevent
   // synchronous layout caused by spell checking (see crbug.com/517298).
@@ -888,7 +888,7 @@ void SpellChecker::RespondToChangedSelection(
   if (!ShouldCheckOldSelection(old_selection_start))
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // In the long term we should use idle time spell checker to prevent
   // synchronous layout caused by spell checking (see crbug.com/517298).
@@ -938,9 +938,9 @@ void SpellChecker::SpellCheckAfterBlur() {
   if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  // TODO(yosin): We should hoist updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
   // to caller. See http://crbug.com/590369 for more details.
-  // TODO(xiaochengh): In the long term we should use idle time spell checker to
+  // In the long term we should use idle time spell checker to
   // prevent synchronous layout caused by spell checking (see crbug.com/517298).
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   DocumentLifecycle::DisallowTransitionScope disallow_transition(

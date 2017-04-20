@@ -249,7 +249,7 @@ bool Editor::HandleTextEvent(TextEvent* event) {
   if (event->IsIncrementalInsertion())
     return false;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -537,7 +537,7 @@ void Editor::PasteWithPasteboard(Pasteboard* pasteboard) {
     if (!text.IsEmpty()) {
       chose_plain_text = true;
 
-      // TODO(xiaochengh): Use of updateStyleAndLayoutIgnorePendingStylesheets
+      // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
       // needs to be audited.  See http://crbug.com/590369 for more details.
       // |selectedRange| requires clean layout for visible selection
       // normalization.
@@ -1151,7 +1151,7 @@ void Editor::Cut(EditorCommandSource source) {
   if (!CanCut())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // |tryDHTMLCut| dispatches cut event, which may make layout dirty, but we
   // need clean layout to obtain the selected content.
@@ -1194,7 +1194,7 @@ void Editor::Copy() {
   if (!CanCopy())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // |tryDHTMLCopy| dispatches copy event, which may make layout dirty, but
   // we need clean layout to obtain the selected content.
@@ -1270,7 +1270,7 @@ void Editor::PerformDelete() {
   if (!CanDelete())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // |selectedRange| requires clean layout for visible selection normalization.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();

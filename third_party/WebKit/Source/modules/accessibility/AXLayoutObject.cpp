@@ -1993,7 +1993,7 @@ void AXLayoutObject::SetSelection(const AXRange& selection) {
   if (!frame)
     return;
 
-  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  see http://crbug.com/590369 for more details.
   // This callsite should probably move up the stack.
   frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();

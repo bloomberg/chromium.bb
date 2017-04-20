@@ -2101,7 +2101,7 @@ size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
 }
 
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
   node.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (!HasRichlyEditableStyle(node))
