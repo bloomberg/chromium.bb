@@ -1917,6 +1917,8 @@
     },
     {
       name: "transform",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertTransformOperations",
       interpolable: true,
       keywords: ["none"],

@@ -534,6 +534,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPITextSizeAdjust.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPITextUnderlinePosition.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPITouchAction.h",
+    "$blink_core_output_dir/css/properties/CSSPropertyAPITransform.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPITransformOrigin.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPITranslate.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIVerticalAlign.h",

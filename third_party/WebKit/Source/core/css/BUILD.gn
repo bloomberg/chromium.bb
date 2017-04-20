@@ -463,6 +463,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPITextSizeAdjust.cpp",
     "properties/CSSPropertyAPITextUnderlinePosition.cpp",
     "properties/CSSPropertyAPITouchAction.cpp",
+    "properties/CSSPropertyAPITransform.cpp",
     "properties/CSSPropertyAPITransformOrigin.cpp",
     "properties/CSSPropertyAPITranslate.cpp",
     "properties/CSSPropertyAPIVerticalAlign.cpp",
