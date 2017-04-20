@@ -101,7 +101,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                                           &helper_,
                                           idle_helper_.IdleTaskRunner()),
       render_widget_scheduler_signals_(this),
-      control_task_runner_(helper_.ControlTaskRunner()),
+      control_task_runner_(helper_.ControlTaskQueue()),
       compositor_task_runner_(
           helper_.NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::COMPOSITOR)
                                    .SetShouldMonitorQuiescence(true))),
@@ -110,7 +110,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       delayed_update_policy_runner_(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
-          helper_.ControlTaskRunner()),
+          helper_.ControlTaskQueue()),
       seqlock_queueing_time_estimator_(
           QueueingTimeEstimator(this, base::TimeDelta::FromSeconds(1))),
       main_thread_only_(this,
@@ -131,9 +131,9 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                  weak_factory_.GetWeakPtr()));
 
   default_loading_task_runner_ =
-      NewLoadingTaskRunner(TaskQueue::QueueType::DEFAULT_LOADING);
+      NewLoadingTaskQueue(TaskQueue::QueueType::DEFAULT_LOADING);
   default_timer_task_runner_ =
-      NewTimerTaskRunner(TaskQueue::QueueType::DEFAULT_TIMER);
+      NewTimerTaskQueue(TaskQueue::QueueType::DEFAULT_TIMER);
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
@@ -264,11 +264,13 @@ std::unique_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
   return base::MakeUnique<WebThreadImplForRendererScheduler>(this);
 }
 
-scoped_refptr<TaskQueue> RendererSchedulerImpl::DefaultTaskRunner() {
-  return helper_.DefaultTaskRunner();
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererSchedulerImpl::DefaultTaskRunner() {
+  return helper_.DefaultTaskQueue();
 }
 
-scoped_refptr<TaskQueue> RendererSchedulerImpl::CompositorTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererSchedulerImpl::CompositorTaskRunner() {
   helper_.CheckOnValidThread();
   return compositor_task_runner_;
 }
@@ -278,22 +280,43 @@ RendererSchedulerImpl::IdleTaskRunner() {
   return idle_helper_.IdleTaskRunner();
 }
 
-scoped_refptr<TaskQueue> RendererSchedulerImpl::LoadingTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererSchedulerImpl::LoadingTaskRunner() {
   helper_.CheckOnValidThread();
   return default_loading_task_runner_;
 }
 
-scoped_refptr<TaskQueue> RendererSchedulerImpl::TimerTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererSchedulerImpl::TimerTaskRunner() {
   helper_.CheckOnValidThread();
   return default_timer_task_runner_;
 }
 
-scoped_refptr<TaskQueue> RendererSchedulerImpl::ControlTaskRunner() {
-  helper_.CheckOnValidThread();
-  return helper_.ControlTaskRunner();
+scoped_refptr<TaskQueue> RendererSchedulerImpl::DefaultTaskQueue() {
+  return helper_.DefaultTaskQueue();
 }
 
-scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskRunner(
+scoped_refptr<TaskQueue> RendererSchedulerImpl::CompositorTaskQueue() {
+  helper_.CheckOnValidThread();
+  return compositor_task_runner_;
+}
+
+scoped_refptr<TaskQueue> RendererSchedulerImpl::LoadingTaskQueue() {
+  helper_.CheckOnValidThread();
+  return default_loading_task_runner_;
+}
+
+scoped_refptr<TaskQueue> RendererSchedulerImpl::TimerTaskQueue() {
+  helper_.CheckOnValidThread();
+  return default_timer_task_runner_;
+}
+
+scoped_refptr<TaskQueue> RendererSchedulerImpl::ControlTaskQueue() {
+  helper_.CheckOnValidThread();
+  return helper_.ControlTaskQueue();
+}
+
+scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
     TaskQueue::QueueType queue_type) {
   helper_.CheckOnValidThread();
   scoped_refptr<TaskQueue> loading_task_queue(helper_.NewTaskQueue(
@@ -318,7 +341,7 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskRunner(
   return loading_task_queue;
 }
 
-scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
+scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskQueue(
     TaskQueue::QueueType queue_type) {
   helper_.CheckOnValidThread();
   // TODO(alexclarke): Consider using ApplyTaskQueuePolicy() for brevity.
@@ -344,7 +367,7 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
   return timer_task_queue;
 }
 
-scoped_refptr<TaskQueue> RendererSchedulerImpl::NewUnthrottledTaskRunner(
+scoped_refptr<TaskQueue> RendererSchedulerImpl::NewUnthrottledTaskQueue(
     TaskQueue::QueueType queue_type) {
   helper_.CheckOnValidThread();
   scoped_refptr<TaskQueue> unthrottled_task_queue(helper_.NewTaskQueue(
@@ -1165,7 +1188,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   // TODO(alexclarke): We shouldn't have to prioritize the default queue, but it
   // appears to be necessary since the order of loading tasks and IPCs (which
   // are mostly dispatched on the default queue) need to be preserved.
-  ApplyTaskQueuePolicy(helper_.DefaultTaskRunner().get(), nullptr,
+  ApplyTaskQueuePolicy(helper_.DefaultTaskQueue().get(), nullptr,
                        GetMainThreadOnly().current_policy.default_queue_policy,
                        new_policy.default_queue_policy);
   if (GetMainThreadOnly().rail_mode_observer &&
@@ -1635,7 +1658,7 @@ void RendererSchedulerImpl::SetTopLevelBlameContext(
   // Per-frame task runners (loading, timers, etc.) are configured with a more
   // specific blame context by WebFrameSchedulerImpl.
   control_task_runner_->SetBlameContext(blame_context);
-  DefaultTaskRunner()->SetBlameContext(blame_context);
+  DefaultTaskQueue()->SetBlameContext(blame_context);
   default_loading_task_runner_->SetBlameContext(blame_context);
   default_timer_task_runner_->SetBlameContext(blame_context);
   compositor_task_runner_->SetBlameContext(blame_context);

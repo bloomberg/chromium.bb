@@ -75,7 +75,7 @@ std::string PointerToId(void* pointer) {
 TaskQueueThrottler::TaskQueueThrottler(
     RendererSchedulerImpl* renderer_scheduler,
     const char* tracing_category)
-    : task_runner_(renderer_scheduler->ControlTaskRunner()),
+    : task_runner_(renderer_scheduler->ControlTaskQueue()),
       renderer_scheduler_(renderer_scheduler),
       tick_clock_(renderer_scheduler->tick_clock()),
       tracing_category_(tracing_category),

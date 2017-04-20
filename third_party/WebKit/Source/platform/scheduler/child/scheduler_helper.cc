@@ -81,12 +81,12 @@ scoped_refptr<TaskQueue> SchedulerHelper::NewTaskQueue(
   return task_queue_manager_->NewTaskQueue(spec);
 }
 
-scoped_refptr<TaskQueue> SchedulerHelper::DefaultTaskRunner() {
+scoped_refptr<TaskQueue> SchedulerHelper::DefaultTaskQueue() {
   CheckOnValidThread();
   return default_task_runner_;
 }
 
-scoped_refptr<TaskQueue> SchedulerHelper::ControlTaskRunner() {
+scoped_refptr<TaskQueue> SchedulerHelper::ControlTaskQueue() {
   return control_task_runner_;
 }
 

@@ -8,7 +8,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/scheduler/base/real_time_domain.h"
-#include "public/platform/scheduler/base/task_queue.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
@@ -141,7 +141,7 @@ void IdleHelper::EnableLongIdlePeriod() {
   EndIdlePeriod();
 
   if (ShouldWaitForQuiescence()) {
-    helper_->ControlTaskRunner()->PostDelayedTask(
+    helper_->ControlTaskQueue()->PostDelayedTask(
         FROM_HERE, enable_next_long_idle_period_closure_.GetCallback(),
         required_quiescence_duration_before_long_idle_period_);
     delegate_->IsNotQuiescent();
@@ -157,7 +157,7 @@ void IdleHelper::EnableLongIdlePeriod() {
                     now + next_long_idle_period_delay);
   } else {
     // Otherwise wait for the next long idle period delay before trying again.
-    helper_->ControlTaskRunner()->PostDelayedTask(
+    helper_->ControlTaskQueue()->PostDelayedTask(
         FROM_HERE, enable_next_long_idle_period_closure_.GetCallback(),
         next_long_idle_period_delay);
   }
@@ -272,7 +272,7 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
     if (next_long_idle_period_delay.is_zero()) {
       EnableLongIdlePeriod();
     } else {
-      helper_->ControlTaskRunner()->PostDelayedTask(
+      helper_->ControlTaskQueue()->PostDelayedTask(
           FROM_HERE, enable_next_long_idle_period_closure_.GetCallback(),
           next_long_idle_period_delay);
     }
@@ -291,7 +291,7 @@ void IdleHelper::OnIdleTaskPosted() {
   if (idle_task_runner_->RunsTasksOnCurrentThread()) {
     OnIdleTaskPostedOnMainThread();
   } else {
-    helper_->ControlTaskRunner()->PostTask(
+    helper_->ControlTaskQueue()->PostTask(
         FROM_HERE, on_idle_task_posted_closure_.GetCallback());
   }
 }
@@ -304,7 +304,7 @@ void IdleHelper::OnIdleTaskPostedOnMainThread() {
   if (state_.idle_period_state() ==
       IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
     // Restart long idle period ticks.
-    helper_->ControlTaskRunner()->PostTask(
+    helper_->ControlTaskQueue()->PostTask(
         FROM_HERE, enable_next_long_idle_period_closure_.GetCallback());
   }
 }

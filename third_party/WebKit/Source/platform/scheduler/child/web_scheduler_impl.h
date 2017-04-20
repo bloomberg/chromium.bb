@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
@@ -19,7 +20,6 @@ namespace scheduler {
 
 class ChildScheduler;
 class SingleThreadIdleTaskRunner;
-class TaskQueue;
 class WebTaskRunnerImpl;
 
 class BLINK_PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {

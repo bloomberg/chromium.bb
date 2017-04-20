@@ -13,6 +13,7 @@
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "platform/scheduler/base/pollable_thread_safe_flag.h"
 #include "platform/scheduler/base/queueing_time_estimator.h"
+#include "platform/scheduler/base/task_time_observer.h"
 #include "platform/scheduler/base/thread_load_tracker.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
@@ -24,7 +25,6 @@
 #include "platform/scheduler/renderer/user_model.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
-#include "public/platform/scheduler/base/task_time_observer.h"
 
 namespace base {
 namespace trace_event {
@@ -85,17 +85,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
 
   // RendererScheduler implementation:
   std::unique_ptr<WebThread> CreateMainThread() override;
-  scoped_refptr<TaskQueue> DefaultTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
-  scoped_refptr<TaskQueue> CompositorTaskRunner() override;
-  scoped_refptr<TaskQueue> LoadingTaskRunner() override;
-  scoped_refptr<TaskQueue> TimerTaskRunner() override;
-  scoped_refptr<TaskQueue> NewLoadingTaskRunner(
-      TaskQueue::QueueType queue_type) override;
-  scoped_refptr<TaskQueue> NewTimerTaskRunner(
-      TaskQueue::QueueType queue_type) override;
-  scoped_refptr<TaskQueue> NewUnthrottledTaskRunner(
-      TaskQueue::QueueType queue_type) override;
   std::unique_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState()
       override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
@@ -150,8 +140,24 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // QueueingTimeEstimator::Client implementation:
   void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time) override;
 
-  // Returns a task runner where tasks run at the highest possible priority.
-  scoped_refptr<TaskQueue> ControlTaskRunner();
+  scoped_refptr<TaskQueue> DefaultTaskQueue();
+  scoped_refptr<TaskQueue> CompositorTaskQueue();
+  scoped_refptr<TaskQueue> LoadingTaskQueue();
+  scoped_refptr<TaskQueue> TimerTaskQueue();
+
+  // Returns a new loading task queue. This queue is intended for tasks related
+  // to resource dispatch, foreground HTML parsing, etc...
+  scoped_refptr<TaskQueue> NewLoadingTaskQueue(TaskQueue::QueueType queue_type);
+
+  // Returns a new timer task queue. This queue is intended for DOM Timers.
+  scoped_refptr<TaskQueue> NewTimerTaskQueue(TaskQueue::QueueType queue_type);
+
+  // Returns a task queue for tasks which should never get throttled.
+  scoped_refptr<TaskQueue> NewUnthrottledTaskQueue(
+      TaskQueue::QueueType queue_type);
+
+  // Returns a task queue where tasks run at the highest possible priority.
+  scoped_refptr<TaskQueue> ControlTaskQueue();
 
   void RegisterTimeDomain(TimeDomain* time_domain);
   void UnregisterTimeDomain(TimeDomain* time_domain);
@@ -205,6 +211,14 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // base::trace_event::TraceLog::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
+
+ protected:
+  // RendererScheduler implementation.
+  // Use *TaskQueue internally.
+  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() override;
 
  private:
   friend class RendererSchedulerImplTest;

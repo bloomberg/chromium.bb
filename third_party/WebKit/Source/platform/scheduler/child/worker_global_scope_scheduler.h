@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WORKER_GLOBAL_SCOPE_SCHEDULER_H_
 #define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WORKER_GLOBAL_SCOPE_SCHEDULER_H_
 
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/scheduler/base/task_queue.h"
 
 namespace blink {
 namespace scheduler {

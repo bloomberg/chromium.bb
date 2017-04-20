@@ -398,7 +398,7 @@ void WebViewSchedulerImpl::UpdateBackgroundThrottlingState() {
       UpdateBackgroundBudgetPoolThrottlingState();
     } else {
       // TODO(altimin): Consider moving this logic into PumpThrottledTasks.
-      renderer_scheduler_->ControlTaskRunner()->PostDelayedTask(
+      renderer_scheduler_->ControlTaskQueue()->PostDelayedTask(
           FROM_HERE, delayed_background_throttling_enabler_.GetCallback(),
           kBackgroundThrottlingGracePeriod);
     }

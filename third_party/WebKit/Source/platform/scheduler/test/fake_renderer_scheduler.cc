@@ -17,15 +17,18 @@ std::unique_ptr<blink::WebThread> FakeRendererScheduler::CreateMainThread() {
   return nullptr;
 }
 
-scoped_refptr<TaskQueue> FakeRendererScheduler::DefaultTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeRendererScheduler::DefaultTaskRunner() {
   return nullptr;
 }
 
-scoped_refptr<TaskQueue> FakeRendererScheduler::CompositorTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeRendererScheduler::CompositorTaskRunner() {
   return nullptr;
 }
 
-scoped_refptr<TaskQueue> FakeRendererScheduler::LoadingTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeRendererScheduler::LoadingTaskRunner() {
   return nullptr;
 }
 
@@ -34,22 +37,8 @@ FakeRendererScheduler::IdleTaskRunner() {
   return nullptr;
 }
 
-scoped_refptr<TaskQueue> FakeRendererScheduler::TimerTaskRunner() {
-  return nullptr;
-}
-
-scoped_refptr<TaskQueue> FakeRendererScheduler::NewLoadingTaskRunner(
-    TaskQueue::QueueType queue_type) {
-  return nullptr;
-}
-
-scoped_refptr<TaskQueue> FakeRendererScheduler::NewTimerTaskRunner(
-    TaskQueue::QueueType queue_type) {
-  return nullptr;
-}
-
-scoped_refptr<TaskQueue> FakeRendererScheduler::NewUnthrottledTaskRunner(
-    TaskQueue::QueueType queue_type) {
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeRendererScheduler::TimerTaskRunner() {
   return nullptr;
 }
 

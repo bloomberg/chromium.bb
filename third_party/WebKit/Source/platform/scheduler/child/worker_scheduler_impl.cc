@@ -9,10 +9,10 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/Histogram.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/time_converter.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/scheduler/base/task_queue.h"
 
 namespace blink {
 namespace scheduler {
@@ -75,9 +75,15 @@ void WorkerSchedulerImpl::Init() {
   idle_helper_.EnableLongIdlePeriod();
 }
 
-scoped_refptr<TaskQueue> WorkerSchedulerImpl::DefaultTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerSchedulerImpl::DefaultTaskRunner() {
   DCHECK(initialized_);
-  return helper_->DefaultTaskRunner();
+  return helper_->DefaultTaskQueue();
+}
+
+scoped_refptr<TaskQueue> WorkerSchedulerImpl::DefaultTaskQueue() {
+  DCHECK(initialized_);
+  return helper_->DefaultTaskQueue();
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>

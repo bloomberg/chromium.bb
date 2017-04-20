@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/wtf/PtrUtil.h"
@@ -30,8 +31,13 @@ CompositorWorkerScheduler::~CompositorWorkerScheduler() {}
 
 void CompositorWorkerScheduler::Init() {}
 
-scoped_refptr<TaskQueue> CompositorWorkerScheduler::DefaultTaskRunner() {
-  return helper_->DefaultTaskRunner();
+scoped_refptr<TaskQueue> CompositorWorkerScheduler::DefaultTaskQueue() {
+  return helper_->DefaultTaskQueue();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+CompositorWorkerScheduler::DefaultTaskRunner() {
+  return DefaultTaskQueue();
 }
 
 scoped_refptr<scheduler::SingleThreadIdleTaskRunner>

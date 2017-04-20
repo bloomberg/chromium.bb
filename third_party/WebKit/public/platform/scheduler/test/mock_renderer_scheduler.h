@@ -19,18 +19,15 @@ class MockRendererScheduler : public RendererScheduler {
   ~MockRendererScheduler() override = default;
 
   MOCK_METHOD0(CreateMainThread, std::unique_ptr<blink::WebThread>());
-  MOCK_METHOD0(DefaultTaskRunner, scoped_refptr<TaskQueue>());
-  MOCK_METHOD0(CompositorTaskRunner, scoped_refptr<TaskQueue>());
-  MOCK_METHOD0(LoadingTaskRunner, scoped_refptr<TaskQueue>());
+  MOCK_METHOD0(DefaultTaskRunner,
+               scoped_refptr<base::SingleThreadTaskRunner>());
+  MOCK_METHOD0(CompositorTaskRunner,
+               scoped_refptr<base::SingleThreadTaskRunner>());
+  MOCK_METHOD0(LoadingTaskRunner,
+               scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(IdleTaskRunner,
                scoped_refptr<blink::scheduler::SingleThreadIdleTaskRunner>());
-  MOCK_METHOD0(TimerTaskRunner, scoped_refptr<TaskQueue>());
-  MOCK_METHOD1(NewLoadingTaskRunner,
-               scoped_refptr<TaskQueue>(TaskQueue::QueueType));
-  MOCK_METHOD1(NewTimerTaskRunner,
-               scoped_refptr<TaskQueue>(TaskQueue::QueueType));
-  MOCK_METHOD1(NewUnthrottledTaskRunner,
-               scoped_refptr<TaskQueue>(TaskQueue::QueueType));
+  MOCK_METHOD0(TimerTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(NewRenderWidgetSchedulingState,
                std::unique_ptr<RenderWidgetSchedulingState>());
   MOCK_METHOD1(WillBeginFrame, void(const cc::BeginFrameArgs&));

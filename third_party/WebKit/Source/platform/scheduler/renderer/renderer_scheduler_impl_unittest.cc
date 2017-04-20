@@ -279,11 +279,11 @@ class RendererSchedulerImplTest : public testing::Test {
 
   void Initialize(std::unique_ptr<RendererSchedulerImplForTest> scheduler) {
     scheduler_ = std::move(scheduler);
-    default_task_runner_ = scheduler_->DefaultTaskRunner();
-    compositor_task_runner_ = scheduler_->CompositorTaskRunner();
-    loading_task_runner_ = scheduler_->LoadingTaskRunner();
+    default_task_runner_ = scheduler_->DefaultTaskQueue();
+    compositor_task_runner_ = scheduler_->CompositorTaskQueue();
+    loading_task_runner_ = scheduler_->LoadingTaskQueue();
     idle_task_runner_ = scheduler_->IdleTaskRunner();
-    timer_task_runner_ = scheduler_->TimerTaskRunner();
+    timer_task_runner_ = scheduler_->TimerTaskQueue();
   }
 
   void TearDown() override {
@@ -555,8 +555,8 @@ class RendererSchedulerImplTest : public testing::Test {
     double start = (clock_->NowTicks() - base::TimeTicks()).InSecondsF();
     clock_->Advance(base::TimeDelta::FromSecondsD(duration));
     double end = (clock_->NowTicks() - base::TimeTicks()).InSecondsF();
-    scheduler_->WillProcessTask(scheduler_->TimerTaskRunner().get(), start);
-    scheduler_->DidProcessTask(scheduler_->TimerTaskRunner().get(), start, end);
+    scheduler_->WillProcessTask(scheduler_->TimerTaskQueue().get(), start);
+    scheduler_->DidProcessTask(scheduler_->TimerTaskQueue().get(), start, end);
   }
 
   void GetQueueingTimeEstimatorLock() {
@@ -821,7 +821,7 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 
   // Post a task which simulates running until after the previous end idle
   // period delayed task was scheduled for
-  scheduler_->DefaultTaskRunner()->PostTask(FROM_HERE, base::Bind(NullTask));
+  scheduler_->DefaultTaskQueue()->PostTask(FROM_HERE, base::Bind(NullTask));
   clock_->Advance(base::TimeDelta::FromMilliseconds(300));
 
   RunUntilIdle();
@@ -3181,9 +3181,9 @@ TEST_F(RendererSchedulerImplTest,
   size_t count = 0;
   // With the compositor task taking 10ms, there is not enough time to run this
   // 7ms timer task in the 16ms frame.
-  scheduler_->TimerTaskRunner()->PostTask(
+  scheduler_->TimerTaskQueue()->PostTask(
       FROM_HERE, base::Bind(SlowCountingTask, &count, clock_.get(), 7,
-                            scheduler_->TimerTaskRunner()));
+                            scheduler_->TimerTaskQueue()));
 
   for (int i = 0; i < 1000; i++) {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
@@ -3213,7 +3213,7 @@ TEST_F(RendererSchedulerImplTest,
     bool expect_queue_throttled = (i > 0);
     EXPECT_EQ(expect_queue_throttled,
               scheduler_->task_queue_throttler()->IsThrottled(
-                  scheduler_->TimerTaskRunner().get()))
+                  scheduler_->TimerTaskQueue().get()))
         << "i = " << i;
 
     if (expect_queue_throttled) {
@@ -3244,9 +3244,9 @@ TEST_F(RendererSchedulerImplTest,
   size_t count = 0;
   // With the compositor task taking 10ms, there is not enough time to run this
   // 7ms timer task in the 16ms frame.
-  scheduler_->TimerTaskRunner()->PostTask(
+  scheduler_->TimerTaskQueue()->PostTask(
       FROM_HERE, base::Bind(SlowCountingTask, &count, clock_.get(), 7,
-                            scheduler_->TimerTaskRunner()));
+                            scheduler_->TimerTaskQueue()));
 
   bool suspended = false;
   for (int i = 0; i < 1000; i++) {
@@ -3279,7 +3279,7 @@ TEST_F(RendererSchedulerImplTest,
     if (suspended)
       expect_queue_enabled = false;
     EXPECT_EQ(expect_queue_enabled,
-              scheduler_->TimerTaskRunner()->IsQueueEnabled())
+              scheduler_->TimerTaskQueue()->IsQueueEnabled())
         << "i = " << i;
 
     // After we've run any expensive tasks suspend the queue.  The throttling
@@ -3303,9 +3303,9 @@ TEST_F(RendererSchedulerImplTest,
   size_t count = 0;
   // With the compositor task taking 10ms, there is enough time to run this 6ms
   // timer task in the 16ms frame.
-  scheduler_->TimerTaskRunner()->PostTask(
+  scheduler_->TimerTaskQueue()->PostTask(
       FROM_HERE, base::Bind(SlowCountingTask, &count, clock_.get(), 6,
-                            scheduler_->TimerTaskRunner()));
+                            scheduler_->TimerTaskQueue()));
 
   for (int i = 0; i < 1000; i++) {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
@@ -3329,7 +3329,7 @@ TEST_F(RendererSchedulerImplTest,
         base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
                    base::Unretained(this)));
     EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE, CurrentUseCase()) << "i = " << i;
-    EXPECT_TRUE(scheduler_->TimerTaskRunner()->IsQueueEnabled()) << "i = " << i;
+    EXPECT_TRUE(scheduler_->TimerTaskQueue()->IsQueueEnabled()) << "i = " << i;
   }
 
   // Task is not throttled.
@@ -3360,7 +3360,7 @@ TEST_F(RendererSchedulerImplTest,
 
   EXPECT_TRUE(TimerTasksSeemExpensive());
   EXPECT_TRUE(TouchStartExpectedSoon());
-  EXPECT_FALSE(scheduler_->TimerTaskRunner()->IsQueueEnabled());
+  EXPECT_FALSE(scheduler_->TimerTaskQueue()->IsQueueEnabled());
 }
 
 TEST_F(RendererSchedulerImplTest, DenyLongIdleDuringTouchStart) {
@@ -3436,7 +3436,7 @@ TEST_F(RendererSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
   // Timer tasks should not have been starved by the expensive compositor
   // tasks.
   EXPECT_EQ(TaskQueue::NORMAL_PRIORITY,
-            scheduler_->CompositorTaskRunner()->GetQueuePriority());
+            scheduler_->CompositorTaskQueue()->GetQueuePriority());
   EXPECT_EQ(1000u, run_order.size());
 }
 
@@ -3479,7 +3479,7 @@ TEST_F(RendererSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
   // Timer tasks should not have been starved by the expensive compositor
   // tasks.
   EXPECT_EQ(TaskQueue::NORMAL_PRIORITY,
-            scheduler_->CompositorTaskRunner()->GetQueuePriority());
+            scheduler_->CompositorTaskQueue()->GetQueuePriority());
   EXPECT_EQ(1000u, run_order.size());
 }
 
@@ -3520,7 +3520,7 @@ TEST_F(RendererSchedulerImplTest, MAIN_THREAD_GESTURE) {
   }
 
   EXPECT_EQ(TaskQueue::HIGH_PRIORITY,
-            scheduler_->CompositorTaskRunner()->GetQueuePriority());
+            scheduler_->CompositorTaskQueue()->GetQueuePriority());
   EXPECT_EQ(279u, run_order.size());
 }
 
@@ -3608,13 +3608,13 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
   // task runner.
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
   scoped_refptr<TaskQueue> unthrottled_task_runner =
-      scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::UNTHROTTLED);
+      scheduler_->NewUnthrottledTaskQueue(TaskQueue::QueueType::UNTHROTTLED);
 
   size_t timer_count = 0;
   size_t unthrottled_count = 0;
-  scheduler_->TimerTaskRunner()->PostTask(
+  scheduler_->TimerTaskQueue()->PostTask(
       FROM_HERE, base::Bind(SlowCountingTask, &timer_count, clock_.get(), 7,
-                            scheduler_->TimerTaskRunner()));
+                            scheduler_->TimerTaskQueue()));
   unthrottled_task_runner->PostTask(
       FROM_HERE, base::Bind(SlowCountingTask, &unthrottled_count, clock_.get(),
                             7, unthrottled_task_runner));
@@ -3652,19 +3652,19 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
   scheduler_->EnableVirtualTime();
 
   scoped_refptr<TaskQueue> loading_tq =
-      scheduler_->NewLoadingTaskRunner(TaskQueue::QueueType::TEST);
+      scheduler_->NewLoadingTaskQueue(TaskQueue::QueueType::TEST);
   scoped_refptr<TaskQueue> timer_tq =
-      scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST);
+      scheduler_->NewTimerTaskQueue(TaskQueue::QueueType::TEST);
   scoped_refptr<TaskQueue> unthrottled_tq =
-      scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::TEST);
+      scheduler_->NewUnthrottledTaskQueue(TaskQueue::QueueType::TEST);
 
-  EXPECT_EQ(scheduler_->DefaultTaskRunner()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->DefaultTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->CompositorTaskRunner()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->CompositorTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->LoadingTaskRunner()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->LoadingTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->TimerTaskRunner()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->TimerTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
 
   EXPECT_EQ(loading_tq->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
@@ -3672,13 +3672,13 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
   EXPECT_EQ(unthrottled_tq->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
 
-  EXPECT_EQ(scheduler_->NewLoadingTaskRunner(TaskQueue::QueueType::TEST)
+  EXPECT_EQ(scheduler_->NewLoadingTaskQueue(TaskQueue::QueueType::TEST)
                 ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST)
+  EXPECT_EQ(scheduler_->NewTimerTaskQueue(TaskQueue::QueueType::TEST)
                 ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::TEST)
+  EXPECT_EQ(scheduler_->NewUnthrottledTaskQueue(TaskQueue::QueueType::TEST)
                 ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
 }
@@ -3687,18 +3687,18 @@ TEST_F(RendererSchedulerImplTest, DisableVirtualTimeForTesting) {
   scheduler_->EnableVirtualTime();
 
   scoped_refptr<TaskQueue> timer_tq =
-      scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST);
+      scheduler_->NewTimerTaskQueue(TaskQueue::QueueType::TEST);
   scoped_refptr<TaskQueue> unthrottled_tq =
-      scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::TEST);
+      scheduler_->NewUnthrottledTaskQueue(TaskQueue::QueueType::TEST);
 
   scheduler_->DisableVirtualTimeForTesting();
-  EXPECT_EQ(scheduler_->DefaultTaskRunner()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->DefaultTaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
-  EXPECT_EQ(scheduler_->CompositorTaskRunner()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->CompositorTaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
-  EXPECT_EQ(scheduler_->LoadingTaskRunner()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->LoadingTaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
-  EXPECT_EQ(scheduler_->TimerTaskRunner()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->TimerTaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
 }
 
@@ -3722,9 +3722,9 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
       scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool("test");
 
   time_budget_pool->AddQueue(base::TimeTicks(),
-                             scheduler_->TimerTaskRunner().get());
+                             scheduler_->TimerTaskQueue().get());
 
-  scheduler_->TimerTaskRunner()->PostTask(FROM_HERE, base::Bind(NullTask));
+  scheduler_->TimerTaskQueue()->PostTask(FROM_HERE, base::Bind(NullTask));
 
   web_frame_scheduler->LoadingTaskRunner()->PostDelayedTask(
       FROM_HERE, base::Bind(NullTask), 10);
@@ -3797,7 +3797,7 @@ TEST_F(RendererSchedulerImplTest, ResponsiveMainThreadDuringTask) {
       scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
   clock_->Advance(base::TimeDelta::FromSecondsD(2));
   scheduler_->WillProcessTask(
-      scheduler_->TimerTaskRunner().get(),
+      scheduler_->TimerTaskQueue().get(),
       (clock_->NowTicks() - base::TimeTicks()).InSecondsF());
   EXPECT_FALSE(
       scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));

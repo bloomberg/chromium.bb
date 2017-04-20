@@ -45,13 +45,13 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
   void OnTriedToExecuteBlockedTask(const TaskQueue& queue,
                                    const base::PendingTask& task) override;
 
-  // Returns the default task runner.
-  scoped_refptr<TaskQueue> DefaultTaskRunner();
+  // Returns the default task queue.
+  scoped_refptr<TaskQueue> DefaultTaskQueue();
 
-  // Returns the control task runner.  Tasks posted to this runner are executed
+  // Returns the control task queue.  Tasks posted to this queue are executed
   // with the highest priority. Care must be taken to avoid starvation of other
   // task queues.
-  scoped_refptr<TaskQueue> ControlTaskRunner();
+  scoped_refptr<TaskQueue> ControlTaskQueue();
 
   // Adds or removes a task observer from the scheduler. The observer will be
   // notified before and after every executed task. These functions can only be
@@ -63,7 +63,7 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
   void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer);
 
   // Shuts down the scheduler by dropping any remaining pending work in the work
-  // queues. After this call any work posted to the task runners will be
+  // queues. After this call any work posted to the task queue will be
   // silently dropped.
   void Shutdown();
 

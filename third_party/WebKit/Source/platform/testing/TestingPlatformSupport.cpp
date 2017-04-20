@@ -297,7 +297,7 @@ void TestingPlatformSupportWithMockScheduler::SetAutoAdvanceNowToPendingTasks(
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(auto_advance);
 }
 
-scheduler::RendererScheduler*
+scheduler::RendererSchedulerImpl*
 TestingPlatformSupportWithMockScheduler::GetRendererScheduler() const {
   return scheduler_.get();
 }

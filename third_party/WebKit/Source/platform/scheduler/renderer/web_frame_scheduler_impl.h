@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/scheduler/base/task_queue.h"
 
 namespace base {
 namespace trace_event {

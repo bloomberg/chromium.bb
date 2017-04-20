@@ -50,31 +50,19 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   static std::unique_ptr<RendererScheduler> Create();
 
   // Returns the compositor task runner.
-  virtual scoped_refptr<TaskQueue> CompositorTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  CompositorTaskRunner() = 0;
 
   // Creates a WebThread implementation for the renderer main thread.
   virtual std::unique_ptr<WebThread> CreateMainThread() = 0;
 
   // Returns the loading task runner.  This queue is intended for tasks related
   // to resource dispatch, foreground HTML parsing, etc...
-  virtual scoped_refptr<TaskQueue> LoadingTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() = 0;
 
   // Returns the timer task runner.  This queue is intended for DOM Timers.
   // TODO(alexclarke): Get rid of this default timer queue.
-  virtual scoped_refptr<TaskQueue> TimerTaskRunner() = 0;
-
-  // Returns a new loading task runner. This queue is intended for tasks related
-  // to resource dispatch, foreground HTML parsing, etc...
-  virtual scoped_refptr<TaskQueue> NewLoadingTaskRunner(
-      TaskQueue::QueueType queue_type) = 0;
-
-  // Returns a new timer task runner. This queue is intended for DOM Timers.
-  virtual scoped_refptr<TaskQueue> NewTimerTaskRunner(
-      TaskQueue::QueueType queue_type) = 0;
-
-  // Returns a task runner for tasks which should never get throttled.
-  virtual scoped_refptr<TaskQueue> NewUnthrottledTaskRunner(
-      TaskQueue::QueueType queue_type) = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() = 0;
 
   // Returns a new RenderWidgetSchedulingState.  The signals from this will be
   // used to make scheduling decisions.

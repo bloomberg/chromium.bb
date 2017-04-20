@@ -6,7 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_TEST_TASK_TIME_OBSERVER_H_
 
 #include "base/time/time.h"
-#include "public/platform/scheduler/base/task_time_observer.h"
+#include "platform/scheduler/base/task_time_observer.h"
 
 namespace blink {
 namespace scheduler {

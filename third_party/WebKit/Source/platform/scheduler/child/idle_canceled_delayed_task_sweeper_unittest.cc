@@ -7,8 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "public/platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/lazy_now.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/scheduler_helper.h"
@@ -52,7 +52,7 @@ class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
             new IdleCanceledDelayedTaskSweeper("test",
                                                scheduler_helper_.get(),
                                                idle_helper_->IdleTaskRunner())),
-        default_task_runner_(scheduler_helper_->DefaultTaskRunner()) {
+        default_task_runner_(scheduler_helper_->DefaultTaskQueue()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 

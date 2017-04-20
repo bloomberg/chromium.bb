@@ -30,9 +30,10 @@ class BLINK_PLATFORM_EXPORT CompositorWorkerScheduler
 
   // WorkerScheduler:
   void Init() override;
+  scoped_refptr<TaskQueue> DefaultTaskQueue() override;
 
   // ChildScheduler:
-  scoped_refptr<TaskQueue> DefaultTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> IdleTaskRunner()
       override;
   bool ShouldYieldForHighPriorityWork() override;

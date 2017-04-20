@@ -18,8 +18,8 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/scheduler/base/enqueue_order.h"
 #include "platform/scheduler/base/intrusive_heap.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/wtf/Deque.h"
-#include "public/platform/scheduler/base/task_queue.h"
 
 namespace blink {
 namespace scheduler {

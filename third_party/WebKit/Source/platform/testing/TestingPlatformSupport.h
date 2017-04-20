@@ -59,7 +59,6 @@ class WebCompositorSupportImpl;
 
 namespace blink {
 namespace scheduler {
-class RendererScheduler;
 class RendererSchedulerImpl;
 }
 class WebCompositorSupport;
@@ -161,7 +160,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   // Advances |m_clock| by |seconds|.
   void AdvanceClockSeconds(double seconds);
 
-  scheduler::RendererScheduler* GetRendererScheduler() const;
+  scheduler::RendererSchedulerImpl* GetRendererScheduler() const;
 
   // Controls the behavior of |m_mockTaskRunner| if true, then |m_clock| will
   // be advanced to the next timer when there's no more immediate work to do.

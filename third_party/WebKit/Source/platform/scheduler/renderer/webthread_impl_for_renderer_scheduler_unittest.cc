@@ -47,7 +47,7 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     scheduler_.reset(new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
         &message_loop_, base::MakeUnique<TestTimeSource>(clock_.get()))));
-    default_task_runner_ = scheduler_->DefaultTaskRunner();
+    default_task_runner_ = scheduler_->DefaultTaskQueue();
     thread_ = scheduler_->CreateMainThread();
   }
 

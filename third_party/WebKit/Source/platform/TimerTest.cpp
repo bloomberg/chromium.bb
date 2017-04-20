@@ -54,12 +54,12 @@ class TimerTest : public testing::Test {
   bool TimeTillNextDelayedTask(double* time) const {
     base::TimeTicks next_run_time;
     if (!platform_->GetRendererScheduler()
-             ->TimerTaskRunner()
+             ->TimerTaskQueue()
              ->GetTimeDomain()
              ->NextScheduledRunTime(&next_run_time))
       return false;
     *time = (next_run_time - platform_->GetRendererScheduler()
-                                 ->TimerTaskRunner()
+                                 ->TimerTaskQueue()
                                  ->GetTimeDomain()
                                  ->Now())
                 .InSecondsF();
@@ -536,7 +536,7 @@ class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 
 TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
   scoped_refptr<scheduler::TaskQueue> task_runner(
-      platform_->GetRendererScheduler()->NewTimerTaskRunner(
+      platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner =
       scheduler::WebTaskRunnerImpl::Create(task_runner);
@@ -624,7 +624,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   std::vector<RefPtr<WebTaskRunner>> run_order;
 
   scoped_refptr<scheduler::TaskQueue> task_runner1(
-      platform_->GetRendererScheduler()->NewTimerTaskRunner(
+      platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
       scheduler::WebTaskRunnerImpl::Create(task_runner1);
@@ -632,7 +632,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   task_runner1->AddTaskObserver(&task_observer1);
 
   scoped_refptr<scheduler::TaskQueue> task_runner2(
-      platform_->GetRendererScheduler()->NewTimerTaskRunner(
+      platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
       scheduler::WebTaskRunnerImpl::Create(task_runner2);
@@ -664,7 +664,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   std::vector<RefPtr<WebTaskRunner>> run_order;
 
   scoped_refptr<scheduler::TaskQueue> task_runner1(
-      platform_->GetRendererScheduler()->NewTimerTaskRunner(
+      platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
       scheduler::WebTaskRunnerImpl::Create(task_runner1);
@@ -672,7 +672,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   task_runner1->AddTaskObserver(&task_observer1);
 
   scoped_refptr<scheduler::TaskQueue> task_runner2(
-      platform_->GetRendererScheduler()->NewTimerTaskRunner(
+      platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
       scheduler::WebTaskRunnerImpl::Create(task_runner2);
@@ -706,13 +706,13 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 // runner it isn't activated.
 TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
   scoped_refptr<scheduler::TaskQueue> task_runner1(
-      platform_->GetRendererScheduler()->NewTimerTaskRunner(
+      platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
       scheduler::WebTaskRunnerImpl::Create(task_runner1);
 
   scoped_refptr<scheduler::TaskQueue> task_runner2(
-      platform_->GetRendererScheduler()->NewTimerTaskRunner(
+      platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
       scheduler::WebTaskRunnerImpl::Create(task_runner2);

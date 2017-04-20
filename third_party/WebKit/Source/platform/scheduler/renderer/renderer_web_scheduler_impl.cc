@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "public/platform/scheduler/base/task_queue.h"
+#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 namespace scheduler {
@@ -19,8 +19,8 @@ RendererWebSchedulerImpl::RendererWebSchedulerImpl(
     RendererSchedulerImpl* renderer_scheduler)
     : WebSchedulerImpl(renderer_scheduler,
                        renderer_scheduler->IdleTaskRunner(),
-                       renderer_scheduler->LoadingTaskRunner(),
-                       renderer_scheduler->TimerTaskRunner()),
+                       renderer_scheduler->LoadingTaskQueue(),
+                       renderer_scheduler->TimerTaskQueue()),
       renderer_scheduler_(renderer_scheduler) {}
 
 RendererWebSchedulerImpl::~RendererWebSchedulerImpl() {}

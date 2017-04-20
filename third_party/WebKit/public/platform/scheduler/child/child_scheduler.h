@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "public/platform/scheduler/base/task_queue.h"
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
 namespace base {
 class MessageLoop;
@@ -17,14 +17,13 @@ class MessageLoop;
 
 namespace blink {
 namespace scheduler {
-class TaskQueue;
 
 class BLINK_PLATFORM_EXPORT ChildScheduler {
  public:
   virtual ~ChildScheduler() {}
 
   // Returns the default task runner.
-  virtual scoped_refptr<TaskQueue> DefaultTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() = 0;
 
   // Returns the idle task runner. Tasks posted to this runner may be reordered
   // relative to other task types and may be starved for an arbitrarily long

@@ -9,8 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "public/platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/lazy_now.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,7 +58,7 @@ class SchedulerHelperTest : public testing::Test {
             "test.scheduler",
             TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
             TRACE_DISABLED_BY_DEFAULT("test.scheduler.dbg"))),
-        default_task_runner_(scheduler_helper_->DefaultTaskRunner()) {
+        default_task_runner_(scheduler_helper_->DefaultTaskQueue()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
@@ -132,18 +132,18 @@ TEST_F(SchedulerHelperTest, IsShutdown) {
 
 TEST_F(SchedulerHelperTest, DefaultTaskRunnerRegistration) {
   EXPECT_EQ(main_task_runner_->default_task_runner(),
-            scheduler_helper_->DefaultTaskRunner());
+            scheduler_helper_->DefaultTaskQueue());
   scheduler_helper_->Shutdown();
   EXPECT_EQ(nullptr, main_task_runner_->default_task_runner());
 }
 
 TEST_F(SchedulerHelperTest, GetNumberOfPendingTasks) {
   std::vector<std::string> run_order;
-  scheduler_helper_->DefaultTaskRunner()->PostTask(
+  scheduler_helper_->DefaultTaskQueue()->PostTask(
       FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D1"));
-  scheduler_helper_->DefaultTaskRunner()->PostTask(
+  scheduler_helper_->DefaultTaskQueue()->PostTask(
       FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D2"));
-  scheduler_helper_->ControlTaskRunner()->PostTask(
+  scheduler_helper_->ControlTaskQueue()->PostTask(
       FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "C1"));
   EXPECT_EQ(3U, scheduler_helper_->GetNumberOfPendingTasks());
   RunUntilIdle();
@@ -164,20 +164,20 @@ TEST_F(SchedulerHelperTest, ObserversNotifiedFor_DefaultTaskRunner) {
   MockTaskObserver observer;
   scheduler_helper_->AddTaskObserver(&observer);
 
-  scheduler_helper_->DefaultTaskRunner()->PostTask(FROM_HERE,
-                                                   base::Bind(&NopTask));
+  scheduler_helper_->DefaultTaskQueue()->PostTask(FROM_HERE,
+                                                  base::Bind(&NopTask));
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(1);
   RunUntilIdle();
 }
 
-TEST_F(SchedulerHelperTest, ObserversNotNotifiedFor_ControlTaskRunner) {
+TEST_F(SchedulerHelperTest, ObserversNotNotifiedFor_ControlTaskQueue) {
   MockTaskObserver observer;
   scheduler_helper_->AddTaskObserver(&observer);
 
-  scheduler_helper_->ControlTaskRunner()->PostTask(FROM_HERE,
-                                                   base::Bind(&NopTask));
+  scheduler_helper_->ControlTaskQueue()->PostTask(FROM_HERE,
+                                                  base::Bind(&NopTask));
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);

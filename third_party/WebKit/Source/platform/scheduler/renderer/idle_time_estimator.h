@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
 #include "cc/base/rolling_time_delta_history.h"
-#include "public/platform/scheduler/base/task_queue.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "public/platform/WebCommon.h"
 
 namespace blink {

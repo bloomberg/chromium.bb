@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/scheduler/base/task_queue.h"
 #include "public/platform/scheduler/child/child_scheduler.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
@@ -24,6 +24,10 @@ class BLINK_PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
   ~WorkerScheduler() override;
   static std::unique_ptr<WorkerScheduler> Create(
       scoped_refptr<SchedulerTqmDelegate> main_task_runner);
+
+  // Blink should use WorkerScheduler::DefaultTaskQueue instead of
+  // ChildScheduler::DefaultTaskRunner.
+  virtual scoped_refptr<TaskQueue> DefaultTaskQueue() = 0;
 
   // Must be called before the scheduler can be used. Does any post construction
   // initialization needed such as initializing idle period detection.

@@ -13,7 +13,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/real_time_domain.h"
-#include "public/platform/scheduler/base/task_queue.h"
+#include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_helper.h"
@@ -199,7 +199,7 @@ class BaseIdleHelperTest : public testing::Test {
         idle_helper_(new IdleHelperForTest(
             scheduler_helper_.get(),
             required_quiescence_duration_before_long_idle_period)),
-        default_task_runner_(scheduler_helper_->DefaultTaskRunner()),
+        default_task_runner_(scheduler_helper_->DefaultTaskQueue()),
         idle_task_runner_(idle_helper_->IdleTaskRunner()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
