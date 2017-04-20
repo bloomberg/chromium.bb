@@ -1090,12 +1090,13 @@ CrSettingsLanguagesTest.prototype = {
     'test_browser_proxy.js',
     'fake_language_settings_private.js',
     'fake_settings_private.js',
+    'fake_input_method_private.js',
     'languages_tests.js',
   ]),
 };
 
 // Flaky on Win and Linux, see http://crbug/692356.
-TEST_F('CrSettingsLanguagesTest', 'DISABLED_Languages', function() {
+TEST_F('CrSettingsLanguagesTest', 'Languages', function() {
   mocha.run();
 });
 

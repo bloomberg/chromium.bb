@@ -608,6 +608,13 @@
                  type="chrome_html"
                  preprocess="true"
                  allowexternalscript="true" />
+      <structure name="IDR_SETTINGS_LANGUAGES_BROWSER_PROXY_HTML"
+                 file="languages_page/languages_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_LANGUAGES_BROWSER_PROXY_JS"
+                 file="languages_page/languages_browser_proxy.js"
+                 preprocess="true"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_LANGUAGES_ADD_LANGUAGES_DIALOG_HTML"
                  file="languages_page/add_languages_dialog.html"
                  type="chrome_html" />
