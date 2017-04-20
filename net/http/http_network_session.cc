@@ -303,21 +303,23 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
   dict->SetBoolean("quic_enabled", IsQuicEnabled());
-  std::unique_ptr<base::ListValue> connection_options(new base::ListValue);
-  for (QuicTagVector::const_iterator it =
-           params_.quic_connection_options.begin();
-       it != params_.quic_connection_options.end(); ++it) {
-    connection_options->AppendString("'" + QuicTagToString(*it) + "'");
-  }
+
+  auto connection_options(base::MakeUnique<base::ListValue>());
+  for (const auto& option : params_.quic_connection_options)
+    connection_options->AppendString(QuicTagToString(option));
   dict->Set("connection_options", std::move(connection_options));
 
-  std::unique_ptr<base::ListValue> origins_to_force_quic_on(
-      new base::ListValue);
-  for (const auto& origin : params_.origins_to_force_quic_on) {
-    origins_to_force_quic_on->AppendString("'" + origin.ToString() + "'");
-  }
+  auto supported_versions(base::MakeUnique<base::ListValue>());
+  for (const auto& version : params_.quic_supported_versions)
+    supported_versions->AppendString(QuicVersionToString(version));
+  dict->Set("supported_versions", std::move(supported_versions));
+
+  auto origins_to_force_quic_on(base::MakeUnique<base::ListValue>());
+  for (const auto& origin : params_.origins_to_force_quic_on)
+    origins_to_force_quic_on->AppendString(origin.ToString());
   dict->Set("origins_to_force_quic_on", std::move(origins_to_force_quic_on));
 
+  dict->SetInteger("max_packet_length", params_.quic_max_packet_length);
   dict->SetInteger("max_server_configs_stored_in_properties",
                    params_.quic_max_server_configs_stored_in_properties);
   dict->SetInteger("idle_connection_timeout_seconds",
@@ -327,9 +329,29 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->SetInteger(
       "packet_reader_yield_after_duration_milliseconds",
       params_.quic_packet_reader_yield_after_duration_milliseconds);
-  dict->SetBoolean("force_hol_blocking", params_.quic_force_hol_blocking);
+
+  dict->SetBoolean("mark_quic_broken_when_network_blackholes",
+                   params_.mark_quic_broken_when_network_blackholes);
+  dict->SetBoolean("retry_without_alt_svc_on_quic_errors",
+                   params_.retry_without_alt_svc_on_quic_errors);
   dict->SetBoolean("race_cert_verification",
                    params_.quic_race_cert_verification);
+  dict->SetBoolean("disable_bidirectional_streams",
+                   params_.quic_disable_bidirectional_streams);
+  dict->SetBoolean("close_sessions_on_ip_change",
+                   params_.quic_close_sessions_on_ip_change);
+  dict->SetBoolean("migrate_sessions_on_network_change",
+                   params_.quic_migrate_sessions_on_network_change);
+  dict->SetBoolean("migrate_sessions_early",
+                   params_.quic_migrate_sessions_early);
+  dict->SetBoolean("allow_server_migration",
+                   params_.quic_allow_server_migration);
+  dict->SetBoolean("do_not_fragment", params_.quic_do_not_fragment);
+  dict->SetBoolean("do_not_mark_as_broken_on_network_change",
+                   params_.quic_do_not_mark_as_broken_on_network_change);
+  dict->SetBoolean("estimate_initial_rtt", params_.quic_estimate_initial_rtt);
+  dict->SetBoolean("force_hol_blocking", params_.quic_force_hol_blocking);
+
   return std::move(dict);
 }
 
