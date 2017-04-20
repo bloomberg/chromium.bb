@@ -158,6 +158,10 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
 // associated with window.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
 
+// A property key containing a boolean set to true whether the current
+// OnWindowActivated invocation should be ignored.
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIgnoreWindowActivated, false);
+
 wl_resource* GetSurfaceResource(Surface* surface) {
   return surface->GetProperty(kSurfaceResourceKey);
 }
@@ -1926,7 +1930,14 @@ void remote_surface_set_top_inset(wl_client* client,
 void remote_surface_activate(wl_client* client,
                              wl_resource* resource,
                              uint32_t serial) {
+  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+
+  // Activation on Aura is synchronous, so activation callbacks will be called
+  // before the flag is reset.
+  window->SetProperty(kIgnoreWindowActivated, true);
   GetUserDataAs<ShellSurface>(resource)->Activate();
+  window->ClearProperty(kIgnoreWindowActivated);
 }
 
 void remote_surface_maximize(wl_client* client, wl_resource* resource) {
@@ -2121,6 +2132,13 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
   // Overridden from WMHelper::ActivationObserver:
   void OnWindowActivated(aura::Window* gained_active,
                          aura::Window* lost_active) override {
+    // If the origin of activation is Wayland client, then assume it's been
+    // already activated on the client side, so do not notify about the
+    // activation. It means that zcr_remote_shell_v1_send_activated is used
+    // only to notify about activations originating in Aura.
+    if (gained_active && gained_active->GetProperty(kIgnoreWindowActivated))
+      return;
+
     SendActivated(gained_active, lost_active);
   }
 
