@@ -1058,11 +1058,20 @@ int SimpleSynchronousEntry::InitializeForOpen(
     if (empty_file_omitted_[i])
       continue;
 
-    if (!key_.empty()) {
-      header_and_key_check_needed_[i] = true;
-    } else {
+    if (key_.empty()) {
+      // If |key_| is empty, we were opened via the iterator interface, without
+      // knowing what our key is. We must therefore read the header immediately
+      // to discover it, so SimpleEntryImpl can make it available to
+      // disk_cache::Entry::GetKey().
       if (!CheckHeaderAndKey(i))
         return net::ERR_FAILED;
+    } else {
+      // If we do know which key were are looking for, we still need to
+      // check that the file actually has it (rather than just being a hash
+      // collision or some sort of file system accident), but that can be put
+      // off until opportune time: either the read of the footer, or when we
+      // start reading in the data, depending on stream # and format revision.
+      header_and_key_check_needed_[i] = true;
     }
 
     if (i == 0) {
