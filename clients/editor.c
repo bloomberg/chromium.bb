@@ -639,6 +639,9 @@ editor_copy_cut(struct editor *editor, struct input *input, bool cut)
 
 		editor->selection =
 			display_create_data_source(editor->display);
+		if (!editor->selection)
+			return;
+
 		wl_data_source_offer(editor->selection,
 				     "text/plain;charset=utf-8");
 		wl_data_source_add_listener(editor->selection,
