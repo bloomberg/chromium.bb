@@ -3286,3 +3286,5 @@ crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-enabledf
 crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-disabled.php [ Skip ]
 
 crbug.com/713462 [ Mac ] virtual/gpu/fast/canvas/canvas-ImageData-neutered-source.html [ Failure Pass ]
+
+crbug.com/713509 crypto/subtle/worker-subtle-crypto-concurrent.html [ Pass Timeout ]
