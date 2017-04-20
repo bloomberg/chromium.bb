@@ -97,11 +97,9 @@ class SyncEngineTest : public testing::Test,
   void PostUpdateServiceState(RemoteServiceState state,
                               const std::string& description) {
     worker_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeSyncWorker::UpdateServiceState,
-                   base::Unretained(fake_sync_worker()),
-                   state,
-                   description));
+        FROM_HERE, base::BindOnce(&FakeSyncWorker::UpdateServiceState,
+                                  base::Unretained(fake_sync_worker()), state,
+                                  description));
     WaitForWorkerTaskRunner();
   }
 

@@ -45,15 +45,11 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DriveUploaderWrapper::UploadNewFile,
-                 wrapper_,
-                 parent_resource_id,
-                 local_file_path,
-                 title,
-                 content_type,
-                 options,
-                 RelayCallbackToTaskRunner(
-                     worker_task_runner_.get(), FROM_HERE, callback)));
+      base::BindOnce(&DriveUploaderWrapper::UploadNewFile, wrapper_,
+                     parent_resource_id, local_file_path, title, content_type,
+                     options,
+                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
+                                               FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -69,14 +65,10 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadExistingFile(
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DriveUploaderWrapper::UploadExistingFile,
-                 wrapper_,
-                 resource_id,
-                 local_file_path,
-                 content_type,
-                 options,
-                 RelayCallbackToTaskRunner(
-                     worker_task_runner_.get(), FROM_HERE, callback)));
+      base::BindOnce(&DriveUploaderWrapper::UploadExistingFile, wrapper_,
+                     resource_id, local_file_path, content_type, options,
+                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
+                                               FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }

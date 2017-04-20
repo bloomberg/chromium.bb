@@ -104,7 +104,7 @@ ACTION_P3(NotifyStateAndCallback,
   mock_remote_service->NotifyRemoteServiceStateUpdated(
       service_state, "Test event.");
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg1, operation_status));
+      FROM_HERE, base::BindOnce(arg1, operation_status));
 }
 
 ACTION_P(RecordState, states) {
@@ -112,13 +112,13 @@ ACTION_P(RecordState, states) {
 }
 
 ACTION_P(MockStatusCallback, status) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg4, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::BindOnce(arg4, status));
 }
 
 ACTION_P2(MockSyncFileCallback, status, url) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg0, status, url));
+      FROM_HERE, base::BindOnce(arg0, status, url));
 }
 
 ACTION(InvokeCompletionClosure) {
@@ -424,12 +424,11 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
   // Start a local operation on the same file (to make it BUSY).
   base::RunLoop verify_file_error_run_loop;
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&CannedSyncableFileSystem::DoCreateFile,
-                 base::Unretained(file_system_.get()),
-                 kFile, base::Bind(&VerifyFileError,
-                                   verify_file_error_run_loop.QuitClosure())));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&CannedSyncableFileSystem::DoCreateFile,
+                     base::Unretained(file_system_.get()), kFile,
+                     base::Bind(&VerifyFileError,
+                                verify_file_error_run_loop.QuitClosure())));
 
   run_loop.Run();
 

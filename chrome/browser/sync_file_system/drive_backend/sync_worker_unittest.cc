@@ -39,8 +39,8 @@ namespace {
 const char kAppID[] = "app_id";
 
 void EmptyTask(SyncStatusCode status, const SyncStatusCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, status));
 }
 
 }  // namespace

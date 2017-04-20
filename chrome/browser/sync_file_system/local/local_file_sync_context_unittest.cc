@@ -184,8 +184,8 @@ class LocalFileSyncContextTest : public testing::Test {
       ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
       io_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&LocalFileSyncContextTest::StartModifyFileOnIOThread,
-                     base::Unretained(this), file_system, url));
+          base::BindOnce(&LocalFileSyncContextTest::StartModifyFileOnIOThread,
+                         base::Unretained(this), file_system, url));
       return;
     }
     ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
@@ -205,9 +205,8 @@ class LocalFileSyncContextTest : public testing::Test {
     if (!ui_task_runner_->RunsTasksOnCurrentThread()) {
       ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
       ui_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&LocalFileSyncContextTest::DidModifyFile,
-                     base::Unretained(this), error));
+          FROM_HERE, base::BindOnce(&LocalFileSyncContextTest::DidModifyFile,
+                                    base::Unretained(this), error));
       return;
     }
     ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());

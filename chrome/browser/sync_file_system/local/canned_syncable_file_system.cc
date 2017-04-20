@@ -68,10 +68,10 @@ R RunOnThread(
   base::RunLoop run_loop;
   task_runner->PostTask(
       location,
-      base::Bind(task, base::Bind(&AssignAndQuit<R>,
-                                  base::RetainedRef(
-                                      base::ThreadTaskRunnerHandle::Get()),
-                                  run_loop.QuitClosure(), &result)));
+      base::BindOnce(task, base::Bind(&AssignAndQuit<R>,
+                                      base::RetainedRef(
+                                          base::ThreadTaskRunnerHandle::Get()),
+                                      run_loop.QuitClosure(), &result)));
   run_loop.Run();
   return result;
 }
@@ -80,12 +80,11 @@ void RunOnThread(base::SingleThreadTaskRunner* task_runner,
                  const tracked_objects::Location& location,
                  const base::Closure& task) {
   base::RunLoop run_loop;
-  task_runner->PostTaskAndReply(
-      location, task,
-      base::Bind(base::IgnoreResult(
-          base::Bind(&base::SingleThreadTaskRunner::PostTask,
-                     base::ThreadTaskRunnerHandle::Get(),
-                     FROM_HERE, run_loop.QuitClosure()))));
+  task_runner->PostTaskAndReply(location, task,
+                                base::BindOnce(base::IgnoreResult(base::Bind(
+                                    &base::SingleThreadTaskRunner::PostTask,
+                                    base::ThreadTaskRunnerHandle::Get(),
+                                    FROM_HERE, run_loop.QuitClosure()))));
   run_loop.Run();
 }
 
@@ -98,8 +97,8 @@ void VerifySameTaskRunner(
     base::SingleThreadTaskRunner* runner2) {
   ASSERT_TRUE(runner1 != nullptr);
   ASSERT_TRUE(runner2 != nullptr);
-  runner1->PostTask(FROM_HERE,
-                    base::Bind(&EnsureRunningOn, base::RetainedRef(runner2)));
+  runner1->PostTask(
+      FROM_HERE, base::BindOnce(&EnsureRunningOn, base::RetainedRef(runner2)));
 }
 
 void OnCreateSnapshotFileAndVerifyData(
@@ -206,8 +205,8 @@ void DidGetUsageAndQuota(const storage::StatusCallback& callback,
 
 void EnsureLastTaskRuns(base::SingleThreadTaskRunner* runner) {
   base::RunLoop run_loop;
-  runner->PostTaskAndReply(
-      FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
+  runner->PostTaskAndReply(FROM_HERE, base::BindOnce(&base::DoNothing),
+                           run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -291,7 +290,7 @@ File::Error CannedSyncableFileSystem::OpenFileSystem() {
   base::RunLoop run_loop;
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &CannedSyncableFileSystem::DoOpenFileSystem, base::Unretained(this),
           base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,
                      base::Unretained(this),
@@ -737,10 +736,10 @@ void CannedSyncableFileSystem::DidOpenFileSystem(
   if (!original_task_runner->RunsTasksOnCurrentThread()) {
     DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
     original_task_runner->PostTask(
-        FROM_HERE, base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,
-                              base::Unretained(this),
-                              base::RetainedRef(original_task_runner),
-                              quit_closure, root, name, result));
+        FROM_HERE, base::BindOnce(&CannedSyncableFileSystem::DidOpenFileSystem,
+                                  base::Unretained(this),
+                                  base::RetainedRef(original_task_runner),
+                                  quit_closure, root, name, result));
     return;
   }
   result_ = result;

@@ -61,8 +61,7 @@ void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, SYNC_STATUS_OK,
-                 local_metadata, change_list));
+      base::BindOnce(callback, SYNC_STATUS_OK, local_metadata, change_list));
 }
 
 void FakeRemoteChangeProcessor::ApplyRemoteChange(
@@ -99,7 +98,7 @@ void FakeRemoteChangeProcessor::ApplyRemoteChange(
     status = SYNC_STATUS_OK;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, status));
+      FROM_HERE, base::BindOnce(callback, status));
 }
 
 void FakeRemoteChangeProcessor::FinalizeRemoteSync(
@@ -115,7 +114,7 @@ void FakeRemoteChangeProcessor::RecordFakeLocalChange(
     const SyncStatusCallback& callback) {
   local_changes_[url].Update(change);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+      FROM_HERE, base::BindOnce(callback, SYNC_STATUS_OK));
 }
 
 void FakeRemoteChangeProcessor::UpdateLocalFileMetadata(

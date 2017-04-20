@@ -91,13 +91,13 @@ void OnGetFileMetadata(const tracked_objects::Location& where,
 }
 
 ACTION_P(MockStatusCallback, status) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg4, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::BindOnce(arg4, status));
 }
 
 ACTION_P2(MockStatusCallbackAndRecordChange, status, changes) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg4, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::BindOnce(arg4, status));
   changes->push_back(arg0);
 }
 

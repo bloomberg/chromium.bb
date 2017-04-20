@@ -93,8 +93,7 @@ void MockRemoteFileSyncService::RegisterOriginStub(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, SYNC_STATUS_OK));
+      FROM_HERE, base::BindOnce(callback, SYNC_STATUS_OK));
 }
 
 void MockRemoteFileSyncService::DeleteOriginDirectoryStub(
@@ -102,16 +101,14 @@ void MockRemoteFileSyncService::DeleteOriginDirectoryStub(
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, SYNC_STATUS_OK));
+      FROM_HERE, base::BindOnce(callback, SYNC_STATUS_OK));
 }
 
 void MockRemoteFileSyncService::ProcessRemoteChangeStub(
     const SyncFileCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          callback, SYNC_STATUS_NO_CHANGE_TO_SYNC, storage::FileSystemURL()));
+      FROM_HERE, base::BindOnce(callback, SYNC_STATUS_NO_CHANGE_TO_SYNC,
+                                storage::FileSystemURL()));
 }
 
 RemoteServiceState MockRemoteFileSyncService::GetCurrentStateStub() const {

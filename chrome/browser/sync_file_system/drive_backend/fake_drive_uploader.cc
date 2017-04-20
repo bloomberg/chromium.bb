@@ -38,11 +38,8 @@ void DidAddFileForUploadNew(const UploadCompletionCallback& callback,
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 google_apis::HTTP_SUCCESS,
-                 GURL(),
-                 base::Passed(&entry)));
+      FROM_HERE, base::BindOnce(callback, google_apis::HTTP_SUCCESS, GURL(),
+                                base::Passed(&entry)));
 }
 
 void DidGetFileResourceForUploadExisting(
@@ -50,11 +47,7 @@ void DidGetFileResourceForUploadExisting(
     DriveApiErrorCode error,
     std::unique_ptr<FileResource> entry) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 error,
-                 GURL(),
-                 base::Passed(&entry)));
+      FROM_HERE, base::BindOnce(callback, error, GURL(), base::Passed(&entry)));
 }
 
 }  // namespace

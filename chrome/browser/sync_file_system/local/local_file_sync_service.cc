@@ -187,7 +187,7 @@ void LocalFileSyncService::HasPendingLocalChanges(
   if (!base::ContainsKey(origin_to_contexts_, url.origin())) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, SYNC_FILE_ERROR_INVALID_URL, false));
+        base::BindOnce(callback, SYNC_FILE_ERROR_INVALID_URL, false));
     return;
   }
   sync_context_->HasPendingLocalChanges(

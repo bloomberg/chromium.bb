@@ -34,7 +34,7 @@ void MockLocalChangeProcessor::ApplyLocalChangeStub(
     const storage::FileSystemURL& url,
     const SyncStatusCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+      FROM_HERE, base::BindOnce(callback, SYNC_STATUS_OK));
 }
 
 }  // namespace sync_file_system

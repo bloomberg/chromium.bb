@@ -71,7 +71,8 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
   if (base::ContainsKey(file_system_contexts_, file_system_context)) {
     // The context has been already initialized. Just dispatch the callback
     // with SYNC_STATUS_OK.
-    ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    ui_task_runner_->PostTask(FROM_HERE,
+                              base::BindOnce(callback, SYNC_STATUS_OK));
     return;
   }
 
@@ -90,13 +91,11 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
                  this, source_url, base::RetainedRef(file_system_context));
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&storage::SandboxFileSystemBackendDelegate::OpenFileSystem,
-                 base::Unretained(file_system_context->sandbox_delegate()),
-                 source_url,
-                 storage::kFileSystemTypeSyncable,
-                 storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                 open_filesystem_callback,
-                 GURL()));
+      base::BindOnce(&storage::SandboxFileSystemBackendDelegate::OpenFileSystem,
+                     base::Unretained(file_system_context->sandbox_delegate()),
+                     source_url, storage::kFileSystemTypeSyncable,
+                     storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                     open_filesystem_callback, GURL()));
 }
 
 void LocalFileSyncContext::ShutdownOnUIThread() {
@@ -104,7 +103,7 @@ void LocalFileSyncContext::ShutdownOnUIThread() {
   shutdown_on_ui_ = true;
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LocalFileSyncContext::ShutdownOnIOThread, this));
+      base::BindOnce(&LocalFileSyncContext::ShutdownOnIOThread, this));
 }
 
 void LocalFileSyncContext::GetFileForLocalSync(
@@ -131,9 +130,9 @@ void LocalFileSyncContext::ClearChangesForURL(
           RunsTasksOnCurrentThread()) {
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     file_system_context->default_file_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LocalFileSyncContext::ClearChangesForURL, this,
-                   base::RetainedRef(file_system_context), url, done_callback));
+        FROM_HERE, base::BindOnce(&LocalFileSyncContext::ClearChangesForURL,
+                                  this, base::RetainedRef(file_system_context),
+                                  url, done_callback));
     return;
   }
 
@@ -157,9 +156,9 @@ void LocalFileSyncContext::FinalizeSnapshotSync(
   if (!file_system_context->default_file_task_runner()->
           RunsTasksOnCurrentThread()) {
     file_system_context->default_file_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&LocalFileSyncContext::FinalizeSnapshotSync, this,
-                              base::RetainedRef(file_system_context), url,
-                              sync_finish_status, done_callback));
+        FROM_HERE, base::BindOnce(&LocalFileSyncContext::FinalizeSnapshotSync,
+                                  this, base::RetainedRef(file_system_context),
+                                  url, sync_finish_status, done_callback));
     return;
   }
 
@@ -180,8 +179,9 @@ void LocalFileSyncContext::FinalizeSnapshotSync(
   // We've been keeping it in writing mode, so clear the writing counter
   // to unblock sync activities.
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(
-          &LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread, this, url));
+      FROM_HERE,
+      base::BindOnce(&LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread,
+                     this, url));
 
   // Call the completion callback on UI thread.
   ui_task_runner_->PostTask(FROM_HERE, done_callback);
@@ -207,9 +207,8 @@ void LocalFileSyncContext::FinalizeExclusiveSync(
   }
 
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LocalFileSyncContext::ClearSyncFlagOnIOThread,
-                 this, url, false /* for_snapshot_sync */));
+      FROM_HERE, base::BindOnce(&LocalFileSyncContext::ClearSyncFlagOnIOThread,
+                                this, url, false /* for_snapshot_sync */));
 
   done_callback.Run();
 }
@@ -223,9 +222,9 @@ void LocalFileSyncContext::PrepareForSync(
   if (!io_task_runner_->RunsTasksOnCurrentThread()) {
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&LocalFileSyncContext::PrepareForSync, this,
-                              base::RetainedRef(file_system_context), url,
-                              sync_mode, callback));
+        FROM_HERE, base::BindOnce(&LocalFileSyncContext::PrepareForSync, this,
+                                  base::RetainedRef(file_system_context), url,
+                                  sync_mode, callback));
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -234,10 +233,11 @@ void LocalFileSyncContext::PrepareForSync(
   if (syncable)
     sync_status()->StartSyncing(url);
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&LocalFileSyncContext::DidGetWritingStatusForSync,
-                            this, base::RetainedRef(file_system_context),
-                            syncable ? SYNC_STATUS_OK : SYNC_STATUS_FILE_BUSY,
-                            url, sync_mode, callback));
+      FROM_HERE,
+      base::BindOnce(&LocalFileSyncContext::DidGetWritingStatusForSync, this,
+                     base::RetainedRef(file_system_context),
+                     syncable ? SYNC_STATUS_OK : SYNC_STATUS_FILE_BUSY, url,
+                     sync_mode, callback));
 }
 
 void LocalFileSyncContext::RegisterURLForWaitingSync(
@@ -248,8 +248,8 @@ void LocalFileSyncContext::RegisterURLForWaitingSync(
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::RegisterURLForWaitingSync,
-                   this, url, on_syncable_callback));
+        base::BindOnce(&LocalFileSyncContext::RegisterURLForWaitingSync, this,
+                       url, on_syncable_callback));
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -273,9 +273,9 @@ void LocalFileSyncContext::ApplyRemoteChange(
   if (!io_task_runner_->RunsTasksOnCurrentThread()) {
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&LocalFileSyncContext::ApplyRemoteChange, this,
-                              base::RetainedRef(file_system_context), change,
-                              local_path, url, callback));
+        FROM_HERE, base::BindOnce(&LocalFileSyncContext::ApplyRemoteChange,
+                                  this, base::RetainedRef(file_system_context),
+                                  change, local_path, url, callback));
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -410,9 +410,9 @@ void LocalFileSyncContext::RecordFakeLocalChange(
           RunsTasksOnCurrentThread()) {
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     file_system_context->default_file_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&LocalFileSyncContext::RecordFakeLocalChange,
-                              this, base::RetainedRef(file_system_context), url,
-                              change, callback));
+        FROM_HERE, base::BindOnce(&LocalFileSyncContext::RecordFakeLocalChange,
+                                  this, base::RetainedRef(file_system_context),
+                                  url, change, callback));
     return;
   }
 
@@ -425,8 +425,7 @@ void LocalFileSyncContext::RecordFakeLocalChange(
 
   // Fire the callback on UI thread.
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(callback,
-                                       SYNC_STATUS_OK));
+                            base::BindOnce(callback, SYNC_STATUS_OK));
 }
 
 void LocalFileSyncContext::GetFileMetadata(
@@ -438,8 +437,8 @@ void LocalFileSyncContext::GetFileMetadata(
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::GetFileMetadata, this,
-                   base::RetainedRef(file_system_context), url, callback));
+        base::BindOnce(&LocalFileSyncContext::GetFileMetadata, this,
+                       base::RetainedRef(file_system_context), url, callback));
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -464,8 +463,8 @@ void LocalFileSyncContext::HasPendingLocalChanges(
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     file_system_context->default_file_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::HasPendingLocalChanges, this,
-                   base::RetainedRef(file_system_context), url, callback));
+        base::BindOnce(&LocalFileSyncContext::HasPendingLocalChanges, this,
+                       base::RetainedRef(file_system_context), url, callback));
     return;
   }
 
@@ -477,10 +476,8 @@ void LocalFileSyncContext::HasPendingLocalChanges(
   backend->change_tracker()->GetChangesForURL(url, &changes);
 
   // Fire the callback on UI thread.
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(callback,
-                                       SYNC_STATUS_OK,
-                                       !changes.empty()));
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(callback, SYNC_STATUS_OK, !changes.empty()));
 }
 
 void LocalFileSyncContext::PromoteDemotedChanges(
@@ -494,8 +491,9 @@ void LocalFileSyncContext::PromoteDemotedChanges(
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     file_system_context->default_file_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::PromoteDemotedChanges, this, origin,
-                   base::RetainedRef(file_system_context), callback));
+        base::BindOnce(&LocalFileSyncContext::PromoteDemotedChanges, this,
+                       origin, base::RetainedRef(file_system_context),
+                       callback));
     return;
   }
 
@@ -509,9 +507,8 @@ void LocalFileSyncContext::PromoteDemotedChanges(
   }
 
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LocalFileSyncContext::UpdateChangesForOrigin,
-                 this, origin, callback));
+      FROM_HERE, base::BindOnce(&LocalFileSyncContext::UpdateChangesForOrigin,
+                                this, origin, callback));
 }
 
 void LocalFileSyncContext::UpdateChangesForOrigin(
@@ -595,9 +592,8 @@ void LocalFileSyncContext::NotifyAvailableChangesOnIOThread() {
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LocalFileSyncContext::NotifyAvailableChanges,
-                 this, origins_with_pending_changes_,
-                 completion_callbacks));
+      base::BindOnce(&LocalFileSyncContext::NotifyAvailableChanges, this,
+                     origins_with_pending_changes_, completion_callbacks));
   last_notified_changes_ = base::Time::Now();
   origins_with_pending_changes_.clear();
 }
@@ -736,8 +732,8 @@ void LocalFileSyncContext::DidInitialize(
   if (!ui_task_runner_->RunsTasksOnCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::DidInitialize, this, source_url,
-                   base::RetainedRef(file_system_context), status));
+        base::BindOnce(&LocalFileSyncContext::DidInitialize, this, source_url,
+                       base::RetainedRef(file_system_context), status));
     return;
   }
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -755,7 +751,7 @@ void LocalFileSyncContext::DidInitialize(
       pending_initialize_callbacks_[file_system_context];
   for (StatusCallbackQueue::iterator iter = callback_queue.begin();
        iter != callback_queue.end(); ++iter) {
-    ui_task_runner_->PostTask(FROM_HERE, base::Bind(*iter, status));
+    ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(*iter, status));
   }
   pending_initialize_callbacks_.erase(file_system_context);
 }
@@ -841,8 +837,8 @@ void LocalFileSyncContext::PromoteDemotedChangesForURL(
       return;
     file_system_context->default_file_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::PromoteDemotedChangesForURL, this,
-                   base::RetainedRef(file_system_context), url));
+        base::BindOnce(&LocalFileSyncContext::PromoteDemotedChangesForURL, this,
+                       base::RetainedRef(file_system_context), url));
     return;
   }
 
@@ -864,9 +860,9 @@ void LocalFileSyncContext::PromoteDemotedChangesForURLs(
       return;
     file_system_context->default_file_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::PromoteDemotedChangesForURLs, this,
-                   base::RetainedRef(file_system_context),
-                   base::Passed(&urls)));
+        base::BindOnce(&LocalFileSyncContext::PromoteDemotedChangesForURLs,
+                       this, base::RetainedRef(file_system_context),
+                       base::Passed(&urls)));
     return;
   }
 
@@ -892,9 +888,10 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
       return;
     }
     file_system_context->default_file_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&LocalFileSyncContext::DidGetWritingStatusForSync,
-                              this, base::RetainedRef(file_system_context),
-                              status, url, sync_mode, callback));
+        FROM_HERE,
+        base::BindOnce(&LocalFileSyncContext::DidGetWritingStatusForSync, this,
+                       base::RetainedRef(file_system_context), status, url,
+                       sync_mode, callback));
     return;
   }
 
@@ -964,13 +961,13 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
     // the same URL)
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::ClearSyncFlagOnIOThread,
-                   this, url, true /* for_snapshot_sync */));
+        base::BindOnce(&LocalFileSyncContext::ClearSyncFlagOnIOThread, this,
+                       url, true /* for_snapshot_sync */));
   }
 
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(callback, status, sync_file_info,
-                                       base::Passed(&snapshot)));
+                            base::BindOnce(callback, status, sync_file_info,
+                                           base::Passed(&snapshot)));
 }
 
 void LocalFileSyncContext::ClearSyncFlagOnIOThread(
@@ -1010,7 +1007,7 @@ void LocalFileSyncContext::DidApplyRemoteChange(
   root_delete_helper_.reset();
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(callback_on_ui, FileErrorToSyncStatusCode(file_error)));
+      base::BindOnce(callback_on_ui, FileErrorToSyncStatusCode(file_error)));
 }
 
 void LocalFileSyncContext::DidGetFileMetadata(
@@ -1026,8 +1023,8 @@ void LocalFileSyncContext::DidGetFileMetadata(
     metadata.last_modified = file_info.last_modified;
   }
   ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(callback, FileErrorToSyncStatusCode(file_error), metadata));
+      FROM_HERE, base::BindOnce(callback, FileErrorToSyncStatusCode(file_error),
+                                metadata));
 }
 
 base::TimeDelta LocalFileSyncContext::NotifyChangesDuration() {

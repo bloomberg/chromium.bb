@@ -272,8 +272,8 @@ void SyncFileSystemBackend::InitializeSyncFileSystemService(
     // It is safe to pass Unretained(this) (see comments in OpenFileSystem()).
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&SyncFileSystemBackend::InitializeSyncFileSystemService,
-                   base::Unretained(this), origin_url, callback));
+        base::BindOnce(&SyncFileSystemBackend::InitializeSyncFileSystemService,
+                       base::Unretained(this), origin_url, callback));
     return;
   }
 
@@ -302,9 +302,10 @@ void SyncFileSystemBackend::DidInitializeSyncFileSystemService(
     // It is safe to pass Unretained(this) since |context| owns it.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SyncFileSystemBackend::DidInitializeSyncFileSystemService,
-                   base::Unretained(this), base::RetainedRef(context),
-                   origin_url, type, mode, callback, status));
+        base::BindOnce(
+            &SyncFileSystemBackend::DidInitializeSyncFileSystemService,
+            base::Unretained(this), base::RetainedRef(context), origin_url,
+            type, mode, callback, status));
     return;
   }
 

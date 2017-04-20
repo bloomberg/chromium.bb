@@ -34,8 +34,8 @@ namespace {
 
 void DumbTask(SyncStatusCode status,
               const SyncStatusCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, status));
 }
 
 void IncrementAndAssign(int expected_before_counter,
@@ -110,7 +110,7 @@ class TaskManagerClient
     if (is_idle_task)
       ++idle_task_scheduled_count_;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, status_to_return));
+        FROM_HERE, base::BindOnce(callback, status_to_return));
   }
 
   std::unique_ptr<SyncTaskManager> task_manager_;
@@ -141,8 +141,8 @@ class MultihopSyncTask : public ExclusiveTask {
     DCHECK(!*task_started_);
     *task_started_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MultihopSyncTask::CompleteTask,
-                              weak_ptr_factory_.GetWeakPtr(), callback));
+        FROM_HERE, base::BindOnce(&MultihopSyncTask::CompleteTask,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  private:
@@ -203,8 +203,8 @@ class BackgroundTask : public SyncTask {
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BackgroundTask::CompleteTask,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+        base::BindOnce(&BackgroundTask::CompleteTask,
+                       weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
   }
 
   void CompleteTask(std::unique_ptr<SyncTaskToken> token) {
@@ -273,8 +273,8 @@ class BlockerUpdateTestHelper : public SyncTask {
     log_->push_back(name_ + ": updated to " + updated_to);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BlockerUpdateTestHelper::UpdateBlocker,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+        base::BindOnce(&BlockerUpdateTestHelper::UpdateBlocker,
+                       weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
   }
 
   std::string name_;

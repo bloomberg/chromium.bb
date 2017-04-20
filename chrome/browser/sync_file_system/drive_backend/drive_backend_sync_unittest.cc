@@ -597,11 +597,9 @@ class DriveBackendSyncTest : public testing::Test,
     base::RunLoop run_loop;
     worker_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SyncWorker::CallOnIdleForTesting,
-                   base::Unretained(sync_worker()),
-                   RelayCallbackToCurrentThread(
-                       FROM_HERE,
-                       run_loop.QuitClosure())));
+        base::BindOnce(
+            &SyncWorker::CallOnIdleForTesting, base::Unretained(sync_worker()),
+            RelayCallbackToCurrentThread(FROM_HERE, run_loop.QuitClosure())));
     run_loop.Run();
   }
 

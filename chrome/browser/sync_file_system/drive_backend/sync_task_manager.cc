@@ -262,8 +262,8 @@ void SyncTaskManager::NotifyTaskDoneBody(std::unique_ptr<SyncTaskToken> token,
   // making the call-chaing longer.
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncTaskManager::MaybeStartNextForegroundTask,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+      base::BindOnce(&SyncTaskManager::MaybeStartNextForegroundTask,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
 }
 
 void SyncTaskManager::UpdateTaskBlockerBody(

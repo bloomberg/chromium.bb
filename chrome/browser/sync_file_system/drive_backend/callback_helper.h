@@ -78,7 +78,7 @@ struct RelayToTaskRunnerHelper<void(Args...)> {
   static void Run(CallbackHolder<void(Args...)>* holder, Args... args) {
     holder->task_runner()->PostTask(
         holder->from_here(),
-        base::Bind(holder->callback(), RebindForward(args)...));
+        base::BindOnce(holder->callback(), RebindForward(args)...));
   }
 };
 
