@@ -442,7 +442,7 @@ notify_output_destroy(struct wl_listener *listener, void *data)
 				      struct weston_output, link);
 		evdev_device_set_output(device, output);
 	} else {
-		device->output = NULL;
+		evdev_device_set_output(device, NULL);
 	}
 }
 
@@ -555,6 +555,14 @@ evdev_device_set_output(struct evdev_device *device,
 	if (device->output_destroy_listener.notify) {
 		wl_list_remove(&device->output_destroy_listener.link);
 		device->output_destroy_listener.notify = NULL;
+	}
+
+	if (!output) {
+		weston_log("output for input device %s removed\n",
+			   libinput_device_get_sysname(device->device));
+
+		device->output = NULL;
+		return;
 	}
 
 	weston_log("associating input device %s with output %s "
