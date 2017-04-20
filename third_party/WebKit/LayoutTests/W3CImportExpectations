@@ -30,7 +30,6 @@ external/wpt/WebIDL/valid [ Skip ]
 ## Owners: blink-network-dev@chromium.org
 # external/wpt/XMLHttpRequest [ Pass ]
 external/wpt/ambient-light [ Skip ]
-external/wpt/animation-timing [ Skip ]
 external/wpt/annotation-model [ Skip ]
 external/wpt/annotation-protocol [ Skip ]
 external/wpt/annotation-vocab [ Skip ]
@@ -50,7 +49,6 @@ external/wpt/conformance-checkers [ Skip ]
 # external/wpt/content-security-policy [ Pass ]
 external/wpt/cookies [ Skip ]
 external/wpt/cors [ Skip ]
-external/wpt/csp [ Skip ]
 external/wpt/css/CSS1 [ Skip ]
 ## Owners: kojii@chromium.org
 # external/wpt/css/CSS2 [ Pass ]
@@ -60,7 +58,6 @@ external/wpt/css/CSS2/LICENSE-W3CTS [ Skip ]
 external/wpt/css/CSS2/Makefile [ Skip ]
 ## Owners: atotic@chromium.org glebl@chromium.org
 # external/wpt/css/CSS2/abspos [ Pass ]
-external/wpt/css/CSS2/archive [ Skip ]
 external/wpt/css/CSS2/backgrounds [ Skip ]
 external/wpt/css/CSS2/bidi-005.xht [ Skip ]
 external/wpt/css/CSS2/bidi-006.xht [ Skip ]
@@ -112,7 +109,6 @@ external/wpt/css/CSS2/sec5 [ Skip ]
 external/wpt/css/CSS2/section-index.xht [ Skip ]
 external/wpt/css/CSS2/selector [ Skip ]
 external/wpt/css/CSS2/selectors [ Skip ]
-external/wpt/css/CSS2/src [ Skip ]
 external/wpt/css/CSS2/syntax [ Skip ]
 external/wpt/css/CSS2/tables [ Skip ]
 external/wpt/css/CSS2/text [ Skip ]
@@ -124,18 +120,15 @@ external/wpt/css/CSS2/visuren [ Skip ]
 external/wpt/css/CSS2/zindex [ Skip ]
 external/wpt/css/CSS2/zorder [ Skip ]
 external/wpt/css/WOFF2 [ Skip ]
-external/wpt/css/WOFF2-UserAgent [ Skip ]
 external/wpt/css/compositing-1 [ Skip ]
 ## Owners: jfernandez@igalia.com
 # external/wpt/css/css-align-3 [ Pass ]
 external/wpt/css/css-animations-1 [ Skip ]
 external/wpt/css/css-backgrounds-3 [ Skip ]
 external/wpt/css/css-block-3 [ Skip ]
-external/wpt/css/css-box-3 [ Skip ]
 external/wpt/css/css-break-3 [ Skip ]
 external/wpt/css/css-cascade-3 [ Skip ]
 external/wpt/css/css-cascade-4 [ Skip ]
-external/wpt/css/css-color-3 [ Skip ]
 external/wpt/css/css-color-4 [ Skip ]
 external/wpt/css/css-conditional-3 [ Skip ]
 external/wpt/css/css-counter-styles-3 [ Skip ]
@@ -167,7 +160,6 @@ external/wpt/css/css-ruby-1 [ Skip ]
 ## Owners: bjonesbe@adobe.com
 # external/wpt/css/css-shapes-1 [ Pass ]
 external/wpt/css/css-speech-1 [ Skip ]
-external/wpt/css/css-style-attr-1 [ Skip ]
 external/wpt/css/css-syntax-3 [ Skip ]
 external/wpt/css/css-style-attr [ Skip ]
 external/wpt/css/css-tables-3 [ Skip ]
@@ -200,13 +192,9 @@ external/wpt/css/css-variables-1 [ Skip ]
 # external/wpt/css/css-writing-modes-3 [ Pass ]
 external/wpt/css/css3-color [ Skip ]
 external/wpt/css/css3-selectors [ Skip ]
-## Owners: style-dev@chromium.org
-# external/wpt/css/cssom [ Pass ]
 external/wpt/css/filter-effects-1 [ Skip ]
-external/wpt/css/filters-1 [ Skip ]
 external/wpt/css/geometry-1 [ Skip ]
 external/wpt/css/mediaqueries-3 [ Skip ]
-external/wpt/css/selectors-3 [ Skip ]
 ## Owners: rego@igalia.com
 # external/wpt/css/selectors4 [ Pass ]
 external/wpt/css/tools [ Skip ]
@@ -248,7 +236,6 @@ external/wpt/css/.htaccess [ Skip ]
 # external/wpt/cssom-view [ Pass ]
 ## Owners: dom-dev@chromium.org
 # external/wpt/custom-elements [ Pass ]
-external/wpt/custom-elements/v0/registering/unresolved-element-pseudoclass [ Skip ]
 external/wpt/docs [ Skip ]
 ## Owners: dom-dev@chromium.org
 external/wpt/dom [ Pass ]
@@ -368,7 +355,6 @@ external/wpt/svg/import [ Skip ]
 external/wpt/tools [ Skip ]
 ## Owners: chongz@chromium.org
 # external/wpt/touch-events [ Pass ]
-external/wpt/typedarrays [ Skip ]
 ## Owners: dtapuska@chromium.org
 # external/wpt/uievents [ Pass ]
 external/wpt/url [ Skip ]
@@ -506,19 +492,8 @@ external/wpt/html/editing/dnd/platform/plugin/swfsources [ Skip ]
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-003.html [ Skip ]
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-004.html [ Skip ]
 
-# We'll never be able to test WebRTC deny tests since we always auto-allow
-# user media.
-external/wpt/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Skip ]
-
 # Requires http server. Needs http: scheme, using XHR, etc.
 external/wpt/FileAPI/url/url_xmlhttprequest_img.html [ Skip ]
-
-# Requires http server. Moved the following test to http/tests/custom-elements/.
-external/wpt/custom-elements/v0/creating-and-passing-registries/no-registry-test.html [ Skip ]
-
-# crbug.com/404303: Was broken as of 2014-07-06.
-external/wpt/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html
-external/wpt/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html
 
 # Uses custom request handler
 external/wpt/encoding/single-byte-decoder.html [ Skip ]
@@ -528,9 +503,6 @@ external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-re
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-addEventListener.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-no-listener.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-onerror.html [ Skip ]
-
-# This test requires manual interventions.
-external/wpt/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html [ Skip ]
 
 # Uses TAB character for indentation
 external/wpt/touch-events/multi-touch-interactions.js [ Skip ]
@@ -643,7 +615,6 @@ external/wpt/html/browsers/history/the-history-interface/002.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/joint_session_history/002.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/traverse_the_history_1.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/traverse_the_history_write_after_load_1.html [ Skip ]
-external/wpt/html/browsers/windows/browsing-context-names/browsing-context-choose-self-2.html [ Skip ]
 external/wpt/html/semantics/document-metadata/the-style-element/style-error-01.html [ Skip ]
 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-allowfullscreen.html [ Skip ]
 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-1.html [ Skip ]
@@ -654,11 +625,6 @@ external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_p
 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-3.html [ Skip ]
 external/wpt/html/semantics/forms/form-submission-0/url-encoded.html [ Skip ]
 external/wpt/svg/linking/scripted [ Skip ]
-
-# This test depends on a support file with non-LF new lines, which
-# causes a patch error in the bot_update step when importing this test.
-crbug.com/691107 external/wpt/webvtt/webvtt-file-format-parsing/webvtt-file-parsing/001.html [ Skip ]
-crbug.com/691107 external/wpt/webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/newlines.vtt [ Skip ]
 
 # Manual tests that fail as TIMEOUT or NOTRUN. Consider adding wpt_automation.
 external/wpt/FileAPI/BlobURL/test1-manual.html [ Skip ]
