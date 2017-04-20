@@ -4228,10 +4228,9 @@ TEST_P(ParameterizedWebFrameTest, ReloadDoesntSetRedirect) {
 class ClearScrollStateOnCommitWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  void DidCommitProvisionalLoad(WebLocalFrame* frame,
-                                const WebHistoryItem&,
+  void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType) override {
-    frame->View()->ResetScrollAndScaleState();
+    Frame()->View()->ResetScrollAndScaleState();
   }
 };
 
@@ -6338,11 +6337,9 @@ class TestSubstituteDataWebFrameClient
                             error.unreachable_url, true);
   }
 
-  virtual void DidCommitProvisionalLoad(WebLocalFrame* frame,
-                                        const WebHistoryItem&,
+  virtual void DidCommitProvisionalLoad(const WebHistoryItem&,
                                         WebHistoryCommitType) {
-    ASSERT_EQ(Frame(), frame);
-    if (frame->DataSource()->GetResponse().Url() !=
+    if (Frame()->DataSource()->GetResponse().Url() !=
         WebURL(URLTestHelpers::ToKURL("about:blank")))
       commit_called_ = true;
   }
@@ -6394,8 +6391,7 @@ class TestWillInsertBodyWebFrameClient
  public:
   TestWillInsertBodyWebFrameClient() : num_bodies_(0), did_load_(false) {}
 
-  void DidCommitProvisionalLoad(WebLocalFrame*,
-                                const WebHistoryItem&,
+  void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType) override {
     num_bodies_ = 0;
     did_load_ = true;
@@ -9289,11 +9285,10 @@ class RemoteToLocalSwapWebFrameClient
         remote_frame_(remote_frame) {}
 
   void DidCommitProvisionalLoad(
-      WebLocalFrame* frame,
       const WebHistoryItem&,
       WebHistoryCommitType history_commit_type) override {
     history_commit_type_ = history_commit_type;
-    remote_frame_->Swap(frame);
+    remote_frame_->Swap(Frame());
   }
 
   WebHistoryCommitType HistoryCommitType() const {
@@ -9321,6 +9316,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterNewRemoteToLocalSwap) {
   RemoteToLocalSwapWebFrameClient client(remote_frame);
   WebLocalFrame* local_frame = WebLocalFrame::CreateProvisional(
       &client, nullptr, nullptr, remote_frame, WebSandboxFlags::kNone);
+  client.SetFrame(local_frame);
   FrameTestHelpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   EXPECT_EQ(kWebInitialCommitInChildFrame, client.HistoryCommitType());
 
@@ -9346,6 +9342,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap) {
   RemoteToLocalSwapWebFrameClient client(remote_frame);
   WebLocalFrame* local_frame = WebLocalFrame::CreateProvisional(
       &client, nullptr, nullptr, remote_frame, WebSandboxFlags::kNone);
+  client.SetFrame(local_frame);
   local_frame->SetCommittedFirstRealLoad();
   FrameTestHelpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   EXPECT_EQ(kWebStandardCommit, client.HistoryCommitType());
@@ -9524,7 +9521,6 @@ class CommitTypeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
       : history_commit_type_(kWebHistoryInertCommit) {}
 
   void DidCommitProvisionalLoad(
-      WebLocalFrame*,
       const WebHistoryItem&,
       WebHistoryCommitType history_commit_type) override {
     history_commit_type_ = history_commit_type;
@@ -10347,8 +10343,7 @@ class CallbackOrderingWebFrameClient
   void DidStartProvisionalLoad(WebDataSource*, WebURLRequest&) override {
     EXPECT_EQ(1, callback_count_++);
   }
-  void DidCommitProvisionalLoad(WebLocalFrame*,
-                                const WebHistoryItem&,
+  void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType) override {
     EXPECT_EQ(2, callback_count_++);
   }

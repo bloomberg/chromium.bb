@@ -367,8 +367,7 @@ class BLINK_EXPORT WebFrameClient {
   // The provisional datasource is now committed.  The first part of the
   // response body has been received, and the encoding of the response
   // body is known.
-  virtual void DidCommitProvisionalLoad(WebLocalFrame*,
-                                        const WebHistoryItem&,
+  virtual void DidCommitProvisionalLoad(const WebHistoryItem&,
                                         WebHistoryCommitType) {}
 
   // The frame's document has just been initialized.

@@ -455,11 +455,10 @@ void WebFrameTestClient::DidFailProvisionalLoad(
 }
 
 void WebFrameTestClient::DidCommitProvisionalLoad(
-    blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType history_type) {
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
-    PrintFrameDescription(delegate_, frame);
+    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
     delegate_->PrintMessage(" - didCommitLoadForFrame\n");
   }
 }

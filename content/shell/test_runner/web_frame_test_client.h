@@ -67,7 +67,6 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void DidFailProvisionalLoad(const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;
   void DidCommitProvisionalLoad(
-      blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& history_item,
       blink::WebHistoryCommitType history_type) override;
   void DidReceiveTitle(blink::WebLocalFrame* frame,

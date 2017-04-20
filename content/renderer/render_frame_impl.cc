@@ -3627,14 +3627,11 @@ void RenderFrameImpl::DidFailProvisionalLoad(
 }
 
 void RenderFrameImpl::DidCommitProvisionalLoad(
-    blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());
-  DCHECK_EQ(frame_, frame);
-
   // TODO(dcheng): Remove this UMA once we have enough measurements.
   // Record the number of subframes where window.name changes between the
   // creation of the frame and the first commit that records a history entry
@@ -3675,10 +3672,10 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   }
 
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame->DataSource());
+      DocumentState::FromDataSource(frame_->DataSource());
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
-  const WebURLResponse& web_url_response = frame->DataSource()->GetResponse();
+  const WebURLResponse& web_url_response = frame_->DataSource()->GetResponse();
   WebURLResponseExtraDataImpl* extra_data =
       GetExtraDataFromResponse(web_url_response);
   // Only update the PreviewsState and effective connection type states for new
@@ -3762,13 +3759,13 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   }
 
   for (auto& observer : render_view_->observers_)
-    observer.DidCommitProvisionalLoad(frame, is_new_navigation);
+    observer.DidCommitProvisionalLoad(frame_, is_new_navigation);
   for (auto& observer : observers_) {
     observer.DidCommitProvisionalLoad(
         is_new_navigation, navigation_state->WasWithinSameDocument());
   }
 
-  if (!frame->Parent()) {  // Only for top frames.
+  if (!frame_->Parent()) {  // Only for top frames.
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
     if (render_thread_impl) {  // Can be NULL in tests.
       render_thread_impl->histogram_customizer()->
@@ -3791,10 +3788,10 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // new navigation.
   navigation_state->set_request_committed(true);
 
-  SendDidCommitProvisionalLoad(frame, commit_type);
+  SendDidCommitProvisionalLoad(frame_, commit_type);
 
   // Check whether we have new encoding name.
-  UpdateEncoding(frame, frame->View()->PageEncoding().Utf8());
+  UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
 }
 
 void RenderFrameImpl::DidCreateNewDocument(blink::WebLocalFrame* frame) {
@@ -4098,7 +4095,7 @@ void RenderFrameImpl::DidNavigateWithinPage(
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(true);
 
-  DidCommitProvisionalLoad(frame_, item, commit_type);
+  DidCommitProvisionalLoad(item, commit_type);
 }
 
 void RenderFrameImpl::DidUpdateCurrentHistoryItem() {

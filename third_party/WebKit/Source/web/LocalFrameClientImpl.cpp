@@ -390,8 +390,7 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
 
   if (web_frame_->Client()) {
     web_frame_->Client()->DidCommitProvisionalLoad(
-        web_frame_, WebHistoryItem(item),
-        static_cast<WebHistoryCommitType>(commit_type));
+        WebHistoryItem(item), static_cast<WebHistoryCommitType>(commit_type));
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
