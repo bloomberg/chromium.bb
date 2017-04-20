@@ -698,20 +698,7 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
 struct DecoderTextureState {
   // total_texture_upload_time automatically initialized to 0 in default
   // constructor.
-  explicit DecoderTextureState(const GpuDriverBugWorkarounds& workarounds)
-      : tex_image_failed(false),
-        texture_upload_count(0),
-        texsubimage_faster_than_teximage(
-            workarounds.texsubimage_faster_than_teximage),
-        force_cube_map_positive_x_allocation(
-            workarounds.force_cube_map_positive_x_allocation),
-        force_cube_complete(workarounds.force_cube_complete),
-        unpack_alignment_workaround_with_unpack_buffer(
-            workarounds.unpack_alignment_workaround_with_unpack_buffer),
-        unpack_overlapping_rows_separately_unpack_buffer(
-            workarounds.unpack_overlapping_rows_separately_unpack_buffer),
-        unpack_image_height_workaround_with_unpack_buffer(
-            workarounds.unpack_image_height_workaround_with_unpack_buffer) {}
+  explicit DecoderTextureState(const GpuDriverBugWorkarounds& workarounds);
 
   // This indicates all the following texSubImage*D calls that are part of the
   // failed texImage*D call should be ignored. The client calls have a lock
@@ -726,6 +713,7 @@ struct DecoderTextureState {
   bool texsubimage_faster_than_teximage;
   bool force_cube_map_positive_x_allocation;
   bool force_cube_complete;
+  bool force_int_or_srgb_cube_texture_complete;
   bool unpack_alignment_workaround_with_unpack_buffer;
   bool unpack_overlapping_rows_separately_unpack_buffer;
   bool unpack_image_height_workaround_with_unpack_buffer;

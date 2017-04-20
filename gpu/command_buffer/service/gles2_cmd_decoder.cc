@@ -14355,6 +14355,32 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   const gfx::Rect dst(0, 0, size.width(), size.height());
   src.Intersect(dst);
 
+  GLenum final_internal_format = TextureManager::AdjustTexInternalFormat(
+      feature_info_.get(), internal_format);
+  if (workarounds().force_int_or_srgb_cube_texture_complete &&
+      texture->target() == GL_TEXTURE_CUBE_MAP &&
+      (GLES2Util::IsIntegerFormat(final_internal_format) ||
+       GLES2Util::GetColorEncodingFromInternalFormat(final_internal_format) ==
+           GL_SRGB)) {
+    TextureManager::DoTexImageArguments args = {
+        target,
+        level,
+        final_internal_format,
+        width,
+        height,
+        1,
+        border,
+        format,
+        type,
+        nullptr,
+        pixels_size,
+        0,
+        TextureManager::DoTexImageArguments::kTexImage2D};
+    texture_manager()->WorkaroundCopyTexImageCubeMap(
+        &texture_state_, &state_, &framebuffer_state_, texture_ref, func_name,
+        args);
+  }
+
   if (src.x() != x || src.y() != y ||
       src.width() != width || src.height() != height) {
     {
@@ -14364,9 +14390,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
       std::unique_ptr<char[]> zero(new char[pixels_size]);
       memset(zero.get(), 0, pixels_size);
-      glTexImage2D(target, level, TextureManager::AdjustTexInternalFormat(
-        feature_info_.get(), internal_format),
-        width, height, border, format, type, zero.get());
+      glTexImage2D(target, level, final_internal_format, width, height, border,
+                   format, type, zero.get());
     }
 
     if (!src.IsEmpty()) {
@@ -14385,8 +14410,6 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       }
     }
   } else {
-    GLenum final_internal_format = TextureManager::AdjustTexInternalFormat(
-        feature_info_.get(), internal_format);
     if (workarounds().init_two_cube_map_levels_before_copyteximage &&
         texture->target() == GL_TEXTURE_CUBE_MAP &&
         target != GL_TEXTURE_CUBE_MAP_POSITIVE_X) {

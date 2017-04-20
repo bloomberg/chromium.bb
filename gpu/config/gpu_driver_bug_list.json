@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.3",
+  "version": "10.4",
   "entries": [
     {
       "id": 1,
@@ -2361,6 +2361,18 @@
       "vendor_id": "0x1002",
       "features": [
         "disable_software_to_accelerated_canvas_upgrade"
+      ]
+    },
+    {
+      "id": 223,
+      "description": "Force integer or srgb cube map texture complete on Linux AMD",
+      "cr_bugs": [712117],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "force_int_or_srgb_cube_texture_complete"
       ]
     }
   ],
