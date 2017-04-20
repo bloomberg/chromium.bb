@@ -357,13 +357,29 @@ bool MediaStreamDevicesController::IsAskingForVideo() const {
 
 void MediaStreamDevicesController::PromptAnswered(ContentSetting setting,
                                                   bool persist) {
-  ContentSetting audio_setting = GetNewSetting(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, old_audio_setting_, setting);
-  ContentSetting video_setting = GetNewSetting(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, old_video_setting_, setting);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (persist)
-    StorePermission(audio_setting, video_setting);
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  ContentSetting audio_setting = old_audio_setting_;
+  if (old_audio_setting_ == CONTENT_SETTING_ASK) {
+    if (persist && setting != CONTENT_SETTING_ASK) {
+      host_content_settings_map->SetContentSettingDefaultScope(
+          request_.security_origin, GURL(),
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), setting);
+    }
+    audio_setting = setting;
+  }
+
+  ContentSetting video_setting = old_video_setting_;
+  if (old_video_setting_ == CONTENT_SETTING_ASK) {
+    if (persist && setting != CONTENT_SETTING_ASK) {
+      host_content_settings_map->SetContentSettingDefaultScope(
+          request_.security_origin, GURL(),
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), setting);
+    }
+    video_setting = setting;
+  }
 
   content::MediaStreamRequestResult denial_reason = content::MEDIA_DEVICE_OK;
   if (setting == CONTENT_SETTING_ASK)
@@ -455,6 +471,9 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback)
     : web_contents_(web_contents), request_(request), callback_(callback) {
+  DCHECK(content::IsOriginSecure(request_.security_origin) ||
+         request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY);
+
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   content_settings_ = TabSpecificContentSettings::FromWebContents(web_contents);
 
@@ -625,28 +644,6 @@ void MediaStreamDevicesController::RunCallback(
   base::ResetAndReturn(&callback_).Run(devices, request_result, std::move(ui));
 }
 
-void MediaStreamDevicesController::StorePermission(
-    ContentSetting new_audio_setting,
-    ContentSetting new_video_setting) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(content::IsOriginSecure(request_.security_origin) ||
-         request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY);
-
-  if (IsAskingForAudio() && new_audio_setting != CONTENT_SETTING_ASK) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->SetContentSettingDefaultScope(request_.security_origin, GURL(),
-                                        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                                        std::string(), new_audio_setting);
-  }
-  if (IsAskingForVideo() && new_video_setting != CONTENT_SETTING_ASK) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->SetContentSettingDefaultScope(
-            request_.security_origin, GURL(),
-            CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(),
-            new_video_setting);
-  }
-}
-
 void MediaStreamDevicesController::UpdateTabSpecificContentSettings(
     ContentSetting audio_setting,
     ContentSetting video_setting) const {
@@ -733,16 +730,6 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
   }
 
   return result.content_setting;
-}
-
-ContentSetting MediaStreamDevicesController::GetNewSetting(
-    ContentSettingsType content_type,
-    ContentSetting old_setting,
-    ContentSetting user_decision) const {
-  ContentSetting result = old_setting;
-  if (old_setting == CONTENT_SETTING_ASK)
-    result = user_decision;
-  return result;
 }
 
 bool MediaStreamDevicesController::IsUserAcceptAllowed(

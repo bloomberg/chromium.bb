@@ -145,11 +145,6 @@ class MediaStreamDevicesController {
                    ContentSetting video_setting,
                    content::MediaStreamRequestResult denial_reason);
 
-  // Store the permission to use media devices for the origin of the request.
-  // This is triggered when the user makes a decision.
-  void StorePermission(ContentSetting new_audio_setting,
-                       ContentSetting new_video_setting) const;
-
   // Called when the permission has been set to update the
   // TabSpecificContentSettings.
   void UpdateTabSpecificContentSettings(ContentSetting audio_setting,
@@ -160,14 +155,6 @@ class MediaStreamDevicesController {
       ContentSettingsType content_type,
       const content::MediaStreamRequest& request,
       content::MediaStreamRequestResult* denial_reason) const;
-
-  // Returns the content setting that should apply given an old content setting
-  // and a user decision that has been made. If a user isn't being asked for one
-  // of audio/video then we shouldn't change that setting, even if they accept
-  // the dialog.
-  ContentSetting GetNewSetting(ContentSettingsType content_type,
-                               ContentSetting old_setting,
-                               ContentSetting user_decision) const;
 
   // Returns true if clicking allow on the dialog should give access to the
   // requested devices.
