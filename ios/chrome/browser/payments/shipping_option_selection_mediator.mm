@@ -4,29 +4,22 @@
 
 #include <vector>
 
-#import "ios/chrome/browser/payments/shipping_address_selection_mediator.h"
+#import "ios/chrome/browser/payments/shipping_option_selection_mediator.h"
 
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/payments/core/currency_formatter.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
-#import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace {
-using ::payment_request_util::GetNameLabelFromAutofillProfile;
-using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
-using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
-}  // namespace
-
-@interface ShippingAddressSelectionMediator ()
+@interface ShippingOptionSelectionMediator ()
 
 // The PaymentRequest object owning an instance of web::PaymentRequest as
 // provided by the page invoking the Payment Request API. This is a weak
@@ -34,11 +27,11 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The selectable items to display in the collection.
-@property(nonatomic, strong) NSArray<AutofillProfileItem*>* items;
+@property(nonatomic, strong) NSArray<PaymentsTextItem*>* items;
 
 @end
 
-@implementation ShippingAddressSelectionMediator
+@implementation ShippingOptionSelectionMediator
 
 @synthesize headerText = _headerText;
 @synthesize state = _state;
@@ -79,27 +72,26 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 }
 
 - (CollectionViewItem*)addButtonItem {
-  PaymentsTextItem* addButtonItem = [[PaymentsTextItem alloc] init];
-  addButtonItem.text = l10n_util::GetNSString(IDS_PAYMENTS_ADD_ADDRESS);
-  addButtonItem.image = NativeImage(IDR_IOS_PAYMENTS_ADD);
-  return addButtonItem;
+  return nil;
 }
 
 #pragma mark - Helper methods
 
-- (NSArray<AutofillProfileItem*>*)createItems {
-  const std::vector<autofill::AutofillProfile*>& shippingProfiles =
-      _paymentRequest->shipping_profiles();
-  NSMutableArray<AutofillProfileItem*>* items =
-      [NSMutableArray arrayWithCapacity:shippingProfiles.size()];
-  for (size_t index = 0; index < shippingProfiles.size(); ++index) {
-    autofill::AutofillProfile* shippingAddress = shippingProfiles[index];
-    DCHECK(shippingAddress);
-    AutofillProfileItem* item = [[AutofillProfileItem alloc] init];
-    item.name = GetNameLabelFromAutofillProfile(*shippingAddress);
-    item.address = GetShippingAddressLabelFromAutofillProfile(*shippingAddress);
-    item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*shippingAddress);
-    if (_paymentRequest->selected_shipping_profile() == shippingAddress)
+- (NSArray<PaymentsTextItem*>*)createItems {
+  const std::vector<web::PaymentShippingOption*>& shippingOptions =
+      _paymentRequest->shipping_options();
+  NSMutableArray<PaymentsTextItem*>* items =
+      [NSMutableArray arrayWithCapacity:shippingOptions.size()];
+  for (size_t index = 0; index < shippingOptions.size(); ++index) {
+    web::PaymentShippingOption* shippingOption = shippingOptions[index];
+    DCHECK(shippingOption);
+    PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
+    item.text = base::SysUTF16ToNSString(shippingOption->label);
+    payments::CurrencyFormatter* currencyFormatter =
+        _paymentRequest->GetOrCreateCurrencyFormatter();
+    item.detailText = SysUTF16ToNSString(currencyFormatter->Format(
+        base::UTF16ToASCII(shippingOption->amount.value)));
+    if (_paymentRequest->selected_shipping_option() == shippingOption)
       _selectedItemIndex = index;
 
     [items addObject:item];

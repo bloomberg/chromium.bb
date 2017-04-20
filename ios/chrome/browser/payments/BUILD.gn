@@ -20,9 +20,8 @@ source_set("payments") {
     "payment_items_display_view_controller_actions.h",
     "payment_method_selection_coordinator.h",
     "payment_method_selection_coordinator.mm",
-    "payment_method_selection_view_controller.h",
-    "payment_method_selection_view_controller.mm",
-    "payment_method_selection_view_controller_actions.h",
+    "payment_method_selection_mediator.h",
+    "payment_method_selection_mediator.mm",
     "payment_request.h",
     "payment_request.mm",
     "payment_request_coordinator.h",
@@ -45,9 +44,8 @@ source_set("payments") {
     "shipping_address_selection_mediator.mm",
     "shipping_option_selection_coordinator.h",
     "shipping_option_selection_coordinator.mm",
-    "shipping_option_selection_view_controller.h",
-    "shipping_option_selection_view_controller.mm",
-    "shipping_option_selection_view_controller_actions.h",
+    "shipping_option_selection_mediator.h",
+    "shipping_option_selection_mediator.mm",
   ]
   deps = [
     ":payments_ui",
@@ -128,7 +126,6 @@ source_set("unit_tests") {
     "payment_items_display_coordinator_unittest.mm",
     "payment_items_display_view_controller_unittest.mm",
     "payment_method_selection_coordinator_unittest.mm",
-    "payment_method_selection_view_controller_unittest.mm",
     "payment_request_coordinator_unittest.mm",
     "payment_request_error_coordinator_unittest.mm",
     "payment_request_error_view_controller_unittest.mm",
@@ -139,7 +136,6 @@ source_set("unit_tests") {
     "payment_request_view_controller_unittest.mm",
     "shipping_address_selection_coordinator_unittest.mm",
     "shipping_option_selection_coordinator_unittest.mm",
-    "shipping_option_selection_view_controller_unittest.mm",
   ]
   deps = [
     ":payments",

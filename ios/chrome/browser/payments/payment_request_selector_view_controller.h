@@ -20,13 +20,15 @@
             (PaymentRequestSelectorViewController*)controller
                         didSelectItemAtIndex:(NSUInteger)index;
 
-// Notifies the delegate that the user has chosen to add an item.
-- (void)paymentRequestSelectorViewControllerDidSelectAddItem:
-    (PaymentRequestSelectorViewController*)controller;
-
 // Notifies the delegate that the user has chosen to return to the previous
 // screen without making a selection.
 - (void)paymentRequestSelectorViewControllerDidFinish:
+    (PaymentRequestSelectorViewController*)controller;
+
+@optional
+
+// Notifies the delegate that the user has chosen to add an item.
+- (void)paymentRequestSelectorViewControllerDidSelectAddItem:
     (PaymentRequestSelectorViewController*)controller;
 
 @end

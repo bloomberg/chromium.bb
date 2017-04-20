@@ -151,6 +151,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
       }
       break;
     }
+    case ItemTypeSelectableItem: {
+      if ([cell isKindOfClass:[PaymentsTextCell class]]) {
+        PaymentsTextCell* textCell =
+            base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
+        textCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
+      }
+      break;
+    }
     default:
       break;
   }
@@ -194,7 +202,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeAddItem: {
-      [self.delegate paymentRequestSelectorViewControllerDidSelectAddItem:self];
+      if ([self.delegate
+              respondsToSelector:@selector
+              (paymentRequestSelectorViewControllerDidSelectAddItem:)]) {
+        [self.delegate
+            paymentRequestSelectorViewControllerDidSelectAddItem:self];
+      }
       break;
     }
     default:

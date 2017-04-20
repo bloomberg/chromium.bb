@@ -4,9 +4,12 @@
 
 #import "ios/chrome/browser/payments/shipping_option_selection_coordinator.h"
 
+#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/payments/core/strings_util.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
+#include "ios/chrome/browser/payments/shipping_option_selection_mediator.h"
 #include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,12 +18,18 @@
 
 namespace {
 using ::payment_request_util::GetShippingOptionSelectorErrorMessage;
+using ::payments::GetShippingOptionSectionString;
+
+// The delay in nano seconds before notifying the delegate of the selection.
+const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 }  // namespace
 
 @interface ShippingOptionSelectionCoordinator ()
 
 @property(nonatomic, strong)
-    ShippingOptionSelectionViewController* viewController;
+    PaymentRequestSelectorViewController* viewController;
+
+@property(nonatomic, strong) ShippingOptionSelectionMediator* mediator;
 
 // Called when the user selects a shipping option. The cell is checked, the
 // UI is locked so that the user can't interact with it, then the delegate is
@@ -36,70 +45,78 @@ using ::payment_request_util::GetShippingOptionSelectorErrorMessage;
 @synthesize paymentRequest = _paymentRequest;
 @synthesize delegate = _delegate;
 @synthesize viewController = _viewController;
+@synthesize mediator = _mediator;
 
 - (void)start {
-  _viewController = [[ShippingOptionSelectionViewController alloc]
-      initWithPaymentRequest:_paymentRequest];
-  [_viewController setDelegate:self];
-  [_viewController loadModel];
+  self.mediator = [[ShippingOptionSelectionMediator alloc]
+      initWithPaymentRequest:self.paymentRequest];
+
+  self.viewController = [[PaymentRequestSelectorViewController alloc] init];
+  self.viewController.title = base::SysUTF16ToNSString(
+      GetShippingOptionSectionString(self.paymentRequest->shipping_type()));
+  self.viewController.delegate = self;
+  self.viewController.dataSource = self.mediator;
+  [self.viewController loadModel];
 
   DCHECK(self.baseViewController.navigationController);
   [self.baseViewController.navigationController
-      pushViewController:_viewController
+      pushViewController:self.viewController
                 animated:YES];
 }
 
 - (void)stop {
   [self.baseViewController.navigationController popViewControllerAnimated:YES];
-  _viewController = nil;
+  self.viewController = nil;
+  self.mediator = nil;
 }
 
 - (void)stopSpinnerAndDisplayError {
   // Re-enable user interactions that were disabled earlier in
   // delayedNotifyDelegateOfSelection.
-  _viewController.view.userInteractionEnabled = YES;
+  self.viewController.view.userInteractionEnabled = YES;
 
-  [_viewController setPending:NO];
-  DCHECK(_paymentRequest);
-  [_viewController
-      setErrorMessage:GetShippingOptionSelectorErrorMessage(*_paymentRequest)];
-  [_viewController loadModel];
-  [[_viewController collectionView] reloadData];
+  DCHECK(self.paymentRequest);
+  self.mediator.headerText =
+      GetShippingOptionSelectorErrorMessage(*self.paymentRequest);
+  self.mediator.state = PaymentRequestSelectorStateError;
+  [self.viewController loadModel];
+  [self.viewController.collectionView reloadData];
 }
 
-#pragma mark - ShippingOptionSelectionViewControllerDelegate
+#pragma mark - PaymentRequestSelectorViewControllerDelegate
 
-- (void)shippingOptionSelectionViewController:
-            (ShippingOptionSelectionViewController*)controller
-                      didSelectShippingOption:
-                          (web::PaymentShippingOption*)shippingOption {
-  [self delayedNotifyDelegateOfSelection:shippingOption];
+- (void)paymentRequestSelectorViewController:
+            (PaymentRequestSelectorViewController*)controller
+                        didSelectItemAtIndex:(NSUInteger)index {
+  // Update the data source with the selection.
+  self.mediator.selectedItemIndex = index;
+
+  DCHECK(index < self.paymentRequest->shipping_options().size());
+  [self delayedNotifyDelegateOfSelection:self.paymentRequest
+                                             ->shipping_options()[index]];
 }
 
-- (void)shippingOptionSelectionViewControllerDidReturn:
-    (ShippingOptionSelectionViewController*)controller {
-  [_delegate shippingOptionSelectionCoordinatorDidReturn:self];
+- (void)paymentRequestSelectorViewControllerDidFinish:
+    (PaymentRequestSelectorViewController*)controller {
+  [self.delegate shippingOptionSelectionCoordinatorDidReturn:self];
 }
+
+#pragma mark - Helper methods
 
 - (void)delayedNotifyDelegateOfSelection:
     (web::PaymentShippingOption*)shippingOption {
-  _viewController.view.userInteractionEnabled = NO;
+  self.viewController.view.userInteractionEnabled = NO;
   __weak ShippingOptionSelectionCoordinator* weakSelf = self;
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                               static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
-                 dispatch_get_main_queue(), ^{
-                   ShippingOptionSelectionCoordinator* strongSelf = weakSelf;
-                   // Early return if the coordinator has been deallocated.
-                   if (!strongSelf)
-                     return;
-                   [strongSelf.viewController setPending:YES];
-                   [strongSelf.viewController loadModel];
-                   [[strongSelf.viewController collectionView] reloadData];
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW, kDelegateNotificationDelayInNanoSeconds),
+      dispatch_get_main_queue(), ^{
+        [weakSelf.mediator setState:PaymentRequestSelectorStatePending];
+        [weakSelf.viewController loadModel];
+        [weakSelf.viewController.collectionView reloadData];
 
-                   [strongSelf.delegate
-                       shippingOptionSelectionCoordinator:strongSelf
-                                  didSelectShippingOption:shippingOption];
-                 });
+        [weakSelf.delegate shippingOptionSelectionCoordinator:weakSelf
+                                      didSelectShippingOption:shippingOption];
+      });
 }
 
 @end

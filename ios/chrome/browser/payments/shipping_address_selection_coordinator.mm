@@ -20,6 +20,9 @@ namespace {
 using ::payment_request_util::GetShippingAddressSelectorErrorMessage;
 using ::payments::GetShippingAddressSectionString;
 using ::payments::GetShippingAddressSelectorInfoMessage;
+
+// The delay in nano seconds before notifying the delegate of the selection.
+const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 }  // namespace
 
 @interface ShippingAddressSelectionCoordinator ()
@@ -116,12 +119,11 @@ using ::payments::GetShippingAddressSelectorInfoMessage;
   self.viewController.view.userInteractionEnabled = NO;
   __weak ShippingAddressSelectionCoordinator* weakSelf = self;
   dispatch_after(
-      dispatch_time(DISPATCH_TIME_NOW,
-                    static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
+      dispatch_time(DISPATCH_TIME_NOW, kDelegateNotificationDelayInNanoSeconds),
       dispatch_get_main_queue(), ^{
         [weakSelf.mediator setState:PaymentRequestSelectorStatePending];
         [weakSelf.viewController loadModel];
-        [[weakSelf.viewController collectionView] reloadData];
+        [weakSelf.viewController.collectionView reloadData];
 
         [weakSelf.delegate shippingAddressSelectionCoordinator:weakSelf
                                       didSelectShippingAddress:shippingAddress];

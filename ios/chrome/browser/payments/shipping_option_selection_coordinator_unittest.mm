@@ -11,8 +11,8 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/payments/payment_request_selector_view_controller.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
-#import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -37,7 +37,7 @@ class PaymentRequestShippingOptionSelectionCoordinatorTest
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
-// the ShippingOptionSelectionViewController, respectively.
+// the PaymentRequestSelectorViewController, respectively.
 TEST_F(PaymentRequestShippingOptionSelectionCoordinatorTest, StartAndStop) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   UINavigationController* navigation_controller =
@@ -59,7 +59,7 @@ TEST_F(PaymentRequestShippingOptionSelectionCoordinatorTest, StartAndStop) {
   UIViewController* view_controller =
       navigation_controller.visibleViewController;
   EXPECT_TRUE([view_controller
-      isMemberOfClass:[ShippingOptionSelectionViewController class]]);
+      isMemberOfClass:[PaymentRequestSelectorViewController class]]);
 
   [coordinator stop];
   // Short delay to allow animation to complete.
@@ -85,9 +85,9 @@ TEST_F(PaymentRequestShippingOptionSelectionCoordinatorTest,
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
       mockForProtocol:@protocol(ShippingOptionSelectionCoordinatorDelegate)];
-  web::PaymentShippingOption option;
+  web::PaymentShippingOption* option = payment_request_->shipping_options()[1];
   [[delegate expect] shippingOptionSelectionCoordinator:coordinator
-                                didSelectShippingOption:&option];
+                                didSelectShippingOption:option];
   [coordinator setDelegate:delegate];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
@@ -98,11 +98,11 @@ TEST_F(PaymentRequestShippingOptionSelectionCoordinatorTest,
   EXPECT_EQ(2u, navigation_controller.viewControllers.count);
 
   // Call the controller delegate method.
-  ShippingOptionSelectionViewController* view_controller =
-      base::mac::ObjCCastStrict<ShippingOptionSelectionViewController>(
+  PaymentRequestSelectorViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestSelectorViewController>(
           navigation_controller.visibleViewController);
-  [coordinator shippingOptionSelectionViewController:view_controller
-                             didSelectShippingOption:&option];
+  [coordinator paymentRequestSelectorViewController:view_controller
+                               didSelectItemAtIndex:1];
 
   // Wait for the coordinator delegate to be notified.
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
@@ -138,10 +138,10 @@ TEST_F(PaymentRequestShippingOptionSelectionCoordinatorTest, DidReturn) {
   EXPECT_EQ(2u, navigation_controller.viewControllers.count);
 
   // Call the controller delegate method.
-  ShippingOptionSelectionViewController* view_controller =
-      base::mac::ObjCCastStrict<ShippingOptionSelectionViewController>(
+  PaymentRequestSelectorViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestSelectorViewController>(
           navigation_controller.visibleViewController);
-  [coordinator shippingOptionSelectionViewControllerDidReturn:view_controller];
+  [coordinator paymentRequestSelectorViewControllerDidFinish:view_controller];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }

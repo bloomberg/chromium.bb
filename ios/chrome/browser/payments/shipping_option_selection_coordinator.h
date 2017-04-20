@@ -9,7 +9,7 @@
 #include <vector>
 
 #import "ios/chrome/browser/chrome_coordinator.h"
-#import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
+#import "ios/chrome/browser/payments/payment_request_selector_view_controller.h"
 
 class PaymentRequest;
 
@@ -39,7 +39,7 @@ class PaymentShippingOption;
 // selection view controller. This view controller will be presented by the view
 // controller provided in the initializer.
 @interface ShippingOptionSelectionCoordinator
-    : ChromeCoordinator<ShippingOptionSelectionViewControllerDelegate>
+    : ChromeCoordinator<PaymentRequestSelectorViewControllerDelegate>
 
 // The PaymentRequest object having a copy of web::PaymentRequest as provided by
 // the page invoking the Payment Request API. This pointer is not owned by this

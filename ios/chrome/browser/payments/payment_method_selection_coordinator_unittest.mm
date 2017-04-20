@@ -7,11 +7,11 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#import "ios/chrome/browser/payments/payment_method_selection_view_controller.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/payments/payment_request_selector_view_controller.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,18 +26,25 @@
 class PaymentRequestPaymentMethodSelectionCoordinatorTest
     : public PlatformTest {
  protected:
-  PaymentRequestPaymentMethodSelectionCoordinatorTest() {
+  PaymentRequestPaymentMethodSelectionCoordinatorTest()
+      : credit_card1_(autofill::test::GetCreditCard()),
+        credit_card2_(autofill::test::GetCreditCard2()) {
+    // Add testing credit cards to autofill::TestPersonalDataManager.
+    personal_data_manager_.AddTestingCreditCard(&credit_card1_);
+    personal_data_manager_.AddTestingCreditCard(&credit_card2_);
     payment_request_ = base::MakeUnique<PaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
   }
 
+  autofill::CreditCard credit_card1_;
+  autofill::CreditCard credit_card2_;
   autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<PaymentRequest> payment_request_;
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
-// the PaymentMethodSelectionViewController, respectively.
+// the PaymentRequestSelectorViewController, respectively.
 TEST_F(PaymentRequestPaymentMethodSelectionCoordinatorTest, StartAndStop) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   UINavigationController* navigation_controller =
@@ -59,7 +66,7 @@ TEST_F(PaymentRequestPaymentMethodSelectionCoordinatorTest, StartAndStop) {
   UIViewController* view_controller =
       navigation_controller.visibleViewController;
   EXPECT_TRUE([view_controller
-      isMemberOfClass:[PaymentMethodSelectionViewController class]]);
+      isMemberOfClass:[PaymentRequestSelectorViewController class]]);
 
   [coordinator stop];
   // Short delay to allow animation to complete.
@@ -85,9 +92,9 @@ TEST_F(PaymentRequestPaymentMethodSelectionCoordinatorTest,
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
       mockForProtocol:@protocol(PaymentMethodSelectionCoordinatorDelegate)];
-  autofill::CreditCard credit_card;
+  autofill::CreditCard* credit_card = payment_request_->credit_cards()[1];
   [[delegate expect] paymentMethodSelectionCoordinator:coordinator
-                                didSelectPaymentMethod:&credit_card];
+                                didSelectPaymentMethod:credit_card];
   [coordinator setDelegate:delegate];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
@@ -98,11 +105,11 @@ TEST_F(PaymentRequestPaymentMethodSelectionCoordinatorTest,
   EXPECT_EQ(2u, navigation_controller.viewControllers.count);
 
   // Call the controller delegate method.
-  PaymentMethodSelectionViewController* view_controller =
-      base::mac::ObjCCastStrict<PaymentMethodSelectionViewController>(
+  PaymentRequestSelectorViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestSelectorViewController>(
           navigation_controller.visibleViewController);
-  [coordinator paymentMethodSelectionViewController:view_controller
-                             didSelectPaymentMethod:&credit_card];
+  [coordinator paymentRequestSelectorViewController:view_controller
+                               didSelectItemAtIndex:1];
 
   // Wait for the coordinator delegate to be notified.
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
@@ -138,10 +145,10 @@ TEST_F(PaymentRequestPaymentMethodSelectionCoordinatorTest, DidReturn) {
   EXPECT_EQ(2u, navigation_controller.viewControllers.count);
 
   // Call the controller delegate method.
-  PaymentMethodSelectionViewController* view_controller =
-      base::mac::ObjCCastStrict<PaymentMethodSelectionViewController>(
+  PaymentRequestSelectorViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestSelectorViewController>(
           navigation_controller.visibleViewController);
-  [coordinator paymentMethodSelectionViewControllerDidReturn:view_controller];
+  [coordinator paymentRequestSelectorViewControllerDidFinish:view_controller];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }

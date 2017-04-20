@@ -10,7 +10,7 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/payments/credit_card_edit_coordinator.h"
-#import "ios/chrome/browser/payments/payment_method_selection_view_controller.h"
+#import "ios/chrome/browser/payments/payment_request_selector_view_controller.h"
 
 class PaymentRequest;
 
@@ -39,7 +39,7 @@ class CreditCard;
 // selection view controller. This view controller will be presented by the view
 // controller provided in the initializer.
 @interface PaymentMethodSelectionCoordinator
-    : ChromeCoordinator<PaymentMethodSelectionViewControllerDelegate,
+    : ChromeCoordinator<PaymentRequestSelectorViewControllerDelegate,
                         CreditCardEditCoordinatorDelegate>
 
 // The PaymentRequest object having a copy of web::PaymentRequest as provided by

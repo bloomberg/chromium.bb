@@ -5,18 +5,29 @@
 #import "ios/chrome/browser/payments/payment_method_selection_coordinator.h"
 
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/payments/payment_method_selection_mediator.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface PaymentMethodSelectionCoordinator () {
-  CreditCardEditCoordinator* _creditCardEditCoordinator;
-}
+namespace {
+// The delay in nano seconds before notifying the delegate of the selection.
+const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
+}  // namespace
+
+@interface PaymentMethodSelectionCoordinator ()
 
 @property(nonatomic, strong)
-    PaymentMethodSelectionViewController* viewController;
+    CreditCardEditCoordinator* creditCardEditCoordinator;
+
+@property(nonatomic, strong)
+    PaymentRequestSelectorViewController* viewController;
+
+@property(nonatomic, strong) PaymentMethodSelectionMediator* mediator;
 
 // Called when the user selects a payment method. The cell is checked, the
 // UI is locked so that the user can't interact with it, then the delegate is
@@ -29,85 +40,92 @@
 @implementation PaymentMethodSelectionCoordinator
 @synthesize paymentRequest = _paymentRequest;
 @synthesize delegate = _delegate;
+@synthesize creditCardEditCoordinator = _creditCardEditCoordinator;
 @synthesize viewController = _viewController;
+@synthesize mediator = _mediator;
 
 - (void)start {
-  _viewController = [[PaymentMethodSelectionViewController alloc]
-      initWithPaymentRequest:_paymentRequest];
-  [_viewController setDelegate:self];
-  [_viewController loadModel];
+  self.mediator = [[PaymentMethodSelectionMediator alloc]
+      initWithPaymentRequest:self.paymentRequest];
 
-  DCHECK([self baseViewController].navigationController);
-  [[self baseViewController].navigationController
-      pushViewController:_viewController
+  self.viewController = [[PaymentRequestSelectorViewController alloc] init];
+  self.viewController.title =
+      l10n_util::GetNSString(IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL);
+  self.viewController.delegate = self;
+  self.viewController.dataSource = self.mediator;
+  [self.viewController loadModel];
+
+  DCHECK(self.baseViewController.navigationController);
+  [self.baseViewController.navigationController
+      pushViewController:self.viewController
                 animated:YES];
 }
 
 - (void)stop {
-  [[self baseViewController].navigationController
-      popViewControllerAnimated:YES];
-  [_creditCardEditCoordinator stop];
-  _creditCardEditCoordinator = nil;
-  _viewController = nil;
+  [self.baseViewController.navigationController popViewControllerAnimated:YES];
+  [self.creditCardEditCoordinator stop];
+  self.creditCardEditCoordinator = nil;
+  self.viewController = nil;
+  self.mediator = nil;
 }
 
-#pragma mark - PaymentMethodSelectionViewControllerDelegate
+#pragma mark - PaymentRequestSelectorViewControllerDelegate
 
-- (void)paymentMethodSelectionViewController:
-            (PaymentMethodSelectionViewController*)controller
-                      didSelectPaymentMethod:
-                          (autofill::CreditCard*)paymentMethod {
-  [self delayedNotifyDelegateOfSelection:paymentMethod];
+- (void)paymentRequestSelectorViewController:
+            (PaymentRequestSelectorViewController*)controller
+                        didSelectItemAtIndex:(NSUInteger)index {
+  // Update the data source with the selection.
+  self.mediator.selectedItemIndex = index;
+
+  DCHECK(index < self.paymentRequest->credit_cards().size());
+  [self delayedNotifyDelegateOfSelection:self.paymentRequest
+                                             ->credit_cards()[index]];
 }
 
-- (void)paymentMethodSelectionViewControllerDidReturn:
-    (PaymentMethodSelectionViewController*)controller {
-  [_delegate paymentMethodSelectionCoordinatorDidReturn:self];
+- (void)paymentRequestSelectorViewControllerDidFinish:
+    (PaymentRequestSelectorViewController*)controller {
+  [self.delegate paymentMethodSelectionCoordinatorDidReturn:self];
 }
 
-- (void)delayedNotifyDelegateOfSelection:(autofill::CreditCard*)paymentMethod {
-  _viewController.view.userInteractionEnabled = NO;
-  __weak PaymentMethodSelectionCoordinator* weakSelf = self;
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                               static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
-                 dispatch_get_main_queue(), ^{
-                   PaymentMethodSelectionCoordinator* strongSelf = weakSelf;
-                   // Early return if the coordinator has been deallocated.
-                   if (!strongSelf)
-                     return;
-
-                   strongSelf.viewController.view.userInteractionEnabled = YES;
-                   [strongSelf.delegate
-                       paymentMethodSelectionCoordinator:strongSelf
-                                  didSelectPaymentMethod:paymentMethod];
-                 });
-}
-
-- (void)paymentMethodSelectionViewControllerDidSelectAddCard:
-    (PaymentMethodSelectionViewController*)controller {
-  _creditCardEditCoordinator = [[CreditCardEditCoordinator alloc]
-      initWithBaseViewController:_viewController];
-  [_creditCardEditCoordinator setPaymentRequest:_paymentRequest];
-  [_creditCardEditCoordinator setDelegate:self];
-  [_creditCardEditCoordinator start];
+- (void)paymentRequestSelectorViewControllerDidSelectAddItem:
+    (PaymentRequestSelectorViewController*)controller {
+  self.creditCardEditCoordinator = [[CreditCardEditCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+  self.creditCardEditCoordinator.paymentRequest = self.paymentRequest;
+  self.creditCardEditCoordinator.delegate = self;
+  [self.creditCardEditCoordinator start];
 }
 
 #pragma mark - CreditCardEditCoordinatorDelegate
 
 - (void)creditCardEditCoordinator:(CreditCardEditCoordinator*)coordinator
        didFinishEditingCreditCard:(autofill::CreditCard*)creditCard {
-  [_creditCardEditCoordinator stop];
-  _creditCardEditCoordinator = nil;
+  [self.creditCardEditCoordinator stop];
+  self.creditCardEditCoordinator = nil;
 
-  // Inform |_delegate| that this card has been selected.
-  [_delegate paymentMethodSelectionCoordinator:self
-                        didSelectPaymentMethod:creditCard];
+  // Inform |self.delegate| that this card has been selected.
+  [self.delegate paymentMethodSelectionCoordinator:self
+                            didSelectPaymentMethod:creditCard];
 }
 
 - (void)creditCardEditCoordinatorDidCancel:
     (CreditCardEditCoordinator*)coordinator {
-  [_creditCardEditCoordinator stop];
-  _creditCardEditCoordinator = nil;
+  [self.creditCardEditCoordinator stop];
+  self.creditCardEditCoordinator = nil;
+}
+
+#pragma mark - Helper methods
+
+- (void)delayedNotifyDelegateOfSelection:(autofill::CreditCard*)paymentMethod {
+  self.viewController.view.userInteractionEnabled = NO;
+  __weak PaymentMethodSelectionCoordinator* weakSelf = self;
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW, kDelegateNotificationDelayInNanoSeconds),
+      dispatch_get_main_queue(), ^{
+        weakSelf.viewController.view.userInteractionEnabled = YES;
+        [weakSelf.delegate paymentMethodSelectionCoordinator:weakSelf
+                                      didSelectPaymentMethod:paymentMethod];
+      });
 }
 
 @end
