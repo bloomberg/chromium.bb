@@ -451,6 +451,10 @@ CompositorImpl::~CompositorImpl() {
   GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
+bool CompositorImpl::IsForSubframe() {
+  return false;
+}
+
 ui::UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
   return *this;
 }

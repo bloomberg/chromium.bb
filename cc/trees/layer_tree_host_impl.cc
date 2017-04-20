@@ -3007,6 +3007,14 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   }
   scroll_state.set_is_ending(true);
   ScrollEnd(&scroll_state);
+  if (settings_.is_layer_tree_for_subframe &&
+      scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
+    // If we get to here, we shouldn't return SCROLL_ON_IMPL_THREAD as otherwise
+    // we'll mark the scroll as handled and the scroll won't bubble.
+    scroll_status.thread = SCROLL_IGNORED;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNotScrollable;
+  }
   return scroll_status;
 }
 

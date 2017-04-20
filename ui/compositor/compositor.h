@@ -343,6 +343,8 @@ class COMPOSITOR_EXPORT Compositor
   void DidReceiveCompositorFrameAck() override;
   void DidCompletePageScaleAnimation() override {}
 
+  bool IsForSubframe() override;
+
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseCompositorFrameSink() override {}

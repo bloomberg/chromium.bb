@@ -8,4 +8,8 @@ namespace cc {
 
 StubLayerTreeHostClient::~StubLayerTreeHostClient() = default;
 
+bool StubLayerTreeHostClient::IsForSubframe() {
+  return false;
+}
+
 }  // namespace cc

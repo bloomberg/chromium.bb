@@ -347,7 +347,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     ScreenInfo dummy_screen_info;
     cc::LayerTreeSettings settings =
         RenderWidgetCompositor::GenerateLayerTreeSettings(
-            *base::CommandLine::ForCurrentProcess(), deps, 1.f,
+            *base::CommandLine::ForCurrentProcess(), deps, 1.f, false,
             dummy_screen_info);
 
     auto compositor_frame_sink = base::MakeUnique<cc::TestCompositorFrameSink>(

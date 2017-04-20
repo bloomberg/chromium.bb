@@ -253,6 +253,10 @@ Compositor::~Compositor() {
   }
 }
 
+bool Compositor::IsForSubframe() {
+  return false;
+}
+
 void Compositor::AddFrameSink(const cc::FrameSinkId& frame_sink_id) {
   if (!context_factory_private_)
     return;

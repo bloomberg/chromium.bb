@@ -203,4 +203,8 @@ bool WebLayerTreeViewImplForTesting::HaveScrollEventHandlers() const {
   return layer_tree_host_->have_scroll_event_handlers();
 }
 
+bool WebLayerTreeViewImplForTesting::IsForSubframe() {
+  return false;
+}
+
 }  // namespace blink

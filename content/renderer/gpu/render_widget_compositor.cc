@@ -229,8 +229,8 @@ std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
     float device_scale_factor,
     const ScreenInfo& screen_info) {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  cc::LayerTreeSettings settings =
-      GenerateLayerTreeSettings(*cmd, deps, device_scale_factor, screen_info);
+  cc::LayerTreeSettings settings = GenerateLayerTreeSettings(
+      *cmd, deps, device_scale_factor, client->IsForSubframe(), screen_info);
 
   const bool is_threaded = !!deps->GetCompositorImplThreadTaskRunner();
 
@@ -270,8 +270,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     const base::CommandLine& cmd,
     CompositorDependencies* compositor_deps,
     float device_scale_factor,
+    bool is_for_subframe,
     const ScreenInfo& screen_info) {
   cc::LayerTreeSettings settings;
+
+  settings.is_layer_tree_for_subframe = is_for_subframe;
 
   // For web contents, layer transforms should scale up the contents of layers
   // to keep content always crisp when possible.
@@ -1118,6 +1121,10 @@ void RenderWidgetCompositor::DidReceiveCompositorFrameAck() {
 
 void RenderWidgetCompositor::DidCompletePageScaleAnimation() {
   delegate_->DidCompletePageScaleAnimation();
+}
+
+bool RenderWidgetCompositor::IsForSubframe() {
+  return is_for_oopif_;
 }
 
 void RenderWidgetCompositor::RequestScheduleAnimation() {

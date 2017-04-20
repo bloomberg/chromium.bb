@@ -1280,13 +1280,14 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   compositor_ = RenderWidgetCompositor::Create(this, compositor_deps_);
   auto animation_host = cc::AnimationHost::CreateMainInstance();
 
+  // Oopif status must be set before the LayerTreeHost is created.
+  compositor_->SetIsForOopif(for_oopif_);
   auto layer_tree_host = RenderWidgetCompositor::CreateLayerTreeHost(
       compositor_.get(), compositor_.get(), animation_host.get(),
       compositor_deps_, device_scale_factor_, screen_info_);
   compositor_->Initialize(std::move(layer_tree_host),
                           std::move(animation_host));
 
-  compositor_->SetIsForOopif(for_oopif_);
   compositor_->SetViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
   compositor_->SetRasterColorSpace(screen_info_.icc_profile.GetColorSpace());

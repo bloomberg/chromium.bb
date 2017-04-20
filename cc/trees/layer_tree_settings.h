@@ -110,6 +110,10 @@ class CC_EXPORT LayerTreeSettings {
   // Indicates that the LayerTreeHost should defer commits unless it has a valid
   // LocalSurfaceId set.
   bool enable_surface_synchronization = false;
+
+  // Indicates the case when a sub-frame gets its own LayerTree because it's
+  // rendered in a different process from its ancestor frames.
+  bool is_layer_tree_for_subframe = false;
 };
 
 }  // namespace cc

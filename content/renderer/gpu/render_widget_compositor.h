@@ -66,6 +66,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
       const base::CommandLine& cmd,
       CompositorDependencies* compositor_deps,
       float device_scale_factor,
+      bool is_for_subframe,
       const ScreenInfo& screen_info);
   static std::unique_ptr<cc::LayerTreeHost> CreateLayerTreeHost(
       cc::LayerTreeHostClient* client,
@@ -197,6 +198,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidCommitAndDrawFrame() override;
   void DidReceiveCompositorFrameAck() override;
   void DidCompletePageScaleAnimation() override;
+  bool IsForSubframe() override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void RequestScheduleAnimation() override;
