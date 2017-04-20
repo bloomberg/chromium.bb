@@ -173,9 +173,10 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
   for (const MetaDataEntry& entry : params->meta_data)
     (*meta_data)[entry.key] = entry.value;
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::SetMetaData, webrtc_logging_handler_host,
-      base::Passed(&meta_data), callback));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&WebRtcLoggingHandlerHost::SetMetaData,
+                                         webrtc_logging_handler_host,
+                                         base::Passed(&meta_data), callback));
 
   return true;
 }
@@ -190,9 +191,10 @@ bool WebrtcLoggingPrivateStartFunction::RunAsync() {
   if (!webrtc_logging_handler_host.get())
     return false;
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::StartLogging, webrtc_logging_handler_host,
-      callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebRtcLoggingHandlerHost::StartLogging,
+                     webrtc_logging_handler_host, callback));
 
   return true;
 }
@@ -215,7 +217,7 @@ bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
   // UIThreadExtensionFunction. Fix this.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::SendResponse,
           this, true));
   return true;
@@ -231,9 +233,10 @@ bool WebrtcLoggingPrivateStopFunction::RunAsync() {
   if (!webrtc_logging_handler_host.get())
     return false;
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::StopLogging, webrtc_logging_handler_host,
-      callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebRtcLoggingHandlerHost::StopLogging,
+                     webrtc_logging_handler_host, callback));
 
   return true;
 }
@@ -251,9 +254,10 @@ bool WebrtcLoggingPrivateStoreFunction::RunAsync() {
   const std::string local_log_id(HashIdWithOrigin(params->security_origin,
                                                   params->log_id));
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::StoreLog,
-      webrtc_logging_handler_host, local_log_id, callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebRtcLoggingHandlerHost::StoreLog,
+                     webrtc_logging_handler_host, local_log_id, callback));
 
   return true;
 }
@@ -274,9 +278,10 @@ bool WebrtcLoggingPrivateUploadStoredFunction::RunAsync() {
   const std::string local_log_id(HashIdWithOrigin(params->security_origin,
                                                   params->log_id));
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::UploadStoredLog, logging_handler, local_log_id,
-      callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebRtcLoggingHandlerHost::UploadStoredLog,
+                     logging_handler, local_log_id, callback));
 
   return true;
 }
@@ -293,8 +298,9 @@ bool WebrtcLoggingPrivateUploadFunction::RunAsync() {
   WebRtcLoggingHandlerHost::UploadDoneCallback callback = base::Bind(
       &WebrtcLoggingPrivateUploadFunction::FireCallback, this);
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::UploadLog, logging_handler, callback));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&WebRtcLoggingHandlerHost::UploadLog,
+                                         logging_handler, callback));
 
   return true;
 }
@@ -309,9 +315,10 @@ bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
   if (!webrtc_logging_handler_host.get())
     return false;
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::DiscardLog, webrtc_logging_handler_host,
-      callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebRtcLoggingHandlerHost::DiscardLog,
+                     webrtc_logging_handler_host, callback));
 
   return true;
 }
@@ -350,13 +357,11 @@ bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
                          base::Bind(&WebRtcLoggingHandlerHost::OnRtpPacket,
                                     webrtc_logging_handler_host));
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&WebRtcLoggingHandlerHost::StartRtpDump,
-                                     webrtc_logging_handler_host,
-                                     type,
-                                     callback,
-                                     stop_callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebRtcLoggingHandlerHost::StartRtpDump,
+                     webrtc_logging_handler_host, type, callback,
+                     stop_callback));
   return true;
 }
 
@@ -387,12 +392,10 @@ bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
   WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
       &WebrtcLoggingPrivateStopRtpDumpFunction::FireCallback, this);
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&WebRtcLoggingHandlerHost::StopRtpDump,
-                                     webrtc_logging_handler_host,
-                                     type,
-                                     callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebRtcLoggingHandlerHost::StopRtpDump,
+                     webrtc_logging_handler_host, type, callback));
   return true;
 }
 

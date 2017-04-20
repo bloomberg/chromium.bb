@@ -1072,11 +1072,11 @@ bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
 
   project_base_path_ = project_path;
 
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DeveloperPrivateLoadDirectoryFunction::
-                     ClearExistingDirectoryContent,
-                 this,
-                 project_base_path_));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(
+          &DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent,
+          this, project_base_path_));
   return true;
 }
 
@@ -1098,10 +1098,11 @@ void DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent(
 
   pending_copy_operations_count_ = 1;
 
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&DeveloperPrivateLoadDirectoryFunction::
-                 ReadDirectoryByFileSystemAPI,
-                 this, project_path, project_path.BaseName()));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPI,
+          this, project_path, project_path.BaseName()));
 }
 
 void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPI(
@@ -1164,9 +1165,8 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
     if (!pending_copy_operations_count_) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&DeveloperPrivateLoadDirectoryFunction::SendResponse,
-                     this,
-                     success_));
+          base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::SendResponse,
+                         this, success_));
     }
   }
 }
@@ -1183,11 +1183,10 @@ void DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback(
     return;
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DeveloperPrivateLoadDirectoryFunction::CopyFile,
-                 this,
-                 src_path,
-                 target_path));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::CopyFile, this,
+                     src_path, target_path));
 }
 
 void DeveloperPrivateLoadDirectoryFunction::CopyFile(
@@ -1205,9 +1204,9 @@ void DeveloperPrivateLoadDirectoryFunction::CopyFile(
   pending_copy_operations_count_--;
 
   if (!pending_copy_operations_count_) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&DeveloperPrivateLoadDirectoryFunction::Load,
-                   this));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::Load, this));
   }
 }
 

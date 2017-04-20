@@ -101,7 +101,8 @@ PasswordsPrivateGetSavedPasswordListFunction::Run() {
   // RespondLater()). So we post a task to preserve order.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&PasswordsPrivateGetSavedPasswordListFunction::GetList, this));
+      base::BindOnce(&PasswordsPrivateGetSavedPasswordListFunction::GetList,
+                     this));
   return RespondLater();
 }
 
@@ -131,8 +132,8 @@ PasswordsPrivateGetPasswordExceptionListFunction::Run() {
   // RespondLater()). So we post a task to preserve order.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&PasswordsPrivateGetPasswordExceptionListFunction::GetList,
-                 this));
+      base::BindOnce(&PasswordsPrivateGetPasswordExceptionListFunction::GetList,
+                     this));
   return RespondLater();
 }
 

@@ -1765,7 +1765,7 @@ bool TabsDetectLanguageFunction::RunAsync() {
     // returned.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &TabsDetectLanguageFunction::GotLanguage, this,
             chrome_translate_client->GetLanguageState().original_language()));
     return true;

@@ -179,8 +179,8 @@ void ExtensionGarbageCollector::GarbageCollectExtensions() {
     // collect again later.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ExtensionGarbageCollector::GarbageCollectExtensions,
-                   weak_factory_.GetWeakPtr()),
+        base::BindOnce(&ExtensionGarbageCollector::GarbageCollectExtensions,
+                       weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kGarbageCollectRetryDelayInSeconds));
     return;
   }
@@ -203,9 +203,8 @@ void ExtensionGarbageCollector::GarbageCollectExtensions() {
       ExtensionSystem::Get(context_)->extension_service();
   if (!service->GetFileTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&GarbageCollectExtensionsOnFileThread,
-                     service->install_directory(),
-                     extension_paths))) {
+          base::BindOnce(&GarbageCollectExtensionsOnFileThread,
+                         service->install_directory(), extension_paths))) {
     NOTREACHED();
   }
 }

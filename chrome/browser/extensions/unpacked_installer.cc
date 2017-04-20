@@ -130,9 +130,8 @@ void UnpackedInstaller::Load(const base::FilePath& path_in) {
   DCHECK(extension_path_.empty());
   extension_path_ = path_in;
   BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UnpackedInstaller::GetAbsolutePath, this));
+      BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&UnpackedInstaller::GetAbsolutePath, this));
 }
 
 bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
@@ -309,14 +308,14 @@ void UnpackedInstaller::GetAbsolutePath() {
   std::string error;
   if (!file_util::CheckForIllegalFilenames(extension_path_, &error)) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&UnpackedInstaller::ReportExtensionLoadError, this, error));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError, this,
+                       error));
     return;
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&UnpackedInstaller::CheckExtensionFileAccess, this));
+      base::BindOnce(&UnpackedInstaller::CheckExtensionFileAccess, this));
 }
 
 void UnpackedInstaller::CheckExtensionFileAccess() {
@@ -330,9 +329,8 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
   }
 
   BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UnpackedInstaller::LoadWithFileAccess, this, GetFlags()));
+      BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&UnpackedInstaller::LoadWithFileAccess, this, GetFlags()));
 }
 
 void UnpackedInstaller::LoadWithFileAccess(int flags) {
@@ -346,16 +344,15 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
       !extension_l10n_util::ValidateExtensionLocales(
           extension_path_, extension()->manifest()->value(), &error)) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&UnpackedInstaller::ReportExtensionLoadError, this, error));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError, this,
+                       error));
     return;
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&UnpackedInstaller::ShowInstallPrompt, this));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&UnpackedInstaller::ShowInstallPrompt, this));
 }
 
 void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {

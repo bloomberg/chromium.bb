@@ -142,9 +142,9 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
     if (!audio_manager->GetTaskRunner()->BelongsToCurrentThread()) {
       audio_manager->GetTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&WebrtcAudioPrivateTest::GetAudioDeviceDescriptions,
-                     base::Unretained(this), EnumerationFunc,
-                     device_descriptions));
+          base::BindOnce(&WebrtcAudioPrivateTest::GetAudioDeviceDescriptions,
+                         base::Unretained(this), EnumerationFunc,
+                         device_descriptions));
       enumeration_event_.Wait();
     } else {
       (audio_manager->*EnumerationFunc)(device_descriptions);
@@ -163,9 +163,9 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&WebrtcAudioPrivateTest::GetIDInOrigin,
-                     base::Unretained(this),
-                     resource_context, origin, raw_device_id, id_in_origin));
+          base::BindOnce(&WebrtcAudioPrivateTest::GetIDInOrigin,
+                         base::Unretained(this), resource_context, origin,
+                         raw_device_id, id_in_origin));
       enumeration_event_.Wait();
     } else {
       *id_in_origin = content::GetHMACForMediaDeviceID(

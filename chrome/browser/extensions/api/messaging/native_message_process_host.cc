@@ -191,9 +191,8 @@ void NativeMessageProcessHost::Start(Client* client) {
   // It's safe to use base::Unretained() here because NativeMessagePort always
   // deletes us on the IO thread.
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&NativeMessageProcessHost::LaunchHostProcess,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&NativeMessageProcessHost::LaunchHostProcess,
+                                weak_factory_.GetWeakPtr()));
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

@@ -275,10 +275,9 @@ void ExtensionUpdater::CheckSoon() {
   DCHECK(alive_);
   if (will_check_soon_)
     return;
-  if (BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ExtensionUpdater::DoCheckSoon,
-                     weak_ptr_factory_.GetWeakPtr()))) {
+  if (BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              base::BindOnce(&ExtensionUpdater::DoCheckSoon,
+                                             weak_ptr_factory_.GetWeakPtr()))) {
     will_check_soon_ = true;
   } else {
     NOTREACHED();

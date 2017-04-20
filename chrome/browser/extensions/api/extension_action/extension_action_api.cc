@@ -586,7 +586,7 @@ bool BrowserActionOpenPopupFunction::RunAsync() {
   // instance around until a notification is observed.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&BrowserActionOpenPopupFunction::OpenPopupTimedOut, this),
+      base::BindOnce(&BrowserActionOpenPopupFunction::OpenPopupTimedOut, this),
       base::TimeDelta::FromSeconds(10));
   return true;
 }

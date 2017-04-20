@@ -266,8 +266,8 @@ void RunFaviconCallbackAsync(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&favicon::FaviconService::FaviconResultsCallbackRunner,
-                 callback, base::Owned(favicon_bitmap_results)));
+      base::BindOnce(&favicon::FaviconService::FaviconResultsCallbackRunner,
+                     callback, base::Owned(favicon_bitmap_results)));
 }
 
 bool ValidateOverrideURL(const base::Value* override_url_value,

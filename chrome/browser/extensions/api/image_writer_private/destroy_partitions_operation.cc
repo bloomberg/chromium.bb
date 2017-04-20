@@ -42,11 +42,9 @@ void DestroyPartitionsOperation::StartImpl() {
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&DestroyPartitionsOperation::Write,
-                 this,
-                 base::Bind(&DestroyPartitionsOperation::Finish, this)));
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&DestroyPartitionsOperation::Write, this,
+                     base::Bind(&DestroyPartitionsOperation::Finish, this)));
 }
 
 }  // namespace image_writer

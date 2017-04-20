@@ -162,9 +162,8 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
       .Times(AnyNumber());
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&OperationForTest::Download, operation, quit_closure));
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&OperationForTest::Download, operation, quit_closure));
 
   runloop.Run();
 
@@ -200,11 +199,10 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
                          100)).Times(AtLeast(1));
 
   operation->SetImagePath(test_utils_.GetImagePath());
-  content::BrowserThread::PostTask(content::BrowserThread::FILE,
-                                   FROM_HERE,
-                                   base::Bind(&OperationForTest::VerifyDownload,
-                                              operation,
-                                              base::Bind(&base::DoNothing)));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&OperationForTest::VerifyDownload, operation,
+                     base::Bind(&base::DoNothing)));
 
   base::RunLoop().RunUntilIdle();
 

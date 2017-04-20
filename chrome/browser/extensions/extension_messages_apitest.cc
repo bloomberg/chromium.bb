@@ -1101,10 +1101,11 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
     net::ChannelIDService::Request request;
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ExternallyConnectableMessagingWithTlsChannelIdTest::
-                       CreateDomainBoundCertOnIOThread,
-                   base::Unretained(this), base::Unretained(&channel_id_key),
-                   base::Unretained(&request), request_context_getter));
+        base::BindOnce(&ExternallyConnectableMessagingWithTlsChannelIdTest::
+                           CreateDomainBoundCertOnIOThread,
+                       base::Unretained(this),
+                       base::Unretained(&channel_id_key),
+                       base::Unretained(&request), request_context_getter));
     tls_channel_id_created_.Wait();
     // Create the expected value.
     std::vector<uint8_t> spki_vector;

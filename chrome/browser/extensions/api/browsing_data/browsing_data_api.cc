@@ -284,12 +284,10 @@ bool BrowsingDataRemoverFunction::RunAsync() {
     // If we're being asked to remove plugin data, check whether it's actually
     // supported.
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(
+        BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(
             &BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported,
-            this,
-            PluginPrefs::GetForProfile(GetProfile())));
+            this, PluginPrefs::GetForProfile(GetProfile())));
   } else {
     StartRemoving();
   }
@@ -307,7 +305,7 @@ void BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataRemoverFunction::StartRemoving, this));
+      base::BindOnce(&BrowsingDataRemoverFunction::StartRemoving, this));
 }
 
 void BrowsingDataRemoverFunction::StartRemoving() {

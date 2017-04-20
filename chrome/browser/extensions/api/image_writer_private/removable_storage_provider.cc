@@ -19,9 +19,8 @@ static base::LazyInstance<scoped_refptr<StorageDeviceList>>::DestructorAtExit
 void RemovableStorageProvider::GetAllDevices(DeviceListReadyCallback callback) {
   if (g_test_device_list.Get().get() != NULL) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(callback, g_test_device_list.Get(), true));
+        content::BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(callback, g_test_device_list.Get(), true));
     return;
   }
 

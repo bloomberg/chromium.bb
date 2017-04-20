@@ -570,8 +570,8 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
     // that would do it for us.
     if (file_ownership_passed &&
         !GetFileTaskRunner()->PostTask(
-            FROM_HERE,
-            base::Bind(&extensions::file_util::DeleteFile, file.path, false)))
+            FROM_HERE, base::BindOnce(&extensions::file_util::DeleteFile,
+                                      file.path, false)))
       NOTREACHED();
 
     return false;
@@ -829,11 +829,9 @@ bool ExtensionService::UninstallExtension(
   if (!Manifest::IsUnpackedLocation(extension->location())) {
     if (!GetFileTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(&ExtensionService::UninstallExtensionOnFileThread,
-                       extension->id(),
-                       profile_,
-                       install_directory_,
-                       extension->path())))
+            base::BindOnce(&ExtensionService::UninstallExtensionOnFileThread,
+                           extension->id(), profile_, install_directory_,
+                           extension->path())))
       NOTREACHED();
   }
 
@@ -1814,10 +1812,8 @@ void ExtensionService::OnExtensionInstalled(
       // Delete the extension directory since we're not going to
       // load it.
       if (!GetFileTaskRunner()->PostTask(
-              FROM_HERE,
-              base::Bind(&extensions::file_util::DeleteFile,
-                         extension->path(),
-                         true))) {
+              FROM_HERE, base::BindOnce(&extensions::file_util::DeleteFile,
+                                        extension->path(), true))) {
         NOTREACHED();
       }
       return;
@@ -2215,8 +2211,8 @@ void ExtensionService::Observe(int type,
       // that other handlers of this notification will still have
       // access to the Extension and ExtensionHost.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&ExtensionService::TrackTerminatedExtension,
-                                AsWeakPtr(), host->extension()->id()));
+          FROM_HERE, base::BindOnce(&ExtensionService::TrackTerminatedExtension,
+                                    AsWeakPtr(), host->extension()->id()));
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
@@ -2259,8 +2255,9 @@ void ExtensionService::Observe(int type,
           if (delayed_installs_.Contains(*it)) {
             base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
                 FROM_HERE,
-                base::Bind(&ExtensionService::MaybeFinishDelayedInstallation,
-                           AsWeakPtr(), *it),
+                base::BindOnce(
+                    &ExtensionService::MaybeFinishDelayedInstallation,
+                    AsWeakPtr(), *it),
                 base::TimeDelta::FromSeconds(kUpdateIdleDelay));
           }
         }
@@ -2268,11 +2265,9 @@ void ExtensionService::Observe(int type,
 
       process_map->RemoveAllFromProcess(process->GetID());
       BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&extensions::InfoMap::UnregisterAllExtensionsInProcess,
-                     system_->info_map(),
-                     process->GetID()));
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&extensions::InfoMap::UnregisterAllExtensionsInProcess,
+                         system_->info_map(), process->GetID()));
       break;
     }
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {

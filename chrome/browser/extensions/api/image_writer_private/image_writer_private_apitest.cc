@@ -70,28 +70,21 @@ class ImageWriterPrivateApiTest : public ExtensionApiTest {
 #if !defined(OS_CHROMEOS)
   void ImageWriterUtilityClientCall() {
     content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&FakeImageWriterClient::Progress,
-                   test_utils_.GetUtilityClient(),
-                   0));
+        content::BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(&FakeImageWriterClient::Progress,
+                       test_utils_.GetUtilityClient(), 0));
     content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&FakeImageWriterClient::Progress,
-                   test_utils_.GetUtilityClient(),
-                   50));
+        content::BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(&FakeImageWriterClient::Progress,
+                       test_utils_.GetUtilityClient(), 50));
     content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&FakeImageWriterClient::Progress,
-                   test_utils_.GetUtilityClient(),
-                   100));
+        content::BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(&FakeImageWriterClient::Progress,
+                       test_utils_.GetUtilityClient(), 100));
     content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&FakeImageWriterClient::Success,
-                   test_utils_.GetUtilityClient()));
+        content::BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(&FakeImageWriterClient::Success,
+                       test_utils_.GetUtilityClient()));
   }
 #endif
 

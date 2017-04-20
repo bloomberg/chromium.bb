@@ -118,7 +118,7 @@ void GetDownloadFilePath(
   if (!base::DirectoryExists(download_directory)) {
     if (!base::CreateDirectory(download_directory)) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(callback, base::FilePath()));
+                              base::BindOnce(callback, base::FilePath()));
       return;
     }
   }
@@ -141,7 +141,7 @@ void GetDownloadFilePath(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, file));
+                          base::BindOnce(callback, file));
 }
 
 void MaybeAppendAuthUserParameter(const std::string& authuser, GURL* url) {
@@ -602,8 +602,9 @@ void WebstoreInstaller::DownloadCrx(
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetDownloadFilePath, download_directory, extension_id,
-        base::Bind(&WebstoreInstaller::StartDownload, this, extension_id)));
+      base::BindOnce(
+          &GetDownloadFilePath, download_directory, extension_id,
+          base::Bind(&WebstoreInstaller::StartDownload, this, extension_id)));
 }
 
 // http://crbug.com/165634

@@ -291,8 +291,8 @@ void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
   // Delay extension reenabling so this bubble closes properly.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ExtensionService::GrantPermissionsAndEnableExtension,
-                 service_->AsWeakPtr(), extension_));
+      base::BindOnce(&ExtensionService::GrantPermissionsAndEnableExtension,
+                     service_->AsWeakPtr(), extension_));
 }
 
 void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
@@ -309,10 +309,10 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
   // immediately, to close the bubble properly. See crbug.com/121544.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&extensions::ExtensionUninstallDialog::ConfirmUninstall,
-                 uninstall_dialog_->AsWeakPtr(), extension_,
-                 extensions::UNINSTALL_REASON_EXTENSION_DISABLED,
-                 extensions::UNINSTALL_SOURCE_PERMISSIONS_INCREASE));
+      base::BindOnce(&extensions::ExtensionUninstallDialog::ConfirmUninstall,
+                     uninstall_dialog_->AsWeakPtr(), extension_,
+                     extensions::UNINSTALL_REASON_EXTENSION_DISABLED,
+                     extensions::UNINSTALL_SOURCE_PERMISSIONS_INCREASE));
 }
 
 bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {

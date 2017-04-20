@@ -139,36 +139,30 @@ void Operation::Unzip(const base::Closure& continuation) {
 
 void Operation::Finish() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE, base::Bind(&Operation::Finish, this));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::BindOnce(&Operation::Finish, this));
     return;
   }
 
   CleanUp();
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationManager::OnComplete, manager_, extension_id_));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OperationManager::OnComplete, manager_, extension_id_));
 }
 
 void Operation::Error(const std::string& error_message) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::Error, this, error_message));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(&Operation::Error, this, error_message));
     return;
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationManager::OnError,
-                 manager_,
-                 extension_id_,
-                 stage_,
-                 progress_,
-                 error_message));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OperationManager::OnError, manager_, extension_id_,
+                     stage_, progress_, error_message));
 
   CleanUp();
 }
@@ -176,11 +170,8 @@ void Operation::Error(const std::string& error_message) {
 void Operation::SetProgress(int progress) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&Operation::SetProgress,
-                   this,
-                   progress));
+        BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(&Operation::SetProgress, this, progress));
     return;
   }
 
@@ -194,23 +185,16 @@ void Operation::SetProgress(int progress) {
 
   progress_ = progress;
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&OperationManager::OnProgress,
-                                     manager_,
-                                     extension_id_,
-                                     stage_,
-                                     progress_));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OperationManager::OnProgress, manager_, extension_id_,
+                     stage_, progress_));
 }
 
 void Operation::SetStage(image_writer_api::Stage stage) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&Operation::SetStage,
-                   this,
-                   stage));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::BindOnce(&Operation::SetStage, this, stage));
     return;
   }
 
@@ -222,13 +206,9 @@ void Operation::SetStage(image_writer_api::Stage stage) {
   progress_ = 0;
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationManager::OnProgress,
-                 manager_,
-                 extension_id_,
-                 stage_,
-                 progress_));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OperationManager::OnProgress, manager_, extension_id_,
+                     stage_, progress_));
 }
 
 bool Operation::IsCancelled() {
@@ -308,8 +288,8 @@ void Operation::GetMD5SumOfFile(
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&Operation::MD5Chunk, this, Passed(std::move(file)), 0,
-                 file_size, progress_offset, progress_scale, callback));
+      base::BindOnce(&Operation::MD5Chunk, this, Passed(std::move(file)), 0,
+                     file_size, progress_offset, progress_scale, callback));
 }
 
 void Operation::MD5Chunk(
@@ -346,9 +326,9 @@ void Operation::MD5Chunk(
 
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          base::Bind(&Operation::MD5Chunk, this, Passed(std::move(file)),
-                     bytes_processed + len, bytes_total, progress_offset,
-                     progress_scale, callback));
+          base::BindOnce(&Operation::MD5Chunk, this, Passed(std::move(file)),
+                         bytes_processed + len, bytes_total, progress_offset,
+                         progress_scale, callback));
       // Skip closing the file.
       return;
     } else {

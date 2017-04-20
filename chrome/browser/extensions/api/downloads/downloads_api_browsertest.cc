@@ -314,7 +314,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpOnMainThread();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     InProcessBrowserTest::SetUpOnMainThread();
     GoOnTheRecord();
     CreateAndSetDownloadsDirectory();
@@ -622,8 +622,8 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
       callback_ = callback;
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&MockIconExtractorImpl::RunCallback,
-                     base::Unretained(this)));
+          base::BindOnce(&MockIconExtractorImpl::RunCallback,
+                         base::Unretained(this)));
       return true;
     } else {
       return false;
@@ -706,9 +706,9 @@ class HTML5FileWriter {
     base::RunLoop run_loop;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&CreateFileForTestingOnIOThread, base::Unretained(context),
-                   path, temp_file, base::Unretained(&result),
-                   run_loop.QuitClosure()));
+        base::BindOnce(&CreateFileForTestingOnIOThread,
+                       base::Unretained(context), path, temp_file,
+                       base::Unretained(&result), run_loop.QuitClosure()));
     // Wait for that to finish.
     run_loop.Run();
     base::DeleteFile(temp_file, false);

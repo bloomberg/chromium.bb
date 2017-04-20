@@ -97,8 +97,9 @@ void MigrateFileSystem(WeakPtr<extensions::AppDataMigrator> migrator,
   // invoke the original callback passed into DoMigrationAndReply.
   old_fs_context->default_file_task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&MigrateOnFileSystemThread, base::RetainedRef(old_fs_context),
-                 base::RetainedRef(fs_context), base::RetainedRef(extension)),
+      base::BindOnce(
+          &MigrateOnFileSystemThread, base::RetainedRef(old_fs_context),
+          base::RetainedRef(fs_context), base::RetainedRef(extension)),
       reply);
 }
 
@@ -124,7 +125,7 @@ void MigrateLegacyPartition(WeakPtr<extensions::AppDataMigrator> migrator,
   // runner. After completion, it should call MigrateFileSystem.
   old_indexed_db_context->TaskRunner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &MigrateOnIndexedDBThread, base::RetainedRef(old_indexed_db_context),
           base::RetainedRef(indexed_db_context), base::RetainedRef(extension)),
       migrate_fs);

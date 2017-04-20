@@ -64,14 +64,14 @@ void DialAPI::OnListenerAdded(const EventListenerInfo& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DialAPI::NotifyListenerAddedOnIOThread, this));
+      base::BindOnce(&DialAPI::NotifyListenerAddedOnIOThread, this));
 }
 
 void DialAPI::OnListenerRemoved(const EventListenerInfo& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DialAPI::NotifyListenerRemovedOnIOThread, this));
+      base::BindOnce(&DialAPI::NotifyListenerRemovedOnIOThread, this));
 }
 
 void DialAPI::NotifyListenerAddedOnIOThread() {
@@ -99,14 +99,16 @@ void DialAPI::FillDialDevice(const media_router::DialDeviceData& device_data,
 
 void DialAPI::OnDialDeviceEvent(const DialRegistry::DeviceList& devices) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&DialAPI::SendEventOnUIThread, this, devices));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&DialAPI::SendEventOnUIThread, this, devices));
 }
 
 void DialAPI::OnDialError(const DialRegistry::DialErrorCode code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&DialAPI::SendErrorOnUIThread, this, code));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&DialAPI::SendErrorOnUIThread, this, code));
 }
 
 void DialAPI::SendEventOnUIThread(const DialRegistry::DeviceList& devices) {
@@ -204,9 +206,9 @@ bool DialFetchDeviceDescriptionFunction::RunAsync() {
   // DialRegistry lives on the IO thread.  Hop on over there to get the URL to
   // fetch.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&DialFetchDeviceDescriptionFunction::
-                                         GetDeviceDescriptionUrlOnIOThread,
-                                     this, params_->device_label));
+                          base::BindOnce(&DialFetchDeviceDescriptionFunction::
+                                             GetDeviceDescriptionUrlOnIOThread,
+                                         this, params_->device_label));
   return true;
 }
 
@@ -217,8 +219,8 @@ void DialFetchDeviceDescriptionFunction::GetDeviceDescriptionUrlOnIOThread(
       dial_->dial_registry()->GetDeviceDescriptionURL(label);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DialFetchDeviceDescriptionFunction::MaybeStartFetch, this,
-                 device_description_url));
+      base::BindOnce(&DialFetchDeviceDescriptionFunction::MaybeStartFetch, this,
+                     device_description_url));
 }
 
 void DialFetchDeviceDescriptionFunction::MaybeStartFetch(const GURL& url) {

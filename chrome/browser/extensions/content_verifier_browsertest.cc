@@ -248,8 +248,8 @@ void JobObserver::JobFinished(const std::string& extension_id,
   if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
     content::BrowserThread::PostTask(
         creation_thread_, FROM_HERE,
-        base::Bind(&JobObserver::JobFinished, base::Unretained(this),
-                   extension_id, relative_path, failure_reason));
+        base::BindOnce(&JobObserver::JobFinished, base::Unretained(this),
+                       extension_id, relative_path, failure_reason));
     return;
   }
   Result result = failure_reason == ContentVerifyJob::NONE ? Result::SUCCESS
@@ -355,7 +355,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
         // requests needed before a file could be returned).
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 &ExtensionDownloaderDelegate::OnExtensionDownloadFinished,
                 base::Unretained(delegate),
                 CRXFileInfo(id, responses_[id].second),

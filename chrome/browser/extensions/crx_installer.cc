@@ -187,8 +187,8 @@ void CrxInstaller::InstallCrxFile(const CRXFileInfo& source_file) {
       installer_task_runner_.get(), this));
 
   if (!installer_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&SandboxedUnpacker::StartWithCrx,
-                                unpacker, source_file))) {
+          FROM_HERE, base::BindOnce(&SandboxedUnpacker::StartWithCrx, unpacker,
+                                    source_file))) {
     NOTREACHED();
   }
 }
@@ -204,7 +204,7 @@ void CrxInstaller::InstallUserScript(const base::FilePath& source_file,
 
   if (!installer_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&CrxInstaller::ConvertUserScriptOnFileThread, this)))
+          base::BindOnce(&CrxInstaller::ConvertUserScriptOnFileThread, this)))
     NOTREACHED();
 }
 
@@ -225,8 +225,8 @@ void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
   NotifyCrxInstallBegin();
 
   if (!installer_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&CrxInstaller::ConvertWebAppOnFileThread, this, web_app)))
+          FROM_HERE, base::BindOnce(&CrxInstaller::ConvertWebAppOnFileThread,
+                                    this, web_app)))
     NOTREACHED();
 }
 
@@ -453,9 +453,9 @@ void CrxInstaller::OnUnpackSuccess(
     return;
   }
 
-  if (!BrowserThread::PostTask(BrowserThread::UI,
-                               FROM_HERE,
-                               base::Bind(&CrxInstaller::CheckInstall, this)))
+  if (!BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&CrxInstaller::CheckInstall, this)))
     NOTREACHED();
 }
 
@@ -682,7 +682,7 @@ void CrxInstaller::UpdateCreationFlagsAndCompleteInstall() {
     creation_flags_ |= Extension::ALLOW_FILE_ACCESS;
 
   if (!installer_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&CrxInstaller::CompleteInstall, this))) {
+          FROM_HERE, base::BindOnce(&CrxInstaller::CompleteInstall, this))) {
     NOTREACHED();
   }
 }
@@ -753,7 +753,8 @@ void CrxInstaller::ReportFailureFromFileThread(const CrxInstallError& error) {
   DCHECK(installer_task_runner_->RunsTasksOnCurrentThread());
   if (!BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&CrxInstaller::ReportFailureFromUIThread, this, error))) {
+          base::BindOnce(&CrxInstaller::ReportFailureFromUIThread, this,
+                         error))) {
     NOTREACHED();
   }
 }
@@ -797,7 +798,7 @@ void CrxInstaller::ReportSuccessFromFileThread() {
 
   if (!BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&CrxInstaller::ReportSuccessFromUIThread, this)))
+          base::BindOnce(&CrxInstaller::ReportSuccessFromUIThread, this)))
     NOTREACHED();
 
   // Delete temporary files.
@@ -860,8 +861,7 @@ void CrxInstaller::NotifyCrxInstallComplete(bool success) {
 void CrxInstaller::CleanupTempFiles() {
   if (!installer_task_runner_->RunsTasksOnCurrentThread()) {
     if (!installer_task_runner_->PostTask(
-            FROM_HERE,
-            base::Bind(&CrxInstaller::CleanupTempFiles, this))) {
+            FROM_HERE, base::BindOnce(&CrxInstaller::CleanupTempFiles, this))) {
       NOTREACHED();
     }
     return;

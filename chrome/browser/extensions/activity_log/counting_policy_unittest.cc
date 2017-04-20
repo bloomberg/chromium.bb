@@ -74,7 +74,7 @@ class CountingPolicyTest : public testing::Test {
   // Wait for the task queue for the specified thread to empty.
   void WaitOnThread(const BrowserThread::ID& thread) {
     BrowserThread::PostTaskAndReply(
-        thread, FROM_HERE, base::Bind(&base::DoNothing),
+        thread, FROM_HERE, base::BindOnce(&base::DoNothing),
         base::MessageLoop::current()->QuitWhenIdleClosure());
     base::RunLoop().Run();
   }

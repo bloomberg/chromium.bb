@@ -59,8 +59,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrTest, TlsClientAuth) {
   base::RunLoop loop;
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&InstallNullCertStoreFactoryOnIOThread,
-                 browser()->profile()->GetResourceContext()),
+      base::BindOnce(&InstallNullCertStoreFactoryOnIOThread,
+                     browser()->profile()->GetResourceContext()),
       loop.QuitClosure());
   loop.Run();
 

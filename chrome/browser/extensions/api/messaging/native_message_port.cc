@@ -50,10 +50,10 @@ NativeMessagePort::Core::Core(
       message_service_task_runner_(message_service_task_runner),
       host_task_runner_(host_->task_runner()) {
   DCHECK(message_service_task_runner_->BelongsToCurrentThread());
-  host_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&NativeMessageHost::Start,
-                                         base::Unretained(host_.get()),
-                                         base::Unretained(this)));
+  host_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&NativeMessageHost::Start, base::Unretained(host_.get()),
+                     base::Unretained(this)));
 }
 
 NativeMessagePort::Core::~Core() {
@@ -62,26 +62,24 @@ NativeMessagePort::Core::~Core() {
 
 void NativeMessagePort::Core::OnMessageFromChrome(const std::string& message) {
   DCHECK(message_service_task_runner_->BelongsToCurrentThread());
-  host_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&NativeMessageHost::OnMessage,
-                                         base::Unretained(host_.get()),
-                                         message));
+  host_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&NativeMessageHost::OnMessage,
+                                base::Unretained(host_.get()), message));
 }
 
 void NativeMessagePort::Core::PostMessageFromNativeHost(
     const std::string& message) {
   DCHECK(host_task_runner_->BelongsToCurrentThread());
   message_service_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &NativeMessagePort::PostMessageFromNativeHost, port_, message));
+      FROM_HERE, base::BindOnce(&NativeMessagePort::PostMessageFromNativeHost,
+                                port_, message));
 }
 
 void NativeMessagePort::Core::CloseChannel(const std::string& error_message) {
   DCHECK(host_task_runner_->BelongsToCurrentThread());
   message_service_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NativeMessagePort::CloseChannel, port_, error_message));
+      base::BindOnce(&NativeMessagePort::CloseChannel, port_, error_message));
 }
 
 NativeMessagePort::NativeMessagePort(

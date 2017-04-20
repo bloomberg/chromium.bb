@@ -193,26 +193,23 @@ class ActivityLogDatabasePolicy : public ActivityLogPolicy,
   template<typename DatabaseType, typename DatabaseFunc>
   void ScheduleAndForget(DatabaseType db, DatabaseFunc func) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(func, base::Unretained(db)));
+        content::BrowserThread::DB, FROM_HERE,
+        base::BindOnce(func, base::Unretained(db)));
   }
 
   template<typename DatabaseType, typename DatabaseFunc, typename ArgA>
   void ScheduleAndForget(DatabaseType db, DatabaseFunc func, ArgA a) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(func, base::Unretained(db), a));
+        content::BrowserThread::DB, FROM_HERE,
+        base::BindOnce(func, base::Unretained(db), a));
   }
 
   template<typename DatabaseType, typename DatabaseFunc,
       typename ArgA, typename ArgB>
   void ScheduleAndForget(DatabaseType db, DatabaseFunc func, ArgA a, ArgB b) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(func, base::Unretained(db), a, b));
+        content::BrowserThread::DB, FROM_HERE,
+        base::BindOnce(func, base::Unretained(db), a, b));
   }
 
   // Access to the underlying ActivityDatabase.

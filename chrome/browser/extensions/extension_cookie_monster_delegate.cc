@@ -37,8 +37,9 @@ void ExtensionCookieMonsterDelegate::OnCookieChanged(
     net::CookieStore::ChangeCause cause) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExtensionCookieMonsterDelegate::OnCookieChangedAsyncHelper,
-                 this, cookie, removed, cause));
+      base::BindOnce(
+          &ExtensionCookieMonsterDelegate::OnCookieChangedAsyncHelper, this,
+          cookie, removed, cause));
 }
 
 ExtensionCookieMonsterDelegate::~ExtensionCookieMonsterDelegate() {}

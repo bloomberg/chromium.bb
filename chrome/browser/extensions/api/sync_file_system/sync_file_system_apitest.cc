@@ -82,7 +82,7 @@ ACTION_P(NotifyOkStateAndCallback, mock_remote_service) {
   mock_remote_service->NotifyRemoteServiceStateUpdated(
       sync_file_system::REMOTE_SERVICE_OK, "Test event description.");
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg1, sync_file_system::SYNC_STATUS_OK));
+      FROM_HERE, base::BindOnce(arg1, sync_file_system::SYNC_STATUS_OK));
 }
 
 ACTION_P2(UpdateRemoteChangeQueue, origin, mock_remote_service) {
@@ -102,9 +102,8 @@ ACTION_P6(ReturnWithFakeFileAddedStatus,
       base::FilePath(FILE_PATH_LITERAL("foo.txt")));
   mock_remote_service->NotifyRemoteChangeQueueUpdated(0);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg0,
-                            sync_file_system::SYNC_STATUS_OK,
-                            mock_url));
+      FROM_HERE,
+      base::BindOnce(arg0, sync_file_system::SYNC_STATUS_OK, mock_url));
   mock_remote_service->NotifyFileStatusChanged(
       mock_url,
       file_type,

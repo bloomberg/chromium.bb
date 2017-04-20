@@ -81,14 +81,12 @@ bool SyncFileSystemDeleteFileSystemFunction::RunAsync() {
       file_system_context->CrackURL(GURL(url)));
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      Bind(&storage::FileSystemContext::DeleteFileSystem,
-           file_system_context,
-           source_url().GetOrigin(),
-           file_system_url.type(),
-           Bind(&SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem,
-                this)));
+      BrowserThread::IO, FROM_HERE,
+      BindOnce(
+          &storage::FileSystemContext::DeleteFileSystem, file_system_context,
+          source_url().GetOrigin(), file_system_url.type(),
+          Bind(&SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem,
+               this)));
   return true;
 }
 
@@ -98,10 +96,9 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        Bind(&SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem, this,
-             error));
+        BrowserThread::UI, FROM_HERE,
+        BindOnce(&SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem,
+                 this, error));
     return;
   }
 
@@ -126,14 +123,13 @@ bool SyncFileSystemRequestFileSystemFunction::RunAsync() {
 
   // Initializes sync context for this extension and continue to open
   // a new file system.
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          Bind(&storage::FileSystemContext::OpenFileSystem,
-                               GetFileSystemContext(),
-                               source_url().GetOrigin(),
-                               storage::kFileSystemTypeSyncable,
-                               storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                               base::Bind(&self::DidOpenFileSystem, this)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      BindOnce(&storage::FileSystemContext::OpenFileSystem,
+               GetFileSystemContext(), source_url().GetOrigin(),
+               storage::kFileSystemTypeSyncable,
+               storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+               base::Bind(&self::DidOpenFileSystem, this)));
   return true;
 }
 
@@ -154,8 +150,8 @@ void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        Bind(&SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem,
-             this, root_url, file_system_name, error));
+        BindOnce(&SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem,
+                 this, root_url, file_system_name, error));
     return;
   }
 
@@ -315,14 +311,13 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunAsync() {
           ->GetQuotaManager();
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      Bind(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
-           quota_manager,
-           source_url().GetOrigin(),
-           storage::FileSystemTypeToQuotaStorageType(file_system_url.type()),
-           Bind(&SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota,
-                this)));
+      BrowserThread::IO, FROM_HERE,
+      BindOnce(
+          &storage::QuotaManager::GetUsageAndQuotaForWebApps, quota_manager,
+          source_url().GetOrigin(),
+          storage::FileSystemTypeToQuotaStorageType(file_system_url.type()),
+          Bind(&SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota,
+               this)));
 
   return true;
 }
@@ -335,10 +330,9 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        Bind(&SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota, this,
-             status, usage, quota));
+        BrowserThread::UI, FROM_HERE,
+        BindOnce(&SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota,
+                 this, status, usage, quota));
     return;
   }
 

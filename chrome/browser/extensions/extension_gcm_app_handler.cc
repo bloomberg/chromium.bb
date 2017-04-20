@@ -130,8 +130,9 @@ void ExtensionGCMAppHandler::OnExtensionUnloaded(
     AddDummyAppHandler();
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ExtensionGCMAppHandler::RemoveDummyAppHandler,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&ExtensionGCMAppHandler::RemoveDummyAppHandler,
+                       weak_factory_.GetWeakPtr()));
   }
 
   // When the extention is being uninstalled, it will be unloaded first. We
@@ -190,8 +191,8 @@ void ExtensionGCMAppHandler::OnDeleteIDCompleted(
   // Postpone to do it outside this calling context to avoid any risk to
   // the caller.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ExtensionGCMAppHandler::RemoveInstanceID,
-                            weak_factory_.GetWeakPtr(), app_id));
+      FROM_HERE, base::BindOnce(&ExtensionGCMAppHandler::RemoveInstanceID,
+                                weak_factory_.GetWeakPtr(), app_id));
 }
 
 void ExtensionGCMAppHandler::RemoveInstanceID(const std::string& app_id) {

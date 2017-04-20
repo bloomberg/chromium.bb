@@ -128,8 +128,8 @@ void SettingsPrivateEventRouter::OnPreferenceChanged(
   // as |prefs_util_->GetPref()| relies on this information to determine if a
   // preference is controlled by e.g. extensions.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SettingsPrivateEventRouter::SendPrefChange,
-                            weak_ptr_factory_.GetWeakPtr(), pref_name));
+      FROM_HERE, base::BindOnce(&SettingsPrivateEventRouter::SendPrefChange,
+                                weak_ptr_factory_.GetWeakPtr(), pref_name));
 }
 
 void SettingsPrivateEventRouter::SendPrefChange(const std::string& pref_name) {

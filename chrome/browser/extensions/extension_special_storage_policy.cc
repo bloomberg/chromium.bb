@@ -70,10 +70,10 @@ void LogHostedAppUnlimitedStorageUsage(
     // https://developers.google.com/chrome/whitepapers/storage.
     BrowserThread::PostAfterStartupTask(
         FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-        base::Bind(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
-                   partition->GetQuotaManager(), launch_url,
-                   storage::kStorageTypePersistent,
-                   base::Bind(&ReportQuotaUsage)));
+        base::BindOnce(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
+                       partition->GetQuotaManager(), launch_url,
+                       storage::kStorageTypePersistent,
+                       base::Bind(&ReportQuotaUsage)));
   }
 }
 
@@ -255,8 +255,8 @@ void ExtensionSpecialStoragePolicy::NotifyGranted(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ExtensionSpecialStoragePolicy::NotifyGranted, this,
-                   origin, change_flags));
+        base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyGranted, this,
+                       origin, change_flags));
     return;
   }
   SpecialStoragePolicy::NotifyGranted(origin, change_flags);
@@ -268,8 +268,8 @@ void ExtensionSpecialStoragePolicy::NotifyRevoked(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ExtensionSpecialStoragePolicy::NotifyRevoked, this,
-                   origin, change_flags));
+        base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyRevoked, this,
+                       origin, change_flags));
     return;
   }
   SpecialStoragePolicy::NotifyRevoked(origin, change_flags);
@@ -279,7 +279,7 @@ void ExtensionSpecialStoragePolicy::NotifyCleared() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ExtensionSpecialStoragePolicy::NotifyCleared, this));
+        base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyCleared, this));
     return;
   }
   SpecialStoragePolicy::NotifyCleared();

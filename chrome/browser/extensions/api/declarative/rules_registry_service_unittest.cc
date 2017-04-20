@@ -82,23 +82,23 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&InsertRule, registry_service.GetRulesRegistry(key, "ui"),
-                 "ui_task"));
+      base::BindOnce(&InsertRule, registry_service.GetRulesRegistry(key, "ui"),
+                     "ui_task"));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&InsertRule, registry_service.GetRulesRegistry(key, "io"),
-                 "io_task"));
+      base::BindOnce(&InsertRule, registry_service.GetRulesRegistry(key, "io"),
+                     "io_task"));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&VerifyNumberOfRules,
-                 registry_service.GetRulesRegistry(key, "ui"), 1));
+      base::BindOnce(&VerifyNumberOfRules,
+                     registry_service.GetRulesRegistry(key, "ui"), 1));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&VerifyNumberOfRules,
-                 registry_service.GetRulesRegistry(key, "io"), 1));
+      base::BindOnce(&VerifyNumberOfRules,
+                     registry_service.GetRulesRegistry(key, "io"), 1));
 
   base::RunLoop().RunUntilIdle();
 
@@ -117,13 +117,13 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&VerifyNumberOfRules,
-                 registry_service.GetRulesRegistry(key, "ui"), 0));
+      base::BindOnce(&VerifyNumberOfRules,
+                     registry_service.GetRulesRegistry(key, "ui"), 0));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&VerifyNumberOfRules,
-                 registry_service.GetRulesRegistry(key, "io"), 0));
+      base::BindOnce(&VerifyNumberOfRules,
+                     registry_service.GetRulesRegistry(key, "io"), 0));
 
   base::RunLoop().RunUntilIdle();
 }

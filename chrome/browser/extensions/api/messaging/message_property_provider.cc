@@ -37,12 +37,11 @@ void MessagePropertyProvider::GetChannelID(Profile* profile,
   }
   scoped_refptr<net::URLRequestContextGetter> request_context_getter(
       profile->GetRequestContext());
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&MessagePropertyProvider::GetChannelIDOnIOThread,
-                 base::ThreadTaskRunnerHandle::Get(),
-                 request_context_getter,
-                 source_url.host(),
-                 reply));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&MessagePropertyProvider::GetChannelIDOnIOThread,
+                     base::ThreadTaskRunnerHandle::Get(),
+                     request_context_getter, source_url.host(), reply));
 }
 
 // Helper struct to bind the memory addresses that will be written to by
@@ -101,7 +100,7 @@ void MessagePropertyProvider::GotChannelID(
   }
   std::string jwk_str;
   base::JSONWriter::Write(jwk_value, &jwk_str);
-  original_task_runner->PostTask(FROM_HERE, base::Bind(reply, jwk_str));
+  original_task_runner->PostTask(FROM_HERE, base::BindOnce(reply, jwk_str));
 }
 
 }  // namespace extensions

@@ -233,14 +233,14 @@ void UserScriptListener::Observe(int type,
       Profile* profile = content::Source<Profile>(source).ptr();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&UserScriptListener::ProfileDestroyed, this, profile));
+          base::BindOnce(&UserScriptListener::ProfileDestroyed, this, profile));
       break;
     }
     case extensions::NOTIFICATION_USER_SCRIPTS_UPDATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&UserScriptListener::UserScriptsReady, this, profile));
+          base::BindOnce(&UserScriptListener::UserScriptsReady, this, profile));
       break;
     }
     default:
@@ -259,8 +259,8 @@ void UserScriptListener::OnExtensionLoaded(
   if (!new_patterns.empty()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&UserScriptListener::AppendNewURLPatterns, this,
-                   browser_context, new_patterns));
+        base::BindOnce(&UserScriptListener::AppendNewURLPatterns, this,
+                       browser_context, new_patterns));
   }
 }
 
@@ -280,9 +280,10 @@ void UserScriptListener::OnExtensionUnloaded(
     if (it->get() != extension)
       CollectURLPatterns(it->get(), &new_patterns);
   }
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&UserScriptListener::ReplaceURLPatterns,
-                                     this, browser_context, new_patterns));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&UserScriptListener::ReplaceURLPatterns, this,
+                     browser_context, new_patterns));
 }
 
 void UserScriptListener::OnShutdown(ExtensionRegistry* registry) {

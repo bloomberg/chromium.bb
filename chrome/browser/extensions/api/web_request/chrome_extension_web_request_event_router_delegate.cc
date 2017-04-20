@@ -63,6 +63,6 @@ void ChromeExtensionWebRequestEventRouterDelegate::NotifyWebRequestWithheld(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&NotifyWebRequestWithheldOnUI, render_process_id,
-                 render_frame_id, extension_id));
+      base::BindOnce(&NotifyWebRequestWithheldOnUI, render_process_id,
+                     render_frame_id, extension_id));
 }

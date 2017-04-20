@@ -98,9 +98,8 @@ class Waiter {
   // Runs until IO loop becomes idle.
   void PumpIOLoop() {
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&Waiter::OnIOLoopPump, base::Unretained(this)));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&Waiter::OnIOLoopPump, base::Unretained(this)));
 
     WaitUntilCompleted();
   }
@@ -116,18 +115,16 @@ class Waiter {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&Waiter::OnIOLoopPumpCompleted, base::Unretained(this)));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&Waiter::OnIOLoopPumpCompleted, base::Unretained(this)));
   }
 
   void OnIOLoopPumpCompleted() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&Waiter::PumpIOLoopCompleted, base::Unretained(this)));
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&Waiter::PumpIOLoopCompleted, base::Unretained(this)));
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;

@@ -307,11 +307,11 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
   }
   SetResult(std::move(list));
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
           &ContentSettingsContentSettingGetResourceIdentifiersFunction::
-          SendResponse,
-          this,
-          true));
+              SendResponse,
+          this, true));
 }
 
 }  // namespace extensions

@@ -355,7 +355,7 @@ void ExtensionActionRunner::ShowBlockedActionBubble(
     if (default_bubble_close_action_for_testing_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(callback, *default_bubble_close_action_for_testing_));
+          base::BindOnce(callback, *default_bubble_close_action_for_testing_));
     } else {
       toolbar_actions_bar->ShowToolbarActionBubble(
           base::MakeUnique<BlockedActionBubbleDelegate>(callback,

@@ -60,10 +60,8 @@ void OperationManager::Shutdown() {
   for (OperationMap::iterator iter = operations_.begin();
        iter != operations_.end();
        iter++) {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::Abort,
-                                       iter->second));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::BindOnce(&Operation::Abort, iter->second));
   }
 }
 
@@ -94,9 +92,8 @@ void OperationManager::StartWriteFromUrl(
       device_path,
       GetAssociatedDownloadFolder()));
   operations_[extension_id] = operation;
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&Operation::Start, operation));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::BindOnce(&Operation::Start, operation));
   callback.Run(true, "");
 }
 
@@ -120,9 +117,8 @@ void OperationManager::StartWriteFromFile(
       weak_factory_.GetWeakPtr(), extension_id, path, device_path,
       GetAssociatedDownloadFolder()));
   operations_[extension_id] = operation;
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&Operation::Start, operation));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::BindOnce(&Operation::Start, operation));
   callback.Run(true, "");
 }
 
@@ -134,9 +130,9 @@ void OperationManager::CancelWrite(
   if (existing_operation == NULL) {
     callback.Run(false, error::kNoOperationInProgress);
   } else {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::Cancel, existing_operation));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(&Operation::Cancel, existing_operation));
     DeleteOperation(extension_id);
     callback.Run(true, "");
   }
@@ -156,9 +152,8 @@ void OperationManager::DestroyPartitions(
       weak_factory_.GetWeakPtr(), extension_id, device_path,
       GetAssociatedDownloadFolder()));
   operations_[extension_id] = operation;
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&Operation::Start, operation));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::BindOnce(&Operation::Start, operation));
   callback.Run(true, "");
 }
 

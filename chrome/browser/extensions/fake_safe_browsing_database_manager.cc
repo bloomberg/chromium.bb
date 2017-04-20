@@ -118,8 +118,8 @@ bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeSafeBrowsingDatabaseManager::OnSafeBrowsingResult, this,
-                 base::Passed(&safe_browsing_check)));
+      base::BindOnce(&FakeSafeBrowsingDatabaseManager::OnSafeBrowsingResult,
+                     this, base::Passed(&safe_browsing_check)));
   return false;
 }
 

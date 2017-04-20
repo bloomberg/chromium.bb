@@ -200,10 +200,9 @@ void WriteFromUrlOperation::VerifyDownloadCompare(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &WriteFromUrlOperation::VerifyDownloadComplete, this, continuation));
+      BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&WriteFromUrlOperation::VerifyDownloadComplete, this,
+                     continuation));
 }
 
 void WriteFromUrlOperation::VerifyDownloadComplete(

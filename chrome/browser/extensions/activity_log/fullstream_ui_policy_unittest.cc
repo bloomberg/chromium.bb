@@ -823,7 +823,7 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
 
   policy->Flush();
   BrowserThread::PostTaskAndReply(
-      BrowserThread::DB, FROM_HERE, base::Bind(&base::DoNothing),
+      BrowserThread::DB, FROM_HERE, base::BindOnce(&base::DoNothing),
       base::MessageLoop::current()->QuitWhenIdleClosure());
   base::RunLoop().Run();
 

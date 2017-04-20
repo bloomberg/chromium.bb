@@ -766,9 +766,10 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InfoMap::RegisterExtensionProcess,
-                 ExtensionSystem::Get(context)->info_map(), extension->id(),
-                 site_instance->GetProcess()->GetID(), site_instance->GetId()));
+      base::BindOnce(&InfoMap::RegisterExtensionProcess,
+                     ExtensionSystem::Get(context)->info_map(), extension->id(),
+                     site_instance->GetProcess()->GetID(),
+                     site_instance->GetId()));
 }
 
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
@@ -790,9 +791,10 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InfoMap::UnregisterExtensionProcess,
-                 ExtensionSystem::Get(context)->info_map(), extension->id(),
-                 site_instance->GetProcess()->GetID(), site_instance->GetId()));
+      base::BindOnce(&InfoMap::UnregisterExtensionProcess,
+                     ExtensionSystem::Get(context)->info_map(), extension->id(),
+                     site_instance->GetProcess()->GetID(),
+                     site_instance->GetId()));
 }
 
 void ChromeContentBrowserClientExtensionsPart::OverrideWebkitPrefs(

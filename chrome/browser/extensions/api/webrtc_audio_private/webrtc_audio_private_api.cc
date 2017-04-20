@@ -118,8 +118,8 @@ void WebrtcAudioPrivateFunction::GetOutputDeviceDescriptions() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     audio_manager_runner->PostTask(
         FROM_HERE,
-        base::Bind(&WebrtcAudioPrivateFunction::GetOutputDeviceDescriptions,
-                   this));
+        base::BindOnce(&WebrtcAudioPrivateFunction::GetOutputDeviceDescriptions,
+                       this));
     return;
   }
 
@@ -130,8 +130,8 @@ void WebrtcAudioPrivateFunction::GetOutputDeviceDescriptions() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&WebrtcAudioPrivateFunction::OnOutputDeviceDescriptions, this,
-                 base::Passed(&device_descriptions)));
+      base::BindOnce(&WebrtcAudioPrivateFunction::OnOutputDeviceDescriptions,
+                     this, base::Passed(&device_descriptions)));
 }
 
 void WebrtcAudioPrivateFunction::OnOutputDeviceDescriptions(
@@ -177,17 +177,17 @@ void WebrtcAudioPrivateFunction::OnControllerList(
 void WebrtcAudioPrivateFunction::CalculateHMAC(const std::string& raw_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&WebrtcAudioPrivateFunction::CalculateHMAC, this, raw_id));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&WebrtcAudioPrivateFunction::CalculateHMAC, this,
+                       raw_id));
     return;
   }
 
   std::string hmac = CalculateHMACImpl(raw_id);
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&WebrtcAudioPrivateFunction::OnHMACCalculated, this, hmac));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&WebrtcAudioPrivateFunction::OnHMACCalculated, this,
+                     hmac));
 }
 
 void WebrtcAudioPrivateFunction::OnHMACCalculated(const std::string& hmac) {
@@ -289,9 +289,9 @@ void WebrtcAudioPrivateGetSinksFunction::OnOutputDeviceDescriptions(
   results_ = wap::GetSinks::Results::Create(results);
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread, this));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread,
+                     this));
 }
 
 void WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread() {
@@ -439,10 +439,9 @@ void WebrtcAudioPrivateSetActiveSinkFunction::OnOutputDeviceDescriptions(
 void WebrtcAudioPrivateSetActiveSinkFunction::SwitchDone() {
   if (--num_remaining_sink_ids_ == 0) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&WebrtcAudioPrivateSetActiveSinkFunction::DoneOnUIThread,
-                   this));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&WebrtcAudioPrivateSetActiveSinkFunction::DoneOnUIThread,
+                       this));
   }
 }
 
@@ -466,9 +465,9 @@ bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunAsync() {
   InitDeviceIDSalt();
 
   AudioManager::Get()->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
-                 GetDevicesOnDeviceThread, this));
+      FROM_HERE, base::BindOnce(&WebrtcAudioPrivateGetAssociatedSinkFunction::
+                                    GetDevicesOnDeviceThread,
+                                this));
 
   return true;
 }
@@ -478,11 +477,10 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::GetDevicesOnDeviceThread() {
   AudioManager::Get()->GetAudioInputDeviceDescriptions(&source_devices_);
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
-                 GetRawSourceIDOnIOThread,
-                 this));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebrtcAudioPrivateGetAssociatedSinkFunction::
+                         GetRawSourceIDOnIOThread,
+                     this));
 }
 
 void
@@ -507,11 +505,9 @@ WebrtcAudioPrivateGetAssociatedSinkFunction::GetRawSourceIDOnIOThread() {
   }
 
   AudioManager::Get()->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
-                 GetAssociatedSinkOnDeviceThread,
-                 this,
-                 raw_source_id));
+      FROM_HERE, base::BindOnce(&WebrtcAudioPrivateGetAssociatedSinkFunction::
+                                    GetAssociatedSinkOnDeviceThread,
+                                this, raw_source_id));
 }
 
 void

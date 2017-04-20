@@ -104,7 +104,8 @@ static void SendMulticastPacket(const base::Closure& quit_run_loop,
     scoped_refptr<net::IOBuffer> data = new net::WrappedIOBuffer(test_message);
     src->Write(data, test_message_length, base::Bind(&OnSendCompleted));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&SendMulticastPacket, quit_run_loop, src, result),
+        FROM_HERE,
+        base::BindOnce(&SendMulticastPacket, quit_run_loop, src, result),
         base::TimeDelta::FromSeconds(1));
   } else {
     quit_run_loop.Run();

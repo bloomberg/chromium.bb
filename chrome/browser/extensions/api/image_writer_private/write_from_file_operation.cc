@@ -32,16 +32,12 @@ void WriteFromFileOperation::StartImpl() {
   }
 
   BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &WriteFromFileOperation::Unzip,
-          this,
+      BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(
+          &WriteFromFileOperation::Unzip, this,
           base::Bind(
-              &WriteFromFileOperation::Write,
-              this,
-              base::Bind(&WriteFromFileOperation::VerifyWrite,
-                         this,
+              &WriteFromFileOperation::Write, this,
+              base::Bind(&WriteFromFileOperation::VerifyWrite, this,
                          base::Bind(&WriteFromFileOperation::Finish, this)))));
 }
 

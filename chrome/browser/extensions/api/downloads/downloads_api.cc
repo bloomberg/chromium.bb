@@ -659,8 +659,9 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
         new base::WeakPtrFactory<ExtensionDownloadsEventRouterData>(this));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ExtensionDownloadsEventRouterData::DetermineFilenameTimeout,
-                   weak_ptr_factory_->GetWeakPtr()),
+        base::BindOnce(
+            &ExtensionDownloadsEventRouterData::DetermineFilenameTimeout,
+            weak_ptr_factory_->GetWeakPtr()),
         base::TimeDelta::FromSeconds(determine_filename_timeout_s_));
   }
 
@@ -825,8 +826,9 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
         new base::WeakPtrFactory<ExtensionDownloadsEventRouterData>(this));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ExtensionDownloadsEventRouterData::ClearPendingDeterminers,
-                   weak_ptr_factory_->GetWeakPtr()),
+        base::BindOnce(
+            &ExtensionDownloadsEventRouterData::ClearPendingDeterminers,
+            weak_ptr_factory_->GetWeakPtr()),
         base::TimeDelta::FromSeconds(15));
   }
 
@@ -1276,8 +1278,9 @@ void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
   if (!visible) {
     if (retries > 0) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&DownloadsAcceptDangerFunction::PromptOrWait,
-                                this, download_id, retries - 1),
+          FROM_HERE,
+          base::BindOnce(&DownloadsAcceptDangerFunction::PromptOrWait, this,
+                         download_id, retries - 1),
           base::TimeDelta::FromMilliseconds(100));
       return;
     }

@@ -29,9 +29,8 @@ PackExtensionJob::PackExtensionJob(Client* client,
 
 void PackExtensionJob::Start() {
   if (asynchronous_) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&PackExtensionJob::Run, this));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::BindOnce(&PackExtensionJob::Run, this));
   } else {
     Run();
   }
@@ -59,7 +58,7 @@ void PackExtensionJob::Run() {
     if (asynchronous_) {
       BrowserThread::PostTask(
           client_thread_id_, FROM_HERE,
-          base::Bind(&PackExtensionJob::ReportSuccessOnClientThread, this));
+          base::BindOnce(&PackExtensionJob::ReportSuccessOnClientThread, this));
     } else {
       ReportSuccessOnClientThread();
     }
@@ -67,9 +66,8 @@ void PackExtensionJob::Run() {
     if (asynchronous_) {
       BrowserThread::PostTask(
           client_thread_id_, FROM_HERE,
-          base::Bind(
-              &PackExtensionJob::ReportFailureOnClientThread, this,
-              creator.error_message(), creator.error_type()));
+          base::BindOnce(&PackExtensionJob::ReportFailureOnClientThread, this,
+                         creator.error_message(), creator.error_type()));
     } else {
       ReportFailureOnClientThread(creator.error_message(),
           creator.error_type());

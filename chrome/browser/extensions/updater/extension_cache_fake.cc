@@ -59,9 +59,8 @@ void ExtensionCacheFake::PutExtension(const std::string& id,
     cache_[id].first = version;
     cache_[id].second = file_path;
     content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(callback, file_path, false));
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(callback, file_path, false));
   } else {
     callback.Run(file_path, true);
   }

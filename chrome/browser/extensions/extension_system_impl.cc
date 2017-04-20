@@ -453,19 +453,18 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InfoMap::AddExtension, info_map(),
-                 base::RetainedRef(extension), install_time, incognito_enabled,
-                 notifications_disabled),
+      base::BindOnce(&InfoMap::AddExtension, info_map(),
+                     base::RetainedRef(extension), install_time,
+                     incognito_enabled, notifications_disabled),
       callback);
 }
 
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
     const UnloadedExtensionInfo::Reason reason) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&InfoMap::RemoveExtension, info_map(), extension_id, reason));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&InfoMap::RemoveExtension, info_map(),
+                                         extension_id, reason));
 }
 
 }  // namespace extensions

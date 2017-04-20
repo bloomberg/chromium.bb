@@ -79,11 +79,9 @@ class SafeBrowsingClientImpl
       : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         callback_(callback) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&SafeBrowsingClientImpl::StartCheck, this,
-                   g_database_manager.Get().get(),
-                   extension_ids));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&SafeBrowsingClientImpl::StartCheck, this,
+                       g_database_manager.Get().get(), extension_ids));
   }
 
  private:
@@ -98,8 +96,7 @@ class SafeBrowsingClientImpl
     if (database_manager->CheckExtensionIDs(extension_ids, this)) {
       // Definitely not blacklisted. Callback immediately.
       callback_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(callback_, std::set<std::string>()));
+          FROM_HERE, base::BindOnce(callback_, std::set<std::string>()));
       return;
     }
     // Something might be blacklisted, response will come in
@@ -109,7 +106,7 @@ class SafeBrowsingClientImpl
 
   void OnCheckExtensionsResult(const std::set<std::string>& hits) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback_, hits));
+    callback_task_runner_->PostTask(FROM_HERE, base::BindOnce(callback_, hits));
     Release();  // Balanced in StartCheck.
   }
 
@@ -195,7 +192,7 @@ void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
 
   if (ids.empty() || !g_database_manager.Get().get().get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, BlacklistStateMap()));
+        FROM_HERE, base::BindOnce(callback, BlacklistStateMap()));
     return;
   }
 

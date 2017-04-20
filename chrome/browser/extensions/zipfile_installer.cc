@@ -41,7 +41,7 @@ void ZipFileInstaller::LoadFromZipFile(const base::FilePath& zip_file) {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ZipFileInstaller::PrepareUnzipDir, this, zip_file));
+      base::BindOnce(&ZipFileInstaller::PrepareUnzipDir, this, zip_file));
 }
 
 ZipFileInstaller::ZipFileInstaller(ExtensionService* service)
@@ -63,14 +63,14 @@ void ZipFileInstaller::PrepareUnzipDir(const base::FilePath& zip_file) {
   if (!base::CreateTemporaryDirInDir(dir_temp, dir_name, &unzip_dir)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&ZipFileInstaller::ReportFailure, this,
-                   std::string(kExtensionHandlerTempDirError)));
+        base::BindOnce(&ZipFileInstaller::ReportFailure, this,
+                       std::string(kExtensionHandlerTempDirError)));
     return;
   }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&ZipFileInstaller::Unzip, this, unzip_dir));
+      base::BindOnce(&ZipFileInstaller::Unzip, this, unzip_dir));
 }
 
 void ZipFileInstaller::Unzip(const base::FilePath& unzip_dir) {

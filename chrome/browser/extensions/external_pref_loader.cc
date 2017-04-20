@@ -146,7 +146,7 @@ void ExternalPrefLoader::StartLoading() {
   } else {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ExternalPrefLoader::LoadOnFileThread, this));
+        base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
   }
 }
 
@@ -187,7 +187,7 @@ void ExternalPrefLoader::PostLoadAndRemoveObservers() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ExternalPrefLoader::LoadOnFileThread, this));
+      base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
 }
 
 void ExternalPrefLoader::LoadOnFileThread() {
@@ -228,7 +228,7 @@ void ExternalPrefLoader::LoadOnFileThread() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExternalPrefLoader::LoadFinished, this));
+      base::BindOnce(&ExternalPrefLoader::LoadFinished, this));
 }
 
 void ExternalPrefLoader::ReadExternalExtensionPrefFile(

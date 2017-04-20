@@ -228,7 +228,7 @@ bool CookiesGetFunction::RunAsync() {
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CookiesGetFunction::GetCookieOnIOThread, this));
+      base::BindOnce(&CookiesGetFunction::GetCookieOnIOThread, this));
   DCHECK(rv);
 
   // Will finish asynchronously.
@@ -263,7 +263,7 @@ void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CookiesGetFunction::RespondOnUIThread, this));
+      base::BindOnce(&CookiesGetFunction::RespondOnUIThread, this));
   DCHECK(rv);
 }
 
@@ -299,7 +299,7 @@ bool CookiesGetAllFunction::RunAsync() {
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CookiesGetAllFunction::GetAllCookiesOnIOThread, this));
+      base::BindOnce(&CookiesGetAllFunction::GetAllCookiesOnIOThread, this));
   DCHECK(rv);
 
   // Will finish asynchronously.
@@ -326,7 +326,7 @@ void CookiesGetAllFunction::GetAllCookiesCallback(
   }
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CookiesGetAllFunction::RespondOnUIThread, this));
+      base::BindOnce(&CookiesGetAllFunction::RespondOnUIThread, this));
   DCHECK(rv);
 }
 
@@ -361,7 +361,7 @@ bool CookiesSetFunction::RunAsync() {
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CookiesSetFunction::SetCookieOnIOThread, this));
+      base::BindOnce(&CookiesSetFunction::SetCookieOnIOThread, this));
   DCHECK(rv);
 
   // Will finish asynchronously.
@@ -448,7 +448,7 @@ void CookiesSetFunction::PullCookieCallback(
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CookiesSetFunction::RespondOnUIThread, this));
+      base::BindOnce(&CookiesSetFunction::RespondOnUIThread, this));
   DCHECK(rv);
 }
 
@@ -490,7 +490,7 @@ bool CookiesRemoveFunction::RunAsync() {
   // Pass the work off to the IO thread.
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CookiesRemoveFunction::RemoveCookieOnIOThread, this));
+      base::BindOnce(&CookiesRemoveFunction::RemoveCookieOnIOThread, this));
   DCHECK(rv);
 
   // Will return asynchronously.
@@ -519,7 +519,7 @@ void CookiesRemoveFunction::RemoveCookieCallback() {
   // Return to UI thread
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CookiesRemoveFunction::RespondOnUIThread, this));
+      base::BindOnce(&CookiesRemoveFunction::RespondOnUIThread, this));
   DCHECK(rv);
 }
 

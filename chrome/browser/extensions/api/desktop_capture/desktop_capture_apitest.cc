@@ -64,9 +64,8 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
     if (!expectation_->cancelled) {
       // Post a task to call the callback asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&FakeDesktopMediaPicker::CallCallback,
-                     weak_factory_.GetWeakPtr(), done_callback));
+          FROM_HERE, base::BindOnce(&FakeDesktopMediaPicker::CallCallback,
+                                    weak_factory_.GetWeakPtr(), done_callback));
     } else {
       // If we expect the dialog to be cancelled then store the callback to
       // retain reference to the callback handler.

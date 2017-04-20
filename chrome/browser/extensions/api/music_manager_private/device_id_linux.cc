@@ -182,10 +182,8 @@ void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
     raw_device_id = mac_address + disk_id;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, raw_device_id));
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::BindOnce(callback, raw_device_id));
 }
 
 }  // namespace
@@ -198,11 +196,9 @@ void DeviceId::GetRawDeviceId(const IdCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(GetRawDeviceIdImpl,
-          base::Bind(DeviceId::IsValidMacAddress),
-          callback));
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(GetRawDeviceIdImpl,
+                     base::Bind(DeviceId::IsValidMacAddress), callback));
 }
 
 }  // namespace api

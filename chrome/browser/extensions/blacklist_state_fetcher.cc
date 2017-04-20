@@ -38,7 +38,7 @@ void BlacklistStateFetcher::Request(const std::string& id,
           g_browser_process->safe_browsing_service()->GetProtocolConfig());
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, BLACKLISTED_UNKNOWN));
+          FROM_HERE, base::BindOnce(callback, BLACKLISTED_UNKNOWN));
       return;
     }
   }

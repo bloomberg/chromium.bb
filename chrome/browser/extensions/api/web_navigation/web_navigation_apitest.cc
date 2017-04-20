@@ -74,9 +74,9 @@ class TestNavigationListener
   void DelayRequestsForURL(const GURL& url) {
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
       content::BrowserThread::PostTask(
-          content::BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&TestNavigationListener::DelayRequestsForURL, this, url));
+          content::BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&TestNavigationListener::DelayRequestsForURL, this,
+                         url));
       return;
     }
     urls_to_delay_.insert(url);
@@ -86,9 +86,8 @@ class TestNavigationListener
   void ResumeAll() {
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
       content::BrowserThread::PostTask(
-          content::BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&TestNavigationListener::ResumeAll, this));
+          content::BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&TestNavigationListener::ResumeAll, this));
       return;
     }
     WeakThrottleList::const_iterator it;
@@ -104,7 +103,7 @@ class TestNavigationListener
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
       content::BrowserThread::PostTask(
           content::BrowserThread::IO, FROM_HERE,
-          base::Bind(&TestNavigationListener::Resume, this, url));
+          base::BindOnce(&TestNavigationListener::Resume, this, url));
       return;
     }
     WeakThrottleList::iterator it;

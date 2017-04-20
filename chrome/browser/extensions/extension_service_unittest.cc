@@ -4559,15 +4559,15 @@ class ExtensionCookieCallback {
 
   void SetCookieCallback(bool result) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&base::MessageLoop::QuitWhenIdle,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&base::MessageLoop::QuitWhenIdle,
+                                  weak_factory_.GetWeakPtr()));
     result_ = result;
   }
 
   void GetAllCookiesCallback(const net::CookieList& list) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&base::MessageLoop::QuitWhenIdle,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&base::MessageLoop::QuitWhenIdle,
+                                  weak_factory_.GetWeakPtr()));
     list_ = list;
   }
   net::CookieList list_;

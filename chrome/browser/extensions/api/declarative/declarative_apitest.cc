@@ -118,10 +118,9 @@ class DeclarativeApiTest : public ExtensionApiTest {
 
     std::vector<linked_ptr<api::events::Rule>> rules;
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(
-            &RulesRegistry::GetAllRules, rules_registry, extension_id, &rules));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&RulesRegistry::GetAllRules, rules_registry,
+                       extension_id, &rules));
     scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
     EXPECT_TRUE(io_helper->Run());

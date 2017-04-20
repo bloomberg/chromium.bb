@@ -109,11 +109,12 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
         no_updates_.erase(no_update);
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(&ExtensionDownloaderDelegate::OnExtensionDownloadFailed,
-                       base::Unretained(delegate), id,
-                       ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE,
-                       ExtensionDownloaderDelegate::PingResult(),
-                       fetch_data->request_ids()));
+            base::BindOnce(
+                &ExtensionDownloaderDelegate::OnExtensionDownloadFailed,
+                base::Unretained(delegate), id,
+                ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE,
+                ExtensionDownloaderDelegate::PingResult(),
+                fetch_data->request_ids()));
         continue;
       }
       auto update = updates_.find(id);
@@ -123,7 +124,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
         updates_.erase(update);
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 &ExtensionDownloaderDelegate::OnExtensionDownloadFinished,
                 base::Unretained(delegate), info,
                 false /* file_ownership_passed */, GURL(), version,

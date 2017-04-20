@@ -109,11 +109,8 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     // it to finish.
     pref_service_->CommitPendingWrite();
     base::RunLoop run_loop;
-    ASSERT_TRUE(
-        task_runner_->PostTaskAndReply(
-            FROM_HERE,
-            base::Bind(&base::DoNothing),
-            run_loop.QuitClosure()));
+    ASSERT_TRUE(task_runner_->PostTaskAndReply(
+        FROM_HERE, base::BindOnce(&base::DoNothing), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

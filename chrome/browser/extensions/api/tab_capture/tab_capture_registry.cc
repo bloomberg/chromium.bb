@@ -67,9 +67,8 @@ class WindowAdoptionAgent : protected aura::WindowObserver {
     // avoid clashing with the currently-in-progress window tree hierarchy
     // changes.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&WindowAdoptionAgent::FindNewParent,
-                   weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&WindowAdoptionAgent::FindNewParent,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   // aura::WindowObserver:

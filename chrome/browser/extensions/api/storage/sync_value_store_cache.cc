@@ -43,9 +43,8 @@ SyncValueStoreCache::SyncValueStoreCache(
   // after the constructor returns.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SyncValueStoreCache::InitOnFileThread,
-                 base::Unretained(this),
-                 factory, observers, profile_path));
+      base::BindOnce(&SyncValueStoreCache::InitOnFileThread,
+                     base::Unretained(this), factory, observers, profile_path));
 }
 
 SyncValueStoreCache::~SyncValueStoreCache() {

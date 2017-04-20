@@ -94,10 +94,9 @@ GaiaWebAuthFlow::~GaiaWebAuthFlow() {
 
   if (io_helper_) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&GaiaWebAuthFlow::IOHelper::Cleanup,
-                   base::Unretained(io_helper_.release())));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&GaiaWebAuthFlow::IOHelper::Cleanup,
+                       base::Unretained(io_helper_.release())));
   }
 
   if (web_flow_)
@@ -108,10 +107,9 @@ void GaiaWebAuthFlow::Start() {
   io_helper_.reset(new IOHelper(weak_ptr_factory_.GetWeakPtr(),
                                 profile_->GetRequestContext()));
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&GaiaWebAuthFlow::IOHelper::PrepareRequestContext,
-                 base::Unretained(io_helper_.get())));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&GaiaWebAuthFlow::IOHelper::PrepareRequestContext,
+                     base::Unretained(io_helper_.get())));
 }
 
 void GaiaWebAuthFlow::StartUberTokenFetch() {
@@ -296,10 +294,9 @@ void GaiaWebAuthFlow::IOHelper::PrepareRequestContext() {
       app_http_cache_.get());
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GaiaWebAuthFlow::StartUberTokenFetch,
-                 gaia_web_auth_flow_));
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&GaiaWebAuthFlow::StartUberTokenFetch,
+                     gaia_web_auth_flow_));
 }
 
 void GaiaWebAuthFlow::IOHelper::Cleanup() {
