@@ -127,6 +127,8 @@ Text* Text::splitText(unsigned offset, ExceptionState& exception_state) {
 
   if (parentNode())
     GetDocument().DidSplitTextNode(*this);
+  else
+    GetDocument().DidRemoveText(this, offset, old_str.length() - offset);
 
   // [NewObject] must always create a new wrapper.  Check that a wrapper
   // does not exist yet.
