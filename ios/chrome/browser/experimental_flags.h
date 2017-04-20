@@ -19,11 +19,10 @@ enum GaiaEnvironment {
 };
 
 enum WhatsNewPromoStatus {
-  WHATS_NEW_DEFAULT = 0,          // Not forced to enable a promo.
-  WHATS_NEW_APP_RATING,           // Force enable App Rating Promo.
-  WHATS_NEW_MOVE_TO_DOCK_FASTER,  // Force enable Move To Dock Faster Access
-  WHATS_NEW_MOVE_TO_DOCK_LOVE,    // Force enable Move To Dock Love Chrome
-  WHATS_NEW_MOVE_TO_DOCK_TIP,     // Force enable Move To Dock Tip promo.
+  WHATS_NEW_DEFAULT = 0,         // Not forced to enable a promo.
+  WHATS_NEW_APP_RATING,          // Force enable App Rating Promo.
+  WHATS_NEW_MOVE_TO_DOCK_TIP,    // Force enable Move To Dock Tip promo.
+  WHATS_NEW_PROMO_STATUS_COUNT,  // Count of Whats New Promo Statuses.
 };
 
 // Whether the First Run UI will be always be displayed.

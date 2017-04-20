@@ -189,12 +189,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_MANAGED_SWITCH_SUBTITLE" desc="The subtitle of the Switch from a managed account dialog. [300em]">
         You are switching sync accounts from <ph name="USER_EMAIL1">$1<ex>john@doe.com</ex></ph> to <ph name="USER_EMAIL2">$2<ex>johndoe@gmail.com</ex></ph>. Your existing Chromium data is managed by <ph name="DOMAIN">$3<ex>doe.com</ex></ph>. This will delete your data from this device, but your data will remain in <ph name="USER_EMAIL1">$1<ex>john@doe.com</ex></ph>.
       </message>
-      <message name="IDS_IOS_MOVE_TO_DOCK_FASTER_ACCESS" desc="Text displayed on the New Tab Page for the move Chromium to the dock promo. [iOS only]">
-        For faster access, <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>move Chromium to your dock<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
-      </message>
-      <message name="IDS_IOS_MOVE_TO_DOCK_LOVE_CHROME" desc="Text displayed on the New Tab Page for the move Chromium to the dock promo. [iOS only]">
-        Love Chromium? <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>Move it to your dock<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
-      </message>
       <message name="IDS_IOS_MOVE_TO_DOCK_TIP" desc="Text displayed on the New Tab Page for the move Chromium to the dock promo. [iOS only]">
         Tip: <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>Move Chromium to your dock<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
       </message>

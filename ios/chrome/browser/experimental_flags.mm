@@ -70,8 +70,16 @@ std::string GetOriginServerHost() {
 }
 
 WhatsNewPromoStatus GetWhatsNewPromoStatus() {
-  NSInteger status = [[NSUserDefaults standardUserDefaults]
-      integerForKey:kWhatsNewPromoStatus];
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSInteger status = [defaults integerForKey:kWhatsNewPromoStatus];
+  // If |status| is set to a value greater than or equal to the count of items
+  // defined in WhatsNewPromoStatus, set it to |WHATS_NEW_DEFAULT| and correct
+  // the value in NSUserDefaults. This error case can happen when a user
+  // upgrades to a version with fewer Whats New Promo settings.
+  if (status >= static_cast<NSInteger>(WHATS_NEW_PROMO_STATUS_COUNT)) {
+    status = static_cast<NSInteger>(WHATS_NEW_DEFAULT);
+    [defaults setInteger:status forKey:kWhatsNewPromoStatus];
+  }
   return static_cast<WhatsNewPromoStatus>(status);
 }
 

@@ -35,10 +35,8 @@ struct PromoStringToIdsMapEntry {
 
 // A mapping from a string to a l10n message id.
 const PromoStringToIdsMapEntry kPromoStringToIdsMap[] = {
-    {"IDS_IOS_APP_RATING_PROMO_STRING", IDS_IOS_APP_RATING_PROMO_STRING},
-    {"IDS_IOS_MOVE_TO_DOCK_FASTER_ACCESS", IDS_IOS_MOVE_TO_DOCK_FASTER_ACCESS},
-    {"IDS_IOS_MOVE_TO_DOCK_LOVE_CHROME", IDS_IOS_MOVE_TO_DOCK_LOVE_CHROME},
-    {"IDS_IOS_MOVE_TO_DOCK_TIP", IDS_IOS_MOVE_TO_DOCK_TIP},
+    {"appRatingPromo", IDS_IOS_APP_RATING_PROMO_STRING},
+    {"moveToDockTip", IDS_IOS_MOVE_TO_DOCK_TIP},
 };
 
 // Returns a localized version of |promo_text| if it has an entry in the
@@ -69,23 +67,11 @@ bool NotificationPromoWhatsNew::Init() {
   if (forceEnabled != experimental_flags::WHATS_NEW_DEFAULT) {
     switch (forceEnabled) {
       case experimental_flags::WHATS_NEW_APP_RATING:
-        InjectFakePromo("1", "IDS_IOS_APP_RATING_PROMO_STRING",
-                        "chrome_command", "ratethisapp", "", "RateThisAppPromo",
-                        "logo");
-        break;
-      case experimental_flags::WHATS_NEW_MOVE_TO_DOCK_FASTER:
-        InjectFakePromo("2", "IDS_IOS_MOVE_TO_DOCK_FASTER_ACCESS", "url", "",
-                        "https://support.google.com/chrome/?p=iphone_dock",
-                        "MoveToDockFasterAccessPromo",
-                        "logoWithRoundedRectangle");
-        break;
-      case experimental_flags::WHATS_NEW_MOVE_TO_DOCK_LOVE:
-        InjectFakePromo("3", "IDS_IOS_MOVE_TO_DOCK_LOVE_CHROME", "url", "",
-                        "https://support.google.com/chrome/?p=iphone_dock",
-                        "MoveToDockLovePromo", "logoWithRoundedRectangle");
+        InjectFakePromo("1", "appRatingPromo", "chrome_command", "ratethisapp",
+                        "", "RateThisAppPromo", "logo");
         break;
       case experimental_flags::WHATS_NEW_MOVE_TO_DOCK_TIP:
-        InjectFakePromo("4", "IDS_IOS_MOVE_TO_DOCK_TIP", "url", "",
+        InjectFakePromo("2", "moveToDockTip", "url", "",
                         "https://support.google.com/chrome/?p=iphone_dock",
                         "MoveToDockTipPromo", "logoWithRoundedRectangle");
         break;

@@ -344,15 +344,11 @@
 				<integer>0</integer>
 				<integer>1</integer>
 				<integer>2</integer>
-				<integer>3</integer>
-				<integer>4</integer>
 			</array>
 			<key>Titles</key>
 			<array>
 				<string>Default</string>
 				<string>App Rating Promo</string>
-				<string>Faster Access Move to Dock Promo</string>
-				<string>Love Chrome Move to Dock Promo</string>
 				<string>Tip Move to Dock Promo</string>
 			</array>
 		</dict>
