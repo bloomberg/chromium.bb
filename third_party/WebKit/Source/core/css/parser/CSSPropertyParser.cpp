@@ -1784,6 +1784,7 @@ static void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
 const CSSValue* CSSPropertyParser::ParseSingleValue(
     CSSPropertyID unresolved_property,
     CSSPropertyID current_shorthand) {
+  DCHECK(context_);
   CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
   if (CSSParserFastPaths::IsKeywordPropertyID(property)) {
     if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
@@ -1801,7 +1802,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
   const CSSPropertyDescriptor& css_property_desc =
       CSSPropertyDescriptor::Get(property);
   if (css_property_desc.parseSingleValue) {
-    DCHECK(context_);
     return css_property_desc.parseSingleValue(range_, *context_,
                                               unresolved_property);
   }
@@ -1814,13 +1814,13 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyMaxWidth:
     case CSSPropertyMaxHeight:
       return CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(
-          range_, context_, UnitlessQuirk::kAllow);
+          range_, *context_, UnitlessQuirk::kAllow);
     case CSSPropertyMinWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyWidth:
     case CSSPropertyHeight:
       return CSSPropertyLengthUtils::ConsumeWidthOrHeight(
-          range_, context_, UnitlessQuirk::kAllow);
+          range_, *context_, UnitlessQuirk::kAllow);
     case CSSPropertyInlineSize:
     case CSSPropertyBlockSize:
     case CSSPropertyMinInlineSize:
@@ -1829,7 +1829,7 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitMinLogicalHeight:
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
-      return CSSPropertyLengthUtils::ConsumeWidthOrHeight(range_, context_);
+      return CSSPropertyLengthUtils::ConsumeWidthOrHeight(range_, *context_);
     case CSSPropertyScrollSnapDestination:
     case CSSPropertyObjectPosition:
     case CSSPropertyPerspectiveOrigin:

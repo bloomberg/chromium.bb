@@ -19,12 +19,12 @@ class CSSPropertyLengthUtils {
 
   static CSSValue* ConsumeMaxWidthOrHeight(
       CSSParserTokenRange&,
-      const CSSParserContext*,
+      const CSSParserContext&,
       CSSPropertyParserHelpers::UnitlessQuirk =
           CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
   static CSSValue* ConsumeWidthOrHeight(
       CSSParserTokenRange&,
-      const CSSParserContext*,
+      const CSSParserContext&,
       CSSPropertyParserHelpers::UnitlessQuirk =
           CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 };

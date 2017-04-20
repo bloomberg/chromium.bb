@@ -12,7 +12,7 @@ const CSSValue* CSSPropertyAPIWebkitMaxLogicalWidthOrHeight::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     CSSPropertyID) {
-  return CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(range, &context);
+  return CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(range, context);
 }
 
 }  // namespace blink
