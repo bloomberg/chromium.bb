@@ -175,26 +175,6 @@ void DocumentMarkerController::RemoveMarkers(
   DocumentMarkerController::RemoveMarkers(marked_text, marker_types);
 }
 
-static bool StartsFurther(const Member<RenderedDocumentMarker>& lhv,
-                          const DocumentMarker* rhv) {
-  return lhv->StartOffset() < rhv->StartOffset();
-}
-
-static bool EndsBefore(size_t start_offset,
-                       const Member<RenderedDocumentMarker>& rhv) {
-  return start_offset < rhv->EndOffset();
-}
-
-static bool CompareByStart(const Member<DocumentMarker>& lhv,
-                           const Member<DocumentMarker>& rhv) {
-  return lhv->StartOffset() < rhv->StartOffset();
-}
-
-static bool DoesNotOverlap(const Member<RenderedDocumentMarker>& lhv,
-                           const DocumentMarker* rhv) {
-  return lhv->EndOffset() < rhv->StartOffset();
-}
-
 static void UpdateMarkerRenderedRect(const Node& node,
                                      RenderedDocumentMarker& marker) {
   Range* range = Range::Create(node.GetDocument());
@@ -262,8 +242,13 @@ void DocumentMarkerListEditor::AddMarker(MarkerList* list,
         marker->GetType() != DocumentMarker::kComposition) {
       MergeOverlapping(list, rendered_marker);
     } else {
-      MarkerList::iterator pos =
-          std::lower_bound(list->begin(), list->end(), marker, StartsFurther);
+      MarkerList::iterator pos = std::lower_bound(
+          list->begin(), list->end(), marker,
+          [](const Member<RenderedDocumentMarker>& marker_in_list,
+             const DocumentMarker* marker_to_insert) {
+            return marker_in_list->StartOffset() <
+                   marker_to_insert->StartOffset();
+          });
       list->insert(pos - list->begin(), rendered_marker);
     }
   }
@@ -273,8 +258,12 @@ void DocumentMarkerListEditor::AddMarker(MarkerList* list,
 void DocumentMarkerListEditor::MergeOverlapping(
     MarkerList* list,
     RenderedDocumentMarker* to_insert) {
-  MarkerList::iterator first_overlapping =
-      std::lower_bound(list->begin(), list->end(), to_insert, DoesNotOverlap);
+  MarkerList::iterator first_overlapping = std::lower_bound(
+      list->begin(), list->end(), to_insert,
+      [](const Member<RenderedDocumentMarker>& marker_in_list,
+         const DocumentMarker* marker_to_insert) {
+        return marker_in_list->EndOffset() < marker_to_insert->StartOffset();
+      });
   size_t index = first_overlapping - list->begin();
   list->insert(index, to_insert);
   MarkerList::iterator inserted = list->begin() + index;
@@ -424,8 +413,11 @@ bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
                                              int length) {
   bool doc_dirty = false;
   unsigned end_offset = start_offset + length;
-  MarkerList::iterator start_pos =
-      std::upper_bound(list->begin(), list->end(), start_offset, EndsBefore);
+  MarkerList::iterator start_pos = std::upper_bound(
+      list->begin(), list->end(), start_offset,
+      [](size_t start_offset, const Member<RenderedDocumentMarker>& marker) {
+        return start_offset < marker->EndOffset();
+      });
   for (MarkerList::iterator i = start_pos; i != list->end();) {
     DocumentMarker marker(*i->Get());
 
@@ -462,7 +454,11 @@ DocumentMarkerVector DocumentMarkerController::MarkersFor(
       result.push_back(list->at(i).Get());
   }
 
-  std::sort(result.begin(), result.end(), CompareByStart);
+  std::sort(result.begin(), result.end(),
+            [](const Member<DocumentMarker>& marker1,
+               const Member<DocumentMarker>& marker2) {
+              return marker1->StartOffset() < marker2->StartOffset();
+            });
   return result;
 }
 
@@ -478,7 +474,11 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
         result.push_back(list->at(j).Get());
     }
   }
-  std::sort(result.begin(), result.end(), CompareByStart);
+  std::sort(result.begin(), result.end(),
+            [](const Member<DocumentMarker>& marker1,
+               const Member<DocumentMarker>& marker2) {
+              return marker1->StartOffset() < marker2->StartOffset();
+            });
   return result;
 }
 
@@ -781,8 +781,11 @@ bool DocumentMarkerController::SetMarkersActive(Node* node,
   Member<MarkerList>& list = ListForType(markers, DocumentMarker::kTextMatch);
   if (!list)
     return false;
-  MarkerList::iterator start_pos =
-      std::upper_bound(list->begin(), list->end(), start_offset, EndsBefore);
+  MarkerList::iterator start_pos = std::upper_bound(
+      list->begin(), list->end(), start_offset,
+      [](size_t start_offset, const Member<RenderedDocumentMarker>& marker) {
+        return start_offset < marker->EndOffset();
+      });
   for (MarkerList::iterator marker = start_pos; marker != list->end();
        ++marker) {
     // Markers are returned in order, so stop if we are now past the specified
