@@ -25,6 +25,7 @@
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
@@ -46,7 +47,6 @@
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
-#include "third_party/WebKit/public/web/WebSerializedScriptValueVersion.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 using base::FilePath;
@@ -335,24 +335,19 @@ WARN_UNUSED_RESULT bool IsSchemaKnown(LevelDBDatabase* db, bool* known) {
     return true;
   }
 
-  const uint32_t latest_known_data_version =
-      blink::kSerializedScriptValueVersion;
-  int64_t db_data_version = 0;
-  s = GetInt(db, DataVersionKey::Encode(), &db_data_version, &found);
+  int64_t raw_db_data_version = 0;
+  s = GetInt(db, DataVersionKey::Encode(), &raw_db_data_version, &found);
   if (!s.ok())
     return false;
   if (!found) {
     *known = true;
     return true;
   }
-  if (db_data_version < 0)
+  if (raw_db_data_version < 0)
     return false;  // Only corruption should cause this.
-  if (db_data_version > latest_known_data_version) {
-    *known = false;
-    return true;
-  }
 
-  *known = true;
+  *known = IndexedDBDataFormatVersion::GetCurrent().IsAtLeast(
+      IndexedDBDataFormatVersion::Decode(raw_db_data_version));
   return true;
 }
 
@@ -1143,8 +1138,8 @@ Status IndexedDBBackingStore::DestroyBackingStore(const FilePath& path_base,
 }
 
 WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
-  const uint32_t latest_known_data_version =
-      blink::kSerializedScriptValueVersion;
+  const IndexedDBDataFormatVersion latest_known_data_version =
+      IndexedDBDataFormatVersion::GetCurrent();
   const std::string schema_version_key = SchemaVersionKey::Encode();
   const std::string data_version_key = DataVersionKey::Encode();
 
@@ -1152,7 +1147,7 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
       IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
 
   int64_t db_schema_version = 0;
-  int64_t db_data_version = 0;
+  IndexedDBDataFormatVersion db_data_version;
   bool found = false;
   Status s =
       GetInt(transaction.get(), schema_version_key, &db_schema_version, &found);
@@ -1165,7 +1160,7 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
     db_schema_version = kLatestKnownSchemaVersion;
     PutInt(transaction.get(), schema_version_key, db_schema_version);
     db_data_version = latest_known_data_version;
-    PutInt(transaction.get(), data_version_key, db_data_version);
+    PutInt(transaction.get(), data_version_key, db_data_version.Encode());
     // If a blob directory already exists for this database, blow it away.  It's
     // leftover from a partially-purged previous generation of data.
     if (!base::DeleteFile(blob_path_, true)) {
@@ -1206,8 +1201,8 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
     if (s.ok() && db_schema_version < 2) {
       db_schema_version = 2;
       PutInt(transaction.get(), schema_version_key, db_schema_version);
-      db_data_version = blink::kSerializedScriptValueVersion;
-      PutInt(transaction.get(), data_version_key, db_data_version);
+      db_data_version = latest_known_data_version;
+      PutInt(transaction.get(), data_version_key, db_data_version.Encode());
     }
     if (db_schema_version < 3) {
       db_schema_version = 3;
@@ -1225,7 +1220,8 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
 
   // All new values will be written using this serialization version.
   found = false;
-  s = GetInt(transaction.get(), data_version_key, &db_data_version, &found);
+  int64_t raw_db_data_version = 0;
+  s = GetInt(transaction.get(), data_version_key, &raw_db_data_version, &found);
   if (!s.ok()) {
     INTERNAL_READ_ERROR_UNTESTED(SET_UP_METADATA);
     return s;
@@ -1234,13 +1230,20 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
     INTERNAL_CONSISTENCY_ERROR_UNTESTED(SET_UP_METADATA);
     return InternalInconsistencyStatus();
   }
-  if (db_data_version < latest_known_data_version) {
+  db_data_version = IndexedDBDataFormatVersion::Decode(raw_db_data_version);
+  if (latest_known_data_version == db_data_version) {
+    // Up to date. Nothing to do.
+  } else if (latest_known_data_version.IsAtLeast(db_data_version)) {
     db_data_version = latest_known_data_version;
-    PutInt(transaction.get(), data_version_key, db_data_version);
+    PutInt(transaction.get(), data_version_key, db_data_version.Encode());
+  } else {
+    // |db_data_version| is in the future according to at least one component.
+    INTERNAL_CONSISTENCY_ERROR(SET_UP_METADATA);
+    return InternalInconsistencyStatus();
   }
 
   DCHECK_EQ(db_schema_version, kLatestKnownSchemaVersion);
-  DCHECK_EQ(db_data_version, latest_known_data_version);
+  DCHECK(db_data_version == latest_known_data_version);
 
   s = transaction->Commit();
   if (!s.ok())

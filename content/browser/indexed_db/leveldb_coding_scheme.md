@@ -150,7 +150,7 @@ key                                 | value
 ------------------------------------|------
 «0, 0, 0, 0»                        | backing store schema version (Int) [`SchemaVersionKey`]
 «0, 0, 0, 1»                        | maximum allocated database (Int) [`MaxDatabaseIdKey`]
-«0, 0, 0, 2»                        | SerializedScriptValue version (Int) [`DataVersionKey`]
+«0, 0, 0, 2»                        | data format version (Int) [`DataVersionKey`]
 «0, 0, 0, 3»                        | primary BlobJournal [`BlobJournalKey`]
 «0, 0, 0, 4»                        | live BlobJournal [`LiveBlobJournalKey`]
 «0, 0, 0, 100, database id (VarInt)» | Existence implies the database id is in the free list  [`DatabaseFreeListKey`] - _obsolete_
@@ -161,6 +161,10 @@ Free lists (#100) are no longer used. The ID space is assumed to be
 sufficient.
 ***
 
+The data format version encodes a `content::IndexedDBDataFormatVersion` object.
+It includes a 32-bit version for the V8 serialization code in its most
+significant bits, and a 32-bit version for the Blink serialization code in its
+least significant 32 bits.
 
 ## Database metadata
 [`DatabaseMetaDataKey`]
