@@ -61,7 +61,7 @@
 #define ASAN_RETIRE_CONTAINER_ANNOTATION(object, objectSize)          \
   do {                                                                \
     BasePage* page = PageFromObject(object);                          \
-    ASSERT(page);                                                     \
+    DCHECK(page);                                                     \
     bool is_container =                                               \
         ThreadState::IsVectorArenaIndex(page->Arena()->ArenaIndex()); \
     if (!is_container && page->IsLargeObjectPage())                   \
@@ -77,7 +77,7 @@
 #define ASAN_MARK_LARGE_VECTOR_CONTAINER(arena, large_object)            \
   if (ThreadState::IsVectorArenaIndex(arena->ArenaIndex())) {            \
     BasePage* large_page = PageFromObject(large_object);                 \
-    ASSERT(large_page->IsLargeObjectPage());                             \
+    DCHECK(large_page->IsLargeObjectPage());                             \
     static_cast<LargeObjectPage*>(large_page)->SetIsVectorBackingPage(); \
   }
 #else
@@ -112,14 +112,14 @@ BaseArena::BaseArena(ThreadState* state, int index)
       index_(index) {}
 
 BaseArena::~BaseArena() {
-  ASSERT(!first_page_);
-  ASSERT(!first_unswept_page_);
+  DCHECK(!first_page_);
+  DCHECK(!first_unswept_page_);
 }
 
 void BaseArena::RemoveAllPages() {
   ClearFreeLists();
 
-  ASSERT(!first_unswept_page_);
+  DCHECK(!first_unswept_page_);
   while (first_page_) {
     BasePage* page = first_page_;
     page->Unlink(&first_page_);
@@ -171,7 +171,9 @@ BasePage* BaseArena::FindPageFromAddress(Address address) {
 
 void BaseArena::MakeConsistentForGC() {
   ClearFreeLists();
-  ASSERT(IsConsistentForGC());
+#if DCHECK_IS_ON()
+  DCHECK(IsConsistentForGC());
+#endif
   for (BasePage* page = first_page_; page; page = page->Next()) {
     page->MarkAsUnswept();
     page->InvalidateObjectStartBitmap();
@@ -194,8 +196,10 @@ void BaseArena::MakeConsistentForGC() {
 
 void BaseArena::MakeConsistentForMutator() {
   ClearFreeLists();
-  ASSERT(IsConsistentForGC());
-  ASSERT(!first_page_);
+#if DCHECK_IS_ON()
+  DCHECK(IsConsistentForGC());
+#endif
+  DCHECK(!first_page_);
 
   // Drop marks from marked objects and rebuild free lists in preparation for
   // resuming the executions of mutators.
@@ -207,17 +211,19 @@ void BaseArena::MakeConsistentForMutator() {
     page->InvalidateObjectStartBitmap();
   }
   if (previous_page) {
-    ASSERT(first_unswept_page_);
+    DCHECK(first_unswept_page_);
     previous_page->next_ = first_page_;
     first_page_ = first_unswept_page_;
     first_unswept_page_ = nullptr;
   }
-  ASSERT(!first_unswept_page_);
+  DCHECK(!first_unswept_page_);
 }
 
 size_t BaseArena::ObjectPayloadSizeForTesting() {
-  ASSERT(IsConsistentForGC());
-  ASSERT(!first_unswept_page_);
+#if DCHECK_IS_ON()
+  DCHECK(IsConsistentForGC());
+#endif
+  DCHECK(!first_unswept_page_);
 
   size_t object_payload_size = 0;
   for (BasePage* page = first_page_; page; page = page->Next())
@@ -226,8 +232,8 @@ size_t BaseArena::ObjectPayloadSizeForTesting() {
 }
 
 void BaseArena::PrepareForSweep() {
-  ASSERT(GetThreadState()->IsInGC());
-  ASSERT(!first_unswept_page_);
+  DCHECK(GetThreadState()->IsInGC());
+  DCHECK(!first_unswept_page_);
 
   // Move all pages to a list of unswept pages.
   first_unswept_page_ = first_page_;
@@ -290,8 +296,8 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
   static const int kDeadlineCheckInterval = 10;
 
   CHECK(GetThreadState()->IsSweepingInProgress());
-  ASSERT(GetThreadState()->SweepForbidden());
-  ASSERT(!GetThreadState()->IsMainThread() ||
+  DCHECK(GetThreadState()->SweepForbidden());
+  DCHECK(!GetThreadState()->IsMainThread() ||
          ScriptForbiddenScope::IsScriptForbidden());
 
   NormalPageArena* normal_arena = nullptr;
@@ -324,8 +330,8 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
 
 void BaseArena::CompleteSweep() {
   CHECK(GetThreadState()->IsSweepingInProgress());
-  ASSERT(GetThreadState()->SweepForbidden());
-  ASSERT(!GetThreadState()->IsMainThread() ||
+  DCHECK(GetThreadState()->SweepForbidden());
+  DCHECK(!GetThreadState()->IsMainThread() ||
          ScriptForbiddenScope::IsScriptForbidden());
 
   while (first_unswept_page_) {
@@ -667,7 +673,7 @@ bool NormalPageArena::Coalesce() {
   if (GetThreadState()->SweepForbidden())
     return false;
 
-  ASSERT(!HasCurrentAllocationArea());
+  DCHECK(!HasCurrentAllocationArea());
   TRACE_EVENT0("blink_gc", "BaseArena::coalesce");
 
   // Rebuild free lists.
@@ -681,11 +687,11 @@ bool NormalPageArena::Coalesce() {
       HeapObjectHeader* header =
           reinterpret_cast<HeapObjectHeader*>(header_address);
       size_t size = header->size();
-      ASSERT(size > 0);
-      ASSERT(size < BlinkPagePayloadSize());
+      DCHECK_GT(size, 0u);
+      DCHECK_LT(size, BlinkPagePayloadSize());
 
       if (header->IsPromptlyFreed()) {
-        ASSERT(size >= sizeof(HeapObjectHeader));
+        DCHECK_GE(size, sizeof(HeapObjectHeader));
         // Zero the memory in the free list header to maintain the
         // invariant that memory on the free list is zero filled.
         // The rest of the memory is already on the free list and is
@@ -719,20 +725,21 @@ bool NormalPageArena::Coalesce() {
       AddToFreeList(start_of_gap, page->PayloadEnd() - start_of_gap);
   }
   GetThreadState()->DecreaseAllocatedObjectSize(freed_size);
-  ASSERT(promptly_freed_size_ == freed_size);
+  DCHECK_EQ(promptly_freed_size_, freed_size);
   promptly_freed_size_ = 0;
   return true;
 }
 
 void NormalPageArena::PromptlyFreeObject(HeapObjectHeader* header) {
-  ASSERT(!GetThreadState()->SweepForbidden());
+  DCHECK(!GetThreadState()->SweepForbidden());
   Address address = reinterpret_cast<Address>(header);
   Address payload = header->Payload();
   size_t size = header->size();
   size_t payload_size = header->PayloadSize();
-  ASSERT(size > 0);
-  ASSERT(PageFromObject(address) == FindPageFromAddress(address));
-
+  DCHECK_GT(size, 0u);
+#if DCHECK_IS_ON()
+  DCHECK_EQ(PageFromObject(address), FindPageFromAddress(address));
+#endif
   {
     ThreadState::SweepForbiddenScope forbidden_scope(GetThreadState());
     header->Finalize(payload, payload_size);
@@ -756,26 +763,28 @@ bool NormalPageArena::ExpandObject(HeapObjectHeader* header, size_t new_size) {
   if (header->PayloadSize() >= new_size)
     return true;
   size_t allocation_size = ThreadHeap::AllocationSizeFromSize(new_size);
-  ASSERT(allocation_size > header->size());
+  DCHECK_GT(allocation_size, header->size());
   size_t expand_size = allocation_size - header->size();
   if (IsObjectAllocatedAtAllocationPoint(header) &&
       expand_size <= remaining_allocation_size_) {
     current_allocation_point_ += expand_size;
-    ASSERT(remaining_allocation_size_ >= expand_size);
+    DCHECK_GE(remaining_allocation_size_, expand_size);
     SetRemainingAllocationSize(remaining_allocation_size_ - expand_size);
     // Unpoison the memory used for the object (payload).
     SET_MEMORY_ACCESSIBLE(header->PayloadEnd(), expand_size);
     header->SetSize(allocation_size);
-    ASSERT(FindPageFromAddress(header->PayloadEnd() - 1));
+#if DCHECK_IS_ON()
+    DCHECK(FindPageFromAddress(header->PayloadEnd() - 1));
+#endif
     return true;
   }
   return false;
 }
 
 bool NormalPageArena::ShrinkObject(HeapObjectHeader* header, size_t new_size) {
-  ASSERT(header->PayloadSize() > new_size);
+  DCHECK_GT(header->PayloadSize(), new_size);
   size_t allocation_size = ThreadHeap::AllocationSizeFromSize(new_size);
-  ASSERT(header->size() > allocation_size);
+  DCHECK_GT(header->size(), allocation_size);
   size_t shrink_size = header->size() - allocation_size;
   if (IsObjectAllocatedAtAllocationPoint(header)) {
     current_allocation_point_ -= shrink_size;
@@ -784,14 +793,16 @@ bool NormalPageArena::ShrinkObject(HeapObjectHeader* header, size_t new_size) {
     header->SetSize(allocation_size);
     return true;
   }
-  ASSERT(shrink_size >= sizeof(HeapObjectHeader));
-  ASSERT(header->GcInfoIndex() > 0);
+  DCHECK_GE(shrink_size, sizeof(HeapObjectHeader));
+  DCHECK_GT(header->GcInfoIndex(), 0u);
   Address shrink_address = header->PayloadEnd() - shrink_size;
   HeapObjectHeader* freed_header = new (NotNull, shrink_address)
       HeapObjectHeader(shrink_size, header->GcInfoIndex());
   freed_header->MarkPromptlyFreed();
-  ASSERT(PageFromObject(reinterpret_cast<Address>(header)) ==
-         FindPageFromAddress(reinterpret_cast<Address>(header)));
+#if DCHECK_IS_ON()
+  DCHECK_EQ(PageFromObject(reinterpret_cast<Address>(header)),
+            FindPageFromAddress(reinterpret_cast<Address>(header)));
+#endif
   promptly_freed_size_ += shrink_size;
   header->SetSize(allocation_size);
   SET_MEMORY_INACCESSIBLE(shrink_address + sizeof(HeapObjectHeader),
@@ -801,7 +812,7 @@ bool NormalPageArena::ShrinkObject(HeapObjectHeader* header, size_t new_size) {
 
 Address NormalPageArena::LazySweepPages(size_t allocation_size,
                                         size_t gc_info_index) {
-  ASSERT(!HasCurrentAllocationArea());
+  DCHECK(!HasCurrentAllocationArea());
   AutoReset<bool> is_lazy_sweeping(&is_lazy_sweeping_, true);
   Address result = nullptr;
   while (first_unswept_page_) {
@@ -850,16 +861,16 @@ void NormalPageArena::UpdateRemainingAllocationSize() {
         last_remaining_allocation_size_ - RemainingAllocationSize());
     last_remaining_allocation_size_ = RemainingAllocationSize();
   }
-  ASSERT(last_remaining_allocation_size_ == RemainingAllocationSize());
+  DCHECK_EQ(last_remaining_allocation_size_, RemainingAllocationSize());
 }
 
 void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
 #if DCHECK_IS_ON()
   if (point) {
-    ASSERT(size);
+    DCHECK(size);
     BasePage* page = PageFromObject(point);
-    ASSERT(!page->IsLargeObjectPage());
-    ASSERT(size <= static_cast<NormalPage*>(page)->PayloadSize());
+    DCHECK(!page->IsLargeObjectPage());
+    DCHECK_LE(size, static_cast<NormalPage*>(page)->PayloadSize());
   }
 #endif
   if (HasCurrentAllocationArea()) {
@@ -872,8 +883,8 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
 
 Address NormalPageArena::OutOfLineAllocate(size_t allocation_size,
                                            size_t gc_info_index) {
-  ASSERT(allocation_size > RemainingAllocationSize());
-  ASSERT(allocation_size >= kAllocationGranularity);
+  DCHECK_GT(allocation_size, RemainingAllocationSize());
+  DCHECK_GE(allocation_size, kAllocationGranularity);
 
   // 1. If this allocation is big enough, allocate a large object.
   if (allocation_size >= kLargeObjectSizeThreshold)
@@ -939,8 +950,8 @@ Address NormalPageArena::AllocateFromFreeList(size_t allocation_size,
     if (entry) {
       entry->Unlink(&free_list_.free_lists_[index]);
       SetAllocationPoint(entry->GetAddress(), entry->size());
-      ASSERT(HasCurrentAllocationArea());
-      ASSERT(RemainingAllocationSize() >= allocation_size);
+      DCHECK(HasCurrentAllocationArea());
+      DCHECK_GE(RemainingAllocationSize(), allocation_size);
       free_list_.biggest_free_list_index_ = index;
       return AllocateObject(allocation_size, gc_info_index);
     }
@@ -956,7 +967,7 @@ Address LargeObjectArena::AllocateLargeObjectPage(size_t allocation_size,
                                                   size_t gc_info_index) {
   // Caller already added space for object header and rounded up to allocation
   // alignment
-  ASSERT(!(allocation_size & kAllocationMask));
+  DCHECK(!(allocation_size & kAllocationMask));
 
   // 1. Try to sweep large objects more than allocationSize bytes
   // before allocating a new large object.
@@ -993,13 +1004,13 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
 #if DCHECK_IS_ON()
   // Verify that the allocated PageMemory is expectedly zeroed.
   for (size_t i = 0; i < large_object_size; ++i)
-    ASSERT(!large_object_address[i]);
+    DCHECK(!large_object_address[i]);
 #endif
-  ASSERT(gc_info_index > 0);
+  DCHECK_GT(gc_info_index, 0u);
   HeapObjectHeader* header = new (NotNull, header_address)
       HeapObjectHeader(kLargeObjectSizeInHeader, gc_info_index);
   Address result = header_address + sizeof(*header);
-  ASSERT(!(reinterpret_cast<uintptr_t>(result) & kAllocationMask));
+  DCHECK(!(reinterpret_cast<uintptr_t>(result) & kAllocationMask));
   LargeObjectPage* large_object = new (large_object_address)
       LargeObjectPage(page_memory, this, allocation_size);
 
@@ -1049,7 +1060,7 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
       // more than allocationSize bytes.
       if (swept_size >= allocation_size) {
         result = DoAllocateLargeObjectPage(allocation_size, gc_info_index);
-        ASSERT(result);
+        DCHECK(result);
         break;
       }
     } else {
@@ -1067,17 +1078,17 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
 FreeList::FreeList() : biggest_free_list_index_(0) {}
 
 void FreeList::AddToFreeList(Address address, size_t size) {
-  ASSERT(size < BlinkPagePayloadSize());
+  DCHECK_LT(size, BlinkPagePayloadSize());
   // The free list entries are only pointer aligned (but when we allocate
   // from them we are 8 byte aligned due to the header size).
-  ASSERT(!((reinterpret_cast<uintptr_t>(address) + sizeof(HeapObjectHeader)) &
+  DCHECK(!((reinterpret_cast<uintptr_t>(address) + sizeof(HeapObjectHeader)) &
            kAllocationMask));
-  ASSERT(!(size & kAllocationMask));
+  DCHECK(!(size & kAllocationMask));
   ASAN_UNPOISON_MEMORY_REGION(address, size);
   FreeListEntry* entry;
   if (size < sizeof(*entry)) {
     // Create a dummy header with only a size and freelist bit set.
-    ASSERT(size >= sizeof(HeapObjectHeader));
+    DCHECK_GE(size, sizeof(HeapObjectHeader));
     // Free list encode the size to mark the lost memory as freelist memory.
     new (NotNull, address)
         HeapObjectHeader(size, kGcInfoIndexForFreeListHeader);
@@ -1162,7 +1173,7 @@ void NEVER_INLINE FreeList::ZapFreedMemory(Address address, size_t size) {
 void NEVER_INLINE FreeList::CheckFreedMemoryIsZapped(Address address,
                                                      size_t size) {
   for (size_t i = 0; i < size; i++) {
-    ASSERT(address[i] == kReuseAllowedZapValue ||
+    DCHECK(address[i] == kReuseAllowedZapValue ||
            address[i] == kReuseForbiddenZapValue);
   }
 }
@@ -1206,7 +1217,7 @@ void FreeList::Clear() {
 }
 
 int FreeList::BucketIndexForSize(size_t size) {
-  ASSERT(size > 0);
+  DCHECK_GT(size, 0u);
   int index = -1;
   while (size) {
     size >>= 1;
@@ -1240,28 +1251,32 @@ bool FreeList::TakeSnapshot(const String& dump_base_name) {
 
 BasePage::BasePage(PageMemory* storage, BaseArena* arena)
     : storage_(storage), arena_(arena), next_(nullptr), swept_(true) {
-  ASSERT(IsPageHeaderAddress(reinterpret_cast<Address>(this)));
+#if DCHECK_IS_ON()
+  DCHECK(IsPageHeaderAddress(reinterpret_cast<Address>(this)));
+#endif
 }
 
 NormalPage::NormalPage(PageMemory* storage, BaseArena* arena)
     : BasePage(storage, arena), object_start_bit_map_computed_(false) {
-  ASSERT(IsPageHeaderAddress(reinterpret_cast<Address>(this)));
+#if DCHECK_IS_ON()
+  DCHECK(IsPageHeaderAddress(reinterpret_cast<Address>(this)));
+#endif
 }
 
 size_t NormalPage::ObjectPayloadSizeForTesting() {
   size_t object_payload_size = 0;
   Address header_address = Payload();
   MarkAsSwept();
-  ASSERT(header_address != PayloadEnd());
+  DCHECK_NE(header_address, PayloadEnd());
   do {
     HeapObjectHeader* header =
         reinterpret_cast<HeapObjectHeader*>(header_address);
     if (!header->IsFree()) {
       object_payload_size += header->PayloadSize();
     }
-    ASSERT(header->size() < BlinkPagePayloadSize());
+    DCHECK_LT(header->size(), BlinkPagePayloadSize());
     header_address += header->size();
-    ASSERT(header_address <= PayloadEnd());
+    DCHECK_LE(header_address, PayloadEnd());
   } while (header_address < PayloadEnd());
   return object_payload_size;
 }
@@ -1295,8 +1310,8 @@ void NormalPage::Sweep() {
     HeapObjectHeader* header =
         reinterpret_cast<HeapObjectHeader*>(header_address);
     size_t size = header->size();
-    ASSERT(size > 0);
-    ASSERT(size < BlinkPagePayloadSize());
+    DCHECK_GT(size, 0u);
+    DCHECK_LT(size, BlinkPagePayloadSize());
 
     if (header->IsPromptlyFreed())
       page_arena->DecreasePromptlyFreedSize(size);
@@ -1370,7 +1385,8 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
     HeapObjectHeader* header =
         reinterpret_cast<HeapObjectHeader*>(header_address);
     size_t size = header->size();
-    DCHECK(size > 0 && size < BlinkPagePayloadSize());
+    DCHECK_GT(size, 0u);
+    DCHECK_LT(size, BlinkPagePayloadSize());
 
     if (header->IsPromptlyFreed())
       page_arena->DecreasePromptlyFreedSize(size);
@@ -1470,7 +1486,7 @@ void NormalPage::MakeConsistentForMutator() {
     HeapObjectHeader* header =
         reinterpret_cast<HeapObjectHeader*>(header_address);
     size_t size = header->size();
-    ASSERT(size < BlinkPagePayloadSize());
+    DCHECK_LT(size, BlinkPagePayloadSize());
     if (header->IsPromptlyFreed())
       ArenaForNormalPage()->DecreasePromptlyFreedSize(size);
     if (header->IsFree()) {
@@ -1491,7 +1507,7 @@ void NormalPage::MakeConsistentForMutator() {
       header->Unmark();
     header_address += size;
     start_of_gap = header_address;
-    ASSERT(header_address <= PayloadEnd());
+    DCHECK_LE(header_address, PayloadEnd());
   }
   if (start_of_gap != PayloadEnd())
     normal_arena->AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap);
@@ -1502,7 +1518,7 @@ void NormalPage::PoisonUnmarkedObjects() {
   for (Address header_address = Payload(); header_address < PayloadEnd();) {
     HeapObjectHeader* header =
         reinterpret_cast<HeapObjectHeader*>(header_address);
-    ASSERT(header->size() < BlinkPagePayloadSize());
+    DCHECK_LT(header->size(), BlinkPagePayloadSize());
     // Check if a free list entry first since we cannot call
     // isMarked on a free list entry.
     if (header->IsFree()) {
@@ -1523,13 +1539,13 @@ void NormalPage::PopulateObjectStartBitMap() {
     HeapObjectHeader* header =
         reinterpret_cast<HeapObjectHeader*>(header_address);
     size_t object_offset = header_address - start;
-    ASSERT(!(object_offset & kAllocationMask));
+    DCHECK(!(object_offset & kAllocationMask));
     size_t object_start_number = object_offset / kAllocationGranularity;
     size_t map_index = object_start_number / 8;
-    ASSERT(map_index < kObjectStartBitMapSize);
+    DCHECK_LT(map_index, kObjectStartBitMapSize);
     object_start_bit_map_[map_index] |= (1 << (object_start_number & 7));
     header_address += header->size();
-    ASSERT(header_address <= PayloadEnd());
+    DCHECK_LE(header_address, PayloadEnd());
   }
   object_start_bit_map_computed_ = true;
 }
@@ -1559,11 +1575,11 @@ HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
   size_t object_offset = address - Payload();
   size_t object_start_number = object_offset / kAllocationGranularity;
   size_t map_index = object_start_number / 8;
-  ASSERT(map_index < kObjectStartBitMapSize);
+  DCHECK_LT(map_index, kObjectStartBitMapSize);
   size_t bit = object_start_number & 7;
   uint8_t byte = object_start_bit_map_[map_index] & ((1 << (bit + 1)) - 1);
   while (!byte) {
-    ASSERT(map_index > 0);
+    DCHECK_GT(map_index, 0u);
     byte = object_start_bit_map_[--map_index];
   }
   int leading_zeroes = NumberOfLeadingZeroes(byte);
@@ -1604,7 +1620,9 @@ static void MarkPointer(Visitor* visitor, HeapObjectHeader* header) {
     // has not yet been initialized. In this case, we should mark the A
     // object without tracing any member of the A object.
     visitor->MarkHeaderNoTracing(header);
-    ASSERT(IsUninitializedMemory(header->Payload(), header->PayloadSize()));
+#if DCHECK_IS_ON()
+    DCHECK(IsUninitializedMemory(header->Payload(), header->PayloadSize()));
+#endif
   } else {
     visitor->MarkHeader(header, gc_info->trace_);
   }
@@ -1680,7 +1698,7 @@ void NormalPage::TakeSnapshot(base::trace_event::MemoryAllocatorDump* page_dump,
 bool NormalPage::Contains(Address addr) {
   Address blink_page_start = RoundToBlinkPageStart(GetAddress());
   // Page is at aligned address plus guard page size.
-  ASSERT(blink_page_start == GetAddress() - kBlinkGuardPageSize);
+  DCHECK_EQ(blink_page_start, GetAddress() - kBlinkGuardPageSize);
   return blink_page_start <= addr && addr < blink_page_start + kBlinkPageSize;
 }
 #endif
@@ -1804,10 +1822,10 @@ size_t HeapDoesNotContainCache::GetHash(Address address) {
 }
 
 bool HeapDoesNotContainCache::Lookup(Address address) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
 
   size_t index = GetHash(address);
-  ASSERT(!(index & 1));
+  DCHECK(!(index & 1));
   Address cache_page = RoundToBlinkPageStart(address);
   if (entries_[index] == cache_page)
     return entries_[index];
@@ -1817,11 +1835,11 @@ bool HeapDoesNotContainCache::Lookup(Address address) {
 }
 
 void HeapDoesNotContainCache::AddEntry(Address address) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
 
   has_entries_ = true;
   size_t index = GetHash(address);
-  ASSERT(!(index & 1));
+  DCHECK(!(index & 1));
   Address cache_page = RoundToBlinkPageStart(address);
   entries_[index + 1] = entries_[index];
   entries_[index] = cache_page;

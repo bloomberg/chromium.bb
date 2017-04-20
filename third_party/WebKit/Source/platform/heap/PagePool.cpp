@@ -21,7 +21,7 @@ PagePool::~PagePool() {
     while (PoolEntry* entry = pool_[index]) {
       pool_[index] = entry->next;
       PageMemory* memory = entry->data;
-      ASSERT(memory);
+      DCHECK(memory);
       delete memory;
       delete entry;
     }
@@ -41,7 +41,7 @@ PageMemory* PagePool::Take(int index) {
   while (PoolEntry* entry = pool_[index]) {
     pool_[index] = entry->next;
     PageMemory* memory = entry->data;
-    ASSERT(memory);
+    DCHECK(memory);
     delete entry;
     if (memory->Commit())
       return memory;

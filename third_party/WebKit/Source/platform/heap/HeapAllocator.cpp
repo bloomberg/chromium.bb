@@ -13,7 +13,7 @@ void HeapAllocator::BackingFree(void* address) {
   ThreadState* state = ThreadState::Current();
   if (state->SweepForbidden())
     return;
-  ASSERT(!state->IsInGC());
+  DCHECK(!state->IsInGC());
 
   // Don't promptly free large objects because their page is never reused.
   // Don't free backings allocated on other threads.
@@ -46,8 +46,8 @@ bool HeapAllocator::BackingExpand(void* address, size_t new_size) {
   ThreadState* state = ThreadState::Current();
   if (state->SweepForbidden())
     return false;
-  ASSERT(!state->IsInGC());
-  ASSERT(state->IsAllocationAllowed());
+  DCHECK(!state->IsInGC());
+  DCHECK(state->IsAllocationAllowed());
   DCHECK_EQ(&state->Heap(), &ThreadState::FromObject(address)->Heap());
 
   // FIXME: Support expand for large objects.
@@ -82,13 +82,13 @@ bool HeapAllocator::BackingShrink(void* address,
   if (!address || quantized_shrunk_size == quantized_current_size)
     return true;
 
-  ASSERT(quantized_shrunk_size < quantized_current_size);
+  DCHECK_LT(quantized_shrunk_size, quantized_current_size);
 
   ThreadState* state = ThreadState::Current();
   if (state->SweepForbidden())
     return false;
-  ASSERT(!state->IsInGC());
-  ASSERT(state->IsAllocationAllowed());
+  DCHECK(!state->IsInGC());
+  DCHECK(state->IsAllocationAllowed());
   DCHECK_EQ(&state->Heap(), &ThreadState::FromObject(address)->Heap());
 
   // FIXME: Support shrink for large objects.

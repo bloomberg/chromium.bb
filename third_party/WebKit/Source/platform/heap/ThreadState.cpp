@@ -128,8 +128,8 @@ ThreadState::ThreadState()
       allocated_object_size_(0),
       marked_object_size_(0),
       reported_memory_to_v8_(0) {
-  ASSERT(CheckThread());
-  ASSERT(!**thread_specific_);
+  DCHECK(CheckThread());
+  DCHECK(!**thread_specific_);
   **thread_specific_ = this;
 
   heap_ = WTF::WrapUnique(new ThreadHeap(this));
@@ -146,7 +146,7 @@ ThreadState::ThreadState()
 }
 
 ThreadState::~ThreadState() {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   if (IsMainThread())
     DCHECK_EQ(Heap().HeapStats().AllocatedSpace(), 0u);
   CHECK(GcState() == ThreadState::kNoGCScheduled);
@@ -173,7 +173,7 @@ void ThreadState::DetachCurrentThread() {
 }
 
 void ThreadState::RemoveAllPages() {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     arenas_[i]->RemoveAllPages();
 }
@@ -183,7 +183,7 @@ void ThreadState::RunTerminationGC() {
     RemoveAllPages();
     return;
   }
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
 
   // Finish sweeping.
   CompleteSweep();
@@ -197,7 +197,7 @@ void ThreadState::RunTerminationGC() {
   // changes and is above zero.
   int old_count = -1;
   int current_count = GetPersistentRegion()->NumberOfPersistents();
-  ASSERT(current_count >= 0);
+  DCHECK_GE(current_count, 0);
   while (current_count != old_count) {
     CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kGCWithSweep,
                    BlinkGC::kThreadTerminationGC);
@@ -209,9 +209,9 @@ void ThreadState::RunTerminationGC() {
   }
   // We should not have any persistents left when getting to this point,
   // if we have it is probably a bug so adding a debug ASSERT to catch this.
-  ASSERT(!current_count);
+  DCHECK(!current_count);
   // All of pre-finalizers should be consumed.
-  ASSERT(ordered_pre_finalizers_.IsEmpty());
+  DCHECK(ordered_pre_finalizers_.IsEmpty());
   CHECK_EQ(GcState(), kNoGCScheduled);
 
   RemoveAllPages();
@@ -422,7 +422,7 @@ bool ThreadState::ShouldForceMemoryPressureGC() {
 }
 
 void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
 
 #if PRINT_HEAP_STATS
@@ -436,8 +436,8 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   // This completeSweep() will do nothing in common cases since we've
   // called completeSweep() before V8 starts minor/major GCs.
   CompleteSweep();
-  ASSERT(!IsSweepingInProgress());
-  ASSERT(!SweepForbidden());
+  DCHECK(!IsSweepingInProgress());
+  DCHECK(!SweepForbidden());
 
   if ((gc_type == BlinkGC::kV8MajorGC && ShouldForceMemoryPressureGC()) ||
       ShouldScheduleV8FollowupGC()) {
@@ -470,7 +470,7 @@ void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
 
 void ThreadState::SchedulePageNavigationGCIfNeeded(
     float estimated_removal_ratio) {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
 
 #if PRINT_HEAP_STATS
@@ -487,8 +487,8 @@ void ThreadState::SchedulePageNavigationGCIfNeeded(
   // TODO(haraken): It might not make sense to force completeSweep() for all
   // page navigations.
   CompleteSweep();
-  ASSERT(!IsSweepingInProgress());
-  ASSERT(!SweepForbidden());
+  DCHECK(!IsSweepingInProgress());
+  DCHECK(!SweepForbidden());
 
   if (ShouldForceMemoryPressureGC()) {
 #if PRINT_HEAP_STATS
@@ -507,13 +507,13 @@ void ThreadState::SchedulePageNavigationGCIfNeeded(
 }
 
 void ThreadState::SchedulePageNavigationGC() {
-  ASSERT(CheckThread());
-  ASSERT(!IsSweepingInProgress());
+  DCHECK(CheckThread());
+  DCHECK(!IsSweepingInProgress());
   SetGCState(kPageNavigationGCScheduled);
 }
 
 void ThreadState::ScheduleGCIfNeeded() {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
 
 #if PRINT_HEAP_STATS
@@ -527,7 +527,7 @@ void ThreadState::ScheduleGCIfNeeded() {
 
   if (IsSweepingInProgress())
     return;
-  ASSERT(!SweepForbidden());
+  DCHECK(!SweepForbidden());
 
   ReportMemoryToV8();
 
@@ -564,16 +564,16 @@ void ThreadState::ScheduleGCIfNeeded() {
 }
 
 ThreadState* ThreadState::FromObject(const void* object) {
-  ASSERT(object);
+  DCHECK(object);
   BasePage* page = PageFromObject(object);
-  ASSERT(page);
-  ASSERT(page->Arena());
+  DCHECK(page);
+  DCHECK(page->Arena());
   return page->Arena()->GetThreadState();
 }
 
 void ThreadState::PerformIdleGC(double deadline_seconds) {
-  ASSERT(CheckThread());
-  ASSERT(Platform::Current()->CurrentThread()->Scheduler());
+  DCHECK(CheckThread());
+  DCHECK(Platform::Current()->CurrentThread()->Scheduler());
 
   if (GcState() != kIdleGCScheduled)
     return;
@@ -605,7 +605,7 @@ void ThreadState::PerformIdleGC(double deadline_seconds) {
 }
 
 void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
 
   // If we are not in a sweeping phase, there is nothing to do here.
   if (!IsSweepingInProgress())
@@ -674,7 +674,7 @@ void ThreadState::ScheduleIdleLazySweep() {
 }
 
 void ThreadState::SchedulePreciseGC() {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   if (IsSweepingInProgress()) {
     SetGCState(kSweepingAndPreciseGCScheduled);
     return;
@@ -717,7 +717,7 @@ void UnexpectedGCState(ThreadState::GCState gc_state) {
 void ThreadState::SetGCState(GCState gc_state) {
   switch (gc_state) {
     case kNoGCScheduled:
-      ASSERT(CheckThread());
+      DCHECK(CheckThread());
       VERIFY_STATE_TRANSITION(gc_state_ == kSweeping ||
                               gc_state_ == kSweepingAndIdleGCScheduled);
       break;
@@ -725,7 +725,7 @@ void ThreadState::SetGCState(GCState gc_state) {
     case kPreciseGCScheduled:
     case kFullGCScheduled:
     case kPageNavigationGCScheduled:
-      ASSERT(CheckThread());
+      DCHECK(CheckThread());
       VERIFY_STATE_TRANSITION(
           gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
@@ -735,7 +735,7 @@ void ThreadState::SetGCState(GCState gc_state) {
       CompleteSweep();
       break;
     case kGCRunning:
-      ASSERT(!IsInGC());
+      DCHECK(!IsInGC());
       VERIFY_STATE_TRANSITION(gc_state_ != kGCRunning);
       break;
     case kSweeping:
@@ -745,7 +745,7 @@ void ThreadState::SetGCState(GCState gc_state) {
       break;
     case kSweepingAndIdleGCScheduled:
     case kSweepingAndPreciseGCScheduled:
-      ASSERT(CheckThread());
+      DCHECK(CheckThread());
       VERIFY_STATE_TRANSITION(gc_state_ == kSweeping ||
                               gc_state_ == kSweepingAndIdleGCScheduled ||
                               gc_state_ == kSweepingAndPreciseGCScheduled);
@@ -759,7 +759,7 @@ void ThreadState::SetGCState(GCState gc_state) {
 #undef VERIFY_STATE_TRANSITION
 
 void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   if (stack_state != BlinkGC::kNoHeapPointersOnStack)
     return;
 
@@ -799,7 +799,7 @@ void ThreadState::FlushHeapDoesNotContainCacheIfNeeded() {
 }
 
 void ThreadState::MakeConsistentForGC() {
-  ASSERT(IsInGC());
+  DCHECK(IsInGC());
   TRACE_EVENT0("blink_gc", "ThreadState::makeConsistentForGC");
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     arenas_[i]->MakeConsistentForGC();
@@ -834,7 +834,7 @@ void ThreadState::Compact() {
 }
 
 void ThreadState::MakeConsistentForMutator() {
-  ASSERT(IsInGC());
+  DCHECK(IsInGC());
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     arenas_[i]->MakeConsistentForMutator();
 }
@@ -843,7 +843,7 @@ void ThreadState::PreGC() {
   if (isolate_ && perform_cleanup_)
     perform_cleanup_(isolate_);
 
-  ASSERT(!IsInGC());
+  DCHECK(!IsInGC());
   SetGCState(kGCRunning);
   MakeConsistentForGC();
   FlushHeapDoesNotContainCacheIfNeeded();
@@ -943,11 +943,11 @@ void ThreadState::EagerSweep() {
 #if defined(ADDRESS_SANITIZER)
   PoisonEagerArena();
 #endif
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   // Some objects need to be finalized promptly and cannot be handled
   // by lazy sweeping. Keep those in a designated heap and sweep it
   // eagerly.
-  ASSERT(IsSweepingInProgress());
+  DCHECK(IsSweepingInProgress());
 
   // Mirroring the completeSweep() condition; see its comment.
   if (SweepForbidden())
@@ -962,7 +962,7 @@ void ThreadState::EagerSweep() {
 }
 
 void ThreadState::CompleteSweep() {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   // If we are not in a sweeping phase, there is nothing to do here.
   if (!IsSweepingInProgress())
     return;
@@ -997,7 +997,7 @@ void ThreadState::CompleteSweep() {
 }
 
 void ThreadState::PostSweep() {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
 
   if (IsMainThread()) {
@@ -1098,7 +1098,7 @@ size_t ThreadState::ObjectPayloadSizeForTesting() {
 }
 
 void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
 
   RunScheduledGC(stack_state);
@@ -1143,12 +1143,12 @@ static void EnterSafePointAfterPushRegisters(void*,
 
 void ThreadState::EnterSafePoint(BlinkGC::StackState stack_state,
                                  void* scope_marker) {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
 #ifdef ADDRESS_SANITIZER
   if (stack_state == BlinkGC::kHeapPointersOnStack)
     scope_marker = AdjustScopeMarkerForAdressSanitizer(scope_marker);
 #endif
-  ASSERT(stack_state == BlinkGC::kNoHeapPointersOnStack || scope_marker);
+  DCHECK(stack_state == BlinkGC::kNoHeapPointersOnStack || scope_marker);
   RunScheduledGC(stack_state);
   stack_state_ = stack_state;
   safe_point_scope_marker_ = scope_marker;
@@ -1156,7 +1156,7 @@ void ThreadState::EnterSafePoint(BlinkGC::StackState stack_state,
 }
 
 void ThreadState::LeaveSafePoint() {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   stack_state_ = BlinkGC::kHeapPointersOnStack;
   ClearSafePointScopeMarker();
 }
@@ -1206,12 +1206,12 @@ void ThreadState::CopyStackUntilSafePointScope() {
 #if defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
   // ASan/LSan use more space on the stack and we therefore
   // increase the allowed stack copying for those builds.
-  ASSERT(slot_count < 2048);
+  DCHECK_LT(slot_count, 2048u);
 #else
-  ASSERT(slot_count < 1024);
+  DCHECK_LT(slot_count, 1024u);
 #endif
 
-  ASSERT(!safe_point_stack_copy_.size());
+  DCHECK(!safe_point_stack_copy_.size());
   safe_point_stack_copy_.Resize(slot_count);
   for (size_t i = 0; i < slot_count; ++i) {
     safe_point_stack_copy_[i] = from[i];
@@ -1226,7 +1226,7 @@ void ThreadState::RegisterStaticPersistentNode(
     return;
 #endif
 
-  ASSERT(!static_persistents_.Contains(node));
+  DCHECK(!static_persistents_.Contains(node));
   static_persistents_.insert(node, callback);
 }
 
@@ -1248,7 +1248,7 @@ void ThreadState::FreePersistentNode(PersistentNode* persistent_node) {
   //
   // There's no fundamental reason why this couldn't be supported,
   // but no known use for it.
-  ASSERT(!static_persistents_.Contains(persistent_node));
+  DCHECK(!static_persistents_.Contains(persistent_node));
 }
 
 #if defined(LEAK_SANITIZER)
@@ -1257,14 +1257,14 @@ void ThreadState::enterStaticReferenceRegistrationDisabledScope() {
 }
 
 void ThreadState::leaveStaticReferenceRegistrationDisabledScope() {
-  ASSERT(m_disabledStaticPersistentsRegistration);
+  DCHECK(m_disabledStaticPersistentsRegistration);
   m_disabledStaticPersistentsRegistration--;
 }
 #endif
 
 void ThreadState::InvokePreFinalizers() {
-  ASSERT(CheckThread());
-  ASSERT(!SweepForbidden());
+  DCHECK(CheckThread());
+  DCHECK(!SweepForbidden());
   TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
 
   SweepForbiddenScope sweep_forbidden(this);
@@ -1320,12 +1320,12 @@ int ThreadState::ArenaIndexOfVectorArenaLeastRecentlyExpanded(
       arena_index_with_min_arena_age = arena_index;
     }
   }
-  ASSERT(IsVectorArenaIndex(arena_index_with_min_arena_age));
+  DCHECK(IsVectorArenaIndex(arena_index_with_min_arena_age));
   return arena_index_with_min_arena_age;
 }
 
 BaseArena* ThreadState::ExpandedVectorBackingArena(size_t gc_info_index) {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
   --likely_to_be_promptly_freed_[entry_index];
   int arena_index = vector_backing_arena_index_;
@@ -1343,14 +1343,14 @@ void ThreadState::AllocationPointAdjusted(int arena_index) {
 }
 
 void ThreadState::PromptlyFreed(size_t gc_info_index) {
-  ASSERT(CheckThread());
+  DCHECK(CheckThread());
   size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
   // See the comment in vectorBackingArena() for why this is +3.
   likely_to_be_promptly_freed_[entry_index] += 3;
 }
 
 void ThreadState::TakeSnapshot(SnapshotType type) {
-  ASSERT(IsInGC());
+  DCHECK(IsInGC());
 
   // 0 is used as index for freelist entries. Objects are indexed 1 to
   // gcInfoIndex.
@@ -1392,7 +1392,7 @@ void ThreadState::TakeSnapshot(SnapshotType type) {
   SNAPSHOT_HEAP(LargeObject);
   FOR_EACH_TYPED_ARENA(SNAPSHOT_HEAP);
 
-  ASSERT(number_of_heaps_reported == BlinkGC::kNumberOfArenas);
+  DCHECK_EQ(number_of_heaps_reported, BlinkGC::kNumberOfArenas);
 
 #undef SNAPSHOT_HEAP
 

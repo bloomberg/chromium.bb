@@ -146,11 +146,11 @@ class PLATFORM_EXPORT ThreadState {
 
    public:
     explicit SweepForbiddenScope(ThreadState* state) : state_(state) {
-      ASSERT(!state_->sweep_forbidden_);
+      DCHECK(!state_->sweep_forbidden_);
       state_->sweep_forbidden_ = true;
     }
     ~SweepForbiddenScope() {
-      ASSERT(state_->sweep_forbidden_);
+      DCHECK(state_->sweep_forbidden_);
       state_->sweep_forbidden_ = false;
     }
 
@@ -358,8 +358,8 @@ class PLATFORM_EXPORT ThreadState {
   // The thread heap is split into multiple heap parts based on object types
   // and object sizes.
   BaseArena* Arena(int arena_index) const {
-    ASSERT(0 <= arena_index);
-    ASSERT(arena_index < BlinkGC::kNumberOfArenas);
+    DCHECK_LE(0, arena_index);
+    DCHECK_LT(arena_index, BlinkGC::kNumberOfArenas);
     return arenas_[arena_index];
   }
 
@@ -432,7 +432,7 @@ class PLATFORM_EXPORT ThreadState {
   // constructed.
   void EnterGCForbiddenScopeIfNeeded(
       GarbageCollectedMixinConstructorMarker* gc_mixin_marker) {
-    ASSERT(CheckThread());
+    DCHECK(CheckThread());
     if (!gc_mixin_marker_) {
       EnterMixinConstructionScope();
       gc_mixin_marker_ = gc_mixin_marker;
@@ -440,7 +440,7 @@ class PLATFORM_EXPORT ThreadState {
   }
   void LeaveGCForbiddenScopeIfNeeded(
       GarbageCollectedMixinConstructorMarker* gc_mixin_marker) {
-    ASSERT(CheckThread());
+    DCHECK(CheckThread());
     if (gc_mixin_marker_ == gc_mixin_marker) {
       LeaveMixinConstructionScope();
       gc_mixin_marker_ = nullptr;
@@ -474,7 +474,7 @@ class PLATFORM_EXPORT ThreadState {
   //       freed since the last GC.
   //
   BaseArena* VectorBackingArena(size_t gc_info_index) {
-    ASSERT(CheckThread());
+    DCHECK(CheckThread());
     size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
     --likely_to_be_promptly_freed_[entry_index];
     int arena_index = vector_backing_arena_index_;
@@ -487,7 +487,7 @@ class PLATFORM_EXPORT ThreadState {
           ArenaIndexOfVectorArenaLeastRecentlyExpanded(
               BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
     }
-    ASSERT(IsVectorArenaIndex(arena_index));
+    DCHECK(IsVectorArenaIndex(arena_index));
     return arenas_[arena_index];
   }
   BaseArena* ExpandedVectorBackingArena(size_t gc_info_index);
@@ -720,7 +720,7 @@ class ThreadStateFor<kMainThreadOnly> {
  public:
   static ThreadState* GetState() {
     // This specialization must only be used from the main thread.
-    ASSERT(ThreadState::Current()->IsMainThread());
+    DCHECK(ThreadState::Current()->IsMainThread());
     return ThreadState::MainThreadState();
   }
 };

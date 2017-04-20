@@ -182,7 +182,7 @@ struct PairWithWeakHandling : public StrongWeakPair {
   // Regular constructor.
   PairWithWeakHandling(IntWrapper* one, IntWrapper* two)
       : StrongWeakPair(one, two) {
-    ASSERT(one);  // We use null first field to indicate empty slots in the hash
+    DCHECK(one);  // We use null first field to indicate empty slots in the hash
                   // table.
   }
 
@@ -332,7 +332,7 @@ class TestGCScope {
  public:
   explicit TestGCScope(BlinkGC::StackState state)
       : state_(ThreadState::Current()), safe_point_scope_(state) {
-    ASSERT(state_->CheckThread());
+    DCHECK(state_->CheckThread());
     state_->PreGC();
   }
 
@@ -518,7 +518,7 @@ class ThreadedHeapTester : public ThreadedTesterBase {
     // Verify that the threads cleared their CTPs when
     // terminating, preventing access to a finalized heap.
     for (auto& global_int_wrapper : cross_persistents_) {
-      ASSERT(global_int_wrapper.get());
+      DCHECK(global_int_wrapper.get());
       EXPECT_FALSE(global_int_wrapper.get()->Get());
     }
   }
@@ -937,15 +937,17 @@ class RefCountedAndGarbageCollected
 
   void Ref() {
     if (UNLIKELY(!ref_count_)) {
-      ASSERT(ThreadState::Current()->FindPageFromAddress(
+#if DCHECK_IS_ON()
+      DCHECK(ThreadState::Current()->FindPageFromAddress(
           reinterpret_cast<Address>(this)));
+#endif
       keep_alive_ = this;
     }
     ++ref_count_;
   }
 
   void Deref() {
-    ASSERT(ref_count_ > 0);
+    DCHECK_GT(ref_count_, 0);
     if (!--ref_count_)
       keep_alive_.Clear();
   }
@@ -975,15 +977,17 @@ class RefCountedAndGarbageCollected2
 
   void Ref() {
     if (UNLIKELY(!ref_count_)) {
-      ASSERT(ThreadState::Current()->FindPageFromAddress(
+#if DCHECK_IS_ON()
+      DCHECK(ThreadState::Current()->FindPageFromAddress(
           reinterpret_cast<Address>(this)));
+#endif
       keep_alive_ = this;
     }
     ++ref_count_;
   }
 
   void Deref() {
-    ASSERT(ref_count_ > 0);
+    DCHECK_GT(ref_count_, 0);
     if (!--ref_count_)
       keep_alive_.Clear();
   }
@@ -1215,7 +1219,7 @@ class FinalizationObserverWithHashMap {
       result.stored_value->value =
           WTF::MakeUnique<FinalizationObserverWithHashMap>(target);
     } else {
-      ASSERT(result.stored_value->value);
+      DCHECK(result.stored_value->value);
     }
     return map;
   }
@@ -2091,11 +2095,15 @@ TEST(HeapTest, MarkTest) {
   {
     Bar::live_ = 0;
     Persistent<Bar> bar = Bar::Create();
-    ASSERT(ThreadState::Current()->FindPageFromAddress(bar));
+#if DCHECK_IS_ON()
+    DCHECK(ThreadState::Current()->FindPageFromAddress(bar));
+#endif
     EXPECT_EQ(1u, Bar::live_);
     {
       Foo* foo = Foo::Create(bar);
-      ASSERT(ThreadState::Current()->FindPageFromAddress(foo));
+#if DCHECK_IS_ON()
+      DCHECK(ThreadState::Current()->FindPageFromAddress(foo));
+#endif
       EXPECT_EQ(2u, Bar::live_);
       EXPECT_TRUE(reinterpret_cast<Address>(foo) !=
                   reinterpret_cast<Address>(bar.Get()));
@@ -2115,14 +2123,20 @@ TEST(HeapTest, DeepTest) {
   Bar::live_ = 0;
   {
     Bar* bar = Bar::Create();
-    ASSERT(ThreadState::Current()->FindPageFromAddress(bar));
+#if DCHECK_IS_ON()
+    DCHECK(ThreadState::Current()->FindPageFromAddress(bar));
+#endif
     Foo* foo = Foo::Create(bar);
-    ASSERT(ThreadState::Current()->FindPageFromAddress(foo));
+#if DCHECK_IS_ON()
+    DCHECK(ThreadState::Current()->FindPageFromAddress(foo));
+#endif
     EXPECT_EQ(2u, Bar::live_);
     for (unsigned i = 0; i < kDepth; i++) {
       Foo* foo2 = Foo::Create(foo);
       foo = foo2;
-      ASSERT(ThreadState::Current()->FindPageFromAddress(foo));
+#if DCHECK_IS_ON()
+      DCHECK(ThreadState::Current()->FindPageFromAddress(foo));
+#endif
     }
     EXPECT_EQ(kDepth + 2, Bar::live_);
     ConservativelyCollectGarbage();
@@ -2265,9 +2279,11 @@ TEST(HeapTest, LargeHeapObjects) {
     int slack =
         8;  // LargeHeapObject points to an IntWrapper that is also allocated.
     Persistent<LargeHeapObject> object = LargeHeapObject::Create();
-    ASSERT(ThreadState::Current()->FindPageFromAddress(object));
-    ASSERT(ThreadState::Current()->FindPageFromAddress(
+#if DCHECK_IS_ON()
+    DCHECK(ThreadState::Current()->FindPageFromAddress(object));
+    DCHECK(ThreadState::Current()->FindPageFromAddress(
         reinterpret_cast<char*>(object.Get()) + sizeof(LargeHeapObject) - 1));
+#endif
     ClearOutOldGarbage();
     size_t after_allocation = heap.HeapStats().AllocatedSpace();
     {
@@ -5657,7 +5673,7 @@ static bool AllocateAndReturnBool() {
 }
 
 static bool CheckGCForbidden() {
-  ASSERT(ThreadState::Current()->IsGCForbidden());
+  DCHECK(ThreadState::Current()->IsGCForbidden());
   return true;
 }
 
@@ -6211,7 +6227,7 @@ NEVER_INLINE NO_SANITIZE_ADDRESS GrowthDirection StackGrowthDirection() {
     previous = nullptr;
     return result;
   }
-  ASSERT(&dummy != previous);
+  DCHECK_NE(&dummy, previous);
   return &dummy < previous ? kGrowsTowardsLower : kGrowsTowardsHigher;
 }
 
@@ -6232,7 +6248,7 @@ class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>,
   TestMixinAllocationA() {
     // Completely wrong in general, but test only
     // runs this constructor while constructing another mixin.
-    ASSERT(ThreadState::Current()->IsGCForbidden());
+    DCHECK(ThreadState::Current()->IsGCForbidden());
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
@@ -6248,7 +6264,7 @@ class TestMixinAllocationB : public TestMixinAllocationA {
   {
     // Completely wrong in general, but test only
     // runs this constructor while constructing another mixin.
-    ASSERT(ThreadState::Current()->IsGCForbidden());
+    DCHECK(ThreadState::Current()->IsGCForbidden());
   }
 
   DEFINE_INLINE_TRACE() {
@@ -6264,7 +6280,7 @@ class TestMixinAllocationC final : public TestMixinAllocationB {
   USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocationC);
 
  public:
-  TestMixinAllocationC() { ASSERT(!ThreadState::Current()->IsGCForbidden()); }
+  TestMixinAllocationC() { DCHECK(!ThreadState::Current()->IsGCForbidden()); }
 
   DEFINE_INLINE_TRACE() { TestMixinAllocationB::Trace(visitor); }
 };
@@ -6283,7 +6299,7 @@ class ObjectWithLargeAmountsOfAllocationInConstructor {
     // and it is a base of GC mixin, GCs will remain locked out
     // regardless, as we cannot safely trace the leftmost GC
     // mixin base.
-    ASSERT(ThreadState::Current()->IsGCForbidden());
+    DCHECK(ThreadState::Current()->IsGCForbidden());
     for (size_t i = 0; i < number_of_large_objects_to_allocate; i++) {
       LargeHeapObject* large_object = LargeHeapObject::Create();
       EXPECT_TRUE(large_object);
@@ -6313,7 +6329,7 @@ class TestMixinAllocatingObject final
   TestMixinAllocatingObject(ClassWithMember* member)
       : ObjectWithLargeAmountsOfAllocationInConstructor(600, member),
         trace_counter_(TraceCounter::Create()) {
-    ASSERT(!ThreadState::Current()->IsGCForbidden());
+    DCHECK(!ThreadState::Current()->IsGCForbidden());
     ConservativelyCollectGarbage();
     EXPECT_GT(member->TraceCount(), 0);
     EXPECT_GT(TraceCount(), 0);

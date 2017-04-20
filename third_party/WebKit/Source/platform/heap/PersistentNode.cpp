@@ -42,13 +42,13 @@ int PersistentRegion::NumberOfPersistents() {
 
 void PersistentRegion::EnsurePersistentNodeSlots(void* self,
                                                  TraceCallback trace) {
-  ASSERT(!free_list_head_);
+  DCHECK(!free_list_head_);
   PersistentNodeSlots* slots = new PersistentNodeSlots;
   for (int i = 0; i < PersistentNodeSlots::kSlotCount; ++i) {
     PersistentNode* node = &slots->slot_[i];
     node->SetFreeListNext(free_list_head_);
     free_list_head_ = node;
-    ASSERT(node->IsUnused());
+    DCHECK(node->IsUnused());
   }
   slots->next_ = slots_;
   slots_ = slots;
@@ -57,18 +57,18 @@ void PersistentRegion::EnsurePersistentNodeSlots(void* self,
 void PersistentRegion::ReleasePersistentNode(
     PersistentNode* persistent_node,
     ThreadState::PersistentClearCallback callback) {
-  ASSERT(!persistent_node->IsUnused());
+  DCHECK(!persistent_node->IsUnused());
   // 'self' is in use, containing the persistent wrapper object.
   void* self = persistent_node->Self();
   if (callback) {
     (*callback)(self);
-    ASSERT(persistent_node->IsUnused());
+    DCHECK(persistent_node->IsUnused());
     return;
   }
   Persistent<DummyGCBase>* persistent =
       reinterpret_cast<Persistent<DummyGCBase>*>(self);
   persistent->Clear();
-  ASSERT(persistent_node->IsUnused());
+  DCHECK(persistent_node->IsUnused());
 }
 
 // This function traces all PersistentNodes. If we encounter
@@ -111,8 +111,8 @@ void PersistentRegion::TracePersistentNodes(Visitor* visitor,
       delete dead_slots;
     } else {
       if (free_list_last) {
-        ASSERT(free_list_next);
-        ASSERT(!free_list_last->FreeListNext());
+        DCHECK(free_list_next);
+        DCHECK(!free_list_last->FreeListNext());
         free_list_last->SetFreeListNext(free_list_head_);
         free_list_head_ = free_list_next;
       }
@@ -159,15 +159,15 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
       CrossThreadPersistent<DummyGCBase>* persistent =
           reinterpret_cast<CrossThreadPersistent<DummyGCBase>*>(
               slots->slot_[i].Self());
-      ASSERT(persistent);
+      DCHECK(persistent);
       void* raw_object = persistent->AtomicGet();
       if (!raw_object)
         continue;
       BasePage* page = PageFromObject(raw_object);
-      ASSERT(page);
+      DCHECK(page);
       if (page->Arena()->GetThreadState() == thread_state) {
         persistent->Clear();
-        ASSERT(slots->slot_[i].IsUnused());
+        DCHECK(slots->slot_[i].IsUnused());
       }
     }
     slots = slots->next_;

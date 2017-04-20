@@ -166,7 +166,7 @@ class PersistentBase {
   // needing to be cleared out before the thread is terminated.
   PersistentBase* RegisterAsStaticReference() {
     if (persistent_node_) {
-      ASSERT(ThreadState::Current());
+      DCHECK(ThreadState::Current());
       ThreadState::Current()->RegisterStaticPersistentNode(persistent_node_,
                                                            nullptr);
       LEAK_SANITIZER_IGNORE_OBJECT(this);
@@ -214,7 +214,7 @@ class PersistentBase {
 
   NO_SANITIZE_ADDRESS
   void Initialize() {
-    ASSERT(!persistent_node_);
+    DCHECK(!persistent_node_);
     if (!raw_ || IsHashTableDeletedValue())
       return;
 
@@ -228,7 +228,7 @@ class PersistentBase {
     }
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    ASSERT(state->CheckThread());
+    DCHECK(state->CheckThread());
     persistent_node_ = state->GetPersistentRegion()->AllocatePersistentNode(
         this, trace_callback);
 #if DCHECK_IS_ON()
@@ -248,9 +248,11 @@ class PersistentBase {
       return;
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    ASSERT(state->CheckThread());
+    DCHECK(state->CheckThread());
     // Persistent handle must be created and destructed in the same thread.
-    ASSERT(state_ == state);
+#if DCHECK_IS_ON()
+    DCHECK_EQ(state_, state);
+#endif
     state->FreePersistentNode(persistent_node_);
     persistent_node_ = nullptr;
   }
@@ -567,7 +569,7 @@ class PersistentHeapCollectionBase : public Collection {
   // See PersistentBase::registerAsStaticReference() comment.
   PersistentHeapCollectionBase* RegisterAsStaticReference() {
     if (persistent_node_) {
-      ASSERT(ThreadState::Current());
+      DCHECK(ThreadState::Current());
       ThreadState::Current()->RegisterStaticPersistentNode(
           persistent_node_,
           &PersistentHeapCollectionBase<Collection>::ClearPersistentNode);
@@ -596,7 +598,7 @@ class PersistentHeapCollectionBase : public Collection {
   void Initialize() {
     // FIXME: Derive affinity based on the collection.
     ThreadState* state = ThreadState::Current();
-    ASSERT(state->CheckThread());
+    DCHECK(state->CheckThread());
     persistent_node_ = state->GetPersistentRegion()->AllocatePersistentNode(
         this,
         TraceMethodDelegate<PersistentHeapCollectionBase<Collection>,
@@ -611,9 +613,11 @@ class PersistentHeapCollectionBase : public Collection {
     if (!persistent_node_)
       return;
     ThreadState* state = ThreadState::Current();
-    ASSERT(state->CheckThread());
+    DCHECK(state->CheckThread());
     // Persistent handle must be created and destructed in the same thread.
-    ASSERT(state_ == state);
+#if DCHECK_IS_ON()
+    DCHECK_EQ(state_, state);
+#endif
     state->FreePersistentNode(persistent_node_);
     persistent_node_ = nullptr;
   }

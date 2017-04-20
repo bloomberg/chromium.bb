@@ -301,7 +301,7 @@ class PLATFORM_EXPORT ThreadHeap {
     // Page has been swept and it is still alive.
     if (page->HasBeenSwept())
       return false;
-    ASSERT(page->Arena()->GetThreadState()->IsSweepingInProgress());
+    DCHECK(page->Arena()->GetThreadState()->IsSweepingInProgress());
 
     // If marked and alive, the object hasn't yet been swept..and won't
     // be once its page is processed.
@@ -419,11 +419,11 @@ class PLATFORM_EXPORT ThreadHeap {
   BasePage* LookupPageForAddress(Address);
 
   static const GCInfo* GcInfo(size_t gc_info_index) {
-    ASSERT(gc_info_index >= 1);
-    ASSERT(gc_info_index < GCInfoTable::kMaxIndex);
-    ASSERT(g_gc_info_table);
+    DCHECK_GE(gc_info_index, 1u);
+    DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
+    DCHECK(g_gc_info_table);
     const GCInfo* info = g_gc_info_table[gc_info_index];
-    ASSERT(info);
+    DCHECK(info);
     return info;
   }
 
@@ -572,7 +572,7 @@ class VerifyEagerFinalization {
     // eagerly finalized. Declaring and defining an 'operator new'
     // for this class is what's required -- consider using
     // DECLARE_EAGER_FINALIZATION_OPERATOR_NEW().
-    ASSERT(IS_EAGERLY_FINALIZED());
+    DCHECK(IS_EAGERLY_FINALIZED());
   }
 };
 #define EAGERLY_FINALIZE()                            \
@@ -592,8 +592,8 @@ inline Address ThreadHeap::AllocateOnArenaIndex(ThreadState* state,
                                                 int arena_index,
                                                 size_t gc_info_index,
                                                 const char* type_name) {
-  ASSERT(state->IsAllocationAllowed());
-  ASSERT(arena_index != BlinkGC::kLargeObjectArenaIndex);
+  DCHECK(state->IsAllocationAllowed());
+  DCHECK_NE(arena_index, BlinkGC::kLargeObjectArenaIndex);
   NormalPageArena* arena =
       static_cast<NormalPageArena*>(state->Arena(arena_index));
   Address address =
@@ -627,7 +627,7 @@ Address ThreadHeap::Reallocate(void* previous, size_t size) {
   ThreadState* state = ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
   HeapObjectHeader* previous_header = HeapObjectHeader::FromPayload(previous);
   BasePage* page = PageFromObject(previous_header);
-  ASSERT(page);
+  DCHECK(page);
 
   // Determine arena index of new allocation.
   int arena_index;
@@ -642,8 +642,8 @@ Address ThreadHeap::Reallocate(void* previous, size_t size) {
 
   size_t gc_info_index = GCInfoTrait<T>::Index();
   // TODO(haraken): We don't support reallocate() for finalizable objects.
-  ASSERT(!ThreadHeap::GcInfo(previous_header->GcInfoIndex())->HasFinalizer());
-  ASSERT(previous_header->GcInfoIndex() == gc_info_index);
+  DCHECK(!ThreadHeap::GcInfo(previous_header->GcInfoIndex())->HasFinalizer());
+  DCHECK_EQ(previous_header->GcInfoIndex(), gc_info_index);
   HeapAllocHooks::FreeHookIfEnabled(static_cast<Address>(previous));
   Address address;
   if (arena_index == BlinkGC::kLargeObjectArenaIndex) {

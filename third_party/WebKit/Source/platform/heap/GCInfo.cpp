@@ -18,8 +18,8 @@ GCInfo const** g_gc_info_table = nullptr;
 
 void GCInfoTable::EnsureGCInfoIndex(const GCInfo* gc_info,
                                     size_t* gc_info_index_slot) {
-  ASSERT(gc_info);
-  ASSERT(gc_info_index_slot);
+  DCHECK(gc_info);
+  DCHECK(gc_info_index_slot);
   // Keep a global GCInfoTable lock while allocating a new slot.
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
   MutexLocker locker(mutex);
@@ -48,11 +48,11 @@ void GCInfoTable::Resize() {
 
   size_t new_size =
       gc_info_table_size_ ? 2 * gc_info_table_size_ : kInitialSize;
-  ASSERT(new_size < GCInfoTable::kMaxIndex);
+  DCHECK(new_size < GCInfoTable::kMaxIndex);
   g_gc_info_table =
       reinterpret_cast<GCInfo const**>(WTF::Partitions::FastRealloc(
           g_gc_info_table, new_size * sizeof(GCInfo), "GCInfo"));
-  ASSERT(g_gc_info_table);
+  DCHECK(g_gc_info_table);
   memset(reinterpret_cast<uint8_t*>(g_gc_info_table) +
              gc_info_table_size_ * sizeof(GCInfo),
          kGcInfoZapValue, (new_size - gc_info_table_size_) * sizeof(GCInfo));
@@ -70,8 +70,8 @@ void AssertObjectHasGCInfo(const void* payload, size_t gc_info_index) {
 #if !defined(COMPONENT_BUILD)
   // On component builds we cannot compare the gcInfos as they are statically
   // defined in each of the components and hence will not match.
-  ASSERT(HeapObjectHeader::FromPayload(payload)->GcInfoIndex() ==
-         gc_info_index);
+  DCHECK_EQ(HeapObjectHeader::FromPayload(payload)->GcInfoIndex(),
+            gc_info_index);
 #endif
 }
 #endif

@@ -98,7 +98,8 @@ inline const T& HeapLinkedStack<T>::Peek() {
 
 template <typename T>
 inline void HeapLinkedStack<T>::Pop() {
-  ASSERT(head_ && size_);
+  DCHECK(head_);
+  DCHECK(size_);
   head_ = head_->next_;
   --size_;
 }

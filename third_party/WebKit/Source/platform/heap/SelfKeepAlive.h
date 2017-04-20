@@ -61,7 +61,7 @@ class SelfKeepAlive final {
 
  private:
   void Assign(Self* self) {
-    ASSERT(!keep_alive_ || keep_alive_.Get() == self);
+    DCHECK(!keep_alive_ || keep_alive_.Get() == self);
     keep_alive_ = self;
   }
 

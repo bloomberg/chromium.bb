@@ -198,11 +198,11 @@ struct GCInfoAtBaseType {
     };
 
     static size_t gc_info_index = 0;
-    ASSERT(g_gc_info_table);
+    DCHECK(g_gc_info_table);
     if (!AcquireLoad(&gc_info_index))
       GCInfoTable::EnsureGCInfoIndex(&kGcInfo, &gc_info_index);
-    ASSERT(gc_info_index >= 1);
-    ASSERT(gc_info_index < GCInfoTable::kMaxIndex);
+    DCHECK_GE(gc_info_index, 1u);
+    DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
     return gc_info_index;
   }
 };

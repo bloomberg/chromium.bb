@@ -66,7 +66,7 @@ class PLATFORM_EXPORT HeapAllocator {
   static T* AllocateVectorBacking(size_t size) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    ASSERT(state->IsAllocationAllowed());
+    DCHECK(state->IsAllocationAllowed());
     size_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
     NormalPageArena* arena =
         static_cast<NormalPageArena*>(state->VectorBackingArena(gc_info_index));
@@ -77,7 +77,7 @@ class PLATFORM_EXPORT HeapAllocator {
   static T* AllocateExpandedVectorBacking(size_t size) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    ASSERT(state->IsAllocationAllowed());
+    DCHECK(state->IsAllocationAllowed());
     size_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
     NormalPageArena* arena = static_cast<NormalPageArena*>(
         state->ExpandedVectorBackingArena(gc_info_index));
@@ -323,7 +323,7 @@ void HeapVectorBacking<T, Traits>::Finalize(void* pointer) {
       "HeapVectorBacking doesn't support objects that cannot be cleared as "
       "unused with memset or don't have a vtable");
 
-  ASSERT(!WTF::IsTriviallyDestructible<T>::value);
+  DCHECK(!WTF::IsTriviallyDestructible<T>::value);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(pointer);
   // Use the payload size as recorded by the heap to determine how many
   // elements to finalize.
@@ -351,7 +351,7 @@ void HeapVectorBacking<T, Traits>::Finalize(void* pointer) {
 template <typename Table>
 void HeapHashTableBacking<Table>::Finalize(void* pointer) {
   using Value = typename Table::ValueType;
-  ASSERT(!WTF::IsTriviallyDestructible<Value>::value);
+  DCHECK(!WTF::IsTriviallyDestructible<Value>::value);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(pointer);
   // Use the payload size as recorded by the heap to determine how many
   // elements to finalize.

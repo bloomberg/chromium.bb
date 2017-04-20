@@ -50,7 +50,7 @@ class GCTaskObserver final : public WebThread::TaskObserver {
   ~GCTaskObserver() {
     // m_nesting can be 1 if this was unregistered in a task and
     // didProcessTask was not called.
-    ASSERT(!nesting_ || nesting_ == 1);
+    DCHECK(!nesting_ || nesting_ == 1);
   }
 
   virtual void WillProcessTask() { nesting_++; }

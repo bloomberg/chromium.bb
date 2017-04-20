@@ -171,7 +171,7 @@ BasePage* ThreadHeap::FindPageFromAddress(Address address) {
 #endif
 
 Address ThreadHeap::CheckAndMarkPointer(Visitor* visitor, Address address) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
 
 #if !DCHECK_IS_ON()
   if (heap_does_not_contain_cache_->Lookup(address))
@@ -179,8 +179,10 @@ Address ThreadHeap::CheckAndMarkPointer(Visitor* visitor, Address address) {
 #endif
 
   if (BasePage* page = LookupPageForAddress(address)) {
-    ASSERT(page->Contains(address));
-    ASSERT(!heap_does_not_contain_cache_->Lookup(address));
+#if DCHECK_IS_ON()
+    DCHECK(page->Contains(address));
+#endif
+    DCHECK(!heap_does_not_contain_cache_->Lookup(address));
     DCHECK(&visitor->Heap() == &page->Arena()->GetThreadState()->Heap());
     page->CheckAndMarkPointer(visitor, address);
     return address;
@@ -219,7 +221,7 @@ Address ThreadHeap::CheckAndMarkPointer(
 #endif
 
 void ThreadHeap::PushTraceCallback(void* object, TraceCallback callback) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
 
   CallbackStack::Item* slot = marking_stack_->AllocateEntry();
   *slot = CallbackStack::Item(object, callback);
@@ -234,7 +236,7 @@ bool ThreadHeap::PopAndInvokeTraceCallback(Visitor* visitor) {
 }
 
 void ThreadHeap::PushPostMarkingCallback(void* object, TraceCallback callback) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
 
   CallbackStack::Item* slot = post_marking_callback_stack_->AllocateEntry();
   *slot = CallbackStack::Item(object, callback);
@@ -249,7 +251,7 @@ bool ThreadHeap::PopAndInvokePostMarkingCallback(Visitor* visitor) {
 }
 
 void ThreadHeap::PushWeakCallback(void* closure, WeakCallback callback) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
 
   CallbackStack::Item* slot = weak_callback_stack_->AllocateEntry();
   *slot = CallbackStack::Item(closure, callback);
@@ -266,7 +268,7 @@ bool ThreadHeap::PopAndInvokeWeakCallback(Visitor* visitor) {
 void ThreadHeap::RegisterWeakTable(void* table,
                                    EphemeronCallback iteration_callback,
                                    EphemeronCallback iteration_done_callback) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
 
   CallbackStack::Item* slot = ephemeron_stack_->AllocateEntry();
   *slot = CallbackStack::Item(table, iteration_callback);
@@ -278,7 +280,7 @@ void ThreadHeap::RegisterWeakTable(void* table,
 
 #if DCHECK_IS_ON()
 bool ThreadHeap::WeakTableRegistered(const void* table) {
-  ASSERT(ephemeron_stack_);
+  DCHECK(ephemeron_stack_);
   return ephemeron_stack_->HasCallbackForObject(table);
 }
 #endif
@@ -352,7 +354,7 @@ void ThreadHeap::PostMarkingProcessing(Visitor* visitor) {
   // Post-marking callbacks should not trace any objects and
   // therefore the marking stack should be empty after the
   // post-marking callbacks.
-  ASSERT(marking_stack_->IsEmpty());
+  DCHECK(marking_stack_->IsEmpty());
 }
 
 void ThreadHeap::WeakProcessing(Visitor* visitor) {
@@ -370,7 +372,7 @@ void ThreadHeap::WeakProcessing(Visitor* visitor) {
 
   // It is not permitted to trace pointers of live objects in the weak
   // callback phase, so the marking stack should still be empty here.
-  ASSERT(marking_stack_->IsEmpty());
+  DCHECK(marking_stack_->IsEmpty());
 
   double time_for_weak_processing = WTF::CurrentTimeMS() - start_time;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -481,7 +483,7 @@ size_t ThreadHeap::ObjectPayloadSizeForTesting() {
 }
 
 void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitPersistentRoots");
   ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
 
@@ -489,13 +491,13 @@ void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
 }
 
 void ThreadHeap::VisitStackRoots(Visitor* visitor) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
   thread_state_->VisitStack(visitor);
 }
 
 BasePage* ThreadHeap::LookupPageForAddress(Address address) {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
   if (PageMemoryRegion* region = region_tree_->Lookup(address)) {
     return region->PageFromAddress(address);
   }
@@ -503,7 +505,7 @@ BasePage* ThreadHeap::LookupPageForAddress(Address address) {
 }
 
 void ThreadHeap::ResetHeapCounters() {
-  ASSERT(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
 
   ThreadHeap::ReportMemoryUsageForTracing();
 

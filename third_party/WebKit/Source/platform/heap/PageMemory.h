@@ -21,7 +21,7 @@ class MemoryRegion {
 
  public:
   MemoryRegion(Address base, size_t size) : base_(base), size_(size) {
-    ASSERT(size > 0);
+    DCHECK_GT(size, 0u);
   }
 
   bool Contains(Address addr) const {
@@ -57,7 +57,7 @@ class PageMemoryRegion : public MemoryRegion {
   void PageDeleted(Address);
 
   void MarkPageUsed(Address page) {
-    ASSERT(!in_use_[Index(page)]);
+    DCHECK(!in_use_[Index(page)]);
     in_use_[Index(page)] = true;
   }
 
@@ -74,7 +74,7 @@ class PageMemoryRegion : public MemoryRegion {
   }
 
   BasePage* PageFromAddress(Address address) {
-    ASSERT(Contains(address));
+    DCHECK(Contains(address));
     if (!in_use_[Index(address)])
       return nullptr;
     if (is_large_page_)
@@ -86,11 +86,11 @@ class PageMemoryRegion : public MemoryRegion {
   PageMemoryRegion(Address base, size_t, unsigned num_pages, RegionTree*);
 
   unsigned Index(Address address) const {
-    ASSERT(Contains(address));
+    DCHECK(Contains(address));
     if (is_large_page_)
       return 0;
     size_t offset = BlinkPageAddress(address) - Base();
-    ASSERT(offset % kBlinkPageSize == 0);
+    DCHECK_EQ(offset % kBlinkPageSize, 0u);
     return offset / kBlinkPageSize;
   }
 
