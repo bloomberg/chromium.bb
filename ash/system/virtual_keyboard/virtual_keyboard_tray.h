@@ -25,7 +25,6 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   ~VirtualKeyboardTray() override;
 
   // TrayBackgroundView:
-  void SetShelfAlignment(ShelfAlignment alignment) override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
@@ -39,10 +38,6 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   void OnKeyboardClosed() override;
 
  private:
-  // Creates a new border for the icon. The padding is determined based on the
-  // alignment of the shelf.
-  void SetIconBorderForShelfAlignment();
-
   void ObserveKeyboardController();
   void UnobserveKeyboardController();
 

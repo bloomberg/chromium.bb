@@ -27,7 +27,7 @@ namespace ash {
 
 StatusAreaWidget::StatusAreaWidget(WmWindow* status_container,
                                    WmShelf* wm_shelf)
-    : status_area_widget_delegate_(new StatusAreaWidgetDelegate),
+    : status_area_widget_delegate_(new StatusAreaWidgetDelegate(wm_shelf)),
       overview_button_tray_(nullptr),
       system_tray_(nullptr),
       web_notification_tray_(nullptr),
@@ -66,13 +66,12 @@ void StatusAreaWidget::CreateTrayViews() {
   // Initialize after all trays have been created.
   system_tray_->InitializeTrayItems(delegate, web_notification_tray_);
   web_notification_tray_->Initialize();
-  logout_button_tray_->Initialize();
   if (palette_tray_)
     palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
   ime_menu_tray_->Initialize();
   overview_button_tray_->Initialize();
-  SetShelfAlignment(system_tray_->shelf_alignment());
+  UpdateAfterShelfAlignmentChange();
   UpdateAfterLoginStatusChange(delegate->GetUserLoginStatus());
 }
 
@@ -104,22 +103,21 @@ void StatusAreaWidget::Shutdown() {
   DCHECK_EQ(0, GetContentsView()->child_count());
 }
 
-void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
-  status_area_widget_delegate_->set_alignment(alignment);
+void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
   if (system_tray_)
-    system_tray_->SetShelfAlignment(alignment);
+    system_tray_->UpdateAfterShelfAlignmentChange();
   if (web_notification_tray_)
-    web_notification_tray_->SetShelfAlignment(alignment);
+    web_notification_tray_->UpdateAfterShelfAlignmentChange();
   if (logout_button_tray_)
-    logout_button_tray_->SetShelfAlignment(alignment);
+    logout_button_tray_->UpdateAfterShelfAlignmentChange();
   if (virtual_keyboard_tray_)
-    virtual_keyboard_tray_->SetShelfAlignment(alignment);
+    virtual_keyboard_tray_->UpdateAfterShelfAlignmentChange();
   if (ime_menu_tray_)
-    ime_menu_tray_->SetShelfAlignment(alignment);
+    ime_menu_tray_->UpdateAfterShelfAlignmentChange();
   if (palette_tray_)
-    palette_tray_->SetShelfAlignment(alignment);
+    palette_tray_->UpdateAfterShelfAlignmentChange();
   if (overview_button_tray_)
-    overview_button_tray_->SetShelfAlignment(alignment);
+    overview_button_tray_->UpdateAfterShelfAlignmentChange();
   status_area_widget_delegate_->UpdateLayout();
 }
 
@@ -132,7 +130,7 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
   if (web_notification_tray_)
     web_notification_tray_->UpdateAfterLoginStatusChange(login_status);
   if (logout_button_tray_)
-    logout_button_tray_->UpdateAfterLoginStatusChange(login_status);
+    logout_button_tray_->UpdateAfterLoginStatusChange();
   if (overview_button_tray_)
     overview_button_tray_->UpdateAfterLoginStatusChange(login_status);
 }
@@ -184,7 +182,6 @@ void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
   web_notification_tray_->UpdateShelfItemBackground(color);
   system_tray_->UpdateShelfItemBackground(color);
   virtual_keyboard_tray_->UpdateShelfItemBackground(color);
-  logout_button_tray_->UpdateShelfItemBackground(color);
   ime_menu_tray_->UpdateShelfItemBackground(color);
   if (palette_tray_)
     palette_tray_->UpdateShelfItemBackground(color);

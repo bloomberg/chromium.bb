@@ -49,14 +49,9 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
-  void SetShelfAlignment(ShelfAlignment alignment) override;
 
  private:
   friend class OverviewButtonTrayTest;
-
-  // Creates a new border for the icon. The padding is determined based on the
-  // alignment of the shelf.
-  void SetIconBorderForShelfAlignment();
 
   // Sets the icon to visible if maximize mode is enabled and
   // WindowSelectorController::CanSelect.

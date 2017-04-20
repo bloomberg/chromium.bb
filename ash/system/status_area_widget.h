@@ -38,7 +38,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   void Shutdown();
 
   // Update the alignment of the widget and tray views.
-  void SetShelfAlignment(ShelfAlignment alignment);
+  void UpdateAfterShelfAlignmentChange();
 
   // Called by the client when the login status changes. Caches login_status
   // and calls UpdateAfterLoginStatusChange for the system tray and the web

@@ -8,7 +8,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/wm_shelf.h"
-#include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm_window.h"
@@ -46,8 +45,10 @@ class StatusAreaWidgetDelegateAnimationSettings
 
 namespace ash {
 
-StatusAreaWidgetDelegate::StatusAreaWidgetDelegate()
-    : focus_cycler_for_testing_(nullptr), alignment_(SHELF_ALIGNMENT_BOTTOM) {
+StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(WmShelf* wm_shelf)
+    : wm_shelf_(wm_shelf), focus_cycler_for_testing_(nullptr) {
+  DCHECK(wm_shelf_);
+
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
   set_allow_deactivate_on_esc(true);
@@ -121,7 +122,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
-  if (IsHorizontalAlignment(alignment_)) {
+  if (wm_shelf_->IsHorizontalAlignment()) {
     for (int c = child_count() - 1; c >= 0; --c) {
       views::View* child = child_at(c);
       if (!child->visible())
@@ -174,7 +175,7 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
                                                 bool extend_border_to_edge) {
   // Tray views are laid out right-to-left or bottom-to-top.
-  const bool horizontal_alignment = IsHorizontalAlignment(alignment_);
+  const bool horizontal_alignment = wm_shelf_->IsHorizontalAlignment();
   const int padding = (kShelfSize - kTrayItemSize) / 2;
 
   const int top_edge = horizontal_alignment ? padding : 0;

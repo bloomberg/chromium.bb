@@ -221,8 +221,7 @@ bool ShelfWidget::IsShelfHiddenBehindBlackBar() const {
 
 void ShelfWidget::OnShelfAlignmentChanged() {
   shelf_view_->OnShelfAlignmentChanged();
-  // TODO(jamescook): Status area should not cache alignment.
-  status_area_widget_->SetShelfAlignment(wm_shelf_->GetAlignment());
+  status_area_widget_->UpdateAfterShelfAlignmentChange();
   delegate_view_->SchedulePaint();
 }
 

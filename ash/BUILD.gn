@@ -524,6 +524,8 @@ component("ash") {
     "system/tray/tray_bubble_wrapper.h",
     "system/tray/tray_constants.cc",
     "system/tray/tray_constants.h",
+    "system/tray/tray_container.cc",
+    "system/tray/tray_container.h",
     "system/tray/tray_details_view.cc",
     "system/tray/tray_details_view.h",
     "system/tray/tray_event_filter.cc",

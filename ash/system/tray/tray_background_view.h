@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/macros.h"
@@ -17,53 +16,22 @@
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {
-class TrayEventFilter;
 class TrayBackground;
+class TrayContainer;
+class TrayEventFilter;
 class WmShelf;
 
-// Base class for children of StatusAreaWidget: SystemTray, WebNotificationTray,
-// LogoutButtonTray, OverviewButtonTray.
-// This class handles setting and animating the background when the Launcher
-// is shown/hidden. It also inherits from ActionableView so that the tray
-// items can override PerformAction when clicked on.
+// Base class for some children of StatusAreaWidget. This class handles setting
+// and animating the background when the Launcher is shown/hidden. It also
+// inherits from ActionableView so that the tray items can override
+// PerformAction when clicked on.
 class ASH_EXPORT TrayBackgroundView : public ActionableView,
                                       public ui::ImplicitAnimationObserver,
                                       public ShelfBackgroundAnimatorObserver {
  public:
   static const char kViewClassName[];
 
-  // Base class for tray containers. Sets the border and layout. The container
-  // auto-resizes the widget when necessary.
-  class TrayContainer : public views::View {
-   public:
-    explicit TrayContainer(ShelfAlignment alignment);
-    ~TrayContainer() override {}
-
-    void SetAlignment(ShelfAlignment alignment);
-
-    void SetMargin(int main_axis_margin, int cross_axis_margin);
-
-   protected:
-    // views::View:
-    void ChildPreferredSizeChanged(views::View* child) override;
-    void ChildVisibilityChanged(View* child) override;
-    void ViewHierarchyChanged(
-        const ViewHierarchyChangedDetails& details) override;
-
-   private:
-    void UpdateLayout();
-
-    ShelfAlignment alignment_;
-    int main_axis_margin_ = 0;
-    int cross_axis_margin_ = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(TrayContainer);
-  };
-
-  // TODO(mohsen): Remove |draws_background| paramter when LogoutButtonTray, as
-  // the only reason for existence of this parameter, is no longer a
-  // TrayBackgroundView. See https://crbug.com/698134.
-  TrayBackgroundView(WmShelf* wm_shelf, bool draws_background);
+  explicit TrayBackgroundView(WmShelf* wm_shelf);
   ~TrayBackgroundView() override;
 
   // Called after the tray has been added to the widget containing it.
@@ -86,7 +54,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
       const override;
 
   // Called whenever the shelf alignment changes.
-  virtual void SetShelfAlignment(ShelfAlignment alignment);
+  virtual void UpdateAfterShelfAlignmentChange();
 
   // Called when the anchor (tray or bubble) may have moved or changed.
   virtual void AnchorUpdated() {}
@@ -112,7 +80,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   bool is_active() const { return is_active_; }
 
   TrayContainer* tray_container() const { return tray_container_; }
-  ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
   TrayEventFilter* tray_event_filter() { return tray_event_filter_.get(); }
   WmShelf* shelf() { return wm_shelf_; }
 
@@ -164,10 +131,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Convenience pointer to the contents view.
   TrayContainer* tray_container_;
-
-  // Shelf alignment.
-  // TODO(jamescook): Don't cache this, get it from WmShelf.
-  ShelfAlignment shelf_alignment_;
 
   // Owned by the view passed to SetContents().
   TrayBackground* background_;

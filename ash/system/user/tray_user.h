@@ -67,7 +67,7 @@ class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionObserver {
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
+  void UpdateAfterShelfAlignmentChange() override;
 
   // Overridden from SessionObserver.
   void OnActiveUserSessionChanged(const AccountId& account_id) override;

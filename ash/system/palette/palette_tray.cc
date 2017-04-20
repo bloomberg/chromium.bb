@@ -21,6 +21,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/wm_window.h"
@@ -128,7 +129,7 @@ class TitleView : public views::View, public views::ButtonListener {
 }  // namespace
 
 PaletteTray::PaletteTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf, true),
+    : TrayBackgroundView(wm_shelf),
       palette_tool_manager_(new PaletteToolManager(this)),
       scoped_session_observer_(this),
       weak_factory_(this) {
@@ -360,13 +361,6 @@ void PaletteTray::OnActiveToolChanged() {
 
 WmWindow* PaletteTray::GetWindow() {
   return shelf()->GetWindow();
-}
-
-void PaletteTray::SetShelfAlignment(ShelfAlignment alignment) {
-  if (alignment == shelf_alignment())
-    return;
-
-  TrayBackgroundView::SetShelfAlignment(alignment);
 }
 
 void PaletteTray::AnchorUpdated() {

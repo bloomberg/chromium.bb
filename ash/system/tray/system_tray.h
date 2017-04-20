@@ -86,7 +86,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   void UpdateAfterLoginStatusChange(LoginStatus login_status);
 
   // Updates the items when the shelf alignment changes.
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment);
+  void UpdateItemsAfterShelfAlignmentChange();
 
   // Returns true if the shelf should be forced visible when auto-hidden.
   bool ShouldShowShelf() const;
@@ -115,7 +115,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayAudio* GetTrayAudio() const;
 
   // Overridden from TrayBackgroundView.
-  void SetShelfAlignment(ShelfAlignment alignment) override;
+  void UpdateAfterShelfAlignmentChange() override;
   void AnchorUpdated() override;
   base::string16 GetAccessibleNameForTray() override;
   void BubbleResized(const views::TrayBubbleView* bubble_view) override;

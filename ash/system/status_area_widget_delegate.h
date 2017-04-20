@@ -14,12 +14,13 @@
 
 namespace ash {
 class FocusCycler;
+class WmShelf;
 
 // The View for the status area widget.
 class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
                                             public views::WidgetDelegate {
  public:
-  StatusAreaWidgetDelegate();
+  explicit StatusAreaWidgetDelegate(WmShelf* wm_shelf);
   ~StatusAreaWidgetDelegate() override;
 
   // Add a tray view to the widget (e.g. system tray, web notifications).
@@ -30,8 +31,6 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
 
   // Sets the focus cycler.
   void SetFocusCyclerForTesting(const FocusCycler* focus_cycler);
-
-  void set_alignment(ShelfAlignment alignment) { alignment_ = alignment; }
 
   // Overridden from views::AccessiblePaneView.
   View* GetDefaultFocusableChild() override;
@@ -60,10 +59,8 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   // screen.
   void SetBorderOnChild(views::View* child, bool extend_border_to_edge);
 
+  WmShelf* const wm_shelf_;
   const FocusCycler* focus_cycler_for_testing_;
-
-  // TODO(jamescook): Get this from WmShelf.
-  ShelfAlignment alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegate);
 };

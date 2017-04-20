@@ -162,10 +162,10 @@ class ShelfDragCallback {
       EXPECT_EQ(auto_hidden_shelf_widget_bounds_.bottom(),
                 shelf_bounds.bottom());
       EXPECT_EQ(shelf_widget_bounds_.bottom(), shelf_bounds.bottom());
-    } else if (SHELF_ALIGNMENT_RIGHT == shelf->GetAlignment()) {
+    } else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment()) {
       EXPECT_EQ(auto_hidden_shelf_widget_bounds_.right(), shelf_bounds.right());
       EXPECT_EQ(shelf_widget_bounds_.right(), shelf_bounds.right());
-    } else if (SHELF_ALIGNMENT_LEFT == shelf->GetAlignment()) {
+    } else if (SHELF_ALIGNMENT_LEFT == shelf->alignment()) {
       EXPECT_EQ(auto_hidden_shelf_widget_bounds_.x(), shelf_bounds.x());
       EXPECT_EQ(shelf_widget_bounds_.x(), shelf_bounds.x());
     }
@@ -393,9 +393,9 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   // Swipe down very little. It shouldn't change any state.
   if (shelf->IsHorizontalAlignment())
     end.set_y(start.y() + shelf_shown.height() * 3 / 10);
-  else if (SHELF_ALIGNMENT_LEFT == shelf->GetAlignment())
+  else if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
     end.set_x(start.x() - shelf_shown.width() * 3 / 10);
-  else if (SHELF_ALIGNMENT_RIGHT == shelf->GetAlignment())
+  else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment())
     end.set_x(start.x() + shelf_shown.width() * 3 / 10);
   generator.GestureScrollSequence(start, end, kTimeDelta, 5);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
@@ -421,10 +421,10 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   gfx::Point extended_start = start;
   if (shelf->IsHorizontalAlignment())
     extended_start.set_y(GetShelfWidget()->GetWindowBoundsInScreen().y() - 1);
-  else if (SHELF_ALIGNMENT_LEFT == shelf->GetAlignment())
+  else if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
     extended_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().right() +
                          1);
-  else if (SHELF_ALIGNMENT_RIGHT == shelf->GetAlignment())
+  else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment())
     extended_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().x() - 1);
   end = extended_start - delta;
   generator.GestureScrollSequenceWithCallback(
@@ -470,9 +470,9 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   gfx::Point below_start = start;
   if (shelf->IsHorizontalAlignment())
     below_start.set_y(GetShelfWidget()->GetWindowBoundsInScreen().bottom() + 1);
-  else if (SHELF_ALIGNMENT_LEFT == shelf->GetAlignment())
+  else if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
     below_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().x() - 1);
-  else if (SHELF_ALIGNMENT_RIGHT == shelf->GetAlignment())
+  else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment())
     below_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().right() + 1);
   end = below_start - delta;
   generator.GestureScrollSequence(below_start, end, kTimeDelta,
@@ -1279,7 +1279,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
             display.GetWorkAreaInsets().left());
   EXPECT_GE(shelf_bounds.width(),
             GetShelfWidget()->GetContentsView()->GetPreferredSize().width());
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, GetPrimarySystemTray()->shelf_alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, GetPrimarySystemTray()->shelf()->alignment());
   StatusAreaWidget* status_area_widget = GetShelfWidget()->status_area_widget();
   gfx::Rect status_bounds(status_area_widget->GetWindowBoundsInScreen());
   // TODO(estade): Re-enable this check. See crbug.com/660928.
@@ -1308,7 +1308,8 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
             display.GetWorkAreaInsets().right());
   EXPECT_GE(shelf_bounds.width(),
             GetShelfWidget()->GetContentsView()->GetPreferredSize().width());
-  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, GetPrimarySystemTray()->shelf_alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT,
+            GetPrimarySystemTray()->shelf()->alignment());
   status_bounds = gfx::Rect(status_area_widget->GetWindowBoundsInScreen());
   // TODO(estade): Re-enable this check. See crbug.com/660928.
   //  EXPECT_GE(

@@ -5,7 +5,7 @@
 #include "ash/system/user/tray_user.h"
 
 #include "ash/session/session_controller.h"
-#include "ash/shelf/wm_shelf_util.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -169,11 +169,11 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
   UpdateLayoutOfItem();
 }
 
-void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void TrayUser::UpdateAfterShelfAlignmentChange() {
   // Inactive users won't have a layout.
   if (!layout_view_)
     return;
-  if (IsHorizontalAlignment(alignment)) {
+  if (system_tray()->shelf()->IsHorizontalAlignment()) {
     if (avatar_) {
       avatar_->SetCornerRadii(0, kTrayRoundedBorderRadius,
                               kTrayRoundedBorderRadius, 0);
@@ -249,7 +249,7 @@ void TrayUser::UpdateAvatarImage(LoginStatus status) {
 }
 
 void TrayUser::UpdateLayoutOfItem() {
-  UpdateAfterShelfAlignmentChange(system_tray()->shelf_alignment());
+  UpdateAfterShelfAlignmentChange();
 }
 
 }  // namespace ash

@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_container.h"
 #include "ash/wm_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -25,13 +26,18 @@
 namespace ash {
 
 VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf, true),
+    : TrayBackgroundView(wm_shelf),
       icon_(new views::ImageView),
       wm_shelf_(wm_shelf) {
   SetInkDropMode(InkDropMode::ON);
 
-  icon_->SetImage(gfx::CreateVectorIcon(kShelfKeyboardIcon, kShelfIconColor));
-  SetIconBorderForShelfAlignment();
+  gfx::ImageSkia image =
+      gfx::CreateVectorIcon(kShelfKeyboardIcon, kShelfIconColor);
+  icon_->SetImage(image);
+  const int vertical_padding = (kTrayItemSize - image.height()) / 2;
+  const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
+  icon_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(vertical_padding, horizontal_padding)));
   tray_container()->AddChildView(icon_);
 
   // The Shell may not exist in some unit tests.
@@ -47,14 +53,6 @@ VirtualKeyboardTray::~VirtualKeyboardTray() {
   // The Shell may not exist in some unit tests.
   if (Shell::HasInstance())
     Shell::Get()->keyboard_ui()->RemoveObserver(this);
-}
-
-void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
-  if (alignment == shelf_alignment())
-    return;
-
-  TrayBackgroundView::SetShelfAlignment(alignment);
-  SetIconBorderForShelfAlignment();
 }
 
 base::string16 VirtualKeyboardTray::GetAccessibleNameForTray() {
@@ -98,14 +96,6 @@ void VirtualKeyboardTray::OnKeyboardBoundsChanging(
 }
 
 void VirtualKeyboardTray::OnKeyboardClosed() {}
-
-void VirtualKeyboardTray::SetIconBorderForShelfAlignment() {
-  const gfx::ImageSkia& image = icon_->GetImage();
-  const int vertical_padding = (kTrayItemSize - image.height()) / 2;
-  const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
-  icon_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(vertical_padding, horizontal_padding)));
-}
 
 void VirtualKeyboardTray::ObserveKeyboardController() {
   keyboard::KeyboardController* keyboard_controller =

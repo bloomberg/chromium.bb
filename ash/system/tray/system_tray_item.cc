@@ -45,8 +45,7 @@ void SystemTrayItem::TransitionDetailedView() {
 
 void SystemTrayItem::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
-void SystemTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-}
+void SystemTrayItem::UpdateAfterShelfAlignmentChange() {}
 
 void SystemTrayItem::ShowDetailedView(int for_seconds, bool activate) {
   system_tray()->ShowDetailedView(this, for_seconds, activate,

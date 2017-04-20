@@ -40,6 +40,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_container.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
 #include "ash/system/tray_tracing.h"
@@ -207,7 +208,7 @@ class SystemTray::ActivationObserver
 
 // SystemTray
 
-SystemTray::SystemTray(WmShelf* wm_shelf) : TrayBackgroundView(wm_shelf, true) {
+SystemTray::SystemTray(WmShelf* wm_shelf) : TrayBackgroundView(wm_shelf) {
   SetInkDropMode(InkDropMode::ON);
 
   // Since user avatar is on the right hand side of System tray of a
@@ -298,7 +299,7 @@ void SystemTray::AddTrayItem(std::unique_ptr<SystemTrayItem> item) {
   SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   views::View* tray_item =
       item_ptr->CreateTrayView(delegate->GetUserLoginStatus());
-  item_ptr->UpdateAfterShelfAlignmentChange(shelf_alignment());
+  item_ptr->UpdateAfterShelfAlignmentChange();
 
   if (tray_item) {
     tray_container()->AddChildViewAt(tray_item, 0);
@@ -369,18 +370,13 @@ void SystemTray::UpdateAfterLoginStatusChange(LoginStatus login_status) {
   for (const auto& item : items_)
     item->UpdateAfterLoginStatusChange(login_status);
 
-  // Items default to SHELF_ALIGNMENT_BOTTOM. Update them if the initial
-  // position of the shelf differs.
-  if (!IsHorizontalAlignment(shelf_alignment()))
-    UpdateAfterShelfAlignmentChange(shelf_alignment());
-
   SetVisible(true);
   PreferredSizeChanged();
 }
 
-void SystemTray::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void SystemTray::UpdateItemsAfterShelfAlignmentChange() {
   for (const auto& item : items_)
-    item->UpdateAfterShelfAlignmentChange(alignment);
+    item->UpdateAfterShelfAlignmentChange();
 }
 
 bool SystemTray::ShouldShowShelf() const {
@@ -547,11 +543,9 @@ base::string16 SystemTray::GetAccessibleTimeString(
                                                     base::kKeepAmPm);
 }
 
-void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
-  if (alignment == shelf_alignment())
-    return;
-  TrayBackgroundView::SetShelfAlignment(alignment);
-  UpdateAfterShelfAlignmentChange(alignment);
+void SystemTray::UpdateAfterShelfAlignmentChange() {
+  TrayBackgroundView::UpdateAfterShelfAlignmentChange();
+  UpdateItemsAfterShelfAlignmentChange();
   // Destroy any existing bubble so that it is rebuilt correctly.
   CloseSystemBubbleAndDeactivateSystemTray();
   // Rebuild any notification bubble.

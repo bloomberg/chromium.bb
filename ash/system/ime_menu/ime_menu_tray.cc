@@ -21,6 +21,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
@@ -282,7 +283,7 @@ class ImeMenuListView : public ImeListView {
 }  // namespace
 
 ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf, true),
+    : TrayBackgroundView(wm_shelf),
       label_(new ImeMenuLabel()),
       show_keyboard_(false),
       force_show_keyboard_(false),

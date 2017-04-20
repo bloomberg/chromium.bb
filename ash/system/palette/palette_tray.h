@@ -5,7 +5,6 @@
 #ifndef ASH_SYSTEM_PALETTE_PALETTE_TRAY_H_
 #define ASH_SYSTEM_PALETTE_PALETTE_TRAY_H_
 
-#include <map>
 #include <memory>
 
 #include "ash/ash_export.h"
@@ -58,7 +57,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
-  void SetShelfAlignment(ShelfAlignment alignment) override;
   void AnchorUpdated() override;
   void Initialize() override;
 

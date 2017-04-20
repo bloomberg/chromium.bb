@@ -12,6 +12,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_container.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,13 +23,18 @@
 namespace ash {
 
 OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf, true),
+    : TrayBackgroundView(wm_shelf),
       icon_(new views::ImageView()),
       scoped_session_observer_(this) {
   SetInkDropMode(InkDropMode::ON);
 
-  icon_->SetImage(CreateVectorIcon(kShelfOverviewIcon, kShelfIconColor));
-  SetIconBorderForShelfAlignment();
+  gfx::ImageSkia image =
+      gfx::CreateVectorIcon(kShelfOverviewIcon, kShelfIconColor);
+  icon_->SetImage(image);
+  const int vertical_padding = (kTrayItemSize - image.height()) / 2;
+  const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
+  icon_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(vertical_padding, horizontal_padding)));
   tray_container()->AddChildView(icon_);
 
   // Since OverviewButtonTray is located on the rightmost position of a
@@ -85,23 +91,6 @@ base::string16 OverviewButtonTray::GetAccessibleNameForTray() {
 void OverviewButtonTray::HideBubbleWithView(
     const views::TrayBubbleView* bubble_view) {
   // This class has no bubbles to hide.
-}
-
-void OverviewButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
-  if (alignment == shelf_alignment())
-    return;
-
-  TrayBackgroundView::SetShelfAlignment(alignment);
-  SetIconBorderForShelfAlignment();
-}
-
-void OverviewButtonTray::SetIconBorderForShelfAlignment() {
-  // Pad button size to align with other controls in the system tray.
-  const gfx::ImageSkia& image = icon_->GetImage();
-  const int vertical_padding = (kTrayItemSize - image.height()) / 2;
-  const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
-  icon_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(vertical_padding, horizontal_padding)));
 }
 
 void OverviewButtonTray::UpdateIconVisibility() {
