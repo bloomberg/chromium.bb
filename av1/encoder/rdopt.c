@@ -626,27 +626,24 @@ static int64_t av1_daala_dist(const uint8_t *src, int src_stride,
 #endif  // CONFIG_DAALA_DIST
 
 static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
-                                         uint8_t *src, int src_stride,
-                                         uint8_t *dst, int dst_stride,
+                                         const uint8_t *src, int src_stride,
+                                         const uint8_t *dst, int dst_stride,
                                          double *hordist, double *verdist) {
-  int bw = block_size_wide[bsize];
-  int bh = block_size_high[bsize];
+  const int bw = block_size_wide[bsize];
+  const int bh = block_size_high[bsize];
   unsigned int esq[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-  unsigned int var[16];
-  double total = 0;
 
   const int f_index = bsize - BLOCK_16X16;
   if (f_index < 0) {
-    int i, j, index;
-    int w_shift = bw == 8 ? 1 : 2;
-    int h_shift = bh == 8 ? 1 : 2;
+    const int w_shift = bw == 8 ? 1 : 2;
+    const int h_shift = bh == 8 ? 1 : 2;
 #if CONFIG_HIGHBITDEPTH
     if (cpi->common.use_highbitdepth) {
-      uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
-      uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
-      for (i = 0; i < bh; ++i)
-        for (j = 0; j < bw; ++j) {
-          index = (j >> w_shift) + ((i >> h_shift) << 2);
+      const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
+      const uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
+      for (int i = 0; i < bh; ++i)
+        for (int j = 0; j < bw; ++j) {
+          const int index = (j >> w_shift) + ((i >> h_shift) << 2);
           esq[index] +=
               (src16[j + i * src_stride] - dst16[j + i * dst_stride]) *
               (src16[j + i * src_stride] - dst16[j + i * dst_stride]);
@@ -654,9 +651,9 @@ static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
     } else {
 #endif  // CONFIG_HIGHBITDEPTH
 
-      for (i = 0; i < bh; ++i)
-        for (j = 0; j < bw; ++j) {
-          index = (j >> w_shift) + ((i >> h_shift) << 2);
+      for (int i = 0; i < bh; ++i)
+        for (int j = 0; j < bw; ++j) {
+          const int index = (j >> w_shift) + ((i >> h_shift) << 2);
           esq[index] += (src[j + i * src_stride] - dst[j + i * dst_stride]) *
                         (src[j + i * src_stride] - dst[j + i * dst_stride]);
         }
@@ -664,90 +661,61 @@ static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
     }
 #endif  // CONFIG_HIGHBITDEPTH
   } else {
-    var[0] = cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[0]);
-    var[1] = cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4,
-                                     dst_stride, &esq[1]);
-    var[2] = cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2,
-                                     dst_stride, &esq[2]);
-    var[3] = cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride,
-                                     dst + 3 * bw / 4, dst_stride, &esq[3]);
+    cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[0]);
+    cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
+                            &esq[1]);
+    cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
+                            &esq[2]);
+    cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+                            dst_stride, &esq[3]);
     src += bh / 4 * src_stride;
     dst += bh / 4 * dst_stride;
 
-    var[4] = cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[4]);
-    var[5] = cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4,
-                                     dst_stride, &esq[5]);
-    var[6] = cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2,
-                                     dst_stride, &esq[6]);
-    var[7] = cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride,
-                                     dst + 3 * bw / 4, dst_stride, &esq[7]);
+    cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[4]);
+    cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
+                            &esq[5]);
+    cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
+                            &esq[6]);
+    cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+                            dst_stride, &esq[7]);
     src += bh / 4 * src_stride;
     dst += bh / 4 * dst_stride;
 
-    var[8] = cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[8]);
-    var[9] = cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4,
-                                     dst_stride, &esq[9]);
-    var[10] = cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2,
-                                      dst_stride, &esq[10]);
-    var[11] = cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride,
-                                      dst + 3 * bw / 4, dst_stride, &esq[11]);
+    cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[8]);
+    cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
+                            &esq[9]);
+    cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
+                            &esq[10]);
+    cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+                            dst_stride, &esq[11]);
     src += bh / 4 * src_stride;
     dst += bh / 4 * dst_stride;
 
-    var[12] =
-        cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[12]);
-    var[13] = cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4,
-                                      dst_stride, &esq[13]);
-    var[14] = cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2,
-                                      dst_stride, &esq[14]);
-    var[15] = cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride,
-                                      dst + 3 * bw / 4, dst_stride, &esq[15]);
+    cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[12]);
+    cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
+                            &esq[13]);
+    cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
+                            &esq[14]);
+    cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+                            dst_stride, &esq[15]);
   }
 
-  total = esq[0] + esq[1] + esq[2] + esq[3] + esq[4] + esq[5] + esq[6] +
-          esq[7] + esq[8] + esq[9] + esq[10] + esq[11] + esq[12] + esq[13] +
-          esq[14] + esq[15];
+  double total = (double)esq[0] + esq[1] + esq[2] + esq[3] + esq[4] + esq[5] +
+                 esq[6] + esq[7] + esq[8] + esq[9] + esq[10] + esq[11] +
+                 esq[12] + esq[13] + esq[14] + esq[15];
   if (total > 0) {
     const double e_recip = 1.0 / total;
-    hordist[0] =
-        ((double)esq[0] + (double)esq[4] + (double)esq[8] + (double)esq[12]) *
-        e_recip;
-    hordist[1] =
-        ((double)esq[1] + (double)esq[5] + (double)esq[9] + (double)esq[13]) *
-        e_recip;
-    hordist[2] =
-        ((double)esq[2] + (double)esq[6] + (double)esq[10] + (double)esq[14]) *
-        e_recip;
-    verdist[0] =
-        ((double)esq[0] + (double)esq[1] + (double)esq[2] + (double)esq[3]) *
-        e_recip;
-    verdist[1] =
-        ((double)esq[4] + (double)esq[5] + (double)esq[6] + (double)esq[7]) *
-        e_recip;
-    verdist[2] =
-        ((double)esq[8] + (double)esq[9] + (double)esq[10] + (double)esq[11]) *
-        e_recip;
+    hordist[0] = ((double)esq[0] + esq[4] + esq[8] + esq[12]) * e_recip;
+    hordist[1] = ((double)esq[1] + esq[5] + esq[9] + esq[13]) * e_recip;
+    hordist[2] = ((double)esq[2] + esq[6] + esq[10] + esq[14]) * e_recip;
+    verdist[0] = ((double)esq[0] + esq[1] + esq[2] + esq[3]) * e_recip;
+    verdist[1] = ((double)esq[4] + esq[5] + esq[6] + esq[7]) * e_recip;
+    verdist[2] = ((double)esq[8] + esq[9] + esq[10] + esq[11]) * e_recip;
   } else {
     hordist[0] = verdist[0] = 0.25;
     hordist[1] = verdist[1] = 0.25;
     hordist[2] = verdist[2] = 0.25;
   }
-  (void)var[0];
-  (void)var[1];
-  (void)var[2];
-  (void)var[3];
-  (void)var[4];
-  (void)var[5];
-  (void)var[6];
-  (void)var[7];
-  (void)var[8];
-  (void)var[9];
-  (void)var[10];
-  (void)var[11];
-  (void)var[12];
-  (void)var[13];
-  (void)var[14];
-  (void)var[15];
 }
 
 static int adst_vs_flipadst(const AV1_COMP *cpi, BLOCK_SIZE bsize, uint8_t *src,
