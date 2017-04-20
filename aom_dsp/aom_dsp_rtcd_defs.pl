@@ -407,8 +407,6 @@ if ((aom_config("CONFIG_AV1_ENCODER") eq "yes") || (aom_config("CONFIG_PVQ") eq 
 # Inverse transform
 if (aom_config("CONFIG_AV1") eq "yes") {
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
-  # Note as optimized versions of these functions are added we need to add a check to ensure
-  # that when CONFIG_EMULATE_HARDWARE is on, it defaults to the C versions only.
   add_proto qw/void aom_iwht4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
 
   add_proto qw/void aom_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
@@ -430,42 +428,7 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 
   add_proto qw/void aom_highbd_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
 
-  # Force C versions if CONFIG_EMULATE_HARDWARE is 1
-  if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
-    add_proto qw/void aom_idct4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct8x8_12_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct8x8_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct16x16_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct16x16_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct32x32_1024_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct32x32_135_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct32x32_34_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct32x32_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_highbd_idct4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-
-    add_proto qw/void aom_highbd_idct8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-
-    add_proto qw/void aom_highbd_idct8x8_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-
-    add_proto qw/void aom_highbd_idct16x16_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-
-    add_proto qw/void aom_highbd_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-  } else {
+  {
     add_proto qw/void aom_idct4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct4x4_16_add sse2/;
 
@@ -518,38 +481,9 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 
     add_proto qw/void aom_highbd_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
     specialize qw/aom_highbd_idct16x16_10_add sse2/;
-  }  # CONFIG_EMULATE_HARDWARE
+  }
 } else {
-  # Force C versions if CONFIG_EMULATE_HARDWARE is 1
-  if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
-    add_proto qw/void aom_idct4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct8x8_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct8x8_12_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct16x16_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct16x16_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct32x32_1024_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct32x32_135_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct32x32_34_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_idct32x32_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_iwht4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-    add_proto qw/void aom_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  } else {
+  {
     add_proto qw/void aom_idct4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct4x4_1_add sse2 neon dspr2 msa/;
 
@@ -598,7 +532,7 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 
     add_proto qw/void aom_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_iwht4x4_16_add msa sse2/;
-  }  # CONFIG_EMULATE_HARDWARE
+  }
 }  # CONFIG_HIGHBITDEPTH
 }  # CONFIG_AV1
 

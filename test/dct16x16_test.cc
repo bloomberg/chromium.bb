@@ -851,14 +851,14 @@ INSTANTIATE_TEST_CASE_P(C, PartialTrans16x16Test,
                                                      AOM_BITS_8)));
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if HAVE_NEON_ASM && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_NEON_ASM && !CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     NEON, Trans16x16DCT,
     ::testing::Values(make_tuple(&aom_fdct16x16_c, &aom_idct16x16_256_add_neon,
                                  0, AOM_BITS_8)));
 #endif
 
-#if HAVE_SSE2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16DCT,
     ::testing::Values(make_tuple(&aom_fdct16x16_sse2,
@@ -876,15 +876,15 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(SSE2, PartialTrans16x16Test,
                         ::testing::Values(make_tuple(&aom_fdct16x16_1_sse2,
                                                      AOM_BITS_8)));
-#endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
 
-#if HAVE_AVX2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_AVX2 && !CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(AVX2, PartialTrans16x16Test,
                         ::testing::Values(make_tuple(&aom_fdct16x16_1_avx2,
                                                      AOM_BITS_8)));
-#endif  // HAVE_AVX2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_AVX2 && !CONFIG_HIGHBITDEPTH
 
-#if HAVE_SSE2 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16DCT,
     ::testing::Values(
@@ -924,9 +924,9 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(SSE2, PartialTrans16x16Test,
                         ::testing::Values(make_tuple(&aom_fdct16x16_1_sse2,
                                                      AOM_BITS_8)));
-#endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH
 
-#if HAVE_MSA && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_MSA && !CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(MSA, Trans16x16DCT,
                         ::testing::Values(make_tuple(&aom_fdct16x16_msa,
                                                      &aom_idct16x16_256_add_msa,
@@ -945,5 +945,5 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(MSA, PartialTrans16x16Test,
                         ::testing::Values(make_tuple(&aom_fdct16x16_1_msa,
                                                      AOM_BITS_8)));
-#endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
 }  // namespace

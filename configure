@@ -245,7 +245,6 @@ HAVE_LIST="
 "
 EXPERIMENT_LIST="
     fp_mb_stats
-    emulate_hardware
     cdef
     var_tx
     rect_tx

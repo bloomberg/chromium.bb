@@ -163,7 +163,7 @@ TEST_P(AV1HighbdTrans16x16HT, HighbdCoeffCheck) { RunBitexactCheck(); }
 
 using std::tr1::make_tuple;
 
-#if HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2
 const Ht16x16Param kArrayHt16x16Param_sse2[] = {
   make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2, 0, AOM_BITS_8,
              256),
@@ -202,9 +202,9 @@ const Ht16x16Param kArrayHt16x16Param_sse2[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans16x16HT,
                         ::testing::ValuesIn(kArrayHt16x16Param_sse2));
-#endif  // HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE2
 
-#if HAVE_AVX2 && !CONFIG_EMULATE_HARDWARE
+#if HAVE_AVX2
 const Ht16x16Param kArrayHt16x16Param_avx2[] = {
   make_tuple(&av1_fht16x16_avx2, &av1_iht16x16_256_add_avx2, 0, AOM_BITS_8,
              256),
@@ -243,9 +243,9 @@ const Ht16x16Param kArrayHt16x16Param_avx2[] = {
 };
 INSTANTIATE_TEST_CASE_P(AVX2, AV1Trans16x16HT,
                         ::testing::ValuesIn(kArrayHt16x16Param_avx2));
-#endif  // HAVE_AVX2 && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_AVX2
 
-#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
 const HighbdHt16x16Param kArrayHBDHt16x16Param_sse4_1[] = {
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, 0, 10),
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, 0, 12),
@@ -270,6 +270,6 @@ const HighbdHt16x16Param kArrayHBDHt16x16Param_sse4_1[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdTrans16x16HT,
                         ::testing::ValuesIn(kArrayHBDHt16x16Param_sse4_1));
-#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
 
 }  // namespace

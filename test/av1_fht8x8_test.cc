@@ -165,7 +165,7 @@ TEST_P(AV1HighbdTrans8x8HT, HighbdCoeffCheck) { RunBitexactCheck(); }
 
 using std::tr1::make_tuple;
 
-#if HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2
 const Ht8x8Param kArrayHt8x8Param_sse2[] = {
   make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 0, AOM_BITS_8, 64),
   make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 1, AOM_BITS_8, 64),
@@ -188,9 +188,9 @@ const Ht8x8Param kArrayHt8x8Param_sse2[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans8x8HT,
                         ::testing::ValuesIn(kArrayHt8x8Param_sse2));
-#endif  // HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE2
 
-#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
 const HighbdHt8x8Param kArrayHBDHt8x8Param_sse4_1[] = {
   make_tuple(&av1_fwd_txfm2d_8x8_sse4_1, 0, 10),
   make_tuple(&av1_fwd_txfm2d_8x8_sse4_1, 0, 12),
@@ -215,6 +215,6 @@ const HighbdHt8x8Param kArrayHBDHt8x8Param_sse4_1[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdTrans8x8HT,
                         ::testing::ValuesIn(kArrayHBDHt8x8Param_sse4_1));
-#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
 
 }  // namespace

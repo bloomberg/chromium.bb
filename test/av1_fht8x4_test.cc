@@ -100,7 +100,7 @@ const Ht8x4Param kArrayHt8x4Param_c[] = {
 INSTANTIATE_TEST_CASE_P(C, AV1Trans8x4HT,
                         ::testing::ValuesIn(kArrayHt8x4Param_c));
 
-#if HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2
 const Ht8x4Param kArrayHt8x4Param_sse2[] = {
   make_tuple(&av1_fht8x4_sse2, &av1_iht8x4_32_add_sse2, 0, AOM_BITS_8, 32),
   make_tuple(&av1_fht8x4_sse2, &av1_iht8x4_32_add_sse2, 1, AOM_BITS_8, 32),
@@ -123,6 +123,6 @@ const Ht8x4Param kArrayHt8x4Param_sse2[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans8x4HT,
                         ::testing::ValuesIn(kArrayHt8x4Param_sse2));
-#endif  // HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE2
 
 }  // namespace

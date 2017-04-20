@@ -100,7 +100,7 @@ const Ht32x16Param kArrayHt32x16Param_c[] = {
 INSTANTIATE_TEST_CASE_P(C, AV1Trans32x16HT,
                         ::testing::ValuesIn(kArrayHt32x16Param_c));
 
-#if HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2
 const Ht32x16Param kArrayHt32x16Param_sse2[] = {
   make_tuple(&av1_fht32x16_sse2, &av1_iht32x16_512_add_sse2, 0, AOM_BITS_8,
              512),
@@ -139,6 +139,6 @@ const Ht32x16Param kArrayHt32x16Param_sse2[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans32x16HT,
                         ::testing::ValuesIn(kArrayHt32x16Param_sse2));
-#endif  // HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE2
 
 }  // namespace

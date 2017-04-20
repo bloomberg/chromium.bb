@@ -50,37 +50,10 @@ static INLINE tran_high_t check_range(tran_high_t input, int bd) {
   return input;
 }
 
-#if CONFIG_EMULATE_HARDWARE
-// When CONFIG_EMULATE_HARDWARE is 1 the transform performs a
-// non-normative method to handle overflows. A stream that causes
-// overflows  in the inverse transform is considered invalid,
-// and a hardware implementer is free to choose any reasonable
-// method to handle overflows. However to aid in hardware
-// verification they can use a specific implementation of the
-// WRAPLOW() macro below that is identical to their intended
-// hardware implementation (and also use configure options to trigger
-// the C-implementation of the transform).
-//
-// The particular WRAPLOW implementation below performs strict
-// overflow wrapping to match common hardware implementations.
-// bd of 8 uses trans_low with 16bits, need to remove 16bits
-// bd of 10 uses trans_low with 18bits, need to remove 14bits
-// bd of 12 uses trans_low with 20bits, need to remove 12bits
-// bd of x uses trans_low with 8+x bits, need to remove 24-x bits
-
-#define WRAPLOW(x) ((((int32_t)check_range(x, 8)) << 16) >> 16)
-#if CONFIG_HIGHBITDEPTH
-#define HIGHBD_WRAPLOW(x, bd) \
-  ((((int32_t)check_range((x), bd)) << (24 - bd)) >> (24 - bd))
-#endif  // CONFIG_HIGHBITDEPTH
-
-#else  // CONFIG_EMULATE_HARDWARE
-
 #define WRAPLOW(x) ((int32_t)check_range(x, 8))
 #if CONFIG_HIGHBITDEPTH
 #define HIGHBD_WRAPLOW(x, bd) ((int32_t)check_range((x), bd))
 #endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_EMULATE_HARDWARE
 
 void aom_idct4_c(const tran_low_t *input, tran_low_t *output);
 void aom_idct8_c(const tran_low_t *input, tran_low_t *output);

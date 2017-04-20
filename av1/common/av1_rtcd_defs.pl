@@ -62,35 +62,7 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 # Inverse dct
 #
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
-  # Note as optimized versions of these functions are added we need to add a check to ensure
-  # that when CONFIG_EMULATE_HARDWARE is on, it defaults to the C versions only.
-  if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
-    add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht8x16_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht16x8_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht16x16_256_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
-  } else {
+  {
     add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
       specialize qw/av1_iht4x4_16_add sse2/;
 
@@ -129,37 +101,7 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
   }
 } else {
-  # Force C versions if CONFIG_EMULATE_HARDWARE is 1
-  if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
-    add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht8x16_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht16x8_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
-
-    add_proto qw/void av1_iht16x16_256_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
-
-    add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
-
-  } else {
+  {
     add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
     specialize qw/av1_iht4x4_16_add sse2 neon dspr2/;
 
@@ -284,8 +226,6 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   #
   # dct
   #
-  # Note as optimized versions of these functions are added we need to add a check to ensure
-  # that when CONFIG_EMULATE_HARDWARE is on, it defaults to the C versions only.
   add_proto qw/void av1_highbd_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
 
   add_proto qw/void av1_highbd_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
