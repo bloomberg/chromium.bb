@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("promos") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "promo_view_controller.h",
     "signin_promo_view_controller.h",
