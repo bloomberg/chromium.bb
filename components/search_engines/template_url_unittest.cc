@@ -6,6 +6,7 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -21,6 +22,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
+
+namespace {
+bool IsLowerCase(const base::string16& str) {
+  return str == base::i18n::ToLower(str);
+}
+}
 
 class TemplateURLTest : public testing::Test {
  public:
@@ -1742,6 +1749,13 @@ TEST_F(TemplateURLTest, GenerateKeyword) {
   ASSERT_EQ(
       base::UTF8ToUTF16("\xd0\xb0\xd0\xb1\xd0\xb2"),
       TemplateURL::GenerateKeyword(GURL("http://xn--80acd")));
+
+  // Generated keywords must always be in lowercase, because TemplateURLs always
+  // converts keywords to lowercase in its constructor and TemplateURLService
+  // stores TemplateURLs in maps using keyword as key.
+  EXPECT_TRUE(IsLowerCase(TemplateURL::GenerateKeyword(GURL("http://BLAH/"))));
+  EXPECT_TRUE(IsLowerCase(
+      TemplateURL::GenerateKeyword(GURL("http://embeddedhtml.<head>/"))));
 }
 
 TEST_F(TemplateURLTest, GenerateSearchURL) {

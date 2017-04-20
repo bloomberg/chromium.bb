@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -1198,7 +1199,8 @@ base::string16 TemplateURL::GenerateKeyword(const GURL& url) {
   // Special case: if the host was exactly "www." (not sure this can happen but
   // perhaps with some weird intranet and custom DNS server?), ensure we at
   // least don't return the empty string.
-  return keyword.empty() ? base::ASCIIToUTF16("www") : keyword;
+  return keyword.empty() ? base::ASCIIToUTF16("www")
+                         : base::i18n::ToLower(keyword);
 }
 
 // static

@@ -1793,6 +1793,29 @@ TEST_F(TemplateURLServiceTest, CheckNonreplaceableEnginesKeywordsConflicts) {
   EXPECT_EQ(kCommonKeyword, user4->keyword());
   EXPECT_EQ(user4, model()->GetTemplateURLForKeyword(kCommonKeyword));
   EXPECT_EQ(user4, model()->GetTemplateURLForHost("test3"));
+
+  // Check conflict between search engines with html tags embedded in URL host.
+  // URLs with embedded HTML canonicalize to contain uppercase characters in the
+  // hostname. Ensure these URLs are still handled correctly for conflict
+  // resolution.
+  const TemplateURL* user5 =
+      AddKeywordWithDate("nonreplaceable5", "embedded.%3chtml%3eweb",
+                         "http://embedded.<html>web/?q={searchTerms}",
+                         std::string(), std::string(), std::string(), false);
+  EXPECT_EQ(ASCIIToUTF16("embedded.%3chtml%3eweb"), user5->keyword());
+  EXPECT_EQ(user5, model()->GetTemplateURLForKeyword(
+                       ASCIIToUTF16("embedded.%3chtml%3eweb")));
+  const TemplateURL* user6 =
+      AddKeywordWithDate("nonreplaceable6", "embedded.%3chtml%3eweb",
+                         "http://embedded.<html>web/?q={searchTerms}",
+                         std::string(), std::string(), std::string(), false);
+  EXPECT_EQ(ASCIIToUTF16("embedded.%3chtml%3eweb"), user6->keyword());
+  EXPECT_EQ(user6, model()->GetTemplateURLForKeyword(
+                       ASCIIToUTF16("embedded.%3chtml%3eweb")));
+  // Expect existing engine changed its keyword.
+  EXPECT_EQ(ASCIIToUTF16("embedded.%3chtml%3eweb_"), user5->keyword());
+  EXPECT_EQ(user5, model()->GetTemplateURLForKeyword(
+                       ASCIIToUTF16("embedded.%3chtml%3eweb_")));
 }
 
 TEST_F(TemplateURLServiceTest, CheckReplaceableEnginesKeywordsConflicts) {
