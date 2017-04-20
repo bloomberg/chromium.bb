@@ -75,6 +75,7 @@ DECLARE_ALIGNED(256, static const InterpKernel,
   { -1, 2, -6, 18, 123, -10, 3, -1 },  { 0, 1, -3, 8, 126, -5, 1, 0 },
 };
 
+#if USE_12TAP_FILTER
 DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8sharp[SUBPEL_SHIFTS]) = {
   // intfilt 0.8
@@ -108,6 +109,30 @@ DECLARE_ALIGNED(256, static const int16_t,
   { 0, 1, -2, 4, -8, 18, 124, -13, 6, -3, 1, 0 },
   { 0, 1, -1, 2, -4, 8, 127, -7, 3, -2, 1, 0 },
 };
+#else
+DECLARE_ALIGNED(256, static const InterpKernel,
+                sub_pel_filters_8sharp[SUBPEL_SHIFTS]) = {
+#if CONFIG_FILTER_7BIT
+  { 0, 0, 0, 128, 0, 0, 0, 0 },         { -2, 2, -6, 126, 8, -2, 2, 0 },
+  { -2, 6, -12, 124, 16, -6, 4, -2 },   { -2, 8, -18, 120, 26, -10, 6, -2 },
+  { -4, 10, -22, 116, 38, -14, 6, -2 }, { -4, 10, -22, 108, 48, -18, 8, -2 },
+  { -4, 10, -24, 100, 60, -20, 8, -2 }, { -4, 10, -24, 90, 70, -22, 10, -2 },
+  { -4, 12, -24, 80, 80, -24, 12, -4 }, { -2, 10, -22, 70, 90, -24, 10, -4 },
+  { -2, 8, -20, 60, 100, -24, 10, -4 }, { -2, 8, -18, 48, 108, -22, 10, -4 },
+  { -2, 6, -14, 38, 116, -22, 10, -4 }, { -2, 6, -10, 26, 120, -18, 8, -2 },
+  { -2, 4, -6, 16, 124, -12, 6, -2 },   { 0, 2, -2, 8, 126, -6, 2, -2 }
+#else
+  { 0, 0, 0, 128, 0, 0, 0, 0 },         { -1, 3, -7, 127, 8, -3, 1, 0 },
+  { -2, 5, -13, 125, 17, -6, 3, -1 },   { -3, 7, -17, 121, 27, -10, 5, -2 },
+  { -4, 9, -20, 115, 37, -13, 6, -2 },  { -4, 10, -23, 108, 48, -16, 8, -3 },
+  { -4, 10, -24, 100, 59, -19, 9, -3 }, { -4, 11, -24, 90, 70, -21, 10, -4 },
+  { -4, 11, -23, 80, 80, -23, 11, -4 }, { -4, 10, -21, 70, 90, -24, 11, -4 },
+  { -3, 9, -19, 59, 100, -24, 10, -4 }, { -3, 8, -16, 48, 108, -23, 10, -4 },
+  { -2, 6, -13, 37, 115, -20, 9, -4 },  { -2, 5, -10, 27, 121, -17, 7, -3 },
+  { -1, 3, -6, 17, 125, -13, 5, -2 },   { 0, 1, -3, 8, 127, -7, 3, -1 }
+#endif
+};
+#endif
 
 DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8smooth2[SUBPEL_SHIFTS]) = {
@@ -250,8 +275,13 @@ static const InterpFilterParams
         EIGHTTAP_REGULAR },
       { (const int16_t *)sub_pel_filters_8smooth, SUBPEL_TAPS, SUBPEL_SHIFTS,
         EIGHTTAP_SMOOTH },
+#if USE_12TAP_FILTER
       { (const int16_t *)sub_pel_filters_10sharp, 12, SUBPEL_SHIFTS,
         MULTITAP_SHARP },
+#else
+      { (const int16_t *)sub_pel_filters_8sharp, SUBPEL_TAPS, SUBPEL_SHIFTS,
+        EIGHTTAP_SHARP },
+#endif
       { (const int16_t *)sub_pel_filters_8smooth2, SUBPEL_TAPS, SUBPEL_SHIFTS,
         EIGHTTAP_SMOOTH2 },
       { (const int16_t *)bilinear_filters, SUBPEL_TAPS, SUBPEL_SHIFTS,

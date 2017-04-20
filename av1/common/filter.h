@@ -24,6 +24,8 @@ extern "C" {
 #define USE_TEMPORALFILTER_12TAP 1
 #define MAX_FILTER_TAP 12
 
+#define USE_12TAP_FILTER 0
+
 typedef enum {
   EIGHTTAP_REGULAR,
   EIGHTTAP_SMOOTH,
