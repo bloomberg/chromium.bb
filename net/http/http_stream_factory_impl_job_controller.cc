@@ -636,16 +636,16 @@ void HttpStreamFactoryImpl::JobController::
 
 void HttpStreamFactoryImpl::JobController::
     RemoveRequestFromSpdySessionRequestMap() {
-  const SpdySessionKey* spdy_session_key = request_->spdy_session_key();
-  if (spdy_session_key) {
+  if (request_->HasSpdySessionKey()) {
+    const SpdySessionKey& spdy_session_key = request_->GetSpdySessionKey();
     SpdySessionRequestMap& spdy_session_request_map =
         factory_->spdy_session_request_map_;
-    DCHECK(base::ContainsKey(spdy_session_request_map, *spdy_session_key));
-    RequestSet& request_set = spdy_session_request_map[*spdy_session_key];
+    DCHECK(base::ContainsKey(spdy_session_request_map, spdy_session_key));
+    RequestSet& request_set = spdy_session_request_map[spdy_session_key];
     DCHECK(base::ContainsKey(request_set, request_));
     request_set.erase(request_);
     if (request_set.empty())
-      spdy_session_request_map.erase(*spdy_session_key);
+      spdy_session_request_map.erase(spdy_session_key);
     request_->ResetSpdySessionKey();
   }
 }

@@ -44,11 +44,6 @@ HttpStreamFactoryImpl::Request::~Request() {
   helper_->OnRequestComplete();
 }
 
-void HttpStreamFactoryImpl::Request::SetSpdySessionKey(
-    const SpdySessionKey& spdy_session_key) {
-  spdy_session_key_.reset(new SpdySessionKey(spdy_session_key));
-}
-
 void HttpStreamFactoryImpl::Request::Complete(bool was_alpn_negotiated,
                                               NextProto negotiated_protocol,
                                               bool using_spdy) {
@@ -152,16 +147,6 @@ bool HttpStreamFactoryImpl::Request::using_spdy() const {
 const ConnectionAttempts& HttpStreamFactoryImpl::Request::connection_attempts()
     const {
   return connection_attempts_;
-}
-
-void HttpStreamFactoryImpl::Request::ResetSpdySessionKey() {
-  if (spdy_session_key_.get()) {
-    spdy_session_key_.reset();
-  }
-}
-
-bool HttpStreamFactoryImpl::Request::HasSpdySessionKey() const {
-  return spdy_session_key_.get() != NULL;
 }
 
 void HttpStreamFactoryImpl::Request::AddConnectionAttempts(
