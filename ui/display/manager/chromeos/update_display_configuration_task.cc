@@ -30,23 +30,40 @@ UpdateDisplayConfigurationTask::UpdateDisplayConfigurationTask(
       force_configure_(force_configure),
       callback_(callback),
       force_dpms_(false),
+      requesting_displays_(false),
       weak_ptr_factory_(this) {
   delegate_->GrabServer();
+  delegate_->AddObserver(this);
 }
 
 UpdateDisplayConfigurationTask::~UpdateDisplayConfigurationTask() {
+  delegate_->RemoveObserver(this);
   delegate_->UngrabServer();
 }
 
 void UpdateDisplayConfigurationTask::Run() {
+  requesting_displays_ = true;
   delegate_->GetDisplays(
       base::Bind(&UpdateDisplayConfigurationTask::OnDisplaysUpdated,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void UpdateDisplayConfigurationTask::OnConfigurationChanged() {}
+
+void UpdateDisplayConfigurationTask::OnDisplaySnapshotsInvalidated() {
+  cached_displays_.clear();
+  if (!requesting_displays_ && weak_ptr_factory_.HasWeakPtrs()) {
+    // This task has already been run and getting the displays request is not in
+    // flight. We need to re-run it to get updated displays snapshots.
+    weak_ptr_factory_.InvalidateWeakPtrs();
+    Run();
+  }
+}
+
 void UpdateDisplayConfigurationTask::OnDisplaysUpdated(
     const std::vector<DisplaySnapshot*>& displays) {
   cached_displays_ = displays;
+  requesting_displays_ = false;
 
   if (cached_displays_.size() > 1 && background_color_argb_)
     delegate_->SetBackgroundColor(background_color_argb_);

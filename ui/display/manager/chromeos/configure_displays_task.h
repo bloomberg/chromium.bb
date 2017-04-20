@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/manager/display_manager_export.h"
+#include "ui/display/types/native_display_observer.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace display {
@@ -33,7 +34,8 @@ struct DISPLAY_MANAGER_EXPORT DisplayConfigureRequest {
 };
 
 // Applies the display configuration asynchronously.
-class DISPLAY_MANAGER_EXPORT ConfigureDisplaysTask {
+class DISPLAY_MANAGER_EXPORT ConfigureDisplaysTask
+    : public NativeDisplayObserver {
  public:
   enum Status {
     // At least one of the displays failed to apply any mode it supports.
@@ -52,10 +54,14 @@ class DISPLAY_MANAGER_EXPORT ConfigureDisplaysTask {
   ConfigureDisplaysTask(NativeDisplayDelegate* delegate,
                         const std::vector<DisplayConfigureRequest>& requests,
                         const ResponseCallback& callback);
-  ~ConfigureDisplaysTask();
+  ~ConfigureDisplaysTask() override;
 
   // Starts the configuration task.
   void Run();
+
+  // display::NativeDisplayObserver:
+  void OnConfigurationChanged() override;
+  void OnDisplaySnapshotsInvalidated() override;
 
  private:
   void OnConfigured(size_t index, bool success);

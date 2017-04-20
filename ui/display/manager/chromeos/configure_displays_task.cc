@@ -55,9 +55,12 @@ ConfigureDisplaysTask::ConfigureDisplaysTask(
       weak_ptr_factory_(this) {
   for (size_t i = 0; i < requests_.size(); ++i)
     pending_request_indexes_.push(i);
+  delegate_->AddObserver(this);
 }
 
-ConfigureDisplaysTask::~ConfigureDisplaysTask() {}
+ConfigureDisplaysTask::~ConfigureDisplaysTask() {
+  delegate_->RemoveObserver(this);
+}
 
 void ConfigureDisplaysTask::Run() {
   // Synchronous configurators will recursively call Run(). In that case just
@@ -89,6 +92,17 @@ void ConfigureDisplaysTask::Run() {
   // task may be deleted in the callback.
   if (num_displays_configured_ == requests_.size())
     callback_.Run(task_status_);
+}
+
+void ConfigureDisplaysTask::OnConfigurationChanged() {}
+
+void ConfigureDisplaysTask::OnDisplaySnapshotsInvalidated() {
+  std::queue<size_t> empty_queue;
+  pending_request_indexes_.swap(empty_queue);
+  // From now on, don't access |requests_[index]->display|; they're invalid.
+  task_status_ = ERROR;
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  Run();
 }
 
 void ConfigureDisplaysTask::OnConfigured(size_t index, bool success) {
