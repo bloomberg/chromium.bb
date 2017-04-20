@@ -342,7 +342,9 @@ static_library("headless_lib") {
     "//url",
   ]
 
-  if (!is_mac) {
+  if (is_mac) {
+    deps += [ ":mac_helpers" ]
+  } else {
     deps += [ "//ui/aura" ]
   }
 
@@ -430,6 +432,22 @@ repack("headless_browser_tests_pak") {
   deps = [
     ":headless_browsertest_resources_grit",
   ]
+}
+
+if (is_mac) {
+  copy("mac_helpers") {
+    sources = [
+      "$root_out_dir/crashpad_handler",
+    ]
+
+    deps = [
+      "//third_party/crashpad/crashpad/handler:crashpad_handler",
+    ]
+
+    outputs = [
+      "$root_out_dir/Helpers/{{source_file_part}}",
+    ]
+  }
 }
 
 test("headless_browsertests") {
