@@ -8,11 +8,9 @@
 #include <CoreServices/CoreServices.h>
 #include <Security/Security.h>
 
-#include <set>
 #include <string>
 #include <vector>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
@@ -32,6 +30,7 @@
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/certificate_policies.h"
 #include "net/cert/internal/parsed_certificate.h"
+#include "net/cert/known_roots_mac.h"
 #include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
@@ -596,58 +595,16 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
   return OK;
 }
 
-// Helper class for managing the set of OS X Known Roots. This is only safe
-// to initialize while the crypto::GetMacSecurityServicesLock() is held, due
-// to calling into Security.framework functions; however, once initialized,
-// it can be called at any time.
-// In practice, due to lazy initialization, it's best to just always guard
-// accesses with the lock.
-class OSXKnownRootHelper {
- public:
-  // IsIssuedByKnownRoot returns true if the given chain is rooted at a root CA
-  // that we recognise as a standard root.
-  bool IsIssuedByKnownRoot(CFArrayRef chain) {
-    // If there are no known roots, then an API failure occurred. For safety,
-    // assume that all certificates are issued by known roots.
-    if (known_roots_.empty())
-      return true;
-
-    CFIndex n = CFArrayGetCount(chain);
-    if (n < 1)
-      return false;
-    SecCertificateRef root_ref = reinterpret_cast<SecCertificateRef>(
-        const_cast<void*>(CFArrayGetValueAtIndex(chain, n - 1)));
-    SHA256HashValue hash = x509_util::CalculateFingerprint256(root_ref);
-    return known_roots_.find(hash) != known_roots_.end();
-  }
-
- private:
-  friend struct base::LazyInstanceTraitsBase<OSXKnownRootHelper>;
-
-  OSXKnownRootHelper() {
-    CFArrayRef cert_array = NULL;
-    OSStatus rv = SecTrustSettingsCopyCertificates(
-        kSecTrustSettingsDomainSystem, &cert_array);
-    if (rv != noErr) {
-      LOG(ERROR) << "Unable to determine trusted roots; assuming all roots are "
-                 << "trusted! Error " << rv;
-      return;
-    }
-    base::ScopedCFTypeRef<CFArrayRef> scoped_array(cert_array);
-    for (CFIndex i = 0, size = CFArrayGetCount(cert_array); i < size; ++i) {
-      SecCertificateRef cert = reinterpret_cast<SecCertificateRef>(
-          const_cast<void*>(CFArrayGetValueAtIndex(cert_array, i)));
-      known_roots_.insert(x509_util::CalculateFingerprint256(cert));
-    }
-  }
-
-  ~OSXKnownRootHelper() {}
-
-  std::set<SHA256HashValue, SHA256HashValueLessThan> known_roots_;
-};
-
-base::LazyInstance<OSXKnownRootHelper>::Leaky g_known_roots =
-    LAZY_INSTANCE_INITIALIZER;
+// IsIssuedByKnownRoot returns true if the given chain is rooted at a root CA
+// that we recognise as a standard root.
+bool IsIssuedByKnownRoot(CFArrayRef chain) {
+  CFIndex n = CFArrayGetCount(chain);
+  if (n < 1)
+    return false;
+  SecCertificateRef root_ref = reinterpret_cast<SecCertificateRef>(
+      const_cast<void*>(CFArrayGetValueAtIndex(chain, n - 1)));
+  return IsKnownRoot(root_ref);
+}
 
 // Runs path building & verification loop for |cert|, given |flags|. This is
 // split into a separate function so verification can be repeated with different
@@ -1006,8 +963,7 @@ int VerifyWithGivenFlags(X509Certificate* cert,
   verify_result->cert_status &= ~CERT_STATUS_NO_REVOCATION_MECHANISM;
 
   AppendPublicKeyHashes(completed_chain, &verify_result->public_key_hashes);
-  verify_result->is_issued_by_known_root =
-      g_known_roots.Get().IsIssuedByKnownRoot(completed_chain);
+  verify_result->is_issued_by_known_root = IsIssuedByKnownRoot(completed_chain);
 
   if (IsCertStatusError(verify_result->cert_status))
     return MapCertStatusToNetError(verify_result->cert_status);

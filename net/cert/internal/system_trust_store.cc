@@ -19,9 +19,12 @@
 #include "crypto/nss_util.h"
 #include "net/cert/internal/cert_issuer_source_nss.h"
 #include "net/cert/internal/trust_store_nss.h"
+#include "net/cert/known_roots_nss.h"
 #include "net/cert/scoped_nss_types.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "net/cert/internal/trust_store_mac.h"
+#include "net/cert/known_roots_mac.h"
+#include "net/cert/x509_util_mac.h"
 #endif
 
 namespace net {
@@ -93,24 +96,10 @@ class SystemTrustStoreNSS : public BaseSystemTrustStore {
     if (!nss_cert)
       return false;
 
-    return IsKnownRoot(nss_cert.get());
+    return net::IsKnownRoot(nss_cert.get());
   }
 
  private:
-  // TODO(eroman): This function was copied verbatim from
-  // cert_verify_proc_nss.cc
-  //
-  // IsKnownRoot returns true if the given certificate is one that we believe
-  // is a standard (as opposed to user-installed) root.
-  bool IsKnownRoot(CERTCertificate* root) const {
-    if (!root || !root->slot)
-      return false;
-
-    // This magic name is taken from
-    // http://bonsai.mozilla.org/cvsblame.cgi?file=mozilla/security/nss/lib/ckfw/builtins/constants.c&rev=1.13&mark=86,89#79
-    return 0 == strcmp(PK11_GetSlotName(root->slot), "NSS Builtin Objects");
-  }
-
   TrustStoreNSS trust_store_nss_;
   CertIssuerSourceNSS cert_issuer_source_nss_;
 };
@@ -123,14 +112,16 @@ std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
 
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 
+// TODO(eroman): Compose with test roots added via cert/test_roots.h
 class SystemTrustStoreMac : public BaseSystemTrustStore {
  public:
   explicit SystemTrustStoreMac() : trust_store_mac_(kSecPolicyAppleSSL) {
+    InitializeKnownRoots();
     trust_store_.AddTrustStore(&trust_store_mac_);
   }
 
   CertIssuerSource* GetCertIssuerSource() override {
-    // TODO(eroman): Should this return something?
+    // TODO(eroman): Implement.
     return nullptr;
   }
 
@@ -140,8 +131,17 @@ class SystemTrustStoreMac : public BaseSystemTrustStore {
   // opposed to a user-installed root)
   bool IsKnownRoot(
       const scoped_refptr<TrustAnchor>& trust_anchor) const override {
-    // TODO(eroman): Implement.
-    return false;
+    if (!trust_anchor->cert())
+      return false;
+
+    der::Input bytes = trust_anchor->cert()->der_cert();
+    base::ScopedCFTypeRef<SecCertificateRef> cert_ref =
+        x509_util::CreateSecCertificateFromBytes(bytes.UnsafeData(),
+                                                 bytes.Length());
+    if (!cert_ref)
+      return false;
+
+    return net::IsKnownRoot(cert_ref);
   }
 
  private:
