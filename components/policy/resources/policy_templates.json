@@ -972,9 +972,7 @@
           'id': 285,
           'caption': '''Requires that the name of the local user and the remote access host owner match''',
           'tags': [],
-          'desc': '''Requires that the name of the local user and the remote access host owner match.
-
-          If this setting is enabled, then the remote access host compares the name of the local user (that the host is associated with) and the name of the Google account registered as the host owner (i.e. "johndoe" if the host is owned by "johndoe@example.com" Google account).  The remote access host will not start if the name of the host owner is different from the name of the local user that the host is associated with.  RemoteAccessHostMatchUsername policy should be used together with RemoteAccessHostDomain to also enforce that the Google account of the host owner is associated with a specific domain (i.e. "example.com").
+          'desc': '''If this setting is enabled, then the remote access host compares the name of the local user (that the host is associated with) and the name of the Google account registered as the host owner (i.e. "johndoe" if the host is owned by "johndoe@example.com" Google account).  The remote access host will not start if the name of the host owner is different from the name of the local user that the host is associated with.  RemoteAccessHostMatchUsername policy should be used together with RemoteAccessHostDomain to also enforce that the Google account of the host owner is associated with a specific domain (i.e. "example.com").
 
           If this setting is disabled or not set, then the remote access host can be associated with any local user.''',
         },
@@ -991,9 +989,7 @@
           'id': 286,
           'caption': '''URL where remote access clients should obtain their authentication token''',
           'tags': ['website-sharing'],
-          'desc': '''URL where remote access clients should obtain their authentication token.
-
-          If this policy is set, the remote access host will require authenticating clients to obtain an authentication token from this URL in order to connect. Must be used in conjunction with RemoteAccessHostTokenValidationUrl.
+          'desc': '''If this policy is set, the remote access host will require authenticating clients to obtain an authentication token from this URL in order to connect. Must be used in conjunction with RemoteAccessHostTokenValidationUrl.
 
           This feature is currently disabled server-side.''',
         },
@@ -1010,9 +1006,7 @@
           'id': 287,
           'caption': '''URL for validating remote access client authentication token''',
           'tags': ['website-sharing'],
-          'desc': '''URL for validating remote access client authentication token.
-
-          If this policy is set, the remote access host will use this URL to validate authentication tokens from remote access clients, in order to accept connections. Must be used in conjunction with RemoteAccessHostTokenUrl.
+          'desc': '''If this policy is set, the remote access host will use this URL to validate authentication tokens from remote access clients, in order to accept connections. Must be used in conjunction with RemoteAccessHostTokenUrl.
 
           This feature is currently disabled server-side.''',
         },
@@ -1029,9 +1023,7 @@
           'id': 288,
           'caption': '''Client certificate for connecting to RemoteAccessHostTokenValidationUrl''',
           'tags': [],
-          'desc': '''Client certificate for connecting to RemoteAccessHostTokenValidationUrl.
-
-          If this policy is set, the host will use a client certificate with the given issuer CN to authenticate to RemoteAccessHostTokenValidationUrl. Set it to "*" to use any available client certificate.
+          'desc': '''If this policy is set, the host will use a client certificate with the given issuer CN to authenticate to RemoteAccessHostTokenValidationUrl. Set it to "*" to use any available client certificate.
 
           This feature is currently disabled server-side.''',
         },
@@ -1297,8 +1289,7 @@
           'id': 16,
           'caption': '''Enable saving passwords to the password manager''',
           'tags': [],
-          'desc': '''
-          If this setting is enabled, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords and provide them automatically the next time they log in to a site.
+          'desc': '''If this setting is enabled, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords and provide them automatically the next time they log in to a site.
 
           If this settings is disabled, users cannot save new passwords but they
           may still use passwords that have been saved previously.
@@ -1517,9 +1508,7 @@
       'id': 358,
       'caption': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data''',
       'tags': ['local-data-access'],
-      'desc': '''Enables the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data.
-
-      If you enable this setting, the settings stored in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles like bookmarks, autofill data, passwords, etc. will also be written to a file stored in the Roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMINGPROFILELOCATION_POLICY_NAME">$1<ex>RoamingProfileLocation</ex></ph> policy.
+      'desc': '''If you enable this setting, the settings stored in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles like bookmarks, autofill data, passwords, etc. will also be written to a file stored in the Roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMINGPROFILELOCATION_POLICY_NAME">$1<ex>RoamingProfileLocation</ex></ph> policy.
 
       Google Sync is automatically disabled when this policy is enabled.
 
@@ -1582,11 +1571,9 @@
       'deprecated': True,
       'example_value': False,
       'id': 265,
-      'caption': '''Enables the old web-based signin''',
+      'caption': '''Enables the old web-based signin flow''',
       'tags': [],
-      'desc': '''Enables the old web-based signin flow.
-
-      This setting was named EnableWebBasedSignin prior to Chrome 42, and support for it will be removed entirely in Chrome 43.
+      'desc': '''This setting was named EnableWebBasedSignin prior to Chrome 42, and support for it will be removed entirely in Chrome 43.
 
       This setting is useful for enterprise customers who are using SSO solutions that are not compatible with the new inline signin flow yet.
       If you enable this setting, the old web-based signin flow would be used.
@@ -2250,8 +2237,7 @@
           'id': 34,
           'caption': '''Configure the list of force-installed apps and extensions''',
           'tags': ['full-admin-access'],
-          'desc': '''
-          Specifies a list of apps and extensions that are installed silently,
+          'desc': '''Specifies a list of apps and extensions that are installed silently,
           without user interaction, and which cannot be uninstalled by the
           user. All permissions requested by the apps/extensions are granted
           implicitly, without user interaction, including any additional
@@ -2632,9 +2618,7 @@
       'id': 39,
       'caption': '''Block third party cookies''',
       'tags': [],
-      'desc': '''Blocks third party cookies.
-
-      Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
+      'desc': '''Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
 
       Disabling this setting allows cookies to be set by web page elements that are not from the domain that is in the browser's address bar and prevents users from changing this setting.
 
@@ -3842,9 +3826,7 @@
       'id': 55,
       'caption': '''Disable support for 3D graphics APIs''',
       'tags': [],
-      'desc': '''Disable support for 3D graphics APIs.
-
-      Enabling this setting prevents web pages from accessing the graphics processing unit (GPU). Specifically, web pages can not access the WebGL API and plugins can not use the Pepper 3D API.
+      'desc': '''Enabling this setting prevents web pages from accessing the graphics processing unit (GPU). Specifically, web pages can not access the WebGL API and plugins can not use the Pepper 3D API.
 
       Disabling this setting or leaving it not set potentially allows web pages to use the WebGL API and plugins to use the Pepper 3D API. The default settings of the browser may still require command line arguments to be passed in order to use these APIs.
 
@@ -4028,9 +4010,9 @@
           'id': 60,
           'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types''',
           'tags': [],
-          'desc': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types.
+          'desc': '''If this policy is set, the specified content types are handled by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.
 
-          If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.''',
+          If this policy is not set, the default renderer is used for all sites. (The <ph name="CHROMEFRAMERENDERERSETTINGS_POLICY_NAME">ChromeFrameRendererSettings</ph> policy may be used to configure the default renderer.)''',
         },
       ],
     },
@@ -4180,9 +4162,7 @@
       'id': 81,
       'caption': '''Allow running plugins that are outdated''',
       'tags': ['system-security'],
-      'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to run plugins that are outdated.
-
-      If you enable this setting, outdated plugins are used as normal plugins.
+      'desc': '''If you enable this setting, outdated plugins are used as normal plugins.
 
       If you disable this setting, outdated plugins will not be used and users will not be asked for permission to run them.
 
@@ -4201,9 +4181,7 @@
       'id': 86,
       'caption': '''Always runs plugins that require authorization''',
       'tags': ['system-security'],
-      'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to run plugins that require authorization.
-
-      If you enable this setting, plugins that are not outdated always run.
+      'desc': '''If you enable this setting, plugins that are not outdated always run.
 
       If this setting is disabled or not set, users will be asked for permission to run plugins that require authorization. These are plugins that can compromise security.''',
     },
@@ -4221,9 +4199,7 @@
       'id': 82,
       'caption': '''Enable Bookmark Bar''',
       'tags': [],
-      'desc': '''Enables the bookmark bar on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show a bookmark bar.
+      'desc': '''If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show a bookmark bar.
 
       If you disable this setting, users will never see the bookmark bar.
 
@@ -4244,9 +4220,7 @@
       'id': 83,
       'caption': '''Enables or disables bookmark editing''',
       'tags': [],
-      'desc': '''Enables or disables editing bookmarks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If you enable this setting, bookmarks can be added, removed or modified. This is the default also when this policy is not set.
+      'desc': '''If you enable this setting, bookmarks can be added, removed or modified. This is the default also when this policy is not set.
 
       If you disable this setting, bookmarks can not be added, removed or modified. Existing bookmarks are still available.''',
     },
@@ -4519,9 +4493,7 @@
       'id': 103,
       'caption': '''Block access to a list of URLs''',
       'tags': ['filtering'],
-      'desc': '''Blocks access to the listed URLs.
-
-      This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
+      'desc': '''This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
 
       A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
 
@@ -4883,9 +4855,7 @@
       'id': 254,
       'caption': '''Limit the time for which a user authenticated via SAML can log in offline''',
       'tags': [],
-      'desc': '''Limit the time for which a user authenticated via SAML can log in offline.
-
-      During login, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can authenticate against a server (online) or using a cached password (offline).
+      'desc': '''During login, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can authenticate against a server (online) or using a cached password (offline).
 
       When this policy is set to a value of -1, the user can authenticate offline indefinitely. When this policy is set to any other value, it specifies the length of time since the last online authentication after which the user must use online authentication again.
 
@@ -5917,9 +5887,7 @@
       'id': 159,
       'caption': '''Allow playing audio''',
       'tags': [],
-      'desc': '''Allow playing audio.
-
-      When this policy is set to false, audio output will not be available on the device while the user is logged in.
+      'desc': '''When this policy is set to false, audio output will not be available on the device while the user is logged in.
 
       This policy affects all types of audio output and not only the built-in speakers. Audio accessibility features are also inhibited by this policy. Do not enable this policy if a screen reader is required for the user.
 
@@ -5938,9 +5906,7 @@
       'id': 160,
       'caption': '''Allow or deny audio capture''',
       'tags': [],
-      'desc': '''Allow or deny audio capture.
-
-      If enabled or not configured (default), the user will be prompted for
+      'desc': '''If enabled or not configured (default), the user will be prompted for
       audio capture access except for URLs configured in the
       AudioCaptureAllowedUrls list which will be granted access without prompting.
 
@@ -5985,9 +5951,7 @@
       'id': 167,
       'caption': '''Allow or deny video capture''',
       'tags': [],
-      'desc': '''Allow or deny video capture.
-
-      If enabled or not configured (default), the user will be prompted for
+      'desc': '''If enabled or not configured (default), the user will be prompted for
       video capture access except for URLs configured in the
       VideoCaptureAllowedUrls list which will be granted access without prompting.
 
@@ -6032,9 +5996,7 @@
       'id': 153,
       'caption': '''Disable taking screenshots''',
       'tags': [],
-      'desc': '''Disables taking screenshots.
-
-      If enabled screenshots cannot be taken using keyboard shortcuts or extension APIs.
+      'desc': '''If enabled, screenshots cannot be taken using keyboard shortcuts or extension APIs.
 
       If disabled or not specified, taking screenshots is allowed.'''
     },
@@ -6118,9 +6080,7 @@
       'id': 164,
       'caption': '''Add a logout button to the system tray''',
       'tags': [],
-      'desc': '''Adds a logout button to the system tray.
-
-      If enabled, a big, red logout button is shown in the system tray while a session is active and the screen is not locked.
+      'desc': '''If enabled, a big, red logout button is shown in the system tray while a session is active and the screen is not locked.
 
       If disabled or not specified, no big, red logout button is shown in the system tray.''',
     },
@@ -6219,11 +6179,9 @@
       },
       'example_value': 3600000,
       'id': 170,
-      'caption': '''Limit the session length''',
+      'caption': '''Limit the length of a user session''',
       'tags': [],
-      'desc': '''Limit the maximum length of a user session.
-
-      When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
+      'desc': '''When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
 
       When this policy is not set, the session length is not limited.
 
@@ -6244,9 +6202,7 @@
       'id': 240,
       'caption': '''Allow fullscreen mode''',
       'tags': [],
-      'desc': '''Allow fullscreen mode.
-
-      This policy controls the availability of fullscreen mode in which all <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> UI is hidden and only web content is visible.
+      'desc': '''This policy controls the availability of fullscreen mode in which all <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> UI is hidden and only web content is visible.
 
       If this policy is set to true or not not configured, the user, apps and extensions with appropriate permissions can enter fullscreen mode.
 
@@ -6568,9 +6524,7 @@
           'id': 180,
           'caption': '''Action to take when the idle delay is reached''',
           'tags': [],
-          'desc': '''Specify the action to take when the idle delay is reached.
-
-          Note that this policy is deprecated and will be removed in the future.
+          'desc': '''Note that this policy is deprecated and will be removed in the future.
 
           This policy provides a fallback value for the more-specific <ph name="IDLEACTIONAC_POLICY_NAME">IdleActionAC</ph> and <ph name="IDLEACTIONBATTERY_POLICY_NAME">IdleActionBattery</ph> policies. If this policy is set, its value gets used if the respective more-specific policy is not set.
 
@@ -6615,9 +6569,7 @@
           'id': 226,
           'caption': '''Action to take when the idle delay is reached while running on AC power''',
           'tags': [],
-          'desc': '''Specify the action to take when the idle delay is reached while running on AC power.
-
-          When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
+          'desc': '''When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
 
           When this policy is unset, the default action is taken, which is suspend.
 
@@ -6662,9 +6614,7 @@
           'id': 222,
           'caption': '''Action to take when the idle delay is reached while running on battery power''',
           'tags': [],
-          'desc': '''Specify the action to take when the idle delay is reached while running on battery power.
-
-          When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
+          'desc': '''When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
 
           When this policy is unset, the default action is taken, which is suspend.
 
@@ -6708,9 +6658,7 @@
           'id': 181,
           'caption': '''Action to take when the user closes the lid''',
           'tags': [],
-          'desc': '''Specify the action to take when the user closes the lid.
-
-          When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user closes the device's lid.
+          'desc': '''When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user closes the device's lid.
 
           When this policy is unset, the default action is taken, which is suspend.
 
@@ -6729,9 +6677,7 @@
           'id': 182,
           'caption': '''Specify whether audio activity affects power management''',
           'tags': [],
-          'desc': '''Specifies whether audio activity affects power management.
-
-          If this policy is set to True or is unset, the user is not considered to be idle while audio is playing. This prevents the idle timeout from being reached and the idle action from being taken. However, screen dimming, screen off and screen lock will be performed after the configured timeouts, irrespective of audio activity.
+          'desc': '''If this policy is set to True or is unset, the user is not considered to be idle while audio is playing. This prevents the idle timeout from being reached and the idle action from being taken. However, screen dimming, screen off and screen lock will be performed after the configured timeouts, irrespective of audio activity.
 
           If this policy is set to False, audio activity does not prevent the user from being considered idle.''',
         },
@@ -6748,9 +6694,7 @@
           'id': 183,
           'caption': '''Specify whether video activity affects power management''',
           'tags': [],
-          'desc': '''Specifies whether video activity affects power management.
-
-          If this policy is set to True or is unset, the user is not considered to be idle while video is playing. This prevents the idle delay, screen dim delay, screen off delay and screen lock delay from being reached and the corresponding actions from being taken.
+          'desc': '''If this policy is set to True or is unset, the user is not considered to be idle while video is playing. This prevents the idle delay, screen dim delay, screen off delay and screen lock delay from being reached and the corresponding actions from being taken.
 
           If this policy is set to False, video activity does not prevent the user from being considered idle.''',
           'arc_support': 'Video playing in Android apps is not taken into consideration, even if this policy is set to <ph name="TRUE">True</ph>.',
@@ -6916,9 +6860,7 @@
           'id': 258,
           'caption': '''Power management settings when the user becomes idle''',
           'tags': [],
-          'desc': '''Configure power management settings when the user becomes idle.
-
-          This policy controls multiple settings for the power management strategy when the user becomes idle.
+          'desc': '''This policy controls multiple settings for the power management strategy when the user becomes idle.
 
           There are four types of action:
           * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
@@ -7127,9 +7069,7 @@
           'id': 188,
           'caption': '''Show accessibility options in system tray menu''',
           'tags': [],
-          'desc': '''Show <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> accessibility options in the system menu.
-
-          If this policy is set to true, Accessibility options always appear in system tray menu.
+          'desc': '''If this policy is set to true, Accessibility options always appear in system tray menu.
 
           If this policy is set to false, Accessibility options never appear in system tray menu.
 
@@ -7282,9 +7222,7 @@
           'id': 214,
           'caption': '''Set screen magnifier type''',
           'tags': [],
-          'desc': '''Set the type of screen magnifier that is enabled.
-
-          If this policy is set, it controls the type of screen magnifier that is enabled. Setting the policy to "None" disables the screen magnifier.
+          'desc': '''If this policy is set, it controls the type of screen magnifier that is enabled. Setting the policy to "None" disables the screen magnifier.
 
           If you set this policy, users cannot change or override it.
 
@@ -7683,9 +7621,7 @@
           'id': 204,
           'caption': '''Default behavior for sites not in any content pack''',
           'tags': [],
-          'desc': '''The default behavior for sites not in any content pack.
-
-          This policy is for internal use by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> itself.''',
+          'desc': '''This policy is for internal use by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> itself.''',
         },
         {
           'name': 'ContentPackManualBehaviorHosts',
@@ -7902,9 +7838,7 @@
       'id': 249,
       'caption': '''User avatar image''',
       'tags': [],
-      'desc': '''Configure user avatar image.
-
-      This policy allows you to configure the avatar image representing the user on the login screen. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the avatar image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its size must not exceed 512kB. The URL must be accessible without any authentication.
+      'desc': '''This policy allows you to configure the avatar image representing the user on the login screen. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the avatar image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its size must not exceed 512kB. The URL must be accessible without any authentication.
 
       The avatar image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
@@ -7949,9 +7883,7 @@
       'id': 262,
       'caption': '''Wallpaper image''',
       'tags': [],
-      'desc': '''Configure wallpaper image.
-
-      This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16MB. The URL must be accessible without any authentication.
+      'desc': '''This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16MB. The URL must be accessible without any authentication.
 
       The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
@@ -8051,9 +7983,7 @@
       'id': 272,
       'caption': '''Allows Smart Lock to be used''',
       'tags': [],
-      'desc': '''Allows Smart Lock to be used on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
-
-      If you enable this setting, users will be allowed to use Smart Lock if the requirements for the feature are satisfied.
+      'desc': '''If you enable this setting, users will be allowed to use Smart Lock if the requirements for the feature are satisfied.
 
       If you disable this setting, users will not be allowed to use Smart Lock.
 
@@ -8539,9 +8469,7 @@
       'id': 303,
       'caption': 'Enable showing the welcome page on the first browser launch following OS upgrade',
       'tags': [],
-      'desc': '''Enable showing the welcome page on the first browser launch following OS upgrade.
-
-      If this policy is set to true or not configured, the browser will re-show the welcome page on the first launch following an OS upgrade.
+      'desc': '''If this policy is set to true or not configured, the browser will re-show the welcome page on the first launch following an OS upgrade.
 
       If this policy is set to false, the browser will not re-show the welcome page on the first launch following an OS upgrade.''',
       'features': {
@@ -8563,9 +8491,7 @@
       'id': 304,
       'caption': '''Use hardware acceleration when available''',
       'tags': [],
-      'desc': '''Use hardware acceleration when available.
-
-      If this policy is set to true or left unset, hardware acceleration will be enabled unless a certain GPU feature is blacklisted.
+      'desc': '''If this policy is set to true or left unset, hardware acceleration will be enabled unless a certain GPU feature is blacklisted.
 
       If this policy is set to false, hardware acceleration will be disabled.''',
     },
@@ -8896,9 +8822,7 @@
     {
       'name': 'TaskManagerEndProcessEnabled',
       'caption': '''Enables ending processes in Task Manager''',
-      'desc': '''Enables ending processes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Task Manager.
-
-      If set to false, the 'End process' button is disabled in the Task Manager.
+      'desc': '''If set to false, the 'End process' button is disabled in the Task Manager.
 
       If set to true or not configured, the user can end processes in the Task Manager.''',
       'type': 'main',
@@ -9005,9 +8929,7 @@
     {
       'name': 'AllowScreenLock',
       'caption': '''Permit locking the screen''',
-      'desc': '''Permit locking the screen.
-
-      If this policy is set to false, users will not be able to lock the screen (only signing out from the user session will be possible). If this setting is set to true or not set, users who authenticated with a password can lock the screen.''',
+      'desc': '''If this policy is set to false, users will not be able to lock the screen (only signing out from the user session will be possible). If this setting is set to true or not set, users who authenticated with a password can lock the screen.''',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:52-'],
@@ -9437,11 +9359,12 @@
           'id': 354,
           'caption': '''Sets the minimum length of the lock screen PIN''',
           'tags': [],
-          'desc': '''This setting controls the minimum PIN length.
+          'desc': '''If the policy is set, the configured minimal PIN length is
+          enforced. (The absolute minimum PIN length is 1; values less than 1
+          are treated as 1.)
 
-          The absolute minimum PIN length is 1; values less than 1 are treated as 1.
-
-          The default and recommended minimum PIN length is 6 digits.''',
+          If the policy is not set, a minimal PIN length of 6 digits is
+          enforced. This is the recommended minimum.''',
         },
         {
           'name': 'PinUnlockMaximumLength',
@@ -9456,13 +9379,9 @@
           'id': 355,
           'caption': '''Sets the maximum length of the lock screen PIN''',
           'tags': [],
-          'desc': '''This setting controls the maximum PIN length.
+          'desc': '''If the policy is set, the configured maximal PIN length is enforced. A value of 0 or less means no maximum length; in that case the user may set a PIN as long as they want. If this setting is less than <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME">PinUnlockMinimumLength</ph> but greater than 0, the maximum length is the same as the minimum length.
 
-          If this setting is 0 or less, there is no maximum length; the user can set a PIN as long as they want.
-
-          If this setting is less than <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME">PinUnlockMinimumLength</ph> but greater than 0, the maximum length is the same as the minimum length.
-
-          This setting defaults to no maximum length.''',
+          If the policy is not set, no maximum length is enforced.''',
         },
         {
           'name': 'PinUnlockWeakPinsAllowed',
