@@ -87,7 +87,8 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(
     TaskType type,
     WorkerOrWorkletGlobalScope* global_scope) {
   DCHECK(global_scope);
-  DCHECK(global_scope->IsContextThread());
+  // TODO(nhiroki): Add |DCHECK(global_scope->IsContextThread())| here after
+  // https://crbug.com/694925 is fixed.
   return Get(type, global_scope->GetThread());
 }
 
