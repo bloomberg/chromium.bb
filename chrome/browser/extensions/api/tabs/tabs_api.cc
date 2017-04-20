@@ -621,8 +621,17 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     chrome::NavigateParams navigate_params(new_window, url,
                                            ui::PAGE_TRANSITION_LINK);
     navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+
+    // The next 2 statements put the new contents in the same BrowsingInstance
+    // as their opener.  Note that |force_new_process_for_new_contents = false|
+    // means that new contents might still end up in a new renderer
+    // (if they open a web URL and are transferred out of an extension
+    // renderer), but even in this case the flags below ensure findability via
+    // window.open.
+    navigate_params.force_new_process_for_new_contents = false;
     navigate_params.source_site_instance =
         render_frame_host()->GetSiteInstance();
+
     chrome::Navigate(&navigate_params);
   }
 

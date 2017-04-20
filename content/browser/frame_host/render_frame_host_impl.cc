@@ -1172,10 +1172,22 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",
                validated_url.possibly_invalid_spec());
 
+  // When |params.disposition| asks OpenURL to create new contents, it always
+  // happens because of an explicit user request for new content creation (i.e.
+  // opening a link using ctrl-click or middle click).  In such cases, the new
+  // content should be created in a new renderer to break opener relationship
+  // (see https://crbug.com/658386) and to conserve memory per renderer (see
+  // https://crbug.com/23815).  Note that new content creation that wasn't
+  // explicitly requested by the user (i.e. left-clicking a link with
+  // target=_blank) goes through a different code path (through
+  // WebViewClient::CreateView).
+  bool kForceNewProcessForNewContents = true;
+
   frame_tree_node_->navigator()->RequestOpenURL(
       this, validated_url, params.uses_post, params.resource_request_body,
       params.extra_headers, params.referrer, params.disposition,
-      params.should_replace_current_entry, params.user_gesture);
+      kForceNewProcessForNewContents, params.should_replace_current_entry,
+      params.user_gesture);
 }
 
 void RenderFrameHostImpl::OnCancelInitialHistoryLoad() {

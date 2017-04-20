@@ -39,6 +39,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
@@ -2116,7 +2117,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, CannotZoomInvalidTab) {
 }
 
 // Regression test for crbug.com/660498.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Foo) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   content::WebContents* first_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -2142,6 +2143,47 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Foo) {
             browser()->tab_strip_model()->GetActiveWebContents());
 
   EXPECT_EQ(url, second_web_contents->GetVisibleURL());
+}
+
+// Window created by chrome.windows.create should be in the same SiteInstance
+// and BrowsingInstance as the opener - this is a regression test for
+// hangouts-vs-isolate-extensions-trouble (see also https://crbug.com/597750).
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreateVsSiteInstance) {
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("../simple_with_file"));
+  ASSERT_TRUE(extension);
+
+  // Navigate a tab to an extension page.
+  GURL extension_url = extension->GetResourceURL("file.html");
+  ui_test_utils::NavigateToURL(browser(), extension_url);
+  content::WebContents* old_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Execute chrome.windows.create and store the new tab in |new_contents|.
+  content::WebContents* new_contents = nullptr;
+  {
+    content::WebContentsAddedObserver observer;
+    ASSERT_TRUE(content::ExecuteScript(old_contents,
+                                       "window.name = 'test-name';\n"
+                                       "chrome.windows.create({url: '" +
+                                           extension_url.spec() + "'})"));
+    new_contents = observer.GetWebContents();
+  }
+
+  // Verify that the old and new tab are in the same process and SiteInstance.
+  // Note: both test assertions are important - one observed failure mode was
+  // having the same process, but different SiteInstance.
+  EXPECT_EQ(old_contents->GetMainFrame()->GetProcess(),
+            new_contents->GetMainFrame()->GetProcess());
+  EXPECT_EQ(old_contents->GetMainFrame()->GetSiteInstance(),
+            new_contents->GetMainFrame()->GetSiteInstance());
+
+  // Verify that the |new_contents| doesn't have a |window.opener| set.
+  bool window_opener_cast_to_bool = true;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      new_contents, "window.domAutomationController.send(!!window.opener)",
+      &window_opener_cast_to_bool));
+  EXPECT_FALSE(window_opener_cast_to_bool);
 }
 
 }  // namespace extensions

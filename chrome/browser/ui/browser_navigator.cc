@@ -356,7 +356,7 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
                                            const GURL& url) {
   WebContents::CreateParams create_params(
       params.browser->profile(),
-      params.source_site_instance
+      params.source_site_instance && !params.force_new_process_for_new_contents
           ? params.source_site_instance
           : tab_util::GetSiteInstanceForNewTab(params.browser->profile(), url));
   create_params.main_frame_name = params.frame_name;

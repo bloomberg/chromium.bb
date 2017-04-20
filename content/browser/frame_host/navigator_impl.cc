@@ -732,6 +732,7 @@ void NavigatorImpl::RequestOpenURL(
     const std::string& extra_headers,
     const Referrer& referrer,
     WindowOpenDisposition disposition,
+    bool force_new_process_for_new_contents,
     bool should_replace_current_entry,
     bool user_gesture) {
   // Note: This can be called for subframes (even when OOPIFs are not possible)
@@ -774,6 +775,8 @@ void NavigatorImpl::RequestOpenURL(
   OpenURLParams params(dest_url, referrer, frame_tree_node_id, disposition,
                        ui::PAGE_TRANSITION_LINK,
                        true /* is_renderer_initiated */);
+  params.force_new_process_for_new_contents =
+      force_new_process_for_new_contents;
   params.uses_post = uses_post;
   params.post_data = body;
   params.extra_headers = extra_headers;

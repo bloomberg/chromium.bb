@@ -82,6 +82,12 @@ struct CONTENT_EXPORT OpenURLParams {
   // The disposition requested by the navigation source.
   WindowOpenDisposition disposition;
 
+  // Controls creation of new web contents (in case |disposition| asks for a new
+  // tab or window).  If |force_new_process_for_new_contents| is true, then we
+  // try to put the new contents in a new renderer, even if they are same-site
+  // as |source_site_instance| (this is subject to renderer process limits).
+  bool force_new_process_for_new_contents;
+
   // The transition type of navigation.
   ui::PageTransition transition;
 
