@@ -163,7 +163,6 @@
 <translation id="1583248206450240930">기본으로 <ph name="PRODUCT_FRAME_NAME" /> 사용</translation>
 <translation id="1608755754295374538">별도 메시지를 표시하지 않고 오디오 캡처 기기에 대한 액세스 권한이 부여되는 URL입니다.</translation>
 <translation id="1617235075406854669">브라우저 및 다운로드 기록을 삭제하도록 설정합니다.</translation>
-<translation id="1617384279878333801">프로필 관리자에서 사용자 추가 사용 설정</translation>
 <translation id="163200210584085447">이 목록의 패턴을 요청 URL의 보안 출처와 비교합니다.
       일치하는 항목이 확인되는 경우 SAML 로그인 페이지에서
       동영상 캡처 기기에 액세스할 수 있는 권한이 부여됩니다.
@@ -933,15 +932,6 @@
       이 정책을 설정하지 않으면 사용자가 직접 프록시 설정을 선택할 수 있습니다.</translation>
 <translation id="3758249152301468420">개발자 도구 사용 중지</translation>
 <translation id="3765260570442823273">유휴 로그아웃 경고 메시지 표시 시간</translation>
-<translation id="3768412594120638208">설치할 수 있는 앱/확장 프로그램 유형을 컨트롤합니다.
-
-          이 설정을 사용하면 <ph name="PRODUCT_NAME" />에 설치할 수 있는 확장 프로그램/앱 유형의 허용 목록을 만듭니다. 값은 문자열 목록으로 각 문자열은 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app' 중 한 가지를 사용해야 합니다. 이러한 유형에 대해 더 자세히 알아보려면 <ph name="PRODUCT_NAME" /> 확장 프로그램 설명서를 참조하세요.
-
-          이 정책은 ExtensionInstallForcelist에 의해 강제 설치되는 확장 프로그램 및 앱에도 적용됩니다.
-
-          이 설정을 사용하면 목록에 없는 유형의 확장 프로그램/앱은 설치되지 않습니다.
-
-          이 설정을 사용하지 않으면 허용되는 확장 프로그램/앱 유형에 제한이 없습니다.</translation>
 <translation id="3780152581321609624">Kerberos SPN에 비표준 포트 포함</translation>
 <translation id="3780319008680229708">이 정책을 'true'로 설정하면 Cast 툴바 아이콘이 툴바 또는 더보기 메뉴에 항상 표시되며 사용자는 이 아이콘을 삭제할 수 없습니다.
 
@@ -2007,9 +1997,6 @@
 <translation id="6786967369487349613">로밍 프로필 디렉토리를 설정합니다.</translation>
 <translation id="6810445994095397827">이 사이트에서 자바스크립트 차단</translation>
 <translation id="681446116407619279">지원되는 인증 스키마</translation>
-<translation id="6828905844648501476">이 정책이 'true'로 설정되거나 설정되지 않으면 <ph name="PRODUCT_NAME" />이(가) 사용자 관리자가 사용자를 추가하도록 허용합니다.
-
-      이 정책이 'false'로 설정되면 <ph name="PRODUCT_NAME" />에서 프로필 관리자가 새 프로필을 생성하도록 허용하지 않습니다.</translation>
 <translation id="685769593149966548">YouTube에 강력 제한 모드 사용</translation>
 <translation id="687046793986382807">이 정책은 <ph name="PRODUCT_NAME" /> 버전 35를 기준으로 지원이 중단되었습니다.
 

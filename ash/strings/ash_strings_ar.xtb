@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">إضافة اتصال</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> هي جلسة عامة يديرها <ph name="DOMAIN" /></translation>
+<translation id="3000461861112256445">صوت أحادي</translation>
 <translation id="3009178788565917040">الإخراج</translation>
 <translation id="3019353588588144572">الوقت المتبقي حتى يتم شحن البطارية بالكامل <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">أدوات قلم الشاشة</translation>
 <translation id="3368922792935385530">متصل</translation>
 <translation id="3371140690572404006">‏جهاز USB-C (المنفذ الأمامي الأيمن)</translation>
+<translation id="3400357268283240774">إعدادات إضافية</translation>
 <translation id="3445925074670675829">‏جهاز USB-C</translation>
 <translation id="3473479545200714844">مكبّر الشاشة</translation>
+<translation id="3510164367642747937">تمييز مؤشر الماوس</translation>
 <translation id="3547954654003013442">إعدادات الخادم الوكيل</translation>
 <translation id="3573179567135747900">التغيير مرة أخرى إلى "<ph name="FROM_LOCALE" />" (يتطلب إعادة التشغيل)</translation>
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">لقد تغير اختصار قفل الشاشة. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">بحث</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
+<translation id="4849058404725798627">تمييز الكائن باستخدام تركيز لوحة المفاتيح</translation>
 <translation id="4872237917498892622">‏Alt+مفتاح البحث أو Shift</translation>
 <translation id="4895488851634969361">البطارية مملوءة.</translation>
 <translation id="4918086044614829423">قبول</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">أجهزة البث متاحة</translation>
 <translation id="5170568018924773124">العرض في المجلد</translation>
+<translation id="5207949376430453814">تمييز علامة إقحام النص</translation>
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="523505283826916779">إعدادات إمكانية الدخول</translation>
 <translation id="5313326810920013265">إعدادات البلوتوث</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">الإدخال بالكتابة اليدوية</translation>
 <translation id="6537270692134705506">التقاط الشاشة</translation>
 <translation id="6585808820553845416">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. الرجاء إدخال مفتاح المرور هذا في هذا الجهاز: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">‏زر قائمة أداة تحرير أسلوب الإدخال (IME)</translation>
 <translation id="6713285437468012787">تم إقران جهاز بلوتوث "<ph name="DEVICE_NAME" />" وهو الآن متاح لجميع المستخدمين. يمكنك إزالة هذا الإقران باستخدام الإعدادات.</translation>
@@ -197,6 +203,7 @@
 <translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
 <translation id="7129360219436193655">وضع مؤشر الليزر</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">هل ترغب في تمكين إلغاء القفل باستخدام بصمة الإصبع؟</translation>
 <translation id="7256634071279256947">الميكروفون الخلفي</translation>
@@ -232,6 +239,7 @@
 <translation id="8308637677604853869">القائمة السابقة</translation>
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8433186206711564395">إعدادات الشبكة</translation>
+<translation id="8433977262951327081">تم تغيير اختصار عرض الفقاعة التفسيرية لقائمة خيارات الإدخال في الرف. الرجاء استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
 <translation id="8484916590211895857"><ph name="NAME" /> : جارٍ إعادة الاتصال ...</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>

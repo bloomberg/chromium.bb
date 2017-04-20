@@ -166,7 +166,6 @@
 <translation id="1583248206450240930">Varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> ürününü kullan</translation>
 <translation id="1608755754295374538">Soru sorulmadan ses yakalama cihazlarına erişim verilecek URL'ler</translation>
 <translation id="1617235075406854669">Tarayıcı ve indirme geçmişinin silinmesini etkinleştir</translation>
-<translation id="1617384279878333801">Profil yöneticisinde kişi eklemeyi etkinleştir</translation>
 <translation id="163200210584085447">Bu listedeki kalıplar, istek yapan URL'nin güvenlik kaynağı ile
       karşılaştırılır. Eşleşme bulunursa, SAML giriş sayfalarında video
       yakalama cihazlarına erişim izni verilir. Herhangi bir eşleşme
@@ -942,15 +941,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politikaların ayarlanmadan bırakılması, kullanıcıların proxy ayarlarını kendilerinin yapabilmesine olanak tanır.</translation>
 <translation id="3758249152301468420">Geliştirici Araçları'nı devre dışı bırak</translation>
 <translation id="3765260570442823273">Boştayken çıkış yapma uyarı mesajının süresi</translation>
-<translation id="3768412594120638208">Yüklenmesine izin verilecek uygulama/uzantı türlerini kontrol eder.
-
-          Bu ayar, <ph name="PRODUCT_NAME" /> ürününe yüklenebilecek, izin verilen uzantı/uygulama türlerini beyaz listeye ekler. Değer bir dize listesidir ve her biri şu değerlerden biri olmalıdır: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Bu türler hakkında daha fazla bilgi edinmek için <ph name="PRODUCT_NAME" /> uzantıları dokümanına bakın.
-
-          Bu politikanın, ExtensionInstallForcelist ile yüklenmesi zorunlu tutulacak uzantı ve uygulamaları da etkilediğini unutmayın.
-
-          Bu ayar yapılandırılırsa listede bulunmayan türden uzantılar/uygulamalar yüklenmez.
-
-          Bu ayar yapılandırılmadan bırakılırsa kabul edilen uzantı/uygulama türleri ile ilgili herhangi bir kısıtlama uygulanmaz.</translation>
 <translation id="3780152581321609624">Kerberos SPN'sine standart dışı bağlantı noktasını dahil et</translation>
 <translation id="3780319008680229708">Bu politika doğru değerine ayarlanırsa Cast araç çubuğu simgesi, araç çubuğunda veya taşma menüsünde her zaman gösterilir ve kullanıcılar bu simgeyi kaldıramaz.
 
@@ -2014,9 +2004,6 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 <translation id="6786967369487349613">Dolaşım profili dizinini ayarlayın</translation>
 <translation id="6810445994095397827">Bu sitelerde JavaScript'i engelle</translation>
 <translation id="681446116407619279">Desteklenen kimlik doğrulama şemaları</translation>
-<translation id="6828905844648501476">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, kullanıcı yöneticisinin Kişi Ekle işlevinin kullanılmasına izin verir.
-
-      Bu politika yanlış seçeneğine ayarlanırsa <ph name="PRODUCT_NAME" />, profil yöneticisinin yeni profiller oluşturmasına izin vermez.</translation>
 <translation id="685769593149966548">YouTube için Yüksek Düzey Kısıtlı Mod'u zorunlu kıl</translation>
 <translation id="687046793986382807">Bu politika, <ph name="PRODUCT_NAME" /> sürüm 35 itibarı ile kullanımdan kaldırılmıştır.
 

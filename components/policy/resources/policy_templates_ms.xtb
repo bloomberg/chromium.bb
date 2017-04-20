@@ -164,7 +164,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> secara lalai</translation>
 <translation id="1608755754295374538">URL yang akan diberikan akses kepada peranti tangkapan audio tanpa gesaan</translation>
 <translation id="1617235075406854669">Dayakan pemadaman sejarah penyemak imbas dan muat turun</translation>
-<translation id="1617384279878333801">Dayakan tambah orang dalam pengurus profil</translation>
 <translation id="163200210584085447">Corak dalam senarai ini akan dipadankan dengan keselamatan
       asal URL yang meminta.  Jika padanan ditemui, akses kepada peranti
       tangkapan video akan diberi pada halaman log masuk SAML.  Jika padanan tidak
@@ -935,15 +934,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih sendiri tetapan proksi mereka.</translation>
 <translation id="3758249152301468420">Lumpuhkan Alatan Pembangun</translation>
 <translation id="3765260570442823273">Tempoh mesej amaran log keluar melahu</translation>
-<translation id="3768412594120638208">Mengawal jenis apl/sambungan yang dibenarkan untuk dipasang.
-
-          Tetapan ini menyenaraiputihkan jenis sambungan/apl dibenarkan yang boleh dipasang dalam <ph name="PRODUCT_NAME" />. Nilainya merupakan senarai rentetan, yang setiap satunya harus salah satu yang berikut: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Lihat dokumentasi sambungan <ph name="PRODUCT_NAME" /> untuk mendapatkan maklumat lanjut tentang jenis-jenis ini.
-
-          Ambil perhatian bahawa dasar ini juga mempengaruhi sambungan dan apl yang dipasang secara paksa melalui ExtensionInstallForcelist.
-
-          Jika tetapan ini dikonfigurasikan, jenis sambungan/apl yang tidak terdapat dalam senarai tersebut tidak akan dipasang.
-
-          Jika tetapan ini dibiarkan tanpa dikonfigurasikan, tiada pengehadan dikenakan terhadap jenis sambungan/apl yang boleh diterima.</translation>
 <translation id="3780152581321609624">Termasuk port tidak standard dalam Kerberos SPN</translation>
 <translation id="3780319008680229708">Jika dasar ini ditetapkan kepada benar, ikon bar alat Cast akan sentiasa ditunjukkan di bar alat atau menu limpahan dan pengguna tidak akan dapat mengalih keluar ikon ini.
 
@@ -2016,9 +2006,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6786967369487349613">Tetapkan direktori profil perayauan</translation>
 <translation id="6810445994095397827">Sekat JavaScript pada tapak ini</translation>
 <translation id="681446116407619279">Skim pengesahan yang disokong</translation>
-<translation id="6828905844648501476">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan membolehkan Tambah Orang daripada pengurus pengguna.
-
-      Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan penghasilan profil baharu daripada pengurus profil.</translation>
 <translation id="685769593149966548">Kuatkuasakan Mod Sekatan Ketat untuk YouTube</translation>
 <translation id="687046793986382807">Dasar ini telah ditamatkan bermula <ph name="PRODUCT_NAME" /> versi 35.
 

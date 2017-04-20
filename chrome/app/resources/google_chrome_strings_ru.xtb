@@ -208,6 +208,7 @@
 <translation id="7242029209006116544">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. Чтобы сохранить данные Chrome отдельно, создайте новый профиль. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Google Chrome скоро перестанет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista будет прекращена.</translation>
 <translation id="7339898014177206373">Новое окно</translation>
+<translation id="7369650938475876456">Используйте надежный пароль, сгенерированный Chrome.</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7400722733683201933">О браузере Google Chrome</translation>
 <translation id="7408085963519505752">Условия использования Chrome OS</translation>
@@ -248,6 +249,7 @@
 <translation id="8290100596633877290">Произошел сбой Google Chrome. Перезапустить?</translation>
 <translation id="8342675569599923794">Chrome заблокировал этот файл как опасный.</translation>
 <translation id="8406086379114794905">Помогите сделать Chrome безопаснее</translation>
+<translation id="8439301513305169426">Chrome сохранит этот пароль в <ph name="SAVED_PASSWORD_LINK" />. Вам не нужно его запоминать.</translation>
 <translation id="8455999171311319804">Автоматически отправлять статистику использования и данные диагностики в Google, чтобы помочь улучшить Chrome OS (необязательно)</translation>
 <translation id="8478823064122749032">Установите Chrome на телефон. Мы отправим SMS на номер, указанный в вашем аккаунте: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

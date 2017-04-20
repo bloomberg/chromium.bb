@@ -163,7 +163,6 @@
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
-<translation id="1617384279878333801">Slå på «Legg til person» i profilbehandlingen</translation>
 <translation id="163200210584085447">Mønstrene på denne listen stilles opp mot sikkerhetskilden
       til nettadressen forespørselen kommer fra. Hvis det finnes samsvar, blir det gitt
       tilgang til videoopptaksenheter på SAML-påloggingssider. Hvis det ikke blir funnet
@@ -916,15 +915,6 @@
       Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3758249152301468420">Deaktiver utviklerverktøy</translation>
 <translation id="3765260570442823273">Varighet på advarselmeldingen for inaktiv avlogging</translation>
-<translation id="3768412594120638208">Kontrollerer hvilke apper/utvidelser som kan installeres.
-
-          Denne innstillingen godkjenner utvidelsene og appene som tillates for installering i <ph name="PRODUCT_NAME" />. Verdien er en liste over strenger fra dette utvalget: «extension», «theme», «user_script», «hosted_app», «legacy_packaged_app», «platform_app». Se i utvidelsesdokumentasjonen for <ph name="PRODUCT_NAME" /> for å finne ut mer om disse typene.
-
-          Vær oppmerksom på at denne regelen også påvirker utvidelser og apper som skal tvangsinstalleres via ExtensionInstallForcelist.
-
-          Hvis denne innstillingen konfigureres, installeres ikke apper og utvidelser som har en type som ikke er på listen.
-
-          Hvis innstillingen ikke konfigureres, settes det ingen begrensninger for hvilke typer utvidelser og apper som kan installeres.</translation>
 <translation id="3780152581321609624">Inkluder ikke-standardisert port i SPN for Kerberos</translation>
 <translation id="3780319008680229708">Hvis denne regelen angis som «true» (sann), vises verktøyradikonet for Cast hele tiden i verktøyraden eller overflytsmenyen, og brukere kan ikke fjerne det.
 
@@ -1972,9 +1962,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6786967369487349613">Angir katalogen for roamingprofiler</translation>
 <translation id="6810445994095397827">Blokkér JavaScript på disse nettstedene</translation>
 <translation id="681446116407619279">Støttede autentiseringssystemer</translation>
-<translation id="6828905844648501476">Hvis denne regelen settes til true (sann) eller ikke konfigureres, tillater <ph name="PRODUCT_NAME" /> «Legg til person» fra brukerbehandlingen.
-
-      Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> opprettelse av nye profiler fra profilbehandlingen.</translation>
 <translation id="685769593149966548">Fremtvinger bruk av strengt nivå for Begrenset innhold-modus på YouTube</translation>
 <translation id="687046793986382807">Disse retningslinjene ble avviklet fra og med versjon 35 av <ph name="PRODUCT_NAME" />.
 

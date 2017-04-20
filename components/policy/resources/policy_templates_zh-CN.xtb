@@ -152,7 +152,6 @@
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="1608755754295374538">无需提示用户即可使用音频捕获设备的网址</translation>
 <translation id="1617235075406854669">允许删除浏览器历史记录和下载记录</translation>
-<translation id="1617384279878333801">允许通过个人资料管理器添加用户</translation>
 <translation id="163200210584085447">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，系统将允许相应网址通过 SAML 登录页面访问视频捕获设备。如果未找到匹配项，系统将自动拒绝授予访问权限。不允许使用通配符模式。</translation>
 <translation id="1655229863189977773">设置磁盘缓存大小（字节）</translation>
 <translation id="166427968280387991">代理服务器</translation>
@@ -857,15 +856,6 @@
       如果您未设置这些政策，用户将可以自行选择代理设置。</translation>
 <translation id="3758249152301468420">停用开发者工具</translation>
 <translation id="3765260570442823273">待机退出警告讯息的持续时间</translation>
-<translation id="3768412594120638208">控制可以安装哪些类型的应用/扩展程序。
-
-          此政策会将允许在 <ph name="PRODUCT_NAME" /> 中安装的扩展程序/应用所属的类型列入白名单。此政策的值是一系列字符串，系统接受的字符串为：extension、theme、user_script、hosted_app、legacy_packaged_app、platform_app。如需关于这些类型的更多信息，请参见 <ph name="PRODUCT_NAME" /> 扩展程序文档。
-
-          请注意，此政策还会影响通过 ExtensionInstallForcelist 强制安装的扩展程序和应用。
-
-          如果此政策已配置，用户将无法安装此列表中未列出的类型的扩展程序/应用。
-
-          如果不配置此政策，则任何类型的扩展程序/应用都可以安装。</translation>
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
 <translation id="3780319008680229708">如果此政策设为 true，Cast 工具栏图标将始终显示在工具栏或菜单中，用户无法将其移除。
 
@@ -1809,9 +1799,6 @@
 <translation id="6786967369487349613">设置漫游个人资料目录</translation>
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
-<translation id="6828905844648501476">如果此政策设为 true 或未配置，<ph name="PRODUCT_NAME" /> 将允许通过用户管理器添加用户。
-
-      如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止通过个人资料管理器创建新的个人资料。</translation>
 <translation id="685769593149966548">强制启用 YouTube“严格”受限模式</translation>
 <translation id="687046793986382807">此政策自35版<ph name="PRODUCT_NAME" />起已停止使用。
 

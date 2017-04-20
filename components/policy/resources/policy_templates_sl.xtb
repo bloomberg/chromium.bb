@@ -163,7 +163,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1583248206450240930">Privzeto uporabi <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem zvoka</translation>
 <translation id="1617235075406854669">Omogočanje brisanja zgodovine brskalnika in prenosov</translation>
-<translation id="1617384279878333801">Omogočanje dodajanja oseb v upravitelju profilov</translation>
 <translation id="163200210584085447">Vzorci na tem seznamu se bodo primerjali z varnostnim
       izvorom zahtevajočega URL-ja. Če bo najdeno ujemanje, bo dostop
       do naprav za zajemanje videa odobren na straneh za prijavo SAML. Če ne bo najdeno nobeno
@@ -936,15 +935,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če teh pravilnikov ne nastavite, lahko uporabniki sami izberejo nastavitve proxyja.</translation>
 <translation id="3758249152301468420">Onemogoči Orodja za razvijalce</translation>
 <translation id="3765260570442823273">Trajanje opozorila o odjavi zaradi nedejavnosti</translation>
-<translation id="3768412594120638208">Nadzira, katere vrste aplikacij/razširitev je dovoljeno namestiti.
-
-          Ta nastavitev določa seznam dovoljenih vrst razširitev/aplikacij, ki jih je mogoče namestiti v <ph name="PRODUCT_NAME" />. Vrednost je seznam nizov teh vrst: »extension«, »theme«, »user_script«, »hosted_app«, »legacy_packaged_app«, »platform_app«. Več informacij o teh vrstah najdete v dokumentaciji za razširitve za <ph name="PRODUCT_NAME" />.
-
-          Upoštevajte, da ta pravilnik velja tudi za razširitve in aplikacije, ki so vsiljeno nameščene prek pravilnika »ExtensionInstallForcelist«.
-
-          Če je ta nastavitev konfigurirana, razširitve/aplikacije tistih vrst, ki jih ni na seznamu, ne bodo nameščene.
-
-          Če ta nastavitev ni konfigurirana, za sprejemljive vrste razširitev/aplikacij ne veljajo omejitve.</translation>
 <translation id="3780152581321609624">Vključi nestandardna vrata v SPN za Kerberos</translation>
 <translation id="3780319008680229708">Če je ta pravilnik omogočen, bo ikona za Google Cast v orodni vrstici vedno prikazana v orodni vrstici ali v meniju z dodatnimi elementi in je uporabniki ne bodo mogli odstraniti.
 
@@ -2019,9 +2009,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6786967369487349613">Nastavitev imenika za profil za gostovanje</translation>
 <translation id="6810445994095397827">Blokiraj JavaScript na teh mestih</translation>
 <translation id="681446116407619279">Podprti načini preverjanja pristnosti</translation>
-<translation id="6828905844648501476">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> dovoli dodajanje osebe v upravitelju uporabnikov.
-
-      Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli ustvarjanja novih profilov v upravitelju uporabnikov.</translation>
 <translation id="685769593149966548">Uveljavitev Strogo omejenega načina v YouTubu</translation>
 <translation id="687046793986382807">Ta pravilnik je zastaral in se ne uporablja več od različice 35 brskalnika <ph name="PRODUCT_NAME" />.
 

@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="1224275271335624810">அதிகபட்ச வேகம்</translation>
 <translation id="1588438908519853928">இயல்பு</translation>
 <translation id="2089387485033699258">ta</translation>
 <translation id="335581015389089642">பேச்சு</translation>
+<translation id="4274874082286476934">பேச்சின் வேகத்தைத் தேர்ந்தெடுக்கவும்:</translation>
+<translation id="4276663915471735629">உரை வாசித்தல் விருப்பங்கள்</translation>
+<translation id="5589989204720007810">திரையில் இருக்கும் உரையைப் படித்துக் காட்ட, தேடல் விசையைப் பிடித்தபடி, கிளிக் செய்யவும் அல்லது இழுக்கவும்.</translation>
+<translation id="6029587122245504742">குறைந்தபட்ச வேகம்</translation>
+<translation id="6837853484260746864">குரலைத் தேர்ந்தெடுக்கவும்:</translation>
 <translation id="7019805045859631636">வேகமான</translation>
 <translation id="7768784765476638775">தேர்ந்தெடுப்பதைப் படிக்கும்</translation>
 <translation id="8044899503464538266">மெதுவான</translation>
+<translation id="9030754204056345429">அதிவேகம்</translation>
 </translationbundle>

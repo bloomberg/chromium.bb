@@ -164,7 +164,6 @@
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
-<translation id="1617384279878333801">Gör att en person kan läggas till i profilhanteraren</translation>
 <translation id="163200210584085447">Mönster på den här listan kommer att matchas mot den begärande
       webbadressens säkerhetsursprung. Om det blir en träff får adressen
       åtkomst till videoinspelningsenheter på inloggningssidor med SAML.
@@ -940,15 +939,6 @@
       Om du inte anger de här principerna kan användarna själva välja proxyinställningar.</translation>
 <translation id="3758249152301468420">Inaktivera utvecklarverktygen</translation>
 <translation id="3765260570442823273">Varaktighet för varningsmeddelande för inaktivitetsutloggning</translation>
-<translation id="3768412594120638208">Kontrollerar vilka appar/tillägg som får installeras.
-
-          Med den här inställningen tillåts de typer av tillägg/appar som kan installeras i <ph name="PRODUCT_NAME" />. Värdet är en lista med strängar som alla ska vara antingen extension, theme, user_script, hosted_app, legacy_packaged_app eller platform_app. Läs dokumentationen för <ph name="PRODUCT_NAME" />-tillägg om du vill ha mer information om typerna.
-
-          Observera att principen också påverkar tillägg och appar så att installationen av dem tvingas fram via ExtensionInstallForcelist.
-
-          Om inställningen konfigureras installeras inte tillägg/appar som har en typ som inte finns på listan.
-
-          Om inställningen inte konfigureras tvingas inte några begränsningar på de accepterade tilläggs- och apptyperna fram.</translation>
 <translation id="3780152581321609624">Inkludera port som inte är standard i Kerberos SPN</translation>
 <translation id="3780319008680229708">Om sant har angetts för principen visas alltid Cast-ikonen i verktygsfältet eller i fler menyalternativ och användarna kan inte ta bort den.
 
@@ -2022,9 +2012,6 @@
 <translation id="6786967369487349613">Ange roamingprofilkatalogen</translation>
 <translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
 <translation id="681446116407619279">Autentiseringsscheman som stöds</translation>
-<translation id="6828905844648501476">Om den här principen är inställd på sant eller inte är konfigurerad tillåter <ph name="PRODUCT_NAME" /> Lägg till person i användarhanteraren.
-
-      Om principen är inställd på falskt tillåter <ph name="PRODUCT_NAME" /> inte att nya profiler skapas i profilhanteraren.</translation>
 <translation id="685769593149966548">Gör strikt begränsat läge på YouTube obligatoriskt</translation>
 <translation id="687046793986382807">Denna princip används inte från och med <ph name="PRODUCT_NAME" /> version 35. 
 

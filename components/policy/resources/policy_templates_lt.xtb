@@ -163,7 +163,6 @@
 <translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus</translation>
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
 <translation id="1617235075406854669">Įgalinti naršyklės ištrynimą ir atsisiuntimo istoriją</translation>
-<translation id="1617384279878333801">Asmens pridėjimo profilių tvarkymo priemonėje įgalinimas</translation>
 <translation id="163200210584085447">Šiame sąraše pateikti šablonai bus atitaikomi
       pagal užklausą pateikiančio URL saugos kilmę. Jei bus rasta atitiktis, prieiga prie vaizdo įrašus
       fiksuojančių įrenginių bus suteikta SAML prisijungimo puslapiuose. Neradus atitikties,
@@ -935,15 +934,6 @@
       Jei paliksite šią politiką nenustatytą, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="3758249152301468420">Neleisti kūrėjo įrankių</translation>
 <translation id="3765260570442823273">Neveikos būsenos atjungimo įspėjimo pranešimo trukmė</translation>
-<translation id="3768412594120638208">Valdoma, kuriuos plėtinių / programų tipus leidžiama įdiegti.
-
-          Naudojant šį nustatymą į baltąjį sąrašą įtraukiami leistini „<ph name="PRODUCT_NAME" />“ įdiegti plėtinių / programų tipai. Vertė yra eilučių sąrašas, kiekviena jų turi būti vienas iš šių elementų: „extension“, „theme“, „user_script“, „hosted_app“, „legacy_packaged_app“, „platform_app“. Jei reikia daugiau informacijos apie šiuos tipus, žr. „<ph name="PRODUCT_NAME" />“ plėtinių dokumentaciją.
-
-          Atminkite, kad ši politika turi įtakos plėtiniams ir programoms, priverstinai diegiamoms naudojant plėtinių priverstinio diegimo sąrašą.
-
-          Jei šis nustatymas sukonfigūruotas, sąraše nesančių tipų plėtiniai / programos nebus įdiegti.
-
-          Jei šis nustatymas nesukonfigūruotas, nėra jokių diegiamų plėtinių / programų apribojimų.</translation>
 <translation id="3780152581321609624">Įtraukti nestandartinį prievadą į „Kerberos“ SPN</translation>
 <translation id="3780319008680229708">Jei ši politika bus nustatyta į „true“, „Cast“ įrankių juostos piktograma visada bus rodoma įrankių juostoje arba perpildymo meniu ir naudotojai negalės jos pašalinti.
 
@@ -2015,9 +2005,6 @@
 <translation id="6786967369487349613">Nustatyti tarptinklinio ryšio profilio katalogą</translation>
 <translation id="6810445994095397827">Blokuoti „JavaScript“ šiose svetainėse</translation>
 <translation id="681446116407619279">Palaikomos tapatumo nustatymo schemos</translation>
-<translation id="6828905844648501476">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ leis „Pridėti asmenį“ naudojant naudotojų tvarkytuvę.
-
-      Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis kurti naujų profilių naudojant profilių tvarkytuvę.</translation>
 <translation id="685769593149966548">Vykdyti griežtai ribotą režimą sistemoje „YouTube“</translation>
 <translation id="687046793986382807">Ši politika nebegalioja išleidus „<ph name="PRODUCT_NAME" />“ 35 versiją.
 

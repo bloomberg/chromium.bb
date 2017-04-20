@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1224275271335624810">Nopein</translation>
 <translation id="1588438908519853928">Normaali</translation>
 <translation id="2089387485033699258">fi</translation>
 <translation id="335581015389089642">Puhe</translation>
+<translation id="4274874082286476934">Valitse puhenopeus:</translation>
+<translation id="4276663915471735629">Valinnan ääneen lukemisen vaihtoehdot</translation>
+<translation id="5589989204720007810">Pidä hakupainike painettuna ja klikkaa tai vedä tekstiä, niin se luetaan ääneen.</translation>
+<translation id="6029587122245504742">Hitain</translation>
+<translation id="6837853484260746864">Valitse ääni:</translation>
 <translation id="7019805045859631636">Nopea</translation>
 <translation id="7768784765476638775">Valinnan ääneen lukeminen</translation>
 <translation id="8044899503464538266">Hidas</translation>
+<translation id="9030754204056345429">Nopeampi</translation>
 </translationbundle>

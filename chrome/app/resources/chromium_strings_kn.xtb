@@ -233,6 +233,7 @@
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> ಅವರು ಮೊದಲಿನಿಂದಲೆ Chromium ಬಳಸುತ್ತಿದ್ದರು</translation>
 <translation id="8453117565092476964">ಸ್ಥಾಪಕ ಆರ್ಕೈವ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಅಥವಾ ಅಮಾನ್ಯವಾಗಿದೆ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="8493179195440786826">Chromium ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
+<translation id="8563206822260884157">Chromium ಸೃಷ್ಟಿಸಿರುವ ಬಲಿಷ್ಠ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ</translation>
 <translation id="85843667276690461">Chromium ಅನ್ನು ಬಳಸುತ್ತಿರುವುದರ ಜೊತೆಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="8586442755830160949">ಹಕ್ಕುಸ್ವಾಮ್ಯ <ph name="YEAR" /> Chromium ಲೇಖಕರು. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
 <translation id="8621669128220841554">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Chromium ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
@@ -248,6 +249,7 @@
 <translation id="8897323336392112261">ನೀವು Chromium ಪ್ರಾರಂಭಿಸಿದಾಗ ಅಥವಾ ಮುಖಪುಟ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="8907580949721785412">Chromium ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪ್ರದರ್ಶಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ. ಇದನ್ನು ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="894903460958736500">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಚಾಲನೆಯಾಗುತ್ತಿರುವ ಸಾಫ್ಟ್‌ವೇರ್ Chromium ನೊಂದಿಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="8968921422458636175">Chromium ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು <ph name="SAVED_PASSWORD_LINK" /> ಬಳಸಿ ಉಳಿಸುತ್ತದೆ. ನೀವು ಅದನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳಬೇಕಿಲ್ಲ.</translation>
 <translation id="8974095189086268230">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS" />ತೆರೆದ ಮೂಲ ಸಾಫ್ಟ್‌ವೇರ್<ph name="END_LINK_CROS_OSS" /> ನಿಂದ Chrome OS ಮಾಡಲು ಸಾಧ್ಯ.</translation>
 <translation id="8985587603644336029"><ph name="ACCOUNT_EMAIL_LAST" /> ನಂತೆ ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chromium ಯಾರೋ ಈ ಹಿಂದೆಯೇ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ಅದು ನಿಮ್ಮ ಖಾತೆಯಾಗಿಲ್ಲದಿದ್ದರೆ, ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಲು ಹೊಸ Chromium ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ.
 

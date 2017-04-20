@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">Ongeza muunganisho</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ni kipindi cha kila mtu kinachodhibitiwa na <ph name="DOMAIN" /></translation>
+<translation id="3000461861112256445">Kipengele cha sauti moja</translation>
 <translation id="3009178788565917040">Towe</translation>
 <translation id="3019353588588144572">Muda unaosalia hadi betri itakapochajiwa kikamilifu, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">Zana za stylus</translation>
 <translation id="3368922792935385530">Umeunganishwa</translation>
 <translation id="3371140690572404006">Kifaa cha USB-C (mlango wa upande wa kulia mbele)</translation>
+<translation id="3400357268283240774">Mipangilio ya ziada</translation>
 <translation id="3445925074670675829">Kifaa cha USB-C</translation>
 <translation id="3473479545200714844">Kikuza skrini</translation>
+<translation id="3510164367642747937">Angazia kishale cha kipanya</translation>
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
 <translation id="3573179567135747900">Badilisha hadi "<ph name="FROM_LOCALE" />" (inahitaji uzime na uwashe)</translation>
 <translation id="3595596368722241419">Betri imejaa</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">Njia ya mkato ya kufunga skrini imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">tafuta</translation>
 <translation id="4804818685124855865">Tenganisha</translation>
+<translation id="4849058404725798627">Angazia kipengee kilicholengwa kwa kibodi</translation>
 <translation id="4872237917498892622">Alt + Utafutaji au Hama</translation>
 <translation id="4895488851634969361">Betri imejaa.</translation>
 <translation id="4918086044614829423">Kubali</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Vifaa vinavyorusha midia vinapatikana</translation>
 <translation id="5170568018924773124">Onyesha katika folda</translation>
+<translation id="5207949376430453814">Angazia kareti ya maandishi</translation>
 <translation id="5222676887888702881">Ondoka</translation>
 <translation id="523505283826916779">Mipangilio ya ufikiaji</translation>
 <translation id="5313326810920013265">Mipangilio ya Bluetooth</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">Kuingiza data kwa mwandiko wa mkono</translation>
 <translation id="6537270692134705506">Piga skrini picha</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Tafuta+Shift+K</translation>
 <translation id="6650933572246256093">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">Kitufe cha menyu ya IME</translation>
 <translation id="6713285437468012787">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kimeoanishwa na sasa kinapatikana kwa watumiaji wote. Unaweza kuondoa uoanishaji huu kwa kutumia Mipangilio.</translation>
@@ -197,6 +203,7 @@
 <translation id="7098389117866926363">Kifaa cha USB-C (mlango wa kushoto nyuma)</translation>
 <translation id="7129360219436193655">Hali ya kielekezi leza</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Inarejesha katika ubora wa zamani baada ya <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Je, ungependa kuwasha kipengele cha kufungua kwa kutumia Alama ya Kidole?</translation>
 <translation id="7256634071279256947">Maikrofoni ya nyuma</translation>
@@ -231,6 +238,7 @@
 <translation id="8308637677604853869">Menyu ya awali</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
 <translation id="8433186206711564395">Mipangilio ya mtandao</translation>
+<translation id="8433977262951327081">Njia ya mkato ya kuonyesha kiputo cha menyu ya chaguo za kuingiza data katika rafu imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi imewashwa.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Inaunganisha upya...</translation>
 <translation id="8517041960877371778">Huenda kifaa chako cha <ph name="DEVICE_TYPE" /> kisichaji kikiwa kimewashwa.</translation>

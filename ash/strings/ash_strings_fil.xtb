@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">Magdagdag ng koneksyon</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416">Ang <ph name="DISPLAY_NAME" /> ay isang pampublikong session na pinamamahalaan ng <ph name="DOMAIN" /></translation>
+<translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Natitirang oras bago ganap na ma-charge ang baterya, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">Mga stylus tool</translation>
 <translation id="3368922792935385530">Nakakonekta</translation>
 <translation id="3371140690572404006">USB-C device (port sa kanang bahagi sa harap)</translation>
+<translation id="3400357268283240774">Mga karagdagang setting</translation>
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
+<translation id="3510164367642747937">I-highlight ang cursor ng mouse</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="3573179567135747900">Palitan pabalik sa "<ph name="FROM_LOCALE" />" (kailangang i-restart)</translation>
 <translation id="3595596368722241419">Puno na ang baterya</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">Napalitan na ang shortcut para sa pagla-lock sa screen. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">I-disconnect</translation>
+<translation id="4849058404725798627">I-highlight ang bagay sa pamamagitan ng pag-focus ng keyboard</translation>
 <translation id="4872237917498892622">Alt+Search o Shift</translation>
 <translation id="4895488851634969361">Puno na ang baterya.</translation>
 <translation id="4918086044614829423">Tanggapin</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">I-cast ang mga available na device</translation>
 <translation id="5170568018924773124">Ipinakita sa folder</translation>
+<translation id="5207949376430453814">I-highlight ang text caret</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="523505283826916779">Mga setting ng accessibility</translation>
 <translation id="5313326810920013265">Mga setting ng Bluetooth</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">Input ng handwriting</translation>
 <translation id="6537270692134705506">I-capture ang screen</translation>
 <translation id="6585808820553845416">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Maghanap+Shift+K</translation>
 <translation id="6650933572246256093">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">Button ng menu ng IME</translation>
 <translation id="6713285437468012787">Naipares na ang bluetooth device na "<ph name="DEVICE_NAME" />" at available na ngayon sa lahat ng user. Maaari mong alisin ang pagpapares na ito gamit ang Mga Setting.</translation>
@@ -198,6 +204,7 @@ Pindutin ang Ctrl+Alt+Z upang i-disable.</translation>
 <translation id="7098389117866926363">USB-C device (kaliwang port sa likod)</translation>
 <translation id="7129360219436193655">Laser pointer mode</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">I-enable ang Pag-unlock gamit ang fingerprint?</translation>
 <translation id="7256634071279256947">Mikropono sa likod</translation>
@@ -233,6 +240,7 @@ Pindutin ang Ctrl+Alt+Z upang i-disable.</translation>
 <translation id="8308637677604853869">Nakaraang menu</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8433186206711564395">Mga setting ng network</translation>
+<translation id="8433977262951327081">Napalitan na ang shortcut para sa pagpapakita ng bubble na menu ng mga opsyon sa input sa shelf. Pakigamit ang <ph name="NEW_SHORTCUT" /> sa halip na <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Naka-on ang Wi-Fi.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Muling kumokonekta...</translation>
 <translation id="8517041960877371778">Maaaring hindi mag-charge ang iyong <ph name="DEVICE_TYPE" /> habang naka-on ito.</translation>

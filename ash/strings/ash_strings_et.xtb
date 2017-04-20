@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">Lisa ühendus</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> on avalik seanss, mida haldab <ph name="DOMAIN" /></translation>
+<translation id="3000461861112256445">Monoheli</translation>
 <translation id="3009178788565917040">Väljund</translation>
 <translation id="3019353588588144572">Aku täitumiseni on aega <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">tõstuklahv</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">Elektronpliiatsi tööriistad</translation>
 <translation id="3368922792935385530">Ühendatud</translation>
 <translation id="3371140690572404006">C-tüüpi USB-seade (eesmine parempoolne port)</translation>
+<translation id="3400357268283240774">Lisaseaded</translation>
 <translation id="3445925074670675829">C-tüüpi USB-seade</translation>
 <translation id="3473479545200714844">Ekraanisuurendi</translation>
+<translation id="3510164367642747937">Hiirekursori esiletõstmine</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="3573179567135747900">Muuda tagasi seadele <ph name="FROM_LOCALE" /> (nõuab taaskäivitust)</translation>
 <translation id="3595596368722241419">Aku on täis</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">Ekraani lukustamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="479989351350248267">otsing</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
+<translation id="4849058404725798627">Klaviatuuri fookusega objekti esiletõstmine</translation>
 <translation id="4872237917498892622">Alt + otsinguklahv või tõstuklahv</translation>
 <translation id="4895488851634969361">Aku on täis.</translation>
 <translation id="4918086044614829423">Nõustu</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
 <translation id="5170568018924773124">Kuva kaustas</translation>
+<translation id="5207949376430453814">Tekstisisestusmärgi esiletõstmine</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="523505283826916779">Juurdepääsuseaded</translation>
 <translation id="5313326810920013265">Bluetoothi seaded</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">Käsitsikirjasisend</translation>
 <translation id="6537270692134705506">Jäädvusta ekraanikuva</translation>
 <translation id="6585808820553845416">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Otsing + Tõstuklahv + K</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">IME menüünupp</translation>
 <translation id="6713285437468012787">Bluetoothi seade „<ph name="DEVICE_NAME" />” on nüüd seotud ja saadaval kõikidele kasutajatele. Võite sidumise tühistada jaotises Seaded.</translation>
@@ -198,6 +204,7 @@ Keelamiseks vajutage klahvikombinatsiooni Ctrl + Alt + Z.</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
 <translation id="7129360219436193655">Laserkursorirežiim</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7246339268451149667">Kas lubada sõrmejäljega avamine?</translation>
 <translation id="7256634071279256947">Tagumine mikrofon</translation>
@@ -232,6 +239,7 @@ Keelamiseks vajutage klahvikombinatsiooni Ctrl + Alt + Z.</translation>
 <translation id="8308637677604853869">Eelmine menüü</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8433186206711564395">Võrguseaded</translation>
+<translation id="8433977262951327081">Otsetee sisestusvalikute menüü mulli kuvamiseks riiulil on muutunud. Kasutage otsetee <ph name="OLD_SHORTCUT" /> asemel otseteed <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">WiFi on sisse lülitatud.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: uuesti ühendamine …</translation>
 <translation id="8517041960877371778">Kui seade <ph name="DEVICE_TYPE" /> on sisse lülitatud, ei pruugita seda laadida.</translation>

@@ -161,7 +161,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1583248206450240930">Brug <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Webadresser, der får adgang til lydoptagelsesenheder, uden at du skal give tilladelse hertil</translation>
 <translation id="1617235075406854669">Aktivér sletning af browser- og downloadhistorik</translation>
-<translation id="1617384279878333801">Aktivér funktionen Tilføj person i profiladministratoren</translation>
 <translation id="163200210584085447">Mønstre på denne liste sammenlignes med sikkerhedskilden
       for den anmodede webadresse.  Hvis der findes et match, gives der
       adgang til videooptagelsesenheder på SAML-loginsider.  Hvis der ikke findes
@@ -895,15 +894,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3758249152301468420">Deaktiver udviklerværktøjer</translation>
 <translation id="3765260570442823273">Varighed af advarselsmeddelelsen om logout for inaktivitet</translation>
-<translation id="3768412594120638208">Styrer, hvilke app-/udvidelsestyper, der må installeres.
-
-          Denne indstilling hvidlister de tilladte typer af udvidelser/apps, som kan installeres i <ph name="PRODUCT_NAME" />. Værdien er en liste over strenge, som alle skal være en af følgende: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Se dokumentationen til udvidelser til <ph name="PRODUCT_NAME" /> for at få flere oplysninger om disse typer.
-
-          Bemærk, at denne politik også påvirker udvidelser og apps, der skal tvangsinstalleres via ExtensionInstallForcelist.
-
-          Hvis denne indstilling er konfigureret, vil de udvidelser/apps, som har en type, der ikke findes på listen, ikke blive installeret.
-
-          Hvis denne indstilling ikke er konfigureret, håndhæves der ingen begrænsninger for de acceptable udvidelses-/apptyper.</translation>
 <translation id="3780152581321609624">Inkluder en port, der ikke er standard, i Kerberos-SPN</translation>
 <translation id="3780319008680229708">Hvis denne politik angives som Sand, vises Cast-ikonet altid på værktøjslinjen eller i prikmenuen, og brugerne kan ikke fjerne det.
 
@@ -1902,9 +1892,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6786967369487349613">Angiv placeringen af roamingprofilen</translation>
 <translation id="6810445994095397827">Bloker JavaScript på disse websites</translation>
 <translation id="681446116407619279">Understøttede godkendelsesskemaer</translation>
-<translation id="6828905844648501476">Hvis denne politik er angivet til sand eller ikke konfigureres, tillader <ph name="PRODUCT_NAME" /> Tilføj person fra brugeradministration.
-
-      Hvis denne politik er angivet til falsk, tillader <ph name="PRODUCT_NAME" /> ikke oprettelse af nye profiler fra profiladministratoren.</translation>
 <translation id="685769593149966548">Gennemtving Strengt begrænset tilstand på YouTube</translation>
 <translation id="687046793986382807">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 35.
 

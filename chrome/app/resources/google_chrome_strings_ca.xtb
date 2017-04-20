@@ -208,6 +208,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7242029209006116544">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Google Chrome a l'administrador corresponent. Les vostres dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chrome a part. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Aquest ordinador aviat deixarà de rebre actualitzacions de Google Chrome perquè Windows XP i Windows Vista ja no seran compatibles.</translation>
 <translation id="7339898014177206373">Finestra nova</translation>
+<translation id="7369650938475876456">Utilitza una contrasenya segura generada per Chrome</translation>
 <translation id="7398801000654795464">Teníeu la sessió iniciada a Chrome com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar-hi a iniciar la sessió.</translation>
 <translation id="7400722733683201933">Quant a Google Chrome</translation>
 <translation id="7408085963519505752">Condicions de Chrome OS</translation>
@@ -248,6 +249,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="8290100596633877290">Google Chrome s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
 <translation id="8342675569599923794">Chrome ha bloquejat aquest fitxer perquè és perillós.</translation>
 <translation id="8406086379114794905">Ajudeu a millorar Chrome</translation>
+<translation id="8439301513305169426">Chrome desarà aquesta contrasenya amb <ph name="SAVED_PASSWORD_LINK" /> i no caldrà que la recordis.</translation>
 <translation id="8455999171311319804">Opcional: ajuda'ns a millorar Chrome OS enviant automàticament dades de diagnòstic i d'ús a Google.</translation>
 <translation id="8478823064122749032">Instal·la Chrome al telèfon. T'enviarem un SMS al número de telèfon de recuperació del compte: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8540666473246803645">Google Chrome</translation>

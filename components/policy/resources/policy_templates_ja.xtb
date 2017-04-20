@@ -162,7 +162,6 @@
 <translation id="1583248206450240930">デフォルトで <ph name="PRODUCT_FRAME_NAME" /> を使用する</translation>
 <translation id="1608755754295374538">ユーザー確認なしで音声キャプチャ デバイスへのアクセスが許可される URL</translation>
 <translation id="1617235075406854669">閲覧とダウンロードの履歴を削除可能にする</translation>
-<translation id="1617384279878333801">プロフィール マネージャでユーザーを追加することを有効にする</translation>
 <translation id="163200210584085447">このリストに指定されているパターンと、リクエスト元 URL の
       セキュリティ オリジンが照合されます。一致するものが見つかった場合は、
       動画キャプチャ デバイスへのアクセスが SAML ログインページで許可されます。
@@ -885,15 +884,6 @@
       このポリシーが未設定の場合、ユーザーは自分でプロキシ設定を選択できます。</translation>
 <translation id="3758249152301468420">デベロッパー ツールを無効にする</translation>
 <translation id="3765260570442823273">アイドル時のログアウト警告メッセージの表示期間</translation>
-<translation id="3768412594120638208">インストールを許可するアプリや拡張機能のタイプを指定します。
-
-          この設定により、<ph name="PRODUCT_NAME" /> にインストールできる拡張機能やアプリのタイプがホワイトリストに登録されます。値は文字列のリストで、それぞれ「extension」、「theme」、「user_script」、「hosted_app」、「legacy_packaged_app」、「platform_app」のいずれかに該当します。こうしたタイプについて詳しくは、<ph name="PRODUCT_NAME" /> 拡張機能のドキュメントをご覧ください。
-
-          このポリシーは ExtensionInstallForcelist により強制インストールされる拡張機能やアプリにも影響します。
-
-          この設定が有効な場合、リストにないタイプの拡張機能やアプリはインストールされません。
-
-          未設定の場合、インストールできる拡張機能やアプリのタイプに関する制限は適用されません。</translation>
 <translation id="3780152581321609624">Kerberos SPN に非標準ポートを含める</translation>
 <translation id="3780319008680229708">このポリシーが true に設定されている場合は、ツールバーまたはオーバーフロー メニューに Cast ツールバー アイコンが常に表示されます。ユーザーがこのアイコンを削除することはできません。
 
@@ -1885,9 +1875,6 @@ Active Directory ドメインに参加していない Windows インスタンス
 <translation id="6786967369487349613">ローミング プロフィール ディレクトリの設定</translation>
 <translation id="6810445994095397827">これらのサイトの Javascript をブロックする</translation>
 <translation id="681446116407619279">サポートされる認証スキーム</translation>
-<translation id="6828905844648501476">このポリシーが true に設定されているか未設定の場合、<ph name="PRODUCT_NAME" /> ではユーザー マネージャから [ユーザーを追加] を使用することができます。
-
-このポリシーが false に設定されている場合、<ph name="PRODUCT_NAME" /> ではプロフィール マネージャから新しいプロフィールを作成することはできません。</translation>
 <translation id="685769593149966548">YouTube で制限付きモード「強」を強制する</translation>
 <translation id="687046793986382807">このポリシーは <ph name="PRODUCT_NAME" /> バージョン 35 で廃止されました。
 

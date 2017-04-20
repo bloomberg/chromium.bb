@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">कनेक्शन जोड़ें</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" />, <ph name="DOMAIN" /> के द्वारा प्रबंधित एक सार्वजनिक सत्र है</translation>
+<translation id="3000461861112256445">मोनो ऑडियो</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="3019353588588144572">बैटरी के पूरी तरह से चार्ज होने में शेष समय, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">स्टाइलस टूल</translation>
 <translation id="3368922792935385530">कनेक्टेड</translation>
 <translation id="3371140690572404006">USB-C डिवाइस (दायां सामने वाला पोर्ट)</translation>
+<translation id="3400357268283240774">अतिरिक्त सेटिंग</translation>
 <translation id="3445925074670675829">USB-C डिवाइस</translation>
 <translation id="3473479545200714844">स्क्रीन आवर्द्धक</translation>
+<translation id="3510164367642747937">माउस कर्सर को हाइलाइट करें</translation>
 <translation id="3547954654003013442">प्रॉक्सी सेटिंग</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" में पुन: बदलें (फिर से आरंभ करने की आवश्यकता है)</translation>
 <translation id="3595596368722241419">बैटरी पूर्ण</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">स्‍क्रीन को लॉक करने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
+<translation id="4849058404725798627">कीबोर्ड फ़ोकस वाला ऑब्जेक्ट हाइलाइट करें</translation>
 <translation id="4872237917498892622">Alt+Search या Shift</translation>
 <translation id="4895488851634969361">बैटरी भरी हुई है.</translation>
 <translation id="4918086044614829423">स्वीकार करें</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
 <translation id="5170568018924773124">फ़ोल्डर में दिखाएं</translation>
+<translation id="5207949376430453814">लेख कैरेट हाइलाइट करें</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="523505283826916779">पहुंच-योग्यता विकल्प</translation>
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
 <translation id="6537270692134705506">स्क्रीन कैप्चर करें</translation>
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है.</translation>
+<translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया डिवाइस पर यह पासकुंजी डालें: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">IME मेनू बटन</translation>
 <translation id="6713285437468012787">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" यु्ग्मित हो गया है और अब वह सभी उपयोगकर्ताओं के लिए उपलब्ध है. आप सेटिंग का उपयोग करके इस युग्मन को निकाल सकते हैं.</translation>
@@ -197,6 +203,7 @@
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
 <translation id="7129360219436193655">लेज़र पॉइंटर मोड</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> में पुराने रिज़ॉल्यूशन में वापस लौट रहा है</translation>
 <translation id="7246339268451149667">फ़िंगरप्रिंट अनलॉक सक्षम करें?</translation>
 <translation id="7256634071279256947">पीछे वाला माइक्रोफ़ोन</translation>
@@ -232,6 +239,7 @@
 <translation id="8308637677604853869">पिछला मेनू</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>
 <translation id="8433186206711564395">नेटवर्क सेटिंग</translation>
+<translation id="8433977262951327081">शेल्फ़ में इनपुट विकल्पों का मेनू बबल दिखाने वाला शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="8454013096329229812">वाई-फ़ाई  चालू है.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: पुनः कनेक्ट कर रहा है...</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>

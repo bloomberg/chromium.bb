@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">Lisää yhteys</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> on julkinen käyttökerta, jota hallinnoi <ph name="DOMAIN" /></translation>
+<translation id="3000461861112256445">Monoääni</translation>
 <translation id="3009178788565917040">Äänentoisto</translation>
 <translation id="3019353588588144572">Akku on ladattu <ph name="TIME_REMAINING" /> kuluttua</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">Näyttökynätyökalut</translation>
 <translation id="3368922792935385530">Yhdistetty</translation>
 <translation id="3371140690572404006">C-tyypin USB-laite (oikean sivun etummainen portti)</translation>
+<translation id="3400357268283240774">Lisäasetukset</translation>
 <translation id="3445925074670675829">C-tyypin USB-laite</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
+<translation id="3510164367642747937">Korosta hiiren osoitin</translation>
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE" /> (vaatii uudelleenkäynnistyksen)</translation>
 <translation id="3595596368722241419">Akku täynnä</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">Näytön lukituksen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="479989351350248267">haku</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
+<translation id="4849058404725798627">Korosta tekstin syöttökohde</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="4895488851634969361">Akku on täynnä.</translation>
 <translation id="4918086044614829423">Hyväksy</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Cast-laitteita käytettävissä</translation>
 <translation id="5170568018924773124">Näytä kansiossa</translation>
+<translation id="5207949376430453814">Korosta tekstikursori</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
 <translation id="523505283826916779">Käytettävyysasetukset</translation>
 <translation id="5313326810920013265">Bluetooth-asetukset</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">Käsinkirjoitus</translation>
 <translation id="6537270692134705506">Tallenna kuvakaappaus koko näkymästä</translation>
 <translation id="6585808820553845416">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Haku+Vaihto+K</translation>
 <translation id="6650933572246256093">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Anna tämä avain kyseisellä laitteella: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">IME-valikkopainike</translation>
 <translation id="6713285437468012787">Bluetooth-laitteeseen <ph name="DEVICE_NAME" /> on nyt muodostettu laitepariyhteys, ja se on kaikkien käyttäjien saatavilla. Voit poistaa laiteparin Asetuksien kautta.</translation>
@@ -197,6 +203,7 @@
 <translation id="7098389117866926363">C-tyypin USB-laite (vasemmanpuoleinen takaportti)</translation>
 <translation id="7129360219436193655">Laserosoitintila</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Vaihto+K</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Sallitaanko lukituksen avaaminen sormenjäljellä?</translation>
 <translation id="7256634071279256947">Takamikrofoni</translation>
@@ -231,6 +238,7 @@
 <translation id="8308637677604853869">Edellinen valikko</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8433186206711564395">Verkkoasetukset</translation>
+<translation id="8433977262951327081">Hyllyn syöttöasetukset näyttävä valikkokupla on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Yhdistetään uudelleen…</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ei välttämättä lataudu, kun se on käynnissä.</translation>

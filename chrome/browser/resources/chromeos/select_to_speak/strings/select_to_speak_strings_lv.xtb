@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1224275271335624810">Ātrākais</translation>
 <translation id="1588438908519853928">Parasts</translation>
 <translation id="2089387485033699258">lv</translation>
 <translation id="335581015389089642">Runa</translation>
+<translation id="4274874082286476934">Atlasiet runas ātrumu:</translation>
+<translation id="4276663915471735629">Opcijas atlasīšanai, lai izrunātu</translation>
+<translation id="5589989204720007810">Lai izrunātu jebkuru tekstu, turiet nospiestu meklēšanas taustiņu un noklikšķiniet uz teksta vai velciet to.</translation>
+<translation id="6029587122245504742">Lēnākais</translation>
+<translation id="6837853484260746864">Atlasiet balsi:</translation>
 <translation id="7019805045859631636">Ātrs</translation>
 <translation id="7768784765476638775">Atlasīt, lai izrunātu</translation>
 <translation id="8044899503464538266">Lēns</translation>
+<translation id="9030754204056345429">Ātrāks</translation>
 </translationbundle>

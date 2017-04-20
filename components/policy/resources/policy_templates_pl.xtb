@@ -159,7 +159,6 @@
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania dźwięku</translation>
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
-<translation id="1617384279878333801">Włącz dodawanie osób w menedżerze profili</translation>
 <translation id="163200210584085447">Wzorce na tej liście są dopasowywane do źródła zabezpieczeń adresu URL,
       z którego pochodzi żądanie. Po znalezieniu odpowiednika dostęp do urządzeń
       rejestrujących wideo jest udzielany na stronach logowania SAML. Jeśli
@@ -891,15 +890,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
       Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="3758249152301468420">Wyłącz narzędzia dla programistów</translation>
 <translation id="3765260570442823273">Czas wyświetlania ostrzeżenia o wylogowaniu z powodu bezczynności</translation>
-<translation id="3768412594120638208">Określa typy aplikacji lub rozszerzeń, które można instalować.
-
-          To ustawienie tworzy białą listę typów rozszerzeń lub aplikacji, których instalacja jest dozwolona w <ph name="PRODUCT_NAME" />. Wartość jest listą ciągów znaków z tego zestawu: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Więcej informacji o tych typach znajdziesz w dokumentacji rozszerzeń <ph name="PRODUCT_NAME" />.
-
-          Zasada wpływa też na rozszerzenia i aplikacje, których instalacja jest wymuszana przez ExtensionInstallForcelist.
-
-          Jeśli skonfigurujesz to ustawienie, rozszerzenia lub aplikacje o typie innym niż wymienione na liście nie są instalowane.
-
-          W przeciwnym razie nie obowiązują żadne ograniczenia dozwolonych typów rozszerzeń lub aplikacji.</translation>
 <translation id="3780152581321609624">Umieść port niestandardowy w nazwie SPN w protokole Kerberos</translation>
 <translation id="3780319008680229708">Jeśli ta zasada ma wartość prawda, ikona Cast jest zawsze widoczna na pasku narzędzi lub w rozszerzonym menu, a użytkownicy nie mogą jej usunąć.
 
@@ -1883,9 +1873,6 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 <translation id="6786967369487349613">Ustaw katalog profilu przenośnego</translation>
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="681446116407619279">Obsługiwane schematy uwierzytelniania</translation>
-<translation id="6828905844648501476">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie zezwalać na dodawanie osób w menedżerze użytkowników.
-
-      Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie będzie zezwalać na tworzenie nowych profili w menedżerze profili.</translation>
 <translation id="685769593149966548">Wymuszaj ścisły tryb ograniczonego dostępu w YouTube</translation>
 <translation id="687046793986382807">Począwszy od wersji 35 usługi <ph name="PRODUCT_NAME" />, te zasady są wycofane.
 

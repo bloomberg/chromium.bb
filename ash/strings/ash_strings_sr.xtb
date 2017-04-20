@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">Додај везу</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> је јавна сесија којом управља <ph name="DOMAIN" /></translation>
+<translation id="3000461861112256445">Моно звук</translation>
 <translation id="3009178788565917040">Излаз</translation>
 <translation id="3019353588588144572">Време које је преостало док се батерија у потпуности не напуни, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">Алатке за писаљку</translation>
 <translation id="3368922792935385530">Повезан</translation>
 <translation id="3371140690572404006">Уређај са USB прикључком типа C (десни предњи порт)</translation>
+<translation id="3400357268283240774">Додатна подешавања</translation>
 <translation id="3445925074670675829">Уређај са USB прикључком типа C</translation>
 <translation id="3473479545200714844">Лупа екрана</translation>
+<translation id="3510164367642747937">Истакни курсор миша</translation>
 <translation id="3547954654003013442">Подешавања проксија</translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
 <translation id="3595596368722241419">Батерија је пуна</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">Пречица за закључавање екрана је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Прекини везу</translation>
+<translation id="4849058404725798627">Истакни објекат помоћу фокуса тастатуре</translation>
 <translation id="4872237917498892622">Alt + тастер за претрагу или Shift</translation>
 <translation id="4895488851634969361">Батерија је пуна.</translation>
 <translation id="4918086044614829423">Прихвати</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Доступни су уређаји за пребацивање</translation>
 <translation id="5170568018924773124">Прикажи у директоријуму</translation>
+<translation id="5207949376430453814">Истакни курсор за текст</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
 <translation id="523505283826916779">Подешавања приступачности</translation>
 <translation id="5313326810920013265">Подешавања Bluetooth-а</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">Унос рукописа</translation>
 <translation id="6537270692134705506">Сними екран</translation>
 <translation id="6585808820553845416">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Тастер за претрагу+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">Дугме IME менија</translation>
 <translation id="6713285437468012787">Bluetooth уређај „<ph name="DEVICE_NAME" />“ је упарен и сада је доступан свим корисницима. Можете да уклоните то упаривање помоћу Подешавања.</translation>
@@ -197,6 +203,7 @@
 <translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
 <translation id="7129360219436193655">Режим ласерског показивача</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Омогућити откључавање отиском прста?</translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
@@ -231,6 +238,7 @@
 <translation id="8308637677604853869">Претходни мени</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8433186206711564395">Мрежна подешавања</translation>
+<translation id="8433977262951327081">Промењена је пречица за приказивање облачића за мени Опције уноса на полици. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi је укључен.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Поново се повезујете...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> се можда неће пунити док је укључен.</translation>

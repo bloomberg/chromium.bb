@@ -160,7 +160,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1608755754295374538">Las URL que recibirán acceso a dispositivos de captura de audio sin solicitarlo</translation>
 <translation id="1617235075406854669">Habilita la eliminación del historial de descargas y del navegador.</translation>
-<translation id="1617384279878333801">Habilitar opción para agregar persona al administrador de perfiles</translation>
 <translation id="163200210584085447">Los patrones en esta lista se compararán con el origen
        de seguridad de la URL solicitante. Si se encuentra una coincidencia,
        se concede acceso a los dispositivos de captura de video en las páginas
@@ -879,15 +878,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si no se establecen estas políticas, los usuarios podrán elegir la configuración de proxy.</translation>
 <translation id="3758249152301468420">Inhabilitar herramientas para desarrolladores</translation>
 <translation id="3765260570442823273">Duración del mensaje que advierte al usuario que saldrá del navegador porque se encuentra inactivo</translation>
-<translation id="3768412594120638208">Permite controlar el tipo de apps o extensiones que se pueden instalar.
-
-          Esta configuración incluye en la lista blanca los tipos de extensiones o apps que se pueden instalar en <ph name="PRODUCT_NAME" />. El valor es una lista de cadenas y cada una de ellas debe ser uno de los siguientes elementos: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información, consulta la documentación sobre extensiones de <ph name="PRODUCT_NAME" />.
-
-          Ten en cuenta que esta política también fuerza a las extensiones y a las apps para que se instalen a través de ExtensionInstallForcelist.
-
-          Si esta opción se configura, no se instalarán las extensiones o apps que tengan un tipo que no esté incluido en la lista.
-
-          Si esta opción no se configura, no se aplicará ninguna restricción sobre los tipos de extensiones o apps aceptados.</translation>
 <translation id="3780152581321609624">Incluir puerto no estándar en el SPN de Kerberos</translation>
 <translation id="3780319008680229708">Si esta política se establece como verdadera, el ícono de Cast aparecerá siempre en la barra de herramientas o en el menú ampliado, y los usuarios no podrán quitarlo.
 
@@ -1879,9 +1869,6 @@ desactivarlo).</translation>
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
-<translation id="6828905844648501476">Si esta política se establece en true o no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción de agregar una persona desde el administrador de usuarios.
-
-      Si esta política se establece en false, <ph name="PRODUCT_NAME" /> no permitirá la creación de perfiles nuevos desde el administrador de perfiles.</translation>
 <translation id="685769593149966548">Aplicar el modo restringido estricto para YouTube</translation>
 <translation id="687046793986382807">Esta política no está disponible a partir de la versión 35 de <ph name="PRODUCT_NAME" />.
 

@@ -161,7 +161,6 @@
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">系統會直接授權存取音訊擷取裝置而不需提示的網址</translation>
 <translation id="1617235075406854669">啟用刪除瀏覽器和下載紀錄</translation>
-<translation id="1617384279878333801">允許在設定檔管理員中新增使用者</translation>
 <translation id="163200210584085447">系統會比對這份清單中的模式與要求網址的
       安全性來源。如果找到相符的結果，系統就會
       在 SAML 登入網頁授權存取錄影裝置。如果找不到
@@ -888,15 +887,6 @@
       如未設定這些政策，使用者可自行選擇 Proxy 設定。</translation>
 <translation id="3758249152301468420">停用開發人員工具</translation>
 <translation id="3765260570442823273">閒置登出時間警告訊息</translation>
-<translation id="3768412594120638208">控制要允許安裝的應用程式/擴充功能類型。
-
-          這項許可清單設定會列出允許安裝在 <ph name="PRODUCT_NAME" /> 的擴充功能/應用程式類型。該值為字串清單，可用字串如下：「extension」、「theme」、「user_script」、「hosted_app」、「legacy_packaged_app」、「platform_app」。如要進一步瞭解這些類型，請參閱 <ph name="PRODUCT_NAME" /> 擴充功能說明文件。
-
-          請注意，這項政策也會影響透過 ExtensionInstallForcelist 強制安裝的擴充功能和應用程式。
-
-          如果設定了這項政策，系統就不會安裝未列於清單中的其他類型擴充功能/應用程式。
-
-          如未設定這項政策，系統便不會針對可接受的擴充功能/應用程式類型套用任何限制。</translation>
 <translation id="3780152581321609624">Kerberos SPN 包含非標準通訊埠</translation>
 <translation id="3780319008680229708">如果這項政策設為 True，工具列或溢位選單就一定會顯示 Cast 工具列圖示，而且使用者無法移除這個圖示。
 
@@ -1887,9 +1877,6 @@
 <translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
 <translation id="6810445994095397827">封鎖這些網站的 JavaScript</translation>
 <translation id="681446116407619279">支援的驗證機制</translation>
-<translation id="6828905844648501476">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 將允許從使用者管理工具新增使用者。
-
-      如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 就無法讓使用者從設定檔管理工具建立新設定檔。</translation>
 <translation id="685769593149966548">強制執行高度的 YouTube 嚴格篩選模式</translation>
 <translation id="687046793986382807">我們已於 <ph name="PRODUCT_NAME" /> 35 版中移除這項政策。
 

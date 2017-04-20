@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
+<translation id="1224275271335624810">Greičiausias</translation>
 <translation id="1588438908519853928">Įprastas</translation>
 <translation id="2089387485033699258">lt</translation>
 <translation id="335581015389089642">Kalba</translation>
+<translation id="4274874082286476934">Pasirinkite kalbėjimo greitį:</translation>
+<translation id="4276663915471735629">Funkcijos „Pasirinkti ir ištarti“ parinktys</translation>
+<translation id="5589989204720007810">Palaikykite paspaustą paieškos klavišą ir spustelėkite arba vilkite pelės žymekliu, kad būtų ištartas bet koks rodomas tekstas.</translation>
+<translation id="6029587122245504742">Lėčiausias</translation>
+<translation id="6837853484260746864">Pasirinkite balsą:</translation>
 <translation id="7019805045859631636">Greitas</translation>
 <translation id="7768784765476638775">Pasirinkti ir sakyti</translation>
 <translation id="8044899503464538266">Lėtas</translation>
+<translation id="9030754204056345429">Greitesnis</translation>
 </translationbundle>

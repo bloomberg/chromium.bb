@@ -161,7 +161,6 @@
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
-<translation id="1617384279878333801">Omogućivanje dodavanja osobe u upravitelju profila</translation>
 <translation id="163200210584085447">Uzorci na tom popisu usporedit će se sa sigurnosnim
       izvorištem URL-a koji šalje zahtjev. Ako se podudaranje pronađe, pristup
       uređajima za videosnimanje dodijelit će se na SAML stranicama za
@@ -888,15 +887,6 @@
       Ako se ta pravila ne postave, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3758249152301468420">Onemogući Razvojne alate</translation>
 <translation id="3765260570442823273">Trajanje poruke upozorenja za odjavu u stanju mirovanja</translation>
-<translation id="3768412594120638208">Kontrolira koje se vrste aplikacija/proširenja smiju instalirati.
-
-          Ova postavka sadrži popis dopuštenih vrsta proširenja/aplikacija koje se mogu instalirati u pregledniku <ph name="PRODUCT_NAME" />. Vrijednost je popis nizova, od kojih svaki treba biti jedan od sljedećih: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" ili "platform_app". Više informacija o tim vrstama potražite u dokumentaciji o proširenjima preglednika <ph name="PRODUCT_NAME" />.
-
-          Napominjemo da to pravilo također utječe na proširenja i aplikacije čija se instalacija mora nametnuti popisom ExtensionInstallForcelist.
-
-          Ako se ta postavka konfigurira, proširenja/aplikacije vrste koja nije na popisu neće se instalirati.
-
-          Ako se ta postavka ne konfigurira, neće se primijeniti ograničenja o prihvatljivim vrstama proširenja/aplikacija.</translation>
 <translation id="3780152581321609624">Uključi nestandardni port u Kerberos SPN-u</translation>
 <translation id="3780319008680229708">Ako se to pravilo postavi na "istinito", ikona Casta na alatnoj traci uvijek će se prikazivati na alatnoj traci ili u dodatnom izborniku te je korisnici neće moći ukloniti.
 
@@ -1893,9 +1883,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6786967369487349613">Postavljanje direktorija roaming profila</translation>
 <translation id="6810445994095397827">Blok JavaScript na ovim web-lokacijama</translation>
 <translation id="681446116407619279">Podržane sheme autentifikacije</translation>
-<translation id="6828905844648501476">Ako se pravilo postavi na "True" ili se ne konfigurira, <ph name="PRODUCT_NAME" /> dopustit će dodavanje osoba iz upravitelja korisnika.
-
-      Ako se pravilo postavi na "False", <ph name="PRODUCT_NAME" /> neće dopustiti izradu novih profila iz upravitelja profila.</translation>
 <translation id="685769593149966548">Primijeni strogi Ograničeni način rada za YouTube</translation>
 <translation id="687046793986382807">To se pravilo više ne primjenjuje od verzije 35 proizvoda <ph name="PRODUCT_NAME" />.
 

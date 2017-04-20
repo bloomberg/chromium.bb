@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1006017844123154345">Отваряне онлайн</translation>
+<translation id="1049743911850919806">„Инкогнито“</translation>
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="1061441684050139317">Chrome се нуждае от достъп до микрофона, за да го сподели с този сайт.</translation>
 <translation id="1080790410959514870">Излизате от профил, управляван от <ph name="DOMAIN_NAME" />. Съхраняваните на това устройство данни в Chrome ще се изтрият, но ще останат в профила ви в Google.</translation>
 <translation id="1111673857033749125">Тук ще се показват отметките, които сте запазили на другите си устройства.</translation>
+<translation id="1117638547758781293">Филтър за подресурсите</translation>
 <translation id="1121094540300013208">Отчети за употребата и сигнали за сривове</translation>
 <translation id="1137305377394488060">последния час</translation>
 <translation id="1145536944570833626">Изтриване на съществуващите данни.</translation>
@@ -61,6 +63,7 @@
 <translation id="1549000191223877751">Преместв. в другия прозорец</translation>
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1571304935088121812">Копиране на потребителското име</translation>
+<translation id="1594030484168838125">Избор</translation>
 <translation id="1612196535745283361">Chrome се нуждае от достъп до местоположението, за да сканира за устройства, но съответните услуги са <ph name="BEGIN_LINK" />изключени за това устройство<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Да не се създават допълнителни диалогови прозорци от тази страница</translation>
@@ -148,6 +151,7 @@
 <translation id="2587052924345400782">Налице е по-нова версия</translation>
 <translation id="2593272815202181319">Непропорционален</translation>
 <translation id="2621115761605608342">Разрешаване на JavaScript за конкретен сайт.</translation>
+<translation id="2631006050119455616">Запазено</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2677748264148917807">Излизане</translation>
 <translation id="2704606927547763573">Копирано</translation>
@@ -394,6 +398,7 @@
 <translation id="5345083863238459644">Достъпът до местоположението също е <ph name="BEGIN_LINK" />изключен за това устройство<ph name="END_LINK" />.</translation>
 <translation id="5349103022427743704">Експеримент за подобрено добавяне към началния екран</translation>
 <translation id="5372829067651257087">URL адресът е копиран.</translation>
+<translation id="5384883051496921101">Този сайт е напът да сподели информация с приложение, което не е в режим „инкогнито“.</translation>
 <translation id="5400569084694353794">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
 <translation id="5403644198645076998">Разрешаване само на конкретни сайтове</translation>
 <translation id="5414836363063783498">Потвърждава се…</translation>
@@ -504,6 +509,7 @@
 <translation id="6482749332252372425">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради липса на място в хранилището.</translation>
 <translation id="6508332297647760142">Споделяне във Физическата мрежа</translation>
 <translation id="6527303717912515753">Споделяне</translation>
+<translation id="6534565668554028783">Google не отговаря твърде дълго време</translation>
 <translation id="6538442820324228105">Изтеглено: <ph name="GBS" /> ГБ</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Изберете раздел за излъчване</translation>
@@ -577,6 +583,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> използва местоположението ви, за да показва резултати от местното търсене</translation>
 <translation id="7253272406652746122">Добавете профил в Google от страницата „Профили“ в приложението Настройки на устройството ви.</translation>
 <translation id="7274013316676448362">Блокиран сайт</translation>
+<translation id="7307288900373049735">Установява се връзка с Google… Това може да отнеме известно време</translation>
 <translation id="7333031090786104871">Още се добавя предишният сайт</translation>
 <translation id="7352939065658542140">ВИДЕОКЛИП</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделяне на 1 избран елемент}other{Споделяне на # избрани елемента}}</translation>
@@ -688,6 +695,7 @@
 <translation id="8489271220582375723">Отваряне на страницата „История“</translation>
 <translation id="8493948351860045254">Освобождаване на място</translation>
 <translation id="8497726226069778601">Тук няма нищо… засега</translation>
+<translation id="8499147970084652325">Използване на сървърите на Google за предоставяне на предложения при сърфиране.</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="8514577642972634246">Влизане в режим „инкогнито“</translation>
 <translation id="8523928698583292556">Изтриване на съхранената парола</translation>
@@ -717,6 +725,7 @@
 <translation id="8788968922598763114">Повторно отваряне на последно затворения раздел</translation>
 <translation id="8812260976093120287">На някои уебсайтове можете да извършвате плащания чрез посочените по-горе поддържани приложения за плащане на устройството ви.</translation>
 <translation id="8812942424849541387">Контролирайте това поведение от <ph name="BEGIN_LINK1" />Настройки<ph name="END_LINK1" /></translation>
+<translation id="8812949859341886735">Когато тази функция е активирана, Chrome ще използва сървърите на Google, за да предоставя предложения при сърфиране, напр., когато отворите нов раздел. Това включва популярни уебсайтове, набиращи популярност статии, както и персонализирани предложения.</translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="883635517171802338">Блокиране на показването на изскачащи прозорци от сайтовете (препоръчително)</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -728,6 +737,7 @@
 <translation id="8920114477895755567">Изчакват се подробности за родителите.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Отваряне в другия прозорец</translation>
+<translation id="894871326938397531">Излизане от режим „инкогнито“?</translation>
 <translation id="8951232171465285730">Chrome ви спести <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8959122750345127698">Навигирането не е възможно: <ph name="URL" /></translation>
 <translation id="8979340629087822094">последния ден</translation>

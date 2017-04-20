@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">Verbindung hinzufügen</translation>
 <translation id="2963773877003373896">Mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ist eine öffentliche Sitzung, die von <ph name="DOMAIN" /> verwaltet wird.</translation>
+<translation id="3000461861112256445">Mono-Audio</translation>
 <translation id="3009178788565917040">Ausgang</translation>
 <translation id="3019353588588144572">Verbleibende Zeit, bis der Akku vollständig geladen ist: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">Shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">Eingabestift-Tools</translation>
 <translation id="3368922792935385530">Verbunden</translation>
 <translation id="3371140690572404006">USB-C-Gerät (Port vorne rechts)</translation>
+<translation id="3400357268283240774">Zusätzliche Einstellungen</translation>
 <translation id="3445925074670675829">USB-C-Gerät</translation>
 <translation id="3473479545200714844">Lupe</translation>
+<translation id="3510164367642747937">Mauszeiger hervorheben</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
 <translation id="3595596368722241419">Akku voll</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">Die Tastenkombination zum Sperren des Bildschirms hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
+<translation id="4849058404725798627">Objekt mit Tastaturfokus hervorheben</translation>
 <translation id="4872237917498892622">Alt+Suchen oder Shift</translation>
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
 <translation id="4918086044614829423">Annehmen</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
 <translation id="5170568018924773124">In Ordner anzeigen</translation>
+<translation id="5207949376430453814">Textcursor hervorheben</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="523505283826916779">Zugänglichkeitseinstellungen</translation>
 <translation id="5313326810920013265">Bluetooth-Einstellungen</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">Handschrifteingabe</translation>
 <translation id="6537270692134705506">Screenshot aufnehmen</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Suchtaste + Shift + K</translation>
 <translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
 <translation id="6700713906295497288">IME-Menüschaltfläche</translation>
 <translation id="6713285437468012787">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde gekoppelt und ist nun für alle Nutzer verfügbar. Sie können es unter "Einstellungen" wieder entkoppeln.</translation>
@@ -198,6 +204,7 @@ Zum Deaktivieren drücken Sie Strg + Alt + Z.</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
 <translation id="7129360219436193655">Laserpointer-Modus</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="7246339268451149667">Entsperren per Fingerabdruck aktivieren?</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
@@ -232,6 +239,7 @@ Zum Deaktivieren drücken Sie Strg + Alt + Z.</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
+<translation id="8433977262951327081">Die Tastenkombination zum Aufrufen des Infofelds für die Eingabeoptionen in der Ablage hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">WLAN ist aktiviert.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Verbindung wird wiederhergestellt...</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>

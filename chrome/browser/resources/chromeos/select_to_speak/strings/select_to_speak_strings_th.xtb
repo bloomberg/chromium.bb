@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1224275271335624810">เร็วที่สุด</translation>
 <translation id="1588438908519853928">ปกติ</translation>
 <translation id="2089387485033699258">th</translation>
 <translation id="335581015389089642">คำพูด</translation>
+<translation id="4274874082286476934">เลือกความเร็วในการพูด:</translation>
+<translation id="4276663915471735629">ตัวเลือกสำหรับเลือกเพื่อพูด</translation>
+<translation id="5589989204720007810">กดแป้น Search ค้างไว้ แล้วคลิกหรือลากเพื่อพูดอะไรก็ได้</translation>
+<translation id="6029587122245504742">ช้าที่สุด</translation>
+<translation id="6837853484260746864">เลือกเสียง:</translation>
 <translation id="7019805045859631636">เร็ว</translation>
 <translation id="7768784765476638775">เลือกเพื่อพูด</translation>
 <translation id="8044899503464538266">ช้า</translation>
+<translation id="9030754204056345429">เร็วขึ้น</translation>
 </translationbundle>

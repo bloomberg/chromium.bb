@@ -163,7 +163,6 @@
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
-<translation id="1617384279878333801">Enable add person in profile manager</translation>
 <translation id="163200210584085447">Patterns in this list will be matched against the security
       origin of the requesting URL.  If a match is found, access to video
       capture devices will be granted on SAML login pages.  If no match is
@@ -935,15 +934,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Leaving these policies unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3758249152301468420">Disable Developer Tools</translation>
 <translation id="3765260570442823273">Duration of the idle log-out warning message</translation>
-<translation id="3768412594120638208">Controls which app/extension types are allowed to be installed.
-
-          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" />. The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
-
-          Note that this policy also affects extensions and apps to be force-installed via ExtensionInstallForcelist.
-
-          If this setting is configured, extensions/apps which have a type that is not on the list will not be installed.
-
-          If this setting is left not-configured, no restrictions on the acceptable extension/app types are enforced.</translation>
 <translation id="3780152581321609624">Include non-standard port in Kerberos SPN</translation>
 <translation id="3780319008680229708">If this policy is set to true, the Cast toolbar icon will always be shown on the toolbar or the overflow menu and users will not be able to remove it.
 
@@ -2014,9 +2004,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6786967369487349613">Set the roaming profile directory</translation>
 <translation id="6810445994095397827">Block JavaScript on these sites</translation>
 <translation id="681446116407619279">Supported authentication schemes</translation>
-<translation id="6828905844648501476">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will allow Add Person from the user manager.
-
-      If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow creation of new profiles from the profile manager.</translation>
 <translation id="685769593149966548">Enforce Strict Restricted Mode for YouTube</translation>
 <translation id="687046793986382807">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 35.
 

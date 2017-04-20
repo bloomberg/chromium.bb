@@ -239,6 +239,7 @@
 <translation id="8340674089072921962">Chromium の前回の使用者は <ph name="USER_EMAIL_ADDRESS" /> です</translation>
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
 <translation id="8493179195440786826">Chromium は古いバージョンです</translation>
+<translation id="8563206822260884157">Chromium で生成された安全なパスワードを使用</translation>
 <translation id="85843667276690461">Chromium の使用に関するアドバイス</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8621669128220841554">原因不明のエラーによりインストールに失敗しました。Chromium をもう一度ダウンロードしてください。</translation>
@@ -254,6 +255,7 @@
 <translation id="8897323336392112261">この拡張機能では、Chromium の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
 <translation id="8907580949721785412">Chromium でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="894903460958736500">お使いのパソコンで実行されているソフトウェアは Chromium に対応していません。</translation>
+<translation id="8968921422458636175">このパスワードは <ph name="SAVED_PASSWORD_LINK" /> に保存されるため、覚えておく必要はありません。</translation>
 <translation id="8974095189086268230">Chromium OS は、追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
 <translation id="8985587603644336029">別のユーザーが前回このパソコンから <ph name="ACCOUNT_EMAIL_LAST" /> として Chromium にログインしました。このメール アドレスがご自分のアカウントでない場合は、新しい Chromium ユーザーを作成して情報を個別に保持してください。
 

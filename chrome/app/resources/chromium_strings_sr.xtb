@@ -241,6 +241,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="8340674089072921962">Корисник <ph name="USER_EMAIL_ADDRESS" /> је претходно користио Chromium</translation>
 <translation id="8453117565092476964">Архива програма за инсталацију је оштећена или неважећа. Преузмите Chromium поново.</translation>
 <translation id="8493179195440786826">Chromium је застарео</translation>
+<translation id="8563206822260884157">Користите јаку лозинку коју је Chromium генерисао</translation>
 <translation id="85843667276690461">Пронађи помоћ за коришћење Chromium-а</translation>
 <translation id="8586442755830160949">Ауторска права <ph name="YEAR" />. Аутори Chromium-а. Сва права задржана.</translation>
 <translation id="8621669128220841554">Инсталација није успела због неодређене грешке. Преузмите Chromium поново.</translation>
@@ -256,6 +257,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="8897323336392112261">Контролише и страницу која се приказује када покренете Chromium или кликнете на дугме Почетна.</translation>
 <translation id="8907580949721785412">Chromium покушава да прикаже лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="894903460958736500">Софтвер покренут на рачунару није компатибилан са Chromium-ом.</translation>
+<translation id="8968921422458636175">Chromium ће сачувати ову лозинку за <ph name="SAVED_PASSWORD_LINK" />. Не морате да је памтите.</translation>
 <translation id="8974095189086268230">Chromium ОС омогућава додатни <ph name="BEGIN_LINK_CROS_OSS" />софтвер отвореног кода<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="8985587603644336029">Неко се претходно пријавио на Chromium на овом рачунару као <ph name="ACCOUNT_EMAIL_LAST" />. Ако то није ваш налог, направите новог Chromium корисника да би информације биле раздвојене.
 

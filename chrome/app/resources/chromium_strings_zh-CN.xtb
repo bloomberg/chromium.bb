@@ -239,6 +239,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> 之前使用的是 Chromium</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
 <translation id="8493179195440786826">Chromium版本太旧</translation>
+<translation id="8563206822260884157">使用由 Chromium 生成的安全系数高的密码</translation>
 <translation id="85843667276690461">获取 Chromium 使用帮助</translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR" /> The Chromium Authors。保留所有权利。</translation>
 <translation id="8621669128220841554">未指定的错误导致安装失败。请重新下载 Chromium。</translation>
@@ -254,6 +255,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8897323336392112261">它还能够控制您启动Chromium或点击“主页”按钮后系统显示的页面。</translation>
 <translation id="8907580949721785412">Chromium正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
 <translation id="894903460958736500">您计算机上运行的软件与 Chromium 不兼容。</translation>
+<translation id="8968921422458636175">Chromium 会通过 <ph name="SAVED_PASSWORD_LINK" /> 保存此密码，因此您不必记住它。</translation>
 <translation id="8974095189086268230">Chromium 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />的一份功能。</translation>
 <translation id="8985587603644336029">之前有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST" /> 帐号登录 Chromium。如果这不是您的帐号，请新建一个 Chromium 用户来单独保存您的信息。
 

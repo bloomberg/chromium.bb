@@ -163,7 +163,6 @@
 <translation id="1583248206450240930">Sử dụng <ph name="PRODUCT_FRAME_NAME" /> theo mặc định</translation>
 <translation id="1608755754295374538">Các URL sẽ được cấp quyền truy cập thiết bị ghi âm mà không cần phải hiển thị lời nhắc</translation>
 <translation id="1617235075406854669">Bật xóa lịch sử trình duyệt và lịch sử tải xuống</translation>
-<translation id="1617384279878333801">Bật tính năng thêm người trong trình quản lý hồ sơ</translation>
 <translation id="163200210584085447">Các mẫu trong danh sách này sẽ được đối sánh dựa trên nguồn gốc
       bảo mật của URL yêu cầu.  Nếu tìm thấy mẫu phù hợp, quyền
       truy cập thiết bị quay video sẽ được cấp trên
@@ -930,15 +929,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Việc không đặt các chính sách này sẽ cho phép người dùng tự chọn cài đặt proxy.</translation>
 <translation id="3758249152301468420">Vô hiệu hóa công cụ dành cho nhà phát triển</translation>
 <translation id="3765260570442823273">Thời lượng hiển thị thông điệp cảnh báo đăng xuất khi không hoạt động</translation>
-<translation id="3768412594120638208">Kiểm soát các loại ứng dụng/tiện ích được phép cài đặt.
-
-          Cài đặt này liệt kê các loại tiện ích/ứng dụng được cho phép mà có thể cài đặt được trong <ph name="PRODUCT_NAME" />. Giá trị là một danh sách chuỗi, mỗi chuỗi phải là một trong số các loại sau: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Xem tài liệu về tiện ích <ph name="PRODUCT_NAME" /> để biết thêm thông tin về các loại này.
-
-          Lưu ý rằng chính sách này cũng ảnh hưởng đến tiện ích và ứng dụng được cài đặt bắt buộc qua ExtensionInstallForcelist.
-
-          Nếu cài đặt này được định cấu hình, tiện ích/ứng dụng có loại không nằm trong danh sách sẽ không được cài đặt.
-
-          Nếu cài đặt này không được định cấu hình, không có giới hạn về loại tiện ích/ứng dụng được chấp nhận nào được đặt ra.</translation>
 <translation id="3780152581321609624">Bao gồm cổng không chuẩn trong  Kerberos SPN</translation>
 <translation id="3780319008680229708">Nếu chính sách này được đặt thành true thì biểu tượng thanh công cụ Cast sẽ luôn được hiển thị trên thanh công cụ hoặc menu mục bổ sung và người dùng sẽ không thể xóa biểu tượng này.
 
@@ -1996,9 +1986,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6786967369487349613">Đặt thư mục hồ sơ chuyển vùng</translation>
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
-<translation id="6828905844648501476">Nếu chính sách này được đặt thành true hoặc không được định cấu hình, <ph name="PRODUCT_NAME" /> sẽ cho phép Thêm người từ trình quản lý người dùng.
-
-      Nếu chính sách này được đặt thành false, <ph name="PRODUCT_NAME" /> sẽ không cho phép tạo hồ sơ mới từ trình quản lý người dùng.</translation>
 <translation id="685769593149966548">Buộc sử dụng Chế độ hạn chế nghiêm ngặt cho YouTube</translation>
 <translation id="687046793986382807">Chính sách này sẽ được xóa bỏ kể từ phiên bản 35 của <ph name="PRODUCT_NAME" />.
 

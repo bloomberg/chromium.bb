@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">Tambahkan koneksi</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> adalah sesi publik yang dikelola oleh <ph name="DOMAIN" /></translation>
+<translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Keluaran</translation>
 <translation id="3019353588588144572">Waktu yang tersisa hingga baterai terisi penuh, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">Alat stilus</translation>
 <translation id="3368922792935385530">Tersambung</translation>
 <translation id="3371140690572404006">Perangkat USB-C (port depan sebelah kanan)</translation>
+<translation id="3400357268283240774">Setelan tambahan</translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
+<translation id="3510164367642747937">Sorot kursor mouse</translation>
 <translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">Pintasan untuk mengunci layar telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai gantinya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan</translation>
+<translation id="4849058404725798627">Sorot objek dengan fokus keyboard</translation>
 <translation id="4872237917498892622">Alt+Telusuri atau Shift</translation>
 <translation id="4895488851634969361">Baterai penuh.</translation>
 <translation id="4918086044614829423">Terima</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Perangkat transmisi tersedia</translation>
 <translation id="5170568018924773124">Tampilkan dalam folder</translation>
+<translation id="5207949376430453814">Sorot tempat penyisipan teks</translation>
 <translation id="5222676887888702881">Keluar</translation>
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
 <translation id="5313326810920013265">Setelan bluetooth</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">Masukan tulisan tangan</translation>
 <translation id="6537270692134705506">Tangkap layar</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Tombol Penelusuran+Shift+K</translation>
 <translation id="6650933572246256093">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukkan kunci sandi ini pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">Tombol menu IME</translation>
 <translation id="6713285437468012787">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" telah disandingkan dan kini tersedia bagi semua pengguna. Anda dapat menghapus penyandingan ini menggunakan Setelan.</translation>
@@ -198,6 +204,7 @@ Tekan Ctrl+Alt+Z untuk menonaktifkan.</translation>
 <translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
 <translation id="7129360219436193655">Mode penunjuk laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Aktifkan buka kunci dengan Sidik Jari?</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
@@ -232,6 +239,7 @@ Tekan Ctrl+Alt+Z untuk menonaktifkan.</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433186206711564395">Setelan jaringan</translation>
+<translation id="8433977262951327081">Pintasan untuk menampilkan balon menu opsi masukan di rak telah diubah. Harap gunakan <ph name="NEW_SHORTCUT" />, bukan <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi diaktifkan.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Menyambungkan lagi...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> Anda mungkin tidak diisi daya saat dinyalakan.</translation>

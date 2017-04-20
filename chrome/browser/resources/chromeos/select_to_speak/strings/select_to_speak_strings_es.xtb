@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="1224275271335624810">Velocidad máxima</translation>
 <translation id="1588438908519853928">Modo normal</translation>
 <translation id="2089387485033699258">es</translation>
 <translation id="335581015389089642">Voz</translation>
+<translation id="4274874082286476934">Selecciona la velocidad de la voz:</translation>
+<translation id="4276663915471735629">Opciones de Escuchar Selección</translation>
+<translation id="5589989204720007810">Mantén pulsada la tecla de búsqueda y haz clic en un elemento o arrástralo para escucharlo en voz alta.</translation>
+<translation id="6029587122245504742">Velocidad mínima</translation>
+<translation id="6837853484260746864">Selecciona una voz:</translation>
 <translation id="7019805045859631636">Rápido</translation>
 <translation id="7768784765476638775">Escuchar Selección</translation>
 <translation id="8044899503464538266">Lento</translation>
+<translation id="9030754204056345429">Más rápida</translation>
 </translationbundle>

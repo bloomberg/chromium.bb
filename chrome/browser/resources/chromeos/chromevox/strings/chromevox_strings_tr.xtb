@@ -7,6 +7,7 @@
 <translation id="1023866615269196768">Farklı satıra veya sütuna geçildi.</translation>
 <translation id="1025074108959230262">Yapışkan mod devre dışı bırakıldı</translation>
 <translation id="1031961866430398710">sonra</translation>
+<translation id="1038643060055067718">Satır sayısı:</translation>
 <translation id="1038795173450935438">Bir sayfadaki öğeler arasında ilerlemek için Arama + Sağ Ok veya geriye atlamak için Arama + Sol Ok tuşlarına basın. Sonraki satıra gitmek için Arama + Aşağı Ok tuşlarına basın. Önceki satıra gitmek için Arama + Yukarı Ok tuşlarını kullanın. Tıklamak istediğiniz bir öğeye ulaşırsanız Arama + Boşluk tuşlarına basın.</translation>
 <translation id="1044777062731150180">Üst bilgi yok.</translation>
 <translation id="106222400312645156">rwhdr</translation>
@@ -109,6 +110,7 @@
 <translation id="2110480898214777136">Bir sayfa, iletişim veya kapsayıcı içinde baştan sona veya sondan başa sarma</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">erişim tuşu:<ph name="KEY" /></translation>
+<translation id="2138345533858834403">Ekranın üst kısmındaki ChromeVox panelinde yenilenebilir bir braille ekranın çıktısını simüle eder.</translation>
 <translation id="2169714232367507776">Mevcut öğeyi tıkla</translation>
 <translation id="2179452035581866348">ChromeVox gerekli bilgilerin yanı sıra ek bilgiler sağlamak için sesleri kullanır. Hangi sesin ne anlama geldiğini öğrendiğinizde bu seslerden faydalanarak daha hızlı gezinebilirsiniz. Kullanmaya alıştıktan sonra konuşma formundaki ayrıntılı açıklamaları kapatabilir ve ses özelliğini, sayfayla ilgili gerekli bilgileri almak için kullanabilirsiniz. Aşağıda seslerin ve ne anlama geldiklerinin kapsamlı bir listesini bulabilirsiniz.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{kapa parantez}other{# kapa parantez}}</translation>
@@ -123,6 +125,7 @@
 <translation id="2344193891939537199">Tarih/saat denetimi</translation>
 <translation id="2347456970887948350">Bağlantı</translation>
 <translation id="2359897517538099099">Tablo modunda değil.</translation>
+<translation id="2381733276052567791">Konuşmayı açın veya kapatın</translation>
 <translation id="2390264819538553347">İlerlemek için enter tuşuna, geri gitmek için geri tuşuna basın.</translation>
 <translation id="241124561063364910">ardından</translation>
 <translation id="2416512023405990736">İşaretlenmemiş onay kutusu</translation>
@@ -211,6 +214,7 @@
 <translation id="3138767756593758860">Önemli nokta listesini göster</translation>
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Sonraki Satır</translation>
+<translation id="3153024374267644603">Konuşma açık</translation>
 <translation id="3155083529632865074">Önceki düğme yok.</translation>
 <translation id="3163593631834463955">Boş sütun üst bilgisi</translation>
 <translation id="316542773973815724">Gezinme</translation>
@@ -223,6 +227,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="3229375994964697375">Ziyaret edilmiş bağlantı</translation>
 <translation id="3232388865800379423">Pop-up düğme</translation>
 <translation id="3241052487511142956">Ziyaret edilmiş olan önceki bağlantı</translation>
+<translation id="3241638166094654466">Her satırdaki hücre sayısı:</translation>
 <translation id="3286390186030710347">Kaydırma çubuğu</translation>
 <translation id="3299925995433437805">Ziyaret edilmiş başka sonraki bağlantı yok.</translation>
 <translation id="3307886118343381874">Tablonun sonuna git</translation>
@@ -379,6 +384,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="4376316291247992553">Grafiği Braille Olarak Göster</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">reset</translation>
+<translation id="4457472090507035117">Geçerli sesi seçin:</translation>
 <translation id="4471074325120394300">Bağlantı yok.</translation>
 <translation id="4476183483923481720">yeni satır</translation>
 <translation id="4482330759234983253">Önceki tablo</translation>
@@ -452,7 +458,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="5105050547967751155">rq</translation>
 <translation id="5110983769041734144">Önceki form alanı yok.</translation>
 <translation id="5111640677200759579">Sütun üst bilgisi</translation>
-<translation id="5117636609870536415">@ed</translation>
 <translation id="5136967254288895616">Önceki bağlantı yok.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="517143700877085897">, seçili değil</translation>
@@ -666,6 +671,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
 <translation id="7221740160534240920">satır</translation>
 <translation id="7226216518520804442">lst</translation>
+<translation id="7229749224609077523">6 noktalı bir braille tablosu seçin:</translation>
 <translation id="72393384879519786">Başlık</translation>
 <translation id="7241683698754534149">Uzun açıklamayı yeni sekmede aç</translation>
 <translation id="7248671827512403053">Uygulama</translation>
@@ -739,6 +745,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7974390230414479278">Menü öğesi</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{tırnak işareti}other{# tırnak işareti}}</translation>
+<translation id="8017588669690167134">Konuşma kapalı</translation>
 <translation id="8033827949643255796">seçildi</translation>
 <translation id="8035962149453661158">en çok:<ph name="X" /></translation>
 <translation id="8042761080832772327">Metni düzenle, arama girişi</translation>
@@ -794,7 +801,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8638532244051952400">Geçerli hücre koordinatlarını söyle</translation>
 <translation id="8650576015643545550">Önceki liste yok.</translation>
 <translation id="8651481478098336970">sesi kapat</translation>
-<translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Bağlantı listesini göster</translation>
 <translation id="8664519043722036194">saniye</translation>
 <translation id="867187640362843212">Başlık 5</translation>
@@ -827,6 +833,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="9027462562263121875">Tablo yok.</translation>
 <translation id="9040132695316389094">Başlık 1</translation>
 <translation id="9043969572162476692">%<ph name="NUM" /></translation>
+<translation id="9061884144798498064">8 noktalı bir braille tablosu seçin:</translation>
 <translation id="9065283790526219006">+popup</translation>
 <translation id="9077213568694924680">seçimden kaldırıldı</translation>
 <translation id="9082874451376019682">Önceki kaydırma çubuğu yok.</translation>

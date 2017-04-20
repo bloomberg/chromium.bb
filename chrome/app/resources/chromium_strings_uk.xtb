@@ -239,6 +239,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8340674089072921962">Раніше ви входили в обліковий запис <ph name="USER_EMAIL_ADDRESS" /> у Chromium</translation>
 <translation id="8453117565092476964">Архів програми встановлення пошкоджений або недійсний. Завантажте Chromium ще раз.</translation>
 <translation id="8493179195440786826">Версія Chromium застаріла</translation>
+<translation id="8563206822260884157">Використовуйте надійний пароль, згенерований Chromium</translation>
 <translation id="85843667276690461">Отримати довідку щодо користування Chromium</translation>
 <translation id="8586442755830160949">Авторське право <ph name="YEAR" /> Автори Chromium. Усі права захищено.</translation>
 <translation id="8621669128220841554">Не вдалося встановити через невизначену помилку. Завантажте Chromium ще раз.</translation>
@@ -254,6 +255,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8897323336392112261">Розширення також змінило сторінку, яка відкривається під час запуску Chromium або натискання кнопки "Домашня сторінка".</translation>
 <translation id="8907580949721785412">Chromium намагається показати паролі. Щоб дозволити, введіть свій пароль Windows.</translation>
 <translation id="894903460958736500">Програмне забезпечення, запущене на вашому комп’ютері, не сумісне з Chromium.</translation>
+<translation id="8968921422458636175">Chromium збереже цей пароль тут: <ph name="SAVED_PASSWORD_LINK" />. Не потрібно його запам’ятовувати.</translation>
 <translation id="8974095189086268230">ОС Chromium стала можливою завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="8985587603644336029">Хтось раніше входив у Chromium на цьому комп’ютері як <ph name="ACCOUNT_EMAIL_LAST" />. Якщо це не ваш обліковий запис, створіть нового користувача Chromium, щоб зберігати свою інформацію окремо.
 

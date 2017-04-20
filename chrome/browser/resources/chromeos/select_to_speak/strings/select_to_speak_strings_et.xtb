@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1224275271335624810">Kõige kiirem</translation>
 <translation id="1588438908519853928">Tavaline</translation>
 <translation id="2089387485033699258">et</translation>
 <translation id="335581015389089642">Kõne</translation>
+<translation id="4274874082286476934">Valige kõne kiirus:</translation>
+<translation id="4276663915471735629">Funktsiooni Vali ja kuula valikud</translation>
+<translation id="5589989204720007810">Hoidke all otsinguklahvi ja klõpsake või lohistage rääkimiseks.</translation>
+<translation id="6029587122245504742">Kõige aeglasem</translation>
+<translation id="6837853484260746864">Valige hääl:</translation>
 <translation id="7019805045859631636">Kiire</translation>
 <translation id="7768784765476638775">Vali rääkimiseks</translation>
 <translation id="8044899503464538266">Aeglane</translation>
+<translation id="9030754204056345429">Kiirem</translation>
 </translationbundle>

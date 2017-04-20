@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1224275271335624810">الأسرع</translation>
 <translation id="1588438908519853928">عادي</translation>
 <translation id="2089387485033699258">ar</translation>
 <translation id="335581015389089642">الحديث</translation>
+<translation id="4274874082286476934">تحديد معدّل سرعة الكلام:</translation>
+<translation id="4276663915471735629">خيارات التحديد للتحدّث</translation>
+<translation id="5589989204720007810">اضغط باستمرار على البحث وانقر أو اسحب لتحدُّث أي شيء.</translation>
+<translation id="6029587122245504742">الأبطأ</translation>
+<translation id="6837853484260746864">تحديد صوت:</translation>
 <translation id="7019805045859631636">سريع</translation>
 <translation id="7768784765476638775">حدّد للتحدث</translation>
 <translation id="8044899503464538266">بطيء</translation>
+<translation id="9030754204056345429">أسرع</translation>
 </translationbundle>

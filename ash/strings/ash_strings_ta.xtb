@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">இணைப்பைச் சேர்</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ஆனது <ph name="DOMAIN" /> ஆல் நிர்வகிக்கப்படும் பொது அமர்வாகும்</translation>
+<translation id="3000461861112256445">மோனோ ஆடியோ</translation>
 <translation id="3009178788565917040">வெளியீடு</translation>
 <translation id="3019353588588144572"><ph name="TIME_REMAINING" /> இல் பேட்டரி முழுவதும் சார்ஜ் ஆகிவிடும்</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">ஸ்டைலஸ் கருவிகள்</translation>
 <translation id="3368922792935385530">இணைக்கப்பட்டது</translation>
 <translation id="3371140690572404006">USB-C சாதனம் (வலது பக்கம் முன்னே இருக்கும் போர்ட்)</translation>
+<translation id="3400357268283240774">கூடுதல் அமைப்புகள்</translation>
 <translation id="3445925074670675829">USB-C சாதனம்</translation>
 <translation id="3473479545200714844">திரை உருப்பெருக்கி</translation>
+<translation id="3510164367642747937">மவுஸ் கர்சரைத் தனிப்படுத்து</translation>
 <translation id="3547954654003013442">ப்ராக்ஸி அமைப்புகள்</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
 <translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">திரையைப் பூட்டுவதற்கான குறுக்குவழி மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">தொடர்பைத் துண்டி</translation>
+<translation id="4849058404725798627">விசைப்பலகை ஃபோகஸ் மூலம் ஆப்ஜெக்ட்டைத் தனிப்படுத்து</translation>
 <translation id="4872237917498892622">Alt+Search அல்லது Shift</translation>
 <translation id="4895488851634969361">பேட்டரி நிரம்பியது.</translation>
 <translation id="4918086044614829423">ஏற்கிறேன்</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">அனுப்பும் சாதனங்கள் உள்ளன</translation>
 <translation id="5170568018924773124">கோப்புறையில் காண்பி</translation>
+<translation id="5207949376430453814">உரைச் சுட்டியைத் தனிப்படுத்து</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>
 <translation id="523505283826916779">அணுகல்தன்மை அமைப்புகள்</translation>
 <translation id="5313326810920013265">புளூடூத் அமைப்புகள்</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">கையெழுத்து உள்ளீடு</translation>
 <translation id="6537270692134705506">திரையைப் படமெடு</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
+<translation id="6627638273713273709">தேடல்+ஷிஃப்ட்+K</translation>
 <translation id="6650933572246256093">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">IME மெனு பொத்தான்</translation>
 <translation id="6713285437468012787">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" ஆனது இணைக்கப்பட்டது மற்றும் இப்போது எல்லா பயனர்களுக்கும் கிடைக்கக்கூடியதாக உள்ளது. அமைப்புகளைப் பயன்படுத்தி இந்த இணைத்தலை நீங்கள் அகற்றலாம்.</translation>
@@ -198,6 +204,7 @@
 <translation id="7098389117866926363">USB-C சாதனம் (பின்பக்கம் உள்ள இடது போர்ட்)</translation>
 <translation id="7129360219436193655">லேசர் பாயின்டர் பயன்முறை</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">ஆல்ட்+ஷிஃப்ட்+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> வினாடிகளில் பழைய தெளிவுதிறனுக்கு மாற்றியமைக்கப்படும்</translation>
 <translation id="7246339268451149667">கைரேகை மூலம் திறப்பதை இயக்கவா?</translation>
 <translation id="7256634071279256947">பின்பக்க மைக்ரோஃபோன்</translation>
@@ -232,6 +239,7 @@
 <translation id="8308637677604853869">முந்தைய மெனு</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
 <translation id="8433186206711564395">நெட்வொர்க் அமைப்புகள்</translation>
+<translation id="8433977262951327081">உள்ளீட்டு விருப்பங்கள் மெனு குமிழியை, ஷெல்ஃபில் காட்டுவதற்கான குறுக்குவழி மாறியுள்ளது. <ph name="OLD_SHORTCUT" />க்குப் பதிலாக <ph name="NEW_SHORTCUT" />ஐப் பயன்படுத்தவும்.</translation>
 <translation id="8454013096329229812">வைஃபை இயக்கத்தில் உள்ளது.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: மீண்டும் இணைக்கிறது...</translation>
 <translation id="8517041960877371778">இயக்கப்பட்டிருக்கும் போது உங்கள் <ph name="DEVICE_TYPE" /> இல் சார்ஜ் ஏறாது.</translation>

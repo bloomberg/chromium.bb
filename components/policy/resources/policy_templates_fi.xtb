@@ -161,7 +161,6 @@
 <translation id="1583248206450240930">Käytä tuotetta <ph name="PRODUCT_FRAME_NAME" /> oletuksena</translation>
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
-<translation id="1617384279878333801">Salli profiilien luominen käyttäjäprofiilien hallinnassa</translation>
 <translation id="163200210584085447">Tämän luettelon osoitemalleja verrataan pyytävän URL-osoitteen
       suojaustiedon alkuperään. Jos vastaavuus havaitaan, videontallennuslaitteiden
       käyttö sallitaan SAML-kirjautumissivuilla. Jos vastaavuutta ei löydetä,
@@ -887,15 +886,6 @@ Käytännön arvot tulee määrittää millisekunteina. Arvoja voi valita välil
       Jos näitä käytäntöjä ei ole määritetty, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="3758249152301468420">Poista kehittäjätyökalut käytöstä</translation>
 <translation id="3765260570442823273">Käyttämättömän käyttökerran uloskirjausvaroituksen kesto</translation>
-<translation id="3768412594120638208">Hallinnoi, minkä tyyppisiä laajennuksia tai sovelluksia saa asentaa.
-
-Tämä asetus lisää sallittujen luetteloon ne sovellus- tai laajennustyypit, jotka tuotteeseen <ph name="PRODUCT_NAME" /> saa asentaa. Arvo on merkkijonojen luettelo. Kunkin merkkijonon tulee olla jokin seuraavista: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Saat lisätietoja näistä tyypeistä tuotteen <ph name="PRODUCT_NAME" /> laajennuksien dokumentaatiosta.
-
-Huomaa, että tämä käytäntö koskee myös laajennuksia ja sovelluksia, jotka pakotetaan asennettaviksi ExtensionInstallForcelist-käytännön avulla.
-
-Jos tämä asetus on määritetty, sallittujen luetteloon kuulumattomia sovellus- tai laajennustyyppejä ei asenneta.
-
-Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajennuksia voi asentaa.</translation>
 <translation id="3780152581321609624">Lisää standardista poikkeava portti Kerberos-SPN:ään</translation>
 <translation id="3780319008680229708">Jos tämän käytännön arvo on Tosi, Cast-yläpalkkikuvake näytetään aina yläpalkissa tai ylivuotovalikossa, eivätkä käyttäjät voi poistaa sitä.
 
@@ -1889,9 +1879,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6786967369487349613">Määritä roaming-profiilihakemisto</translation>
 <translation id="6810445994095397827">Estä JavaScript näissä sivustoissa</translation>
 <translation id="681446116407619279">Tuetut todennusjärjestelmät</translation>
-<translation id="6828905844648501476">Jos tämän käytännön arvo on Tosi tai sitä ei määritetä, <ph name="PRODUCT_NAME" /> sallii uusien profiilien luomisen käyttäjäprofiilien hallinnassa.
-
-      Jos tämän käytännön arvo on Epätosi, <ph name="PRODUCT_NAME" /> ei salli uusien profiilien luomista käyttäjäprofiilien hallinnassa.</translation>
 <translation id="685769593149966548">Pakota rajoitettu tila YouTubessa</translation>
 <translation id="687046793986382807">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 35 alkaen.
 

@@ -210,6 +210,7 @@
 <translation id="7242029209006116544">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Google Chrome. Данните ви в браузъра, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. По избор можете да създадете нов потребителски профил, за да отделите съществуващите си данни в Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Този компютър скоро ще спре да получава актуализации на Google Chrome, тъй като Windows XP и Windows Vista вече няма да се поддържат.</translation>
 <translation id="7339898014177206373">Нов прозорец</translation>
+<translation id="7369650938475876456">Използвайте надеждна парола, генерирана от Chrome</translation>
 <translation id="7398801000654795464">Бяхте влезли в Chrome като <ph name="USER_EMAIL_ADDRESS" />. Моля, използвайте същия профил, за да влезете отново.</translation>
 <translation id="7400722733683201933">Всичко за Google Chrome</translation>
 <translation id="7408085963519505752">Общи условия на Chrome OS</translation>
@@ -250,6 +251,7 @@
 <translation id="8290100596633877290">О, не! Google Chrome претърпя срив. Да се стартира ли отново сега?</translation>
 <translation id="8342675569599923794">Chrome блокира този файл, тъй като е опасен.</translation>
 <translation id="8406086379114794905">Помогнете за подобряването на Chrome</translation>
+<translation id="8439301513305169426">Chrome ще запази тази парола посредством <ph name="SAVED_PASSWORD_LINK" />. Не е нужно да я помните.</translation>
 <translation id="8455999171311319804">По избор: Помогнете за подобряването на Chrome OS, като автоматично изпращате до Google данни за диагностиката и употребата.</translation>
 <translation id="8478823064122749032">Инсталирайте Chrome на телефона си. Ще изпратим SMS на телефонния номер за възстановяване на профила ви: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8540666473246803645">Google Chrome</translation>

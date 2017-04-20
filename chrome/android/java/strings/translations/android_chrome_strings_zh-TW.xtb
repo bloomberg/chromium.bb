@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="1006017844123154345">在網路上開啟</translation>
+<translation id="1049743911850919806">無痕模式</translation>
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="1061441684050139317">Chrome 需要存取麥克風，才能與這個網站分享。</translation>
 <translation id="1080790410959514870">您即將登出由 <ph name="DOMAIN_NAME" /> 所管理的帳戶。儲存在這個裝置上的 Chrome 資料將因此遭到刪除，但這些資料仍會保留在您的 Google 帳戶中。</translation>
 <translation id="1111673857033749125">儲存在您其他裝置上的書籤會顯示在這裡。</translation>
+<translation id="1117638547758781293">子資源篩選器</translation>
 <translation id="1121094540300013208">使用資料和當機報告</translation>
 <translation id="1137305377394488060">過去 1 小時</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
@@ -61,6 +63,7 @@
 <translation id="1549000191223877751">移至其他視窗</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1571304935088121812">複製使用者名稱</translation>
+<translation id="1594030484168838125">選擇</translation>
 <translation id="1612196535745283361">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1623104350909869708">防止這個網頁產生其他對話方塊</translation>
@@ -148,6 +151,7 @@
 <translation id="2587052924345400782">已推出新版本</translation>
 <translation id="2593272815202181319">等寬</translation>
 <translation id="2621115761605608342">允許特定網站執行 JavaScript。</translation>
+<translation id="2631006050119455616">已儲存</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2677748264148917807">離開</translation>
 <translation id="2704606927547763573">已複製</translation>
@@ -394,6 +398,7 @@
 <translation id="5345083863238459644">這個裝置的<ph name="BEGIN_LINK" />位置資訊存取功能已一併關閉<ph name="END_LINK" />。</translation>
 <translation id="5349103022427743704">增強型新增至主畫面實驗功能</translation>
 <translation id="5372829067651257087">已複製網址。</translation>
+<translation id="5384883051496921101">這個網站即將與外部應用程式分享資訊，分享時會自動退出無痕模式。</translation>
 <translation id="5400569084694353794">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
 <translation id="5403644198645076998">只允許特定網站</translation>
 <translation id="5414836363063783498">驗證中…</translation>
@@ -504,6 +509,7 @@
 <translation id="6482749332252372425">儲存空間不足，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="6508332297647760142">實體化網路共用</translation>
 <translation id="6527303717912515753">分享</translation>
+<translation id="6534565668554028783">Google 的回應時間過長</translation>
 <translation id="6538442820324228105">已下載 <ph name="GBS" /> GB</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">選取要傳輸的分頁</translation>
@@ -577,6 +583,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 會使用您的位置資訊來顯示當地搜尋結果</translation>
 <translation id="7253272406652746122">在裝置的「設定」應用程式中，透過「帳戶」頁面新增 Google 帳戶。</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
+<translation id="7307288900373049735">正在連線至 Google… 這可能需要一分鐘的時間</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
@@ -688,6 +695,7 @@
 <translation id="8489271220582375723">開啟紀錄頁面</translation>
 <translation id="8493948351860045254">釋出空間</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
+<translation id="8499147970084652325">使用 Google 伺服器提供瀏覽建議。</translation>
 <translation id="8503813439785031346">使用者名稱</translation>
 <translation id="8514577642972634246">進入無痕模式</translation>
 <translation id="8523928698583292556">刪除已儲存的密碼</translation>
@@ -717,6 +725,7 @@
 <translation id="8788968922598763114">重新開啟最近關閉的分頁</translation>
 <translation id="8812260976093120287">在部分網站上，你可以在你的裝置上使用上述支援的付款應用程式付款。</translation>
 <translation id="8812942424849541387">您可以在「<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />」頁面中管理這項功能的運作方式</translation>
+<translation id="8812949859341886735">啟用這項功能後，Chrome 便會使用 Google 伺服器為你提供瀏覽建議；舉例來說，當你開啟新分頁，分頁中將顯示熱門網站、發燒主題文章以及個人化建議。</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="883635517171802338">禁止網站顯示彈出式視窗 (建議)</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -728,6 +737,7 @@
 <translation id="8920114477895755567">尚未取得家長詳細資料。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">在其他視窗中開啟</translation>
+<translation id="894871326938397531">要退出無痕模式嗎？</translation>
 <translation id="8951232171465285730">Chrome 為你節省了 <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL" /></translation>
 <translation id="8979340629087822094">過去 1 天</translation>

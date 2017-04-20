@@ -161,7 +161,6 @@
 <translation id="1583248206450240930">Utilizar o <ph name="PRODUCT_FRAME_NAME" /> por predefinição</translation>
 <translation id="1608755754295374538">URLs aos quais será concedido acesso a dispositivos de captura de áudio imediatamente</translation>
 <translation id="1617235075406854669">Ativar a eliminação do histórico de transferências e do navegador</translation>
-<translation id="1617384279878333801">Ativar adicionar pessoa no gestor de perfis</translation>
 <translation id="163200210584085447">Os padrões nesta lista serão comparados com a origem de
       segurança do URL que faz o pedido. Caso seja encontrada uma correspondência, o acesso a dispositivos de
       captura de vídeo é concedido nas páginas de início de sessão SAML. Caso não seja encontrada uma
@@ -887,15 +886,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se deixar estas políticas por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="3758249152301468420">Desativar Ferramentas do Programador</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de encerramento de sessão por inatividade</translation>
-<translation id="3768412594120638208">Controla os tipos de aplicações/extensões que têm permissão para serem instalados.
-
-          Esta definição coloca os tipos de extensões/aplicações permitidos na lista de permissões que podem ser instalados no <ph name="PRODUCT_NAME" />. O valor é uma lista de strings, em que cada uma deverá ser de um dos seguintes tipos: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" e "platform_app". Consulte a documentação sobre extensões do <ph name="PRODUCT_NAME" /> para obter mais informações sobre estes tipos.
-
-          Note que esta política também afeta as extensões e as aplicações cuja instalação será forçada através de ExtensionInstallForcelist.
-
-          Se esta definição estiver configurada, as extensões/aplicações que tenham um tipo não existente na lista não serão instaladas.
-
-          Se esta definição ficar por configurar, não serão impostas restrições aos tipos de extensões/aplicações aceitáveis.</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN do Kerberos</translation>
 <translation id="3780319008680229708">Se esta política estiver definida como verdadeira, o ícone da barra de ferramentas do Google Cast é sempre apresentado na barra de ferramentas ou no menu adicional e os utilizadores não podem removê-lo.
 
@@ -1892,9 +1882,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6786967369487349613">Definir o diretório do perfil de roaming</translation>
 <translation id="6810445994095397827">Bloquear JavaScript nestes sites</translation>
 <translation id="681446116407619279">Esquemas de autenticação suportados</translation>
-<translation id="6828905844648501476">Se esta política for definida como verdadeira ou não configurada, o <ph name="PRODUCT_NAME" /> permite Adicionar pessoa a partir do gestor de utilizadores.
-
-      Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permite a criação de novos perfis a partir do gestor de utilizadores.</translation>
 <translation id="685769593149966548">Aplicar o Modo restrito rigoroso no YouTube</translation>
 <translation id="687046793986382807">Esta política foi retirada na versão 35 do <ph name="PRODUCT_NAME" />.
 

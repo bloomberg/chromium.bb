@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1006017844123154345">Ouvrir la version en ligne</translation>
+<translation id="1049743911850919806">Navigation privée</translation>
 <translation id="10614374240317010">Jamais enregistrés</translation>
 <translation id="1061441684050139317">Chrome doit disposer de l'accès au micro pour le partager avec ce site.</translation>
 <translation id="1080790410959514870">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />. Cette opération va entraîner la suppression des données Chrome stockées sur l'appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
 <translation id="1111673857033749125">Les favoris enregistrés sur vos autres appareils s'affichent ici.</translation>
+<translation id="1117638547758781293">Filtre de sous-ressource</translation>
 <translation id="1121094540300013208">Statistiques d'utilisation et rapports d'erreur</translation>
 <translation id="1137305377394488060">de la dernière heure</translation>
 <translation id="1145536944570833626">Supprimer les données existantes.</translation>
@@ -61,6 +63,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1549000191223877751">Déplacer vers autre fenêtre</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1571304935088121812">Copier le nom d'utilisateur</translation>
+<translation id="1594030484168838125">Sélectionner</translation>
 <translation id="1612196535745283361">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. Cette fonctionnalité est <ph name="BEGIN_LINK" />désactivée pour cet appareil<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
@@ -148,6 +151,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2587052924345400782">Version plus récente dispo.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2621115761605608342">Autorise le langage JavaScript pour un site spécifique.</translation>
+<translation id="2631006050119455616">Enregistré</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2704606927547763573">Copié</translation>
@@ -394,6 +398,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5345083863238459644">L'accès aux données de localisation est également <ph name="BEGIN_LINK" />désactivé pour cet appareil<ph name="END_LINK" />.</translation>
 <translation id="5349103022427743704">Écran "Ajouter à la page d'accueil" amélioré</translation>
 <translation id="5372829067651257087">L'URL a bien été copiée.</translation>
+<translation id="5384883051496921101">Ce site s'apprête à partager des informations avec une application en dehors du mode navigation privée.</translation>
 <translation id="5400569084694353794">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403644198645076998">N'autoriser que certains sites</translation>
 <translation id="5414836363063783498">Validation en cours…</translation>
@@ -504,6 +509,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6482749332252372425">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage insuffisant.</translation>
 <translation id="6508332297647760142">Partage du Web physique</translation>
 <translation id="6527303717912515753">Partager</translation>
+<translation id="6534565668554028783">Google a mis trop de temps à répondre</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> Go téléchargé(s)</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Sélectionnez un onglet à partager.</translation>
@@ -577,6 +583,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
 <translation id="7253272406652746122">Ajoutez un compte Google depuis la page "Comptes" dans l'application "Paramètres" de votre appareil.</translation>
 <translation id="7274013316676448362">Site bloqué</translation>
+<translation id="7307288900373049735">Mise en relation avec Google. Cette opération peut prendre une minute…</translation>
 <translation id="7333031090786104871">L'ajout du site précédent est toujours en cours</translation>
 <translation id="7352939065658542140">VIDÉO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partager 1 élément sélectionné}one{Partager # élément sélectionné}other{Partager # éléments sélectionnés}}</translation>
@@ -688,6 +695,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8489271220582375723">Ouvrir la page "Historique"</translation>
 <translation id="8493948351860045254">Libérer de l'espace</translation>
 <translation id="8497726226069778601">Aucune page à afficher pour le moment</translation>
+<translation id="8499147970084652325">Utiliser les serveurs Google pour fournir des suggestions de navigation.</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="8514577642972634246">Activer le mode navigation privée</translation>
 <translation id="8523928698583292556">Supprimer le mot de passe enregistré</translation>
@@ -717,6 +725,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8788968922598763114">Rouvrir le dernier onglet fermé</translation>
 <translation id="8812260976093120287">Sur certains sites Web, vous pouvez payer depuis votre appareil avec les applications de paiement compatibles indiquées ci-dessus.</translation>
 <translation id="8812942424849541387">Contrôler comment cela fonctionne dans <ph name="BEGIN_LINK1" />Paramètres<ph name="END_LINK1" /></translation>
+<translation id="8812949859341886735">Lorsque cette fonctionnalité est activée, Chrome utilise les serveurs Google pour fournir des suggestions de navigation (lorsque vous ouvrez un nouvel onglet, par exemple). Il peut s'agir de sites Web ou d'articles populaires, ou de suggestions personnalisées.</translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="883635517171802338">Bloquer l'affichage de fenêtres pop-up par les sites (recommandé)</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -728,6 +737,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8920114477895755567">En attente des coordonnées des parents…</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Ouvrir dans une autre fenêtre</translation>
+<translation id="894871326938397531">Quitter le mode navigation privée ?</translation>
 <translation id="8951232171465285730">Chrome vous a permis de gagner <ph name="MEGABYTES" /> Mo</translation>
 <translation id="8959122750345127698">Impossible d'accéder à <ph name="URL" />.</translation>
 <translation id="8979340629087822094">des dernières 24 heures</translation>

@@ -7,6 +7,7 @@
 <translation id="1023866615269196768">Egyesítve.</translation>
 <translation id="1025074108959230262">Beragadó mód kikapcsolva</translation>
 <translation id="1031961866430398710">majd</translation>
+<translation id="1038643060055067718">Sorok:</translation>
 <translation id="1038795173450935438">Az oldal elemei közötti továbblépéshez nyomja le a Keresés + jobbra nyíl billentyűkombinációt, a visszalépéshez pedig a Keresés + balra nyíl billentyűkombinációt. Ha a következő sorra kíván lépni, nyomja le a Keresés + a lefelé nyíl billentyűkombinációt. Az előző sorra lépéshez használja a Keresés + a felfelé nyíl billentyűkombinációt. Ha olyan elemhez ér, amelyre rá kíván kattintani, nyomja le a Keresés + szóköz billentyűkombinációt.</translation>
 <translation id="1044777062731150180">Nincsenek fejlécek</translation>
 <translation id="106222400312645156">sorfejléc</translation>
@@ -109,6 +110,8 @@
 <translation id="2110480898214777136">Csomagolás az elejétől a végéig vagy a végétől az elejéig egy oldalon, párbeszédpanelen vagy más tárolón belül</translation>
 <translation id="2119965627982867824">léptetőgomb</translation>
 <translation id="2121067395472282800">hozzáférési kulcs: <ph name="KEY" /></translation>
+<translation id="2138345533858834403">A frissíthető Braille-kijelző kimenetét szimulálja
+        a képernyő tetején elhelyezkedő ChromeVox-panelen.</translation>
 <translation id="2169714232367507776">Kattintás az aktuális elemre</translation>
 <translation id="2179452035581866348">A ChromeVox hangok használatával tájékoztat a lényeges és a kiegészítő információkról. Ha megtanulja az egyes hangok jelentését, gyorsabban navigálhat azok alapján. Ha megszokja a visszajelzéseket, kikapcsolhatja a bővített hangos leírásokat, és a hangok alapján megtudhatja az oldallal kapcsolatos lényeges információkat. Megmutatjuk a hangok és jelentésük teljes listáját.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{berekesztő zárójel}other{# berekesztő zárójel}}</translation>
@@ -123,6 +126,7 @@
 <translation id="2344193891939537199">Dátum és idő beállítása</translation>
 <translation id="2347456970887948350">Link</translation>
 <translation id="2359897517538099099">Nem táblázat módban van.</translation>
+<translation id="2381733276052567791">Szövegfelolvasás be- és kikapcsolása</translation>
 <translation id="2390264819538553347">Továbblépéshez nyomja le az Enter, visszalépéshez a Backspace billentyűt.</translation>
 <translation id="241124561063364910">azután</translation>
 <translation id="2416512023405990736">Nem bejelölt négyzet</translation>
@@ -211,6 +215,7 @@
 <translation id="3138767756593758860">Határjelek listájának megjelenítése</translation>
 <translation id="3143851963874289911">cella</translation>
 <translation id="3149472044574196936">Következő sor</translation>
+<translation id="3153024374267644603">Szövegfelolvasás bekapcsolása</translation>
 <translation id="3155083529632865074">Nincs előző gomb.</translation>
 <translation id="3163593631834463955">Üres oszlopfejléc</translation>
 <translation id="316542773973815724">Navigálás</translation>
@@ -223,6 +228,7 @@ Ha végzett az útmutatóval, a ChromeVox segítségével navigáljon a Bezárá
 <translation id="3229375994964697375">Felkeresett link</translation>
 <translation id="3232388865800379423">Előugró gomb</translation>
 <translation id="3241052487511142956">Előző felkeresett link</translation>
+<translation id="3241638166094654466">Az egyes sorokban található cellák száma:</translation>
 <translation id="3286390186030710347">Csúszka</translation>
 <translation id="3299925995433437805">Nincs következő felkeresett link.</translation>
 <translation id="3307886118343381874">Ugrás a táblázat végére</translation>
@@ -379,6 +385,7 @@ Ha végzett az útmutatóval, a ChromeVox segítségével navigáljon a Bezárá
 <translation id="4376316291247992553">Kép megtekintése Braille-formátumban</translation>
 <translation id="4391478986194775161">tartalominformáció</translation>
 <translation id="443163561286008705">visszaáll</translation>
+<translation id="4457472090507035117">Az aktuális hang kiválasztása:</translation>
 <translation id="4471074325120394300">Nincsenek linkek.</translation>
 <translation id="4476183483923481720">új sor</translation>
 <translation id="4482330759234983253">Előző táblázat</translation>
@@ -452,7 +459,6 @@ Ha végzett az útmutatóval, a ChromeVox segítségével navigáljon a Bezárá
 <translation id="5105050547967751155">kötelező</translation>
 <translation id="5110983769041734144">Nincs előző űrlap mező.</translation>
 <translation id="5111640677200759579">Oszlopfejléc</translation>
-<translation id="5117636609870536415">e-mail mező</translation>
 <translation id="5136967254288895616">Nincs előző link.</translation>
 <translation id="513774504516943387">link</translation>
 <translation id="517143700877085897">, nincs kiválasztva</translation>
@@ -666,6 +672,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
 <translation id="7221740160534240920">sor</translation>
 <translation id="7226216518520804442">list</translation>
+<translation id="7229749224609077523">6 pontos Braille-táblázat kiválasztása:</translation>
 <translation id="72393384879519786">Címsor</translation>
 <translation id="7241683698754534149">Hosszú leírás megnyitása új lapon</translation>
 <translation id="7248671827512403053">Alkalmazás</translation>
@@ -739,6 +746,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="7974390230414479278">Menüelem</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{idézőjel}other{# idézőjel}}</translation>
+<translation id="8017588669690167134">Szövegfelolvasás kikapcsolása</translation>
 <translation id="8033827949643255796">kijelölve</translation>
 <translation id="8035962149453661158">max.: <ph name="X" /></translation>
 <translation id="8042761080832772327">Szövegszerkesztés, keresési bevitel</translation>
@@ -794,7 +802,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="8638532244051952400">Aktuális cella koordinátáinak kimondása</translation>
 <translation id="8650576015643545550">Nincs előző lista.</translation>
 <translation id="8651481478098336970">némítás</translation>
-<translation id="8653031188082306838">url szerkesztése</translation>
 <translation id="8653646212587894517">Linklista megjelenítése</translation>
 <translation id="8664519043722036194">másodperc</translation>
 <translation id="867187640362843212">5-ös címsor</translation>
@@ -827,6 +834,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="9027462562263121875">Nincsenek táblázatok.</translation>
 <translation id="9040132695316389094">1-es címsor</translation>
 <translation id="9043969572162476692"><ph name="NUM" />%</translation>
+<translation id="9061884144798498064">8 pontos Braille-táblázat kiválasztása:</translation>
 <translation id="9065283790526219006">+előugr</translation>
 <translation id="9077213568694924680">eltávolítva a kiválasztottak közül</translation>
 <translation id="9082874451376019682">Nincs előző dia.</translation>

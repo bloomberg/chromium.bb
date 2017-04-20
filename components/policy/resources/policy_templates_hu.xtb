@@ -160,7 +160,6 @@
 <translation id="1583248206450240930">A <ph name="PRODUCT_FRAME_NAME" /> használata alapértelmezés szerint</translation>
 <translation id="1608755754295374538">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a hangrögzítő eszközökhöz</translation>
 <translation id="1617235075406854669">Böngészési és letöltési előzmények törlésének engedélyezése</translation>
-<translation id="1617384279878333801">Engedélyezi a személyek hozzáadását a profilkezelőben</translation>
 <translation id="163200210584085447">A listában szereplő mintákat a rendszer egyezteti a kérelmező
       URL biztonsági eredetével. Ha van egyezés, a böngésző a SAML
       bejelentkező oldalakon engedélyezi a videórögzítő eszközökhöz való
@@ -889,15 +888,6 @@
       Ha beállítatlanul hagyja ezeket a házirendeket, akkor a felhasználók maguk választhatják ki proxybeállításaikat.</translation>
 <translation id="3758249152301468420">Fejlesztőeszközök letiltása</translation>
 <translation id="3765260570442823273">A tétlenség miatti kijelentkeztetés figyelmeztető üzenetének időtartama</translation>
-<translation id="3768412594120638208">Azt irányítja, hogy mely alkalmazás-/bővítménytípusok telepítése engedélyezett.
-
-          A beállítás engedélyezőlistára teszi a <ph name="PRODUCT_NAME" />-ban telepíthető bővítmény-/alkalmazástípusokat. Az érték karakterláncok sorozata, melyek mindegyikének az alábbiak közül valamelyiknek kell lennie: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. A típusokkal kapcsolatos további információt a <ph name="PRODUCT_NAME" /> bővítményeinek dokumentációjában talál.
-
-          Ne feledje, hogy ez a házirend hatással van az ExtensionInstallForcelist alapján kényszerítetten telepített bővítményekre és alkalmazásokra is.
-
-          Ha konfigurálva van a beállítás, akkor azon bővítmények/alkalmazások, melyek típusa nem szerepel a listán, nem lesznek telepítve.
-
-          Ha a beállítás nincs konfigurálva, akkor nem vonatkoznak korlátozások az elfogadható bővítmény-/alkalmazástípusokra.</translation>
 <translation id="3780152581321609624">A Kerberos SPN tartalmazza a nem szabványos portot</translation>
 <translation id="3780319008680229708">Ha a házirend értéke igaz, akkor a Cast-eszköztár ikonja mindig megjelenik majd az eszköztáron vagy a további elemeket tartalmazó menüben, és a felhasználók nem távolíthatják el onnan.
 
@@ -1890,9 +1880,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6786967369487349613">Barangolási profilcímtár beállítása</translation>
 <translation id="6810445994095397827">JavaScript letiltása ezeken a webhelyeken</translation>
 <translation id="681446116407619279">Támogatott hitelesítési sémák</translation>
-<translation id="6828905844648501476">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> lehetővé teszi személyek hozzáadását a felhasználókezelőből.
-
-      Ha a házirend értéke hamis, akkor a <ph name="PRODUCT_NAME" /> nem teszi lehetővé új profilok létrehozását a profilkezelőben.</translation>
 <translation id="685769593149966548">Szigorú Korlátozott mód kényszerítése a YouTube-on</translation>
 <translation id="687046793986382807">Ez a házirend a(z) <ph name="PRODUCT_NAME" /> 35-ös verziójától kezdve megszűnt.
 

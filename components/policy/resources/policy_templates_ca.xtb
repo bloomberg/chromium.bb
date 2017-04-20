@@ -161,7 +161,6 @@
 <translation id="1583248206450240930">Fes servir <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
 <translation id="1617235075406854669">Activa la supressió de l'historial de baixades i del navegador</translation>
-<translation id="1617384279878333801">Permet que s'utilitzi l'opció Afegeix una persona al gestor de perfils</translation>
 <translation id="163200210584085447">Els patrons d'aquesta llista es compararan amb l'origen de la seguretat de l'URL sol·licitant. Si es troba alguna coincidència, l'URL obtindrà permís per accedir a dispositius de captura de vídeo en pàgines d'inici de sessió amb SAML. Si no es troba cap coincidència, l'accés es denegarà automàticament. Els patrons comodí no es permeten.</translation>
 <translation id="1655229863189977773">Defineix la mida de la memòria cau del disc en bytes</translation>
 <translation id="166427968280387991">Servidor intermediari</translation>
@@ -534,7 +533,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2592091433672667839">La durada de la inactivitat abans no es mostri l'estalvi de pantalla es mostra a la pantalla d'inici de sessió en mode de venta</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2633084400146331575">Activa els comentaris per veu</translation>
+<translation id="2633084400146331575">Activa els comentaris de veu</translation>
 <translation id="2646290749315461919">Us permet definir si els llocs web poden rastrejar la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web demani la ubicació física. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AskGeolocation" i l'usuari podrà canviar-lo.</translation>
 <translation id="2650049181907741121">Acció que cal dur a terme quan l'usuari tanca la tapa</translation>
 <translation id="2655233147335439767">Especifica l'URL del motor de cerca utilitzat en fer una cerca predeterminada. L'URL ha de contenir la cadena "<ph name="SEARCH_TERM_MARKER" />", que se substituirà, en el moment de fer la consulta, pels termes que l'usuari estigui cercant.
@@ -887,15 +886,6 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
           Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3758249152301468420">Desactiva les eines per a desenvolupadors</translation>
 <translation id="3765260570442823273">Durada del missatge d'advertència de tancament de la sessió per inactivitat</translation>
-<translation id="3768412594120638208">Controla quins tipus d'aplicacions i d'extensions es poden instal·lar.
-
-Aquesta opció afegeix a la llista blanca els tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME" />. El valor és una llista de cadenes i cadascuna d'elles hauria de ser una de les següents: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulteu la documentació sobre les extensions de <ph name="PRODUCT_NAME" /> per obtenir-ne més informació.
-
-Tingueu en compte que aquesta política també força les extensions i les aplicacions perquè s'instal·lin mitjançant ExtensionInstallForcelist.
-
-Si es configura aquesta opció, no s'instal·laran les extensions o les aplicacions d'un tipus que no aparegui a la llista.
-
-Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipus d'extensions i d'aplicacions acceptables.</translation>
 <translation id="3780152581321609624">Inclou un port no estàndard a l'SPN de Kerberos</translation>
 <translation id="3780319008680229708">Si aquesta política es defineix com a "true", la icona de la barra d'eines de Cast es mostrarà sempre a la barra d'eines o al menú addicional, i els usuaris no la podran suprimir.
 
@@ -1515,7 +1505,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Si aquesta política es deixa sense establir, els connectors que coincideixin amb els patrons de "DisabledPlugins" es bloquejaran i es desactivaran, de manera que l'usuari no podrà activar-los.</translation>
 <translation id="5795001131770861387">Activa la compatibilitat amb HTTP/0.9 als ports no predeterminats</translation>
 <translation id="5809728392451418079">Defineix el nom de visualització per als comptes locals del dispositiu</translation>
-<translation id="5814301096961727113">Estableix l'estat predeterminat dels comentaris per veu a la pantalla d'inici de sessió</translation>
+<translation id="5814301096961727113">Estableix l'estat predeterminat dels comentaris de veu a la pantalla d'inici de sessió</translation>
 <translation id="5815129011704381141">Reinicia automàticament després d'actualitzar</translation>
 <translation id="5815353477778354428">Configura el directori que <ph name="PRODUCT_FRAME_NAME" /> utilitzarà per emmagatzemar les dades de l'usuari.
 
@@ -1526,15 +1516,15 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Si no es defineix aquesta opció, s'utilitzarà el directori de perfil predeterminat.</translation>
 <translation id="5826047473100157858">Especifica si l'usuari pot obrir les pàgines en mode d'incògnit a <ph name="PRODUCT_NAME" />. Si se selecciona l'opció "activat" o no es defineix la política, les pàgines es podran obrir en mode d'incògnit. Si se selecciona l'opció "desactivat", les pàgines no es podran obrir en mode d'incògnit. Si se selecciona l'opció "forçat", les pàgines NOMÉS es podran obrir en mode d'incògnit.</translation>
 <translation id="5836064773277134605">Restringeix l'interval de port UDP utilitzat per l'amfitrió d'accés remot</translation>
-<translation id="5862253018042179045">Estableix l'estat predeterminat de la funció d'accessibilitat de comentaris per veu a la pantalla d'inici de sessió.
+<translation id="5862253018042179045">Estableix l'estat predeterminat de la funció d'accessibilitat de comentaris de veu a la pantalla d'inici de sessió.
 
-          Si el valor d'aquesta política s'estableix com a vertader, els comentaris per veu s'activaran quan es mostri la pantalla d'inici de sessió.
+          Si el valor d'aquesta política s'estableix com a vertader, els comentaris de veu s'activaran quan es mostri la pantalla d'inici de sessió.
 
-          Si el valor d'aquesta política s'estableix com a fals, els comentaris per veu es desactivaran quan es mostri la pantalla d'inici de sessió.
+          Si el valor d'aquesta política s'estableix com a fals, els comentaris de veu es desactivaran quan es mostri la pantalla d'inici de sessió.
 
-          Si s'estableix aquesta política, els usuaris la podran ignorar temporalment si activen o desactiven els comentaris per veu. No obstant això, l'elecció de l'usuari no és permanent i l'estat predeterminat es restablirà quan la pantalla d'inici de sessió es torni a mostrar o si l'usuari es manté inactiu a la pantalla d'inici de sessió durant un minut.
+          Si s'estableix aquesta política, els usuaris la podran ignorar temporalment si activen o desactiven els comentaris de veu. No obstant això, l'elecció de l'usuari no és permanent i l'estat predeterminat es restablirà quan la pantalla d'inici de sessió es torni a mostrar o si l'usuari es manté inactiu a la pantalla d'inici de sessió durant un minut.
 
-          Si no s'estableix aquesta política, els comentaris per veu es desactivaran quan la pantalla d'inici de sessió es mostri per primera vegada. Els usuaris poden activar o desactivar els comentaris per veu en qualsevol moment i el seu estat a la pantalla d'inici de sessió es mantindrà entre els usuaris.</translation>
+          Si no s'estableix aquesta política, els comentaris de veu es desactivaran quan la pantalla d'inici de sessió es mostri per primera vegada. Els usuaris poden activar o desactivar els comentaris de veu en qualsevol moment i el seu estat a la pantalla d'inici de sessió es mantindrà entre els usuaris.</translation>
 <translation id="5868414965372171132">Configuració de la xarxa per part de l'usuari</translation>
 <translation id="588135807064822874">Activa Toca per cercar</translation>
 <translation id="5883015257301027298">Configuració predeterminada de les galetes</translation>
@@ -1879,9 +1869,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6786967369487349613">Estableix el directori de perfils itinerants</translation>
 <translation id="6810445994095397827">Bloqueja JavaScript en aquests llocs</translation>
 <translation id="681446116407619279">Esquemes d'autenticació compatibles</translation>
-<translation id="6828905844648501476">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà que s'utilitzi l'opció Afegeix una persona des de l'administrador d'usuaris.
-
-      Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà crear perfils des del gestor de perfils.</translation>
 <translation id="685769593149966548">Aplica el mode restringit estricte a YouTube</translation>
 <translation id="687046793986382807">Aquesta política s'ha retirat a partir de la versió 35 de <ph name="PRODUCT_NAME" />.
 
@@ -1894,15 +1881,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Determina el conjunt d'URL que es carrega quan s'inicia la sessió de demostració. Aquesta política substituirà qualsevol altre mecanisme d'establir l'URL inicial i, per tant, només es pot aplicar a una sessió que no estigui associada amb cap usuari en particular.</translation>
 <translation id="6908640907898649429">Configura el proveïdor de cerca predeterminat. Podeu especificar el proveïdor de cerca predeterminat que l'usuari farà servir o bé podeu desactivar la cerca predeterminada.</translation>
-<translation id="6915442654606973733">Activa la funció d'accessibilitat de comentaris per veu.
+<translation id="6915442654606973733">Activa la funció d'accessibilitat de comentaris de veu.
 
-          Si el valor d'aquesta política s'estableix com a vertader, els comentaris per veu sempre estaran activats.
+          Si el valor d'aquesta política s'estableix com a vertader, els comentaris de veu sempre estaran activats.
 
-          Si el valor d'aquesta política s'estableix com a fals, els comentaris per veu sempre estaran desactivats.
+          Si el valor d'aquesta política s'estableix com a fals, els comentaris de veu sempre estaran desactivats.
 
           Si s'estableix aquesta política, els usuaris no podran canviar-la ni ignorar-la.
 
-          Si no s'estableix aquesta política, els comentaris per veu es desactivaran inicialment, però l'usuari els podrà activar en qualsevol moment.</translation>
+          Si no s'estableix aquesta política, els comentaris de veu es desactivaran inicialment, però l'usuari els podrà activar en qualsevol moment.</translation>
 <translation id="6923366716660828830">Especifica el nom del proveïdor de cerca predeterminat. Si es deixa buit o no es defineix, s'utilitzarà el nom de l'amfitrió especificat a l'URL de cerca. Aquesta política només es tindrà en compte si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="6931242315485576290">Desactiva la sincronització de dades amb Google</translation>
 <translation id="6936894225179401731">Especifica el nombre màxim de connexions simultànies al servidor intermediari.

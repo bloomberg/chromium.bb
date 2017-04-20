@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">Adicionar ligação</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> é uma sessão pública gerida por <ph name="DOMAIN" /></translation>
+<translation id="3000461861112256445">Áudio mono</translation>
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3019353588588144572">Tempo restante até a bateria estar totalmente carregada: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">Ferramentas da caneta stylus</translation>
 <translation id="3368922792935385530">Ligado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
+<translation id="3400357268283240774">Definições adicionais</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="3510164367642747937">Realçar cursor do rato</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">O atalho para bloquear o ecrã foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desligar</translation>
+<translation id="4849058404725798627">Realçar objeto com foco do teclado</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
 <translation id="4918086044614829423">Aceitar</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5170568018924773124">Mostrar numa pasta</translation>
+<translation id="5207949376430453814">Realçar cursor do texto</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
 <translation id="523505283826916779">Definições de acessibilidade</translation>
 <translation id="5313326810920013265">Definições de Bluetooth</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">Entrada de escrita manual</translation>
 <translation id="6537270692134705506">Capturar ecrã</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">Botão de menu IME</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" foi sincronizado e está agora disponível para todos os utilizadores. Pode remover esta sincronização através das Definições.</translation>
@@ -198,6 +204,7 @@ Prima Ctrl+Alt+Z para desativar.</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira esquerda)</translation>
 <translation id="7129360219436193655">Modo de ponteiro de laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Pretende ativar o desbloqueio por impressão digital?</translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
@@ -232,6 +239,7 @@ Prima Ctrl+Alt+Z para desativar.</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433186206711564395">Definições da rede</translation>
+<translation id="8433977262951327081">O atalho para mostrar o balão do menu de opções de introdução na prateleira foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">A ligação Wi-Fi está ativada.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: a restabelecer ligação...</translation>
 <translation id="8517041960877371778">O <ph name="DEVICE_TYPE" /> pode não carregar enquanto estiver ligado.</translation>

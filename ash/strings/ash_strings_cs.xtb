@@ -66,6 +66,7 @@
 <translation id="2946119680249604491">Přidat připojení</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> je veřejná relace spravovaná doménou <ph name="DOMAIN" />.</translation>
+<translation id="3000461861112256445">Zvuk mono</translation>
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3019353588588144572">Čas zbývající do úplného nabití baterie: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -83,8 +84,10 @@ Vypnete jej stisknutím kombinace kláves Alt + Hledat nebo Shift.</translation>
 <translation id="3364721542077212959">Nástroje pro dotykové pero</translation>
 <translation id="3368922792935385530">Připojeno</translation>
 <translation id="3371140690572404006">Zařízení USB Type-C (pravý přední port)</translation>
+<translation id="3400357268283240774">Další nastavení</translation>
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
 <translation id="3473479545200714844">Lupa obrazovky</translation>
+<translation id="3510164367642747937">Zvýraznit ukazatel myši</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
 <translation id="3595596368722241419">Baterie je nabitá</translation>
@@ -123,6 +126,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Hledat nebo Shift.</translation>
 <translation id="4544944664594876241">Zkratka k odemknutí obrazovky se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Odpojit</translation>
+<translation id="4849058404725798627">Zvýraznit objekt se zaměřením pro zadávání</translation>
 <translation id="4872237917498892622">Alt + Vyhledávání nebo Shift</translation>
 <translation id="4895488851634969361">Baterie je plně nabita.</translation>
 <translation id="4918086044614829423">Přijmout</translation>
@@ -130,6 +134,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Hledat nebo Shift.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Dostupná zařízení Cast</translation>
 <translation id="5170568018924773124">Zobrazit ve složce</translation>
+<translation id="5207949376430453814">Zvýraznit textový kurzor</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="523505283826916779">Nastavení usnadnění přístupu</translation>
 <translation id="5313326810920013265">Nastavení Bluetooth</translation>
@@ -178,6 +183,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Hledat nebo Shift.</translation>
 <translation id="6521655319214113338">Zadávání psaním rukou</translation>
 <translation id="6537270692134705506">Pořídit snímek obrazovky</translation>
 <translation id="6585808820553845416">Relace skončí za <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Vyhledávací tlačítko + Shift + K</translation>
 <translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">Tlačítko nabídky IME</translation>
 <translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ bylo spárováno a je nyní k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
@@ -197,6 +203,7 @@ Deaktivujete ji stisknutím kláves Ctrl+Alt+Z.</translation>
 <translation id="7098389117866926363">Zařízení USB Type-C (levý zadní port)</translation>
 <translation id="7129360219436193655">Režim laserového ukazovátka</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Povolit odemknutí otiskem prstu?</translation>
 <translation id="7256634071279256947">Zadní mikrofon</translation>
@@ -231,6 +238,7 @@ Deaktivujete ji stisknutím kláves Ctrl+Alt+Z.</translation>
 <translation id="8308637677604853869">Předchozí nabídka</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433186206711564395">Nastavení sítě</translation>
+<translation id="8433977262951327081">Klávesová zkratka k zobrazení bubliny s možnostmi vstupu na poličce se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Připojení Wi-Fi je zapnuto.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Obnovování připojení...</translation>
 <translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>

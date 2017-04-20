@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="1224275271335624810">Hurtigst</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="2089387485033699258">da</translation>
 <translation id="335581015389089642">Tale</translation>
+<translation id="4274874082286476934">Vælg talehastighed:</translation>
+<translation id="4276663915471735629">Valgmuligheder for Tekstoplæsning</translation>
+<translation id="5589989204720007810">Hold søgeknappen nede, og klik eller træk for at få teksten læst højt.</translation>
+<translation id="6029587122245504742">Langsomst</translation>
+<translation id="6837853484260746864">Vælg en stemme:</translation>
 <translation id="7019805045859631636">Hurtig</translation>
 <translation id="7768784765476638775">Vælg-for-at-tale</translation>
 <translation id="8044899503464538266">Langsom</translation>
+<translation id="9030754204056345429">Hurtigere</translation>
 </translationbundle>

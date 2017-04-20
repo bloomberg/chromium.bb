@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1006017844123154345">Open Online</translation>
+<translation id="1049743911850919806">Incognito</translation>
 <translation id="10614374240317010">Never saved</translation>
 <translation id="1061441684050139317">Chrome needs microphone access to share it with this site.</translation>
 <translation id="1080790410959514870">You are signing out of an account managed by <ph name="DOMAIN_NAME" />. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.</translation>
 <translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
+<translation id="1117638547758781293">Subresource Filter</translation>
 <translation id="1121094540300013208">Usage and crash reports</translation>
 <translation id="1137305377394488060">past hour</translation>
 <translation id="1145536944570833626">Delete existing data.</translation>
@@ -61,6 +63,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1549000191223877751">Move to other window</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1571304935088121812">Copy username</translation>
+<translation id="1594030484168838125">Choose</translation>
 <translation id="1612196535745283361">Chrome needs location access to scan for devices. Location access is <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
@@ -148,6 +151,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2587052924345400782">Newer version is available</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2621115761605608342">Allow JavaScript for a specific site.</translation>
+<translation id="2631006050119455616">saved</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2677748264148917807">Leave</translation>
 <translation id="2704606927547763573">Copied</translation>
@@ -394,6 +398,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5345083863238459644">Location access is also <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
 <translation id="5349103022427743704">Improved Add to Home screen Experiment</translation>
 <translation id="5372829067651257087">URL copied.</translation>
+<translation id="5384883051496921101">This site is about to share information with an app outside of incognito mode.</translation>
 <translation id="5400569084694353794">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Only allow certain sites</translation>
 <translation id="5414836363063783498">Verifying…</translation>
@@ -504,6 +509,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> download failed due to lack of storage space.</translation>
 <translation id="6508332297647760142">Physical Web Sharing</translation>
 <translation id="6527303717912515753">Share</translation>
+<translation id="6534565668554028783">Google took too long to respond</translation>
 <translation id="6538442820324228105">Downloaded <ph name="GBS" /> GB</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Select a tab to beam</translation>
@@ -577,6 +583,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
 <translation id="7253272406652746122">Add a Google account from the Accounts page in your device’s Settings app.</translation>
 <translation id="7274013316676448362">Blocked site</translation>
+<translation id="7307288900373049735">Contacting Google…this may take a minute</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Share 1 selected item}other{Share # selected items}}</translation>
@@ -688,6 +695,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8489271220582375723">Open the history page</translation>
 <translation id="8493948351860045254">Free up space</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
+<translation id="8499147970084652325">Use Google servers to provide browsing suggestions.</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="8523928698583292556">Delete stored password</translation>
@@ -715,6 +723,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8788968922598763114">Reopen the last closed tab</translation>
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
 <translation id="8812942424849541387">Control how this works in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
+<translation id="8812949859341886735">When this feature is turned on, Chrome will use Google servers to provide browsing suggestions, e.g. when you open a new tab. This includes popular websites, trending articles as well as personalised suggestions.</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883635517171802338">Block sites from showing pop-ups (recommended)</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -726,6 +735,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8920114477895755567">Waiting for details of parents.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Open in other window</translation>
+<translation id="894871326938397531">Leave incognito mode?</translation>
 <translation id="8951232171465285730">Chrome has saved you <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
 <translation id="8979340629087822094">past day</translation>

@@ -162,7 +162,6 @@
 <translation id="1583248206450240930">Utilizează <ph name="PRODUCT_FRAME_NAME" /> în mod prestabilit</translation>
 <translation id="1608755754295374538">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului audio</translation>
 <translation id="1617235075406854669">Permite ștergerea istoricului browserului și a istoricului descărcărilor</translation>
-<translation id="1617384279878333801">Activează adăugarea persoanelor în managerul de profiluri</translation>
 <translation id="163200210584085447">Șabloanele din această listă vor fi comparate cu
       originea de securitate a adresei URL solicitante. Dacă este identificată o potrivire, accesul la dispozitivele de capturare a
       conținutului video va fi acordat pe paginile de conectare SAML. Dacă nu este identificată nicio potrivire,
@@ -898,15 +897,6 @@
       Dacă nu configurezi politicile, utilizatorii vor avea permisiunea să aleagă setările de proxy.</translation>
 <translation id="3758249152301468420">Dezactivează instrumentele pentru dezvoltatori</translation>
 <translation id="3765260570442823273">Durata mesajului de avertizare privind deconectarea din cauza inactivității</translation>
-<translation id="3768412594120638208">Controlează tipurile de aplicații/extensii a căror instalare este permisă.
-
-          Această setare adaugă pe lista albă tipurile permise de extensii/aplicații care pot fi instalate în <ph name="PRODUCT_NAME" />. Valoarea este o listă de șiruri, iar fiecare dintre acestea trebuie să fie unul dintre următoarele: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Pentru informații suplimentare despre aceste tipuri, consultă documentația referitoare la extensiile <ph name="PRODUCT_NAME" />.
-
-          Reține că această politică afectează, de asemenea, extensiile și aplicațiile care urmează să fie instalate forțat prin ExtensionInstallForcelist.
-
-          Dacă această setare este configurată, extensiile/aplicațiile de tipuri neincluse pe listă nu vor fi instalate.
-
-          Dacă această setare nu este configurată, nu se impun restricții legate de tipurile de extensii/aplicații.</translation>
 <translation id="3780152581321609624">Include un port non-standard în codul SPN al protocolului Kerberos</translation>
 <translation id="3780319008680229708">Dacă această politică este activată, pictograma Cast din bara de instrumente va fi afișată întotdeauna în bara de instrumente sau în meniul suplimentar, iar utilizatorii nu o vor putea elimina.
 
@@ -1909,9 +1899,6 @@
 <translation id="6786967369487349613">Setează locația profilului de roaming</translation>
 <translation id="6810445994095397827">Blochează JavaScript de pe aceste site-uri</translation>
 <translation id="681446116407619279">Scheme de autentificare acceptate</translation>
-<translation id="6828905844648501476">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va permite utilizarea funcției Adaugă o persoană din managerul de utilizatori.
-
-      Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> nu va permite crearea unor noi profiluri din managerul de profiluri.</translation>
 <translation id="685769593149966548">Impune Modul restricționat strict pentru YouTube</translation>
 <translation id="687046793986382807">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 35.
 

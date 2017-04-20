@@ -1,10 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1224275271335624810">Najhitrejša</translation>
 <translation id="1588438908519853928">Običajen</translation>
 <translation id="2089387485033699258">sl</translation>
 <translation id="335581015389089642">Speech</translation>
+<translation id="4274874082286476934">Izberite hitrost govora:</translation>
+<translation id="4276663915471735629">Možnosti izbire za govor</translation>
+<translation id="5589989204720007810">Pridržite gumb za iskanje in kliknite ali povlecite poljubni element, če želite slišati izgovorjeno.</translation>
+<translation id="6029587122245504742">Najpočasnejša</translation>
+<translation id="6837853484260746864">Izberite glas:</translation>
 <translation id="7019805045859631636">Hitro</translation>
 <translation id="7768784765476638775">Izbira za govor</translation>
 <translation id="8044899503464538266">Počasi</translation>
+<translation id="9030754204056345429">Hitrejša</translation>
 </translationbundle>

@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1006017844123154345">Abrir en línea</translation>
+<translation id="1049743911850919806">Incógnito</translation>
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1061441684050139317">Chrome necesita acceso al micrófono para compartirlo con este sitio.</translation>
 <translation id="1080790410959514870">Saldrás de una cuenta administrada por <ph name="DOMAIN_NAME" />. Esta acción eliminará los datos de Chrome almacenados en este dispositivo, aunque estos se mantendrán en la cuenta de Google.</translation>
 <translation id="1111673857033749125">Los favoritos guardados en tus otros dispositivos aparecerán aquí.</translation>
+<translation id="1117638547758781293">Filtro de subrecurso</translation>
 <translation id="1121094540300013208">Informes de uso y de fallos</translation>
 <translation id="1137305377394488060">hace una hora</translation>
 <translation id="1145536944570833626">Borra los datos existentes.</translation>
@@ -61,6 +63,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1549000191223877751">Mover a otra ventana</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1571304935088121812">Copiar el nombre de usuario</translation>
+<translation id="1594030484168838125">Seleccionar</translation>
 <translation id="1612196535745283361">Chrome debe acceder a la ubicación para buscar dispositivos. El acceso a la ubicación está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623104350909869708">Evitar que esta página cree cuadros de diálogo adicionales</translation>
@@ -148,6 +151,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2587052924345400782">Nueva versión disponible</translation>
 <translation id="2593272815202181319">Monoespaciada</translation>
 <translation id="2621115761605608342">Permitir la ejecución de JavaScript para un sitio específico</translation>
+<translation id="2631006050119455616">Guardado</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Abandonar</translation>
 <translation id="2704606927547763573">Copiado</translation>
@@ -394,6 +398,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5345083863238459644">El acceso a la ubicación también se <ph name="BEGIN_LINK" />desactivó para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5349103022427743704">Experimento para agregar a la pantalla principal de forma mejorada</translation>
 <translation id="5372829067651257087">Se copió la URL.</translation>
+<translation id="5384883051496921101">Este sitio está a punto de compartir información con una app fuera del modo de navegación incógnito.</translation>
 <translation id="5400569084694353794">Al utilizar esta aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones del servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403644198645076998">Permitir solo algunos sitios</translation>
 <translation id="5414836363063783498">Verificando…</translation>
@@ -504,6 +509,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> no se pudo descargar debido a la falta de espacio de almacenamiento.</translation>
 <translation id="6508332297647760142">Uso compartido de la Web física</translation>
 <translation id="6527303717912515753">Compartir</translation>
+<translation id="6534565668554028783">Google tardó demasiado en responder</translation>
 <translation id="6538442820324228105">Se descargaron <ph name="GBS" /> GB</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Elige una pestaña para transmitir.</translation>
@@ -577,6 +583,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa tu ubicación para mostrar resultados de la búsqueda a nivel local.</translation>
 <translation id="7253272406652746122">Agrega una cuenta de Google desde la página Cuentas en la app de Configuración del dispositivo.</translation>
 <translation id="7274013316676448362">Sitio bloqueado</translation>
+<translation id="7307288900373049735">Comunicándose con Google… Esta acción puede demorar unos minutos</translation>
 <translation id="7333031090786104871">Aún se está agregando el sitio anterior</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparte 1 elemento seleccionado}other{Comparte # elementos seleccionados}}</translation>
@@ -688,6 +695,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8489271220582375723">Abrir la página del historial</translation>
 <translation id="8493948351860045254">Liberar espacio</translation>
 <translation id="8497726226069778601">Aún no hay elementos para ver</translation>
+<translation id="8499147970084652325">Usa los servidores de Google para proporcionar sugerencias de navegación.</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8514577642972634246">Acceder al modo de navegación de incógnito</translation>
 <translation id="8523928698583292556">Borrar contraseña almacenada</translation>
@@ -717,6 +725,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8788968922598763114">Volver a abrir la última pestaña cerrada</translation>
 <translation id="8812260976093120287">En algunos sitios web, puedes usar las apps compatibles que se enumeran anteriormente para hacer pagos en tu dispositivo.</translation>
 <translation id="8812942424849541387">Controlar el funcionamiento en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
+<translation id="8812949859341886735">Cuando se activa esta función, p. ej., cuando abres una pestaña nueva, Chrome usa los servidores de Google para proporcionarte sugerencias de navegación, como sitios web populares, artículos del momento y sugerencias personalizadas.</translation>
 <translation id="8820817407110198400">Favoritos</translation>
 <translation id="883635517171802338">Bloquear las ventanas emergentes en los sitios (recomendado)</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -728,6 +737,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8920114477895755567">Esperando los detalles parentales</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="8942627711005830162">Abrir en otra ventana</translation>
+<translation id="894871326938397531">¿Deseas salir del modo de navegación incógnito?</translation>
 <translation id="8951232171465285730">Chrome te permitió ahorrar <ph name="MEGABYTES" /> megabytes</translation>
 <translation id="8959122750345127698">Navegación inaccesible: <ph name="URL" /></translation>
 <translation id="8979340629087822094">ayer</translation>

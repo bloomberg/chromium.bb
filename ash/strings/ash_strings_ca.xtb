@@ -68,6 +68,7 @@
 <translation id="2946119680249604491">Afegeix una connexió</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> és una sessió pública gestionada per <ph name="DOMAIN" />.</translation>
+<translation id="3000461861112256445">Àudio mono</translation>
 <translation id="3009178788565917040">Sortida</translation>
 <translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">maj</translation>
@@ -85,8 +86,10 @@
 <translation id="3364721542077212959">Eines del llapis òptic</translation>
 <translation id="3368922792935385530">Connectat</translation>
 <translation id="3371140690572404006">Dispositiu USB-C (port frontal dret)</translation>
+<translation id="3400357268283240774">Configuració addicional</translation>
 <translation id="3445925074670675829">Dispositiu USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="3510164367642747937">Ressalta el cursor del ratolí</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
@@ -125,6 +128,7 @@
 <translation id="4544944664594876241">La drecera per bloquejar la pantalla ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
+<translation id="4849058404725798627">Ressalta l'objecte amb el focus del teclat</translation>
 <translation id="4872237917498892622">Alt+Cerca o Maj</translation>
 <translation id="4895488851634969361">La bateria està carregada.</translation>
 <translation id="4918086044614829423">Accepta</translation>
@@ -132,6 +136,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Dispositius d'emissió disponibles</translation>
 <translation id="5170568018924773124">Mostra a la carpeta</translation>
+<translation id="5207949376430453814">Ressalta la marca d'inserció de text</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="523505283826916779">Configuració d'accessibilitat</translation>
 <translation id="5313326810920013265">Configuració de Bluetooth</translation>
@@ -180,6 +185,7 @@
 <translation id="6521655319214113338">Entrada d'escriptura a mà</translation>
 <translation id="6537270692134705506">Captura la pantalla</translation>
 <translation id="6585808820553845416">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Cerca+Maj+K</translation>
 <translation id="6650933572246256093">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY" />.</translation>
 <translation id="6700713906295497288">Botó del menú d'IME</translation>
 <translation id="6713285437468012787">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" s'ha emparellat i ja està disponible per a tots els usuaris. Podeu eliminar l'emparellament a la Configuració.</translation>
@@ -199,6 +205,7 @@ Premeu Ctrl + Alt + Z per desactivar-lo.</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
 <translation id="7129360219436193655">Mode de punter làser</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Vols activar el desbloqueig amb empremta digital?</translation>
 <translation id="7256634071279256947">Micròfon posterior</translation>
@@ -233,6 +240,7 @@ Premeu Ctrl + Alt + Z per desactivar-lo.</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8433186206711564395">Configuració de la xarxa</translation>
+<translation id="8433977262951327081">La drecera per mostrar el quadre d'ajuda amb el menú d'opcions d'entrada al prestatge ha canviat. Fes servir <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">La Wi-Fi està activada.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: s'està tornant a connectar…</translation>
 <translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès.</translation>

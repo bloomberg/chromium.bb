@@ -67,6 +67,7 @@
 <translation id="2946119680249604491">Tambah sambungan</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ialah sesi awam yang diurus oleh <ph name="DOMAIN" /></translation>
+<translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Masa yang tinggal sehingga bateri dicas sepenuhnya, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -84,8 +85,10 @@
 <translation id="3364721542077212959">Alatan stilus</translation>
 <translation id="3368922792935385530">Disambungkan</translation>
 <translation id="3371140690572404006">Peranti USB-C (port depan sebelah kanan)</translation>
+<translation id="3400357268283240774">Tetapan tambahan</translation>
 <translation id="3445925074670675829">Peranti USB-C</translation>
 <translation id="3473479545200714844">Penggadang skrin</translation>
+<translation id="3510164367642747937">Serlahkan kursor tetikus</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="3573179567135747900">Tukar kembali kepada "<ph name="FROM_LOCALE" />" (perlu dimulakan semula)</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
@@ -124,6 +127,7 @@
 <translation id="4544944664594876241">Pintasan untuk mengunci skrin telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan sambungan</translation>
+<translation id="4849058404725798627">Serlahkan objek dengan fokus papan kekunci</translation>
 <translation id="4872237917498892622">Alt+Search atau Shift</translation>
 <translation id="4895488851634969361">Bateri penuh.</translation>
 <translation id="4918086044614829423">Terima</translation>
@@ -131,6 +135,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Peranti Cast tersedia</translation>
 <translation id="5170568018924773124">Paparkan dalam folder</translation>
+<translation id="5207949376430453814">Serlahkan karet teks</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="523505283826916779">Tetapan kebolehcapaian</translation>
 <translation id="5313326810920013265">Tetapan Bluetooth</translation>
@@ -179,6 +184,7 @@
 <translation id="6521655319214113338">Input tulisan tangan</translation>
 <translation id="6537270692134705506">Tangkap skrin</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sila masukkan kekunci laluan ini pada peranti tersebut: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">Butang menu IME</translation>
 <translation id="6713285437468012787">Peranti Bluetooth "<ph name="DEVICE_NAME" />" telah dipasangkan dan kini tersedia untuk semua pengguna. Anda boleh mengalih keluar pasangan ini menggunakan Tetapan.</translation>
@@ -198,6 +204,7 @@ Tekan Ctrl+Alt+Z untuk melumpuhkan.</translation>
 <translation id="7098389117866926363">Peranti USB-C (port kiri di belakang)</translation>
 <translation id="7129360219436193655">Mod penunjuk laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Dayakan buka kunci menggunakan Cap Jari?</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
@@ -233,6 +240,7 @@ Tekan Ctrl+Alt+Z untuk melumpuhkan.</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8433186206711564395">Tetapan rangkaian</translation>
+<translation id="8433977262951327081">Pintasan untuk menunjukkan gelembung menu pilihan input dalam rak telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi dihidupkan.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Menyambung semula...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan.</translation>
