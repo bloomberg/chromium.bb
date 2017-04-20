@@ -741,6 +741,12 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
   handoff_active_url_observer_bridge_.reset(
       new HandoffActiveURLObserverBridge(self));
+
+  NSApplication* application = [NSApplication sharedApplication];
+  if ([application respondsToSelector:
+      @selector(setAutomaticCustomizeTouchBarMenuItemEnabled:)]) {
+    [application setAutomaticCustomizeTouchBarMenuItemEnabled:YES];
+  }
 }
 
 // Helper function for populating and displaying the in progress downloads at

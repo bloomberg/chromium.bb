@@ -6,8 +6,10 @@
 #define UI_BASE_COCOA_TOUCH_BAR_FORWARD_DECLARATIONS_H_
 
 // Once Chrome no longer supports OSX 10.12.0, this file can be deleted.
-
+#import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
+
+#include "ui/base/ui_base_export.h"
 
 #if !defined(MAC_OS_X_VERSION_10_12_1)
 
@@ -23,12 +25,6 @@ static const NSTouchBarItemPriority NSTouchBarItemPriorityLow = -1000;
 
 typedef NSString* NSTouchBarItemIdentifier;
 typedef NSString* NSTouchBarCustomizationIdentifier;
-
-static const NSTouchBarItemIdentifier NSTouchBarItemIdentifierFixedSpaceSmall =
-    @"NSTouchBarItemIdentifierFixedSpaceSmall";
-
-static const NSTouchBarItemIdentifier NSTouchBarItemIdentifierFlexibleSpace =
-    @"NSTouchBarItemIdentifierFlexibleSpace";
 
 @interface NSTouchBar : NSObject<NSCoding>
 
@@ -97,8 +93,6 @@ static const NSTouchBarItemIdentifier NSTouchBarItemIdentifierFlexibleSpace =
                makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier;
 @end
 
-#pragma clang assume_nonnull end
-
 #elif MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12_1
 
 // When compiling against the 10.12.1 SDK or later, just provide forward
@@ -115,5 +109,15 @@ static const NSTouchBarItemIdentifier NSTouchBarItemIdentifierFlexibleSpace =
 @end
 
 #endif  // MAC_OS_X_VERSION_10_12_1
+
+extern "C" {
+#if !defined(MAC_OS_X_VERSION_10_12_1) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12_1
+UI_BASE_EXPORT extern NSString* const NSTouchBarItemIdentifierFixedSpaceSmall;
+UI_BASE_EXPORT extern NSString* const NSTouchBarItemIdentifierFlexibleSpace;
+#endif  // MAC_OS_X_VERSION_10_12_1
+}  // extern "C"
+
+#pragma clang assume_nonnull end
 
 #endif  // UI_BASE_COCOA_TOUCH_BAR_FORWARD_DECLARATIONS_H_

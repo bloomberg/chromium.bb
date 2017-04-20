@@ -1926,12 +1926,31 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
                    desc="Text for the search button in the touch bar when Google is not the default search provider. Pressing the button will bring focus to the omnibox. $1 is the name of the search provider)">
           Search <ph name="SEARCH_ENGINE">$1<ex>Bing</ex></ph>
         </message>
-
         <message name="IDS_TOOLTIP_TOUCH_BAR_BACK" desc="The tooltip for the touch bar back button.">
         Touch to go back.
         </message>
         <message name="IDS_TOOLTIP_TOUCH_BAR_FORWARD" desc="The tooltip for the touch bar forward button.">
         Touch to go forward.
+        </message>
+        <message name="IDS_TOUCH_BAR_BACK_FORWARD_CUSTOMIZATION_LABEL"
+                   desc="Customization label for the back and forward buttons in the touch bar.">
+          Back/Forward
+        </message>
+        <message name="IDS_TOUCH_BAR_STOP_RELOAD_CUSTOMIZATION_LABEL"
+                   desc="Customization label for the stop or reload button in the touch bar.">
+          Stop/Reload
+        </message>
+        <message name="IDS_TOUCH_BAR_HOME_CUSTOMIZATION_LABEL"
+                   desc="Customization label for the home button in the touch bar.">
+          Home
+        </message>
+        <message name="IDS_TOUCH_BAR_BOOKMARK_CUSTOMIZATION_LABEL"
+                   desc="Customization label for the bookmark button in the touch bar.">
+          Bookmark
+        </message>
+        <message name="IDS_TOUCH_BAR_NEW_TAB_CUSTOMIZATION_LABEL"
+                   desc="Customization label for the new tab button in the touch bar.">
+          New Tab
         </message>
       </if>
 
