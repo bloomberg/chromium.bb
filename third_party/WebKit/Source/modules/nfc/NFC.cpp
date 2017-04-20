@@ -125,7 +125,7 @@ struct TypeConverter<WTF::Vector<uint8_t>, WTF::String> {
   static WTF::Vector<uint8_t> Convert(const WTF::String& string) {
     WTF::CString utf8String = string.Utf8();
     WTF::Vector<uint8_t> array;
-    array.Append(utf8String.Data(), utf8String.length());
+    array.Append(utf8String.data(), utf8String.length());
     return array;
   }
 };

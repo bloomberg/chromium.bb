@@ -61,7 +61,7 @@ static inline bool VectorEqualsString(const Vector<LChar, 32>& vector,
   if (!string.length())
     return true;
 
-  return Equal(string.Impl(), vector.Data(), vector.size());
+  return Equal(string.Impl(), vector.data(), vector.size());
 }
 
 #define HTML_BEGIN_STATE(stateName) BEGIN_STATE(HTMLTokenizer, stateName)
@@ -1452,7 +1452,7 @@ String HTMLTokenizer::BufferedCharacters() const {
   characters.ReserveCapacity(NumberOfBufferedCharacters());
   characters.Append('<');
   characters.Append('/');
-  characters.Append(temporary_buffer_.Data(), temporary_buffer_.size());
+  characters.Append(temporary_buffer_.data(), temporary_buffer_.size());
   return characters.ToString();
 }
 

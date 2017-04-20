@@ -71,7 +71,7 @@ class DOMActivityLoggerContainer : public V8DOMActivityLogger {
     for (int i = 0; i < argc; i++)
       web_string_argv.push_back(argv[i]);
     dom_activity_logger_->LogEvent(WebString(event_name), argc,
-                                   web_string_argv.Data(), GetURL(),
+                                   web_string_argv.data(), GetURL(),
                                    GetTitle());
   }
 

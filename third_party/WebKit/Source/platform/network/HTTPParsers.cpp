@@ -370,7 +370,7 @@ bool ParseHTTPRefresh(const String& refresh,
 }
 
 double ParseDate(const String& value) {
-  return ParseDateFromNullTerminatedCharacters(value.Utf8().Data());
+  return ParseDateFromNullTerminatedCharacters(value.Utf8().data());
 }
 
 AtomicString ExtractMIMETypeFromMediaType(const AtomicString& media_type) {
@@ -771,7 +771,7 @@ bool ParseSuboriginHeader(const String& header,
   Vector<UChar> characters;
   headers[0].AppendTo(characters);
 
-  const UChar* position = characters.Data();
+  const UChar* position = characters.data();
   const UChar* end = position + characters.size();
 
   skipWhile<UChar, IsASCIISpace>(position, end);

@@ -170,7 +170,7 @@ static unsigned ComputePresentationAttributeCacheHash(
     return 0;
   DCHECK(key.attributes_and_values.size());
   unsigned attribute_hash = StringHasher::HashMemory(
-      key.attributes_and_values.Data(),
+      key.attributes_and_values.data(),
       key.attributes_and_values.size() * sizeof(key.attributes_and_values[0]));
   return WTF::HashInts(key.tag_name->ExistingHash(), attribute_hash);
 }

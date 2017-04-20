@@ -36,7 +36,7 @@ String GetSha256String(const String& content) {
     return "sha256-...";
   }
 
-  return "sha256-" + Base64Encode(reinterpret_cast<char*>(digest.Data()),
+  return "sha256-" + Base64Encode(reinterpret_cast<char*>(digest.data()),
                                   digest.size(), kBase64DoNotInsertLFs);
 }
 
@@ -66,7 +66,7 @@ bool ParseBase64Digest(String base64, DigestValue& hash) {
     return false;
   if (hash_vector.IsEmpty() || hash_vector.size() > kMaxDigestSize)
     return false;
-  hash.Append(reinterpret_cast<uint8_t*>(hash_vector.Data()),
+  hash.Append(reinterpret_cast<uint8_t*>(hash_vector.data()),
               hash_vector.size());
   return true;
 }
@@ -1038,7 +1038,7 @@ void CSPDirectiveList::ParseRequireSRIFor(const String& name,
   Vector<UChar> characters;
   value.AppendTo(characters);
 
-  const UChar* position = characters.Data();
+  const UChar* position = characters.data();
   const UChar* end = position + characters.size();
 
   while (position < end) {
@@ -1097,7 +1097,7 @@ void CSPDirectiveList::ParseReportURI(const String& name, const String& value) {
   Vector<UChar> characters;
   value.AppendTo(characters);
 
-  const UChar* position = characters.Data();
+  const UChar* position = characters.data();
   const UChar* end = position + characters.size();
 
   while (position < end) {

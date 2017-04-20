@@ -43,7 +43,7 @@ static inline void Append(Vector<char>& buffer, const char* string) {
 }
 
 static inline void Append(Vector<char>& buffer, const CString& string) {
-  buffer.Append(string.Data(), string.length());
+  buffer.Append(string.data(), string.length());
 }
 
 static inline void AppendPercentEncoded(Vector<char>& buffer, unsigned char c) {
@@ -58,7 +58,7 @@ static void AppendQuotedString(Vector<char>& buffer, const CString& string) {
   // if there is an encoding form they can handle.
   size_t length = string.length();
   for (size_t i = 0; i < length; ++i) {
-    char c = string.Data()[i];
+    char c = string.data()[i];
 
     switch (c) {
       case 0x0a:
@@ -212,7 +212,7 @@ void FormDataEncoder::EncodeStringAsFormData(Vector<char>& buffer,
   // http://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.1
   unsigned length = string.length();
   for (unsigned i = 0; i < length; ++i) {
-    unsigned char c = string.Data()[i];
+    unsigned char c = string.data()[i];
 
     if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
         (c >= '0' && c <= '9') || (c != '\0' && strchr(kSafeCharacters, c))) {
@@ -222,7 +222,7 @@ void FormDataEncoder::EncodeStringAsFormData(Vector<char>& buffer,
     } else {
       if (mode == kNormalizeCRLF) {
         if (c == '\n' ||
-            (c == '\r' && (i + 1 >= length || string.Data()[i + 1] != '\n'))) {
+            (c == '\r' && (i + 1 >= length || string.data()[i + 1] != '\n'))) {
           Append(buffer, "%0D%0A");
         } else if (c != '\r') {
           AppendPercentEncoded(buffer, c);

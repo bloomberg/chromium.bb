@@ -1013,13 +1013,17 @@ class Vector
 
   // Return a pointer to the front of the backing buffer. Those pointers get
   // invalidated on a reallocation.
-  T* Data() { return Base::Buffer(); }
-  const T* Data() const { return Base::Buffer(); }
+  T* data() { return Base::Buffer(); }
+  const T* data() const { return Base::Buffer(); }
+
+  // TODO(dcheng): Temporary alias to make removing this easier.
+  T* Data() { return data(); }
+  const T* Data() const { return data(); }
 
   // Iterators and reverse iterators. They are invalidated on a reallocation.
-  iterator begin() { return Data(); }
+  iterator begin() { return data(); }
   iterator end() { return begin() + size_; }
-  const_iterator begin() const { return Data(); }
+  const_iterator begin() const { return data(); }
   const_iterator end() const { return begin() + size_; }
 
   reverse_iterator rbegin() { return reverse_iterator(end()); }
@@ -1873,7 +1877,7 @@ bool operator==(const Vector<T, inlineCapacityA, Allocator>& a,
     return false;
   if (a.IsEmpty())
     return true;
-  return VectorTypeOperations<T>::Compare(a.Data(), b.Data(), a.size());
+  return VectorTypeOperations<T>::Compare(a.data(), b.data(), a.size());
 }
 
 template <typename T,

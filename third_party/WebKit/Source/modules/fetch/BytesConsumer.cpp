@@ -115,7 +115,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       buffer_.ReserveInitialCapacity(size);
       buffer_.Append(data, size);
     }
-    const char* Data() const { return buffer_.Data(); }
+    const char* data() const { return buffer_.data(); }
     size_t size() const { return buffer_.size(); }
 
     DEFINE_INLINE_TRACE() {}
@@ -138,7 +138,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       if (!chunks_.IsEmpty()) {
         Chunk* chunk = chunks_[0];
         DCHECK_LE(offset_, chunk->size());
-        *buffer = chunk->Data() + offset_;
+        *buffer = chunk->data() + offset_;
         *available = chunk->size() - offset_;
         chunk_in_use_ = chunk;
         return Result::kOk;

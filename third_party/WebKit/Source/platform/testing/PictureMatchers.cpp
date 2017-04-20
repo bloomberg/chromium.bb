@@ -131,7 +131,7 @@ class DrawsRectanglesMatcher
           *listener << "at index " << index << " which draws ";
           PrintTo(rect, listener->stream());
           *listener << " with color "
-                    << quad_with_color.color.Serialized().Ascii().Data()
+                    << quad_with_color.color.Serialized().Ascii().data()
                     << "\n";
         }
         return false;
@@ -147,7 +147,7 @@ class DrawsRectanglesMatcher
       const auto& rect_with_color = rects_with_color_[index];
       *os << "at index " << index << " rect draws ";
       PrintTo(rect_with_color.rect, os);
-      *os << " with color " << rect_with_color.color.Serialized().Ascii().Data()
+      *os << " with color " << rect_with_color.color.Serialized().Ascii().data()
           << "\n";
     }
   }

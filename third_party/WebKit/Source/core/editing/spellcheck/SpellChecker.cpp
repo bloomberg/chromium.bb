@@ -1062,7 +1062,7 @@ Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {
   text.AppendTo(characters);
   unsigned length = text.length();
 
-  TextBreakIterator* iterator = WordBreakIterator(characters.Data(), length);
+  TextBreakIterator* iterator = WordBreakIterator(characters.data(), length);
   if (!iterator)
     return Vector<TextCheckingResult>();
 
@@ -1076,7 +1076,7 @@ Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {
     int misspelling_location = -1;
     int misspelling_length = 0;
     TextChecker().CheckSpellingOfString(
-        String(characters.Data() + word_start, word_length),
+        String(characters.data() + word_start, word_length),
         &misspelling_location, &misspelling_length);
     if (misspelling_length > 0) {
       DCHECK_GE(misspelling_location, 0);

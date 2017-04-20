@@ -509,7 +509,7 @@ static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCal
 
 static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   const CString& nameInUtf8 = name.Utf8();
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface5", nameInUtf8.Data());
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface5", nameInUtf8.data());
 
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
 

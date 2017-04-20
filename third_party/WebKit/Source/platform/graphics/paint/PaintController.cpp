@@ -272,8 +272,8 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
     ShowDebugData();
     WTFLogAlways(
         "DisplayItem %s has duplicated id with previous %s (index=%zu)\n",
-        display_item.AsDebugString().Utf8().Data(),
-        new_display_item_list_[index].AsDebugString().Utf8().Data(), index);
+        display_item.AsDebugString().Utf8().data(),
+        new_display_item_list_[index].AsDebugString().Utf8().data(), index);
 #endif
     NOTREACHED();
   }
@@ -921,7 +921,7 @@ void PaintController::ShowDebugDataInternal(bool show_paint_records) const {
                            : DisplayItemList::JsonOptions::kDefault)
                    ->ToPrettyJSONString()
                    .Utf8()
-                   .Data());
+                   .data());
   // debugName() and clientCacheIsValid() can only be called on a live
   // client, so only output it for m_newDisplayItemList, in which we are
   // sure the clients are all alive.
@@ -936,7 +936,7 @@ void PaintController::ShowDebugDataInternal(bool show_paint_records) const {
                   : DisplayItemList::JsonOptions::kShowClientDebugName)
           ->ToPrettyJSONString()
           .Utf8()
-          .Data());
+          .data());
 }
 
 }  // namespace blink

@@ -102,7 +102,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
 
 static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   const CString& nameInUtf8 = name.Utf8();
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestSpecialOperations", nameInUtf8.Data());
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestSpecialOperations", nameInUtf8.data());
 
   TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
 

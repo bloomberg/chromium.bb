@@ -156,7 +156,7 @@ void SerializeV8Value(v8::Local<v8::Value> value,
   // C4309 (truncation of constant value). This happens because VersionTag is
   // 0xFF.
   const unsigned char* wire_data =
-      reinterpret_cast<unsigned char*>(wire_bytes->Data());
+      reinterpret_cast<unsigned char*>(wire_bytes->data());
   ASSERT_EQ(static_cast<unsigned char>(kVersionTag),
             wire_data[kSSVHeaderBlinkVersionTagOffset]);
   ASSERT_EQ(

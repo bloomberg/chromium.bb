@@ -122,7 +122,7 @@ template <size_t inlineCapacity>
 inline static String AttemptStaticStringCreation(
     const Vector<UChar, inlineCapacity>& vector,
     CharacterWidth width) {
-  return AttemptStaticStringCreation(vector.Data(), vector.size(), width);
+  return AttemptStaticStringCreation(vector.data(), vector.size(), width);
 }
 
 inline static String AttemptStaticStringCreation(const String str) {

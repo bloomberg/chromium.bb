@@ -45,7 +45,7 @@ int WebCString::Compare(const WebCString& other) const {
   if (IsNull())
     return 0;  // Both WebStrings are null.
 
-  return strcmp(private_->Data(), other.private_->Data());
+  return strcmp(private_->data(), other.private_->data());
 }
 
 void WebCString::Reset() {
@@ -65,7 +65,7 @@ size_t WebCString::length() const {
 }
 
 const char* WebCString::Data() const {
-  return private_.IsNull() ? 0 : private_->Data();
+  return private_.IsNull() ? 0 : private_->data();
 }
 
 WebString WebCString::Utf16() const {

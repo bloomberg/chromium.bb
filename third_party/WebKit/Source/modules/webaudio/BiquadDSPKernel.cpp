@@ -194,7 +194,7 @@ void BiquadDSPKernel::GetFrequencyResponse(int n_frequencies,
 
   UpdateCoefficients(1, &cutoff_frequency, &q, &gain, &detune);
 
-  biquad_.GetFrequencyResponse(n_frequencies, frequency.Data(), mag_response,
+  biquad_.GetFrequencyResponse(n_frequencies, frequency.data(), mag_response,
                                phase_response);
 }
 

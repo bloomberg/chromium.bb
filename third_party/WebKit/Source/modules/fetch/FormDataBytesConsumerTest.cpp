@@ -30,7 +30,7 @@ using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 using MockBytesConsumer = BytesConsumerTestUtil::MockBytesConsumer;
 
 String ToString(const Vector<char>& v) {
-  return String(v.Data(), v.size());
+  return String(v.data(), v.size());
 }
 
 PassRefPtr<EncodedFormData> ComplexFormData() {

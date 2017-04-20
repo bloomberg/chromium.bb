@@ -205,7 +205,7 @@ const v8::Eternal<v8::Name>* V8PerIsolateData::FindOrCreateEternalNameCache(
     vector = &it->value;
   }
   DCHECK_EQ(vector->size(), count);
-  return vector->Data();
+  return vector->data();
 }
 
 v8::Local<v8::Context> V8PerIsolateData::EnsureScriptRegexpContext() {

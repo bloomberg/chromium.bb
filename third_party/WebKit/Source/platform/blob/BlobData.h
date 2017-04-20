@@ -49,7 +49,7 @@ class PLATFORM_EXPORT RawData : public ThreadSafeRefCounted<RawData> {
 
   void DetachFromCurrentThread();
 
-  const char* Data() const { return data_.Data(); }
+  const char* data() const { return data_.data(); }
   size_t length() const { return data_.size(); }
   Vector<char>* MutableData() { return &data_; }
 

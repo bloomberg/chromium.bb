@@ -189,7 +189,7 @@ class LinearGradient final : public Gradient {
                                uint32_t flags,
                                const SkMatrix& local_matrix) const override {
     SkPoint pts[2] = {p0_.Data(), p1_.Data()};
-    return SkGradientShader::MakeLinear(pts, colors.Data(), pos.Data(),
+    return SkGradientShader::MakeLinear(pts, colors.data(), pos.data(),
                                         static_cast<int>(colors.size()),
                                         tile_mode, flags, &local_matrix);
   }
@@ -234,7 +234,7 @@ class RadialGradient final : public Gradient {
     // only use it if we have to.
     if (p0_ == p1_ && r0_ <= 0.0f) {
       return SkGradientShader::MakeRadial(
-          p1_.Data(), r1_, colors.Data(), pos.Data(),
+          p1_.Data(), r1_, colors.data(), pos.data(),
           static_cast<int>(colors.size()), tile_mode, flags,
           adjusted_local_matrix);
     }
@@ -244,7 +244,7 @@ class RadialGradient final : public Gradient {
     const SkScalar radius0 = std::max(WebCoreFloatToSkScalar(r0_), 0.0f);
     const SkScalar radius1 = std::max(WebCoreFloatToSkScalar(r1_), 0.0f);
     return SkGradientShader::MakeTwoPointConical(
-        p0_.Data(), radius0, p1_.Data(), radius1, colors.Data(), pos.Data(),
+        p0_.Data(), radius0, p1_.Data(), radius1, colors.data(), pos.data(),
         static_cast<int>(colors.size()), tile_mode, flags,
         adjusted_local_matrix);
   }
@@ -283,7 +283,7 @@ class ConicGradient final : public Gradient {
     }
 
     return SkGradientShader::MakeSweep(
-        position_.X(), position_.Y(), colors.Data(), pos.Data(),
+        position_.X(), position_.Y(), colors.data(), pos.data(),
         static_cast<int>(colors.size()), flags, adjusted_local_matrix);
   }
 

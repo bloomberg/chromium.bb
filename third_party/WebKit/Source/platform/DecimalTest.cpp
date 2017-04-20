@@ -110,7 +110,7 @@ class DecimalTest : public ::testing::Test {
   EXPECT_EQ(Decimal::expectedSign, (decimal).Value().GetSign());
 
 #define EXPECT_DECIMAL_STREQ(expected, decimal) \
-  EXPECT_STREQ((expected), (decimal).ToString().Ascii().Data())
+  EXPECT_STREQ((expected), (decimal).ToString().Ascii().data())
 
 TEST_F(DecimalTest, Abs) {
   EXPECT_EQ(Encode(0, 0, kPositive), Encode(0, 0, kPositive).Abs());

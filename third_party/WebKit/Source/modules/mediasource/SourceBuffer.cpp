@@ -1212,7 +1212,7 @@ void SourceBuffer::AppendBufferAsyncPart() {
   unsigned char zero = 0;
   unsigned char* append_data = &zero;
   if (append_size)
-    append_data = pending_append_data_.Data() + pending_append_data_offset_;
+    append_data = pending_append_data_.data() + pending_append_data_offset_;
 
   bool append_success =
       web_source_buffer_->Append(append_data, append_size, &timestamp_offset_);

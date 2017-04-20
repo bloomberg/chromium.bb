@@ -28,7 +28,7 @@ class CSPDirectiveListTest : public ::testing::Test {
                                ContentSecurityPolicyHeaderType type) {
     Vector<UChar> characters;
     list.AppendTo(characters);
-    const UChar* begin = characters.Data();
+    const UChar* begin = characters.data();
     const UChar* end = begin + characters.size();
 
     return CSPDirectiveList::Create(csp, begin, end, type,

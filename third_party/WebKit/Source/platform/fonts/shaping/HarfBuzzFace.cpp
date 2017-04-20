@@ -416,10 +416,10 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   if (axis_count > 0) {
     Vector<SkFontArguments::VariationPosition::Coordinate> axis_values;
     axis_values.Resize(axis_count);
-    if (typeface->getVariationDesignPosition(axis_values.Data(),
+    if (typeface->getVariationDesignPosition(axis_values.data(),
                                              axis_values.size()) > 0) {
       hb_font_set_variations(
-          unscaled_font_, reinterpret_cast<hb_variation_t*>(axis_values.Data()),
+          unscaled_font_, reinterpret_cast<hb_variation_t*>(axis_values.data()),
           axis_values.size());
     }
   }

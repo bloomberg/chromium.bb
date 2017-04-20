@@ -185,7 +185,7 @@ void Resource::CachedMetadataHandlerImpl::SendToPlatform() {
     const Vector<char>& serialized_data = cached_metadata_->SerializedData();
     Platform::Current()->CacheMetadata(
         GetResponse().Url(), GetResponse().ResponseTime(),
-        serialized_data.Data(), serialized_data.size());
+        serialized_data.data(), serialized_data.size());
   } else {
     Platform::Current()->CacheMetadata(
         GetResponse().Url(), GetResponse().ResponseTime(), nullptr, 0);
@@ -235,7 +235,7 @@ void Resource::ServiceWorkerResponseCachedMetadataHandler::SendToPlatform() {
     const Vector<char>& serialized_data = cached_metadata_->SerializedData();
     Platform::Current()->CacheMetadataInCacheStorage(
         GetResponse().Url(), GetResponse().ResponseTime(),
-        serialized_data.Data(), serialized_data.size(),
+        serialized_data.data(), serialized_data.size(),
         WebSecurityOrigin(security_origin_),
         GetResponse().CacheStorageCacheName());
   } else {

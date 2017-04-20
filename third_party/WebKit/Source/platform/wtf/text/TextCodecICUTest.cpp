@@ -17,8 +17,8 @@ TEST(TextCodecICUTest, IgnorableCodePoint) {
   source.push_back('a');
   source.push_back(kZeroWidthJoinerCharacter);
   CString encoded =
-      codec->Encode(source.Data(), source.size(), kEntitiesForUnencodables);
-  EXPECT_STREQ("a&#8205;", encoded.Data());
+      codec->Encode(source.data(), source.size(), kEntitiesForUnencodables);
+  EXPECT_STREQ("a&#8205;", encoded.data());
 }
 
 TEST(TextCodecICUTest, UTF32AndQuestionMarks) {
@@ -46,12 +46,12 @@ TEST(TextCodecICUTest, UTF32AndQuestionMarks) {
     {
       const UChar* data = nullptr;
       CString encoded = codec->Encode(data, 0, kQuestionMarksForUnencodables);
-      EXPECT_STREQ("", encoded.Data());
+      EXPECT_STREQ("", encoded.data());
     }
     {
       CString encoded = codec->Encode(kPoo, WTF_ARRAY_LENGTH(kPoo),
                                       kQuestionMarksForUnencodables);
-      EXPECT_STREQ(expected.Data(), encoded.Data());
+      EXPECT_STREQ(expected.data(), encoded.data());
     }
   }
 }

@@ -55,7 +55,7 @@ static size_t LengthOfLineEndingAtIndex(const char* input,
 }
 
 void QuotedPrintableEncode(const Vector<char>& in, Vector<char>& out) {
-  QuotedPrintableEncode(in.Data(), in.size(), out);
+  QuotedPrintableEncode(in.data(), in.size(), out);
 }
 
 void QuotedPrintableEncode(const char* input,
@@ -123,7 +123,7 @@ void QuotedPrintableEncode(const char* input,
 }
 
 void QuotedPrintableDecode(const Vector<char>& in, Vector<char>& out) {
-  QuotedPrintableDecode(in.Data(), in.size(), out);
+  QuotedPrintableDecode(in.data(), in.size(), out);
 }
 
 void QuotedPrintableDecode(const char* data,

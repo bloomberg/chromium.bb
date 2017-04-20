@@ -154,7 +154,7 @@ void StringBuilder::CreateBuffer16(unsigned added_size) {
   is8_bit_ = false;
   length_ = 0;
   if (!buffer8.IsEmpty()) {
-    Append(buffer8.Data(), length);
+    Append(buffer8.data(), length);
     return;
   }
   Append(string_);

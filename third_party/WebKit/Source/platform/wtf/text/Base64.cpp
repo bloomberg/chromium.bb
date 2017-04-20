@@ -55,7 +55,7 @@ String Base64Encode(const char* data,
                     Base64EncodePolicy policy) {
   Vector<char> result;
   Base64Encode(data, length, result, policy);
-  return String(result.Data(), result.size());
+  return String(result.data(), result.size());
 }
 
 void Base64Encode(const char* data,
@@ -135,7 +135,7 @@ bool Base64Decode(const Vector<char>& in,
   if (in.size() > UINT_MAX)
     return false;
 
-  return Base64Decode(in.Data(), in.size(), out, should_ignore_character,
+  return Base64Decode(in.data(), in.size(), out, should_ignore_character,
                       policy);
 }
 

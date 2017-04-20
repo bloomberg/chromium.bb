@@ -142,7 +142,7 @@ void EventSource::Connect() {
     CString last_event_id_utf8 = parser_->LastEventId().Utf8();
     request.SetHTTPHeaderField(
         HTTPNames::Last_Event_ID,
-        AtomicString(reinterpret_cast<const LChar*>(last_event_id_utf8.Data()),
+        AtomicString(reinterpret_cast<const LChar*>(last_event_id_utf8.data()),
                      last_event_id_utf8.length()));
   }
 

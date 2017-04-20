@@ -88,7 +88,7 @@ void WaveShaperDSPKernel::ProcessCurve(const float* source,
     return;
   }
 
-  float* curve_data = curve->Data();
+  float* curve_data = curve->data();
   int curve_length = curve->size();
 
   DCHECK(curve_data);

@@ -40,8 +40,8 @@
 // Can be removed if a pretty failure message isn't needed.
 #define EXPECT_NE_WITH_MESSAGE(a, b)                                        \
   EXPECT_NE(*a.second, *b.second)                                           \
-      << a.first << " (" << a.second->ToString().Latin1().Data() << ")"     \
-      << " ==  " << b.first << " (" << b.second->ToString().Latin1().Data() \
+      << a.first << " (" << a.second->ToString().Latin1().data() << ")"     \
+      << " ==  " << b.first << " (" << b.second->ToString().Latin1().data() \
       << ")"                                                                \
       << "\n";
 

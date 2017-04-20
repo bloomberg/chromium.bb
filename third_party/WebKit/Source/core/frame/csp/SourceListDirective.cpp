@@ -33,7 +33,7 @@ SourceListDirective::SourceListDirective(const String& name,
       hash_algorithms_used_(0) {
   Vector<UChar> characters;
   value.AppendTo(characters);
-  Parse(characters.Data(), characters.Data() + characters.size());
+  Parse(characters.data(), characters.data() + characters.size());
 }
 
 static bool IsSourceListNone(const UChar* begin, const UChar* end) {
@@ -406,7 +406,7 @@ bool SourceListDirective::ParseHash(
                hash_vector);
   if (hash_vector.size() > kMaxDigestSize)
     return false;
-  hash.Append(reinterpret_cast<uint8_t*>(hash_vector.Data()),
+  hash.Append(reinterpret_cast<uint8_t*>(hash_vector.data()),
               hash_vector.size());
   return true;
 }

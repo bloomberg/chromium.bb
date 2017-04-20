@@ -2944,7 +2944,7 @@ bool WebGLImageConversion::PackImageData(
   return PackPixels(reinterpret_cast<const uint8_t*>(pixels), source_format,
                     source_image_width, source_image_height,
                     source_image_sub_rectangle, depth, source_unpack_alignment,
-                    unpack_image_height, format, type, alpha_op, data.Data(),
+                    unpack_image_height, format, type, alpha_op, data.data(),
                     flip_y);
 }
 
@@ -2979,7 +2979,7 @@ bool WebGLImageConversion::ExtractImageData(
                   source_image_sub_rectangle, depth, 0, unpack_image_height,
                   format, type,
                   premultiply_alpha ? kAlphaDoPremultiply : kAlphaDoNothing,
-                  data.Data(), flip_y))
+                  data.data(), flip_y))
     return false;
 
   return true;
@@ -3009,7 +3009,7 @@ bool WebGLImageConversion::ExtractTextureData(unsigned width,
                   width, height, IntRect(0, 0, width, height), 1,
                   unpack_alignment, 0, format, type,
                   (premultiply_alpha ? kAlphaDoPremultiply : kAlphaDoNothing),
-                  data.Data(), flip_y))
+                  data.data(), flip_y))
     return false;
 
   return true;

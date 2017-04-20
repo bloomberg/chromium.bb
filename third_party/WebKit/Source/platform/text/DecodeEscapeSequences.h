@@ -128,7 +128,7 @@ struct URLEscapeSequence {
     Vector<char, 512> buffer;
     buffer.Resize(
         run_length);  // Unescaping hex sequences only makes the length smaller.
-    char* p = buffer.Data();
+    char* p = buffer.data();
     const CharType* run_end = run + run_length;
     while (run < run_end) {
       if (run[0] == '%') {
@@ -141,9 +141,9 @@ struct URLEscapeSequence {
     }
     DCHECK_GE(
         buffer.size(),
-        static_cast<size_t>(p - buffer.Data()));  // Prove buffer not overrun.
+        static_cast<size_t>(p - buffer.data()));  // Prove buffer not overrun.
     return (encoding.IsValid() ? encoding : UTF8Encoding())
-        .Decode(buffer.Data(), p - buffer.Data());
+        .Decode(buffer.data(), p - buffer.data());
   }
 };
 

@@ -139,7 +139,7 @@ double ParseDoubleFromLongString(const UChar* string,
   Vector<LChar> conversion_buffer(length);
   for (size_t i = 0; i < length; ++i)
     conversion_buffer[i] = IsASCII(string[i]) ? string[i] : 0;
-  return ParseDouble(conversion_buffer.Data(), length, parsed_length);
+  return ParseDouble(conversion_buffer.data(), length, parsed_length);
 }
 
 }  // namespace Internal

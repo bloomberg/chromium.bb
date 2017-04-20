@@ -79,7 +79,7 @@ DEFINE_TRACE(V0CustomElementMicrotaskImportStep) {
 void V0CustomElementMicrotaskImportStep::Show(unsigned indent) {
   fprintf(stderr, "%*sImport(wait=%d sync=%d, url=%s)\n", indent, "",
           ShouldWaitForImport(), import_ && import_->IsSync(),
-          import_ ? import_->Url().GetString().Utf8().Data() : "null");
+          import_ ? import_->Url().GetString().Utf8().data() : "null");
   queue_->Show(indent + 1);
 }
 #endif

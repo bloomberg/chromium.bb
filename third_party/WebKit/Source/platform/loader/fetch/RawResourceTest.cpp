@@ -225,7 +225,7 @@ TEST_F(RawResourceTest, RevalidationSucceeded) {
   resource->RemoveClient(client);
   EXPECT_FALSE(resource->IsAlive());
   EXPECT_FALSE(client->Called());
-  EXPECT_EQ("abcd", String(client->Data().Data(), client->Data().size()));
+  EXPECT_EQ("abcd", String(client->Data().data(), client->Data().size()));
 }
 
 TEST_F(RawResourceTest, RevalidationSucceededForResourceWithoutBody) {
@@ -399,7 +399,7 @@ TEST_F(RawResourceTest, RedirectDuringRevalidation) {
 
   EXPECT_TRUE(client->Called());
   EXPECT_EQ(1, client->NumberOfRedirectsReceived());
-  EXPECT_EQ("xyz", String(client->Data().Data(), client->Data().size()));
+  EXPECT_EQ("xyz", String(client->Data().data(), client->Data().size()));
 
   // Test the case where a client is added after revalidation is completed.
   Persistent<DummyClient> client2 = new DummyClient;
@@ -411,7 +411,7 @@ TEST_F(RawResourceTest, RedirectDuringRevalidation) {
 
   EXPECT_TRUE(client2->Called());
   EXPECT_EQ(1, client2->NumberOfRedirectsReceived());
-  EXPECT_EQ("xyz", String(client2->Data().Data(), client2->Data().size()));
+  EXPECT_EQ("xyz", String(client2->Data().data(), client2->Data().size()));
 
   GetMemoryCache()->Remove(resource);
 

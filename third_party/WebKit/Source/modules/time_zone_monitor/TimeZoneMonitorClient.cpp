@@ -56,7 +56,7 @@ void TimeZoneMonitorClient::OnTimeZoneChange(const String& time_zone_info) {
 
   if (!time_zone_info.IsEmpty()) {
     icu::TimeZone* zone = icu::TimeZone::createTimeZone(
-        icu::UnicodeString::fromUTF8(time_zone_info.Utf8().Data()));
+        icu::UnicodeString::fromUTF8(time_zone_info.Utf8().data()));
     icu::TimeZone::adoptDefault(zone);
     VLOG(1) << "ICU default timezone is set to " << time_zone_info;
   }

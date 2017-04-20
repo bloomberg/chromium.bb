@@ -90,11 +90,11 @@ TEST(UnsafeSVGAttributeSanitizationTest, pasteAnchor_javaScriptHrefIsStripped) {
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
@@ -112,11 +112,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
@@ -133,11 +133,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
@@ -155,11 +155,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
@@ -176,11 +176,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
 }
 
 TEST(
@@ -199,11 +199,11 @@ TEST(
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
 }
 
 // Other sanitization integration tests are layout tests that use
@@ -227,11 +227,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("<a href=\"https://www.goo"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
 }
 
 TEST(
@@ -254,11 +254,11 @@ TEST(
 
   EXPECT_TRUE(sanitized_content.Contains("<a xlink:href=\"https://www.goo"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().Data();
+      << sanitized_content.Utf8().data();
 }
 
 // Unit tests

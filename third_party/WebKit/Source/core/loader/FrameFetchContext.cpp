@@ -99,7 +99,7 @@ void EmitWarningForDocWriteScripts(const String& url, Document& document) {
       "for more details.";
   document.AddConsoleMessage(
       ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, message));
-  WTFLogAlways("%s", message.Utf8().Data());
+  WTFLogAlways("%s", message.Utf8().data());
 }
 
 bool IsConnectionEffectively2G(WebEffectiveConnectionType effective_type) {
@@ -611,7 +611,7 @@ void FrameFetchContext::RecordLoadingActivity(
     Vector<String> argv;
     argv.push_back(Resource::ResourceTypeToString(type, fetch_initiator_name));
     argv.push_back(request.Url());
-    activity_logger->LogEvent("blinkRequestResource", argv.size(), argv.Data());
+    activity_logger->LogEvent("blinkRequestResource", argv.size(), argv.data());
   }
 }
 

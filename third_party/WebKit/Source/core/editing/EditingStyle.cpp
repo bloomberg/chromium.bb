@@ -681,7 +681,7 @@ void EditingStyle::RemoveBlockProperties() {
   if (!mutable_style_)
     return;
 
-  mutable_style_->RemovePropertiesInSet(BlockPropertiesVector().Data(),
+  mutable_style_->RemovePropertiesInSet(BlockPropertiesVector().data(),
                                         BlockPropertiesVector().size());
 }
 
@@ -1356,7 +1356,7 @@ static void RemovePropertiesInStyle(
     properties_to_remove[i] = style->PropertyAt(i).Id();
 
   style_to_remove_properties_from->RemovePropertiesInSet(
-      properties_to_remove.Data(), properties_to_remove.size());
+      properties_to_remove.data(), properties_to_remove.size());
 }
 
 void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,

@@ -1124,7 +1124,7 @@ void LayoutGrid::ApplyStretchAlignmentToTracksIfNeeded(
   LayoutUnit size_to_increase =
       free_space.value() / number_of_auto_sized_tracks;
   for (const auto& track_index : auto_sized_tracks_index) {
-    GridTrack* track = all_tracks.Data() + track_index;
+    GridTrack* track = all_tracks.data() + track_index;
     LayoutUnit base_size = track->BaseSize() + size_to_increase;
     track->SetBaseSize(base_size);
   }

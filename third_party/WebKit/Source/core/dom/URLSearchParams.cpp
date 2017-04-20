@@ -150,7 +150,7 @@ void URLSearchParams::SetInput(const String& query_string) {
 String URLSearchParams::toString() const {
   Vector<char> encoded_data;
   EncodeAsFormData(encoded_data);
-  return String(encoded_data.Data(), encoded_data.size());
+  return String(encoded_data.data(), encoded_data.size());
 }
 
 void URLSearchParams::AppendWithoutUpdate(const String& name,
@@ -232,7 +232,7 @@ void URLSearchParams::EncodeAsFormData(Vector<char>& encoded_data) const {
 PassRefPtr<EncodedFormData> URLSearchParams::ToEncodedFormData() const {
   Vector<char> encoded_data;
   EncodeAsFormData(encoded_data);
-  return EncodedFormData::Create(encoded_data.Data(), encoded_data.size());
+  return EncodedFormData::Create(encoded_data.data(), encoded_data.size());
 }
 
 PairIterable<String, String>::IterationSource* URLSearchParams::StartIteration(

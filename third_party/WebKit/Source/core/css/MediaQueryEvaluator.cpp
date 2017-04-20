@@ -155,7 +155,7 @@ bool MediaQueryEvaluator::Eval(
   bool result = false;
   for (size_t i = 0; i < queries.size() && !result; ++i) {
     // TODO(sof): CHECK() added for crbug.com/699269 diagnosis, remove sooner.
-    CHECK_EQ(queries.Data(), query_set->QueryVector().Data());
+    CHECK_EQ(queries.data(), query_set->QueryVector().data());
     result = Eval(queries[i].Get(), viewport_dependent_media_query_results,
                   device_dependent_media_query_results);
   }

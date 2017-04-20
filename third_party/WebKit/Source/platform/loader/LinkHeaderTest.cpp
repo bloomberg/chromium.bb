@@ -166,10 +166,10 @@ TEST_P(SingleLinkHeaderTest, Single) {
   LinkHeader& header = header_set[0];
   EXPECT_EQ(test_case.valid, header.Valid());
   if (test_case.valid) {
-    EXPECT_STREQ(test_case.url, header.Url().Ascii().Data());
-    EXPECT_STREQ(test_case.rel, header.Rel().Ascii().Data());
-    EXPECT_STREQ(test_case.as, header.As().Ascii().Data());
-    EXPECT_STREQ(test_case.media, header.Media().Ascii().Data());
+    EXPECT_STREQ(test_case.url, header.Url().Ascii().data());
+    EXPECT_STREQ(test_case.rel, header.Rel().Ascii().data());
+    EXPECT_STREQ(test_case.as, header.As().Ascii().data());
+    EXPECT_STREQ(test_case.media, header.Media().Ascii().data());
   }
 }
 
@@ -209,11 +209,11 @@ TEST_P(DoubleLinkHeaderTest, Double) {
   ASSERT_EQ(2u, header_set.size());
   LinkHeader& header1 = header_set[0];
   LinkHeader& header2 = header_set[1];
-  EXPECT_STREQ(test_case.url, header1.Url().Ascii().Data());
-  EXPECT_STREQ(test_case.rel, header1.Rel().Ascii().Data());
+  EXPECT_STREQ(test_case.url, header1.Url().Ascii().data());
+  EXPECT_STREQ(test_case.rel, header1.Rel().Ascii().data());
   EXPECT_EQ(test_case.valid, header1.Valid());
-  EXPECT_STREQ(test_case.url2, header2.Url().Ascii().Data());
-  EXPECT_STREQ(test_case.rel2, header2.Rel().Ascii().Data());
+  EXPECT_STREQ(test_case.url2, header2.Url().Ascii().data());
+  EXPECT_STREQ(test_case.rel2, header2.Rel().Ascii().data());
   EXPECT_EQ(test_case.valid2, header2.Valid());
 }
 
@@ -270,13 +270,13 @@ TEST_P(CrossOriginLinkHeaderTest, CrossOrigin) {
   LinkHeaderSet header_set(test_case.header_value);
   ASSERT_GE(header_set.size(), 1u);
   LinkHeader& header = header_set[0];
-  EXPECT_STREQ(test_case.url, header.Url().Ascii().Data());
-  EXPECT_STREQ(test_case.rel, header.Rel().Ascii().Data());
+  EXPECT_STREQ(test_case.url, header.Url().Ascii().data());
+  EXPECT_STREQ(test_case.rel, header.Rel().Ascii().data());
   EXPECT_EQ(test_case.valid, header.Valid());
   if (!test_case.crossorigin)
     EXPECT_TRUE(header.CrossOrigin().IsNull());
   else
-    EXPECT_STREQ(test_case.crossorigin, header.CrossOrigin().Ascii().Data());
+    EXPECT_STREQ(test_case.crossorigin, header.CrossOrigin().Ascii().data());
 }
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest,

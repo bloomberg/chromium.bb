@@ -105,7 +105,7 @@ class KURLCharsetConverter final : public url::CharsetConverter {
                         url::CanonOutput* output) override {
     CString encoded = encoding_->Encode(
         String(input, input_length), WTF::kURLEncodedEntitiesForUnencodables);
-    output->Append(encoded.Data(), static_cast<int>(encoded.length()));
+    output->Append(encoded.data(), static_cast<int>(encoded.length()));
   }
 
  private:
@@ -649,7 +649,7 @@ String EncodeWithURLEscapeSequences(const String& not_encoded_string) {
   if (buffer.capacity() < input_length * 3)
     buffer.Resize(input_length * 3);
 
-  url::EncodeURIComponent(utf8.Data(), input_length, &buffer);
+  url::EncodeURIComponent(utf8.data(), input_length, &buffer);
   String escaped(buffer.data(), buffer.length());
   // Unescape '/'; it's safe and much prettier.
   escaped.Replace("%2F", "/");

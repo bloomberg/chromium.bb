@@ -151,13 +151,13 @@ String NGConstraintSpace::ToString() const {
   return String::Format(
       "Offset: %s,%s Size: %sx%s MarginStrut: %s"
       " Clearance: %s",
-      bfc_offset_.inline_offset.ToString().Ascii().Data(),
-      bfc_offset_.block_offset.ToString().Ascii().Data(),
-      AvailableSize().inline_size.ToString().Ascii().Data(),
-      AvailableSize().block_size.ToString().Ascii().Data(),
-      margin_strut_.ToString().Ascii().Data(),
+      bfc_offset_.inline_offset.ToString().Ascii().data(),
+      bfc_offset_.block_offset.ToString().Ascii().data(),
+      AvailableSize().inline_size.ToString().Ascii().data(),
+      AvailableSize().block_size.ToString().Ascii().data(),
+      margin_strut_.ToString().Ascii().data(),
       clearance_offset_.has_value()
-          ? clearance_offset_.value().ToString().Ascii().Data()
+          ? clearance_offset_.value().ToString().Ascii().data()
           : "none");
 }
 

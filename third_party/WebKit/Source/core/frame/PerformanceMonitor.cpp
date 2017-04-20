@@ -196,7 +196,7 @@ void PerformanceMonitor::Did(const probe::CallFunction& probe) {
 
   String name = user_callback->name ? String(user_callback->name)
                                     : String(user_callback->atomicName);
-  String text = String::Format("'%s' handler took %ldms", name.Utf8().Data(),
+  String text = String::Format("'%s' handler took %ldms", name.Utf8().data(),
                                lround(duration * 1000));
   InnerReportGenericViolation(probe.context, handler_type, text, duration,
                               SourceLocation::FromFunction(probe.function));

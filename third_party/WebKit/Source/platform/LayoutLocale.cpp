@@ -24,7 +24,7 @@ bool LayoutLocale::default_for_han_computed_ = false;
 
 static hb_language_t ToHarfbuzLanguage(const AtomicString& locale) {
   CString locale_as_latin1 = locale.Latin1();
-  return hb_language_from_string(locale_as_latin1.Data(),
+  return hb_language_from_string(locale_as_latin1.data(),
                                  locale_as_latin1.length());
 }
 
@@ -51,7 +51,7 @@ const char* LayoutLocale::LocaleForSkFontMgr() const {
     if (string_for_sk_font_mgr_.IsNull())
       string_for_sk_font_mgr_ = string_.Ascii();
   }
-  return string_for_sk_font_mgr_.Data();
+  return string_for_sk_font_mgr_.data();
 }
 
 void LayoutLocale::ComputeScriptForHan() const {
@@ -196,7 +196,7 @@ AtomicString LayoutLocale::LocaleWithBreakKeyword(
 
   CString utf8_locale = string_.Utf8();
   Vector<char> buffer(utf8_locale.length() + 11, 0);
-  memcpy(buffer.Data(), utf8_locale.Data(), utf8_locale.length());
+  memcpy(buffer.data(), utf8_locale.data(), utf8_locale.length());
 
   const char* keyword_value = nullptr;
   switch (mode) {
@@ -219,20 +219,20 @@ AtomicString LayoutLocale::LocaleWithBreakKeyword(
 
   ICUError status;
   int32_t length_needed = uloc_setKeywordValue(
-      "lb", keyword_value, buffer.Data(), buffer.size(), &status);
+      "lb", keyword_value, buffer.data(), buffer.size(), &status);
   if (U_SUCCESS(status))
-    return AtomicString::FromUTF8(buffer.Data(), length_needed);
+    return AtomicString::FromUTF8(buffer.data(), length_needed);
 
   if (status == U_BUFFER_OVERFLOW_ERROR) {
     buffer.Grow(length_needed + 1);
-    memset(buffer.Data() + utf8_locale.length(), 0,
+    memset(buffer.data() + utf8_locale.length(), 0,
            buffer.size() - utf8_locale.length());
     status = U_ZERO_ERROR;
     int32_t length_needed2 = uloc_setKeywordValue(
-        "lb", keyword_value, buffer.Data(), buffer.size(), &status);
+        "lb", keyword_value, buffer.data(), buffer.size(), &status);
     DCHECK_EQ(length_needed, length_needed2);
     if (U_SUCCESS(status) && length_needed == length_needed2)
-      return AtomicString::FromUTF8(buffer.Data(), length_needed);
+      return AtomicString::FromUTF8(buffer.data(), length_needed);
   }
 
   NOTREACHED();

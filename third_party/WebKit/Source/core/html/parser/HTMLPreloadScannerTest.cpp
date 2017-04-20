@@ -73,9 +73,9 @@ class MockHTMLResourcePreloader : public ResourcePreloader {
     if (preload_request_) {
       EXPECT_FALSE(preload_request_->IsPreconnect());
       EXPECT_EQ(type, preload_request_->ResourceType());
-      EXPECT_STREQ(url, preload_request_->ResourceURL().Ascii().Data());
+      EXPECT_STREQ(url, preload_request_->ResourceURL().Ascii().data());
       EXPECT_STREQ(base_url,
-                   preload_request_->BaseURL().GetString().Ascii().Data());
+                   preload_request_->BaseURL().GetString().Ascii().data());
       EXPECT_EQ(width, preload_request_->ResourceWidth());
       EXPECT_EQ(preferences.ShouldSendDPR(),
                 preload_request_->Preferences().ShouldSendDPR());
@@ -113,8 +113,8 @@ class MockHTMLResourcePreloader : public ResourcePreloader {
                                      CrossOriginAttributeValue cross_origin) {
     if (!host.IsNull()) {
       EXPECT_TRUE(preload_request_->IsPreconnect());
-      EXPECT_STREQ(preload_request_->ResourceURL().Ascii().Data(),
-                   host.Ascii().Data());
+      EXPECT_STREQ(preload_request_->ResourceURL().Ascii().data(),
+                   host.Ascii().data());
       EXPECT_EQ(preload_request_->CrossOrigin(), cross_origin);
     }
   }

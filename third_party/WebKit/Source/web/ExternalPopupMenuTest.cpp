@@ -186,7 +186,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex) {
       static_cast<ExternalPopupMenu*>(select->Popup());
   client->DidAcceptIndex(2);
   EXPECT_FALSE(select->PopupIsVisible());
-  ASSERT_STREQ("2", menu_list->GetText().Utf8().Data());
+  ASSERT_STREQ("2", menu_list->GetText().Utf8().data());
   EXPECT_EQ(2, select->selectedIndex());
 }
 
@@ -208,7 +208,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices) {
   WebVector<int> indices_vector(indices, 1);
   client->DidAcceptIndices(indices_vector);
   EXPECT_FALSE(select->PopupIsVisible());
-  EXPECT_STREQ("2", menu_list->GetText().Utf8().Data());
+  EXPECT_STREQ("2", menu_list->GetText().Utf8().data());
   EXPECT_EQ(2, select->selectedIndex());
 }
 

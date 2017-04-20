@@ -352,7 +352,7 @@ TEST_F(DeferredImageDecoderTest, frameOpacity) {
     size_t size = pix_info.getSafeSize(row_bytes);
 
     Vector<char> storage(size);
-    SkPixmap pixmap(pix_info, storage.Data(), row_bytes);
+    SkPixmap pixmap(pix_info, storage.data(), row_bytes);
 
     // Before decoding, the frame is not known to be opaque.
     sk_sp<SkImage> frame = decoder->CreateFrameAtIndex(0);

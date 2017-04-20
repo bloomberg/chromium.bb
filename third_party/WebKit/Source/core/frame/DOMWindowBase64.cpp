@@ -76,7 +76,7 @@ String DOMWindowBase64::atob(const String& encoded_string,
     return String();
   }
 
-  return String(out.Data(), out.size());
+  return String(out.data(), out.size());
 }
 
 }  // namespace blink

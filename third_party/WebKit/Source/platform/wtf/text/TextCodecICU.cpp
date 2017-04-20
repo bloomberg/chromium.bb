@@ -592,7 +592,7 @@ class TextCodecInput final {
     buffer_.ReserveInitialCapacity(length);
     for (size_t i = 0; i < length; ++i)
       buffer_.push_back(characters[i]);
-    begin_ = buffer_.Data();
+    begin_ = buffer_.data();
     end_ = begin_ + buffer_.size();
   }
 
@@ -679,11 +679,11 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
                      true, &err);
     size_t count = target - buffer;
     result.Grow(size + count);
-    memcpy(result.Data() + size, buffer, count);
+    memcpy(result.data() + size, buffer, count);
     size += count;
   } while (err == U_BUFFER_OVERFLOW_ERROR);
 
-  return CString(result.Data(), size);
+  return CString(result.data(), size);
 }
 
 template <typename CharType>

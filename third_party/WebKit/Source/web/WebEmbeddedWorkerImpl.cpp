@@ -327,7 +327,7 @@ void WebEmbeddedWorkerImpl::LoadShadowPage() {
   // to have same origin as the worker so the loading checks work correctly.
   CString content("");
   RefPtr<SharedBuffer> buffer(
-      SharedBuffer::Create(content.Data(), content.length()));
+      SharedBuffer::Create(content.data(), content.length()));
   loading_shadow_page_ = true;
   main_frame_->GetFrame()->Loader().Load(
       FrameLoadRequest(0, ResourceRequest(worker_start_data_.script_url),

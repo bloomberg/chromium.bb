@@ -279,7 +279,7 @@ std::unique_ptr<JSONObject> ObjectForBitmapData(const SkBitmap& bitmap) {
   std::unique_ptr<JSONObject> data_item = JSONObject::Create();
   data_item->SetString(
       "base64",
-      WTF::Base64Encode(reinterpret_cast<char*>(output.Data()), output.size()));
+      WTF::Base64Encode(reinterpret_cast<char*>(output.data()), output.size()));
   data_item->SetString("mimeType", "image/png");
   return data_item;
 }
@@ -326,7 +326,7 @@ String StringForSkColor(const SkColor& color) {
   Vector<LChar, 9> result;
   result.push_back('#');
   HexNumber::AppendUnsignedAsHex(color, result);
-  return String(result.Data(), result.size());
+  return String(result.data(), result.size());
 }
 
 void AppendFlagToString(String* flags_string, bool is_set, const String& name) {
@@ -536,7 +536,7 @@ String StringForText(const void* text,
       return StringForUTFText(text, byte_length, encoding);
     case SkPaint::kGlyphID_TextEncoding: {
       WTF::Vector<SkUnichar> data_vector(byte_length / 2);
-      SkUnichar* text_data = data_vector.Data();
+      SkUnichar* text_data = data_vector.data();
       paint.glyphsToUnichars(static_cast<const uint16_t*>(text),
                              byte_length / 2, text_data);
       return WTF::UTF32LittleEndianEncoding().Decode(
@@ -916,7 +916,7 @@ String RecordAsDebugString(const PaintRecord* record) {
 }
 
 void ShowPaintRecord(const PaintRecord* record) {
-  WTFLogAlways("%s\n", RecordAsDebugString(record).Utf8().Data());
+  WTFLogAlways("%s\n", RecordAsDebugString(record).Utf8().data());
 }
 #endif
 

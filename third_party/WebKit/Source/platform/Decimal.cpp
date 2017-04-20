@@ -1000,11 +1000,11 @@ Decimal Decimal::Zero(Sign sign) {
 std::ostream& operator<<(std::ostream& ostream, const Decimal& decimal) {
   Decimal::EncodedData data = decimal.Value();
   return ostream << "encode("
-                 << String::Number(data.Coefficient()).Ascii().Data() << ", "
-                 << String::Number(data.Exponent()).Ascii().Data() << ", "
+                 << String::Number(data.Coefficient()).Ascii().data() << ", "
+                 << String::Number(data.Exponent()).Ascii().data() << ", "
                  << (data.GetSign() == Decimal::kNegative ? "Negative"
                                                           : "Positive")
-                 << ")=" << decimal.ToString().Ascii().Data();
+                 << ")=" << decimal.ToString().Ascii().data();
 }
 
 }  // namespace blink

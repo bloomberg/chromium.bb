@@ -435,7 +435,7 @@ int Internals::getResourcePriority(const String& url, Document* document) {
     return ResourceLoadPriority::kResourceLoadPriorityUnresolved;
 
   Resource* resource = document->Fetcher()->AllResources().at(
-      URLTestHelpers::ToKURL(url.Utf8().Data()));
+      URLTestHelpers::ToKURL(url.Utf8().data()));
 
   if (!resource)
     return ResourceLoadPriority::kResourceLoadPriorityUnresolved;
@@ -449,10 +449,10 @@ String Internals::getResourceHeader(const String& url,
   if (!document)
     return String();
   Resource* resource = document->Fetcher()->AllResources().at(
-      URLTestHelpers::ToKURL(url.Utf8().Data()));
+      URLTestHelpers::ToKURL(url.Utf8().data()));
   if (!resource)
     return String();
-  return resource->GetResourceRequest().HttpHeaderField(header.Utf8().Data());
+  return resource->GetResourceRequest().HttpHeaderField(header.Utf8().data());
 }
 
 bool Internals::isSharingStyle(Element* element1, Element* element2) const {
@@ -2233,7 +2233,7 @@ String Internals::pageProperty(String property_name,
     return String();
   }
 
-  return PrintContext::PageProperty(GetFrame(), property_name.Utf8().Data(),
+  return PrintContext::PageProperty(GetFrame(), property_name.Utf8().data(),
                                     page_number);
 }
 

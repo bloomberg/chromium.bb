@@ -73,7 +73,7 @@ void CSSPreloadScanner::Scan(const HTMLToken::DataVector& data,
                              const SegmentedString& source,
                              PreloadRequestStream& requests,
                              const KURL& predicted_base_element_url) {
-  ScanCommon(data.Data(), data.Data() + data.size(), source, requests,
+  ScanCommon(data.data(), data.data() + data.size(), source, requests,
              predicted_base_element_url);
 }
 

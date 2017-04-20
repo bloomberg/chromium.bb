@@ -95,7 +95,7 @@ static bool IsSchemeWhitelisted(const String& scheme) {
     InitCustomSchemeHandlerWhitelist();
 
   StringBuilder builder;
-  builder.Append(scheme.DeprecatedLower().Ascii().Data());
+  builder.Append(scheme.DeprecatedLower().Ascii().data());
 
   return g_scheme_whitelist->Contains(builder.ToString());
 }

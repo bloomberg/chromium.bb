@@ -124,7 +124,7 @@ class LocaleICUTest : public ::testing::Test {
 
 std::ostream& operator<<(std::ostream& os,
                          const LocaleICUTest::Labels& labels) {
-  return os << labels.ToString().Utf8().Data();
+  return os << labels.ToString().Utf8().data();
 }
 
 TEST_F(LocaleICUTest, isRTL) {
@@ -135,37 +135,37 @@ TEST_F(LocaleICUTest, isRTL) {
 }
 
 TEST_F(LocaleICUTest, monthFormat) {
-  EXPECT_STREQ("MMMM yyyy", MonthFormat("en_US").Utf8().Data());
-  EXPECT_STREQ("MMMM yyyy", MonthFormat("fr").Utf8().Data());
+  EXPECT_STREQ("MMMM yyyy", MonthFormat("en_US").Utf8().data());
+  EXPECT_STREQ("MMMM yyyy", MonthFormat("fr").Utf8().data());
   EXPECT_STREQ("yyyy\xE5\xB9\xB4M\xE6\x9C\x88",
-               MonthFormat("ja").Utf8().Data());
+               MonthFormat("ja").Utf8().data());
 }
 
 TEST_F(LocaleICUTest, localizedDateFormatText) {
   // Note: EXPECT_EQ(String, String) doesn't print result as string.
-  EXPECT_STREQ("h:mm:ss a", LocalizedDateFormatText("en_US").Utf8().Data());
-  EXPECT_STREQ("HH:mm:ss", LocalizedDateFormatText("fr").Utf8().Data());
-  EXPECT_STREQ("H:mm:ss", LocalizedDateFormatText("ja").Utf8().Data());
+  EXPECT_STREQ("h:mm:ss a", LocalizedDateFormatText("en_US").Utf8().data());
+  EXPECT_STREQ("HH:mm:ss", LocalizedDateFormatText("fr").Utf8().data());
+  EXPECT_STREQ("H:mm:ss", LocalizedDateFormatText("ja").Utf8().data());
 }
 
 TEST_F(LocaleICUTest, localizedShortDateFormatText) {
-  EXPECT_STREQ("h:mm a", LocalizedShortDateFormatText("en_US").Utf8().Data());
-  EXPECT_STREQ("HH:mm", LocalizedShortDateFormatText("fr").Utf8().Data());
-  EXPECT_STREQ("H:mm", LocalizedShortDateFormatText("ja").Utf8().Data());
+  EXPECT_STREQ("h:mm a", LocalizedShortDateFormatText("en_US").Utf8().data());
+  EXPECT_STREQ("HH:mm", LocalizedShortDateFormatText("fr").Utf8().data());
+  EXPECT_STREQ("H:mm", LocalizedShortDateFormatText("ja").Utf8().data());
 }
 
 TEST_F(LocaleICUTest, standAloneMonthLabels) {
-  EXPECT_STREQ("January", StandAloneMonthLabel("en_US", 0).Utf8().Data());
-  EXPECT_STREQ("June", StandAloneMonthLabel("en_US", 5).Utf8().Data());
-  EXPECT_STREQ("December", StandAloneMonthLabel("en_US", 11).Utf8().Data());
+  EXPECT_STREQ("January", StandAloneMonthLabel("en_US", 0).Utf8().data());
+  EXPECT_STREQ("June", StandAloneMonthLabel("en_US", 5).Utf8().data());
+  EXPECT_STREQ("December", StandAloneMonthLabel("en_US", 11).Utf8().data());
 
 #if U_ICU_VERSION_MAJOR_NUM >= 54
-  EXPECT_STREQ("Janvier", StandAloneMonthLabel("fr_FR", 0).Utf8().Data());
-  EXPECT_STREQ("Juin", StandAloneMonthLabel("fr_FR", 5).Utf8().Data());
+  EXPECT_STREQ("Janvier", StandAloneMonthLabel("fr_FR", 0).Utf8().data());
+  EXPECT_STREQ("Juin", StandAloneMonthLabel("fr_FR", 5).Utf8().data());
   EXPECT_STREQ(
       "D\xC3\xA9"
       "cembre",
-      StandAloneMonthLabel("fr_FR", 11).Utf8().Data());
+      StandAloneMonthLabel("fr_FR", 11).Utf8().data());
 #else
   EXPECT_STREQ("janvier", standAloneMonthLabel("fr_FR", 0).utf8().data());
   EXPECT_STREQ("juin", standAloneMonthLabel("fr_FR", 5).utf8().data());
@@ -175,34 +175,34 @@ TEST_F(LocaleICUTest, standAloneMonthLabels) {
       standAloneMonthLabel("fr_FR", 11).utf8().data());
 #endif
 
-  EXPECT_STREQ("1\xE6\x9C\x88", StandAloneMonthLabel("ja_JP", 0).Utf8().Data());
-  EXPECT_STREQ("6\xE6\x9C\x88", StandAloneMonthLabel("ja_JP", 5).Utf8().Data());
+  EXPECT_STREQ("1\xE6\x9C\x88", StandAloneMonthLabel("ja_JP", 0).Utf8().data());
+  EXPECT_STREQ("6\xE6\x9C\x88", StandAloneMonthLabel("ja_JP", 5).Utf8().data());
   EXPECT_STREQ("12\xE6\x9C\x88",
-               StandAloneMonthLabel("ja_JP", 11).Utf8().Data());
+               StandAloneMonthLabel("ja_JP", 11).Utf8().data());
 
   EXPECT_STREQ("\xD0\x9C\xD0\xB0\xD1\x80\xD1\x82",
-               StandAloneMonthLabel("ru_RU", 2).Utf8().Data());
+               StandAloneMonthLabel("ru_RU", 2).Utf8().data());
   EXPECT_STREQ("\xD0\x9C\xD0\xB0\xD0\xB9",
-               StandAloneMonthLabel("ru_RU", 4).Utf8().Data());
+               StandAloneMonthLabel("ru_RU", 4).Utf8().data());
 }
 
 TEST_F(LocaleICUTest, shortMonthLabels) {
-  EXPECT_STREQ("Jan", ShortMonthLabel("en_US", 0).Utf8().Data());
-  EXPECT_STREQ("Jan", ShortStandAloneMonthLabel("en_US", 0).Utf8().Data());
-  EXPECT_STREQ("Dec", ShortMonthLabel("en_US", 11).Utf8().Data());
-  EXPECT_STREQ("Dec", ShortStandAloneMonthLabel("en_US", 11).Utf8().Data());
+  EXPECT_STREQ("Jan", ShortMonthLabel("en_US", 0).Utf8().data());
+  EXPECT_STREQ("Jan", ShortStandAloneMonthLabel("en_US", 0).Utf8().data());
+  EXPECT_STREQ("Dec", ShortMonthLabel("en_US", 11).Utf8().data());
+  EXPECT_STREQ("Dec", ShortStandAloneMonthLabel("en_US", 11).Utf8().data());
 
 #if U_ICU_VERSION_MAJOR_NUM >= 54
-  EXPECT_STREQ("janv.", ShortMonthLabel("fr_FR", 0).Utf8().Data());
-  EXPECT_STREQ("Janv.", ShortStandAloneMonthLabel("fr_FR", 0).Utf8().Data());
+  EXPECT_STREQ("janv.", ShortMonthLabel("fr_FR", 0).Utf8().data());
+  EXPECT_STREQ("Janv.", ShortStandAloneMonthLabel("fr_FR", 0).Utf8().data());
   EXPECT_STREQ(
       "d\xC3\xA9"
       "c.",
-      ShortMonthLabel("fr_FR", 11).Utf8().Data());
+      ShortMonthLabel("fr_FR", 11).Utf8().data());
   EXPECT_STREQ(
       "D\xC3\xA9"
       "c.",
-      ShortStandAloneMonthLabel("fr_FR", 11).Utf8().Data());
+      ShortStandAloneMonthLabel("fr_FR", 11).Utf8().data());
 #else
   EXPECT_STREQ("janv.", shortMonthLabel("fr_FR", 0).utf8().data());
   EXPECT_STREQ("janv.", shortStandAloneMonthLabel("fr_FR", 0).utf8().data());
@@ -216,21 +216,21 @@ TEST_F(LocaleICUTest, shortMonthLabels) {
       shortStandAloneMonthLabel("fr_FR", 11).utf8().data());
 #endif
 
-  EXPECT_STREQ("1\xE6\x9C\x88", ShortMonthLabel("ja_JP", 0).Utf8().Data());
+  EXPECT_STREQ("1\xE6\x9C\x88", ShortMonthLabel("ja_JP", 0).Utf8().data());
   EXPECT_STREQ("1\xE6\x9C\x88",
-               ShortStandAloneMonthLabel("ja_JP", 0).Utf8().Data());
-  EXPECT_STREQ("12\xE6\x9C\x88", ShortMonthLabel("ja_JP", 11).Utf8().Data());
+               ShortStandAloneMonthLabel("ja_JP", 0).Utf8().data());
+  EXPECT_STREQ("12\xE6\x9C\x88", ShortMonthLabel("ja_JP", 11).Utf8().data());
   EXPECT_STREQ("12\xE6\x9C\x88",
-               ShortStandAloneMonthLabel("ja_JP", 11).Utf8().Data());
+               ShortStandAloneMonthLabel("ja_JP", 11).Utf8().data());
 
   EXPECT_STREQ("\xD0\xBC\xD0\xB0\xD1\x80.",
-               ShortMonthLabel("ru_RU", 2).Utf8().Data());
+               ShortMonthLabel("ru_RU", 2).Utf8().data());
   EXPECT_STREQ("\xD0\x9C\xD0\xB0\xD1\x80\xD1\x82",
-               ShortStandAloneMonthLabel("ru_RU", 2).Utf8().Data());
+               ShortStandAloneMonthLabel("ru_RU", 2).Utf8().data());
   EXPECT_STREQ("\xD0\xBC\xD0\xB0\xD1\x8F",
-               ShortMonthLabel("ru_RU", 4).Utf8().Data());
+               ShortMonthLabel("ru_RU", 4).Utf8().data());
   EXPECT_STREQ("\xD0\x9C\xD0\xB0\xD0\xB9",
-               ShortStandAloneMonthLabel("ru_RU", 4).Utf8().Data());
+               ShortStandAloneMonthLabel("ru_RU", 4).Utf8().data());
 }
 
 TEST_F(LocaleICUTest, timeAMPMLabels) {

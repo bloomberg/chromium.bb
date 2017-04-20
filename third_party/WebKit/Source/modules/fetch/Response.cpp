@@ -162,7 +162,7 @@ Response* Response::Create(ScriptState* script_state,
     // Here we handle formData->boundary() as a C-style string. See
     // FormDataEncoder::generateUniqueBoundaryString.
     content_type = AtomicString("multipart/form-data; boundary=") +
-                   form_data->Boundary().Data();
+                   form_data->Boundary().data();
     body_buffer = new BodyStreamBuffer(
         script_state,
         new FormDataBytesConsumer(execution_context, form_data.Release()));

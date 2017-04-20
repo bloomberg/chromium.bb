@@ -271,7 +271,7 @@ class CacheStorageTest : public ::testing::Test {
     return ToCoreString(
                on_reject.V8Value()->ToString(GetContext()).ToLocalChecked())
         .Ascii()
-        .Data();
+        .data();
   }
 
   ScriptValue GetResolveValue(ScriptPromise& promise) {
@@ -287,7 +287,7 @@ class CacheStorageTest : public ::testing::Test {
     return ToCoreString(
                on_resolve.V8Value()->ToString(GetContext()).ToLocalChecked())
         .Ascii()
-        .Data();
+        .data();
   }
 
  private:

@@ -168,7 +168,7 @@ TEST(HTMLSrcsetParserTest, Basic) {
         test.srcset_input);
     ASSERT_EQ(test.output_density, candidate.Density());
     ASSERT_EQ(test.output_resource_width, candidate.GetResourceWidth());
-    ASSERT_STREQ(test.output_url, candidate.ToString().Ascii().Data());
+    ASSERT_STREQ(test.output_url, candidate.ToString().Ascii().data());
   }
 }
 

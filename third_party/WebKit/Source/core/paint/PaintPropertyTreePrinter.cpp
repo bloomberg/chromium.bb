@@ -482,9 +482,9 @@ class PaintPropertyTreeGraphBuilder {
        << object.GetName();
     Node* node = object.GetNode();
     if (node) {
-      os << "\\n" << GetTagName(node).Utf8().Data();
+      os << "\\n" << GetTagName(node).Utf8().data();
       if (node->IsElementNode() && ToElement(node)->HasID())
-        os << "\\nid=" << ToElement(node)->GetIdAttribute().Utf8().Data();
+        os << "\\nid=" << ToElement(node)->GetIdAttribute().Utf8().data();
     }
     os << "\"];" << std::endl;
     const void* parent = object.IsLayoutView()
@@ -544,19 +544,19 @@ CORE_EXPORT void showAllPropertyTrees(const blink::FrameView& rootFrame) {
 
 void showTransformPropertyTree(const blink::FrameView& rootFrame) {
   fprintf(stderr, "%s\n",
-          transformPropertyTreeAsString(rootFrame).Utf8().Data());
+          transformPropertyTreeAsString(rootFrame).Utf8().data());
 }
 
 void showClipPropertyTree(const blink::FrameView& rootFrame) {
-  fprintf(stderr, "%s\n", clipPropertyTreeAsString(rootFrame).Utf8().Data());
+  fprintf(stderr, "%s\n", clipPropertyTreeAsString(rootFrame).Utf8().data());
 }
 
 void showEffectPropertyTree(const blink::FrameView& rootFrame) {
-  fprintf(stderr, "%s\n", effectPropertyTreeAsString(rootFrame).Utf8().Data());
+  fprintf(stderr, "%s\n", effectPropertyTreeAsString(rootFrame).Utf8().data());
 }
 
 void showScrollPropertyTree(const blink::FrameView& rootFrame) {
-  fprintf(stderr, "%s\n", scrollPropertyTreeAsString(rootFrame).Utf8().Data());
+  fprintf(stderr, "%s\n", scrollPropertyTreeAsString(rootFrame).Utf8().data());
 }
 
 String transformPropertyTreeAsString(const blink::FrameView& rootFrame) {

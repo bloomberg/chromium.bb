@@ -90,19 +90,19 @@ void PrintTo(const PaintChunkProperties& properties, std::ostream* os) {
 }
 
 void PrintTo(const ClipPaintPropertyNode& node, std::ostream* os) {
-  *os << "ClipPaintPropertyNode(" << node.ToString().Ascii().Data() << ")";
+  *os << "ClipPaintPropertyNode(" << node.ToString().Ascii().data() << ")";
 }
 
 void PrintTo(const TransformPaintPropertyNode& node, std::ostream* os) {
-  *os << "TransformPaintPropertyNode(" << node.ToString().Ascii().Data() << ")";
+  *os << "TransformPaintPropertyNode(" << node.ToString().Ascii().data() << ")";
 }
 
 void PrintTo(const EffectPaintPropertyNode& node, std::ostream* os) {
-  *os << "EffectPaintPropertyNode(" << node.ToString().Ascii().Data() << ")";
+  *os << "EffectPaintPropertyNode(" << node.ToString().Ascii().data() << ")";
 }
 
 void PrintTo(const ScrollPaintPropertyNode& node, std::ostream* os) {
-  *os << "ScrollPaintPropertyNode(" << node.ToString().Ascii().Data() << ")";
+  *os << "ScrollPaintPropertyNode(" << node.ToString().Ascii().data() << ")";
 }
 
 }  // namespace blink

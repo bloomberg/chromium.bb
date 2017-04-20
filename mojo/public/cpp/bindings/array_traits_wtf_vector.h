@@ -26,9 +26,9 @@ struct ArrayTraits<WTF::Vector<U>> {
 
   static size_t GetSize(const WTF::Vector<U>& input) { return input.size(); }
 
-  static U* GetData(WTF::Vector<U>& input) { return input.Data(); }
+  static U* GetData(WTF::Vector<U>& input) { return input.data(); }
 
-  static const U* GetData(const WTF::Vector<U>& input) { return input.Data(); }
+  static const U* GetData(const WTF::Vector<U>& input) { return input.data(); }
 
   static U& GetAt(WTF::Vector<U>& input, size_t index) { return input[index]; }
 

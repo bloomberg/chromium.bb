@@ -224,7 +224,7 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
     if (Platform::Current()->GetSandboxSupport())
       return typefaceForFontconfigInterfaceIdAndTtcIndex(
           creation_params.FontconfigInterfaceId(), creation_params.TtcIndex());
-    return SkTypeface::MakeFromFile(creation_params.Filename().Data(),
+    return SkTypeface::MakeFromFile(creation_params.Filename().data(),
                                     creation_params.TtcIndex());
   }
 #endif
@@ -256,14 +256,14 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
   // Manager.  On Windows the font manager is always present.
   if (font_manager_)
     return sk_sp<SkTypeface>(font_manager_->matchFamilyStyle(
-        name.Data(), font_description.SkiaFontStyle()));
+        name.data(), font_description.SkiaFontStyle()));
 #endif
 
   // FIXME: Use m_fontManager, matchFamilyStyle instead of
   // legacyCreateTypeface on all platforms.
   sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
   return sk_sp<SkTypeface>(
-      fm->legacyCreateTypeface(name.Data(), font_description.SkiaFontStyle()));
+      fm->legacyCreateTypeface(name.data(), font_description.SkiaFontStyle()));
 }
 
 #if !OS(WIN)
@@ -279,7 +279,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     return nullptr;
 
   return WTF::WrapUnique(
-      new FontPlatformData(tf, name.Data(), font_size,
+      new FontPlatformData(tf, name.data(), font_size,
                            (NumericFontWeight(font_description.Weight()) >
                             200 + tf->fontStyle().weight()) ||
                                font_description.IsSyntheticBold(),

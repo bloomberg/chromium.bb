@@ -126,10 +126,10 @@ TEST(SharedBufferTest, copy) {
 
   size_t length = test_data.size();
   RefPtr<SharedBuffer> shared_buffer =
-      SharedBuffer::Create(test_data.Data(), length);
-  shared_buffer->Append(test_data.Data(), length);
-  shared_buffer->Append(test_data.Data(), length);
-  shared_buffer->Append(test_data.Data(), length);
+      SharedBuffer::Create(test_data.data(), length);
+  shared_buffer->Append(test_data.data(), length);
+  shared_buffer->Append(test_data.data(), length);
+  shared_buffer->Append(test_data.data(), length);
   // sharedBuffer must contain data more than segmentSize (= 0x1000) to check
   // copy().
   ASSERT_EQ(length * 4, shared_buffer->size());
@@ -138,7 +138,7 @@ TEST(SharedBufferTest, copy) {
   ASSERT_EQ(length * 4, clone->size());
   ASSERT_EQ(0, memcmp(clone->Data(), shared_buffer->Data(), clone->size()));
 
-  clone->Append(test_data.Data(), length);
+  clone->Append(test_data.data(), length);
   ASSERT_EQ(length * 5, clone->size());
 }
 

@@ -114,7 +114,7 @@ PerformanceEntry* UserTiming::Mark(const String& mark_name,
     return nullptr;
   }
 
-  TRACE_EVENT_COPY_MARK("blink.user_timing", mark_name.Utf8().Data());
+  TRACE_EVENT_COPY_MARK("blink.user_timing", mark_name.Utf8().data());
   double start_time = performance_->now();
   PerformanceEntry* entry = PerformanceMark::Create(mark_name, start_time);
   InsertPerformanceEntry(marks_map_, *entry);
@@ -184,11 +184,11 @@ PerformanceEntry* UserTiming::Measure(const String& measure_name,
   double end_time_monotonic = performance_->TimeOrigin() + end_time / 1000.0;
 
   TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().Data(),
+      "blink.user_timing", measure_name.Utf8().data(),
       WTF::StringHash::GetHash(measure_name),
       TraceEvent::ToTraceTimestamp(start_time_monotonic));
   TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().Data(),
+      "blink.user_timing", measure_name.Utf8().data(),
       WTF::StringHash::GetHash(measure_name),
       TraceEvent::ToTraceTimestamp(end_time_monotonic));
 

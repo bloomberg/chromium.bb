@@ -171,7 +171,7 @@ void CanvasRenderingContext2DState::UpdateLineDash() const {
     Vector<float> line_dash(line_dash_.size());
     std::copy(line_dash_.begin(), line_dash_.end(), line_dash.begin());
     stroke_flags_.setPathEffect(SkDashPathEffect::Make(
-        line_dash.Data(), line_dash.size(), line_dash_offset_));
+        line_dash.data(), line_dash.size(), line_dash_offset_));
   }
 
   line_dash_dirty_ = false;

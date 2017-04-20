@@ -67,13 +67,13 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
     constexpr auto kDataStart = CachedMetadata::kDataStart;
     DCHECK_GE(serialized_data_.size(), kDataStart);
     return *reinterpret_cast_ptr<uint32_t*>(
-        const_cast<char*>(serialized_data_.Data()));
+        const_cast<char*>(serialized_data_.data()));
   }
 
   const char* Data() const {
     constexpr auto kDataStart = CachedMetadata::kDataStart;
     DCHECK_GE(serialized_data_.size(), kDataStart);
-    return serialized_data_.Data() + kDataStart;
+    return serialized_data_.data() + kDataStart;
   }
 
   size_t size() const {

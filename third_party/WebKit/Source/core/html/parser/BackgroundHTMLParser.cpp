@@ -144,7 +144,7 @@ void BackgroundHTMLParser::AppendRawBytesFromMainThread(
   DEFINE_STATIC_LOCAL(CustomCountHistogram, queue_delay,
                       ("Parser.AppendBytesDelay", 1, 5000, 50));
   queue_delay.Count(MonotonicallyIncreasingTimeMS() - bytes_received_time);
-  UpdateDocument(decoder_->Decode(buffer->Data(), buffer->size()));
+  UpdateDocument(decoder_->Decode(buffer->data(), buffer->size()));
 }
 
 void BackgroundHTMLParser::AppendDecodedBytes(const String& input) {

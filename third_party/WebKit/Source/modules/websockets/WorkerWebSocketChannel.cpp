@@ -407,7 +407,7 @@ void Bridge::Send(const CString& message) {
   std::unique_ptr<Vector<char>> data =
       WTF::WrapUnique(new Vector<char>(message.length()));
   if (message.length())
-    memcpy(data->Data(), static_cast<const char*>(message.Data()),
+    memcpy(data->data(), static_cast<const char*>(message.data()),
            message.length());
 
   loader_proxy_->PostTaskToLoader(
@@ -424,7 +424,7 @@ void Bridge::Send(const DOMArrayBuffer& binary_data,
   std::unique_ptr<Vector<char>> data =
       WTF::MakeUnique<Vector<char>>(byte_length);
   if (binary_data.ByteLength())
-    memcpy(data->Data(),
+    memcpy(data->data(),
            static_cast<const char*>(binary_data.Data()) + byte_offset,
            byte_length);
 

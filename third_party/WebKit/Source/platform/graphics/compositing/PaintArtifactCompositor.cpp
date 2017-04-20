@@ -661,7 +661,7 @@ void PaintArtifactCompositor::ShowDebugData() {
   LOG(ERROR) << LayersAsJSON(kLayerTreeIncludesDebugInfo)
                     ->ToPrettyJSONString()
                     .Utf8()
-                    .Data();
+                    .data();
 }
 #endif
 

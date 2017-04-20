@@ -65,7 +65,7 @@ FontRenderStyle FontRenderStyle::QuerySystem(const CString& family,
     const int size_and_style = (((int)text_size) << 2) | (((int)is_bold) << 1) |
                                (((int)is_italic) << 0);
     Platform::Current()->GetSandboxSupport()->GetWebFontRenderStyleForStrike(
-        family.Data(), size_and_style, &style);
+        family.data(), size_and_style, &style);
   }
 #endif
 

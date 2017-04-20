@@ -281,7 +281,7 @@ void Font::GetTextIntercepts(const TextRunPaintInfo& run_info,
   intercepts.Resize(num_intervals / 2);
 
   GetInterceptsFromBlobs(blobs, paint, bounds,
-                         reinterpret_cast<SkScalar*>(intercepts.Data()));
+                         reinterpret_cast<SkScalar*>(intercepts.data()));
 }
 
 static inline FloatRect PixelSnappedSelectionRect(FloatRect rect) {

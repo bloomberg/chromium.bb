@@ -68,7 +68,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   TextResourceDecoderForFuzzing decoder(fuzzed_data);
   CString bytes = fuzzed_data.ConsumeRemainingBytes();
-  String decoded_bytes = decoder.Decode(bytes.Data(), bytes.length());
+  String decoded_bytes = decoder.Decode(bytes.data(), bytes.length());
   scanner->AppendToEnd(decoded_bytes);
   PreloadRequestStream requests = scanner->Scan(document_url, nullptr);
   preloader.TakeAndPreload(requests);

@@ -25,7 +25,7 @@ TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject) {
   LayoutObject* obj = div->GetLayoutObject();
   DCHECK(obj);
   EXPECT_STREQ("LayoutBlockFlow (positioned)",
-               obj->DecoratedName().Ascii().Data());
+               obj->DecoratedName().Ascii().data());
 }
 
 // Some display checks.

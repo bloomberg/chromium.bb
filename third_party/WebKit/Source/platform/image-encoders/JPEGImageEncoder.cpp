@@ -148,14 +148,14 @@ static void PrepareOutput(j_compress_ptr cinfo) {
   JPEGOutputBuffer* out = static_cast<JPEGOutputBuffer*>(cinfo->dest);
   const size_t kInternalBufferSize = 8192;
   out->buffer.Resize(kInternalBufferSize);
-  out->next_output_byte = out->buffer.Data();
+  out->next_output_byte = out->buffer.data();
   out->free_in_buffer = out->buffer.size();
 }
 
 static boolean WriteOutput(j_compress_ptr cinfo) {
   JPEGOutputBuffer* out = static_cast<JPEGOutputBuffer*>(cinfo->dest);
-  out->output->Append(out->buffer.Data(), out->buffer.size());
-  out->next_output_byte = out->buffer.Data();
+  out->output->Append(out->buffer.data(), out->buffer.size());
+  out->next_output_byte = out->buffer.data();
   out->free_in_buffer = out->buffer.size();
   return TRUE;
 }
@@ -163,7 +163,7 @@ static boolean WriteOutput(j_compress_ptr cinfo) {
 static void FinishOutput(j_compress_ptr cinfo) {
   JPEGOutputBuffer* out = static_cast<JPEGOutputBuffer*>(cinfo->dest);
   const size_t size = out->buffer.size() - out->free_in_buffer;
-  out->output->Append(out->buffer.Data(), size);
+  out->output->Append(out->buffer.data(), size);
 }
 
 static void HandleError(j_common_ptr common) {
@@ -255,7 +255,7 @@ int JPEGImageEncoder::ProgressiveEncodeRowsJpegHelper(
 
   while (encoder_state_impl->Cinfo()->next_scanline <
          encoder_state_impl->Cinfo()->image_height) {
-    JSAMPLE* row_data = row.Data();
+    JSAMPLE* row_data = row.data();
     RGBAtoRGB(pixels, encoder_state_impl->Cinfo()->image_width, row_data);
     jpeg_write_scanlines(encoder_state_impl->Cinfo(), &row_data, 1);
     pixels += pixel_row_stride;
@@ -290,7 +290,7 @@ bool JPEGImageEncoder::EncodeWithPreInitializedState(
                           pixel_row_stride * num_rows_completed;
   while (encoder_state_impl->Cinfo()->next_scanline <
          encoder_state_impl->Cinfo()->image_height) {
-    JSAMPLE* row_data = row.Data();
+    JSAMPLE* row_data = row.data();
     RGBAtoRGB(pixels, encoder_state_impl->Cinfo()->image_width, row_data);
     jpeg_write_scanlines(encoder_state_impl->Cinfo(), &row_data, 1);
     pixels += pixel_row_stride;

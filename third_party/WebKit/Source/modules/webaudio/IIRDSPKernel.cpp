@@ -36,7 +36,7 @@ void IIRDSPKernel::GetFrequencyResponse(int n_frequencies,
   for (int k = 0; k < n_frequencies; ++k)
     frequency[k] = clampTo<float>(frequency_hz[k] / nyquist);
 
-  iir_.GetFrequencyResponse(n_frequencies, frequency.Data(), mag_response,
+  iir_.GetFrequencyResponse(n_frequencies, frequency.data(), mag_response,
                             phase_response);
 }
 

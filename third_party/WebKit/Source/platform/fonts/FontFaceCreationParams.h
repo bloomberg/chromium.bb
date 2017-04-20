@@ -105,7 +105,7 @@ class FontFaceCreationParams {
       // encoding and endianness. However, since the hash is not transferred
       // over a network or permanently stored and only used for the runtime of
       // Chromium, this is not a concern.
-      hasher.AddCharacters(reinterpret_cast<const LChar*>(filename_.Data()),
+      hasher.AddCharacters(reinterpret_cast<const LChar*>(filename_.data()),
                            filename_.length());
       hasher.AddCharacters(reinterpret_cast<const LChar*>(&ttc_index_),
                            sizeof(ttc_index_));

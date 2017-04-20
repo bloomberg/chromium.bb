@@ -45,8 +45,8 @@ const ComputedStyle& NGPhysicalFragment::Style() const {
 
 String NGPhysicalFragment::ToString() const {
   return String::Format("Type: '%d' Size: '%s' Offset: '%s' Placed: '%d'",
-                        Type(), Size().ToString().Ascii().Data(),
-                        Offset().ToString().Ascii().Data(), IsPlaced());
+                        Type(), Size().ToString().Ascii().data(),
+                        Offset().ToString().Ascii().data(), IsPlaced());
 }
 
 }  // namespace blink

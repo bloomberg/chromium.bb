@@ -862,7 +862,7 @@ void USBDevice::AsyncIsochronousTransferIn(
     return;
 
   DOMArrayBuffer* buffer =
-      data ? DOMArrayBuffer::Create(data->Data(), data->size()) : nullptr;
+      data ? DOMArrayBuffer::Create(data->data(), data->size()) : nullptr;
   HeapVector<Member<USBIsochronousInTransferPacket>> packets;
   packets.ReserveCapacity(mojo_packets.size());
   size_t byte_offset = 0;

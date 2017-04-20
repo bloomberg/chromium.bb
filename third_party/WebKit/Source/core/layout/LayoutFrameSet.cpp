@@ -80,7 +80,7 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
                                 int available_len) {
   available_len = max(available_len, 0);
 
-  int* grid_layout = axis.sizes_.Data();
+  int* grid_layout = axis.sizes_.data();
 
   if (grid.IsEmpty()) {
     grid_layout[0] = available_len;
@@ -262,7 +262,7 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
 
   // now we have the final layout, distribute the delta over it
   bool worked = true;
-  int* grid_delta = axis.deltas_.Data();
+  int* grid_delta = axis.deltas_.data();
   for (int i = 0; i < grid_len; ++i) {
     if (grid_layout[i] && grid_layout[i] + grid_delta[i] <= 0)
       worked = false;

@@ -211,7 +211,7 @@ CString FormData::EncodeAndNormalize(const String& string) const {
 }
 
 String FormData::Decode(const CString& data) const {
-  return Encoding().Decode(data.Data(), data.length());
+  return Encoding().Decode(data.data(), data.length());
 }
 
 PassRefPtr<EncodedFormData> FormData::EncodeFormData(
@@ -224,7 +224,7 @@ PassRefPtr<EncodedFormData> FormData::EncodeFormData(
         entry->isFile() ? EncodeAndNormalize(entry->GetFile()->name())
                         : entry->Value(),
         encoding_type);
-  form_data->AppendData(encoded_data.Data(), encoded_data.size());
+  form_data->AppendData(encoded_data.data(), encoded_data.size());
   return form_data.Release();
 }
 
@@ -234,7 +234,7 @@ PassRefPtr<EncodedFormData> FormData::EncodeMultiPartFormData() {
   Vector<char> encoded_data;
   for (const auto& entry : Entries()) {
     Vector<char> header;
-    FormDataEncoder::BeginMultiPartHeader(header, form_data->Boundary().Data(),
+    FormDataEncoder::BeginMultiPartHeader(header, form_data->Boundary().data(),
                                           entry->name());
 
     // If the current type is blob, then we also need to include the
@@ -280,7 +280,7 @@ PassRefPtr<EncodedFormData> FormData::EncodeMultiPartFormData() {
     FormDataEncoder::FinishMultiPartHeader(header);
 
     // Append body
-    form_data->AppendData(header.Data(), header.size());
+    form_data->AppendData(header.data(), header.size());
     if (entry->GetBlob()) {
       if (entry->GetBlob()->HasBackingFile()) {
         File* file = ToFile(entry->GetBlob());
@@ -294,13 +294,13 @@ PassRefPtr<EncodedFormData> FormData::EncodeMultiPartFormData() {
                               entry->GetBlob()->GetBlobDataHandle());
       }
     } else {
-      form_data->AppendData(entry->Value().Data(), entry->Value().length());
+      form_data->AppendData(entry->Value().data(), entry->Value().length());
     }
     form_data->AppendData("\r\n", 2);
   }
   FormDataEncoder::AddBoundaryToMultiPartHeader(
-      encoded_data, form_data->Boundary().Data(), true);
-  form_data->AppendData(encoded_data.Data(), encoded_data.size());
+      encoded_data, form_data->Boundary().data(), true);
+  form_data->AppendData(encoded_data.data(), encoded_data.size());
   return form_data.Release();
 }
 

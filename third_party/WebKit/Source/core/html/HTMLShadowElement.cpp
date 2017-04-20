@@ -74,7 +74,7 @@ Node::InsertionNotificationRequest HTMLShadowElement::InsertedInto(
         root->GetType() != root->OlderShadowRoot()->GetType()) {
       String message =
           String::Format("<shadow> doesn't work for %s element host.",
-                         root->host().tagName().Utf8().Data());
+                         root->host().tagName().Utf8().data());
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
           kRenderingMessageSource, kWarningMessageLevel, message));
     }

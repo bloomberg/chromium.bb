@@ -9,8 +9,8 @@
 namespace blink {
 
 String LayoutSize::ToString() const {
-  return String::Format("%sx%s", Width().ToString().Ascii().Data(),
-                        Height().ToString().Ascii().Data());
+  return String::Format("%sx%s", Width().ToString().Ascii().data(),
+                        Height().ToString().Ascii().data());
 }
 
 }  // namespace blink

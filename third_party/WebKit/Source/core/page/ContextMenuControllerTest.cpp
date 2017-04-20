@@ -117,32 +117,32 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu) {
                                              ->Items();
   EXPECT_EQ(8u, items.size());
   EXPECT_EQ(kActionType, items[0].GetType());
-  EXPECT_STREQ("Item1", items[0].Title().Utf8().Data());
+  EXPECT_STREQ("Item1", items[0].Title().Utf8().data());
   GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
       &items[0]);
-  EXPECT_STREQ("Title 1", GetDocument().title().Utf8().Data());
+  EXPECT_STREQ("Title 1", GetDocument().title().Utf8().data());
   EXPECT_EQ(kSubmenuType, items[3].GetType());
-  EXPECT_STREQ("Submenu", items[3].Title().Utf8().Data());
+  EXPECT_STREQ("Submenu", items[3].Title().Utf8().data());
   const Vector<ContextMenuItem>& sub_menu_items = items[3].SubMenuItems();
   EXPECT_EQ(3u, sub_menu_items.size());
-  EXPECT_STREQ("Item6", sub_menu_items[2].Title().Utf8().Data());
+  EXPECT_STREQ("Item6", sub_menu_items[2].Title().Utf8().data());
   GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
       &sub_menu_items[2]);
-  EXPECT_STREQ("Title 6", GetDocument().title().Utf8().Data());
+  EXPECT_STREQ("Title 6", GetDocument().title().Utf8().data());
   GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
       &items[4]);
-  EXPECT_STREQ("Title 7 checked", GetDocument().title().Utf8().Data());
+  EXPECT_STREQ("Title 7 checked", GetDocument().title().Utf8().data());
   GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
       &items[4]);
-  EXPECT_STREQ("Title 7 not checked", GetDocument().title().Utf8().Data());
+  EXPECT_STREQ("Title 7 not checked", GetDocument().title().Utf8().data());
   GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
       &items[5]);
   EXPECT_STREQ("Title 8 not checked and Title 9 checked",
-               GetDocument().title().Utf8().Data());
+               GetDocument().title().Utf8().data());
   GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
       &items[7]);
   EXPECT_STREQ("Title 10 not checked and Title 8 checked",
-               GetDocument().title().Utf8().Data());
+               GetDocument().title().Utf8().data());
 }
 
 }  // namespace blink

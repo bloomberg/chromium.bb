@@ -153,7 +153,7 @@ void ScheduledAction::Execute(LocalFrame* frame) {
     CreateLocalHandlesForArgs(&info);
     V8ScriptRunner::CallFunction(
         function, frame->GetDocument(), script_state_->GetContext()->Global(),
-        info.size(), info.Data(), script_state_->GetIsolate());
+        info.size(), info.data(), script_state_->GetIsolate());
   } else {
     DVLOG(1) << "ScheduledAction::execute " << this
              << ": executing from source";
@@ -188,7 +188,7 @@ void ScheduledAction::Execute(WorkerGlobalScope* worker) {
     CreateLocalHandlesForArgs(&info);
     V8ScriptRunner::CallFunction(
         function, worker, script_state_->GetContext()->Global(), info.size(),
-        info.Data(), script_state_->GetIsolate());
+        info.data(), script_state_->GetIsolate());
   } else {
     worker->ScriptController()->Evaluate(ScriptSourceCode(code_));
   }

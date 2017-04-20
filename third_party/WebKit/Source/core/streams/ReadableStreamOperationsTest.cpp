@@ -154,7 +154,7 @@ ScriptValue EvalWithPrintingError(V8TestingScope* scope, const char* s) {
     ADD_FAILURE() << ToCoreString(
                          block.Exception()->ToString(scope->GetIsolate()))
                          .Utf8()
-                         .Data();
+                         .data();
     block.ReThrow();
   }
   return r;

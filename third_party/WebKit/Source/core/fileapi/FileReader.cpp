@@ -225,8 +225,8 @@ bool FileReader::HasPendingActivity() const {
 void FileReader::readAsArrayBuffer(Blob* blob,
                                    ExceptionState& exception_state) {
   DCHECK(blob);
-  DVLOG(1) << "reading as array buffer: " << Utf8BlobUUID(blob).Data() << " "
-           << Utf8FilePath(blob).Data();
+  DVLOG(1) << "reading as array buffer: " << Utf8BlobUUID(blob).data() << " "
+           << Utf8FilePath(blob).data();
 
   ReadInternal(blob, FileReaderLoader::kReadAsArrayBuffer, exception_state);
 }
@@ -234,8 +234,8 @@ void FileReader::readAsArrayBuffer(Blob* blob,
 void FileReader::readAsBinaryString(Blob* blob,
                                     ExceptionState& exception_state) {
   DCHECK(blob);
-  DVLOG(1) << "reading as binary: " << Utf8BlobUUID(blob).Data() << " "
-           << Utf8FilePath(blob).Data();
+  DVLOG(1) << "reading as binary: " << Utf8BlobUUID(blob).data() << " "
+           << Utf8FilePath(blob).data();
 
   ReadInternal(blob, FileReaderLoader::kReadAsBinaryString, exception_state);
 }
@@ -244,8 +244,8 @@ void FileReader::readAsText(Blob* blob,
                             const String& encoding,
                             ExceptionState& exception_state) {
   DCHECK(blob);
-  DVLOG(1) << "reading as text: " << Utf8BlobUUID(blob).Data() << " "
-           << Utf8FilePath(blob).Data();
+  DVLOG(1) << "reading as text: " << Utf8BlobUUID(blob).data() << " "
+           << Utf8FilePath(blob).data();
 
   encoding_ = encoding;
   ReadInternal(blob, FileReaderLoader::kReadAsText, exception_state);
@@ -257,8 +257,8 @@ void FileReader::readAsText(Blob* blob, ExceptionState& exception_state) {
 
 void FileReader::readAsDataURL(Blob* blob, ExceptionState& exception_state) {
   DCHECK(blob);
-  DVLOG(1) << "reading as data URL: " << Utf8BlobUUID(blob).Data() << " "
-           << Utf8FilePath(blob).Data();
+  DVLOG(1) << "reading as data URL: " << Utf8BlobUUID(blob).data() << " "
+           << Utf8FilePath(blob).data();
 
   ReadInternal(blob, FileReaderLoader::kReadAsDataURL, exception_state);
 }

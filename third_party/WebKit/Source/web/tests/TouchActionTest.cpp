@@ -247,14 +247,14 @@ void TouchActionTest::RunTestOnTree(
 
     std::string failure_context("Test case: ");
     if (element->HasID()) {
-      failure_context.append(element->GetIdAttribute().Ascii().Data());
+      failure_context.append(element->GetIdAttribute().Ascii().data());
     } else if (element->FirstChild()) {
       failure_context.append("\"");
       failure_context.append(element->FirstChild()
                                  ->textContent(false)
                                  .StripWhiteSpace()
                                  .Ascii()
-                                 .Data());
+                                 .data());
       failure_context.append("\"");
     } else {
       failure_context += "<missing ID>";
@@ -325,12 +325,12 @@ void TouchActionTest::RunTestOnTree(
                  .StripWhiteSpace()
                  .Left(80)
                  .Ascii()
-                 .Data()
+                 .data()
           << "\"" << std::endl
           << "Document render tree:" << std::endl
           << ExternalRepresentation(root->GetDocument().GetFrame())
                  .Utf8()
-                 .Data();
+                 .data();
 
       // Now send the touch event and check any touch action result.
       SendTouchEvent(web_view, WebInputEvent::kTouchStart, window_point);
@@ -362,7 +362,7 @@ void TouchActionTest::RunTestOnTree(
                 << failure_context_pos;
           } else {
             FAIL() << "Unrecognized expected-action \""
-                   << expected_action.Ascii().Data() << "\" "
+                   << expected_action.Ascii().data() << "\" "
                    << failure_context_pos;
           }
         }

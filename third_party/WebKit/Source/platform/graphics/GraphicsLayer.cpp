@@ -1297,6 +1297,6 @@ void showGraphicsLayerTree(const blink::GraphicsLayer* layer) {
   }
 
   String output = layer->LayerTreeAsText(blink::kLayerTreeIncludesDebugInfo);
-  LOG(INFO) << output.Utf8().Data();
+  LOG(INFO) << output.Utf8().data();
 }
 #endif

@@ -53,7 +53,7 @@ TEST(TextCodecReplacement, EncodesToUTF8) {
   CString result =
       codec->Encode(kTestCase, test_case_size, kQuestionMarksForUnencodables);
 
-  EXPECT_STREQ("\xE6\xBC\xA2\xE5\xAD\x97", result.Data());
+  EXPECT_STREQ("\xE6\xBC\xA2\xE5\xAD\x97", result.data());
 }
 
 }  // namespace

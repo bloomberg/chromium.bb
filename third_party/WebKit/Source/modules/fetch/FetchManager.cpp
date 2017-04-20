@@ -215,10 +215,10 @@ class FetchManager::Loader final
       finished_ = true;
       if (r == WebDataConsumerHandle::kDone) {
         if (SubresourceIntegrity::CheckSubresourceIntegrity(
-                integrity_metadata_, buffer_.Data(), buffer_.size(), url_,
+                integrity_metadata_, buffer_.data(), buffer_.size(), url_,
                 *loader_->GetExecutionContext(), error_message)) {
           updater_->Update(
-              new FormDataBytesConsumer(buffer_.Data(), buffer_.size()));
+              new FormDataBytesConsumer(buffer_.data(), buffer_.size()));
           loader_->resolver_->Resolve(response_);
           loader_->resolver_.Clear();
           // FetchManager::Loader::didFinishLoading() can

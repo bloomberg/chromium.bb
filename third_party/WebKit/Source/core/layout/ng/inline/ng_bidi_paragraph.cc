@@ -47,8 +47,8 @@ void NGBidiParagraph::IndicesInVisualOrder(
     Vector<int32_t, 32>* indices_in_visual_order_out) {
   // Check the size before passing the raw pointers to ICU.
   CHECK_EQ(levels.size(), indices_in_visual_order_out->size());
-  ubidi_reorderVisual(levels.Data(), levels.size(),
-                      indices_in_visual_order_out->Data());
+  ubidi_reorderVisual(levels.data(), levels.size(),
+                      indices_in_visual_order_out->data());
 }
 
 }  // namespace blink

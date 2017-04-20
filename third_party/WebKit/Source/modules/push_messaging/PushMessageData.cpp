@@ -44,7 +44,7 @@ PushMessageData* PushMessageData::Create(
   if (message_data.isUSVString()) {
     CString encoded_string = UTF8Encoding().Encode(
         message_data.getAsUSVString(), WTF::kEntitiesForUnencodables);
-    return new PushMessageData(encoded_string.Data(), encoded_string.length());
+    return new PushMessageData(encoded_string.data(), encoded_string.length());
   }
 
   DCHECK(message_data.isNull());
@@ -58,12 +58,12 @@ PushMessageData::PushMessageData(const char* data, unsigned bytes_size) {
 PushMessageData::~PushMessageData() {}
 
 DOMArrayBuffer* PushMessageData::arrayBuffer() const {
-  return DOMArrayBuffer::Create(data_.Data(), data_.size());
+  return DOMArrayBuffer::Create(data_.data(), data_.size());
 }
 
 Blob* PushMessageData::blob() const {
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
-  blob_data->AppendBytes(data_.Data(), data_.size());
+  blob_data->AppendBytes(data_.data(), data_.size());
 
   // Note that the content type of the Blob object is deliberately not being
   // provided, following the specification.
@@ -85,7 +85,7 @@ ScriptValue PushMessageData::json(ScriptState* script_state,
 }
 
 String PushMessageData::text() const {
-  return UTF8Encoding().Decode(data_.Data(), data_.size());
+  return UTF8Encoding().Decode(data_.data(), data_.size());
 }
 
 DEFINE_TRACE(PushMessageData) {}

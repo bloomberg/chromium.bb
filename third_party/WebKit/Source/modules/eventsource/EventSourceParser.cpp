@@ -36,7 +36,7 @@ void EventSourceParser::AddBytes(const char* bytes, size_t size) {
       line.Append(&bytes[start], i - start);
       DCHECK_EQ(line.size(), WTF_ARRAY_LENGTH(kBOM));
       is_recognizing_bom_ = false;
-      if (memcmp(line.Data(), kBOM, sizeof(kBOM)) == 0) {
+      if (memcmp(line.data(), kBOM, sizeof(kBOM)) == 0) {
         start = i;
         line_.clear();
         continue;
@@ -69,7 +69,7 @@ void EventSourceParser::ParseLine() {
     // We dispatch an event when seeing an empty line.
     if (!data_.IsEmpty()) {
       DCHECK_EQ(data_[data_.size() - 1], '\n');
-      String data = FromUTF8(data_.Data(), data_.size() - 1);
+      String data = FromUTF8(data_.data(), data_.size() - 1);
       client_->OnMessageEvent(
           event_type_.IsEmpty() ? EventTypeNames::message : event_type_, data,
           last_event_id_);
@@ -90,20 +90,20 @@ void EventSourceParser::ParseLine() {
     }
   }
   size_t field_value_size = line_.size() - field_value_start;
-  String field_name = FromUTF8(line_.Data(), field_name_end);
+  String field_name = FromUTF8(line_.data(), field_name_end);
   if (field_name == "event") {
     event_type_ = AtomicString(
-        FromUTF8(line_.Data() + field_value_start, field_value_size));
+        FromUTF8(line_.data() + field_value_start, field_value_size));
     return;
   }
   if (field_name == "data") {
-    data_.Append(line_.Data() + field_value_start, field_value_size);
+    data_.Append(line_.data() + field_value_start, field_value_size);
     data_.push_back('\n');
     return;
   }
   if (field_name == "id") {
     id_ = AtomicString(
-        FromUTF8(line_.Data() + field_value_start, field_value_size));
+        FromUTF8(line_.data() + field_value_start, field_value_size));
     return;
   }
   if (field_name == "retry") {
@@ -115,7 +115,7 @@ void EventSourceParser::ParseLine() {
     } else if (has_only_digits) {
       bool ok;
       auto reconnection_time =
-          FromUTF8(line_.Data() + field_value_start, field_value_size)
+          FromUTF8(line_.data() + field_value_start, field_value_size)
               .ToUInt64Strict(&ok);
       if (ok)
         client_->OnReconnectionTimeSet(reconnection_time);

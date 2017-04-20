@@ -100,13 +100,13 @@ int SQLiteStatement::Prepare() {
   *statement = nullptr;
   int error;
   {
-    SQL_DVLOG(1) << "SQL - prepare - " << query.Data();
+    SQL_DVLOG(1) << "SQL - prepare - " << query.data();
 
     // Pass the length of the string including the null character to
     // sqlite3_prepare_v2; this lets SQLite avoid an extra string copy.
     size_t length_including_null_character = query.length() + 1;
 
-    error = sqlite3_prepare_v2(database_.Sqlite3Handle(), query.Data(),
+    error = sqlite3_prepare_v2(database_.Sqlite3Handle(), query.data(),
                                length_including_null_character, statement.get(),
                                tail.get());
   }
@@ -114,7 +114,7 @@ int SQLiteStatement::Prepare() {
 
   if (error != SQLITE_OK)
     SQL_DVLOG(1) << "sqlite3_prepare16 failed (" << error << ")\n"
-                 << query.Data() << "\n"
+                 << query.data() << "\n"
                  << sqlite3_errmsg(database_.Sqlite3Handle());
   else if (*tail && **tail)
     error = SQLITE_ERROR;

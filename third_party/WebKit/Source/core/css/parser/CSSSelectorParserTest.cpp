@@ -120,7 +120,7 @@ TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
     CSSParserTokenRange range = tokenizer.TokenRange();
     CSSSelectorList list = CSSSelectorParser::ParseSelector(
         range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
-    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().Data());
+    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().data());
   }
 }
 
@@ -271,7 +271,7 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_TRUE(list.IsValid());
-    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().Data());
+    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().data());
   }
 }
 
@@ -327,7 +327,7 @@ TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInStaticProfile) {
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_TRUE(list.IsValid());
-    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().Data());
+    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().data());
   }
 }
 

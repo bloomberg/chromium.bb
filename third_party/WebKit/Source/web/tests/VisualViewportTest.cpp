@@ -1960,7 +1960,7 @@ TEST_P(VisualViewportTest, WindowDimensionsOnLoad) {
   Element* output = frame()->GetDocument()->GetElementById("output");
   DCHECK(output);
   EXPECT_EQ(std::string("1600x1200"),
-            std::string(output->innerHTML().Ascii().Data()));
+            std::string(output->innerHTML().Ascii().data()));
 }
 
 // Similar to above but make sure the initial scale is updated with the content
@@ -1976,7 +1976,7 @@ TEST_P(VisualViewportTest, WindowDimensionsOnLoadWideContent) {
   Element* output = frame()->GetDocument()->GetElementById("output");
   DCHECK(output);
   EXPECT_EQ(std::string("2000x1500"),
-            std::string(output->innerHTML().Ascii().Data()));
+            std::string(output->innerHTML().Ascii().data()));
 }
 
 TEST_P(VisualViewportTest, PinchZoomGestureScrollsVisualViewportOnly) {

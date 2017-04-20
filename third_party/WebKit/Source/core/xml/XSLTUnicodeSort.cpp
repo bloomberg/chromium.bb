@@ -170,8 +170,8 @@ void XsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
             String::FromUTF8(
                 reinterpret_cast<const char*>(results[j + incr]->stringval))
                 .AppendTo(string2);
-            tst = collator.Collate(string1.Data(), string1.size(),
-                                   string2.Data(), string2.size());
+            tst = collator.Collate(string1.data(), string1.size(),
+                                   string2.data(), string2.size());
           }
           if (descending)
             tst = -tst;
@@ -225,8 +225,8 @@ void XsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
                 String::FromUTF8(
                     reinterpret_cast<const char*>(res[j + incr]->stringval))
                     .AppendTo(string2);
-                tst = collator.Collate(string1.Data(), string1.size(),
-                                       string2.Data(), string2.size());
+                tst = collator.Collate(string1.data(), string1.size(),
+                                       string2.data(), string2.size());
               }
               if (desc)
                 tst = -tst;

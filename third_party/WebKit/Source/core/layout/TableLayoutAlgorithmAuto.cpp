@@ -630,7 +630,7 @@ void TableLayoutAlgorithmAuto::InsertSpanCell(LayoutTableCell* cell) {
   while (pos < span_cells_.size() && span_cells_[pos] &&
          span > span_cells_[pos]->ColSpan())
     pos++;
-  memmove(span_cells_.Data() + pos + 1, span_cells_.Data() + pos,
+  memmove(span_cells_.data() + pos + 1, span_cells_.data() + pos,
           (size - pos - 1) * sizeof(LayoutTableCell*));
   span_cells_[pos] = cell;
 }

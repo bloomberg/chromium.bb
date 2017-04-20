@@ -458,7 +458,7 @@ static CSSPropertyID g_transition_properties[] = {
 static void AddStringToDigestor(WebCryptoDigestor* digestor,
                                 const String& string) {
   digestor->Consume(
-      reinterpret_cast<const unsigned char*>(string.Ascii().Data()),
+      reinterpret_cast<const unsigned char*>(string.Ascii().data()),
       string.length());
 }
 
@@ -500,7 +500,7 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
   }
   DigestValue digest_result;
   FinishDigestor(digestor.get(), digest_result);
-  return Base64Encode(reinterpret_cast<const char*>(digest_result.Data()), 10);
+  return Base64Encode(reinterpret_cast<const char*>(digest_result.data()), 10);
 }
 
 void InspectorAnimationAgent::DidCreateAnimation(unsigned sequence_number) {

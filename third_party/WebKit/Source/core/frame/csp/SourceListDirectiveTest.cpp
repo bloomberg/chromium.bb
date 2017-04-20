@@ -1344,7 +1344,7 @@ TEST_F(SourceListDirectiveTest, ParseHost) {
     CSPSource::WildcardDisposition disposition = CSPSource::kNoWildcard;
     Vector<UChar> characters;
     test.sources.AppendTo(characters);
-    const UChar* start = characters.Data();
+    const UChar* start = characters.data();
     const UChar* end = start + characters.size();
     EXPECT_EQ(test.expected,
               SourceListDirective::ParseHost(start, end, host, disposition))

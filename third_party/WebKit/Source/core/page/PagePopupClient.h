@@ -95,7 +95,7 @@ class CORE_EXPORT PagePopupClient {
 
 inline void PagePopupClient::AddString(const String& str, SharedBuffer* data) {
   CString str8 = str.Utf8();
-  data->Append(str8.Data(), str8.length());
+  data->Append(str8.data(), str8.length());
 }
 
 }  // namespace blink

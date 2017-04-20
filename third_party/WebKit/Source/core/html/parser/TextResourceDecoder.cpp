@@ -112,9 +112,9 @@ static int Find(const char* subject,
 static WTF::TextEncoding FindTextEncoding(const char* encoding_name,
                                           int length) {
   Vector<char, 64> buffer(length + 1);
-  memcpy(buffer.Data(), encoding_name, length);
+  memcpy(buffer.data(), encoding_name, length);
   buffer[length] = '\0';
-  return buffer.Data();
+  return buffer.data();
 }
 
 TextResourceDecoder::ContentType TextResourceDecoder::DetermineContentType(
@@ -252,7 +252,7 @@ size_t TextResourceDecoder::CheckForBOM(const char* data, size_t len) {
   size_t buf1_len = buffer_length;
   size_t buf2_len = len;
   const unsigned char* buf1 =
-      reinterpret_cast<const unsigned char*>(buffer_.Data());
+      reinterpret_cast<const unsigned char*>(buffer_.data());
   const unsigned char* buf2 = reinterpret_cast<const unsigned char*>(data);
   unsigned char c1 =
       buf1_len ? (--buf1_len, *buf1++) : buf2_len ? (--buf2_len, *buf2++) : 0;
@@ -300,14 +300,14 @@ bool TextResourceDecoder::CheckForCSSCharset(const char* data,
 
   size_t old_size = buffer_.size();
   buffer_.Grow(old_size + len);
-  memcpy(buffer_.Data() + old_size, data, len);
+  memcpy(buffer_.data() + old_size, data, len);
 
   moved_data_to_buffer = true;
 
   if (buffer_.size() <= 13)  // strlen('@charset "x";') == 13
     return false;
 
-  const char* data_start = buffer_.Data();
+  const char* data_start = buffer_.data();
   const char* data_end = data_start + buffer_.size();
 
   if (BytesEqual(data_start, '@', 'c', 'h', 'a', 'r', 's', 'e', 't', ' ',
@@ -348,11 +348,11 @@ bool TextResourceDecoder::CheckForXMLCharset(const char* data,
 
   size_t old_size = buffer_.size();
   buffer_.Grow(old_size + len);
-  memcpy(buffer_.Data() + old_size, data, len);
+  memcpy(buffer_.data() + old_size, data, len);
 
   moved_data_to_buffer = true;
 
-  const char* ptr = buffer_.Data();
+  const char* ptr = buffer_.data();
   const char* p_end = ptr + buffer_.size();
 
   // Is there enough data available to check for XML declaration?
@@ -464,10 +464,10 @@ String TextResourceDecoder::Decode(const char* data, size_t len) {
     if (!moved_data_to_buffer) {
       size_t old_size = buffer_.size();
       buffer_.Grow(old_size + len);
-      memcpy(buffer_.Data() + old_size, data, len);
+      memcpy(buffer_.data() + old_size, data, len);
     }
 
-    data_for_decode = buffer_.Data() + length_of_bom;
+    data_for_decode = buffer_.data() + length_of_bom;
     length_for_decode = buffer_.size() - length_of_bom;
   }
 
@@ -503,7 +503,7 @@ String TextResourceDecoder::Flush() {
         (content_type_ == kHTMLContent || content_type_ == kXMLContent)) ||
        (!checked_for_css_charset_ && (content_type_ == kCSSContent)))) {
     WTF::TextEncoding detected_encoding;
-    if (DetectTextEncoding(buffer_.Data(), buffer_.size(), hint_encoding_,
+    if (DetectTextEncoding(buffer_.data(), buffer_.size(), hint_encoding_,
                            hint_url_, hint_language_, &detected_encoding))
       SetEncoding(detected_encoding, kEncodingFromContentSniffing);
   }
@@ -512,7 +512,7 @@ String TextResourceDecoder::Flush() {
     codec_ = NewTextCodec(encoding_);
 
   String result = codec_->Decode(
-      buffer_.Data(), buffer_.size(), WTF::kFetchEOF,
+      buffer_.data(), buffer_.size(), WTF::kFetchEOF,
       content_type_ == kXMLContent && !use_lenient_xml_decoding_, saw_error_);
   buffer_.clear();
   codec_.reset();

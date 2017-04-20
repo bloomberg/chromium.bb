@@ -457,7 +457,7 @@ void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
                              WTF::MonotonicallyIncreasingTime() - start_time_);
 
   Blob* result_blob =
-      Blob::Create(encoded_image_->Data(), encoded_image_->size(),
+      Blob::Create(encoded_image_->data(), encoded_image_->size(),
                    ConvertMimeTypeEnumToString(mime_type_));
   if (function_type_ == kHTMLCanvasToBlobCallback) {
     TaskRunnerHelper::Get(TaskType::kCanvasBlobSerialization, document_)

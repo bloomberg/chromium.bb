@@ -5045,7 +5045,7 @@ void Document::SetEncodingData(const DocumentEncodingData& new_data) {
     CString original_bytes = title_element_->textContent().Latin1();
     std::unique_ptr<TextCodec> codec = NewTextCodec(new_data.Encoding());
     String correctly_decoded_title = codec->Decode(
-        original_bytes.Data(), original_bytes.length(), WTF::kDataEOF);
+        original_bytes.data(), original_bytes.length(), WTF::kDataEOF);
     title_element_->setTextContent(correctly_decoded_title);
   }
 
@@ -6679,6 +6679,6 @@ void showLiveDocumentInstances() {
   fprintf(stderr, "There are %u documents currently alive:\n", set.size());
   for (blink::Document* document : set)
     fprintf(stderr, "- Document %p URL: %s\n", document,
-            document->Url().GetString().Utf8().Data());
+            document->Url().GetString().Utf8().data());
 }
 #endif

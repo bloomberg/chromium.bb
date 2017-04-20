@@ -78,7 +78,7 @@ class LocalFrameClientImplTest : public ::testing::Test {
   WebString UserAgent() {
     // The test always returns the same user agent .
     WTF::CString user_agent = GetLocalFrameClient().UserAgent().Utf8();
-    return WebString::FromUTF8(user_agent.Data(), user_agent.length());
+    return WebString::FromUTF8(user_agent.data(), user_agent.length());
   }
 
   WebLocalFrameImpl* MainFrame() {

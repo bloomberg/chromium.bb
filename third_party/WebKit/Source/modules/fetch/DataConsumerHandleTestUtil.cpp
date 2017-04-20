@@ -168,7 +168,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::Context::BeginRead(
     case Command::kData: {
       auto& body = command.Body();
       *available = body.size() - Offset();
-      *buffer = body.Data() + Offset();
+      *buffer = body.data() + Offset();
       result = kOk;
       break;
     }

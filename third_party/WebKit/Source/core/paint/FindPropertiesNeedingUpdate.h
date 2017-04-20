@@ -26,9 +26,9 @@ namespace blink {
 
 #define DUMP_PROPERTIES(original, updated)                           \
   "\nOriginal:\n"                                                    \
-      << (original ? (original)->ToString().Ascii().Data() : "null") \
+      << (original ? (original)->ToString().Ascii().data() : "null") \
       << "\nUpdated:\n"                                              \
-      << (updated ? (updated)->ToString().Ascii().Data() : "null")
+      << (updated ? (updated)->ToString().Ascii().data() : "null")
 
 #define CHECK_PROPERTY_EQ(thing, original, updated)                        \
   do {                                                                     \

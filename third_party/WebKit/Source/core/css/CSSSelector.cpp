@@ -437,19 +437,19 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
 
 #ifndef NDEBUG
 void CSSSelector::Show(int indent) const {
-  printf("%*sSelectorText(): %s\n", indent, "", SelectorText().Ascii().Data());
+  printf("%*sSelectorText(): %s\n", indent, "", SelectorText().Ascii().data());
   printf("%*smatch_: %d\n", indent, "", match_);
   if (match_ != kTag)
-    printf("%*sValue(): %s\n", indent, "", Value().Ascii().Data());
+    printf("%*sValue(): %s\n", indent, "", Value().Ascii().data());
   printf("%*sGetPseudoType(): %d\n", indent, "", GetPseudoType());
   if (match_ == kTag)
     printf("%*sTagQName().LocalName(): %s\n", indent, "",
-           TagQName().LocalName().Ascii().Data());
+           TagQName().LocalName().Ascii().data());
   printf("%*sIsAttributeSelector(): %d\n", indent, "", IsAttributeSelector());
   if (IsAttributeSelector())
     printf("%*sAttribute(): %s\n", indent, "",
-           Attribute().LocalName().Ascii().Data());
-  printf("%*sArgument(): %s\n", indent, "", Argument().Ascii().Data());
+           Attribute().LocalName().Ascii().data());
+  printf("%*sArgument(): %s\n", indent, "", Argument().Ascii().data());
   printf("%*sSpecificity(): %u\n", indent, "", Specificity());
   if (TagHistory()) {
     printf("\n%*s--> (Relation() == %d)\n", indent, "", Relation());
@@ -461,7 +461,7 @@ void CSSSelector::Show(int indent) const {
 
 void CSSSelector::Show() const {
   printf("\n******* CSSSelector::Show(\"%s\") *******\n",
-         SelectorText().Ascii().Data());
+         SelectorText().Ascii().data());
   Show(2);
   printf("******* end *******\n");
 }

@@ -67,7 +67,7 @@ NotShared<DOMUint8Array> TextEncoder::encode(const String& input) {
     result = codec_->Encode(input.Characters16(), input.length(),
                             WTF::kQuestionMarksForUnencodables);
 
-  const char* buffer = result.Data();
+  const char* buffer = result.data();
   const unsigned char* unsigned_buffer =
       reinterpret_cast<const unsigned char*>(buffer);
 

@@ -25,7 +25,7 @@ class USBInTransferResult final
     DOMDataView* data_view = nullptr;
     if (data) {
       data_view = DOMDataView::Create(
-          DOMArrayBuffer::Create(data->Data(), data->size()), 0, data->size());
+          DOMArrayBuffer::Create(data->data(), data->size()), 0, data->size());
     }
     return new USBInTransferResult(status, data_view);
   }

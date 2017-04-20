@@ -3296,7 +3296,7 @@ void showLayerTree(const blink::PaintLayer* layer) {
                                    blink::kLayoutAsTextDontUpdateLayout |
                                    blink::kLayoutAsTextShowLayoutState,
                                layer);
-    LOG(INFO) << output.Utf8().Data();
+    LOG(INFO) << output.Utf8().data();
   }
 }
 

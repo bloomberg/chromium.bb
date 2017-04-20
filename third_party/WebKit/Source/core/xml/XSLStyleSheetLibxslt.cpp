@@ -154,7 +154,7 @@ bool XSLStyleSheet::ParseString(const String& source) {
 
   stylesheet_doc_ =
       xmlCtxtReadMemory(ctxt, input.Data(), input.size(),
-                        FinalURL().GetString().Utf8().Data(), input.Encoding(),
+                        FinalURL().GetString().Utf8().data(), input.Encoding(),
                         XML_PARSE_NOENT | XML_PARSE_DTDATTR |
                             XML_PARSE_NOWARNING | XML_PARSE_NOCDATA);
 
@@ -178,7 +178,7 @@ void XSLStyleSheet::LoadChildSheets() {
     // We have to locate (by ID) the appropriate embedded stylesheet
     // element, so that we can walk the import/include list.
     xmlAttrPtr id_node = xmlGetID(
-        GetDocument(), (const xmlChar*)(FinalURL().GetString().Utf8().Data()));
+        GetDocument(), (const xmlChar*)(FinalURL().GetString().Utf8().data()));
     if (!id_node)
       return;
     stylesheet_root = id_node->parent;
@@ -283,7 +283,7 @@ xmlDocPtr XSLStyleSheet::LocateStylesheetSubResource(xmlDocPtr parent_doc,
       CString import_href = import->Href().Utf8();
       xmlChar* base = xmlNodeGetBase(parent_doc, (xmlNodePtr)parent_doc);
       xmlChar* child_uri =
-          xmlBuildURI((const xmlChar*)import_href.Data(), base);
+          xmlBuildURI((const xmlChar*)import_href.data(), base);
       bool equal_ur_is = xmlStrEqual(uri, child_uri);
       xmlFree(base);
       xmlFree(child_uri);

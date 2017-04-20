@@ -368,7 +368,7 @@ BuildObjectForResourceRequest(const ResourceRequest& request) {
     Vector<char> bytes;
     request.HttpBody()->Flatten(bytes);
     request_object->setPostData(
-        String::FromUTF8WithLatin1Fallback(bytes.Data(), bytes.size()));
+        String::FromUTF8WithLatin1Fallback(bytes.data(), bytes.size()));
   }
   return request_object;
 }

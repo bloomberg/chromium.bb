@@ -55,7 +55,7 @@ class CompositorWorkerTest
 
   void NavigateTo(const String& url) {
     FrameTestHelpers::LoadFrame(GetWebViewImpl()->MainFrame(),
-                                url.Utf8().Data());
+                                url.Utf8().data());
   }
 
   void ForceFullCompositingUpdate() {

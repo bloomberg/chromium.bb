@@ -41,7 +41,7 @@ std::string StyledMarkupSerializerTest::Serialize(
       GetDocument().body(), PositionAnchorType::kBeforeChildren);
   PositionTemplate<Strategy> end = PositionTemplate<Strategy>(
       GetDocument().body(), PositionAnchorType::kAfterChildren);
-  return CreateMarkup(start, end, should_annotate).Utf8().Data();
+  return CreateMarkup(start, end, should_annotate).Utf8().data();
 }
 
 template <typename Strategy>
@@ -49,7 +49,7 @@ std::string StyledMarkupSerializerTest::SerializePart(
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end,
     EAnnotateForInterchange should_annotate) {
-  return CreateMarkup(start, end, should_annotate).Utf8().Data();
+  return CreateMarkup(start, end, should_annotate).Utf8().data();
 }
 
 TEST_F(StyledMarkupSerializerTest, TextOnly) {

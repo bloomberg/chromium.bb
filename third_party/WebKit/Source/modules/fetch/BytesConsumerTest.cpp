@@ -20,7 +20,7 @@ using Result = BytesConsumer::Result;
 using ReplayingBytesConsumer = BytesConsumerTestUtil::ReplayingBytesConsumer;
 
 String ToString(const Vector<char>& v) {
-  return String(v.Data(), v.size());
+  return String(v.data(), v.size());
 }
 
 class TestClient final : public GarbageCollectedFinalized<TestClient>,

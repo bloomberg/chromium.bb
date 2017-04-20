@@ -631,7 +631,7 @@ void FrameLoader::UpdateForSameDocumentNavigation(
     FrameLoadType type,
     Document* initiating_document) {
   TRACE_EVENT1("blink", "FrameLoader::updateForSameDocumentNavigation", "url",
-               new_url.GetString().Ascii().Data());
+               new_url.GetString().Ascii().data());
 
   // Generate start and stop notifications only when loader is completed so that
   // we don't fire them for fragment redirection that happens in window.onload
@@ -1030,7 +1030,7 @@ SubstituteData FrameLoader::DefaultSubstituteDataForURL(const KURL& url) {
   DCHECK(!srcdoc.IsNull());
   CString encoded_srcdoc = srcdoc.Utf8();
   return SubstituteData(
-      SharedBuffer::Create(encoded_srcdoc.Data(), encoded_srcdoc.length()),
+      SharedBuffer::Create(encoded_srcdoc.data(), encoded_srcdoc.length()),
       "text/html", "UTF-8", KURL());
 }
 

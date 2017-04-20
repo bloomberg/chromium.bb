@@ -320,7 +320,7 @@ void NGLayoutOpportunityIterator::ShowLayoutOpportunityTree() const {
   StringBuilder string_builder;
   string_builder.Append("\n.:: LayoutOpportunity Tree ::.\n\nRoot Node: ");
   AppendNodeToString(opportunity_tree_root_.get(), &string_builder);
-  fprintf(stderr, "%s\n", string_builder.ToString().Utf8().Data());
+  fprintf(stderr, "%s\n", string_builder.ToString().Utf8().data());
 }
 #endif
 

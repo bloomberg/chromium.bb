@@ -115,14 +115,14 @@ class WebFrameSerializerTest : public ::testing::Test {
   void RegisterMockedImageURLLoad(const String& url) {
     // Image resources need to be mocked, but irrelevant here what image they
     // map to.
-    RegisterMockedFileURLLoad(URLTestHelpers::ToKURL(url.Utf8().Data()),
+    RegisterMockedFileURLLoad(URLTestHelpers::ToKURL(url.Utf8().data()),
                               "frameserialization/awesome.png");
   }
   void RegisterMockedFileURLLoad(const KURL& url,
                                  const String& file_path,
                                  const String& mime_type = "image/png") {
     URLTestHelpers::RegisterMockedURLLoad(
-        url, testing::WebTestDataPath(file_path.Utf8().Data()), mime_type);
+        url, testing::WebTestDataPath(file_path.Utf8().data()), mime_type);
   }
 
   class SingleLinkRewritingDelegate
@@ -153,7 +153,7 @@ class WebFrameSerializerTest : public ::testing::Test {
     KURL parsed_url(kParsedURLString, url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, "text/html");
-    FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().Data());
+    FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
     SingleLinkRewritingDelegate delegate(parsed_url, WebString("local"));
     SimpleWebFrameSerializerClient serializer_client;
     WebFrameSerializer::Serialize(MainFrameImpl(), &serializer_client,
@@ -224,7 +224,7 @@ class WebFrameSerializerSanitizationTest : public WebFrameSerializerTest {
     KURL parsed_url(kParsedURLString, url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, mime_type);
-    FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().Data());
+    FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
     WebThreadSafeData result = WebFrameSerializer::GenerateMHTMLParts(
         WebString("boundary"), MainFrameImpl(), &mhtml_delegate_);
     return String(result.Data(), result.size());

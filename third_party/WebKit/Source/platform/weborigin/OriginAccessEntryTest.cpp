@@ -204,7 +204,7 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTest) {
 
     SCOPED_TRACE(testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin
-                 << ", Domain: " << entry1.Registerable().Utf8().Data());
+                 << ", Domain: " << entry1.Registerable().Utf8().data());
     EXPECT_EQ(test.expected, entry1.MatchesOrigin(*origin_to_test));
   }
 }
@@ -260,7 +260,7 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTestWithDottedSuffix) {
 
     SCOPED_TRACE(testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin
-                 << ", Domain: " << entry1.Registerable().Utf8().Data());
+                 << ", Domain: " << entry1.Registerable().Utf8().data());
     EXPECT_EQ(test.expected, entry1.MatchesOrigin(*origin_to_test));
   }
 }

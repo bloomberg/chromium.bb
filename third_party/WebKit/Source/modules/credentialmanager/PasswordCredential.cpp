@@ -108,7 +108,7 @@ PasswordCredential* PasswordCredential::Create(
     URLSearchParams* params = URLSearchParams::Create(String());
     for (const FormData::Entry* entry : form_data->Entries()) {
       if (entry->IsString())
-        params->append(entry->name().Data(), entry->Value().Data());
+        params->append(entry->name().data(), entry->Value().data());
     }
     additional_data.setURLSearchParams(params);
   }
@@ -173,7 +173,7 @@ PassRefPtr<EncodedFormData> PasswordCredential::EncodeFormData(
 
   RefPtr<EncodedFormData> encoded_data = form_data->EncodeMultiPartFormData();
   content_type = AtomicString("multipart/form-data; boundary=") +
-                 encoded_data->Boundary().Data();
+                 encoded_data->Boundary().data();
   return encoded_data.Release();
 }
 

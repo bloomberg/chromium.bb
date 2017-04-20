@@ -208,7 +208,7 @@ static CString EncodeComplexWindowsLatin1(const CharType* characters,
                                           UnencodableHandling handling) {
   size_t target_length = length;
   Vector<char> result(target_length);
-  char* bytes = result.Data();
+  char* bytes = result.data();
 
   size_t result_length = 0;
   for (size_t i = 0; i < length;) {
@@ -240,7 +240,7 @@ static CString EncodeComplexWindowsLatin1(const CharType* characters,
       target_length += replacement_length - 1;
       if (target_length > result.size()) {
         result.Grow(target_length);
-        bytes = result.Data();
+        bytes = result.data();
       }
       memcpy(bytes + result_length, replacement, replacement_length);
       result_length += replacement_length;

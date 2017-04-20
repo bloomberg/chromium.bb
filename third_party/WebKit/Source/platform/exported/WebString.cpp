@@ -116,7 +116,7 @@ std::string WebString::Latin1() const {
                        string.length());
 
   CString latin1 = string.Latin1();
-  return std::string(latin1.Data(), latin1.length());
+  return std::string(latin1.data(), latin1.length());
 }
 
 WebString WebString::FromLatin1(const WebLChar* data, size_t length) {

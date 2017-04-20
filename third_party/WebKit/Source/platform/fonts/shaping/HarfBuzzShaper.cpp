@@ -663,7 +663,7 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
     if (!ShapeRange(range_data->buffer,
                     range_data->font_features.IsEmpty()
                         ? 0
-                        : range_data->font_features.Data(),
+                        : range_data->font_features.data(),
                     range_data->font_features.size(),
                     direction_and_small_caps_adjusted_font,
                     current_font_data_for_range_set->Ranges(), segment.script,

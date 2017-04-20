@@ -289,7 +289,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       DVLOG(1) << "Binary contents requires end of part";
       return nullptr;
     }
-    line_reader_.SetSeparator(end_of_part_boundary.Utf8().Data());
+    line_reader_.SetSeparator(end_of_part_boundary.Utf8().data());
     Vector<char> part;
     if (!line_reader_.NextChunk(part)) {
       DVLOG(1) << "Binary contents requires end of part";
@@ -324,7 +324,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       }
       // Note that we use line.utf8() and not line.ascii() as ascii turns
       // special characters (such as tab, line-feed...) into '?'.
-      content->Append(line.Utf8().Data(), line.length());
+      content->Append(line.Utf8().data(), line.length());
       if (content_transfer_encoding == MIMEHeader::kQuotedPrintable) {
         // The line reader removes the \r\n, but we need them for the content in
         // this case as the QuotedPrintable decoder expects CR-LF terminated

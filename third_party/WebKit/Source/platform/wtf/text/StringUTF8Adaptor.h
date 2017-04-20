@@ -60,7 +60,7 @@ class StringUTF8Adaptor final {
       length_ = string.length();
     } else {
       utf8_buffer_ = string.Utf8(mode);
-      data_ = utf8_buffer_.Data();
+      data_ = utf8_buffer_.data();
       length_ = utf8_buffer_.length();
     }
   }

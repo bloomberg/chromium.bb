@@ -106,9 +106,9 @@ void PaintPropertyTreeBuilderTest::TearDown() {
       inflated_expected.Inflate(slopFactor);                                  \
       SCOPED_TRACE(String::Format(                                            \
           "Old path rect: %s, Expected: %s, Inflated expected: %s",           \
-          slow_path_rect.ToString().Ascii().Data(),                           \
-          expected.ToString().Ascii().Data(),                                 \
-          inflated_expected.ToString().Ascii().Data()));                      \
+          slow_path_rect.ToString().Ascii().data(),                           \
+          expected.ToString().Ascii().data(),                                 \
+          inflated_expected.ToString().Ascii().data()));                      \
       EXPECT_TRUE(slow_path_rect.Contains(LayoutRect(expected)));             \
       EXPECT_TRUE(inflated_expected.Contains(slow_path_rect));                \
     } else {                                                                  \

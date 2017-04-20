@@ -535,7 +535,7 @@ void ImageCapture::OnTakePhoto(ScriptPromiseResolver* resolver,
     resolver->Reject(DOMException::Create(kUnknownError, "platform error"));
   else
     resolver->Resolve(
-        Blob::Create(blob->data.Data(), blob->data.size(), blob->mime_type));
+        Blob::Create(blob->data.data(), blob->data.size(), blob->mime_type));
   service_requests_.erase(resolver);
 }
 

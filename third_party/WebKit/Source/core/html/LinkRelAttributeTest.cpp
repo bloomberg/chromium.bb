@@ -46,17 +46,17 @@ static inline void TestLinkRelAttribute(String value,
                                         bool is_preconnect = false) {
   LinkRelAttribute link_rel_attribute(value);
   ASSERT_EQ(is_style_sheet, link_rel_attribute.IsStyleSheet())
-      << value.Utf8().Data();
-  ASSERT_EQ(icon_type, link_rel_attribute.GetIconType()) << value.Utf8().Data();
+      << value.Utf8().data();
+  ASSERT_EQ(icon_type, link_rel_attribute.GetIconType()) << value.Utf8().data();
   ASSERT_EQ(is_alternate, link_rel_attribute.IsAlternate())
-      << value.Utf8().Data();
+      << value.Utf8().data();
   ASSERT_EQ(is_dns_prefetch, link_rel_attribute.IsDNSPrefetch())
-      << value.Utf8().Data();
+      << value.Utf8().data();
   ASSERT_EQ(is_link_prerender, link_rel_attribute.IsLinkPrerender())
-      << value.Utf8().Data();
-  ASSERT_EQ(is_import, link_rel_attribute.IsImport()) << value.Utf8().Data();
+      << value.Utf8().data();
+  ASSERT_EQ(is_import, link_rel_attribute.IsImport()) << value.Utf8().data();
   ASSERT_EQ(is_preconnect, link_rel_attribute.IsPreconnect())
-      << value.Utf8().Data();
+      << value.Utf8().data();
 }
 
 TEST(LinkRelAttributeTest, Constructor) {

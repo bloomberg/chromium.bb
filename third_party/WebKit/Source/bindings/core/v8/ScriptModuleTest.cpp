@@ -101,7 +101,7 @@ TEST(ScriptModuleTest, equalAndHash) {
   ASSERT_FALSE(module_b.IsNull());
   Vector<char> module_deleted_buffer(sizeof(ScriptModule));
   ScriptModule& module_deleted =
-      *reinterpret_cast<ScriptModule*>(module_deleted_buffer.Data());
+      *reinterpret_cast<ScriptModule*>(module_deleted_buffer.data());
   HashTraits<ScriptModule>::ConstructDeletedValue(module_deleted, true);
 
   EXPECT_EQ(module_null, module_null);

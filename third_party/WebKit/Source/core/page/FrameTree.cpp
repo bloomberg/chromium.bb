@@ -285,7 +285,7 @@ static void printFrames(const blink::Frame* frame,
   printf(
       "  uri=%s\n\n",
       frame->IsLocalFrame()
-          ? ToLocalFrame(frame)->GetDocument()->Url().GetString().Utf8().Data()
+          ? ToLocalFrame(frame)->GetDocument()->Url().GetString().Utf8().data()
           : 0);
 
   for (blink::Frame* child = frame->Tree().FirstChild(); child;

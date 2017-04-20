@@ -129,7 +129,7 @@ class TestDisplayItem final : public DisplayItem {
   String trace = String::Format("%d: ", (int)i) +            \
                  "Expected: " + (expected).AsDebugString() + \
                  " Actual: " + (actual).AsDebugString();     \
-  SCOPED_TRACE(trace.Utf8().Data());
+  SCOPED_TRACE(trace.Utf8().data());
 #else
 #define TRACE_DISPLAY_ITEMS(i, expected, actual)
 #endif

@@ -129,7 +129,7 @@ static bool RemoveListenerFromVector(
     const EventListenerOptions& options,
     size_t* index_of_removed_listener,
     RegisteredEventListener* registered_listener) {
-  const auto begin = listener_vector->Data();
+  const auto begin = listener_vector->data();
   const auto end = begin + listener_vector->size();
 
   // Do a manual search for the matching RegisteredEventListener. It is not

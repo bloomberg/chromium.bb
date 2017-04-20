@@ -585,7 +585,7 @@ static TextBreakIterator* WordBreakIteratorForMinOffsetBoundary(
                                                    text_box->Len());
   len += text_box->Len();
 
-  return WordBreakIterator(string.Data(), len);
+  return WordBreakIterator(string.data(), len);
 }
 
 static TextBreakIterator* WordBreakIteratorForMaxOffsetBoundary(
@@ -612,7 +612,7 @@ static TextBreakIterator* WordBreakIteratorForMaxOffsetBoundary(
     len += next_box->Len();
   }
 
-  return WordBreakIterator(string.Data(), len);
+  return WordBreakIterator(string.data(), len);
 }
 
 static bool IsLogicalStartOfWord(TextBreakIterator* iter,

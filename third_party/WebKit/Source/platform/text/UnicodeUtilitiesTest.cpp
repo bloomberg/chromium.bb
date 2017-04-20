@@ -149,7 +149,7 @@ TEST(UnicodeUtilitiesTest, FoldQuoteMarkOrSoftHyphenTest) {
                              WTF_ARRAY_LENGTH(kCharactersToFold));
   EXPECT_EQ(string_to_fold, folded_string);
 
-  FoldQuoteMarksAndSoftHyphens(buffer.Data(), buffer.size());
+  FoldQuoteMarksAndSoftHyphens(buffer.data(), buffer.size());
   EXPECT_EQ(String(buffer), folded_string);
 }
 

@@ -577,7 +577,7 @@ void DOMWebSocket::CloseInternal(int code,
       DCHECK_GT(utf8.length(), 0u);
       // reason might contain unpaired surrogates. Reconstruct it from
       // utf8.
-      cleansed_reason = String::FromUTF8(utf8.Data(), utf8.length());
+      cleansed_reason = String::FromUTF8(utf8.data(), utf8.length());
     }
   }
 
@@ -727,7 +727,7 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 
     case kBinaryTypeArrayBuffer:
       DOMArrayBuffer* array_buffer =
-          DOMArrayBuffer::Create(binary_data->Data(), binary_data->size());
+          DOMArrayBuffer::Create(binary_data->data(), binary_data->size());
       RecordReceiveTypeHistogram(kWebSocketReceiveTypeArrayBuffer);
       RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeArrayBuffer,
                                         binary_data->size());

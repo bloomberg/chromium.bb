@@ -51,7 +51,7 @@ TEST_F(BackwardsTextBufferTest, pushRange) {
   Vector<UChar> chunk(4096);
   for (unsigned i = 0; i < chunk.size(); ++i)
     chunk[i] = i % 256;
-  buffer.PushRange(chunk.Data(), chunk.size());
+  buffer.PushRange(chunk.data(), chunk.size());
   EXPECT_EQ(0, buffer[0]);
   EXPECT_EQ(1111 % 256, buffer[1111]);
   EXPECT_EQ(255, buffer[4095]);

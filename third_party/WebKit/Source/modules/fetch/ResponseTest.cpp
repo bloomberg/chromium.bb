@@ -77,7 +77,7 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponse) {
   EXPECT_EQ(web_response->UrlList()[0], response->url());
   EXPECT_EQ(web_response->Status(), response->status());
   EXPECT_STREQ(web_response->StatusText().Utf8().c_str(),
-               response->statusText().Utf8().Data());
+               response->statusText().Utf8().data());
 
   Headers* response_headers = response->headers();
 
@@ -87,7 +87,7 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponse) {
     WebString key = keys[i];
     DummyExceptionStateForTesting exception_state;
     EXPECT_STREQ(web_response->GetHeader(key).Utf8().c_str(),
-                 response_headers->get(key, exception_state).Utf8().Data());
+                 response_headers->get(key, exception_state).Utf8().data());
     EXPECT_FALSE(exception_state.HadException());
   }
 }
@@ -103,12 +103,12 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponseDefault) {
   DummyExceptionStateForTesting exception_state;
   EXPECT_STREQ(
       "foop",
-      response_headers->get("set-cookie", exception_state).Utf8().Data());
+      response_headers->get("set-cookie", exception_state).Utf8().data());
   EXPECT_STREQ("bar",
-               response_headers->get("foo", exception_state).Utf8().Data());
+               response_headers->get("foo", exception_state).Utf8().data());
   EXPECT_STREQ(
       "no-cache",
-      response_headers->get("cache-control", exception_state).Utf8().Data());
+      response_headers->get("cache-control", exception_state).Utf8().data());
   EXPECT_FALSE(exception_state.HadException());
 }
 
@@ -122,12 +122,12 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponseBasic) {
   Headers* response_headers = response->headers();
   DummyExceptionStateForTesting exception_state;
   EXPECT_STREQ(
-      "", response_headers->get("set-cookie", exception_state).Utf8().Data());
+      "", response_headers->get("set-cookie", exception_state).Utf8().data());
   EXPECT_STREQ("bar",
-               response_headers->get("foo", exception_state).Utf8().Data());
+               response_headers->get("foo", exception_state).Utf8().data());
   EXPECT_STREQ(
       "no-cache",
-      response_headers->get("cache-control", exception_state).Utf8().Data());
+      response_headers->get("cache-control", exception_state).Utf8().data());
   EXPECT_FALSE(exception_state.HadException());
 }
 
@@ -141,11 +141,11 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponseCORS) {
   Headers* response_headers = response->headers();
   DummyExceptionStateForTesting exception_state;
   EXPECT_STREQ(
-      "", response_headers->get("set-cookie", exception_state).Utf8().Data());
-  EXPECT_STREQ("", response_headers->get("foo", exception_state).Utf8().Data());
+      "", response_headers->get("set-cookie", exception_state).Utf8().data());
+  EXPECT_STREQ("", response_headers->get("foo", exception_state).Utf8().data());
   EXPECT_STREQ(
       "no-cache",
-      response_headers->get("cache-control", exception_state).Utf8().Data());
+      response_headers->get("cache-control", exception_state).Utf8().data());
   EXPECT_FALSE(exception_state.HadException());
 }
 
@@ -159,11 +159,11 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponseOpaque) {
   Headers* response_headers = response->headers();
   DummyExceptionStateForTesting exception_state;
   EXPECT_STREQ(
-      "", response_headers->get("set-cookie", exception_state).Utf8().Data());
-  EXPECT_STREQ("", response_headers->get("foo", exception_state).Utf8().Data());
+      "", response_headers->get("set-cookie", exception_state).Utf8().data());
+  EXPECT_STREQ("", response_headers->get("foo", exception_state).Utf8().data());
   EXPECT_STREQ(
       "",
-      response_headers->get("cache-control", exception_state).Utf8().Data());
+      response_headers->get("cache-control", exception_state).Utf8().data());
   EXPECT_FALSE(exception_state.HadException());
 }
 

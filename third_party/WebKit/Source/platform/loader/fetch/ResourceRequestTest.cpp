@@ -54,19 +54,19 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
       Referrer("http://www.example.com/referrer.htm", kReferrerPolicyDefault));
 
   EXPECT_STREQ("http://www.example.com/test.htm",
-               original.Url().GetString().Utf8().Data());
+               original.Url().GetString().Utf8().data());
   EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy, original.GetCachePolicy());
   EXPECT_EQ(10, original.TimeoutInterval());
   EXPECT_STREQ("http://www.example.com/first_party.htm",
-               original.FirstPartyForCookies().GetString().Utf8().Data());
+               original.FirstPartyForCookies().GetString().Utf8().data());
   EXPECT_STREQ("www.example.com",
-               original.RequestorOrigin()->Host().Utf8().Data());
-  EXPECT_STREQ("GET", original.HttpMethod().Utf8().Data());
-  EXPECT_STREQ("Bar", original.HttpHeaderFields().Get("Foo").Utf8().Data());
-  EXPECT_STREQ("Fuga", original.HttpHeaderFields().Get("Piyo").Utf8().Data());
+               original.RequestorOrigin()->Host().Utf8().data());
+  EXPECT_STREQ("GET", original.HttpMethod().Utf8().data());
+  EXPECT_STREQ("Bar", original.HttpHeaderFields().Get("Foo").Utf8().data());
+  EXPECT_STREQ("Fuga", original.HttpHeaderFields().Get("Piyo").Utf8().data());
   EXPECT_EQ(kResourceLoadPriorityLow, original.Priority());
   EXPECT_STREQ("Test Body",
-               original.HttpBody()->FlattenToString().Utf8().Data());
+               original.HttpBody()->FlattenToString().Utf8().data());
   EXPECT_FALSE(original.AllowStoredCredentials());
   EXPECT_FALSE(original.ReportUploadProgress());
   EXPECT_FALSE(original.HasUserGesture());
@@ -83,24 +83,24 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_EQ(WebURLRequest::kRequestContextAudio, original.GetRequestContext());
   EXPECT_EQ(WebURLRequest::kFrameTypeNested, original.GetFrameType());
   EXPECT_STREQ("http://www.example.com/referrer.htm",
-               original.HttpReferrer().Utf8().Data());
+               original.HttpReferrer().Utf8().data());
   EXPECT_EQ(kReferrerPolicyDefault, original.GetReferrerPolicy());
 
   std::unique_ptr<CrossThreadResourceRequestData> data1(original.CopyData());
   ResourceRequest copy1(data1.get());
 
   EXPECT_STREQ("http://www.example.com/test.htm",
-               copy1.Url().GetString().Utf8().Data());
+               copy1.Url().GetString().Utf8().data());
   EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy, copy1.GetCachePolicy());
   EXPECT_EQ(10, copy1.TimeoutInterval());
   EXPECT_STREQ("http://www.example.com/first_party.htm",
-               copy1.FirstPartyForCookies().GetString().Utf8().Data());
+               copy1.FirstPartyForCookies().GetString().Utf8().data());
   EXPECT_STREQ("www.example.com",
-               copy1.RequestorOrigin()->Host().Utf8().Data());
-  EXPECT_STREQ("GET", copy1.HttpMethod().Utf8().Data());
-  EXPECT_STREQ("Bar", copy1.HttpHeaderFields().Get("Foo").Utf8().Data());
+               copy1.RequestorOrigin()->Host().Utf8().data());
+  EXPECT_STREQ("GET", copy1.HttpMethod().Utf8().data());
+  EXPECT_STREQ("Bar", copy1.HttpHeaderFields().Get("Foo").Utf8().data());
   EXPECT_EQ(kResourceLoadPriorityLow, copy1.Priority());
-  EXPECT_STREQ("Test Body", copy1.HttpBody()->FlattenToString().Utf8().Data());
+  EXPECT_STREQ("Test Body", copy1.HttpBody()->FlattenToString().Utf8().data());
   EXPECT_FALSE(copy1.AllowStoredCredentials());
   EXPECT_FALSE(copy1.ReportUploadProgress());
   EXPECT_FALSE(copy1.HasUserGesture());
@@ -116,7 +116,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_EQ(WebURLRequest::kRequestContextAudio, copy1.GetRequestContext());
   EXPECT_EQ(WebURLRequest::kFrameTypeNested, copy1.GetFrameType());
   EXPECT_STREQ("http://www.example.com/referrer.htm",
-               copy1.HttpReferrer().Utf8().Data());
+               copy1.HttpReferrer().Utf8().data());
   EXPECT_EQ(kReferrerPolicyDefault, copy1.GetReferrerPolicy());
 
   copy1.SetAllowStoredCredentials(true);

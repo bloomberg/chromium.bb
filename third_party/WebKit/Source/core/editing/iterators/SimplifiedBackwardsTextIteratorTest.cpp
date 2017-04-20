@@ -122,17 +122,17 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, copyTextTo) {
   BackwardsTextBuffer output1;
   back_iter1.CopyTextTo(&output1, 0, 2);
   EXPECT_EQ("wo", String(output1.Data(), output1.Size()))
-      << String::Format(message, 1, "wo").Utf8().Data();
+      << String::Format(message, 1, "wo").Utf8().data();
   back_iter1.CopyTextTo(&output1, 2, 1);
   EXPECT_EQ("two", String(output1.Data(), output1.Size()))
-      << String::Format(message, 1, "two").Utf8().Data();
+      << String::Format(message, 1, "two").Utf8().data();
   back_iter1.Advance();
   back_iter1.CopyTextTo(&output1, 0, 1);
   EXPECT_EQ("etwo", String(output1.Data(), output1.Size()))
-      << String::Format(message, 1, "etwo").Utf8().Data();
+      << String::Format(message, 1, "etwo").Utf8().data();
   back_iter1.CopyTextTo(&output1, 1, 2);
   EXPECT_EQ("onetwo", String(output1.Data(), output1.Size()))
-      << String::Format(message, 1, "onetwo").Utf8().Data();
+      << String::Format(message, 1, "onetwo").Utf8().data();
 
   EphemeralRangeTemplate<EditingInFlatTreeStrategy> range2(
       EphemeralRangeTemplate<EditingInFlatTreeStrategy>::RangeOfContents(
@@ -142,35 +142,35 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, copyTextTo) {
   BackwardsTextBuffer output2;
   back_iter2.CopyTextTo(&output2, 0, 2);
   EXPECT_EQ("ro", String(output2.Data(), output2.Size()))
-      << String::Format(message, 2, "ro").Utf8().Data();
+      << String::Format(message, 2, "ro").Utf8().data();
   back_iter2.CopyTextTo(&output2, 2, 3);
   EXPECT_EQ(" zero", String(output2.Data(), output2.Size()))
-      << String::Format(message, 2, " zero").Utf8().Data();
+      << String::Format(message, 2, " zero").Utf8().data();
   back_iter2.Advance();
   back_iter2.CopyTextTo(&output2, 0, 1);
   EXPECT_EQ("e zero", String(output2.Data(), output2.Size()))
-      << String::Format(message, 2, "e zero").Utf8().Data();
+      << String::Format(message, 2, "e zero").Utf8().data();
   back_iter2.CopyTextTo(&output2, 1, 2);
   EXPECT_EQ("one zero", String(output2.Data(), output2.Size()))
-      << String::Format(message, 2, "one zero").Utf8().Data();
+      << String::Format(message, 2, "one zero").Utf8().data();
   back_iter2.Advance();
   back_iter2.CopyTextTo(&output2, 0, 1);
   EXPECT_EQ(" one zero", String(output2.Data(), output2.Size()))
-      << String::Format(message, 2, " one zero").Utf8().Data();
+      << String::Format(message, 2, " one zero").Utf8().data();
   back_iter2.Advance();
   back_iter2.CopyTextTo(&output2, 0, 2);
   EXPECT_EQ("wo one zero", String(output2.Data(), output2.Size()))
-      << String::Format(message, 2, "wo one zero").Utf8().Data();
+      << String::Format(message, 2, "wo one zero").Utf8().data();
   back_iter2.CopyTextTo(&output2, 2, 1);
   EXPECT_EQ("two one zero", String(output2.Data(), output2.Size()))
-      << String::Format(message, 2, "two one zero").Utf8().Data();
+      << String::Format(message, 2, "two one zero").Utf8().data();
   back_iter2.Advance();
   back_iter2.CopyTextTo(&output2, 0, 3);
   EXPECT_EQ("ee two one zero", String(output2.Data(), output2.Size()))
-      << String::Format(message, 2, "ee two one zero").Utf8().Data();
+      << String::Format(message, 2, "ee two one zero").Utf8().data();
   back_iter2.CopyTextTo(&output2, 3, 3);
   EXPECT_EQ("three two one zero", String(output2.Data(), output2.Size()))
-      << String::Format(message, 2, "three two one zero").Utf8().Data();
+      << String::Format(message, 2, "three two one zero").Utf8().data();
 }
 
 TEST_F(SimplifiedBackwardsTextIteratorTest, CopyWholeCodePoints) {

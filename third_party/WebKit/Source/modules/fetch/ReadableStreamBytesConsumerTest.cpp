@@ -77,7 +77,7 @@ class ReadableStreamBytesConsumerTest : public ::testing::Test {
     if (block.HasCaught()) {
       ADD_FAILURE() << ToCoreString(block.Exception()->ToString(GetIsolate()))
                            .Utf8()
-                           .Data();
+                           .data();
       block.ReThrow();
     }
     return r;

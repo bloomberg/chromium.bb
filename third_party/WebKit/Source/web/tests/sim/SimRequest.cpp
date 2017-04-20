@@ -51,7 +51,7 @@ void SimRequest::Write(const String& data) {
   DCHECK(is_ready_);
   DCHECK(!error_.reason);
   total_encoded_data_length_ += data.length();
-  client_->DidReceiveData(data.Utf8().Data(), data.length());
+  client_->DidReceiveData(data.Utf8().data(), data.length());
 }
 
 void SimRequest::Finish() {

@@ -18,8 +18,8 @@ TEST(FormDataTest, get) {
   EXPECT_EQ("value1", result.getAsUSVString());
 
   const FormData::Entry& entry = *fd->Entries()[0];
-  EXPECT_STREQ("name1", entry.name().Data());
-  EXPECT_STREQ("value1", entry.Value().Data());
+  EXPECT_STREQ("name1", entry.name().data());
+  EXPECT_STREQ("value1", entry.Value().data());
 }
 
 TEST(FormDataTest, getAll) {

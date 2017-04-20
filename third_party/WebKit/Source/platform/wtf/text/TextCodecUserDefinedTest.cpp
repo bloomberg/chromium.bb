@@ -20,27 +20,27 @@ TEST(TextCodecUserDefinedTest, QuestionMarksAndSurrogates) {
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
     CString result = codec->Encode(testCase, testCaseSize,
                                    WTF::kQuestionMarksForUnencodables);
-    EXPECT_STREQ("?\x16?", result.Data());
+    EXPECT_STREQ("?\x16?", result.data());
   }
   {
     const UChar testCase[] = {0xd9f0, 0xdcd9};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
     CString result = codec->Encode(testCase, testCaseSize,
                                    WTF::kQuestionMarksForUnencodables);
-    EXPECT_STREQ("?", result.Data());
+    EXPECT_STREQ("?", result.data());
   }
   {
     const UChar testCase[] = {0xd9f0, 0xdcd9, 0xd9f0, 0xdcd9};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
     CString result = codec->Encode(testCase, testCaseSize,
                                    WTF::kQuestionMarksForUnencodables);
-    EXPECT_STREQ("??", result.Data());
+    EXPECT_STREQ("??", result.data());
   }
   {
     const UChar testCase[] = {0x0041, 0xd9f0, 0xdcd9, 0xf7c1, 0xd9f0, 0xdcd9};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
     CString result = codec->Encode(testCase, testCaseSize,
                                    WTF::kQuestionMarksForUnencodables);
-    EXPECT_STREQ("A?\xC1?", result.Data());
+    EXPECT_STREQ("A?\xC1?", result.data());
   }
 }

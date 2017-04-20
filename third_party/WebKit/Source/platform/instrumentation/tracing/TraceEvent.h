@@ -16,7 +16,7 @@ static inline void SetTraceValue(const CString& arg,
                                  unsigned char* type,
                                  unsigned long long* value) {
   trace_event_internal::TraceValueUnion type_value;
-  type_value.as_string = arg.Data();
+  type_value.as_string = arg.data();
   *type = TRACE_VALUE_TYPE_COPY_STRING;
   *value = type_value.as_uint;
 }

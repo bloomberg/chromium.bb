@@ -75,7 +75,7 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
   }
 
   PeriodicWave* periodic_wave = new PeriodicWave(context.sampleRate());
-  periodic_wave->CreateBandLimitedTables(real.Data(), imag.Data(), real.size(),
+  periodic_wave->CreateBandLimitedTables(real.data(), imag.data(), real.size(),
                                          disable_normalization);
   return periodic_wave;
 }

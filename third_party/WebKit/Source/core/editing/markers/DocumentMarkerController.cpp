@@ -835,7 +835,7 @@ void DocumentMarkerController::ShowMarkers() const {
     builder.Append("\n");
   }
   LOG(INFO) << markers_.size() << " nodes have markers:\n"
-            << builder.ToString().Utf8().Data();
+            << builder.ToString().Utf8().data();
 }
 #endif
 

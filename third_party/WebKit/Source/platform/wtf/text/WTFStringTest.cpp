@@ -46,22 +46,22 @@ TEST(StringTest, ASCII) {
 
   // Null String.
   output = String().Ascii();
-  EXPECT_STREQ("", output.Data());
+  EXPECT_STREQ("", output.data());
 
   // Empty String.
   output = g_empty_string.Ascii();
-  EXPECT_STREQ("", output.Data());
+  EXPECT_STREQ("", output.data());
 
   // Regular String.
   output = String("foobar").Ascii();
-  EXPECT_STREQ("foobar", output.Data());
+  EXPECT_STREQ("foobar", output.data());
 }
 
 namespace {
 
 void TestNumberToStringECMAScript(double number, const char* reference) {
   CString number_string = String::NumberToStringECMAScript(number).Latin1();
-  EXPECT_STREQ(reference, number_string.Data());
+  EXPECT_STREQ(reference, number_string.data());
 }
 
 }  // anonymous namespace
@@ -112,39 +112,39 @@ TEST(StringTest, ReplaceWithLiteral) {
   String test_string = "1224";
   EXPECT_TRUE(test_string.Is8Bit());
   test_string.Replace('2', "");
-  EXPECT_STREQ("14", test_string.Utf8().Data());
+  EXPECT_STREQ("14", test_string.Utf8().data());
 
   test_string = "1224";
   EXPECT_TRUE(test_string.Is8Bit());
   test_string.Replace('2', "3");
-  EXPECT_STREQ("1334", test_string.Utf8().Data());
+  EXPECT_STREQ("1334", test_string.Utf8().data());
 
   test_string = "1224";
   EXPECT_TRUE(test_string.Is8Bit());
   test_string.Replace('2', "555");
-  EXPECT_STREQ("15555554", test_string.Utf8().Data());
+  EXPECT_STREQ("15555554", test_string.Utf8().data());
 
   test_string = "1224";
   EXPECT_TRUE(test_string.Is8Bit());
   test_string.Replace('3', "NotFound");
-  EXPECT_STREQ("1224", test_string.Utf8().Data());
+  EXPECT_STREQ("1224", test_string.Utf8().data());
 
   // Cases for 16Bit source.
   // U+00E9 (=0xC3 0xA9 in UTF-8) is e with accent.
   test_string = String::FromUTF8("r\xC3\xA9sum\xC3\xA9");
   EXPECT_FALSE(test_string.Is8Bit());
   test_string.Replace(UChar(0x00E9), "e");
-  EXPECT_STREQ("resume", test_string.Utf8().Data());
+  EXPECT_STREQ("resume", test_string.Utf8().data());
 
   test_string = String::FromUTF8("r\xC3\xA9sum\xC3\xA9");
   EXPECT_FALSE(test_string.Is8Bit());
   test_string.Replace(UChar(0x00E9), "");
-  EXPECT_STREQ("rsum", test_string.Utf8().Data());
+  EXPECT_STREQ("rsum", test_string.Utf8().data());
 
   test_string = String::FromUTF8("r\xC3\xA9sum\xC3\xA9");
   EXPECT_FALSE(test_string.Is8Bit());
   test_string.Replace('3', "NotFound");
-  EXPECT_STREQ("r\xC3\xA9sum\xC3\xA9", test_string.Utf8().Data());
+  EXPECT_STREQ("r\xC3\xA9sum\xC3\xA9", test_string.Utf8().data());
 }
 
 TEST(StringTest, ComparisonOfSameStringVectors) {
@@ -275,7 +275,7 @@ TEST(StringTest, ToUpperLocale) {
     String source = String::FromUTF8(test_data_list[i].source);
     for (size_t j = 0; j < test_data_list[i].locale_list_length; ++j) {
       const char* locale = test_data_list[i].locale_list[j];
-      EXPECT_STREQ(expected, source.UpperUnicode(locale).Utf8().Data())
+      EXPECT_STREQ(expected, source.UpperUnicode(locale).Utf8().data())
           << test_data_list[i].source_description << "; locale=" << locale;
     }
   }
@@ -335,7 +335,7 @@ TEST(StringTest, ToLowerLocale) {
     String source = String::FromUTF8(test_data_list[i].source);
     for (size_t j = 0; j < test_data_list[i].locale_list_length; ++j) {
       const char* locale = test_data_list[i].locale_list[j];
-      EXPECT_STREQ(expected, source.LowerUnicode(locale).Utf8().Data())
+      EXPECT_STREQ(expected, source.LowerUnicode(locale).Utf8().data())
           << test_data_list[i].source_description << "; locale=" << locale;
     }
   }
@@ -433,14 +433,14 @@ TEST(StringTest, FindIgnoringASCIICase) {
 }
 
 TEST(StringTest, DeprecatedLower) {
-  EXPECT_STREQ("link", String("LINK").DeprecatedLower().Ascii().Data());
-  EXPECT_STREQ("link", String("lInk").DeprecatedLower().Ascii().Data());
+  EXPECT_STREQ("link", String("LINK").DeprecatedLower().Ascii().data());
+  EXPECT_STREQ("link", String("lInk").DeprecatedLower().Ascii().data());
   EXPECT_STREQ("lin\xE1k",
-               String("lIn\xC1k").DeprecatedLower().Latin1().Data());
+               String("lIn\xC1k").DeprecatedLower().Latin1().data());
   // U+212A -> k
   EXPECT_STREQ(
       "link",
-      String::FromUTF8("LIN\xE2\x84\xAA").DeprecatedLower().Utf8().Data());
+      String::FromUTF8("LIN\xE2\x84\xAA").DeprecatedLower().Utf8().data());
 }
 
 TEST(StringTest, Ensure16Bit) {

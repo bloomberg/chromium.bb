@@ -146,7 +146,7 @@ static ImmutableStylePropertySet* CreateStylePropertySet(
                    seen_properties, seen_custom_properties);
 
   ImmutableStylePropertySet* result = ImmutableStylePropertySet::Create(
-      results.Data() + unused_entries, results.size() - unused_entries, mode);
+      results.data() + unused_entries, results.size() - unused_entries, mode);
   parsed_properties.clear();
   return result;
 }

@@ -56,7 +56,7 @@ size_t WebThreadSafeData::size() const {
 const char* WebThreadSafeData::Data() const {
   if (private_.IsNull())
     return 0;
-  return private_->Data();
+  return private_->data();
 }
 
 WebThreadSafeData::WebThreadSafeData(PassRefPtr<RawData> data)

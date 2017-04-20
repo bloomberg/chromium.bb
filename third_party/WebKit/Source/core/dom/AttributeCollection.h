@@ -55,7 +55,7 @@ class AttributeCollectionGeneric {
     return begin()[index];
   }
 
-  iterator begin() const { return attributes_.Data(); }
+  iterator begin() const { return attributes_.data(); }
   iterator end() const { return begin() + size(); }
 
   unsigned size() const { return attributes_.size(); }
@@ -81,7 +81,7 @@ class AttributeArray {
   AttributeArray(const Attribute* array, unsigned size)
       : array_(array), size_(size) {}
 
-  const Attribute* Data() const { return array_; }
+  const Attribute* data() const { return array_; }
   unsigned size() const { return size_; }
 
  private:

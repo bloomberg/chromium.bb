@@ -65,7 +65,7 @@ ImmutableStylePropertySet* StylePropertySet::ImmutableCopyIfNeeded() const {
     return ToImmutableStylePropertySet(const_cast<StylePropertySet*>(this));
   const MutableStylePropertySet* mutable_this = ToMutableStylePropertySet(this);
   return ImmutableStylePropertySet::Create(
-      mutable_this->property_vector_.Data(),
+      mutable_this->property_vector_.data(),
       mutable_this->property_vector_.size(), CssParserMode());
 }
 
@@ -461,7 +461,7 @@ bool MutableStylePropertySet::RemovePropertiesInSet(const CSSPropertyID* set,
   if (property_vector_.IsEmpty())
     return false;
 
-  CSSProperty* properties = property_vector_.Data();
+  CSSProperty* properties = property_vector_.data();
   unsigned old_size = property_vector_.size();
   unsigned new_index = 0;
   for (unsigned old_index = 0; old_index < old_size; ++old_index) {
@@ -545,7 +545,7 @@ MutableStylePropertySet* StylePropertySet::CopyPropertiesInSet(
     if (value)
       list.push_back(CSSProperty(properties[i], *value, false));
   }
-  return MutableStylePropertySet::Create(list.Data(), list.size());
+  return MutableStylePropertySet::Create(list.data(), list.size());
 }
 
 CSSStyleDeclaration* MutableStylePropertySet::EnsureCSSStyleDeclaration() {
@@ -563,7 +563,7 @@ CSSStyleDeclaration* MutableStylePropertySet::EnsureCSSStyleDeclaration() {
 
 template <typename T>
 int MutableStylePropertySet::FindPropertyIndex(T property) const {
-  const CSSProperty* begin = property_vector_.Data();
+  const CSSProperty* begin = property_vector_.data();
   const CSSProperty* end = begin + property_vector_.size();
 
   uint16_t id = GetConvertedCSSPropertyID(property);
@@ -603,7 +603,7 @@ static_assert(sizeof(StylePropertySet) == sizeof(SameSizeAsStylePropertySet),
 
 #ifndef NDEBUG
 void StylePropertySet::ShowStyle() {
-  fprintf(stderr, "%s\n", AsText().Ascii().Data());
+  fprintf(stderr, "%s\n", AsText().Ascii().data());
 }
 #endif
 

@@ -80,7 +80,7 @@ bool SharedBufferChunkReader::NextChunk(Vector<char>& chunk,
       if (current_character != separator_[separator_index_]) {
         if (separator_index_ > 0) {
           SECURITY_DCHECK(separator_index_ <= separator_.size());
-          chunk.Append(separator_.Data(), separator_index_);
+          chunk.Append(separator_.data(), separator_index_);
           separator_index_ = 0;
         }
         chunk.push_back(current_character);
@@ -102,7 +102,7 @@ bool SharedBufferChunkReader::NextChunk(Vector<char>& chunk,
     if (!segment_length_) {
       reached_end_of_file_ = true;
       if (separator_index_ > 0)
-        chunk.Append(separator_.Data(), separator_index_);
+        chunk.Append(separator_.data(), separator_index_);
       return !chunk.IsEmpty();
     }
   }
@@ -117,7 +117,7 @@ String SharedBufferChunkReader::NextChunkAsUTF8StringWithLatin1Fallback(
     return String();
 
   return data.size()
-             ? String::FromUTF8WithLatin1Fallback(data.Data(), data.size())
+             ? String::FromUTF8WithLatin1Fallback(data.data(), data.size())
              : g_empty_string;
 }
 

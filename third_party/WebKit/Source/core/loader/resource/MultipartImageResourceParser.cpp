@@ -46,7 +46,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
 
     // Some servers don't send a boundary token before the first chunk of
     // data.  We handle this case anyway (Gecko does too).
-    if (0 != memcmp(data_.Data(), boundary_.Data(), boundary_.size())) {
+    if (0 != memcmp(data_.data(), boundary_.data(), boundary_.size())) {
       data_.push_front("\n", 1);
       data_.PrependVector(boundary_);
     }
@@ -77,7 +77,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
       }
     }
     if (data_size) {
-      client_->MultipartDataReceived(data_.Data(), data_size);
+      client_->MultipartDataReceived(data_.data(), data_size);
       if (IsCancelled())
         return;
     }
@@ -107,7 +107,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
   // as we may ignore the last CRLF.
   if (!is_parsing_headers_ && data_.size() > boundary_.size() + 2) {
     size_t send_length = data_.size() - boundary_.size() - 2;
-    client_->MultipartDataReceived(data_.Data(), send_length);
+    client_->MultipartDataReceived(data_.data(), send_length);
     data_.erase(0, send_length);
   }
 }
@@ -119,7 +119,7 @@ void MultipartImageResourceParser::Finish() {
   // If we have any pending data and we're not in a header, go ahead and send
   // it to the client.
   if (!is_parsing_headers_ && !data_.IsEmpty())
-    client_->MultipartDataReceived(data_.Data(), data_.size());
+    client_->MultipartDataReceived(data_.data(), data_.size());
   data_.clear();
   saw_last_boundary_ = true;
 }
@@ -146,7 +146,7 @@ bool MultipartImageResourceParser::ParseHeaders() {
     response.AddHTTPHeaderField(header.key, header.value);
 
   size_t end = 0;
-  if (!ParseMultipartHeadersFromBody(data_.Data() + pos, data_.size() - pos,
+  if (!ParseMultipartHeadersFromBody(data_.data() + pos, data_.size() - pos,
                                      &response, &end))
     return false;
   data_.erase(0, end + pos);
@@ -159,12 +159,12 @@ bool MultipartImageResourceParser::ParseHeaders() {
 // doesn't require the dashes to exist.  See nsMultiMixedConv::FindToken.
 size_t MultipartImageResourceParser::FindBoundary(const Vector<char>& data,
                                                   Vector<char>* boundary) {
-  auto it = std::search(data.Data(), data.Data() + data.size(),
-                        boundary->Data(), boundary->Data() + boundary->size());
-  if (it == data.Data() + data.size())
+  auto it = std::search(data.data(), data.data() + data.size(),
+                        boundary->data(), boundary->data() + boundary->size());
+  if (it == data.data() + data.size())
     return kNotFound;
 
-  size_t boundary_position = it - data.Data();
+  size_t boundary_position = it - data.data();
   // Back up over -- for backwards compat
   // TODO(tc): Don't we only want to do this once?  Gecko code doesn't seem to
   // care.

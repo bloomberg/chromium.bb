@@ -121,7 +121,7 @@ void ReportBlockedEvent(ExecutionContext* context,
       "being busy. "
       "Consider marking event handler as 'passive' to make the page more "
       "responsive.",
-      event->type().GetString().Utf8().Data(), lround(delayed_seconds * 1000));
+      event->type().GetString().Utf8().data(), lround(delayed_seconds * 1000));
 
   PerformanceMonitor::ReportGenericViolation(
       context, PerformanceMonitor::kBlockedEvent, message_text, delayed_seconds,
@@ -245,7 +245,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
         "Added non-passive event listener to a scroll-blocking '%s' event. "
         "Consider marking event handler as 'passive' to make the page more "
         "responsive.",
-        event_type.GetString().Utf8().Data());
+        event_type.GetString().Utf8().data());
 
     PerformanceMonitor::ReportGenericViolation(
         GetExecutionContext(), PerformanceMonitor::kDiscouragedAPIUse,
@@ -297,7 +297,7 @@ bool EventTarget::AddEventListenerInternal(
     argv.push_back(ToNode() ? ToNode()->nodeName() : InterfaceName());
     argv.push_back(event_type);
     activity_logger->LogEvent("blinkAddEventListener", argv.size(),
-                              argv.Data());
+                              argv.data());
   }
 
   RegisteredEventListener registered_listener;

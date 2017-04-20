@@ -44,17 +44,17 @@ CString PrintedString(const CString& string) {
 TEST(CStringTest, NullStringConstructor) {
   CString string;
   EXPECT_TRUE(string.IsNull());
-  EXPECT_EQ(static_cast<const char*>(0), string.Data());
+  EXPECT_EQ(static_cast<const char*>(0), string.data());
   EXPECT_EQ(static_cast<size_t>(0), string.length());
 
   CString string_from_char_pointer(static_cast<const char*>(0));
   EXPECT_TRUE(string_from_char_pointer.IsNull());
-  EXPECT_EQ(static_cast<const char*>(0), string_from_char_pointer.Data());
+  EXPECT_EQ(static_cast<const char*>(0), string_from_char_pointer.data());
   EXPECT_EQ(static_cast<size_t>(0), string_from_char_pointer.length());
 
   CString string_from_char_and_length(static_cast<const char*>(0), 0);
   EXPECT_TRUE(string_from_char_and_length.IsNull());
-  EXPECT_EQ(static_cast<const char*>(0), string_from_char_and_length.Data());
+  EXPECT_EQ(static_cast<const char*>(0), string_from_char_and_length.data());
   EXPECT_EQ(static_cast<size_t>(0), string_from_char_and_length.length());
 }
 
@@ -63,12 +63,12 @@ TEST(CStringTest, EmptyEmptyConstructor) {
   CString string(empty_string);
   EXPECT_FALSE(string.IsNull());
   EXPECT_EQ(static_cast<size_t>(0), string.length());
-  EXPECT_EQ(0, string.Data()[0]);
+  EXPECT_EQ(0, string.data()[0]);
 
   CString string_with_length(empty_string, 0);
   EXPECT_FALSE(string_with_length.IsNull());
   EXPECT_EQ(static_cast<size_t>(0), string_with_length.length());
-  EXPECT_EQ(0, string_with_length.Data()[0]);
+  EXPECT_EQ(0, string_with_length.data()[0]);
 }
 
 TEST(CStringTest, EmptyRegularConstructor) {
@@ -77,32 +77,32 @@ TEST(CStringTest, EmptyRegularConstructor) {
   CString string(reference_string);
   EXPECT_FALSE(string.IsNull());
   EXPECT_EQ(strlen(reference_string), string.length());
-  EXPECT_STREQ(reference_string, string.Data());
+  EXPECT_STREQ(reference_string, string.data());
 
   CString string_with_length(reference_string, 6);
   EXPECT_FALSE(string_with_length.IsNull());
   EXPECT_EQ(strlen(reference_string), string_with_length.length());
-  EXPECT_STREQ(reference_string, string_with_length.Data());
+  EXPECT_STREQ(reference_string, string_with_length.data());
 }
 
 TEST(CStringTest, UninitializedConstructor) {
   char* buffer;
   CString empty_string = CString::CreateUninitialized(0, buffer);
   EXPECT_FALSE(empty_string.IsNull());
-  EXPECT_EQ(buffer, empty_string.Data());
+  EXPECT_EQ(buffer, empty_string.data());
   EXPECT_EQ(0, buffer[0]);
 
   const size_t kLength = 25;
   CString uninitialized_string = CString::CreateUninitialized(kLength, buffer);
   EXPECT_FALSE(uninitialized_string.IsNull());
-  EXPECT_EQ(buffer, uninitialized_string.Data());
-  EXPECT_EQ(0, uninitialized_string.Data()[kLength]);
+  EXPECT_EQ(buffer, uninitialized_string.data());
+  EXPECT_EQ(0, uninitialized_string.data()[kLength]);
 }
 
 TEST(CStringTest, ZeroTerminated) {
   const char* reference_string = "WebKit";
   CString string_with_length(reference_string, 3);
-  EXPECT_EQ(0, string_with_length.Data()[3]);
+  EXPECT_EQ(0, string_with_length.data()[3]);
 }
 
 TEST(CStringTest, Comparison) {
@@ -192,11 +192,11 @@ TEST(CStringTest, Comparison) {
 }
 
 TEST(CStringTest, Printer) {
-  EXPECT_STREQ("<null>", PrintedString(CString()).Data());
-  EXPECT_STREQ("\"abc\"", PrintedString("abc").Data());
-  EXPECT_STREQ("\"\\t\\n\\r\\\"\\\\\"", PrintedString("\t\n\r\"\\").Data());
+  EXPECT_STREQ("<null>", PrintedString(CString()).data());
+  EXPECT_STREQ("\"abc\"", PrintedString("abc").data());
+  EXPECT_STREQ("\"\\t\\n\\r\\\"\\\\\"", PrintedString("\t\n\r\"\\").data());
   EXPECT_STREQ("\"\\xFF\\x00\\x01xyz\"",
-               PrintedString(CString("\xff\0\x01xyz", 6)).Data());
+               PrintedString(CString("\xff\0\x01xyz", 6)).data());
 }
 
 }  // namespace WTF

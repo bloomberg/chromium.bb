@@ -29,7 +29,7 @@ TEST(SerializedScriptValueTest, WireFormatRoundTrip) {
   sourceSerializedScriptValue->ToWireBytes(wireData);
 
   RefPtr<SerializedScriptValue> serializedScriptValue =
-      SerializedScriptValue::Create(wireData.Data(), wireData.size());
+      SerializedScriptValue::Create(wireData.data(), wireData.size());
   v8::Local<v8::Value> deserialized =
       serializedScriptValue->Deserialize(scope.GetIsolate());
   EXPECT_TRUE(deserialized->IsTrue());
@@ -106,7 +106,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion0ImageData) {
   data.Resize(257);  // (508 pixel data + 6 header bytes) / 2
 
   RefPtr<SerializedScriptValue> serializedScriptValue =
-      SerializedScriptValue::Create(reinterpret_cast<const char*>(data.Data()),
+      SerializedScriptValue::Create(reinterpret_cast<const char*>(data.data()),
                                     data.size() * sizeof(UChar));
   v8::Local<v8::Value> deserialized =
       serializedScriptValue->Deserialize(isolate);

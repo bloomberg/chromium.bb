@@ -418,7 +418,7 @@ void WebGLFramebuffer::DrawBuffersIfNecessary(bool force) {
     }
     if (reset) {
       Context()->ContextGL()->DrawBuffersEXT(filtered_draw_buffers_.size(),
-                                             filtered_draw_buffers_.Data());
+                                             filtered_draw_buffers_.data());
     }
   }
 }

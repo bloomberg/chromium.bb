@@ -204,7 +204,7 @@ inline AttributeCollection ShareableElementData::Attributes() const {
 }
 
 inline AttributeCollection UniqueElementData::Attributes() const {
-  return AttributeCollection(attribute_vector_.Data(),
+  return AttributeCollection(attribute_vector_.data(),
                              attribute_vector_.size());
 }
 

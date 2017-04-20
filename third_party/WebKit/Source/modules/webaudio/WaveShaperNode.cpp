@@ -106,7 +106,7 @@ void WaveShaperNode::setCurve(const Vector<float>& curve,
                               ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  SetCurveImpl(curve.Data(), curve.size(), exception_state);
+  SetCurveImpl(curve.data(), curve.size(), exception_state);
 }
 
 NotShared<DOMFloat32Array> WaveShaperNode::curve() {
@@ -117,7 +117,7 @@ NotShared<DOMFloat32Array> WaveShaperNode::curve() {
   unsigned size = curve->size();
   RefPtr<WTF::Float32Array> new_curve = WTF::Float32Array::Create(size);
 
-  memcpy(new_curve->Data(), curve->Data(), sizeof(float) * size);
+  memcpy(new_curve->Data(), curve->data(), sizeof(float) * size);
 
   return NotShared<DOMFloat32Array>(
       DOMFloat32Array::Create(new_curve.Release()));

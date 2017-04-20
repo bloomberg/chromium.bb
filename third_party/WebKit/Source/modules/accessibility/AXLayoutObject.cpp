@@ -935,7 +935,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
                                        kUnpremul_SkAlphaType);
   size_t row_bytes = info.minRowBytes();
   Vector<char> pixel_storage(info.getSafeSize(row_bytes));
-  SkPixmap pixmap(info, pixel_storage.Data(), row_bytes);
+  SkPixmap pixmap(info, pixel_storage.data(), row_bytes);
   if (!SkImage::MakeFromBitmap(bitmap)->readPixels(pixmap, 0, 0))
     return String();
 
@@ -943,7 +943,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   String data_url =
       ImageDataBuffer(
           IntSize(width, height),
-          reinterpret_cast<const unsigned char*>(pixel_storage.Data()))
+          reinterpret_cast<const unsigned char*>(pixel_storage.data()))
           .ToDataURL("image/png", 1.0);
   return data_url;
 }

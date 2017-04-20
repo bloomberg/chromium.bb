@@ -164,7 +164,7 @@ void WebPepperSocketImpl::DidReceiveBinaryMessage(
       break;
     case kBinaryTypeArrayBuffer:
       client_->DidReceiveArrayBuffer(WebArrayBuffer(
-          DOMArrayBuffer::Create(payload->Data(), payload->size())));
+          DOMArrayBuffer::Create(payload->data(), payload->size())));
       break;
   }
 }

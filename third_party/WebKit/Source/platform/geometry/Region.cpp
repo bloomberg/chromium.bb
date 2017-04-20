@@ -245,8 +245,8 @@ bool Region::Shape::CanCoalesce(SegmentIterator begin, SegmentIterator end) {
     return false;
 
   SegmentIterator last_span_begin =
-      segments_.Data() + spans_.back().segment_index;
-  SegmentIterator last_span_end = segments_.Data() + segments_.size();
+      segments_.data() + spans_.back().segment_index;
+  SegmentIterator last_span_end = segments_.data() + segments_.size();
 
   // Check if both spans have an equal number of segments.
   if (last_span_end - last_span_begin != end - begin)
@@ -282,17 +282,17 @@ void Region::Shape::AppendSegment(int x) {
 }
 
 Region::Shape::SpanIterator Region::Shape::SpansBegin() const {
-  return spans_.Data();
+  return spans_.data();
 }
 
 Region::Shape::SpanIterator Region::Shape::SpansEnd() const {
-  return spans_.Data() + spans_.size();
+  return spans_.data() + spans_.size();
 }
 
 Region::Shape::SegmentIterator Region::Shape::SegmentsBegin(
     SpanIterator it) const {
-  ASSERT(it >= spans_.Data());
-  ASSERT(it < spans_.Data() + spans_.size());
+  ASSERT(it >= spans_.data());
+  ASSERT(it < spans_.data() + spans_.size());
 
   // Check if this span has any segments.
   if (it->segment_index == segments_.size())
@@ -303,18 +303,18 @@ Region::Shape::SegmentIterator Region::Shape::SegmentsBegin(
 
 Region::Shape::SegmentIterator Region::Shape::SegmentsEnd(
     SpanIterator it) const {
-  ASSERT(it >= spans_.Data());
-  ASSERT(it < spans_.Data() + spans_.size());
+  ASSERT(it >= spans_.data());
+  ASSERT(it < spans_.data() + spans_.size());
 
   // Check if this span has any segments.
   if (it->segment_index == segments_.size())
     return 0;
 
-  ASSERT(it + 1 < spans_.Data() + spans_.size());
+  ASSERT(it + 1 < spans_.data() + spans_.size());
   size_t segment_index = (it + 1)->segment_index;
 
   SECURITY_DCHECK(segment_index <= segments_.size());
-  return segments_.Data() + segment_index;
+  return segments_.data() + segment_index;
 }
 
 #ifndef NDEBUG
@@ -481,7 +481,7 @@ Region::Shape Region::Shape::ShapeOperation(const Shape& shape1,
 
     // Add the span.
     if (!segments.IsEmpty() || !result.IsEmpty())
-      result.AppendSpan(y, segments.Data(), segments.Data() + segments.size());
+      result.AppendSpan(y, segments.data(), segments.data() + segments.size());
   }
 
   // Add any remaining spans.

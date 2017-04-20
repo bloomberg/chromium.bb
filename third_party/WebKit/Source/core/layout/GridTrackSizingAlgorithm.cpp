@@ -470,7 +470,7 @@ void DefiniteSizeStrategy::MaximizeTracks(Vector<GridTrack>& tracks,
   size_t tracks_size = tracks.size();
   Vector<GridTrack*> tracks_for_distribution(tracks_size);
   for (size_t i = 0; i < tracks_size; ++i) {
-    tracks_for_distribution[i] = tracks.Data() + i;
+    tracks_for_distribution[i] = tracks.data() + i;
     tracks_for_distribution[i]->SetPlannedSize(
         tracks_for_distribution[i]->BaseSize());
   }

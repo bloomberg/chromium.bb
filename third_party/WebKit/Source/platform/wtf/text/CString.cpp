@@ -72,7 +72,7 @@ bool operator==(const CString& a, const CString& b) {
     return false;
   if (a.length() != b.length())
     return false;
-  return !memcmp(a.Data(), b.Data(), a.length());
+  return !memcmp(a.data(), b.data(), a.length());
 }
 
 bool operator==(const CString& a, const char* b) {
@@ -80,7 +80,7 @@ bool operator==(const CString& a, const char* b) {
     return false;
   if (!b)
     return true;
-  return !strcmp(a.Data(), b);
+  return !strcmp(a.data(), b);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const CString& string) {
@@ -90,7 +90,7 @@ std::ostream& operator<<(std::ostream& ostream, const CString& string) {
   ostream << '"';
   for (size_t index = 0; index < string.length(); ++index) {
     // Print shorthands for select cases.
-    char character = string.Data()[index];
+    char character = string.data()[index];
     switch (character) {
       case '\t':
         ostream << "\\t";

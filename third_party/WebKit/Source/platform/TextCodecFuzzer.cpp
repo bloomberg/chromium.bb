@@ -64,20 +64,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Treat as bytes-off-the-wire.
   bool sawError;
-  const String decoded = codec->Decode(byteString.Data(), byteString.length(),
+  const String decoded = codec->Decode(byteString.data(), byteString.length(),
                                        flushBehavior, stopOnError, sawError);
 
   // Treat as blink 8-bit string (latin1).
   if (size % sizeof(LChar) == 0) {
     std::unique_ptr<TextCodec> codec = NewTextCodec(encoding);
-    codec->Encode(reinterpret_cast<const LChar*>(byteString.Data()),
+    codec->Encode(reinterpret_cast<const LChar*>(byteString.data()),
                   byteString.length() / sizeof(LChar), unencodableHandling);
   }
 
   // Treat as blink 16-bit string (utf-16) if there are an even number of bytes.
   if (size % sizeof(UChar) == 0) {
     std::unique_ptr<TextCodec> codec = NewTextCodec(encoding);
-    codec->Encode(reinterpret_cast<const UChar*>(byteString.Data()),
+    codec->Encode(reinterpret_cast<const UChar*>(byteString.data()),
                   byteString.length() / sizeof(UChar), unencodableHandling);
   }
 

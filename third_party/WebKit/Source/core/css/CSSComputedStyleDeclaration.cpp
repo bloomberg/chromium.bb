@@ -480,7 +480,7 @@ MutableStylePropertySet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
     if (value)
       list.push_back(CSSProperty(properties[i], *value, false));
   }
-  return MutableStylePropertySet::Create(list.Data(), list.size());
+  return MutableStylePropertySet::Create(list.data(), list.size());
 }
 
 CSSRule* CSSComputedStyleDeclaration::parentRule() const {

@@ -28,7 +28,7 @@ using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using Result = BytesConsumer::Result;
 
 String ToString(const Vector<char>& v) {
-  return String(v.Data(), v.size());
+  return String(v.data(), v.size());
 }
 
 class TestThreadableLoader : public ThreadableLoader {

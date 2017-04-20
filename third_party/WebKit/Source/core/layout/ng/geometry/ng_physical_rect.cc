@@ -23,10 +23,10 @@ bool NGPhysicalRect::operator==(const NGPhysicalRect& other) const {
 }
 
 String NGPhysicalRect::ToString() const {
-  return String::Format("%s,%s %sx%s", location.left.ToString().Ascii().Data(),
-                        location.top.ToString().Ascii().Data(),
-                        size.width.ToString().Ascii().Data(),
-                        size.height.ToString().Ascii().Data());
+  return String::Format("%s,%s %sx%s", location.left.ToString().Ascii().data(),
+                        location.top.ToString().Ascii().data(),
+                        size.width.ToString().Ascii().data(),
+                        size.height.ToString().Ascii().data());
 }
 
 std::ostream& operator<<(std::ostream& os, const NGPhysicalRect& value) {

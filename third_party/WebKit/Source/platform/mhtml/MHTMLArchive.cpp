@@ -160,7 +160,7 @@ void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
   ASSERT(string_builder.ToString().ContainsOnlyASCII());
   CString ascii_string = string_builder.ToString().Utf8();
 
-  output_buffer.Append(ascii_string.Data(), ascii_string.length());
+  output_buffer.Append(ascii_string.data(), ascii_string.length());
 }
 
 void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
@@ -209,7 +209,7 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
   string_builder.Append("\r\n");
 
   CString ascii_string = string_builder.ToString().Utf8();
-  output_buffer.Append(ascii_string.Data(), ascii_string.length());
+  output_buffer.Append(ascii_string.data(), ascii_string.length());
 
   if (!strcmp(content_encoding, kBinary)) {
     const char* data;
@@ -226,7 +226,7 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
     Vector<char> encoded_data;
     if (!strcmp(content_encoding, kQuotedPrintable)) {
       QuotedPrintableEncode(data, data_length, encoded_data);
-      output_buffer.Append(encoded_data.Data(), encoded_data.size());
+      output_buffer.Append(encoded_data.data(), encoded_data.size());
       output_buffer.Append("\r\n", 2u);
     } else {
       ASSERT(!strcmp(content_encoding, kBase64));
@@ -239,7 +239,7 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
       do {
         size_t line_length =
             std::min(encoded_data_length - index, kMaximumLineLength);
-        output_buffer.Append(encoded_data.Data() + index, line_length);
+        output_buffer.Append(encoded_data.data() + index, line_length);
         output_buffer.Append("\r\n", 2u);
         index += kMaximumLineLength;
       } while (index < encoded_data_length);
@@ -251,7 +251,7 @@ void MHTMLArchive::GenerateMHTMLFooterForTesting(const String& boundary,
                                                  Vector<char>& output_buffer) {
   ASSERT(!boundary.IsEmpty());
   CString ascii_string = String("--" + boundary + "--\r\n").Utf8();
-  output_buffer.Append(ascii_string.Data(), ascii_string.length());
+  output_buffer.Append(ascii_string.data(), ascii_string.length());
 }
 
 void MHTMLArchive::SetMainResource(ArchiveResource* main_resource) {

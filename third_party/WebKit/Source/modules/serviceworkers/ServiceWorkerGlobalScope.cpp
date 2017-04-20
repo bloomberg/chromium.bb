@@ -189,7 +189,7 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
     String message = String::Format(
         "Event handler of '%s' event must be added on the initial evaluation "
         "of worker script.",
-        event_type.Utf8().Data());
+        event_type.Utf8().data());
     AddConsoleMessage(ConsoleMessage::Create(kJSMessageSource,
                                              kWarningMessageLevel, message));
   }

@@ -397,7 +397,7 @@ class WTF_EXPORT String {
   template <size_t inlineCapacity>
   static String Make8BitFrom16BitSource(
       const Vector<UChar, inlineCapacity>& buffer) {
-    return Make8BitFrom16BitSource(buffer.Data(), buffer.size());
+    return Make8BitFrom16BitSource(buffer.data(), buffer.size());
   }
 
   static String Make16BitFrom8BitSource(const LChar*, size_t);
@@ -495,7 +495,7 @@ inline void swap(String& a, String& b) {
 
 template <size_t inlineCapacity>
 String::String(const Vector<UChar, inlineCapacity>& vector)
-    : impl_(vector.size() ? StringImpl::Create(vector.Data(), vector.size())
+    : impl_(vector.size() ? StringImpl::Create(vector.data(), vector.size())
                           : StringImpl::empty_) {}
 
 template <>

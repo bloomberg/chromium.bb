@@ -13,7 +13,7 @@ bool NGExclusion::operator==(const NGExclusion& other) const {
 }
 
 String NGExclusion::ToString() const {
-  return String::Format("Rect: %s Type: %d", rect.ToString().Ascii().Data(),
+  return String::Format("Rect: %s Type: %d", rect.ToString().Ascii().data(),
                         type);
 }
 

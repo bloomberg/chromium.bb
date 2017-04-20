@@ -323,7 +323,7 @@ String FontCache::FirstAvailableOrFirst(const String& families) {
   // only from grd/xtb and all ASCII, and b) at most only a few times per
   // setting change/script.
   return String::FromUTF8(
-      gfx::FontList::FirstAvailableOrFirst(families.Utf8().Data()).c_str());
+      gfx::FontList::FirstAvailableOrFirst(families.Utf8().data()).c_str());
 }
 
 SimpleFontData* FontCache::GetNonRetainedLastResortFallbackFont(

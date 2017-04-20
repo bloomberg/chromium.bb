@@ -88,7 +88,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
 
     sk_sp<SkTypeface> sk_variation_font(fm->createFromStream(
         base_typeface_->openStream(nullptr)->duplicate(),
-        SkFontMgr::FontParameters().setAxes(axes.Data(), axes.size())));
+        SkFontMgr::FontParameters().setAxes(axes.data(), axes.size())));
 
     if (sk_variation_font) {
       return_typeface = sk_variation_font;

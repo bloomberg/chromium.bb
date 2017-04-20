@@ -18,7 +18,7 @@ void SimDisplayItemList::AppendDrawingItem(const WebRect&,
   SkIRect bounds = record->cullRect().roundOut();
   SimCanvas canvas(bounds.width(), bounds.height());
   record->playback(&canvas);
-  commands_.Append(canvas.Commands().Data(), canvas.Commands().size());
+  commands_.Append(canvas.Commands().data(), canvas.Commands().size());
 }
 
 bool SimDisplayItemList::Contains(SimCanvas::CommandType type,

@@ -2022,7 +2022,7 @@ static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCal
 
 static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   const CString& nameInUtf8 = name.Utf8();
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface", nameInUtf8.Data());
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface", nameInUtf8.data());
 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 

@@ -57,7 +57,7 @@ bool HostIsIPAddress(const String& host) {
   url::CanonHostInfo host_info;
   url::Component host_component(0,
                                 static_cast<int>(url.Host().Utf8().length()));
-  url::CanonicalizeIPAddress(url.Host().Utf8().Data(), host_component,
+  url::CanonicalizeIPAddress(url.Host().Utf8().data(), host_component,
                              &ignored_output, &host_info);
   return host_info.IsIPAddress();
 }

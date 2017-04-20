@@ -1365,11 +1365,11 @@ void LayoutObject::ShowLayoutObject() const {
 
 void LayoutObject::ShowLayoutObject(StringBuilder& string_builder) const {
   string_builder.Append(
-      String::Format("%s %p", DecoratedName().Ascii().Data(), this));
+      String::Format("%s %p", DecoratedName().Ascii().data(), this));
 
   if (IsText() && ToLayoutText(this)->IsTextFragment())
     string_builder.Append(String::Format(
-        " \"%s\" ", ToLayoutText(this)->GetText().Ascii().Data()));
+        " \"%s\" ", ToLayoutText(this)->GetText().Ascii().data()));
 
   if (VirtualContinuation())
     string_builder.Append(
@@ -1379,10 +1379,10 @@ void LayoutObject::ShowLayoutObject(StringBuilder& string_builder) const {
     while (string_builder.length() < kShowTreeCharacterOffset)
       string_builder.Append(' ');
     string_builder.Append('\t');
-    WTFLogAlways("%s%s", string_builder.ToString().Utf8().Data(),
-                 GetNode()->ToString().Utf8().Data());
+    WTFLogAlways("%s%s", string_builder.ToString().Utf8().data(),
+                 GetNode()->ToString().Utf8().data());
   } else {
-    WTFLogAlways("%s", string_builder.ToString().Utf8().Data());
+    WTFLogAlways("%s", string_builder.ToString().Utf8().data());
   }
 }
 

@@ -159,7 +159,7 @@ RequestInit::RequestInit(ExecutionContext* context,
     // Here we handle formData->boundary() as a C-style string. See
     // FormDataEncoder::generateUniqueBoundaryString.
     content_type = AtomicString("multipart/form-data; boundary=") +
-                   form_data->Boundary().Data();
+                   form_data->Boundary().data();
     body = new FormDataBytesConsumer(context, form_data.Release());
   } else if (V8URLSearchParams::hasInstance(v8_body, isolate)) {
     RefPtr<EncodedFormData> form_data =

@@ -42,7 +42,7 @@ class SimpleFormDataBytesConsumer : public BytesConsumer {
     }
     if (flatten_form_data_offset_ == flatten_form_data_.size())
       return Result::kDone;
-    *buffer = flatten_form_data_.Data() + flatten_form_data_offset_;
+    *buffer = flatten_form_data_.data() + flatten_form_data_offset_;
     *available = flatten_form_data_.size() - flatten_form_data_offset_;
     return Result::kOk;
   }
@@ -65,7 +65,7 @@ class SimpleFormDataBytesConsumer : public BytesConsumer {
     form_data_->Flatten(data);
     form_data_ = nullptr;
     std::unique_ptr<BlobData> blob_data = BlobData::Create();
-    blob_data->AppendBytes(data.Data(), data.size());
+    blob_data->AppendBytes(data.data(), data.size());
     auto length = blob_data->length();
     state_ = PublicState::kClosed;
     return BlobDataHandle::Create(std::move(blob_data), length);
@@ -116,7 +116,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
     for (const auto& element : form_data_->Elements()) {
       switch (element.type_) {
         case FormDataElement::kData:
-          blob_data->AppendBytes(element.data_.Data(), element.data_.size());
+          blob_data->AppendBytes(element.data_.data(), element.data_.size());
           break;
         case FormDataElement::kEncodedFile: {
           auto file_length = element.file_length_;
@@ -154,7 +154,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
     // Here we handle m_formData->boundary() as a C-style string. See
     // FormDataEncoder::generateUniqueBoundaryString.
     blob_data->SetContentType(AtomicString("multipart/form-data; boundary=") +
-                              form_data_->Boundary().Data());
+                              form_data_->Boundary().data());
     auto size = blob_data->length();
     blob_bytes_consumer_ = new BlobBytesConsumer(
         execution_context, BlobDataHandle::Create(std::move(blob_data), size));

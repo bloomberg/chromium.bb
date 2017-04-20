@@ -15,7 +15,7 @@ std::unique_ptr<base::Value> ParseTracedValue(
     std::unique_ptr<TracedValue> value) {
   base::JSONReader reader;
   CString utf8 = value->ToString().Utf8();
-  return reader.Read(utf8.Data());
+  return reader.Read(utf8.data());
 }
 
 TEST(TracedValueTest, FlatDictionary) {

@@ -442,7 +442,7 @@ bool DOMPatchSupport::InnerPatchChildren(
 static void AddStringToDigestor(WebCryptoDigestor* digestor,
                                 const String& string) {
   digestor->Consume(
-      reinterpret_cast<const unsigned char*>(string.Utf8().Data()),
+      reinterpret_cast<const unsigned char*>(string.Utf8().data()),
       string.length());
 }
 
@@ -483,14 +483,14 @@ DOMPatchSupport::Digest* DOMPatchSupport::CreateDigest(
       }
       FinishDigestor(attrs_digestor.get(), digest_result);
       digest->attrs_sha1_ =
-          Base64Encode(reinterpret_cast<const char*>(digest_result.Data()), 10);
+          Base64Encode(reinterpret_cast<const char*>(digest_result.data()), 10);
       AddStringToDigestor(digestor.get(), digest->attrs_sha1_);
       digest_result.clear();
     }
   }
   FinishDigestor(digestor.get(), digest_result);
   digest->sha1_ =
-      Base64Encode(reinterpret_cast<const char*>(digest_result.Data()), 10);
+      Base64Encode(reinterpret_cast<const char*>(digest_result.data()), 10);
 
   if (unused_nodes_map)
     unused_nodes_map->insert(digest->sha1_, digest);

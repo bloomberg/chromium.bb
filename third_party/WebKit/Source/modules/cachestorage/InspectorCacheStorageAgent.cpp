@@ -145,7 +145,7 @@ class RequestCacheNames
   void OnError(WebServiceWorkerCacheError error) override {
     callback_->sendFailure(Response::Error(
         String::Format("Error requesting cache names: %s",
-                       ServiceWorkerCacheErrorString(error).Data())));
+                       ServiceWorkerCacheErrorString(error).data())));
   }
 
  private:
@@ -241,8 +241,8 @@ class GetCacheResponsesForRequestData
   void OnError(WebServiceWorkerCacheError error) override {
     accumulator_->SendFailure(Response::Error(
         String::Format("Error requesting responses for cache  %s: %s",
-                       params_.cache_name.Utf8().Data(),
-                       ServiceWorkerCacheErrorString(error).Data())));
+                       params_.cache_name.Utf8().data(),
+                       ServiceWorkerCacheErrorString(error).data())));
   }
 
  private:
@@ -287,8 +287,8 @@ class GetCacheKeysForRequestData
   void OnError(WebServiceWorkerCacheError error) override {
     callback_->sendFailure(Response::Error(
         String::Format("Error requesting requests for cache %s: %s",
-                       params_.cache_name.Utf8().Data(),
-                       ServiceWorkerCacheErrorString(error).Data())));
+                       params_.cache_name.Utf8().data(),
+                       ServiceWorkerCacheErrorString(error).data())));
   }
 
  private:
@@ -317,8 +317,8 @@ class GetCacheForRequestData
 
   void OnError(WebServiceWorkerCacheError error) override {
     callback_->sendFailure(Response::Error(String::Format(
-        "Error requesting cache %s: %s", params_.cache_name.Utf8().Data(),
-        ServiceWorkerCacheErrorString(error).Data())));
+        "Error requesting cache %s: %s", params_.cache_name.Utf8().data(),
+        ServiceWorkerCacheErrorString(error).data())));
   }
 
  private:
@@ -339,7 +339,7 @@ class DeleteCache : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
   void OnError(WebServiceWorkerCacheError error) override {
     callback_->sendFailure(Response::Error(
         String::Format("Error requesting cache names: %s",
-                       ServiceWorkerCacheErrorString(error).Data())));
+                       ServiceWorkerCacheErrorString(error).data())));
   }
 
  private:
@@ -359,7 +359,7 @@ class DeleteCacheEntry : public WebServiceWorkerCache::CacheBatchCallbacks {
   void OnError(WebServiceWorkerCacheError error) override {
     callback_->sendFailure(Response::Error(
         String::Format("Error requesting cache names: %s",
-                       ServiceWorkerCacheErrorString(error).Data())));
+                       ServiceWorkerCacheErrorString(error).data())));
   }
 
  private:
@@ -394,8 +394,8 @@ class GetCacheForDeleteEntry
 
   void OnError(WebServiceWorkerCacheError error) override {
     callback_->sendFailure(Response::Error(String::Format(
-        "Error requesting cache %s: %s", cache_name_.Utf8().Data(),
-        ServiceWorkerCacheErrorString(error).Data())));
+        "Error requesting cache %s: %s", cache_name_.Utf8().data(),
+        ServiceWorkerCacheErrorString(error).data())));
   }
 
  private:

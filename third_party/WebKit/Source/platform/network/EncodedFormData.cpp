@@ -58,14 +58,14 @@ PassRefPtr<EncodedFormData> EncodedFormData::Create(const void* data,
 
 PassRefPtr<EncodedFormData> EncodedFormData::Create(const CString& string) {
   RefPtr<EncodedFormData> result = Create();
-  result->AppendData(string.Data(), string.length());
+  result->AppendData(string.data(), string.length());
   return result.Release();
 }
 
 PassRefPtr<EncodedFormData> EncodedFormData::Create(
     const Vector<char>& vector) {
   RefPtr<EncodedFormData> result = Create();
-  result->AppendData(vector.Data(), vector.size());
+  result->AppendData(vector.data(), vector.size());
   return result.Release();
 }
 
@@ -113,7 +113,7 @@ void EncodedFormData::AppendData(const void* data, size_t size) {
   FormDataElement& e = elements_.back();
   size_t old_size = e.data_.size();
   e.data_.Grow(old_size + size);
-  memcpy(e.data_.Data() + old_size, data, size);
+  memcpy(e.data_.data() + old_size, data, size);
 }
 
 void EncodedFormData::AppendFile(const String& filename) {
@@ -155,14 +155,14 @@ void EncodedFormData::Flatten(Vector<char>& data) const {
   for (size_t i = 0; i < n; ++i) {
     const FormDataElement& e = elements_[i];
     if (e.type_ == FormDataElement::kData)
-      data.Append(e.data_.Data(), static_cast<size_t>(e.data_.size()));
+      data.Append(e.data_.data(), static_cast<size_t>(e.data_.size()));
   }
 }
 
 String EncodedFormData::FlattenToString() const {
   Vector<char> bytes;
   Flatten(bytes);
-  return Latin1Encoding().Decode(reinterpret_cast<const char*>(bytes.Data()),
+  return Latin1Encoding().Decode(reinterpret_cast<const char*>(bytes.data()),
                                  bytes.size());
 }
 

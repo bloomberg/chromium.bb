@@ -87,7 +87,7 @@ std::unique_ptr<JSONArray> DisplayItemList::SubsequenceAsJSON(
         json->SetString(
             "clientDebugName",
             String::Format("clientDebugName: \"%s\"",
-                           display_item.Client().DebugName().Ascii().Data()));
+                           display_item.Client().DebugName().Ascii().data()));
       }
 #ifndef NDEBUG
       if ((options & kShowPaintRecords) && display_item.IsDrawing()) {

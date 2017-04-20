@@ -126,7 +126,7 @@ PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
 
   FontCache::PlatformFallbackFont fallback_font;
   FontCache::GetFontForCharacter(
-      c, font_description.LocaleOrDefault().Ascii().Data(), &fallback_font);
+      c, font_description.LocaleOrDefault().Ascii().data(), &fallback_font);
   if (fallback_font.name.IsEmpty())
     return nullptr;
 

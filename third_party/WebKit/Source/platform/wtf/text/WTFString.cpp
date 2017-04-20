@@ -345,7 +345,7 @@ String String::Format(const char* format, ...) {
   Vector<char, kDefaultSize> buffer(kDefaultSize);
 
   va_start(args, format);
-  int length = base::vsnprintf(buffer.Data(), buffer.size(), format, args);
+  int length = base::vsnprintf(buffer.data(), buffer.size(), format, args);
   va_end(args);
 
   // TODO(esprehn): This can only happen if there's an encoding error, what's
@@ -366,12 +366,12 @@ String String::Format(const char* format, ...) {
     // Not calling va_end/va_start here happens to work on lots of systems, but
     // fails e.g. on 64bit Linux.
     va_start(args, format);
-    length = base::vsnprintf(buffer.Data(), buffer.size(), format, args);
+    length = base::vsnprintf(buffer.data(), buffer.size(), format, args);
     va_end(args);
   }
 
   CHECK_LT(static_cast<unsigned>(length), buffer.size());
-  return String(reinterpret_cast<const LChar*>(buffer.Data()), length);
+  return String(reinterpret_cast<const LChar*>(buffer.data()), length);
 }
 
 template <typename IntegerType>
@@ -644,7 +644,7 @@ CString String::Utf8(UTF8ConversionMode mode) const {
     return CString();
   Vector<char, 1024> buffer_vector(length * 3);
 
-  char* buffer = buffer_vector.Data();
+  char* buffer = buffer_vector.data();
 
   if (Is8Bit()) {
     const LChar* characters = this->Characters8();
@@ -711,7 +711,7 @@ CString String::Utf8(UTF8ConversionMode mode) const {
     }
   }
 
-  return CString(buffer_vector.Data(), buffer - buffer_vector.Data());
+  return CString(buffer_vector.data(), buffer - buffer_vector.data());
 }
 
 String String::Make8BitFrom16BitSource(const UChar* source, size_t length) {
@@ -751,7 +751,7 @@ String String::FromUTF8(const LChar* string_start, size_t length) {
     return StringImpl::Create(string_start, length);
 
   Vector<UChar, 1024> buffer(length);
-  UChar* buffer_start = buffer.Data();
+  UChar* buffer_start = buffer.data();
 
   UChar* buffer_current = buffer_start;
   const char* string_current = reinterpret_cast<const char*>(string_start);
@@ -772,7 +772,7 @@ String String::FromUTF8(const LChar* string) {
 }
 
 String String::FromUTF8(const CString& s) {
-  return FromUTF8(s.Data());
+  return FromUTF8(s.data());
 }
 
 String String::FromUTF8WithLatin1Fallback(const LChar* string, size_t size) {
@@ -826,7 +826,7 @@ std::ostream& operator<<(std::ostream& out, const String& string) {
 
 #ifndef NDEBUG
 void String::Show() const {
-  DataLogF("%s\n", AsciiDebug(Impl()).Data());
+  DataLogF("%s\n", AsciiDebug(Impl()).data());
 }
 #endif
 

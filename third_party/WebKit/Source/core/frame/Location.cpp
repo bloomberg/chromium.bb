@@ -275,7 +275,7 @@ void Location::SetLocation(const String& url,
     argv.push_back("url");
     argv.push_back(entered_document->Url());
     argv.push_back(completed_url);
-    activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.Data());
+    activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.data());
   }
   dom_window_->GetFrame()->Navigate(
       *current_window->document(), completed_url,

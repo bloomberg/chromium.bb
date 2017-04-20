@@ -17,7 +17,7 @@ TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle) {
   LayoutObject* obj = LayoutBlockFlow::CreateAnonymous(&GetDocument());
   EXPECT_FALSE(obj->Style());
   EXPECT_STREQ("LayoutBlockFlow (anonymous)",
-               obj->DecoratedName().Ascii().Data());
+               obj->DecoratedName().Ascii().data());
   obj->Destroy();
 }
 

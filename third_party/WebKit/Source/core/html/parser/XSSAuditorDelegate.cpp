@@ -98,7 +98,7 @@ PassRefPtr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
   std::unique_ptr<JSONObject> report_object = JSONObject::Create();
   report_object->SetObject("xss-report", std::move(report_details));
 
-  return EncodedFormData::Create(report_object->ToJSONString().Utf8().Data());
+  return EncodedFormData::Create(report_object->ToJSONString().Utf8().data());
 }
 
 void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {

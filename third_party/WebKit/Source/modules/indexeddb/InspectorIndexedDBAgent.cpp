@@ -948,7 +948,7 @@ class ClearObjectStore final
       ExceptionCode ec = exception_state.Code();
       request_callback_->sendFailure(Response::Error(
           String::Format("Could not clear object store '%s': %d",
-                         object_store_name_.Utf8().Data(), ec)));
+                         object_store_name_.Utf8().data(), ec)));
       return;
     }
     idb_transaction->addEventListener(

@@ -167,11 +167,11 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       EXPECT_EQ(String::FromUTF8(test.expected), result.referrer)
           << "'" << test.referrer << "' to '" << test.destination
           << "' should have been '" << test.expected << "': was '"
-          << result.referrer.Utf8().Data() << "'.";
+          << result.referrer.Utf8().data() << "'.";
     } else {
       EXPECT_TRUE(result.referrer.IsEmpty())
           << "'" << test.referrer << "' to '" << test.destination
-          << "' should have been empty: was '" << result.referrer.Utf8().Data()
+          << "' should have been empty: was '" << result.referrer.Utf8().data()
           << "'.";
     }
     EXPECT_EQ(test.policy == kReferrerPolicyDefault

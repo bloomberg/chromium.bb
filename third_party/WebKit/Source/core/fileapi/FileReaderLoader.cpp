@@ -380,7 +380,7 @@ void FileReaderLoader::ConvertToDataURL() {
   Base64Encode(static_cast<const char*>(raw_data_->Data()),
                raw_data_->ByteLength(), out);
   out.push_back('\0');
-  builder.Append(out.Data());
+  builder.Append(out.data());
 
   string_result_ = builder.ToString();
 }

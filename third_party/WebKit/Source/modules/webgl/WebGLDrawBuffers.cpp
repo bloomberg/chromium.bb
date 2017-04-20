@@ -58,7 +58,7 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers) {
   if (scoped.IsLost())
     return;
   GLsizei n = buffers.size();
-  const GLenum* bufs = buffers.Data();
+  const GLenum* bufs = buffers.data();
   if (!scoped.Context()->framebuffer_binding_) {
     if (n != 1) {
       scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION,

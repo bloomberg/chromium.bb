@@ -119,7 +119,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
     if (V8ScriptRunner::CallFunction(function_.NewLocal(isolate),
                                      frame->GetDocument(),
                                      receiver_.NewLocal(isolate), args.size(),
-                                     args.Data(), ToIsolate(frame))
+                                     args.data(), ToIsolate(frame))
             .ToLocal(&single_result))
       results.push_back(single_result);
   }

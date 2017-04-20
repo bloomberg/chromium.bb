@@ -333,7 +333,7 @@ void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
   for (unsigned i = 0; i < import_rules.size(); ++i) {
     StyleRuleImport* import_rule = import_rules[i].Get();
     // TODO(sof): CHECK() added for crbug.com/699269 diagnosis, remove sooner.
-    CHECK_EQ(import_rules.Data(), sheet->ImportRules().Data());
+    CHECK_EQ(import_rules.data(), sheet->ImportRules().data());
     if (import_rule->GetStyleSheet() &&
         (!import_rule->MediaQueries() ||
          medium.Eval(import_rule->MediaQueries(),

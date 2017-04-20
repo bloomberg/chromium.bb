@@ -51,7 +51,7 @@ class WTF_EXPORT CStringImpl : public RefCounted<CStringImpl> {
   static PassRefPtr<CStringImpl> CreateUninitialized(size_t length,
                                                      char*& data);
 
-  const char* Data() const { return reinterpret_cast<const char*>(this + 1); }
+  const char* data() const { return reinterpret_cast<const char*>(this + 1); }
   size_t length() const { return length_; }
 
  private:
@@ -83,7 +83,9 @@ class WTF_EXPORT CString {
   }
 
   // The bytes of the string, always NUL terminated. May be null.
-  const char* Data() const { return buffer_ ? buffer_->Data() : 0; }
+  const char* data() const { return buffer_ ? buffer_->data() : 0; }
+  // TODO(dcheng): Temporary alias to make removing this easier.
+  const char* Data() const { return data(); }
 
   // The length of the data(), *not* including the NUL terminator.
   size_t length() const { return buffer_ ? buffer_->length() : 0; }

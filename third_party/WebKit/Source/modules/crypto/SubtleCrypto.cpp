@@ -169,7 +169,7 @@ static bool ParseJsonWebKey(const Dictionary& dict,
     CopyStringProperty(kPropertyNames[i], dict, json_object.get());
 
   String json = json_object->ToJSONString();
-  json_utf8 = WebVector<uint8_t>(json.Utf8().Data(), json.Utf8().length());
+  json_utf8 = WebVector<uint8_t>(json.Utf8().data(), json.Utf8().length());
   return true;
 }
 

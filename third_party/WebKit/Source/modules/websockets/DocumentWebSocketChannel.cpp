@@ -237,7 +237,7 @@ void DocumentWebSocketChannel::Send(const CString& message) {
   // of individual frames.
   probe::didSendWebSocketFrame(GetDocument(), identifier_,
                                WebSocketFrame::kOpCodeText, true,
-                               message.Data(), message.length());
+                               message.data(), message.length());
   messages_.push_back(new Message(message));
   ProcessSendQueue();
 }
@@ -284,7 +284,7 @@ void DocumentWebSocketChannel::SendTextAsCharVector(
   // FIXME: Change the inspector API to show the entire message instead
   // of individual frames.
   probe::didSendWebSocketFrame(GetDocument(), identifier_,
-                               WebSocketFrame::kOpCodeText, true, data->Data(),
+                               WebSocketFrame::kOpCodeText, true, data->data(),
                                data->size());
   messages_.push_back(
       new Message(std::move(data), kMessageTypeTextAsCharVector));
@@ -300,7 +300,7 @@ void DocumentWebSocketChannel::SendBinaryAsCharVector(
   // of individual frames.
   probe::didSendWebSocketFrame(GetDocument(), identifier_,
                                WebSocketFrame::kOpCodeBinary, true,
-                               data->Data(), data->size());
+                               data->data(), data->size());
   messages_.push_back(
       new Message(std::move(data), kMessageTypeBinaryAsCharVector));
   ProcessSendQueue();
@@ -406,7 +406,7 @@ void DocumentWebSocketChannel::ProcessSendQueue() {
       break;
     switch (message->type) {
       case kMessageTypeText:
-        SendInternal(WebSocketHandle::kMessageTypeText, message->text.Data(),
+        SendInternal(WebSocketHandle::kMessageTypeText, message->text.data(),
                      message->text.length(), &consumed_buffered_amount);
         break;
       case kMessageTypeBlob:
@@ -421,12 +421,12 @@ void DocumentWebSocketChannel::ProcessSendQueue() {
         break;
       case kMessageTypeTextAsCharVector:
         SendInternal(WebSocketHandle::kMessageTypeText,
-                     message->vector_data->Data(), message->vector_data->size(),
+                     message->vector_data->data(), message->vector_data->size(),
                      &consumed_buffered_amount);
         break;
       case kMessageTypeBinaryAsCharVector:
         SendInternal(WebSocketHandle::kMessageTypeBinary,
-                     message->vector_data->Data(), message->vector_data->size(),
+                     message->vector_data->data(), message->vector_data->size(),
                      &consumed_buffered_amount);
         break;
       case kMessageTypeClose: {
@@ -593,7 +593,7 @@ void DocumentWebSocketChannel::DidReceiveData(WebSocketHandle* handle,
   WebSocketFrame::OpCode opcode = receiving_message_type_is_text_
                                       ? WebSocketFrame::kOpCodeText
                                       : WebSocketFrame::kOpCodeBinary;
-  WebSocketFrame frame(opcode, receiving_message_data_.Data(),
+  WebSocketFrame frame(opcode, receiving_message_data_.data(),
                        receiving_message_data_.size(), WebSocketFrame::kFinal);
   if (GetDocument()) {
     probe::didReceiveWebSocketFrame(GetDocument(), identifier_, frame.op_code,
@@ -603,7 +603,7 @@ void DocumentWebSocketChannel::DidReceiveData(WebSocketHandle* handle,
   if (receiving_message_type_is_text_) {
     String message = receiving_message_data_.IsEmpty()
                          ? g_empty_string
-                         : String::FromUTF8(receiving_message_data_.Data(),
+                         : String::FromUTF8(receiving_message_data_.data(),
                                             receiving_message_data_.size());
     receiving_message_data_.clear();
     if (message.IsNull()) {

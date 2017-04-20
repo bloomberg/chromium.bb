@@ -28,10 +28,10 @@ String NGLogicalRect::ToString() const {
   return IsEmpty()
              ? "(empty)"
              : String::Format("%sx%s at (%s,%s)",
-                              size.inline_size.ToString().Ascii().Data(),
-                              size.block_size.ToString().Ascii().Data(),
-                              offset.inline_offset.ToString().Ascii().Data(),
-                              offset.block_offset.ToString().Ascii().Data());
+                              size.inline_size.ToString().Ascii().data(),
+                              size.block_size.ToString().Ascii().data(),
+                              offset.inline_offset.ToString().Ascii().data(),
+                              offset.block_offset.ToString().Ascii().data());
 }
 
 std::ostream& operator<<(std::ostream& os, const NGLogicalRect& value) {

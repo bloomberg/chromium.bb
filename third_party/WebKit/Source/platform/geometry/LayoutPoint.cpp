@@ -9,8 +9,8 @@
 namespace blink {
 
 String LayoutPoint::ToString() const {
-  return String::Format("%s,%s", X().ToString().Ascii().Data(),
-                        Y().ToString().Ascii().Data());
+  return String::Format("%s,%s", X().ToString().Ascii().data(),
+                        Y().ToString().Ascii().data());
 }
 
 }  // namespace blink

@@ -2950,61 +2950,61 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
-  EXPECT_STREQ("1970-01-01", input_element->value().Utf8().Data());
+  EXPECT_STREQ("1970-01-01", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(
       std::numeric_limits<double>::quiet_NaN());
   client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().Data());
+  EXPECT_STREQ("", input_element->value().Utf8().data());
 
   input_element = toHTMLInputElement(document->GetElementById("datetimelocal"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
-  EXPECT_STREQ("1970-01-01T00:00", input_element->value().Utf8().Data());
+  EXPECT_STREQ("1970-01-01T00:00", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(
       std::numeric_limits<double>::quiet_NaN());
   client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().Data());
+  EXPECT_STREQ("", input_element->value().Utf8().data());
 
   input_element = toHTMLInputElement(document->GetElementById("month"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
-  EXPECT_STREQ("1970-01", input_element->value().Utf8().Data());
+  EXPECT_STREQ("1970-01", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(
       std::numeric_limits<double>::quiet_NaN());
   client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().Data());
+  EXPECT_STREQ("", input_element->value().Utf8().data());
 
   input_element = toHTMLInputElement(document->GetElementById("time"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
-  EXPECT_STREQ("00:00", input_element->value().Utf8().Data());
+  EXPECT_STREQ("00:00", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(
       std::numeric_limits<double>::quiet_NaN());
   client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().Data());
+  EXPECT_STREQ("", input_element->value().Utf8().data());
 
   input_element = toHTMLInputElement(document->GetElementById("week"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
-  EXPECT_STREQ("1970-W01", input_element->value().Utf8().Data());
+  EXPECT_STREQ("1970-W01", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(
       std::numeric_limits<double>::quiet_NaN());
   client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().Data());
+  EXPECT_STREQ("", input_element->value().Utf8().data());
 
   // Clear the WebViewClient from the webViewHelper to avoid use-after-free in
   // the WebViewHelper destructor.

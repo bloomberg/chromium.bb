@@ -126,11 +126,11 @@ void MediaFragmentURIParser::ParseFragments() {
     //     remove the name-value pair from the list.
     bool valid_utf8 = true;
     if (!name.IsEmpty()) {
-      name = name.Utf8(kStrictUTF8Conversion).Data();
+      name = name.Utf8(kStrictUTF8Conversion).data();
       valid_utf8 = !name.IsEmpty();
     }
     if (valid_utf8 && !value.IsEmpty()) {
-      value = value.Utf8(kStrictUTF8Conversion).Data();
+      value = value.Utf8(kStrictUTF8Conversion).data();
       valid_utf8 = !value.IsEmpty();
     }
 

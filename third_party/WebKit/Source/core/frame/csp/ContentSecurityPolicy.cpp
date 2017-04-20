@@ -309,7 +309,7 @@ void ContentSecurityPolicy::AddPolicyFromHeaderValue(
   Vector<UChar> characters;
   header.AppendTo(characters);
 
-  const UChar* begin = characters.Data();
+  const UChar* begin = characters.data();
   const UChar* end = begin + characters.size();
 
   // RFC2616, section 4.2 specifies that headers appearing multiple times can

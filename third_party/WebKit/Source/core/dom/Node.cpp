@@ -1561,22 +1561,22 @@ static void DumpAttributeDesc(const Node& node,
   const AtomicString& value = ToElement(node).getAttribute(name);
   if (value.IsEmpty())
     return;
-  ostream << ' ' << name.ToString().Utf8().Data() << '=' << value;
+  ostream << ' ' << name.ToString().Utf8().data() << '=' << value;
 }
 
 std::ostream& operator<<(std::ostream& ostream, const Node& node) {
   if (node.getNodeType() == Node::kProcessingInstructionNode)
-    return ostream << "?" << node.nodeName().Utf8().Data();
+    return ostream << "?" << node.nodeName().Utf8().data();
   if (node.IsShadowRoot()) {
     // nodeName of ShadowRoot is #document-fragment.  It's confused with
     // DocumentFragment.
     return ostream << "#shadow-root";
   }
   if (node.IsDocumentTypeNode())
-    return ostream << "DOCTYPE " << node.nodeName().Utf8().Data();
+    return ostream << "DOCTYPE " << node.nodeName().Utf8().data();
 
   // We avoid to print "" by utf8().data().
-  ostream << node.nodeName().Utf8().Data();
+  ostream << node.nodeName().Utf8().data();
   if (node.IsTextNode())
     return ostream << " " << node.nodeValue();
   DumpAttributeDesc(node, HTMLNames::idAttr, ostream);
@@ -1634,7 +1634,7 @@ void Node::PrintNodePathTo(std::ostream& stream) const {
 
     switch (node->getNodeType()) {
       case kElementNode: {
-        stream << "/" << node->nodeName().Utf8().Data();
+        stream << "/" << node->nodeName().Utf8().data();
 
         const Element* element = ToElement(node);
         const AtomicString& idattr = element->GetIdAttribute();
@@ -1648,12 +1648,12 @@ void Node::PrintNodePathTo(std::ostream& stream) const {
             }
           }
           if (has_id_attr)
-            stream << "[@id=\"" << idattr.Utf8().Data()
+            stream << "[@id=\"" << idattr.Utf8().data()
                    << "\" and position()=" << count << "]";
           else
             stream << "[" << count << "]";
         } else if (has_id_attr) {
-          stream << "[@id=\"" << idattr.Utf8().Data() << "\"]";
+          stream << "[@id=\"" << idattr.Utf8().data() << "\"]";
         }
         break;
       }
@@ -1661,7 +1661,7 @@ void Node::PrintNodePathTo(std::ostream& stream) const {
         stream << "/text()";
         break;
       case kAttributeNode:
-        stream << "/@" << node->nodeName().Utf8().Data();
+        stream << "/@" << node->nodeName().Utf8().data();
         break;
       default:
         break;
@@ -1792,7 +1792,7 @@ static void PrintSubTreeAcrossFrame(const Node* node,
                                     std::ostream& stream) {
   if (node == marked_node)
     stream << "*";
-  stream << indent.Utf8().Data() << *node << "\n";
+  stream << indent.Utf8().data() << *node << "\n";
   if (node->IsShadowRoot()) {
     if (ShadowRoot* younger_shadow_root =
             ToShadowRoot(node)->YoungerShadowRoot())
@@ -2554,7 +2554,7 @@ void showNode(const blink::Node* node) {
 
 void showTree(const blink::Node* node) {
   if (node)
-    LOG(INFO) << "\n" << node->ToTreeStringForThis().Utf8().Data();
+    LOG(INFO) << "\n" << node->ToTreeStringForThis().Utf8().data();
   else
     LOG(INFO) << "Cannot showTree for <null>";
 }

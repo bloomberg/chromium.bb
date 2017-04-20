@@ -48,7 +48,7 @@ void PrintInternal(PrintStream& out, const char* string) {
 }
 
 void PrintInternal(PrintStream& out, const CString& string) {
-  out.Print(string.Data());
+  out.Print(string.data());
 }
 
 void PrintInternal(PrintStream& out, const String& string) {

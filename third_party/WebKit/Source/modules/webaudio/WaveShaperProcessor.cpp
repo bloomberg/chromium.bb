@@ -58,7 +58,7 @@ void WaveShaperProcessor::SetCurve(const float* curve_data,
 
   // Copy the curve data, if any, to our internal buffer.
   curve_ = WTF::MakeUnique<Vector<float>>(curve_length);
-  memcpy(curve_->Data(), curve_data, sizeof(float) * curve_length);
+  memcpy(curve_->data(), curve_data, sizeof(float) * curve_length);
 }
 
 void WaveShaperProcessor::SetOversample(OverSampleType oversample) {

@@ -148,7 +148,7 @@ void BlobRegistry::RegisterStreamURL(SecurityOrigin* origin,
 static void AddDataToStreamTask(const KURL& url,
                                 PassRefPtr<RawData> stream_data) {
   if (WebBlobRegistry* registry = GetBlobRegistry())
-    registry->AddDataToStream(url, stream_data->Data(), stream_data->length());
+    registry->AddDataToStream(url, stream_data->data(), stream_data->length());
 }
 
 void BlobRegistry::AddDataToStream(const KURL& url,

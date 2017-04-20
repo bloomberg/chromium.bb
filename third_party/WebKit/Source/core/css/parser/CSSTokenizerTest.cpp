@@ -15,7 +15,7 @@ namespace blink {
 #define TEST_TOKENS(string, ...)     \
   {                                  \
     String s = string;               \
-    SCOPED_TRACE(s.Ascii().Data());  \
+    SCOPED_TRACE(s.Ascii().data());  \
     TestTokens(string, __VA_ARGS__); \
   }
 

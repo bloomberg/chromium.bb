@@ -243,7 +243,7 @@ bool Frame::CanNavigate(const Frame& target_frame) {
         "but is neither same-origin with its target nor has it received a "
         "user gesture. See "
         "https://www.chromestatus.com/features/5851021045661696.";
-    PrintNavigationErrorMessage(target_frame, error_reason.Latin1().Data());
+    PrintNavigationErrorMessage(target_frame, error_reason.Latin1().data());
     if (IsLocalFrame()) {
       ToLocalFrame(this)->GetNavigationScheduler().SchedulePageBlock(
           ToLocalFrame(this)->GetDocument(), ResourceError::ACCESS_DENIED);
@@ -251,7 +251,7 @@ bool Frame::CanNavigate(const Frame& target_frame) {
     return false;
   }
   if (!is_allowed_navigation && !error_reason.IsNull())
-    PrintNavigationErrorMessage(target_frame, error_reason.Latin1().Data());
+    PrintNavigationErrorMessage(target_frame, error_reason.Latin1().data());
   return is_allowed_navigation;
 }
 

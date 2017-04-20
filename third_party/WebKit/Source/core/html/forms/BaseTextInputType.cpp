@@ -91,8 +91,8 @@ bool BaseTextInputType::PatternMismatch(const String& value) const {
           kRenderingMessageSource, kErrorMessageLevel,
           String::Format("Pattern attribute value %s is not a valid regular "
                          "expression: %s",
-                         raw_pattern.Utf8().Data(),
-                         raw_regexp->ExceptionMessage().Utf8().Data())));
+                         raw_pattern.Utf8().data(),
+                         raw_regexp->ExceptionMessage().Utf8().data())));
       regexp_.reset(raw_regexp.release());
       pattern_for_regexp_ = raw_pattern;
       return false;

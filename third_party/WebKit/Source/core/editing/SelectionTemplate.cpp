@@ -123,11 +123,11 @@ void SelectionTemplate<Strategy>::ShowTreeForThis() const {
                    ->ToMarkedTreeString(base_.AnchorNode(), "B",
                                         extent_.AnchorNode(), "E")
                    .Utf8()
-                   .Data()
-            << "base: " << base_.ToAnchorTypeAndOffsetString().Utf8().Data()
+                   .data()
+            << "base: " << base_.ToAnchorTypeAndOffsetString().Utf8().data()
             << "\n"
             << "extent: "
-            << extent_.ToAnchorTypeAndOffsetString().Utf8().Data();
+            << extent_.ToAnchorTypeAndOffsetString().Utf8().data();
 }
 #endif
 

@@ -72,7 +72,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
   void ExpectAlgorithm(const String& text, HashAlgorithm expected_algorithm) {
     Vector<UChar> characters;
     text.AppendTo(characters);
-    const UChar* position = characters.Data();
+    const UChar* position = characters.data();
     const UChar* end = characters.end();
     HashAlgorithm algorithm;
 
@@ -87,8 +87,8 @@ class SubresourceIntegrityTest : public ::testing::Test {
       SubresourceIntegrity::AlgorithmParseResult expected_result) {
     Vector<UChar> characters;
     text.AppendTo(characters);
-    const UChar* position = characters.Data();
-    const UChar* begin = characters.Data();
+    const UChar* position = characters.data();
+    const UChar* begin = characters.data();
     const UChar* end = characters.end();
     HashAlgorithm algorithm;
 
@@ -100,7 +100,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
   void ExpectDigest(const String& text, const char* expected_digest) {
     Vector<UChar> characters;
     text.AppendTo(characters);
-    const UChar* position = characters.Data();
+    const UChar* position = characters.data();
     const UChar* end = characters.end();
     String digest;
 
@@ -111,7 +111,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
   void ExpectDigestFailure(const String& text) {
     Vector<UChar> characters;
     text.AppendTo(characters);
-    const UChar* position = characters.Data();
+    const UChar* position = characters.data();
     const UChar* end = characters.end();
     String digest;
 

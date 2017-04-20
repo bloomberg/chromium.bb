@@ -843,7 +843,7 @@ void XMLHttpRequest::send(FormData* body, ExceptionState& exception_state) {
     if (GetRequestHeader(HTTPNames::Content_Type).IsEmpty()) {
       AtomicString content_type =
           AtomicString("multipart/form-data; boundary=") +
-          http_body->Boundary().Data();
+          http_body->Boundary().data();
       SetRequestHeaderInternal(HTTPNames::Content_Type, content_type);
     }
   }

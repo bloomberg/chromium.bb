@@ -39,10 +39,10 @@ String EffectPaintPropertyNode::ToString() const {
       "blendMode=%s directCompositingReasons=%s compositorElementId=(%d, %d) "
       "paintOffset=%s",
       parent_.Get(), local_transform_space_.Get(), output_clip_.Get(), opacity_,
-      filter_.ToString().Ascii().Data(), SkBlendMode_Name(blend_mode_),
-      CompositingReasonsAsString(direct_compositing_reasons_).Ascii().Data(),
+      filter_.ToString().Ascii().data(), SkBlendMode_Name(blend_mode_),
+      CompositingReasonsAsString(direct_compositing_reasons_).Ascii().data(),
       compositor_element_id_.primaryId, compositor_element_id_.secondaryId,
-      paint_offset_.ToString().Ascii().Data());
+      paint_offset_.ToString().Ascii().data());
 }
 
 #if DCHECK_IS_ON()

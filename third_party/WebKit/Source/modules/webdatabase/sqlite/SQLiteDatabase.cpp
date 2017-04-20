@@ -65,7 +65,7 @@ bool SQLiteDatabase::Open(const String& filename) {
     open_error_message_ =
         db_ ? sqlite3_errmsg(db_) : "sqlite_open returned null";
     DLOG(ERROR) << "SQLite database failed to load from " << filename
-                << "\nCause - " << open_error_message_.Data();
+                << "\nCause - " << open_error_message_.data();
     sqlite3_close(db_);
     db_ = 0;
     return false;
@@ -75,7 +75,7 @@ bool SQLiteDatabase::Open(const String& filename) {
   if (open_error_ != SQLITE_OK) {
     open_error_message_ = sqlite3_errmsg(db_);
     DLOG(ERROR) << "SQLite database error when enabling extended errors - "
-                << open_error_message_.Data();
+                << open_error_message_.data();
     sqlite3_close(db_);
     db_ = 0;
     return false;
@@ -251,7 +251,7 @@ const char* SQLiteDatabase::LastErrorMsg() {
   if (db_)
     return sqlite3_errmsg(db_);
   return open_error_message_.IsNull() ? kNotOpenErrorMessage
-                                      : open_error_message_.Data();
+                                      : open_error_message_.data();
 }
 
 int SQLiteDatabase::AuthorizerFunction(void* user_data,

@@ -59,7 +59,7 @@ static bool DigestsEqual(const DigestValue& digest1,
 }
 
 static String DigestToString(const DigestValue& digest) {
-  return Base64Encode(reinterpret_cast<const char*>(digest.Data()),
+  return Base64Encode(reinterpret_cast<const char*>(digest.data()),
                       digest.size(), kBase64DoNotInsertLFs);
 }
 
@@ -199,7 +199,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
       Base64Decode(metadata.Digest(), hash_vector);
       DigestValue converted_hash_vector;
       converted_hash_vector.Append(
-          reinterpret_cast<uint8_t*>(hash_vector.Data()), hash_vector.size());
+          reinterpret_cast<uint8_t*>(hash_vector.data()), hash_vector.size());
 
       if (DigestsEqual(digest, converted_hash_vector)) {
         UseCounter::Count(
@@ -324,7 +324,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
     ExecutionContext* execution_context) {
   Vector<UChar> characters;
   attribute.StripWhiteSpace().AppendTo(characters);
-  const UChar* position = characters.Data();
+  const UChar* position = characters.data();
   const UChar* end = characters.end();
   const UChar* current_integrity_end;
 

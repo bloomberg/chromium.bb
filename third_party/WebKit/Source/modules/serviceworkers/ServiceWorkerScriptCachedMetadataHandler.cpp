@@ -18,7 +18,7 @@ ServiceWorkerScriptCachedMetadataHandler::
     : worker_global_scope_(worker_global_scope), script_url_(script_url) {
   if (meta_data)
     cached_metadata_ = CachedMetadata::CreateFromSerializedData(
-        meta_data->Data(), meta_data->size());
+        meta_data->data(), meta_data->size());
 }
 
 ServiceWorkerScriptCachedMetadataHandler::
@@ -39,7 +39,7 @@ void ServiceWorkerScriptCachedMetadataHandler::SetCachedMetadata(
   cached_metadata_ = CachedMetadata::Create(data_type_id, data, size);
   const Vector<char>& serialized_data = cached_metadata_->SerializedData();
   ServiceWorkerGlobalScopeClient::From(worker_global_scope_)
-      ->SetCachedMetadata(script_url_, serialized_data.Data(),
+      ->SetCachedMetadata(script_url_, serialized_data.data(),
                           serialized_data.size());
 }
 

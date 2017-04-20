@@ -92,27 +92,27 @@ WTF_EXPORT String Base64URLEncode(const char*,
 inline void Base64Encode(const Vector<char>& in,
                          Vector<char>& out,
                          Base64EncodePolicy policy) {
-  Base64Encode(in.Data(), in.size(), out, policy);
+  Base64Encode(in.data(), in.size(), out, policy);
 }
 
 inline void Base64Encode(const CString& in,
                          Vector<char>& out,
                          Base64EncodePolicy policy) {
-  Base64Encode(in.Data(), in.length(), out, policy);
+  Base64Encode(in.data(), in.length(), out, policy);
 }
 
 inline String Base64Encode(const Vector<char>& in, Base64EncodePolicy policy) {
-  return Base64Encode(in.Data(), in.size(), policy);
+  return Base64Encode(in.data(), in.size(), policy);
 }
 
 inline String Base64Encode(const Vector<unsigned char>& in,
                            Base64EncodePolicy policy) {
-  return Base64Encode(reinterpret_cast<const char*>(in.Data()), in.size(),
+  return Base64Encode(reinterpret_cast<const char*>(in.data()), in.size(),
                       policy);
 }
 
 inline String Base64Encode(const CString& in, Base64EncodePolicy policy) {
-  return Base64Encode(in.Data(), in.length(), policy);
+  return Base64Encode(in.data(), in.length(), policy);
 }
 
 }  // namespace WTF

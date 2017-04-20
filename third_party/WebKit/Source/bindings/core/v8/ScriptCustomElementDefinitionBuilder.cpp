@@ -114,7 +114,7 @@ bool ScriptCustomElementDefinitionBuilder::CallableForName(
     return true;
   if (!value->IsFunction()) {
     exception_state_.ThrowTypeError(String::Format(
-        "\"%s\" is not a callable object", name.ToString().Ascii().Data()));
+        "\"%s\" is not a callable object", name.ToString().Ascii().data()));
     return false;
   }
   callback = value.As<v8::Function>();

@@ -78,7 +78,7 @@ static void AppendMailtoPostFormDataToURL(KURL& url,
   body_data.Append("body=", 5);
   FormDataEncoder::EncodeStringAsFormData(body_data, body.Utf8(),
                                           FormDataEncoder::kNormalizeCRLF);
-  body = String(body_data.Data(), body_data.size()).Replace('+', "%20");
+  body = String(body_data.data(), body_data.size()).Replace('+', "%20");
 
   StringBuilder query;
   query.Append(url.Query());
@@ -248,7 +248,7 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
 
   if (is_multi_part_form) {
     form_data = dom_form_data->EncodeMultiPartFormData();
-    boundary = form_data->Boundary().Data();
+    boundary = form_data->Boundary().data();
   } else {
     form_data = dom_form_data->EncodeFormData(
         attributes.Method() == kGetMethod

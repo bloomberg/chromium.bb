@@ -187,7 +187,7 @@ void LocalWindowProxy::CreateContext() {
       extension_names.push_back(extension->name());
   }
   v8::ExtensionConfiguration extension_configuration(extension_names.size(),
-                                                     extension_names.Data());
+                                                     extension_names.data());
 
   v8::Local<v8::Context> context;
   {

@@ -165,7 +165,7 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded() {
         extension_names.push_back(extension->name());
     }
     v8::ExtensionConfiguration extension_configuration(extension_names.size(),
-                                                       extension_names.Data());
+                                                       extension_names.data());
 
     V8PerIsolateData::UseCounterDisabledScope use_counter_disabled(
         V8PerIsolateData::From(isolate_));

@@ -723,7 +723,7 @@ void InlineTextBox::ShowBox(int printed_characters) const {
        printed_characters++)
     fputc(' ', stderr);
   fprintf(stderr, "(%d,%d) \"%s\"\n", Start(), Start() + Len(),
-          value.Utf8().Data());
+          value.Utf8().data());
 }
 
 #endif

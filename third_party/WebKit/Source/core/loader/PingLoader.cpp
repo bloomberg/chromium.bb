@@ -167,7 +167,7 @@ class BeaconFormData final : public Beacon {
   explicit BeaconFormData(FormData* data)
       : data_(data), entity_body_(data_->EncodeMultiPartFormData()) {
     content_type_ = AtomicString("multipart/form-data; boundary=") +
-                    entity_body_->Boundary().Data();
+                    entity_body_->Boundary().data();
   }
 
   unsigned long long size() const override {

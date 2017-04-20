@@ -47,11 +47,11 @@ void AtomicHTMLToken::Show() const {
         printf(" selfclosing");
     /* FALL THROUGH */
     case HTMLToken::DOCTYPE:
-      printf(" name \"%s\"", name_.GetString().Utf8().Data());
+      printf(" name \"%s\"", name_.GetString().Utf8().data());
       break;
     case HTMLToken::kComment:
     case HTMLToken::kCharacter:
-      printf(" data \"%s\"", data_.Utf8().Data());
+      printf(" data \"%s\"", data_.Utf8().data());
       break;
     default:
       break;

@@ -75,7 +75,7 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
 
   String ToString() const {
     return String::Format("Type: '%d' Fragment: '%s'", exclusion_type,
-                          fragment->ToString().Ascii().Data());
+                          fragment->ToString().Ascii().data());
   }
 
  private:

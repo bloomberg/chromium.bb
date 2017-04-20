@@ -18,7 +18,7 @@ namespace {
 String ToString(const Vector<char>& data) {
   if (data.IsEmpty())
     return String("");
-  return String(data.Data(), data.size());
+  return String(data.data(), data.size());
 }
 
 class MockClient final : public GarbageCollectedFinalized<MockClient>,

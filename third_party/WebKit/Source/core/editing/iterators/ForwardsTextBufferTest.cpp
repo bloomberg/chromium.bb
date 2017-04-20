@@ -51,7 +51,7 @@ TEST_F(ForwardsTextBufferTest, pushRange) {
   Vector<UChar> chunk(4096);
   for (unsigned i = 0; i < chunk.size(); ++i)
     chunk[i] = i % 256;
-  buffer.PushRange(chunk.Data(), chunk.size());
+  buffer.PushRange(chunk.data(), chunk.size());
   EXPECT_EQ('a', buffer[0]);
   EXPECT_EQ('#', buffer[1]);
   EXPECT_EQ('@', buffer[2]);

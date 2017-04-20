@@ -73,7 +73,7 @@ class HexNumber final {
       number >>= 4;
     } while (number > 0);
 
-    destination.Append(result.Data(), result.size());
+    destination.Append(result.data(), result.size());
   }
 
   // Same as appendUnsignedAsHex, but using exactly 'desiredDigits' for the
@@ -94,7 +94,7 @@ class HexNumber final {
     } while (result.size() < desired_digits);
 
     DCHECK_EQ(result.size(), desired_digits);
-    destination.Append(result.Data(), result.size());
+    destination.Append(result.data(), result.size());
   }
 
  private:

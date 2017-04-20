@@ -262,7 +262,7 @@ void SerializedScriptValue::ToWireBytes(Vector<char>& result) const {
 
   size_t result_size = (data_buffer_size_ + 1) & ~1;
   result.Resize(result_size);
-  memcpy(result.Data(), data_buffer_.get(), data_buffer_size_);
+  memcpy(result.data(), data_buffer_.get(), data_buffer_size_);
 
   if (result_size > data_buffer_size_) {
     DCHECK_EQ(result_size, data_buffer_size_ + 1);

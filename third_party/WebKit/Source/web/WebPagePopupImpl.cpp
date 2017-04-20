@@ -114,7 +114,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
                            const String&) override {
 #ifndef NDEBUG
     fprintf(stderr, "CONSOLE MESSSAGE:%u: %s\n", line_number,
-            message.Utf8().Data());
+            message.Utf8().data());
 #endif
   }
 

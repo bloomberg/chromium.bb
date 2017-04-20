@@ -649,7 +649,7 @@ void WebGL2RenderingContextBase::invalidateFramebuffer(
                                     translated_attachments))
     return;
   ContextGL()->InvalidateFramebuffer(target, translated_attachments.size(),
-                                     translated_attachments.Data());
+                                     translated_attachments.data());
 }
 
 void WebGL2RenderingContextBase::invalidateSubFramebuffer(
@@ -667,7 +667,7 @@ void WebGL2RenderingContextBase::invalidateSubFramebuffer(
                                     translated_attachments))
     return;
   ContextGL()->InvalidateSubFramebuffer(target, translated_attachments.size(),
-                                        translated_attachments.Data(), x, y,
+                                        translated_attachments.data(), x, y,
                                         width, height);
 }
 
@@ -2399,7 +2399,7 @@ GLint WebGL2RenderingContextBase::getFragDataLocation(WebGLProgram* program,
     return -1;
 
   return ContextGL()->GetFragDataLocation(ObjectOrZero(program),
-                                          name.Utf8().Data());
+                                          name.Utf8().data());
 }
 
 void WebGL2RenderingContextBase::uniform1ui(
@@ -2489,13 +2489,13 @@ void WebGL2RenderingContextBase::uniform1fv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform1fv", location, v.Data(), v.size(), 1,
+      !ValidateUniformParameters("uniform1fv", location, v.data(), v.size(), 1,
                                  src_offset, src_length))
     return;
 
   ContextGL()->Uniform1fv(location->Location(),
                           src_length ? src_length : (v.size() - src_offset),
-                          v.Data() + src_offset);
+                          v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform2fv(
@@ -2520,14 +2520,14 @@ void WebGL2RenderingContextBase::uniform2fv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform2fv", location, v.Data(), v.size(), 2,
+      !ValidateUniformParameters("uniform2fv", location, v.data(), v.size(), 2,
                                  src_offset, src_length))
     return;
 
   ContextGL()->Uniform2fv(
       location->Location(),
       (src_length ? src_length : (v.size() - src_offset)) >> 1,
-      v.Data() + src_offset);
+      v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform3fv(
@@ -2552,14 +2552,14 @@ void WebGL2RenderingContextBase::uniform3fv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform3fv", location, v.Data(), v.size(), 3,
+      !ValidateUniformParameters("uniform3fv", location, v.data(), v.size(), 3,
                                  src_offset, src_length))
     return;
 
   ContextGL()->Uniform3fv(
       location->Location(),
       (src_length ? src_length : (v.size() - src_offset)) / 3,
-      v.Data() + src_offset);
+      v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform4fv(
@@ -2584,14 +2584,14 @@ void WebGL2RenderingContextBase::uniform4fv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform4fv", location, v.Data(), v.size(), 4,
+      !ValidateUniformParameters("uniform4fv", location, v.data(), v.size(), 4,
                                  src_offset, src_length))
     return;
 
   ContextGL()->Uniform4fv(
       location->Location(),
       (src_length ? src_length : (v.size() - src_offset)) >> 2,
-      v.Data() + src_offset);
+      v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform1iv(
@@ -2615,13 +2615,13 @@ void WebGL2RenderingContextBase::uniform1iv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform1iv", location, v.Data(), v.size(), 1,
+      !ValidateUniformParameters("uniform1iv", location, v.data(), v.size(), 1,
                                  src_offset, src_length))
     return;
 
   ContextGL()->Uniform1iv(location->Location(),
                           src_length ? src_length : (v.size() - src_offset),
-                          v.Data() + src_offset);
+                          v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform2iv(
@@ -2646,14 +2646,14 @@ void WebGL2RenderingContextBase::uniform2iv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform2iv", location, v.Data(), v.size(), 2,
+      !ValidateUniformParameters("uniform2iv", location, v.data(), v.size(), 2,
                                  src_offset, src_length))
     return;
 
   ContextGL()->Uniform2iv(
       location->Location(),
       (src_length ? src_length : (v.size() - src_offset)) >> 1,
-      v.Data() + src_offset);
+      v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform3iv(
@@ -2678,14 +2678,14 @@ void WebGL2RenderingContextBase::uniform3iv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform3iv", location, v.Data(), v.size(), 3,
+      !ValidateUniformParameters("uniform3iv", location, v.data(), v.size(), 3,
                                  src_offset, src_length))
     return;
 
   ContextGL()->Uniform3iv(
       location->Location(),
       (src_length ? src_length : (v.size() - src_offset)) / 3,
-      v.Data() + src_offset);
+      v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform4iv(
@@ -2710,14 +2710,14 @@ void WebGL2RenderingContextBase::uniform4iv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform4iv", location, v.Data(), v.size(), 4,
+      !ValidateUniformParameters("uniform4iv", location, v.data(), v.size(), 4,
                                  src_offset, src_length))
     return;
 
   ContextGL()->Uniform4iv(
       location->Location(),
       (src_length ? src_length : (v.size() - src_offset)) >> 2,
-      v.Data() + src_offset);
+      v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform1uiv(
@@ -2741,14 +2741,14 @@ void WebGL2RenderingContextBase::uniform1uiv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform1uiv", location, value.Data(),
+      !ValidateUniformParameters("uniform1uiv", location, value.data(),
                                  value.size(), 1, src_offset, src_length))
     return;
 
   ContextGL()->Uniform1uiv(
       location->Location(),
       src_length ? src_length : (value.size() - src_offset),
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform2uiv(
@@ -2773,14 +2773,14 @@ void WebGL2RenderingContextBase::uniform2uiv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform2uiv", location, value.Data(),
+      !ValidateUniformParameters("uniform2uiv", location, value.data(),
                                  value.size(), 2, src_offset, src_length))
     return;
 
   ContextGL()->Uniform2uiv(
       location->Location(),
       (src_length ? src_length : (value.size() - src_offset)) >> 1,
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform3uiv(
@@ -2805,14 +2805,14 @@ void WebGL2RenderingContextBase::uniform3uiv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform3uiv", location, value.Data(),
+      !ValidateUniformParameters("uniform3uiv", location, value.data(),
                                  value.size(), 3, src_offset, src_length))
     return;
 
   ContextGL()->Uniform3uiv(
       location->Location(),
       (src_length ? src_length : (value.size() - src_offset)) / 3,
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform4uiv(
@@ -2837,14 +2837,14 @@ void WebGL2RenderingContextBase::uniform4uiv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() ||
-      !ValidateUniformParameters("uniform4uiv", location, value.Data(),
+      !ValidateUniformParameters("uniform4uiv", location, value.data(),
                                  value.size(), 4, src_offset, src_length))
     return;
 
   ContextGL()->Uniform4uiv(
       location->Location(),
       (src_length ? src_length : (value.size() - src_offset)) >> 2,
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix2fv(
@@ -2870,13 +2870,13 @@ void WebGL2RenderingContextBase::uniformMatrix2fv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformMatrixParameters(
-                             "uniformMatrix2fv", location, transpose, v.Data(),
+                             "uniformMatrix2fv", location, transpose, v.data(),
                              v.size(), 4, src_offset, src_length))
     return;
   ContextGL()->UniformMatrix2fv(
       location->Location(),
       (src_length ? src_length : (v.size() - src_offset)) >> 2, transpose,
-      v.Data() + src_offset);
+      v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix3fv(
@@ -2902,13 +2902,13 @@ void WebGL2RenderingContextBase::uniformMatrix3fv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformMatrixParameters(
-                             "uniformMatrix3fv", location, transpose, v.Data(),
+                             "uniformMatrix3fv", location, transpose, v.data(),
                              v.size(), 9, src_offset, src_length))
     return;
   ContextGL()->UniformMatrix3fv(
       location->Location(),
       (src_length ? src_length : (v.size() - src_offset)) / 9, transpose,
-      v.Data() + src_offset);
+      v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix4fv(
@@ -2934,13 +2934,13 @@ void WebGL2RenderingContextBase::uniformMatrix4fv(
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformMatrixParameters(
-                             "uniformMatrix4fv", location, transpose, v.Data(),
+                             "uniformMatrix4fv", location, transpose, v.data(),
                              v.size(), 16, src_offset, src_length))
     return;
   ContextGL()->UniformMatrix4fv(
       location->Location(),
       (src_length ? src_length : (v.size() - src_offset)) >> 4, transpose,
-      v.Data() + src_offset);
+      v.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix2x3fv(
@@ -2967,13 +2967,13 @@ void WebGL2RenderingContextBase::uniformMatrix2x3fv(
     GLuint src_length) {
   if (isContextLost() ||
       !ValidateUniformMatrixParameters("uniformMatrix2x3fv", location,
-                                       transpose, value.Data(), value.size(), 6,
+                                       transpose, value.data(), value.size(), 6,
                                        src_offset, src_length))
     return;
   ContextGL()->UniformMatrix2x3fv(
       location->Location(),
       (src_length ? src_length : (value.size() - src_offset)) / 6, transpose,
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix3x2fv(
@@ -3000,13 +3000,13 @@ void WebGL2RenderingContextBase::uniformMatrix3x2fv(
     GLuint src_length) {
   if (isContextLost() ||
       !ValidateUniformMatrixParameters("uniformMatrix3x2fv", location,
-                                       transpose, value.Data(), value.size(), 6,
+                                       transpose, value.data(), value.size(), 6,
                                        src_offset, src_length))
     return;
   ContextGL()->UniformMatrix3x2fv(
       location->Location(),
       (src_length ? src_length : (value.size() - src_offset)) / 6, transpose,
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix2x4fv(
@@ -3033,13 +3033,13 @@ void WebGL2RenderingContextBase::uniformMatrix2x4fv(
     GLuint src_length) {
   if (isContextLost() ||
       !ValidateUniformMatrixParameters("uniformMatrix2x4fv", location,
-                                       transpose, value.Data(), value.size(), 8,
+                                       transpose, value.data(), value.size(), 8,
                                        src_offset, src_length))
     return;
   ContextGL()->UniformMatrix2x4fv(
       location->Location(),
       (src_length ? src_length : (value.size() - src_offset)) >> 3, transpose,
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix4x2fv(
@@ -3066,13 +3066,13 @@ void WebGL2RenderingContextBase::uniformMatrix4x2fv(
     GLuint src_length) {
   if (isContextLost() ||
       !ValidateUniformMatrixParameters("uniformMatrix4x2fv", location,
-                                       transpose, value.Data(), value.size(), 8,
+                                       transpose, value.data(), value.size(), 8,
                                        src_offset, src_length))
     return;
   ContextGL()->UniformMatrix4x2fv(
       location->Location(),
       (src_length ? src_length : (value.size() - src_offset)) >> 3, transpose,
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix3x4fv(
@@ -3099,13 +3099,13 @@ void WebGL2RenderingContextBase::uniformMatrix3x4fv(
     GLuint src_length) {
   if (isContextLost() ||
       !ValidateUniformMatrixParameters("uniformMatrix3x4fv", location,
-                                       transpose, value.Data(), value.size(),
+                                       transpose, value.data(), value.size(),
                                        12, src_offset, src_length))
     return;
   ContextGL()->UniformMatrix3x4fv(
       location->Location(),
       (src_length ? src_length : (value.size() - src_offset)) / 12, transpose,
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix4x3fv(
@@ -3132,13 +3132,13 @@ void WebGL2RenderingContextBase::uniformMatrix4x3fv(
     GLuint src_length) {
   if (isContextLost() ||
       !ValidateUniformMatrixParameters("uniformMatrix4x3fv", location,
-                                       transpose, value.Data(), value.size(),
+                                       transpose, value.data(), value.size(),
                                        12, src_offset, src_length))
     return;
   ContextGL()->UniformMatrix4x3fv(
       location->Location(),
       (src_length ? src_length : (value.size() - src_offset)) / 12, transpose,
-      value.Data() + src_offset);
+      value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::uniform1fv(
@@ -3311,7 +3311,7 @@ void WebGL2RenderingContextBase::vertexAttribI4iv(GLuint index,
     SynthesizeGLError(GL_INVALID_VALUE, "vertexAttribI4iv", "invalid array");
     return;
   }
-  ContextGL()->VertexAttribI4iv(index, v.Data());
+  ContextGL()->VertexAttribI4iv(index, v.data());
   SetVertexAttribType(index, kInt32ArrayType);
 }
 
@@ -3347,7 +3347,7 @@ void WebGL2RenderingContextBase::vertexAttribI4uiv(GLuint index,
     SynthesizeGLError(GL_INVALID_VALUE, "vertexAttribI4uiv", "invalid array");
     return;
   }
-  ContextGL()->VertexAttribI4uiv(index, v.Data());
+  ContextGL()->VertexAttribI4uiv(index, v.data());
   SetVertexAttribType(index, kUint32ArrayType);
 }
 
@@ -3467,7 +3467,7 @@ void WebGL2RenderingContextBase::drawBuffers(const Vector<GLenum>& buffers) {
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
                                                    drawing_buffer_.Get());
   GLsizei n = buffers.size();
-  const GLenum* bufs = buffers.Data();
+  const GLenum* bufs = buffers.data();
   for (GLsizei i = 0; i < n; ++i) {
     switch (bufs[i]) {
       case GL_NONE:
@@ -3580,7 +3580,7 @@ void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
       !ValidateClearBuffer("clearBufferiv", buffer, value.size(), src_offset))
     return;
 
-  ContextGL()->ClearBufferiv(buffer, drawbuffer, value.Data() + src_offset);
+  ContextGL()->ClearBufferiv(buffer, drawbuffer, value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::clearBufferuiv(
@@ -3605,7 +3605,7 @@ void WebGL2RenderingContextBase::clearBufferuiv(GLenum buffer,
       !ValidateClearBuffer("clearBufferuiv", buffer, value.size(), src_offset))
     return;
 
-  ContextGL()->ClearBufferuiv(buffer, drawbuffer, value.Data() + src_offset);
+  ContextGL()->ClearBufferuiv(buffer, drawbuffer, value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::clearBufferfv(
@@ -3630,7 +3630,7 @@ void WebGL2RenderingContextBase::clearBufferfv(GLenum buffer,
       !ValidateClearBuffer("clearBufferfv", buffer, value.size(), src_offset))
     return;
 
-  ContextGL()->ClearBufferfv(buffer, drawbuffer, value.Data() + src_offset);
+  ContextGL()->ClearBufferfv(buffer, drawbuffer, value.data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::clearBufferfi(GLenum buffer,
@@ -4256,11 +4256,11 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(
   Vector<const char*> varying_strings;
   for (size_t i = 0; i < varyings.size(); ++i) {
     keep_alive.push_back(varyings[i].Ascii());
-    varying_strings.push_back(keep_alive.back().Data());
+    varying_strings.push_back(keep_alive.back().data());
   }
 
   ContextGL()->TransformFeedbackVaryings(ObjectOrZero(program), varyings.size(),
-                                         varying_strings.Data(), buffer_mode);
+                                         varying_strings.data(), buffer_mode);
 }
 
 WebGLActiveInfo* WebGL2RenderingContextBase::getTransformFeedbackVarying(
@@ -4442,12 +4442,12 @@ Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(
   Vector<const char*> uniform_strings;
   for (size_t i = 0; i < uniform_names.size(); ++i) {
     keep_alive.push_back(uniform_names[i].Ascii());
-    uniform_strings.push_back(keep_alive.back().Data());
+    uniform_strings.push_back(keep_alive.back().data());
   }
 
   result.Resize(uniform_names.size());
   ContextGL()->GetUniformIndices(ObjectOrZero(program), uniform_strings.size(),
-                                 uniform_strings.Data(), result.Data());
+                                 uniform_strings.data(), result.data());
   return result;
 }
 
@@ -4500,8 +4500,8 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniforms(
 
   Vector<GLint> result(size);
   ContextGL()->GetActiveUniformsiv(
-      ObjectOrZero(program), uniform_indices.size(), uniform_indices.Data(),
-      pname, result.Data());
+      ObjectOrZero(program), uniform_indices.size(), uniform_indices.data(),
+      pname, result.data());
   switch (return_type) {
     case kEnumType: {
       Vector<GLenum> enum_result(size);
@@ -4539,7 +4539,7 @@ GLuint WebGL2RenderingContextBase::getUniformBlockIndex(
     return 0;
 
   return ContextGL()->GetUniformBlockIndex(ObjectOrZero(program),
-                                           uniform_block_name.Utf8().Data());
+                                           uniform_block_name.Utf8().data());
 }
 
 bool WebGL2RenderingContextBase::ValidateUniformBlockIndex(
@@ -4593,10 +4593,10 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniformBlockParameter(
 
       Vector<GLint> indices(uniform_count);
       ContextGL()->GetActiveUniformBlockiv(
-          ObjectOrZero(program), uniform_block_index, pname, indices.Data());
+          ObjectOrZero(program), uniform_block_index, pname, indices.data());
       return WebGLAny(
           script_state,
-          DOMUint32Array::Create(reinterpret_cast<GLuint*>(indices.Data()),
+          DOMUint32Array::Create(reinterpret_cast<GLuint*>(indices.data()),
                                  indices.size()));
     }
     case GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER:

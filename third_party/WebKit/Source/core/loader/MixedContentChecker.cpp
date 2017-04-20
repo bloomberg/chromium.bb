@@ -227,8 +227,8 @@ void MixedContentChecker::LogToConsoleAboutFetch(
   String message = String::Format(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an "
       "insecure %s '%s'. %s",
-      main_resource_url.ElidedString().Utf8().Data(),
-      RequestContextName(request_context), url.ElidedString().Utf8().Data(),
+      main_resource_url.ElidedString().Utf8().data(),
+      RequestContextName(request_context), url.ElidedString().Utf8().data(),
       allowed ? "This content should also be served over HTTPS."
               : "This request has been blocked; the content must be served "
                 "over HTTPS.");
@@ -424,8 +424,8 @@ void MixedContentChecker::LogToConsoleAboutWebSocket(
   String message = String::Format(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but attempted to "
       "connect to the insecure WebSocket endpoint '%s'. %s",
-      main_resource_url.ElidedString().Utf8().Data(),
-      url.ElidedString().Utf8().Data(),
+      main_resource_url.ElidedString().Utf8().data(),
+      url.ElidedString().Utf8().data(),
       allowed ? "This endpoint should be available via WSS. Insecure access is "
                 "deprecated."
               : "This request has been blocked; this endpoint must be "
@@ -515,8 +515,8 @@ bool MixedContentChecker::IsMixedFormAction(
         "Mixed Content: The page at '%s' was loaded over a secure connection, "
         "but contains a form which targets an insecure endpoint '%s'. This "
         "endpoint should be made available over a secure connection.",
-        MainResourceUrlForFrame(mixed_frame).ElidedString().Utf8().Data(),
-        url.ElidedString().Utf8().Data());
+        MainResourceUrlForFrame(mixed_frame).ElidedString().Utf8().data(),
+        url.ElidedString().Utf8().data());
     frame->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kWarningMessageLevel, message));
   }

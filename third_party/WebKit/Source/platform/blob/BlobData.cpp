@@ -181,7 +181,7 @@ void BlobData::AppendText(const String& text,
   if (do_normalize_line_endings_to_native) {
     NormalizeLineEndingsToNative(utf8_text, *buffer);
   } else {
-    buffer->Append(utf8_text.Data(), utf8_text.length());
+    buffer->Append(utf8_text.data(), utf8_text.length());
   }
 
   if (data)

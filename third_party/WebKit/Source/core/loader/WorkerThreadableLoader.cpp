@@ -56,7 +56,7 @@ std::unique_ptr<Vector<char>> CreateVectorFromMemoryRegion(
     unsigned data_length) {
   std::unique_ptr<Vector<char>> buffer =
       WTF::MakeUnique<Vector<char>>(data_length);
-  memcpy(buffer->Data(), data, data_length);
+  memcpy(buffer->data(), data, data_length);
   return buffer;
 }
 
@@ -349,7 +349,7 @@ void WorkerThreadableLoader::DidReceiveData(
   CHECK_LE(data->size(), std::numeric_limits<unsigned>::max());
   if (!client_)
     return;
-  client_->DidReceiveData(data->Data(), data->size());
+  client_->DidReceiveData(data->data(), data->size());
 }
 
 void WorkerThreadableLoader::DidReceiveCachedMetadata(
@@ -357,7 +357,7 @@ void WorkerThreadableLoader::DidReceiveCachedMetadata(
   DCHECK(!IsMainThread());
   if (!client_)
     return;
-  client_->DidReceiveCachedMetadata(data->Data(), data->size());
+  client_->DidReceiveCachedMetadata(data->data(), data->size());
 }
 
 void WorkerThreadableLoader::DidFinishLoading(unsigned long identifier,

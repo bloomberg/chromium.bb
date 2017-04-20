@@ -42,7 +42,7 @@ namespace blink {
 SQLiteFileSystem::SQLiteFileSystem() {}
 
 int SQLiteFileSystem::OpenDatabase(const String& filename, sqlite3** database) {
-  return sqlite3_open_v2(filename.Utf8().Data(), database,
+  return sqlite3_open_v2(filename.Utf8().data(), database,
                          SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
                          "chromium_vfs");
 }

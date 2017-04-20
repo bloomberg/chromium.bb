@@ -366,7 +366,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   const CString& nameInUtf8 = name.Utf8();
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface2", nameInUtf8.Data());
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface2", nameInUtf8.data());
 
   TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
   TestInterfaceEmpty* result = impl->namedItem(name, exceptionState);
@@ -377,7 +377,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
 
 static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   const CString& nameInUtf8 = name.Utf8();
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kSetterContext, "TestInterface2", nameInUtf8.Data());
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kSetterContext, "TestInterface2", nameInUtf8.data());
 
   TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
   TestInterfaceEmpty* propertyValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -396,7 +396,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
 
 static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   const CString& nameInUtf8 = name.Utf8();
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kDeletionContext, "TestInterface2", nameInUtf8.Data());
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kDeletionContext, "TestInterface2", nameInUtf8.data());
 
   TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
 
@@ -410,7 +410,7 @@ static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCal
 
 static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   const CString& nameInUtf8 = name.Utf8();
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface2", nameInUtf8.Data());
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface2", nameInUtf8.data());
 
   TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
 

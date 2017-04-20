@@ -366,7 +366,7 @@ bool XMLDocumentParser::UpdateLeafTextNode() {
     return true;
 
   leaf_text_node_->appendData(
-      ToString(buffered_text_.Data(), buffered_text_.size()));
+      ToString(buffered_text_.data(), buffered_text_.size()));
   buffered_text_.clear();
   leaf_text_node_ = nullptr;
 
@@ -726,7 +726,7 @@ PassRefPtr<XMLParserContext> XMLParserContext::CreateMemoryParser(
 
   // appendFragmentSource() checks that the length doesn't overflow an int.
   xmlParserCtxtPtr parser =
-      xmlCreateMemoryParserCtxt(chunk.Data(), chunk.length());
+      xmlCreateMemoryParserCtxt(chunk.data(), chunk.length());
 
   if (!parser)
     return nullptr;
@@ -1534,7 +1534,7 @@ void XMLDocumentParser::InitializeParserContext(const CString& chunk) {
   if (parsing_fragment_) {
     context_ = XMLParserContext::CreateMemoryParser(&sax, this, chunk);
   } else {
-    DCHECK(!chunk.Data());
+    DCHECK(!chunk.data());
     context_ = XMLParserContext::CreateStringParser(&sax, this);
   }
 }
@@ -1576,7 +1576,7 @@ xmlDocPtr XmlDocPtrForString(Document* document,
   // document results in good error messages.
   XMLDocumentParserScope scope(document, ErrorFunc, 0);
   XMLParserInput input(source);
-  return xmlReadMemory(input.Data(), input.size(), url.Latin1().Data(),
+  return xmlReadMemory(input.Data(), input.size(), url.Latin1().data(),
                        input.Encoding(), XSLT_PARSE_OPTIONS);
 }
 
@@ -1660,7 +1660,7 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
     // an error or a null byte. If we hit this DCHECK, we've found a test
     // case which demonstrates the need for this code.
     DCHECK(saw_error_ ||
-           (bytes_processed >= 0 && !chunk_as_utf8.Data()[bytes_processed]));
+           (bytes_processed >= 0 && !chunk_as_utf8.data()[bytes_processed]));
     return false;
   }
 

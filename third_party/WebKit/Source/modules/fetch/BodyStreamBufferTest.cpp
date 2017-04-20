@@ -61,7 +61,7 @@ class BodyStreamBufferTest : public ::testing::Test {
       ADD_FAILURE() << ToCoreString(block.Exception()->ToString(
                                         script_state->GetIsolate()))
                            .Utf8()
-                           .Data();
+                           .data();
       block.ReThrow();
     }
     return r;

@@ -49,7 +49,7 @@ namespace WTF {
 struct DigestValueHash {
   STATIC_ONLY(DigestValueHash);
   static unsigned GetHash(const blink::DigestValue& v) {
-    return StringHasher::ComputeHash(v.Data(), v.size());
+    return StringHasher::ComputeHash(v.data(), v.size());
   }
   static bool Equal(const blink::DigestValue& a, const blink::DigestValue& b) {
     return a == b;

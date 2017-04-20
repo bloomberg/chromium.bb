@@ -208,7 +208,7 @@ TEST(RuleSetTest, SelectorIndexLimit) {
   builder.Append("b,span {}");
 
   CSSTestHelper helper;
-  helper.AddCSSRules(builder.ToString().Ascii().Data());
+  helper.AddCSSRules(builder.ToString().Ascii().data());
   const RuleSet& rule_set = helper.GetRuleSet();
   const HeapTerminatedArray<RuleData>* rules = rule_set.TagRules("b");
   ASSERT_EQ(1u, rules->size());

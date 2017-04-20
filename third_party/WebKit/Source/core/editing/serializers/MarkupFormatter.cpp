@@ -71,7 +71,7 @@ static inline void AppendCharactersReplacingEntitiesInternal(
         result.Append(text + position_after_last_entity,
                       i - position_after_last_entity);
         const CString& replacement = entity_maps[entity_index].reference;
-        result.Append(replacement.Data(), replacement.length());
+        result.Append(replacement.data(), replacement.length());
         position_after_last_entity = i + 1;
         break;
       }

@@ -1684,7 +1684,7 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
 
   unsigned cache_hash = match_result.IsCacheable()
                             ? ComputeMatchedPropertiesHash(
-                                  match_result.GetMatchedProperties().Data(),
+                                  match_result.GetMatchedProperties().data(),
                                   match_result.GetMatchedProperties().size())
                             : 0;
   bool is_inherited_cache_hit = false;

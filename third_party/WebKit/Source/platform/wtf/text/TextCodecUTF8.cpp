@@ -477,10 +477,10 @@ CString TextCodecUTF8::EncodeCommon(const CharType* characters, size_t length) {
     // U+FFFD (REPLACEMENT CHARACTER) here.
     if (0xD800 <= character && character <= 0xDFFF)
       character = kReplacementCharacter;
-    U8_APPEND_UNSAFE(bytes.Data(), bytes_written, character);
+    U8_APPEND_UNSAFE(bytes.data(), bytes_written, character);
   }
 
-  return CString(reinterpret_cast<char*>(bytes.Data()), bytes_written);
+  return CString(reinterpret_cast<char*>(bytes.data()), bytes_written);
 }
 
 CString TextCodecUTF8::Encode(const UChar* characters,

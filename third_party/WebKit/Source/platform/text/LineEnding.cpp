@@ -76,11 +76,11 @@ class VectorCharAppendBuffer final : public OutputBuffer {
   char* allocate(size_t size) override {
     size_t oldSize = m_buffer.size();
     m_buffer.Grow(oldSize + size);
-    return m_buffer.Data() + oldSize;
+    return m_buffer.data() + oldSize;
   }
 
   void copy(const CString& source) override {
-    m_buffer.Append(source.Data(), source.length());
+    m_buffer.Append(source.data(), source.length());
   }
 
  private:
@@ -91,8 +91,8 @@ void internalNormalizeLineEndingsToCRLF(const CString& from,
                                         OutputBuffer& buffer) {
   // Compute the new length.
   size_t newLen = 0;
-  const char* p = from.Data();
-  while (p < from.Data() + from.length()) {
+  const char* p = from.data();
+  while (p < from.data() + from.length()) {
     char c = *p++;
     if (c == '\r') {
       // Safe to look ahead because of trailing '\0'.
@@ -116,11 +116,11 @@ void internalNormalizeLineEndingsToCRLF(const CString& from,
     return;
   }
 
-  p = from.Data();
+  p = from.data();
   char* q = buffer.allocate(newLen);
 
   // Make a copy of the string.
-  while (p < from.Data() + from.length()) {
+  while (p < from.data() + from.length()) {
     char c = *p++;
     if (c == '\r') {
       // Safe to look ahead because of trailing '\0'.
@@ -148,10 +148,10 @@ void NormalizeLineEndingsToLF(const CString& from, Vector<char>& result) {
   // Compute the new length.
   size_t new_len = 0;
   bool need_fix = false;
-  const char* p = from.Data();
+  const char* p = from.data();
   char from_ending_char = '\r';
   char to_ending_char = '\n';
-  while (p < from.Data() + from.length()) {
+  while (p < from.data() + from.length()) {
     char c = *p++;
     if (c == '\r' && *p == '\n') {
       // Turn CRLF into CR or LF.
@@ -165,10 +165,10 @@ void NormalizeLineEndingsToLF(const CString& from, Vector<char>& result) {
   }
 
   // Grow the result buffer.
-  p = from.Data();
+  p = from.data();
   size_t old_result_size = result.size();
   result.Grow(old_result_size + new_len);
-  char* q = result.Data() + old_result_size;
+  char* q = result.data() + old_result_size;
 
   // If no need to fix the string, just copy the string over.
   if (!need_fix) {
@@ -177,7 +177,7 @@ void NormalizeLineEndingsToLF(const CString& from, Vector<char>& result) {
   }
 
   // Make a copy of the string.
-  while (p < from.Data() + from.length()) {
+  while (p < from.data() + from.length()) {
     char c = *p++;
     if (c == '\r' && *p == '\n') {
       // Turn CRLF or CR into CR or LF.

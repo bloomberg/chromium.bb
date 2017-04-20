@@ -229,7 +229,7 @@ class WTF_EXPORT StringImpl {
   template <size_t inlineCapacity>
   static PassRefPtr<StringImpl> Create8BitIfPossible(
       const Vector<UChar, inlineCapacity>& vector) {
-    return Create8BitIfPossible(vector.Data(), vector.size());
+    return Create8BitIfPossible(vector.data(), vector.size());
   }
 
   ALWAYS_INLINE static PassRefPtr<StringImpl> Create(const char* s,
@@ -770,8 +770,8 @@ bool EqualIgnoringNullity(const Vector<UChar, inlineCapacity>& a,
   if (a.size() != b->length())
     return false;
   if (b->Is8Bit())
-    return Equal(a.Data(), b->Characters8(), b->length());
-  return Equal(a.Data(), b->Characters16(), b->length());
+    return Equal(a.data(), b->Characters8(), b->length());
+  return Equal(a.data(), b->Characters16(), b->length());
 }
 
 template <typename CharacterType1, typename CharacterType2>

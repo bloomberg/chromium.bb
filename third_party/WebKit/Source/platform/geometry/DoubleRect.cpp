@@ -48,8 +48,8 @@ void DoubleRect::Scale(float sx, float sy) {
 }
 
 String DoubleRect::ToString() const {
-  return String::Format("%s %s", Location().ToString().Ascii().Data(),
-                        Size().ToString().Ascii().Data());
+  return String::Format("%s %s", Location().ToString().Ascii().data(),
+                        Size().ToString().Ascii().data());
 }
 
 }  // namespace blink

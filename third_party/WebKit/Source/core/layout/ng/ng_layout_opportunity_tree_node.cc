@@ -22,9 +22,9 @@ NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(
 
 String NGLayoutOpportunityTreeNode::ToString() const {
   return String::Format("Opportunity: '%s' Exclusion: '%s'",
-                        opportunity.ToString().Ascii().Data(),
+                        opportunity.ToString().Ascii().data(),
                         combined_exclusion
-                            ? combined_exclusion->ToString().Ascii().Data()
+                            ? combined_exclusion->ToString().Ascii().data()
                             : "null");
 }
 

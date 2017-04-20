@@ -249,10 +249,10 @@ bool FloatQuad::IsCounterclockwise() const {
 }
 
 String FloatQuad::ToString() const {
-  return String::Format("%s; %s; %s; %s", p1_.ToString().Ascii().Data(),
-                        p2_.ToString().Ascii().Data(),
-                        p3_.ToString().Ascii().Data(),
-                        p4_.ToString().Ascii().Data());
+  return String::Format("%s; %s; %s; %s", p1_.ToString().Ascii().data(),
+                        p2_.ToString().Ascii().data(),
+                        p3_.ToString().Ascii().data(),
+                        p4_.ToString().Ascii().data());
 }
 
 }  // namespace blink

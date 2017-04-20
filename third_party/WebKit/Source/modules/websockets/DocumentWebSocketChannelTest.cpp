@@ -162,7 +162,7 @@ MATCHER_P(KURLEq,
               url_string +
               "\"") {
   KURL url(KURL(), url_string);
-  *result_listener << "where the url is \"" << arg.GetString().Utf8().Data()
+  *result_listener << "where the url is \"" << arg.GetString().Utf8().data()
                    << "\"";
   return arg == url;
 }
@@ -191,14 +191,14 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
   document.SetURL(page_url);
   // Make sure that firstPartyForCookies() is set to the given value.
   EXPECT_STREQ("http://example.com/",
-               document.FirstPartyForCookies().GetString().Utf8().Data());
+               document.FirstPartyForCookies().GetString().Utf8().data());
 
   EXPECT_TRUE(Channel()->Connect(KURL(KURL(), "ws://localhost/"), "x"));
 
   EXPECT_EQ(1U, protocols.size());
-  EXPECT_STREQ("x", protocols[0].Utf8().Data());
+  EXPECT_STREQ("x", protocols[0].Utf8().data());
 
-  EXPECT_STREQ("http://example.com", origin->ToString().Utf8().Data());
+  EXPECT_STREQ("http://example.com", origin->ToString().Utf8().data());
 
   checkpoint.Call(1);
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));

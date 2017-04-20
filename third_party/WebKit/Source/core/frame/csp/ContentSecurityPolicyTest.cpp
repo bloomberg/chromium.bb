@@ -231,7 +231,7 @@ TEST_F(ContentSecurityPolicyTest, ReportURIInMeta) {
   String policy = "img-src 'none'; report-uri http://foo.test";
   Vector<UChar> characters;
   policy.AppendTo(characters);
-  const UChar* begin = characters.Data();
+  const UChar* begin = characters.data();
   const UChar* end = begin + characters.size();
   CSPDirectiveList* directive_list(CSPDirectiveList::Create(
       csp, begin, end, kContentSecurityPolicyHeaderTypeEnforce,
