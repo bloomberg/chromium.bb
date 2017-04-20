@@ -103,6 +103,7 @@ class CORE_EXPORT ComputedStyleBase {
 
   ~ComputedStyleBase() = default;
 
+ private:
   // Storage.
   {% for field in fields %}
   {% if field.is_bit_field %}

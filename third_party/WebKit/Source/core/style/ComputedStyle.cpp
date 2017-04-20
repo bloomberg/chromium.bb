@@ -347,7 +347,7 @@ void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
   SetOriginalDisplay(other.OriginalDisplay());
   SetVerticalAlign(other.VerticalAlign());
   SetHasViewportUnits(other.HasViewportUnits());
-  has_rem_units_ = other.HasRemUnits();
+  SetHasRemUnitsInternal(other.HasRemUnits());
 
   // Correctly set during selector matching:
   // m_styleType
@@ -480,8 +480,8 @@ bool ComputedStyle::NonInheritedEqual(const ComputedStyle& other) const {
   return ComputedStyleBase::NonInheritedEqual(other) &&
          OriginalDisplay() ==
              other.OriginalDisplay() &&  // Not generated in ComputedStyleBase
-         VerticalAlign() ==
-             other.VerticalAlign() &&  // Not generated in ComputedStyleBase
+         VerticalAlign() == other.VerticalAlign() &&  // Not generated in
+                                                      // ComputedStyleBase
          box_ == other.box_ &&
          visual_ == other.visual_ && background_ == other.background_ &&
          surround_ == other.surround_ &&
@@ -1060,7 +1060,7 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
     if (style_inherited_data_->color != other.style_inherited_data_->color ||
         style_inherited_data_->visited_link_color !=
             other.style_inherited_data_->visited_link_color ||
-        has_simple_underline_ != other.has_simple_underline_ ||
+        HasSimpleUnderlineInternal() != other.HasSimpleUnderlineInternal() ||
         visual_->text_decoration != other.visual_->text_decoration) {
       diff.SetTextDecorationOrColorChanged();
     } else if (rare_non_inherited_data_.Get() !=
@@ -1712,7 +1712,7 @@ FontStretch ComputedStyle::GetFontStretch() const {
 }
 
 TextDecoration ComputedStyle::TextDecorationsInEffect() const {
-  if (has_simple_underline_)
+  if (HasSimpleUnderlineInternal())
     return kTextDecorationUnderline;
   if (!rare_inherited_data_->applied_text_decorations)
     return kTextDecorationNone;
@@ -1729,7 +1729,7 @@ TextDecoration ComputedStyle::TextDecorationsInEffect() const {
 
 const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
     const {
-  if (has_simple_underline_) {
+  if (HasSimpleUnderlineInternal()) {
     DEFINE_STATIC_LOCAL(
         Vector<AppliedTextDecoration>, underline,
         (1, AppliedTextDecoration(
@@ -2016,7 +2016,8 @@ void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
 void ComputedStyle::ApplyTextDecorations(
     const Color& parent_text_decoration_color,
     bool override_existing_colors) {
-  if (GetTextDecoration() == kTextDecorationNone && !has_simple_underline_ &&
+  if (GetTextDecoration() == kTextDecorationNone &&
+      !HasSimpleUnderlineInternal() &&
       !rare_inherited_data_->applied_text_decorations)
     return;
 
@@ -2024,10 +2025,10 @@ void ComputedStyle::ApplyTextDecorations(
   // using m_hasSimpleUnderline.
   Color current_text_decoration_color =
       VisitedDependentColor(CSSPropertyTextDecorationColor);
-  if (has_simple_underline_ &&
+  if (HasSimpleUnderlineInternal() &&
       (GetTextDecoration() != kTextDecorationNone ||
        current_text_decoration_color != parent_text_decoration_color)) {
-    has_simple_underline_ = false;
+    SetHasSimpleUnderlineInternal(false);
     AddAppliedTextDecoration(AppliedTextDecoration(
         kTextDecorationUnderline, kTextDecorationStyleSolid,
         parent_text_decoration_color));
@@ -2037,7 +2038,7 @@ void ComputedStyle::ApplyTextDecorations(
     OverrideTextDecorationColors(current_text_decoration_color);
   if (GetTextDecoration() == kTextDecorationNone)
     return;
-  DCHECK(!has_simple_underline_);
+  DCHECK(!HasSimpleUnderlineInternal());
   // To save memory, we don't use AppliedTextDecoration objects in the common
   // case of a single simple underline of currentColor.
   TextDecoration decoration_lines = GetTextDecoration();
@@ -2046,7 +2047,7 @@ void ComputedStyle::ApplyTextDecorations(
                              decoration_style == kTextDecorationStyleSolid &&
                              TextDecorationColor().IsCurrentColor();
   if (is_simple_underline && !rare_inherited_data_->applied_text_decorations) {
-    has_simple_underline_ = true;
+    SetHasSimpleUnderlineInternal(true);
     return;
   }
 
@@ -2055,7 +2056,7 @@ void ComputedStyle::ApplyTextDecorations(
 }
 
 void ComputedStyle::ClearAppliedTextDecorations() {
-  has_simple_underline_ = false;
+  SetHasSimpleUnderlineInternal(false);
 
   if (rare_inherited_data_->applied_text_decorations)
     rare_inherited_data_.Access()->applied_text_decorations = nullptr;
@@ -2063,7 +2064,7 @@ void ComputedStyle::ClearAppliedTextDecorations() {
 
 void ComputedStyle::RestoreParentTextDecorations(
     const ComputedStyle& parent_style) {
-  has_simple_underline_ = parent_style.has_simple_underline_;
+  SetHasSimpleUnderlineInternal(parent_style.HasSimpleUnderlineInternal());
   if (rare_inherited_data_->applied_text_decorations !=
       parent_style.rare_inherited_data_->applied_text_decorations)
     rare_inherited_data_.Access()->applied_text_decorations =

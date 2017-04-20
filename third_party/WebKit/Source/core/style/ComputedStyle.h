@@ -257,8 +257,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                    IsAtShadowBoundary = kNotAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyle&);
 
-  PseudoId StyleType() const { return static_cast<PseudoId>(style_type_); }
-  void SetStyleType(PseudoId style_type) { style_type_ = style_type; }
+  PseudoId StyleType() const { return StyleTypeInternal(); }
+  void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
   ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
   ComputedStyle* AddCachedPseudoStyle(PassRefPtr<ComputedStyle>);
@@ -1639,15 +1639,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static EVerticalAlign InitialVerticalAlign() {
     return EVerticalAlign::kBaseline;
   }
-  EVerticalAlign VerticalAlign() const {
-    return static_cast<EVerticalAlign>(vertical_align_);
-  }
+  EVerticalAlign VerticalAlign() const { return VerticalAlignInternal(); }
   const Length& GetVerticalAlignLength() const { return box_->VerticalAlign(); }
-  void SetVerticalAlign(EVerticalAlign v) {
-    vertical_align_ = static_cast<unsigned>(v);
-  }
+  void SetVerticalAlign(EVerticalAlign v) { SetVerticalAlignInternal(v); }
   void SetVerticalAlignLength(const Length& length) {
-    SetVerticalAlign(EVerticalAlign::kLength);
+    SetVerticalAlignInternal(EVerticalAlign::kLength);
     SET_VAR(box_, vertical_align_, length);
   }
 
@@ -2244,7 +2240,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool InheritedDataShared(const ComputedStyle&) const;
 
   bool HasChildDependentFlags() const {
-    return EmptyState() || HasExplicitlyInheritedProperties();
+    return EmptyStateInternal() || HasExplicitlyInheritedProperties();
   }
   void CopyChildDependentFlagsFrom(const ComputedStyle&);
 
@@ -2313,10 +2309,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void AddCallbackSelector(const String& selector);
 
   // Non-property flags.
-  bool EmptyState() const { return empty_state_; }
+  bool EmptyState() const { return EmptyStateInternal(); }
   void SetEmptyState(bool b) {
     SetUnique();
-    empty_state_ = b;
+    SetEmptyStateInternal(b);
   }
 
   bool HasInlineTransform() const {
@@ -3694,23 +3690,25 @@ inline bool ComputedStyle::SetTextOrientation(
 }
 
 inline bool ComputedStyle::HasAnyPublicPseudoStyles() const {
-  return pseudo_bits_;
+  return PseudoBitsInternal() != kPseudoIdNone;
 }
 
 inline bool ComputedStyle::HasPseudoStyle(PseudoId pseudo) const {
   DCHECK(pseudo >= kFirstPublicPseudoId);
   DCHECK(pseudo < kFirstInternalPseudoId);
-  return (1 << (pseudo - kFirstPublicPseudoId)) & pseudo_bits_;
+  return (1 << (pseudo - kFirstPublicPseudoId)) & PseudoBitsInternal();
 }
 
 inline void ComputedStyle::SetHasPseudoStyle(PseudoId pseudo) {
   DCHECK(pseudo >= kFirstPublicPseudoId);
   DCHECK(pseudo < kFirstInternalPseudoId);
-  pseudo_bits_ |= 1 << (pseudo - kFirstPublicPseudoId);
+  // TODO: Fix up this code. It is hard to understand.
+  SetPseudoBitsInternal(static_cast<PseudoId>(
+      PseudoBitsInternal() | 1 << (pseudo - kFirstPublicPseudoId)));
 }
 
 inline bool ComputedStyle::HasPseudoElementStyle() const {
-  return pseudo_bits_ & kElementPseudoIdMask;
+  return PseudoBitsInternal() & kElementPseudoIdMask;
 }
 
 }  // namespace blink
