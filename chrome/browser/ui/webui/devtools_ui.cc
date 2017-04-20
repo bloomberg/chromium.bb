@@ -248,7 +248,7 @@ void DevToolsDataSource::StartRemoteDataRequest(
           chrome_policy {
             DeveloperToolsDisabled {
               policy_options {mode: MANDATORY}
-              DeveloperToolsDisabled: True
+              DeveloperToolsDisabled: true
             }
           }
         })");
@@ -292,7 +292,7 @@ void DevToolsDataSource::StartCustomDataRequest(
           chrome_policy {
             DeveloperToolsDisabled {
               policy_options {mode: MANDATORY}
-              DeveloperToolsDisabled: True
+              DeveloperToolsDisabled: true
             }
           }
         })");
