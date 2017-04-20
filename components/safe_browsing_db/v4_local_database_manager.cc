@@ -572,8 +572,8 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
   // Post on the IO thread to enforce async behavior.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&V4LocalDatabaseManager::PerformFullHashCheck, this,
-                 base::Passed(std::move(check)),
+      base::Bind(&V4LocalDatabaseManager::PerformFullHashCheck,
+                 weak_factory_.GetWeakPtr(), base::Passed(std::move(check)),
                  full_hash_to_store_and_hash_prefixes));
 
   return false;
