@@ -22,6 +22,7 @@
 #include "headless/lib/browser/headless_content_browser_client.h"
 #include "headless/lib/headless_crash_reporter_client.h"
 #include "headless/lib/headless_macros.h"
+#include "headless/lib/renderer/headless_content_renderer_client.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -30,10 +31,6 @@
 
 #ifdef HEADLESS_USE_EMBEDDED_RESOURCES
 #include "headless/embedded_resource_pak.h"
-#endif
-
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-#include "headless/lib/renderer/headless_content_renderer_client.h"
 #endif
 
 namespace headless {
@@ -162,7 +159,7 @@ void HeadlessContentMainDelegate::InitCrashReporter(
   g_headless_crash_client.Pointer()->set_crash_dumps_dir(
       browser_->options()->crash_dumps_dir);
 
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
   if (!browser_->options()->enable_crash_reporter) {
     DCHECK(!breakpad::IsCrashReporterEnabled());
     return;
@@ -171,7 +168,7 @@ void HeadlessContentMainDelegate::InitCrashReporter(
   if (process_type != switches::kZygoteProcess)
     breakpad::InitCrashReporter(process_type);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
-#endif  // !defined(OS_LINUX)
+#endif  // !defined(OS_MACOSX)
 }
 
 void HeadlessContentMainDelegate::PreSandboxStartup() {
@@ -275,23 +272,15 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
 
 content::ContentBrowserClient*
 HeadlessContentMainDelegate::CreateContentBrowserClient() {
-#if defined(CHROME_MULTIPLE_DLL_CHILD)
-  return nullptr;
-#else
   browser_client_ =
       base::MakeUnique<HeadlessContentBrowserClient>(browser_.get());
   return browser_client_.get();
-#endif
 }
 
 content::ContentRendererClient*
 HeadlessContentMainDelegate::CreateContentRendererClient() {
-#if defined(CHROME_MULTIPLE_DLL_BROWSER)
-  return nullptr;
-#else
   renderer_client_ = base::MakeUnique<HeadlessContentRendererClient>();
   return renderer_client_.get();
-#endif
 }
 
 }  // namespace headless

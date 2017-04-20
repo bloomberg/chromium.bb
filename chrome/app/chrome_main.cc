@@ -89,20 +89,22 @@ int ChromeMain(int argc, const char** argv) {
 #else
   params.argc = argc;
   params.argv = argv;
+#endif
+
+#if !defined(OS_WIN)
   base::CommandLine::Init(params.argc, params.argv);
-#endif  // defined(OS_WIN)
-  base::CommandLine::Init(0, nullptr);
   const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
   ALLOW_UNUSED_LOCAL(command_line);
+#endif
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   if (command_line->HasSwitch(switches::kHeadless)) {
 #if defined(OS_MACOSX)
     SetUpBundleOverrides();
 #endif
-    return headless::HeadlessShellMain(params);
+    return headless::HeadlessShellMain(argc, argv);
   }
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
   version_info::Channel channel = chrome::GetChannel();

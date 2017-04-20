@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "headless/public/headless_export.h"
 #include "headless/public/util/managed_dispatch_url_request_job.h"
 #include "headless/public/util/url_fetcher.h"
 #include "net/base/net_errors.h"
@@ -35,7 +34,7 @@ namespace headless {
 class URLRequestDispatcher;
 
 // Wrapper around net::URLRequest with helpers to access select metadata.
-class HEADLESS_EXPORT Request {
+class Request {
  public:
   virtual uint64_t GetRequestId() const = 0;
 
@@ -84,7 +83,7 @@ class HEADLESS_EXPORT Request {
 
 // Details of a pending request received by GenericURLRequestJob which must be
 // either Allowed, Blocked, Modified or have it's response Mocked.
-class HEADLESS_EXPORT PendingRequest {
+class PendingRequest {
  public:
   virtual const Request* GetRequest() const = 0;
 
@@ -129,7 +128,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
       public PendingRequest,
       public Request {
  public:
-  class HEADLESS_EXPORT Delegate {
+  class Delegate {
    public:
     // Notifies the delegate of an PendingRequest which must either be
     // allowed, blocked, modifed or it's response mocked. Called on an arbitrary

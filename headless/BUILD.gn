@@ -19,9 +19,9 @@ config("headless_implementation") {
   }
 }
 
-group("headless_lib") {
+group("headless") {
   deps = [
-    "//headless:headless",
+    "//headless:headless_lib",
   ]
 }
 
@@ -202,7 +202,7 @@ action("gen_devtools_client_api") {
   ]
 }
 
-component("headless") {
+static_library("headless_lib") {
   sources = generated_devtools_api + [
               "app/headless_shell_switches.cc",
               "app/headless_shell_switches.h",
@@ -244,6 +244,10 @@ component("headless") {
               "lib/headless_crash_reporter_client.h",
               "lib/headless_content_client.cc",
               "lib/headless_content_client.h",
+              "lib/headless_content_main_delegate.cc",
+              "lib/headless_content_main_delegate.h",
+              "lib/renderer/headless_content_renderer_client.cc",
+              "lib/renderer/headless_content_renderer_client.h",
               "public/headless_browser.cc",
               "public/headless_browser.h",
               "public/headless_browser_context.h",
@@ -324,6 +328,9 @@ component("headless") {
     "//components/crash/content/browser",
     "//components/security_state/content",
     "//components/security_state/core",
+    "//content/public/app:both",
+    "//content/public/browser",
+    "//content/public/child:child",
     "//content/public/common",
     "//content/public/common:service_names",
     "//services/service_manager/public/cpp",
@@ -335,24 +342,15 @@ component("headless") {
     "//url",
   ]
 
-  if (is_component_build) {
-    sources += [
-      "lib/headless_content_main_delegate.cc",
-      "lib/headless_content_main_delegate.h",
-      "lib/renderer/headless_content_renderer_client.cc",
-      "lib/renderer/headless_content_renderer_client.h",
-    ]
-
-    if (enable_basic_printing) {
-      deps += [
-        "//components/printing/browser",
-        "//components/printing/renderer",
-      ]
-    }
-  }
-
   if (!is_mac) {
     deps += [ "//ui/aura" ]
+  }
+
+  if (enable_basic_printing) {
+    deps += [
+      "//components/printing/browser",
+      "//components/printing/renderer",
+    ]
   }
 
   if (headless_use_embedded_resources) {
@@ -368,32 +366,8 @@ component("headless") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
-  configs += [ ":headless_implementation" ]
-}
 
-# Headless renderer is a convenience source set that includes headless classes
-# that depend on the reenderer. These are not added in case of a component build
-# since in that case they are already included in the headless component.
-source_set("headless_renderer") {
-  deps = [
-    ":headless",
-  ]
-  if (!is_component_build) {
-    sources = [
-      "lib/headless_content_main_delegate.cc",
-      "lib/headless_content_main_delegate.h",
-      "lib/renderer/headless_content_renderer_client.cc",
-      "lib/renderer/headless_content_renderer_client.h",
-    ]
-    deps += [ "//ui/base" ]
-    if (enable_basic_printing) {
-      deps += [
-        "//components/printing/browser",
-        "//components/printing/renderer",
-      ]
-    }
-    configs += [ ":headless_implementation" ]
-  }
+  configs += [ ":headless_implementation" ]
 }
 
 group("headless_tests") {
@@ -418,7 +392,7 @@ test("headless_unittests") {
   ]
 
   deps = [
-    ":headless",
+    ":headless_lib",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",
@@ -492,79 +466,14 @@ test("headless_browsertests") {
   deps = [
     ":embedder_mojo_for_testing",
     ":headless_browser_tests_pak",
-    ":headless_renderer",
     "//base",
     "//content/test:test_support",
+    "//headless:headless_lib",
     "//testing/gmock",
     "//testing/gtest",
   ]
 }
 
-# Headless library with only browser dependencies. This is used when no child
-# dependencies are needed in the target (e.g. chrome:main_dll).
-static_library("headless_shell_browser_lib") {
-  if (is_multi_dll_chrome) {
-    defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-  }
-
-  sources = [
-    "app/headless_shell.cc",
-    "app/headless_shell.h",
-    "app/headless_shell_switches.cc",
-    "app/headless_shell_switches.h",
-    "app/shell_navigation_request.cc",
-    "app/shell_navigation_request.h",
-    "lib/headless_content_main_delegate.cc",
-    "lib/headless_content_main_delegate.h",
-    "public/headless_shell.h",
-  ]
-
-  deps = [
-    ":headless",
-    "//content/public/browser",
-    "//content/public/common",
-  ]
-
-  if (is_win) {
-    deps += [
-      "//content:sandbox_helper_win",
-      "//sandbox",
-    ]
-  }
-
-  configs += [ ":headless_implementation" ]
-}
-
-# Headless library with child specific dependencies (e.g., renderer). This
-# is used when no browser depencendies are needed (e.g. chrome:child_dll).
-static_library("headless_shell_child_lib") {
-  if (is_multi_dll_chrome) {
-    defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
-  }
-
-  sources = [
-    "app/headless_shell.cc",
-    "app/headless_shell.h",
-    "app/headless_shell_switches.cc",
-    "app/headless_shell_switches.h",
-    "app/shell_navigation_request.cc",
-    "app/shell_navigation_request.h",
-    "lib/headless_content_main_delegate.cc",
-    "lib/headless_content_main_delegate.h",
-    "public/headless_shell.h",
-  ]
-
-  deps = [
-    ":headless_renderer",
-    "//content/public/child:child",
-    "//ui/base",
-  ]
-
-  configs += [ ":headless_implementation" ]
-}
-
-# Headless library with all included dependencies. Use this library unless you
-# have browser/child dependencies restrictions.
 static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
@@ -577,19 +486,10 @@ static_library("headless_shell_lib") {
   ]
 
   deps = [
-    ":headless_renderer",
-    "//content/public/app:both",
-    "//content/public/browser",
-    "//content/public/child:child",
-    "//content/public/common",
+    "//headless:headless_lib",
   ]
 
-  if (is_win) {
-    deps += [
-      "//content:sandbox_helper_win",
-      "//sandbox",
-    ]
-  }
+  configs += [ ":headless_implementation" ]
 }
 
 executable("headless_shell") {
@@ -598,8 +498,18 @@ executable("headless_shell") {
   ]
 
   deps = [
-    ":headless_shell_lib",
+    "//headless:headless_shell_lib",
   ]
+
+  if (is_win) {
+    deps += [
+      "//build/win:default_exe_manifest",
+      "//content:sandbox_helper_win",
+      "//sandbox",
+    ]
+  }
+
+  configs += [ ":headless_implementation" ]
 }
 
 process_version("version_header") {
@@ -617,6 +527,6 @@ executable("headless_example") {
   ]
 
   deps = [
-    ":headless_shell_lib",
+    "//headless:headless_shell_lib",
   ]
 }

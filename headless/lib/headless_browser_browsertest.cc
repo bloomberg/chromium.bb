@@ -400,7 +400,7 @@ bool IsMethodSafe(const std::string& method) {
 class ProtocolHandlerWithCookies
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  explicit ProtocolHandlerWithCookies(net::CookieList* sent_cookies);
+  ProtocolHandlerWithCookies(net::CookieList* sent_cookies);
   ~ProtocolHandlerWithCookies() override {}
 
   net::URLRequestJob* MaybeCreateJob(
@@ -634,7 +634,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetCookiesWithDevTools) {
 // TODO(skyostil): This test currently relies on being able to run a shell
 // script.
 #if defined(OS_POSIX)
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, RendererCommandPrefixTest) {
+#define MAYBE_RendererCommandPrefixTest RendererCommandPrefixTest
+#else
+#define MAYBE_RendererCommandPrefixTest DISABLED_RendererCommandPrefixTest
+#endif  // defined(OS_POSIX)
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_RendererCommandPrefixTest) {
   base::ThreadRestrictions::SetIOAllowed(true);
   base::FilePath launcher_stamp;
   base::CreateTemporaryFile(&launcher_stamp);
@@ -672,7 +676,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, RendererCommandPrefixTest) {
   base::DeleteFile(launcher_script, false);
   base::DeleteFile(launcher_stamp, false);
 }
-#endif  // defined(OS_POSIX)
 
 class CrashReporterTest : public HeadlessBrowserTest,
                           public HeadlessWebContents::Observer,
@@ -683,8 +686,7 @@ class CrashReporterTest : public HeadlessBrowserTest,
 
   void SetUp() override {
     base::ThreadRestrictions::SetIOAllowed(true);
-    base::CreateNewTempDirectory(FILE_PATH_LITERAL("CrashReporterTest"),
-                                 &crash_dumps_dir_);
+    base::CreateNewTempDirectory("CrashReporterTest", &crash_dumps_dir_);
     EXPECT_FALSE(options()->enable_crash_reporter);
     options()->enable_crash_reporter = true;
     options()->crash_dumps_dir = crash_dumps_dir_;
@@ -747,7 +749,7 @@ IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
                             base::FileEnumerator::FILES);
     base::FilePath minidump = it.Next();
     EXPECT_FALSE(minidump.empty());
-    EXPECT_EQ(FILE_PATH_LITERAL(".dmp"), minidump.Extension());
+    EXPECT_EQ(".dmp", minidump.Extension());
     EXPECT_TRUE(it.Next().empty());
   }
 

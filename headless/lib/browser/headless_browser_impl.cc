@@ -27,6 +27,11 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_WIN)
+#include "content/public/app/sandbox_helper_win.h"
+#include "sandbox/win/src/sandbox_types.h"
+#endif
+
 namespace headless {
 namespace {
 
@@ -35,10 +40,9 @@ int RunContentMain(
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {
   content::ContentMainParams params(nullptr);
 #if defined(OS_WIN)
-  // Sandbox info has to be set and initialized.
-  CHECK(options.sandbox_info);
-  params.instance = options.instance;
-  params.sandbox_info = std::move(options.sandbox_info);
+  sandbox::SandboxInterfaceInfo sandbox_info = {0};
+  content::InitializeSandboxInfo(&sandbox_info);
+  params.sandbox_info = &sandbox_info;
 #elif !defined(OS_ANDROID)
   params.argc = options.argc;
   params.argv = options.argv;
@@ -196,7 +200,6 @@ HeadlessBrowserContext* HeadlessBrowserImpl::GetBrowserContextForId(
   return find_it->second.get();
 }
 
-#if !defined(OS_WIN)
 void RunChildProcessIfNeeded(int argc, const char** argv) {
   base::CommandLine::Init(argc, argv);
   const base::CommandLine& command_line(
@@ -215,7 +218,6 @@ void RunChildProcessIfNeeded(int argc, const char** argv) {
   exit(RunContentMain(builder.Build(),
                       base::Callback<void(HeadlessBrowser*)>()));
 }
-#endif  // !defined(OS_WIN)
 
 int HeadlessBrowserMain(
     HeadlessBrowser::Options options,
