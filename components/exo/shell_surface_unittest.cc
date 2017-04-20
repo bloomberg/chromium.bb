@@ -832,20 +832,6 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   ASSERT_TRUE(shell_surface->shadow_underlay());
   EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
 
-  shell_surface->SetRectangularSurfaceShadow(gfx::Rect(0, 0, 0, 0));
-  // Underlay should be created even without shadow.
-  ASSERT_TRUE(shell_surface->shadow_underlay());
-  EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
-  shell_surface->SetRectangularShadowEnabled(false);
-  surface->Commit();
-  // Underlay should be created even without shadow.
-  ASSERT_TRUE(shell_surface->shadow_underlay());
-  EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
-
-  shell_surface->SetRectangularShadowEnabled(true);
-  shell_surface->SetRectangularSurfaceShadow(gfx::Rect(10, 10, 100, 100));
-  surface->Commit();
-
   // Restore the window and make sure the shadow is created, visible and
   // has the latest bounds.
   widget->Restore();
