@@ -38,7 +38,6 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -573,11 +572,6 @@ void LoginDisplayHostImpl::Finalize() {
   }
 }
 
-void LoginDisplayHostImpl::OnCompleteLogin() {
-  if (auto_enrollment_controller_)
-    auto_enrollment_controller_->Cancel();
-}
-
 void LoginDisplayHostImpl::OpenProxySettings() {
   if (login_view_)
     login_view_->OpenProxySettings();
@@ -588,12 +582,6 @@ void LoginDisplayHostImpl::SetStatusAreaVisible(bool visible) {
     status_area_saved_visibility_ = visible;
   else if (login_view_)
     login_view_->SetStatusAreaVisible(visible);
-}
-
-AutoEnrollmentController* LoginDisplayHostImpl::GetAutoEnrollmentController() {
-  if (!auto_enrollment_controller_)
-    auto_enrollment_controller_.reset(new AutoEnrollmentController());
-  return auto_enrollment_controller_.get();
 }
 
 void LoginDisplayHostImpl::StartWizard(OobeScreen first_screen) {
@@ -754,11 +742,6 @@ void LoginDisplayHostImpl::StartSignInScreen(
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   SetStatusAreaVisible(true);
   existing_user_controller_->Init(users);
-
-  // We might be here after a reboot that was triggered after OOBE was complete,
-  // so check for auto-enrollment again. This might catch a cached decision from
-  // a previous oobe flow, or might start a new check with the server.
-  GetAutoEnrollmentController()->Start();
 
   // Initiate mobile config load.
   MobileConfig::GetInstance();

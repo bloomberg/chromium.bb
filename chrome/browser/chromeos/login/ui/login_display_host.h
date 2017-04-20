@@ -19,7 +19,6 @@ class AccountId;
 namespace chromeos {
 
 class AppLaunchController;
-class AutoEnrollmentController;
 class LoginScreenContext;
 class OobeUI;
 class WebUILoginView;
@@ -56,17 +55,11 @@ class LoginDisplayHost {
   // LoginDisplayHost instance may delete itself.
   virtual void Finalize() = 0;
 
-  // Called when a login has completed successfully.
-  virtual void OnCompleteLogin() = 0;
-
   // Open proxy settings dialog.
   virtual void OpenProxySettings() = 0;
 
   // Toggles status area visibility.
   virtual void SetStatusAreaVisible(bool visible) = 0;
-
-  // Gets the auto-enrollment client.
-  virtual AutoEnrollmentController* GetAutoEnrollmentController() = 0;
 
   // Starts out-of-box-experience flow or shows other screen handled by
   // Wizard controller i.e. camera, recovery.

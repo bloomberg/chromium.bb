@@ -64,11 +64,9 @@ class AutoEnrollmentController {
   AutoEnrollmentController();
   ~AutoEnrollmentController();
 
-  // Starts the auto-enrollment check.
+  // Starts the auto-enrollment check.  Safe to call multiple times: aborts in
+  // case a check is currently running or a decision has already been made.
   void Start();
-
-  // Stops any pending auto-enrollment checking.
-  void Cancel();
 
   // Retry checking.
   void Retry();

@@ -1328,8 +1328,6 @@ void ExistingUserController::DoCompleteLogin(
     time_init_ = base::Time();  // Reset to null.
   }
 
-  host_->OnCompleteLogin();
-
   if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_EASY_BOOTSTRAP) {
     bootstrap_user_context_initializer_.reset(
         new BootstrapUserContextInitializer());

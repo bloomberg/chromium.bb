@@ -79,8 +79,9 @@ AutoEnrollmentController::FRERequirement GetFRERequirement() {
       return AutoEnrollmentController::EXPLICITLY_REQUIRED;
   }
   if (!provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
-      !provider->GetEnterpriseMachineID().empty())
+      !provider->GetEnterpriseMachineID().empty()) {
     return AutoEnrollmentController::NOT_REQUIRED;
+  }
   return AutoEnrollmentController::REQUIRED;
 }
 
@@ -140,9 +141,21 @@ AutoEnrollmentController::AutoEnrollmentController() {}
 AutoEnrollmentController::~AutoEnrollmentController() {}
 
 void AutoEnrollmentController::Start() {
-  // This method is called at the point in the OOBE/login flow at which the
-  // auto-enrollment check can start. This happens either after the EULA is
-  // accepted, or right after a reboot if the EULA has already been accepted.
+  switch (state_) {
+    case policy::AUTO_ENROLLMENT_STATE_PENDING:
+      // Abort re-start if the check is still running.
+      return;
+    case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
+      // Abort re-start when there's already a final decision.
+      return;
+
+    case policy::AUTO_ENROLLMENT_STATE_IDLE:
+    case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
+    case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
+      // Continue (re-)start.
+      break;
+  }
 
   // Skip if GAIA is disabled or modulus configuration is not present.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -190,19 +203,6 @@ void AutoEnrollmentController::Start() {
                  client_start_weak_factory_.GetWeakPtr()));
 }
 
-void AutoEnrollmentController::Cancel() {
-  if (client_) {
-    // Cancelling the |client_| allows it to determine whether
-    // its protocol finished before login was complete.
-    client_.release()->CancelAndDeleteSoon();
-  }
-
-  // Make sure to nuke pending |client_| start sequences.
-  client_start_weak_factory_.InvalidateWeakPtrs();
-
-  safeguard_timer_.Stop();
-}
-
 void AutoEnrollmentController::Retry() {
   if (client_)
     client_->Retry();
@@ -218,22 +218,14 @@ AutoEnrollmentController::RegisterProgressCallback(
 
 void AutoEnrollmentController::OnOwnershipStatusCheckDone(
     DeviceSettingsService::OwnershipStatus status) {
-  policy::ServerBackedStateKeysBroker* state_keys_broker =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetStateKeysBroker();
   switch (status) {
     case DeviceSettingsService::OWNERSHIP_NONE:
-      // TODO(tnagel): Prevent missing state keys broker in the first place.
-      // https://crbug.com/703658
-      if (!state_keys_broker) {
-        LOG(ERROR) << "State keys broker missing.";
-        UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
-        return;
-      }
-      state_keys_broker->RequestStateKeys(
-          base::Bind(&AutoEnrollmentController::StartClient,
-                     client_start_weak_factory_.GetWeakPtr()));
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetStateKeysBroker()
+          ->RequestStateKeys(
+              base::Bind(&AutoEnrollmentController::StartClient,
+                         client_start_weak_factory_.GetWeakPtr()));
       return;
     case DeviceSettingsService::OWNERSHIP_TAKEN:
       VLOG(1) << "Device already owned, skipping auto-enrollment check.";
@@ -349,7 +341,14 @@ void AutoEnrollmentController::Timeout() {
   }
 
   // Reset state.
-  Cancel();
+  if (client_) {
+    // Cancelling the |client_| allows it to determine whether
+    // its protocol finished before login was complete.
+    client_.release()->CancelAndDeleteSoon();
+  }
+
+  // Make sure to nuke pending |client_| start sequences.
+  client_start_weak_factory_.InvalidateWeakPtrs();
 }
 
 }  // namespace chromeos

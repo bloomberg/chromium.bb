@@ -64,10 +64,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   WebUILoginView* GetWebUILoginView() const override;
   void BeforeSessionStart() override;
   void Finalize() override;
-  void OnCompleteLogin() override;
   void OpenProxySettings() override;
   void SetStatusAreaVisible(bool visible) override;
-  AutoEnrollmentController* GetAutoEnrollmentController() override;
   void StartWizard(OobeScreen first_screen) override;
   WizardController* GetWizardController() override;
   AppLaunchController* GetAppLaunchController() override;
@@ -194,9 +192,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   gfx::Rect wallpaper_bounds_;
 
   content::NotificationRegistrar registrar_;
-
-  // The controller driving the auto-enrollment check.
-  std::unique_ptr<AutoEnrollmentController> auto_enrollment_controller_;
 
   // Sign in screen controller.
   std::unique_ptr<ExistingUserController> existing_user_controller_;

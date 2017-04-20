@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -586,7 +587,7 @@ void WizardController::ShowAutoEnrollmentCheckScreen() {
       AutoEnrollmentCheckScreen::Get(screen_manager());
   if (retry_auto_enrollment_check_)
     screen->ClearState();
-  screen->set_auto_enrollment_controller(host_->GetAutoEnrollmentController());
+  screen->set_auto_enrollment_controller(GetAutoEnrollmentController());
   SetCurrentScreen(screen);
 }
 
@@ -664,18 +665,17 @@ void WizardController::OnHIDDetectionCompleted() {
 }
 
 void WizardController::OnNetworkConnected() {
-  if (!StartupUtils::IsEulaAccepted()) {
-    if (is_official_build_) {
+  if (is_official_build_) {
+    if (!StartupUtils::IsEulaAccepted()) {
       ShowEulaScreen();
     } else {
-      // Follow the same flow as if EULA had been accepted.
-      OnEulaAccepted();
+      // Possible cases:
+      // 1. EULA was accepted, forced shutdown/reboot during update.
+      // 2. EULA was accepted, planned reboot after update.
+      // Make sure that device is up to date.
+      InitiateOOBEUpdate();
     }
   } else {
-    // Possible cases:
-    // 1. EULA was accepted, forced shutdown/reboot during update.
-    // 2. EULA was accepted, planned reboot after update.
-    // Make sure that device is up to date.
     InitiateOOBEUpdate();
   }
 }
@@ -931,7 +931,7 @@ void WizardController::PerformPostEulaActions() {
   // ChromiumOS builds would go though this code path too.
   NetworkHandler::Get()->network_state_handler()->SetCheckPortalList(
       NetworkStateHandler::kDefaultCheckPortalList);
-  host_->GetAutoEnrollmentController()->Start();
+  GetAutoEnrollmentController()->Start();
   host_->PrewarmAuthentication();
   network_portal_detector::GetInstance()->Enable(true);
 }
@@ -1538,6 +1538,12 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
   screen->SetParameters(effective_config, shark_controller_.get());
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
   SetCurrentScreen(screen);
+}
+
+AutoEnrollmentController* WizardController::GetAutoEnrollmentController() {
+  if (!auto_enrollment_controller_)
+    auto_enrollment_controller_ = base::MakeUnique<AutoEnrollmentController>();
+  return auto_enrollment_controller_.get();
 }
 
 }  // namespace chromeos

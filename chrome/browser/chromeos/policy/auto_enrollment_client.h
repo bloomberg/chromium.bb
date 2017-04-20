@@ -34,20 +34,21 @@ namespace policy {
 class DeviceManagementRequestJob;
 class DeviceManagementService;
 
-// Indicates the current state of the auto-enrollment check.
+// Indicates the current state of the auto-enrollment check.  (Numeric values
+// are just to make reading of log files easier.)
 enum AutoEnrollmentState {
   // Not yet started.
-  AUTO_ENROLLMENT_STATE_IDLE,
+  AUTO_ENROLLMENT_STATE_IDLE = 0,
   // Working, another event will be fired eventually.
-  AUTO_ENROLLMENT_STATE_PENDING,
+  AUTO_ENROLLMENT_STATE_PENDING = 1,
   // Failed to connect to DMServer.
-  AUTO_ENROLLMENT_STATE_CONNECTION_ERROR,
+  AUTO_ENROLLMENT_STATE_CONNECTION_ERROR = 2,
   // Connection successful, but the server failed to generate a valid reply.
-  AUTO_ENROLLMENT_STATE_SERVER_ERROR,
+  AUTO_ENROLLMENT_STATE_SERVER_ERROR = 3,
   // Check completed successfully, enrollment should be triggered.
-  AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT,
+  AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT = 4,
   // Check completed successfully, enrollment not applicable.
-  AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+  AUTO_ENROLLMENT_STATE_NO_ENROLLMENT = 5,
 };
 
 // Interacts with the device management service and determines whether this

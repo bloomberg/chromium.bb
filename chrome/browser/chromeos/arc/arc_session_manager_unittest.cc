@@ -89,12 +89,8 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   }
   void BeforeSessionStart() override {}
   void Finalize() override {}
-  void OnCompleteLogin() override {}
   void OpenProxySettings() override {}
   void SetStatusAreaVisible(bool visible) override {}
-  chromeos::AutoEnrollmentController* GetAutoEnrollmentController() override {
-    return nullptr;
-  }
   void StartWizard(chromeos::OobeScreen first_screen) override {}
   chromeos::WizardController* GetWizardController() override { return nullptr; }
   chromeos::AppLaunchController* GetAppLaunchController() override {

@@ -23,11 +23,9 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_CONST_METHOD0(GetWebUILoginView, WebUILoginView*(void));
   MOCK_METHOD0(BeforeSessionStart, void(void));
   MOCK_METHOD0(Finalize, void(void));
-  MOCK_METHOD0(OnCompleteLogin, void(void));
   MOCK_METHOD0(OpenProxySettings, void(void));
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
   MOCK_METHOD0(ShowBackground, void(void));
-  MOCK_METHOD0(GetAutoEnrollmentController, AutoEnrollmentController*(void));
   MOCK_METHOD1(StartWizard, void(OobeScreen));
   MOCK_METHOD0(GetWizardController, WizardController*(void));
   MOCK_METHOD0(GetAppLaunchController, AppLaunchController*(void));

@@ -668,8 +668,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetAccountId().GetUserEmail());
   ExpectSuccessfulLogin(user_context);
-  EXPECT_CALL(*mock_login_display_host_, OnCompleteLogin())
-      .Times(1);
 
   existing_user_controller()->OnSigninScreenReady();
   SetAutoLoginPolicy(kPublicSessionUserEmail, kAutoLoginLongDelay);
@@ -801,7 +799,6 @@ class ExistingUserControllerActiveDirectoryTest
   void ExpectLoginSuccess() {
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
-    EXPECT_CALL(*mock_login_display_host_, OnCompleteLogin()).Times(1);
   }
 };
 
@@ -842,7 +839,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
                        GAIAAccountLogin_Failure) {
   ExpectLoginFailure();
-  EXPECT_CALL(*mock_login_display_host_, OnCompleteLogin()).Times(1);
   UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
