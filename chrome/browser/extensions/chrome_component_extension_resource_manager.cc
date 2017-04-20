@@ -16,6 +16,7 @@
 #if defined(OS_CHROMEOS)
 #include "components/chrome_apps/chrome_apps_resource_util.h"
 #include "ui/file_manager/file_manager_resource_util.h"
+#include "ui/file_manager/grit/file_manager_resources.h"
 #endif
 
 #if defined(USE_AURA)
@@ -35,6 +36,9 @@ ChromeComponentExtensionResourceManager() {
     {"webstore_widget/app/icons/icon_16.png", IDR_WEBSTORE_ICON_16},
     {"webstore_widget/app/icons/icon_32.png", IDR_WEBSTORE_ICON_32},
     {"webstore_widget/app/icons/icon_128.png", IDR_WEBSTORE_ICON},
+#ifndef DISABLE_NACL
+    {"zip_archiver/zip_archiver_pnacl.pexe.js", IDR_ZIP_ARCHIVER_PEXE},
+#endif
 #endif
   };
 

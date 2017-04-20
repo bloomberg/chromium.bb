@@ -155,6 +155,7 @@ class ComponentLoader {
   void AddVideoPlayerExtension();
   void AddAudioPlayerExtension();
   void AddGalleryExtension();
+  void AddZipArchiverExtension();
   void AddWebstoreWidgetExtension();
   void AddHangoutServicesExtension();
   void AddHotwordHelperExtension();

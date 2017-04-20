@@ -317,6 +317,16 @@ void ComponentLoader::AddGalleryExtension() {
 #endif
 }
 
+void ComponentLoader::AddZipArchiverExtension() {
+#if defined(OS_CHROMEOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableZipArchiverOnFileManager)) {
+    Add(IDR_ZIP_ARCHIVER_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("zip_archiver")));
+  }
+#endif  // defined(OS_CHROMEOS)
+}
+
 void ComponentLoader::AddWebstoreWidgetExtension() {
 #if defined(OS_CHROMEOS)
   AddWithNameAndDescription(
@@ -553,6 +563,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddAudioPlayerExtension();
     AddFileManagerExtension();
     AddGalleryExtension();
+    AddZipArchiverExtension();
     AddWebstoreWidgetExtension();
 
     AddHangoutServicesExtension();
