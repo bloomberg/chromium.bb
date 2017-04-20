@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 58 tests; 50 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 58 tests; 49 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS When qualifiedName does not match the Name production, an INVALID_CHARACTER_ERR exception is to be thrown. (setAttribute) 
 PASS When qualifiedName does not match the Name production, an INVALID_CHARACTER_ERR exception is to be thrown, even if the attribute is already present. (setAttribute) 
 PASS setAttribute should lowercase its name argument (upper case attribute) 
@@ -11,7 +11,7 @@ PASS setAttribute should set the first attribute with the given name
 PASS setAttribute should set the attribute with the given qualified name 
 PASS When qualifiedName does not match the Name production, an INVALID_CHARACTER_ERR exception is to be thrown. (setAttributeNS) 
 PASS When qualifiedName does not match the Name production, an INVALID_CHARACTER_ERR exception is to be thrown, even if the attribute is already present. (setAttributeNS) 
-PASS When qualifiedName does not match the QName production, an NAMESPACE_ERR exception is to be thrown. 
+FAIL When qualifiedName does not match the QName production, an INVALID_CHARACTER_ERR exception is to be thrown. assert_throws: Expected exception for :a. function "function () { el.setAttributeNS("a", invalid_qnames[i], "fail") }" threw object "NamespaceError: Failed to execute 'setAttributeNS' on 'Element': The qualified name provided (':a') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS null and the empty string should result in a null namespace. 
 PASS A namespace is required to use a prefix. 
 PASS The xml prefix should not be allowed for arbitrary namespaces 

@@ -2418,7 +2418,6 @@ crbug.com/626703 external/wpt/streams/piping/general.sharedworker.html [ Timeout
 crbug.com/626703 external/wpt/streams/piping/multiple-propagation.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/piping/pipe-through.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/piping/transform-streams.sharedworker.html [ Timeout ]
-crbug.com/626703 external/wpt/streams/readable-byte-streams/general.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/bad-strategies.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/bad-underlying-sources.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/brand-checks.sharedworker.html [ Timeout ]

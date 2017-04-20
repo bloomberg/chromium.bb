@@ -26,7 +26,7 @@ PASS PasswordCredential must be primary interface of new PasswordCredential({ id
 PASS Stringification of new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) 
 PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "idName" with the proper type (0) 
 PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "passwordName" with the proper type (1) 
-PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "additionalData" with the proper type (2) 
+FAIL PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "additionalData" with the proper type (2) Unrecognized type FormData
 PASS SiteBoundCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "name" with the proper type (0) 
 PASS SiteBoundCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "iconURL" with the proper type (1) 
 PASS Credential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "id" with the proper type (0) 

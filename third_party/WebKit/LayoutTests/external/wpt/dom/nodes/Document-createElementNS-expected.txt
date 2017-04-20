@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 581 tests; 575 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 581 tests; 512 PASS, 69 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS createElementNS test in HTML document: null,null,null 
 PASS createElementNS test in XML document: null,null,null 
 PASS createElementNS test in XHTML document: null,null,null 
@@ -63,21 +63,21 @@ PASS createElementNS test in XHTML document: null,"-foo","INVALID_CHARACTER_ERR"
 PASS createElementNS test in HTML document: null,".foo","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in XML document: null,".foo","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in XHTML document: null,".foo","INVALID_CHARACTER_ERR" 
-PASS createElementNS test in HTML document: null,":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: null,":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: null,":foo","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: null,"f:oo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: null,"f:oo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: null,"f:oo","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: null,"foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: null,"foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: null,"foo:","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: null,"f:o:o","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: null,"f:o:o","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: null,"f:o:o","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: null,":","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: null,":","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: null,":","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: null,":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: null,":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: null,":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in HTML document: null,"f:oo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The namespace URI provided ('') is not valid for the qualified name provided ('f:oo')." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: null,"f:oo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The namespace URI provided ('') is not valid for the qualified name provided ('f:oo')." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: null,"f:oo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The namespace URI provided ('') is not valid for the qualified name provided ('f:oo')." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in HTML document: null,"foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: null,"foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: null,"foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in HTML document: null,"f:o:o","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f:o:o') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: null,"f:o:o","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f:o:o') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: null,"f:o:o","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f:o:o') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in HTML document: null,":","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: null,":","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: null,":","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: null,"xml",null 
 PASS createElementNS test in XML document: null,"xml",null 
 PASS createElementNS test in XHTML document: null,"xml",null 
@@ -102,15 +102,15 @@ PASS createElementNS test in XHTML document: null,"null:xml","NAMESPACE_ERR"
 PASS createElementNS test in HTML document: "",null,null 
 PASS createElementNS test in XML document: "",null,null 
 PASS createElementNS test in XHTML document: "",null,null 
-PASS createElementNS test in HTML document: "",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "",":foo","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "","f:oo","NAMESPACE_ERR" 
 PASS createElementNS test in XML document: "","f:oo","NAMESPACE_ERR" 
 PASS createElementNS test in XHTML document: "","f:oo","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: "","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "","foo:","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: undefined,null,null 
 PASS createElementNS test in XML document: undefined,null,null 
 PASS createElementNS test in XHTML document: undefined,null,null 
@@ -129,18 +129,18 @@ PASS createElementNS test in XHTML document: undefined,"f1oo",null
 PASS createElementNS test in HTML document: undefined,"foo1",null 
 PASS createElementNS test in XML document: undefined,"foo1",null 
 PASS createElementNS test in XHTML document: undefined,"foo1",null 
-PASS createElementNS test in HTML document: undefined,":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: undefined,":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: undefined,":foo","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: undefined,":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: undefined,":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: undefined,":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: undefined,"f:oo","NAMESPACE_ERR" 
 PASS createElementNS test in XML document: undefined,"f:oo","NAMESPACE_ERR" 
 PASS createElementNS test in XHTML document: undefined,"f:oo","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: undefined,"foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: undefined,"foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: undefined,"foo:","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: undefined,"f::oo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: undefined,"f::oo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: undefined,"f::oo","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: undefined,"foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: undefined,"foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: undefined,"foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in HTML document: undefined,"f::oo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f::oo') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: undefined,"f::oo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f::oo') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: undefined,"f::oo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f::oo') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: undefined,"xml",null 
 PASS createElementNS test in XML document: undefined,"xml",null 
 PASS createElementNS test in XHTML document: undefined,"xml",null 
@@ -183,33 +183,33 @@ PASS createElementNS test in XHTML document: "http://example.com/","f1oo",null
 PASS createElementNS test in HTML document: "http://example.com/","foo1",null 
 PASS createElementNS test in XML document: "http://example.com/","foo1",null 
 PASS createElementNS test in XHTML document: "http://example.com/","foo1",null 
-PASS createElementNS test in HTML document: "http://example.com/",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "http://example.com/",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "http://example.com/",":foo","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "http://example.com/",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "http://example.com/",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "http://example.com/",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "http://example.com/","f:oo",null 
 PASS createElementNS test in XML document: "http://example.com/","f:oo",null 
 PASS createElementNS test in XHTML document: "http://example.com/","f:oo",null 
-PASS createElementNS test in HTML document: "http://example.com/","f:o:o","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "http://example.com/","f:o:o","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "http://example.com/","f:o:o","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: "http://example.com/","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "http://example.com/","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "http://example.com/","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: "http://example.com/","f::oo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "http://example.com/","f::oo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "http://example.com/","f::oo","NAMESPACE_ERR" 
-FAIL createElementNS test in HTML document: "http://example.com/","a:0","NAMESPACE_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "InvalidCharacterError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('a:0') contains the invalid name-start character '0'." that is not a DOMException NAMESPACE_ERR: property "code" is equal to 5, expected 14
-FAIL createElementNS test in XML document: "http://example.com/","a:0","NAMESPACE_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "InvalidCharacterError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('a:0') contains the invalid name-start character '0'." that is not a DOMException NAMESPACE_ERR: property "code" is equal to 5, expected 14
-FAIL createElementNS test in XHTML document: "http://example.com/","a:0","NAMESPACE_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "InvalidCharacterError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('a:0') contains the invalid name-start character '0'." that is not a DOMException NAMESPACE_ERR: property "code" is equal to 5, expected 14
+FAIL createElementNS test in HTML document: "http://example.com/","f:o:o","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f:o:o') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "http://example.com/","f:o:o","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f:o:o') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "http://example.com/","f:o:o","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f:o:o') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in HTML document: "http://example.com/","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "http://example.com/","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "http://example.com/","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in HTML document: "http://example.com/","f::oo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f::oo') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "http://example.com/","f::oo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f::oo') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "http://example.com/","f::oo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('f::oo') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+PASS createElementNS test in HTML document: "http://example.com/","a:0","INVALID_CHARACTER_ERR" 
+PASS createElementNS test in XML document: "http://example.com/","a:0","INVALID_CHARACTER_ERR" 
+PASS createElementNS test in XHTML document: "http://example.com/","a:0","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in HTML document: "http://example.com/","0:a","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in XML document: "http://example.com/","0:a","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in XHTML document: "http://example.com/","0:a","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in HTML document: "http://example.com/","a:_",null 
 PASS createElementNS test in XML document: "http://example.com/","a:_",null 
 PASS createElementNS test in XHTML document: "http://example.com/","a:_",null 
-FAIL createElementNS test in HTML document: "http://example.com/","a:ெ","NAMESPACE_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "InvalidCharacterError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('a:ெ') contains the invalid name-start character 'ெ'." that is not a DOMException NAMESPACE_ERR: property "code" is equal to 5, expected 14
-FAIL createElementNS test in XML document: "http://example.com/","a:ெ","NAMESPACE_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "InvalidCharacterError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('a:ெ') contains the invalid name-start character 'ெ'." that is not a DOMException NAMESPACE_ERR: property "code" is equal to 5, expected 14
-FAIL createElementNS test in XHTML document: "http://example.com/","a:ெ","NAMESPACE_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "InvalidCharacterError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('a:ெ') contains the invalid name-start character 'ெ'." that is not a DOMException NAMESPACE_ERR: property "code" is equal to 5, expected 14
+PASS createElementNS test in HTML document: "http://example.com/","a:ெ","INVALID_CHARACTER_ERR" 
+PASS createElementNS test in XML document: "http://example.com/","a:ெ","INVALID_CHARACTER_ERR" 
+PASS createElementNS test in XHTML document: "http://example.com/","a:ெ","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in HTML document: "http://example.com/","ெ:a","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in XML document: "http://example.com/","ெ:a","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in XHTML document: "http://example.com/","ெ:a","INVALID_CHARACTER_ERR" 
@@ -282,9 +282,9 @@ PASS createElementNS test in XHTML document: "http://example.com/","XMLNS:foo",n
 PASS createElementNS test in HTML document: "http://example.com/","xmlfoo:bar",null 
 PASS createElementNS test in XML document: "http://example.com/","xmlfoo:bar",null 
 PASS createElementNS test in XHTML document: "http://example.com/","xmlfoo:bar",null 
-PASS createElementNS test in HTML document: "http://example.com/","prefix::local","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "http://example.com/","prefix::local","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "http://example.com/","prefix::local","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "http://example.com/","prefix::local","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('prefix::local') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "http://example.com/","prefix::local","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('prefix::local') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "http://example.com/","prefix::local","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('prefix::local') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "http://example.com/","namespaceURI:{","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in XML document: "http://example.com/","namespaceURI:{","INVALID_CHARACTER_ERR" 
 PASS createElementNS test in XHTML document: "http://example.com/","namespaceURI:{","INVALID_CHARACTER_ERR" 
@@ -378,15 +378,15 @@ PASS createElementNS test in XHTML document: "/","f1oo",null
 PASS createElementNS test in HTML document: "/","foo1",null 
 PASS createElementNS test in XML document: "/","foo1",null 
 PASS createElementNS test in XHTML document: "/","foo1",null 
-PASS createElementNS test in HTML document: "/",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "/",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "/",":foo","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "/",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "/",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "/",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "/","f:oo",null 
 PASS createElementNS test in XML document: "/","f:oo",null 
 PASS createElementNS test in XHTML document: "/","f:oo",null 
-PASS createElementNS test in HTML document: "/","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "/","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "/","foo:","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "/","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "/","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "/","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "/","xml",null 
 PASS createElementNS test in XML document: "/","xml",null 
 PASS createElementNS test in XHTML document: "/","xml",null 
@@ -417,15 +417,15 @@ PASS createElementNS test in XHTML document: "http://www.w3.org/XML/1998/namespa
 PASS createElementNS test in HTML document: "http://www.w3.org/XML/1998/namespace","foo1",null 
 PASS createElementNS test in XML document: "http://www.w3.org/XML/1998/namespace","foo1",null 
 PASS createElementNS test in XHTML document: "http://www.w3.org/XML/1998/namespace","foo1",null 
-PASS createElementNS test in HTML document: "http://www.w3.org/XML/1998/namespace",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "http://www.w3.org/XML/1998/namespace",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "http://www.w3.org/XML/1998/namespace",":foo","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "http://www.w3.org/XML/1998/namespace",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "http://www.w3.org/XML/1998/namespace",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "http://www.w3.org/XML/1998/namespace",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "http://www.w3.org/XML/1998/namespace","f:oo",null 
 PASS createElementNS test in XML document: "http://www.w3.org/XML/1998/namespace","f:oo",null 
 PASS createElementNS test in XHTML document: "http://www.w3.org/XML/1998/namespace","f:oo",null 
-PASS createElementNS test in HTML document: "http://www.w3.org/XML/1998/namespace","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "http://www.w3.org/XML/1998/namespace","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "http://www.w3.org/XML/1998/namespace","foo:","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "http://www.w3.org/XML/1998/namespace","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "http://www.w3.org/XML/1998/namespace","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "http://www.w3.org/XML/1998/namespace","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "http://www.w3.org/XML/1998/namespace","xml",null 
 PASS createElementNS test in XML document: "http://www.w3.org/XML/1998/namespace","xml",null 
 PASS createElementNS test in XHTML document: "http://www.w3.org/XML/1998/namespace","xml",null 
@@ -462,15 +462,15 @@ PASS createElementNS test in XHTML document: "http://www.w3.org/2000/xmlns/","f1
 PASS createElementNS test in HTML document: "http://www.w3.org/2000/xmlns/","foo1","NAMESPACE_ERR" 
 PASS createElementNS test in XML document: "http://www.w3.org/2000/xmlns/","foo1","NAMESPACE_ERR" 
 PASS createElementNS test in XHTML document: "http://www.w3.org/2000/xmlns/","foo1","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: "http://www.w3.org/2000/xmlns/",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "http://www.w3.org/2000/xmlns/",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "http://www.w3.org/2000/xmlns/",":foo","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "http://www.w3.org/2000/xmlns/",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "http://www.w3.org/2000/xmlns/",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "http://www.w3.org/2000/xmlns/",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "http://www.w3.org/2000/xmlns/","f:oo","NAMESPACE_ERR" 
 PASS createElementNS test in XML document: "http://www.w3.org/2000/xmlns/","f:oo","NAMESPACE_ERR" 
 PASS createElementNS test in XHTML document: "http://www.w3.org/2000/xmlns/","f:oo","NAMESPACE_ERR" 
-PASS createElementNS test in HTML document: "http://www.w3.org/2000/xmlns/","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "http://www.w3.org/2000/xmlns/","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "http://www.w3.org/2000/xmlns/","foo:","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "http://www.w3.org/2000/xmlns/","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "http://www.w3.org/2000/xmlns/","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "http://www.w3.org/2000/xmlns/","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "http://www.w3.org/2000/xmlns/","xml","NAMESPACE_ERR" 
 PASS createElementNS test in XML document: "http://www.w3.org/2000/xmlns/","xml","NAMESPACE_ERR" 
 PASS createElementNS test in XHTML document: "http://www.w3.org/2000/xmlns/","xml","NAMESPACE_ERR" 
@@ -504,15 +504,15 @@ PASS createElementNS test in XHTML document: "foo:","f1oo",null
 PASS createElementNS test in HTML document: "foo:","foo1",null 
 PASS createElementNS test in XML document: "foo:","foo1",null 
 PASS createElementNS test in XHTML document: "foo:","foo1",null 
-PASS createElementNS test in HTML document: "foo:",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "foo:",":foo","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "foo:",":foo","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "foo:",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "foo:",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "foo:",":foo","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "foo:","f:oo",null 
 PASS createElementNS test in XML document: "foo:","f:oo",null 
 PASS createElementNS test in XHTML document: "foo:","f:oo",null 
-PASS createElementNS test in HTML document: "foo:","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XML document: "foo:","foo:","NAMESPACE_ERR" 
-PASS createElementNS test in XHTML document: "foo:","foo:","NAMESPACE_ERR" 
+FAIL createElementNS test in HTML document: "foo:","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XML document: "foo:","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createElementNS test in XHTML document: "foo:","foo:","INVALID_CHARACTER_ERR" assert_throws: function "function () { doc.createElementNS(namespace, qualifiedName) }" threw object "NamespaceError: Failed to execute 'createElementNS' on 'Document': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
 PASS createElementNS test in HTML document: "foo:","xml",null 
 PASS createElementNS test in XML document: "foo:","xml",null 
 PASS createElementNS test in XHTML document: "foo:","xml",null 

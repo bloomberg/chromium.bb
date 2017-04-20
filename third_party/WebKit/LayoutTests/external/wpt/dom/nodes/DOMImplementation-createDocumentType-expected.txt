@@ -1,0 +1,92 @@
+This is a testharness.js-based test.
+Found 82 tests; 79 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS DOMImplementation.createDocumentType(qualifiedName, publicId, systemId) 
+PASS createDocumentType("", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("test:root", "1234", "") should work 
+PASS createDocumentType("test:root", "1234", "test") should work 
+PASS createDocumentType("test:root", "test", "") should work 
+PASS createDocumentType("test:root", "test", "test") should work 
+PASS createDocumentType("_:_", "", "") should work 
+PASS createDocumentType("_:h0", "", "") should work 
+PASS createDocumentType("_:test", "", "") should work 
+PASS createDocumentType("_:_.", "", "") should work 
+PASS createDocumentType("_:a-", "", "") should work 
+PASS createDocumentType("l_:_", "", "") should work 
+PASS createDocumentType("ns:_0", "", "") should work 
+PASS createDocumentType("ns:a0", "", "") should work 
+PASS createDocumentType("ns0:test", "", "") should work 
+PASS createDocumentType("ns:EEE.", "", "") should work 
+PASS createDocumentType("ns:_-", "", "") should work 
+PASS createDocumentType("a.b:c", "", "") should work 
+PASS createDocumentType("a-b:c.j", "", "") should work 
+PASS createDocumentType("a-b:c", "", "") should work 
+PASS createDocumentType("foo", "", "") should work 
+PASS createDocumentType("1foo", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("foo1", "", "") should work 
+PASS createDocumentType("f1oo", "", "") should work 
+PASS createDocumentType("@foo", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("foo@", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("f@oo", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:{", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:}", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:~", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:'", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:!", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:@", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:#", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:$", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:%", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:^", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:&", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:*", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:(", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:)", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:+", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:=", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:[", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:]", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:\\", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:/", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:;", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:`", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:<", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:>", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:,", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:a ", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("edi:\"", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("{", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("}", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("'", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("~", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("`", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("@", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("#", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("$", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("%", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("^", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("&", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("*", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("(", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType(")", "", "") should throw INVALID_CHARACTER_ERR 
+PASS createDocumentType("f:oo", "", "") should work 
+FAIL createDocumentType(":foo", "", "") should throw INVALID_CHARACTER_ERR assert_throws: function "function () {
+          document.implementation.createDocumentType(qualifiedName, publicId, systemId)
+        }" threw object "NamespaceError: Failed to execute 'createDocumentType' on 'DOMImplementation': The qualified name provided (':foo') has an empty namespace prefix." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createDocumentType("foo:", "", "") should throw INVALID_CHARACTER_ERR assert_throws: function "function () {
+          document.implementation.createDocumentType(qualifiedName, publicId, systemId)
+        }" threw object "NamespaceError: Failed to execute 'createDocumentType' on 'DOMImplementation': The qualified name provided ('foo:') has an empty local name." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+FAIL createDocumentType("prefix::local", "", "") should throw INVALID_CHARACTER_ERR assert_throws: function "function () {
+          document.implementation.createDocumentType(qualifiedName, publicId, systemId)
+        }" threw object "NamespaceError: Failed to execute 'createDocumentType' on 'DOMImplementation': The qualified name provided ('prefix::local') contains multiple colons." that is not a DOMException INVALID_CHARACTER_ERR: property "code" is equal to 14, expected 5
+PASS createDocumentType("foo", "foo", "") should work 
+PASS createDocumentType("foo", "", "foo") should work 
+PASS createDocumentType("foo", "f'oo", "") should work 
+PASS createDocumentType("foo", "", "f'oo") should work 
+PASS createDocumentType("foo", "f\"oo", "") should work 
+PASS createDocumentType("foo", "", "f\"oo") should work 
+PASS createDocumentType("foo", "f'o\"o", "") should work 
+PASS createDocumentType("foo", "", "f'o\"o") should work 
+PASS createDocumentType("foo", "foo>", "") should work 
+PASS createDocumentType("foo", "", "foo>") should work 
+Harness: the test ran to completion.
+
