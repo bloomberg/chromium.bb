@@ -126,10 +126,10 @@
   {
     "prefix": "android",
     "base": "fullscreen",
-    "args": ["--enable-threaded-compositing",
+    "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
              "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
              "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
-             "--force-overlay-fullscreen-video", "--enable-overlay-scrollbars", "--enable-overscroll-notifications",
+             "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
              "--enable-fixed-layout", "--enable-viewport", "--disable-canvas-aa",
              "--disable-composited-antialiasing"]
   },

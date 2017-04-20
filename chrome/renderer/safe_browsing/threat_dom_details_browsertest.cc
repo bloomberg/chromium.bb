@@ -16,7 +16,7 @@
 #include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "ui/native_theme/native_theme_switches.h"
+#include "ui/native_theme/native_theme_features.h"
 
 namespace {
 
