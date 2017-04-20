@@ -267,9 +267,16 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             setContentView();
             if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
         } else {
-            ChromeBrowserInitializer.getInstance(
-                    getApplicationContext()).handlePreNativeStartup(this);
+            ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
         }
+    }
+
+    /**
+     * Call to begin loading the library, if it was delayed.
+     */
+    protected void beginLoadingLibrary() {
+        assert shouldDelayBrowserStartup();
+        ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
     }
 
     /**

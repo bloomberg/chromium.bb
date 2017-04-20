@@ -33,6 +33,7 @@ class SearchBoxDataProvider implements ToolbarDataProvider, TemplateUrlService.L
     public void onTemplateUrlServiceLoaded() {
         // For zero suggest, the default search engine's URL is used as the first suggestion.
         TemplateUrlService service = TemplateUrlService.getInstance();
+        service.unregisterLoadListener(this);
         String searchEngineUrl = service.getSearchEngineUrlFromTemplateUrl(
                 service.getDefaultSearchEngineTemplateUrl().getKeyword());
         mVerbatimUrl = LocationBarLayout.splitPathFromUrlDisplayText(searchEngineUrl).first;

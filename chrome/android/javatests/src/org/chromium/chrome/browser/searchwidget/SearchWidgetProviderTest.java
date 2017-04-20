@@ -9,6 +9,7 @@ import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
@@ -184,5 +185,35 @@ public class SearchWidgetProviderTest {
         boolean microphoneState = IntentUtils.safeGetBooleanExtra(
                 intent, SearchWidgetProvider.EXTRA_START_VOICE_SEARCH, false);
         Assert.assertEquals(clickTarget == R.id.microphone_icon, microphoneState);
+    }
+
+    @Test
+    @SmallTest
+    public void testCrashAbsorption() {
+        Runnable crashingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                throw new RuntimeException();
+            }
+        };
+
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        Assert.assertEquals(0, SearchWidgetProvider.getNumConsecutiveCrashes(prefs));
+
+        // The first few crashes should be silently absorbed.
+        SearchWidgetProvider.run(crashingRunnable);
+        Assert.assertEquals(1, SearchWidgetProvider.getNumConsecutiveCrashes(prefs));
+        SearchWidgetProvider.run(crashingRunnable);
+        Assert.assertEquals(2, SearchWidgetProvider.getNumConsecutiveCrashes(prefs));
+
+        // The crash should be thrown after hitting the crash limit, which is 3.
+        boolean exceptionWasThrown = false;
+        try {
+            SearchWidgetProvider.run(crashingRunnable);
+        } catch (Exception e) {
+            exceptionWasThrown = true;
+        }
+        Assert.assertEquals(3, SearchWidgetProvider.getNumConsecutiveCrashes(prefs));
+        Assert.assertTrue(exceptionWasThrown);
     }
 }

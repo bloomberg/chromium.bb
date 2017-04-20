@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.searchwidget;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Handler;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -20,7 +19,6 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -35,8 +33,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 
 /** Queries the user's default search engine and shows autocomplete suggestions. */
 public class SearchActivity extends AsyncInitializationActivity
-        implements SnackbarManageable, SearchActivityLocationBarLayout.Delegate,
-                   View.OnLayoutChangeListener {
+        implements SnackbarManageable, SearchActivityLocationBarLayout.Delegate {
     /** Setting this field causes the Activity to finish itself immediately for tests. */
     private static boolean sIsDisabledForTest;
 
@@ -82,16 +79,26 @@ public class SearchActivity extends AsyncInitializationActivity
         mSnackbarManager = new SnackbarManager(this, null);
         mSearchBoxDataProvider = new SearchBoxDataProvider();
 
-        mContentView = createContentView();
-
         // Build the search box.
+        mContentView = createContentView();
         mSearchBox = (SearchActivityLocationBarLayout) mContentView.findViewById(
                 R.id.search_location_bar);
         mSearchBox.setDelegate(this);
         mSearchBox.setToolbarDataProvider(mSearchBoxDataProvider);
         mSearchBox.initializeControls(new WindowDelegate(getWindow()), getWindowAndroid());
-
         setContentView(mContentView);
+
+        // Kick off everything needed for the user to type into the box.
+        beginQuery();
+        mSearchBox.showCachedZeroSuggestResultsIfAvailable();
+
+        // Kick off loading of the native library.
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                beginLoadingLibrary();
+            }
+        });
     }
 
     @Override
@@ -111,7 +118,7 @@ public class SearchActivity extends AsyncInitializationActivity
 
         if (mQueuedUrl != null) loadUrl(mQueuedUrl);
 
-        new Handler().post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 onDeferredStartup();
@@ -195,7 +202,6 @@ public class SearchActivity extends AsyncInitializationActivity
 
         ViewGroup contentView = (ViewGroup) LayoutInflater.from(this).inflate(
                 R.layout.search_activity, null, false);
-        contentView.addOnLayoutChangeListener(this);
         contentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -203,25 +209,6 @@ public class SearchActivity extends AsyncInitializationActivity
             }
         });
         return contentView;
-    }
-
-    @Override
-    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
-            int oldTop, int oldRight, int oldBottom) {
-        mContentView.removeOnLayoutChangeListener(this);
-        beginLoadingLibrary();
-    }
-
-    private void beginLoadingLibrary() {
-        beginQuery();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mSearchBox.showCachedZeroSuggestResultsIfAvailable();
-            }
-        });
-        ChromeBrowserInitializer.getInstance(getApplicationContext())
-                .handlePreNativeStartup(SearchActivity.this);
     }
 
     private void cancelSearch() {
