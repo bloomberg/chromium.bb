@@ -17,7 +17,10 @@ void ReportUnrecoverableError(version_info::Channel channel) {
   }
 
   // We only want to upload |kErrorUploadRatio| ratio of errors.
-  const double kErrorUploadRatio = 0.01;
+  // Note: crash reporting is disabled, and should only be enabled when
+  // investigating a specific datatype error. In that event, a specific bug
+  // should be referenced here.
+  const double kErrorUploadRatio = 0.00;
   if (kErrorUploadRatio <= 0.0)
     return;  // We are not allowed to upload errors.
   double random_number = base::RandDouble();
