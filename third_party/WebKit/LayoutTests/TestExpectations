@@ -1876,10 +1876,13 @@ crbug.com/662010 [ Win7 ] csspaint/invalidation-background-image.html [ Skip ]
 crbug.com/693568 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure ]
 crbug.com/712629 [ Linux ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ Pass Crash ]
 
+# This is temporary until we revert the speculative change
+crbug.com/704935 fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Skip ]
+
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointerevent_touch-action-pinch_zoom_touch.html [ Skip ]
-crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Skip ]
+#crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html [ Skip ]
