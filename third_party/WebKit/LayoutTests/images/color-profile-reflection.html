@@ -16,6 +16,11 @@
 
 <script>
 window.onload = function() {
+  if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
+    testRunner.waitUntilDone();
+  }
+
   document.querySelector('div').classList.add('reflection');
 
   if (window.testRunner)
@@ -27,12 +32,8 @@ function changeColorProfile() {
 }
 
 function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
+  runAfterLayoutAndPaint(function() { testRunner.notifyDone() });
 }
 
-if (window.testRunner) {
-  testRunner.dumpAsTextWithPixelResults();
-  testRunner.waitUntilDone();
-}
 </script>
 </html>

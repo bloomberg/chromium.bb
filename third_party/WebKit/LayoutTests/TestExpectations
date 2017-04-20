@@ -123,6 +123,15 @@ crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.
 # Can be broken into smaller tests, probably.
 crbug.com/709009 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Timeout Pass ]
 
+# Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
+# instead of a timeout, which may fix things.
+crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
+crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass ]
+
+# Fails when run in isolation. Passes when run as part of the directory
+# depending on test order.
+crbug.com/713419 virtual/gpu/fast/canvas/painting-on-bad-canvas.html [ Crash Pass ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======
@@ -3254,15 +3263,6 @@ crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
 crbug.com/673526 external/wpt/webmessaging/message-channels/close.html [ Failure ]
 
-crbug.com/642376 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ NeedsManualRebaseline ]
-crbug.com/642376 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ NeedsManualRebaseline ]
-crbug.com/642376 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsManualRebaseline ]
-crbug.com/642376 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ NeedsManualRebaseline ]
-crbug.com/642376 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
-crbug.com/706375 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
-crbug.com/706375 virtual/display_list_2d_canvas/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
-crbug.com/706375 virtual/sharedarraybuffer/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
-
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 crbug.com/610835 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
@@ -3444,15 +3444,9 @@ crbug.com/707689 shapedetection/detection-HTMLCanvasElement.html [ Skip ]
 # Sheriff failures 2017-04-19
 crbug.com/713094 [ Win ] virtual/sharedarraybuffer/fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
-# Fails when run in isolation. Passes when run as part of the directory
-# depending on test order.
-crbug.com/713419 virtual/gpu/fast/canvas/painting-on-bad-canvas.html [ Crash Pass ]
-
 # Tests to be run only under virtual/experimental-canvas-features/
 crbug.com/682753 fast/canvas-experimental [ Skip ]
 
-crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
-crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass ]
 crbug.com/713050 tables/mozilla/bugs/bug113424.html [ Failure Pass ]
 
 crbug.com/708934 fast/backgrounds/background-image-relative-url-in-iframe.html [ Failure Pass ]
@@ -3467,8 +3461,6 @@ crbug.com/710850 virtual/feature-policy/http/tests/feature-policy/vibrate-disabl
 crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-enabledforall.php [ Skip ]
 crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-enabledforself.php [ Skip ]
 crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-disabled.php [ Skip ]
-
-crbug.com/713462 [ Mac ] virtual/gpu/fast/canvas/canvas-ImageData-neutered-source.html [ Failure Pass ]
 
 crbug.com/713509 crypto/subtle/worker-subtle-crypto-concurrent.html [ Pass Timeout ]
 
