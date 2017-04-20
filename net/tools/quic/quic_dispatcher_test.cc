@@ -535,7 +535,7 @@ TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
   static_assert(arraysize(kSupportedQuicVersions) == 5u,
                 "Supported versions out of sync");
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
-  SetQuicFlag(&FLAGS_quic_enable_version_39, true);
+  FLAGS_quic_enable_version_39 = true;
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
   QuicConnectionId connection_id = 1;
@@ -575,7 +575,7 @@ TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
                 PACKET_6BYTE_PACKET_NUMBER, 1);
 
   // Turn off version 39.
-  SetQuicFlag(&FLAGS_quic_enable_version_39, false);
+  FLAGS_quic_enable_version_39 = false;
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address))
       .Times(0);
@@ -584,7 +584,7 @@ TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
                 PACKET_6BYTE_PACKET_NUMBER, 1);
 
   // Turn on version 39.
-  SetQuicFlag(&FLAGS_quic_enable_version_39, true);
+  FLAGS_quic_enable_version_39 = true;
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address))
       .WillOnce(testing::Return(CreateSession(

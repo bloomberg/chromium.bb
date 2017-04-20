@@ -147,7 +147,7 @@ TEST(QuicVersionsTest, FilterSupportedVersionsNo39) {
                                     QUIC_VERSION_39};
 
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
-  SetQuicFlag(&FLAGS_quic_enable_version_39, false);
+  FLAGS_quic_enable_version_39 = false;
 
   QuicVersionVector filtered_versions = FilterSupportedVersions(all_versions);
   ASSERT_EQ(4u, filtered_versions.size());
@@ -164,7 +164,7 @@ TEST(QuicVersionsTest, FilterSupportedVersionsAllVersions) {
                                     QUIC_VERSION_39};
 
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
-  SetQuicFlag(&FLAGS_quic_enable_version_39, true);
+  FLAGS_quic_enable_version_39 = true;
 
   QuicVersionVector filtered_versions = FilterSupportedVersions(all_versions);
   ASSERT_EQ(all_versions, filtered_versions);

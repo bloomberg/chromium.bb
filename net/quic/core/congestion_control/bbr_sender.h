@@ -119,7 +119,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   void OnRetransmissionTimeout(bool packets_retransmitted) override {}
   void OnConnectionMigration() override {}
   QuicTime::Delta TimeUntilSend(QuicTime now,
-                                QuicByteCount bytes_in_flight) const override;
+                                QuicByteCount bytes_in_flight) override;
   QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const override;
   QuicBandwidth BandwidthEstimate() const override;
   QuicByteCount GetCongestionWindow() const override;
@@ -196,6 +196,16 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
                            bool has_losses,
                            bool is_round_start);
 
+  // Returns true if recent ack rate has decreased substantially and if sender
+  // is allowed to continue sending when congestion window limited.
+  bool SlowDeliveryAllowsSending(QuicTime now, QuicByteCount bytes_in_flight);
+
+  // Updates history of recently received acks. Acks are considered recent
+  // if received within kRecentlyAckedRttFraction x smoothed RTT in the past.
+  // Adds new ack to recently_acked_ if |newly_acked_bytes| is non-zero.
+  void UpdateRecentlyAcked(QuicTime new_ack_time,
+                           QuicByteCount newly_acked_bytes);
+
   // Updates the ack aggregation max filter in bytes.
   void UpdateAckAggregationBytes(QuicTime ack_time,
                                  QuicByteCount newly_acked_bytes);
@@ -270,6 +280,13 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // The number of RTTs to stay in STARTUP mode.  Defaults to 3.
   QuicRoundTripCount num_startup_rtts_;
 
+  // Gain to use when delivery rate is slow.
+  // TODO(jri): Make this a constant if we decide to use this code for BBR.
+  const float congestion_window_gain_for_slow_delivery_;
+  // Threshold multiplier below which delivery is considered slow.
+  // TODO(jri): Make this a constant if we decide to use this code for BBR.
+  const float threshold_multiplier_for_slow_delivery_;
+
   // Number of round-trips in PROBE_BW mode, used for determining the current
   // pacing gain cycle.
   int cycle_current_offset_;
@@ -304,6 +321,17 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   QuicPacketNumber end_recovery_at_;
   // A window used to limit the number of bytes in flight during loss recovery.
   QuicByteCount recovery_window_;
+
+  // Records information about a received ack
+  struct DataDelivered {
+    QuicTime ack_time;
+    QuicByteCount acked_bytes;
+  };
+
+  // Data structure to record recently received acks. Used for determining
+  // recently seen ack rate over a short period in the past.
+  std::deque<DataDelivered> recently_acked_;
+  QuicByteCount bytes_recently_acked_;
 
   DISALLOW_COPY_AND_ASSIGN(BbrSender);
 };

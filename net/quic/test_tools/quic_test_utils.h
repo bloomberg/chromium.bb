@@ -758,9 +758,8 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD1(OnRetransmissionTimeout, void(bool));
   MOCK_METHOD0(OnConnectionMigration, void());
   MOCK_METHOD0(RevertRetransmissionTimeout, void());
-  MOCK_CONST_METHOD2(TimeUntilSend,
-                     QuicTime::Delta(QuicTime now,
-                                     QuicByteCount bytes_in_flight));
+  MOCK_METHOD2(TimeUntilSend,
+               QuicTime::Delta(QuicTime now, QuicByteCount bytes_in_flight));
   MOCK_CONST_METHOD1(PacingRate, QuicBandwidth(QuicByteCount));
   MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_CONST_METHOD0(HasReliableBandwidthEstimate, bool());

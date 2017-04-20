@@ -204,3 +204,16 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_base_cwnd_on_srtt, false)
 // If true, enable random padding of size [1, 256] when response body is
 // compressed for QUIC version >= 38.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_random_padding, false)
+
+// Use conservation in PROBE_BW ouside of super-unity gain and immediately
+// preceeding cycle.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_extra_conservation, false)
+
+// Increase BBR's inflight limit if recent ack rate is low.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slow_recent_delivery, false)
+
+// Congestion window gain for QUIC BBR during slow delivery.
+QUIC_FLAG(double, FLAGS_quic_bbr_slow_delivery_cwnd_gain, 4.0f)
+
+// Threshold multiplier below which delivery is considered slow.
+QUIC_FLAG(double, FLAGS_quic_bbr_slow_delivery_threshold_multiplier, 0.5f)

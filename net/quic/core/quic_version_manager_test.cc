@@ -30,7 +30,7 @@ TEST(QuicVersionManagerTest, QuicVersionManager) {
   EXPECT_EQ(QUIC_VERSION_36, manager.GetSupportedVersions()[2]);
   EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[3]);
 
-  SetQuicFlag(&FLAGS_quic_enable_version_39, true);
+  FLAGS_quic_enable_version_39 = true;
   EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
             manager.GetSupportedVersions());
   ASSERT_EQ(5u, manager.GetSupportedVersions().size());
