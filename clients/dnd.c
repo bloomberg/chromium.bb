@@ -534,6 +534,10 @@ create_drag_source(struct dnd *dnd,
 		} else {
 			dnd_drag->data_source =
 				display_create_data_source(dnd->display);
+			if (!dnd_drag->data_source) {
+				fprintf(stderr, "No data device manager\n");
+				abort();
+			}
 			wl_data_source_add_listener(dnd_drag->data_source,
 						    &data_source_listener,
 						    dnd_drag);
