@@ -37,28 +37,3 @@ static_library("router") {
     public_deps += [ "mojo:media_router" ]
   }
 }
-
-source_set("unit_tests") {
-  testonly = true
-  public_deps = [
-    ":router",
-    "//base/test:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/icu",
-  ]
-
-  sources = [
-    "discovery/media_sink_internal_unittest.cc",
-    "issue_unittest.cc",
-    "media_route_unittest.cc",
-    "media_sink_unittest.cc",
-    "media_source_helper_unittest.cc",
-    "media_source_unittest.cc",
-  ]
-
-  if (!is_android) {
-    public_deps += [ "mojo:media_router_test_interfaces" ]
-    sources += [ "mojo/media_router_struct_traits_unittest.cc" ]
-  }
-}
