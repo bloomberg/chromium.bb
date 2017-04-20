@@ -310,13 +310,11 @@
           'id': 360,
           'caption': '''Configure the New Tab page URL''',
           'tags': [],
-          'desc': '''Configures the default New Tab page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
+          'desc': '''Configures the default New Tab page URL and prevents users from changing it.
 
           The New Tab page is the page opened when new tabs are created (including the one opened in new windows).
 
-          This policy does not decide which pages to be opened on start up. They are controlled by the RestoreOnStartup policies, which could be to open the New Tab page.
-
-          The NewTabPageLocation can be set to a URL you specify here. It will also affect the Home Page if it is set to open the New Tab page, as well as the startup page if set to New Tab page.
+          This policy does not decide which pages are to be opened on start up. Those are controlled by the <ph name="RESTOREONSTARTUP_POLICY_NAME">RestoreOnStartup</ph> policies. Yet this policy does affect the Home Page if that is set to open the New Tab page, as well as the startup page if that is set to open the New Tab page.
 
           If the policy is not set or left empty the default new tab page is used.
 
