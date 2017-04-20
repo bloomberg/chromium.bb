@@ -43,6 +43,14 @@ class PaymentShippingOption;
                            completionHandler:
                                (ProceduralBlockWithBool)completionHandler;
 
+// Resolves the JavaScript promise returned by the call to canMakePayment on the
+// current PaymentRequest, with the specified |value|. If |completionHandler| is
+// not nil, it will be invoked with YES after the operation has completed
+// successfully or with NO otherwise.
+- (void)resolveCanMakePaymentPromiseWithValue:(bool)value
+                            completionHandler:
+                                (ProceduralBlockWithBool)completionHandler;
+
 // Resolves the promise returned by PaymentRequest.prototype.abort.
 - (void)resolveAbortPromiseWithCompletionHandler:
     (ProceduralBlockWithBool)completionHandler;

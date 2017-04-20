@@ -5,7 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_H_
 #define IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_H_
 
+#include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -36,6 +38,11 @@ class PaymentRequest : payments::PaymentOptionsProvider {
 
   autofill::PersonalDataManager* GetPersonalDataManager() const {
     return personal_data_manager_;
+  }
+
+  // Returns the web::PaymentRequest that was used to build this PaymentRequest.
+  const web::PaymentRequest& web_payment_request() const {
+    return web_payment_request_;
   }
 
   // Returns the payment details from |web_payment_request_|.
@@ -140,6 +147,9 @@ class PaymentRequest : payments::PaymentOptionsProvider {
   web::PaymentShippingOption* selected_shipping_option() const {
     return selected_shipping_option_;
   }
+
+  // Returns whether the current PaymentRequest can be used to make a payment.
+  bool CanMakePayment() const;
 
  private:
   // Fetches the autofill profiles for this user from the PersonalDataManager,

@@ -68,6 +68,16 @@ NSString* JSONEscape(NSString* JSON) {
   [self executeScript:script completionHandler:completionHandler];
 }
 
+- (void)resolveCanMakePaymentPromiseWithValue:(bool)value
+                            completionHandler:
+                                (ProceduralBlockWithBool)completionHandler {
+  NSString* script = value ? @"__gCrWeb['paymentRequestManager']."
+                             @"resolveCanMakePaymentPromise(true)"
+                           : @"__gCrWeb['paymentRequestManager']."
+                             @"resolveCanMakePaymentPromise(false)";
+  [self executeScript:script completionHandler:completionHandler];
+}
+
 - (void)resolveAbortPromiseWithCompletionHandler:
     (ProceduralBlockWithBool)completionHandler {
   NSString* script = @"__gCrWeb['paymentRequestManager'].resolveAbortPromise()";

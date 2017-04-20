@@ -41,8 +41,9 @@
 #endif
 
 namespace {
+
 // Command prefix for injected JavaScript.
-const std::string kCommandPrefix = "paymentRequest";
+const char kCommandPrefix[] = "paymentRequest";
 
 // Time interval between attempts to unblock the webview's JS event queue.
 const NSTimeInterval kNoopInterval = 0.1;
@@ -121,6 +122,10 @@ NSString* kCancelMessage = @"The payment request was canceled.";
 // Handles invocations of PaymentRequest.abort(). Returns YES if the invocation
 // was successful.
 - (BOOL)handleRequestAbort:(const base::DictionaryValue&)message;
+
+// Handles invocations of PaymentRequest.canMakePayment(). Returns YES if the
+// invocation was successful.
+- (BOOL)handleCanMakePayment:(const base::DictionaryValue&)message;
 
 // Called by |_updateEventTimeoutTimer|, displays an error message. Upon
 // dismissal of the error message, cancels the Payment Request as if it was
@@ -299,6 +304,9 @@ NSString* kCancelMessage = @"The payment request was canceled.";
   if (command == "paymentRequest.requestAbort") {
     return [self handleRequestAbort:JSONCommand];
   }
+  if (command == "paymentRequest.requestCanMakePayment") {
+    return [self handleCanMakePayment:JSONCommand];
+  }
   if (command == "paymentRequest.responseComplete") {
     return [self handleResponseComplete:JSONCommand];
   }
@@ -308,12 +316,10 @@ NSString* kCancelMessage = @"The payment request was canceled.";
   return NO;
 }
 
-- (BOOL)handleRequestShow:(const base::DictionaryValue&)message {
-  // TODO(crbug.com/602666): check that there's not already a pending request.
-  // TODO(crbug.com/602666): compare our supported payment types (i.e. autofill
-  //   credit card types) against the merchant supported types and return NO
-  //   if the intersection is empty.
-
+// Ensures that |_paymentRequest| is set to the correct value for |message|.
+// Returns YES if |_paymentRequest| was already set to the right value, or if it
+// was updated to match |message|.
+- (BOOL)createPaymentRequestFromMessage:(const base::DictionaryValue&)message {
   const base::DictionaryValue* paymentRequestData;
   web::PaymentRequest webPaymentRequest;
   if (!message.GetDictionary("payment_request", &paymentRequestData)) {
@@ -325,8 +331,27 @@ NSString* kCancelMessage = @"The payment request was canceled.";
     return NO;
   }
 
+  // TODO(crbug.com/711419): make sure multiple PaymentRequests can be active
+  // simultaneously.
+  if (_paymentRequest &&
+      (_paymentRequest->web_payment_request() == webPaymentRequest)) {
+    return YES;
+  }
+
   _paymentRequest =
       base::MakeUnique<PaymentRequest>(webPaymentRequest, _personalDataManager);
+  return YES;
+}
+
+- (BOOL)handleRequestShow:(const base::DictionaryValue&)message {
+  // TODO(crbug.com/602666): check that there's not already a pending request.
+  // TODO(crbug.com/602666): compare our supported payment types (i.e. autofill
+  //   credit card types) against the merchant supported types and return NO
+  //   if the intersection is empty.
+
+  if (![self createPaymentRequestFromMessage:message]) {
+    return NO;
+  }
 
   UIImage* pageFavicon = nil;
   web::NavigationItem* navigationItem =
@@ -373,6 +398,20 @@ NSString* kCancelMessage = @"The payment request was canceled.";
   };
 
   [_paymentRequestCoordinator displayErrorWithCallback:callback];
+
+  return YES;
+}
+
+- (BOOL)handleCanMakePayment:(const base::DictionaryValue&)message {
+  if (![self createPaymentRequestFromMessage:message]) {
+    return NO;
+  }
+
+  // TODO(crbug.com/602666): reject the promise if quota (TBD) was exceeded.
+
+  [_paymentRequestJsManager
+      resolveCanMakePaymentPromiseWithValue:_paymentRequest->CanMakePayment()
+                          completionHandler:nil];
 
   return YES;
 }

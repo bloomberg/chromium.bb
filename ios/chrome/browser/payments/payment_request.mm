@@ -84,6 +84,10 @@ autofill::CreditCard* PaymentRequest::AddCreditCard(
   return credit_cards_.front();
 }
 
+bool PaymentRequest::CanMakePayment() const {
+  return !credit_cards_.empty();
+}
+
 void PaymentRequest::PopulateProfileCache() {
   const std::vector<autofill::AutofillProfile*>& profiles_to_suggest =
       personal_data_manager_->GetProfilesToSuggest();
