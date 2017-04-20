@@ -412,9 +412,11 @@ def get_interface_exposed_arguments(file_contents):
 
 # Workaround for http://crbug.com/611437
 # TODO(bashi): Remove this hack once we resolve too-long generated file names.
+# pylint: disable=line-too-long
 def shorten_union_name(union_type):
     aliases = {
         'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext': 'RenderingContext',
+        'HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas': 'ImageBitmapSource',
     }
 
     idl_type = union_type
