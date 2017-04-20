@@ -14,7 +14,7 @@ namespace ash {
 
 using DisplayConfigurationControllerTest = test::AshTestBase;
 
-TEST_F(DisplayConfigurationControllerTest, ErasesAnimatorOnAnimationEnded) {
+TEST_F(DisplayConfigurationControllerTest, OnlyHasOneAnimator) {
   // TODO(wutao): needs display_configuration_controller
   // http://crbug.com/686839.
   if (Shell::GetAshConfig() == Config::MASH)
@@ -33,7 +33,14 @@ TEST_F(DisplayConfigurationControllerTest, ErasesAnimatorOnAnimationEnded) {
   screen_rotation_animator->Rotate(
       display::Display::ROTATE_90,
       display::Display::RotationSource::ROTATION_SOURCE_USER);
-  EXPECT_EQ(0, testapi.DisplayScreenRotationAnimatorMapSize());
+  EXPECT_EQ(1, testapi.DisplayScreenRotationAnimatorMapSize());
+
+  screen_rotation_animator =
+      testapi.GetScreenRotationAnimatorForDisplay(display.id());
+  screen_rotation_animator->Rotate(
+      display::Display::ROTATE_180,
+      display::Display::RotationSource::ROTATION_SOURCE_USER);
+  EXPECT_EQ(1, testapi.DisplayScreenRotationAnimatorMapSize());
 }
 
 }  // namespace ash

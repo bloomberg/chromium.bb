@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/rotator/screen_rotation_animator_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/display.h"
@@ -34,8 +33,7 @@ class ScreenRotationAnimator;
 // * Provides a single interface for UI and API classes.
 // * TODO: Forwards display configuration changed events to UI and API classes.
 class ASH_EXPORT DisplayConfigurationController
-    : public WindowTreeHostManager::Observer,
-      public ScreenRotationAnimatorObserver {
+    : public WindowTreeHostManager::Observer {
  public:
   DisplayConfigurationController(
       display::DisplayManager* display_manager,
@@ -61,11 +59,6 @@ class ASH_EXPORT DisplayConfigurationController
 
   // WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;
-
-  // ScreenRotationAnimatorObserver
-  // This will be called when the animation is ended or aborted.
-  void OnScreenRotationAnimationFinished(
-      ScreenRotationAnimator* animator) override;
 
  protected:
   friend class ash::test::DisplayConfigurationControllerTestApi;

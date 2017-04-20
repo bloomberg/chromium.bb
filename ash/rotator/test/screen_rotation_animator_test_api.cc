@@ -28,6 +28,10 @@ ScreenRotationAnimatorTestApi::GetLayerAnimators() {
     animators.insert(animators.end(),
                      animator_->old_layer_tree_owner_->root()->GetAnimator());
   }
+  if (animator_->new_layer_tree_owner_) {
+    animators.insert(animators.end(),
+                     animator_->new_layer_tree_owner_->root()->GetAnimator());
+  }
   return animators;
 }
 

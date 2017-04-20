@@ -133,16 +133,6 @@ void DisplayConfigurationController::OnDisplayConfigurationChanged() {
   SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
 }
 
-void DisplayConfigurationController::OnScreenRotationAnimationFinished(
-    ScreenRotationAnimator* screen_rotation_animator) {
-  const int64_t display_id = screen_rotation_animator->display_id();
-
-  DCHECK(rotation_animator_map_.count(display_id));
-
-  screen_rotation_animator->RemoveScreenRotationAnimatorObserver(this);
-  rotation_animator_map_.erase(screen_rotation_animator->display_id());
-}
-
 // Protected
 
 void DisplayConfigurationController::ResetAnimatorForTest() {
@@ -190,7 +180,6 @@ DisplayConfigurationController::GetScreenRotationAnimatorForDisplay(
     return iter->second.get();
 
   auto animator = base::MakeUnique<ScreenRotationAnimator>(display_id);
-  animator->AddScreenRotationAnimatorObserver(this);
   ScreenRotationAnimator* result = animator.get();
   rotation_animator_map_.insert(
       std::make_pair(display_id, std::move(animator)));
