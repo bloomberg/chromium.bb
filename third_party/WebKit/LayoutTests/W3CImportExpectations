@@ -366,7 +366,8 @@ external/wpt/vibration [ Skip ]
 external/wpt/wai-aria [ Skip ]
 ## Owners: suzyh@chromium.org
 # external/wpt/web-animations [ Pass ]
-external/wpt/webaudio [ Skip ]
+## Owners: hongchan@chromium.org, rtoy@chromium.org
+# external/wpt/webaudio [ Pass ]
 external/wpt/webauthn [ Skip ]
 external/wpt/webdriver [ Skip ]
 external/wpt/webgl [ Skip ]
