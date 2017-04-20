@@ -747,7 +747,6 @@ void FFmpegDemuxerStream::SetEnabled(bool enabled, base::TimeDelta timestamp) {
   if (!is_enabled_ && !read_cb_.is_null()) {
     DVLOG(1) << "Read from disabled stream, returning EOS";
     base::ResetAndReturn(&read_cb_).Run(kOk, DecoderBuffer::CreateEOSBuffer());
-    return;
   }
   if (!stream_status_change_cb_.is_null())
     stream_status_change_cb_.Run(this, is_enabled_, timestamp);

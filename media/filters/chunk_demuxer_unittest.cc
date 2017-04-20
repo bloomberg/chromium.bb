@@ -4675,11 +4675,23 @@ TEST_F(ChunkDemuxerTest, StreamStatusNotifications) {
   ChunkDemuxerStream* audio_stream =
       static_cast<ChunkDemuxerStream*>(GetStream(DemuxerStream::AUDIO));
   EXPECT_NE(nullptr, audio_stream);
-  CheckStreamStatusNotifications(demuxer_.get(), audio_stream);
   ChunkDemuxerStream* video_stream =
       static_cast<ChunkDemuxerStream*>(GetStream(DemuxerStream::VIDEO));
   EXPECT_NE(nullptr, video_stream);
+
+  // Verify stream status changes without pending read.
+  CheckStreamStatusNotifications(demuxer_.get(), audio_stream);
   CheckStreamStatusNotifications(demuxer_.get(), video_stream);
+
+  // Verify stream status changes with pending read.
+  bool read_done = false;
+  audio_stream->Read(base::Bind(&OnReadDone_EOSExpected, &read_done));
+  CheckStreamStatusNotifications(demuxer_.get(), audio_stream);
+  EXPECT_TRUE(read_done);
+  read_done = false;
+  video_stream->Read(base::Bind(&OnReadDone_EOSExpected, &read_done));
+  CheckStreamStatusNotifications(demuxer_.get(), video_stream);
+  EXPECT_TRUE(read_done);
 }
 
 TEST_F(ChunkDemuxerTest, MultipleIds) {
