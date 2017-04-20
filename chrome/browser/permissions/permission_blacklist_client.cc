@@ -48,7 +48,8 @@ PermissionBlacklistClient::PermissionBlacklistClient(
   AddRef();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&PermissionBlacklistClient::StartCheck, this, request_origin));
+      base::BindOnce(&PermissionBlacklistClient::StartCheck, this,
+                     request_origin));
 }
 
 PermissionBlacklistClient::~PermissionBlacklistClient() {}
@@ -97,8 +98,9 @@ void PermissionBlacklistClient::OnCheckApiBlacklistUrlResult(
   PermissionUmaUtil::RecordSafeBrowsingResponse(response_time, response);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&PermissionBlacklistClient::EvaluateBlacklistResultOnUiThread,
-                 this, permission_blocked));
+      base::BindOnce(
+          &PermissionBlacklistClient::EvaluateBlacklistResultOnUiThread, this,
+          permission_blocked));
 }
 
 void PermissionBlacklistClient::EvaluateBlacklistResultOnUiThread(

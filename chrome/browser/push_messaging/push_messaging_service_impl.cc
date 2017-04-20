@@ -814,8 +814,8 @@ void PushMessagingServiceImpl::DidDeleteID(const std::string& app_id,
   // Calling that immediately would cause a use-after-free in our caller.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&PushMessagingServiceImpl::DidUnsubscribe,
-                 weak_factory_.GetWeakPtr(), app_id, was_subscribed));
+      base::BindOnce(&PushMessagingServiceImpl::DidUnsubscribe,
+                     weak_factory_.GetWeakPtr(), app_id, was_subscribed));
 }
 
 void PushMessagingServiceImpl::DidUnsubscribe(

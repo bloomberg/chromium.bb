@@ -319,9 +319,9 @@ void HandleReadError(const base::FilePath& pref_filename,
     if (message_id) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ShowProfileErrorDialog, ProfileErrorType::PREFERENCES,
-                     message_id,
-                     sql::GetCorruptFileDiagnosticsInfo(pref_filename)));
+          base::BindOnce(&ShowProfileErrorDialog, ProfileErrorType::PREFERENCES,
+                         message_id,
+                         sql::GetCorruptFileDiagnosticsInfo(pref_filename)));
     }
 #else
     // On ChromeOS error screen with message about broken local state

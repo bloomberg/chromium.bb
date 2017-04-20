@@ -264,24 +264,21 @@ int GetSwitchValueAsInt(const base::CommandLine& command_line,
 void UpdateMetricsUsagePrefsOnUIThread(const std::string& service_name,
                                        int message_size,
                                        bool is_cellular) {
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind([](const std::string& service_name,
-                    int message_size,
-                    bool is_cellular) {
-                   // Some unit tests use IOThread but do not initialize
-                   // MetricsService. In that case it's fine to skip the update.
-                   auto* metrics_service = g_browser_process->metrics_service();
-                   if (metrics_service) {
-                     metrics_service->UpdateMetricsUsagePrefs(service_name,
-                                                              message_size,
-                                                              is_cellular);
-                   }
-                 },
-                 service_name,
-                 message_size,
-                 is_cellular));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(
+                              [](const std::string& service_name,
+                                 int message_size, bool is_cellular) {
+                                // Some unit tests use IOThread but do not
+                                // initialize MetricsService. In that case it's
+                                // fine to skip the update.
+                                auto* metrics_service =
+                                    g_browser_process->metrics_service();
+                                if (metrics_service) {
+                                  metrics_service->UpdateMetricsUsagePrefs(
+                                      service_name, message_size, is_cellular);
+                                }
+                              },
+                              service_name, message_size, is_cellular));
 }
 
 }  // namespace
@@ -475,10 +472,9 @@ net_log::ChromeNetLog* IOThread::net_log() {
 void IOThread::ChangedToOnTheRecord() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&IOThread::ChangedToOnTheRecordOnIOThread,
-                 base::Unretained(this)));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&IOThread::ChangedToOnTheRecordOnIOThread,
+                     base::Unretained(this)));
 }
 
 net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
@@ -675,10 +671,9 @@ void IOThread::Init() {
   // get it onto the message loop while the IOThread object still
   // exists.  However, the message might not be processed on the UI
   // thread until after IOThread is gone, so use a weak pointer.
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&IOThread::InitSystemRequestContext,
-                                     weak_factory_.GetWeakPtr()));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&IOThread::InitSystemRequestContext,
+                                         weak_factory_.GetWeakPtr()));
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
   // Record how common CPUs with broken NEON units are. See
@@ -845,10 +840,9 @@ void IOThread::InitSystemRequestContext() {
   // Safe to post an unretained this pointer, since IOThread is
   // guaranteed to outlive the IO BrowserThread.
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&IOThread::InitSystemRequestContextOnIOThread,
-                 base::Unretained(this)));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&IOThread::InitSystemRequestContextOnIOThread,
+                     base::Unretained(this)));
 }
 
 void IOThread::InitSystemRequestContextOnIOThread() {

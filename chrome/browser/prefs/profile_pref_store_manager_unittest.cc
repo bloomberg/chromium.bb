@@ -293,7 +293,7 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
       base::RunLoop run_loop;
       JsonPrefStore::GetTaskRunnerForFile(profile_dir_.GetPath(),
                                           worker_pool_->pool().get())
-          ->PostTaskAndReply(FROM_HERE, base::Bind(&base::DoNothing),
+          ->PostTaskAndReply(FROM_HERE, base::BindOnce(&base::DoNothing),
                              run_loop.QuitClosure());
       run_loop.Run();
 
@@ -328,7 +328,7 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
     base::RunLoop run_loop;
     JsonPrefStore::GetTaskRunnerForFile(profile_dir_.GetPath(),
                                         worker_pool_->pool().get())
-        ->PostTaskAndReply(FROM_HERE, base::Bind(&base::DoNothing),
+        ->PostTaskAndReply(FROM_HERE, base::BindOnce(&base::DoNothing),
                            run_loop.QuitClosure());
     run_loop.Run();
   }

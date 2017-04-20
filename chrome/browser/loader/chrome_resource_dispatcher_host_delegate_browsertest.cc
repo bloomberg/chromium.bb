@@ -258,7 +258,7 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &TestDispatcherHostDelegate::GetTimesStandardThrottlesAddedForURL,
             base::Unretained(dispatcher_host_delegate_.get()), url, &count),
         run_loop.QuitClosure());
@@ -360,8 +360,8 @@ class MirrorMockURLRequestJob : public net::URLRequestMockHTTPJob {
     // Report the observed request headers on the UI thread.
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(report_on_ui_, request_->url().spec(),
-                   request_->extra_request_headers().ToString()));
+        base::BindOnce(report_on_ui_, request_->url().spec(),
+                       request_->extra_request_headers().ToString()));
 
     URLRequestMockHTTPJob::Start();
   }
@@ -529,19 +529,20 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
               test_case.original_url);
       content::BrowserThread::PostTask(
           content::BrowserThread::IO, FROM_HERE,
-          base::Bind(&SetDelegateOnIO, dispatcher_host_delegate.get()));
+          base::BindOnce(&SetDelegateOnIO, dispatcher_host_delegate.get()));
     }
 
     // Set up mockup interceptors.
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&MirrorMockJobInterceptor::Register, test_case.original_url,
-                   root_http, report_request_headers));
+        base::BindOnce(&MirrorMockJobInterceptor::Register,
+                       test_case.original_url, root_http,
+                       report_request_headers));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&MirrorMockJobInterceptor::Register,
-                   test_case.redirected_to_url, root_http,
-                   report_request_headers));
+        base::BindOnce(&MirrorMockJobInterceptor::Register,
+                       test_case.redirected_to_url, root_http,
+                       report_request_headers));
 
     // Navigate to first url.
     ui_test_utils::NavigateToURL(browser(), test_case.original_url);
@@ -549,19 +550,19 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
     // Cleanup before verifying the observed headers.
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&MirrorMockJobInterceptor::Unregister,
-                   test_case.original_url));
+        base::BindOnce(&MirrorMockJobInterceptor::Unregister,
+                       test_case.original_url));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&MirrorMockJobInterceptor::Unregister,
-                   test_case.redirected_to_url));
+        base::BindOnce(&MirrorMockJobInterceptor::Unregister,
+                       test_case.redirected_to_url));
 
     // If delegate is changed, remove it.
     if (test_case.inject_header) {
       base::RunLoop run_loop;
       content::BrowserThread::PostTaskAndReply(
           content::BrowserThread::IO, FROM_HERE,
-          base::Bind(&SetDelegateOnIO, nullptr), run_loop.QuitClosure());
+          base::BindOnce(&SetDelegateOnIO, nullptr), run_loop.QuitClosure());
       run_loop.Run();
     }
 
@@ -571,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
     content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
                                              FROM_HERE,
                                              // Flush IO thread...
-                                             base::Bind(&base::DoNothing),
+                                             base::BindOnce(&base::DoNothing),
                                              // ... and UI thread.
                                              run_loop.QuitClosure());
     run_loop.Run();

@@ -263,9 +263,8 @@ class BrowserCloseManagerBrowserTest
         browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
     browsers_.push_back(browser());
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

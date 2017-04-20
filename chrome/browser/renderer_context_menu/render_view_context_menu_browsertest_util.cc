@@ -34,8 +34,9 @@ void ContextMenuNotificationObserver::Observe(
   RenderViewContextMenu* context_menu =
       content::Source<RenderViewContextMenu>(source).ptr();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ContextMenuNotificationObserver::ExecuteCommand,
-                            base::Unretained(this), context_menu));
+      FROM_HERE,
+      base::BindOnce(&ContextMenuNotificationObserver::ExecuteCommand,
+                     base::Unretained(this), context_menu));
 }
 
 void ContextMenuNotificationObserver::ExecuteCommand(
@@ -62,8 +63,8 @@ void ContextMenuWaiter::Observe(int type,
       RenderViewContextMenu* context_menu =
           content::Source<RenderViewContextMenu>(source).ptr();
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&ContextMenuWaiter::Cancel,
-                                base::Unretained(this), context_menu));
+          FROM_HERE, base::BindOnce(&ContextMenuWaiter::Cancel,
+                                    base::Unretained(this), context_menu));
       break;
     }
 

@@ -56,8 +56,8 @@ class TimingUpdatedObserver : public content::BrowserMessageFilter {
     // Roundtrip to the IO thread, to ensure that the filter is properly
     // installed.
     content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE, base::Bind(&base::DoNothing),
-        base::Bind(&TimingUpdatedObserver::Quit, this));
+        content::BrowserThread::IO, FROM_HERE, base::BindOnce(&base::DoNothing),
+        base::BindOnce(&TimingUpdatedObserver::Quit, this));
     run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
     run_loop_.reset(nullptr);
@@ -122,8 +122,8 @@ class TimingUpdatedObserver : public content::BrowserMessageFilter {
       // this waiter unblocks.
       content::BrowserThread::PostTask(
           content::BrowserThread::IO, FROM_HERE,
-          base::Bind(&TimingUpdatedObserver::BounceTimingUpdate, this, timing,
-                     metadata));
+          base::BindOnce(&TimingUpdatedObserver::BounceTimingUpdate, this,
+                         timing, metadata));
     }
     return true;
   }
@@ -132,7 +132,7 @@ class TimingUpdatedObserver : public content::BrowserMessageFilter {
                           const page_load_metrics::PageLoadMetadata& metadata) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&TimingUpdatedObserver::SetTimingUpdatedAndQuit, this));
+        base::BindOnce(&TimingUpdatedObserver::SetTimingUpdatedAndQuit, this));
   }
 
   void Quit() {
@@ -298,8 +298,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ChromeErrorPage) {
       browser()->profile()->GetRequestContext();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&FailAllNetworkTransactions,
-                 base::RetainedRef(url_request_context_getter)));
+      base::BindOnce(&FailAllNetworkTransactions,
+                     base::RetainedRef(url_request_context_getter)));
 
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));

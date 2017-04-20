@@ -242,7 +242,7 @@ void DownloadSuggestionsProvider::FetchSuggestionImage(
   // TODO(vitaliii): Provide site's favicon for assets downloads or file type.
   // See crbug.com/631447.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, gfx::Image()));
+      FROM_HERE, base::BindOnce(callback, gfx::Image()));
 }
 
 void DownloadSuggestionsProvider::Fetch(
@@ -252,7 +252,7 @@ void DownloadSuggestionsProvider::Fetch(
   LOG(DFATAL) << "DownloadSuggestionsProvider has no |Fetch| functionality!";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           callback,
           ntp_snippets::Status(
               ntp_snippets::StatusCode::PERMANENT_ERROR,

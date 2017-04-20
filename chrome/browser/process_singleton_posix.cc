@@ -694,8 +694,8 @@ void ProcessSingleton::LinuxWatcher::SocketReader::
 
   // Return to the UI thread to handle opening a new browser tab.
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ProcessSingleton::LinuxWatcher::HandleMessage,
-                            parent_, current_dir, tokens, this));
+      FROM_HERE, base::BindOnce(&ProcessSingleton::LinuxWatcher::HandleMessage,
+                                parent_, current_dir, tokens, this));
   fd_watch_controller_.reset();
 
   // LinuxWatcher::HandleMessage() is in charge of destroying this SocketReader
@@ -713,11 +713,9 @@ void ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK(
     PLOG(ERROR) << "shutdown() failed";
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ProcessSingleton::LinuxWatcher::RemoveSocketReader,
-                 parent_,
-                 this));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ProcessSingleton::LinuxWatcher::RemoveSocketReader,
+                     parent_, this));
   // We will be deleted once the posted RemoveSocketReader task runs.
 }
 
@@ -1028,11 +1026,9 @@ bool ProcessSingleton::Create() {
 
   DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ProcessSingleton::LinuxWatcher::StartListening,
-                 watcher_,
-                 sock));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ProcessSingleton::LinuxWatcher::StartListening, watcher_,
+                     sock));
 
   return true;
 }

@@ -111,8 +111,8 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PerformanceMonitor::GatherMetricsMapOnIOThread,
-                 base::Unretained(this), current_update_sequence));
+      base::BindOnce(&PerformanceMonitor::GatherMetricsMapOnIOThread,
+                     base::Unretained(this), current_update_sequence));
 }
 
 void PerformanceMonitor::MarkProcessAsAlive(
@@ -167,10 +167,10 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PerformanceMonitor::MarkProcessesAsAliveOnUIThread,
-                 base::Unretained(this),
-                 base::Passed(std::move(process_data_list)),
-                 current_update_sequence));
+      base::BindOnce(&PerformanceMonitor::MarkProcessesAsAliveOnUIThread,
+                     base::Unretained(this),
+                     base::Passed(std::move(process_data_list)),
+                     current_update_sequence));
 }
 
 void PerformanceMonitor::MarkProcessesAsAliveOnUIThread(
@@ -182,8 +182,8 @@ void PerformanceMonitor::MarkProcessesAsAliveOnUIThread(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PerformanceMonitor::UpdateMetricsOnIOThread,
-                 base::Unretained(this), current_update_sequence));
+      base::BindOnce(&PerformanceMonitor::UpdateMetricsOnIOThread,
+                     base::Unretained(this), current_update_sequence));
 }
 
 void PerformanceMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
@@ -201,9 +201,10 @@ void PerformanceMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
     }
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&PerformanceMonitor::RunTriggersUIThread,
-                                     base::Unretained(this)));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&PerformanceMonitor::RunTriggersUIThread,
+                     base::Unretained(this)));
 }
 
 void PerformanceMonitor::RunTriggersUIThread() {

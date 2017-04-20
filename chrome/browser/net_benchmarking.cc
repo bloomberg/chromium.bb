@@ -102,5 +102,5 @@ void NetBenchmarking::ClearPredictorCache(
     const ClearPredictorCacheCallback& callback) {
   BrowserThread::PostTaskAndReply(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ClearPredictorCacheOnUIThread, profile_), callback);
+      base::BindOnce(&ClearPredictorCacheOnUIThread, profile_), callback);
 }

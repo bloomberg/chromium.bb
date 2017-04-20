@@ -332,9 +332,9 @@ void DeleteWebRTCIdentityStoreDBOnFileThread(
 
 void DeleteWebRTCIdentityStoreDB(const Profile& profile) {
   content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&DeleteWebRTCIdentityStoreDBOnFileThread, profile.GetPath()),
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&DeleteWebRTCIdentityStoreDBOnFileThread,
+                     profile.GetPath()),
       base::TimeDelta::FromSeconds(120));
 }
 

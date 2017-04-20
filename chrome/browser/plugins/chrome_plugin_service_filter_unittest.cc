@@ -65,10 +65,10 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromePluginServiceFilterTest::IsPluginAvailableOnIOThread,
-                   base::Unretained(this), plugin_content_url,
-                   main_frame_origin, resource_context, plugin_info,
-                   &is_available),
+        base::BindOnce(
+            &ChromePluginServiceFilterTest::IsPluginAvailableOnIOThread,
+            base::Unretained(this), plugin_content_url, main_frame_origin,
+            resource_context, plugin_info, &is_available),
         run_loop.QuitClosure());
     run_loop.Run();
 

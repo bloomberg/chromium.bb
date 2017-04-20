@@ -31,8 +31,8 @@ void InfoBarResponder::OnInfoBarAdded(infobars::InfoBar* infobar) {
   DCHECK(delegate);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&InfoBarResponder::Respond, base::Unretained(this), delegate));
+      FROM_HERE, base::BindOnce(&InfoBarResponder::Respond,
+                                base::Unretained(this), delegate));
 }
 
 void InfoBarResponder::OnInfoBarReplaced(infobars::InfoBar* old_infobar,

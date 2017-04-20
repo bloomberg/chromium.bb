@@ -973,8 +973,8 @@ void TabManager::DoChildProcessDispatch() {
   // during tear down.
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&TabManager::DoChildProcessDispatch,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&TabManager::DoChildProcessDispatch,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kRendererNotificationDelayInSeconds));
 }
 

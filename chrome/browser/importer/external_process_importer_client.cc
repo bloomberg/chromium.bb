@@ -50,8 +50,8 @@ void ExternalProcessImporterClient::Start() {
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_id));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ExternalProcessImporterClient::StartProcessOnIOThread, this,
-                 thread_id, base::Passed(std::move(request))));
+      base::BindOnce(&ExternalProcessImporterClient::StartProcessOnIOThread,
+                     this, thread_id, base::Passed(std::move(request))));
 
   // Dictionary of all localized strings that could be needed by the importer
   // in the external process.

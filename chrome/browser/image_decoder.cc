@@ -40,7 +40,7 @@ void BindToBrowserConnector(service_manager::mojom::ConnectorRequest request) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&BindToBrowserConnector, base::Passed(&request)));
+        base::BindOnce(&BindToBrowserConnector, base::Passed(&request)));
     return;
   }
 
@@ -52,7 +52,7 @@ void RunDecodeCallbackOnTaskRunner(
     const data_decoder::mojom::ImageDecoder::DecodeImageCallback& callback,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const SkBitmap& image) {
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, image));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, image));
 }
 
 void DecodeImage(
@@ -173,9 +173,9 @@ void ImageDecoder::StartWithOptionsImpl(
   // implementation.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&DecodeImage, base::Passed(&image_data), codec, shrink_to_fit,
-                 desired_image_frame_size, callback,
-                 make_scoped_refptr(image_request->task_runner())));
+      base::BindOnce(&DecodeImage, base::Passed(&image_data), codec,
+                     shrink_to_fit, desired_image_frame_size, callback,
+                     make_scoped_refptr(image_request->task_runner())));
 }
 
 // static

@@ -264,8 +264,8 @@ void ServiceWatcherImpl::DeferUpdate(ServiceWatcher::UpdateType update_type,
   if (it != services_.end() && !it->second->update_pending()) {
     it->second->set_update_pending(true);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ServiceWatcherImpl::DeliverDeferredUpdate,
-                              AsWeakPtr(), update_type, service_name));
+        FROM_HERE, base::BindOnce(&ServiceWatcherImpl::DeliverDeferredUpdate,
+                                  AsWeakPtr(), update_type, service_name));
   }
 }
 
@@ -316,9 +316,10 @@ void ServiceWatcherImpl::OnNsecRecord(const std::string& name,
 void ServiceWatcherImpl::ScheduleQuery(int timeout_seconds) {
   if (timeout_seconds <= kMaxRequeryTimeSeconds) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&ServiceWatcherImpl::SendQuery, AsWeakPtr(),
-                              timeout_seconds * 2 /*next_timeout_seconds*/,
-                              false /*force_update*/),
+        FROM_HERE,
+        base::BindOnce(&ServiceWatcherImpl::SendQuery, AsWeakPtr(),
+                       timeout_seconds * 2 /*next_timeout_seconds*/,
+                       false /*force_update*/),
         base::TimeDelta::FromSeconds(timeout_seconds));
   }
 }

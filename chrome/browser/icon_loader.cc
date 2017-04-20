@@ -22,8 +22,8 @@ void IconLoader::Start() {
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&IconLoader::ReadGroup, base::Unretained(this)),
-      base::Bind(&IconLoader::OnReadGroup, base::Unretained(this)));
+      base::BindOnce(&IconLoader::ReadGroup, base::Unretained(this)),
+      base::BindOnce(&IconLoader::OnReadGroup, base::Unretained(this)));
 }
 
 IconLoader::IconLoader(const base::FilePath& file_path,
@@ -40,5 +40,5 @@ void IconLoader::ReadGroup() {
 void IconLoader::OnReadGroup() {
   BrowserThread::PostTask(
       ReadIconThreadID(), FROM_HERE,
-      base::Bind(&IconLoader::ReadIcon, base::Unretained(this)));
+      base::BindOnce(&IconLoader::ReadIcon, base::Unretained(this)));
 }

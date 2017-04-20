@@ -147,6 +147,6 @@ void ChromeControllerClient::LaunchDateAndTimeSettings() {
 #else
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&LaunchDateAndTimeSettingsOnFileThread));
+      base::BindOnce(&LaunchDateAndTimeSettingsOnFileThread));
 #endif
 }

@@ -144,9 +144,9 @@ void InitMdns(const MdnsInitCallback& on_initialized,
               const net::InterfaceIndexFamilyList& interfaces,
               net::MDnsClient* mdns) {
   SocketFactory socket_factory(interfaces);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(on_initialized,
-                                     mdns->StartListening(&socket_factory)));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(on_initialized, mdns->StartListening(&socket_factory)));
 }
 
 template<class T>
@@ -382,8 +382,9 @@ void ServiceDiscoveryClientMdns::ScheduleStartNewClient() {
   OnBeforeMdnsDestroy();
   if (restart_attempts_ < kMaxRestartAttempts) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&ServiceDiscoveryClientMdns::StartNewClient,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&ServiceDiscoveryClientMdns::StartNewClient,
+                       weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kRestartDelayOnNetworkChangeSeconds *
                                      (1 << restart_attempts_)));
   } else {
@@ -409,11 +410,10 @@ void ServiceDiscoveryClientMdns::OnInterfaceListReady(
     const net::InterfaceIndexFamilyList& interfaces) {
   mdns_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InitMdns,
-                 base::Bind(&ServiceDiscoveryClientMdns::OnMdnsInitialized,
-                            weak_ptr_factory_.GetWeakPtr()),
-                 interfaces,
-                 base::Unretained(mdns_.get())));
+      base::BindOnce(&InitMdns,
+                     base::Bind(&ServiceDiscoveryClientMdns::OnMdnsInitialized,
+                                weak_ptr_factory_.GetWeakPtr()),
+                     interfaces, base::Unretained(mdns_.get())));
 }
 
 void ServiceDiscoveryClientMdns::OnMdnsInitialized(bool success) {

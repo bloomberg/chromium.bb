@@ -523,9 +523,9 @@ void PluginInfoMessageFilter::GetPluginInfoReply(
   if (output->status != ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
     main_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PluginInfoMessageFilter::ReportMetrics, this,
-                   params.render_frame_id, output->actual_mime_type, params.url,
-                   params.main_frame_origin, ukm_source_id_));
+        base::BindOnce(&PluginInfoMessageFilter::ReportMetrics, this,
+                       params.render_frame_id, output->actual_mime_type,
+                       params.url, params.main_frame_origin, ukm_source_id_));
   }
 }
 

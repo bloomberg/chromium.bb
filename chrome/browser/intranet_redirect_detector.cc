@@ -40,8 +40,9 @@ IntranetRedirectDetector::IntranetRedirectDetector()
   // no function to do this.
   static const int kStartFetchDelaySeconds = 7;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&IntranetRedirectDetector::FinishSleep,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&IntranetRedirectDetector::FinishSleep,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kStartFetchDelaySeconds));
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -186,7 +187,8 @@ void IntranetRedirectDetector::OnIPAddressChanged() {
   in_sleep_ = true;
   static const int kNetworkSwitchDelayMS = 1000;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&IntranetRedirectDetector::FinishSleep,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&IntranetRedirectDetector::FinishSleep,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kNetworkSwitchDelayMS));
 }

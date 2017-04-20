@@ -38,7 +38,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
  protected:

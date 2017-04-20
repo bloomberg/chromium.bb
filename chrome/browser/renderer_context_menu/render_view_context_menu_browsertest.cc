@@ -686,8 +686,8 @@ class LoadImageRequestInterceptor : public net::URLRequestInterceptor {
     EXPECT_TRUE(request->load_flags() & net::LOAD_BYPASS_CACHE);
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&LoadImageRequestInterceptor::RequestCreated,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&LoadImageRequestInterceptor::RequestCreated,
+                       weak_factory_.GetWeakPtr()));
     return nullptr;
   }
 
@@ -752,10 +752,10 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
     std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(interceptor_);
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&LoadImageBrowserTest::AddInterceptorForURL,
-                   base::Unretained(this),
-                   GURL(embedded_test_server()->GetURL(image_path).spec()),
-                   base::Passed(&owned_interceptor)));
+        base::BindOnce(&LoadImageBrowserTest::AddInterceptorForURL,
+                       base::Unretained(this),
+                       GURL(embedded_test_server()->GetURL(image_path).spec()),
+                       base::Passed(&owned_interceptor)));
   }
 
   void AttemptLoadImage() {

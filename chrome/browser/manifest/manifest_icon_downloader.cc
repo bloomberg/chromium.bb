@@ -111,12 +111,9 @@ void ManifestIconDownloader::OnIconFetched(
   if (chosen.height() > ideal_icon_size_in_px ||
       chosen.width() > ideal_icon_size_in_px) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&ManifestIconDownloader::ScaleIcon,
-                   ideal_icon_size_in_px,
-                   chosen,
-                   callback));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&ManifestIconDownloader::ScaleIcon,
+                       ideal_icon_size_in_px, chosen, callback));
     return;
   }
 
@@ -135,10 +132,8 @@ void ManifestIconDownloader::ScaleIcon(
       ideal_icon_size_in_px,
       ideal_icon_size_in_px);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, scaled));
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::BindOnce(callback, scaled));
 }
 
 int ManifestIconDownloader::FindClosestBitmapIndex(

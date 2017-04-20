@@ -66,10 +66,9 @@ std::string RemoveCookieTester::GetCookie(const std::string& host) {
   waiting_callback_ = true;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RemoveCookieTester::GetCookieOnIOThread,
-                 base::Unretained(this),
-                 base::Unretained(profile_->GetRequestContext()),
-                 host));
+      base::BindOnce(&RemoveCookieTester::GetCookieOnIOThread,
+                     base::Unretained(this),
+                     base::Unretained(profile_->GetRequestContext()), host));
   BlockUntilNotified();
   return last_cookies_;
 }
@@ -80,11 +79,9 @@ void RemoveCookieTester::AddCookie(const std::string& host,
   waiting_callback_ = true;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RemoveCookieTester::SetCookieOnIOThread,
-                 base::Unretained(this),
-                 base::Unretained(profile_->GetRequestContext()),
-                 host,
-                 definition));
+      base::BindOnce(
+          &RemoveCookieTester::SetCookieOnIOThread, base::Unretained(this),
+          base::Unretained(profile_->GetRequestContext()), host, definition));
   BlockUntilNotified();
 }
 
@@ -117,8 +114,8 @@ void RemoveCookieTester::GetCookieCallback(const std::string& cookies) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&RemoveCookieTester::GetCookieCallback,
-                   base::Unretained(this), cookies));
+        base::BindOnce(&RemoveCookieTester::GetCookieCallback,
+                       base::Unretained(this), cookies));
     return;
   }
   last_cookies_ = cookies;
@@ -129,8 +126,8 @@ void RemoveCookieTester::SetCookieCallback(bool result) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&RemoveCookieTester::SetCookieCallback,
-                   base::Unretained(this), result));
+        base::BindOnce(&RemoveCookieTester::SetCookieCallback,
+                       base::Unretained(this), result));
     return;
   }
   ASSERT_TRUE(result);

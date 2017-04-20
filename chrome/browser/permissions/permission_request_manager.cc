@@ -369,10 +369,9 @@ void PermissionRequestManager::ScheduleShowBubble() {
     return;
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&PermissionRequestManager::TriggerShowBubble,
-                 weak_factory_.GetWeakPtr()));
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&PermissionRequestManager::TriggerShowBubble,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void PermissionRequestManager::TriggerShowBubble() {

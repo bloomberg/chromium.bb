@@ -146,7 +146,7 @@ void MemoryDetails::StartFetch() {
   // However, plugin process information is only available from the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MemoryDetails::CollectChildInfoOnIOThread, this));
+      base::BindOnce(&MemoryDetails::CollectChildInfoOnIOThread, this));
 }
 
 MemoryDetails::~MemoryDetails() {}
@@ -215,7 +215,7 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   // Now go do expensive memory lookups on the blocking pool.
   BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
       FROM_HERE,
-      base::Bind(&MemoryDetails::CollectProcessData, this, child_info),
+      base::BindOnce(&MemoryDetails::CollectProcessData, this, child_info),
       base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
