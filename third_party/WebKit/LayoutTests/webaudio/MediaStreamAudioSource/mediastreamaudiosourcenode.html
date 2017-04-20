@@ -50,6 +50,15 @@ function gotStream(stream, should) {
   should(mediaStreamSource.numberOfOutputs, 'mediaStreamSource.numberOfOutputs')
       .beEqualTo(1);
 
+  // Verify the same object is returned
+  let element = mediaStreamSource.mediaStream;
+  should(element instanceof MediaStream,
+    'mediaStreamSource.mediaStream instanceof MediaStream')
+    .beTrue();
+  should(mediaStreamSource.mediaStream === element,
+    'mediaStreamSource.mediaStream is same object')
+    .beTrue();
+
   // Try calling connect() method with illegal values.
   should(
       () => mediaStreamSource.connect(0, 0, 0),

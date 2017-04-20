@@ -43,6 +43,15 @@ audit.define(
           'audioNode.connect(context.destination, 0, 5)')
           .throw('IndexSizeError');
 
+      // Verify same object is returned.
+      let element = mediaSource.mediaElement;
+      should(element instanceof HTMLMediaElement,
+        'mediaSource.mediaElement instanceof HTMLMediaElement')
+        .beTrue();
+      should(mediaSource.mediaElement === element,
+        'mediaSource.mediaElement is same object')
+        .beTrue();
+
       // Try calling connect() with proper values.
       should(
           () => audioNode.connect(context.destination, 0, 0),

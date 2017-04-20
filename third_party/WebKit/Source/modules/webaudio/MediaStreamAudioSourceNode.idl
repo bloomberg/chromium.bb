@@ -30,5 +30,5 @@
     Measure
 ]
 interface MediaStreamAudioSourceNode : AudioNode {
-    [ImplementedAs=getMediaStream] readonly attribute MediaStream mediaStream;
+  [SameObject, ImplementedAs=getMediaStream] readonly attribute MediaStream mediaStream;
 };

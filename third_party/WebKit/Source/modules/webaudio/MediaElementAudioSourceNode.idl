@@ -31,5 +31,5 @@
     Measure
 ]
 interface MediaElementAudioSourceNode : AudioNode {
-    readonly attribute HTMLMediaElement mediaElement;
+    [SameObject] readonly attribute HTMLMediaElement mediaElement;
 };
