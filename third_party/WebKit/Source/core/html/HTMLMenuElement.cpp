@@ -31,6 +31,25 @@ using namespace HTMLNames;
 inline HTMLMenuElement::HTMLMenuElement(Document& document)
     : HTMLElement(menuTag, document) {}
 
+const String HTMLMenuElement::type() const {
+  const AtomicString menuType = FastGetAttribute(typeAttr);
+  if (EqualIgnoringASCIICase(menuType, "context")) {
+    return "context";
+  }
+  if (EqualIgnoringASCIICase(menuType, "toolbar")) {
+    return "toolbar";
+  }
+  if (parentNode() && isHTMLMenuElement(parentNode()) &&
+       toHTMLMenuElement(parentNode())->type() == "context") {
+    return "context";
+  }
+  return "toolbar";
+}
+
+void HTMLMenuElement::setType(const AtomicString& type) {
+  setAttribute(typeAttr, type);
+}
+
 DEFINE_NODE_FACTORY(HTMLMenuElement)
 
 }  // namespace blink

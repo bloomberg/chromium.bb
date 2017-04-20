@@ -8,16 +8,16 @@
 description("Tests the contextmenu attribute.");
 
 debug("Test with valid contextmenu attribute");
-document.write("<div id='container1' contextmenu='menu1'><menu id='menu1' type='popup' label='menu 1'></menu></div>");
+document.write("<div id='container1' contextmenu='menu1'><menu id='menu1' type='context' label='menu 1'></menu></div>");
 shouldBeEqualToString("document.getElementById('container1').contextMenu.id", "menu1");
-shouldBeEqualToString("document.getElementById('container1').contextMenu.type", "popup");
+shouldBeEqualToString("document.getElementById('container1').contextMenu.type", "context");
 shouldBeEqualToString("document.getElementById('container1').contextMenu.label", "menu 1");
 
 debug("Test with invalid contextmenu attribute");
-document.write("<div id='container2' contextmenu='nonexistent_menu'><menu id='menu2' type='popup' label='menu 2'></menu></div>");
+document.write("<div id='container2' contextmenu='nonexistent_menu'><menu id='menu2' type='context' label='menu 2'></menu></div>");
 shouldBeNull("document.getElementById('container2').contextMenu");
 
-debug("Test setting contextmenu attribute to non-popup type menu element");
+debug("Test setting contextmenu attribute to non-context type menu element");
 document.write("<div id='container11' contextmenu='menu11'><menu id='menu11' type='toolbar' label='menu 11'></menu></div>");
 var container11 = document.getElementById('container11');
 shouldBeEqualToString("container11.contextMenu.id", "menu11");
@@ -30,32 +30,32 @@ var container12 = document.getElementById('container12');
 shouldBeNull("container12.contextMenu");
 
 debug("Test setting contextmenu attribute to an ID which multiple elements have");
-document.write("<div id='container13' contextmenu='menu13'><button id='menu13'></button><menu id='menu13' type='popup' label='menu 13'></menu></div>");
+document.write("<div id='container13' contextmenu='menu13'><button id='menu13'></button><menu id='menu13' type='context' label='menu 13'></menu></div>");
 var container13 = document.getElementById('container13');
 shouldBeNull("container13.contextMenu");
-document.write("<div id='container14' contextmenu='menu14'><menu id='menu14' type='popup' label='menu 14'></menu><button id='menu14'></button></div>");
+document.write("<div id='container14' contextmenu='menu14'><menu id='menu14' type='context' label='menu 14'></menu><button id='menu14'></button></div>");
 var container14 = document.getElementById('container14');
 shouldBeEqualToString("container14.contextMenu.id", "menu14");
-shouldBeEqualToString("container14.contextMenu.type", "popup");
+shouldBeEqualToString("container14.contextMenu.type", "context");
 shouldBeEqualToString("container14.contextMenu.label", "menu 14");
 
 debug("Test setting contextmenu attribute");
 document.write("<div id='container3'></div>");
 var menu = document.createElement('menu');
 menu.id = 'menu3';
-menu.type = 'popup';
+menu.type = 'context';
 menu.label = 'menu 3';
 document.getElementById('container3').appendChild(menu);
 var container3 = document.getElementById('container3');
 container3.contextMenu = menu;
 shouldBeEqualToString("container3.contextMenu.id", "menu3");
-shouldBeEqualToString("container3.contextMenu.type", "popup");
+shouldBeEqualToString("container3.contextMenu.type", "context");
 shouldBeEqualToString("container3.contextMenu.label", "menu 3");
 
 debug("Test setting contextmenu attribute with menu element without id");
 document.write("<div id='container4'></div>");
 var menu1 = document.createElement('menu');
-menu1.type = 'popup';
+menu1.type = 'context';
 menu1.label = 'menu 4';
 document.getElementById('container4').appendChild(menu1);
 var container4 = document.getElementById('container4');
@@ -68,11 +68,11 @@ debug("Test setting contextmenu attribute with multiple menu element with same i
 document.write("<div id='container5'></div>");
 var menu2 = document.createElement('menu');
 menu2.id = 'menu5';
-menu2.type = 'popup';
+menu2.type = 'context';
 menu2.label = 'menu 5';
 var menu3 = document.createElement('menu');
 menu3.id = 'menu5';
-menu3.type = 'popup';
+menu3.type = 'context';
 menu3.label = 'menu 6';
 document.getElementById('container5').appendChild(menu2);
 document.getElementById('container5').appendChild(menu3);
@@ -111,7 +111,7 @@ document.getElementById('container9').appendChild(menu4);
 var container9 = document.getElementById('container9');
 container9.contextMenu = menu4;
 shouldBeEqualToString("container9.contextMenu.id", "menu_without_type");
-shouldBeEqualToString("container9.contextMenu.type", "");
+shouldBeEqualToString("container9.contextMenu.type", "toolbar");
 shouldBeEqualToString("container9.contextMenu.label", "menu without type");
 
 debug("Test setting contextmenu attribute to menu element which is in shadow dom");
@@ -125,8 +125,22 @@ container10.contextMenu = menu5;
 shouldBeNull("container10.contextMenu");
 
 debug("Test contextmenu attribute of an element with no contextmenu attribute but parent has valid contextmenu");
-document.write("<div contextmenu='menu7'><button id='inner'></button><menu id='menu7' type='popup' label='menu 7'></menu></div>");
+document.write("<div contextmenu='menu7'><button id='inner'></button><menu id='menu7' type='context' label='menu 7'></menu></div>");
 var inner = document.getElementById('inner');
 shouldBeNull("inner.contextMenu");
+
+debug("Test setting menu type when parent is contextmenu");
+document.write("<menu id='menu15' type='context'></menu>");
+var menu15 = document.getElementById('menu15');
+var menu16 = document.createElement('menu');
+menu16.id = 'menu16';
+menu15.appendChild(menu16);
+shouldBeEqualToString("menu15.type", "context");
+shouldBeEqualToString("menu16.type", "context");
+menu16.type = 'popup';
+shouldBeEqualToString("menu16.type", "context");
+menu15.type = 'toolbar';
+shouldBeEqualToString("menu15.type", "toolbar");
+shouldBeEqualToString("menu16.type", "toolbar");
 </script>
 </html>

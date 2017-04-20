@@ -20,7 +20,7 @@
 // https://html.spec.whatwg.org/#the-menu-element
 
 interface HTMLMenuElement : HTMLElement {
-    [CEReactions, RuntimeEnabled=ContextMenu, Reflect] attribute DOMString type;
+    [CEReactions, RuntimeEnabled=ContextMenu] attribute DOMString type;
     [CEReactions, RuntimeEnabled=ContextMenu, Reflect] attribute DOMString label;
 
     // obsolete members

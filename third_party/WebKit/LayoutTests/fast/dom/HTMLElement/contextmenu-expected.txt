@@ -5,11 +5,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Test with valid contextmenu attribute
 PASS document.getElementById('container1').contextMenu.id is "menu1"
-PASS document.getElementById('container1').contextMenu.type is "popup"
+PASS document.getElementById('container1').contextMenu.type is "context"
 PASS document.getElementById('container1').contextMenu.label is "menu 1"
 Test with invalid contextmenu attribute
 PASS document.getElementById('container2').contextMenu is null
-Test setting contextmenu attribute to non-popup type menu element
+Test setting contextmenu attribute to non-context type menu element
 PASS container11.contextMenu.id is "menu11"
 PASS container11.contextMenu.type is "toolbar"
 PASS container11.contextMenu.label is "menu 11"
@@ -18,11 +18,11 @@ PASS container12.contextMenu is null
 Test setting contextmenu attribute to an ID which multiple elements have
 PASS container13.contextMenu is null
 PASS container14.contextMenu.id is "menu14"
-PASS container14.contextMenu.type is "popup"
+PASS container14.contextMenu.type is "context"
 PASS container14.contextMenu.label is "menu 14"
 Test setting contextmenu attribute
 PASS container3.contextMenu.id is "menu3"
-PASS container3.contextMenu.type is "popup"
+PASS container3.contextMenu.type is "context"
 PASS container3.contextMenu.label is "menu 3"
 Test setting contextmenu attribute with menu element without id
 PASS container4.contextMenu is null
@@ -43,15 +43,22 @@ PASS container8.contextMenu = document.createComment('foo') threw exception Type
 PASS container8.contextMenu is null
 Test setting contextmenu attribute to menu without type
 PASS container9.contextMenu.id is "menu_without_type"
-PASS container9.contextMenu.type is ""
+PASS container9.contextMenu.type is "toolbar"
 PASS container9.contextMenu.label is "menu without type"
 Test setting contextmenu attribute to menu element which is in shadow dom
 PASS container10.contextMenu is null
 Test contextmenu attribute of an element with no contextmenu attribute but parent has valid contextmenu
 PASS inner.contextMenu is null
+Test setting menu type when parent is contextmenu
+PASS menu15.type is "context"
+PASS menu16.type is "context"
+PASS menu16.type is "context"
+PASS menu15.type is "toolbar"
+PASS menu16.type is "toolbar"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 
 
 
