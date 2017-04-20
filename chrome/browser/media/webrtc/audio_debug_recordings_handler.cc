@@ -116,8 +116,9 @@ void AudioDebugRecordingsHandler::DoStartAudioDebugRecordings(
   // this object, which is owned by content::RenderProcessHost, so it's safe to
   // post unretained.
   audio_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&media::AudioManager::EnableOutputDebugRecording,
-                            base::Unretained(audio_manager_), prefix_path));
+      FROM_HERE,
+      base::BindOnce(&media::AudioManager::EnableOutputDebugRecording,
+                     base::Unretained(audio_manager_), prefix_path));
 
   if (delay.is_zero()) {
     const bool is_stopped = false, is_manual_stop = false;
@@ -128,9 +129,10 @@ void AudioDebugRecordingsHandler::DoStartAudioDebugRecordings(
   const bool is_manual_stop = false;
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&AudioDebugRecordingsHandler::DoStopAudioDebugRecordings, this,
-                 host, is_manual_stop, current_audio_debug_recordings_id_,
-                 callback, error_callback, log_directory),
+      base::BindOnce(&AudioDebugRecordingsHandler::DoStopAudioDebugRecordings,
+                     this, host, is_manual_stop,
+                     current_audio_debug_recordings_id_, callback,
+                     error_callback, log_directory),
       delay);
 }
 
@@ -166,8 +168,9 @@ void AudioDebugRecordingsHandler::DoStopAudioDebugRecordings(
   // this object, which is owned by content::RenderProcessHost, so it's safe to
   // post unretained.
   audio_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&media::AudioManager::DisableOutputDebugRecording,
-                            base::Unretained(audio_manager_)));
+      FROM_HERE,
+      base::BindOnce(&media::AudioManager::DisableOutputDebugRecording,
+                     base::Unretained(audio_manager_)));
 
   host->DisableAudioDebugRecordings();
 

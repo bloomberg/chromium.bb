@@ -91,15 +91,14 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
       inbound_messages_.clear();
       for (const auto& entry : outbound_messages_) {
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::Bind(entry.second, false));
+                                base::BindOnce(entry.second, false));
       }
       outbound_messages_.clear();
     }
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeMediaRouter::DoUpdateRoutes,
-                   weak_factory_.GetWeakPtr()));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&FakeMediaRouter::DoUpdateRoutes,
+                                           weak_factory_.GetWeakPtr()));
   }
 
   void OnMessageFromProvider(const std::string& message) {
@@ -108,8 +107,8 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
     inbound_messages_.back().text = message;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeMediaRouter::DoDeliverInboundMessages,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&FakeMediaRouter::DoDeliverInboundMessages,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void OnBinaryMessageFromProvider(const std::vector<uint8_t>& message) {
@@ -118,8 +117,8 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
     inbound_messages_.back().binary = std::vector<uint8_t>(message);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeMediaRouter::DoDeliverInboundMessages,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&FakeMediaRouter::DoDeliverInboundMessages,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void TakeMessagesSentToProvider(RouteMessage::Type type,
@@ -129,7 +128,7 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
       if (entry.first.type == type) {
         messages->push_back(entry.first);
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::Bind(entry.second, true));
+                                base::BindOnce(entry.second, true));
       } else {
         untaken_messages.push_back(entry);
       }
@@ -142,10 +141,9 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
     CHECK(!routes_observer_);
     routes_observer_ = observer;
     CHECK(routes_observer_);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeMediaRouter::DoUpdateRoutes,
-                   weak_factory_.GetWeakPtr()));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&FakeMediaRouter::DoUpdateRoutes,
+                                           weak_factory_.GetWeakPtr()));
   }
 
   void UnregisterMediaRoutesObserver(MediaRoutesObserver* observer) final {

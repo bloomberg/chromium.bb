@@ -532,8 +532,8 @@ void MediaRouterMojoImpl::RegisterMediaRoutesObserver(
     // must complete before invoking its virtual OnRoutesUpdated() method.
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&MediaRouterMojoImpl::NotifyOfExistingRoutesIfRegistered,
-                   weak_factory_.GetWeakPtr(), source_id, observer));
+        base::BindOnce(&MediaRouterMojoImpl::NotifyOfExistingRoutesIfRegistered,
+                       weak_factory_.GetWeakPtr(), source_id, observer));
   }
 }
 

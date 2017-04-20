@@ -169,8 +169,8 @@ void NativeDesktopMediaList::Worker::Refresh(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NativeDesktopMediaList::RefreshForAuraWindows, media_list_,
-                 sources));
+      base::BindOnce(&NativeDesktopMediaList::RefreshForAuraWindows,
+                     media_list_, sources));
 }
 
 void NativeDesktopMediaList::Worker::RefreshThumbnails(
@@ -211,8 +211,8 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
             ScaleDesktopFrame(std::move(current_frame_), thumbnail_size);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&NativeDesktopMediaList::UpdateSourceThumbnail,
-                       media_list_, id, thumbnail));
+            base::BindOnce(&NativeDesktopMediaList::UpdateSourceThumbnail,
+                           media_list_, id, thumbnail));
       }
     }
   }
@@ -221,8 +221,8 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
-                 media_list_));
+      base::BindOnce(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
+                     media_list_));
 }
 
 void NativeDesktopMediaList::Worker::OnCaptureResult(
@@ -258,8 +258,9 @@ void NativeDesktopMediaList::Refresh() {
 #endif
 
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Worker::Refresh, base::Unretained(worker_.get()),
-                            view_dialog_id_.id));
+      FROM_HERE,
+      base::BindOnce(&Worker::Refresh, base::Unretained(worker_.get()),
+                     view_dialog_id_.id));
 }
 
 void NativeDesktopMediaList::RefreshForAuraWindows(
@@ -311,9 +312,9 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
     pending_native_thumbnail_capture_ = true;
 #endif
     capture_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&Worker::RefreshThumbnails, base::Unretained(worker_.get()),
-                   native_ids, thumbnail_size_));
+        FROM_HERE, base::BindOnce(&Worker::RefreshThumbnails,
+                                  base::Unretained(worker_.get()), native_ids,
+                                  thumbnail_size_));
   }
 }
 

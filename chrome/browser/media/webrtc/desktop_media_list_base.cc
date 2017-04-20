@@ -128,10 +128,10 @@ void DesktopMediaListBase::UpdateSourceThumbnail(DesktopMediaID id,
 }
 
 void DesktopMediaListBase::ScheduleNextRefresh() {
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DesktopMediaListBase::Refresh, weak_factory_.GetWeakPtr()),
-      update_period_);
+  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+                                 base::BindOnce(&DesktopMediaListBase::Refresh,
+                                                weak_factory_.GetWeakPtr()),
+                                 update_period_);
 }
 
 // static

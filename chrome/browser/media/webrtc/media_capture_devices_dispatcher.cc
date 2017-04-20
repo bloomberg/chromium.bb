@@ -314,7 +314,7 @@ void MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &MediaCaptureDevicesDispatcher::NotifyAudioDevicesChangedOnUIThread,
           base::Unretained(this)));
 }
@@ -323,7 +323,7 @@ void MediaCaptureDevicesDispatcher::OnVideoCaptureDevicesChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &MediaCaptureDevicesDispatcher::NotifyVideoDevicesChangedOnUIThread,
           base::Unretained(this)));
 }
@@ -338,7 +338,7 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread,
           base::Unretained(this), render_process_id, render_frame_id,
           page_request_id, security_origin, stream_type, state));
@@ -350,7 +350,7 @@ void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread,
           base::Unretained(this), render_process_id, render_frame_id));
 }
@@ -455,9 +455,9 @@ void MediaCaptureDevicesDispatcher::OnSetCapturingLinkSecured(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured,
-                 base::Unretained(this), render_process_id, render_frame_id,
-                 page_request_id, stream_type, is_secure));
+      base::BindOnce(&MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured,
+                     base::Unretained(this), render_process_id, render_frame_id,
+                     page_request_id, stream_type, is_secure));
 }
 
 void MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured(

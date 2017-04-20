@@ -199,8 +199,8 @@ bool WebRtcTextLogHandler::StartLogging(WebRtcLogUploader* log_uploader,
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&WebRtcTextLogHandler::LogInitialInfoOnFileThread, this,
-                 callback));
+      base::BindOnce(&WebRtcTextLogHandler::LogInitialInfoOnFileThread, this,
+                     callback));
   return true;
 }
 
@@ -241,8 +241,8 @@ bool WebRtcTextLogHandler::StopLogging(const GenericDoneCallback& callback) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebRtcTextLogHandler::DisableBrowserProcessLoggingOnUIThread,
-                 this));
+      base::BindOnce(
+          &WebRtcTextLogHandler::DisableBrowserProcessLoggingOnUIThread, this));
   return true;
 }
 
@@ -268,7 +268,7 @@ void WebRtcTextLogHandler::ChannelClosing() {
     logging_state_ = LoggingState::CHANNEL_CLOSING;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &WebRtcTextLogHandler::DisableBrowserProcessLoggingOnUIThread,
             this));
   } else {
@@ -343,7 +343,7 @@ void WebRtcTextLogHandler::FireGenericDoneCallback(
   if (error_message.empty()) {
     DCHECK(success);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, success, error_message));
+                            base::BindOnce(callback, success, error_message));
     return;
   }
 
@@ -374,7 +374,7 @@ void WebRtcTextLogHandler::FireGenericDoneCallback(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, success, error_message_with_state));
+      base::BindOnce(callback, success, error_message_with_state));
 }
 
 void WebRtcTextLogHandler::LogInitialInfoOnFileThread(
@@ -387,8 +387,8 @@ void WebRtcTextLogHandler::LogInitialInfoOnFileThread(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&WebRtcTextLogHandler::LogInitialInfoOnIOThread, this,
-                 network_list, callback));
+      base::BindOnce(&WebRtcTextLogHandler::LogInitialInfoOnIOThread, this,
+                     network_list, callback));
 }
 
 void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
@@ -408,8 +408,8 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
   // that IPC message.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebRtcTextLogHandler::EnableBrowserProcessLoggingOnUIThread,
-                 this));
+      base::BindOnce(
+          &WebRtcTextLogHandler::EnableBrowserProcessLoggingOnUIThread, this));
 
   // Log start time (current time). We don't use base/i18n/time_formatting.h
   // here because we don't want the format of the current locale.

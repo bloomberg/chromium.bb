@@ -50,8 +50,8 @@ std::string DesktopStreamsRegistry::RegisterStream(
 
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&DesktopStreamsRegistry::CleanupStream,
-                 base::Unretained(this), id),
+      base::BindOnce(&DesktopStreamsRegistry::CleanupStream,
+                     base::Unretained(this), id),
       base::TimeDelta::FromSeconds(kApprovedStreamTimeToLiveSeconds));
 
   return id;

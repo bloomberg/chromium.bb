@@ -58,7 +58,7 @@ class FakeDumpWriter : public WebRtcRtpDumpWriter {
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(finished_callback, incoming_success, outgoing_success));
+        base::BindOnce(finished_callback, incoming_success, outgoing_success));
   }
 
  private:

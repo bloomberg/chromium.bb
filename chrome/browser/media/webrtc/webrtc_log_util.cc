@@ -117,10 +117,9 @@ void WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles() {
           GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&DeleteOldWebRtcLogFiles,
-                   WebRtcLogList::GetWebRtcLogDirectoryForProfile(
-                       entry->GetPath())));
+        content::BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(
+            &DeleteOldWebRtcLogFiles,
+            WebRtcLogList::GetWebRtcLogDirectoryForProfile(entry->GetPath())));
   }
 }

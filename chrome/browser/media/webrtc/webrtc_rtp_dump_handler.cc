@@ -33,9 +33,8 @@ void FireGenericDoneCallback(
   DCHECK(!callback.is_null());
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, success, error_message));
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(callback, success, error_message));
 }
 
 bool DumpTypeContainsIncoming(RtpDumpType type) {
@@ -67,18 +66,16 @@ WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
 
   if (incoming_state_ != STATE_NONE && !incoming_dump_path_.empty()) {
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(
-            base::IgnoreResult(&base::DeleteFile), incoming_dump_path_, false));
+        BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                       incoming_dump_path_, false));
   }
 
   if (outgoing_state_ != STATE_NONE && !outgoing_dump_path_.empty()) {
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(
-            base::IgnoreResult(&base::DeleteFile), outgoing_dump_path_, false));
+        BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                       outgoing_dump_path_, false));
   }
 }
 
@@ -239,12 +236,9 @@ void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
   // thread to return and check the states again.
   if (incoming_state_ == STATE_STOPPING || outgoing_state_ == STATE_STOPPING) {
     BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&base::DoNothing),
-        base::Bind(&WebRtcRtpDumpHandler::StopOngoingDumps,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        BrowserThread::FILE, FROM_HERE, base::BindOnce(&base::DoNothing),
+        base::BindOnce(&WebRtcRtpDumpHandler::StopOngoingDumps,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
     return;
   }
 
@@ -303,11 +297,10 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
     incoming_state_ = STATE_STOPPED;
 
     if (!incoming_success) {
-      BrowserThread::PostTask(BrowserThread::FILE,
-                              FROM_HERE,
-                              base::Bind(base::IgnoreResult(&base::DeleteFile),
-                                         incoming_dump_path_,
-                                         false));
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                         incoming_dump_path_, false));
 
       DVLOG(2) << "Deleted invalid incoming dump "
                << incoming_dump_path_.value();
@@ -320,11 +313,10 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
     outgoing_state_ = STATE_STOPPED;
 
     if (!outgoing_success) {
-      BrowserThread::PostTask(BrowserThread::FILE,
-                              FROM_HERE,
-                              base::Bind(base::IgnoreResult(&base::DeleteFile),
-                                         outgoing_dump_path_,
-                                         false));
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                         outgoing_dump_path_, false));
 
       DVLOG(2) << "Deleted invalid outgoing dump "
                << outgoing_dump_path_.value();

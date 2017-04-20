@@ -111,9 +111,9 @@ void WebRtcEventLogHandler::DoStartWebRtcEventLogging(
   const bool is_manual_stop = false;
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebRtcEventLogHandler::DoStopWebRtcEventLogging, this,
-                 is_manual_stop, current_rtc_event_log_id_, callback,
-                 error_callback, log_directory),
+      base::BindOnce(&WebRtcEventLogHandler::DoStopWebRtcEventLogging, this,
+                     is_manual_stop, current_rtc_event_log_id_, callback,
+                     error_callback, log_directory),
       duration);
 }
 

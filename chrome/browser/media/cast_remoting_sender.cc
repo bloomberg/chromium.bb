@@ -110,8 +110,9 @@ CastRemotingSender::CastRemotingSender(
 
   if (!frame_event_cb_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&CastRemotingSender::SendFrameEvents,
-                              weak_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&CastRemotingSender::SendFrameEvents,
+                       weak_factory_.GetWeakPtr()),
         logging_flush_interval_);
   }
 }
@@ -132,11 +133,12 @@ void CastRemotingSender::FindAndBind(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&CastRemotingSender::FindAndBind, rtp_stream_id,
-                   base::Passed(&pipe), base::Passed(&request),
-                   // Using media::BindToCurrentLoop() so the |error_callback|
-                   // is trampolined back to the original thread.
-                   media::BindToCurrentLoop(error_callback)));
+        base::BindOnce(
+            &CastRemotingSender::FindAndBind, rtp_stream_id,
+            base::Passed(&pipe), base::Passed(&request),
+            // Using media::BindToCurrentLoop() so the |error_callback|
+            // is trampolined back to the original thread.
+            media::BindToCurrentLoop(error_callback)));
     return;
   }
 
@@ -208,7 +210,8 @@ void CastRemotingSender::ScheduleNextResendCheck() {
   time_to_next = std::max(time_to_next, kMinSchedulingDelay);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CastRemotingSender::ResendCheck, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&CastRemotingSender::ResendCheck,
+                     weak_factory_.GetWeakPtr()),
       time_to_next);
 }
 
@@ -541,8 +544,9 @@ void CastRemotingSender::SendFrameEvents() {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&CastRemotingSender::SendFrameEvents,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&CastRemotingSender::SendFrameEvents,
+                     weak_factory_.GetWeakPtr()),
       logging_flush_interval_);
 }
 

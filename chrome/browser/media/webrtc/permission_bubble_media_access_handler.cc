@@ -205,7 +205,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     // after this function returns.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest,
             base::Unretained(this), web_contents));
   }

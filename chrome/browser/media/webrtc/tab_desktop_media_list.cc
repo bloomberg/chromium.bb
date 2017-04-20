@@ -153,7 +153,7 @@ void TabDesktopMediaList::Refresh() {
   // to the same sequenced task runner that CreateEnlargedFaviconImag()
   // is posted.
   thumbnail_task_runner_.get()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&base::DoNothing),
-      base::Bind(&TabDesktopMediaList::ScheduleNextRefresh,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&base::DoNothing),
+      base::BindOnce(&TabDesktopMediaList::ScheduleNextRefresh,
+                     weak_factory_.GetWeakPtr()));
 }

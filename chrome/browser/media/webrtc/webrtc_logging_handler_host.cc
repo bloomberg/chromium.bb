@@ -113,10 +113,10 @@ void WebRtcLoggingHandlerHost::UploadStoredLog(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
-  content::BrowserThread::PostTask(content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&WebRtcLoggingHandlerHost::UploadStoredLogOnFileThread,
-                 this, log_id, callback));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&WebRtcLoggingHandlerHost::UploadStoredLogOnFileThread,
+                     this, log_id, callback));
 }
 
 void WebRtcLoggingHandlerHost::UploadStoredLogOnFileThread(
@@ -170,9 +170,8 @@ void WebRtcLoggingHandlerHost::StoreLog(
 
   if (rtp_dump_handler_) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(stop_rtp_dump_callback_, true, true));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(stop_rtp_dump_callback_, true, true));
 
     rtp_dump_handler_->StopOngoingDumps(
         base::Bind(&WebRtcLoggingHandlerHost::StoreLogContinue,
@@ -241,11 +240,10 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
 
   if (!stop_rtp_dump_callback_.is_null()) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(stop_rtp_dump_callback_,
-                   type == RTP_DUMP_INCOMING || type == RTP_DUMP_BOTH,
-                   type == RTP_DUMP_OUTGOING || type == RTP_DUMP_BOTH));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(stop_rtp_dump_callback_,
+                       type == RTP_DUMP_INCOMING || type == RTP_DUMP_BOTH,
+                       type == RTP_DUMP_OUTGOING || type == RTP_DUMP_BOTH));
   }
 
   rtp_dump_handler_->StopDump(type, callback);
@@ -275,14 +273,10 @@ void WebRtcLoggingHandlerHost::OnRtpPacket(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&WebRtcLoggingHandlerHost::DumpRtpPacketOnIOThread,
-                 this,
-                 base::Passed(&packet_header),
-                 header_length,
-                 packet_length,
-                 incoming));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebRtcLoggingHandlerHost::DumpRtpPacketOnIOThread, this,
+                     base::Passed(&packet_header), header_length, packet_length,
+                     incoming));
 }
 
 void WebRtcLoggingHandlerHost::DumpRtpPacketOnIOThread(
@@ -392,9 +386,8 @@ void WebRtcLoggingHandlerHost::TriggerUpload(
 
   if (rtp_dump_handler_) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(stop_rtp_dump_callback_, true, true));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(stop_rtp_dump_callback_, true, true));
 
     rtp_dump_handler_->StopOngoingDumps(
         base::Bind(&WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps,
@@ -421,10 +414,10 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&WebRtcLogUploader::LoggingStoppedDoStore,
-                 base::Unretained(log_uploader_), *log_paths, log_id,
-                 base::Passed(&log_buffer), base::Passed(&meta_data),
-                 done_callback));
+      base::BindOnce(&WebRtcLogUploader::LoggingStoppedDoStore,
+                     base::Unretained(log_uploader_), *log_paths, log_id,
+                     base::Passed(&log_buffer), base::Passed(&meta_data),
+                     done_callback));
 }
 
 void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
@@ -436,7 +429,8 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
       text_log_handler_->GetState() != WebRtcTextLogHandler::CHANNEL_CLOSING) {
     BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, false, "", "Logging not stopped or no log open."));
+        base::BindOnce(callback, false, "",
+                       "Logging not stopped or no log open."));
     return;
   }
 
@@ -452,9 +446,9 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&WebRtcLogUploader::LoggingStoppedDoUpload,
-                 base::Unretained(log_uploader_), base::Passed(&log_buffer),
-                 base::Passed(&meta_data), upload_done_data));
+      base::BindOnce(&WebRtcLogUploader::LoggingStoppedDoUpload,
+                     base::Unretained(log_uploader_), base::Passed(&log_buffer),
+                     base::Passed(&meta_data), upload_done_data));
 }
 
 void WebRtcLoggingHandlerHost::CreateRtpDumpHandlerAndStart(
@@ -509,5 +503,5 @@ void WebRtcLoggingHandlerHost::FireGenericDoneCallback(
   DCHECK_EQ(success, error_message.empty());
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, success, error_message));
+                          base::BindOnce(callback, success, error_message));
 }
