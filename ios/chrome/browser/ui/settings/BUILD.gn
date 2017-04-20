@@ -304,6 +304,7 @@ source_set("settings") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "passphrase_collection_view_controller_test.h",
