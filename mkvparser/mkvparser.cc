@@ -2430,7 +2430,9 @@ bool CuePoint::TrackPosition::Parse(IMkvReader* pReader, long long start_,
 }
 
 const CuePoint::TrackPosition* CuePoint::Find(const Track* pTrack) const {
-  assert(pTrack);
+  if (pTrack == NULL) {
+    return NULL;
+  }
 
   const long long n = pTrack->GetNumber();
 
