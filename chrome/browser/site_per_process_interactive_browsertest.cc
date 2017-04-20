@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -52,6 +53,30 @@ namespace autofill {
 class AutofillPopupDelegate;
 struct Suggestion;
 }
+
+namespace {
+
+// Counts and returns the number of RenderWidgetHosts in the browser process.
+size_t GetNumberOfRenderWidgetHosts() {
+  std::unique_ptr<content::RenderWidgetHostIterator> all_widgets =
+      content::RenderWidgetHost::GetRenderWidgetHosts();
+  size_t count = 0;
+  while (auto* widget = all_widgets->GetNextHost())
+    count++;
+  return count;
+}
+
+// Waits and polls the current number of RenderWidgetHosts and stops when the
+// number reaches |target_count|.
+void WaitForRenderWidgetHostCount(size_t target_count) {
+  while (GetNumberOfRenderWidgetHosts() != target_count) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+}
+}  // namespace
 
 class SitePerProcessInteractiveBrowserTest : public InProcessBrowserTest {
  public:
@@ -1354,4 +1379,89 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillTest,
       << focus_observer.focused_node_bounds_in_screen().ToString()
       << "' but AutofillClient is reporting '" << bounds_origin.ToString()
       << "'";
+}
+
+// This test verifies that when clicking outside the bounds of a date picker
+// associated with an <input> inside an OOPIF, the RenderWidgetHostImpl
+// corresponding to the WebPagePopup is destroyed (see
+// https://crbug.com/671732).
+IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
+                       ShowAndHideDatePopupInOOPIFMultipleTimes) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  content::RenderFrameHost* child_frame = ChildFrameAt(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(), 0);
+
+  // Add <input type='date'> to the child frame. Adjust the positions that we
+  // know where to click to dismiss the popup.
+  ASSERT_TRUE(ExecuteScript(
+      child_frame,
+      "var input = document.createElement('input');"
+      "input.type = 'date';"
+      "input.value = '2008-09-02';"
+      "document.body.appendChild(input);"
+      "input.style = 'position: fixed; left: 0px; top: 10px; border: none;' +"
+      "              'width: 120px; height: 20px;';"));
+
+  // Cache current date value for a sanity check later.
+  std::string cached_date;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      child_frame, "window.domAutomationController.send(input.value);",
+      &cached_date));
+
+  // We use this to determine whether a new RenderWidgetHost is created or an
+  // old one is removed.
+  size_t default_widget_count = GetNumberOfRenderWidgetHosts();
+
+  // Repeatedly invoke the date picker and then click outside the bounds of the
+  // widget to dismiss it and each time verify that a new RenderWidgetHost is
+  // added when showing the date picker and a RenderWidgetHost is destroyed when
+  // it is dismissed.
+  for (size_t tries = 0; tries < 3U; tries++) {
+    // Focus the <input>.
+    ASSERT_TRUE(
+        ExecuteScript(child_frame, "document.querySelector('input').focus();"));
+
+    // Alt + Down seems to be working fine on all platforms.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DOWN, false,
+                                                false, true, false));
+
+    // We should get one more widget on the screen.
+    WaitForRenderWidgetHostCount(default_widget_count + 1U);
+
+    content::RenderWidgetHost* child_widget_host =
+        child_frame->GetView()->GetRenderWidgetHost();
+
+    // Now simulate a click outside the bounds of the popup.
+    blink::WebMouseEvent event;
+    // Click a little bit to the right and top of the <input>.
+    event.SetPositionInWidget(130, 10);
+    event.button = blink::WebMouseEvent::Button::kLeft;
+
+    // Send a mouse down event.
+    event.SetType(blink::WebInputEvent::kMouseDown);
+    child_widget_host->ForwardMouseEvent(event);
+
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+
+    // Now send a mouse up event.
+    event.SetType(blink::WebMouseEvent::kMouseUp);
+    child_widget_host->ForwardMouseEvent(event);
+
+    // Wait until the popup disappears and we go back to the normal
+    // RenderWidgetHost count.
+    WaitForRenderWidgetHostCount(default_widget_count);
+  }
+
+  // To make sure we never clicked into the date picker, get current date value
+  // and make sure it matches the cached value.
+  std::string date;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      child_frame, "window.domAutomationController.send(input.value);", &date));
+  EXPECT_EQ(cached_date, date) << "Cached date was '" << cached_date
+                               << "' but current date is '" << date << "'.";
 }

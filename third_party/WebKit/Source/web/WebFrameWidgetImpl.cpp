@@ -73,6 +73,7 @@
 #include "web/WebInputEventConversion.h"
 #include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
+#include "web/WebPagePopupImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewFrameWidget.h"
@@ -786,6 +787,15 @@ void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& main_frame,
 
 void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
                                          const WebMouseEvent& event) {
+  // If there is a popup open, close it as the user is clicking on the page
+  // (outside of the popup). We also save it so we can prevent a click on an
+  // element from immediately reopening the same popup.
+  RefPtr<WebPagePopupImpl> page_popup;
+  if (event.button == WebMouseEvent::Button::kLeft) {
+    page_popup = View()->GetPagePopup();
+    View()->HidePopups();
+  }
+
   // Take capture on a mouse down on a plugin so we can send it mouse events.
   // If the hit node is a plugin but a scrollbar is over it don't start mouse
   // capture because it will interfere with the scrollbar receiving events.
@@ -809,6 +819,13 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
   if (event.button == WebMouseEvent::Button::kLeft && mouse_capture_node_)
     mouse_capture_gesture_token_ =
         main_frame.GetEventHandler().TakeLastMouseDownGestureToken();
+
+  if (View()->GetPagePopup() && page_popup &&
+      View()->GetPagePopup()->HasSamePopupClient(page_popup.Get())) {
+    // That click triggered a page popup that is the same as the one we just
+    // closed.  It needs to be closed.
+    View()->HidePopups();
+  }
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
   if (!GetPage()->GetSettings().GetShowContextMenuOnMouseUp()) {
@@ -873,6 +890,7 @@ void WebFrameWidgetImpl::HandleMouseUp(LocalFrame& main_frame,
 WebInputEventResult WebFrameWidgetImpl::HandleMouseWheel(
     LocalFrame& main_frame,
     const WebMouseWheelEvent& event) {
+  View()->HidePopups();
   return PageWidgetEventHandler::HandleMouseWheel(main_frame, event);
 }
 
@@ -888,8 +906,17 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
     case WebInputEvent::kGestureTap:
     case WebInputEvent::kGestureTapUnconfirmed:
     case WebInputEvent::kGestureTapDown:
-    case WebInputEvent::kGestureShowPress:
+      // Touch pinch zoom and scroll on the page (outside of a popup) must hide
+      // the popup. In case of a touch scroll or pinch zoom, this function is
+      // called with GestureTapDown rather than a GSB/GSU/GSE or GPB/GPU/GPE.
+      // When we close a popup because of a GestureTapDown, we also save it so
+      // we can prevent the following GestureTap from immediately reopening the
+      // same popup.
+      View()->SetLastHiddenPagePopup(View()->GetPagePopup());
+      View()->HidePopups();
     case WebInputEvent::kGestureTapCancel:
+      View()->SetLastHiddenPagePopup(nullptr);
+    case WebInputEvent::kGestureShowPress:
     case WebInputEvent::kGestureDoubleTap:
     case WebInputEvent::kGestureTwoFingerTap:
     case WebInputEvent::kGestureLongPress:

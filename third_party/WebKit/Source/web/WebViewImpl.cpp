@@ -173,7 +173,6 @@
 #include "web/WebInputEventConversion.h"
 #include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebPagePopupImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
@@ -1703,7 +1702,8 @@ PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
     page_popup_->ClosePopup();
     page_popup_ = nullptr;
   }
-  EnablePopupMouseWheelEventListener();
+  EnablePopupMouseWheelEventListener(WebLocalFrameImpl::FromFrame(
+      client->OwnerElement().GetDocument().GetFrame()->LocalFrameRoot()));
   return page_popup_.Get();
 }
 
@@ -1726,38 +1726,32 @@ void WebViewImpl::CancelPagePopup() {
     page_popup_->Cancel();
 }
 
-void WebViewImpl::EnablePopupMouseWheelEventListener() {
-  // TODO(kenrb): Popup coordination for out-of-process iframes needs to be
-  // added. Because of the early return here a select element
-  // popup can remain visible even when the element underneath it is
-  // scrolled to a new position. This is part of a larger set of issues with
-  // popups.
-  // See https://crbug.com/566130
-  if (!MainFrameImpl())
-    return;
+void WebViewImpl::EnablePopupMouseWheelEventListener(
+    WebLocalFrameImpl* local_root) {
   DCHECK(!popup_mouse_wheel_event_listener_);
-  Document* document = MainFrameImpl()->GetFrame()->GetDocument();
+  Document* document = local_root->GetDocument();
   DCHECK(document);
   // We register an empty event listener, EmptyEventListener, so that mouse
   // wheel events get sent to the WebView.
   popup_mouse_wheel_event_listener_ = EmptyEventListener::Create();
   document->addEventListener(EventTypeNames::mousewheel,
                              popup_mouse_wheel_event_listener_, false);
+  local_root_with_empty_mouse_wheel_listener_ = local_root;
 }
 
 void WebViewImpl::DisablePopupMouseWheelEventListener() {
   // TODO(kenrb): Concerns the same as in enablePopupMouseWheelEventListener.
   // See https://crbug.com/566130
-  if (!MainFrameImpl())
-    return;
   DCHECK(popup_mouse_wheel_event_listener_);
-  Document* document = MainFrameImpl()->GetFrame()->GetDocument();
+  Document* document =
+      local_root_with_empty_mouse_wheel_listener_->GetDocument();
   DCHECK(document);
   // Document may have already removed the event listener, for instance, due
   // to a navigation, but remove it anyway.
   document->removeEventListener(EventTypeNames::mousewheel,
                                 popup_mouse_wheel_event_listener_.Release(),
                                 false);
+  local_root_with_empty_mouse_wheel_listener_ = nullptr;
 }
 
 LocalDOMWindow* WebViewImpl::PagePopupWindow() const {
@@ -2490,7 +2484,7 @@ WebColor WebViewImpl::BackgroundColor() const {
   return view->DocumentBackgroundColor().Rgb();
 }
 
-WebPagePopup* WebViewImpl::GetPagePopup() const {
+WebPagePopupImpl* WebViewImpl::GetPagePopup() const {
   return page_popup_.Get();
 }
 

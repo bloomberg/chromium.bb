@@ -68,6 +68,7 @@
 #include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
 #include "web/WebExport.h"
+#include "web/WebPagePopupImpl.h"
 
 namespace blink {
 
@@ -90,7 +91,6 @@ class WebLayerTreeView;
 class WebLocalFrame;
 class WebLocalFrameImpl;
 class CompositorMutatorImpl;
-class WebPagePopupImpl;
 class WebPlugin;
 class WebRemoteFrame;
 class WebSettingsImpl;
@@ -142,7 +142,7 @@ class WEB_EXPORT WebViewImpl final
   void SetFocus(bool enable) override;
   WebRange CompositionRange() override;
   WebColor BackgroundColor() const override;
-  WebPagePopup* GetPagePopup() const override;
+  WebPagePopupImpl* GetPagePopup() const override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool SelectionTextDirection(WebTextDirection& start,
                               WebTextDirection& end) const override;
@@ -499,6 +499,10 @@ class WEB_EXPORT WebViewImpl final
   // root.
   WebInputMethodControllerImpl* GetActiveWebInputMethodController() const;
 
+  void SetLastHiddenPagePopup(WebPagePopupImpl* page_popup) {
+    last_hidden_page_popup_ = page_popup;
+  }
+
  private:
   InspectorOverlay* GetInspectorOverlay();
 
@@ -576,7 +580,7 @@ class WEB_EXPORT WebViewImpl final
   WebGestureEvent CreateGestureScrollEventFromFling(WebInputEvent::Type,
                                                     WebGestureDevice) const;
 
-  void EnablePopupMouseWheelEventListener();
+  void EnablePopupMouseWheelEventListener(WebLocalFrameImpl* local_root);
   void DisablePopupMouseWheelEventListener();
 
   void CancelPagePopup();
@@ -717,6 +721,10 @@ class WEB_EXPORT WebViewImpl final
   CrossThreadPersistent<CompositorMutatorImpl> mutator_;
 
   Persistent<EventListener> popup_mouse_wheel_event_listener_;
+
+  // The local root whose document has |popup_mouse_wheel_event_listener_|
+  // registered.
+  WeakPersistent<WebLocalFrameImpl> local_root_with_empty_mouse_wheel_listener_;
 
   WebPageImportanceSignals page_importance_signals_;
 
