@@ -6331,17 +6331,17 @@ class TestSubstituteDataWebFrameClient
  public:
   TestSubstituteDataWebFrameClient() : commit_called_(false) {}
 
-  virtual void DidFailProvisionalLoad(WebLocalFrame* frame,
-                                      const WebURLError& error,
+  virtual void DidFailProvisionalLoad(const WebURLError& error,
                                       WebHistoryCommitType) {
-    frame->LoadHTMLString("This should appear",
-                          ToKURL("data:text/html,chromewebdata"),
-                          error.unreachable_url, true);
+    Frame()->LoadHTMLString("This should appear",
+                            ToKURL("data:text/html,chromewebdata"),
+                            error.unreachable_url, true);
   }
 
   virtual void DidCommitProvisionalLoad(WebLocalFrame* frame,
                                         const WebHistoryItem&,
                                         WebHistoryCommitType) {
+    ASSERT_EQ(Frame(), frame);
     if (frame->DataSource()->GetResponse().Url() !=
         WebURL(URLTestHelpers::ToKURL("about:blank")))
       commit_called_ = true;
@@ -11710,8 +11710,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
       did_call_did_stop_loading_ = true;
     }
 
-    void DidFailProvisionalLoad(WebLocalFrame*,
-                                const WebURLError&,
+    void DidFailProvisionalLoad(const WebURLError&,
                                 WebHistoryCommitType) override {
       EXPECT_TRUE(false) << "The load should not have failed.";
     }

@@ -361,8 +361,7 @@ class BLINK_EXPORT WebFrameClient {
 
   // The provisional load failed. The WebHistoryCommitType is the commit type
   // that would have been used had the load succeeded.
-  virtual void DidFailProvisionalLoad(WebLocalFrame*,
-                                      const WebURLError&,
+  virtual void DidFailProvisionalLoad(const WebURLError&,
                                       WebHistoryCommitType) {}
 
   // The provisional datasource is now committed.  The first part of the

@@ -1357,7 +1357,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
 
   // An error occurred.
   view()->GetMainRenderFrame()->DidFailProvisionalLoad(
-      web_frame, error, blink::kWebStandardCommit);
+      error, blink::kWebStandardCommit);
   // Frame should exit view-source mode.
   EXPECT_FALSE(web_frame->IsViewSourceModeEnabled());
 }
@@ -1380,7 +1380,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
 
   // A cancellation occurred.
   view()->GetMainRenderFrame()->DidFailProvisionalLoad(
-      web_frame, error, blink::kWebStandardCommit);
+      error, blink::kWebStandardCommit);
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->IsViewSourceModeEnabled());
 }
@@ -1815,7 +1815,6 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
   error.domain = WebString::FromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
   error.unreachable_url = GURL("http://example.com/suppress");
-  WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
@@ -1827,8 +1826,7 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
                        RequestNavigationParams());
 
   // An error occurred.
-  main_frame->DidFailProvisionalLoad(web_frame, error,
-                                     blink::kWebStandardCommit);
+  main_frame->DidFailProvisionalLoad(error, blink::kWebStandardCommit);
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("", WebFrameContentDumper::DumpWebViewAsText(view()->GetWebView(),
                                                          kMaxOutputCharacters)
@@ -1847,7 +1845,6 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   error.domain = WebString::FromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
   error.unreachable_url = GURL("http://example.com/dont-suppress");
-  WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
@@ -1859,8 +1856,7 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
                        RequestNavigationParams());
 
   // An error occurred.
-  main_frame->DidFailProvisionalLoad(web_frame, error,
-                                     blink::kWebStandardCommit);
+  main_frame->DidFailProvisionalLoad(error, blink::kWebStandardCommit);
 
   // The error page itself is loaded asynchronously.
   FrameLoadWaiter(main_frame).Wait();

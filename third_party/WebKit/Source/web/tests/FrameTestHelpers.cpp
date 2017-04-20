@@ -226,6 +226,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
       WebTreeScopeType::kDocument, web_frame_client,
       web_frame_client->GetInterfaceProvider(), nullptr, opener);
   web_view_->SetMainFrame(frame);
+  web_frame_client->SetFrame(frame);
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
   blink::WebFrameWidget::Create(web_widget_client, web_view_, frame);

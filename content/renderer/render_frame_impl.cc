@@ -3576,35 +3576,33 @@ void RenderFrameImpl::DidReceiveServerRedirectForProvisionalLoad() {
 }
 
 void RenderFrameImpl::DidFailProvisionalLoad(
-    blink::WebLocalFrame* frame,
     const blink::WebURLError& error,
     blink::WebHistoryCommitType commit_type) {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
-  DCHECK_EQ(frame_, frame);
   // Note: It is important this notification occur before DidStopLoading so the
   //       SSL manager can react to the provisional load failure before being
   //       notified the load stopped.
   //
   for (auto& observer : render_view_->observers())
-    observer.DidFailProvisionalLoad(frame, error);
+    observer.DidFailProvisionalLoad(frame_, error);
   for (auto& observer : observers_)
     observer.DidFailProvisionalLoad(error);
 
-  WebDataSource* ds = frame->ProvisionalDataSource();
+  WebDataSource* ds = frame_->ProvisionalDataSource();
   if (!ds)
     return;
 
   const WebURLRequest& failed_request = ds->GetRequest();
 
   // Notify the browser that we failed a provisional load with an error.
-  SendFailedProvisionalLoad(failed_request, error, frame);
+  SendFailedProvisionalLoad(failed_request, error, frame_);
 
   if (!ShouldDisplayErrorPageForFailedLoad(error.reason, error.unreachable_url))
     return;
 
   // Make sure we never show errors in view source mode.
-  frame->EnableViewSourceMode(false);
+  frame_->EnableViewSourceMode(false);
 
   DocumentState* document_state = DocumentState::FromDataSource(ds);
   NavigationStateImpl* navigation_state =
@@ -5309,9 +5307,8 @@ void RenderFrameImpl::OnFailedNavigation(
   // notification.
   bool had_provisional_data_source = frame_->ProvisionalDataSource();
   if (request_params.nav_entry_id == 0) {
-    DidFailProvisionalLoad(
-        frame_, error,
-        replace ? blink::kWebHistoryInertCommit : blink::kWebStandardCommit);
+    DidFailProvisionalLoad(error, replace ? blink::kWebHistoryInertCommit
+                                          : blink::kWebStandardCommit);
   }
 
   // If we didn't call didFailProvisionalLoad or there wasn't a
