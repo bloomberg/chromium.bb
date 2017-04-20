@@ -145,8 +145,8 @@ void FlushTaskRunner(base::SequencedTaskRunner* runner) {
   base::WaitableEvent unblock(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  runner->PostTask(FROM_HERE,
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&unblock)));
+  runner->PostTask(FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
+                                             base::Unretained(&unblock)));
 
   unblock.Wait();
 }
@@ -233,13 +233,13 @@ class ProfileBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   void TearDownOnMainThread() override {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, false));
+        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, false));
   }
 
   std::unique_ptr<Profile> CreateProfile(const base::FilePath& path,
@@ -590,8 +590,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, URLRequestContextIsolation) {
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&CompareURLRequestContexts, extension_context_getter,
-                   main_context_getter),
+        base::BindOnce(&CompareURLRequestContexts, extension_context_getter,
+                       main_context_getter),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -625,8 +625,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&CompareURLRequestContexts, extension_context_getter,
-                   main_context_getter),
+        base::BindOnce(&CompareURLRequestContexts, extension_context_getter,
+                       main_context_getter),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -811,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DiskCacheDirOverride) {
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SendHPKPReport) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &DisablePinningBypass,
           make_scoped_refptr(browser()->profile()->GetRequestContext())));
 
@@ -847,7 +847,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SendHPKPReport) {
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SendHPKPReportServerHangs) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &DisablePinningBypass,
           make_scoped_refptr(browser()->profile()->GetRequestContext())));
 

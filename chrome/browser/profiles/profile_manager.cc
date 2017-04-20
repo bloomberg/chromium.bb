@@ -889,7 +889,7 @@ void ProfileManager::CleanUpEphemeralProfiles() {
   // ProfileInfoCache will modify indices.
   for (const base::FilePath& profile_path : profiles_to_delete) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&NukeProfileFromDisk, profile_path));
+                            base::BindOnce(&NukeProfileFromDisk, profile_path));
 
     storage.RemoveProfile(profile_path);
   }
@@ -915,12 +915,12 @@ void ProfileManager::CleanUpDeletedProfiles() {
                         "Cleaning up now.";
         BrowserThread::PostTaskAndReply(
             BrowserThread::FILE, FROM_HERE,
-            base::Bind(&NukeProfileFromDisk, profile_path),
-            base::Bind(&ProfileCleanedUp, &value));
+            base::BindOnce(&NukeProfileFromDisk, profile_path),
+            base::BindOnce(&ProfileCleanedUp, &value));
       } else {
         // Everything is fine, the profile was removed on shutdown.
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::Bind(&ProfileCleanedUp, &value));
+                                base::BindOnce(&ProfileCleanedUp, &value));
       }
     } else {
       LOG(ERROR) << "Found invalid profile path in deleted_profiles: "
@@ -1304,7 +1304,7 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
   // Log the profile size after a reasonable startup delay.
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ProfileSizeTask, profile->GetPath(), enabled_app_count),
+      base::BindOnce(&ProfileSizeTask, profile->GetPath(), enabled_app_count),
       base::TimeDelta::FromSeconds(112));
 }
 
@@ -1525,9 +1525,8 @@ void ProfileManager::FinishDeletingProfile(
     profiles::RemoveBrowsingDataForProfile(profile_dir);
   } else {
     // It is safe to delete a not yet loaded Profile from disk.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&NukeProfileFromDisk, profile_dir));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::BindOnce(&NukeProfileFromDisk, profile_dir));
   }
 
   // Queue even a profile that was nuked so it will be MarkedForDeletion and so
@@ -1592,7 +1591,8 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
           !entry->IsAuthenticated()) {
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&SignOut, static_cast<SigninManager*>(signin_manager)));
+            base::BindOnce(&SignOut,
+                           static_cast<SigninManager*>(signin_manager)));
       }
 #endif
       return;

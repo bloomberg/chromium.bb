@@ -748,7 +748,7 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
     if (!old_file_name.empty()) {
       base::FilePath image_path = path.AppendASCII(old_file_name);
       BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                              base::Bind(&DeleteBitmap, image_path));
+                              base::BindOnce(&DeleteBitmap, image_path));
     }
   } else {
     // Save the new bitmap to disk.
@@ -924,8 +924,9 @@ void ProfileInfoCache::DownloadHighResAvatarIfNeeded(
                  AsWeakPtr(),
                  icon_index,
                  profile_path);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&RunCallbackIfFileMissing, file_path, callback));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&RunCallbackIfFileMissing, file_path, callback));
 }
 
 void ProfileInfoCache::SaveAvatarImageAtPath(
@@ -955,8 +956,9 @@ void ProfileInfoCache::SaveAvatarImageAtPath(
   } else {
     base::Closure callback = base::Bind(&ProfileInfoCache::OnAvatarPictureSaved,
         AsWeakPtr(), key, profile_path);
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SaveBitmap, base::Passed(&data), image_path, callback));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::BindOnce(&SaveBitmap, base::Passed(&data), image_path, callback));
   }
 }
 
@@ -1098,11 +1100,12 @@ const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
   cached_avatar_images_loading_[key] = true;
 
   gfx::Image** image = new gfx::Image*;
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ReadBitmap, image_path, image),
-      base::Bind(&ProfileInfoCache::OnAvatarPictureLoaded,
-          const_cast<ProfileInfoCache*>(this)->AsWeakPtr(),
-          profile_path, key, image));
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&ReadBitmap, image_path, image),
+      base::BindOnce(&ProfileInfoCache::OnAvatarPictureLoaded,
+                     const_cast<ProfileInfoCache*>(this)->AsWeakPtr(),
+                     profile_path, key, image));
   return NULL;
 }
 

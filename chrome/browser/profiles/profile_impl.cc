@@ -237,14 +237,13 @@ void CreateProfileDirectory(base::SequencedTaskRunner* sequenced_task_runner,
       new base::WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   sequenced_task_runner->PostTask(
-      FROM_HERE, base::Bind(&CreateDirectoryAndSignal, path, done_creating,
-                            create_readme));
+      FROM_HERE, base::BindOnce(&CreateDirectoryAndSignal, path, done_creating,
+                                create_readme));
   // Block the FILE thread until directory is created on I/O pool to make sure
   // that we don't attempt any operation until that part completes.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&BlockFileThreadOnDirectoryCreate,
-                 base::Owned(done_creating)));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::BindOnce(&BlockFileThreadOnDirectoryCreate,
+                                         base::Owned(done_creating)));
 }
 
 base::FilePath GetCachePath(const base::FilePath& base) {

@@ -359,11 +359,8 @@ void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread,
-          base::Unretained(io_data_),
-          time,
-          completion));
+      base::BindOnce(&ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread,
+                     base::Unretained(io_data_), time, completion));
 }
 
 void ProfileImplIOData::Handle::LazyInitialize() const {

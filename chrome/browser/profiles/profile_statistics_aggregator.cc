@@ -107,7 +107,7 @@ void ProfileStatisticsAggregator::StartAggregator() {
       content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
           .get(),
       FROM_HERE,
-      base::Bind(&ProfileStatisticsAggregator::WaitOrCountBookmarks, this));
+      base::BindOnce(&ProfileStatisticsAggregator::WaitOrCountBookmarks, this));
 
   // Initiate history counting (async).
   history::HistoryService* history_service =

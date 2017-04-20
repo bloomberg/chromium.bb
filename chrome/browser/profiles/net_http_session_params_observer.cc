@@ -85,8 +85,8 @@ void NetHttpSessionParamsObserver::ApplySettings() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DisableQuicOnIOThread, disable_quic_callback_, io_thread,
-                 base::Unretained(safe_browsing_service)));
+      base::BindOnce(&DisableQuicOnIOThread, disable_quic_callback_, io_thread,
+                     base::Unretained(safe_browsing_service)));
 }
 
 // static

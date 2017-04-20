@@ -163,7 +163,7 @@ void OffTheRecordProfileImpl::Init() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
+      base::BindOnce(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
 #endif
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
@@ -185,7 +185,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NotifyOTRProfileDestroyedOnIOThread, profile_, this));
+      base::BindOnce(&NotifyOTRProfileDestroyedOnIOThread, profile_, this));
 #endif
 
   if (pref_proxy_config_tracker_)

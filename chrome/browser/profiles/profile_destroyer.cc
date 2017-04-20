@@ -148,8 +148,8 @@ void ProfileDestroyer::RenderProcessHostDestroyed(
     // Delay the destruction one step further in case other observers need to
     // look at the profile attached to the host.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ProfileDestroyer::DestroyProfile,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ProfileDestroyer::DestroyProfile,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

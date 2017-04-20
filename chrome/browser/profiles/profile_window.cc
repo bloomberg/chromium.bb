@@ -109,8 +109,8 @@ class BrowserAddedForProfileObserver : public chrome::BrowserListObserver {
       // added. Post the callback to the message loop so it gets executed after
       // the tabs are created.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(callback_, profile_, Profile::CREATE_STATUS_INITIALIZED));
+          FROM_HERE, base::BindOnce(callback_, profile_,
+                                    Profile::CREATE_STATUS_INITIALIZED));
       base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     }
   }

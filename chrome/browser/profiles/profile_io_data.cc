@@ -1241,8 +1241,8 @@ void ProfileIOData::ShutdownOnUIThread(
     if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&NotifyContextGettersOfShutdownOnIO,
-              base::Passed(&context_getters)));
+          base::BindOnce(&NotifyContextGettersOfShutdownOnIO,
+                         base::Passed(&context_getters)));
     }
   }
 
