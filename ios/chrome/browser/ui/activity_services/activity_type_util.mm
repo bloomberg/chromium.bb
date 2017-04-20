@@ -42,7 +42,9 @@ bool IsPasswordManagerActivity(NSString* activity_string) {
       // Dashlane
       {"com.dashlane.dashlanephonefinal.", false},
       // Enpass
-      {"in.sinew.Walletx.WalletxExt", true}};
+      {"in.sinew.Walletx.WalletxExt", true},
+      // Secrets touch
+      {"com.outercorner.ios.Secrets.Search", true}};
 
   std::string activity = base::SysNSStringToUTF8(activity_string);
   for (const auto& app : kAllPasswordManagerApps) {
