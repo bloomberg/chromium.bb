@@ -88,6 +88,7 @@ ios_web_view_deps = [
   "//components/translate/core/browser",
   "//components/translate/core/common",
   "//components/translate/ios/browser",
+  "//google_apis",
   "//ios/net",
   "//ios/net",
   "//ios/web",

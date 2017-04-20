@@ -206,6 +206,9 @@ class APIKeyCache {
   }
 
   std::string api_key() const { return api_key_; }
+#if defined(OS_IOS)
+  void set_api_key(const std::string& api_key) { api_key_ = api_key; }
+#endif
   std::string api_key_non_stable() const { return api_key_non_stable_; }
   std::string api_key_remoting() const { return api_key_remoting_; }
 
@@ -214,10 +217,22 @@ class APIKeyCache {
     return client_ids_[client];
   }
 
+#if defined(OS_IOS)
+  void SetClientID(OAuth2Client client, const std::string& client_id) {
+    client_ids_[client] = client_id;
+  }
+#endif
+
   std::string GetClientSecret(OAuth2Client client) const {
     DCHECK_LT(client, CLIENT_NUM_ITEMS);
     return client_secrets_[client];
   }
+
+#if defined(OS_IOS)
+  void SetClientSecret(OAuth2Client client, const std::string& client_secret) {
+    client_secrets_[client] = client_secret;
+  }
+#endif
 
   std::string GetSpdyProxyAuthValue() {
 #if defined(SPDY_PROXY_AUTH_VALUE)
@@ -319,6 +334,12 @@ std::string GetRemotingAPIKey() {
   return g_api_key_cache.Get().api_key_remoting();
 }
 
+#if defined(OS_IOS)
+void SetAPIKey(const std::string& api_key) {
+  g_api_key_cache.Get().set_api_key(api_key);
+}
+#endif
+
 std::string GetOAuth2ClientID(OAuth2Client client) {
   return g_api_key_cache.Get().GetClientID(client);
 }
@@ -326,6 +347,17 @@ std::string GetOAuth2ClientID(OAuth2Client client) {
 std::string GetOAuth2ClientSecret(OAuth2Client client) {
   return g_api_key_cache.Get().GetClientSecret(client);
 }
+
+#if defined(OS_IOS)
+void SetOAuth2ClientID(OAuth2Client client, const std::string& client_id) {
+  g_api_key_cache.Get().SetClientID(client, client_id);
+}
+
+void SetOAuth2ClientSecret(OAuth2Client client,
+                           const std::string& client_secret) {
+  g_api_key_cache.Get().SetClientSecret(client, client_secret);
+}
+#endif
 
 std::string GetSpdyProxyAuthValue() {
   return g_api_key_cache.Get().GetSpdyProxyAuthValue();

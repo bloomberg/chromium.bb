@@ -10,6 +10,7 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "google_apis/google_api_keys.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/reload_type.h"
@@ -91,6 +92,21 @@ static NSString* gUserAgentProduct = nil;
 
 + (void)setUserAgentProduct:(NSString*)product {
   gUserAgentProduct = [product copy];
+}
+
++ (void)setGoogleAPIKey:(NSString*)googleAPIKey
+               clientID:(NSString*)clientID
+           clientSecret:(NSString*)clientSecret {
+  google_apis::SetAPIKey(base::SysNSStringToUTF8(googleAPIKey));
+
+  std::string clientIDString = base::SysNSStringToUTF8(clientID);
+  std::string clientSecretString = base::SysNSStringToUTF8(clientSecret);
+  for (size_t i = 0; i < google_apis::CLIENT_NUM_ITEMS; ++i) {
+    google_apis::OAuth2Client client =
+        static_cast<google_apis::OAuth2Client>(i);
+    google_apis::SetOAuth2ClientID(client, clientIDString);
+    google_apis::SetOAuth2ClientSecret(client, clientSecretString);
+  }
 }
 
 - (instancetype)initWithFrame:(CGRect)frame

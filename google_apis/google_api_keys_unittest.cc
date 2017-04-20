@@ -481,4 +481,94 @@ TEST_F(GoogleAPIKeysTest, OverrideAllKeysUsingEnvironment) {
   EXPECT_EQ("env-SECRET_REMOTING_HOST", secret_remoting_host);
 }
 
+#if defined(OS_IOS)
+// Override all keys using both preprocessor defines and setters.
+// Setters should win.
+namespace override_all_keys_setters {
+
+// We start every test by creating a clean environment for the
+// preprocessor defines used in google_api_keys.cc
+#undef DUMMY_API_TOKEN
+#undef GOOGLE_API_KEY
+#undef GOOGLE_CLIENT_ID_MAIN
+#undef GOOGLE_CLIENT_SECRET_MAIN
+#undef GOOGLE_CLIENT_ID_CLOUD_PRINT
+#undef GOOGLE_CLIENT_SECRET_CLOUD_PRINT
+#undef GOOGLE_CLIENT_ID_REMOTING
+#undef GOOGLE_CLIENT_SECRET_REMOTING
+#undef GOOGLE_CLIENT_ID_REMOTING_HOST
+#undef GOOGLE_CLIENT_SECRET_REMOTING_HOST
+#undef GOOGLE_DEFAULT_CLIENT_ID
+#undef GOOGLE_DEFAULT_CLIENT_SECRET
+
+#define GOOGLE_API_KEY "API_KEY"
+#define GOOGLE_CLIENT_ID_MAIN "ID_MAIN"
+#define GOOGLE_CLIENT_SECRET_MAIN "SECRET_MAIN"
+#define GOOGLE_CLIENT_ID_CLOUD_PRINT "ID_CLOUD_PRINT"
+#define GOOGLE_CLIENT_SECRET_CLOUD_PRINT "SECRET_CLOUD_PRINT"
+#define GOOGLE_CLIENT_ID_REMOTING "ID_REMOTING"
+#define GOOGLE_CLIENT_SECRET_REMOTING "SECRET_REMOTING"
+#define GOOGLE_CLIENT_ID_REMOTING_HOST "ID_REMOTING_HOST"
+#define GOOGLE_CLIENT_SECRET_REMOTING_HOST "SECRET_REMOTING_HOST"
+
+// Undef include guard so things get defined again, within this namespace.
+#undef GOOGLE_APIS_GOOGLE_API_KEYS_H_
+#undef GOOGLE_APIS_INTERNAL_GOOGLE_CHROME_API_KEYS_
+#include "google_apis/google_api_keys.cc"
+
+}  // namespace override_all_keys_setters
+
+TEST_F(GoogleAPIKeysTest, OverrideAllKeysUsingSetters) {
+  namespace testcase = override_all_keys_setters::google_apis;
+
+  std::string api_key("setter-API_KEY");
+  testcase::SetAPIKey(api_key);
+
+  std::string id_main("setter-ID_MAIN");
+  std::string secret_main("setter-SECRET_MAIN");
+  testcase::SetOAuth2ClientID(testcase::CLIENT_MAIN, id_main);
+  testcase::SetOAuth2ClientSecret(testcase::CLIENT_MAIN, secret_main);
+
+  std::string id_cloud_print("setter-ID_CLOUD_PRINT");
+  std::string secret_cloud_print("setter-SECRET_CLOUD_PRINT");
+  testcase::SetOAuth2ClientID(testcase::CLIENT_CLOUD_PRINT, id_cloud_print);
+  testcase::SetOAuth2ClientSecret(testcase::CLIENT_CLOUD_PRINT,
+                                  secret_cloud_print);
+
+  std::string id_remoting("setter-ID_REMOTING");
+  std::string secret_remoting("setter-SECRET_REMOTING");
+  testcase::SetOAuth2ClientID(testcase::CLIENT_REMOTING, id_remoting);
+  testcase::SetOAuth2ClientSecret(testcase::CLIENT_REMOTING, secret_remoting);
+
+  std::string id_remoting_host("setter-ID_REMOTING_HOST");
+  std::string secret_remoting_host("setter-SECRET_REMOTING_HOST");
+  testcase::SetOAuth2ClientID(testcase::CLIENT_REMOTING_HOST, id_remoting_host);
+  testcase::SetOAuth2ClientSecret(testcase::CLIENT_REMOTING_HOST,
+                                  secret_remoting_host);
+
+  EXPECT_TRUE(testcase::HasKeysConfigured());
+
+  EXPECT_EQ(api_key, testcase::GetAPIKey());
+
+  EXPECT_EQ(id_main, testcase::GetOAuth2ClientID(testcase::CLIENT_MAIN));
+  EXPECT_EQ(secret_main,
+            testcase::GetOAuth2ClientSecret(testcase::CLIENT_MAIN));
+
+  EXPECT_EQ(id_cloud_print,
+            testcase::GetOAuth2ClientID(testcase::CLIENT_CLOUD_PRINT));
+  EXPECT_EQ(secret_cloud_print,
+            testcase::GetOAuth2ClientSecret(testcase::CLIENT_CLOUD_PRINT));
+
+  EXPECT_EQ(id_remoting,
+            testcase::GetOAuth2ClientID(testcase::CLIENT_REMOTING));
+  EXPECT_EQ(secret_remoting,
+            testcase::GetOAuth2ClientSecret(testcase::CLIENT_REMOTING));
+
+  EXPECT_EQ(id_remoting_host,
+            testcase::GetOAuth2ClientID(testcase::CLIENT_REMOTING_HOST));
+  EXPECT_EQ(secret_remoting_host,
+            testcase::GetOAuth2ClientSecret(testcase::CLIENT_REMOTING_HOST));
+}
+#endif  // defined(OS_IOS)
+
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)

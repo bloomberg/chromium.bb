@@ -69,6 +69,15 @@ CWV_EXPORT
 // depending upon their internal state.
 + (void)setUserAgentProduct:(NSString*)product;
 
+// Use this method to set the necessary credentials used to communicate with
+// the Google API for features such as translate. See this link for more info:
+// https://support.google.com/googleapi/answer/6158857
+// This method must be called before any |CWVWebViews| are instantiated for
+// the keys to be used.
++ (void)setGoogleAPIKey:(NSString*)googleAPIKey
+               clientID:(NSString*)clientID
+           clientSecret:(NSString*)clientSecret;
+
 // |configuration| must not be null
 - (instancetype)initWithFrame:(CGRect)frame
                 configuration:(CWVWebViewConfiguration*)configuration

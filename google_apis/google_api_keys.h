@@ -73,6 +73,12 @@ std::string GetNonStableAPIKey();
 
 std::string GetRemotingAPIKey();
 
+#if defined(OS_IOS)
+// Sets the API key. This should be called as early as possible before this
+// API key is even accessed.
+void SetAPIKey(const std::string& api_key);
+#endif
+
 // Represents the different sets of client IDs and secrets in use.
 enum OAuth2Client {
   CLIENT_MAIN,         // Several different features use this.
@@ -97,6 +103,16 @@ std::string GetOAuth2ClientID(OAuth2Client client);
 // in, e.g. URL-escaped if you use it in a URL.
 std::string GetOAuth2ClientSecret(OAuth2Client client);
 
+#if defined(OS_IOS)
+// Sets the client id for the specified client. Should be called as early as
+// possible before these ids are accessed.
+void SetOAuth2ClientID(OAuth2Client client, const std::string& client_id);
+
+// Sets the client secret for the specified client. Should be called as early as
+// possible before these secrets are accessed.
+void SetOAuth2ClientSecret(OAuth2Client client,
+                           const std::string& client_secret);
+#endif
 // Returns the auth token for the data reduction proxy.
 std::string GetSpdyProxyAuthValue();
 
