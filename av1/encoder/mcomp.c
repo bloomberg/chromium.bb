@@ -2763,7 +2763,13 @@ int av1_find_best_obmc_sub_pixel_tree_up(
                                  ref_mv);
 
   if (use_upsampled_ref) {
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    int ref = has_second_ref(&xd->mi[0]->mbmi)
+                  ? xd->mi[0]->mbmi.ref_frame[is_second]
+                  : xd->mi[0]->mbmi.ref_frame[0];
+#else   // !(CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF)
     int ref = xd->mi[0]->mbmi.ref_frame[is_second];
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
     const YV12_BUFFER_CONFIG *upsampled_ref = get_upsampled_ref(cpi, ref);
     setup_pred_plane(&pd->pre[is_second], mbmi->sb_type,
                      upsampled_ref->y_buffer, upsampled_ref->y_crop_width,

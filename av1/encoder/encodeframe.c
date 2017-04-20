@@ -539,6 +539,21 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
       mbmi->pred_mv[1] = this_mv;
       mi_pred_mv[1] = this_mv;
     }
+#if CONFIG_COMPOUND_SINGLEREF
+  } else if (is_inter_singleref_comp_mode(mbmi->mode)) {
+    // Special case: SR_NEAR_NEWMV uses 1 + mbmi->ref_mv_idx
+    // (like NEARMV) instead
+    if (mbmi->mode == SR_NEAR_NEWMV) ref_mv_idx += 1;
+
+    if (compound_ref0_mode(mbmi->mode) == NEWMV ||
+        compound_ref1_mode(mbmi->mode) == NEWMV) {
+      int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].this_mv;
+      clamp_mv_ref(&this_mv.as_mv, bw, bh, xd);
+      mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
+      mbmi->pred_mv[0] = this_mv;
+      mi_pred_mv[0] = this_mv;
+    }
+#endif  // CONFIG_COMPOUND_SINGLEREF
   } else {
 #endif  // CONFIG_EXT_INTER
     if (mbmi->mode == NEWMV) {
@@ -1619,7 +1634,14 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_REFS
         }
 
-#if CONFIG_EXT_INTER && CONFIG_INTERINTRA
+#if CONFIG_EXT_INTER
+#if CONFIG_COMPOUND_SINGLEREF
+        if (!has_second_ref(mbmi))
+          counts->comp_inter_mode[av1_get_inter_mode_context(xd)]
+                                 [is_inter_singleref_comp_mode(mbmi->mode)]++;
+#endif  // CONFIG_COMPOUND_SINGLEREF
+
+#if CONFIG_INTERINTRA
         if (cm->reference_mode != COMPOUND_REFERENCE &&
 #if CONFIG_SUPERTX
             !supertx_enabled &&
@@ -1635,7 +1657,8 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
             counts->interintra[bsize_group][0]++;
           }
         }
-#endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
+#endif  // CONFIG_INTERINTRA
+#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
         const MOTION_MODE motion_allowed = motion_mode_allowed(
@@ -1663,8 +1686,13 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
-        if (cm->reference_mode != SINGLE_REFERENCE &&
+        if (
+#if CONFIG_COMPOUND_SINGLEREF
+            is_inter_anyref_comp_mode(mbmi->mode)
+#else   // !CONFIG_COMPOUND_SINGLEREF
+            cm->reference_mode != SINGLE_REFERENCE &&
             is_inter_compound_mode(mbmi->mode)
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
             && mbmi->motion_mode == SIMPLE_TRANSLATION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
@@ -1683,6 +1711,12 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
       if (has_second_ref(mbmi)) {
         mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
         ++counts->inter_compound_mode[mode_ctx][INTER_COMPOUND_OFFSET(mode)];
+#if CONFIG_COMPOUND_SINGLEREF
+      } else if (is_inter_singleref_comp_mode(mode)) {
+        mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
+        ++counts->inter_singleref_comp_mode[mode_ctx]
+                                           [INTER_SINGLEREF_COMP_OFFSET(mode)];
+#endif  // CONFIG_COMPOUND_SINGLEREF
       } else {
 #endif  // CONFIG_EXT_INTER
         mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
@@ -1693,10 +1727,15 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_EXT_INTER
+#if CONFIG_COMPOUND_SINGLEREF
+      if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
+          mbmi->mode == SR_NEW_NEWMV) {
+#else   // !CONFIG_COMPOUND_SINGLEREF
       if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
-#else
+#endif  // CONFIG_COMPOUND_SINGLEREF
+#else   // !CONFIG_EXT_INTER
       if (mbmi->mode == NEWMV) {
-#endif
+#endif  // CONFIG_EXT_INTER
         uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
         int idx;
 
@@ -4950,7 +4989,11 @@ static void make_consistent_compound_tools(AV1_COMMON *cm) {
     cm->allow_interintra_compound = 0;
 #endif  // CONFIG_INTERINTRA
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+#if CONFIG_COMPOUND_SINGLEREF
+  if (frame_is_intra_only(cm))
+#else   // !CONFIG_COMPOUND_SINGLEREF
   if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE)
+#endif  // CONFIG_COMPOUND_SINGLEREF
     cm->allow_masked_compound = 0;
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 }
@@ -5588,8 +5631,21 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
                            &xd->block_refs[ref]->sf);
     }
-    av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, block_size);
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    // Single ref compound mode
+    if (!is_compound && is_inter_singleref_comp_mode(mbmi->mode)) {
+      xd->block_refs[1] = xd->block_refs[0];
+      YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, mbmi->ref_frame[0]);
+#if CONFIG_INTRABC
+      assert(IMPLIES(!is_intrabc_block(mbmi), cfg));
+#else
+      assert(cfg != NULL);
+#endif  // !CONFIG_INTRABC
+      av1_setup_pre_planes(xd, 1, cfg, mi_row, mi_col, &xd->block_refs[1]->sf);
+    }
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
+    av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, block_size);
     av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, NULL, block_size);
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
@@ -5887,6 +5943,16 @@ static void predict_superblock(const AV1_COMP *const cpi, ThreadData *td,
     av1_setup_pre_planes(xd, ref, cfg, mi_row_pred, mi_col_pred,
                          &xd->block_refs[ref]->sf);
   }
+
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+  // Single ref compound mode
+  if (!is_compound && is_inter_singleref_comp_mode(mbmi->mode)) {
+    xd->block_refs[1] = xd->block_refs[0];
+    YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, mbmi->ref_frame[0]);
+    av1_setup_pre_planes(xd, 1, cfg, mi_row_pred, mi_col_pred,
+                         &xd->block_refs[1]->sf);
+  }
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
   if (!b_sub8x8)
     av1_build_inter_predictor_sb_extend(cm, xd,

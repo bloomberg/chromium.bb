@@ -61,6 +61,8 @@
 #include "av1/encoder/pvq_encoder.h"
 #endif
 
+#define COMPOUND_SINGLEREF_DEBUG 0
+
 static struct av1_token intra_mode_encodings[INTRA_MODES];
 static struct av1_token switchable_interp_encodings[SWITCHABLE_FILTERS];
 static struct av1_token partition_encodings[PARTITION_TYPES];
@@ -70,6 +72,10 @@ static const struct av1_token
       { 2, 2 },  { 12, 4 }, { 52, 6 }, { 53, 6 },
       { 54, 6 }, { 55, 6 }, { 0, 1 },  { 7, 3 }
     };
+#if CONFIG_COMPOUND_SINGLEREF
+static struct av1_token
+    inter_singleref_comp_mode_encodings[INTER_SINGLEREF_COMP_MODES];
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_PALETTE
 static struct av1_token palette_size_encodings[PALETTE_SIZES];
@@ -161,6 +167,10 @@ void av1_encode_token_init(void) {
 #if CONFIG_INTERINTRA
   av1_tokens_from_tree(interintra_mode_encodings, av1_interintra_mode_tree);
 #endif  // CONFIG_INTERINTRA
+#if CONFIG_COMPOUND_SINGLEREF
+  av1_tokens_from_tree(inter_singleref_comp_mode_encodings,
+                       av1_inter_singleref_comp_mode_tree);
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
   av1_tokens_from_tree(compound_type_encodings, av1_compound_type_tree);
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
@@ -259,10 +269,15 @@ static void write_drl_idx(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
   assert(mbmi->ref_mv_idx < 3);
 
 #if CONFIG_EXT_INTER
+#if CONFIG_COMPOUND_SINGLEREF
+  if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
+      mbmi->mode == SR_NEW_NEWMV) {
+#else   // !CONFIG_COMPOUND_SINGLEREF
   if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
-#else
+#endif  // CONFIG_COMPOUND_SINGLEREF
+#else   // !CONFIG_EXT_INTER
   if (mbmi->mode == NEWMV) {
-#endif
+#endif  // CONFIG_EXT_INTER
     int idx;
     for (idx = 0; idx < 2; ++idx) {
       if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
@@ -305,6 +320,20 @@ static void write_inter_compound_mode(AV1_COMMON *cm, aom_writer *w,
   av1_write_token(w, av1_inter_compound_mode_tree, inter_compound_probs,
                   &inter_compound_mode_encodings[INTER_COMPOUND_OFFSET(mode)]);
 }
+
+#if CONFIG_COMPOUND_SINGLEREF
+static void write_inter_singleref_comp_mode(AV1_COMMON *cm, aom_writer *w,
+                                            PREDICTION_MODE mode,
+                                            const int16_t mode_ctx) {
+  assert(is_inter_singleref_comp_mode(mode));
+  const aom_prob *const inter_singleref_comp_probs =
+      cm->fc->inter_singleref_comp_mode_probs[mode_ctx];
+
+  av1_write_token(
+      w, av1_inter_singleref_comp_mode_tree, inter_singleref_comp_probs,
+      &inter_singleref_comp_mode_encodings[INTER_SINGLEREF_COMP_OFFSET(mode)]);
+}
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #endif  // CONFIG_EXT_INTER
 
 static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
@@ -490,6 +519,34 @@ static void update_inter_compound_mode_probs(AV1_COMMON *cm, int probwt,
     }
   }
 }
+
+#if CONFIG_COMPOUND_SINGLEREF
+static void update_inter_singleref_comp_mode_probs(AV1_COMMON *cm, int probwt,
+                                                   aom_writer *w) {
+  const int savings_thresh = av1_cost_one(GROUP_DIFF_UPDATE_PROB) -
+                             av1_cost_zero(GROUP_DIFF_UPDATE_PROB);
+  int i;
+  int savings = 0;
+  int do_update = 0;
+  for (i = 0; i < INTER_MODE_CONTEXTS; ++i) {
+    savings +=
+        prob_diff_update_savings(av1_inter_singleref_comp_mode_tree,
+                                 cm->fc->inter_singleref_comp_mode_probs[i],
+                                 cm->counts.inter_singleref_comp_mode[i],
+                                 INTER_SINGLEREF_COMP_MODES, probwt);
+  }
+  do_update = savings > savings_thresh;
+  aom_write(w, do_update, GROUP_DIFF_UPDATE_PROB);
+  if (do_update) {
+    for (i = 0; i < INTER_MODE_CONTEXTS; ++i) {
+      prob_diff_update(av1_inter_singleref_comp_mode_tree,
+                       cm->fc->inter_singleref_comp_mode_probs[i],
+                       cm->counts.inter_singleref_comp_mode[i],
+                       INTER_SINGLEREF_COMP_MODES, probwt, w);
+    }
+  }
+}
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #endif  // CONFIG_EXT_INTER
 
 static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
@@ -1891,8 +1948,21 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     int16_t mode_ctx;
     write_ref_frames(cm, xd, w);
 
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    if (!segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) {
+      // NOTE: Handle single ref comp mode
+      if (!is_compound)
+        aom_write(w, is_inter_singleref_comp_mode(mode),
+                  av1_get_inter_mode_prob(cm, xd));
+    }
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+
 #if CONFIG_EXT_INTER
+#if CONFIG_COMPOUND_SINGLEREF
+    if (is_compound || is_inter_singleref_comp_mode(mode))
+#else   // !CONFIG_COMPOUND_SINGLEREF
     if (is_compound)
+#endif  // CONFIG_COMPOUND_SINGLEREF
       mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
     else
 #endif  // CONFIG_EXT_INTER
@@ -1905,16 +1975,23 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #if CONFIG_EXT_INTER
         if (is_inter_compound_mode(mode))
           write_inter_compound_mode(cm, w, mode, mode_ctx);
+#if CONFIG_COMPOUND_SINGLEREF
+        else if (is_inter_singleref_comp_mode(mode))
+          write_inter_singleref_comp_mode(cm, w, mode, mode_ctx);
+#endif  // CONFIG_COMPOUND_SINGLEREF
         else if (is_inter_singleref_mode(mode))
 #endif  // CONFIG_EXT_INTER
           write_inter_mode(w, mode, ec_ctx, mode_ctx);
 
 #if CONFIG_EXT_INTER
         if (mode == NEWMV || mode == NEW_NEWMV ||
+#if CONFIG_COMPOUND_SINGLEREF
+            mbmi->mode == SR_NEW_NEWMV ||
+#endif  // CONFIG_COMPOUND_SINGLEREF
             have_nearmv_in_inter_mode(mode))
-#else
+#else   // !CONFIG_EXT_INTER
         if (mode == NEARMV || mode == NEWMV)
-#endif
+#endif  // CONFIG_EXT_INTER
           write_drl_idx(cm, mbmi, mbmi_ext, w);
         else
           assert(mbmi->ref_mv_idx == 0);
@@ -1926,6 +2003,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
     if (bsize < BLOCK_8X8 && !unify_bsize) {
+#if CONFIG_COMPOUND_SINGLEREF
+      /// NOTE: Single ref comp mode does not support sub8x8.
+      assert(is_compound || !is_inter_singleref_comp_mode(mbmi->mode));
+#endif  // CONFIG_COMPOUND_SINGLEREF
       const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
       const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
       int idx, idy;
@@ -2022,6 +2103,22 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv,
                       &mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv, nmvc,
                       allow_hp);
+#if CONFIG_COMPOUND_SINGLEREF
+      } else if (  //  mode == SR_NEAREST_NEWMV ||
+          mode == SR_NEAR_NEWMV || mode == SR_ZERO_NEWMV ||
+          mode == SR_NEW_NEWMV) {
+        int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
+        int nmv_ctx =
+            av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
+                        mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
+        nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
+        int_mv ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0];
+        if (mode == SR_NEW_NEWMV)
+          av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv, &ref_mv.as_mv, nmvc,
+                        allow_hp);
+        av1_encode_mv(cpi, w, &mbmi->mv[1].as_mv, &ref_mv.as_mv, nmvc,
+                      allow_hp);
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #endif  // CONFIG_EXT_INTER
       }
     }
@@ -2062,12 +2159,18 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
-    if (cpi->common.reference_mode != SINGLE_REFERENCE &&
-        is_inter_compound_mode(mbmi->mode)
+    if (
+#if CONFIG_COMPOUND_SINGLEREF
+        (is_inter_compound_mode(mbmi->mode) ||
+         is_inter_singleref_comp_mode(mbmi->mode)) &&
+#else   // !CONFIG_COMPOUND_SINGLEREF
+        cpi->common.reference_mode != SINGLE_REFERENCE &&
+        is_inter_compound_mode(mbmi->mode) &&
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_MOTION_VAR
-        && mbmi->motion_mode == SIMPLE_TRANSLATION
+        mbmi->motion_mode == SIMPLE_TRANSLATION &&
 #endif  // CONFIG_MOTION_VAR
-        && is_any_masked_compound_used(bsize)) {
+        is_any_masked_compound_used(bsize)) {
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
       if (cm->allow_masked_compound) {
         av1_write_token(
@@ -2350,31 +2453,53 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
     // up if they are scaled. has_subpel_mv_component is in turn needed by
     // write_switchable_interp_filter, which is called by pack_inter_mode_mvs.
     set_ref_ptrs(cm, xd, m->mbmi.ref_frame[0], m->mbmi.ref_frame[1]);
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    if (!has_second_ref(&m->mbmi) && is_inter_singleref_comp_mode(m->mbmi.mode))
+      xd->block_refs[1] = xd->block_refs[0];
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 #endif  // CONFIG_DUAL_FILTER
-#if 0
+
+#if CONFIG_EXT_INTER
+#if COMPOUND_SINGLEREF_DEBUG
     // NOTE(zoeliu): For debug
-    if (cm->current_video_frame == FRAME_TO_CHECK && cm->show_frame == 1) {
-      const PREDICTION_MODE mode = m->mbmi.mode;
-      const int segment_id = m->mbmi.segment_id;
-      const BLOCK_SIZE bsize = m->mbmi.sb_type;
+    if (is_inter_block(&m->mbmi)) {
+#define FRAME_TO_CHECK 1
+      if (cm->current_video_frame == FRAME_TO_CHECK &&
+          ((cm->reference_mode != SINGLE_REFERENCE && cm->show_frame == 0) ||
+           cm->show_frame == 1)) {
+        const MB_MODE_INFO *const mbmi = &m->mbmi;
+        const BLOCK_SIZE bsize = mbmi->sb_type;
 
-      // For sub8x8, simply dump out the first sub8x8 block info
-      const PREDICTION_MODE b_mode =
-          (bsize < BLOCK_8X8) ? m->bmi[0].as_mode : -1;
-      const int mv_x = (bsize < BLOCK_8X8) ?
-          m->bmi[0].as_mv[0].as_mv.row : m->mbmi.mv[0].as_mv.row;
-      const int mv_y = (bsize < BLOCK_8X8) ?
-          m->bmi[0].as_mv[0].as_mv.col : m->mbmi.mv[0].as_mv.col;
+        int_mv mv[2];
+        int is_comp_ref = has_second_ref(&m->mbmi);
+        int ref;
 
-      printf("Before pack_inter_mode_mvs(): "
-             "Frame=%d, (mi_row,mi_col)=(%d,%d), "
-             "mode=%d, segment_id=%d, bsize=%d, b_mode=%d, "
-             "mv[0]=(%d, %d), ref[0]=%d, ref[1]=%d\n",
-             cm->current_video_frame, mi_row, mi_col,
-             mode, segment_id, bsize, b_mode, mv_x, mv_y,
-             m->mbmi.ref_frame[0], m->mbmi.ref_frame[1]);
+        for (ref = 0; ref < 1 + is_comp_ref; ++ref)
+          mv[ref].as_mv = m->mbmi.mv[ref].as_mv;
+
+        if (!is_comp_ref) {
+#if CONFIG_COMPOUND_SINGLEREF
+          if (is_inter_singleref_comp_mode(m->mbmi.mode))
+            mv[1].as_mv = m->mbmi.mv[1].as_mv;
+          else
+#endif  // CONFIG_COMPOUND_SINGLEREF
+            mv[1].as_int = 0;
+        }
+
+        printf(
+            "=== ENCODER ===: "
+            "Frame=%d, (mi_row,mi_col)=(%d,%d), mode=%d, bsize=%d, "
+            "show_frame=%d, mv[0]=(%d,%d), mv[1]=(%d,%d), ref[0]=%d, "
+            "ref[1]=%d, motion_mode=%d\n",
+            cm->current_video_frame, mi_row, mi_col, mbmi->mode, bsize,
+            cm->show_frame, mv[0].as_mv.row, mv[0].as_mv.col, mv[1].as_mv.row,
+            mv[1].as_mv.col, mbmi->ref_frame[0], mbmi->ref_frame[1],
+            mbmi->motion_mode);
+      }
     }
-#endif  // 0
+#endif  // COMPOUND_SINGLEREF_DEBUG
+#undef COMPOUND_SINGLEREF_DEBUG
+#endif  // CONFIG_EXT_INTER
     pack_inter_mode_mvs(cpi, mi_row, mi_col,
 #if CONFIG_SUPERTX
                         supertx_enabled,
@@ -3988,7 +4113,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       *max_tile_col_size = AOMMAX(*max_tile_col_size, col_size);
     }
   }
-#else
+#else  // !CONFIG_EXT_TILE
 #if CONFIG_TILE_GROUPS
   write_uncompressed_header(cpi, wb);
 
@@ -4303,7 +4428,11 @@ static void write_compound_tools(const AV1_COMMON *cm,
   }
 #endif  // CONFIG_INTERINTRA
 #if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+#if CONFIG_COMPOUND_SINGLEREF
+  if (!frame_is_intra_only(cm)) {
+#else   // !CONFIG_COMPOUND_SINGLEREF
   if (!frame_is_intra_only(cm) && cm->reference_mode != SINGLE_REFERENCE) {
+#endif  // CONFIG_COMPOUND_SINGLEREF
     aom_wb_write_bit(wb, cm->allow_masked_compound);
   } else {
     assert(cm->allow_masked_compound == 0);
@@ -4790,6 +4919,10 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     update_inter_mode_probs(cm, header_bc, counts);
 #if CONFIG_EXT_INTER
     update_inter_compound_mode_probs(cm, probwt, header_bc);
+#if CONFIG_COMPOUND_SINGLEREF
+    update_inter_singleref_comp_mode_probs(cm, probwt, header_bc);
+#endif  // CONFIG_COMPOUND_SINGLEREF
+
 #if CONFIG_INTERINTRA
     if (cm->reference_mode != COMPOUND_REFERENCE &&
         cm->allow_interintra_compound) {
@@ -4814,7 +4947,11 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     }
 #endif  // CONFIG_INTERINTRA
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+#if CONFIG_COMPOUND_SINGLEREF
+    if (cm->allow_masked_compound) {
+#else   // !CONFIG_COMPOUND_SINGLEREF
     if (cm->reference_mode != SINGLE_REFERENCE && cm->allow_masked_compound) {
+#endif  // CONFIG_COMPOUND_SINGLEREF
       for (i = 0; i < BLOCK_SIZES; i++)
         prob_diff_update(av1_compound_type_tree, fc->compound_type_prob[i],
                          cm->counts.compound_interinter[i], COMPOUND_TYPES,
@@ -4872,6 +5009,12 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_EXT_REFS
       }
     }
+
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    for (i = 0; i < COMP_INTER_MODE_CONTEXTS; i++)
+      av1_cond_prob_diff_update(header_bc, &fc->comp_inter_mode_prob[i],
+                                counts->comp_inter_mode[i], probwt);
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
 #if !CONFIG_EC_ADAPT
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {

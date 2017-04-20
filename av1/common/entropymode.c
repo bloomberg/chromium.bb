@@ -1027,6 +1027,7 @@ static const aom_prob default_inter_compound_mode_probs
 #if CONFIG_COMPOUND_SINGLEREF
 // TODO(zoeliu): Default values to be further adjusted based on the collected
 //               stats.
+/*
 static const aom_prob default_inter_singleref_comp_mode_probs
     [INTER_MODE_CONTEXTS][INTER_SINGLEREF_COMP_MODES - 1] = {
       { 2, 173, 68, 180 },   // 0 = both zero mv
@@ -1036,6 +1037,16 @@ static const aom_prob default_inter_singleref_comp_mode_probs
       { 8, 64, 64, 180 },    // 4 = two new mvs
       { 17, 81, 52, 180 },   // 5 = one intra neighbour
       { 25, 29, 50, 180 },   // 6 = two intra neighbours
+    };*/
+static const aom_prob default_inter_singleref_comp_mode_probs
+    [INTER_MODE_CONTEXTS][INTER_SINGLEREF_COMP_MODES - 1] = {
+      { 2, 173, 68 },   // 0 = both zero mv
+      { 7, 145, 160 },  // 1 = 1 zero + 1 predicted
+      { 7, 166, 126 },  // 2 = two predicted mvs
+      { 7, 94, 132 },   // 3 = 1 pred/zero, 1 new
+      { 8, 64, 64 },    // 4 = two new mvs
+      { 17, 81, 52 },   // 5 = one intra neighbour
+      { 25, 29, 50 },   // 6 = two intra neighbours
     };
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
@@ -1280,6 +1291,8 @@ const aom_tree_index av1_inter_compound_mode_tree
 };
 
 #if CONFIG_COMPOUND_SINGLEREF
+// TODO(zoeliu): To redesign the tree structure once the number of mode changes.
+/*
 const aom_tree_index av1_inter_singleref_comp_mode_tree
     [TREE_SIZE(INTER_SINGLEREF_COMP_MODES)] = {
   -INTER_SINGLEREF_COMP_OFFSET(SR_ZERO_NEWMV), 2,
@@ -1287,6 +1300,14 @@ const aom_tree_index av1_inter_singleref_comp_mode_tree
   6, -INTER_SINGLEREF_COMP_OFFSET(SR_NEW_NEWMV),
   -INTER_SINGLEREF_COMP_OFFSET(SR_NEAREST_NEWMV),
   -INTER_SINGLEREF_COMP_OFFSET(SR_NEAR_NEWMV)
+};*/
+
+const aom_tree_index av1_inter_singleref_comp_mode_tree
+    [TREE_SIZE(INTER_SINGLEREF_COMP_MODES)] = {
+  -INTER_SINGLEREF_COMP_OFFSET(SR_ZERO_NEWMV), 2,
+  -INTER_SINGLEREF_COMP_OFFSET(SR_NEAREST_NEARMV), 4,
+  -INTER_SINGLEREF_COMP_OFFSET(SR_NEAR_NEWMV),
+      -INTER_SINGLEREF_COMP_OFFSET(SR_NEW_NEWMV)
 };
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
@@ -1368,7 +1389,7 @@ static const aom_prob default_single_ref_p[REF_CONTEXTS][SINGLE_REFS - 1] = {
 // TODO(zoeliu): Default values to be further adjusted based on the collected
 //               stats.
 static const aom_prob default_comp_inter_mode_p[COMP_INTER_MODE_CONTEXTS] = {
-  41, 119, 187, 225
+  40, 110, 160, 220
 };
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 

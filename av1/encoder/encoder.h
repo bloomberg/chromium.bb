@@ -539,6 +539,10 @@ typedef struct AV1_COMP {
 #if CONFIG_EXT_INTER
   unsigned int inter_compound_mode_cost[INTER_MODE_CONTEXTS]
                                        [INTER_COMPOUND_MODES];
+#if CONFIG_COMPOUND_SINGLEREF
+  unsigned int inter_singleref_comp_mode_cost[INTER_MODE_CONTEXTS]
+                                             [INTER_SINGLEREF_COMP_MODES];
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_INTERINTRA
   unsigned int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
 #endif  // CONFIG_INTERINTRA
