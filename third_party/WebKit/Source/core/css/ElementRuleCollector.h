@@ -107,7 +107,7 @@ class ElementRuleCollector {
  public:
   ElementRuleCollector(const ElementResolveContext&,
                        const SelectorFilter&,
-                       ComputedStyle* = 0);
+                       ComputedStyle* = nullptr);
   ~ElementRuleCollector();
 
   void SetMode(SelectorChecker::Mode mode) { mode_ = mode; }

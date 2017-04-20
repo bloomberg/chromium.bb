@@ -234,4 +234,87 @@ TEST_F(SharedStyleFinderTest, SlottedPseudoWithAttribute) {
   EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*b));
 }
 
+TEST_F(SharedStyleFinderTest, HostWithAttribute) {
+  SetBodyContent("<div id=host attr></div>");
+  Element* host = GetDocument().GetElementById("host");
+  ShadowRoot& root = AttachShadow(*host);
+  root.setInnerHTML("<slot></slot>");
+  GetDocument().UpdateDistribution();
+
+  AddSelector(":host([attr])");
+  FinishAddingSelectors();
+
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*host));
+}
+
+TEST_F(SharedStyleFinderTest, HostAncestorWithAttribute) {
+  SetBodyContent("<div id=host attr></div>");
+  Element* host = GetDocument().GetElementById("host");
+  ShadowRoot& root = AttachShadow(*host);
+  root.setInnerHTML("<div id=inner></div>");
+  Element* inner = root.getElementById("inner");
+  GetDocument().UpdateDistribution();
+
+  AddSelector(":host([attr]) div");
+  FinishAddingSelectors();
+
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*inner));
+}
+
+TEST_F(SharedStyleFinderTest, HostContextAncestorWithAttribute) {
+  SetBodyContent("<div id=host attr></div>");
+  Element* host = GetDocument().GetElementById("host");
+  ShadowRoot& root = AttachShadow(*host);
+  root.setInnerHTML("<div id=inner></div>");
+  Element* inner = root.getElementById("inner");
+  GetDocument().UpdateDistribution();
+
+  AddSelector(":host-context([attr]) div");
+  FinishAddingSelectors();
+
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*inner));
+}
+
+TEST_F(SharedStyleFinderTest, HostParentWithAttribute) {
+  SetBodyContent("<div id=host attr></div>");
+  Element* host = GetDocument().GetElementById("host");
+  ShadowRoot& root = AttachShadow(*host);
+  root.setInnerHTML("<div id=inner></div>");
+  Element* inner = root.getElementById("inner");
+  GetDocument().UpdateDistribution();
+
+  AddSelector(":host([attr]) > div");
+  FinishAddingSelectors();
+
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*inner));
+}
+
+TEST_F(SharedStyleFinderTest, HostContextParentWithAttribute) {
+  SetBodyContent("<div id=host attr></div>");
+  Element* host = GetDocument().GetElementById("host");
+  ShadowRoot& root = AttachShadow(*host);
+  root.setInnerHTML("<div id=inner></div>");
+  Element* inner = root.getElementById("inner");
+  GetDocument().UpdateDistribution();
+
+  AddSelector(":host-context([attr]) > div");
+  FinishAddingSelectors();
+
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*inner));
+}
+
+TEST_F(SharedStyleFinderTest, AncestorWithAttributeInParentScope) {
+  SetBodyContent("<div id=host attr></div>");
+  Element* host = GetDocument().GetElementById("host");
+  ShadowRoot& root = AttachShadow(*host);
+  root.setInnerHTML("<div id=inner></div>");
+  Element* inner = root.getElementById("inner");
+  GetDocument().UpdateDistribution();
+
+  AddSelector("div[attr] div");
+  FinishAddingSelectors();
+
+  EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*inner));
+}
+
 }  // namespace blink

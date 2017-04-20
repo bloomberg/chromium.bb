@@ -36,8 +36,8 @@ class MatchRequest {
 
  public:
   MatchRequest(RuleSet* rule_set,
-               const ContainerNode* scope = 0,
-               const CSSStyleSheet* css_sheet = 0,
+               const ContainerNode* scope = nullptr,
+               const CSSStyleSheet* css_sheet = nullptr,
                unsigned style_sheet_index = 0)
       : rule_set(rule_set),
         scope(scope),
