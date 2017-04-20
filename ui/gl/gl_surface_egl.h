@@ -126,14 +126,12 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   gfx::Size size_;
   bool enable_fixed_size_angle_;
 
-  void OnSetSwapInterval(int interval) override;
   gfx::SwapResult SwapBuffersWithDamage(const std::vector<int>& rects);
 
  private:
   // Commit the |pending_overlays_| and clear the vector. Returns false if any
   // fail to be committed.
   bool CommitAndClearPendingOverlays();
-  void UpdateSwapInterval();
 
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
@@ -143,18 +141,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_external_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_internal_;
 
-  int swap_interval_;
-
   std::vector<GLSurfaceOverlay> pending_overlays_;
-
-#if defined(OS_WIN)
-  bool vsync_override_;
-
-  unsigned int swap_generation_;
-  static unsigned int current_swap_generation_;
-  static unsigned int swaps_this_generation_;
-  static unsigned int last_multiswap_generation_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
 };

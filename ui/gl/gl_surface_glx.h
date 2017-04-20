@@ -39,6 +39,8 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
   static bool IsCreateContextES2ProfileSupported();
   static bool IsTextureFromPixmapSupported();
   static bool IsOMLSyncControlSupported();
+  static bool IsEXTSwapControlSupported();
+  static bool IsMESASwapControlSupported();
 
   void* GetDisplay() override;
 
@@ -76,6 +78,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   unsigned long GetCompatibilityKey() override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
+
   VisualID GetVisualID() const { return visual_id_; }
 
  protected:
@@ -92,7 +95,6 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   bool CanHandleEvent(XEvent* xevent);
 
   gfx::AcceleratedWidget window() const { return window_; }
-
  private:
   // The handle for the drawable to make current or swap.
   GLXDrawable GetDrawableHandle() const;

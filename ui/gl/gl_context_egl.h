@@ -47,7 +47,6 @@ class GL_EXPORT GLContextEGL : public GLContextReal {
   EGLDisplay display_;
   EGLConfig config_;
   bool unbind_fbo_on_makecurrent_;
-  int swap_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextEGL);
 };

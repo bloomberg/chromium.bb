@@ -115,14 +115,6 @@ namespace gl {
 
 bool GLSurfaceEGL::initialized_ = false;
 
-#if defined(OS_WIN)
-unsigned int NativeViewGLSurfaceEGL::current_swap_generation_ = 0;
-unsigned int NativeViewGLSurfaceEGL::swaps_this_generation_ = 0;
-unsigned int NativeViewGLSurfaceEGL::last_multiswap_generation_ = 0;
-
-const unsigned int MULTISWAP_FRAME_VSYNC_THRESHOLD = 60;
-#endif
-
 namespace {
 
 EGLDisplay g_display = EGL_NO_DISPLAY;
@@ -719,16 +711,13 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(
       supports_post_sub_buffer_(false),
       supports_swap_buffer_with_damage_(false),
       flips_vertically_(false),
-      vsync_provider_external_(std::move(vsync_provider)),
-      swap_interval_(1) {
+      vsync_provider_external_(std::move(vsync_provider)) {
 #if defined(OS_ANDROID)
   if (window)
     ANativeWindow_acquire(window);
 #endif
 
 #if defined(OS_WIN)
-  vsync_override_ = false;
-  swap_generation_ = 0;
   RECT windowRect;
   if (GetClientRect(window_, &windowRect))
     size_ = gfx::Rect(windowRect).size();
@@ -836,51 +825,10 @@ bool NativeViewGLSurfaceEGL::IsOffscreen() {
   return false;
 }
 
-void NativeViewGLSurfaceEGL::UpdateSwapInterval() {
-#if defined(OS_WIN)
-  if (!g_use_direct_composition && (swap_interval_ != 0)) {
-    // This code is a simple way of enforcing that we only vsync if one surface
-    // is swapping per frame. This provides single window cases a stable refresh
-    // while allowing multi-window cases to not slow down due to multiple syncs
-    // on a single thread. A better way to fix this problem would be to have
-    // each surface present on its own thread. This is unnecessary with
-    // DirectComposition because that doesn't block swaps, but instead blocks
-    // the first draw into a surface during the next frame.
-
-    if (current_swap_generation_ == swap_generation_) {
-      if (swaps_this_generation_ > 1)
-        last_multiswap_generation_ = current_swap_generation_;
-      swaps_this_generation_ = 0;
-      current_swap_generation_++;
-    }
-
-    swap_generation_ = current_swap_generation_;
-
-    if (swaps_this_generation_ != 0 ||
-        (current_swap_generation_ - last_multiswap_generation_ <
-            MULTISWAP_FRAME_VSYNC_THRESHOLD)) {
-      // Override vsync settings and switch it off
-      if (!vsync_override_) {
-        eglSwapInterval(GetDisplay(), 0);
-        vsync_override_ = true;
-      }
-    } else if (vsync_override_) {
-      // Only one window swapping, so let the normal vsync setting take over
-      eglSwapInterval(GetDisplay(), swap_interval_);
-      vsync_override_ = false;
-    }
-
-    swaps_this_generation_++;
-  }
-#endif
-}
-
 gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers() {
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceEGL:RealSwapBuffers",
       "width", GetSize().width(),
       "height", GetSize().height());
-
-  UpdateSwapInterval();
 
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
@@ -965,7 +913,6 @@ bool NativeViewGLSurfaceEGL::BuffersFlipped() const {
 gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(
     const std::vector<int>& rects) {
   DCHECK(supports_swap_buffer_with_damage_);
-  UpdateSwapInterval();
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
     return gfx::SwapResult::SWAP_FAILED;
@@ -986,7 +933,6 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(int x,
                                                       int width,
                                                       int height) {
   DCHECK(supports_post_sub_buffer_);
-  UpdateSwapInterval();
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
     return gfx::SwapResult::SWAP_FAILED;
@@ -1041,10 +987,6 @@ bool NativeViewGLSurfaceEGL::ScheduleOverlayPlane(
       GLSurfaceOverlay(z_order, transform, image, bounds_rect, crop_rect));
   return true;
 #endif
-}
-
-void NativeViewGLSurfaceEGL::OnSetSwapInterval(int interval) {
-  swap_interval_ = interval;
 }
 
 NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {

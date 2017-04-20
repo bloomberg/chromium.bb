@@ -69,7 +69,8 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
       if (!surface.get() || !surface->Initialize(format))
         return surface;
       return make_scoped_refptr<gl::GLSurface>(
-          new PassThroughImageTransportSurface(delegate, surface.get()));
+          new PassThroughImageTransportSurface(
+              delegate, surface.get(), kMultiWindowSwapIntervalDefault));
   }
 }
 

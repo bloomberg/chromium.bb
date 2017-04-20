@@ -48,7 +48,8 @@ bool g_glx_oml_sync_control_supported = false;
 // whole since on some platforms (e.g. crosbug.com/34585), glXGetMscRateOML
 // always fails even though GLX_OML_sync_control is reported as being supported.
 bool g_glx_get_msc_rate_oml_supported = false;
-
+bool g_glx_ext_swap_control_supported = false;
+bool g_glx_mesa_swap_control_supported = false;
 bool g_glx_sgi_video_sync_supported = false;
 
 // A 24-bit RGB visual and colormap to use when creating offscreen surfaces.
@@ -423,6 +424,8 @@ bool GLSurfaceGLX::InitializeOneOff() {
       HasGLXExtension("GLX_EXT_texture_from_pixmap");
   g_glx_oml_sync_control_supported = HasGLXExtension("GLX_OML_sync_control");
   g_glx_get_msc_rate_oml_supported = g_glx_oml_sync_control_supported;
+  g_glx_ext_swap_control_supported = HasGLXExtension("GLX_EXT_swap_control");
+  g_glx_mesa_swap_control_supported = HasGLXExtension("GLX_MESA_swap_control");
   g_glx_sgi_video_sync_supported = HasGLXExtension("GLX_SGI_video_sync");
 
   const XVisualInfo& visual_info =
@@ -489,6 +492,16 @@ bool GLSurfaceGLX::IsCreateContextES2ProfileSupported() {
 // static
 bool GLSurfaceGLX::IsTextureFromPixmapSupported() {
   return g_glx_texture_from_pixmap_supported;
+}
+
+// static
+bool GLSurfaceGLX::IsEXTSwapControlSupported() {
+  return g_glx_ext_swap_control_supported;
+}
+
+// static
+bool GLSurfaceGLX::IsMESASwapControlSupported() {
+  return g_glx_mesa_swap_control_supported;
 }
 
 // static
@@ -593,7 +606,6 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 gfx::SwapResult NativeViewGLSurfaceGLX::SwapBuffers() {
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceGLX:RealSwapBuffers", "width",
                GetSize().width(), "height", GetSize().height());
-
   glXSwapBuffers(g_display, GetDrawableHandle());
   return gfx::SwapResult::SWAP_ACK;
 }

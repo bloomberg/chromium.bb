@@ -14,12 +14,23 @@
 
 namespace gpu {
 
+namespace {
+// Number of swap generations before vsync is reenabled after we've stopped
+// doing multiple swaps per frame.
+const int kMultiWindowSwapEnableVSyncDelay = 60;
+
+int g_current_swap_generation_ = 0;
+int g_num_swaps_in_current_swap_generation_ = 0;
+int g_last_multi_window_swap_generation_ = 0;
+}  // anonymous namespace
+
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
-    gl::GLSurface* surface)
+    gl::GLSurface* surface,
+    MultiWindowSwapInterval multi_window_swap_interval)
     : GLSurfaceAdapter(surface),
       delegate_(delegate),
-      did_set_swap_interval_(false),
+      multi_window_swap_interval_(multi_window_swap_interval),
       weak_ptr_factory_(this) {}
 
 bool PassThroughImageTransportSurface::Initialize(
@@ -110,18 +121,6 @@ void PassThroughImageTransportSurface::CommitOverlayPlanesAsync(
       weak_ptr_factory_.GetWeakPtr(), base::Passed(&latency_info), callback));
 }
 
-bool PassThroughImageTransportSurface::OnMakeCurrent(gl::GLContext* context) {
-  if (!did_set_swap_interval_) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableGpuVsync))
-      context->ForceSwapIntervalZero(true);
-    else
-      context->SetSwapInterval(1);
-    did_set_swap_interval_ = true;
-  }
-  return true;
-}
-
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
   if (delegate_) {
     delegate_->SetLatencyInfoCallback(
@@ -143,11 +142,48 @@ void PassThroughImageTransportSurface::SendVSyncUpdateIfAvailable() {
   }
 }
 
+void PassThroughImageTransportSurface::UpdateSwapInterval() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuVsync)) {
+    gl::GLContext::GetCurrent()->ForceSwapIntervalZero(true);
+    return;
+  }
+
+  gl::GLContext::GetCurrent()->SetSwapInterval(1);
+
+  if (multi_window_swap_interval_ == kMultiWindowSwapIntervalForceZero) {
+    // This code is a simple way of enforcing that we only vsync if one surface
+    // is swapping per frame. This provides single window cases a stable refresh
+    // while allowing multi-window cases to not slow down due to multiple syncs
+    // on a single thread. A better way to fix this problem would be to have
+    // each surface present on its own thread.
+
+    if (g_current_swap_generation_ == swap_generation_) {
+      // No other surface has swapped since we swapped last time.
+      if (g_num_swaps_in_current_swap_generation_ > 1)
+        g_last_multi_window_swap_generation_ = g_current_swap_generation_;
+      g_num_swaps_in_current_swap_generation_ = 0;
+      g_current_swap_generation_++;
+    }
+
+    swap_generation_ = g_current_swap_generation_;
+    g_num_swaps_in_current_swap_generation_++;
+
+    bool should_override_vsync =
+        (g_num_swaps_in_current_swap_generation_ > 1) &&
+        (g_current_swap_generation_ - g_last_multi_window_swap_generation_ <
+         kMultiWindowSwapEnableVSyncDelay);
+    gl::GLContext::GetCurrent()->ForceSwapIntervalZero(should_override_vsync);
+  }
+}
+
 std::unique_ptr<std::vector<ui::LatencyInfo>>
 PassThroughImageTransportSurface::StartSwapBuffers() {
   // GetVsyncValues before SwapBuffers to work around Mali driver bug:
   // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
+
+  UpdateSwapInterval();
 
   base::TimeTicks swap_time = base::TimeTicks::Now();
   for (auto& latency : latency_info_) {

@@ -294,20 +294,13 @@ void* GLContextGLX::GetHandle() {
 
 void GLContextGLX::OnSetSwapInterval(int interval) {
   DCHECK(IsCurrent(nullptr));
-  if (HasExtension("GLX_EXT_swap_control") &&
-      g_driver_glx.fn.glXSwapIntervalEXTFn) {
-    glXSwapIntervalEXT(
-        display_,
-        glXGetCurrentDrawable(),
-        interval);
-  } else if (HasExtension("GLX_MESA_swap_control") &&
-             g_driver_glx.fn.glXSwapIntervalMESAFn) {
+  if (GLSurfaceGLX::IsEXTSwapControlSupported()) {
+    glXSwapIntervalEXT(display_, glXGetCurrentDrawable(), interval);
+  } else if (GLSurfaceGLX::IsMESASwapControlSupported()) {
     glXSwapIntervalMESA(interval);
-  } else {
-    if(interval == 0)
-      LOG(WARNING) <<
-          "Could not disable vsync: driver does not "
-          "support GLX_EXT_swap_control";
+  } else if (interval == 0) {
+    LOG(WARNING)
+        << "Could not disable vsync: driver does not support swap control";
   }
 }
 

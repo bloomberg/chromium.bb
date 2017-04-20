@@ -222,9 +222,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   static GLSurface* GetCurrent();
 
-  // Called when the swap interval for the associated context changes.
-  virtual void OnSetSwapInterval(int interval);
-
  protected:
   virtual ~GLSurface();
 
@@ -295,7 +292,6 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool SupportsDCLayers() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
-  void OnSetSwapInterval(int interval) override;
 
   GLSurface* surface() const { return surface_.get(); }
 

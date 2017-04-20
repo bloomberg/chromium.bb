@@ -216,9 +216,6 @@ bool GLSurface::ExtensionsContain(const char* c_extensions, const char* name) {
   return extensions.find(delimited_name) != std::string::npos;
 }
 
-void GLSurface::OnSetSwapInterval(int interval) {
-}
-
 GLSurfaceAdapter::GLSurfaceAdapter(GLSurface* surface) : surface_(surface) {}
 
 bool GLSurfaceAdapter::Initialize(GLSurfaceFormat format) {
@@ -390,10 +387,6 @@ bool GLSurfaceAdapter::SetDrawRectangle(const gfx::Rect& rect) {
 
 gfx::Vector2d GLSurfaceAdapter::GetDrawOffset() const {
   return surface_->GetDrawOffset();
-}
-
-void GLSurfaceAdapter::OnSetSwapInterval(int interval) {
-  surface_->OnSetSwapInterval(interval);
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}
