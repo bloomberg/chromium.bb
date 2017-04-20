@@ -117,9 +117,8 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
     SetVisible(Shell::Get()
                    ->maximize_mode_controller()
                    ->IsMaximizeModeWindowManagerEnabled());
-  } else {
-    tri_view->SetContainerVisible(TriView::Container::END, false);
   }
+  tri_view->SetContainerVisible(TriView::Container::END, false);
 }
 
 BrightnessView::~BrightnessView() {

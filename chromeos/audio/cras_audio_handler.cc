@@ -1304,10 +1304,12 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
   for (size_t i = 0; i < nodes.size(); ++i) {
     AudioDevice device(nodes[i]);
     audio_devices_[device.id] = device;
-    if (!has_alternative_input_ &&
-        device.is_input &&
+    if (!has_alternative_input_ && device.is_input &&
         device.type != AUDIO_TYPE_INTERNAL_MIC &&
-        device.type != AUDIO_TYPE_KEYBOARD_MIC) {
+        device.type != AUDIO_TYPE_KEYBOARD_MIC &&
+        device.type != AUDIO_TYPE_HOTWORD &&
+        device.type != AUDIO_TYPE_POST_MIX_LOOPBACK &&
+        device.type != AUDIO_TYPE_POST_DSP_LOOPBACK) {
       has_alternative_input_ = true;
     } else if (!has_alternative_output_ &&
                !device.is_input &&
