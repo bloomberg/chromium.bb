@@ -47,6 +47,20 @@ id<GREYMatcher> CancelButton() {
                     grey_sufficientlyVisible(), nil);
 }
 
+// Returns the GREYMatcher for the UIAlertView's message displayed for a call
+// that notifies the delegate of a selection.
+id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
+    NSString* argument) {
+  return grey_allOf(
+      grey_text(
+          [NSString stringWithFormat:
+                        @"paymentRequestPickerViewController:"
+                        @"kPaymentRequestPickerViewControllerAccessibilityID "
+                        @"didSelectRow:%@",
+                        argument]),
+      grey_sufficientlyVisible(), nil);
+}
+
 }  // namespace
 
 // Tests for the payment request picker view controller.
@@ -292,6 +306,10 @@ id<GREYMatcher> CancelButton() {
       performAction:grey_tap()];
 
   // Confirm the delegate is informed.
+  [[EarlGrey
+      selectElementWithMatcher:UIAlertViewMessageForDelegateCallWithArgument(
+                                   @"Label: Canada, Value: CAN")]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
       performAction:grey_tap()];
@@ -305,6 +323,10 @@ id<GREYMatcher> CancelButton() {
       performAction:grey_tap()];
 
   // Confirm the delegate is informed.
+  [[EarlGrey
+      selectElementWithMatcher:UIAlertViewMessageForDelegateCallWithArgument(
+                                   @"Label: Canada, Value: CAN")]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
       performAction:grey_tap()];

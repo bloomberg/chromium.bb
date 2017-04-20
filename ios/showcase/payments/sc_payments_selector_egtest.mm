@@ -43,6 +43,29 @@ id<GREYMatcher> AddButton() {
                     grey_sufficientlyVisible(), nil);
 }
 
+// Returns the GREYMatcher for the UIAlertView's message displayed for a call
+// that notifies the delegate of a selection.
+id<GREYMatcher> UIAlertViewMessageForDelegateCallForSelectionWithArgument(
+    NSString* argument) {
+  return grey_allOf(
+      grey_text(
+          [NSString stringWithFormat:
+                        @"paymentRequestSelectorViewController:"
+                        @"kPaymentRequestSelectorCollectionViewAccessibilityID "
+                        @"didSelectItemAtIndex:%@",
+                        argument]),
+      grey_sufficientlyVisible(), nil);
+}
+
+// Returns the GREYMatcher for the UIAlertView's message displayed for a call
+// that notifies the delegate of adding an item.
+id<GREYMatcher> UIAlertViewMessageForDelegateCallForAddingItem() {
+  return grey_allOf(
+      grey_text(@"paymentRequestSelectorViewControllerDidSelectAddItem:"
+                @"kPaymentRequestSelectorCollectionViewAccessibilityID"),
+      grey_sufficientlyVisible(), nil);
+}
+
 }  // namespace
 
 // Tests for the payment request selector view controller.
@@ -91,6 +114,9 @@ id<GREYMatcher> AddButton() {
       performAction:grey_tap()];
 
   // Confirm the delegate is informed.
+  [[EarlGrey selectElementWithMatcher:
+                 UIAlertViewMessageForDelegateCallForSelectionWithArgument(
+                     @"0")] assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
       performAction:grey_tap()];
@@ -101,6 +127,9 @@ id<GREYMatcher> AddButton() {
       performAction:grey_tap()];
 
   // Confirm the delegate is informed.
+  [[EarlGrey selectElementWithMatcher:
+                 UIAlertViewMessageForDelegateCallForSelectionWithArgument(
+                     @"0")] assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
       performAction:grey_tap()];
@@ -116,6 +145,9 @@ id<GREYMatcher> AddButton() {
       performAction:grey_tap()];
 
   // Confirm the delegate is informed.
+  [[EarlGrey selectElementWithMatcher:
+                 UIAlertViewMessageForDelegateCallForSelectionWithArgument(
+                     @"1")] assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
       performAction:grey_tap()];
@@ -132,6 +164,9 @@ id<GREYMatcher> AddButton() {
   [[EarlGrey selectElementWithMatcher:AddButton()] performAction:grey_tap()];
 
   // Confirm the delegate is informed.
+  [[EarlGrey
+      selectElementWithMatcher:UIAlertViewMessageForDelegateCallForAddingItem()]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
       performAction:grey_tap()];

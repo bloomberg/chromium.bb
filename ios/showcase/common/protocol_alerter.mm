@@ -161,6 +161,8 @@ char kAssociatedProtocolNameKey;
       return [self objectDescriptionAtIndex:index];
     case 'q':
       return [self longLongDescriptionAtIndex:index];
+    case 'Q':
+      return [self unsignedLongLongDescriptionAtIndex:index];
     // Add cases as needed here.
     default:
       return [NSString stringWithFormat:@"<Unknown Type:%s>", type];
@@ -208,6 +210,15 @@ char kAssociatedProtocolNameKey;
 
   [self getArgument:&value atIndex:index];
   return [NSString stringWithFormat:@"%lld", value];
+}
+
+// Returns a string describing an argument at |index| that is known to be an
+// unsigned long long.
+- (NSString*)unsignedLongLongDescriptionAtIndex:(NSInteger)index {
+  unsigned long long value;
+
+  [self getArgument:&value atIndex:index];
+  return [NSString stringWithFormat:@"%llu", value];
 }
 
 @end

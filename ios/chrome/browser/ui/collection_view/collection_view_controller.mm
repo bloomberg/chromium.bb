@@ -262,6 +262,12 @@
   }
 }
 
+#pragma mark - NSObject
+
+- (NSString*)description {
+  return self.collectionView.accessibilityIdentifier;
+}
+
 #pragma mark - Private
 
 // Reconfigures the cell at |indexPath| by calling |configureCell:| with |item|.
