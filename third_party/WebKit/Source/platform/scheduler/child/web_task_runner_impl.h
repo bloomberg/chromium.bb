@@ -31,8 +31,6 @@ class BLINK_PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
   double MonotonicallyIncreasingVirtualTimeSeconds() const override;
   base::SingleThreadTaskRunner* ToSingleThreadTaskRunner() override;
 
-  TaskQueue* GetTaskQueue() const { return task_queue_.get(); }
-
  private:
   explicit WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue);
   ~WebTaskRunnerImpl() override;

@@ -37,7 +37,6 @@
 #include "platform/LifecycleNotifier.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/scheduler/child/worker_global_scope_scheduler.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PassRefPtr.h"
@@ -93,6 +92,7 @@ class CORE_EXPORT WorkerThreadLifecycleContext final
 //    If the running task is for debugger, it's guaranteed to finish without
 //    any interruptions.
 //  - Queued tasks never run.
+//  - postTask() and appendDebuggerTask() reject posting new tasks.
 class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
  public:
   // Represents how this thread is terminated. Used for UMA. Append only.
@@ -137,6 +137,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return worker_reporting_proxy_;
   }
 
+  void PostTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
+  void PostTask(const WebTraceLocation&,
+                std::unique_ptr<WTF::CrossThreadClosure>);
   void AppendDebuggerTask(std::unique_ptr<CrossThreadClosure>);
 
   // Runs only debugger tasks while paused in debugger.
@@ -171,10 +174,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   ParentFrameTaskRunners* GetParentFrameTaskRunners() const {
     return parent_frame_task_runners_.Get();
-  }
-
-  scheduler::WorkerGlobalScopeScheduler* GetGlobalScopeScheduler() const {
-    return global_scope_scheduler_.get();
   }
 
  protected:
@@ -244,7 +243,12 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // |m_threadStateMutex| acquired.
   void ForciblyTerminateExecution(const MutexLocker&, ExitCode);
 
-  void InitializeSchedulerOnWorkerThread(WaitableEvent*);
+  // Returns true if termination or shutdown sequence has started. This is
+  // thread safe.
+  // Note that this returns false when the sequence has already started but it
+  // hasn't been notified to the calling thread.
+  bool IsInShutdown();
+
   void InitializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupData>);
   void PrepareForShutdownOnWorkerThread();
   void PerformShutdownOnWorkerThread();
@@ -290,13 +294,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   RefPtr<WorkerLoaderProxy> worker_loader_proxy_;
   WorkerReportingProxy& worker_reporting_proxy_;
-
   CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
-
-  // Tasks managed by this scheduler are canceled when the global scope is
-  // closed.
-  std::unique_ptr<scheduler::WorkerGlobalScopeScheduler>
-      global_scope_scheduler_;
 
   // This lock protects |m_globalScope|, |m_requestedToTerminate|,
   // |m_threadState|, |m_runningDebuggerTask| and |m_exitCode|.

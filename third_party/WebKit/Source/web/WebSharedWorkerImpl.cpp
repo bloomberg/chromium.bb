@@ -32,7 +32,6 @@
 
 #include <memory>
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -255,8 +254,7 @@ void WebSharedWorkerImpl::PostTaskToWorkerGlobalScope(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::CrossThreadClosure> task) {
   DCHECK(IsMainThread());
-  TaskRunnerHelper::Get(TaskType::kNetworking, GetWorkerThread())
-      ->PostTask(location, std::move(task));
+  worker_thread_->PostTask(location, std::move(task));
 }
 
 ThreadableLoadingContext* WebSharedWorkerImpl::GetThreadableLoadingContext() {
@@ -270,12 +268,11 @@ ThreadableLoadingContext* WebSharedWorkerImpl::GetThreadableLoadingContext() {
 void WebSharedWorkerImpl::Connect(
     std::unique_ptr<WebMessagePortChannel> web_channel) {
   DCHECK(IsMainThread());
-  TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetWorkerThread())
-      ->PostTask(
-          BLINK_FROM_HERE,
-          CrossThreadBind(&WebSharedWorkerImpl::ConnectTaskOnWorkerThread,
-                          WTF::CrossThreadUnretained(this),
-                          WTF::Passed(std::move(web_channel))));
+  GetWorkerThread()->PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(&WebSharedWorkerImpl::ConnectTaskOnWorkerThread,
+                      WTF::CrossThreadUnretained(this),
+                      WTF::Passed(std::move(web_channel))));
 }
 
 void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(

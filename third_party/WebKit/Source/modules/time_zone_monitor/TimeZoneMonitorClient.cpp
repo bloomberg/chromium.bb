@@ -7,7 +7,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerThread.h"
@@ -71,10 +70,9 @@ void TimeZoneMonitorClient::OnTimeZoneChange(const String& time_zone_info) {
     // among multiple WorkerThreads.
     if (posted.Contains(&thread->GetWorkerBackingThread()))
       continue;
-    TaskRunnerHelper::Get(TaskType::kUnspecedTimer, thread)
-        ->PostTask(BLINK_FROM_HERE,
-                   CrossThreadBind(&NotifyTimezoneChangeOnWorkerThread,
-                                   WTF::CrossThreadUnretained(thread)));
+    thread->PostTask(BLINK_FROM_HERE,
+                     CrossThreadBind(&NotifyTimezoneChangeOnWorkerThread,
+                                     WTF::CrossThreadUnretained(thread)));
     posted.insert(&thread->GetWorkerBackingThread());
   }
 }

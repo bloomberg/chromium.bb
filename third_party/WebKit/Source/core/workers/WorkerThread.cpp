@@ -31,7 +31,6 @@
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -50,8 +49,6 @@
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
-#include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
-#include "platform/scheduler/child/worker_global_scope_scheduler.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/Noncopyable.h"
@@ -110,22 +107,12 @@ WorkerThread::~WorkerThread() {
 void WorkerThread::Start(std::unique_ptr<WorkerThreadStartupData> startup_data,
                          ParentFrameTaskRunners* parent_frame_task_runners) {
   DCHECK(IsMainThread());
+
   if (requested_to_start_)
     return;
 
   requested_to_start_ = true;
   parent_frame_task_runners_ = parent_frame_task_runners;
-
-  // Synchronously initialize the per-global-scope scheduler to prevent someone
-  // from posting a task to the thread before the scheduler is ready.
-  WaitableEvent waitable_event;
-  GetWorkerBackingThread().BackingThread().PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerThread::InitializeSchedulerOnWorkerThread,
-                      CrossThreadUnretained(this),
-                      CrossThreadUnretained(&waitable_event)));
-  waitable_event.Wait();
-
   GetWorkerBackingThread().BackingThread().PostTask(
       BLINK_FROM_HERE, CrossThreadBind(&WorkerThread::InitializeOnWorkerThread,
                                        CrossThreadUnretained(this),
@@ -203,10 +190,33 @@ bool WorkerThread::IsCurrentThread() {
   return GetWorkerBackingThread().BackingThread().IsCurrentThread();
 }
 
+void WorkerThread::PostTask(const WebTraceLocation& location,
+                            std::unique_ptr<WTF::Closure> task) {
+  DCHECK(IsCurrentThread());
+  if (IsInShutdown())
+    return;
+  GetWorkerBackingThread().BackingThread().PostTask(
+      location,
+      WTF::Bind(
+          &WorkerThread::PerformTaskOnWorkerThread<WTF::kSameThreadAffinity>,
+          WTF::Unretained(this), WTF::Passed(std::move(task))));
+}
+
+void WorkerThread::PostTask(const WebTraceLocation& location,
+                            std::unique_ptr<WTF::CrossThreadClosure> task) {
+  if (IsInShutdown())
+    return;
+  GetWorkerBackingThread().BackingThread().PostTask(
+      location,
+      CrossThreadBind(
+          &WorkerThread::PerformTaskOnWorkerThread<WTF::kCrossThreadAffinity>,
+          CrossThreadUnretained(this), WTF::Passed(std::move(task))));
+}
+
 void WorkerThread::AppendDebuggerTask(
     std::unique_ptr<CrossThreadClosure> task) {
   DCHECK(IsMainThread());
-  if (requested_to_terminate_)
+  if (IsInShutdown())
     return;
   inspector_task_runner_->AppendTask(CrossThreadBind(
       &WorkerThread::PerformDebuggerTaskOnWorkerThread,
@@ -216,11 +226,10 @@ void WorkerThread::AppendDebuggerTask(
     if (GetIsolate() && thread_state_ != ThreadState::kReadyToShutdown)
       inspector_task_runner_->InterruptAndRunAllTasksDontWait(GetIsolate());
   }
-  TaskRunnerHelper::Get(TaskType::kUnthrottled, this)
-      ->PostTask(BLINK_FROM_HERE,
-                 CrossThreadBind(
-                     &WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread,
-                     CrossThreadUnretained(this)));
+  GetWorkerBackingThread().BackingThread().PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(&WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread,
+                      CrossThreadUnretained(this)));
 }
 
 void WorkerThread::StartRunningDebuggerTasksOnPauseOnWorkerThread() {
@@ -421,17 +430,16 @@ void WorkerThread::ForciblyTerminateExecution(const MutexLocker& lock,
   forcible_termination_task_handle_.Cancel();
 }
 
-void WorkerThread::InitializeSchedulerOnWorkerThread(
-    WaitableEvent* waitable_event) {
-  DCHECK(IsCurrentThread());
-  DCHECK(!global_scope_scheduler_);
-  scheduler::WebThreadImplForWorkerScheduler& web_thread_for_worker =
-      static_cast<scheduler::WebThreadImplForWorkerScheduler&>(
-          GetWorkerBackingThread().BackingThread().PlatformThread());
-  global_scope_scheduler_ =
-      WTF::MakeUnique<scheduler::WorkerGlobalScopeScheduler>(
-          web_thread_for_worker.GetWorkerScheduler());
-  waitable_event->Signal();
+bool WorkerThread::IsInShutdown() {
+  // Check if we've started termination or shutdown sequence. Avoid acquiring
+  // a lock here to avoid introducing a risk of deadlock. Note that accessing
+  // |m_requestedToTerminate| on the main thread or |m_threadState| on the
+  // worker thread is safe as the flag is set only on the thread.
+  if (IsMainThread() && requested_to_terminate_)
+    return true;
+  if (IsCurrentThread() && thread_state_ == ThreadState::kReadyToShutdown)
+    return true;
+  return false;
 }
 
 void WorkerThread::InitializeOnWorkerThread(
@@ -528,7 +536,6 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
     worker_inspector_controller_.Clear();
   }
   GlobalScope()->Dispose();
-  global_scope_scheduler_->Dispose();
   console_message_storage_.Clear();
   GetWorkerBackingThread().BackingThread().RemoveTaskObserver(this);
 }
@@ -555,6 +562,22 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
   GetWorkerReportingProxy().DidTerminateWorkerThread();
 
   shutdown_event_->Signal();
+}
+
+template <WTF::FunctionThreadAffinity threadAffinity>
+void WorkerThread::PerformTaskOnWorkerThread(
+    std::unique_ptr<Function<void(), threadAffinity>> task) {
+  DCHECK(IsCurrentThread());
+  if (thread_state_ != ThreadState::kRunning)
+    return;
+
+  {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, scoped_us_counter,
+        new CustomCountHistogram("WorkerThread.Task.Time", 0, 10000000, 50));
+    ScopedUsHistogramTimer timer(scoped_us_counter);
+    (*task)();
+  }
 }
 
 void WorkerThread::PerformDebuggerTaskOnWorkerThread(

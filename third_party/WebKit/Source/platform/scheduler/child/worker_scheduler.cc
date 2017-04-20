@@ -14,8 +14,7 @@
 namespace blink {
 namespace scheduler {
 
-WorkerScheduler::WorkerScheduler(std::unique_ptr<SchedulerHelper> helper)
-    : helper_(std::move(helper)) {}
+WorkerScheduler::WorkerScheduler() {}
 
 WorkerScheduler::~WorkerScheduler() {}
 
@@ -23,16 +22,6 @@ WorkerScheduler::~WorkerScheduler() {}
 std::unique_ptr<WorkerScheduler> WorkerScheduler::Create(
     scoped_refptr<SchedulerTqmDelegate> main_task_runner) {
   return base::WrapUnique(new WorkerSchedulerImpl(std::move(main_task_runner)));
-}
-
-scoped_refptr<TaskQueue> WorkerScheduler::CreateUnthrottledTaskRunner(
-    TaskQueue::QueueType queue_type) {
-  helper_->CheckOnValidThread();
-  scoped_refptr<TaskQueue> unthrottled_task_queue(
-      helper_->NewTaskQueue(TaskQueue::Spec(queue_type)
-                                .SetShouldMonitorQuiescence(true)
-                                .SetTimeDomain(nullptr)));
-  return unthrottled_task_queue;
 }
 
 }  // namespace scheduler
