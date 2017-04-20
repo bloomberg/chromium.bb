@@ -84,8 +84,9 @@ class SyncChromeStage(generic_stages.BuilderStage,
         if chrome_atom_to_build:
           results_lib.Results.Record(self.name, e)
           logging.PrintBuildbotStepFailure()
-          logging.error('Chrome is pinned. Attempting to continue build for '
-                        'chrome atom %s anyway but build will ultimately fail.',
+          logging.error('Chrome is pinned. Unpinning chrome and continuing '
+                        'build for chrome atom %s. This stage will be marked '
+                        'as failed to prevent an uprev.',
                         chrome_atom_to_build)
           logging.info('Deleting pin file at %s and proceeding.',
                        CHROMEPIN_MASK_PATH)

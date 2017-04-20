@@ -68,9 +68,9 @@ class UprevAndroidStage(generic_stages.BuilderStage,
       if android_atom_to_build:
         results_lib.Results.Record(self.name, e)
         logging.PrintBuildbotStepFailure()
-        logging.error('Android is pinned. Attempting to continue build for '
-                      'Android atom %s anyway but build will ultimately '
-                      'fail.',
+        logging.error('Android is pinned. Unpinning Android and continuing '
+                      'build for Android atom %s. This stage will be marked '
+                      'as failed to prevent an uprev.',
                       android_atom_to_build)
         logging.info('Deleting pin file at %s and proceeding.',
                      ANDROIDPIN_MASK_PATH)
