@@ -116,7 +116,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   // Sets up the callback that should be called once lock animation is finished.
   // Callback is guaranteed to be called once and then discarded.
-  void SetLockScreenDisplayedCallback(const base::Closure& callback);
+  void SetLockScreenDisplayedCallback(base::OnceClosure callback);
 
   // aura::WindowTreeHostObserver override:
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
@@ -240,7 +240,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // etc. are shut down.
   base::OneShotTimer real_shutdown_timer_;
 
-  base::Closure lock_screen_displayed_callback_;
+  base::OnceClosure lock_screen_displayed_callback_;
 
   ScopedSessionObserver scoped_session_observer_;
 

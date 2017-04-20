@@ -181,8 +181,9 @@ void LockStateController::OnLockScreenHide(base::Closure callback) {
 }
 
 void LockStateController::SetLockScreenDisplayedCallback(
-    const base::Closure& callback) {
-  lock_screen_displayed_callback_ = callback;
+    base::OnceClosure callback) {
+  DCHECK(lock_screen_displayed_callback_.is_null());
+  lock_screen_displayed_callback_ = std::move(callback);
 }
 
 void LockStateController::OnHostCloseRequested(
@@ -496,10 +497,9 @@ void LockStateController::PostLockAnimationFinished() {
   VLOG(1) << "PostLockAnimationFinished";
   ShellPort::Get()->OnLockStateEvent(
       LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED);
-  if (!lock_screen_displayed_callback_.is_null()) {
-    lock_screen_displayed_callback_.Run();
-    lock_screen_displayed_callback_.Reset();
-  }
+  if (!lock_screen_displayed_callback_.is_null())
+    std::move(lock_screen_displayed_callback_).Run();
+
   CHECK(!views::MenuController::GetActiveInstance());
   if (shutdown_after_lock_) {
     shutdown_after_lock_ = false;

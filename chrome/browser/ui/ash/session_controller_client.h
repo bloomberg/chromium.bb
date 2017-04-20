@@ -37,6 +37,13 @@ class SessionControllerClient
 
   static SessionControllerClient* Get();
 
+  // Calls SessionController to start locking ash. |callback| will be invoked
+  // to indicate whether the lock is successful. If |locked| is true, the post
+  // lock animation is finished and ash is fully locked. Otherwise, the lock
+  // is failed somehow.
+  using StartLockCallback = base::Callback<void(bool locked)>;
+  void StartLock(StartLockCallback callback);
+
   // Calls ash SessionController to run unlock animation.
   // |animation_finished_callback| will be invoked when the animation finishes.
   void RunUnlockAnimation(base::Closure animation_finished_callback);

@@ -42,9 +42,14 @@ SessionState GetDefaultSessionState() {
 
 }  // namespace
 
-SessionController::SessionController() : state_(GetDefaultSessionState()) {}
+SessionController::SessionController()
+    : state_(GetDefaultSessionState()), weak_ptr_factory_(this) {}
 
-SessionController::~SessionController() {}
+SessionController::~SessionController() {
+  // Abort pending start lock request.
+  if (!start_lock_callback_.is_null())
+    std::move(start_lock_callback_).Run(false /* locked */);
+}
 
 void SessionController::BindRequest(mojom::SessionControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -228,6 +233,19 @@ void SessionController::SetUserSessionOrder(
   }
 }
 
+void SessionController::StartLock(const StartLockCallback& callback) {
+  DCHECK(start_lock_callback_.is_null());
+  start_lock_callback_ = callback;
+
+  LockStateController* const lock_state_controller =
+      Shell::Get()->lock_state_controller();
+
+  lock_state_controller->SetLockScreenDisplayedCallback(
+      base::Bind(&SessionController::OnLockAnimationFinished,
+                 weak_ptr_factory_.GetWeakPtr()));
+  lock_state_controller->OnStartingLock();
+}
+
 void SessionController::RunUnlockAnimation(
     const RunUnlockAnimationCallback& callback) {
   is_unlocking_ = true;
@@ -351,6 +369,11 @@ void SessionController::UpdateLoginStatus() {
   login_status_ = new_login_status;
   for (auto& observer : observers_)
     observer.OnLoginStatusChanged(login_status_);
+}
+
+void SessionController::OnLockAnimationFinished() {
+  if (!start_lock_callback_.is_null())
+    std::move(start_lock_callback_).Run(true /* locked */);
 }
 
 }  // namespace ash

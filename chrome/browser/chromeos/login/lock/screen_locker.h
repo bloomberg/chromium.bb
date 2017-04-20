@@ -145,6 +145,11 @@ class ScreenLocker : public AuthStatusConsumer {
   // Looks up user in unlock user list.
   const user_manager::User* FindUnlockUser(const AccountId& account_id);
 
+  // Callback to be invoked for ash start lock request. |locked| is true when
+  // ash is fully locked and post lock animation finishes. Otherwise, the start
+  // lock request is failed.
+  void OnStartLockCallback(bool locked);
+
   // WebUIScreenLocker instance in use.
   std::unique_ptr<WebUIScreenLocker> web_ui_;
 

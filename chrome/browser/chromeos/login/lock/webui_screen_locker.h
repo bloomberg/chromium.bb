@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/wm/lock_state_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -45,7 +44,6 @@ class WebUIScreenLockerTester;
 // Displays a WebUI lock screen based on the Oobe account picker screen.
 class WebUIScreenLocker : public WebUILoginView,
                           public LoginDisplay::Delegate,
-                          public ash::LockStateObserver,
                           public views::WidgetObserver,
                           public PowerManagerClient::Observer,
                           public display::DisplayObserver,
@@ -88,6 +86,9 @@ class WebUIScreenLocker : public WebUILoginView,
   // Called when the webui header bar becomes visible.
   void OnHeaderBarVisible();
 
+  // Called by ScreenLocker to notify that ash lock animation finishes.
+  void OnLockAnimationFinished();
+
  private:
   friend class test::WebUIScreenLockerTester;
 
@@ -118,9 +119,6 @@ class WebUIScreenLocker : public WebUILoginView,
                               const std::string& given_name) override;
   void Signout() override;
   bool IsUserWhitelisted(const AccountId& account_id) override;
-
-  // LockStateObserver:
-  void OnLockStateEvent(ash::LockStateObserver::EventType event) override;
 
   // WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;

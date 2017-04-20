@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/power/power_event_observer.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -124,7 +123,6 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
   set_should_emit_login_prompt_visible(false);
-  ash::ShellPort::Get()->AddLockStateObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
@@ -132,7 +130,6 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
 WebUIScreenLocker::~WebUIScreenLocker() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
-  ash::ShellPort::Get()->RemoveLockStateObserver(this);
   // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
   if (lock_window_) {
     lock_window_->RemoveObserver(this);
@@ -261,6 +258,14 @@ void WebUIScreenLocker::OnHeaderBarVisible() {
   ash::Shell::Get()->power_event_observer()->OnLockAnimationsComplete();
 }
 
+void WebUIScreenLocker::OnLockAnimationFinished() {
+  // Release capture if any.
+  aura::client::GetCaptureClient(GetNativeWindow()->GetRootWindow())
+      ->SetCapture(nullptr);
+  GetWebUI()->CallJavascriptFunctionUnsafe(
+      "cr.ui.Oobe.animateOnceFullyDisplayed");
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebUIScreenLocker, LoginDisplay::Delegate:
 
@@ -344,25 +349,11 @@ bool WebUIScreenLocker::IsUserWhitelisted(const AccountId& account_id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SessionLockStateObserver:
-
-void WebUIScreenLocker::OnLockStateEvent(
-    ash::LockStateObserver::EventType event) {
-  if (event == ash::LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED) {
-    // Release capture if any.
-    aura::client::GetCaptureClient(GetNativeWindow()->GetRootWindow())->
-        SetCapture(NULL);
-    GetWebUI()->CallJavascriptFunctionUnsafe(
-        "cr.ui.Oobe.animateOnceFullyDisplayed");
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // WidgetObserver:
 
 void WebUIScreenLocker::OnWidgetDestroying(views::Widget* widget) {
   lock_window_->RemoveObserver(this);
-  lock_window_ = NULL;
+  lock_window_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

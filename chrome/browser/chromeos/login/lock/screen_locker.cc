@@ -9,7 +9,6 @@
 
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -157,12 +156,6 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
                       bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
-
-  ash::Shell::Get()->lock_state_controller()->SetLockScreenDisplayedCallback(
-      base::Bind(base::IgnoreResult(&AccessibilityManager::PlayEarcon),
-                 base::Unretained(AccessibilityManager::Get()),
-                 chromeos::SOUND_LOCK,
-                 PlaySoundOption::SPOKEN_FEEDBACK_ENABLED));
 }
 
 void ScreenLocker::Init() {
@@ -182,6 +175,10 @@ void ScreenLocker::Init() {
       new ScreenlockIconSource(screenlock_icon_provider_->AsWeakPtr());
   content::URLDataSource::Add(web_ui()->GetWebContents()->GetBrowserContext(),
                               screenlock_icon_source);
+
+  // Start locking on ash side.
+  SessionControllerClient::Get()->StartLock(base::Bind(
+      &ScreenLocker::OnStartLockCallback, weak_factory_.GetWeakPtr()));
 }
 
 void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
@@ -355,6 +352,19 @@ const user_manager::User* ScreenLocker::FindUnlockUser(
   return nullptr;
 }
 
+void ScreenLocker::OnStartLockCallback(bool locked) {
+  // Happens in tests that exit with a pending lock. In real lock failure,
+  // ash::LockStateController would cause the current user session to be
+  // terminated.
+  if (!locked)
+    return;
+
+  web_ui()->OnLockAnimationFinished();
+
+  AccessibilityManager::Get()->PlayEarcon(
+      chromeos::SOUND_LOCK, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+}
+
 void ScreenLocker::ClearErrors() {
   web_ui()->ClearErrors();
 }
@@ -412,7 +422,6 @@ void ScreenLocker::HandleLockScreenRequest() {
   if (g_screen_lock_observer->session_started() &&
       user_manager::UserManager::Get()->CanCurrentUserLock()) {
     ScreenLocker::Show();
-    ash::Shell::Get()->lock_state_controller()->OnStartingLock();
   } else {
     // If the current user's session cannot be locked or the user has not
     // completed all sign-in steps yet, log out instead. The latter is done to

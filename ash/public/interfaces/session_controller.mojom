@@ -143,6 +143,14 @@ interface SessionController {
   // active user session.
   SetUserSessionOrder(array<uint32> user_session_ids);
 
+  // Runs the pre-lock animation to start locking ash. When the call returns,
+  // |locked| == true means that the post-lock animation is finished and ash is
+  // fully locked. Otherwise |locked| is false, which means something is wrong
+  // for the lock and ash is not locked. When the call returns with a true
+  // |locked|, screen locker runs the post lock jobs such as a11y announcement
+  // etc. Invoked by the screen locker during initialization.
+  StartLock() => (bool locked);
+
   // Runs the pre-unlock animation. Invoked by the screen locker before
   // dismissing. When the mojo call returns, screen locker takes that as a
   // signal of finished unlock animation and dismisses itself.

@@ -13,7 +13,9 @@
 #include "ash/login_status.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -117,6 +119,7 @@ class ASH_EXPORT SessionController
   void UpdateUserSession(mojom::UserSessionPtr user_session) override;
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
+  void StartLock(const StartLockCallback& callback) override;
   void RunUnlockAnimation(const RunUnlockAnimationCallback& callback) override;
   void NotifyChromeTerminating() override;
 
@@ -137,6 +140,11 @@ class ASH_EXPORT SessionController
 
   // Update the |login_status_| and notify observers.
   void UpdateLoginStatus();
+
+  // Used as lock screen displayed callback of LockStateController and invoked
+  // when post lock animation finishes and ash is fully locked. It would then
+  // run |start_lock_callback_| to indicate ash is locked successfully.
+  void OnLockAnimationFinished();
 
   // Bindings for mojom::SessionController interface.
   mojo::BindingSet<mojom::SessionController> bindings_;
@@ -167,7 +175,12 @@ class ASH_EXPORT SessionController
   // animation starts and reset when session state is no longer LOCKED.
   bool is_unlocking_ = false;
 
+  // Pending callback for the StartLock request.
+  base::OnceCallback<void(bool)> start_lock_callback_;
+
   base::ObserverList<ash::SessionObserver> observers_;
+
+  base::WeakPtrFactory<SessionController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionController);
 };

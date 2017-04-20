@@ -118,6 +118,10 @@ SessionControllerClient* SessionControllerClient::Get() {
   return g_instance;
 }
 
+void SessionControllerClient::StartLock(StartLockCallback callback) {
+  session_controller_->StartLock(callback);
+}
+
 void SessionControllerClient::RunUnlockAnimation(
     base::Closure animation_finished_callback) {
   session_controller_->RunUnlockAnimation(animation_finished_callback);
