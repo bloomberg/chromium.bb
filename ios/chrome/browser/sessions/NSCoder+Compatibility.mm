@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Note: |NSNotFound| is equal to |NSIntegerMax| in 32-bit and 64-bit that
 // in turn is initialized to |LONG_MAX|. On a 32-bit build, |INT_MAX| and

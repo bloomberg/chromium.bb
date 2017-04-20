@@ -4,12 +4,15 @@
 
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <unordered_map>
 
 #include "base/callback.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/serializable_user_data_manager.h"
@@ -130,8 +133,7 @@ void RestoreRelationship(WebStateList* web_state_list, int old_count) {
 }
 }  // namespace
 
-NSArray<CRWSessionStorage*>* SerializeWebStateList(
-    WebStateList* web_state_list) {
+SessionWindowIOS* SerializeWebStateList(WebStateList* web_state_list) {
   NSMutableArray<CRWSessionStorage*>* serialized_session =
       [NSMutableArray arrayWithCapacity:web_state_list->count()];
 
@@ -158,18 +160,31 @@ NSArray<CRWSessionStorage*>* SerializeWebStateList(
     [serialized_session addObject:web_state->BuildSessionStorage()];
   }
 
-  return [serialized_session copy];
+  NSUInteger selectedIndex =
+      web_state_list->active_index() != WebStateList::kInvalidIndex
+          ? static_cast<NSUInteger>(web_state_list->active_index())
+          : static_cast<NSUInteger>(NSNotFound);
+
+  return [[SessionWindowIOS alloc] initWithSessions:[serialized_session copy]
+                                      selectedIndex:selectedIndex];
 }
 
 void DeserializeWebStateList(WebStateList* web_state_list,
-                             NSArray<CRWSessionStorage*>* sessions,
+                             SessionWindowIOS* session_window,
                              const WebStateFactory& web_state_factory) {
   int old_count = web_state_list->count();
-  for (CRWSessionStorage* session in sessions) {
+  for (CRWSessionStorage* session in session_window.sessions) {
     std::unique_ptr<web::WebState> web_state = web_state_factory.Run(session);
     web_state_list->InsertWebState(web_state_list->count(),
                                    std::move(web_state));
   }
 
   RestoreRelationship(web_state_list, old_count);
+
+  if (session_window.selectedIndex != NSNotFound) {
+    DCHECK_LT(session_window.selectedIndex, session_window.sessions.count);
+    DCHECK_LT(session_window.selectedIndex, static_cast<NSUInteger>(INT_MAX));
+    web_state_list->ActivateWebStateAt(
+        old_count + static_cast<int>(session_window.selectedIndex));
+  }
 }

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -96,10 +97,11 @@ class WebStateListSerializationTest : public PlatformTest {
 
 TEST_F(WebStateListSerializationTest, SerializationEmpty) {
   WebStateList original_web_state_list(web_state_list_delegate());
-  NSArray<CRWSessionStorage*>* sessions =
+  SessionWindowIOS* session_window =
       SerializeWebStateList(&original_web_state_list);
 
-  EXPECT_EQ(0u, [sessions count]);
+  EXPECT_EQ(0u, session_window.sessions.count);
+  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound), session_window.selectedIndex);
 }
 
 TEST_F(WebStateListSerializationTest, SerializationRoundTrip) {
@@ -114,21 +116,24 @@ TEST_F(WebStateListSerializationTest, SerializationRoundTrip) {
       2, WebStateOpener(original_web_state_list.GetWebStateAt(0), 2));
   original_web_state_list.SetOpenerOfWebStateAt(
       3, WebStateOpener(original_web_state_list.GetWebStateAt(1), 1));
+  original_web_state_list.ActivateWebStateAt(1);
 
-  NSArray<CRWSessionStorage*>* sessions =
+  SessionWindowIOS* session_window =
       SerializeWebStateList(&original_web_state_list);
 
-  EXPECT_EQ(4u, [sessions count]);
+  EXPECT_EQ(4u, session_window.sessions.count);
+  EXPECT_EQ(1u, session_window.selectedIndex);
 
   WebStateList restored_web_state_list(web_state_list_delegate());
   restored_web_state_list.InsertWebState(0, SerializableTestWebState::Create());
   ASSERT_EQ(1, restored_web_state_list.count());
 
   DeserializeWebStateList(
-      &restored_web_state_list, sessions,
+      &restored_web_state_list, session_window,
       base::BindRepeating(&SerializableTestWebState::CreateWithSessionStorage));
 
   EXPECT_EQ(5, restored_web_state_list.count());
+  EXPECT_EQ(2, restored_web_state_list.active_index());
   ExpectRelationshipIdenticalFrom(1, &original_web_state_list,
                                   &restored_web_state_list);
 }

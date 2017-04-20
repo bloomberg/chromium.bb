@@ -24,6 +24,7 @@ source_set("web_state_list") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/sessions:serialisation",
     "//ios/web",
     "//ui/base",
   ]
@@ -57,6 +58,7 @@ source_set("unit_tests") {
     ":test_support",
     ":web_state_list",
     "//base",
+    "//ios/chrome/browser/sessions:serialisation",
     "//ios/web",
     "//ios/web:test_support",
     "//net",

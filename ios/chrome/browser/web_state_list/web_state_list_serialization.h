@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 
 @class CRWSessionStorage;
+@class SessionWindowIOS;
 class WebStateList;
 
 namespace web {
@@ -23,13 +24,12 @@ using WebStateFactory =
     base::RepeatingCallback<std::unique_ptr<web::WebState>(CRWSessionStorage*)>;
 
 // Returns an array of serialised sessions.
-NSArray<CRWSessionStorage*>* SerializeWebStateList(
-    WebStateList* web_state_list);
+SessionWindowIOS* SerializeWebStateList(WebStateList* web_state_list);
 
-// Restores |sessions| into |web_state_list| using |web_state_factory| for
-// creating the restored WebStates.
+// Restores a |web_state_list| from |session_window| using |web_state_factory|
+// to create the restored WebStates.
 void DeserializeWebStateList(WebStateList* web_state_list,
-                             NSArray<CRWSessionStorage*>* sessions,
+                             SessionWindowIOS* session_window,
                              const WebStateFactory& web_state_factory);
 
 #endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_SERIALIZATION_H_

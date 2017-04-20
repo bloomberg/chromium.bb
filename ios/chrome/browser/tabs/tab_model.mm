@@ -700,10 +700,8 @@ void CleanCertificatePolicyCache(
   // be done on a separate thread.
   // TODO(crbug.com/661986): This could get expensive especially since this
   // window may never be saved (if another call comes in before the delay).
-  SessionWindowIOS* sessionWindow = [[[SessionWindowIOS alloc]
-      initWithSessions:SerializeWebStateList(_webStateList.get())
-         selectedIndex:[self indexOfTab:self.currentTab]] autorelease];
-  return [[SessionIOS alloc] initWithWindows:@[ sessionWindow ]];
+  return [[SessionIOS alloc]
+      initWithWindows:@[ SerializeWebStateList(_webStateList.get()) ]];
 }
 
 - (void)postNotificationName:(NSString*)notificationName withTab:(Tab*)tab {
@@ -723,28 +721,30 @@ void CleanCertificatePolicyCache(
   DCHECK(_browserState);
   DCHECK(window);
 
-  NSArray* sessions = window.sessions;
-  if (!sessions.count)
+  if (!window.sessions.count)
     return NO;
 
   int oldCount = _webStateList->count();
   DCHECK_GE(oldCount, 0);
 
+  if (persistState && self.currentTab)
+    [self.currentTab recordStateInHistory];
+
   web::WebState::CreateParams createParams(_browserState);
   DeserializeWebStateList(
-      _webStateList.get(), sessions,
+      _webStateList.get(), window,
       base::BindRepeating(&web::WebState::CreateWithStorageSession,
                           createParams));
 
   DCHECK_GT(_webStateList->count(), oldCount);
   int restoredCount = _webStateList->count() - oldCount;
-  DCHECK_EQ(sessions.count, static_cast<NSUInteger>(restoredCount));
+  DCHECK_EQ(window.sessions.count, static_cast<NSUInteger>(restoredCount));
 
   scoped_refptr<web::CertificatePolicyCache> policyCache =
       web::BrowserState::GetCertificatePolicyCache(_browserState);
 
   base::scoped_nsobject<NSMutableArray<Tab*>> restoredTabs(
-      [[NSMutableArray alloc] initWithCapacity:sessions.count]);
+      [[NSMutableArray alloc] initWithCapacity:window.sessions.count]);
 
   for (int index = oldCount; index < _webStateList->count(); ++index) {
     web::WebState* webState = _webStateList->GetWebStateAt(index);
@@ -757,17 +757,6 @@ void CleanCertificatePolicyCache(
     // passing it via move semantic to -initWithWebState:model:).
     UpdateCertificatePolicyCacheFromWebState(policyCache, [tab webState]);
     [restoredTabs addObject:tab];
-  }
-
-  // Update the selected tab if there was a selected Tab in the saved session.
-  if (window.selectedIndex != NSNotFound) {
-    NSUInteger selectedIndex = window.selectedIndex + oldCount;
-    DCHECK_LT(selectedIndex, self.count);
-    DCHECK([self tabAtIndex:selectedIndex]);
-
-    if (persistState && self.currentTab)
-      [self.currentTab recordStateInHistory];
-    _webStateList->ActivateWebStateAt(static_cast<int>(selectedIndex));
   }
 
   // If there was only one tab and it was the new tab page, clobber it.
