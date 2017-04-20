@@ -853,10 +853,6 @@ ResourceFetcher::DetermineRevalidationPolicy(
     return kReload;
   }
 
-  // Service Worker's CORS fallback message must not be cached.
-  if (existing_resource->GetResponse().WasFallbackRequiredByServiceWorker())
-    return kReload;
-
   // If the same URL has been loaded as a different type, we need to reload.
   if (existing_resource->GetType() != type) {
     // FIXME: If existingResource is a Preload and the new type is LinkPrefetch

@@ -183,6 +183,14 @@ void RawResource::WillNotFollowRedirect() {
 void RawResource::ResponseReceived(
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
+  if (response.WasFallbackRequiredByServiceWorker()) {
+    // The ServiceWorker asked us to re-fetch the request. This resource must
+    // not be reused.
+    // Note: This logic is needed here because DocumentThreadableLoader handles
+    // CORS independently from ResourceLoader. Fix it.
+    GetMemoryCache()->Remove(this);
+  }
+
   bool is_successful_revalidation =
       IsCacheValidator() && response.HttpStatusCode() == 304;
   Resource::ResponseReceived(response, nullptr);
