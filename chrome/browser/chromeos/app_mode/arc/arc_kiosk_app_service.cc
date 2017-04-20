@@ -98,7 +98,7 @@ void ArcKioskAppService::OnTaskCreated(int32_t task_id,
                                        const std::string& intent) {
   // Store task id of the app to stop it later when needed.
   if (app_info_ && package_name == app_info_->package_name &&
-      activity == app_info_->activity) {
+      activity == app_info_->activity && intent == app_info_->intent_uri) {
     task_id_ = task_id;
     if (delegate_)
       delegate_->OnAppStarted();
@@ -144,7 +144,7 @@ void ArcKioskAppService::OnIconUpdated(ArcAppIcon* icon) {
     app_icon_.release();
     return;
   }
-  app_manager_->UpdateNameAndIcon(app_info_->package_name, app_info_->name,
+  app_manager_->UpdateNameAndIcon(app_id_, app_info_->name,
                                   app_icon_->image_skia());
 }
 
@@ -217,12 +217,15 @@ std::string ArcKioskAppService::GetAppId() {
   if (!app)
     return std::string();
   std::unordered_set<std::string> app_ids =
-      ArcAppListPrefs::Get(profile_)->GetAppsForPackage(app->app_id());
+      ArcAppListPrefs::Get(profile_)->GetAppsForPackage(app->package_name());
   if (app_ids.empty())
     return std::string();
-  // TODO(poromov@): Choose appropriate app id to launch. See
-  // http://crbug.com/665904
-  return std::string(*app_ids.begin());
+  // If |activity| and |intent| are not specified, return any app from the
+  // package.
+  if (app->activity().empty() && app->intent().empty())
+    return *app_ids.begin();
+  // Check that the app is registered for given package.
+  return app_ids.count(app->app_id()) ? app->app_id() : std::string();
 }
 
 }  // namespace chromeos

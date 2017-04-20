@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -216,18 +217,27 @@ void ArcKioskAppManager::UpdateApps() {
       auto_launched_with_zero_delay_ = auto_launch_delay == 0;
     }
 
-    // Apps are keyed by package name. http://crbug.com/665904
-    auto old_it = old_apps.find(account.arc_kiosk_app_info.package_name());
+    const policy::ArcKioskAppBasicInfo& app_info = account.arc_kiosk_app_info;
+    std::string app_id;
+    if (!app_info.class_name().empty()) {
+      app_id = ArcAppListPrefs::GetAppId(app_info.package_name(),
+                                         app_info.class_name());
+    } else {
+      app_id =
+          ArcAppListPrefs::GetAppId(app_info.package_name(), app_info.action());
+    }
+    auto old_it = old_apps.find(app_id);
     if (old_it != old_apps.end()) {
       apps_.push_back(std::move(old_it->second));
       old_apps.erase(old_it);
     } else {
       // Use package name when display name is not specified.
-      std::string name = account.arc_kiosk_app_info.package_name();
-      if (!account.arc_kiosk_app_info.display_name().empty())
-        name = account.arc_kiosk_app_info.display_name();
+      std::string name = app_info.package_name();
+      if (!app_info.display_name().empty())
+        name = app_info.display_name();
       apps_.push_back(base::MakeUnique<ArcKioskAppData>(
-          account.arc_kiosk_app_info.package_name(), account_id, name));
+          app_id, app_info.package_name(), app_info.class_name(),
+          app_info.action(), account_id, name));
       apps_.back()->LoadFromCache();
     }
     CancelDelayedCryptohomeRemoval(cryptohome::Identification(account_id));

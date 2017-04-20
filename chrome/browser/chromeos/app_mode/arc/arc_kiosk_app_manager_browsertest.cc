@@ -161,8 +161,8 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     ArcKioskAppManager::Apps apps;
     manager()->GetAllApps(&apps);
     ASSERT_EQ(2u, apps.size());
-    ASSERT_EQ(app1.package_name(), apps[0]->app_id());
-    ASSERT_EQ(app2.package_name(), apps[1]->app_id());
+    ASSERT_EQ(app1.package_name(), apps[0]->package_name());
+    ASSERT_EQ(app2.package_name(), apps[1]->package_name());
     ASSERT_EQ(app1.package_name(), apps[0]->name());
     ASSERT_EQ(app2.display_name(), apps[1]->name());
     EXPECT_FALSE(manager()->GetAutoLaunchAccountId().is_valid());
@@ -183,8 +183,8 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     ArcKioskAppManager::Apps apps;
     manager()->GetAllApps(&apps);
     ASSERT_EQ(2u, apps.size());
-    ASSERT_EQ(app1.package_name(), apps[0]->app_id());
-    ASSERT_EQ(app2.package_name(), apps[1]->app_id());
+    ASSERT_EQ(app1.package_name(), apps[0]->package_name());
+    ASSERT_EQ(app2.package_name(), apps[1]->package_name());
     ASSERT_EQ(app1.package_name(), apps[0]->name());
     ASSERT_EQ(app2.display_name(), apps[1]->name());
     EXPECT_TRUE(manager()->GetAutoLaunchAccountId().is_valid());
@@ -206,8 +206,8 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     ArcKioskAppManager::Apps apps;
     manager()->GetAllApps(&apps);
     ASSERT_EQ(2u, apps.size());
-    ASSERT_EQ(app1.package_name(), apps[0]->app_id());
-    ASSERT_EQ(app3.package_name(), apps[1]->app_id());
+    ASSERT_EQ(app1.package_name(), apps[0]->package_name());
+    ASSERT_EQ(app3.package_name(), apps[1]->package_name());
     ASSERT_EQ(app1.package_name(), apps[0]->name());
     ASSERT_EQ(app3.package_name(), apps[1]->name());
     // Auto launch app must be reset.

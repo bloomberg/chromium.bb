@@ -20,12 +20,17 @@ namespace chromeos {
 class ArcKioskAppData : public KioskAppDataBase {
  public:
   ArcKioskAppData(const std::string& app_id,
+                  const std::string& package_name,
+                  const std::string& activity,
+                  const std::string& intent,
                   const AccountId& account_id,
                   const std::string& name);
   ~ArcKioskAppData() override;
 
-  // TODO(poromov@): Use appropriate app id http://crbug.com/665904
-  // Currently app_id is always package_name.
+  const std::string& package_name() const { return package_name_; }
+  const std::string& activity() const { return activity_; }
+  const std::string& intent() const { return intent_; }
+
   bool operator==(const std::string& other_app_id) const;
 
   // Loads the locally cached data. Return false if there is none.
@@ -39,6 +44,11 @@ class ArcKioskAppData : public KioskAppDataBase {
   void OnIconLoadFailure() override;
 
  private:
+  // Not cached, always provided in ctor.
+  const std::string package_name_;
+  const std::string activity_;
+  const std::string intent_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcKioskAppData);
 };
 

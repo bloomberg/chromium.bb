@@ -23,11 +23,19 @@ constexpr char kIconCacheDir[] = "arc-kiosk/icon";
 }  // namespace
 
 ArcKioskAppData::ArcKioskAppData(const std::string& app_id,
+                                 const std::string& package_name,
+                                 const std::string& activity,
+                                 const std::string& intent,
                                  const AccountId& account_id,
                                  const std::string& name)
     : KioskAppDataBase(ArcKioskAppManager::kArcKioskDictionaryName,
                        app_id,
-                       account_id) {
+                       account_id),
+      package_name_(package_name),
+      activity_(activity),
+      intent_(intent) {
+  DCHECK(!package_name_.empty());
+  DCHECK(activity.empty() || intent.empty());
   name_ = name;
 }
 
