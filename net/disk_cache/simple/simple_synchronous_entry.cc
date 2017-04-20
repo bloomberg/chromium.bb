@@ -1228,6 +1228,8 @@ int SimpleSynchronousEntry::ReadAndValidateStream0(
       RecordKeySHA256Result(cache_type_, KeySHA256Result::NO_MATCH);
       return net::ERR_FAILED;
     }
+    // Elide header check if we verified sha256(key) via footer.
+    header_and_key_check_needed_[0] = false;
     RecordKeySHA256Result(cache_type_, KeySHA256Result::MATCHED);
   } else {
     RecordKeySHA256Result(cache_type_, KeySHA256Result::NOT_PRESENT);
