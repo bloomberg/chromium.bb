@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/testing/DummyPageHolder.h"
@@ -17,7 +19,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -388,10 +389,11 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   // API use on the DedicatedWorkerGlobalScope should be recorded in UseCounter
   // on the Document.
   EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature1));
-  GetWorkerThread()->PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&DedicatedWorkerThreadForTest::CountFeature,
-                      CrossThreadUnretained(GetWorkerThread()), kFeature1));
+  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+      ->PostTask(
+          BLINK_FROM_HERE,
+          CrossThreadBind(&DedicatedWorkerThreadForTest::CountFeature,
+                          CrossThreadUnretained(GetWorkerThread()), kFeature1));
   testing::EnterRunLoop();
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature1));
 
@@ -402,10 +404,11 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   // Deprecated API use on the DedicatedWorkerGlobalScope should be recorded in
   // UseCounter on the Document.
   EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature2));
-  GetWorkerThread()->PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
-                      CrossThreadUnretained(GetWorkerThread()), kFeature2));
+  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+      ->PostTask(
+          BLINK_FROM_HERE,
+          CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
+                          CrossThreadUnretained(GetWorkerThread()), kFeature2));
   testing::EnterRunLoop();
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature2));
 }

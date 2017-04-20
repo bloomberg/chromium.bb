@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/ThreadableLoadingContext.h"
@@ -73,7 +74,8 @@ void ThreadedMessagingProxyBase::PostTaskToWorkerGlobalScope(
     return;
 
   DCHECK(worker_thread_);
-  worker_thread_->PostTask(location, std::move(task));
+  TaskRunnerHelper::Get(TaskType::kNetworking, worker_thread_.get())
+      ->PostTask(location, std::move(task));
 }
 
 void ThreadedMessagingProxyBase::PostTaskToLoader(

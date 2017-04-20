@@ -17,11 +17,15 @@ class Thread;
 namespace blink {
 namespace scheduler {
 
+class SchedulerTqmDelegate;
+
 class BLINK_PLATFORM_EXPORT CompositorWorkerScheduler
     : public WorkerScheduler,
       public SingleThreadIdleTaskRunner::Delegate {
  public:
-  explicit CompositorWorkerScheduler(base::Thread* thread);
+  CompositorWorkerScheduler(
+      base::Thread* thread,
+      scoped_refptr<SchedulerTqmDelegate> main_task_runner);
   ~CompositorWorkerScheduler() override;
 
   // WorkerScheduler:

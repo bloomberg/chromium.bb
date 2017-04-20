@@ -5,6 +5,7 @@
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/probe/CoreProbes.h"
@@ -18,7 +19,7 @@ namespace blink {
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope()
     : deprecation_warning_bits_(UseCounter::kNumberOfFeatures) {}
 
-WorkerOrWorkletGlobalScope::~WorkerOrWorkletGlobalScope() {}
+WorkerOrWorkletGlobalScope::~WorkerOrWorkletGlobalScope() = default;
 
 void WorkerOrWorkletGlobalScope::AddDeprecationMessage(
     UseCounter::Feature feature) {
@@ -37,7 +38,7 @@ void WorkerOrWorkletGlobalScope::AddDeprecationMessage(
 }
 
 void WorkerOrWorkletGlobalScope::PostTask(
-    TaskType,
+    TaskType type,
     const WebTraceLocation& location,
     std::unique_ptr<ExecutionContextTask> task,
     const String& task_name_for_instrumentation) {
@@ -49,10 +50,11 @@ void WorkerOrWorkletGlobalScope::PostTask(
     probe::AsyncTaskScheduled(this, "Worker task", task.get());
   }
 
-  GetThread()->PostTask(
-      location, CrossThreadBind(&WorkerOrWorkletGlobalScope::RunTask,
-                                WrapCrossThreadWeakPersistent(this),
-                                WTF::Passed(std::move(task)), is_instrumented));
+  TaskRunnerHelper::Get(type, this)
+      ->PostTask(location, CrossThreadBind(&WorkerOrWorkletGlobalScope::RunTask,
+                                           WrapCrossThreadWeakPersistent(this),
+                                           WTF::Passed(std::move(task)),
+                                           is_instrumented));
 }
 
 void WorkerOrWorkletGlobalScope::RunTask(

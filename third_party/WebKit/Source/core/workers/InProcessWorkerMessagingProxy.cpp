@@ -30,6 +30,7 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalFrame.h"
@@ -148,7 +149,8 @@ void InProcessWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
         CrossThreadUnretained(&WorkerObjectProxy()), std::move(message),
         WTF::Passed(std::move(channels)),
         CrossThreadUnretained(GetWorkerThread()));
-    GetWorkerThread()->PostTask(BLINK_FROM_HERE, std::move(task));
+    TaskRunnerHelper::Get(TaskType::kPostedMessage, GetWorkerThread())
+        ->PostTask(BLINK_FROM_HERE, std::move(task));
   } else {
     queued_early_tasks_.push_back(
         QueuedTask{std::move(message), std::move(channels)});
@@ -197,7 +199,8 @@ void InProcessWorkerMessagingProxy::WorkerThreadCreated() {
         queued_task.message.Release(),
         WTF::Passed(std::move(queued_task.channels)),
         CrossThreadUnretained(GetWorkerThread()));
-    GetWorkerThread()->PostTask(BLINK_FROM_HERE, std::move(task));
+    TaskRunnerHelper::Get(TaskType::kPostedMessage, GetWorkerThread())
+        ->PostTask(BLINK_FROM_HERE, std::move(task));
   }
   queued_early_tasks_.clear();
 }

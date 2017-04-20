@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "platform/scheduler/child/scheduler_helper.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/scheduler/base/task_queue.h"
 #include "public/platform/scheduler/child/child_scheduler.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
@@ -27,8 +29,14 @@ class BLINK_PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
   // initialization needed such as initializing idle period detection.
   virtual void Init() = 0;
 
+  scoped_refptr<TaskQueue> CreateUnthrottledTaskRunner(
+      TaskQueue::QueueType queue_type);
+
  protected:
-  WorkerScheduler();
+  explicit WorkerScheduler(std::unique_ptr<SchedulerHelper> helper);
+
+  std::unique_ptr<SchedulerHelper> helper_;
+
   DISALLOW_COPY_AND_ASSIGN(WorkerScheduler);
 };
 

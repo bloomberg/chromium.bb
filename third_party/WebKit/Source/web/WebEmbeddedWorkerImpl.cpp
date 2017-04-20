@@ -34,6 +34,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -274,7 +275,8 @@ void WebEmbeddedWorkerImpl::PostTaskToWorkerGlobalScope(
     std::unique_ptr<WTF::CrossThreadClosure> task) {
   if (asked_to_terminate_ || !worker_thread_)
     return;
-  worker_thread_->PostTask(location, std::move(task));
+  TaskRunnerHelper::Get(TaskType::kNetworking, worker_thread_.get())
+      ->PostTask(location, std::move(task));
 }
 
 ThreadableLoadingContext* WebEmbeddedWorkerImpl::GetThreadableLoadingContext() {

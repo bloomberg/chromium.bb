@@ -9,135 +9,29 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
+#include "platform/scheduler/child/scheduler_helper.h"
+#include "platform/scheduler/child/scheduler_tqm_delegate.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 namespace scheduler {
 
-// TODO(scheduler-dev): Get rid of this asap!
-namespace {
-class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
- public:
-  explicit CompositorWorkerTaskRunnerWrapper(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : task_runner_(task_runner) {}
-
-  // TaskQueue implementation:
-  void UnregisterTaskQueue() override { NOTREACHED(); }
-
-  bool RunsTasksOnCurrentThread() const override {
-    return task_runner_->RunsTasksOnCurrentThread();
-  }
-
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override {
-    return task_runner_->PostDelayedTask(from_here, std::move(task), delay);
-  }
-
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::OnceClosure task,
-                                  base::TimeDelta delay) override {
-    return task_runner_->PostNonNestableDelayedTask(from_here, std::move(task),
-                                                    delay);
-  }
-
-  std::unique_ptr<QueueEnabledVoter> CreateQueueEnabledVoter() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  void InsertFence(InsertFencePosition position) override { NOTREACHED(); }
-
-  void RemoveFence() override { NOTREACHED(); }
-
-  bool BlockedByFence() const override {
-    NOTREACHED();
-    return false;
-  }
-
-  bool IsQueueEnabled() const override {
-    NOTREACHED();
-    return true;
-  }
-
-  bool IsEmpty() const override {
-    NOTREACHED();
-    return false;
-  };
-
-  size_t GetNumberOfPendingTasks() const override {
-    NOTREACHED();
-    return 0;
-  };
-
-  bool HasPendingImmediateWork() const override {
-    NOTREACHED();
-    return false;
-  };
-
-  base::Optional<base::TimeTicks> GetNextScheduledWakeUp() override {
-    NOTREACHED();
-    return base::nullopt;
-  }
-
-  const char* GetName() const override {
-    NOTREACHED();
-    return nullptr;
-  };
-
-  QueueType GetQueueType() const override {
-    NOTREACHED();
-    return QueueType::DEFAULT;
-  }
-
-  void SetQueuePriority(QueuePriority priority) override { NOTREACHED(); }
-
-  QueuePriority GetQueuePriority() const override {
-    NOTREACHED();
-    return QueuePriority::NORMAL_PRIORITY;
-  };
-
-  void AddTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override {
-    NOTREACHED();
-  }
-
-  void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override {
-    NOTREACHED();
-  }
-
-  void SetTimeDomain(TimeDomain* domain) override { NOTREACHED(); }
-
-  TimeDomain* GetTimeDomain() const override {
-    return nullptr;
-  }
-
-  void SetBlameContext(base::trace_event::BlameContext*) override {
-    NOTREACHED();
-  }
-
-  void SetObserver(Observer* observer) override { NOTREACHED(); }
-
- private:
-  ~CompositorWorkerTaskRunnerWrapper() override {}
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-};
-}  // namespace
-
-CompositorWorkerScheduler::CompositorWorkerScheduler(base::Thread* thread)
-    : thread_(thread) {}
+CompositorWorkerScheduler::CompositorWorkerScheduler(
+    base::Thread* thread,
+    scoped_refptr<SchedulerTqmDelegate> main_task_runner)
+    : WorkerScheduler(WTF::MakeUnique<SchedulerHelper>(
+          main_task_runner,
+          "compositor.scheduler",
+          TRACE_DISABLED_BY_DEFAULT("compositor.scheduler"),
+          TRACE_DISABLED_BY_DEFAULT("compositor.scheduler.debug"))),
+      thread_(thread) {}
 
 CompositorWorkerScheduler::~CompositorWorkerScheduler() {}
 
 void CompositorWorkerScheduler::Init() {}
 
 scoped_refptr<TaskQueue> CompositorWorkerScheduler::DefaultTaskRunner() {
-  // TODO(sad): Implement a more robust scheduler that can do idle tasks for GC
-  // without regressing performance of the rest of the system.
-  return make_scoped_refptr(
-      new CompositorWorkerTaskRunnerWrapper(thread_->task_runner()));
+  return helper_->DefaultTaskRunner();
 }
 
 scoped_refptr<scheduler::SingleThreadIdleTaskRunner>
@@ -160,12 +54,12 @@ bool CompositorWorkerScheduler::ShouldYieldForHighPriorityWork() {
 
 void CompositorWorkerScheduler::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
-  thread_->message_loop()->AddTaskObserver(task_observer);
+  helper_->AddTaskObserver(task_observer);
 }
 
 void CompositorWorkerScheduler::RemoveTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
-  thread_->message_loop()->RemoveTaskObserver(task_observer);
+  helper_->RemoveTaskObserver(task_observer);
 }
 
 void CompositorWorkerScheduler::Shutdown() {}
