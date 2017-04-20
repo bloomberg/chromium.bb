@@ -252,6 +252,9 @@ class TestWebFrameClient : public WebFrameClient {
  public:
   TestWebFrameClient();
 
+  WebLocalFrame* Frame() const { return frame_; }
+  void SetFrame(WebLocalFrame* frame) { frame_ = frame; }
+
   void FrameDetached(WebLocalFrame*, DetachType) override;
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
                                   WebTreeScopeType,
@@ -270,6 +273,9 @@ class TestWebFrameClient : public WebFrameClient {
 
  private:
   int loads_in_progress_ = 0;
+
+  // This is null from when the client is created until it is initialized.
+  WebLocalFrame* frame_;
 };
 
 // Minimal implementation of WebRemoteFrameClient needed for unit tests that

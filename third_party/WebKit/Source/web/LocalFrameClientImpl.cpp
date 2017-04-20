@@ -654,7 +654,7 @@ void LocalFrameClientImpl::SelectorMatchChanged(
     const Vector<String>& added_selectors,
     const Vector<String>& removed_selectors) {
   if (WebFrameClient* client = web_frame_->Client()) {
-    client->DidMatchCSS(web_frame_, WebVector<WebString>(added_selectors),
+    client->DidMatchCSS(WebVector<WebString>(added_selectors),
                         WebVector<WebString>(removed_selectors));
   }
 }

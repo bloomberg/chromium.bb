@@ -715,7 +715,6 @@ class CSSCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   CSSCallbackWebFrameClient() : update_count_(0) {}
   void DidMatchCSS(
-      WebLocalFrame*,
       const WebVector<WebString>& newly_matching_selectors,
       const WebVector<WebString>& stopped_matching_selectors) override;
 
@@ -724,11 +723,10 @@ class CSSCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 };
 
 void CSSCallbackWebFrameClient::DidMatchCSS(
-    WebLocalFrame* frame,
     const WebVector<WebString>& newly_matching_selectors,
     const WebVector<WebString>& stopped_matching_selectors) {
   ++update_count_;
-  std::set<std::string>& frame_selectors = matched_selectors_[frame];
+  std::set<std::string>& frame_selectors = matched_selectors_[Frame()];
   for (size_t i = 0; i < newly_matching_selectors.size(); ++i) {
     std::string selector = newly_matching_selectors[i].Utf8();
     EXPECT_EQ(0U, frame_selectors.count(selector)) << selector;
@@ -747,6 +745,7 @@ class WebFrameCSSCallbackTest : public ::testing::Test {
     frame_ = helper_.InitializeAndLoad("about:blank", true, &client_)
                  ->MainFrame()
                  ->ToWebLocalFrame();
+    client_.SetFrame(frame_);
   }
 
   ~WebFrameCSSCallbackTest() {
