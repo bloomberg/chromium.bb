@@ -1545,7 +1545,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
           ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
       return editable && !result.empty();
     case ui::TextEditCommand::SELECT_ALL:
-      return !text().empty();
+      return !text().empty() && GetSelectedRange().length() != text().length();
     case ui::TextEditCommand::TRANSPOSE:
       return editable && !model_->HasSelection() &&
              !model_->HasCompositionText();

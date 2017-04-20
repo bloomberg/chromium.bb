@@ -649,6 +649,10 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
                                           bool can_undo,
                                           ui::MenuModel* menu) {
+    const auto& text = textfield_->text();
+    const bool is_all_selected = !text.empty() &&
+        textfield_->GetSelectedRange().length() == text.length();
+
     EXPECT_EQ(can_undo, menu->IsEnabledAt(0 /* UNDO */));
     EXPECT_TRUE(menu->IsEnabledAt(1 /* Separator */));
     EXPECT_EQ(textfield_has_selection, menu->IsEnabledAt(2 /* CUT */));
@@ -657,7 +661,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
               menu->IsEnabledAt(4 /* PASTE */));
     EXPECT_EQ(textfield_has_selection, menu->IsEnabledAt(5 /* DELETE */));
     EXPECT_TRUE(menu->IsEnabledAt(6 /* Separator */));
-    EXPECT_TRUE(menu->IsEnabledAt(7 /* SELECT ALL */));
+    EXPECT_EQ(!is_all_selected, menu->IsEnabledAt(7 /* SELECT ALL */));
   }
 
   void PressMouseButton(ui::EventFlags mouse_button_flags, int extra_flags) {
