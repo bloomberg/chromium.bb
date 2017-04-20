@@ -166,6 +166,7 @@ void GpuMain::CreateFrameSinkManagerInternal(
     cc::mojom::FrameSinkManagerRequest request,
     cc::mojom::FrameSinkManagerClientPtrInfo client_info) {
   DCHECK(!gpu_command_service_);
+  DCHECK(gpu_service_);
   gpu_command_service_ = new gpu::GpuInProcessThreadService(
       gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group());
