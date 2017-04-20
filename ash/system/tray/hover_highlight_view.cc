@@ -10,26 +10,13 @@
 #include "ash/system/tray/tri_view.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font_list.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/resources/grit/views_resources.h"
-
-namespace {
-
-const gfx::FontList& GetFontList(bool highlight) {
-  return ui::ResourceBundle::GetSharedInstance().GetFontList(
-      highlight ? ui::ResourceBundle::BoldFont : ui::ResourceBundle::BaseFont);
-}
-
-}  // namespace
 
 namespace ash {
 
@@ -41,14 +28,6 @@ HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
 }
 
 HoverHighlightView::~HoverHighlightView() {}
-
-bool HoverHighlightView::GetTooltipText(const gfx::Point& p,
-                                        base::string16* tooltip) const {
-  if (tooltip_.empty())
-    return false;
-  *tooltip = tooltip_;
-  return true;
-}
 
 void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image,
                                       int icon_size) {
@@ -68,9 +47,6 @@ void HoverHighlightView::AddRightView(views::View* view) {
   tri_view_->SetContainerVisible(TriView::Container::END, true);
 }
 
-// TODO(tdanderson): Ensure all checkable detailed view rows use this
-// mechanism, and share the code that sets the accessible state for
-// a checkbox. See crbug.com/652674.
 void HoverHighlightView::SetRightViewVisible(bool visible) {
   if (!right_view_)
     return;
@@ -142,38 +118,6 @@ void HoverHighlightView::DoAddIconAndLabels(
   SetAccessibleName(text);
 }
 
-views::Label* HoverHighlightView::AddLabelDeprecated(
-    const base::string16& text,
-    gfx::HorizontalAlignment alignment,
-    bool highlight) {
-  box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-  SetLayoutManager(box_layout_);
-  text_label_ = new views::Label(text);
-  int left_margin = kTrayPopupPaddingHorizontal;
-  int right_margin = kTrayPopupPaddingHorizontal;
-  if (alignment != gfx::ALIGN_CENTER) {
-    if (base::i18n::IsRTL())
-      right_margin += kTrayPopupDetailsLabelExtraLeftMargin;
-    else
-      left_margin += kTrayPopupDetailsLabelExtraLeftMargin;
-  }
-  text_label_->SetBorder(
-      views::CreateEmptyBorder(5, left_margin, 5, right_margin));
-  text_label_->SetHorizontalAlignment(alignment);
-  text_label_->SetFontList(GetFontList(highlight));
-  // Do not set alpha value in disable color. It will have issue with elide
-  // blending filter in disabled state for rendering label text color.
-  text_label_->SetDisabledColor(SkColorSetARGB(255, 127, 127, 127));
-  if (text_default_color_)
-    text_label_->SetEnabledColor(text_default_color_);
-  text_label_->SetEnabled(enabled());
-  AddChildView(text_label_);
-  box_layout_->SetFlexForView(text_label_, 1);
-
-  SetAccessibleName(text);
-  return text_label_;
-}
-
 void HoverHighlightView::AddLabelRow(const base::string16& text) {
   SetLayoutManager(new views::FillLayout);
   tri_view_ = TrayPopupUtils::CreateDefaultRowView();
@@ -230,9 +174,7 @@ void HoverHighlightView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 gfx::Size HoverHighlightView::GetPreferredSize() const {
   gfx::Size size = ActionableView::GetPreferredSize();
 
-  if (custom_height_)
-    size.set_height(custom_height_);
-  else if (!expandable_ || size.height() < kTrayPopupItemMinHeight)
+  if (!expandable_ || size.height() < kTrayPopupItemMinHeight)
     size.set_height(kTrayPopupItemMinHeight);
 
   return size;

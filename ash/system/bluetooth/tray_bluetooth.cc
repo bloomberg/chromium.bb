@@ -288,7 +288,7 @@ class BluetoothDetailedView : public TrayDetailsView {
       return;
     }
 
-    // Add paired devices (and their section header in MD) in the list.
+    // Add paired devices and their section header to the list.
     size_t num_paired_devices = connected_devices_.size() +
                                 connecting_devices_.size() +
                                 paired_not_connected_devices_.size();
@@ -302,7 +302,8 @@ class BluetoothDetailedView : public TrayDetailsView {
                                         false, bluetooth_enabled);
     }
 
-    // Add paired devices (and their section header in MD) in the list.
+    // Add unpaired devices to the list. If at least one paired device is
+    // present, also add a section header above the unpaired devices.
     if (discovered_not_paired_devices_.size() > 0) {
       if (num_paired_devices > 0)
         AddSubHeader(IDS_ASH_STATUS_TRAY_BLUETOOTH_UNPAIRED_DEVICES);
@@ -311,15 +312,9 @@ class BluetoothDetailedView : public TrayDetailsView {
     }
 
     // Show user Bluetooth state if there is no bluetooth devices in list.
-    if (device_map_.size() == 0) {
-      if (bluetooth_available && bluetooth_enabled) {
-        HoverHighlightView* container = new HoverHighlightView(this);
-        container->AddLabelDeprecated(
-            l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING),
-            gfx::ALIGN_LEFT, false);
-        scroll_content()->AddChildView(container);
-      }
+    if (device_map_.size() == 0 && bluetooth_available && bluetooth_enabled) {
+      scroll_content()->AddChildView(TrayPopupUtils::CreateInfoLabelRowView(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING));
     }
 
     // Focus the device which was focused before the device-list update.

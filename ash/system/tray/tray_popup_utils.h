@@ -62,6 +62,13 @@ class TrayPopupUtils {
   // flexible width.
   static TriView* CreateSubHeaderRowView();
 
+  // Creates a view containing only a label (corresponding to |message_id|),
+  // which is to be inserted as a non-targetable row within a system menu
+  // detailed view (e.g., the "Scanning for devices..." message that can appear
+  // at the top of the Bluetooth detailed view). The caller takes over ownership
+  // of the created view.
+  static views::View* CreateInfoLabelRowView(int message_id);
+
   // Creates a container view to be used by system menu rows that want to embed
   // a targetable area within one (or more) of the containers OR by any row
   // that requires a non-default layout within the container views. The returned

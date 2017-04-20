@@ -14,7 +14,6 @@
 namespace views {
 class ImageView;
 class Label;
-class BoxLayout;
 }
 
 namespace ash {
@@ -38,10 +37,6 @@ class HoverHighlightView : public ActionableView {
   explicit HoverHighlightView(ViewClickListener* listener);
   ~HoverHighlightView() override;
 
-  // views::View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
-
   // Convenience function for adding an icon and a label. This also sets the
   // accessible name. Primarily used for scrollable rows in detailed views.
   void AddIconAndLabel(const gfx::ImageSkia& image, const base::string16& text);
@@ -57,15 +52,6 @@ class HoverHighlightView : public ActionableView {
   // default view row.
   void AddIconAndLabelForDefaultView(const gfx::ImageSkia& image,
                                      const base::string16& text);
-
-  // Convenience function for adding a label with padding on the left for a
-  // blank icon. This also sets the accessible name. Returns label after
-  // parenting it.
-  // TODO(tdanderson): Remove this function and use AddLabelRow() instead.
-  // See crbug.com/708190.
-  views::Label* AddLabelDeprecated(const base::string16& text,
-                                   gfx::HorizontalAlignment alignment,
-                                   bool highlight);
 
   // Adds a row containing only a text label, inset on the left by the
   // horizontal space that would normally be occupied by an icon.
@@ -86,18 +72,12 @@ class HoverHighlightView : public ActionableView {
   // equals to kTrayPopupItemHeight.
   void SetExpandable(bool expandable);
 
-  // Set a custom height for the view. A value of 0 means that no custom height
-  // is set.
-  void set_custom_height(int custom_height) { custom_height_ = custom_height; }
-
   // Changes the view's current accessibility state. This will fire an
   // accessibility event if needed.
   void SetAccessiblityState(AccessibilityState accessibility_state);
 
   views::Label* text_label() { return text_label_; }
   views::Label* sub_text_label() { return sub_text_label_; }
-
-  void set_tooltip(const base::string16& tooltip) { tooltip_ = tooltip; }
 
  protected:
   // views::View:
@@ -132,15 +112,11 @@ class HoverHighlightView : public ActionableView {
   ViewClickListener* listener_ = nullptr;
   views::Label* text_label_ = nullptr;
   views::Label* sub_text_label_ = nullptr;
-  views::BoxLayout* box_layout_ = nullptr;
   views::ImageView* left_icon_ = nullptr;
   views::View* right_view_ = nullptr;
   TriView* tri_view_ = nullptr;
-  SkColor text_default_color_ = 0;
   bool expandable_ = false;
-  int custom_height_ = 0;
   AccessibilityState accessibility_state_ = AccessibilityState::DEFAULT;
-  base::string16 tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
 };

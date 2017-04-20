@@ -184,6 +184,21 @@ TriView* TrayPopupUtils::CreateSubHeaderRowView() {
   return tri_view;
 }
 
+views::View* TrayPopupUtils::CreateInfoLabelRowView(int message_id) {
+  views::Label* label = TrayPopupUtils::CreateDefaultLabel();
+  label->SetText(l10n_util::GetStringUTF16(message_id));
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
+  style.SetupLabel(label);
+
+  TriView* tri_view = CreateMultiTargetRowView();
+  tri_view->SetInsets(gfx::Insets(0, kTrayPopupPaddingHorizontal, 0, 0));
+  tri_view->SetContainerVisible(TriView::Container::START, false);
+  tri_view->SetContainerVisible(TriView::Container::END, false);
+  tri_view->AddView(TriView::Container::CENTER, label);
+
+  return tri_view;
+}
+
 TriView* TrayPopupUtils::CreateMultiTargetRowView() {
   TriView* tri_view = new TriView(0 /* padding_between_items */);
 

@@ -19,7 +19,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {
@@ -80,14 +79,9 @@ void CommonPaletteTool::OnViewClicked(views::View* sender) {
 views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
   gfx::ImageSkia icon =
       CreateVectorIcon(GetPaletteIcon(), kMenuIconSize, gfx::kChromeIconGrey);
-
   highlight_view_ = new HoverHighlightView(this);
-  highlight_view_->SetBorder(views::CreateEmptyBorder(0, 0, 0, 0));
   highlight_view_->AddIconAndLabel(icon, name);
-  highlight_view_->set_custom_height(kMenuButtonSize);
-
   TrayPopupUtils::InitializeAsCheckableRow(highlight_view_, enabled());
-
   return highlight_view_;
 }
 

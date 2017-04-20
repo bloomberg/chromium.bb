@@ -41,7 +41,8 @@ class TrayPopupItemStyle {
     SUB_HEADER,
     // Main text used by detailed view rows.
     DETAILED_VIEW_LABEL,
-    // System information text (e.g. date/time, battery status, etc).
+    // System information text (e.g. date/time, battery status, "Scanning for
+    // devices..." seen in the Bluetooth detailed view, etc).
     SYSTEM_INFO,
     // Child buttons within rows that have a visible border (e.g. Cast's
     // "Stop", etc).

@@ -71,7 +71,6 @@ ASH_EXPORT extern const int kTrayDetailedViewTransitionDelayMs;
 extern const int kTrayPopupLabelRightPadding;
 
 extern const int kTrayPopupDetailsIconWidth;
-extern const int kTrayPopupDetailsLabelExtraLeftMargin;
 extern const SkColor kTrayPopupHoverBackgroundColor;
 extern const int kTrayRoundedBorderRadius;
 
