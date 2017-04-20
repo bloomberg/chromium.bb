@@ -114,7 +114,7 @@ class MediaAndroidToughVideoCases(perf_benchmark.PerfBenchmark):
   test = media.Media
   tag = 'android'
   page_set = page_sets.ToughVideoCasesPageSet
-  options = {'story_tag_filter_exclude': 'is_4k,is_50fps'}
+  options = {'story_tag_filter_exclude': 'is_4k,is_50fps,theora'}
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -136,7 +136,7 @@ class MediaAndroidToughVideoCasesTBMv2(_MediaTBMv2Benchmark):
   Will eventually replace MediaAndroidToughVideoCases class."""
 
   tag = 'android'
-  options = {'story_tag_filter_exclude': 'is_4k,is_50fps'}
+  options = {'story_tag_filter_exclude': 'is_4k,is_50fps,theora'}
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
