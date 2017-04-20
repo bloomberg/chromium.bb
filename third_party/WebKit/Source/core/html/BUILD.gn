@@ -483,8 +483,6 @@ blink_core_sources("html") {
     "shadow/MediaControlElementTypes.h",
     "shadow/MediaControlElements.cpp",
     "shadow/MediaControlElements.h",
-    "shadow/MediaControlTimelineMetrics.cpp",
-    "shadow/MediaControlTimelineMetrics.h",
     "shadow/MediaRemotingElements.cpp",
     "shadow/MediaRemotingElements.h",
     "shadow/MediaRemotingInterstitial.cpp",

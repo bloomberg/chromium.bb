@@ -10,6 +10,7 @@
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlCastButtonElement.h"
 #include "modules/media_controls/elements/MediaControlPanelElement.h"
+#include "modules/media_controls/elements/MediaControlTimelineElement.h"
 
 namespace blink {
 

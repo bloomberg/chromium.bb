@@ -31,38 +31,8 @@
 #define MediaControlElements_h
 
 #include "core/html/shadow/MediaControlElementTypes.h"
-#include "core/html/shadow/MediaControlTimelineMetrics.h"
 
 namespace blink {
-
-class CORE_EXPORT MediaControlTimelineElement final
-    : public MediaControlInputElement {
- public:
-  static MediaControlTimelineElement* Create(MediaControls&);
-
-  bool WillRespondToMouseClickEvents() override;
-
-  // FIXME: An "earliest possible position" will be needed once that concept
-  // is supported by HTMLMediaElement, see https://crbug.com/137275
-  void SetPosition(double);
-  void SetDuration(double);
-
-  void OnPlaying();
-
- private:
-  explicit MediaControlTimelineElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-  bool KeepEventInNode(Event*) override;
-
-  // Width in CSS pixels * pageZoomFactor (ignores CSS transforms for
-  // simplicity; deliberately ignores pinch zoom's pageScaleFactor).
-  int TimelineWidth();
-
-  MediaControlTimelineMetrics metrics_;
-};
-
-// ----------------------------
 
 class CORE_EXPORT MediaControlVolumeSliderElement final
     : public MediaControlInputElement {

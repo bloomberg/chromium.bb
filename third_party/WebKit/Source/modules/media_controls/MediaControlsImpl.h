@@ -52,6 +52,7 @@ class MediaControlPanelEnclosureElement;
 class MediaControlPlayButtonElement;
 class MediaControlRemainingTimeDisplayElement;
 class MediaControlTextTrackListElement;
+class MediaControlTimelineElement;
 class MediaControlToggleClosedCaptionsButtonElement;
 class ShadowRoot;
 
@@ -102,10 +103,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Return the internal elements, which is used by registering clicking
   // EventHandlers from MediaControlsWindowEventListener.
   HTMLDivElement* PanelElement() override;
-  void BeginScrubbing() override;
-  void EndScrubbing() override;
-  void UpdateCurrentTimeDisplay() override;
-  bool OverflowMenuVisible() override;
   // TODO(mlamouri): this method is needed in order to notify the controls that
   // the `MediaControlsEnabled` setting has changed.
   void OnMediaControlsEnabledChange() override {
@@ -123,10 +120,16 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ShowTextTrackAtIndex(unsigned);
   void DisableShowingTextTracks();
 
-  // Toggle the overflow menu visibility.
+  // Methods related to the overflow menu.
   void ToggleOverflowMenu();
+  bool OverflowMenuVisible();
 
   void ShowOverlayCastButtonIfNeeded();
+
+  // Methods call by the scrubber.
+  void BeginScrubbing();
+  void EndScrubbing();
+  void UpdateCurrentTimeDisplay();
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -10,6 +10,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
+#include "platform/Histogram.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

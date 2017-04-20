@@ -74,10 +74,6 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   // to modules.
   virtual HTMLDivElement* PanelElement() = 0;
   virtual Document& OwnerDocument() = 0;
-  virtual void BeginScrubbing() = 0;
-  virtual void EndScrubbing() = 0;
-  virtual void UpdateCurrentTimeDisplay() = 0;
-  virtual bool OverflowMenuVisible() = 0;
   virtual void OnMediaControlsEnabledChange() = 0;
 
   DECLARE_VIRTUAL_TRACE();

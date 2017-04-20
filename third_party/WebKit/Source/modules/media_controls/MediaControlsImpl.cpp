@@ -60,6 +60,7 @@
 #include "modules/media_controls/elements/MediaControlPlayButtonElement.h"
 #include "modules/media_controls/elements/MediaControlRemainingTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlTextTrackListElement.h"
+#include "modules/media_controls/elements/MediaControlTimelineElement.h"
 #include "modules/media_controls/elements/MediaControlToggleClosedCaptionsButtonElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
 
@@ -337,10 +338,8 @@ void MediaControlsImpl::InitializeControls() {
   duration_display_ = new MediaControlRemainingTimeDisplayElement(*this);
   panel_->AppendChild(duration_display_);
 
-  MediaControlTimelineElement* timeline =
-      MediaControlTimelineElement::Create(*this);
-  timeline_ = timeline;
-  panel_->AppendChild(timeline);
+  timeline_ = new MediaControlTimelineElement(*this);
+  panel_->AppendChild(timeline_);
 
   mute_button_ = new MediaControlMuteButtonElement(*this);
   panel_->AppendChild(mute_button_);

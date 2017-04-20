@@ -26,7 +26,8 @@ bool MediaControlOverflowMenuButtonElement::WillRespondToMouseClickEvents() {
 
 void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click) {
-    if (GetMediaControls().OverflowMenuVisible()) {
+    if (static_cast<MediaControlsImpl&>(GetMediaControls())
+            .OverflowMenuVisible()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.OverflowClose"));
     } else {

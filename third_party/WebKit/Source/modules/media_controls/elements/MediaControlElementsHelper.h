@@ -10,6 +10,7 @@
 namespace blink {
 
 class Event;
+class LayoutObject;
 
 // Helper class for media control elements. It contains methods, constants or
 // concepts shared by more than one element.
@@ -18,6 +19,10 @@ class MediaControlElementsHelper final {
 
  public:
   static bool IsUserInteractionEvent(Event*);
+
+  // Sliders (the volume control and timeline) need to capture some additional
+  // events used when dragging the thumb.
+  static bool IsUserInteractionEventForSlider(Event*, LayoutObject*);
 };
 
 }  // namespace blink

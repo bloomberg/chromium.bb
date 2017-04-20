@@ -21,6 +21,7 @@
 #ifndef LayoutSlider_h
 #define LayoutSlider_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutFlexibleBox.h"
 
 namespace blink {
@@ -35,7 +36,7 @@ class LayoutSlider final : public LayoutFlexibleBox {
   explicit LayoutSlider(HTMLInputElement*);
   ~LayoutSlider() override;
 
-  bool InDragMode() const;
+  CORE_EXPORT bool InDragMode() const;
 
   const char* GetName() const override { return "LayoutSlider"; }
 
