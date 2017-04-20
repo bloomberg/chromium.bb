@@ -15,6 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
+#include "base/task_scheduler/delayed_task_manager.h"
+#include "base/task_scheduler/scheduler_single_thread_task_runner_manager.h"
 #include "base/task_scheduler/scheduler_worker_pool_impl.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task_scheduler.h"
@@ -32,9 +34,6 @@ namespace base {
 class HistogramBase;
 
 namespace internal {
-
-class DelayedTaskManager;
-class SchedulerSingleThreadTaskRunnerManager;
 
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
@@ -94,9 +93,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
 #else
   TaskTracker task_tracker_;
 #endif
-  std::unique_ptr<DelayedTaskManager> delayed_task_manager_;
-  std::unique_ptr<SchedulerSingleThreadTaskRunnerManager>
-      single_thread_task_runner_manager_;
+  DelayedTaskManager delayed_task_manager_;
+  SchedulerSingleThreadTaskRunnerManager single_thread_task_runner_manager_;
 
   // There are 4 SchedulerWorkerPoolImpl in this array to match the 4
   // SchedulerWorkerPoolParams in TaskScheduler::InitParams.

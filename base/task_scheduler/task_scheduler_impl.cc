@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/delayed_task_manager.h"
-#include "base/task_scheduler/scheduler_single_thread_task_runner_manager.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
@@ -99,7 +98,7 @@ TaskSchedulerImpl::CreateSingleThreadTaskRunnerWithTraits(
   const auto& environment_params =
       kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
   return single_thread_task_runner_manager_
-      ->CreateSingleThreadTaskRunnerWithTraits(
+      .CreateSingleThreadTaskRunnerWithTraits(
           name_ + environment_params.name_suffix,
           environment_params.priority_hint, traits);
 }
@@ -109,7 +108,7 @@ scoped_refptr<SingleThreadTaskRunner>
 TaskSchedulerImpl::CreateCOMSTATaskRunnerWithTraits(const TaskTraits& traits) {
   const auto& environment_params =
       kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
-  return single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
+  return single_thread_task_runner_manager_.CreateCOMSTATaskRunnerWithTraits(
       environment_params.name_suffix, environment_params.priority_hint, traits);
 }
 #endif  // defined(OS_WIN)
@@ -140,7 +139,7 @@ void TaskSchedulerImpl::JoinForTesting() {
 #if DCHECK_IS_ON()
   DCHECK(!join_for_testing_returned_.IsSet());
 #endif
-  single_thread_task_runner_manager_->JoinForTesting();
+  single_thread_task_runner_manager_.JoinForTesting();
   for (const auto& worker_pool : worker_pools_)
     worker_pool->DisallowWorkerDetachmentForTesting();
   for (const auto& worker_pool : worker_pools_)
@@ -152,7 +151,10 @@ void TaskSchedulerImpl::JoinForTesting() {
 }
 
 TaskSchedulerImpl::TaskSchedulerImpl(StringPiece name)
-    : name_(name), service_thread_("TaskSchedulerServiceThread") {}
+    : name_(name),
+      service_thread_("TaskSchedulerServiceThread"),
+      single_thread_task_runner_manager_(&task_tracker_,
+                                         &delayed_task_manager_) {}
 
 void TaskSchedulerImpl::Initialize(
     const TaskScheduler::InitParams& init_params) {
@@ -177,13 +179,9 @@ void TaskSchedulerImpl::Initialize(
 #endif
 
   // Needs to happen after starting the service thread to get its task_runner().
-  delayed_task_manager_ =
-      base::MakeUnique<DelayedTaskManager>(service_thread_.task_runner());
+  delayed_task_manager_.Start(service_thread_.task_runner());
 
-  single_thread_task_runner_manager_ =
-      MakeUnique<SchedulerSingleThreadTaskRunnerManager>(
-          &task_tracker_, delayed_task_manager_.get());
-  single_thread_task_runner_manager_->Start();
+  single_thread_task_runner_manager_.Start();
 
   // Callback invoked by workers to re-enqueue a sequence in the appropriate
   // PriorityQueue.
@@ -216,8 +214,7 @@ void TaskSchedulerImpl::Initialize(
     worker_pools_[environment_type] = MakeUnique<SchedulerWorkerPoolImpl>(
         name_ + kEnvironmentParams[environment_type].name_suffix,
         kEnvironmentParams[environment_type].priority_hint,
-        re_enqueue_sequence_callback, &task_tracker_,
-        delayed_task_manager_.get());
+        re_enqueue_sequence_callback, &task_tracker_, &delayed_task_manager_);
     worker_pools_[environment_type]->Start(
         *worker_pool_params[environment_type]);
   }

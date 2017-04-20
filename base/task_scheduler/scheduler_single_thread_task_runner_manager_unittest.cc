@@ -39,17 +39,15 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
 
   void SetUp() override {
     service_thread_.Start();
-    delayed_task_manager_ =
-        MakeUnique<DelayedTaskManager>(service_thread_.task_runner());
+    delayed_task_manager_.Start(service_thread_.task_runner());
     single_thread_task_runner_manager_ =
         MakeUnique<SchedulerSingleThreadTaskRunnerManager>(
-            &task_tracker_, delayed_task_manager_.get());
+            &task_tracker_, &delayed_task_manager_);
     StartSingleThreadTaskRunnerManagerFromSetUp();
   }
 
   void TearDown() override {
     TearDownSingleThreadTaskRunnerManager();
-    delayed_task_manager_.reset();
     service_thread_.Stop();
   }
 
@@ -69,7 +67,7 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
 
  private:
   Thread service_thread_;
-  std::unique_ptr<DelayedTaskManager> delayed_task_manager_;
+  DelayedTaskManager delayed_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerSingleThreadTaskRunnerManagerTest);
 };

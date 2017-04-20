@@ -78,15 +78,13 @@ class TaskSchedulerWorkerPoolImplTest
 
   void CreateWorkerPool() {
     ASSERT_FALSE(worker_pool_);
-    ASSERT_FALSE(delayed_task_manager_);
     service_thread_.Start();
-    delayed_task_manager_ =
-        base::MakeUnique<DelayedTaskManager>(service_thread_.task_runner());
+    delayed_task_manager_.Start(service_thread_.task_runner());
     worker_pool_ = MakeUnique<SchedulerWorkerPoolImpl>(
         "TestWorkerPool", ThreadPriority::NORMAL,
         Bind(&TaskSchedulerWorkerPoolImplTest::ReEnqueueSequenceCallback,
              Unretained(this)),
-        &task_tracker_, delayed_task_manager_.get());
+        &task_tracker_, &delayed_task_manager_);
     ASSERT_TRUE(worker_pool_);
   }
 
@@ -107,7 +105,6 @@ class TaskSchedulerWorkerPoolImplTest
 
   TaskTracker task_tracker_;
   Thread service_thread_;
-  std::unique_ptr<DelayedTaskManager> delayed_task_manager_;
 
  private:
   void ReEnqueueSequenceCallback(scoped_refptr<Sequence> sequence) {
@@ -117,6 +114,8 @@ class TaskSchedulerWorkerPoolImplTest
     const SequenceSortKey sort_key(sequence->GetSortKey());
     worker_pool_->ReEnqueueSequence(std::move(sequence), sort_key);
   }
+
+  DelayedTaskManager delayed_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolImplTest);
 };
@@ -793,8 +792,8 @@ void NotReachedReEnqueueSequenceCallback(scoped_refptr<Sequence> sequence) {
 
 TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitLazy) {
   TaskTracker task_tracker;
-  DelayedTaskManager delayed_task_manager(
-      make_scoped_refptr(new TestSimpleTaskRunner));
+  DelayedTaskManager delayed_task_manager;
+  delayed_task_manager.Start(make_scoped_refptr(new TestSimpleTaskRunner));
   auto worker_pool = MakeUnique<SchedulerWorkerPoolImpl>(
       "LazyPolicyWorkerPool", ThreadPriority::NORMAL,
       Bind(&NotReachedReEnqueueSequenceCallback), &task_tracker,
@@ -808,8 +807,8 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitLazy) {
 
 TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
   TaskTracker task_tracker;
-  DelayedTaskManager delayed_task_manager(
-      make_scoped_refptr(new TestSimpleTaskRunner));
+  DelayedTaskManager delayed_task_manager;
+  delayed_task_manager.Start(make_scoped_refptr(new TestSimpleTaskRunner));
   auto worker_pool = MakeUnique<SchedulerWorkerPoolImpl>(
       "OnePolicyWorkerPool", ThreadPriority::NORMAL,
       Bind(&NotReachedReEnqueueSequenceCallback), &task_tracker,
