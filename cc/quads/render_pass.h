@@ -153,10 +153,6 @@ class CC_EXPORT RenderPass {
 
 using RenderPassList = std::vector<std::unique_ptr<RenderPass>>;
 
-// List of pairs of render pass id and filter, sorted by render pass id so that
-// it can be searched using std::lower_bound.
-using RenderPassFilterList = std::vector<std::pair<int, FilterOperations*>>;
-
 }  // namespace cc
 
 #endif  // CC_QUADS_RENDER_PASS_H_

@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_CA_LAYER_OVERLAY_H_
 #define CC_OUTPUT_CA_LAYER_OVERLAY_H_
 
+#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "cc/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -76,8 +77,9 @@ bool ProcessForCALayerOverlays(
     ResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     const QuadList& quad_list,
-    const RenderPassFilterList& render_pass_filters,
-    const RenderPassFilterList& render_pass_background_filters,
+    const base::flat_map<int, FilterOperations*>& render_pass_filters,
+    const base::flat_map<int, FilterOperations*>&
+        render_pass_background_filters,
     CALayerOverlayList* ca_layer_overlays);
 
 }  // namespace cc

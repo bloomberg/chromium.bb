@@ -62,8 +62,9 @@ gfx::Rect OverlayProcessor::GetAndResetOverlayDamage() {
 bool OverlayProcessor::ProcessForCALayers(
     ResourceProvider* resource_provider,
     RenderPass* render_pass,
-    const RenderPassFilterList& render_pass_filters,
-    const RenderPassFilterList& render_pass_background_filters,
+    const base::flat_map<int, FilterOperations*>& render_pass_filters,
+    const base::flat_map<int, FilterOperations*>&
+        render_pass_background_filters,
     OverlayCandidateList* overlay_candidates,
     CALayerOverlayList* ca_layer_overlays,
     gfx::Rect* damage_rect) {
@@ -90,8 +91,9 @@ bool OverlayProcessor::ProcessForCALayers(
 bool OverlayProcessor::ProcessForDCLayers(
     ResourceProvider* resource_provider,
     RenderPass* render_pass,
-    const RenderPassFilterList& render_pass_filters,
-    const RenderPassFilterList& render_pass_background_filters,
+    const base::flat_map<int, FilterOperations*>& render_pass_filters,
+    const base::flat_map<int, FilterOperations*>&
+        render_pass_background_filters,
     OverlayCandidateList* overlay_candidates,
     DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect) {
@@ -111,8 +113,9 @@ bool OverlayProcessor::ProcessForDCLayers(
 void OverlayProcessor::ProcessForOverlays(
     ResourceProvider* resource_provider,
     RenderPass* render_pass,
-    const RenderPassFilterList& render_pass_filters,
-    const RenderPassFilterList& render_pass_background_filters,
+    const base::flat_map<int, FilterOperations*>& render_pass_filters,
+    const base::flat_map<int, FilterOperations*>&
+        render_pass_background_filters,
     OverlayCandidateList* candidates,
     CALayerOverlayList* ca_layer_overlays,
     DCLayerOverlayList* dc_layer_overlays,

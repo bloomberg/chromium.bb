@@ -74,34 +74,23 @@ bool FilterOperationSupported(const FilterOperation& operation) {
   }
 }
 
-static const FilterOperations* FiltersForPass(
-    int render_pass_id,
-    const RenderPassFilterList& filter_list) {
-  auto it = std::lower_bound(
-      filter_list.begin(), filter_list.end(),
-      std::pair<int, FilterOperations*>(render_pass_id, nullptr));
-  if (it != filter_list.end() && it->first == render_pass_id)
-    return it->second;
-  return nullptr;
-}
-
 CALayerResult FromRenderPassQuad(
     ResourceProvider* resource_provider,
     const RenderPassDrawQuad* quad,
-    const RenderPassFilterList& render_pass_filters,
-    const RenderPassFilterList& render_pass_background_filters,
+    const base::flat_map<int, FilterOperations*>& render_pass_filters,
+    const base::flat_map<int, FilterOperations*>&
+        render_pass_background_filters,
     CALayerOverlay* ca_layer_overlay) {
-  if (FiltersForPass(quad->render_pass_id, render_pass_background_filters)) {
+  if (render_pass_background_filters.count(quad->render_pass_id)) {
     return CA_LAYER_FAILED_RENDER_PASS_BACKGROUND_FILTERS;
   }
 
   if (quad->shared_quad_state->sorting_context_id != 0)
     return CA_LAYER_FAILED_RENDER_PASS_SORTING_CONTEXT_ID;
 
-  const FilterOperations* filters =
-      FiltersForPass(quad->render_pass_id, render_pass_filters);
-  if (filters) {
-    for (const FilterOperation& operation : filters->operations()) {
+  auto it = render_pass_filters.find(quad->render_pass_id);
+  if (it != render_pass_filters.end()) {
+    for (const FilterOperation& operation : it->second->operations()) {
       bool success = FilterOperationSupported(operation);
       if (!success)
         return CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION;
@@ -188,8 +177,9 @@ class CALayerOverlayProcessor {
       ResourceProvider* resource_provider,
       const gfx::RectF& display_rect,
       const DrawQuad* quad,
-      const RenderPassFilterList& render_pass_filters,
-      const RenderPassFilterList& render_pass_background_filters,
+      const base::flat_map<int, FilterOperations*>& render_pass_filters,
+      const base::flat_map<int, FilterOperations*>&
+          render_pass_background_filters,
       CALayerOverlay* ca_layer_overlay,
       bool* skip,
       bool* render_pass_draw_quad) {
@@ -286,8 +276,9 @@ bool ProcessForCALayerOverlays(
     ResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     const QuadList& quad_list,
-    const RenderPassFilterList& render_pass_filters,
-    const RenderPassFilterList& render_pass_background_filters,
+    const base::flat_map<int, FilterOperations*>& render_pass_filters,
+    const base::flat_map<int, FilterOperations*>&
+        render_pass_background_filters,
     CALayerOverlayList* ca_layer_overlays) {
   CALayerResult result = CA_LAYER_SUCCESS;
   ca_layer_overlays->reserve(quad_list.size());

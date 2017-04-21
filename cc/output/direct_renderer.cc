@@ -288,14 +288,9 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   for (const auto& pass : *render_passes_in_draw_order) {
     if (!pass->filters.IsEmpty())
-      render_pass_filters_.push_back(std::make_pair(pass->id, &pass->filters));
-    if (!pass->background_filters.IsEmpty()) {
-      render_pass_background_filters_.push_back(
-          std::make_pair(pass->id, &pass->background_filters));
-    }
-    std::sort(render_pass_filters_.begin(), render_pass_filters_.end());
-    std::sort(render_pass_background_filters_.begin(),
-              render_pass_background_filters_.end());
+      render_pass_filters_[pass->id] = &pass->filters;
+    if (!pass->background_filters.IsEmpty())
+      render_pass_background_filters_[pass->id] = &pass->background_filters;
   }
 
   // Draw all non-root render passes except for the root render pass.
@@ -456,24 +451,14 @@ void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
 
 const FilterOperations* DirectRenderer::FiltersForPass(
     int render_pass_id) const {
-  auto it = std::lower_bound(
-      render_pass_filters_.begin(), render_pass_filters_.end(),
-      std::pair<int, FilterOperations*>(render_pass_id, nullptr));
-  if (it != render_pass_filters_.end() && it->first == render_pass_id)
-    return it->second;
-  return nullptr;
+  auto it = render_pass_filters_.find(render_pass_id);
+  return it == render_pass_filters_.end() ? nullptr : it->second;
 }
 
 const FilterOperations* DirectRenderer::BackgroundFiltersForPass(
     int render_pass_id) const {
-  auto it = std::lower_bound(
-      render_pass_background_filters_.begin(),
-      render_pass_background_filters_.end(),
-      std::pair<int, FilterOperations*>(render_pass_id, nullptr));
-  if (it != render_pass_background_filters_.end() &&
-      it->first == render_pass_id)
-    return it->second;
-  return nullptr;
+  auto it = render_pass_background_filters_.find(render_pass_id);
+  return it == render_pass_background_filters_.end() ? nullptr : it->second;
 }
 
 void DirectRenderer::FlushPolygons(

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
@@ -46,8 +47,9 @@ class CC_EXPORT OverlayProcessor {
   void ProcessForOverlays(
       ResourceProvider* resource_provider,
       RenderPass* root_render_pass,
-      const RenderPassFilterList& render_pass_filters,
-      const RenderPassFilterList& render_pass_background_filters,
+      const base::flat_map<int, FilterOperations*>& render_pass_filters,
+      const base::flat_map<int, FilterOperations*>&
+          render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
       CALayerOverlayList* ca_layer_overlays,
       DCLayerOverlayList* dc_layer_overlays,
@@ -64,16 +66,18 @@ class CC_EXPORT OverlayProcessor {
   bool ProcessForCALayers(
       ResourceProvider* resource_provider,
       RenderPass* render_pass,
-      const RenderPassFilterList& render_pass_filters,
-      const RenderPassFilterList& render_pass_background_filters,
+      const base::flat_map<int, FilterOperations*>& render_pass_filters,
+      const base::flat_map<int, FilterOperations*>&
+          render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
       CALayerOverlayList* ca_layer_overlays,
       gfx::Rect* damage_rect);
   bool ProcessForDCLayers(
       ResourceProvider* resource_provider,
       RenderPass* render_pass,
-      const RenderPassFilterList& render_pass_filters,
-      const RenderPassFilterList& render_pass_background_filters,
+      const base::flat_map<int, FilterOperations*>& render_pass_filters,
+      const base::flat_map<int, FilterOperations*>&
+          render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
       DCLayerOverlayList* dc_layer_overlays,
       gfx::Rect* damage_rect);
