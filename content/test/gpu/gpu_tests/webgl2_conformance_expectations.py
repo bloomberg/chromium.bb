@@ -220,7 +220,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Fails on all GPU types.
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
               ['mac'], bug=709351)
-
+    self.Fail('conformance2/rendering/' +
+        'blitframebuffer-resolve-to-back-buffer.html',
+        ['mac'], bug=699566)
     self.Fail('conformance2/rendering/' +
         'framebuffer-completeness-unaffected.html',
         ['mac'], bug=630800)
