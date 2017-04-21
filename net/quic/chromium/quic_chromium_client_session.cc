@@ -1217,13 +1217,6 @@ void QuicChromiumClientSession::CloseSessionOnError(int error,
   NotifyFactoryOfSessionClosed();
 }
 
-void QuicChromiumClientSession::CloseSessionOnErrorAndNotifyFactoryLater(
-    int error,
-    QuicErrorCode quic_error) {
-  RecordAndCloseSessionOnError(error, quic_error);
-  NotifyFactoryOfSessionClosedLater();
-}
-
 void QuicChromiumClientSession::RecordAndCloseSessionOnError(
     int error,
     QuicErrorCode quic_error) {

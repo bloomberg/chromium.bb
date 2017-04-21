@@ -225,11 +225,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // that this session has been closed, which will delete the session.
   void CloseSessionOnError(int error, QuicErrorCode quic_error);
 
-  // Close the session because of |error| and notifies the factory later that
-  // this session has been closed, which will delete the session.
-  void CloseSessionOnErrorAndNotifyFactoryLater(int error,
-                                                QuicErrorCode quic_error);
-
   std::unique_ptr<base::Value> GetInfoAsValue(
       const std::set<HostPortPair>& aliases);
 
