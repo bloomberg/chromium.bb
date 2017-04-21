@@ -213,6 +213,8 @@
          disallow_large_instanced_draw)                      \
   GPU_OP(DISABLE_SOFTWARE_TO_ACCELERATED_CANVAS_UPGRADE,     \
          disable_software_to_accelerated_canvas_upgrade)     \
+  GPU_OP(DISABLE_NON_EMPTY_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES, \
+         disable_non_empty_post_sub_buffers_for_onscreen_surfaces) \
 // clang-format on
 
 namespace gpu {

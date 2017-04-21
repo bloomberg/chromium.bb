@@ -172,6 +172,9 @@ struct GPU_EXPORT Capabilities {
   // See https://crbug.com/710029.
   bool software_to_accelerated_canvas_upgrade = true;
 
+  // When true, non-empty post sub buffer calls are unsupported.
+  bool disable_non_empty_post_sub_buffers = false;
+
   int major_version = 2;
   int minor_version = 0;
 };

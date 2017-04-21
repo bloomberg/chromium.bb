@@ -98,6 +98,10 @@ void DirectRenderer::Initialize() {
       allow_empty_swap_ = true;
     if (context_provider->ContextCapabilities().dc_layers)
       supports_dc_layers_ = true;
+    if (context_provider->ContextCapabilities()
+            .disable_non_empty_post_sub_buffers) {
+      use_partial_swap_ = false;
+    }
   }
 
   initialized_ = true;
@@ -346,19 +350,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   if (!skip_drawing_root_render_pass && !use_partial_swap_)
     current_frame()->root_damage_rect = root_render_pass->output_rect;
 
-  if (skip_drawing_root_render_pass) {
-    // If any of the overlays is the output surface, then ensure that the
-    // backbuffer be allocated (allocation of the backbuffer is a side-effect
-    // of BindFramebufferToOutputSurface).
-    for (auto& overlay : current_frame()->overlay_list) {
-      if (overlay.use_output_surface_for_resource) {
-        BindFramebufferToOutputSurface();
-        break;
-      }
-    }
-  } else {
+  if (!skip_drawing_root_render_pass)
     DrawRenderPassAndExecuteCopyRequests(root_render_pass);
-  }
 
   FinishDrawingFrame();
   render_passes_in_draw_order->clear();

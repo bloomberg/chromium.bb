@@ -183,11 +183,30 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::RecreateBuffer(
 }
 
 void BufferQueue::PageFlipComplete() {
-  DCHECK(!in_flight_surfaces_.empty());
+  // Early out when no surface is in-flight. This can happen when using
+  // overlays and page flipping without changing the primary plane.
+  if (in_flight_surfaces_.empty())
+    return;
   if (displayed_surface_)
     available_surfaces_.push_back(std::move(displayed_surface_));
   displayed_surface_ = std::move(in_flight_surfaces_.front());
   in_flight_surfaces_.pop_front();
+}
+
+uint32_t BufferQueue::GetCurrentTextureId() const {
+  // Return current surface texture if bound.
+  if (current_surface_)
+    return current_surface_->texture;
+
+  // Return in-flight or displayed surface texture if no surface is
+  // currently bound. This can happen when using overlays and surface
+  // damage is empty.
+  if (!in_flight_surfaces_.empty())
+    return in_flight_surfaces_.back()->texture;
+  if (displayed_surface_)
+    return displayed_surface_->texture;
+
+  return 0;
 }
 
 void BufferQueue::FreeAllSurfaces() {

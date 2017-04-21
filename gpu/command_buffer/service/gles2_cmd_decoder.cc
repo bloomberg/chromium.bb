@@ -3816,6 +3816,10 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       !workarounds().disable_software_to_accelerated_canvas_upgrade;
   caps.emulate_rgb_buffer_with_rgba =
       workarounds().disable_gl_rgb_format;
+  if (workarounds().disable_non_empty_post_sub_buffers_for_onscreen_surfaces &&
+      !surface_->IsOffscreen()) {
+    caps.disable_non_empty_post_sub_buffers = true;
+  }
 
   return caps;
 }

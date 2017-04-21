@@ -854,7 +854,7 @@
       "gl_vendor": "ARM.*",
       "gl_renderer": "Mali-T.*",
       "features": [
-        "disable_post_sub_buffers_for_onscreen_surfaces"
+        "disable_non_empty_post_sub_buffers_for_onscreen_surfaces"
       ]
     },
     {

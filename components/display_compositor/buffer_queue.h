@@ -60,12 +60,9 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
                float scale_factor,
                const gfx::ColorSpace& color_space,
                bool use_stencil);
-
   void RecreateBuffers();
+  uint32_t GetCurrentTextureId() const;
 
-  uint32_t current_texture_id() const {
-    return current_surface_ ? current_surface_->texture : 0;
-  }
   uint32_t fbo() const { return fbo_; }
   uint32_t internal_format() const { return internal_format_; }
 
