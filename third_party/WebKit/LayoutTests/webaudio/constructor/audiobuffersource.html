@@ -5,113 +5,71 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
-    <script src="audionodeoptions.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="new-audionodeoptions.js"></script>
   </head>
 
   <body>
     <script>
-      var context;
+      let context;
 
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
-      audit.defineTask("initialize", function (taskDone) {
-        Should("context = new OfflineAudioContext(...)", function () {
-          context = new OfflineAudioContext(1, 1, 48000);
-        }).notThrow();
-
-        taskDone();
+      audit.define('initialize', (task, should) => {
+        context = initializeContext(should);
+        task.done();
       });
 
-      audit.defineTask("invalid constructor", function (taskDone) {
-        var node;
-        var success = true;
-
-        success = Should("new AudioBufferSourceNode()", function () {
-          node = new AudioBufferSourceNode();
-        }).throw("TypeError");
-        success = Should("new AudioBufferSourceNode(1)", function () {
-          node = new AudioBufferSourceNode(1) && success;
-        }).throw("TypeError");
-        success = Should("new AudioBufferSourceNode(c, 42)", function () {
-          node = new AudioBufferSourceNode(context, 42) && success;
-        }).throw("TypeError");
-
-        Should("Invalid constructors", success)
-          .summarize(
-            "correctly threw errors",
-            "did not throw errors in all cases");
-
-        taskDone();
+      audit.define('invalid constructor', (task, should) => {
+        testInvalidConstructor(should, 'AudioBufferSourceNode', context);
+        task.done();
       });
 
-      audit.defineTask("default constructor", function (taskDone) {
-        var node;
-        var success = true;
+      audit.define('default constructor', (task, should) => {
+        let prefix = 'node0';
+        let node =
+            testDefaultConstructor(should, 'AudioBufferSourceNode', context, {
+              prefix: prefix,
+              numberOfInputs: 0,
+              numberOfOutputs: 1,
+              channelCount: 2,
+              channelCountMode: 'max',
+              channelInterpretation: 'speakers'
+            });
 
-        success = Should("node = new AudioBufferSourceNode(c)", function () {
-          node = new AudioBufferSourceNode(context);
-        }).notThrow() && success;
+        testDefaultAttributes(should, node, prefix, [
+          {name: 'buffer', value: null},
+          {name: 'detune', value: 0},
+          {name: 'loop', value: false},
+          {name: 'loopEnd', value: 0.0},
+          {name: 'loopStart', value: 0.0},
+          {name: 'playbackRate', value: 1.0},
+        ]);
 
-        success = Should("node instanceof AudioBufferSourceNode",
-          node instanceof AudioBufferSourceNode).beEqualTo(true) && success;
-
-        success = Should("node0.buffer === null", node.buffer === null)
-          .beEqualTo(true) && success;
-
-        // This node using the factory method is used as a reference for the
-        // defautl values.
-        var factoryNode = context.createBufferSource();
-
-        var testAttributes = ["buffer", "detune", "loop", "loopEnd", "loopStart",
-        "playbackRate"];
-
-        for (var index in testAttributes) {
-          var name = testAttributes[index];
-
-          if (node[name] instanceof AudioParam) {
-            success = Should("node0." + name + ".value", node[name].value)
-              .beEqualTo(factoryNode[name].value) && success;
-          } else {
-          success = Should("node0." + name, node[name])
-          .beEqualTo(factoryNode[name]) && success;
-          }
-        }
-
-        Should("AudioBufferSourceNode constructed", success)
-          .summarize("correctly", "incorrectly");
-
-        taskDone();
+        task.done();
       });
 
-      audit.defineTask("nullable buffer", function (taskDone) {
-        var node;
-        var success = true;
+      audit.define('nullable buffer', (task, should) => {
+        let node;
+        let options = {buffer: null};
 
-        var options = { buffer: null };
-      
-        success = Should("node1 = new AudioBufferSourceNode(c, " + JSON.stringify(options), function () {
-          node = new AudioBufferSourceNode(context, options);
-        }).notThrow();
+        should(
+            () => {
+              node = new AudioBufferSourceNode(context, options);
+            },
+            'node1 = new AudioBufferSourceNode(c, ' + JSON.stringify(options))
+            .notThrow();
 
-        success = Should("node1.buffer", node.buffer)
-          .beEqualTo(null);
+        should(node.buffer, 'node1.buffer').beEqualTo(null);
 
-        Should("Null buffer in constructor handled", success)
-          .summarize(
-            "correctly",
-            "incorrectly");
-
-        taskDone();
+        task.done();
       });
 
-      audit.defineTask("constructor options", function (taskDone) {
-        var node;
-        var success = true;
+      audit.define('constructor options', (task, should) => {
+        let node;
+        let buffer = context.createBuffer(2, 1000, context.sampleRate);
 
-        var buffer = context.createBuffer(2, 1000, context.sampleRate);
-
-        var options = {
+        let options = {
           buffer: buffer,
           detune: .5,
           loop: true,
@@ -120,15 +78,16 @@
           playbackRate: .75
         };
 
-        message = "node = new AudioBufferSourceNode(c, " + JSON.stringify(options) + ")";
+        let message = 'node = new AudioBufferSourceNode(c, ' +
+            JSON.stringify(options) + ')';
 
-        success = Should(message, function () {
+        should(() => {
           node = new AudioBufferSourceNode(context, options);
-        }).notThrow();
+        }, message).notThrow();
 
         // Use the factory method to create an equivalent node and compare the
         // results from the constructor against this node.
-        var factoryNode = context.createBufferSource();
+        let factoryNode = context.createBufferSource();
         factoryNode.buffer = options.buffer;
         factoryNode.detune.value = options.detune;
         factoryNode.loop = options.loop;
@@ -136,26 +95,21 @@
         factoryNode.loopStart = options.loopStart;
         factoryNode.playbackRate.value = options.playbackRate;
 
-        success = Should("node2.buffer === buffer", node.buffer === buffer)
-          .beEqualTo(true) && success;
-        success = Should("node2.detune.value", node.detune.value)
-          .beEqualTo(factoryNode.detune.value) && success;
-        success = Should("node2.loop", node.loop)
-          .beEqualTo(factoryNode.loop) && success;
-        success = Should("node2.loopEnd", node.loopEnd)
-          .beEqualTo(factoryNode.loopEnd) && success;
-        success = Should("node2.loopStart", node.loopStart)
-          .beEqualTo(factoryNode.loopStart) && success;
-        success = Should("node2.playbackRate.value", node.playbackRate.value)
-          .beEqualTo(factoryNode.playbackRate.value) && success;
+        should(node.buffer === buffer, 'node2.buffer === buffer')
+            .beEqualTo(true);
+        should(node.detune.value, 'node2.detune.value')
+            .beEqualTo(factoryNode.detune.value);
+        should(node.loop, 'node2.loop').beEqualTo(factoryNode.loop);
+        should(node.loopEnd, 'node2.loopEnd').beEqualTo(factoryNode.loopEnd);
+        should(node.loopStart, 'node2.loopStart')
+            .beEqualTo(factoryNode.loopStart);
+        should(node.playbackRate.value, 'node2.playbackRate.value')
+            .beEqualTo(factoryNode.playbackRate.value);
 
-        Should("AudioBufferSource with options cosntructed", success)
-          .summarize("correctly", "incorrectly");
-        
-        taskDone();
+        task.done();
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
