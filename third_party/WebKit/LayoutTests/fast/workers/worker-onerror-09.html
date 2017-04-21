@@ -17,7 +17,7 @@
         description("This tests that unhandled exceptions in postMessage() are delivered to 'worker.onerror'.");
 
         checkErrorEventInHandler({
-            message: "Uncaught TypeError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope': The 2nd argument is neither an array, nor does it have indexed properties.",
+            message: "Uncaught TypeError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope': The provided value cannot be converted to a sequence.",
             filename: "[blob: URL]",
             lineno: 3,
             colno: 9,

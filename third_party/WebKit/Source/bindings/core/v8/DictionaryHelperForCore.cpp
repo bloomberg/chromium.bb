@@ -27,6 +27,8 @@
 #include "bindings/core/v8/DictionaryHelperForBindings.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Element.h"
@@ -273,8 +275,9 @@ CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
                    v8::Uint32::New(dictionary.GetIsolate(), i))
              .ToLocal(&v8_indexed_value))
       return false;
-    Vector<String> indexed_value = ToImplArray<Vector<String>>(
-        v8_indexed_value, i, dictionary.GetIsolate(), exception_state);
+    Vector<String> indexed_value =
+        NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
+            dictionary.GetIsolate(), v8_indexed_value, exception_state);
     if (exception_state.HadException())
       return false;
     value.push_back(indexed_value);

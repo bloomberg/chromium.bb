@@ -6,6 +6,8 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptCustomElementDefinition.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -128,7 +130,7 @@ bool ScriptCustomElementDefinitionBuilder::RetrieveObservedAttributes() {
     return false;
   if (observed_attributes_value->IsUndefined())
     return true;
-  Vector<AtomicString> list = ToImplSequence<Vector<AtomicString>>(
+  Vector<String> list = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
       script_state_->GetIsolate(), observed_attributes_value, exception_state_);
   if (exception_state_.HadException())
     return false;
@@ -136,7 +138,7 @@ bool ScriptCustomElementDefinitionBuilder::RetrieveObservedAttributes() {
     return true;
   observed_attributes_.ReserveCapacityForSize(list.size());
   for (const auto& attribute : list)
-    observed_attributes_.insert(attribute);
+    observed_attributes_.insert(AtomicString(attribute));
   return true;
 }
 

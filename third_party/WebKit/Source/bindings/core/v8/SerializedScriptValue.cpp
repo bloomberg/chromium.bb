@@ -34,6 +34,8 @@
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializationTag.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
@@ -373,25 +375,15 @@ bool SerializedScriptValue::ExtractTransferables(
   if (value.IsEmpty() || value->IsUndefined())
     return true;
 
-  uint32_t length = 0;
-  if (value->IsArray()) {
-    v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(value);
-    length = array->Length();
-  } else if (!ToV8Sequence(value, length, isolate, exception_state)) {
-    if (!exception_state.HadException())
-      exception_state.ThrowTypeError(
-          ExceptionMessages::NotAnArrayTypeArgumentOrValue(argument_index + 1));
+  Vector<v8::Local<v8::Value>> transferable_array =
+      NativeValueTraits<IDLSequence<v8::Local<v8::Value>>>::NativeValue(
+          isolate, value, exception_state);
+  if (exception_state.HadException())
     return false;
-  }
-
-  v8::Local<v8::Object> transferable_array = v8::Local<v8::Object>::Cast(value);
 
   // Validate the passed array of transferables.
-  for (unsigned i = 0; i < length; ++i) {
-    v8::Local<v8::Value> transferable_object;
-    if (!transferable_array->Get(isolate->GetCurrentContext(), i)
-             .ToLocal(&transferable_object))
-      return false;
+  uint32_t i = 0;
+  for (const auto& transferable_object : transferable_array) {
     // Validation of non-null objects, per HTML5 spec 10.3.3.
     if (IsUndefinedOrNull(transferable_object)) {
       exception_state.ThrowTypeError(
@@ -459,6 +451,7 @@ bool SerializedScriptValue::ExtractTransferables(
                                      " does not have a transferable type.");
       return false;
     }
+    i++;
   }
   return true;
 }

@@ -24,7 +24,7 @@ shouldThrow('channel.port1.postMessage("duplicate port", [channel3.port1, channe
 // Should be OK to send channel3.port1 (should not have been disentangled by the previous failed calls).
 channel.port1.postMessage("entangled ports", [channel3.port1, channel3.port2]);
 
-shouldThrow('channel.port1.postMessage("notAnArray", channel3.port1)', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': The 2nd argument is neither an array, nor does it have indexed properties."');
+shouldThrow('channel.port1.postMessage("notAnArray", channel3.port1)', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': Iterator getter is not callable."');
 shouldThrow('channel.port1.postMessage("notASequence", [{length: 3}])', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 0 does not have a transferable type."');
 var arrayBuffer = new ArrayBuffer(2);
 shouldThrow('channel.port1.postMessage("duplicate buffer", [arrayBuffer, arrayBuffer])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': ArrayBuffer at index 1 is a duplicate of an earlier ArrayBuffer."');
@@ -33,7 +33,7 @@ shouldThrow('channel.port1.postMessage("duplicate buffer", [arrayBuffer, arrayBu
 // entries).
 var largePortArray = [];
 largePortArray[1234567890] = channel4.port1;
-shouldThrow('channel.port1.postMessage("largeSequence", largePortArray)', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 0 is an untransferable \'undefined\' value."');
+shouldThrow('channel.port1.postMessage("largeSequence", largePortArray)', '"RangeError: Failed to execute \'postMessage\' on \'MessagePort\': Array length exceeds supported limit."');
 
 channel.port1.postMessage("done");
 

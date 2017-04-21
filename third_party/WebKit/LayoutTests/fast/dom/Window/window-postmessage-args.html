@@ -62,7 +62,7 @@ document.getElementById("description").innerHTML = "Test that the second argumen
 tryPostMessage('1', '*', 1, true);
 tryPostMessage('2', '*', 'c', true);
 tryPostMessage('3', '*', { x: 1 }, true);
-tryPostMessage('4', '*', window);  // Passes because window has a "length" attribute of value '0', so it looks like an array
+tryPostMessage('4', '*', window, true);
 tryPostMessage('5', '*', undefined);
 tryPostMessage('5a', '*', null, true);
 tryPostMessage('6', '*', void 0);

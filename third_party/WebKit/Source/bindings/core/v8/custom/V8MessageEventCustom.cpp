@@ -30,6 +30,8 @@
 
 #include "bindings/core/v8/V8MessageEvent.h"
 
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
@@ -119,9 +121,8 @@ void V8MessageEvent::initMessageEventMethodCustom(
   const int kPortArrayIndex = 7;
   if (!IsUndefinedOrNull(info[kPortArrayIndex])) {
     port_array = new MessagePortArray;
-    *port_array = ToMemberNativeArray<MessagePort>(
-        info[kPortArrayIndex], kPortArrayIndex + 1, info.GetIsolate(),
-        exception_state);
+    *port_array = NativeValueTraits<IDLSequence<MessagePort>>::NativeValue(
+        info.GetIsolate(), info[kPortArrayIndex], exception_state);
     if (exception_state.HadException())
       return;
   }
