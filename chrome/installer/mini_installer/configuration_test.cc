@@ -178,6 +178,10 @@ TEST_F(MiniInstallerConfigurationTest, IsUpdatingSystemMulti) {
 TEST_F(MiniInstallerConfigurationTest, ChromeAppGuid) {
   EXPECT_STREQ(google_update::kAppGuid,
                TestConfiguration(L"spam.exe").chrome_app_guid());
+  EXPECT_STREQ(google_update::kBetaAppGuid,
+               TestConfiguration(L"spam.exe --chrome-beta").chrome_app_guid());
+  EXPECT_STREQ(google_update::kDevAppGuid,
+               TestConfiguration(L"spam.exe --chrome-dev").chrome_app_guid());
   EXPECT_STREQ(google_update::kSxSAppGuid,
                TestConfiguration(L"spam.exe --chrome-sxs").chrome_app_guid());
 }

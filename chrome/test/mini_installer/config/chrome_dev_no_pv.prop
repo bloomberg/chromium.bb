@@ -1,7 +1,7 @@
 {
   "Condition": "'$BRAND' == 'Google Chrome'",
   "RegistryEntries": {
-    "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY_SXS": {
+    "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY_DEV": {
       "exists": "optional",
       "values": {
         "pv": {}

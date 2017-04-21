@@ -73,6 +73,42 @@ constexpr TestData kTestData[] = {
         L"beta",                       // Expect beta channel.
     },
     {
+        L"setup.exe --chrome-beta",  // User-level, secondary SxS beta mode.
+        L"",                         // New install.
+        L"",                         // Unused.
+        L"",                         // Unused.
+        install_static::BETA_INDEX,  // Expect SxS beta mode.
+        false,                       // Expect user-level.
+        L"beta",                     // Expect beta channel.
+    },
+    {
+        L"setup.exe --chrome-beta",    // User-level, secondary SxS beta mode.
+        L"--uninstall --chrome-beta",  // Update.
+        L"",                           // Unused.
+        L"",                           // Unused.
+        install_static::BETA_INDEX,    // Expect SxS beta mode.
+        false,                         // Expect user-level.
+        L"beta",                       // Expect beta channel.
+    },
+    {
+        L"setup.exe --chrome-dev",  // User-level, secondary SxS dev mode.
+        L"",                        // New install.
+        L"",                        // Unused.
+        L"",                        // Unused.
+        install_static::DEV_INDEX,  // Expect SxS dev mode.
+        false,                      // Expect user-level.
+        L"dev",                     // Expect dev channel.
+    },
+    {
+        L"setup.exe --chrome-dev",    // User-level, secondary SxS dev mode.
+        L"--uninstall --chrome-dev",  // Update.
+        L"",                          // Unused.
+        L"",                          // Unused.
+        install_static::DEV_INDEX,    // Expect SxS dev mode.
+        false,                        // Expect user-level.
+        L"dev",                       // Expect dev channel.
+    },
+    {
         L"setup.exe --chrome-sxs",     // User-level, secondary SxS canary mode.
         L"",                           // New install.
         L"",                           // Unused.
@@ -128,6 +164,46 @@ constexpr TestData kTestData[] = {
         install_static::STABLE_INDEX,  // Expect primary mode.
         true,                          // Expect system-level.
         L"beta",                       // Expect beta channel.
+    },
+    {
+        L"setup.exe --system-level --chrome-beta",  // User-level, secondary SxS
+                                                    // beta mode.
+        L"",                                        // New install.
+        L"",                                        // Unused.
+        L"",                                        // Unused.
+        install_static::BETA_INDEX,                 // Expect SxS beta mode.
+        true,                                       // Expect user-level.
+        L"beta",                                    // Expect beta channel.
+    },
+    {
+        L"setup.exe --system-level --chrome-beta",  // User-level, secondary SxS
+                                                    // beta mode.
+        L"--uninstall --system-level --chrome-beta",  // Update.
+        L"",                                          // Unused.
+        L"",                                          // Unused.
+        install_static::BETA_INDEX,                   // Expect SxS beta mode.
+        true,                                         // Expect user-level.
+        L"beta",                                      // Expect beta channel.
+    },
+    {
+        L"setup.exe --system-level --chrome-dev",  // User-level, secondary SxS
+                                                   // dev mode.
+        L"",                                       // New install.
+        L"",                                       // Unused.
+        L"",                                       // Unused.
+        install_static::DEV_INDEX,                 // Expect SxS dev mode.
+        true,                                      // Expect user-level.
+        L"dev",                                    // Expect dev channel.
+    },
+    {
+        L"setup.exe --system-level --chrome-dev",  // User-level, secondary SxS
+                                                   // dev mode.
+        L"--uninstall --system-level --chrome-dev",  // Update.
+        L"",                                         // Unused.
+        L"",                                         // Unused.
+        install_static::DEV_INDEX,                   // Expect SxS dev mode.
+        true,                                        // Expect user-level.
+        L"dev",                                      // Expect dev channel.
     },
 };
 #else   // GOOGLE_CHROME_BUILD

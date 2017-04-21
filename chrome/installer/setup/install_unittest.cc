@@ -102,6 +102,28 @@ constexpr char kExpectedPrimaryManifest[] =
     "</Application>\r\n";
 
 #if defined(GOOGLE_CHROME_BUILD)
+constexpr char kExpectedBetaManifest[] =
+    "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
+    "  <VisualElements\r\n"
+    "      ShowNameOnSquare150x150Logo='on'\r\n"
+    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoBeta.png'\r\n"
+    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
+    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
+    "      ForegroundText='light'\r\n"
+    "      BackgroundColor='#212121'/>\r\n"
+    "</Application>\r\n";
+
+constexpr char kExpectedDevManifest[] =
+    "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
+    "  <VisualElements\r\n"
+    "      ShowNameOnSquare150x150Logo='on'\r\n"
+    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoDev.png'\r\n"
+    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
+    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
+    "      ForegroundText='light'\r\n"
+    "      BackgroundColor='#212121'/>\r\n"
+    "</Application>\r\n";
+
 constexpr char kExpectedCanaryManifest[] =
     "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
     "  <VisualElements\r\n"
@@ -118,6 +140,16 @@ INSTANTIATE_TEST_CASE_P(
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::STABLE_INDEX),
                      testing::Values(kExpectedPrimaryManifest)));
+INSTANTIATE_TEST_CASE_P(
+    BetaChrome,
+    CreateVisualElementsManifestTest,
+    testing::Combine(testing::Values(install_static::BETA_INDEX),
+                     testing::Values(kExpectedBetaManifest)));
+INSTANTIATE_TEST_CASE_P(
+    DevChrome,
+    CreateVisualElementsManifestTest,
+    testing::Combine(testing::Values(install_static::DEV_INDEX),
+                     testing::Values(kExpectedDevManifest)));
 INSTANTIATE_TEST_CASE_P(
     CanaryChrome,
     CreateVisualElementsManifestTest,

@@ -44,15 +44,12 @@ sys.path.append(os.path.join(BASEDIR, '../../../../tools/python'))
 from grit.extern import tclib
 
 # The IDs of strings we want to import from the .grd files and include in
-# setup.exe's resources.
+# setup.exe's resources. These strings are universal for all brands.
 STRING_IDS = [
   'IDS_ABOUT_VERSION_COMPANY_NAME',
   'IDS_APP_SHORTCUTS_SUBDIR_NAME',
-  'IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY',
   'IDS_INBOUND_MDNS_RULE_DESCRIPTION',
-  'IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY',
   'IDS_INBOUND_MDNS_RULE_NAME',
-  'IDS_INBOUND_MDNS_RULE_NAME_CANARY',
   'IDS_INSTALL_EXISTING_VERSION_LAUNCHED',
   'IDS_INSTALL_FAILED',
   'IDS_INSTALL_HIGHER_VERSION',
@@ -69,7 +66,6 @@ STRING_IDS = [
   'IDS_SETUP_PATCH_FAILED',
   'IDS_SHORTCUT_NEW_WINDOW',
   'IDS_SHORTCUT_TOOLTIP',
-  'IDS_SXS_SHORTCUT_NAME',
 ]
 
 # Certain strings are conditional on a brand's install mode (see
@@ -106,6 +102,8 @@ MODE_SPECIFIC_STRINGS = {
   'IDS_APP_SHORTCUTS_SUBDIR_NAME': {
     'google_chrome': [
       'IDS_APP_SHORTCUTS_SUBDIR_NAME',
+      'IDS_APP_SHORTCUTS_SUBDIR_NAME_BETA',
+      'IDS_APP_SHORTCUTS_SUBDIR_NAME_DEV',
       'IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY',
     ],
     'chromium': [
@@ -115,6 +113,8 @@ MODE_SPECIFIC_STRINGS = {
   'IDS_INBOUND_MDNS_RULE_DESCRIPTION': {
     'google_chrome': [
       'IDS_INBOUND_MDNS_RULE_DESCRIPTION',
+      'IDS_INBOUND_MDNS_RULE_DESCRIPTION_BETA',
+      'IDS_INBOUND_MDNS_RULE_DESCRIPTION_DEV',
       'IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY',
     ],
     'chromium': [
@@ -124,6 +124,8 @@ MODE_SPECIFIC_STRINGS = {
   'IDS_INBOUND_MDNS_RULE_NAME': {
     'google_chrome': [
       'IDS_INBOUND_MDNS_RULE_NAME',
+      'IDS_INBOUND_MDNS_RULE_NAME_BETA',
+      'IDS_INBOUND_MDNS_RULE_NAME_DEV',
       'IDS_INBOUND_MDNS_RULE_NAME_CANARY',
     ],
     'chromium': [
@@ -137,6 +139,8 @@ MODE_SPECIFIC_STRINGS = {
   'IDS_PRODUCT_NAME': {
     'google_chrome': [
       'IDS_PRODUCT_NAME',
+      'IDS_SHORTCUT_NAME_BETA',
+      'IDS_SHORTCUT_NAME_DEV',
       'IDS_SXS_SHORTCUT_NAME',
     ],
     'chromium': [
@@ -157,17 +161,17 @@ class GrdHandler(sax.handler.ContentHandler):
   Attributes:
     messages: A dict mapping string identifiers to their corresponding messages.
   """
-  def __init__(self, string_ids):
+  def __init__(self, string_id_set):
     """Constructs a handler that reads selected strings from a .grd file.
 
     The dict attribute |messages| is populated with the strings that are read.
 
     Args:
-      string_ids: A list of message identifiers to extract.
+      string_id_set: A set of message identifiers to extract.
     """
     sax.handler.ContentHandler.__init__(self)
     self.messages = {}
-    self.__id_set = set(string_ids)
+    self.__id_set = string_id_set
     self.__message_name = None
     self.__element_stack = []
     self.__text_scraps = []
@@ -306,9 +310,10 @@ class StringRcMaker(object):
     self.brand = brand
 
   def MakeFiles(self):
-    translated_strings = self.__ReadSourceAndTranslatedStrings()
+    string_id_set = self.__BuildStringIds()
+    translated_strings = self.__ReadSourceAndTranslatedStrings(string_id_set)
     self.__WriteRCFile(translated_strings)
-    self.__WriteHeaderFile(translated_strings)
+    self.__WriteHeaderFile(string_id_set, translated_strings)
 
   class __TranslationData(object):
     """A container of information about a single translation."""
@@ -322,7 +327,21 @@ class StringRcMaker(object):
       id_result = cmp(self.resource_id_str, other.resource_id_str)
       return cmp(self.language, other.language) if id_result == 0 else id_result
 
-  def __ReadSourceAndTranslatedStrings(self):
+  def __BuildStringIds(self):
+    """Returns the set of string IDs to extract from the grd and xtb files."""
+    # Start with the strings that apply to all brands.
+    string_id_set = set(STRING_IDS)
+    # Add in the strings for the current brand.
+    for string_id, brands in MODE_SPECIFIC_STRINGS.iteritems():
+      brand_strings = brands.get(self.brand)
+      if not brand_strings:
+        raise exceptions.RuntimeError(
+          'No strings declared for brand \'%s\' in MODE_SPECIFIC_STRINGS for '
+          'message %s' % (self.brand, string_id))
+      string_id_set.update(brand_strings)
+    return string_id_set
+
+  def __ReadSourceAndTranslatedStrings(self, string_id_set):
     """Reads the source strings and translations from all inputs."""
     translated_strings = []
     for grd_file, xtb_dir in self.inputs:
@@ -332,18 +351,20 @@ class StringRcMaker(object):
       xtb_pattern = os.path.join(os.path.dirname(grd_file), xtb_dir,
                                  '%s*.xtb' % source_name)
       translated_strings.extend(
-        self.__ReadSourceAndTranslationsFrom(grd_file, glob.glob(xtb_pattern)))
+        self.__ReadSourceAndTranslationsFrom(string_id_set, grd_file,
+                                             glob.glob(xtb_pattern)))
     translated_strings.sort()
     return translated_strings
 
-  def __ReadSourceAndTranslationsFrom(self, grd_file, xtb_files):
+  def __ReadSourceAndTranslationsFrom(self, string_id_set, grd_file, xtb_files):
     """Reads source strings and translations for a .grd file.
 
     Reads the source strings and all available translations for the messages
-    identified by STRING_IDS. The source string is used where translations are
-    missing.
+    identified by string_id_set. The source string is used where translations
+    are missing.
 
     Args:
+      string_id_set: The identifiers of the strings to read.
       grd_file: Path to a .grd file.
       xtb_files: List of paths to .xtb files.
 
@@ -353,7 +374,7 @@ class StringRcMaker(object):
     sax_parser = sax.make_parser()
 
     # Read the source (en-US) string from the .grd file.
-    grd_handler = GrdHandler(STRING_IDS)
+    grd_handler = GrdHandler(string_id_set)
     sax_parser.setContentHandler(grd_handler)
     sax_parser.parse(grd_file)
     source_strings = grd_handler.messages
@@ -417,7 +438,7 @@ class StringRcMaker(object):
                        escaped_text))
       outfile.write(FOOTER_TEXT)
 
-  def __WriteHeaderFile(self, translated_strings):
+  def __WriteHeaderFile(self, string_id_set, translated_strings):
     """Writes a .h file with resource ids."""
     # TODO(grt): Stream the lines to the file rather than building this giant
     # list of lines first.
@@ -461,7 +482,7 @@ class StringRcMaker(object):
         % (string_id, ', '.join([ ('%s_BASE' % s) for s in brand_strings])))
 
     # Write out base ID values.
-    for string_id in STRING_IDS:
+    for string_id in sorted(string_id_set):
       lines.append('#define %s_BASE %s_%s' % (string_id,
                                               string_id,
                                               translated_strings[0].language))
