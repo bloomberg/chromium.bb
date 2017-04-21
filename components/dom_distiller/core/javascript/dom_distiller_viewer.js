@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This variable will be changed by iOS scripts.
-var distiller_on_ios = false;
+// On iOS, |distiller_on_ios| was set to true before this script.
+var distiller_on_ios;
+if (typeof distiller_on_ios === 'undefined') {distiller_on_ios = false;}
 
 function addToPage(html) {
   var div = document.createElement('div');
@@ -111,6 +112,20 @@ function useFontScaling(scaling) {
   pincher.useFontScaling(scaling);
 }
 
+function maybeSetWebFont() {
+  // On iOS, the web fonts block the rendering until the resources are
+  // fetched, which can take a long time on slow networks.
+  // In Blink, it times out after 3 seconds and uses fallback fonts.
+  // See crbug.com/711650
+  if (distiller_on_ios) return;
+
+  var e = document.createElement('link');
+  e.href = 'https://fonts.googleapis.com/css?family=Roboto';
+  e.rel = 'stylesheet';
+  e.type = 'text/css';
+  document.head.appendChild(e);
+}
+
 // Add a listener to the "View Original" link to report opt-outs.
 document.getElementById('closeReaderView').addEventListener('click',
     function(e) {
@@ -120,6 +135,7 @@ document.getElementById('closeReaderView').addEventListener('click',
     }, true);
 
 updateToolbarColor();
+maybeSetWebFont();
 
 var pincher = (function() {
   'use strict';
