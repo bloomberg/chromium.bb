@@ -11,9 +11,9 @@
 
 #include "ui/base/ui_base_export.h"
 
-#if !defined(MAC_OS_X_VERSION_10_12_1)
-
 #pragma clang assume_nonnull begin
+
+#if !defined(MAC_OS_X_VERSION_10_12_1)
 
 @class NSTouchBar, NSTouchBarItem;
 @protocol NSTouchBarDelegate;
