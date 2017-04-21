@@ -1796,11 +1796,14 @@
             ],
             "experiments": [
                 {
-                    "name": "Beta_Android_PhysWeb_QuerySuggest_Experiment",
+                    "name": "Dev_Android_ClipboardProvider_Enabled",
                     "params": {
                         "PhysicalWebAfterTyping": "true",
                         "PhysicalWebZeroSuggest": "true"
-                    }
+                    },
+                    "enable_features": [
+                        "OmniboxEnableClipboardProvider"
+                    ]
                 }
             ]
         }
