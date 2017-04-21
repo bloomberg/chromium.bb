@@ -3418,6 +3418,7 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
+        "hwqual": false,
         "image_test": false,
         "images": [
             "base"
@@ -3556,6 +3557,7 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
+        "hwqual": false,
         "image_test": false,
         "images": [
             "base"
