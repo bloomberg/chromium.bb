@@ -64,11 +64,14 @@ Determine the cause of binary size bloat for a patch.
 
 ## Example Usage:
 
-    # Sync, build, and diff for HEAD and HEAD^.
-    tools/binary_size/diagnose_apk_bloat.py
+    # Build and diff HEAD^ and HEAD.
+    tools/binary_size/diagnose_apk_bloat.py HEAD
 
-    # Diff using downloaded build artifacts.
-    tools/binary_size/diagnose_apk_bloat.py --cloud --rev-with-patch REV
+    # Diff OTHERREV and REV using downloaded build artifacts.
+    tools/binary_size/diagnose_apk_bloat.py REV --reference-rev OTHERREV --cloud
+
+    # Build and diff contiguous revs in range OTHERREV..REV for src/v8.
+    tools/binary_size/diagnose_apk_bloat.py REV --reference-rev OTHERREV --subrepo v8 --all
 
     # Display detailed usage info (there are many options).
     tools/binary_size/diagnose_apk_bloat.py -h
@@ -108,5 +111,4 @@ Tracked in https://crbug.com/681694
 1. More `diagnose_apk_bloat.py` features:
 
   * Add more diff types (pak files, Java symbols, native symbols).
-  * Support performing diffs on all revs in a given range.
   * Support local builds for revs before supersize existed.
