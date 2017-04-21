@@ -24,6 +24,7 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/scroll/ScrollerSizeMetrics.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -197,16 +198,20 @@ void ScrollManager::CustomizedScroll(const Node& start_node,
   scroll_state.distributeToScrollChainDescendant();
 }
 
-uint32_t ScrollManager::ComputeNonCompositedMainThreadScrollingReasons() {
+void ScrollManager::ComputeScrollRelatedMetrics(
+    uint32_t* non_composited_main_thread_scrolling_reasons,
+    int* scroller_size) {
   // When scrolling on the main thread, the scrollableArea may or may not be
   // composited. Either way, we have recorded either the reasons stored in
   // its layer or the reason NonFastScrollableRegion from the compositor
   // side. Here we record scrolls that occurred on main thread due to a
   // non-composited scroller.
-  if (!scroll_gesture_handling_node_->GetLayoutObject() || !frame_->View())
-    return 0;
+  if (!scroll_gesture_handling_node_->GetLayoutObject())
+    return;
 
-  uint32_t non_composited_main_thread_scrolling_reasons = 0;
+  // When recording the size of the scroller, we only need to record the
+  // first scrollable area that we find during the walk up.
+  bool set_scroller_size = false;
 
   for (auto* cur_box =
            scroll_gesture_handling_node_->GetLayoutObject()->EnclosingBox();
@@ -216,43 +221,65 @@ uint32_t ScrollManager::ComputeNonCompositedMainThreadScrollingReasons() {
     if (!scrollable_area || !scrollable_area->ScrollsOverflow())
       continue;
 
+    if (!set_scroller_size && !cur_box->Layer()->IsRootLayer()) {
+      *scroller_size = scrollable_area->VisibleContentRect().Width() *
+                       scrollable_area->VisibleContentRect().Height();
+      set_scroller_size = true;
+    }
+
     DCHECK(!scrollable_area->UsesCompositedScrolling() ||
            !scrollable_area->GetNonCompositedMainThreadScrollingReasons());
-    non_composited_main_thread_scrolling_reasons |=
+    *non_composited_main_thread_scrolling_reasons |=
         scrollable_area->GetNonCompositedMainThreadScrollingReasons();
   }
-
-  return non_composited_main_thread_scrolling_reasons;
 }
 
-void ScrollManager::RecordNonCompositedMainThreadScrollingReasons(
-    const WebGestureDevice device) {
+void ScrollManager::RecordScrollRelatedMetrics(const WebGestureDevice device) {
   if (device != kWebGestureDeviceTouchpad &&
       device != kWebGestureDeviceTouchscreen) {
     return;
   }
 
-  uint32_t reasons = ComputeNonCompositedMainThreadScrollingReasons();
-  if (!reasons)
-    return;
-  DCHECK(MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
+  int scroller_size = -1;
+  uint32_t non_composited_main_thread_scrolling_reasons = 0;
+  ComputeScrollRelatedMetrics(&non_composited_main_thread_scrolling_reasons,
+                              &scroller_size);
+  if (scroller_size >= 0) {
+    if (device == kWebGestureDeviceTouchpad) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, size_histogram_wheel,
+          ("Event.Scroll.ScrollerSize.OnScroll_Wheel", 1,
+           kScrollerSizeLargestBucket, kScrollerSizeBucketCount));
+      size_histogram_wheel.Count(scroller_size);
+    } else {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, size_histogram_touch,
+          ("Event.Scroll.ScrollerSize.OnScroll_Touch", 1,
+           kScrollerSizeLargestBucket, kScrollerSizeBucketCount));
+      size_histogram_touch.Count(scroller_size);
+    }
+  }
 
-  uint32_t main_thread_scrolling_reason_enum_max =
-      MainThreadScrollingReason::kMainThreadScrollingReasonCount + 1;
-  for (uint32_t i = MainThreadScrollingReason::kNonCompositedReasonsFirst;
-       i <= MainThreadScrollingReason::kNonCompositedReasonsLast; ++i) {
-    unsigned val = 1 << i;
-    if (reasons & val) {
-      if (device == kWebGestureDeviceTouchscreen) {
-        DEFINE_STATIC_LOCAL(EnumerationHistogram, touch_histogram,
-                            ("Renderer4.MainThreadGestureScrollReason",
-                             main_thread_scrolling_reason_enum_max));
-        touch_histogram.Count(i + 1);
-      } else {
-        DEFINE_STATIC_LOCAL(EnumerationHistogram, wheel_histogram,
-                            ("Renderer4.MainThreadWheelScrollReason",
-                             main_thread_scrolling_reason_enum_max));
-        wheel_histogram.Count(i + 1);
+  if (non_composited_main_thread_scrolling_reasons) {
+    DCHECK(MainThreadScrollingReason::HasNonCompositedScrollReasons(
+        non_composited_main_thread_scrolling_reasons));
+    uint32_t main_thread_scrolling_reason_enum_max =
+        MainThreadScrollingReason::kMainThreadScrollingReasonCount + 1;
+    for (uint32_t i = MainThreadScrollingReason::kNonCompositedReasonsFirst;
+         i <= MainThreadScrollingReason::kNonCompositedReasonsLast; ++i) {
+      unsigned val = 1 << i;
+      if (non_composited_main_thread_scrolling_reasons & val) {
+        if (device == kWebGestureDeviceTouchscreen) {
+          DEFINE_STATIC_LOCAL(EnumerationHistogram, touch_histogram,
+                              ("Renderer4.MainThreadGestureScrollReason",
+                               main_thread_scrolling_reason_enum_max));
+          touch_histogram.Count(i + 1);
+        } else {
+          DEFINE_STATIC_LOCAL(EnumerationHistogram, wheel_histogram,
+                              ("Renderer4.MainThreadWheelScrollReason",
+                               main_thread_scrolling_reason_enum_max));
+          wheel_histogram.Count(i + 1);
+        }
       }
     }
   }
@@ -283,7 +310,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
   PassScrollGestureEvent(gesture_event,
                          scroll_gesture_handling_node_->GetLayoutObject());
 
-  RecordNonCompositedMainThreadScrollingReasons(gesture_event.source_device);
+  RecordScrollRelatedMetrics(gesture_event.source_device);
 
   current_scroll_chain_.clear();
   std::unique_ptr<ScrollStateData> scroll_state_data =

@@ -36,6 +36,7 @@
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar_animation_controller.h"
+#include "cc/input/scroller_size_metrics.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
@@ -2768,6 +2769,22 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     scrolling_node = FindScrollNodeForDeviceViewportPoint(
         device_viewport_point, type, layer_impl, &scroll_on_main_thread,
         &scroll_status.main_thread_scrolling_reasons);
+    if (!scroll_on_main_thread && scrolling_node &&
+        (settings_.is_layer_tree_for_subframe ||
+         (!scrolling_node->scrolls_outer_viewport &&
+          !scrolling_node->scrolls_inner_viewport))) {
+      if (IsWheelBasedScroll(type)) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Event.Scroll.ScrollerSize.OnScroll_Wheel",
+            scrolling_node->scroll_clip_layer_bounds.GetArea(), 1,
+            kScrollerSizeLargestBucket, kScrollerSizeBucketCount);
+      } else {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Event.Scroll.ScrollerSize.OnScroll_Touch",
+            scrolling_node->scroll_clip_layer_bounds.GetArea(), 1,
+            kScrollerSizeLargestBucket, kScrollerSizeBucketCount);
+      }
+    }
   }
 
   if (scroll_on_main_thread) {

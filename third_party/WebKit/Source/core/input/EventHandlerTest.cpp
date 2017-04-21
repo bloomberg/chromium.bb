@@ -20,6 +20,7 @@
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
+#include "platform/scroll/ScrollerSizeMetrics.h"
 #include "platform/testing/HistogramTester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,8 +53,8 @@ class EventHandlerTest : public ::testing::Test {
   FrameSelection& Selection() const {
     return GetDocument().GetFrame()->Selection();
   }
-
   void SetHtmlInnerHTML(const char* html_content);
+  void Scroll(Element*, const WebGestureDevice);
 
  protected:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
@@ -62,43 +63,7 @@ class EventHandlerTest : public ::testing::Test {
 class NonCompositedMainThreadScrollingReasonRecordTest
     : public EventHandlerTest {
  protected:
-  class ScrollBeginEventBuilder : public WebGestureEvent {
-   public:
-    ScrollBeginEventBuilder(IntPoint position,
-                            FloatPoint delta,
-                            WebGestureDevice device)
-        : WebGestureEvent() {
-      type_ = WebInputEvent::kGestureScrollBegin;
-      x = global_x = position.X();
-      y = global_y = position.Y();
-      data.scroll_begin.delta_y_hint = delta.Y();
-      source_device = device;
-      frame_scale_ = 1;
-    }
-  };
-
-  class ScrollUpdateEventBuilder : public WebGestureEvent {
-   public:
-    ScrollUpdateEventBuilder() : WebGestureEvent() {
-      type_ = WebInputEvent::kGestureScrollUpdate;
-      data.scroll_update.delta_x = 0.0f;
-      data.scroll_update.delta_y = 1.0f;
-      data.scroll_update.velocity_x = 0;
-      data.scroll_update.velocity_y = 1;
-      frame_scale_ = 1;
-    }
-  };
-
-  class ScrollEndEventBuilder : public WebGestureEvent {
-   public:
-    ScrollEndEventBuilder() : WebGestureEvent() {
-      type_ = WebInputEvent::kGestureScrollEnd;
-      frame_scale_ = 1;
-    }
-  };
-
   int GetBucketIndex(uint32_t reason);
-  void Scroll(Element*, const WebGestureDevice);
 };
 
 class TapEventBuilder : public WebGestureEvent {
@@ -146,6 +111,41 @@ class MousePressEventBuilder : public WebMouseEvent {
   }
 };
 
+class ScrollBeginEventBuilder : public WebGestureEvent {
+ public:
+  ScrollBeginEventBuilder(IntPoint position,
+                          FloatPoint delta,
+                          WebGestureDevice device)
+      : WebGestureEvent() {
+    type_ = WebInputEvent::kGestureScrollBegin;
+    x = global_x = position.X();
+    y = global_y = position.Y();
+    data.scroll_begin.delta_y_hint = delta.Y();
+    source_device = device;
+    frame_scale_ = 1;
+  }
+};
+
+class ScrollUpdateEventBuilder : public WebGestureEvent {
+ public:
+  ScrollUpdateEventBuilder() : WebGestureEvent() {
+    type_ = WebInputEvent::kGestureScrollUpdate;
+    data.scroll_update.delta_x = 0.0f;
+    data.scroll_update.delta_y = 1.0f;
+    data.scroll_update.velocity_x = 0;
+    data.scroll_update.velocity_y = 1;
+    frame_scale_ = 1;
+  }
+};
+
+class ScrollEndEventBuilder : public WebGestureEvent {
+ public:
+  ScrollEndEventBuilder() : WebGestureEvent() {
+    type_ = WebInputEvent::kGestureScrollEnd;
+    frame_scale_ = 1;
+  }
+};
+
 void EventHandlerTest::SetUp() {
   dummy_page_holder_ = DummyPageHolder::Create(IntSize(300, 400));
 }
@@ -166,9 +166,7 @@ int NonCompositedMainThreadScrollingReasonRecordTest::GetBucketIndex(
   return index;
 }
 
-void NonCompositedMainThreadScrollingReasonRecordTest::Scroll(
-    Element* element,
-    const WebGestureDevice device) {
+void EventHandlerTest::Scroll(Element* element, const WebGestureDevice device) {
   DCHECK(element);
   DCHECK(element->getBoundingClientRect());
   ClientRect* rect = element->getBoundingClientRect();
@@ -181,6 +179,7 @@ void NonCompositedMainThreadScrollingReasonRecordTest::Scroll(
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(scroll_begin);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(scroll_update);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(scroll_end);
+  ASSERT_GT(scroll_update.DeltaYInRootFrame(), 0);
 }
 
 TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
@@ -579,6 +578,54 @@ TEST_F(EventHandlerTest, dragEndInNewDrag) {
       mouse_up_event, kDragOperationNone);
 
   // This test passes if it doesn't crash.
+}
+
+TEST_F(EventHandlerTest,
+       ScrollerSizeOfMainThreadScrollingHistogramRecordingTest) {
+  SetHtmlInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      " .container { width: 200px; height: 200px; overflow: scroll; }"
+      " .box { width: 100px; height: 100px; overflow: scroll; }"
+      " .spacer { height: 1000px; }"
+      " .target { width: 200px; height: 200px; }"
+      " body { height: 2000px; }"
+      "</style>"
+      "<div class='container'>"
+      " <div id='box' class='box'>"
+      "  <div id='content' class='spacer'></div>"
+      " </div>"
+      "</div>"
+      "<div id='target' class='target'></div>");
+
+  Element* box = GetDocument().getElementById("box");
+  HistogramTester histogram_tester;
+
+  // Test wheel scroll on the box.
+  Scroll(box, kWebGestureDeviceTouchpad);
+  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnScroll_Wheel",
+                                     10000, 1);
+  // Only the first scrollable area is recorded.
+  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnScroll_Wheel",
+                                     40000, 0);
+  histogram_tester.ExpectTotalCount("Event.Scroll.ScrollerSize.OnScroll_Wheel",
+                                    1);
+
+  // Test touch scroll.
+  Scroll(box, kWebGestureDeviceTouchscreen);
+  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnScroll_Touch",
+                                     10000, 1);
+  histogram_tester.ExpectTotalCount("Event.Scroll.ScrollerSize.OnScroll_Touch",
+                                    1);
+
+  // Scrolling the non-scrollable target leads to scroll the root layer which
+  // doesn't add to count.
+  Element* body_scroll_target = GetDocument().getElementById("target");
+  Scroll(body_scroll_target, kWebGestureDeviceTouchscreen);
+  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnScroll_Touch",
+                                     kScrollerSizeLargestBucket, 0);
+  histogram_tester.ExpectTotalCount("Event.Scroll.ScrollerSize.OnScroll_Touch",
+                                    1);
 }
 
 class TooltipCapturingChromeClient : public EmptyChromeClient {
