@@ -146,7 +146,9 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
   surface_factory_->SubmitCompositorFrame(
       local_surface_id, std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&CompositorFrameSinkSupport::WillDrawSurface,
+                          weak_factory_.GetWeakPtr()));
 
   // TODO(eseckler): The CompositorFrame submitted below might not be activated
   // right away b/c of surface synchronization. We should only send the

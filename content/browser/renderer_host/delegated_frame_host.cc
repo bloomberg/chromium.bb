@@ -505,11 +505,7 @@ void DelegatedFrameHost::ReclaimResources(
 
 void DelegatedFrameHost::WillDrawSurface(const cc::LocalSurfaceId& id,
                                          const gfx::Rect& damage_rect) {
-  // Frame subscribers are only interested in changes to the target surface, so
-  // do not attempt capture if |damage_rect| is empty.  This prevents the draws
-  // of parent surfaces from triggering extra frame captures, which can affect
-  // smoothness.
-  if (id != local_surface_id_ || damage_rect.IsEmpty())
+  if (id != local_surface_id_)
     return;
   AttemptFrameSubscriberCapture(damage_rect);
 }

@@ -36,6 +36,8 @@ class SurfaceManager;
 class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
  public:
   using DrawCallback = base::Callback<void()>;
+  using WillDrawCallback =
+      base::RepeatingCallback<void(const LocalSurfaceId&, const gfx::Rect&)>;
 
   SurfaceFactory(const FrameSinkId& frame_sink_id,
                  SurfaceManager* manager,
@@ -58,14 +60,13 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
   // to draw, or if the frame is discarded.
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              CompositorFrame frame,
-                             const DrawCallback& callback);
+                             const DrawCallback& callback,
+                             const WillDrawCallback& will_draw_callback);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> copy_request);
 
   // Evicts the current frame on the surface. All the resources
   // will be released and Surface::HasFrame will return false.
   void ClearSurface();
-
-  void WillDrawSurface(const LocalSurfaceId& id, const gfx::Rect& damage_rect);
 
   SurfaceFactoryClient* client() { return client_; }
 

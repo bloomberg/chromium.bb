@@ -98,7 +98,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 
       frame.render_pass_list.push_back(std::move(pass));
       child_factories[i]->SubmitCompositorFrame(
-          local_surface_id, std::move(frame), SurfaceFactory::DrawCallback());
+          local_surface_id, std::move(frame), SurfaceFactory::DrawCallback(),
+          SurfaceFactory::WillDrawCallback());
     }
 
     SurfaceFactory root_factory(FrameSinkId(1, num_surfaces + 1), &manager_,
@@ -126,7 +127,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 
       root_factory.SubmitCompositorFrame(
           LocalSurfaceId(num_surfaces + 1, kArbitraryToken), std::move(frame),
-          SurfaceFactory::DrawCallback());
+          SurfaceFactory::DrawCallback(), SurfaceFactory::WillDrawCallback());
 
       CompositorFrame aggregated = aggregator_->Aggregate(
           SurfaceId(FrameSinkId(1, num_surfaces + 1),

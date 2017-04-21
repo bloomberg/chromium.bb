@@ -26,7 +26,6 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/blocking_task_runner.h"
 
@@ -577,7 +576,7 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
       // Notify client of removed surface.
       Surface* surface_ptr = manager_->GetSurfaceForId(surface.first);
       if (surface_ptr) {
-        surface_ptr->RunDrawCallbacks();
+        surface_ptr->RunDrawCallback();
       }
     }
   }
@@ -759,10 +758,10 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   }
 
   CHECK(debug_weak_this.get());
-  if (surface->factory()) {
-    surface->factory()->WillDrawSurface(
-        surface->surface_id().local_surface_id(), damage_rect);
-  }
+  // TODO(staraz): It shouldn't need to call the callback when the damage is
+  // from |surface| and not from |child_surfaces|.
+  if (!damage_rect.IsEmpty())
+    surface->RunWillDrawCallback(damage_rect);
 
   CHECK(debug_weak_this.get());
   for (const auto& render_pass : frame.render_pass_list) {

@@ -44,7 +44,8 @@ void SurfaceFactory::EvictSurface() {
 void SurfaceFactory::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    const DrawCallback& callback) {
+    const DrawCallback& callback,
+    const WillDrawCallback& will_draw_callback) {
   TRACE_EVENT0("cc", "SurfaceFactory::SubmitCompositorFrame");
   DCHECK(local_surface_id.is_valid());
 
@@ -64,7 +65,7 @@ void SurfaceFactory::SubmitCompositorFrame(
   } else {
     surface = Create(local_surface_id);
   }
-  surface->QueueFrame(std::move(frame), callback);
+  surface->QueueFrame(std::move(frame), callback, will_draw_callback);
 
   if (current_surface_ && create_new_surface) {
     surface->SetPreviousFrameSurface(current_surface_.get());
@@ -89,11 +90,6 @@ void SurfaceFactory::ClearSurface() {
     return;
   current_surface_->EvictFrame();
   manager_->SurfaceModified(current_surface_->surface_id());
-}
-
-void SurfaceFactory::WillDrawSurface(const LocalSurfaceId& id,
-                                     const gfx::Rect& damage_rect) {
-  client_->WillDrawSurface(id, damage_rect);
 }
 
 void SurfaceFactory::ReceiveFromChild(
@@ -131,7 +127,7 @@ void SurfaceFactory::OnSurfaceActivated(Surface* surface) {
                                      surface->active_referenced_surfaces());
   if (!manager_->SurfaceModified(surface->surface_id())) {
     TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
-    surface->RunDrawCallbacks();
+    surface->RunDrawCallback();
   }
 }
 

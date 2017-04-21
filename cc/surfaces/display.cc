@@ -71,7 +71,7 @@ Display::~Display() {
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
       Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
       if (surface)
-        surface->RunDrawCallbacks();
+        surface->RunDrawCallback();
     }
   }
 }
@@ -269,7 +269,7 @@ bool Display::DrawAndSwap() {
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
     Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
     if (surface)
-      surface->RunDrawCallbacks();
+      surface->RunDrawCallback();
   }
 
   frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),

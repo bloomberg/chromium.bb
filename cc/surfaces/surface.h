@@ -41,6 +41,7 @@ class SurfaceFactory;
 class CC_SURFACES_EXPORT Surface {
  public:
   using DrawCallback = SurfaceFactory::DrawCallback;
+  using WillDrawCallback = SurfaceFactory::WillDrawCallback;
 
   Surface(const SurfaceId& id, base::WeakPtr<SurfaceFactory> factory);
   ~Surface();
@@ -52,7 +53,14 @@ class CC_SURFACES_EXPORT Surface {
 
   void SetPreviousFrameSurface(Surface* surface);
 
-  void QueueFrame(CompositorFrame frame, const DrawCallback& draw_callback);
+  // |draw_callback| is called once to notify the client that the previously
+  // submitted CompositorFrame is processed and that another frame can be
+  // submitted.
+  // |will_draw_callback| is called when |surface| is scheduled for a draw and
+  // there is visible damage.
+  void QueueFrame(CompositorFrame frame,
+                  const DrawCallback& draw_callback,
+                  const WillDrawCallback& will_draw_callback);
   void EvictFrame();
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
 
@@ -84,7 +92,8 @@ class CC_SURFACES_EXPORT Surface {
   int frame_index() const { return frame_index_; }
 
   void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
-  void RunDrawCallbacks();
+  void RunDrawCallback();
+  void RunWillDrawCallback(const gfx::Rect& damage_rect);
 
   base::WeakPtr<SurfaceFactory> factory() { return factory_; }
 
@@ -119,12 +128,15 @@ class CC_SURFACES_EXPORT Surface {
 
  private:
   struct FrameData {
-    FrameData(CompositorFrame&& frame, const DrawCallback& draw_callback);
+    FrameData(CompositorFrame&& frame,
+              const DrawCallback& draw_callback,
+              const WillDrawCallback& will_draw_callback);
     FrameData(FrameData&& other);
     ~FrameData();
     FrameData& operator=(FrameData&& other);
     CompositorFrame frame;
     DrawCallback draw_callback;
+    WillDrawCallback will_draw_callback;
   };
 
   void ActivatePendingFrame();

@@ -50,7 +50,9 @@ void Surface::SetPreviousFrameSurface(Surface* surface) {
   surface->TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 }
 
-void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
+void Surface::QueueFrame(CompositorFrame frame,
+                         const DrawCallback& callback,
+                         const WillDrawCallback& will_draw_callback) {
   TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 
   base::Optional<FrameData> previous_pending_frame_data =
@@ -66,13 +68,14 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
   bool is_pending_frame = !blocking_surfaces_.empty();
 
   if (is_pending_frame) {
-    pending_frame_data_ = FrameData(std::move(frame), callback);
+    pending_frame_data_ =
+        FrameData(std::move(frame), callback, will_draw_callback);
     // Ask the surface manager to inform |this| when its dependencies are
     // resolved.
     factory_->manager()->RequestSurfaceResolution(this);
   } else {
     // If there are no blockers, then immediately activate the frame.
-    ActivateFrame(FrameData(std::move(frame), callback));
+    ActivateFrame(FrameData(std::move(frame), callback, will_draw_callback));
   }
 
   // Returns resources for the previous pending frame.
@@ -80,7 +83,7 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
 }
 
 void Surface::EvictFrame() {
-  QueueFrame(CompositorFrame(), DrawCallback());
+  QueueFrame(CompositorFrame(), DrawCallback(), WillDrawCallback());
   active_frame_data_.reset();
 }
 
@@ -143,8 +146,11 @@ void Surface::ActivatePendingFrameForDeadline() {
 }
 
 Surface::FrameData::FrameData(CompositorFrame&& frame,
-                              const DrawCallback& draw_callback)
-    : frame(std::move(frame)), draw_callback(draw_callback) {}
+                              const DrawCallback& draw_callback,
+                              const WillDrawCallback& will_draw_callback)
+    : frame(std::move(frame)),
+      draw_callback(draw_callback),
+      will_draw_callback(will_draw_callback) {}
 
 Surface::FrameData::FrameData(FrameData&& other) = default;
 
@@ -274,12 +280,20 @@ void Surface::TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info) {
   TakeLatencyInfoFromFrame(&active_frame_data_->frame, latency_info);
 }
 
-void Surface::RunDrawCallbacks() {
+void Surface::RunDrawCallback() {
   if (active_frame_data_ && !active_frame_data_->draw_callback.is_null()) {
     DrawCallback callback = active_frame_data_->draw_callback;
     active_frame_data_->draw_callback = DrawCallback();
     callback.Run();
   }
+}
+
+void Surface::RunWillDrawCallback(const gfx::Rect& damage_rect) {
+  if (!active_frame_data_ || active_frame_data_->will_draw_callback.is_null())
+    return;
+
+  active_frame_data_->will_draw_callback.Run(surface_id_.local_surface_id(),
+                                             damage_rect);
 }
 
 void Surface::AddDestructionDependency(SurfaceSequence sequence) {
