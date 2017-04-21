@@ -812,7 +812,7 @@ public class BottomSheet
      * Creates the sheet's animation to a target state.
      * @param targetState The target state.
      */
-    private void createSettleAnimation(@SheetState int targetState) {
+    private void createSettleAnimation(@SheetState final int targetState) {
         mTargetState = targetState;
         mSettleAnimator = ValueAnimator.ofFloat(
                 getSheetOffsetFromBottom(), getSheetHeightForState(targetState));
@@ -824,7 +824,7 @@ public class BottomSheet
             @Override
             public void onAnimationEnd(Animator animator) {
                 mSettleAnimator = null;
-                setInternalCurrentState(mTargetState);
+                setInternalCurrentState(targetState);
                 mTargetState = SHEET_STATE_NONE;
             }
         });
