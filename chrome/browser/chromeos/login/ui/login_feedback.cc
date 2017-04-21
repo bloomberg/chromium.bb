@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -60,6 +62,8 @@ class FeedbackExtensionLoader : public extensions::ProcessManagerObserver,
   explicit FeedbackExtensionLoader(Profile* profile);
   ~FeedbackExtensionLoader() override;
 
+  void Initialize();
+
   void AddOnReadyCallback(const base::Closure& on_ready_callback);
   void RunOnReadyCallbacks();
 
@@ -83,8 +87,10 @@ FeedbackExtensionLoader* instance = nullptr;
 // static
 void FeedbackExtensionLoader::Load(Profile* profile,
                                    const base::Closure& on_ready_callback) {
-  if (instance == nullptr)
+  if (instance == nullptr) {
     instance = new FeedbackExtensionLoader(profile);
+    instance->Initialize();
+  }
 
   DCHECK_EQ(instance->profile_, profile);
   DCHECK(!on_ready_callback.is_null());
@@ -92,18 +98,7 @@ void FeedbackExtensionLoader::Load(Profile* profile,
 }
 
 FeedbackExtensionLoader::FeedbackExtensionLoader(Profile* profile)
-    : profile_(profile) {
-  extensions::ComponentLoader* component_loader = GetComponentLoader(profile_);
-  DCHECK(!component_loader->Exists(extension_misc::kFeedbackExtensionId))
-      << "Feedback extension should not be loaded in signin profile by default";
-  component_loader->Add(IDR_FEEDBACK_MANIFEST,
-                        base::FilePath(FILE_PATH_LITERAL("feedback")));
-
-  extensions::ProcessManager* pm = GetProcessManager(profile_);
-  pm->AddObserver(this);
-  DCHECK(
-      !pm->GetBackgroundHostForExtension(extension_misc::kFeedbackExtensionId));
-}
+    : profile_(profile) {}
 
 FeedbackExtensionLoader::~FeedbackExtensionLoader() {
   DCHECK_EQ(instance, this);
@@ -111,6 +106,25 @@ FeedbackExtensionLoader::~FeedbackExtensionLoader() {
 
   GetProcessManager(profile_)->RemoveObserver(this);
   GetComponentLoader(profile_)->Remove(extension_misc::kFeedbackExtensionId);
+}
+
+void FeedbackExtensionLoader::Initialize() {
+  extensions::ProcessManager* pm = GetProcessManager(profile_);
+  pm->AddObserver(this);
+  extensions::ExtensionHost* const host =
+      pm->GetBackgroundHostForExtension(extension_misc::kFeedbackExtensionId);
+  if (host) {
+    OnBackgroundHostCreated(host);
+    if (!host->host_contents()->IsLoading())
+      DocumentOnLoadCompletedInMainFrame();
+    return;
+  }
+
+  extensions::ComponentLoader* component_loader = GetComponentLoader(profile_);
+  if (!component_loader->Exists(extension_misc::kFeedbackExtensionId)) {
+    component_loader->Add(IDR_FEEDBACK_MANIFEST,
+                          base::FilePath(FILE_PATH_LITERAL("feedback")));
+  }
 }
 
 void FeedbackExtensionLoader::AddOnReadyCallback(
@@ -241,6 +255,12 @@ void LoginFeedback::EnsureFeedbackUI() {
   api->RequestFeedbackForFlow(
       description_, "Login", GURL(),
       extensions::api::feedback_private::FeedbackFlow::FEEDBACK_FLOW_LOGIN);
+
+  // Make sure there is a feedback app window opened.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&LoginFeedback::EnsureFeedbackUI, weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(1));
 }
 
 void LoginFeedback::OnFeedbackFinished() {
