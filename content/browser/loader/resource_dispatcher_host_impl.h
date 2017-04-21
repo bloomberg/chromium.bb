@@ -742,6 +742,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   //       kAvgBytesPerOutstandingRequest)
   int max_outstanding_requests_cost_per_process_;
 
+  // Largest number of outstanding requests seen so far across all processes.
+  int largest_outstanding_request_count_seen_;
+
+  // Largest number of outstanding requests seen so far in any single process.
+  int largest_outstanding_request_per_process_count_seen_;
+
   // Time of the last user gesture. Stored so that we can add a load
   // flag to requests occurring soon after a gesture to indicate they
   // may be because of explicit user action.
