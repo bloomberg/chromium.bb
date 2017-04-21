@@ -528,7 +528,7 @@ void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds_in_pixels,
 
 void HWNDMessageHandler::SetDwmFrameExtension(DwmFrameState state) {
   if (!delegate_->HasFrame() && ui::win::IsAeroGlassEnabled() &&
-      (window_ex_style() & WS_EX_COMPOSITED) == 0) {
+      !is_translucent_) {
     MARGINS m = {0, 0, 0, 0};
     if (state == DwmFrameState::ON)
       m = {0, 0, 1, 0};
@@ -853,10 +853,9 @@ void HWNDMessageHandler::SizeConstraintsChanged() {
   if (style & (WS_POPUP | WS_CHILD))
     return;
 
-  LONG exstyle = GetWindowLong(hwnd(), GWL_EXSTYLE);
-  // Windows cannot have WS_THICKFRAME set if WS_EX_COMPOSITED is set.
+  // Windows cannot have WS_THICKFRAME set if translucent.
   // See CalculateWindowStylesFromInitParams().
-  if (delegate_->CanResize() && (exstyle & WS_EX_COMPOSITED) == 0) {
+  if (delegate_->CanResize() && !is_translucent_) {
     style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
     if (!delegate_->CanMaximize())
       style &= ~WS_MAXIMIZEBOX;
@@ -1177,12 +1176,11 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
 void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   // A native frame uses the native window region, and we don't want to mess
   // with it.
-  // WS_EX_COMPOSITED is used instead of WS_EX_LAYERED under aura. WS_EX_LAYERED
-  // automatically makes clicks on transparent pixels fall through, that isn't
-  // the case with WS_EX_COMPOSITED. So, we route WS_EX_COMPOSITED through to
-  // the delegate to allow for a custom hit mask.
-  if ((window_ex_style() & WS_EX_COMPOSITED) == 0 &&
-      !custom_window_region_.is_valid() &&
+  // WS_EX_LAYERED automatically makes clicks on transparent pixels fall
+  // through, but that isn't the case when using Direct3D to draw transparent
+  // windows. So we route translucent windows throught to the delegate to
+  // allow for a custom hit mask.
+  if (!is_translucent_ && !custom_window_region_.is_valid() &&
       (IsFrameSystemDrawn() || !delegate_->HasNonClientView())) {
     if (force)
       SetWindowRgn(hwnd(), NULL, redraw);
@@ -1341,11 +1339,13 @@ void HWNDMessageHandler::OnCommand(UINT notification_code,
 }
 
 LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
-  if (window_ex_style() &  WS_EX_COMPOSITED) {
+  if (is_translucent_) {
     // This is part of the magic to emulate layered windows with Aura
-    // see the explanation elsewere when we set WS_EX_COMPOSITED style.
+    // see the explanation elsewere when we set is_translucent_.
     MARGINS margins = {-1, -1, -1, -1};
     DwmExtendFrameIntoClientArea(hwnd(), &margins);
+
+    ::SetProp(hwnd(), ui::kWindowTranslucent, reinterpret_cast<HANDLE>(1));
   }
 
   fullscreen_handler_->set_hwnd(hwnd());
@@ -1387,6 +1387,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 }
 
 void HWNDMessageHandler::OnDestroy() {
+  ::RemoveProp(hwnd(), ui::kWindowTranslucent);
   windows_session_change_observer_.reset(nullptr);
   delegate_->HandleDestroying();
   // If the window going away is a fullscreen window then remove its references

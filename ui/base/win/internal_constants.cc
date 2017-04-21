@@ -9,5 +9,7 @@ namespace ui {
 const wchar_t kIgnoreTouchMouseActivateForWindow[] =
     L"Chrome.IgnoreMouseActivate";
 
+const wchar_t kWindowTranslucent[] = L"Chrome.WindowTranslucent";
+
 }  // namespace ui
 

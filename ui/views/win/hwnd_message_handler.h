@@ -213,6 +213,11 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // to this window.
   bool HasChildRenderingWindow();
 
+  void set_is_translucent(bool is_translucent) {
+    is_translucent_ = is_translucent;
+  }
+  bool is_translucent() const { return is_translucent_; }
+
  private:
   typedef std::set<DWORD> TouchIDs;
   enum class DwmFrameState { OFF, ON };
@@ -705,6 +710,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Set to true if the window is a background fullscreen window, i.e a
   // fullscreen window which lost activation. Defaults to false.
   bool background_fullscreen_hack_;
+
+  // True if the window should have no border and its contents should be
+  // partially or fully transparent.
+  bool is_translucent_ = false;
 
   // This is a map of the HMONITOR to full screeen window instance. It is safe
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the

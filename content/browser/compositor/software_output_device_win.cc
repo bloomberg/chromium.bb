@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
+#include "ui/base/win/internal_constants.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/skia_util.h"
@@ -93,8 +94,7 @@ SoftwareOutputDeviceWin::SoftwareOutputDeviceWin(OutputDeviceBacking* backing,
       in_paint_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  LONG style = GetWindowLong(hwnd_, GWL_EXSTYLE);
-  is_hwnd_composited_ = !!(style & WS_EX_COMPOSITED);
+  is_hwnd_composited_ = !!::GetProp(hwnd_, ui::kWindowTranslucent);
   // Layered windows must be completely updated every time, so they can't
   // share contents with other windows.
   if (is_hwnd_composited_)
@@ -177,7 +177,7 @@ void SoftwareOutputDeviceWin::EndPaint() {
     BLENDFUNCTION blend = {AC_SRC_OVER, 0x00, 0xFF, AC_SRC_ALPHA};
 
     DWORD style = GetWindowLong(hwnd_, GWL_EXSTYLE);
-    style &= ~WS_EX_COMPOSITED;
+    DCHECK(!(style & WS_EX_COMPOSITED));
     style |= WS_EX_LAYERED;
     SetWindowLong(hwnd_, GWL_EXSTYLE, style);
 

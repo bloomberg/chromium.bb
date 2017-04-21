@@ -25,6 +25,7 @@ void CalculateWindowStylesFromInitParams(
     const Widget::InitParams& params,
     WidgetDelegate* widget_delegate,
     internal::NativeWidgetDelegate* native_widget_delegate,
+    bool is_translucent,
     DWORD* style,
     DWORD* ex_style,
     DWORD* class_style) {
@@ -48,27 +49,6 @@ void CalculateWindowStylesFromInitParams(
     *ex_style |= WS_EX_TOPMOST;
   if (params.mirror_origin_in_rtl)
     *ex_style |= l10n_util::GetExtendedTooltipStyles();
-  // Layered windows do not work with Aura. They are basically incompatible
-  // with Direct3D surfaces. Officially, it should be impossible to achieve
-  // per-pixel alpha compositing with the desktop and 3D acceleration but it
-  // has been discovered that since Vista There is a secret handshake between
-  // user32 and the DMW. If things are set up just right DMW gets out of the
-  // way; it does not create a backbuffer and simply blends our D3D surface
-  // and the desktop background. The handshake is as follows:
-  // 1- Use D3D9Ex to create device/swapchain, etc. You need D3DFMT_A8R8G8B8.
-  // 2- The window must have WS_EX_COMPOSITED in the extended style.
-  // 3- The window must have WS_POPUP in its style.
-  // 4- The windows must not have WM_SIZEBOX, WS_THICKFRAME or WS_CAPTION in its
-  //    style.
-  // 5- When the window is created but before it is presented, call
-  //    DwmExtendFrameIntoClientArea passing -1 as the margins.
-  // We also set the WS_EX_COMPOSITED style for software composited translucent
-  // windows, which ensures that they are updated via the layered window code
-  // path in the software compositor.
-  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW &&
-    (ui::win::IsAeroGlassEnabled() || params.force_software_compositing))
-      *ex_style |= WS_EX_COMPOSITED;
-
   if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP)
     *class_style |= CS_DROPSHADOW;
 
@@ -111,8 +91,8 @@ void CalculateWindowStylesFromInitParams(
       *ex_style |=
           native_widget_delegate->IsDialogBox() ? WS_EX_DLGMODALFRAME : 0;
 
-      // See layered window comment above.
-      if (*ex_style & WS_EX_COMPOSITED)
+      // See layered window comment below.
+      if (is_translucent)
         *style &= ~(WS_THICKFRAME | WS_CAPTION);
       break;
     }
@@ -157,9 +137,30 @@ void ConfigureWindowStyles(
   DWORD style = 0;
   DWORD ex_style = 0;
   DWORD class_style = 0;
+  // Layered windows do not work with Direct3D, so a different mechanism needs
+  // to be used to allow for transparent borderless windows.
+  //
+  // 1- To allow the contents of the swapchain to blend with the contents
+  //    behind it, it must must be created with D3DFMT_A8R8G8B8 in D3D9Ex, or
+  //    with DXGI_ALPHA_MODE_PREMULTIPLIED with DirectComposition.
+  // 2- When the window is created but before it is presented, call
+  //    DwmExtendFrameIntoClientArea passing -1 as the margins so that
+  //    it's blended with the content below the window and not just black.
+  // 3- To avoid having a window frame and to avoid blurring the contents
+  //    behind the window, the window must have WS_POPUP in its style and must
+  //    not have not have WM_SIZEBOX, WS_THICKFRAME or WS_CAPTION in its
+  //    style.
+  //
+  // This doesn't work when Aero is disabled, so disable it in that case.
+  // Software composited windows can continue to use WS_EX_LAYERED.
+  bool is_translucent =
+      (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW &&
+       (ui::win::IsAeroGlassEnabled() || params.force_software_compositing));
+
   CalculateWindowStylesFromInitParams(params, widget_delegate,
-                                      native_widget_delegate, &style, &ex_style,
-                                      &class_style);
+                                      native_widget_delegate, is_translucent,
+                                      &style, &ex_style, &class_style);
+  handler->set_is_translucent(is_translucent);
   handler->set_initial_class_style(class_style);
   handler->set_window_style(handler->window_style() | style);
   handler->set_window_ex_style(handler->window_ex_style() | ex_style);
