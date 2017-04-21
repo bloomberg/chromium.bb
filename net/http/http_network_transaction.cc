@@ -1257,7 +1257,8 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   // On a 408 response from the server ("Request Timeout") on a stale socket,
   // retry the request.
   // Headers can be NULL because of http://crbug.com/384554.
-  if (response_.headers.get() && response_.headers->response_code() == 408 &&
+  if (response_.headers.get() &&
+      response_.headers->response_code() == HTTP_REQUEST_TIMEOUT &&
       stream_->IsConnectionReused()) {
     net_log_.AddEventWithNetErrorCode(
         NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR,
