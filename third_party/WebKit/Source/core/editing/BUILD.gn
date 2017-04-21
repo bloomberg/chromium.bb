@@ -193,6 +193,8 @@ blink_core_sources("editing") {
     "markers/DocumentMarker.h",
     "markers/DocumentMarkerController.cpp",
     "markers/DocumentMarkerController.h",
+    "markers/DocumentMarkerListEditor.cpp",
+    "markers/DocumentMarkerListEditor.h",
     "markers/RenderedDocumentMarker.h",
     "serializers/HTMLInterchange.cpp",
     "serializers/HTMLInterchange.h",

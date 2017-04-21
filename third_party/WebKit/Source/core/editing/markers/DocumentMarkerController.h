@@ -53,30 +53,6 @@ class MarkerRemoverPredicate final {
   Vector<String> words_;
 };
 
-class DocumentMarkerListEditor {
- public:
-  using MarkerList = HeapVector<Member<RenderedDocumentMarker>>;
-
-  static void AddMarker(MarkerList*, const DocumentMarker*);
-
-  // Returns true if a marker was moved, false otherwise.
-  static bool MoveMarkers(MarkerList* src_list,
-                          int length,
-                          MarkerList* dst_list);
-
-  // Returns true if a marker was removed, false otherwise.
-  static bool RemoveMarkers(MarkerList*, unsigned start_offset, int length);
-
-  // Returns true if a marker was shifted or removed, false otherwise.
-  static bool ShiftMarkers(MarkerList*,
-                           unsigned offset,
-                           unsigned old_length,
-                           unsigned new_length);
-
- private:
-  static void MergeOverlapping(MarkerList*, RenderedDocumentMarker* to_insert);
-};
-
 class CORE_EXPORT DocumentMarkerController final
     : public GarbageCollected<DocumentMarkerController>,
       public SynchronousMutationObserver {

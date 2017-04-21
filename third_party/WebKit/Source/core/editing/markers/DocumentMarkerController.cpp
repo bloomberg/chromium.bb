@@ -28,15 +28,16 @@
 
 #include "core/editing/markers/DocumentMarkerController.h"
 
+#include <algorithm>
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markers/DocumentMarkerListEditor.h"
 #include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
-#include <algorithm>
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -228,56 +229,6 @@ void DocumentMarkerController::AddMarker(Node* node,
   }
 }
 
-// TODO(rlanday): move DocumentMarkerListEditor into its own .h/.cpp files
-// TODO(rlanday): this method was created by cutting and pasting code from
-// DocumentMarkerController::AddMarker(), it should be refactored in a future CL
-void DocumentMarkerListEditor::AddMarker(MarkerList* list,
-                                         const DocumentMarker* marker) {
-  RenderedDocumentMarker* rendered_marker =
-      RenderedDocumentMarker::Create(*marker);
-  if (list->IsEmpty() || list->back()->EndOffset() < marker->StartOffset()) {
-    list->push_back(rendered_marker);
-  } else {
-    if (marker->GetType() != DocumentMarker::kTextMatch &&
-        marker->GetType() != DocumentMarker::kComposition) {
-      MergeOverlapping(list, rendered_marker);
-    } else {
-      MarkerList::iterator pos = std::lower_bound(
-          list->begin(), list->end(), marker,
-          [](const Member<RenderedDocumentMarker>& marker_in_list,
-             const DocumentMarker* marker_to_insert) {
-            return marker_in_list->StartOffset() <
-                   marker_to_insert->StartOffset();
-          });
-      list->insert(pos - list->begin(), rendered_marker);
-    }
-  }
-}
-
-// TODO(rlanday): move DocumentMarkerListEditor into its own .h/.cpp files
-void DocumentMarkerListEditor::MergeOverlapping(
-    MarkerList* list,
-    RenderedDocumentMarker* to_insert) {
-  MarkerList::iterator first_overlapping = std::lower_bound(
-      list->begin(), list->end(), to_insert,
-      [](const Member<RenderedDocumentMarker>& marker_in_list,
-         const DocumentMarker* marker_to_insert) {
-        return marker_in_list->EndOffset() < marker_to_insert->StartOffset();
-      });
-  size_t index = first_overlapping - list->begin();
-  list->insert(index, to_insert);
-  MarkerList::iterator inserted = list->begin() + index;
-  first_overlapping = inserted + 1;
-  for (MarkerList::iterator i = first_overlapping;
-       i != list->end() && (*i)->StartOffset() <= (*inserted)->EndOffset();) {
-    (*inserted)->SetStartOffset(
-        std::min((*inserted)->StartOffset(), (*i)->StartOffset()));
-    (*inserted)->SetEndOffset(
-        std::max((*inserted)->EndOffset(), (*i)->EndOffset()));
-    list->erase(i - list->begin());
-  }
-}
-
 // Moves markers from src_node to dst_node. Markers are moved if their start
 // offset is less than length. Markers that run past that point are truncated.
 void DocumentMarkerController::MoveMarkers(Node* src_node,
@@ -320,35 +271,6 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
     dst_node->GetLayoutObject()->SetShouldDoFullPaintInvalidation(
         kPaintInvalidationDocumentMarkerChange);
   }
-}
-
-// TODO(rlanday): move DocumentMarkerListEditor into its own .h/.cpp files
-bool DocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
-                                           int length,
-                                           MarkerList* dst_list) {
-  DCHECK_GT(length, 0);
-  bool doc_dirty = false;
-  const unsigned end_offset = length - 1;
-  MarkerList::iterator it;
-  for (it = src_list->begin(); it != src_list->end(); ++it) {
-    DocumentMarker* marker = it->Get();
-
-    // stop if we are now past the specified range
-    if (marker->StartOffset() > end_offset)
-      break;
-
-    // pin the marker to the specified range
-    doc_dirty = true;
-    if (marker->EndOffset() > end_offset)
-      marker->SetEndOffset(end_offset);
-
-    DocumentMarkerListEditor::AddMarker(dst_list, marker);
-  }
-
-  // Remove the range of markers that were moved to dst_node
-  src_list->erase(0, it - src_list->begin());
-
-  return doc_dirty;
 }
 
 void DocumentMarkerController::RemoveMarkers(
@@ -402,35 +324,6 @@ void DocumentMarkerController::RemoveMarkers(
     node->GetLayoutObject()->SetShouldDoFullPaintInvalidation(
         kPaintInvalidationDocumentMarkerChange);
   }
-}
-
-// TODO(rlanday): move DocumentMarkerListEditor into its own .h/.cpp files
-// TODO(rlanday): this method was created by cutting and pasting code from
-// DocumentMarkerController::RemoveMarkers(), it should be refactored in a
-// future CL
-bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
-                                             unsigned start_offset,
-                                             int length) {
-  bool doc_dirty = false;
-  unsigned end_offset = start_offset + length;
-  MarkerList::iterator start_pos = std::upper_bound(
-      list->begin(), list->end(), start_offset,
-      [](size_t start_offset, const Member<RenderedDocumentMarker>& marker) {
-        return start_offset < marker->EndOffset();
-      });
-  for (MarkerList::iterator i = start_pos; i != list->end();) {
-    DocumentMarker marker(*i->Get());
-
-    // markers are returned in order, so stop if we are now past the specified
-    // range
-    if (marker.StartOffset() >= end_offset)
-      break;
-
-    list->erase(i - list->begin());
-    doc_dirty = true;
-  }
-
-  return doc_dirty;
 }
 
 DocumentMarkerVector DocumentMarkerController::MarkersFor(
@@ -869,34 +762,6 @@ void DocumentMarkerController::DidUpdateCharacterData(CharacterData* node,
   InvalidateRectsForMarkersInNode(*node);
   // repaint the affected node
   node->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
-}
-
-// TODO(rlanday): move DocumentMarkerListEditor into its own .h/.cpp files
-bool DocumentMarkerListEditor::ShiftMarkers(MarkerList* list,
-                                            unsigned offset,
-                                            unsigned old_length,
-                                            unsigned new_length) {
-  bool did_shift_marker = false;
-  for (MarkerList::iterator it = list->begin(); it != list->end(); ++it) {
-    RenderedDocumentMarker& marker = **it;
-    Optional<DocumentMarker::MarkerOffsets> result =
-        marker.ComputeOffsetsAfterShift(offset, old_length, new_length);
-    if (result == WTF::kNullopt) {
-      list->erase(it - list->begin());
-      --it;
-      did_shift_marker = true;
-      continue;
-    }
-
-    if (marker.StartOffset() != result.value().start_offset ||
-        marker.EndOffset() != result.value().end_offset) {
-      did_shift_marker = true;
-      marker.SetStartOffset(result.value().start_offset);
-      marker.SetEndOffset(result.value().end_offset);
-    }
-  }
-
-  return did_shift_marker;
 }
 
 }  // namespace blink
