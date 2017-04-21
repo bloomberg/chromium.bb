@@ -5794,23 +5794,29 @@ def CMDformat(parser, args):
         DieWithError("gn format failed on " + gn_diff_file +
                      "\nTry running 'gn format' on this file manually.")
 
-  metrics_xml_files = [
-    os.path.join('tools', 'metrics', 'actions', 'actions.xml'),
-    os.path.join('tools', 'metrics', 'histograms', 'histograms.xml'),
-    os.path.join('tools', 'metrics', 'rappor', 'rappor.xml')]
-  for xml_file in metrics_xml_files:
-    if xml_file in diff_files:
-      tool_dir = os.path.join(top_dir, os.path.dirname(xml_file))
-      cmd = [os.path.join(tool_dir, 'pretty_print.py'), '--non-interactive']
-      if opts.dry_run or opts.diff:
-        cmd.append('--diff')
-      stdout = RunCommand(cmd, cwd=top_dir)
-      if opts.diff:
-        sys.stdout.write(stdout)
-      if opts.dry_run and stdout:
-        return_value = 2  # Not formatted.
+  for xml_dir in GetDirtyMetricsDirs(diff_files):
+    tool_dir = os.path.join(top_dir, xml_dir)
+    cmd = [os.path.join(tool_dir, 'pretty_print.py'), '--non-interactive']
+    if opts.dry_run or opts.diff:
+      cmd.append('--diff')
+    stdout = RunCommand(cmd, cwd=top_dir)
+    if opts.diff:
+      sys.stdout.write(stdout)
+    if opts.dry_run and stdout:
+      return_value = 2  # Not formatted.
 
   return return_value
+
+def GetDirtyMetricsDirs(diff_files):
+  xml_diff_files = [x for x in diff_files if MatchingFileType(x, ['.xml'])]
+  metrics_xml_dirs = [
+    os.path.join('tools', 'metrics', 'actions'),
+    os.path.join('tools', 'metrics', 'histograms'),
+    os.path.join('tools', 'metrics', 'rappor'),
+    os.path.join('tools', 'metrics', 'ukm')]
+  for xml_dir in metrics_xml_dirs:
+    if any(file.startswith(xml_dir) for file in xml_diff_files):
+      yield xml_dir
 
 
 @subcommand.usage('<codereview url or issue id>')
