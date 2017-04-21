@@ -61,7 +61,7 @@
   [dispatcher startDispatchingToTarget:self
                            forSelector:@selector(hideFindInPage)];
 
-  _mediator = [[FindInPageMediator alloc]
+  self.mediator = [[FindInPageMediator alloc]
       initWithWebStateList:(&self.browser->web_state_list())provider:self
                 dispatcher:static_cast<id>(dispatcher)];
   [dispatcher startDispatchingToTarget:self.mediator
@@ -76,6 +76,7 @@
   CommandDispatcher* dispatcher = self.browser->dispatcher();
   [dispatcher stopDispatchingToTarget:self];
   [dispatcher stopDispatchingToTarget:self.mediator];
+  self.mediator = nil;
 }
 
 - (void)start {

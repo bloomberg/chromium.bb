@@ -36,20 +36,21 @@
 
   Browser* browser = self.browser;
 
-  _mediator = [[LocationBarMediator alloc]
+  self.mediator = [[LocationBarMediator alloc]
       initWithWebStateList:&(browser->web_state_list())];
   std::unique_ptr<LocationBarController> locationBar =
       base::MakeUnique<LocationBarControllerImpl>(
           self.viewController.omnibox, browser->browser_state(),
           nil /* PreloadProvider */, nil /* OmniboxPopupPositioner */,
-          _mediator);
-  [_mediator setLocationBar:std::move(locationBar)];
+          self.mediator);
+  [self.mediator setLocationBar:std::move(locationBar)];
   [super start];
 }
 
 - (void)stop {
   [super stop];
   self.viewController = nil;
+  self.mediator = nil;
 }
 
 @end
