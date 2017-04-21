@@ -694,31 +694,38 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestLastError) {
 
   bindings_system()->UpdateBindingsForContext(script_context);
 
-  {
-    // Try calling the function with an invalid invocation - an error should be
-    // thrown.
-    const char kCallFunction[] =
-        "(function() {\n"
-        "  chrome.idle.queryState(30, function(state) {\n"
-        "    if (chrome.runtime.lastError)\n"
-        "      this.lastErrorMessage = chrome.runtime.lastError.message;\n"
-        "  });\n"
-        "});";
-    v8::Local<v8::Function> function =
-        FunctionFromString(context, kCallFunction);
-    ASSERT_FALSE(function.IsEmpty());
-    RunFunctionOnGlobal(function, context, 0, nullptr);
-  }
+  const char kCallFunction[] =
+      "(function() {\n"
+      "  chrome.idle.queryState(30, function(state) {\n"
+      "    if (chrome.runtime.lastError)\n"
+      "      this.lastErrorMessage = chrome.runtime.lastError.message;\n"
+      "  });\n"
+      "});";
+  v8::Local<v8::Function> function = FunctionFromString(context, kCallFunction);
+  ASSERT_FALSE(function.IsEmpty());
+  RunFunctionOnGlobal(function, context, 0, nullptr);
 
   // Validate the params that would be sent to the browser.
   EXPECT_EQ(extension->id(), last_params().extension_id);
   EXPECT_EQ("idle.queryState", last_params().name);
 
-  // Respond and validate.
-  bindings_system()->HandleResponse(last_params().request_id, true,
+  int first_request_id = last_params().request_id;
+  // Respond with an error.
+  bindings_system()->HandleResponse(last_params().request_id, false,
                                     base::ListValue(), "Some API Error");
-
   EXPECT_EQ("\"Some API Error\"",
+            GetStringPropertyFromObject(context->Global(), context,
+                                        "lastErrorMessage"));
+
+  // Test responding with a failure, but no set error.
+  RunFunctionOnGlobal(function, context, 0, nullptr);
+  EXPECT_EQ(extension->id(), last_params().extension_id);
+  EXPECT_EQ("idle.queryState", last_params().name);
+  EXPECT_NE(first_request_id, last_params().request_id);
+
+  bindings_system()->HandleResponse(last_params().request_id, false,
+                                    base::ListValue(), std::string());
+  EXPECT_EQ("\"Unknown error.\"",
             GetStringPropertyFromObject(context->Global(), context,
                                         "lastErrorMessage"));
 }

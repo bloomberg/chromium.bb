@@ -476,7 +476,12 @@ void NativeExtensionBindingsSystem::HandleResponse(
     bool success,
     const base::ListValue& response,
     const std::string& error) {
-  api_system_.CompleteRequest(request_id, response, error);
+  // Some API calls result in failure, but don't set an error. Use a generic and
+  // unhelpful error string.
+  // TODO(devlin): Track these down and fix them. See crbug.com/648275.
+  api_system_.CompleteRequest(
+      request_id, response,
+      !success && error.empty() ? "Unknown error." : error);
 }
 
 RequestSender* NativeExtensionBindingsSystem::GetRequestSender() {
