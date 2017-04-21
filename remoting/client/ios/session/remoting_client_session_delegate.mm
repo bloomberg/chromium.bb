@@ -6,7 +6,9 @@
 #error "This file requires ARC support."
 #endif
 
-#import "remoting/client/ios/session/remoting_client_session_delegate.h"
+#include "remoting/client/ios/session/remoting_client_session_delegate.h"
+
+#import "remoting/client/ios/session/remoting_client.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/client/chromoting_client_runtime.h"

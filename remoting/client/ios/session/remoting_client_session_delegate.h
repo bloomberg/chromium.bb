@@ -10,13 +10,15 @@
 #include "remoting/client/chromoting_session.h"
 #include "remoting/protocol/connection_to_host.h"
 
+@class RemotingClient;
+
 namespace remoting {
 
 class ChromotingClientRuntime;
 
 class RemotingClientSessonDelegate : public ChromotingSession::Delegate {
  public:
-  RemotingClientSessonDelegate();
+  RemotingClientSessonDelegate(RemotingClient* client);
   ~RemotingClientSessonDelegate() override;
 
   // ChromotingSession::Delegate implementation
@@ -42,7 +44,7 @@ class RemotingClientSessonDelegate : public ChromotingSession::Delegate {
   base::WeakPtrFactory<RemotingClientSessonDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingClientSessonDelegate);
-}
+};
 
 }  // namespace remoting
 

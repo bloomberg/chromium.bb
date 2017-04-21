@@ -17,7 +17,9 @@ source_set("session") {
   deps = [
     "//base",
     "//remoting/client",
+    "//remoting/client/ios/display",
     "//remoting/client/ios/domain",
+    "//remoting/protocol",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
