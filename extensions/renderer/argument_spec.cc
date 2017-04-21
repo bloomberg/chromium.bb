@@ -20,11 +20,14 @@ template <class T>
 bool ParseFundamentalValueHelper(v8::Local<v8::Value> arg,
                                  v8::Local<v8::Context> context,
                                  const base::Optional<int>& minimum,
+                                 const base::Optional<int>& maximum,
                                  std::unique_ptr<base::Value>* out_value) {
   T val;
   if (!gin::Converter<T>::FromV8(context->GetIsolate(), arg, &val))
     return false;
-  if (minimum && val < minimum.value())
+  if (minimum && val < *minimum)
+    return false;
+  if (maximum && val > *maximum)
     return false;
   if (out_value)
     *out_value = base::MakeUnique<base::Value>(val);
@@ -91,6 +94,10 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
   int min = 0;
   if (dict->GetInteger("minimum", &min))
     minimum_ = min;
+
+  int max = 0;
+  if (dict->GetInteger("maximum", &max))
+    maximum_ = max;
 
   int min_length = 0;
   if (dict->GetInteger("minLength", &min_length) ||
@@ -241,10 +248,10 @@ bool ArgumentSpec::ParseArgumentToFundamental(
   switch (type_) {
     case ArgumentType::INTEGER:
       return ParseFundamentalValueHelper<int32_t>(value, context, minimum_,
-                                                  out_value);
+                                                  maximum_, out_value);
     case ArgumentType::DOUBLE:
       return ParseFundamentalValueHelper<double>(value, context, minimum_,
-                                                 out_value);
+                                                 maximum_, out_value);
     case ArgumentType::STRING: {
       if (!value->IsString())
         return false;

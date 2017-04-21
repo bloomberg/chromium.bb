@@ -131,8 +131,9 @@ class ArgumentSpec {
   // type in its prototype chain.
   base::Optional<std::string> instance_of_;
 
-  // A minimum, if any.
+  // A minimum and maximum for integer and double values, if any.
   base::Optional<int> minimum_;
+  base::Optional<int> maximum_;
 
   // A minimium length for strings or arrays.
   base::Optional<size_t> min_length_;

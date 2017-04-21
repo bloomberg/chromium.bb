@@ -159,6 +159,13 @@ TEST_F(ArgumentSpecUnitTest, Test) {
   }
 
   {
+    ArgumentSpec spec(*ValueFromString("{'type': 'integer', 'maximum': 10}"));
+    ExpectSuccess(spec, "10", "10");
+    ExpectSuccess(spec, "1", "1");
+    ExpectFailure(spec, "11");
+  }
+
+  {
     ArgumentSpec spec(*ValueFromString("{'type': 'string'}"));
     ExpectSuccess(spec, "'foo'", "'foo'");
     ExpectSuccess(spec, "''", "''");
