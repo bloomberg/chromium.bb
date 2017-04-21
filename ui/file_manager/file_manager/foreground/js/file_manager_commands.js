@@ -313,10 +313,11 @@ CommandUtil.shouldShowMenuItemForEntry = function(volumeManager, entry) {
 /**
  * Handle of the command events.
  * @param {!FileManager} fileManager FileManager.
+ * @param {!FileSelectionHandler} selectionHandler
  * @constructor
  * @struct
  */
-var CommandHandler = function(fileManager) {
+var CommandHandler = function(fileManager, selectionHandler) {
   /**
    * FileManager.
    * @type {!FileManager}
@@ -346,6 +347,9 @@ var CommandHandler = function(fileManager) {
       'directory-change', this.updateAvailability.bind(this));
   fileManager.volumeManager.addEventListener(
       'drive-connection-changed', this.updateAvailability.bind(this));
+  selectionHandler.addEventListener(
+      FileSelectionHandler.EventType.CHANGE_THROTTLED,
+      this.updateAvailability.bind(this));
 };
 
 /**

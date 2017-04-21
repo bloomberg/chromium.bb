@@ -3,20 +3,23 @@
 # found in the LICENSE file.
 {
   'targets': [
-#    {
-#      'target_name': 'actions_controller',
-#      'dependencies': [
-#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-#        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
-#        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:context_menu_handler',
-#        'actions_model',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'actions_controller',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:context_menu_handler',
+        'actions_model',
+        'file_selection',
+        'ui/compiled_resources2.gyp:file_manager_ui',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'actions_model',
       'dependencies': [
+        # TODO(oka): Depend on externs/ instead of background/.
         '../../background/js/compiled_resources2.gyp:drive_sync_handler',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(EXTERNS_GYP):file_manager_private',
@@ -29,10 +32,15 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'app_state_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'app_state_controller',
+      'dependencies': [
+        'dialog_type',
+        'directory_model',
+        'ui/compiled_resources2.gyp:file_manager_ui',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'column_visibility_controller',
       'dependencies': [
@@ -46,10 +54,22 @@
       'target_name': 'constants',
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'dialog_action_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'dialog_action_controller',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
+        'dialog_type',
+        'directory_contents',
+        'directory_model',
+        'file_selection',
+        'launch_param',
+        'metadata/compiled_resources2.gyp:metadata_model',
+        'naming_controller',
+        'ui/compiled_resources2.gyp:dialog_footer',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'dialog_type',
       'includes': ['../../../compile_js2.gypi'],
@@ -73,8 +93,9 @@
     {
       'target_name': 'directory_model',
       'dependencies': [
-        '../../common/js/compiled_resources2.gyp:importer_common',
+        # TODO(oka): Depend on externs/ instead of background/.
         '../../background/js/compiled_resources2.gyp:file_operation_manager',
+        '../../common/js/compiled_resources2.gyp:importer_common',
         '../../common/js/compiled_resources2.gyp:metrics',
         'directory_contents',
         'file_watcher',
@@ -83,10 +104,16 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'directory_tree_naming_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'directory_tree_naming_controller',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:dialogs',
+        'directory_model',
+        'ui/compiled_resources2.gyp:directory_tree',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'elements_importer',
       'dependencies': [
@@ -121,19 +148,24 @@
 #      'target_name': 'file_manager_commands',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'file_selection',
-#      'dependencies': [
-#        '../../common/js/compiled_resources2.gyp:file_type',
-#        '../../common/js/compiled_resources2.gyp:util',
-#        '../../common/js/compiled_resources2.gyp:volume_manager_common',
-#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-#        'constants',
-#        'file_manager',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_selection',
+      'dependencies': [
+        # TODO(oka): Depend on externs/ instead of background/.
+        '../../background/js/compiled_resources2.gyp:file_operation_manager',
+        '../../common/js/compiled_resources2.gyp:file_type',
+        '../../common/js/compiled_resources2.gyp:util',
+        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'constants',
+        'directory_model',
+        'metadata/compiled_resources2.gyp:metadata_model',
+        'ui/compiled_resources2.gyp:list_container',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'file_tasks',
       'dependencies': [
@@ -146,6 +178,19 @@
     },
 #    {
 #      'target_name': 'file_transfer_controller',
+#      'dependencies': [
+#        # TODO(oka): Depend on externs/ instead of background/.
+#        '../../background/js/compiled_resources2.gyp:file_operation_manager',
+#        '../../background/js/compiled_resources2.gyp:progress_center',
+#        'directory_model',
+#        'file_selection',
+#        'metadata/compiled_resources2.gyp:metadata_model',
+#        'metadata/compiled_resources2.gyp:thumbnail_model',
+#        'ui/compiled_resources2.gyp:directory_tree',
+#        'ui/compiled_resources2.gyp:list_container',
+#        'ui/compiled_resources2.gyp:multi_profile_share_dialog',
+#        'volume_manager_wrapper',
+#      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
     {
@@ -207,18 +252,36 @@
 #      'target_name': 'main_scripts',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'main_window_component',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'main_window_component',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:directory_change_event',
+        'app_state_controller',
+        'dialog_type',
+        'directory_contents',
+        'directory_model',
+        'file_selection',
+        'naming_controller',
+        'task_controller',
+        'ui/compiled_resources2.gyp:file_manager_ui',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'metadata_box_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'metadata_update_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'metadata_update_controller',
+      'dependencies': [
+        'directory_model',
+        'metadata/compiled_resources2.gyp:metadata_model',
+        'ui/compiled_resources2.gyp:file_metadata_formatter',
+        'ui/compiled_resources2.gyp:list_container',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'metrics_start',
       'dependencies': [
@@ -230,10 +293,17 @@
       'target_name': 'mouse_inactivity_watcher',
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'naming_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'naming_controller',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:dialogs',
+        'directory_contents',
+        'directory_model',
+        'file_selection',
+        'ui/compiled_resources2.gyp:list_container',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'navigation_list_model',
       'dependencies': [
@@ -286,12 +356,24 @@
     },
 #    {
 #      'target_name': 'scan_controller',
+#      'dependencies': [
+#        'directory_model',
+#        'spinner_controller',
+#        'ui/compiled_resources2.gyp:list_container',
+#      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'search_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'search_controller',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:volume_manager',
+        'directory_model',
+        'task_controller',
+        'ui/compiled_resources2.gyp:location_line',
+        'ui/compiled_resources2.gyp:search_box',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'share_client',
       'dependencies': [
@@ -323,10 +405,20 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'task_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'task_controller',
+      'dependencies': [
+        'dialog_type',
+        'directory_model',
+        'file_selection',
+        'file_tasks',
+        'metadata/compiled_resources2.gyp:metadata_model',
+        'metadata_update_controller',
+        'ui/compiled_resources2.gyp:file_manager_ui',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'thumbnail_loader',
       'dependencies': [
@@ -337,19 +429,21 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'toolbar_controller',
-#      'dependencies': [
-#        '../../common/js/compiled_resources2.gyp:util',
-#        'file_selection',
-#        'ui/compiled_resources2.gyp:list_container',
-#        'ui/compiled_resources2.gyp:location_line',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'toolbar_controller',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
+        'file_selection',
+        'ui/compiled_resources2.gyp:list_container',
+        'ui/compiled_resources2.gyp:location_line',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'volume_manager_wrapper',
       'dependencies': [
+        # TODO(oka): Depend on extern/ instead of background/.
         '../../background/js/compiled_resources2.gyp:volume_manager_factory',
       ],
       'includes': ['../../../compile_js2.gypi'],

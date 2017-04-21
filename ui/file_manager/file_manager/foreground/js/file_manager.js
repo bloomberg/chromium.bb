@@ -636,7 +636,8 @@ FileManager.prototype = /** @struct */ {
   FileManager.prototype.initCommands_ = function() {
     assert(this.ui_.textContextMenu);
 
-    this.commandHandler_ = new CommandHandler(this);
+    this.commandHandler_ =
+        new CommandHandler(this, assert(this.selectionHandler_));
 
     // TODO(hirono): Move the following block to the UI part.
     var commandButtons = this.dialogDom_.querySelectorAll('button[command]');
@@ -1004,7 +1005,10 @@ FileManager.prototype = /** @struct */ {
     this.folderShortcutsModel_ = new FolderShortcutsDataModel(
         this.volumeManager_);
 
-    this.selectionHandler_ = new FileSelectionHandler(this);
+    this.selectionHandler_ = new FileSelectionHandler(
+        assert(this.directoryModel_), assert(this.fileOperationManager_),
+        assert(this.ui_.listContainer), assert(this.metadataModel_),
+        assert(this.volumeManager_));
 
     this.directoryModel_.getFileListSelection().addEventListener('change',
         this.selectionHandler_.onFileSelectionChanged.bind(

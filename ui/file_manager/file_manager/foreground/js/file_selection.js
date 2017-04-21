@@ -53,7 +53,7 @@ function FileSelection(indexes, entries) {
   this.iconType = null;
 
   /**
-   * @type {Promise<boolean>}
+   * @private {Promise<boolean>}
    */
   this.additionalPromise_ = null;
 
@@ -100,35 +100,64 @@ FileSelection.prototype.computeAdditional = function(metadataModel) {
 /**
  * This object encapsulates everything related to current selection.
  *
- * @param {!FileManager} fileManager File manager instance.
+ * @param {!DirectoryModel} directoryModel
+ * @param {!FileOperationManager} fileOperationManager
+ * @param {!ListContainer} listContainer
+ * @param {!MetadataModel} metadataModel
+ * @param {!VolumeManagerWrapper} volumeManager
  * @extends {cr.EventTarget}
  * @constructor
  * @struct
  */
-function FileSelectionHandler(fileManager) {
+function FileSelectionHandler(
+    directoryModel, fileOperationManager, listContainer, metadataModel,
+    volumeManager) {
   cr.EventTarget.call(this);
 
-  this.fileManager_ = fileManager;
+  /**
+   * @private {DirectoryModel}
+   * @const
+   */
+  this.directoryModel_ = directoryModel;
+
+  /**
+   * @private {ListContainer}
+   * @const
+   */
+  this.listContainer_ = listContainer;
+
+  /**
+   * @private {MetadataModel}
+   * @const
+   */
+  this.metadataModel_ = metadataModel;
+
+  /**
+   * @private {VolumeManagerWrapper}
+   * @const
+   */
+  this.volumeManager_ = volumeManager;
+
+  /**
+   * @type {FileSelection}
+   */
   this.selection = new FileSelection([], []);
 
   /**
-   * @private
-   * @type {number}
+   * @private {number}
    */
   this.selectionUpdateTimer_ = 0;
 
   /**
-   * @private
-   * @type {!Date}
+   * @private {!Date}
    */
   this.lastFileSelectionTime_ = new Date();
 
   util.addEventListenerToBackgroundComponent(
-      assert(fileManager.fileOperationManager),
-      'entries-changed',
+      assert(fileOperationManager), 'entries-changed',
       this.onFileSelectionChanged.bind(this));
   // Register evnets to update file selections.
-  fileManager.directoryModel.addEventListener(
+  directoryModel.addEventListener(
       'directory-changed', this.onFileSelectionChanged.bind(this));
 }
 
@@ -174,11 +203,10 @@ FileSelectionHandler.prototype.__proto__ = cr.EventTarget.prototype;
  * Update the UI when the selection model changes.
  */
 FileSelectionHandler.prototype.onFileSelectionChanged = function() {
-  var indexes =
-      this.fileManager_.getCurrentList().selectionModel.selectedIndexes;
+  var indexes = this.listContainer_.selectionModel.selectedIndexes;
   var entries = indexes.map(function(index) {
     return /** @type {!Entry} */ (
-        this.fileManager_.getFileList().item(index));
+        this.directoryModel_.getFileList().item(index));
   }.bind(this));
   this.selection = new FileSelection(indexes, entries);
 
@@ -224,11 +252,7 @@ FileSelectionHandler.prototype.updateFileSelectionAsync_ = function(selection) {
     return;
 
   // Calculate all additional and heavy properties.
-  selection.computeAdditional(this.fileManager_.metadataModel);
-
-  // Sync the commands availability.
-  if (this.fileManager_.commandHandler)
-    this.fileManager_.commandHandler.updateAvailability();
+  selection.computeAdditional(this.metadataModel_);
 
   cr.dispatchSimpleEvent(this, FileSelectionHandler.EventType.CHANGE_THROTTLED);
 };
@@ -239,8 +263,8 @@ FileSelectionHandler.prototype.updateFileSelectionAsync_ = function(selection) {
  * @return {boolean}
  */
 FileSelectionHandler.prototype.isAvailable = function() {
-  return !this.fileManager_.isOnDrive() ||
-      this.fileManager_.volumeManager.getDriveConnectionState().type !==
-          VolumeManagerCommon.DriveConnectionType.OFFLINE ||
+  return !this.directoryModel_.isOnDrive() ||
+      this.volumeManager_.getDriveConnectionState().type !==
+      VolumeManagerCommon.DriveConnectionType.OFFLINE ||
       this.selection.allFilesPresent;
 };
