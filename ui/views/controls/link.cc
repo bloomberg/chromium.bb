@@ -25,6 +25,7 @@
 namespace views {
 
 const char Link::kViewClassName[] = "Link";
+constexpr int Link::kFocusBorderPadding;
 
 Link::Link() : Link(base::string16()) {}
 
@@ -36,6 +37,36 @@ Link::Link(const base::string16& title)
 }
 
 Link::~Link() {
+}
+
+// static
+Link::FocusStyle Link::GetDefaultFocusStyle() {
+  return ui::MaterialDesignController::IsSecondaryUiMaterial()
+             ? FocusStyle::UNDERLINE
+             : FocusStyle::RING;
+}
+
+Link::FocusStyle Link::GetFocusStyle() const {
+  // Use the default, unless the link would "always" be underlined.
+  if (underline_ && GetDefaultFocusStyle() == FocusStyle::UNDERLINE)
+    return FocusStyle::RING;
+
+  return GetDefaultFocusStyle();
+}
+
+void Link::PaintFocusRing(gfx::Canvas* canvas) const {
+  if (GetFocusStyle() == FocusStyle::RING)
+    canvas->DrawFocusRect(GetFocusRingBounds());
+}
+
+gfx::Insets Link::GetInsets() const {
+  gfx::Insets insets = Label::GetInsets();
+  if (GetFocusStyle() == FocusStyle::RING &&
+      focus_behavior() != FocusBehavior::NEVER) {
+    DCHECK(!text().empty());
+    insets += gfx::Insets(kFocusBorderPadding);
+  }
+  return insets;
 }
 
 const char* Link::GetClassName() const {
@@ -193,7 +224,7 @@ void Link::SetUnderline(bool underline) {
 void Link::Init() {
   listener_ = NULL;
   pressed_ = false;
-  underline_ = !ui::MaterialDesignController::IsSecondaryUiMaterial();
+  underline_ = GetDefaultFocusStyle() != FocusStyle::UNDERLINE;
   RecalculateFont();
 
   // Label::Init() calls SetText(), but if that's being called from Label(), our
@@ -214,11 +245,10 @@ void Link::SetPressed(bool pressed) {
 
 void Link::RecalculateFont() {
   // Underline the link if it is enabled and |underline_| is true. Also
-  // underline to indicate focus in MD.
+  // underline to indicate focus when that's the style.
   const int style = font_list().GetFontStyle();
   const bool underline =
-      underline_ ||
-      (HasFocus() && ui::MaterialDesignController::IsSecondaryUiMaterial());
+      underline_ || (HasFocus() && GetFocusStyle() == FocusStyle::UNDERLINE);
   const int intended_style = (enabled() && underline) ?
       (style | gfx::Font::UNDERLINE) : (style & ~gfx::Font::UNDERLINE);
 
@@ -227,9 +257,7 @@ void Link::RecalculateFont() {
 }
 
 void Link::ConfigureFocus() {
-  // Disable focusability for empty links.  Otherwise Label::GetInsets() will
-  // give them an unconditional 1-px. inset on every side to allow for a focus
-  // border, when in this case we probably wanted zero width.
+  // Disable focusability for empty links.
   if (text().empty()) {
     SetFocusBehavior(FocusBehavior::NEVER);
   } else {

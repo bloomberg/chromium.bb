@@ -19,10 +19,16 @@
 
 namespace views {
 
-
 // Helpers --------------------------------------------------------------------
 
 namespace {
+
+gfx::Insets FocusBorderInsets(const Label& label) {
+  // StyledLabel never adds a border, so the only Insets added are for the
+  // possible focus ring.
+  DCHECK(label.View::GetInsets().IsEmpty());
+  return label.GetInsets();
+}
 
 // Calculates the height of a line of text. Currently returns the height of
 // a label.
@@ -42,7 +48,18 @@ std::unique_ptr<Label> CreateLabelRange(
   if (style_info.is_link) {
     Link* link = new Link(text);
     link->set_listener(link_listener);
-    link->SetUnderline((style_info.font_style & gfx::Font::UNDERLINE) != 0);
+
+    // StyledLabel makes assumptions about how to inset the entire View based on
+    // the default focus style: If focus rings are not the default, nothing is
+    // inset. So an individual range can't deviate from that.
+    if (Link::GetDefaultFocusStyle() == Link::FocusStyle::UNDERLINE) {
+      // Nothing should (and nothing does) request underlines for links with MD.
+      DCHECK_EQ(0, style_info.font_style & gfx::Font::UNDERLINE);
+      link->SetUnderline(false);  // Override what Link::Init() does.
+    } else {
+      link->SetUnderline((style_info.font_style & gfx::Font::UNDERLINE) != 0);
+    }
+
     result.reset(link);
   } else {
     result.reset(new Label(text));
@@ -64,7 +81,6 @@ std::unique_ptr<Label> CreateLabelRange(
 }
 
 }  // namespace
-
 
 // StyledLabel::RangeStyleInfo ------------------------------------------------
 
@@ -178,16 +194,15 @@ const char* StyledLabel::GetClassName() const {
 
 gfx::Insets StyledLabel::GetInsets() const {
   gfx::Insets insets = View::GetInsets();
+  if (Link::GetDefaultFocusStyle() != Link::FocusStyle::RING)
+    return insets;
 
   // We need a focus border iff we contain a link that will have a focus border.
   // That in turn will be true only if the link is non-empty.
   for (StyleRanges::const_iterator i(style_ranges_.begin());
         i != style_ranges_.end(); ++i) {
     if (i->style_info.is_link && !i->range.is_empty()) {
-      const gfx::Insets focus_border_padding(
-          Label::kFocusBorderPadding, Label::kFocusBorderPadding,
-          Label::kFocusBorderPadding, Label::kFocusBorderPadding);
-      insets += focus_border_padding;
+      insets += gfx::Insets(Link::kFocusBorderPadding);
       break;
     }
   }
@@ -350,22 +365,30 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       label->SetBackgroundColor(displayed_on_background_color_);
     label->SetAutoColorReadabilityEnabled(auto_color_readability_enabled_);
 
-    // Calculate the size of the optional focus border, and overlap by that
-    // amount. Otherwise, "<a>link</a>," will render as "link ,".
-    gfx::Insets focus_border_insets(label->GetInsets());
-    focus_border_insets -= label->View::GetInsets();
     const gfx::Size view_size = label->GetPreferredSize();
     const gfx::Insets insets = GetInsets();
-    label->SetBoundsRect(gfx::Rect(
-        gfx::Point(
-            insets.left() + x - focus_border_insets.left(),
-            insets.top() + line * line_height - focus_border_insets.top()),
-        view_size));
-    x += view_size.width() - focus_border_insets.width();
+    gfx::Point view_origin(insets.left() + x,
+                           insets.top() + line * line_height);
+    if (Link::GetDefaultFocusStyle() == Link::FocusStyle::RING) {
+      // Calculate the size of the optional focus border, and overlap by that
+      // amount. Otherwise, "<a>link</a>," will render as "link ,".
+      const gfx::Insets focus_border_insets = FocusBorderInsets(*label);
+      view_origin.Offset(-focus_border_insets.left(),
+                         -focus_border_insets.top());
+      label->SetBoundsRect(gfx::Rect(view_origin, view_size));
+      x += view_size.width() - focus_border_insets.width();
+      used_width = std::max(used_width, x);
+      total_height =
+          std::max(total_height, label->bounds().bottom() + insets.bottom() -
+                                     focus_border_insets.bottom());
+    } else {
+      label->SetBoundsRect(gfx::Rect(view_origin, view_size));
+      x += view_size.width();
+      total_height =
+          std::max(total_height, label->bounds().bottom() + insets.bottom());
+    }
     used_width = std::max(used_width, x);
-    total_height =
-        std::max(total_height, label->bounds().bottom() + insets.bottom() -
-                                   focus_border_insets.bottom());
+
     if (!dry_run)
       AddChildView(label.release());
 

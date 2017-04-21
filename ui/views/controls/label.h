@@ -31,9 +31,6 @@ class VIEWS_EXPORT Label : public View,
   // Internal class name.
   static const char kViewClassName[];
 
-  // The padding for the focus border when rendering focused text.
-  static const int kFocusBorderPadding;
-
   // Helper to construct a Label that doesn't use the views typography spec.
   // Using this causes Label to obtain colors from ui::NativeTheme and line
   // spacing from gfx::FontList::GetHeight().
@@ -206,7 +203,6 @@ class VIEWS_EXPORT Label : public View,
   void SelectRange(const gfx::Range& range);
 
   // View:
-  gfx::Insets GetInsets() const override;
   int GetBaseline() const override;
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
@@ -228,6 +224,10 @@ class VIEWS_EXPORT Label : public View,
       gfx::HorizontalAlignment alignment,
       gfx::DirectionalityMode directionality,
       gfx::ElideBehavior elide_behavior) const;
+
+  // Draw a focus ring. The default implementation does nothing.
+  virtual void PaintFocusRing(gfx::Canvas* canvas) const;
+  gfx::Rect GetFocusRingBounds() const;
 
   void PaintText(gfx::Canvas* canvas);
 
@@ -253,7 +253,7 @@ class VIEWS_EXPORT Label : public View,
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultilineSupportedRenderText);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, TextChangeWithoutLayout);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, EmptyLabel);
-  FRIEND_TEST_ALL_PREFIXES(LabelTest, FocusBounds);
+  FRIEND_TEST_ALL_PREFIXES(MDLabelTest, FocusBounds);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultiLineSizingWithElide);
   friend class LabelSelectionTest;
 
@@ -296,8 +296,6 @@ class VIEWS_EXPORT Label : public View,
 
   // Set up |lines_| to actually be painted.
   void MaybeBuildRenderTextLines() const;
-
-  gfx::Rect GetFocusBounds() const;
 
   // Get the text broken into lines as needed to fit the given |width|.
   std::vector<base::string16> GetLinesForWidth(int width) const;

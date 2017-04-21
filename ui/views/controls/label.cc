@@ -22,7 +22,6 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
@@ -36,9 +35,16 @@
 #include "ui/views/selection_controller.h"
 
 namespace views {
-// static
+namespace {
+// Returns additional Insets applied to |label->GetContentsBounds()| to obtain
+// the text bounds. GetContentsBounds() includes the Border, but not any
+// additional insets used by the Label (e.g. for a focus ring).
+gfx::Insets NonBorderInsets(const Label& label) {
+  return label.GetInsets() - label.View::GetInsets();
+}
+}  // namespace
+
 const char Label::kViewClassName[] = "Label";
-const int Label::kFocusBorderPadding = 1;
 
 Label::Label() : Label(base::string16()) {
 }
@@ -302,15 +308,6 @@ void Label::SelectRange(const gfx::Range& range) {
     SchedulePaint();
 }
 
-gfx::Insets Label::GetInsets() const {
-  gfx::Insets insets = View::GetInsets();
-  if (focus_behavior() != FocusBehavior::NEVER) {
-    insets += gfx::Insets(kFocusBorderPadding, kFocusBorderPadding,
-                          kFocusBorderPadding, kFocusBorderPadding);
-  }
-  return insets;
-}
-
 int Label::GetBaseline() const {
   return GetInsets().top() + font_list().GetBaseline();
 }
@@ -453,6 +450,29 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText(
   return render_text;
 }
 
+void Label::PaintFocusRing(gfx::Canvas* canvas) const {
+  // No focus ring by default.
+}
+
+gfx::Rect Label::GetFocusRingBounds() const {
+  MaybeBuildRenderTextLines();
+
+  gfx::Rect focus_bounds;
+  if (lines_.empty()) {
+    focus_bounds = gfx::Rect(GetTextSize());
+  } else {
+    for (size_t i = 0; i < lines_.size(); ++i) {
+      gfx::Point origin;
+      origin += lines_[i]->GetLineOffset(0);
+      focus_bounds.Union(gfx::Rect(origin, lines_[i]->GetStringSize()));
+    }
+  }
+
+  focus_bounds.Inset(-NonBorderInsets(*this));
+  focus_bounds.Intersect(GetLocalBounds());
+  return focus_bounds;
+}
+
 void Label::PaintText(gfx::Canvas* canvas) {
   MaybeBuildRenderTextLines();
 
@@ -499,13 +519,8 @@ void Label::OnPaint(gfx::Canvas* canvas) {
     PaintText(canvas);
   }
 
-  // Check for IsAccessibilityFocusable() to prevent drawing a focus rect for
-  // non-focusable labels with selection, which are given focus explicitly in
-  // OnMousePressed.
-  if (HasFocus() && !ui::MaterialDesignController::IsSecondaryUiMaterial() &&
-      IsAccessibilityFocusable()) {
-    canvas->DrawFocusRect(GetFocusBounds());
-  }
+  if (HasFocus())
+    PaintFocusRing(canvas);
 }
 
 void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -843,10 +858,10 @@ void Label::MaybeBuildRenderTextLines() const {
     return;
 
   gfx::Rect rect = GetContentsBounds();
-  if (focus_behavior() != FocusBehavior::NEVER)
-    rect.Inset(kFocusBorderPadding, kFocusBorderPadding);
+  rect.Inset(NonBorderInsets(*this));
   if (rect.IsEmpty())
     return;
+
   rect.Inset(-gfx::ShadowValue::GetMargin(shadows()));
 
   gfx::HorizontalAlignment alignment = horizontal_alignment();
@@ -900,25 +915,6 @@ void Label::MaybeBuildRenderTextLines() const {
 
   stored_selection_range_ = gfx::Range::InvalidRange();
   ApplyTextColors();
-}
-
-gfx::Rect Label::GetFocusBounds() const {
-  MaybeBuildRenderTextLines();
-
-  gfx::Rect focus_bounds;
-  if (lines_.empty()) {
-    focus_bounds = gfx::Rect(GetTextSize());
-  } else {
-    for (size_t i = 0; i < lines_.size(); ++i) {
-      gfx::Point origin;
-      origin += lines_[i]->GetLineOffset(0);
-      focus_bounds.Union(gfx::Rect(origin, lines_[i]->GetStringSize()));
-    }
-  }
-
-  focus_bounds.Inset(-kFocusBorderPadding, -kFocusBorderPadding);
-  focus_bounds.Intersect(GetLocalBounds());
-  return focus_bounds;
 }
 
 std::vector<base::string16> Label::GetLinesForWidth(int width) const {

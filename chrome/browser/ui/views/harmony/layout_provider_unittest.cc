@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -9,12 +10,20 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
+
+namespace {
+
+// Constant from the Harmony spec.
+constexpr int kHarmonyTitleSize = 15;
+}  // namespace
 
 // Check legacy font sizes. No new code should be using these constants, but if
 // these tests ever fail it probably means something in the old UI will have
@@ -116,7 +125,7 @@ TEST(LayoutProviderTest, DISABLED_RequestFontBySize) {
 #endif
   // Harmony spec.
   constexpr int kHeadline = 20;
-  constexpr int kTitle = 15;  // Leading 22.
+  constexpr int kTitle = kHarmonyTitleSize;  // Leading 22.
   constexpr int kBody1 = 13;  // Leading 20.
   constexpr int kBody2 = 12;  // Leading 20.
   constexpr int kButton = 12;
@@ -270,4 +279,59 @@ TEST(LayoutProviderTest, TypographyLineHeight) {
   // buttons have flexibility to configure their own spacing.
   EXPECT_EQ(0,
             views::style::GetLineHeight(views::style::CONTEXT_BUTTON, kStyle));
+}
+
+// Ensure that line heights reported in a default bot configuration match the
+// Harmony spec. This test will only run if it detects that the current machine
+// has the default OS configuration.
+TEST(LayoutProviderTest, ExplicitTypographyLineHeight) {
+  ui::test::MaterialDesignControllerTestAPI md_test_api(
+      ui::MaterialDesignController::MATERIAL_NORMAL);
+  md_test_api.SetSecondaryUiMaterial(true);
+
+  std::unique_ptr<views::LayoutProvider> layout_provider =
+      ChromeLayoutProvider::CreateLayoutProvider();
+
+  constexpr int kStyle = views::style::STYLE_PRIMARY;
+  if (views::style::GetFont(views::style::CONTEXT_DIALOG_TITLE, kStyle)
+          .GetFontSize() != kHarmonyTitleSize) {
+    LOG(WARNING) << "Skipping: Test machine not in default configuration.";
+    return;
+  }
+
+  // Line heights from the Harmony spec.
+  constexpr int kBodyLineHeight = 20;
+  constexpr struct {
+    int context;
+    int line_height;
+  } kHarmonyHeights[] = {{CONTEXT_HEADLINE, 32},
+                         {views::style::CONTEXT_DIALOG_TITLE, 22},
+                         {CONTEXT_BODY_TEXT_LARGE, kBodyLineHeight},
+                         {CONTEXT_BODY_TEXT_SMALL, kBodyLineHeight}};
+
+  for (size_t i = 0; i < arraysize(kHarmonyHeights); ++i) {
+    SCOPED_TRACE(testing::Message() << "Testing index: " << i);
+    EXPECT_EQ(kHarmonyHeights[i].line_height,
+              views::style::GetLineHeight(kHarmonyHeights[i].context, kStyle));
+
+    views::Label label(base::ASCIIToUTF16("test"), kHarmonyHeights[i].context);
+    label.SizeToPreferredSize();
+    EXPECT_EQ(kHarmonyHeights[i].line_height, label.height());
+  }
+
+  // TODO(tapted): Pass in contexts to StyledLabel instead. Currently they are
+  // stuck on style::CONTEXT_LABEL. That only matches the default line height in
+  // HarmonyTypographyProvider::GetLineHeight(), which is body text.
+  EXPECT_EQ(kBodyLineHeight,
+            views::style::GetLineHeight(views::style::CONTEXT_LABEL, kStyle));
+  views::StyledLabel styled_label(base::ASCIIToUTF16("test"), nullptr);
+  constexpr int kStyledLabelWidth = 200;  // Enough to avoid wrapping.
+  styled_label.SizeToFit(kStyledLabelWidth);
+  EXPECT_EQ(kBodyLineHeight, styled_label.height());
+
+  // Adding a link should not change the size.
+  styled_label.AddStyleRange(
+      gfx::Range(0, 2), views::StyledLabel::RangeStyleInfo::CreateForLink());
+  styled_label.SizeToFit(kStyledLabelWidth);
+  EXPECT_EQ(kBodyLineHeight, styled_label.height());
 }

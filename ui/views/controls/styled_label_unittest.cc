@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
@@ -23,6 +24,15 @@
 using base::ASCIIToUTF16;
 
 namespace views {
+namespace {
+
+enum class SecondaryUiMode { NON_MD, MD };
+
+std::string SecondaryUiModeToString(
+    const ::testing::TestParamInfo<SecondaryUiMode>& info) {
+  return info.param == SecondaryUiMode::MD ? "MD" : "NonMD";
+}
+}  // namespace
 
 class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
  public:
@@ -50,6 +60,31 @@ class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
   std::unique_ptr<StyledLabel> styled_;
 
   DISALLOW_COPY_AND_ASSIGN(StyledLabelTest);
+};
+
+// StyledLabelTest harness that runs both with and without secondary UI set to
+// MD.
+class MDStyledLabelTest
+    : public StyledLabelTest,
+      public ::testing::WithParamInterface<SecondaryUiMode> {
+ public:
+  MDStyledLabelTest()
+      : md_test_api_(ui::MaterialDesignController::Mode::MATERIAL_NORMAL) {}
+
+  // StyledLabelTest:
+  void SetUp() override {
+    // This works while StyledLabelTest has no SetUp() of its own. Otherwise the
+    // mode should be set after ViewsTestBase::SetUp(), but before the rest of
+    // StyledLabelTest::SetUp(), so that StyledLabelTest::SetUp() obeys the MD
+    // setting.
+    StyledLabelTest::SetUp();
+    md_test_api_.SetSecondaryUiMaterial(GetParam() == SecondaryUiMode::MD);
+  }
+
+ private:
+  ui::test::MaterialDesignControllerTestAPI md_test_api_;
+
+  DISALLOW_COPY_AND_ASSIGN(MDStyledLabelTest);
 };
 
 TEST_F(StyledLabelTest, NoWrapping) {
@@ -204,7 +239,7 @@ TEST_F(StyledLabelTest, WrapLongWords) {
                 static_cast<Label*>(styled()->child_at(1))->text());
 }
 
-TEST_F(StyledLabelTest, CreateLinks) {
+TEST_P(MDStyledLabelTest, CreateLinks) {
   const std::string text("This is a test block of text.");
   InitStyledLabel(text);
 
@@ -221,8 +256,14 @@ TEST_F(StyledLabelTest, CreateLinks) {
   styled()->AddStyleRange(gfx::Range(12, 13),
                           StyledLabel::RangeStyleInfo::CreateForLink());
 
-  // Now there should be a focus border because there are non-empty Links.
-  EXPECT_FALSE(styled()->GetInsets().IsEmpty());
+  if (GetParam() == SecondaryUiMode::MD) {
+    // Insets shouldn't change under MD when links are added, since the links
+    // indicate focus by adding an underline instead.
+    EXPECT_TRUE(styled()->GetInsets().IsEmpty());
+  } else {
+    // Now there should be a focus border because there are non-empty Links.
+    EXPECT_FALSE(styled()->GetInsets().IsEmpty());
+  }
 
   // Verify layout creates the right number of children.
   styled()->SetBounds(0, 0, 1000, 1000);
@@ -230,7 +271,7 @@ TEST_F(StyledLabelTest, CreateLinks) {
   EXPECT_EQ(7, styled()->child_count());
 }
 
-TEST_F(StyledLabelTest, DontBreakLinks) {
+TEST_P(MDStyledLabelTest, DontBreakLinks) {
   const std::string text("This is a test block of text, ");
   const std::string link_text("and this should be a link");
   InitStyledLabel(text + link_text);
@@ -248,9 +289,17 @@ TEST_F(StyledLabelTest, DontBreakLinks) {
   styled()->SetBounds(0, 0, label_preferred_size.width(), pref_height);
   styled()->Layout();
   ASSERT_EQ(2, styled()->child_count());
-  // The label has no focus border while the link (and thus overall styled
-  // label) does, so the label should be inset by the width of the focus border.
-  EXPECT_EQ(Label::kFocusBorderPadding, styled()->child_at(0)->x());
+
+  if (GetParam() == SecondaryUiMode::MD) {
+    // No additional insets should be added under MD.
+    EXPECT_EQ(0, styled()->child_at(0)->x());
+  } else {
+    // The label has no focus border while, when non-MD, the link (and thus
+    // overall styled label) does, so the label should be inset by the width of
+    // the focus border.
+    EXPECT_EQ(Link::kFocusBorderPadding, styled()->child_at(0)->x());
+  }
+  // The Link shouldn't be offset (it grows in size under non-MD instead).
   EXPECT_EQ(0, styled()->child_at(1)->x());
 }
 
@@ -427,7 +476,7 @@ TEST_F(StyledLabelTest, Color) {
   widget->CloseNow();
 }
 
-TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
+TEST_P(MDStyledLabelTest, StyledRangeWithTooltip) {
   const std::string text("This is a test block of text, ");
   const std::string tooltip_text("this should have a tooltip,");
   const std::string normal_text(" this should not have a tooltip, ");
@@ -463,13 +512,21 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
   EXPECT_EQ(label_preferred_size.width(), styled()->width());
 
   ASSERT_EQ(5, styled()->child_count());
-  // The labels have no focus border while the link (and thus overall styled
-  // label) does, so the labels should be inset by the width of the focus
-  // border.
-  EXPECT_EQ(Label::kFocusBorderPadding, styled()->child_at(0)->x());
+
+  if (GetParam() == SecondaryUiMode::MD) {
+    // In MD, the labels shouldn't be offset to cater for focus rings.
+    EXPECT_EQ(0, styled()->child_at(0)->x());
+    EXPECT_EQ(0, styled()->child_at(2)->x());
+  } else {
+    // The labels have no focus border while the link (and thus overall styled
+    // label) does, so the labels should be inset by the width of the focus
+    // border.
+    EXPECT_EQ(Link::kFocusBorderPadding, styled()->child_at(0)->x());
+    EXPECT_EQ(Link::kFocusBorderPadding, styled()->child_at(2)->x());
+  }
+
   EXPECT_EQ(styled()->child_at(0)->bounds().right(),
             styled()->child_at(1)->x());
-  EXPECT_EQ(Label::kFocusBorderPadding, styled()->child_at(2)->x());
   EXPECT_EQ(styled()->child_at(2)->bounds().right(),
             styled()->child_at(3)->x());
   EXPECT_EQ(0, styled()->child_at(4)->x());
@@ -578,5 +635,11 @@ TEST_F(StyledLabelTest, Border) {
       label_preferred_size.width() + 10 /*left border*/ + 20 /*right border*/,
       styled()->GetPreferredSize().width());
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        MDStyledLabelTest,
+                        ::testing::Values(SecondaryUiMode::MD,
+                                          SecondaryUiMode::NON_MD),
+                        &SecondaryUiModeToString);
 
 }  // namespace views

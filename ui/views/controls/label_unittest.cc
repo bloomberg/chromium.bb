@@ -15,6 +15,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -23,6 +24,7 @@
 #include "ui/gfx/switches.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -90,15 +92,28 @@ base::string16 GetClipboardText(ui::ClipboardType clipboard_type) {
   return clipboard_text;
 }
 
+enum class SecondaryUiMode { NON_MD, MD };
+
+std::string SecondaryUiModeToString(
+    const ::testing::TestParamInfo<SecondaryUiMode>& info) {
+  return info.param == SecondaryUiMode::MD ? "MD" : "NonMD";
+}
+
 }  // namespace
 
 class LabelTest : public ViewsTestBase {
  public:
   LabelTest() {}
 
-  // ViewsTestBase overrides:
+  // Called after ViewsTestBase is set up. ViewsTestBase initializes the
+  // MaterialDesignController, so this allows a subclass to influence settings
+  // used for the remainder of SetUp().
+  virtual void OnBaseSetUp() {}
+
+  // ViewsTestBase:
   void SetUp() override {
     ViewsTestBase::SetUp();
+    OnBaseSetUp();
 
     Widget::InitParams params =
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -219,6 +234,24 @@ class LabelSelectionTest : public LabelTest {
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelSelectionTest);
+};
+
+// LabelTest harness that runs both with and without secondary UI set to MD.
+class MDLabelTest : public LabelTest,
+                    public ::testing::WithParamInterface<SecondaryUiMode> {
+ public:
+  MDLabelTest()
+      : md_test_api_(ui::MaterialDesignController::Mode::MATERIAL_NORMAL) {}
+
+  // LabelTest:
+  void OnBaseSetUp() override {
+    md_test_api_.SetSecondaryUiMaterial(GetParam() == SecondaryUiMode::MD);
+  }
+
+ private:
+  ui::test::MaterialDesignControllerTestAPI md_test_api_;
+
+  DISALLOW_COPY_AND_ASSIGN(MDLabelTest);
 };
 
 // Crashes on Linux only. http://crbug.com/612406
@@ -783,32 +816,64 @@ TEST_F(LabelTest, NoSchedulePaintInOnPaint) {
   EXPECT_EQ(count, label.schedule_paint_count());  // Unchanged.
 }
 
-TEST_F(LabelTest, FocusBounds) {
+TEST_P(MDLabelTest, FocusBounds) {
   label()->SetText(ASCIIToUTF16("Example"));
-  gfx::Size normal_size = label()->GetPreferredSize();
-
-  label()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  label()->RequestFocus();
-  gfx::Size focusable_size = label()->GetPreferredSize();
-  // Focusable label requires larger size to paint the focus rectangle.
-  EXPECT_GT(focusable_size.width(), normal_size.width());
-  EXPECT_GT(focusable_size.height(), normal_size.height());
+  Link concrete_link(ASCIIToUTF16("Example"));
+  Label* link = &concrete_link;  // Allow LabelTest to call methods as friend.
+  link->SetFocusBehavior(View::FocusBehavior::NEVER);
 
   label()->SizeToPreferredSize();
-  gfx::Rect focus_bounds = label()->GetFocusBounds();
+  link->SizeToPreferredSize();
+
+  // A regular label never draws a focus ring, so it should exactly match the
+  // font height (assuming no glyphs came from fallback fonts).
+  EXPECT_EQ(label()->font_list().GetHeight(),
+            label()->GetFocusRingBounds().height());
+
+  // The test starts by setting the link unfocusable, so it should also match.
+  EXPECT_EQ(link->font_list().GetHeight(), link->GetFocusRingBounds().height());
+
+  // Labels are not focusable unless they are links, so don't change size when
+  // the focus behavior changes.
+  gfx::Size normal_label_size = label()->GetPreferredSize();
+  label()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  EXPECT_EQ(normal_label_size, label()->GetPreferredSize());
+
+  gfx::Size normal_link_size = link->GetPreferredSize();
+  link->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  gfx::Size focusable_link_size = link->GetPreferredSize();
+  if (GetParam() == SecondaryUiMode::MD) {
+    // Everything should match under MD since underlines indicates focus.
+    EXPECT_EQ(normal_label_size, normal_link_size);
+    EXPECT_EQ(normal_link_size, focusable_link_size);
+  } else {
+    // Otherwise, links get bigger in order to paint the focus rectangle.
+    EXPECT_NE(normal_link_size, focusable_link_size);
+    EXPECT_GT(focusable_link_size.width(), normal_link_size.width());
+    EXPECT_GT(focusable_link_size.height(), normal_link_size.height());
+  }
+
+  // Requesting focus doesn't change the preferred size since that would mess up
+  // layout.
+  label()->RequestFocus();
+  EXPECT_EQ(focusable_link_size, link->GetPreferredSize());
+
+  label()->SizeToPreferredSize();
+  gfx::Rect focus_bounds = label()->GetFocusRingBounds();
   EXPECT_EQ(label()->GetLocalBounds().ToString(), focus_bounds.ToString());
 
+  gfx::Size focusable_size = normal_label_size;
   label()->SetBounds(
       0, 0, focusable_size.width() * 2, focusable_size.height() * 2);
   label()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  focus_bounds = label()->GetFocusBounds();
+  focus_bounds = label()->GetFocusRingBounds();
   EXPECT_EQ(0, focus_bounds.x());
   EXPECT_LT(0, focus_bounds.y());
   EXPECT_GT(label()->bounds().bottom(), focus_bounds.bottom());
   EXPECT_EQ(focusable_size.ToString(), focus_bounds.size().ToString());
 
   label()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  focus_bounds = label()->GetFocusBounds();
+  focus_bounds = label()->GetFocusRingBounds();
   EXPECT_LT(0, focus_bounds.x());
   EXPECT_EQ(label()->bounds().right(), focus_bounds.right());
   EXPECT_LT(0, focus_bounds.y());
@@ -818,7 +883,7 @@ TEST_F(LabelTest, FocusBounds) {
   label()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label()->SetElideBehavior(gfx::FADE_TAIL);
   label()->SetBounds(0, 0, focusable_size.width() / 2, focusable_size.height());
-  focus_bounds = label()->GetFocusBounds();
+  focus_bounds = label()->GetFocusRingBounds();
   EXPECT_EQ(0, focus_bounds.x());
   EXPECT_EQ(focusable_size.width() / 2, focus_bounds.width());
 }
@@ -828,9 +893,13 @@ TEST_F(LabelTest, EmptyLabel) {
   label()->RequestFocus();
   label()->SizeToPreferredSize();
 
-  gfx::Rect focus_bounds = label()->GetFocusBounds();
-  EXPECT_FALSE(focus_bounds.IsEmpty());
-  EXPECT_LT(label()->font_list().GetHeight(), focus_bounds.height());
+  Link concrete_link((base::string16()));
+  Label* link = &concrete_link;  // Allow LabelTest to call methods as friend.
+
+  // With no text, neither links nor labels are focusable, and have no size in
+  // any dimension.
+  EXPECT_EQ(gfx::Rect(), label()->GetFocusRingBounds());
+  EXPECT_EQ(gfx::Rect(), link->GetFocusRingBounds());
 }
 
 TEST_F(LabelSelectionTest, Selectable) {
@@ -1118,5 +1187,11 @@ TEST_F(LabelSelectionTest, ContextMenuContents) {
   EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
   EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        MDLabelTest,
+                        ::testing::Values(SecondaryUiMode::MD,
+                                          SecondaryUiMode::NON_MD),
+                        &SecondaryUiModeToString);
 
 }  // namespace views
