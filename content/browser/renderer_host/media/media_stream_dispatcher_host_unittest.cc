@@ -27,9 +27,9 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
@@ -257,12 +257,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
         audio_system_.get(), std::move(mock_video_capture_provider));
 
-    MockResourceContext* mock_resource_context =
-        static_cast<MockResourceContext*>(
-            browser_context_.GetResourceContext());
-
     host_ = new MockMediaStreamDispatcherHost(
-        mock_resource_context->GetMediaDeviceIDSalt(),
+        browser_context_.GetMediaDeviceIDSalt(),
         base::ThreadTaskRunnerHandle::Get(), media_stream_manager_.get());
 
     // Use the fake content client and browser.
@@ -409,18 +405,16 @@ class MediaStreamDispatcherHostTest : public testing::Test {
           audio_device_descriptions_.begin();
       for (; audio_it != audio_device_descriptions_.end(); ++audio_it) {
         if (content::DoesMediaDeviceIDMatchHMAC(
-                browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-                origin,
-                devices[i].device.id,
-                audio_it->unique_id)) {
+                browser_context_.GetMediaDeviceIDSalt(), origin,
+                devices[i].device.id, audio_it->unique_id)) {
           EXPECT_FALSE(found_match);
           found_match = true;
         }
       }
       for (const std::string& device_id : stub_video_device_ids_) {
         if (content::DoesMediaDeviceIDMatchHMAC(
-                browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-                origin, devices[i].device.id, device_id)) {
+                browser_context_.GetMediaDeviceIDSalt(), origin,
+                devices[i].device.id, device_id)) {
           EXPECT_FALSE(found_match);
           found_match = true;
         }
@@ -509,8 +503,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithDepthVideo) {
   // We specify to generate both audio and video stream.
   StreamControls controls(true, true);
   std::string source_id = content::GetHMACForMediaDeviceID(
-      browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(), origin_,
-      kDepthVideoDeviceId);
+      browser_context_.GetMediaDeviceIDSalt(), origin_, kDepthVideoDeviceId);
   // |source_id| corresponds to the depth device. As we can generate only one
   // video stream using GenerateStreamAndWaitForResult, we use
   // controls.video.source_id to specify that the stream is depth video.
@@ -663,9 +656,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
       audio_device_descriptions_.begin();
   for (; audio_it != audio_device_descriptions_.end(); ++audio_it) {
     std::string source_id = content::GetHMACForMediaDeviceID(
-        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-        origin_,
-        audio_it->unique_id);
+        browser_context_.GetMediaDeviceIDSalt(), origin_, audio_it->unique_id);
     ASSERT_FALSE(source_id.empty());
     StreamControls controls(true, true);
     controls.audio.device_id = source_id;
@@ -677,8 +668,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
 
   for (const std::string& device_id : stub_video_device_ids_) {
     std::string source_id = content::GetHMACForMediaDeviceID(
-        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(), origin_,
-        device_id);
+        browser_context_.GetMediaDeviceIDSalt(), origin_, device_id);
     ASSERT_FALSE(source_id.empty());
     StreamControls controls(true, true);
     controls.video.device_id = source_id;

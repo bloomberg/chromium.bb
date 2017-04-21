@@ -80,7 +80,6 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/bindings_policy.h"
@@ -2550,7 +2549,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Bind(&MediaDevicesDispatcherHost::Create, GetProcess()->GetID(),
                    GetRoutingID(), GetProcess()
                                        ->GetBrowserContext()
-                                       ->GetResourceContext()
                                        ->GetMediaDeviceIDSalt(),
                    base::Unretained(media_stream_manager)),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));

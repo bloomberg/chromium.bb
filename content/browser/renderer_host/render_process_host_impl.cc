@@ -1056,9 +1056,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   scoped_refptr<net::URLRequestContextGetter> media_request_context(
       GetStoragePartition()->GetMediaURLRequestContext());
 
-  ResourceMessageFilter::GetContextsCallback get_contexts_callback(
-      base::Bind(&GetContexts, browser_context->GetResourceContext(),
-                 request_context, media_request_context));
+  ResourceMessageFilter::GetContextsCallback get_contexts_callback(base::Bind(
+      &GetContexts, resource_context, request_context, media_request_context));
 
   // Several filters need the Blob storage context, so fetch it in advance.
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
@@ -1087,7 +1086,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   audio_renderer_host_ = new AudioRendererHost(
       GetID(), audio_manager, BrowserMainLoop::GetInstance()->audio_system(),
       AudioMirroringManager::GetInstance(), media_stream_manager,
-      browser_context->GetResourceContext()->GetMediaDeviceIDSalt());
+      browser_context->GetMediaDeviceIDSalt());
   AddFilter(audio_renderer_host_.get());
   AddFilter(
       new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_service()));
@@ -1102,8 +1101,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), webrtc_eventlog_host_.GetWeakPtr());
   AddFilter(peer_connection_tracker_host_.get());
   AddFilter(new MediaStreamDispatcherHost(
-      GetID(), browser_context->GetResourceContext()->GetMediaDeviceIDSalt(),
-      media_stream_manager));
+      GetID(), browser_context->GetMediaDeviceIDSalt(), media_stream_manager));
   AddFilter(new MediaStreamTrackMetricsHost());
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)

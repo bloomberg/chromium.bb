@@ -20,8 +20,8 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_device_id.h"
-#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_description.h"
@@ -87,12 +87,8 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
     media_stream_manager_ =
         base::MakeUnique<MediaStreamManager>(audio_system_.get());
 
-    MockResourceContext* mock_resource_context =
-        static_cast<MockResourceContext*>(
-            browser_context_.GetResourceContext());
-
     host_ = base::MakeUnique<MediaDevicesDispatcherHost>(
-        kProcessId, kRenderId, mock_resource_context->GetMediaDeviceIDSalt(),
+        kProcessId, kRenderId, browser_context_.GetMediaDeviceIDSalt(),
         media_stream_manager_.get());
   }
 
@@ -122,9 +118,9 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
   void VideoInputCapabilitiesCallback(
       std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
     MockVideoInputCapabilitiesCallback();
-    std::string expected_first_device_id = GetHMACForMediaDeviceID(
-        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(), origin_,
-        kDefaultVideoDeviceID);
+    std::string expected_first_device_id =
+        GetHMACForMediaDeviceID(browser_context_.GetMediaDeviceIDSalt(),
+                                origin_, kDefaultVideoDeviceID);
     EXPECT_EQ(kNumFakeVideoDevices, capabilities.size());
     EXPECT_EQ(expected_first_device_id, capabilities[0]->device_id);
     for (const auto& capability : capabilities) {
@@ -200,8 +196,8 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
         bool found_match = false;
         for (const auto& raw_device_info : physical_devices_[i]) {
           if (DoesMediaDeviceIDMatchHMAC(
-                  browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-                  origin, device_info.device_id, raw_device_info.device_id)) {
+                  browser_context_.GetMediaDeviceIDSalt(), origin,
+                  device_info.device_id, raw_device_info.device_id)) {
             EXPECT_FALSE(found_match);
             found_match = true;
           }

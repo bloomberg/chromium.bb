@@ -8,8 +8,8 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_context.h"
 
 using content::BrowserThread;
 
@@ -19,16 +19,11 @@ MediaDeviceIDSalt::MediaDeviceIDSalt(PrefService* pref_service) {
   media_device_id_salt_.Init(prefs::kMediaDeviceIdSalt, pref_service);
   if (media_device_id_salt_.GetValue().empty()) {
     media_device_id_salt_.SetValue(
-        content::ResourceContext::CreateRandomMediaDeviceIDSalt());
+        content::BrowserContext::CreateRandomMediaDeviceIDSalt());
   }
 }
 
 MediaDeviceIDSalt::~MediaDeviceIDSalt() {
-}
-
-void MediaDeviceIDSalt::ShutdownOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  media_device_id_salt_.Destroy();
 }
 
 std::string MediaDeviceIDSalt::GetSalt() const {
@@ -44,5 +39,5 @@ void MediaDeviceIDSalt::RegisterProfilePrefs(
 void MediaDeviceIDSalt::Reset(PrefService* pref_service) {
   pref_service->SetString(
       prefs::kMediaDeviceIdSalt,
-      content::ResourceContext::CreateRandomMediaDeviceIDSalt());
+      content::BrowserContext::CreateRandomMediaDeviceIDSalt());
 }

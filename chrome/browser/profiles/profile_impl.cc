@@ -44,6 +44,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -561,6 +562,8 @@ void ProfileImpl::DoFinalInit() {
       prefs::kForceEphemeralProfiles,
       base::Bind(&ProfileImpl::UpdateIsEphemeralInStorage,
                  base::Unretained(this)));
+
+  media_device_id_salt_ = new MediaDeviceIDSalt(prefs_.get());
 
   // It would be nice to use PathService for fetching this directory, but
   // the cache directory depends on the profile directory, which isn't available
@@ -1091,6 +1094,10 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
       base::Bind(&ProfileImpl::CreateIdentityService, base::Unretained(this));
   services->insert(
       std::make_pair(identity::mojom::kServiceName, identity_service_info));
+}
+
+std::string ProfileImpl::GetMediaDeviceIDSalt() {
+  return media_device_id_salt_->GetSalt();
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

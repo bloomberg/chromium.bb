@@ -122,7 +122,7 @@ std::string WebrtcAudioPrivateFunction::CalculateHMAC(
 }
 
 void WebrtcAudioPrivateFunction::InitDeviceIDSalt() {
-  device_id_salt_ = GetProfile()->GetResourceContext()->GetMediaDeviceIDSalt();
+  device_id_salt_ = GetProfile()->GetMediaDeviceIDSalt();
 }
 
 std::string WebrtcAudioPrivateFunction::device_id_salt() const {

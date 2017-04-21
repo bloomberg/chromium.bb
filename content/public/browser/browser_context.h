@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -171,6 +172,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static ServiceManagerConnection* GetServiceManagerConnectionFor(
       BrowserContext* browser_context);
 
+  BrowserContext();
+
   ~BrowserContext() override;
 
   // Shuts down the storage partitions associated to this browser context.
@@ -251,6 +254,18 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Registers per-browser-context services to be loaded in the browser process
   // by the Service Manager.
   virtual void RegisterInProcessServices(StaticServiceMap* services) {}
+
+  // Returns a random salt string that is used for creating media device IDs.
+  // Returns a random string by default.
+  virtual std::string GetMediaDeviceIDSalt();
+
+  // Utility function useful for embedders. Only needs to be called if
+  // 1) The embedder needs to use a new salt, and
+  // 2) The embedder saves its salt across restarts.
+  static std::string CreateRandomMediaDeviceIDSalt();
+
+ private:
+  const std::string media_device_id_salt_;
 };
 
 }  // namespace content

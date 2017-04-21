@@ -25,6 +25,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "extensions/features/features.h"
 
+class MediaDeviceIDSalt;
 class PrefService;
 
 #if defined(OS_CHROMEOS)
@@ -97,6 +98,7 @@ class ProfileImpl : public Profile {
       const base::FilePath& partition_path,
       bool in_memory) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
+  std::string GetMediaDeviceIDSalt() override;
 
   // Profile implementation:
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
@@ -250,6 +252,11 @@ class ProfileImpl : public Profile {
 #endif
 
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+
+  // TODO(mmenke):  This should be removed from the Profile, and use a
+  // BrowserContextKeyedService instead.
+  // See https://crbug.com/713733
+  scoped_refptr<MediaDeviceIDSalt> media_device_id_salt_;
 
   // STOP!!!! DO NOT ADD ANY MORE ITEMS HERE!!!!
   //

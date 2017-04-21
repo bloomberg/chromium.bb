@@ -12,9 +12,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -505,6 +507,9 @@ ServiceManagerConnection* BrowserContext::GetServiceManagerConnectionFor(
                            : nullptr;
 }
 
+BrowserContext::BrowserContext()
+    : media_device_id_salt_(CreateRandomMediaDeviceIDSalt()) {}
+
 BrowserContext::~BrowserContext() {
   CHECK(GetUserData(kMojoWasInitialized))
       << "Attempting to destroy a BrowserContext that never called "
@@ -522,6 +527,18 @@ BrowserContext::~BrowserContext() {
 void BrowserContext::ShutdownStoragePartitions() {
   if (GetUserData(kStoragePartitionMapKeyName))
     RemoveUserData(kStoragePartitionMapKeyName);
+}
+
+std::string BrowserContext::GetMediaDeviceIDSalt() {
+  return media_device_id_salt_;
+}
+
+// static
+std::string BrowserContext::CreateRandomMediaDeviceIDSalt() {
+  std::string salt;
+  base::Base64Encode(base::RandBytesAsString(16), &salt);
+  DCHECK(!salt.empty());
+  return salt;
 }
 
 }  // namespace content

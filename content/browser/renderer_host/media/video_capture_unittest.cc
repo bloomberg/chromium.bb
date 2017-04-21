@@ -24,7 +24,6 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_devices.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
@@ -165,10 +164,9 @@ class VideoCaptureTest : public testing::Test,
       devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
       media_stream_manager_->media_devices_manager()->EnumerateDevices(
           devices_to_enumerate,
-          base::Bind(
-              &VideoInputDevicesEnumerated, run_loop.QuitClosure(),
-              browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-              security_origin, &video_devices));
+          base::Bind(&VideoInputDevicesEnumerated, run_loop.QuitClosure(),
+                     browser_context_.GetMediaDeviceIDSalt(), security_origin,
+                     &video_devices));
       run_loop.Run();
     }
     ASSERT_FALSE(video_devices.empty());
@@ -179,9 +177,9 @@ class VideoCaptureTest : public testing::Test,
       StreamDeviceInfo opened_device;
       media_stream_manager_->OpenDevice(
           &stream_requester_, render_process_id, render_frame_id,
-          browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-          page_request_id, video_devices[0].device_id,
-          MEDIA_DEVICE_VIDEO_CAPTURE, security_origin);
+          browser_context_.GetMediaDeviceIDSalt(), page_request_id,
+          video_devices[0].device_id, MEDIA_DEVICE_VIDEO_CAPTURE,
+          security_origin);
       EXPECT_CALL(stream_requester_,
                   DeviceOpened(render_frame_id, page_request_id, _, _))
           .Times(1)

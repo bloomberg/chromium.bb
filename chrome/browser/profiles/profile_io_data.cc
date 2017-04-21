@@ -36,7 +36,6 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
@@ -480,9 +479,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     google_services_user_account_id_.MoveToThread(io_task_runner);
   }
 
-  if (!IsOffTheRecord())
-    media_device_id_salt_ = new MediaDeviceIDSalt(pref_service);
-
   network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
                                    pref_service);
 
@@ -857,11 +853,6 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_.get();
 }
 
-std::string ProfileIOData::GetMediaDeviceIDSalt() const {
-  DCHECK(media_device_id_salt_);
-  return media_device_id_salt_->GetSalt();
-}
-
 bool ProfileIOData::IsOffTheRecord() const {
   return profile_type() == Profile::INCOGNITO_PROFILE
       || profile_type() == Profile::GUEST_PROFILE;
@@ -957,13 +948,6 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(io_data_->initialized_);
   return request_context_;
-}
-
-std::string ProfileIOData::ResourceContext::GetMediaDeviceIDSalt() {
-  if (io_data_->HasMediaDeviceIDSalt())
-    return io_data_->GetMediaDeviceIDSalt();
-
-  return content::ResourceContext::GetMediaDeviceIDSalt();
 }
 
 void ProfileIOData::Init(
@@ -1226,8 +1210,6 @@ void ProfileIOData::ShutdownOnUIThread(
   enable_metrics_.Destroy();
   safe_browsing_enabled_.Destroy();
   network_prediction_options_.Destroy();
-  if (media_device_id_salt_.get())
-    media_device_id_salt_->ShutdownOnUIThread();
   if (url_blacklist_manager_)
     url_blacklist_manager_->ShutdownOnUIThread();
   if (ct_policy_manager_)

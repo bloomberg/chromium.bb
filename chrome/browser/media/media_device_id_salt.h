@@ -23,7 +23,6 @@ class PrefService;
 class MediaDeviceIDSalt : public base::RefCountedThreadSafe<MediaDeviceIDSalt> {
  public:
   explicit MediaDeviceIDSalt(PrefService* pref_service);
-  void ShutdownOnUIThread();
 
   std::string GetSalt() const;
 

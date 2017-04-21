@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
         media::AudioDeviceDescription::IsDefaultDevice(it->unique_id)
             ? media::AudioDeviceDescription::kDefaultDeviceId
             : content::GetHMACForMediaDeviceID(
-                  profile()->GetResourceContext()->GetMediaDeviceIDSalt(),
+                  profile()->GetMediaDeviceIDSalt(),
                   url::Origin(source_url_.GetOrigin()), it->unique_id);
 
     EXPECT_EQ(expected_id, sink_id);
@@ -189,8 +189,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
     VLOG(2) << "Trying to find associated sink for device " << raw_device_id;
     GURL origin(GURL("http://www.google.com/").GetOrigin());
     std::string source_id_in_origin = content::GetHMACForMediaDeviceID(
-        profile()->GetResourceContext()->GetMediaDeviceIDSalt(),
-        url::Origin(origin), raw_device_id);
+        profile()->GetMediaDeviceIDSalt(), url::Origin(origin), raw_device_id);
 
     base::ListValue parameters;
     parameters.AppendString(origin.spec());

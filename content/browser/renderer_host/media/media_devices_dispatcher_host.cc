@@ -16,10 +16,10 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_devices.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/video_facing.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -114,7 +114,7 @@ MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(
     : render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
       device_id_salt_(device_id_salt),
-      group_id_salt_(ResourceContext::CreateRandomMediaDeviceIDSalt()),
+      group_id_salt_(BrowserContext::CreateRandomMediaDeviceIDSalt()),
       media_stream_manager_(media_stream_manager),
       permission_checker_(base::MakeUnique<MediaDevicesPermissionChecker>()),
       weak_factory_(this) {
