@@ -477,9 +477,9 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, script_start_position.line_.ZeroBasedInt()),
       v8::Integer::New(isolate, script_start_position.column_.ZeroBasedInt()),
-      V8Boolean(access_control_status == kSharableCrossOrigin, isolate),
+      v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
       v8::Local<v8::Integer>(), V8String(isolate, source_map_url),
-      V8Boolean(access_control_status == kOpaqueResource, isolate));
+      v8::Boolean::New(isolate, access_control_status == kOpaqueResource));
 
   V8CompileHistogram::Cacheability cacheability_if_no_handler =
       V8CompileHistogram::Cacheability::kNoncacheable;
@@ -512,12 +512,12 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, 0),  // line_offset
       v8::Integer::New(isolate, 0),  // col_offset
-      V8Boolean(access_control_status == kSharableCrossOrigin, isolate),
-      v8::Local<v8::Integer>(),  // script id
-      V8String(isolate, ""),     // source_map_url
-      V8Boolean(access_control_status == kOpaqueResource, isolate),
-      V8Boolean(false, isolate),  // is_wasm
-      V8Boolean(true, isolate));  // is_module
+      v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
+      v8::Local<v8::Integer>(),    // script id
+      v8::String::Empty(isolate),  // source_map_url
+      v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
+      v8::False(isolate),  // is_wasm
+      v8::True(isolate));  // is_module
 
   v8::ScriptCompiler::Source script_source(V8String(isolate, source), origin);
   return v8::ScriptCompiler::CompileModule(isolate, &script_source);

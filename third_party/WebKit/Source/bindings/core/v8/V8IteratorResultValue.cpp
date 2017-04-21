@@ -12,9 +12,9 @@ v8::Local<v8::Object> V8IteratorResultValue(v8::Isolate* isolate,
   v8::Local<v8::Object> result = v8::Object::New(isolate);
   if (value.IsEmpty())
     value = v8::Undefined(isolate);
-  if (!V8CallBoolean(result->CreateDataProperty(isolate->GetCurrentContext(),
-                                                V8String(isolate, "done"),
-                                                V8Boolean(done, isolate))) ||
+  if (!V8CallBoolean(result->CreateDataProperty(
+          isolate->GetCurrentContext(), V8String(isolate, "done"),
+          v8::Boolean::New(isolate, done))) ||
       !V8CallBoolean(result->CreateDataProperty(
           isolate->GetCurrentContext(), V8String(isolate, "value"), value)))
     return v8::Local<v8::Object>();

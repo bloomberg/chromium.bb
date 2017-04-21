@@ -67,7 +67,7 @@ bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Loca
   v8::Local<v8::Value> booleanMemberValue;
   bool booleanMemberHasValueOrDefault = false;
   if (impl.hasBooleanMember()) {
-    booleanMemberValue = V8Boolean(impl.booleanMember(), isolate);
+    booleanMemberValue = v8::Boolean::New(isolate, impl.booleanMember());
     booleanMemberHasValueOrDefault = true;
   }
   if (booleanMemberHasValueOrDefault &&

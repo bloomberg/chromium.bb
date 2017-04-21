@@ -86,7 +86,7 @@ v8::Local<v8::Value> ToV8(const BooleanOrString& impl, v8::Local<v8::Object> cre
     case BooleanOrString::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrString::SpecificTypeBoolean:
-      return V8Boolean(impl.getAsBoolean(), isolate);
+      return v8::Boolean::New(isolate, impl.getAsBoolean());
     case BooleanOrString::SpecificTypeString:
       return V8String(isolate, impl.getAsString());
     default:

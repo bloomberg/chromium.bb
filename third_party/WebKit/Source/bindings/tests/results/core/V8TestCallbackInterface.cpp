@@ -92,7 +92,7 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
 
   ScriptState::Scope scope(m_scriptState.Get());
 
-  v8::Local<v8::Value> boolArgHandle = V8Boolean(boolArg, m_scriptState->GetIsolate());
+  v8::Local<v8::Value> boolArgHandle = v8::Boolean::New(m_scriptState->GetIsolate(), boolArg);
   v8::Local<v8::Value> argv[] = { boolArgHandle };
 
   v8::Isolate* isolate = m_scriptState->GetIsolate();

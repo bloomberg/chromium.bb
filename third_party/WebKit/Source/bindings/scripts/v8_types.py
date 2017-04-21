@@ -925,7 +925,7 @@ CPP_VALUE_TO_V8_VALUE = {
     'DOMString': 'V8String({isolate}, {cpp_value})',
     'ByteString': 'V8String({isolate}, {cpp_value})',
     'USVString': 'V8String({isolate}, {cpp_value})',
-    'boolean': 'V8Boolean({cpp_value}, {isolate})',
+    'boolean': 'v8::Boolean::New({isolate}, {cpp_value})',
     # All the int types below are converted to (u)int32_t in the v8::Integer::New*() calls.
     # The 64-bit int types have already been converted to double when CPP_VALUE_TO_V8_VALUE is used, so they are not
     # listed here.

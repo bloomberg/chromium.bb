@@ -11,7 +11,7 @@ namespace blink {
 
 ScriptValue WebGLAny(ScriptState* script_state, bool value) {
   return ScriptValue(script_state,
-                     V8Boolean(value, script_state->GetIsolate()));
+                     v8::Boolean::New(script_state->GetIsolate(), value));
 }
 
 ScriptValue WebGLAny(ScriptState* script_state,
@@ -21,7 +21,7 @@ ScriptValue WebGLAny(ScriptState* script_state,
   for (size_t i = 0; i < size; ++i) {
     if (!V8CallBoolean(array->CreateDataProperty(
             script_state->GetContext(), i,
-            V8Boolean(value[i], script_state->GetIsolate()))))
+            v8::Boolean::New(script_state->GetIsolate(), value[i]))))
       return ScriptValue();
   }
   return ScriptValue(script_state, array);
@@ -33,7 +33,7 @@ ScriptValue WebGLAny(ScriptState* script_state, const Vector<bool>& value) {
   for (size_t i = 0; i < size; ++i) {
     if (!V8CallBoolean(array->CreateDataProperty(
             script_state->GetContext(), i,
-            V8Boolean(value[i], script_state->GetIsolate()))))
+            v8::Boolean::New(script_state->GetIsolate(), value[i]))))
       return ScriptValue();
   }
   return ScriptValue(script_state, array);

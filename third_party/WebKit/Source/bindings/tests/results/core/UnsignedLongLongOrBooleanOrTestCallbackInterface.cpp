@@ -119,7 +119,7 @@ v8::Local<v8::Value> ToV8(const UnsignedLongLongOrBooleanOrTestCallbackInterface
     case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeNone:
       return v8::Null(isolate);
     case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeBoolean:
-      return V8Boolean(impl.getAsBoolean(), isolate);
+      return v8::Boolean::New(isolate, impl.getAsBoolean());
     case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeTestCallbackInterface:
       return ToV8(impl.getAsTestCallbackInterface(), creationContext, isolate);
     case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeUnsignedLongLong:

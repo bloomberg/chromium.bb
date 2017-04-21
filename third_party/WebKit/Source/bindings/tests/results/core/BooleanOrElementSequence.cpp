@@ -98,7 +98,7 @@ v8::Local<v8::Value> ToV8(const BooleanOrElementSequence& impl, v8::Local<v8::Ob
     case BooleanOrElementSequence::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrElementSequence::SpecificTypeBoolean:
-      return V8Boolean(impl.getAsBoolean(), isolate);
+      return v8::Boolean::New(isolate, impl.getAsBoolean());
     case BooleanOrElementSequence::SpecificTypeElementSequence:
       return ToV8(impl.getAsElementSequence(), creationContext, isolate);
     default:

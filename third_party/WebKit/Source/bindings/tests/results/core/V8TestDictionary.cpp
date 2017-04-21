@@ -736,7 +736,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
   v8::Local<v8::Value> booleanMemberValue;
   bool booleanMemberHasValueOrDefault = false;
   if (impl.hasBooleanMember()) {
-    booleanMemberValue = V8Boolean(impl.booleanMember(), isolate);
+    booleanMemberValue = v8::Boolean::New(isolate, impl.booleanMember());
     booleanMemberHasValueOrDefault = true;
   }
   if (booleanMemberHasValueOrDefault &&
@@ -747,7 +747,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
   v8::Local<v8::Value> createValue;
   bool createHasValueOrDefault = false;
   if (impl.hasCreateMember()) {
-    createValue = V8Boolean(impl.createMember(), isolate);
+    createValue = v8::Boolean::New(isolate, impl.createMember());
     createHasValueOrDefault = true;
   }
   if (createHasValueOrDefault &&
@@ -758,7 +758,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
   v8::Local<v8::Value> deprecatedCreateMemberValue;
   bool deprecatedCreateMemberHasValueOrDefault = false;
   if (impl.hasCreateMember()) {
-    deprecatedCreateMemberValue = V8Boolean(impl.createMember(), isolate);
+    deprecatedCreateMemberValue = v8::Boolean::New(isolate, impl.createMember());
     deprecatedCreateMemberHasValueOrDefault = true;
   }
   if (deprecatedCreateMemberHasValueOrDefault &&
@@ -984,7 +984,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
   v8::Local<v8::Value> runtimeMemberValue;
   bool runtimeMemberHasValueOrDefault = false;
   if (impl.hasRuntimeMember()) {
-    runtimeMemberValue = V8Boolean(impl.runtimeMember(), isolate);
+    runtimeMemberValue = v8::Boolean::New(isolate, impl.runtimeMember());
     runtimeMemberHasValueOrDefault = true;
   }
   if (runtimeMemberHasValueOrDefault &&

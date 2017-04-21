@@ -565,10 +565,6 @@ CORE_EXPORT String ToUSVString(v8::Isolate*,
                                v8::Local<v8::Value>,
                                ExceptionState&);
 
-inline v8::Local<v8::Boolean> V8Boolean(bool value, v8::Isolate* isolate) {
-  return value ? v8::True(isolate) : v8::False(isolate);
-}
-
 inline double ToCoreDate(v8::Isolate* isolate,
                          v8::Local<v8::Value> object,
                          ExceptionState& exception_state) {

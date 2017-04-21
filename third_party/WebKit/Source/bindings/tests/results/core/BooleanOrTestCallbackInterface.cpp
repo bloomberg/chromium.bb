@@ -91,7 +91,7 @@ v8::Local<v8::Value> ToV8(const BooleanOrTestCallbackInterface& impl, v8::Local<
     case BooleanOrTestCallbackInterface::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrTestCallbackInterface::SpecificTypeBoolean:
-      return V8Boolean(impl.getAsBoolean(), isolate);
+      return v8::Boolean::New(isolate, impl.getAsBoolean());
     case BooleanOrTestCallbackInterface::SpecificTypeTestCallbackInterface:
       return ToV8(impl.getAsTestCallbackInterface(), creationContext, isolate);
     default:

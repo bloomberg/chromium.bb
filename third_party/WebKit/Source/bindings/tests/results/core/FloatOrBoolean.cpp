@@ -94,7 +94,7 @@ v8::Local<v8::Value> ToV8(const FloatOrBoolean& impl, v8::Local<v8::Object> crea
     case FloatOrBoolean::SpecificTypeNone:
       return v8::Null(isolate);
     case FloatOrBoolean::SpecificTypeBoolean:
-      return V8Boolean(impl.getAsBoolean(), isolate);
+      return v8::Boolean::New(isolate, impl.getAsBoolean());
     case FloatOrBoolean::SpecificTypeFloat:
       return v8::Number::New(isolate, impl.getAsFloat());
     default:

@@ -111,7 +111,7 @@ v8::Local<v8::Value> ToV8(const BooleanOrStringOrUnrestrictedDouble& impl, v8::L
     case BooleanOrStringOrUnrestrictedDouble::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrStringOrUnrestrictedDouble::SpecificTypeBoolean:
-      return V8Boolean(impl.getAsBoolean(), isolate);
+      return v8::Boolean::New(isolate, impl.getAsBoolean());
     case BooleanOrStringOrUnrestrictedDouble::SpecificTypeString:
       return V8String(isolate, impl.getAsString());
     case BooleanOrStringOrUnrestrictedDouble::SpecificTypeUnrestrictedDouble:

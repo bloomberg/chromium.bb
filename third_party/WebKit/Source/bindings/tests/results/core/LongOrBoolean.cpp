@@ -94,7 +94,7 @@ v8::Local<v8::Value> ToV8(const LongOrBoolean& impl, v8::Local<v8::Object> creat
     case LongOrBoolean::SpecificTypeNone:
       return v8::Null(isolate);
     case LongOrBoolean::SpecificTypeBoolean:
-      return V8Boolean(impl.getAsBoolean(), isolate);
+      return v8::Boolean::New(isolate, impl.getAsBoolean());
     case LongOrBoolean::SpecificTypeLong:
       return v8::Integer::New(isolate, impl.getAsLong());
     default:
