@@ -365,7 +365,7 @@ static const arg_def_t max_intra_rate_pct =
 
 #if CONFIG_AV1_ENCODER
 static const arg_def_t cpu_used_av1 =
-    ARG_DEF(NULL, "cpu-used", 1, "CPU Used (-8..8)");
+    ARG_DEF(NULL, "cpu-used", 1, "CPU Used (0..8)");
 static const arg_def_t tile_cols =
     ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2");
 static const arg_def_t tile_rows =
