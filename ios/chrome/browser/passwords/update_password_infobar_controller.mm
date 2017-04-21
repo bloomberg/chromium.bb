@@ -62,13 +62,14 @@ NSUInteger kAccountTag = 10;
   }
 
   [view addLabel:base::SysUTF16ToNSString(messageText)
-          target:self
-          action:@selector(infobarLinkDidPress:)];
+          action:^(NSUInteger tag) {
+            [self infobarLinkDidPress:tag];
+          }];
 }
 
-- (void)infobarLinkDidPress:(NSNumber*)tag {
+- (void)infobarLinkDidPress:(NSUInteger)tag {
   [super infobarLinkDidPress:tag];
-  if ([tag unsignedIntegerValue] != kAccountTag)
+  if (tag != kAccountTag)
     return;
 
   UIViewController* baseViewController =

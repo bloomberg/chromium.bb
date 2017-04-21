@@ -97,7 +97,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 // Action for any of the user defined buttons.
 - (void)infoBarButtonDidPress:(id)sender;
 // Action for any of the user defined links.
-- (void)infobarLinkDidPress:(NSNumber*)tag;
+- (void)infobarLinkDidPress:(NSUInteger)tag;
 // Action for the language selection "Done" button.
 - (void)languageSelectionDone;
 // Dismisses the language selection view.
@@ -172,7 +172,10 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
   NSString* label =
       l10n_util::GetNSStringF(IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE_IOS,
                               originalLanguageWithLink, targetLanguageWithLink);
-  [view addLabel:label target:self action:@selector(infobarLinkDidPress:)];
+  [view addLabel:label
+          action:^(NSUInteger tag) {
+            [self infobarLinkDidPress:tag];
+          }];
 }
 
 - (void)languageSelectionDone {
@@ -246,9 +249,8 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
   }
 }
 
-- (void)infobarLinkDidPress:(NSNumber*)tag {
-  DCHECK([tag isKindOfClass:[NSNumber class]]);
-  _languageSelectionType = [tag unsignedIntegerValue];
+- (void)infobarLinkDidPress:(NSUInteger)tag {
+  _languageSelectionType = tag;
   DCHECK(_languageSelectionType ==
              TranslateInfoBarIOSTag::BEFORE_SOURCE_LANGUAGE ||
          _languageSelectionType ==

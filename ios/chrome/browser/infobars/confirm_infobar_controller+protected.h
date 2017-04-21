@@ -11,7 +11,7 @@
 // Action for any of the user defined buttons.
 - (void)infoBarButtonDidPress:(id)sender;
 // Action for any of the user defined links.
-- (void)infobarLinkDidPress:(NSNumber*)tag;
+- (void)infobarLinkDidPress:(NSUInteger)tag;
 // Updates the label on the provided view.
 - (void)updateInfobarLabel:(InfoBarView*)view;
 @end

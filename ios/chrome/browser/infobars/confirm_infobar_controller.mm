@@ -119,8 +119,9 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
         &messageText, 0, _confirmInfobarDelegate->GetLinkText(), msgLink);
 
     [view addLabel:base::SysUTF16ToNSString(messageText)
-            target:self
-            action:@selector(infobarLinkDidPress:)];
+            action:^(NSUInteger tag) {
+              [self infobarLinkDidPress:tag];
+            }];
   } else {
     NSString* label =
         base::SysUTF16ToNSString(_confirmInfobarDelegate->GetMessageText());
@@ -147,12 +148,11 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
 }
 
 // Title link was clicked.
-- (void)infobarLinkDidPress:(NSNumber*)tag {
-  DCHECK([tag isKindOfClass:[NSNumber class]]);
+- (void)infobarLinkDidPress:(NSUInteger)tag {
   if (!self.delegate) {
     return;
   }
-  if ([tag unsignedIntegerValue] == ConfirmInfoBarUITags::TITLE_LINK) {
+  if (tag == ConfirmInfoBarUITags::TITLE_LINK) {
     _confirmInfobarDelegate->LinkClicked(
         WindowOpenDisposition::NEW_FOREGROUND_TAB);
   }

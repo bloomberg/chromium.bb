@@ -764,12 +764,12 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
 }
 
 - (void)addLabel:(NSString*)label {
-  [self addLabel:label target:nil action:nil];
+  [self addLabel:label action:nil];
 }
 
-- (void)addLabel:(NSString*)text target:(id)target action:(SEL)action {
+- (void)addLabel:(NSString*)text action:(void (^)(NSUInteger))action {
   markedLabel_.reset([text copy]);
-  if (target)
+  if (action)
     text = [self stripMarkersFromString:text];
   if ([label_ superview]) {
     [label_ removeFromSuperview];
@@ -800,14 +800,14 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   if (linkRanges_.empty())
     return;
 
-  DCHECK([target respondsToSelector:action]);
-
   labelLinkController_.reset([[LabelLinkController alloc]
       initWithLabel:label_
              action:^(const GURL& gurl) {
-               NSUInteger actionTag = [base::SysUTF8ToNSString(
-                   gurl.ExtractFileName()) integerValue];
-               [target performSelector:action withObject:@(actionTag)];
+               if (action) {
+                 NSUInteger actionTag = [base::SysUTF8ToNSString(
+                     gurl.ExtractFileName()) integerValue];
+                 action(actionTag);
+               }
              }]);
 
   [labelLinkController_ setLinkUnderlineStyle:NSUnderlineStyleSingle];

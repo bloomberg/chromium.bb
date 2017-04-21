@@ -51,8 +51,9 @@ class InfoBarViewDelegate;
 - (void)addLabel:(NSString*)label;
 
 // Adds a message to the infobar that optionaly contains links initialized with
-// |stringAsLink:|. |action| is called on |target| when a link is clicked.
-- (void)addLabel:(NSString*)label target:(id)target action:(SEL)action;
+// |stringAsLink:|. |action| is called when a link is clicked, with the tag
+// associated with the link passed as a parameter..
+- (void)addLabel:(NSString*)label action:(void (^)(NSUInteger))action;
 
 // Adds two buttons to the infobar. Button1 is the primary action of the infobar
 // and in Material Design mode is shown with bold colors to reflect this role.
