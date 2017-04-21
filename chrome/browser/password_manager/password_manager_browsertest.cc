@@ -876,8 +876,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoPromptIfLinkClicked) {
   EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
 }
 
-// TODO(jam): http://crbug.com/350550
-#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        VerifyPasswordGenerationUpload) {
   // Prevent Autofill requests from actually going over the wire.
@@ -942,7 +940,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   autofill::test::ReenableSystemServices();
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PromptForSubmitFromIframe) {
