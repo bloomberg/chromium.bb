@@ -150,8 +150,8 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
   void NodeChildrenWillBeRemoved(ContainerNode&);
   void NodeWillBeRemoved(Node&);
 
-  void DidInsertText(Node*, unsigned offset, unsigned length);
-  void DidRemoveText(Node*, unsigned offset, unsigned length);
+  void DidInsertText(const CharacterData&, unsigned offset, unsigned length);
+  void DidRemoveText(const CharacterData&, unsigned offset, unsigned length);
   void DidMergeTextNodes(const NodeWithIndex& old_node, unsigned offset);
   void DidSplitTextNode(const Text& old_node);
   void UpdateOwnerDocumentIfNeeded();

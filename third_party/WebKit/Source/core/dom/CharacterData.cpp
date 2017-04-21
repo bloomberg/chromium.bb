@@ -46,7 +46,7 @@ void CharacterData::setData(const String& data) {
 
   SetDataAndUpdate(non_null_data, 0, old_length, non_null_data.length(),
                    kUpdateFromNonParser);
-  GetDocument().DidRemoveText(this, 0, old_length);
+  GetDocument().DidRemoveText(*this, 0, old_length);
 }
 
 String CharacterData::substringData(unsigned offset,
@@ -95,7 +95,7 @@ void CharacterData::insertData(unsigned offset,
 
   SetDataAndUpdate(new_str, offset, 0, data.length(), kUpdateFromNonParser);
 
-  GetDocument().DidInsertText(this, offset, data.length());
+  GetDocument().DidInsertText(*this, offset, data.length());
 }
 
 static bool ValidateOffsetCount(unsigned offset,
@@ -135,7 +135,7 @@ void CharacterData::deleteData(unsigned offset,
 
   SetDataAndUpdate(new_str, offset, real_count, 0, kUpdateFromNonParser);
 
-  GetDocument().DidRemoveText(this, offset, real_count);
+  GetDocument().DidRemoveText(*this, offset, real_count);
 }
 
 void CharacterData::replaceData(unsigned offset,
@@ -155,8 +155,8 @@ void CharacterData::replaceData(unsigned offset,
                    kUpdateFromNonParser);
 
   // update DOM ranges
-  GetDocument().DidRemoveText(this, offset, real_count);
-  GetDocument().DidInsertText(this, offset, data.length());
+  GetDocument().DidRemoveText(*this, offset, real_count);
+  GetDocument().DidInsertText(*this, offset, data.length());
 }
 
 String CharacterData::nodeValue() const {

@@ -759,8 +759,8 @@ class CORE_EXPORT Document : public ContainerNode,
                       const Node* old_child,
                       ExceptionState&) const;
 
-  void DidInsertText(Node*, unsigned offset, unsigned length);
-  void DidRemoveText(Node*, unsigned offset, unsigned length);
+  void DidInsertText(const CharacterData&, unsigned offset, unsigned length);
+  void DidRemoveText(const CharacterData&, unsigned offset, unsigned length);
   void DidMergeTextNodes(const Text& merged_node,
                          const Text& node_to_be_removed,
                          unsigned old_length);

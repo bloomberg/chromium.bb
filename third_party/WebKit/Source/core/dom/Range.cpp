@@ -1561,10 +1561,10 @@ void Range::NodeWillBeRemoved(Node& node) {
 }
 
 static inline void BoundaryTextInserted(RangeBoundaryPoint& boundary,
-                                        Node* text,
+                                        const CharacterData& text,
                                         unsigned offset,
                                         unsigned length) {
-  if (boundary.Container() != text)
+  if (boundary.Container() != &text)
     return;
   boundary.MarkValid();
   unsigned boundary_offset = boundary.Offset();
@@ -1573,18 +1573,19 @@ static inline void BoundaryTextInserted(RangeBoundaryPoint& boundary,
   boundary.SetOffset(boundary_offset + length);
 }
 
-void Range::DidInsertText(Node* text, unsigned offset, unsigned length) {
-  DCHECK(text);
-  DCHECK_EQ(text->GetDocument(), owner_document_);
+void Range::DidInsertText(const CharacterData& text,
+                          unsigned offset,
+                          unsigned length) {
+  DCHECK_EQ(text.GetDocument(), owner_document_);
   BoundaryTextInserted(start_, text, offset, length);
   BoundaryTextInserted(end_, text, offset, length);
 }
 
 static inline void BoundaryTextRemoved(RangeBoundaryPoint& boundary,
-                                       Node* text,
+                                       const CharacterData& text,
                                        unsigned offset,
                                        unsigned length) {
-  if (boundary.Container() != text)
+  if (boundary.Container() != &text)
     return;
   boundary.MarkValid();
   unsigned boundary_offset = boundary.Offset();
@@ -1596,9 +1597,10 @@ static inline void BoundaryTextRemoved(RangeBoundaryPoint& boundary,
     boundary.SetOffset(boundary_offset - length);
 }
 
-void Range::DidRemoveText(Node* text, unsigned offset, unsigned length) {
-  DCHECK(text);
-  DCHECK_EQ(text->GetDocument(), owner_document_);
+void Range::DidRemoveText(const CharacterData& text,
+                          unsigned offset,
+                          unsigned length) {
+  DCHECK_EQ(text.GetDocument(), owner_document_);
   BoundaryTextRemoved(start_, text, offset, length);
   BoundaryTextRemoved(end_, text, offset, length);
 }

@@ -4353,12 +4353,16 @@ void Document::NodeWillBeRemoved(Node& n) {
     GetStyleEngine().ElementWillBeRemoved(ToElement(n));
 }
 
-void Document::DidInsertText(Node* text, unsigned offset, unsigned length) {
+void Document::DidInsertText(const CharacterData& text,
+                             unsigned offset,
+                             unsigned length) {
   for (Range* range : ranges_)
     range->DidInsertText(text, offset, length);
 }
 
-void Document::DidRemoveText(Node* text, unsigned offset, unsigned length) {
+void Document::DidRemoveText(const CharacterData& text,
+                             unsigned offset,
+                             unsigned length) {
   for (Range* range : ranges_)
     range->DidRemoveText(text, offset, length);
 }
