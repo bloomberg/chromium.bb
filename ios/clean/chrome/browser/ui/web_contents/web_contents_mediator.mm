@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/scoped_observer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -23,9 +24,22 @@
 
 @implementation WebContentsMediator {
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserverBridge>>
+      _scopedWebStateListObserver;
 }
 @synthesize webStateList = _webStateList;
 @synthesize consumer = _consumer;
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
+    _scopedWebStateListObserver = base::MakeUnique<
+        ScopedObserver<WebStateList, WebStateListObserverBridge>>(
+        _webStateListObserver.get());
+  }
+  return self;
+}
 
 - (void)dealloc {
   [self disconnect];
@@ -44,16 +58,12 @@
 #pragma mark - Properties
 
 - (void)setWebStateList:(WebStateList*)webStateList {
-  if (_webStateList) {
-    _webStateList->RemoveObserver(_webStateListObserver.get());
-    _webStateListObserver.reset();
-  }
+  _scopedWebStateListObserver->RemoveAll();
   _webStateList = webStateList;
   if (!_webStateList) {
     return;
   }
-  _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
-  _webStateList->AddObserver(_webStateListObserver.get());
+  _scopedWebStateListObserver->Add(_webStateList);
   if (_webStateList->GetActiveWebState()) {
     [self updateConsumerWithWebState:_webStateList->GetActiveWebState()];
   }
