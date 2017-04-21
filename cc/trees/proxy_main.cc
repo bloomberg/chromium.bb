@@ -267,17 +267,7 @@ void ProxyMain::BeginMainFrame(
                        base::Unretained(proxy_impl_.get()), &completion,
                        layer_tree_host_, begin_main_frame_start_time,
                        hold_commit_for_activation));
-    // TODO(sunnyps): Remove this code once crbug.com/668892 is fixed.
-    // content/common/content_constants_internal.cc defines hung renderer delay
-    // as 30s so choose something less than that but still sufficiently long.
-    static constexpr base::TimeDelta kDumpDelay =
-        base::TimeDelta::FromSeconds(20);
-    if (!completion.TimedWait(kDumpDelay)) {
-      ImplThreadTaskRunner()->PostTask(
-          FROM_HERE, base::BindOnce(&ProxyImpl::DumpForBeginMainFrameHang,
-                                    base::Unretained(proxy_impl_.get())));
-      completion.Wait();
-    }
+    completion.Wait();
   }
 
   current_pipeline_stage_ = NO_PIPELINE_STAGE;
