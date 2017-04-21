@@ -138,6 +138,9 @@ class ShellSurface : public SurfaceDelegate,
   // Sets whether or not the shell surface should autohide the system UI.
   void SetSystemUiVisibility(bool autohide);
 
+  // Set whether the surface is always on top.
+  void SetAlwaysOnTop(bool always_on_top);
+
   // Set title for surface.
   void SetTitle(const base::string16& title);
 

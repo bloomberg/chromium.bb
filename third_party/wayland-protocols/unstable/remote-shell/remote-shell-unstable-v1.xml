@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="4">
+  <interface name="zcr_remote_shell_v1" version="5">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -140,9 +140,9 @@
       <arg name="layout_mode" type="uint"/>
     </event>
 
-    <!-- Version 4 additions -->
+    <!-- Version 5 additions -->
 
-    <event name="workspace" since="4">
+    <event name="workspace" since="5">
       <description summary="area of remote shell">
 	Defines an area of the remote shell used for layout. Each series of
 	"workspace" events must be terminated by a "configure" event.
@@ -161,7 +161,7 @@
       <arg name="scale_factor" type="fixed"/>
     </event>
 
-    <event name="configure" since="4">
+    <event name="configure" since="5">
       <description summary="suggests configuration of remote shell">
 	Suggests a new configuration of the remote shell. Preceded by a series
 	of "workspace" events.
@@ -170,7 +170,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="4">
+  <interface name="zcr_remote_surface_v1" version="5">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -448,7 +448,28 @@
 
     <!-- Version 4 additions -->
 
-    <event name="configure" since="4">
+    <request name="set_always_on_top" since="4">
+      <description summary="set always on top">
+	Request that surface is made to be always on top.
+
+	This is only a request that the window should be always on top.
+	The compositor may choose to ignore this request.
+
+      </description>
+    </request>
+
+    <request name="unset_always_on_top" since="4">
+      <description summary="unset always on top">
+	Request that surface is made to be not always on top.
+
+	This is only a request that the window should be not always on top.
+	The compositor may choose to ignore this request.
+      </description>
+    </request>
+
+    <!-- Version 5 additions -->
+
+    <event name="configure" since="5">
       <description summary="suggest a surface change">
 	The configure event asks the client to change surface state.
 
@@ -471,7 +492,7 @@
       <arg name="serial" type="uint"/>
     </event>
 
-    <request name="ack_configure" since="4">
+    <request name="ack_configure" since="5">
       <description summary="ack a configure event">
 	When a configure event is received, if a client commits the
 	surface in response to the configure event, then the client
@@ -496,7 +517,7 @@
       <arg name="serial" type="uint" summary="the serial from the configure event"/>
     </request>
 
-    <request name="move" since="4">
+    <request name="move" since="5">
       <description summary="start an interactive move">
 	Start an interactive, user-driven move of the surface.
 
