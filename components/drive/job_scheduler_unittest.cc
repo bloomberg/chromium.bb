@@ -225,6 +225,22 @@ TEST_F(JobSchedulerTest, GetAppList) {
   ASSERT_TRUE(app_list);
 }
 
+TEST_F(JobSchedulerTest, GetAllTeamDriveList) {
+  ConnectToWifi();
+
+  fake_drive_service_->AddTeamDrive("TEAM_DRIVE_ID", "TEAM_DRIVE_NAME");
+  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
+  std::unique_ptr<google_apis::TeamDriveList> team_drive_list;
+
+  scheduler_->GetAllTeamDriveList(
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &team_drive_list));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(team_drive_list);
+}
+
 TEST_F(JobSchedulerTest, GetAllFileList) {
   ConnectToWifi();
 
@@ -327,6 +343,39 @@ TEST_F(JobSchedulerTest, GetRemainingChangeList) {
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(change_list);
+}
+
+TEST_F(JobSchedulerTest, GetRemainingTeamDriveList) {
+  ConnectToWifi();
+  fake_drive_service_->set_default_max_results(2);
+  fake_drive_service_->AddTeamDrive("TEAM_DRIVE_ID_1", "TEAM_DRIVE_NAME 1");
+  fake_drive_service_->AddTeamDrive("TEAM_DRIVE_ID_2", "TEAM_DRIVE_NAME 2");
+  fake_drive_service_->AddTeamDrive("TEAM_DRIVE_ID_3", "TEAM_DRIVE_NAME 3");
+
+  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
+  std::unique_ptr<google_apis::TeamDriveList> team_drive_list;
+
+  scheduler_->GetAllTeamDriveList(
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &team_drive_list));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(team_drive_list);
+
+  // Keep the next page_token before releasing the |file_list|.
+  std::string next_page_token(team_drive_list->next_page_token());
+
+  error = google_apis::DRIVE_OTHER_ERROR;
+  team_drive_list.reset();
+
+  scheduler_->GetRemainingTeamDriveList(
+      next_page_token, google_apis::test_util::CreateCopyResultCallback(
+                           &error, &team_drive_list));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(team_drive_list);
 }
 
 TEST_F(JobSchedulerTest, GetRemainingFileList) {

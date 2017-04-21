@@ -283,6 +283,21 @@ void JobScheduler::GetAppList(const google_apis::AppListCallback& callback) {
   StartJob(new_job);
 }
 
+void JobScheduler::GetAllTeamDriveList(
+    const google_apis::TeamDriveListCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!callback.is_null());
+  JobEntry* new_job = CreateNewJob(TYPE_GET_ALL_TEAM_DRIVE_LIST);
+  new_job->task =
+      base::Bind(&DriveServiceInterface::GetAllTeamDriveList,
+                 base::Unretained(drive_service_),
+                 base::Bind(&JobScheduler::OnGetTeamDriveListJobDone,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            new_job->job_info.job_id, callback));
+  new_job->abort_callback = CreateErrorRunCallback(callback);
+  StartJob(new_job);
+}
+
 void JobScheduler::GetAllFileList(
     const google_apis::FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -372,6 +387,22 @@ void JobScheduler::GetRemainingChangeList(
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
                  callback));
+  new_job->abort_callback = CreateErrorRunCallback(callback);
+  StartJob(new_job);
+}
+
+void JobScheduler::GetRemainingTeamDriveList(
+    const std::string& page_token,
+    const google_apis::TeamDriveListCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!callback.is_null());
+  JobEntry* new_job = CreateNewJob(TYPE_GET_REMAINING_TEAM_DRIVE_LIST);
+  new_job->task =
+      base::Bind(&DriveServiceInterface::GetRemainingTeamDriveList,
+                 base::Unretained(drive_service_), page_token,
+                 base::Bind(&JobScheduler::OnGetTeamDriveListJobDone,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            new_job->job_info.job_id, callback));
   new_job->abort_callback = CreateErrorRunCallback(callback);
   StartJob(new_job);
 }
@@ -931,6 +962,18 @@ bool JobScheduler::OnJobDone(JobID job_id,
   return !should_retry;
 }
 
+void JobScheduler::OnGetTeamDriveListJobDone(
+    JobID job_id,
+    const google_apis::TeamDriveListCallback& callback,
+    google_apis::DriveApiErrorCode error,
+    std::unique_ptr<google_apis::TeamDriveList> team_drive_list) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!callback.is_null());
+
+  if (OnJobDone(job_id, error))
+    callback.Run(error, std::move(team_drive_list));
+}
+
 void JobScheduler::OnGetFileListJobDone(
     JobID job_id,
     const google_apis::FileListCallback& callback,
@@ -1113,11 +1156,13 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
   switch (type) {
     case TYPE_GET_ABOUT_RESOURCE:
     case TYPE_GET_APP_LIST:
+    case TYPE_GET_ALL_TEAM_DRIVE_LIST:
     case TYPE_GET_ALL_RESOURCE_LIST:
     case TYPE_GET_RESOURCE_LIST_IN_DIRECTORY:
     case TYPE_SEARCH:
     case TYPE_GET_CHANGE_LIST:
     case TYPE_GET_REMAINING_CHANGE_LIST:
+    case TYPE_GET_REMAINING_TEAM_DRIVE_LIST:
     case TYPE_GET_REMAINING_FILE_LIST:
     case TYPE_GET_RESOURCE_ENTRY:
     case TYPE_GET_SHARE_URL:

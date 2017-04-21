@@ -122,6 +122,8 @@ class DriveAPIService : public DriveServiceInterface,
   void ClearAccessToken() override;
   void ClearRefreshToken() override;
   std::string GetRootResourceId() const override;
+  google_apis::CancelCallback GetAllTeamDriveList(
+      const google_apis::TeamDriveListCallback& callback) override;
   google_apis::CancelCallback GetAllFileList(
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback GetFileListInDirectory(
@@ -137,6 +139,9 @@ class DriveAPIService : public DriveServiceInterface,
   google_apis::CancelCallback GetChangeList(
       int64_t start_changestamp,
       const google_apis::ChangeListCallback& callback) override;
+  google_apis::CancelCallback GetRemainingTeamDriveList(
+      const std::string& page_token,
+      const google_apis::TeamDriveListCallback& callback) override;
   google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
       const google_apis::ChangeListCallback& callback) override;

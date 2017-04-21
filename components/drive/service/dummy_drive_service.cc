@@ -20,6 +20,7 @@ using google_apis::GetContentCallback;
 using google_apis::GetShareUrlCallback;
 using google_apis::InitiateUploadCallback;
 using google_apis::ProgressCallback;
+using google_apis::TeamDriveListCallback;
 using google_apis::drive::UploadRangeCallback;
 
 namespace drive {
@@ -52,6 +53,11 @@ std::string DummyDriveService::GetRootResourceId() const {
   return "dummy_root";
 }
 
+CancelCallback DummyDriveService::GetAllTeamDriveList(
+    const TeamDriveListCallback& callback) {
+  return CancelCallback();
+}
+
 CancelCallback DummyDriveService::GetAllFileList(
     const FileListCallback& callback) { return CancelCallback(); }
 
@@ -77,6 +83,12 @@ CancelCallback DummyDriveService::GetChangeList(
 CancelCallback DummyDriveService::GetRemainingChangeList(
     const GURL& next_link,
     const ChangeListCallback& callback) { return CancelCallback(); }
+
+CancelCallback DummyDriveService::GetRemainingTeamDriveList(
+    const std::string& page_token,
+    const TeamDriveListCallback& callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::GetRemainingFileList(
     const GURL& next_link,

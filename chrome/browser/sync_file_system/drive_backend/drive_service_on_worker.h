@@ -66,6 +66,10 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
 
   std::string GetRootResourceId() const override;
 
+  google_apis::CancelCallback GetRemainingTeamDriveList(
+      const std::string& page_token,
+      const google_apis::TeamDriveListCallback& callback) override;
+
   google_apis::CancelCallback GetRemainingFileList(
       const GURL& next_link,
       const google_apis::FileListCallback& callback) override;
@@ -100,6 +104,8 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const google_apis::AuthStatusCallback& callback) override;
   void ClearAccessToken() override;
   void ClearRefreshToken() override;
+  google_apis::CancelCallback GetAllTeamDriveList(
+      const google_apis::TeamDriveListCallback& callback) override;
   google_apis::CancelCallback GetAllFileList(
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback Search(

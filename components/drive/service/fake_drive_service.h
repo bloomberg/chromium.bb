@@ -23,6 +23,7 @@ namespace google_apis {
 class AboutResource;
 class ChangeResource;
 class FileResource;
+class TeamDriveResource;
 }
 
 namespace drive {
@@ -53,6 +54,9 @@ class FakeDriveService : public DriveServiceInterface {
               const std::string& product_id,
               const std::string& create_url,
               bool is_removable);
+
+  // Adds a Team Drive to the Team Drive resource list.
+  void AddTeamDrive(const std::string& id, const std::string& name);
 
   // Removes an app by product id.
   void RemoveAppByProductId(const std::string& product_id);
@@ -89,6 +93,10 @@ class FakeDriveService : public DriveServiceInterface {
   const google_apis::AboutResource& about_resource() const {
     return *about_resource_;
   }
+
+  // Returns the number of times the Team Drive list is successfully loaded by
+  // GetAllTeamDriveList().
+  int team_drive_list_load_count() const { return team_drive_list_load_count_; }
 
   // Returns the number of times the file list is successfully loaded by
   // GetAllFileList().
@@ -143,6 +151,8 @@ class FakeDriveService : public DriveServiceInterface {
   bool HasRefreshToken() const override;
   void ClearAccessToken() override;
   void ClearRefreshToken() override;
+  google_apis::CancelCallback GetAllTeamDriveList(
+      const google_apis::TeamDriveListCallback& callback) override;
   google_apis::CancelCallback GetAllFileList(
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback GetFileListInDirectory(
@@ -163,6 +173,9 @@ class FakeDriveService : public DriveServiceInterface {
   google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
       const google_apis::ChangeListCallback& callback) override;
+  google_apis::CancelCallback GetRemainingTeamDriveList(
+      const std::string& page_token,
+      const google_apis::TeamDriveListCallback& callback) override;
   google_apis::CancelCallback GetRemainingFileList(
       const GURL& next_link,
       const google_apis::FileListCallback& callback) override;
@@ -372,6 +385,12 @@ class FakeDriveService : public DriveServiceInterface {
                              int* load_counter,
                              const google_apis::ChangeListCallback& callback);
 
+  void GetTeamDriveListInternal(
+      int start_offset,
+      int max_results,
+      int* load_counter,
+      const google_apis::TeamDriveListCallback& callback);
+
   // Returns new upload session URL.
   GURL GetNewUploadSessionUrl();
 
@@ -383,11 +402,15 @@ class FakeDriveService : public DriveServiceInterface {
   std::map<std::string, std::unique_ptr<EntryInfo>> entries_;
   std::unique_ptr<google_apis::AboutResource> about_resource_;
   std::unique_ptr<base::DictionaryValue> app_info_value_;
+  std::vector<std::unique_ptr<google_apis::TeamDriveResource>>
+      team_drive_value_;
+
   std::map<GURL, UploadSession> upload_sessions_;
   int64_t published_date_seq_;
   int64_t next_upload_sequence_number_;
   int default_max_results_;
   int resource_id_count_;
+  int team_drive_list_load_count_;
   int file_list_load_count_;
   int change_list_load_count_;
   int directory_load_count_;

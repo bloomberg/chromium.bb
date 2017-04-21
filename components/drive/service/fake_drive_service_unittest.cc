@@ -41,6 +41,7 @@ using google_apis::HTTP_PRECONDITION;
 using google_apis::HTTP_RESUME_INCOMPLETE;
 using google_apis::HTTP_SUCCESS;
 using google_apis::ProgressCallback;
+using google_apis::TeamDriveList;
 using google_apis::UploadRangeResponse;
 
 namespace drive {
@@ -56,6 +57,13 @@ using google_apis::test_util::WriteStringToFile;
 }  // namespace test_util
 
 namespace {
+
+constexpr char TEAM_DRIVE_ID_1[] = "the1stTeamDriveId";
+constexpr char TEAM_DRIVE_NAME_1[] = "The First Team Drive";
+constexpr char TEAM_DRIVE_ID_2[] = "the2ndTeamDriveId";
+constexpr char TEAM_DRIVE_NAME_2[] = "The Seconcd Team Drive";
+constexpr char TEAM_DRIVE_ID_3[] = "the3rdTeamDriveId";
+constexpr char TEAM_DRIVE_NAME_3[] = "The Third Team Drive";
 
 class FakeDriveServiceTest : public testing::Test {
  protected:
@@ -499,6 +507,44 @@ TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
   ASSERT_TRUE(item.file());
   EXPECT_TRUE(item.file()->labels().is_trashed());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetAllTeamDriveList) {
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
+  fake_service_.set_default_max_results(2);
+  fake_service_.AddTeamDrive(TEAM_DRIVE_ID_1, TEAM_DRIVE_NAME_1);
+  fake_service_.AddTeamDrive(TEAM_DRIVE_ID_2, TEAM_DRIVE_NAME_2);
+  fake_service_.AddTeamDrive(TEAM_DRIVE_ID_3, TEAM_DRIVE_NAME_3);
+
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  std::unique_ptr<TeamDriveList> team_drive_list;
+  fake_service_.GetAllTeamDriveList(
+      test_util::CreateCopyResultCallback(&error, &team_drive_list));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(team_drive_list);
+
+  EXPECT_EQ(2U, team_drive_list->items().size());
+  EXPECT_EQ(1, fake_service_.team_drive_list_load_count());
+  ASSERT_FALSE(team_drive_list->next_page_token().empty());
+
+  // Second page loading.
+  // Keep the next page token before releasing the |team_drive_list|.
+  std::string next_page_token(team_drive_list->next_page_token());
+
+  error = DRIVE_OTHER_ERROR;
+  team_drive_list.reset();
+  fake_service_.GetRemainingTeamDriveList(
+      next_page_token,
+      test_util::CreateCopyResultCallback(&error, &team_drive_list));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(team_drive_list);
+
+  EXPECT_EQ(1U, team_drive_list->items().size());
+  EXPECT_EQ(1, fake_service_.team_drive_list_load_count());
+  ASSERT_TRUE(team_drive_list->next_page_token().empty());
 }
 
 TEST_F(FakeDriveServiceTest, GetRemainingFileList_GetAllFileList) {

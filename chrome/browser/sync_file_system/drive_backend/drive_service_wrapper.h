@@ -50,6 +50,10 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
       const GURL& next_link,
       const google_apis::ChangeListCallback& callback);
 
+  void GetRemainingTeamDriveList(
+      const std::string& page_token,
+      const google_apis::TeamDriveListCallback& callback);
+
   void GetRemainingFileList(
       const GURL& next_link,
       const google_apis::FileListCallback& callback);

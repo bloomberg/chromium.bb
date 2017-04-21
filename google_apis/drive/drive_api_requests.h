@@ -476,8 +476,8 @@ class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
 
 // This class performs the request for fetching TeamDrive list.
 // The result may contain only first part of the result. The remaining result
-// should be able to be fetched by ContinueGetFileListRequest defined below,
-// or by TeamDriveListRequest with setting page token.
+// should be able to be fetched by another request using this class, by
+// setting the next_page_token from previous call, to page_token.
 // This request is mapped to
 // https://developers.google.com/drive/v2/teamdrives/
 class TeamDriveListRequest : public DriveApiDataRequest<TeamDriveList> {

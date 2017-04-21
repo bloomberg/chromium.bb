@@ -84,6 +84,10 @@ class JobScheduler
   // |callback| must not be null.
   void GetAboutResource(const google_apis::AboutResourceCallback& callback);
 
+  // Adds a GetAllTeamDriveList operation to the queue.
+  // |callback| must not be null.
+  void GetAllTeamDriveList(const google_apis::TeamDriveListCallback& callback);
+
   // Adds a GetAllFileList operation to the queue.
   // |callback| must not be null.
   void GetAllFileList(const google_apis::FileListCallback& callback);
@@ -107,6 +111,12 @@ class JobScheduler
   // |callback| must not be null.
   void GetRemainingChangeList(const GURL& next_link,
                               const google_apis::ChangeListCallback& callback);
+
+  // Adds GetRemainingTeamDriveList operation to the queue.
+  // |callback| must not be null.
+  void GetRemainingTeamDriveList(
+      const std::string& page_token,
+      const google_apis::TeamDriveListCallback& callback);
 
   // Adds GetRemainingFileList operation to the queue.
   // |callback| must not be null.
@@ -268,6 +278,13 @@ class JobScheduler
 
   // Retries the job if needed and returns false. Otherwise returns true.
   bool OnJobDone(JobID job_id, google_apis::DriveApiErrorCode error);
+
+  // Callback for job finishing with a FileListCallback.
+  void OnGetTeamDriveListJobDone(
+      JobID job_id,
+      const google_apis::TeamDriveListCallback& callback,
+      google_apis::DriveApiErrorCode error,
+      std::unique_ptr<google_apis::TeamDriveList> team_drive_list);
 
   // Callback for job finishing with a FileListCallback.
   void OnGetFileListJobDone(JobID job_id,

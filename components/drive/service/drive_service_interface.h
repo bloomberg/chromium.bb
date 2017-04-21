@@ -196,6 +196,16 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // Returns the resource id for the root directory.
   virtual std::string GetRootResourceId() const = 0;
 
+  // Fetches a Team Drive list of the account. |callback| will be called upon
+  // completion.
+  // If the list is too long, it may be paged. In such a case, a URL to fetch
+  // remaining results will be included in the returned result. See also
+  // GetRemainingDriveList.
+  //
+  // |callback| must not be null.
+  virtual google_apis::CancelCallback GetAllTeamDriveList(
+      const google_apis::TeamDriveListCallback& callback) = 0;
+
   // Fetches a file list of the account. |callback| will be called upon
   // completion.
   // If the list is too long, it may be paged. In such a case, a URL to fetch
@@ -264,6 +274,15 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   virtual google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
       const google_apis::ChangeListCallback& callback) = 0;
+
+  // The result of GetAllTeamDrives() may be paged. In such a case, a token to
+  // fetch remaining result is returned. The page token can be used for this
+  // method. |callback| will be called upon completion.
+  //
+  // |next_link| must not be empty. |callback| must not be null.
+  virtual google_apis::CancelCallback GetRemainingTeamDriveList(
+      const std::string& page_token,
+      const google_apis::TeamDriveListCallback& callback) = 0;
 
   // The result of GetAllFileList(), GetFileListInDirectory(), Search()
   // and SearchByTitle() may be paged. In such a case, a next link to fetch

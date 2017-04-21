@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -27,6 +28,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "google_apis/drive/drive_switches.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,6 +78,10 @@ class ChangeListLoaderTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    BuildTestObjects();
+  }
+
+  void BuildTestObjects() {
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
@@ -112,6 +118,12 @@ class ChangeListLoaderTest : public testing::Test {
                              scheduler_.get(),
                              about_resource_loader_.get(),
                              loader_controller_.get()));
+  }
+
+  void SetUpForTeamDrives() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        google_apis::kEnableTeamDrives);
+    BuildTestObjects();
   }
 
   // Adds a new file to the root directory of the service.
@@ -229,6 +241,7 @@ TEST_F(ChangeListLoaderTest, Load) {
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_LT(0, changestamp);
+  EXPECT_EQ(0, drive_service_->team_drive_list_load_count());
   EXPECT_EQ(1, drive_service_->file_list_load_count());
   EXPECT_EQ(1, drive_service_->about_resource_load_count());
   EXPECT_EQ(1, observer.initial_load_complete_count());
@@ -240,6 +253,58 @@ TEST_F(ChangeListLoaderTest, Load) {
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK,
             metadata_->GetResourceEntryByPath(file_path, &entry));
+}
+
+TEST_F(ChangeListLoaderTest, LoadWithTeamDriveEnabled) {
+  constexpr char kTeamDriveId1[] = "the1stTeamDriveId";
+  constexpr char kTeamDriveName1[] = "The First Team Drive";
+  constexpr char kTeamDriveId2[] = "the2ndTeamDriveId";
+  constexpr char kTeamDriveName2[] = "The Seconcd Team Drive";
+  constexpr char kTeamDriveId3[] = "the3rdTeamDriveId";
+  constexpr char kTeamDriveName3[] = "The Third Team Drive";
+  SetUpForTeamDrives();
+  EXPECT_FALSE(change_list_loader_->IsRefreshing());
+  drive_service_->set_default_max_results(2);
+  drive_service_->AddTeamDrive(kTeamDriveId1, kTeamDriveName1);
+  drive_service_->AddTeamDrive(kTeamDriveId2, kTeamDriveName2);
+  drive_service_->AddTeamDrive(kTeamDriveId3, kTeamDriveName3);
+
+  // Start initial load.
+  TestChangeListLoaderObserver observer(change_list_loader_.get());
+
+  EXPECT_EQ(0, drive_service_->about_resource_load_count());
+
+  FileError error = FILE_ERROR_FAILED;
+  change_list_loader_->LoadIfNeeded(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  EXPECT_TRUE(change_list_loader_->IsRefreshing());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  EXPECT_FALSE(change_list_loader_->IsRefreshing());
+  int64_t changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
+  EXPECT_LT(0, changestamp);
+  EXPECT_EQ(1, drive_service_->team_drive_list_load_count());
+  EXPECT_EQ(1, drive_service_->file_list_load_count());
+  EXPECT_EQ(1, drive_service_->about_resource_load_count());
+  EXPECT_EQ(1, observer.initial_load_complete_count());
+  EXPECT_EQ(1, observer.load_from_server_complete_count());
+  EXPECT_TRUE(observer.changed_files().empty());
+
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(
+                util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName1),
+                &entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(
+                util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName2),
+                &entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(
+                util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName3),
+                &entry));
 }
 
 TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {

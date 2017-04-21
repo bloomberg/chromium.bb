@@ -74,6 +74,13 @@ void DriveServiceWrapper::GetRemainingChangeList(
   drive_service_->GetRemainingChangeList(next_link, callback);
 }
 
+void DriveServiceWrapper::GetRemainingTeamDriveList(
+    const std::string& page_token,
+    const google_apis::TeamDriveListCallback& callback) {
+  DCHECK(sequece_checker_.CalledOnValidSequence());
+  drive_service_->GetRemainingTeamDriveList(page_token, callback);
+}
+
 void DriveServiceWrapper::GetRemainingFileList(
     const GURL& next_link,
     const google_apis::FileListCallback& callback) {

@@ -133,6 +133,20 @@ std::string DriveServiceOnWorker::GetRootResourceId() const {
   return "root";
 }
 
+google_apis::CancelCallback DriveServiceOnWorker::GetRemainingTeamDriveList(
+    const std::string& page_token,
+    const google_apis::TeamDriveListCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DriveServiceWrapper::GetRemainingTeamDriveList,
+                            wrapper_, page_token,
+                            RelayCallbackToTaskRunner(worker_task_runner_.get(),
+                                                      FROM_HERE, callback)));
+
+  return google_apis::CancelCallback();
+}
+
 google_apis::CancelCallback DriveServiceOnWorker::GetRemainingFileList(
     const GURL& next_link,
     const google_apis::FileListCallback& callback) {
@@ -250,6 +264,12 @@ void DriveServiceOnWorker::ClearAccessToken() {
 
 void DriveServiceOnWorker::ClearRefreshToken() {
   NOTREACHED();
+}
+
+google_apis::CancelCallback DriveServiceOnWorker::GetAllTeamDriveList(
+    const google_apis::TeamDriveListCallback& callback) {
+  NOTREACHED();
+  return google_apis::CancelCallback();
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::GetAllFileList(
