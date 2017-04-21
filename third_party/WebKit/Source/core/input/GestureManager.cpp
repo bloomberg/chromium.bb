@@ -331,8 +331,7 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
 
   Node* inner_node = hit_test_result.InnerNode();
   if (inner_node && inner_node->GetLayoutObject() &&
-      selection_controller_->HandleGestureLongPress(gesture_event,
-                                                    hit_test_result)) {
+      selection_controller_->HandleGestureLongPress(hit_test_result)) {
     mouse_event_manager_->FocusDocumentView();
     return WebInputEventResult::kHandledSystem;
   }

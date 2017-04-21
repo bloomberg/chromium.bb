@@ -153,7 +153,7 @@ static PositionInFlatTree AdjustPositionRespectUserSelectAll(
 
 // Updating the selection is considered side-effect of the event and so it
 // doesn't impact the handled state.
-bool SelectionController::HandleMousePressEventSingleClick(
+bool SelectionController::HandleSingleClick(
     const MouseEventWithHitTestResults& event) {
   TRACE_EVENT0("blink",
                "SelectionController::handleMousePressEventSingleClick");
@@ -737,7 +737,7 @@ void SelectionController::SetCaretAtHitTestResult(
       kCharacterGranularity, HandleVisibility::kVisible);
 }
 
-bool SelectionController::HandleMousePressEventDoubleClick(
+bool SelectionController::HandleDoubleClick(
     const MouseEventWithHitTestResults& event) {
   TRACE_EVENT0("blink",
                "SelectionController::handleMousePressEventDoubleClick");
@@ -746,7 +746,7 @@ bool SelectionController::HandleMousePressEventDoubleClick(
     return false;
 
   if (!mouse_down_allows_multi_click_)
-    return HandleMousePressEventSingleClick(event);
+    return HandleSingleClick(event);
 
   if (event.Event().button != WebPointerProperties::Button::kLeft)
     return false;
@@ -764,7 +764,7 @@ bool SelectionController::HandleMousePressEventDoubleClick(
   return true;
 }
 
-bool SelectionController::HandleMousePressEventTripleClick(
+bool SelectionController::HandleTripleClick(
     const MouseEventWithHitTestResults& event) {
   TRACE_EVENT0("blink",
                "SelectionController::handleMousePressEventTripleClick");
@@ -775,7 +775,7 @@ bool SelectionController::HandleMousePressEventTripleClick(
   }
 
   if (!mouse_down_allows_multi_click_)
-    return HandleMousePressEventSingleClick(event);
+    return HandleSingleClick(event);
 
   if (event.Event().button != WebPointerProperties::Button::kLeft)
     return false;
@@ -807,8 +807,10 @@ bool SelectionController::HandleMousePressEventTripleClick(
                         : HandleVisibility::kNotVisible);
 }
 
-void SelectionController::HandleMousePressEvent(
+bool SelectionController::HandleMousePressEvent(
     const MouseEventWithHitTestResults& event) {
+  TRACE_EVENT0("blink", "SelectionController::handleMousePressEvent");
+
   // If we got the event back, that must mean it wasn't prevented,
   // so it's allowed to start a drag or selection if it wasn't in a scrollbar.
   mouse_down_may_start_select_ =
@@ -818,16 +820,21 @@ void SelectionController::HandleMousePressEvent(
   if (!Selection().IsAvailable()) {
     // "gesture-tap-frame-removed.html" reaches here.
     mouse_down_allows_multi_click_ = !event.Event().FromTouch();
-    return;
+  } else {
+    // Avoid double-tap touch gesture confusion by restricting multi-click side
+    // effects, e.g., word selection, to editable regions.
+    mouse_down_allows_multi_click_ =
+        !event.Event().FromTouch() ||
+        Selection()
+            .ComputeVisibleSelectionInDOMTreeDeprecated()
+            .HasEditableStyle();
   }
 
-  // Avoid double-tap touch gesture confusion by restricting multi-click side
-  // effects, e.g., word selection, to editable regions.
-  mouse_down_allows_multi_click_ =
-      !event.Event().FromTouch() ||
-      Selection()
-          .ComputeVisibleSelectionInDOMTreeDeprecated()
-          .HasEditableStyle();
+  if (event.Event().click_count >= 3)
+    return HandleTripleClick(event);
+  if (event.Event().click_count == 2)
+    return HandleDoubleClick(event);
+  return HandleSingleClick(event);
 }
 
 void SelectionController::HandleMouseDraggedEvent(
@@ -836,6 +843,8 @@ void SelectionController::HandleMouseDraggedEvent(
     const LayoutPoint& drag_start_pos,
     Node* mouse_press_node,
     const IntPoint& last_known_mouse_position) {
+  TRACE_EVENT0("blink", "SelectionController::handleMouseDraggedEvent");
+
   if (!Selection().IsAvailable())
     return;
   if (selection_state_ != SelectionState::kExtendedSelection) {
@@ -873,6 +882,8 @@ void SelectionController::UpdateSelectionForMouseDrag(
 bool SelectionController::HandleMouseReleaseEvent(
     const MouseEventWithHitTestResults& event,
     const LayoutPoint& drag_start_pos) {
+  TRACE_EVENT0("blink", "SelectionController::handleMouseReleaseEvent");
+
   if (!Selection().IsAvailable())
     return false;
 
@@ -956,8 +967,9 @@ bool SelectionController::HandlePasteGlobalSelection(
 }
 
 bool SelectionController::HandleGestureLongPress(
-    const WebGestureEvent& gesture_event,
     const HitTestResult& hit_test_result) {
+  TRACE_EVENT0("blink", "SelectionController::handleGestureLongPress");
+
   if (!Selection().IsAvailable())
     return false;
   if (hit_test_result.IsLiveLink())
@@ -984,11 +996,15 @@ bool SelectionController::HandleGestureLongPress(
 
 void SelectionController::HandleGestureTwoFingerTap(
     const GestureEventWithHitTestResults& targeted_event) {
+  TRACE_EVENT0("blink", "SelectionController::handleGestureTwoFingerTap");
+
   SetCaretAtHitTestResult(targeted_event.GetHitTestResult());
 }
 
 void SelectionController::HandleGestureLongTap(
     const GestureEventWithHitTestResults& targeted_event) {
+  TRACE_EVENT0("blink", "SelectionController::handleGestureLongTap");
+
   SetCaretAtHitTestResult(targeted_event.GetHitTestResult());
 }
 

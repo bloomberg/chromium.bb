@@ -114,7 +114,6 @@ TEST_F(SelectionControllerTest, setCaretAtHitTestResult) {
   GetDocument().body()->AppendChild(script);
   GetDocument().View()->UpdateAllLifecyclePhases();
   GetFrame().GetEventHandler().GetSelectionController().HandleGestureLongPress(
-      WebGestureEvent(),
       GetFrame().GetEventHandler().HitTestResultAtPoint(IntPoint(8, 8)));
 }
 

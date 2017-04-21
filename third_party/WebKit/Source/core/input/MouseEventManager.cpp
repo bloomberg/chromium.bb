@@ -585,9 +585,6 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
   mouse_down_may_start_drag_ =
       single_click && !IsLinkSelection(event) && !IsExtendingSelection(event);
 
-  frame_->GetEventHandler().GetSelectionController().HandleMousePressEvent(
-      event);
-
   mouse_down_ = event.Event();
 
   if (frame_->GetDocument()->IsSVGDocument() &&
@@ -613,22 +610,11 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
   frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(inner_node);
   drag_start_pos_ = FlooredIntPoint(event.Event().PositionInRootFrame());
 
-  bool swallow_event = false;
   mouse_pressed_ = true;
 
-  if (event.Event().click_count == 2) {
-    swallow_event = frame_->GetEventHandler()
-                        .GetSelectionController()
-                        .HandleMousePressEventDoubleClick(event);
-  } else if (event.Event().click_count >= 3) {
-    swallow_event = frame_->GetEventHandler()
-                        .GetSelectionController()
-                        .HandleMousePressEventTripleClick(event);
-  } else {
-    swallow_event = frame_->GetEventHandler()
-                        .GetSelectionController()
-                        .HandleMousePressEventSingleClick(event);
-  }
+  bool swallow_event =
+      frame_->GetEventHandler().GetSelectionController().HandleMousePressEvent(
+          event);
 
   mouse_down_may_start_autoscroll_ =
       frame_->GetEventHandler()

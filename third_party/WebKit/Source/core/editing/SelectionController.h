@@ -51,10 +51,7 @@ class CORE_EXPORT SelectionController final
   virtual ~SelectionController();
   DECLARE_TRACE();
 
-  void HandleMousePressEvent(const MouseEventWithHitTestResults&);
-  bool HandleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
-  bool HandleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
-  bool HandleMousePressEventTripleClick(const MouseEventWithHitTestResults&);
+  bool HandleMousePressEvent(const MouseEventWithHitTestResults&);
   void HandleMouseDraggedEvent(const MouseEventWithHitTestResults&,
                                const IntPoint&,
                                const LayoutPoint&,
@@ -63,7 +60,7 @@ class CORE_EXPORT SelectionController final
   bool HandleMouseReleaseEvent(const MouseEventWithHitTestResults&,
                                const LayoutPoint&);
   bool HandlePasteGlobalSelection(const WebMouseEvent&);
-  bool HandleGestureLongPress(const WebGestureEvent&, const HitTestResult&);
+  bool HandleGestureLongPress(const HitTestResult&);
   void HandleGestureTwoFingerTap(const GestureEventWithHitTestResults&);
   void HandleGestureLongTap(const GestureEventWithHitTestResults&);
 
@@ -127,6 +124,10 @@ class CORE_EXPORT SelectionController final
   // TODO(yosin): We should relocate |m_originalBaseInFlatTree| when DOM tree
   // changed.
   void ContextDestroyed(Document*) final;
+
+  bool HandleSingleClick(const MouseEventWithHitTestResults&);
+  bool HandleDoubleClick(const MouseEventWithHitTestResults&);
+  bool HandleTripleClick(const MouseEventWithHitTestResults&);
 
   Member<LocalFrame> const frame_;
   // TODO(yosin): We should use |PositionWIthAffinityInFlatTree| since we
