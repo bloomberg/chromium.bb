@@ -86,19 +86,6 @@ void HostSharedBitmapManagerClient::DidAllocateSharedBitmap(
   this->ChildAllocatedSharedBitmap(size, memory_handle, id);
 }
 
-void HostSharedBitmapManagerClient::AllocateSharedBitmapForChild(
-    base::ProcessHandle process_handle,
-    size_t buffer_size,
-    const cc::SharedBitmapId& id,
-    base::SharedMemoryHandle* shared_memory_handle) {
-  manager_->AllocateSharedBitmapForChild(process_handle, buffer_size, id,
-                                         shared_memory_handle);
-  if (*shared_memory_handle != base::SharedMemory::NULLHandle()) {
-    base::AutoLock lock(lock_);
-    owned_bitmaps_.insert(id);
-  }
-}
-
 void HostSharedBitmapManagerClient::ChildAllocatedSharedBitmap(
     size_t buffer_size,
     const base::SharedMemoryHandle& handle,
@@ -213,35 +200,6 @@ bool HostSharedBitmapManager::ChildAllocatedSharedBitmap(
   data->memory->Map(data->buffer_size);
   data->memory->Close();
   return true;
-}
-
-void HostSharedBitmapManager::AllocateSharedBitmapForChild(
-    base::ProcessHandle process_handle,
-    size_t buffer_size,
-    const cc::SharedBitmapId& id,
-    base::SharedMemoryHandle* shared_memory_handle) {
-  base::AutoLock lock(lock_);
-  if (handle_map_.find(id) != handle_map_.end()) {
-    *shared_memory_handle = base::SharedMemory::NULLHandle();
-    return;
-  }
-  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
-  if (!shared_memory->CreateAndMapAnonymous(buffer_size)) {
-    LOG(ERROR) << "Cannot create shared memory buffer";
-    *shared_memory_handle = base::SharedMemory::NULLHandle();
-    return;
-  }
-
-  scoped_refptr<BitmapData> data(new BitmapData(buffer_size));
-  data->memory = std::move(shared_memory);
-
-  handle_map_[id] = data;
-  if (!data->memory->ShareToProcess(process_handle, shared_memory_handle)) {
-    LOG(ERROR) << "Cannot share shared memory buffer";
-    *shared_memory_handle = base::SharedMemory::NULLHandle();
-    return;
-  }
-  data->memory->Close();
 }
 
 void HostSharedBitmapManager::ChildDeletedSharedBitmap(

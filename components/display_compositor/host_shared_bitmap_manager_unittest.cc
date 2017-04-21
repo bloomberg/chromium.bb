@@ -76,31 +76,6 @@ TEST_F(HostSharedBitmapManagerTest, TestCreate) {
   shared_bitmap.reset();
 }
 
-TEST_F(HostSharedBitmapManagerTest, TestCreateForChild) {
-  gfx::Size bitmap_size(1, 1);
-  size_t size_in_bytes;
-  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
-  cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
-  HostSharedBitmapManagerClient client(manager_.get());
-  base::SharedMemoryHandle handle;
-  client.AllocateSharedBitmapForChild(base::GetCurrentProcessHandle(),
-                                      size_in_bytes, id, &handle);
-
-  EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle));
-  std::unique_ptr<base::SharedMemory> bitmap(
-      new base::SharedMemory(handle, false));
-  EXPECT_TRUE(bitmap->Map(size_in_bytes));
-  memset(bitmap->memory(), 0xff, size_in_bytes);
-
-  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
-  shared_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id);
-  EXPECT_TRUE(shared_bitmap);
-  EXPECT_TRUE(
-      memcmp(bitmap->memory(), shared_bitmap->pixels(), size_in_bytes) == 0);
-
-  client.DidDeleteSharedBitmap(id);
-}
-
 TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;

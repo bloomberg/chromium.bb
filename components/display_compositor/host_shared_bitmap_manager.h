@@ -50,11 +50,6 @@ class DISPLAY_COMPOSITOR_EXPORT HostSharedBitmapManagerClient
                                const cc::SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const cc::SharedBitmapId& id) override;
 
-  void AllocateSharedBitmapForChild(
-      base::ProcessHandle process_handle,
-      size_t buffer_size,
-      const cc::SharedBitmapId& id,
-      base::SharedMemoryHandle* shared_memory_handle);
   void ChildAllocatedSharedBitmap(size_t buffer_size,
                                   const base::SharedMemoryHandle& handle,
                                   const cc::SharedBitmapId& id);
@@ -97,11 +92,6 @@ class DISPLAY_COMPOSITOR_EXPORT HostSharedBitmapManager
  private:
   friend class HostSharedBitmapManagerClient;
 
-  void AllocateSharedBitmapForChild(
-      base::ProcessHandle process_handle,
-      size_t buffer_size,
-      const cc::SharedBitmapId& id,
-      base::SharedMemoryHandle* shared_memory_handle);
   bool ChildAllocatedSharedBitmap(size_t buffer_size,
                                   const base::SharedMemoryHandle& handle,
                                   const cc::SharedBitmapId& id);
