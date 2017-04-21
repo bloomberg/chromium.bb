@@ -414,7 +414,7 @@ class TestImporter(object):
 
         if directory_owners:
             description += self._format_directory_owners(directory_owners) + '\n\n'
-        description += 'TBR=qyearsley@chromium.org\n'
+        description += 'TBR=jeffcarp@chromium.org\n'
 
         # Move any NOEXPORT tag to the end of the description.
         description = description.replace('NOEXPORT=true', '')
