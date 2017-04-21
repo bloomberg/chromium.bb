@@ -171,13 +171,23 @@ class BotUpdateApi(recipe_api.RecipeApi):
     self.m.gclient.set_patch_project_revision(
         self.m.properties.get('patch_project'), cfg)
 
+    # TODO(machenbach): Deprecate rev_map. We'll do a three-way dance.
+    # When all users of got_revision_mapping use got_revision_reverse_mapping
+    # we can remove the old one. Make sure nobody uses both.
     rev_map = cfg.got_revision_mapping.as_jsonish()
+    reverse_rev_map = cfg.got_revision_reverse_mapping.as_jsonish()
+    assert not rev_map or not reverse_rev_map
+    if rev_map:
+      reverse_rev_map = {v: k for k, v in rev_map.iteritems()}
+
+      # Make sure we never have duplicate values in the old map.
+      assert len(rev_map) == len(reverse_rev_map)
 
     flags = [
-        # What do we want to check out (spec/root/rev/rev_map).
+        # What do we want to check out (spec/root/rev/reverse_rev_map).
         ['--spec', self.m.gclient.config_to_pythonish(cfg)],
         ['--patch_root', root],
-        ['--revision_mapping_file', self.m.json.input(rev_map)],
+        ['--revision_mapping_file', self.m.json.input(reverse_rev_map)],
         ['--git-cache-dir', cfg.cache_dir],
 
         # How to find the patch, if any (issue/patchset).
@@ -246,7 +256,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
     step_test_data = lambda: self.test_api.output_json(
-        root, first_sln, rev_map, self._fail_patch,
+        root, first_sln, reverse_rev_map, self._fail_patch,
         output_manifest=output_manifest, fixed_revisions=fixed_revisions)
 
     # Add suffixes to the step name, if specified.
@@ -349,10 +359,36 @@ class BotUpdateApi(recipe_api.RecipeApi):
     When deapplying the patch, v8 will be synced to v8_before.
     """
     for name in bot_update_json.get('fixed_revisions', {}):
-      rev_property = self.m.gclient.c.got_revision_mapping.get(name)
-      if rev_property and bot_update_json['properties'].get(rev_property):
+      rev_properties = self.get_project_revision_properties(name)
+      if (rev_properties and
+          bot_update_json['properties'].get(rev_properties[0])):
         self.m.gclient.c.revisions[name] = str(
-            bot_update_json['properties'][rev_property])
+            bot_update_json['properties'][rev_properties[0]])
+
+  # TODO(machenbach): Replace usages of this method eventually by direct calls
+  # to the manifest output.
+  def get_project_revision_properties(self, project_name):
+    """Returns all property names used for storing the checked-out revision of
+    a given project.
+
+    Args:
+      project_name (str): The name of a checked-out project as deps path, e.g.
+          src or src/v8.
+
+    Returns (list of str): All properties that'll hold the checked-out revision
+        of the given project. An empty list if no such properties exist.
+    """
+    cfg = self.m.gclient.c
+    if cfg.got_revision_mapping:
+      prop = cfg.got_revision_mapping.get(project_name)
+      return [prop] if prop else []
+    # Sort for determinism. We might have several properties for the same
+    # project, e.g. got_revision and got_webrtc_revision.
+    return sorted(
+        prop
+        for prop, project in cfg.got_revision_reverse_mapping.iteritems()
+        if project == project_name
+    )
 
   def deapply_patch(self, bot_update_step):
     """Deapplies a patch, taking care of DEPS and solution revisions properly.
@@ -364,7 +400,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # stored in the 'got_revision' as some gclient configs change the default
     # mapping for their own purposes.
     first_solution_name = self.m.gclient.c.solutions[0].name
-    rev_property = self.m.gclient.c.got_revision_mapping[first_solution_name]
+    rev_property = self.get_project_revision_properties(first_solution_name)[0]
     self.m.gclient.c.revisions[first_solution_name] = str(
         bot_update_json['properties'][rev_property])
     self._resolve_fixed_revisions(bot_update_json)

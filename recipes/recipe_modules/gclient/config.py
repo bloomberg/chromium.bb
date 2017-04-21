@@ -42,7 +42,12 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     src_root = Single(basestring, required=False, hidden=True),
 
     # Maps 'solution' -> build_property
+    # TODO(machenbach): Deprecate this in favor of the one below.
+    # http://crbug.com/713356
     got_revision_mapping = Dict(hidden=True),
+
+    # Maps build_property -> 'solution'
+    got_revision_reverse_mapping = Dict(hidden=True),
 
     # Addition revisions we want to pass in.  For now theres a duplication
     # of code here of setting custom vars AND passing in --revision. We hope

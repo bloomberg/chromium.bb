@@ -20,7 +20,11 @@ def RunSteps(api):
   soln.revision = api.properties.get('revision')
   api.gclient.c = src_cfg
   api.gclient.c.revisions.update(api.properties.get('revisions', {}))
-  api.gclient.c.got_revision_mapping['src'] = 'got_cr_revision'
+  if api.properties.get('deprecated_got_revision_mapping'):
+    api.gclient.c.got_revision_mapping['src'] = 'got_cr_revision'
+  else:
+    api.gclient.c.got_revision_reverse_mapping['got_cr_revision'] = 'src'
+    api.gclient.c.got_revision_reverse_mapping['got_revision'] = 'src'
   api.gclient.c.patch_projects['v8'] = ('src/v8', 'HEAD')
   api.gclient.c.patch_projects['angle/angle'] = ('src/third_party/angle',
                                                  'HEAD')
@@ -81,6 +85,12 @@ def GenTests(api):
   )
   yield api.test('with_tags') + api.properties(with_tags=True)
   yield api.test('tryjob') + api.properties(
+      issue=12345,
+      patchset=654321,
+      rietveld='https://rietveld.example.com/',
+  )
+  yield api.test('deprecated_got_revision_mapping') + api.properties(
+      deprecated_got_revision_mapping=True,
       issue=12345,
       patchset=654321,
       rietveld='https://rietveld.example.com/',

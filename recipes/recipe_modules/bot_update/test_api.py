@@ -20,12 +20,12 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
 
     properties = {
         property_name: self.gen_revision(project_name)
-        for project_name, property_name in revision_mapping.iteritems()
+        for property_name, project_name in revision_mapping.iteritems()
     }
     properties.update({
         '%s_cp' % property_name: ('refs/heads/master@{#%s}' %
                                   self.gen_commit_position(project_name))
-        for project_name, property_name in revision_mapping.iteritems()
+        for property_name, project_name in revision_mapping.iteritems()
     })
 
     output.update({
@@ -42,7 +42,7 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
             'repository': 'https://fake.org/%s.git' % project_name,
             'revision': self.gen_revision(project_name),
           }
-          for project_name in revision_mapping
+          for project_name in set(revision_mapping.values())
         }
       })
 

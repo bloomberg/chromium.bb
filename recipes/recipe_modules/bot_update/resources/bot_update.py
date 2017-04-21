@@ -60,13 +60,13 @@ REVINFO_RE = re.compile(r'^([^:]+):\s+([^@]+)@(.+)$')
 # Copied from scripts/recipes/chromium.py.
 GOT_REVISION_MAPPINGS = {
     CHROMIUM_SRC_URL: {
-        'src/': 'got_revision',
-        'src/native_client/': 'got_nacl_revision',
-        'src/tools/swarm_client/': 'got_swarm_client_revision',
-        'src/tools/swarming_client/': 'got_swarming_client_revision',
-        'src/third_party/WebKit/': 'got_webkit_revision',
-        'src/third_party/webrtc/': 'got_webrtc_revision',
-        'src/v8/': 'got_v8_revision',
+        'got_revision': 'src/',
+        'got_nacl_revision': 'src/native_client/',
+        'got_swarm_client_revision': 'src/tools/swarm_client/',
+        'got_swarming_client_revision': 'src/tools/swarming_client/',
+        'got_v8_revision': 'src/v8/',
+        'got_webkit_revision': 'src/third_party/WebKit/',
+        'got_webrtc_revision': 'src/third_party/webrtc/',
     }
 }
 
@@ -721,7 +721,7 @@ def parse_got_revision(gclient_output, got_revision_mapping):
       '%s/' % path.rstrip('/') : solution_output for path, solution_output
       in gclient_output['solutions'].iteritems()
   }
-  for dir_name, property_name in got_revision_mapping.iteritems():
+  for property_name, dir_name in got_revision_mapping.iteritems():
     # Make sure dir_name always ends with a single slash.
     dir_name = '%s/' % dir_name.rstrip('/')
     if dir_name not in solutions_output:
@@ -913,7 +913,7 @@ def parse_args():
   parse.add_option('--specs', help='Gcilent spec.')
   parse.add_option('--revision_mapping_file',
                    help=('Path to a json file of the form '
-                         '{"path/to/repo/": "property_name"}'))
+                         '{"property_name": "path/to/repo/"}'))
   parse.add_option('--revision', action='append', default=[],
                    help='Revision to check out. Can be any form of git ref. '
                         'Can prepend root@<rev> to specify which repository, '
@@ -1076,7 +1076,7 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
   # revision_mapping were specified on the command line then
   # default to setting 'got_revision' based on the first solution.
   if not revision_mapping:
-    revision_mapping[first_sln] = 'got_revision'
+    revision_mapping['got_revision'] = first_sln
 
   got_revisions = parse_got_revision(gclient_output, revision_mapping)
 
