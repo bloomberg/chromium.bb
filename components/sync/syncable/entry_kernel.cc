@@ -149,6 +149,21 @@ base::Value* AttachmentMetadataToValue(const sync_pb::AttachmentMetadata& a) {
   return new base::Value(a.SerializeAsString());
 }
 
+// Estimates memory usage of ProtoValuePtr<T> arrays where consecutive
+// elements can share the same value.
+template <class T, size_t N>
+size_t EstimateSharedMemoryUsage(ProtoValuePtr<T> const (&ptrs)[N]) {
+  size_t memory_usage = 0;
+  const T* last_value = nullptr;
+  for (const auto& ptr : ptrs) {
+    if (last_value != &ptr.value()) {
+      memory_usage += EstimateMemoryUsage(ptr);
+      last_value = &ptr.value();
+    }
+  }
+  return memory_usage;
+}
+
 }  // namespace
 
 base::DictionaryValue* EntryKernel::ToValue(
@@ -216,10 +231,10 @@ size_t EntryKernel::EstimateMemoryUsage() const {
   if (memory_usage_ == kMemoryUsageUnknown) {
     using base::trace_event::EstimateMemoryUsage;
     memory_usage_ = EstimateMemoryUsage(string_fields) +
-                    EstimateMemoryUsage(specifics_fields) +
+                    EstimateSharedMemoryUsage(specifics_fields) +
                     EstimateMemoryUsage(id_fields) +
                     EstimateMemoryUsage(unique_position_fields) +
-                    EstimateMemoryUsage(attachment_metadata_fields);
+                    EstimateSharedMemoryUsage(attachment_metadata_fields);
   }
   return memory_usage_;
 }
