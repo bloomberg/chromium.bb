@@ -713,6 +713,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-r32f-red-float.html',
         ['linux', 'nvidia'], bug=713127)
+    self.Flaky('deqp/functional/gles3/multisample.html',
+        ['linux', 'nvidia'], bug=714207)
 
     # This test is flaky both with and without ANGLE.
     self.Flaky('deqp/functional/gles3/texturespecification/' +
@@ -744,8 +746,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia'], bug=694354)
 
     # Linux NVIDIA Quadro P400
-    self.Fail('deqp/functional/gles3/multisample.html',
-        ['linux', ('nvidia', 0x1cb3)], bug=702861)
     # This test causes a lost device and then the next test fails.
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['linux', ('nvidia', 0x1cb3)], bug=709320)
