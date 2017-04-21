@@ -7,8 +7,7 @@
 namespace data_reduction_proxy {
 namespace features {
 
-// Enables the Data Reduction Proxy menu item in the main menu rather than under
-// Settings on Android.
+// Enables the Data Reduction Proxy footer in the main menu on Android.
 const base::Feature kDataReductionMainMenu{"DataReductionProxyMainMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -1339,12 +1339,11 @@ extern const char kEnableDataReductionProxySavingsPromoDescription[];
 
 #if defined(OS_ANDROID)
 
-// An about:flags experiment title to enable the Data Saver menu item in the
-// main menu rather than under settings on Android
+// An about:flags experiment title to enable the Data Saver footer on Android
 extern const char kEnableDataReductionProxyMainMenuName[];
 
-// Describes an about:flags experiment to enable the Data Saver menu item in the
-// main menu rather than under settings on Android
+// Describes an about:flags experiment to enable the Data Saver footer in the
+// main menu on Android
 extern const char kEnableDataReductionProxyMainMenuDescription[];
 
 // An about:flags experiment title to enable the site breakdown on the Data

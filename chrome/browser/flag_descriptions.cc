@@ -1209,11 +1209,10 @@ const char kEnableDataReductionProxySavingsPromoDescription[] =
 #if defined(OS_ANDROID)
 
 const char kEnableDataReductionProxyMainMenuName[] =
-    "Enable Data Saver main menu item";
+    "Enable Data Saver main menu footer";
 
 const char kEnableDataReductionProxyMainMenuDescription[] =
-    "Enables the Data Saver menu item in the main menu rather than under "
-    "Settings.";
+    "Enables the Data Saver footer in the main menu";
 
 const char kEnableDataReductionProxySiteBreakdownName[] =
     "Data Saver Site Breakdown";
