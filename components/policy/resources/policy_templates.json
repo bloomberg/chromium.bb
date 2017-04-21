@@ -314,7 +314,7 @@
 
           The New Tab page is the page opened when new tabs are created (including the one opened in new windows).
 
-          This policy does not decide which pages are to be opened on start up. Those are controlled by the <ph name="RESTOREONSTARTUP_POLICY_NAME">RestoreOnStartup</ph> policies. Yet this policy does affect the Home Page if that is set to open the New Tab page, as well as the startup page if that is set to open the New Tab page.
+          This policy does not decide which pages are to be opened on start up. Those are controlled by the <ph name="RESTORE_ON_STARTUP_POLICY_NAME">RestoreOnStartup</ph> policies. Yet this policy does affect the Home Page if that is set to open the New Tab page, as well as the startup page if that is set to open the New Tab page.
 
           If the policy is not set or left empty the default new tab page is used.
 
@@ -438,7 +438,7 @@
       'id': 7,
       'caption': '''Enable network prediction''',
       'tags': [],
-      'desc': '''This policy is deprecated in M48 in favor of <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME">NetworkPredictionOptions</ph>, and removed in M54.
+      'desc': '''This policy is deprecated in M48 in favor of <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME">NetworkPredictionOptions</ph>, and removed in M54.
 
       Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -938,7 +938,7 @@
 
           If this setting is enabled, then remote clients can use relay servers to connect to this machine when a direct connection is not available (e.g. due to firewall restrictions).
 
-          Note that if the policy <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is disabled, this policy will be ignored.
+          Note that if the policy <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is disabled, this policy will be ignored.
 
           If this policy is left not set the setting will be enabled.''',
         },
@@ -957,7 +957,7 @@
           'tags': [],
           'desc': '''Restricts the UDP port range used by the remote access host in this machine.
 
-          If this policy is left not set, or if it is set to an empty string, the remote access host will be allowed to use any available port, unless the policy <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is disabled, in which case the remote access host will use UDP ports in the 12400-12409 range.''',
+          If this policy is left not set, or if it is set to an empty string, the remote access host will be allowed to use any available port, unless the policy <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is disabled, in which case the remote access host will use UDP ports in the 12400-12409 range.''',
         },
         {
           'name': 'RemoteAccessHostMatchUsername',
@@ -1117,7 +1117,7 @@
       'id': 162,
       'caption': '''Force SafeSearch''',
       'tags': ['filtering'],
-      'desc': '''This policy is deprecated, please use <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME">ForceGoogleSafeSearch</ph> and <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME">ForceYouTubeRestrict</ph> instead. This policy is ignored if either the <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME">ForceGoogleSafeSearch</ph>, the <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME">ForceYouTubeRestrict</ph> or the (deprecated) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME">ForceYouTubeSafetyMode</ph> policies are set.
+      'desc': '''This policy is deprecated, please use <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME">ForceGoogleSafeSearch</ph> and <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME">ForceYouTubeRestrict</ph> instead. This policy is ignored if either the <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME">ForceGoogleSafeSearch</ph>, the <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME">ForceYouTubeRestrict</ph> or the (deprecated) <ph name="FORCE_YOUTUBE_SAFETY_MODE_POLICY_NAME">ForceYouTubeSafetyMode</ph> policies are set.
 
       Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting. This setting also forces Moderate Restricted Mode on YouTube.
 
@@ -1160,7 +1160,7 @@
       'id': 283,
       'caption': '''Force YouTube Safety Mode''',
       'tags': ['filtering'],
-      'desc': '''This policy is deprecated. Consider using <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME">ForceYouTubeRestrict</ph>, which overrides this policy and allows more fine-grained tuning.
+      'desc': '''This policy is deprecated. Consider using <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME">ForceYouTubeRestrict</ph>, which overrides this policy and allows more fine-grained tuning.
 
       Forces YouTube Moderate Restricted Mode and prevents users from changing this setting.
 
@@ -1363,7 +1363,7 @@
       'id': 19,
       'caption': '''Specify a list of disabled plugins''',
       'tags': [],
-      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -1393,7 +1393,7 @@
       'id': 78,
       'caption': '''Specify a list of enabled plugins''',
       'tags': ['system-security'],
-      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that are enabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -1423,7 +1423,7 @@
       'id': 79,
       'caption': '''Specify a list of plugins that the user can enable or disable''',
       'tags': [],
-      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that user can enable or disable in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -1508,11 +1508,11 @@
       'id': 358,
       'caption': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data''',
       'tags': ['local-data-access'],
-      'desc': '''If you enable this setting, the settings stored in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles like bookmarks, autofill data, passwords, etc. will also be written to a file stored in the Roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMINGPROFILELOCATION_POLICY_NAME">$1<ex>RoamingProfileLocation</ex></ph> policy.
+      'desc': '''If you enable this setting, the settings stored in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles like bookmarks, autofill data, passwords, etc. will also be written to a file stored in the Roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME">$1<ex>RoamingProfileLocation</ex></ph> policy.
 
       Google Sync is automatically disabled when this policy is enabled.
 
-      To prevent accidental data leaks it is advisable to also set the <ph name="SIGNINALLOWED_POLICY_NAME">$1<ex>SigninAllowed</ex></ph> policy to False.
+      To prevent accidental data leaks it is advisable to also set the <ph name="SIGNIN_ALLOWED_POLICY_NAME">$1<ex>SigninAllowed</ex></ph> policy to False.
 
       If this policy is disabled or left not set only the regular local profiles will be used.''',
       'label': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data.''',
@@ -1532,7 +1532,7 @@
       'tags': ['local-data-access'],
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing the roaming copy of the profiles.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory to store the roaming copy of the profiles if the <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME">$1<ex>RoamingProfileSupportEnabled</ex></ph> policy has been enabled. If the <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME">$1<ex>RoamingProfileSupportEnabled</ex></ph> policy is disabled or left unset the value stored in this policy is not used.
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory to store the roaming copy of the profiles if the <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME">$1<ex>RoamingProfileSupportEnabled</ex></ph> policy has been enabled. If the <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME">$1<ex>RoamingProfileSupportEnabled</ex></ph> policy is disabled or left unset the value stored in this policy is not used.
 
       See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 
@@ -1893,7 +1893,7 @@
           If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
 
           Leaving this policy not set will allow the users to choose the proxy settings on their own.''',
-          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY">ProxyMode</ph> policy for more details.',
+          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY_NAME">ProxyMode</ph> policy for more details.',
         },
         {
           'name': 'ProxyServer',
@@ -1921,7 +1921,7 @@
 
           For more options and detailed examples, visit:
           <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>.''',
-          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY">ProxyMode</ph> policy for more details.',
+          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY_NAME">ProxyMode</ph> policy for more details.',
         },
         {
           'name': 'ProxyPacUrl',
@@ -1949,7 +1949,7 @@
 
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>.''',
-          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY">ProxyMode</ph> policy for more details.',
+          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY_NAME">ProxyMode</ph> policy for more details.',
         },
         {
           'name': 'ProxyBypassList',
@@ -1978,7 +1978,7 @@
           For more detailed examples, visit:
           <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>.''',
           'label': '''Comma-separated list of proxy bypass rules''',
-          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY">ProxyMode</ph> policy for more details.',
+          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY_NAME">ProxyMode</ph> policy for more details.',
         },
       ],
     },
@@ -2173,7 +2173,7 @@
       'name': 'Extensions',
       'type': 'group',
       'caption': '''Extensions''',
-      'desc': '''Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>. Force-installed extensions are installed regardless whether they are present in the blacklist.''',
+      'desc': '''Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to automatically install extensions by specifying them in <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>. Force-installed extensions are installed regardless whether they are present in the blacklist.''',
       'policies': [
         {
           'name': 'ExtensionInstallBlacklist',
@@ -2253,7 +2253,7 @@
           domain, forced installation is limited to apps and extensions listed
           in the Chrome Web Store.
 
-          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY">DeveloperToolsDisabled</ph> policy should be set.
+          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME">DeveloperToolsDisabled</ph> policy should be set.
 
           Each list item of the policy is a string that contains an extension ID and an "update" URL separated by a semicolon (<ph name="SEMICOLON">;</ph>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in developer mode. The "update" URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note that the "update" URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest.
 
@@ -4012,7 +4012,7 @@
           'tags': [],
           'desc': '''If this policy is set, the specified content types are handled by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.
 
-          If this policy is not set, the default renderer is used for all sites. (The <ph name="CHROMEFRAMERENDERERSETTINGS_POLICY_NAME">ChromeFrameRendererSettings</ph> policy may be used to configure the default renderer.)''',
+          If this policy is not set, the default renderer is used for all sites. (The <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME">ChromeFrameRendererSettings</ph> policy may be used to configure the default renderer.)''',
         },
       ],
     },
@@ -5171,8 +5171,8 @@
       'tags': [],
       'desc': '''Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT">user@domain</ph>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE">madmax@managedchrome.com</ph>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD">*@domain</ph>.
 
-      If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.''',
-      'arc_support': 'This policy controls who may start a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> session. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY">ArcPolicy</ph>.',
+      If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.''',
+      'arc_support': 'This policy controls who may start a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> session. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY_POLICY_NAME">ArcPolicy</ph>.',
     },
     {
       'name': 'DeviceAllowNewUsers',
@@ -5189,8 +5189,8 @@
       'tags': [],
       'desc': '''Controls whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> allows new user accounts to be created. If this policy is set to false, users that do not have an account already will not be able to login.
 
-      If this policy is set to true or not configured, new user accounts will be allowed to be created provided that <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME">DeviceUserWhitelist</ph> does not prevent the user from logging in.''',
-      'arc_support': 'This policy controls whether new users can be added to <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph>. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY">ArcPolicy</ph>.',
+      If this policy is set to true or not configured, new user accounts will be allowed to be created provided that <ph name="DEVICE_USER_WHITELIST_POLICY_NAME">DeviceUserWhitelist</ph> does not prevent the user from logging in.''',
+      'arc_support': 'This policy controls whether new users can be added to <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph>. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY_POLICY_NAME">ArcPolicy</ph>.',
     },
     {
       'name': 'DeviceGuestModeEnabled',
@@ -5224,7 +5224,7 @@
       'tags': [],
       'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show existing users on the login screen and allow to pick one.
 
-      If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstital screen (if enabled via the <ph name="LOGINAUTHENTICATIONBEHAVIOR_POLICY_NAME">LoginAuthenticationBehavior</ph> policy) will be shown, unless a Public Session is configured. When a Public Session is configured, only the Public Session accounts will be shown, allowing to pick one of them.
+      If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstital screen (if enabled via the <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME">LoginAuthenticationBehavior</ph> policy) will be shown, unless a Public Session is configured. When a Public Session is configured, only the Public Session accounts will be shown, allowing to pick one of them.
 
       Note that this policy does not affect whether the device keeps or discards the local user data.''',
     },
@@ -5672,7 +5672,7 @@
       If this policy is set to True, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will prevent the device from booting into developer mode. The system will refuse to boot and show an error screen when the developer switch is turned on.
 
       If this policy is unset or set to False, developer mode will remain available for the device.''',
-      'arc_support': 'This policy controls <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> developer mode only. If you want to prevent access to Android Developer Options, you need to set the <ph name="DEVELOPER_TOOLS_POLICY">DeveloperToolsDisabled</ph> policy.',
+      'arc_support': 'This policy controls <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> developer mode only. If you want to prevent access to Android Developer Options, you need to set the <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME">DeveloperToolsDisabled</ph> policy.',
     },
     {
       'name': 'BackgroundModeEnabled',
@@ -6526,7 +6526,7 @@
           'tags': [],
           'desc': '''Note that this policy is deprecated and will be removed in the future.
 
-          This policy provides a fallback value for the more-specific <ph name="IDLEACTIONAC_POLICY_NAME">IdleActionAC</ph> and <ph name="IDLEACTIONBATTERY_POLICY_NAME">IdleActionBattery</ph> policies. If this policy is set, its value gets used if the respective more-specific policy is not set.
+          This policy provides a fallback value for the more-specific <ph name="IDLE_ACTION_AC_POLICY_NAME">IdleActionAC</ph> and <ph name="IDLE_ACTION_BATTERY_POLICY_NAME">IdleActionBattery</ph> policies. If this policy is set, its value gets used if the respective more-specific policy is not set.
 
           When this policy is unset, behavior of the more-specific policies remains unaffected.''',
         },
@@ -9129,7 +9129,7 @@
 
       If this setting is not configured then users are able to turn Google Location Service on and off in the Android Settings app.
 
-      Note that this policy value may be overriden by the <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME">DefaultGeolocationSetting</ph> policy, when the latter is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>.
+      Note that this policy value may be overriden by the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME">DefaultGeolocationSetting</ph> policy, when the latter is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>.
 
       This policy is applicable only to the users that are able to run Android apps.''',
     },
