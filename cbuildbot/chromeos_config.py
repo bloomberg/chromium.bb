@@ -2394,6 +2394,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           prebuilts=False,
           compilecheck=True,
           unittests=False,
+          important=False,
           active_waterfall=constants.WATERFALL_INTERNAL,
       ),
   ])
