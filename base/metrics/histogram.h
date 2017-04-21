@@ -86,13 +86,11 @@ namespace base {
 
 class BooleanHistogram;
 class CustomHistogram;
-class DelayedPersistentAllocation;
 class Histogram;
 class LinearHistogram;
 class Pickle;
 class PickleIterator;
 class SampleVector;
-class SampleVectorBase;
 
 class BASE_EXPORT Histogram : public HistogramBase {
  public:
@@ -144,8 +142,9 @@ class BASE_EXPORT Histogram : public HistogramBase {
       Sample minimum,
       Sample maximum,
       const BucketRanges* ranges,
-      const DelayedPersistentAllocation& counts,
-      const DelayedPersistentAllocation& logged_counts,
+      HistogramBase::AtomicCount* counts,
+      HistogramBase::AtomicCount* logged_counts,
+      uint32_t counts_size,
       HistogramSamples::Metadata* meta,
       HistogramSamples::Metadata* logged_meta);
 
@@ -231,8 +230,9 @@ class BASE_EXPORT Histogram : public HistogramBase {
             Sample minimum,
             Sample maximum,
             const BucketRanges* ranges,
-            const DelayedPersistentAllocation& counts,
-            const DelayedPersistentAllocation& logged_counts,
+            HistogramBase::AtomicCount* counts,
+            HistogramBase::AtomicCount* logged_counts,
+            uint32_t counts_size,
             HistogramSamples::Metadata* meta,
             HistogramSamples::Metadata* logged_meta);
 
@@ -274,10 +274,10 @@ class BASE_EXPORT Histogram : public HistogramBase {
                       std::string* output) const;
 
   // Find out how large (graphically) the largest bucket will appear to be.
-  double GetPeakBucketSize(const SampleVectorBase& samples) const;
+  double GetPeakBucketSize(const SampleVector& samples) const;
 
   // Write a common header message describing this histogram.
-  void WriteAsciiHeader(const SampleVectorBase& samples,
+  void WriteAsciiHeader(const SampleVector& samples,
                         Count sample_count,
                         std::string* output) const;
 
@@ -304,7 +304,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   // Finally, provide the state that changes with the addition of each new
   // sample.
-  std::unique_ptr<SampleVectorBase> samples_;
+  std::unique_ptr<SampleVector> samples_;
 
   // Also keep a previous uploaded state for calculating deltas.
   std::unique_ptr<HistogramSamples> logged_samples_;
@@ -357,8 +357,9 @@ class BASE_EXPORT LinearHistogram : public Histogram {
       Sample minimum,
       Sample maximum,
       const BucketRanges* ranges,
-      const DelayedPersistentAllocation& counts,
-      const DelayedPersistentAllocation& logged_counts,
+      HistogramBase::AtomicCount* counts,
+      HistogramBase::AtomicCount* logged_counts,
+      uint32_t counts_size,
       HistogramSamples::Metadata* meta,
       HistogramSamples::Metadata* logged_meta);
 
@@ -399,8 +400,9 @@ class BASE_EXPORT LinearHistogram : public Histogram {
                   Sample minimum,
                   Sample maximum,
                   const BucketRanges* ranges,
-                  const DelayedPersistentAllocation& counts,
-                  const DelayedPersistentAllocation& logged_counts,
+                  HistogramBase::AtomicCount* counts,
+                  HistogramBase::AtomicCount* logged_counts,
+                  uint32_t counts_size,
                   HistogramSamples::Metadata* meta,
                   HistogramSamples::Metadata* logged_meta);
 
@@ -444,8 +446,8 @@ class BASE_EXPORT BooleanHistogram : public LinearHistogram {
   static std::unique_ptr<HistogramBase> PersistentCreate(
       const std::string& name,
       const BucketRanges* ranges,
-      const DelayedPersistentAllocation& counts,
-      const DelayedPersistentAllocation& logged_counts,
+      HistogramBase::AtomicCount* counts,
+      HistogramBase::AtomicCount* logged_counts,
       HistogramSamples::Metadata* meta,
       HistogramSamples::Metadata* logged_meta);
 
@@ -458,8 +460,8 @@ class BASE_EXPORT BooleanHistogram : public LinearHistogram {
   BooleanHistogram(const std::string& name, const BucketRanges* ranges);
   BooleanHistogram(const std::string& name,
                    const BucketRanges* ranges,
-                   const DelayedPersistentAllocation& counts,
-                   const DelayedPersistentAllocation& logged_counts,
+                   HistogramBase::AtomicCount* counts,
+                   HistogramBase::AtomicCount* logged_counts,
                    HistogramSamples::Metadata* meta,
                    HistogramSamples::Metadata* logged_meta);
 
@@ -494,8 +496,9 @@ class BASE_EXPORT CustomHistogram : public Histogram {
   static std::unique_ptr<HistogramBase> PersistentCreate(
       const std::string& name,
       const BucketRanges* ranges,
-      const DelayedPersistentAllocation& counts,
-      const DelayedPersistentAllocation& logged_counts,
+      HistogramBase::AtomicCount* counts,
+      HistogramBase::AtomicCount* logged_counts,
+      uint32_t counts_size,
       HistogramSamples::Metadata* meta,
       HistogramSamples::Metadata* logged_meta);
 
@@ -518,8 +521,9 @@ class BASE_EXPORT CustomHistogram : public Histogram {
 
   CustomHistogram(const std::string& name,
                   const BucketRanges* ranges,
-                  const DelayedPersistentAllocation& counts,
-                  const DelayedPersistentAllocation& logged_counts,
+                  HistogramBase::AtomicCount* counts,
+                  HistogramBase::AtomicCount* logged_counts,
+                  uint32_t counts_size,
                   HistogramSamples::Metadata* meta,
                   HistogramSamples::Metadata* logged_meta);
 

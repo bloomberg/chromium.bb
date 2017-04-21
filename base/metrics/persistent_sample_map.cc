@@ -115,7 +115,8 @@ PersistentSampleMap::~PersistentSampleMap() {
 
 void PersistentSampleMap::Accumulate(Sample value, Count count) {
   *GetOrCreateSampleCountStorage(value) += count;
-  IncreaseSumAndCount(static_cast<int64_t>(count) * value, count);
+  IncreaseSum(static_cast<int64_t>(count) * value);
+  IncreaseRedundantCount(count);
 }
 
 Count PersistentSampleMap::GetCount(Sample value) const {
