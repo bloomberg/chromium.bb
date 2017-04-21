@@ -661,9 +661,10 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (!browserAccessibility_->IsTableLikeRole())
     return nil;
   int count = -1;
-  if (!browserAccessibility_->GetIntAttribute(
-      ui::AX_ATTR_ARIA_COL_COUNT, &count))
+  if (!browserAccessibility_->GetIntAttribute(ui::AX_ATTR_ARIA_COLUMN_COUNT,
+                                              &count)) {
     return nil;
+  }
   return [NSNumber numberWithInt:count];
 }
 
@@ -672,8 +673,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
     return nil;
   int index = -1;
   if (!browserAccessibility_->GetIntAttribute(
-      ui::AX_ATTR_ARIA_COL_INDEX, &index))
+          ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX, &index)) {
     return nil;
+  }
   return [NSNumber numberWithInt:index];
 }
 
@@ -702,9 +704,10 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (!browserAccessibility_->IsTableLikeRole())
     return nil;
   int count = -1;
-  if (!browserAccessibility_->GetIntAttribute(
-      ui::AX_ATTR_ARIA_ROW_COUNT, &count))
+  if (!browserAccessibility_->GetIntAttribute(ui::AX_ATTR_ARIA_ROW_COUNT,
+                                              &count)) {
     return nil;
+  }
   return [NSNumber numberWithInt:count];
 }
 
@@ -712,9 +715,10 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (!browserAccessibility_->IsCellOrTableHeaderRole())
     return nil;
   int index = -1;
-  if (!browserAccessibility_->GetIntAttribute(
-      ui::AX_ATTR_ARIA_ROW_INDEX, &index))
+  if (!browserAccessibility_->GetIntAttribute(ui::AX_ATTR_ARIA_CELL_ROW_INDEX,
+                                              &index)) {
     return nil;
+  }
   return [NSNumber numberWithInt:index];
 }
 

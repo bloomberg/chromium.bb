@@ -706,7 +706,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 
       int aria_colcount = src.AriaColumnCount();
       if (aria_colcount)
-        dst->AddIntAttribute(ui::AX_ATTR_ARIA_COL_COUNT, aria_colcount);
+        dst->AddIntAttribute(ui::AX_ATTR_ARIA_COLUMN_COUNT, aria_colcount);
 
       int aria_rowcount = src.AriaRowCount();
       if (aria_rowcount)
@@ -742,13 +742,15 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                              src.CellRowSpan());
 
         int aria_colindex = src.AriaColumnIndex();
-        if (aria_colindex)
-          dst->AddIntAttribute(ui::AX_ATTR_ARIA_COL_INDEX, aria_colindex);
+        if (aria_colindex) {
+          dst->AddIntAttribute(ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX,
+                               aria_colindex);
+        }
       }
 
       int aria_rowindex = src.AriaRowIndex();
       if (aria_rowindex)
-        dst->AddIntAttribute(ui::AX_ATTR_ARIA_ROW_INDEX, aria_rowindex);
+        dst->AddIntAttribute(ui::AX_ATTR_ARIA_CELL_ROW_INDEX, aria_rowindex);
     }
 
     if ((dst->role == ui::AX_ROLE_ROW_HEADER ||

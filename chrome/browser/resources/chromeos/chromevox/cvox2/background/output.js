@@ -427,10 +427,14 @@ Output.RULES = {
       speak: '$earcon(ALERT_MODAL) $name $nameOrTextContent $state $role'
     },
     cell: {
-      enter: '@cell_summary($tableCellRowIndex, $tableCellColumnIndex) ' +
-          '$node(tableColumnHeader)',
-      speak: '@cell_summary($tableCellRowIndex, $tableCellColumnIndex) ' +
-          '$node(tableColumnHeader) $state'
+      enter: '@cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex, ' +
+      '$tableCellRowIndex), ' +
+      '$if($ariaCellColumnIndex, $ariaCellColumnIndex, ' +
+      '$tableCellColumnIndex)) $node(tableColumnHeader)',
+      speak: '@cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex, ' +
+      '$tableCellRowIndex), ' +
+      '$if($ariaCellColumnIndex, $ariaCellColumnIndex, ' +
+      '$tableCellColumnIndex)) $node(tableColumnHeader) $state'
     },
     checkBox: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
@@ -564,7 +568,9 @@ Output.RULES = {
           '$if($setSize, @describe_index($posInSet, $setSize))',
     },
     table: {
-      enter: '@table_summary($name, $tableRowCount, $tableColumnCount) ' +
+      enter: '@table_summary($name, ' +
+          '$if($ariaRowCount, $ariaRowCount, $tableRowCount), ' +
+          '$if($ariaColumnCount, $ariaColumnCount, $tableColumnCount)) ' +
           '$node(tableHeader)'
     },
     tableHeaderContainer: {

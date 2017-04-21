@@ -53,18 +53,19 @@
   <div id="main" aria-label="main">Content for scrollbar to control</div>
 
   <!-- table and cell attributes -->
-  <table id="table" role="grid">
+  <!-- The first 100 rows and the first 50 columns are missing. -->
+  <table id="table" role="grid" aria-rowcount="103" aria-colcount="53">
     <tr role="row">
-      <td role="cell">Cell spanning one column</td>
-      <td role="cell">Cell spanning one column</td>
-      <td role="cell">Cell spanning one column</td>
+      <td role="cell" aria-rowindex="101" aria-colindex="51">Cell spanning one column</td>
+      <td role="cell" aria-rowindex="101" aria-colindex="52">Cell spanning one column</td>
+      <td role="cell" aria-rowindex="101" aria-colindex="53">Cell spanning one column</td>
     <tr role="row">
-      <td colspan="2" role="cell">Cell spanning two columns</td>
-      <td rowspan="2" role="cell">Cell spanning two rows</td>
+      <td colspan="2" role="cell" aria-rowindex="102" aria-colindex="51">Cell spanning two columns</td>
+      <td rowspan="2" role="cell" aria-rowindex="102" aria-colindex="53">Cell spanning two rows</td>
     </tr>
     <tr role="row">
-      <td role="cell">Cell spanning one column</td>
-      <td role="cell">Cell spanning one column</td>
+      <td role="cell" aria-rowindex="103" aria-colindex="51">Cell spanning one column</td>
+      <td role="cell" aria-rowindex="103" aria-colindex="52">Cell spanning one column</td>
     </tr>
   </table>
 

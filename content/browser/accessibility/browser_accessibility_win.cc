@@ -3818,15 +3818,15 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
 
   // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
   if (IsTableLikeRole()) {
-    IntAttributeToIA2(ui::AX_ATTR_ARIA_COL_COUNT, "colcount");
+    IntAttributeToIA2(ui::AX_ATTR_ARIA_COLUMN_COUNT, "colcount");
     IntAttributeToIA2(ui::AX_ATTR_ARIA_ROW_COUNT, "rowcount");
   }
 
   // Expose aria-colindex and aria-rowindex in a cell or row.
   if (IsCellOrTableHeaderRole() || GetRole() == ui::AX_ROLE_ROW) {
     if (GetRole() != ui::AX_ROLE_ROW)
-      IntAttributeToIA2(ui::AX_ATTR_ARIA_COL_INDEX, "colindex");
-    IntAttributeToIA2(ui::AX_ATTR_ARIA_ROW_INDEX, "rowindex");
+      IntAttributeToIA2(ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX, "colindex");
+    IntAttributeToIA2(ui::AX_ATTR_ARIA_CELL_ROW_INDEX, "rowindex");
   }
 
   // Expose row or column header sort direction.

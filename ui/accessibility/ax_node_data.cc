@@ -110,10 +110,10 @@ bool IsNodeIdIntAttribute(AXIntAttribute attr) {
     case AX_ATTR_CHECKED_STATE:
     case AX_ATTR_TEXT_DIRECTION:
     case AX_ATTR_TEXT_STYLE:
-    case AX_ATTR_ARIA_COL_COUNT:
-    case AX_ATTR_ARIA_COL_INDEX:
+    case AX_ATTR_ARIA_COLUMN_COUNT:
+    case AX_ATTR_ARIA_CELL_COLUMN_INDEX:
     case AX_ATTR_ARIA_ROW_COUNT:
-    case AX_ATTR_ARIA_ROW_INDEX:
+    case AX_ATTR_ARIA_CELL_ROW_INDEX:
       return false;
   }
 
@@ -524,17 +524,17 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_TEXT_SEL_END:
         result += " sel_end=" + value;
         break;
-      case AX_ATTR_ARIA_COL_COUNT:
-        result += " aria_col_count=" + value;
+      case AX_ATTR_ARIA_COLUMN_COUNT:
+        result += " aria_column_count=" + value;
         break;
-      case AX_ATTR_ARIA_COL_INDEX:
-        result += " aria_col_index=" + value;
+      case AX_ATTR_ARIA_CELL_COLUMN_INDEX:
+        result += " aria_cell_column_index=" + value;
         break;
       case AX_ATTR_ARIA_ROW_COUNT:
         result += " aria_row_count=" + value;
         break;
-      case AX_ATTR_ARIA_ROW_INDEX:
-        result += " aria_row_index=" + value;
+      case AX_ATTR_ARIA_CELL_ROW_INDEX:
+        result += " aria_cell_row_index=" + value;
         break;
       case AX_ATTR_TABLE_ROW_COUNT:
         result += " rows=" + value;

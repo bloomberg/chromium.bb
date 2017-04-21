@@ -551,24 +551,38 @@
     // Table attributes.
     //
 
-    // The number of rows in this table.
+    // The number of rows in this table as specified in the DOM.
     long? tableRowCount;
 
-    // The number of columns in this table.
+    // The number of rows in this table as specified by the page author.
+    long? ariaRowCount;
+
+    // The number of columns in this table as specified in the DOM.
     long? tableColumnCount;
+
+    // The number of columns in this table as specified by the page author.
+    long? ariaColumnCount;
 
     //
     // Table cell attributes.
     //
 
-    // The zero-based index of the column that this cell is in.
+    // The zero-based index of the column that this cell is in as specified in
+    // the DOM.
     long? tableCellColumnIndex;
+
+    // The ARIA column index as specified by the page author.
+    long? ariaCellColumnIndex;
 
     // The number of columns that this cell spans (default is 1).
     long? tableCellColumnSpan;
 
-    // The zero-based index of the row that this cell is in.
+    // The zero-based index of the row that this cell is in as specified in the
+    // DOM.
     long? tableCellRowIndex;
+
+    // The ARIA row index as specified by the page author.
+    long? ariaCellRowIndex;
 
     // The number of rows that this cell spans (default is 1).
     long? tableCellRowSpan;

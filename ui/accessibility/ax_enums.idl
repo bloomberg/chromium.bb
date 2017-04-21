@@ -365,10 +365,10 @@
     text_sel_end,
 
     // aria_col* and aria_row* attributes
-    aria_col_count,
-    aria_col_index,
+    aria_column_count,
+    aria_cell_column_index,
     aria_row_count,
-    aria_row_index,
+    aria_cell_row_index,
 
     // Table attributes.
     table_row_count,
