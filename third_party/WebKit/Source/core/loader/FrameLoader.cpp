@@ -453,7 +453,7 @@ void FrameLoader::FinishedParsing() {
         document_loader_ ? document_loader_->IsCommittedButEmpty() : true);
   }
 
-  CheckCompleted();
+  frame_->GetDocument()->CheckCompleted();
 
   if (!frame_->View())
     return;
@@ -465,15 +465,6 @@ void FrameLoader::FinishedParsing() {
                   kNavigationToDifferentDocument);
 }
 
-static bool AllDescendantsAreComplete(Frame* frame) {
-  for (Frame* child = frame->Tree().FirstChild(); child;
-       child = child->Tree().TraverseNext(frame)) {
-    if (child->IsLoading())
-      return false;
-  }
-  return true;
-}
-
 bool FrameLoader::AllAncestorsAreComplete() const {
   for (Frame* ancestor = frame_; ancestor;
        ancestor = ancestor->Tree().Parent()) {
@@ -483,96 +474,15 @@ bool FrameLoader::AllAncestorsAreComplete() const {
   return true;
 }
 
-static bool ShouldComplete(Document* document) {
-  if (!document->GetFrame())
-    return false;
-  if (document->Parsing() || document->IsInDOMContentLoaded())
-    return false;
-  if (!document->HaveImportsLoaded())
-    return false;
-  if (document->Fetcher()->BlockingRequestCount())
-    return false;
-  if (document->IsDelayingLoadEvent())
-    return false;
-  return AllDescendantsAreComplete(document->GetFrame());
-}
-
-static bool ShouldSendFinishNotification(LocalFrame* frame) {
-  // Don't send didFinishLoad more than once per DocumentLoader.
-  if (frame->Loader().GetDocumentLoader()->SentDidFinishLoad())
-    return false;
-
-  // We might have declined to run the load event due to an imminent
-  // content-initiated navigation.
-  if (!frame->GetDocument()->LoadEventFinished())
-    return false;
-
-  // An event might have restarted a child frame.
-  if (!AllDescendantsAreComplete(frame))
-    return false;
-
-  // Don't notify if the frame is being detached.
-  if (!frame->IsAttached())
-    return false;
-
-  return true;
-}
-
-static bool ShouldSendCompleteNotification(LocalFrame* frame) {
-  // FIXME: We might have already sent stop notifications and be re-completing.
-  if (!frame->IsLoading())
-    return false;
-  // Only send didStopLoading() if there are no navigations in progress at all,
-  // whether committed, provisional, or pending.
-  return frame->Loader().GetDocumentLoader()->SentDidFinishLoad() &&
-         !frame->Loader().HasProvisionalNavigation();
-}
-
-void FrameLoader::CheckCompleted() {
-  if (!ShouldComplete(frame_->GetDocument()))
+void FrameLoader::DidFinishNavigation() {
+  // We should have either finished the provisional or committed navigation if
+  // this is called. Only delcare the whole frame finished if neither is in
+  // progress.
+  DCHECK(document_loader_->SentDidFinishLoad() || !HasProvisionalNavigation());
+  if (!document_loader_->SentDidFinishLoad() || HasProvisionalNavigation())
     return;
 
-  if (Client()) {
-    Client()->RunScriptsAtDocumentIdle();
-
-    // Injected scripts may have disconnected this frame.
-    if (!Client())
-      return;
-
-    // Check again, because runScriptsAtDocumentIdle() may have delayed the load
-    // event.
-    if (!ShouldComplete(frame_->GetDocument()))
-      return;
-  }
-
-  // OK, completed.
-  frame_->GetDocument()->SetReadyState(Document::kComplete);
-  if (frame_->GetDocument()->LoadEventStillNeeded())
-    frame_->GetDocument()->ImplicitClose();
-
-  frame_->GetNavigationScheduler().StartTimer();
-
-  if (frame_->View())
-    frame_->View()->HandleLoadCompleted();
-
-  // The readystatechanged or load event may have disconnected this frame.
-  if (!frame_->Client())
-    return;
-
-  if (ShouldSendFinishNotification(frame_)) {
-    // Report mobile vs. desktop page statistics. This will only report on
-    // Android.
-    if (frame_->IsMainFrame())
-      frame_->GetDocument()->GetViewportDescription().ReportMobilePageStats(
-          frame_);
-    document_loader_->SetSentDidFinishLoad();
-    Client()->DispatchDidFinishLoad();
-    // Finishing the load can detach the frame when running layout tests.
-    if (!frame_->Client())
-      return;
-  }
-
-  if (ShouldSendCompleteNotification(frame_)) {
+  if (frame_->IsLoading()) {
     progress_tracker_->ProgressCompleted();
     // Retry restoring scroll offset since finishing loading disables content
     // size clamping.
@@ -584,7 +494,7 @@ void FrameLoader::CheckCompleted() {
 
   Frame* parent = frame_->Tree().Parent();
   if (parent && parent->IsLocalFrame())
-    ToLocalFrame(parent)->Loader().CheckCompleted();
+    ToLocalFrame(parent)->GetDocument()->CheckCompleted();
 }
 
 void FrameLoader::CheckTimerFired(TimerBase*) {
@@ -592,7 +502,7 @@ void FrameLoader::CheckTimerFired(TimerBase*) {
     if (page->Suspended())
       return;
   }
-  CheckCompleted();
+  frame_->GetDocument()->CheckCompleted();
 }
 
 void FrameLoader::ScheduleCheckCompleted() {
@@ -700,7 +610,7 @@ void FrameLoader::LoadInSameDocument(
 
   document_loader_->GetInitialScrollState().was_scrolled_by_user = false;
 
-  CheckCompleted();
+  frame_->GetDocument()->CheckCompleted();
 
   frame_->DomWindow()->StatePopped(state_object
                                        ? std::move(state_object)
@@ -1062,10 +972,9 @@ void FrameLoader::StopAllLoaders() {
       ToLocalFrame(child)->Loader().StopAllLoaders();
   }
 
-  frame_->GetDocument()->SuppressLoadEvent();
+  frame_->GetDocument()->CancelParsing();
   if (document_loader_)
     document_loader_->Fetcher()->StopFetching();
-  frame_->GetDocument()->CancelParsing();
   if (!protect_provisional_loader_)
     DetachDocumentLoader(provisional_document_loader_);
 
@@ -1312,6 +1221,7 @@ void FrameLoader::Detach() {
 void FrameLoader::DetachProvisionalDocumentLoader(DocumentLoader* loader) {
   DCHECK_EQ(loader, provisional_document_loader_);
   DetachDocumentLoader(provisional_document_loader_);
+  DidFinishNavigation();
 }
 
 bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,

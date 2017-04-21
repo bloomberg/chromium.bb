@@ -21,7 +21,7 @@ import java.util.concurrent.TimeoutException;
 /** Tests for the SearchGeolocationDisclosureInfobar. */
 public class SearchGeolocationDisclosureInfoBarTest
         extends ChromeActivityTestCaseBase<ChromeActivity> {
-    private static final String SEARCH_PAGE = "/chrome/test/data/empty.html";
+    private static final String SEARCH_PAGE = "/chrome/test/data/android/google.html";
     private static final String ENABLE_NEW_DISCLOSURE_FEATURE =
             "enable-features=ConsistentOmniboxGeolocation";
     private static final String DISABLE_NEW_DISCLOSURE_FEATURE =

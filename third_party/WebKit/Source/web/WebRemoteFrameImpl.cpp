@@ -487,7 +487,7 @@ void WebRemoteFrameImpl::DidStopLoading() {
   if (Parent() && Parent()->IsWebLocalFrame()) {
     WebLocalFrameImpl* parent_frame =
         ToWebLocalFrameImpl(Parent()->ToWebLocalFrame());
-    parent_frame->GetFrame()->Loader().CheckCompleted();
+    parent_frame->GetFrame()->GetDocument()->CheckCompleted();
   }
 }
 

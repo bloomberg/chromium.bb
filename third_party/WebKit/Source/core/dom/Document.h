@@ -566,8 +566,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void close(ExceptionState&);
   // This is used internally and does not handle exceptions.
   void close();
-  // implicitClose() actually does the work of closing the input stream.
-  void ImplicitClose();
+
+  void CheckCompleted();
 
   bool DispatchBeforeUnloadEvent(ChromeClient&,
                                  bool is_reload,
@@ -680,9 +680,6 @@ class CORE_EXPORT Document : public ContainerNode,
   enum ParsingState { kParsing, kInDOMContentLoaded, kFinishedParsing };
   void SetParsingState(ParsingState);
   bool Parsing() const { return parsing_state_ == kParsing; }
-  bool IsInDOMContentLoaded() const {
-    return parsing_state_ == kInDOMContentLoaded;
-  }
   bool HasFinishedParsing() const { return parsing_state_ == kFinishedParsing; }
 
   bool ShouldScheduleLayout() const;
@@ -1050,9 +1047,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool LoadEventStillNeeded() const {
     return load_event_progress_ == kLoadEventNotRun;
   }
-  bool ProcessingLoadEvent() const {
-    return load_event_progress_ == kLoadEventInProgress;
-  }
   bool LoadEventFinished() const {
     return load_event_progress_ >= kLoadEventCompleted;
   }
@@ -1163,7 +1157,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   HTMLImportLoader* ImportLoader() const;
 
-  bool HaveImportsLoaded() const;
   void DidLoadAllImports();
 
   void AdjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>&,
@@ -1373,6 +1366,10 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateStyle();
   void NotifyLayoutTreeOfSubtreeChanges();
 
+  // ImplicitClose() actually does the work of closing the input stream.
+  void ImplicitClose();
+  bool ShouldComplete();
+
   void DetachParser();
 
   void BeginLifecycleUpdatesIfRenderingReady();
@@ -1437,6 +1434,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void RunExecutionContextTask(std::unique_ptr<ExecutionContextTask>,
                                bool instrumenting);
+
+  bool HaveImportsLoaded() const;
 
   DocumentLifecycle lifecycle_;
 

@@ -488,7 +488,7 @@ Document::Document(const DocumentInit& initializer,
           this,
           &Document::UpdateFocusAppearanceTimerFired),
       css_target_(nullptr),
-      load_event_progress_(kLoadEventNotRun),
+      load_event_progress_(kLoadEventCompleted),
       start_time_(CurrentTime()),
       script_runner_(ScriptRunner::Create(this)),
       xml_version_("1.0"),
@@ -2770,9 +2770,6 @@ void Document::open() {
 
   if (frame_)
     frame_->Loader().DidExplicitOpen();
-  if (load_event_progress_ != kLoadEventInProgress &&
-      PageDismissalEventBeingDispatched() == kNoDismissal)
-    load_event_progress_ = kLoadEventNotRun;
 }
 
 void Document::DetachParser() {
@@ -2787,12 +2784,11 @@ void Document::CancelParsing() {
   DetachParser();
   SetParsingState(kFinishedParsing);
   SetReadyState(kComplete);
+  SuppressLoadEvent();
 }
 
 DocumentParser* Document::ImplicitOpen(
     ParserSynchronizationPolicy parser_sync_policy) {
-  DetachParser();
-
   RemoveChildren();
   DCHECK(!focused_element_);
 
@@ -2806,11 +2802,16 @@ DocumentParser* Document::ImplicitOpen(
     parser_sync_policy = kForceSynchronousParsing;
   }
 
+  DetachParser();
   parser_sync_policy_ = parser_sync_policy;
   parser_ = CreateParser();
   DocumentParserTiming::From(*this).MarkParserStart();
   SetParsingState(kParsing);
   SetReadyState(kLoading);
+  if (load_event_progress_ != kLoadEventInProgress &&
+      PageDismissalEventBeingDispatched() == kNoDismissal) {
+    load_event_progress_ = kLoadEventNotRun;
+  }
 
   return parser_;
 }
@@ -2952,30 +2953,15 @@ void Document::close() {
       !GetScriptableDocumentParser()->IsParsing())
     return;
 
-  if (DocumentParser* parser = parser_)
-    parser->Finish();
-
-  if (!frame_) {
-    // Because we have no frame, we don't know if all loading has completed,
-    // so we just call implicitClose() immediately. FIXME: This might fire
-    // the load event prematurely
-    // <http://bugs.webkit.org/show_bug.cgi?id=14568>.
-    ImplicitClose();
-    return;
-  }
-
-  frame_->Loader().CheckCompleted();
+  parser_->Finish();
+  if (!parser_ || !parser_->IsParsing())
+    SetReadyState(kComplete);
+  CheckCompleted();
 }
 
 void Document::ImplicitClose() {
   DCHECK(!InStyleRecalc());
-  if (ProcessingLoadEvent() || !parser_)
-    return;
-  if (GetFrame() &&
-      GetFrame()->GetNavigationScheduler().LocationChangePending()) {
-    SuppressLoadEvent();
-    return;
-  }
+  DCHECK(parser_);
 
   load_event_progress_ = kLoadEventInProgress;
 
@@ -3055,6 +3041,69 @@ void Document::ImplicitClose() {
 
   if (SvgExtensions())
     AccessSVGExtensions().StartAnimations();
+}
+
+static bool AllDescendantsAreComplete(Frame* frame) {
+  if (!frame)
+    return true;
+  for (Frame* child = frame->Tree().FirstChild(); child;
+       child = child->Tree().TraverseNext(frame)) {
+    if (child->IsLoading())
+      return false;
+  }
+  return true;
+}
+
+bool Document::ShouldComplete() {
+  return parsing_state_ == kFinishedParsing && HaveImportsLoaded() &&
+         !fetcher_->BlockingRequestCount() && !IsDelayingLoadEvent() &&
+         load_event_progress_ != kLoadEventInProgress &&
+         AllDescendantsAreComplete(frame_);
+}
+
+void Document::CheckCompleted() {
+  if (!ShouldComplete())
+    return;
+
+  if (frame_) {
+    frame_->Client()->RunScriptsAtDocumentIdle();
+
+    // Injected scripts may have disconnected this frame.
+    if (!frame_)
+      return;
+
+    // Check again, because runScriptsAtDocumentIdle() may have delayed the load
+    // event.
+    if (!ShouldComplete())
+      return;
+  }
+
+  // OK, completed. Fire load completion events as needed.
+  SetReadyState(kComplete);
+  if (LoadEventStillNeeded())
+    ImplicitClose();
+
+  // The readystatechanged or load event may have disconnected this frame.
+  if (!frame_ || !frame_->IsAttached())
+    return;
+  frame_->GetNavigationScheduler().StartTimer();
+  View()->HandleLoadCompleted();
+  // The document itself is complete, but if a child frame was restarted due to
+  // an event, this document is still considered to be in progress.
+  if (!AllDescendantsAreComplete(frame_))
+    return;
+
+  // No need to repeat if we've already notified this load as finished.
+  if (!Loader()->SentDidFinishLoad()) {
+    if (frame_->IsMainFrame())
+      ViewportDescription().ReportMobilePageStats(frame_);
+    Loader()->SetSentDidFinishLoad();
+    frame_->Client()->DispatchDidFinishLoad();
+    if (!frame_)
+      return;
+  }
+
+  frame_->Loader().DidFinishNavigation();
 }
 
 bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
@@ -5988,8 +6037,8 @@ void Document::DecrementLoadEventDelayCountAndCheckLoadEvent() {
   DCHECK(load_event_delay_count_);
   --load_event_delay_count_;
 
-  if (!load_event_delay_count_ && GetFrame())
-    GetFrame()->Loader().CheckCompleted();
+  if (!load_event_delay_count_)
+    CheckCompleted();
 }
 
 void Document::CheckLoadEventSoon() {
@@ -6011,8 +6060,7 @@ bool Document::IsDelayingLoadEvent() {
 }
 
 void Document::LoadEventDelayTimerFired(TimerBase*) {
-  if (GetFrame())
-    GetFrame()->Loader().CheckCompleted();
+  CheckCompleted();
 }
 
 void Document::LoadPluginsSoon() {
