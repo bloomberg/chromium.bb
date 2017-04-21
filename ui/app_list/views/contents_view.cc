@@ -29,6 +29,34 @@
 
 namespace app_list {
 
+namespace {
+
+// Container of the search answer view.
+class SearchAnswerContainerView : public views::View {
+ public:
+  explicit SearchAnswerContainerView(views::View* search_results_page_view)
+      : search_results_page_view_(search_results_page_view) {
+    views::BoxLayout* answer_container_layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    answer_container_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+    SetLayoutManager(answer_container_layout);
+  }
+
+  // views::View overrides:
+  void ChildPreferredSizeChanged(View* child) override {
+    if (visible())
+      search_results_page_view_->Layout();
+  }
+
+ private:
+  views::View* const search_results_page_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchAnswerContainerView);
+};
+
+}  // namespace
+
 ContentsView::ContentsView(AppListMainView* app_list_main_view)
     : model_(nullptr),
       apps_container_view_(nullptr),
@@ -74,13 +102,9 @@ void ContentsView::Init(AppListModel* model) {
   search_results_page_view_ = new SearchResultPageView();
 
   // Search answer container UI.
-  search_answer_container_view_ = new views::View;
+  search_answer_container_view_ =
+      new SearchAnswerContainerView(search_results_page_view_);
   search_answer_container_view_->SetVisible(false);
-  views::BoxLayout* answer_container_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-  answer_container_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  search_answer_container_view_->SetLayoutManager(answer_container_layout);
   views::View* search_answer_view = view_delegate->GetSearchAnswerWebView();
   if (search_answer_view)
     search_answer_container_view_->AddChildView(search_answer_view);

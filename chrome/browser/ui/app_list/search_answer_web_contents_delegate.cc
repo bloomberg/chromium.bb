@@ -30,6 +30,7 @@ SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
               content::SiteInstance::Create(browser_context)))),
       answer_server_url_(switches::AnswerServerUrl()) {
   Observe(web_contents_.get());
+  web_contents_->SetDelegate(this);
   web_view_->set_owned_by_client();
   web_view_->SetWebContents(web_contents_.get());
 }
@@ -72,6 +73,12 @@ void SearchAnswerWebContentsDelegate::Update() {
   web_contents_->GetRenderViewHost()->EnablePreferredSizeMode();
 }
 
+void SearchAnswerWebContentsDelegate::UpdatePreferredSize(
+    content::WebContents* web_contents,
+    const gfx::Size& pref_size) {
+  web_view_->SetPreferredSize(pref_size);
+}
+
 void SearchAnswerWebContentsDelegate::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->GetURL() != current_request_url_)
@@ -96,7 +103,6 @@ void SearchAnswerWebContentsDelegate::DidStopLoading() {
   if (!received_answer_)
     return;
 
-  web_view_->SetPreferredSize(web_contents_->GetPreferredSize());
   model_->SetSearchAnswerAvailable(true);
 }
 

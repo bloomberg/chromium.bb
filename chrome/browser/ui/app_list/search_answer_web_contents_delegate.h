@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -27,7 +28,8 @@ class WebView;
 namespace app_list {
 
 // Manages the web contents for the search answer web view.
-class SearchAnswerWebContentsDelegate : public content::WebContentsObserver {
+class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
+                                        public content::WebContentsObserver {
  public:
   SearchAnswerWebContentsDelegate(content::BrowserContext* browser_context,
                                   app_list::AppListModel* model);
@@ -42,6 +44,10 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsObserver {
   // class. The object is owned by this class and has property
   // 'set_owned_by_client()' set.
   views::View* web_view();
+
+  // content::WebContentsDelegate overrides:
+  void UpdatePreferredSize(content::WebContents* web_contents,
+                           const gfx::Size& pref_size) override;
 
   // content::WebContentsObserver overrides:
   void DidFinishNavigation(
