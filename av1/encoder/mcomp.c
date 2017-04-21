@@ -81,10 +81,8 @@ static int mv_err_cost(const MV *mv, const MV *ref, const int *mvjcost,
                        int *mvcost[2], int error_per_bit) {
   if (mvcost) {
     const MV diff = { mv->row - ref->row, mv->col - ref->col };
-    // This product sits at a 32-bit ceiling right now and any additional
-    // accuracy in either bit cost or error cost will cause it to overflow.
-    return ROUND_POWER_OF_TWO(
-        (unsigned)mv_cost(&diff, mvjcost, mvcost) * error_per_bit,
+    return (int)ROUND_POWER_OF_TWO_64(
+        (int64_t)mv_cost(&diff, mvjcost, mvcost) * error_per_bit,
         RDDIV_BITS + AV1_PROB_COST_SHIFT - RD_EPB_SHIFT +
             PIXEL_TRANSFORM_ERROR_SCALE);
   }
