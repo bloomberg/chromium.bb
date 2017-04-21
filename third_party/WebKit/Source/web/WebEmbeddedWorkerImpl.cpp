@@ -263,22 +263,6 @@ void WebEmbeddedWorkerImpl::PostMessageToPageInspector(const String& message) {
   worker_inspector_proxy_->DispatchMessageFromWorker(message);
 }
 
-void WebEmbeddedWorkerImpl::PostTaskToLoader(
-    const WebTraceLocation& location,
-    std::unique_ptr<WTF::CrossThreadClosure> task) {
-  main_thread_task_runners_->Get(TaskType::kNetworking)
-      ->PostTask(BLINK_FROM_HERE, std::move(task));
-}
-
-void WebEmbeddedWorkerImpl::PostTaskToWorkerGlobalScope(
-    const WebTraceLocation& location,
-    std::unique_ptr<WTF::CrossThreadClosure> task) {
-  if (asked_to_terminate_ || !worker_thread_)
-    return;
-  TaskRunnerHelper::Get(TaskType::kNetworking, worker_thread_.get())
-      ->PostTask(location, std::move(task));
-}
-
 ThreadableLoadingContext* WebEmbeddedWorkerImpl::GetThreadableLoadingContext() {
   if (!loading_context_) {
     loading_context_ = ThreadableLoadingContext::Create(
@@ -467,19 +451,19 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   main_script_loader_.Clear();
 
-  // We have a dummy document here for loading but it doesn't really represent
-  // the document/frame of associated document(s) for this worker. Here we
-  // populate the task runners with null document not to confuse the frame
-  // scheduler (which will end up using the thread's default task runner).
-  main_thread_task_runners_ = ParentFrameTaskRunners::Create(nullptr);
-
   worker_global_scope_proxy_ = ServiceWorkerGlobalScopeProxy::Create(
       *this, *document, *worker_context_client_);
   loader_proxy_ = WorkerLoaderProxy::Create(this);
   worker_thread_ =
       ServiceWorkerThread::Create(loader_proxy_, *worker_global_scope_proxy_);
+
+  // We have a dummy document here for loading but it doesn't really represent
+  // the document/frame of associated document(s) for this worker. Here we
+  // populate the task runners with null document not to confuse the frame
+  // scheduler (which will end up using the thread's default task runner).
   worker_thread_->Start(std::move(startup_data),
-                        main_thread_task_runners_.Get());
+                        ParentFrameTaskRunners::Create(nullptr));
+
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
                                                script_url);
 }

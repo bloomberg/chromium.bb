@@ -142,6 +142,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
    public:
     static void CreateAndStart(WorkerThreadableLoader*,
                                RefPtr<WorkerLoaderProxy>,
+                               RefPtr<WebTaskRunner>,
                                WorkerThreadLifecycleContext*,
                                std::unique_ptr<CrossThreadResourceRequestData>,
                                const ThreadableLoaderOptions&,
@@ -211,6 +212,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
 
   Member<WorkerGlobalScope> worker_global_scope_;
   RefPtr<WorkerLoaderProxy> worker_loader_proxy_;
+  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
   ThreadableLoaderClient* client_;
 
   ThreadableLoaderOptions threadable_loader_options_;

@@ -67,7 +67,7 @@ class WorkerThreadTest : public ::testing::Test {
   WorkerThreadTest() {}
 
   void SetUp() override {
-    loader_proxy_provider_ = WTF::MakeUnique<MockWorkerLoaderProxyProvider>();
+    loader_proxy_provider_ = WTF::MakeUnique<WorkerLoaderProxyProvider>();
     reporting_proxy_ = WTF::MakeUnique<MockWorkerReportingProxy>();
     security_origin_ =
         SecurityOrigin::Create(KURL(kParsedURLString, "http://fake.url/"));
@@ -143,7 +143,7 @@ class WorkerThreadTest : public ::testing::Test {
   ExitCode GetExitCode() { return worker_thread_->GetExitCodeForTesting(); }
 
   RefPtr<SecurityOrigin> security_origin_;
-  std::unique_ptr<MockWorkerLoaderProxyProvider> loader_proxy_provider_;
+  std::unique_ptr<WorkerLoaderProxyProvider> loader_proxy_provider_;
   std::unique_ptr<MockWorkerReportingProxy> reporting_proxy_;
   std::unique_ptr<WorkerThreadForTest> worker_thread_;
   Persistent<MockWorkerThreadLifecycleObserver> lifecycle_observer_;

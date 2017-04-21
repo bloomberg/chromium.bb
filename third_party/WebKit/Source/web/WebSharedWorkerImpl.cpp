@@ -241,24 +241,6 @@ void WebSharedWorkerImpl::DidTerminateWorkerThread() {
   delete this;
 }
 
-// WorkerLoaderProxyProvider -------------------------------------------------
-
-void WebSharedWorkerImpl::PostTaskToLoader(
-    const WebTraceLocation& location,
-    std::unique_ptr<WTF::CrossThreadClosure> task) {
-  DCHECK(worker_thread_->IsCurrentThread());
-  parent_frame_task_runners_->Get(TaskType::kNetworking)
-      ->PostTask(FROM_HERE, std::move(task));
-}
-
-void WebSharedWorkerImpl::PostTaskToWorkerGlobalScope(
-    const WebTraceLocation& location,
-    std::unique_ptr<WTF::CrossThreadClosure> task) {
-  DCHECK(IsMainThread());
-  TaskRunnerHelper::Get(TaskType::kNetworking, GetWorkerThread())
-      ->PostTask(location, std::move(task));
-}
-
 ThreadableLoadingContext* WebSharedWorkerImpl::GetThreadableLoadingContext() {
   if (!loading_context_) {
     loading_context_ =
@@ -270,6 +252,9 @@ ThreadableLoadingContext* WebSharedWorkerImpl::GetThreadableLoadingContext() {
 void WebSharedWorkerImpl::Connect(
     std::unique_ptr<WebMessagePortChannel> web_channel) {
   DCHECK(IsMainThread());
+  // The HTML spec requires to queue a connect event using the DOM manipulation
+  // task source.
+  // https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface
   TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetWorkerThread())
       ->PostTask(
           BLINK_FROM_HERE,
@@ -365,19 +350,18 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   // use the thread's default task runner. Note that |m_document| should not be
   // used as it's a dummy document for loading that doesn't represent the frame
   // of any associated document.
-  parent_frame_task_runners_ = ParentFrameTaskRunners::Create(nullptr);
+  ParentFrameTaskRunners* task_runners =
+      ParentFrameTaskRunners::Create(nullptr);
 
   loader_proxy_ = WorkerLoaderProxy::Create(this);
-  reporting_proxy_ = new WebSharedWorkerReportingProxyImpl(
-      this, parent_frame_task_runners_.Get());
+  reporting_proxy_ = new WebSharedWorkerReportingProxyImpl(this, task_runners);
   worker_thread_ =
       SharedWorkerThread::Create(name_, loader_proxy_, *reporting_proxy_);
   probe::scriptImported(loading_document_, main_script_loader_->Identifier(),
                         main_script_loader_->SourceText());
   main_script_loader_.Clear();
 
-  GetWorkerThread()->Start(std::move(startup_data),
-                           parent_frame_task_runners_.Get());
+  GetWorkerThread()->Start(std::move(startup_data), task_runners);
   worker_inspector_proxy_->WorkerThreadCreated(ToDocument(loading_document_),
                                                GetWorkerThread(), url_);
   client_->WorkerScriptLoaded();

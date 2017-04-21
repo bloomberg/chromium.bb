@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
@@ -96,7 +97,10 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     WTF_MAKE_NONCOPYABLE(Peer);
 
    public:
-    Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WorkerThreadLifecycleContext*);
+    Peer(Bridge*,
+         PassRefPtr<WorkerLoaderProxy>,
+         RefPtr<WebTaskRunner>,
+         WorkerThreadLifecycleContext*);
     ~Peer() override;
 
     // SourceLocation parameter may be shown when the connection fails.
@@ -134,6 +138,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
    private:
     CrossThreadWeakPersistent<Bridge> bridge_;
     RefPtr<WorkerLoaderProxy> loader_proxy_;
+    RefPtr<WebTaskRunner> worker_networking_task_runner_;
     Member<WebSocketChannel> main_web_socket_channel_;
   };
 
@@ -163,6 +168,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
 
     void ConnectOnMainThread(std::unique_ptr<SourceLocation>,
                              RefPtr<WorkerLoaderProxy>,
+                             RefPtr<WebTaskRunner>,
                              WorkerThreadLifecycleContext*,
                              const KURL&,
                              const String& protocol,
@@ -179,6 +185,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     Member<WebSocketChannelClient> client_;
     Member<WorkerGlobalScope> worker_global_scope_;
     RefPtr<WorkerLoaderProxy> loader_proxy_;
+    CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
     CrossThreadPersistent<Peer> peer_;
   };
 

@@ -35,28 +35,6 @@
 
 namespace blink {
 
-class MockWorkerLoaderProxyProvider : public WorkerLoaderProxyProvider {
- public:
-  MockWorkerLoaderProxyProvider() {}
-  ~MockWorkerLoaderProxyProvider() override {}
-
-  void PostTaskToLoader(const WebTraceLocation&,
-                        std::unique_ptr<WTF::CrossThreadClosure>) override {
-    NOTIMPLEMENTED();
-  }
-
-  void PostTaskToWorkerGlobalScope(
-      const WebTraceLocation&,
-      std::unique_ptr<WTF::CrossThreadClosure>) override {
-    NOTIMPLEMENTED();
-  }
-
-  ThreadableLoadingContext* GetThreadableLoadingContext() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-};
-
 class MockWorkerThreadLifecycleObserver final
     : public GarbageCollectedFinalized<MockWorkerThreadLifecycleObserver>,
       public WorkerThreadLifecycleObserver {
@@ -73,12 +51,10 @@ class MockWorkerThreadLifecycleObserver final
 
 class WorkerThreadForTest : public WorkerThread {
  public:
-  WorkerThreadForTest(
-      WorkerLoaderProxyProvider* mock_worker_loader_proxy_provider,
-      WorkerReportingProxy& mock_worker_reporting_proxy)
-      : WorkerThread(
-            WorkerLoaderProxy::Create(mock_worker_loader_proxy_provider),
-            mock_worker_reporting_proxy),
+  WorkerThreadForTest(WorkerLoaderProxyProvider* worker_loader_proxy_provider,
+                      WorkerReportingProxy& mock_worker_reporting_proxy)
+      : WorkerThread(WorkerLoaderProxy::Create(worker_loader_proxy_provider),
+                     mock_worker_reporting_proxy),
         worker_backing_thread_(
             WorkerBackingThread::CreateForTest("Test thread")) {}
 

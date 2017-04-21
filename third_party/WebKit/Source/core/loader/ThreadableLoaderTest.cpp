@@ -181,7 +181,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
       CrossOriginRequestPolicy cross_origin_request_policy) override {
     std::unique_ptr<WaitableEvent> completion_event =
         WTF::MakeUnique<WaitableEvent>();
-    PostTaskToWorkerGlobalScope(
+    worker_loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerCreateLoader,
                         CrossThreadUnretained(this),
@@ -194,7 +194,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   void StartLoader(const ResourceRequest& request) override {
     std::unique_ptr<WaitableEvent> completion_event =
         WTF::MakeUnique<WaitableEvent>();
-    PostTaskToWorkerGlobalScope(
+    worker_loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerStartLoader,
                         CrossThreadUnretained(this),
@@ -231,7 +231,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
 
     std::unique_ptr<WaitableEvent> completion_event =
         WTF::MakeUnique<WaitableEvent>();
-    PostTaskToWorkerGlobalScope(
+    worker_loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerCallCheckpoint,
                         CrossThreadUnretained(this),
@@ -252,17 +252,19 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
                                         "//fake source code",
                                         parent_frame_task_runners_.Get());
     worker_thread_->WaitForInit();
+    worker_loading_task_runner_ =
+        TaskRunnerHelper::Get(TaskType::kUnspecedLoading, worker_thread_.get());
   }
 
   void OnServeRequests() override { testing::RunPendingTasks(); }
 
   void OnTearDown() override {
-    PostTaskToWorkerGlobalScope(
+    worker_loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::ClearLoader,
                         CrossThreadUnretained(this)));
     WaitableEvent event;
-    PostTaskToWorkerGlobalScope(
+    worker_loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&WaitableEvent::Signal, CrossThreadUnretained(&event)));
     event.Wait();
@@ -320,23 +322,6 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   }
 
   // WorkerLoaderProxyProvider methods.
-  void PostTaskToLoader(
-      const WebTraceLocation& location,
-      std::unique_ptr<WTF::CrossThreadClosure> task) override {
-    DCHECK(worker_thread_);
-    DCHECK(worker_thread_->IsCurrentThread());
-    parent_frame_task_runners_->Get(TaskType::kNetworking)
-        ->PostTask(BLINK_FROM_HERE, std::move(task));
-  }
-
-  void PostTaskToWorkerGlobalScope(
-      const WebTraceLocation& location,
-      std::unique_ptr<WTF::CrossThreadClosure> task) override {
-    DCHECK(worker_thread_);
-    TaskRunnerHelper::Get(TaskType::kNetworking, worker_thread_.get())
-        ->PostTask(location, std::move(task));
-  }
-
   ThreadableLoadingContext* GetThreadableLoadingContext() override {
     return loading_context_.Get();
   }
@@ -348,6 +333,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   // Accessed cross-thread when worker thread posts tasks to the parent.
   CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
+  RefPtr<WebTaskRunner> worker_loading_task_runner_;
   Checkpoint checkpoint_;
   // |m_loader| must be touched only from the worker thread only.
   CrossThreadPersistent<ThreadableLoader> loader_;

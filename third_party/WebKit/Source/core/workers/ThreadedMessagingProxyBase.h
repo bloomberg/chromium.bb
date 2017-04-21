@@ -80,13 +80,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   bool IsParentContextThread() const;
 
   // WorkerLoaderProxyProvider
-  // These methods are called on different threads to schedule loading
-  // requests and to send callbacks back to WorkerGlobalScope.
-  void PostTaskToLoader(const WebTraceLocation&,
-                        std::unique_ptr<WTF::CrossThreadClosure>) override;
-  void PostTaskToWorkerGlobalScope(
-      const WebTraceLocation&,
-      std::unique_ptr<WTF::CrossThreadClosure>) override;
   ThreadableLoadingContext* GetThreadableLoadingContext() override;
 
  private:

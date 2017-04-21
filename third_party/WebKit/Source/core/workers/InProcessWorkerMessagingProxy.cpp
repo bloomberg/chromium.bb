@@ -176,11 +176,15 @@ void InProcessWorkerMessagingProxy::DispatchErrorEvent(
   if (worker_object_->DispatchEvent(event) != DispatchEventResult::kNotCanceled)
     return;
 
-  PostTaskToWorkerGlobalScope(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&InProcessWorkerObjectProxy::ProcessUnhandledException,
-                      CrossThreadUnretained(worker_object_proxy_.get()),
-                      exception_id, CrossThreadUnretained(GetWorkerThread())));
+  // The HTML spec requires to queue an error event using the DOM manipulation
+  // task source.
+  // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
+  TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetWorkerThread())
+      ->PostTask(BLINK_FROM_HERE,
+                 CrossThreadBind(
+                     &InProcessWorkerObjectProxy::ProcessUnhandledException,
+                     CrossThreadUnretained(worker_object_proxy_.get()),
+                     exception_id, CrossThreadUnretained(GetWorkerThread())));
 }
 
 void InProcessWorkerMessagingProxy::WorkerThreadCreated() {

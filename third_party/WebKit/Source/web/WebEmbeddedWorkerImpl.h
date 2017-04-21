@@ -44,7 +44,6 @@
 namespace blink {
 
 class ThreadableLoadingContext;
-class ParentFrameTaskRunners;
 class ServiceWorkerGlobalScopeProxy;
 class WebLocalFrameImpl;
 class WebView;
@@ -100,11 +99,6 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
   void StartWorkerThread();
 
   // WorkerLoaderProxyProvider
-  void PostTaskToLoader(const WebTraceLocation&,
-                        std::unique_ptr<WTF::CrossThreadClosure>) override;
-  void PostTaskToWorkerGlobalScope(
-      const WebTraceLocation&,
-      std::unique_ptr<WTF::CrossThreadClosure>) override;
   ThreadableLoadingContext* GetThreadableLoadingContext() override;
 
   WebEmbeddedWorkerStartData worker_start_data_;
@@ -117,10 +111,6 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
 
   // Kept around only while main script loading is ongoing.
   RefPtr<WorkerScriptLoader> main_script_loader_;
-
-  // Owned by the main thread, but will be accessed by the worker when
-  // posting tasks.
-  CrossThreadPersistent<ParentFrameTaskRunners> main_thread_task_runners_;
 
   std::unique_ptr<WorkerThread> worker_thread_;
   RefPtr<WorkerLoaderProxy> loader_proxy_;

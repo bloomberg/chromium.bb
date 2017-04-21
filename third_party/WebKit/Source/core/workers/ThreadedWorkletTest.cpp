@@ -91,16 +91,16 @@ class ThreadedWorkletMessagingProxyForTest
  public:
   ThreadedWorkletMessagingProxyForTest(ExecutionContext* execution_context)
       : ThreadedWorkletMessagingProxy(execution_context) {
-    mock_worker_loader_proxy_provider_ =
-        WTF::MakeUnique<MockWorkerLoaderProxyProvider>();
+    worker_loader_proxy_provider_ =
+        WTF::MakeUnique<WorkerLoaderProxyProvider>();
     worker_thread_ = WTF::MakeUnique<ThreadedWorkletThreadForTest>(
-        mock_worker_loader_proxy_provider_.get(), WorkletObjectProxy());
+        worker_loader_proxy_provider_.get(), WorkletObjectProxy());
     ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 
   ~ThreadedWorkletMessagingProxyForTest() override {
     worker_thread_->GetWorkerLoaderProxy()->DetachProvider(
-        mock_worker_loader_proxy_provider_.get());
+        worker_loader_proxy_provider_.get());
     worker_thread_->TerminateAndWait();
     ThreadedWorkletThreadForTest::ClearSharedBackingThread();
   };
@@ -136,8 +136,7 @@ class ThreadedWorkletMessagingProxyForTest
  private:
   friend class ThreadedWorkletTest;
 
-  std::unique_ptr<MockWorkerLoaderProxyProvider>
-      mock_worker_loader_proxy_provider_;
+  std::unique_ptr<WorkerLoaderProxyProvider> worker_loader_proxy_provider_;
   RefPtr<SecurityOrigin> security_origin_;
 };
 

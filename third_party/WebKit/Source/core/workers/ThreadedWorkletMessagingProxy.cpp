@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/ThreadedWorkletObjectProxy.h"
@@ -58,12 +59,13 @@ void ThreadedWorkletMessagingProxy::Initialize() {
 
 void ThreadedWorkletMessagingProxy::EvaluateScript(
     const ScriptSourceCode& script_source_code) {
-  PostTaskToWorkerGlobalScope(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&ThreadedWorkletObjectProxy::EvaluateScript,
-                      CrossThreadUnretained(worklet_object_proxy_.get()),
-                      script_source_code.Source(), script_source_code.Url(),
-                      CrossThreadUnretained(GetWorkerThread())));
+  TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, GetWorkerThread())
+      ->PostTask(
+          BLINK_FROM_HERE,
+          CrossThreadBind(&ThreadedWorkletObjectProxy::EvaluateScript,
+                          CrossThreadUnretained(worklet_object_proxy_.get()),
+                          script_source_code.Source(), script_source_code.Url(),
+                          CrossThreadUnretained(GetWorkerThread())));
 }
 
 void ThreadedWorkletMessagingProxy::TerminateWorkletGlobalScope() {

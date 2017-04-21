@@ -67,24 +67,6 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
   WorkerThreadCreated();
 }
 
-void ThreadedMessagingProxyBase::PostTaskToWorkerGlobalScope(
-    const WebTraceLocation& location,
-    std::unique_ptr<WTF::CrossThreadClosure> task) {
-  if (asked_to_terminate_)
-    return;
-
-  DCHECK(worker_thread_);
-  TaskRunnerHelper::Get(TaskType::kNetworking, worker_thread_.get())
-      ->PostTask(location, std::move(task));
-}
-
-void ThreadedMessagingProxyBase::PostTaskToLoader(
-    const WebTraceLocation& location,
-    std::unique_ptr<WTF::CrossThreadClosure> task) {
-  parent_frame_task_runners_->Get(TaskType::kNetworking)
-      ->PostTask(BLINK_FROM_HERE, std::move(task));
-}
-
 ThreadableLoadingContext*
 ThreadedMessagingProxyBase::GetThreadableLoadingContext() {
   DCHECK(IsParentContextThread());

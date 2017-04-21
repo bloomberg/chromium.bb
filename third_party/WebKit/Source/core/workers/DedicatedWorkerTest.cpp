@@ -92,10 +92,10 @@ class InProcessWorkerMessagingProxyForTest
     WorkerObjectProxy().next_interval_in_sec_ = kNextIntervalInSec;
     WorkerObjectProxy().max_interval_in_sec_ = kMaxIntervalInSec;
 
-    mock_worker_loader_proxy_provider_ =
-        WTF::MakeUnique<MockWorkerLoaderProxyProvider>();
+    worker_loader_proxy_provider_ =
+        WTF::MakeUnique<WorkerLoaderProxyProvider>();
     worker_thread_ = WTF::WrapUnique(new DedicatedWorkerThreadForTest(
-        mock_worker_loader_proxy_provider_.get(), WorkerObjectProxy()));
+        worker_loader_proxy_provider_.get(), WorkerObjectProxy()));
     mock_worker_thread_lifecycle_observer_ =
         new MockWorkerThreadLifecycleObserver(
             worker_thread_->GetWorkerThreadLifecycleContext());
@@ -107,7 +107,7 @@ class InProcessWorkerMessagingProxyForTest
   ~InProcessWorkerMessagingProxyForTest() override {
     EXPECT_FALSE(blocking_);
     worker_thread_->GetWorkerLoaderProxy()->DetachProvider(
-        mock_worker_loader_proxy_provider_.get());
+        worker_loader_proxy_provider_.get());
   }
 
   void StartWithSourceCode(const String& source) {
@@ -192,8 +192,7 @@ class InProcessWorkerMessagingProxyForTest
   }
 
  private:
-  std::unique_ptr<MockWorkerLoaderProxyProvider>
-      mock_worker_loader_proxy_provider_;
+  std::unique_ptr<WorkerLoaderProxyProvider> worker_loader_proxy_provider_;
   Persistent<MockWorkerThreadLifecycleObserver>
       mock_worker_thread_lifecycle_observer_;
   RefPtr<SecurityOrigin> security_origin_;

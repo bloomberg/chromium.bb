@@ -47,7 +47,6 @@
 
 namespace blink {
 
-class ParentFrameTaskRunners;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebLocalFrameImpl;
@@ -128,12 +127,6 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   void ConnectTaskOnWorkerThread(std::unique_ptr<WebMessagePortChannel>);
 
   // WorkerLoaderProxyProvider
-  // postTaskToLoader() must be called from a worker thread.
-  void PostTaskToLoader(const WebTraceLocation&,
-                        std::unique_ptr<WTF::CrossThreadClosure>) override;
-  void PostTaskToWorkerGlobalScope(
-      const WebTraceLocation&,
-      std::unique_ptr<WTF::CrossThreadClosure>) override;
   ThreadableLoadingContext* GetThreadableLoadingContext() override;
 
   // 'shadow page' - created to proxy loading requests from the worker.
@@ -147,9 +140,6 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   std::unique_ptr<WebServiceWorkerNetworkProvider> network_provider_;
 
   Persistent<WorkerInspectorProxy> worker_inspector_proxy_;
-
-  // Owned by the main thread, but will be accessed by the worker.
-  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
 
   Persistent<WebSharedWorkerReportingProxyImpl> reporting_proxy_;
   std::unique_ptr<WorkerThread> worker_thread_;
