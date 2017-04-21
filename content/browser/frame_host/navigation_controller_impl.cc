@@ -1050,6 +1050,11 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     return NAVIGATION_TYPE_SAME_PAGE;
   }
 
+  // Everything below here is assumed to be an existing entry, but if there is
+  // no last committed entry, we must consider it a new navigation instead.
+  if (!GetLastCommittedEntry())
+    return NAVIGATION_TYPE_NEW_PAGE;
+
   if (params.intended_as_new_entry) {
     // This was intended to be a navigation to a new entry but the pending entry
     // got cleared in the meanwhile. Classify as EXISTING_PAGE because we may or
@@ -1204,6 +1209,9 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     bool is_in_page,
     bool was_restored,
     NavigationHandleImpl* handle) {
+  DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
+                                  << "that a last committed entry exists.";
+
   // We should only get here for main frame navigations.
   DCHECK(!rfh->GetParent());
 
