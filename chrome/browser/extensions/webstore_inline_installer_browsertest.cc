@@ -20,8 +20,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -384,9 +386,8 @@ class WebstoreInlineInstallerRedirectTest : public WebstoreInlineInstallerTest {
 
   void ProcessServerRequest(
       const net::test_server::HttpRequest& request) override {
+    cws_request_received_ = true;
     if (request.content.find("redirect_chain") != std::string::npos) {
-      cws_request_received_ = true;
-
       std::unique_ptr<base::Value> contents =
           base::JSONReader::Read(request.content);
       ASSERT_EQ(base::Value::Type::DICTIONARY, contents->GetType());
@@ -438,6 +439,38 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerRedirectTest,
     GURL redirect_url(value_string);
     EXPECT_EQ(expected_redirect_domains[i++], redirect_url.host());
   }
+}
+
+// Test that an install from a page arrived at via redirects does not include
+// redirect information when SafeBrowsing is disabled.
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerRedirectTest,
+                       NoRedirectDataWhenSafeBrowsingDisabled) {
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
+
+  // Disable SafeBrowsing.
+  pref_service->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+
+  // Hand craft a url that will cause the test server to issue redirects.
+  const std::vector<std::string> redirects = {kRedirect1Domain,
+                                              kRedirect2Domain};
+  net::HostPortPair host_port = embedded_test_server()->host_port_pair();
+  std::string redirect_chain;
+  for (const auto& redirect : redirects) {
+    std::string redirect_url = base::StringPrintf(
+        "http://%s:%d/server-redirect?", redirect.c_str(), host_port.port());
+    redirect_chain += redirect_url;
+  }
+  const GURL install_url =
+      GURL(redirect_chain +
+           GenerateTestServerUrl(kAppDomain, "install.html").spec());
+
+  AutoAcceptInstall();
+  ui_test_utils::NavigateToURL(browser(), install_url);
+  RunTest("runTest");
+
+  EXPECT_TRUE(cws_request_received_);
+  ASSERT_EQ(nullptr, cws_request_json_data_);
 }
 
 class WebstoreInlineInstallerListenerTest : public WebstoreInlineInstallerTest {

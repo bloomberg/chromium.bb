@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -105,6 +107,11 @@ std::string WebstoreInlineInstaller::GetJsonPostData() {
   // web_contents() might return null during tab destruction. This object would
   // also be destroyed shortly thereafter but check to be on the safe side.
   if (!web_contents())
+    return std::string();
+
+  // Report extra data only when SafeBrowsing is enabled for the current
+  // profile.
+  if (!profile()->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
     return std::string();
 
   content::NavigationController& navigation_controller =
