@@ -96,17 +96,50 @@ class SiteEngagementUiBrowserTest : public InProcessBrowserTest {
     return origin_url;
   }
 
-  // Returns the stringified score at the specified zero-based row index.
-  std::string ScoreAtRow(int index) {
+  // Returns the stringified base score at the specified zero-based row index.
+  std::string BaseScoreAtRow(int index) {
     EXPECT_TRUE(page_is_populated_);
 
     std::string score_string;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        base::JoinString({"window.domAutomationController.send("
-                          "    document.getElementsByClassName('score-input')[",
-                          base::IntToString(index), "].value);"},
-                         ""),
+        base::JoinString(
+            {"window.domAutomationController.send("
+             "    document.getElementsByClassName('base-score-input')[",
+             base::IntToString(index), "].value);"},
+            ""),
+        &score_string));
+
+    return score_string;
+  }
+
+  std::string BonusScoreAtRow(int index) {
+    EXPECT_TRUE(page_is_populated_);
+
+    std::string score_string;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::JoinString(
+            {"window.domAutomationController.send("
+             "    document.getElementsByClassName('bonus-score-cell')[",
+             base::IntToString(index), "].innerHTML);"},
+            ""),
+        &score_string));
+
+    return score_string;
+  }
+
+  std::string TotalScoreAtRow(int index) {
+    EXPECT_TRUE(page_is_populated_);
+
+    std::string score_string;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::JoinString(
+            {"window.domAutomationController.send("
+             "    document.getElementsByClassName('total-score-cell')[",
+             base::IntToString(index), "].innerHTML);"},
+            ""),
         &score_string));
 
     return score_string;
@@ -135,5 +168,7 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementUiBrowserTest,
   WaitUntilPagePopulated();
 
   EXPECT_EQ(1, NumberOfRows());
-  EXPECT_EQ("3.14", ScoreAtRow(0));
+  EXPECT_EQ("3.14", BaseScoreAtRow(0));
+  EXPECT_EQ("0", BonusScoreAtRow(0));
+  EXPECT_EQ("3.14", TotalScoreAtRow(0));
 }

@@ -62,15 +62,22 @@ define('main', [
       var originCell = createElementWithClassName('td', 'origin-cell');
       originCell.textContent = info.origin.url;
 
-      var scoreInput = createElementWithClassName('input', 'score-input');
-      scoreInput.addEventListener(
-          'change', handleScoreChange.bind(undefined, info.origin));
-      scoreInput.addEventListener('focus', disableAutoupdate);
-      scoreInput.addEventListener('blur', enableAutoupdate);
-      scoreInput.value = info.total_score;
+      var baseScoreInput = createElementWithClassName('input',
+                                                      'base-score-input');
+      baseScoreInput.addEventListener(
+          'change', handleBaseScoreChange.bind(undefined, info.origin));
+      baseScoreInput.addEventListener('focus', disableAutoupdate);
+      baseScoreInput.addEventListener('blur', enableAutoupdate);
+      baseScoreInput.value = info.base_score;
 
-      var scoreCell = createElementWithClassName('td', 'score-cell');
-      scoreCell.appendChild(scoreInput);
+      var baseScoreCell = createElementWithClassName('td', 'base-score-cell');
+      baseScoreCell.appendChild(baseScoreInput);
+
+      var bonusScoreCell = createElementWithClassName('td', 'bonus-score-cell');
+      bonusScoreCell.textContent = info.bonus_score;
+
+      var totalScoreCell = createElementWithClassName('td', 'total-score-cell');
+      totalScoreCell.textContent = info.total_score;
 
       var engagementBar = createElementWithClassName('div', 'engagement-bar');
       engagementBar.style.width = (info.total_score * 4) + 'px';
@@ -81,12 +88,14 @@ define('main', [
 
       var row = document.createElement('tr');
       row.appendChild(originCell);
-      row.appendChild(scoreCell);
+      row.appendChild(baseScoreCell);
+      row.appendChild(bonusScoreCell);
+      row.appendChild(totalScoreCell);
       row.appendChild(engagementBarCell);
 
       // Stores correspondent engagementBarCell to change it's length on
       // scoreChange event.
-      scoreInput.barCellRef = engagementBar;
+      baseScoreInput.barCellRef = engagementBar;
       return row;
     }
 
@@ -103,17 +112,17 @@ define('main', [
     }
 
     /**
-     * Sets the engagement score when a score input is changed.
+     * Sets the base engagement score when a score input is changed.
      * Resets the length of engagement-bar-cell to match the new score.
      * Also resets the update interval.
      * @param {string} origin The origin of the engagement score to set.
      * @param {Event} e
      */
-    function handleScoreChange(origin, e) {
-      var scoreInput = e.target;
-      uiHandler.setSiteEngagementScoreForUrl(origin, scoreInput.value);
-      scoreInput.barCellRef.style.width = (scoreInput.value * 4) + 'px';
-      scoreInput.blur();
+    function handleBaseScoreChange(origin, e) {
+      var baseScoreInput = e.target;
+      uiHandler.setSiteEngagementScoreForUrl(origin, baseScoreInput.value);
+      baseScoreInput.barCellRef.style.width = (baseScoreInput.value * 4) + 'px';
+      baseScoreInput.blur();
       enableAutoupdate();
     }
 
@@ -148,11 +157,23 @@ define('main', [
       if (sortKey == 'origin')
         return new URL(val1.url).host > new URL(val2.url).host ? 1 : -1;
 
-      if (sortKey == 'total_score')
+      if (sortKey == 'base_score' ||
+          sortKey == 'bonus_score' ||
+          sortKey == 'total_score') {
         return val1 - val2;
+      }
 
       assertNotReached('Unsupported sort key: ' + sortKey);
       return 0;
+    }
+
+    /**
+     * Rounds the supplied value to two decimal places of accuracy.
+     * @param {number} score
+     * @return {number}
+     */
+    function roundScore(score) {
+      return Number(Math.round(score * 100) / 100);
     }
 
     /**
@@ -161,9 +182,17 @@ define('main', [
     function renderTable() {
       clearTable();
       sortInfo();
-      // Round each score to 2 decimal places.
+
       info.forEach((info) => {
-        info.total_score = Number(Math.round(info.total_score * 100) / 100);
+        // Round all scores to 2 decimal places.
+        info.base_score = roundScore(info.base_score);
+        info.installed_bonus = roundScore(info.installed_bonus);
+        info.notifications_bonus = roundScore(info.notifications_bonus);
+        info.total_score = roundScore(info.total_score);
+
+        // Collate the bonuses into a value for the bonus_score column.
+        info.bonus_score = info.installed_bonus + info.notifications_bonus;
+
         engagementTableBody.appendChild(createRow(info));
       });
 

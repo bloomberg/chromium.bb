@@ -26,6 +26,7 @@
       background: rgb(224, 236, 255);
       cursor: pointer;
       padding-bottom: 4px;
+      padding-right: 16px;
       padding-top: 4px;
       white-space: nowrap;
     }
@@ -44,19 +45,21 @@
       min-width: 500px;
     }
 
-    .score-cell {
+    .base-score-cell,
+    .bonus-score-cell,
+    .total-score-cell {
       background-color: rgba(230, 230, 230, 0.5);
       text-align: right;
     }
 
-    .score-input {
+    .base-score-input {
       border: 1px solid #ccc;
       border-radius: 2px;
       text-align: right;
       width: 70px;
     }
 
-    .score-input:focus {
+    .base-score-input:focus {
       border: 1px solid rgb(143, 185, 252);
       box-shadow: 0 0 2px rgb(113, 158, 206);
       outline: none;
@@ -68,10 +71,12 @@
 
     th.sort-column::after {
       content: '▲';
+      position: absolute;
     }
 
     th[sort-reverse].sort-column::after {
       content: '▼';
+      position: absolute;
     }
   </style>
 </head>
@@ -83,8 +88,14 @@
         <th sort-key="origin">
           Origin
         </th>
+        <th sort-key="base_score" sort-reverse>
+          Base
+        </th>
+        <th sort-key="bonus_score" sort-reverse>
+          Bonus
+        </th>
         <th sort-key="total_score" class="sort-column" sort-reverse>
-          Points
+          Total
         </th>
       </tr>
     </thead>
