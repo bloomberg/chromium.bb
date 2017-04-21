@@ -70,6 +70,7 @@ const ServerWindow* GetEmbedRoot(const ServerWindow* window) {
 }  // namespace
 
 WindowManagerState::InFlightEventDetails::InFlightEventDetails(
+    WindowManagerState* window_manager_state,
     WindowTree* tree,
     int64_t display_id,
     const Event& event,
@@ -77,7 +78,8 @@ WindowManagerState::InFlightEventDetails::InFlightEventDetails(
     : tree(tree),
       display_id(display_id),
       event(Event::Clone(event)),
-      phase(phase) {}
+      phase(phase),
+      weak_factory(window_manager_state) {}
 
 WindowManagerState::InFlightEventDetails::~InFlightEventDetails() {}
 
@@ -126,7 +128,7 @@ WindowManagerState::QueuedEvent::QueuedEvent() {}
 WindowManagerState::QueuedEvent::~QueuedEvent() {}
 
 WindowManagerState::WindowManagerState(WindowTree* window_tree)
-    : window_tree_(window_tree), event_dispatcher_(this), weak_factory_(this) {
+    : window_tree_(window_tree), event_dispatcher_(this) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();
   frame_decoration_values_->max_title_bar_button_width = 0u;
 
@@ -247,7 +249,7 @@ void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
     return;
 
   // The WindowTree is dying. So it's not going to ack the event.
-  // If the dying tree matches the root |tree_| marked as handled so we don't
+  // If the dying tree matches the root |tree_| mark as handled so we don't
   // notify it of accelerators.
   OnEventAck(in_flight_event_details_->tree,
              tree == window_tree_ ? mojom::EventResult::HANDLED
@@ -300,38 +302,12 @@ void WindowManagerState::ProcessEvent(const ui::Event& event,
   ProcessEventImpl(event, display_id);
 }
 
-void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
-                                    mojom::EventResult result) {
-  if (!in_flight_event_details_ || in_flight_event_details_->tree != tree ||
-      in_flight_event_details_->phase != EventDispatchPhase::TARGET) {
-    // TODO(sad): The ack must have arrived after the timeout. We should do
-    // something here, and in OnEventAckTimeout().
-    return;
-  }
-  std::unique_ptr<InFlightEventDetails> details =
-      std::move(in_flight_event_details_);
-
-  base::WeakPtr<Accelerator> post_target_accelerator = post_target_accelerator_;
-  post_target_accelerator_.reset();
-
-  if (result == mojom::EventResult::UNHANDLED && post_target_accelerator) {
-    OnAccelerator(post_target_accelerator->id(), *details->event,
-                  AcceleratorPhase::POST);
-  }
-
-  ProcessNextEventFromQueue();
-}
-
 void WindowManagerState::OnAcceleratorAck(
     mojom::EventResult result,
     const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
-  if (!in_flight_event_details_ ||
-      in_flight_event_details_->phase !=
-          EventDispatchPhase::PRE_TARGET_ACCELERATOR) {
-    // TODO(sad): The ack must have arrived after the timeout. We should do
-    // something here, and in OnEventAckTimeout().
-    return;
-  }
+  DCHECK(in_flight_event_details_);
+  DCHECK_EQ(EventDispatchPhase::PRE_TARGET_ACCELERATOR,
+            in_flight_event_details_->phase);
 
   std::unique_ptr<InFlightEventDetails> details =
       std::move(in_flight_event_details_);
@@ -405,6 +381,21 @@ ServerWindow* WindowManagerState::GetWindowManagerRoot(ServerWindow* window) {
   return nullptr;
 }
 
+void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
+                                    mojom::EventResult result) {
+  DCHECK(in_flight_event_details_);
+  std::unique_ptr<InFlightEventDetails> details =
+      std::move(in_flight_event_details_);
+
+  if (result == mojom::EventResult::UNHANDLED &&
+      details->post_target_accelerator) {
+    OnAccelerator(details->post_target_accelerator->id(), *details->event,
+                  AcceleratorPhase::POST);
+  }
+
+  ProcessNextEventFromQueue();
+}
+
 void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
   WindowTree* hung_tree = window_server()->GetTreeWithId(client_id);
   if (hung_tree && !hung_tree->janky())
@@ -413,9 +404,7 @@ void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
       EventDispatchPhase::PRE_TARGET_ACCELERATOR) {
     OnAcceleratorAck(mojom::EventResult::UNHANDLED, KeyEvent::Properties());
   } else {
-    OnEventAck(
-        in_flight_event_details_ ? in_flight_event_details_->tree : nullptr,
-        mojom::EventResult::UNHANDLED);
+    OnEventAck(in_flight_event_details_->tree, mojom::EventResult::UNHANDLED);
   }
 }
 
@@ -476,15 +465,17 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   WindowTree* tree = window_server()->GetTreeWithId(client_id);
   DCHECK(tree);
   ScheduleInputEventTimeout(tree, target, event, EventDispatchPhase::TARGET);
-
-  if (accelerator)
-    post_target_accelerator_ = accelerator;
+  in_flight_event_details_->post_target_accelerator = accelerator;
 
   // Ignore |tree| because it will receive the event via normal dispatch.
   window_server()->SendToPointerWatchers(event, user_id(), target, tree,
                                          in_flight_event_details_->display_id);
 
-  tree->DispatchInputEvent(target, event);
+  tree->DispatchInputEvent(
+      target, event,
+      base::BindOnce(&WindowManagerState::OnEventAck,
+                     in_flight_event_details_->weak_factory.GetWeakPtr(),
+                     tree));
 }
 
 void WindowManagerState::AddDebugAccelerators() {
@@ -529,16 +520,17 @@ void WindowManagerState::ScheduleInputEventTimeout(WindowTree* tree,
                                                    const Event& event,
                                                    EventDispatchPhase phase) {
   std::unique_ptr<InFlightEventDetails> details =
-      base::MakeUnique<InFlightEventDetails>(tree, event_processing_display_id_,
-                                             event, phase);
+      base::MakeUnique<InFlightEventDetails>(
+          this, tree, event_processing_display_id_, event, phase);
 
   // TOOD(sad): Adjust this delay, possibly make this dynamic.
   const base::TimeDelta max_delay = base::debug::BeingDebugged()
                                         ? base::TimeDelta::FromDays(1)
                                         : GetDefaultAckTimerDelay();
-  details->timer.Start(FROM_HERE, max_delay,
-                       base::Bind(&WindowManagerState::OnEventAckTimeout,
-                                  weak_factory_.GetWeakPtr(), tree->id()));
+  details->timer.Start(
+      FROM_HERE, max_delay,
+      base::Bind(&WindowManagerState::OnEventAckTimeout,
+                 details->weak_factory.GetWeakPtr(), tree->id()));
   in_flight_event_details_ = std::move(details);
 }
 
@@ -550,12 +542,16 @@ void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
                                        AcceleratorPhase phase) {
   DCHECK(IsActive());
   const bool needs_ack = phase == AcceleratorPhase::PRE;
+  WindowTree::AcceleratorCallback ack_callback;
   if (needs_ack) {
     DCHECK(!in_flight_event_details_);
     ScheduleInputEventTimeout(window_tree_, nullptr, event,
                               EventDispatchPhase::PRE_TARGET_ACCELERATOR);
+    ack_callback =
+        base::BindOnce(&WindowManagerState::OnAcceleratorAck,
+                       in_flight_event_details_->weak_factory.GetWeakPtr());
   }
-  window_tree_->OnAccelerator(accelerator_id, event, needs_ack);
+  window_tree_->OnAccelerator(accelerator_id, event, std::move(ack_callback));
 }
 
 void WindowManagerState::SetFocusedWindowFromEventDispatcher(

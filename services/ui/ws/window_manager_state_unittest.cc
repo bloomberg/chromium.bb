@@ -352,7 +352,8 @@ TEST_F(WindowManagerStateTest, ClientHandlesEvent) {
   EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
 
-  window_manager_state()->OnEventAck(tree(), mojom::EventResult::HANDLED);
+  EXPECT_TRUE(WindowManagerStateTestApi(window_manager_state())
+                  .AckInFlightEvent(mojom::EventResult::HANDLED));
   EXPECT_FALSE(window_manager()->on_accelerator_called());
 }
 
@@ -370,7 +371,8 @@ TEST_F(WindowManagerStateTest, AcceleratorDeleted) {
             ChangesToDescription1(*tracker->changes())[0]);
 
   accelerator.reset();
-  window_manager_state()->OnEventAck(tree(), mojom::EventResult::UNHANDLED);
+  EXPECT_TRUE(WindowManagerStateTestApi(window_manager_state())
+                  .AckInFlightEvent(mojom::EventResult::UNHANDLED));
   EXPECT_FALSE(window_manager()->on_accelerator_called());
 }
 

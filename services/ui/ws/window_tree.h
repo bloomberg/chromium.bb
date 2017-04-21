@@ -188,7 +188,13 @@ class WindowTree : public mojom::WindowTree,
   bool Embed(const ClientWindowId& window_id,
              mojom::WindowTreeClientPtr window_tree_client,
              uint32_t flags);
-  void DispatchInputEvent(ServerWindow* target, const ui::Event& event);
+
+  // Dispatches an event to the client. |callback| is run with the result from
+  // the client.
+  using DispatchEventCallback = base::OnceCallback<void(mojom::EventResult)>;
+  void DispatchInputEvent(ServerWindow* target,
+                          const ui::Event& event,
+                          DispatchEventCallback callback);
 
   bool IsWaitingForNewTopLevelWindow(uint32_t wm_change_id);
   void OnWindowManagerCreatedTopLevelWindow(uint32_t wm_change_id,
@@ -198,12 +204,15 @@ class WindowTree : public mojom::WindowTree,
 
   // Calls through to the client.
   void OnChangeCompleted(uint32_t change_id, bool success);
-  // |state_to_ack| is the WindowManagerState to call through to when the ack
-  // from the accelerator is received. If |needs_ack| is true an ack is
-  // required.
+
+  // If |callback| is valid then an ack is expected from the client. When the
+  // ack from the client is received |callback| is Run().
+  using AcceleratorCallback = base::OnceCallback<void(
+      mojom::EventResult,
+      const std::unordered_map<std::string, std::vector<uint8_t>>&)>;
   void OnAccelerator(uint32_t accelerator_id,
                      const ui::Event& event,
-                     bool needs_ack);
+                     AcceleratorCallback callback);
 
   // Called when a display has been removed. This is only called on the
   // WindowTree associated with a WindowManager.
@@ -369,7 +378,9 @@ class WindowTree : public mojom::WindowTree,
   // |event_ack_id_| and returns it.
   uint32_t GenerateEventAckId();
 
-  void DispatchInputEventImpl(ServerWindow* target, const ui::Event& event);
+  void DispatchInputEventImpl(ServerWindow* target,
+                              const ui::Event& event,
+                              DispatchEventCallback callback);
 
   // Returns true if the client has a pointer watcher and this event matches.
   bool EventMatchesPointerWatcher(const ui::Event& event) const;
@@ -589,7 +600,13 @@ class WindowTree : public mojom::WindowTree,
   std::unordered_map<WindowId, ClientWindowId, WindowIdHash>
       window_id_to_client_id_map_;
 
+  // Id passed to the client and expected to be supplied back to
+  // OnWindowInputEventAck() or OnAcceleratorAck().
   uint32_t event_ack_id_;
+
+  DispatchEventCallback event_ack_callback_;
+
+  AcceleratorCallback accelerator_ack_callback_;
 
   // A client is considered janky if it hasn't ACK'ed input events within a
   // reasonable timeframe.

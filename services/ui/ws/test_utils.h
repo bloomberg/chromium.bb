@@ -241,6 +241,13 @@ class WindowManagerStateTestApi {
     return wms_->window_manager_display_roots_;
   }
 
+  bool AckInFlightEvent(mojom::EventResult result) {
+    if (!wms_->in_flight_event_details_)
+      return false;
+    wms_->OnEventAck(wms_->in_flight_event_details_->tree, result);
+    return true;
+  }
+
  private:
   WindowManagerState* wms_;
 

@@ -99,16 +99,6 @@ class WindowManagerState : public EventDispatcherDelegate,
   // Processes an event from PlatformDisplay.
   void ProcessEvent(const Event& event, int64_t display_id);
 
-  // Called when the ack from an event dispatched to WindowTree |tree| is
-  // received.
-  // TODO(sky): make this private and use a callback.
-  void OnEventAck(mojom::WindowTree* tree, mojom::EventResult result);
-
-  // Called when the WindowManager acks an accelerator.
-  void OnAcceleratorAck(
-      mojom::EventResult result,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& properties);
-
  private:
   class ProcessedEventTarget;
   friend class Display;
@@ -161,7 +151,8 @@ class WindowManagerState : public EventDispatcherDelegate,
 
   // Tracks state associated with an event being dispatched to a client.
   struct InFlightEventDetails {
-    InFlightEventDetails(WindowTree* tree,
+    InFlightEventDetails(WindowManagerState* window_manager_state,
+                         WindowTree* tree,
                          int64_t display_id,
                          const Event& event,
                          EventDispatchPhase phase);
@@ -172,6 +163,9 @@ class WindowManagerState : public EventDispatcherDelegate,
     int64_t display_id;
     std::unique_ptr<Event> event;
     EventDispatchPhase phase;
+    base::WeakPtr<Accelerator> post_target_accelerator;
+    // Used for callbacks/timer specific to processing |event|.
+    base::WeakPtrFactory<WindowManagerState> weak_factory;
   };
 
   const WindowServer* window_server() const;
@@ -194,6 +188,14 @@ class WindowManagerState : public EventDispatcherDelegate,
   // Returns the ServerWindow that is the root of the WindowManager for
   // |window|. |window| corresponds to the root of a Display.
   ServerWindow* GetWindowManagerRoot(ServerWindow* window);
+
+  // Called from the callback supplied to WindowTree::OnAccelerator().
+  void OnAcceleratorAck(
+      mojom::EventResult result,
+      const std::unordered_map<std::string, std::vector<uint8_t>>& properties);
+
+  // Called from the callback supplied to WindowTree::DispatchInputEvent().
+  void OnEventAck(mojom::WindowTree* tree, mojom::EventResult result);
 
   // Called if the client doesn't ack an event in the appropriate amount of
   // time.
@@ -267,7 +269,6 @@ class WindowManagerState : public EventDispatcherDelegate,
   bool got_frame_decoration_values_ = false;
   mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
-  base::WeakPtr<Accelerator> post_target_accelerator_;
   std::queue<std::unique_ptr<QueuedEvent>> event_queue_;
 
   std::vector<DebugAccelerator> debug_accelerators_;
@@ -293,8 +294,6 @@ class WindowManagerState : public EventDispatcherDelegate,
   // wants to. Once the client destroys the window WindowManagerDisplayRoots is
   // destroyed.
   WindowManagerDisplayRoots orphaned_window_manager_display_roots_;
-
-  base::WeakPtrFactory<WindowManagerState> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerState);
 };

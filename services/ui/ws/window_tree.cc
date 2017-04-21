@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -45,8 +46,12 @@ namespace ws {
 
 class TargetedEvent : public ServerWindowObserver {
  public:
-  TargetedEvent(ServerWindow* target, const ui::Event& event)
-      : target_(target), event_(ui::Event::Clone(event)) {
+  TargetedEvent(ServerWindow* target,
+                const ui::Event& event,
+                WindowTree::DispatchEventCallback callback)
+      : target_(target),
+        event_(ui::Event::Clone(event)),
+        callback_(std::move(callback)) {
     target_->AddObserver(this);
   }
   ~TargetedEvent() override {
@@ -56,6 +61,9 @@ class TargetedEvent : public ServerWindowObserver {
 
   ServerWindow* target() { return target_; }
   std::unique_ptr<ui::Event> TakeEvent() { return std::move(event_); }
+  WindowTree::DispatchEventCallback TakeCallback() {
+    return std::move(callback_);
+  }
 
  private:
   // ServerWindowObserver:
@@ -67,6 +75,7 @@ class TargetedEvent : public ServerWindowObserver {
 
   ServerWindow* target_;
   std::unique_ptr<ui::Event> event_;
+  WindowTree::DispatchEventCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetedEvent);
 };
@@ -599,10 +608,12 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
 }
 
 void WindowTree::DispatchInputEvent(ServerWindow* target,
-                                    const ui::Event& event) {
+                                    const ui::Event& event,
+                                    DispatchEventCallback callback) {
   if (event_ack_id_) {
     // This is currently waiting for an event ack. Add it to the queue.
-    event_queue_.push(base::MakeUnique<TargetedEvent>(target, event));
+    event_queue_.push(
+        base::MakeUnique<TargetedEvent>(target, event, std::move(callback)));
     // TODO(sad): If the |event_queue_| grows too large, then this should notify
     // Display, so that it can stop sending events.
     return;
@@ -612,11 +623,12 @@ void WindowTree::DispatchInputEvent(ServerWindow* target,
   // and dispatch the latest event from the queue instead that still has a live
   // target.
   if (!event_queue_.empty()) {
-    event_queue_.push(base::MakeUnique<TargetedEvent>(target, event));
+    event_queue_.push(
+        base::MakeUnique<TargetedEvent>(target, event, std::move(callback)));
     return;
   }
 
-  DispatchInputEventImpl(target, event);
+  DispatchInputEventImpl(target, event, std::move(callback));
 }
 
 bool WindowTree::IsWaitingForNewTopLevelWindow(uint32_t wm_change_id) {
@@ -672,13 +684,16 @@ void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
 
 void WindowTree::OnAccelerator(uint32_t accelerator_id,
                                const ui::Event& event,
-                               bool needs_ack) {
+                               AcceleratorCallback callback) {
   DVLOG(3) << "OnAccelerator client=" << id_;
-  DCHECK(window_manager_internal_);
-  if (needs_ack)
+  DCHECK(window_manager_internal_);  // Only valid for the window manager.
+  if (callback) {
     GenerateEventAckId();
-  else
+    accelerator_ack_callback_ = std::move(callback);
+  } else {
     DCHECK_EQ(0u, event_ack_id_);
+    DCHECK(!accelerator_ack_callback_);
+  }
   // TODO(moshayedi): crbug.com/617167. Don't clone even once we map
   // mojom::Event directly to ui::Event.
   window_manager_internal_->OnAccelerator(event_ack_id_, accelerator_id,
@@ -1305,9 +1320,11 @@ uint32_t WindowTree::GenerateEventAckId() {
 }
 
 void WindowTree::DispatchInputEventImpl(ServerWindow* target,
-                                        const ui::Event& event) {
+                                        const ui::Event& event,
+                                        DispatchEventCallback callback) {
   DVLOG(3) << "DispatchInputEventImpl client=" << id_;
   GenerateEventAckId();
+  event_ack_callback_ = std::move(callback);
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(target);
   DCHECK(display_root);
   event_source_wms_ = display_root->window_manager_state();
@@ -1631,35 +1648,37 @@ void WindowTree::SetImeVisibility(Id transport_window_id,
 void WindowTree::OnWindowInputEventAck(uint32_t event_id,
                                        mojom::EventResult result) {
   DVLOG(3) << "OnWindowInputEventAck client=" << id_;
-  if (event_ack_id_ == 0 || event_id != event_ack_id_) {
+  if (event_ack_id_ == 0 || event_id != event_ack_id_ || !event_ack_callback_) {
     // TODO(sad): Something bad happened. Kill the client?
     NOTIMPLEMENTED() << ": Wrong event acked. event_id=" << event_id
                      << ", event_ack_id_=" << event_ack_id_;
     DVLOG(1) << "OnWindowInputEventAck supplied unexpected event_id";
+    return;
   }
+
   event_ack_id_ = 0;
 
   if (janky_)
     event_source_wms_->window_tree()->ClientJankinessChanged(this);
 
-  WindowManagerState* event_source_wms = event_source_wms_;
   event_source_wms_ = nullptr;
-  if (event_source_wms)
-    event_source_wms->OnEventAck(this, result);
+  base::ResetAndReturn(&event_ack_callback_).Run(result);
 
   if (!event_queue_.empty()) {
     DCHECK(!event_ack_id_);
     ServerWindow* target = nullptr;
     std::unique_ptr<ui::Event> event;
+    DispatchEventCallback callback;
     do {
       std::unique_ptr<TargetedEvent> targeted_event =
           std::move(event_queue_.front());
       event_queue_.pop();
       target = targeted_event->target();
       event = targeted_event->TakeEvent();
+      callback = targeted_event->TakeCallback();
     } while (!event_queue_.empty() && !GetDisplay(target));
     if (target)
-      DispatchInputEventImpl(target, *event);
+      DispatchInputEventImpl(target, *event, std::move(callback));
   }
 }
 
@@ -2243,14 +2262,15 @@ void WindowTree::OnAcceleratorAck(uint32_t event_id,
                                   mojom::EventResult result,
                                   const EventProperties& properties) {
   DVLOG(3) << "OnAcceleratorAck client=" << id_;
-  if (event_ack_id_ == 0 || event_id != event_ack_id_) {
+  if (event_ack_id_ == 0 || event_id != event_ack_id_ ||
+      !accelerator_ack_callback_) {
     DVLOG(1) << "OnAcceleratorAck supplied invalid event_id";
     window_server_->WindowManagerSentBogusMessage();
     return;
   }
   event_ack_id_ = 0;
   DCHECK(window_manager_state_);
-  window_manager_state_->OnAcceleratorAck(result, properties);
+  base::ResetAndReturn(&accelerator_ack_callback_).Run(result, properties);
 }
 
 bool WindowTree::HasRootForAccessPolicy(const ServerWindow* window) const {

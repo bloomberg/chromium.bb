@@ -96,7 +96,8 @@ class CursorTest : public testing::Test {
                       ->GetEventSink()
                       ->OnEventFromSource(&event));
     WindowManagerState* wms = active_display_root->window_manager_state();
-    wms->OnEventAck(wms->window_tree(), mojom::EventResult::HANDLED);
+    ASSERT_TRUE(WindowManagerStateTestApi(wms).AckInFlightEvent(
+        mojom::EventResult::HANDLED));
   }
 
  private:
