@@ -322,6 +322,12 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
       rd->thresh_mult_sub8x8[i] = INT_MAX;
     }
   }
+
+  // This is only used in motion vector unit test.
+  if (cpi->oxcf.motion_vector_unit_test == 1)
+    cpi->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
+  else if (cpi->oxcf.motion_vector_unit_test == 2)
+    cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
 }
 
 void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
@@ -472,4 +478,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   if (!cpi->oxcf.frame_periodic_boost) {
     sf->max_delta_qindex = 0;
   }
+
+  // This is only used in motion vector unit test.
+  if (cpi->oxcf.motion_vector_unit_test == 1)
+    cpi->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
+  else if (cpi->oxcf.motion_vector_unit_test == 2)
+    cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
 }

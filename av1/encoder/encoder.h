@@ -280,6 +280,8 @@ typedef struct AV1EncoderConfig {
 #if CONFIG_EXT_TILE
   unsigned int tile_encoding_mode;
 #endif  // CONFIG_EXT_TILE
+
+  unsigned int motion_vector_unit_test;
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {

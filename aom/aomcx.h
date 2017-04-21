@@ -523,6 +523,13 @@ enum aome_enc_control_id {
    * Experiment: EXT_TILE
    */
   AV1E_SET_TILE_ENCODING_MODE,
+
+  /*!\brief Codec control function to enable the extreme motion vector unit test
+   * in AV1. Please note that this is only used in motion vector unit test.
+   *
+   * 0 : off, 1 : MAX_EXTREME_MV, 2 : MIN_EXTREME_MV
+   */
+  AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -730,6 +737,10 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ANS_WINDOW_SIZE_LOG2, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TILE_ENCODING_MODE, unsigned int)
 #define AOM_CTRL_AV1E_SET_TILE_ENCODING_MODE
+
+AOM_CTRL_USE_TYPE(AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, unsigned int)
+#define AOM_CTRL_AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST
+
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */
 #ifdef __cplusplus

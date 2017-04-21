@@ -21,6 +21,7 @@
 #include "aom_ports/mem.h"
 
 #include "av1/common/common.h"
+#include "av1/common/mvref_common.h"
 #include "av1/common/reconinter.h"
 
 #include "av1/encoder/encoder.h"
@@ -3413,3 +3414,78 @@ int av1_obmc_full_pixel_diamond(const AV1_COMP *cpi, MACROBLOCK *x,
   return bestsme;
 }
 #endif  // CONFIG_MOTION_VAR
+
+// Note(yunqingwang): The following 2 functions are only used in the motion
+// vector unit test, which return extreme motion vectors allowed by the MV
+// limits.
+#define COMMON_MV_TEST     \
+  SETUP_SUBPEL_SEARCH;     \
+                           \
+  (void)error_per_bit;     \
+  (void)vfp;               \
+  (void)src_address;       \
+  (void)src_stride;        \
+  (void)y;                 \
+  (void)y_stride;          \
+  (void)second_pred;       \
+  (void)w;                 \
+  (void)h;                 \
+  (void)use_upsampled_ref; \
+  (void)offset;            \
+  (void)mvjcost;           \
+  (void)mvcost;            \
+  (void)sse1;              \
+  (void)distortion;        \
+                           \
+  (void)halfiters;         \
+  (void)quarteriters;      \
+  (void)eighthiters;       \
+  (void)whichdir;          \
+  (void)forced_stop;       \
+  (void)hstep;             \
+                           \
+  (void)tr;                \
+  (void)tc;                \
+  (void)sse;               \
+  (void)thismse;           \
+  (void)cost_list;
+// Return the maximum MV.
+int av1_return_max_sub_pixel_mv(MACROBLOCK *x, const MV *ref_mv, int allow_hp,
+                                int error_per_bit,
+                                const aom_variance_fn_ptr_t *vfp,
+                                int forced_stop, int iters_per_step,
+                                int *cost_list, int *mvjcost, int *mvcost[2],
+                                int *distortion, unsigned int *sse1,
+                                const uint8_t *second_pred, int w, int h,
+                                int use_upsampled_ref) {
+  COMMON_MV_TEST;
+  (void)minr;
+  (void)minc;
+  bestmv->row = maxr;
+  bestmv->col = maxc;
+  besterr = 0;
+  // In the sub-pel motion search, if hp is not used, then the last bit of mv
+  // has to be 0.
+  lower_mv_precision(bestmv, allow_hp);
+  return besterr;
+}
+// Return the minimum MV.
+int av1_return_min_sub_pixel_mv(MACROBLOCK *x, const MV *ref_mv, int allow_hp,
+                                int error_per_bit,
+                                const aom_variance_fn_ptr_t *vfp,
+                                int forced_stop, int iters_per_step,
+                                int *cost_list, int *mvjcost, int *mvcost[2],
+                                int *distortion, unsigned int *sse1,
+                                const uint8_t *second_pred, int w, int h,
+                                int use_upsampled_ref) {
+  COMMON_MV_TEST;
+  (void)maxr;
+  (void)maxc;
+  bestmv->row = minr;
+  bestmv->col = minc;
+  besterr = 0;
+  // In the sub-pel motion search, if hp is not used, then the last bit of mv
+  // has to be 0.
+  lower_mv_precision(bestmv, allow_hp);
+  return besterr;
+}

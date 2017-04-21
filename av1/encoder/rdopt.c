@@ -10019,6 +10019,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (best_rd < mode_threshold[mode_index]) continue;
 
+    // This is only used in motion vector unit test.
+    if (cpi->oxcf.motion_vector_unit_test && ref_frame == INTRA_FRAME) continue;
+
     comp_pred = second_ref_frame > INTRA_FRAME;
     if (comp_pred) {
       if (!cpi->allow_comp_inter_inter) continue;
@@ -11741,6 +11744,9 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
                             rd_opt->threshes[segment_id][bsize][ref_index],
                             tile_data->thresh_freq_fact[bsize][ref_index]))
       continue;
+
+    // This is only used in motion vector unit test.
+    if (cpi->oxcf.motion_vector_unit_test && ref_frame == INTRA_FRAME) continue;
 
     comp_pred = second_ref_frame > INTRA_FRAME;
     if (comp_pred) {

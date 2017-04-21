@@ -81,6 +81,8 @@ struct av1_extracfg {
 #if CONFIG_EXT_TILE
   unsigned int tile_encoding_mode;
 #endif  // CONFIG_EXT_TILE
+
+  unsigned int motion_vector_unit_test;
 };
 
 static struct av1_extracfg default_extra_cfg = {
@@ -146,6 +148,8 @@ static struct av1_extracfg default_extra_cfg = {
 #if CONFIG_EXT_TILE
   0,    // Tile encoding mode is TILE_NORMAL by default.
 #endif  // CONFIG_EXT_TILE
+
+  0,  // motion_vector_unit_test
 };
 
 struct aom_codec_alg_priv {
@@ -259,6 +263,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
         "kf_min_dist not supported in auto mode, use 0 "
         "or kf_max_dist instead.");
 
+  RANGE_CHECK_HI(extra_cfg, motion_vector_unit_test, 2);
   RANGE_CHECK_HI(extra_cfg, enable_auto_alt_ref, 2);
 #if CONFIG_EXT_REFS
   RANGE_CHECK_HI(extra_cfg, enable_auto_bwd_ref, 2);
@@ -559,6 +564,7 @@ static aom_codec_err_t set_encoder_config(
 
   oxcf->frame_periodic_boost = extra_cfg->frame_periodic_boost;
 
+  oxcf->motion_vector_unit_test = extra_cfg->motion_vector_unit_test;
   /*
   printf("Current AV1 Settings: \n");
   printf("target_bandwidth: %d\n", oxcf->target_bandwidth);
@@ -884,6 +890,14 @@ static aom_codec_err_t ctrl_set_frame_periodic_boost(aom_codec_alg_priv_t *ctx,
                                                      va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.frame_periodic_boost = CAST(AV1E_SET_FRAME_PERIODIC_BOOST, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_enable_motion_vector_unit_test(
+    aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.motion_vector_unit_test =
+      CAST(AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1492,6 +1506,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
 #if CONFIG_EXT_TILE
   { AV1E_SET_TILE_ENCODING_MODE, ctrl_set_tile_encoding_mode },
 #endif  // CONFIG_EXT_TILE
+  { AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, ctrl_enable_motion_vector_unit_test },
 
   // Getters
   { AOME_GET_LAST_QUANTIZER, ctrl_get_quantizer },

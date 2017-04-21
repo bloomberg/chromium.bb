@@ -113,6 +113,7 @@ LIBAOM_TEST_SRCS-yes                   += partial_idct_test.cc
 LIBAOM_TEST_SRCS-yes                   += superframe_test.cc
 LIBAOM_TEST_SRCS-yes                   += tile_independence_test.cc
 LIBAOM_TEST_SRCS-yes                   += ethread_test.cc
+LIBAOM_TEST_SRCS-yes                   += motion_vector_test.cc
 ifneq ($(CONFIG_ANS),yes)
 LIBAOM_TEST_SRCS-yes                   += binary_codes_test.cc
 endif
