@@ -181,12 +181,16 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
 
   sandbox_helper_->PreSandboxStartup();
 
+  bool attempted_startsandbox = false;
 #if defined(OS_LINUX)
   // On Chrome OS ARM Mali, GPU driver userspace creates threads when
   // initializing a GL context, so start the sandbox early.
-  if (command_line.HasSwitch(switches::kGpuSandboxStartEarly))
+  if (command_line.HasSwitch(switches::kGpuSandboxStartEarly)) {
     gpu_info_.sandboxed =
         sandbox_helper_->EnsureSandboxInitialized(watchdog_thread_.get());
+    attempted_startsandbox = true;
+  }
+
 #endif  // defined(OS_LINUX)
 
   base::TimeTicks before_initialize_one_off = base::TimeTicks::Now();
@@ -258,9 +262,11 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
     watchdog_thread_ = gpu::GpuWatchdogThread::Create();
   }
 
-  if (!gpu_info_.sandboxed)
+  if (!gpu_info_.sandboxed && !attempted_startsandbox) {
     gpu_info_.sandboxed =
         sandbox_helper_->EnsureSandboxInitialized(watchdog_thread_.get());
+  }
+
   return true;
 }
 
