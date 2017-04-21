@@ -138,7 +138,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void SendGesture(InputTarget input_target,
                    std::unique_ptr<blink::WebInputEvent> event);
   void CreateUiSurface();
-  void OnUIFrameAvailable();
   void OnContentFrameAvailable();
   void OnWebVRFrameAvailable();
   bool GetPixelEncodedFrameIndex(uint16_t* frame_index);
