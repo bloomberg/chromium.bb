@@ -55,11 +55,6 @@ const char kVendorID[] = "ID_VENDOR_ID";
 // Construct a device id using label or manufacturer (vendor and model) details.
 std::string MakeDeviceUniqueId(struct udev_device* device) {
   std::string uuid = device::UdevDeviceGetPropertyValue(device, kFsUUID);
-  // Keep track of device uuid, to see how often we receive empty uuid values.
-  UMA_HISTOGRAM_BOOLEAN(
-      "RemovableDeviceNotificationsLinux.device_file_system_uuid_available",
-      !uuid.empty());
-
   if (!uuid.empty())
     return kFSUniqueIdPrefix + uuid;
 

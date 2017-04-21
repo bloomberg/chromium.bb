@@ -16,7 +16,6 @@
 #include <algorithm>
 
 #include "base/bind_helpers.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -45,15 +44,6 @@ enum DeviceType {
   FLOPPY,
   REMOVABLE,
   FIXED,
-};
-
-// Histogram values for recording frequencies of eject attempts and
-// outcomes.
-enum EjectWinLockOutcomes {
-  LOCK_ATTEMPT,
-  LOCK_TIMEOUT,
-  LOCK_TIMEOUT2,
-  NUM_LOCK_OUTCOMES,
 };
 
 // We are trying to figure out whether the drive is a fixed volume,
@@ -262,12 +252,7 @@ void EjectDeviceInThreadPool(
   // handle is closed, and this is done by the ScopedHandle above.
   BOOL locked = DeviceIoControl(volume_handle.Get(), FSCTL_LOCK_VOLUME,
                                 NULL, 0, NULL, 0, &bytes_returned, NULL);
-  UMA_HISTOGRAM_ENUMERATION("StorageMonitor.EjectWinLock",
-                            LOCK_ATTEMPT, NUM_LOCK_OUTCOMES);
   if (!locked) {
-    UMA_HISTOGRAM_ENUMERATION("StorageMonitor.EjectWinLock",
-                              iteration == 0 ? LOCK_TIMEOUT : LOCK_TIMEOUT2,
-                              NUM_LOCK_OUTCOMES);
     const int kNumLockRetries = 1;
     const base::TimeDelta kLockRetryInterval =
         base::TimeDelta::FromMilliseconds(500);
