@@ -1412,6 +1412,7 @@ crbug.com/589265 svg/text/text-layout-crash.html [ Failure ]
 crbug.com/589265 virtual/threaded/animations/animated-filter-svg-element.html [ Failure Crash ]
 
 # Some work remains to fully support composited animation and scrolling.
+Bug(none) virtual/threaded/animations/css-animation-affects-use-elements.html [ Failure ]
 Bug(none) virtual/threaded/animations/composited-animation-style-update.html [ Failure ]
 crbug.com/702350 transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
 crbug.com/702350 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
@@ -1420,7 +1421,7 @@ crbug.com/702353 virtual/threaded/transitions/transition-end-event-destroy-ifram
 crbug.com/702353 virtual/threaded/transitions/extra-transition.html [ Timeout ]
 crbug.com/702365 virtual/threaded/animations/composited-filter-webkit-filter.html [ Failure ]
 crbug.com/702370 virtual/threaded/animations/compositor-independent-transform-cancel.html [ Failure ]
-crbug.com/702379 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure ]
+crbug.com/702379 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure Crash ]
 crbug.com/692310 virtual/threaded/animations/3d/replace-filling-transform.html [ Crash ]
 crbug.com/692310 virtual/threaded/animations/change-transform-style-during-animation.html [ Crash ]
 crbug.com/692310 virtual/threaded/animations/fill-mode-transform.html [ Crash ]
