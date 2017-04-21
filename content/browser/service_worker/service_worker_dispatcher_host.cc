@@ -1552,6 +1552,8 @@ void ServiceWorkerDispatcherHost::DidUpdateNavigationPreloadEnabled(
             std::string(kDatabaseErrorMessage)));
     return;
   }
+  if (!GetContext())
+    return;
   ServiceWorkerRegistration* registration =
       GetContext()->GetLiveRegistration(registration_id);
   if (registration)
@@ -1572,6 +1574,8 @@ void ServiceWorkerDispatcherHost::DidUpdateNavigationPreloadHeader(
             std::string(kDatabaseErrorMessage)));
     return;
   }
+  if (!GetContext())
+    return;
   ServiceWorkerRegistration* registration =
       GetContext()->GetLiveRegistration(registration_id);
   if (registration)
