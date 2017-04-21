@@ -4038,13 +4038,11 @@ void Document::SetAnnotatedRegions(
   SetAnnotatedRegionsDirty(false);
 }
 
-bool Document::SetFocusedElement(Element* prp_new_focused_element,
+bool Document::SetFocusedElement(Element* new_focused_element,
                                  const FocusParams& params) {
   DCHECK(!lifecycle_.InDetach());
 
   clear_focused_element_timer_.Stop();
-
-  Element* new_focused_element = prp_new_focused_element;
 
   // Make sure newFocusedNode is actually in this document
   if (new_focused_element && (new_focused_element->GetDocument() != this))
