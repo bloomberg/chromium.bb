@@ -1,5 +1,5 @@
 ##
-## Copyright (c) 2016, Alliance for Open Media. All rights reserved
+## Copyright (c) 2017, Alliance for Open Media. All rights reserved
 ##
 ## This source code is subject to the terms of the BSD 2 Clause License and
 ## the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -8,6 +8,24 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
+ARCH_ARM=${RTCD_ARCH_ARM}
+ARCH_MIPS=${RTCD_ARCH_MIPS}
+ARCH_X86=${RTCD_ARCH_X86}
+ARCH_X86_64=${RTCD_ARCH_X86_64}
+HAVE_NEON=${RTCD_HAVE_NEON}
+HAVE_NEON_ASM=${RTCD_HAVE_NEON_ASM}
+HAVE_MIPS32=${RTCD_HAVE_MIPS32}
+HAVE_DSPR2=${RTCD_HAVE_DSPR2}
+HAVE_MSA=${RTCD_HAVE_MSA}
+HAVE_MIPS64=${RTCD_HAVE_MIPS64}
+HAVE_MMX=${RTCD_HAVE_MMX}
+HAVE_SSE=${RTCD_HAVE_SSE}
+HAVE_SSE2=${RTCD_HAVE_SSE2}
+HAVE_SSE3=${RTCD_HAVE_SSE3}
+HAVE_SSSE3=${RTCD_HAVE_SSSE3}
+HAVE_SSE4_1=${RTCD_HAVE_SSE4_1}
+HAVE_AVX=${RTCD_HAVE_AVX}
+HAVE_AVX2=${RTCD_HAVE_AVX2}
 CONFIG_ACCOUNTING=${RTCD_CONFIG_ACCOUNTING}
 CONFIG_INSPECTION=${RTCD_CONFIG_INSPECTION}
 CONFIG_ADAPT_SCAN=${RTCD_CONFIG_ADAPT_SCAN}

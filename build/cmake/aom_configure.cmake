@@ -13,6 +13,9 @@ include(FindPerl)
 include(FindThreads)
 include(FindwxWidgets)
 
+set(AOM_SUPPORTED_CPU_TARGETS
+    "arm64 armv7 armv7s generic mips32 mips64 x86 x86_64")
+
 # Generate the user config settings. This must occur before include of
 # aom_config_defaults.cmake (because it turns every config variable into a cache
 # variable with its own help string).
@@ -77,8 +80,8 @@ string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
 message("--- aom_configure: Detected CPU: ${AOM_TARGET_CPU}")
 set(AOM_TARGET_SYSTEM ${CMAKE_SYSTEM_NAME})
 
-if (NOT EXISTS "${AOM_ROOT}/build/cmake/targets/${AOM_TARGET_CPU}.cmake")
-  message(FATAL_ERROR "No RTCD template for ${AOM_TARGET_CPU}. Create one, or "
+if (NOT "${AOM_SUPPORTED_CPU_TARGETS}" MATCHES "${AOM_TARGET_CPU}")
+  message(FATAL_ERROR "No RTCD support for ${AOM_TARGET_CPU}. Create it, or "
           "add -DAOM_TARGET_CPU=generic to your cmake command line for a "
           "generic build of libaom and tools.")
 endif ()
@@ -110,7 +113,7 @@ elseif ("${AOM_TARGET_CPU}" MATCHES "arm")
   string(STRIP "${AOM_AS_FLAGS}" AOM_AS_FLAGS)
 endif ()
 
-include("${AOM_ROOT}/build/cmake/targets/${AOM_TARGET_CPU}.cmake")
+include("${AOM_ROOT}/build/cmake/cpu.cmake")
 
 # Test compiler flags.
 if (MSVC)
@@ -235,8 +238,8 @@ if (NOT PERL_FOUND)
   message(FATAL_ERROR "Perl is required to build libaom.")
 endif ()
 configure_file(
-  "${AOM_ROOT}/build/cmake/targets/rtcd_templates/${AOM_ARCH}.rtcd.cmake"
-  "${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd")
+  "${AOM_ROOT}/build/cmake/rtcd_config.cmake"
+  "${AOM_CONFIG_DIR}/${AOM_TARGET_CPU}_rtcd_config.rtcd")
 
 set(AOM_RTCD_CONFIG_FILE_LIST
     "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
@@ -261,8 +264,9 @@ foreach(NUM RANGE ${AOM_RTCD_CUSTOM_COMMAND_COUNT})
   list(GET AOM_RTCD_SYMBOL_LIST ${NUM} AOM_RTCD_SYMBOL)
   execute_process(
     COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/make/rtcd.pl"
-      --arch=${AOM_ARCH} --sym=${AOM_RTCD_SYMBOL} ${AOM_RTCD_FLAGS}
-      --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd ${AOM_RTCD_CONFIG_FILE}
+      --arch=${AOM_TARGET_CPU} --sym=${AOM_RTCD_SYMBOL} ${AOM_RTCD_FLAGS}
+      --config=${AOM_CONFIG_DIR}/${AOM_TARGET_CPU}_rtcd_config.rtcd
+      ${AOM_RTCD_CONFIG_FILE}
     OUTPUT_FILE ${AOM_RTCD_HEADER_FILE})
 endforeach()
 
@@ -270,8 +274,12 @@ function (add_rtcd_build_step config output source symbol)
   add_custom_command(
     OUTPUT ${output}
     COMMAND ${PERL_EXECUTABLE}
-    ARGS "${AOM_ROOT}/build/make/rtcd.pl" --arch=${AOM_ARCH} --sym=${symbol}
-      ${AOM_RTCD_FLAGS} --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd ${config}
+    ARGS "${AOM_ROOT}/build/make/rtcd.pl"
+      --arch=${AOM_TARGET_CPU}
+      --sym=${symbol}
+      ${AOM_RTCD_FLAGS}
+      --config=${AOM_CONFIG_DIR}/${AOM_TARGET_CPU}_rtcd_config.rtcd
+      ${config}
       > ${output}
     DEPENDS ${config}
     COMMENT "Generating ${output}"
