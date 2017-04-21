@@ -54,31 +54,9 @@ class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
   ~WebrtcAudioPrivateFunction() override;
 
  protected:
-  // Retrieves the list of output device descriptions on the appropriate
-  // thread. Call from UI thread, callback will occur on IO thread.
-  void GetOutputDeviceDescriptions();
-
-  // Must override this if you call GetOutputDeviceDescriptions. Called on IO
-  // thread.
-  virtual void OnOutputDeviceDescriptions(
-      std::unique_ptr<media::AudioDeviceDescriptions> device_descriptions);
-
-  // Calculates a single HMAC. Call from any thread. Calls back via
-  // OnHMACCalculated on UI thread.
-  //
-  // This function, and device ID HMACs in this API in general use the
-  // calling extension's ID as the security origin. The only exception
-  // to this rule is when calculating the input device ID HMAC in
-  // getAssociatedSink, where we use the provided |securityOrigin|.
-  void CalculateHMAC(const std::string& raw_id);
-
-  // Must override this if you call CalculateHMAC.
-  virtual void OnHMACCalculated(const std::string& hmac);
-
   // Calculates a single HMAC, using the extension ID as the security origin.
-  //
   // Call only on IO thread.
-  std::string CalculateHMACImpl(const std::string& raw_id);
+  std::string CalculateHMAC(const std::string& raw_id);
 
   // Initializes |device_id_salt_|. Must be called on the UI thread,
   // before any calls to |device_id_salt()|.
@@ -106,17 +84,23 @@ class WebrtcAudioPrivateGetSinksFunction : public WebrtcAudioPrivateFunction {
   ~WebrtcAudioPrivateGetSinksFunction() override {}
 
  private:
+  using SinkInfoVector = std::vector<api::webrtc_audio_private::SinkInfo>;
+
   DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.getSinks",
                              WEBRTC_AUDIO_PRIVATE_GET_SINKS);
 
-  // Sequence of events is that we query the list of sinks on the
-  // AudioManager's thread, then calculate HMACs on the IO thread,
-  // then finish on the UI thread.
   bool RunAsync() override;
-  void DoQuery();
-  void OnOutputDeviceDescriptions(
-      std::unique_ptr<media::AudioDeviceDescriptions> raw_ids) override;
-  void DoneOnUIThread();
+
+  // Requests output device descriptions.
+  void GetOutputDeviceDescriptionsOnIOThread();
+
+  // Receives output device descriptions, calculates HMACs for them and replies
+  // to UI thread with DoneOnUIThread().
+  void ReceiveOutputDeviceDescriptionsOnIOThread(
+      media::AudioDeviceDescriptions sink_devices);
+
+  // Sends the response.
+  void DoneOnUIThread(std::unique_ptr<SinkInfoVector> results);
 };
 
 class WebrtcAudioPrivateGetAssociatedSinkFunction
@@ -131,45 +115,27 @@ class WebrtcAudioPrivateGetAssociatedSinkFunction
   DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.getAssociatedSink",
                              WEBRTC_AUDIO_PRIVATE_GET_ASSOCIATED_SINK);
 
+  // UI thread: Entry point, posts GetInputDeviceDescriptions() to IO thread.
   bool RunAsync() override;
 
-  // This implementation is slightly complicated because of different
-  // thread requirements for the various functions we need to invoke.
-  //
-  // Each worker function will post a task to the appropriate thread
-  // for the next one.
-  //
-  // The sequence of events is:
-  // 1. Get the list of source devices on the device thread.
-  // 2. Given a source ID for an origin and that security origin, find
-  //    the raw source ID. This needs to happen on the IO thread since
-  //    we will be using the ResourceContext.
-  // 3. Given a raw source ID, get the raw associated sink ID on the
-  //    device thread.
-  // 4. Given the raw associated sink ID, get its HMAC on the IO thread.
-  // 5. Respond with the HMAC of the associated sink ID on the UI thread.
+  // Enumerates input devices.
+  void GetInputDeviceDescriptionsOnIOThread();
 
-  // Fills in |source_devices_|. Note that these are input devices,
-  // not output devices, so don't use
-  // |WebrtcAudioPrivateFunction::GetOutputDeviceDescriptions|.
-  void GetDevicesOnDeviceThread();
+  // Receives the input device descriptions, looks up the raw source device ID
+  // basing on |params|, and requests the associated raw sink ID for it.
+  void ReceiveInputDeviceDescriptionsOnIOThread(
+      media::AudioDeviceDescriptions source_devices);
 
-  // Takes the parameters of the function, retrieves the raw source
-  // device ID, or the empty string if none.
-  void GetRawSourceIDOnIOThread();
+  // IO thread: Receives the raw sink ID, calculates HMAC and replies to IO
+  // thread with ReceiveHMACOnUIThread().
+  void CalculateHMACOnIOThread(const std::string& raw_sink_id);
 
-  // Gets the raw sink ID for a raw source ID. Sends it to |CalculateHMAC|.
-  void GetAssociatedSinkOnDeviceThread(const std::string& raw_source_id);
+  // Receives the associated sink ID as HMAC and sends the response.
+  void ReceiveHMACOnUIThread(const std::string& hmac);
 
-  // Receives the associated sink ID after its HMAC is calculated.
-  void OnHMACCalculated(const std::string& hmac) override;
-
-  // Accessed from UI thread and device thread, but only on one at a
-  // time, no locking needed.
+  // Initialized on UI thread in RunAsync(), read-only access on IO thread - no
+  // locking needed.
   std::unique_ptr<api::webrtc_audio_private::GetAssociatedSink::Params> params_;
-
-  // Audio sources (input devices). Filled in by DoWorkOnDeviceThread.
-  media::AudioDeviceDescriptions source_devices_;
 };
 
 class WebrtcAudioPrivateSetAudioExperimentsFunction

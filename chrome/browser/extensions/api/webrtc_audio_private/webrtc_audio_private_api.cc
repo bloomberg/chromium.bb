@@ -22,17 +22,13 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "media/audio/audio_device_description.h"
+#include "media/audio/audio_system.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace extensions {
 
 using content::BrowserThread;
-using content::RenderProcessHost;
-using media::AudioDeviceDescriptions;
-using media::AudioManager;
-
 namespace wap = api::webrtc_audio_private;
 
 using api::webrtc_audio_private::RequestInfo;
@@ -78,7 +74,6 @@ void WebrtcAudioPrivateEventService::OnDevicesChanged(
     case base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE:
       SignalEvent();
       break;
-
     default:
       // No action needed.
       break;
@@ -107,58 +102,9 @@ void WebrtcAudioPrivateEventService::SignalEvent() {
 
 WebrtcAudioPrivateFunction::WebrtcAudioPrivateFunction() {}
 
-WebrtcAudioPrivateFunction::~WebrtcAudioPrivateFunction() {
-}
+WebrtcAudioPrivateFunction::~WebrtcAudioPrivateFunction() {}
 
-void WebrtcAudioPrivateFunction::GetOutputDeviceDescriptions() {
-  scoped_refptr<base::SingleThreadTaskRunner> audio_manager_runner =
-      AudioManager::Get()->GetTaskRunner();
-  if (!audio_manager_runner->BelongsToCurrentThread()) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    audio_manager_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WebrtcAudioPrivateFunction::GetOutputDeviceDescriptions,
-                       this));
-    return;
-  }
-
-  std::unique_ptr<AudioDeviceDescriptions> device_descriptions =
-      base::MakeUnique<AudioDeviceDescriptions>();
-  AudioManager::Get()->GetAudioOutputDeviceDescriptions(
-      device_descriptions.get());
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&WebrtcAudioPrivateFunction::OnOutputDeviceDescriptions,
-                     this, base::Passed(&device_descriptions)));
-}
-
-void WebrtcAudioPrivateFunction::OnOutputDeviceDescriptions(
-    std::unique_ptr<AudioDeviceDescriptions> device_descriptions) {
-  NOTREACHED();
-}
-
-void WebrtcAudioPrivateFunction::CalculateHMAC(const std::string& raw_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&WebrtcAudioPrivateFunction::CalculateHMAC, this,
-                       raw_id));
-    return;
-  }
-
-  std::string hmac = CalculateHMACImpl(raw_id);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&WebrtcAudioPrivateFunction::OnHMACCalculated, this,
-                     hmac));
-}
-
-void WebrtcAudioPrivateFunction::OnHMACCalculated(const std::string& hmac) {
-  NOTREACHED();
-}
-
-std::string WebrtcAudioPrivateFunction::CalculateHMACImpl(
+std::string WebrtcAudioPrivateFunction::CalculateHMAC(
     const std::string& raw_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -222,133 +168,130 @@ WebrtcAudioPrivateFunction::GetRenderProcessHostFromRequest(
 
 bool WebrtcAudioPrivateGetSinksFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   InitDeviceIDSalt();
-  GetOutputDeviceDescriptions();
-
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebrtcAudioPrivateGetSinksFunction::
+                         GetOutputDeviceDescriptionsOnIOThread,
+                     this));
   return true;
 }
 
-void WebrtcAudioPrivateGetSinksFunction::OnOutputDeviceDescriptions(
-    std::unique_ptr<AudioDeviceDescriptions> raw_ids) {
+void WebrtcAudioPrivateGetSinksFunction::
+    GetOutputDeviceDescriptionsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  std::vector<wap::SinkInfo> results;
-  for (const media::AudioDeviceDescription& description : *raw_ids) {
-    wap::SinkInfo info;
-    info.sink_id = CalculateHMACImpl(description.unique_id);
-    info.sink_label = description.device_name;
-    // TODO(joi): Add other parameters.
-    results.push_back(std::move(info));
-  }
-
-  // It's safe to directly set the results here (from a thread other
-  // than the UI thread, on which an AsyncExtensionFunction otherwise
-  // normally runs) because there is one instance of this object per
-  // function call, no actor outside of this object is modifying the
-  // results_ member, and the different method invocations on this
-  // object run strictly in sequence; first RunAsync on the UI thread,
-  // then DoQuery on the audio IO thread, then DoneOnUIThread on the
-  // UI thread.
-  results_ = wap::GetSinks::Results::Create(results);
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread,
-                     this));
+  media::AudioSystem::Get()->GetDeviceDescriptions(
+      base::Bind(&WebrtcAudioPrivateGetSinksFunction::
+                     ReceiveOutputDeviceDescriptionsOnIOThread,
+                 this),
+      false);
 }
 
-void WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread() {
+void WebrtcAudioPrivateGetSinksFunction::
+    ReceiveOutputDeviceDescriptionsOnIOThread(
+        media::AudioDeviceDescriptions sink_devices) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto results = base::MakeUnique<SinkInfoVector>();
+  for (const media::AudioDeviceDescription& description : sink_devices) {
+    wap::SinkInfo info;
+    info.sink_id = CalculateHMAC(description.unique_id);
+    info.sink_label = description.device_name;
+    // TODO(joi): Add other parameters.
+    results->push_back(std::move(info));
+  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread, this,
+                     base::Passed(&results)));
+}
+
+void WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread(
+    std::unique_ptr<SinkInfoVector> results) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  results_ = wap::GetSinks::Results::Create(*results);
   SendResponse(true);
 }
 
 WebrtcAudioPrivateGetAssociatedSinkFunction::
-WebrtcAudioPrivateGetAssociatedSinkFunction() {
-}
+    WebrtcAudioPrivateGetAssociatedSinkFunction() {}
 
 WebrtcAudioPrivateGetAssociatedSinkFunction::
-~WebrtcAudioPrivateGetAssociatedSinkFunction() {
-}
+    ~WebrtcAudioPrivateGetAssociatedSinkFunction() {}
 
 bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunAsync() {
   params_ = wap::GetAssociatedSink::Params::Create(*args_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
-
   InitDeviceIDSalt();
-
-  AudioManager::Get()->GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&WebrtcAudioPrivateGetAssociatedSinkFunction::
-                                    GetDevicesOnDeviceThread,
-                                this));
-
-  return true;
-}
-
-void WebrtcAudioPrivateGetAssociatedSinkFunction::GetDevicesOnDeviceThread() {
-  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
-  AudioManager::Get()->GetAudioInputDeviceDescriptions(&source_devices_);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&WebrtcAudioPrivateGetAssociatedSinkFunction::
-                         GetRawSourceIDOnIOThread,
+                         GetInputDeviceDescriptionsOnIOThread,
                      this));
+
+  return true;
 }
 
-void
-WebrtcAudioPrivateGetAssociatedSinkFunction::GetRawSourceIDOnIOThread() {
+void WebrtcAudioPrivateGetAssociatedSinkFunction::
+    GetInputDeviceDescriptionsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  media::AudioSystem::Get()->GetDeviceDescriptions(
+      base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
+                     ReceiveInputDeviceDescriptionsOnIOThread,
+                 this),
+      true);
+}
 
+void WebrtcAudioPrivateGetAssociatedSinkFunction::
+    ReceiveInputDeviceDescriptionsOnIOThread(
+        media::AudioDeviceDescriptions source_devices) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   url::Origin security_origin(GURL(params_->security_origin));
   std::string source_id_in_origin(params_->source_id_in_origin);
 
   // Find the raw source ID for source_id_in_origin.
   std::string raw_source_id;
-  for (AudioDeviceDescriptions::const_iterator it = source_devices_.begin();
-       it != source_devices_.end(); ++it) {
-    const std::string& id = it->unique_id;
+  for (const auto& device : source_devices) {
     if (content::DoesMediaDeviceIDMatchHMAC(device_id_salt(), security_origin,
-                                            source_id_in_origin, id)) {
-      raw_source_id = id;
+                                            source_id_in_origin,
+                                            device.unique_id)) {
+      raw_source_id = device.unique_id;
       DVLOG(2) << "Found raw ID " << raw_source_id
                << " for source ID in origin " << source_id_in_origin;
       break;
     }
   }
-
-  AudioManager::Get()->GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&WebrtcAudioPrivateGetAssociatedSinkFunction::
-                                    GetAssociatedSinkOnDeviceThread,
-                                this, raw_source_id));
-}
-
-void
-WebrtcAudioPrivateGetAssociatedSinkFunction::GetAssociatedSinkOnDeviceThread(
-    const std::string& raw_source_id) {
-  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
-
-  // We return an empty string if there is no associated output device.
-  std::string raw_sink_id;
-  if (!raw_source_id.empty()) {
-    raw_sink_id =
-        AudioManager::Get()->GetAssociatedOutputDeviceID(raw_source_id);
+  if (raw_source_id.empty()) {
+    CalculateHMACOnIOThread(std::string());
+    return;
   }
-
-  CalculateHMAC(raw_sink_id);
+  media::AudioSystem::Get()->GetAssociatedOutputDeviceID(
+      raw_source_id,
+      base::Bind(
+          &WebrtcAudioPrivateGetAssociatedSinkFunction::CalculateHMACOnIOThread,
+          this));
 }
 
-void WebrtcAudioPrivateGetAssociatedSinkFunction::OnHMACCalculated(
+void WebrtcAudioPrivateGetAssociatedSinkFunction::CalculateHMACOnIOThread(
+    const std::string& raw_sink_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &WebrtcAudioPrivateGetAssociatedSinkFunction::ReceiveHMACOnUIThread,
+          this, CalculateHMAC(raw_sink_id)));
+}
+
+void WebrtcAudioPrivateGetAssociatedSinkFunction::ReceiveHMACOnUIThread(
     const std::string& associated_sink_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   if (associated_sink_id == media::AudioDeviceDescription::kDefaultDeviceId) {
     DVLOG(2) << "Got default ID, replacing with empty ID.";
     results_ = wap::GetAssociatedSink::Results::Create("");
   } else {
     results_ = wap::GetAssociatedSink::Results::Create(associated_sink_id);
   }
-
   SendResponse(true);
 }
 
