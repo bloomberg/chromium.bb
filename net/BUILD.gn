@@ -5735,6 +5735,20 @@ fuzzer_test("net_auth_challenge_tokenizer_fuzzer") {
   ]
 }
 
+fuzzer_test("net_http_security_headers_expect_ct_fuzzer") {
+  sources = [
+    "http/http_security_headers_expect_ct_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+    "//url",
+  ]
+  dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
+  seed_corpus = "data/fuzzer_data/http_security_headers/"
+}
+
 fuzzer_test("net_http_security_headers_hsts_fuzzer") {
   sources = [
     "http/http_security_headers_hsts_fuzzer.cc",
@@ -5744,6 +5758,7 @@ fuzzer_test("net_http_security_headers_hsts_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
+  seed_corpus = "data/fuzzer_data/http_security_headers/"
 }
 
 fuzzer_test("net_http_security_headers_hpkp_fuzzer") {
@@ -5757,6 +5772,7 @@ fuzzer_test("net_http_security_headers_hpkp_fuzzer") {
     "//url",
   ]
   dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
+  seed_corpus = "data/fuzzer_data/http_security_headers/"
 }
 
 fuzzer_test("net_http_security_headers_hpkp_report_only_fuzzer") {
