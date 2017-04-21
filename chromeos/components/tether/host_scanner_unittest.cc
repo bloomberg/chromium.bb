@@ -139,6 +139,8 @@ class HostScannerTest : public NetworkStateTest {
   void SetUp() override {
     DBusThreadManager::Initialize();
     NetworkStateTest::SetUp();
+    network_state_handler()->SetTetherTechnologyState(
+        NetworkStateHandler::TECHNOLOGY_ENABLED);
 
     scanned_device_infos_so_far_.clear();
 

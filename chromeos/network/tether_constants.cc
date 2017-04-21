@@ -10,5 +10,7 @@ const char kTypeTether[] = "wifi-tether";
 const char kTetherBatteryPercentage[] = "Tether.BatteryPercentage";
 const char kTetherCarrier[] = "Tether.Carrier";
 const char kTetherSignalStrength[] = "Tether.SignalStrength";
+const char kTetherDevicePath[] = "tether-device-path";
+const char kTetherDeviceName[] = "tether-name";
 
 }  // namespace chromeos
