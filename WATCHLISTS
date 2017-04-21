@@ -955,6 +955,10 @@
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
     },
+    'settings_reset_prompt': {
+      'filepath': 'chrome/browser/safe_browsing/settings_reset_prompt/'\
+                  '|chrome/browser/ui/views/settings_reset_prompt',
+    },
     'site_engagement': {
       'filepath': 'chrome/browser/engagement/|'\
                   'chrome/browser/ui/webui/engagement/',
@@ -2161,6 +2165,7 @@
                        'serviceworker-reviews@chromium.org',
                        'shimazu+serviceworker@chromium.org',
                        'tzik@chromium.org'],
+    'settings_reset_prompt': ['alito+watch@chromium.org'],
     'site_engagement': ['dominickn+watch@chromium.org'],
     'site_instance': ['ajwong+watch@chromium.org',
                       'creis+watch@chromium.org',
