@@ -3350,10 +3350,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
-      'daisy_skate-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
       'peppy-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
