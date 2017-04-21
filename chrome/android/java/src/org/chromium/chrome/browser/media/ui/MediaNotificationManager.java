@@ -729,10 +729,8 @@ public class MediaNotificationManager {
             updateNotificationBuilder();
             AppHooks.get().startForegroundService(createIntent());
         } else {
-            getContext().startService(createIntent());
+            updateNotification();
         }
-        // TODO(zqzhang): merge this call to the if statement above?
-        updateNotification();
     }
 
     private void clearNotification() {
@@ -935,8 +933,8 @@ public class MediaNotificationManager {
     private void setMediaStyleLayoutForNotificationBuilder(ChromeNotificationBuilder builder) {
         setMediaStyleNotificationText(builder);
         if (!mMediaNotificationInfo.supportsPlayPause()) {
-            // TODO(zqzhang): this should be wrong. On pre-N, the notification will look bad when
-            // the large icon is not set.
+            // Non-playback (Cast) notification will not use MediaStyle, so not
+            // setting the large icon is fine.
             builder.setLargeIcon(null);
         } else if (mMediaNotificationInfo.notificationLargeIcon != null) {
             builder.setLargeIcon(mMediaNotificationInfo.notificationLargeIcon);

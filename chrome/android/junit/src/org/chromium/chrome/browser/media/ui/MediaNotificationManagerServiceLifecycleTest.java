@@ -135,7 +135,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         verify(getManager(), times(1)).updateNotificationBuilder();
         verify(mMockContext, never()).startService(any(Intent.class));
         verify(mMockAppHooks, times(1)).startForegroundService(any(Intent.class));
-        verify(getManager(), times(1)).updateNotification();
+        verify(getManager(), never()).updateNotification();
     }
 
     @Test
@@ -150,7 +150,8 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
 
         verify(getManager()).showNotification(newInfo);
         verify(mMockAppHooks, never()).startForegroundService(any(Intent.class));
-        verify(mMockContext).startService(any(Intent.class));
+        verify(mMockContext, never()).startService(any(Intent.class));
+        verify(getManager()).updateNotification();
     }
 
     @Test
@@ -169,7 +170,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         order.verify(getManager(), times(1)).updateMediaSession();
         order.verify(getManager(), times(1)).updateNotificationBuilder();
         order.verify(mMockAppHooks, times(1)).startForegroundService(any(Intent.class));
-        order.verify(getManager(), times(1)).updateNotification();
+        order.verify(getManager(), never()).updateNotification();
 
         // The second call to |showNotification()| should only update the notification info.
         mMediaNotificationInfoBuilder.setMetadata(new MediaMetadata("new title", "", ""));
@@ -180,7 +181,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         order.verify(getManager(), times(1)).updateMediaSession();
         order.verify(getManager(), times(1)).updateNotificationBuilder();
         order.verify(mMockAppHooks, times(1)).startForegroundService(any(Intent.class));
-        order.verify(getManager(), times(1)).updateNotification();
+        order.verify(getManager(), never()).updateNotification();
 
         verify(getManager(), never()).onServiceStarted(any(ListenerService.class));
 
