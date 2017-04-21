@@ -385,7 +385,7 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(
-      draw_transform(), content_rect().size(), content_rect(),
+      draw_transform(), content_rect(), content_rect(),
       draw_properties_.clip_rect, draw_properties_.is_clipped,
       draw_properties_.draw_opacity, BlendMode(), sorting_context_id);
 
@@ -461,18 +461,18 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
   shared_quad_state->quad_to_target_transform.matrix().preScale(
       mask_quad_to_surface_contents_scale.x(),
       mask_quad_to_surface_contents_scale.y(), 1.f);
-  shared_quad_state->quad_layer_bounds =
-      gfx::ScaleToCeiledSize(shared_quad_state->quad_layer_bounds,
-                             1.f / mask_quad_to_surface_contents_scale.x(),
-                             1.f / mask_quad_to_surface_contents_scale.y());
+  shared_quad_state->quad_layer_rect =
+      gfx::ScaleToEnclosingRect(shared_quad_state->quad_layer_rect,
+                                1.f / mask_quad_to_surface_contents_scale.x(),
+                                1.f / mask_quad_to_surface_contents_scale.y());
   shared_quad_state->visible_quad_layer_rect =
-      gfx::ScaleToEnclosedRect(shared_quad_state->visible_quad_layer_rect,
-                               mask_quad_to_surface_contents_scale.x(),
-                               mask_quad_to_surface_contents_scale.y());
-  gfx::Rect content_rect_in_coverage_space = gfx::ScaleToEnclosedRect(
+      gfx::ScaleToEnclosingRect(shared_quad_state->visible_quad_layer_rect,
+                                mask_quad_to_surface_contents_scale.x(),
+                                mask_quad_to_surface_contents_scale.y());
+  gfx::Rect content_rect_in_coverage_space = gfx::ScaleToEnclosingRect(
       content_rect(), 1.f / mask_quad_to_surface_contents_scale.x(),
       1.f / mask_quad_to_surface_contents_scale.y());
-  gfx::Rect visible_layer_rect_in_coverage_space = gfx::ScaleToEnclosedRect(
+  gfx::Rect visible_layer_rect_in_coverage_space = gfx::ScaleToEnclosingRect(
       visible_layer_rect, 1.f / mask_quad_to_surface_contents_scale.x(),
       1.f / mask_quad_to_surface_contents_scale.y());
 

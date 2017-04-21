@@ -228,7 +228,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   pass->SetNew(kRenderPassId, bounds, bounds, gfx::Transform());
 
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-  sqs->SetAll(gfx::Transform(), bounds.size(), bounds, bounds, false, 1.f,
+  sqs->SetAll(gfx::Transform(), bounds, bounds, bounds, false, 1.f,
               SkBlendMode::kSrcOver, 0);
 
   cc::TransferableResource resource;

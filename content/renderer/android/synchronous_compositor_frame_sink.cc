@@ -288,7 +288,7 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
     auto* surface_quad =
         embed_render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     shared_quad_state->SetAll(
-        child_transform, child_size, gfx::Rect(child_size),
+        child_transform, gfx::Rect(child_size), gfx::Rect(child_size),
         gfx::Rect() /* clip_rect */, false /* is_clipped */, 1.f /* opacity */,
         SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
     surface_quad->SetNew(

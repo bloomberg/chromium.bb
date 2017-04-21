@@ -62,7 +62,7 @@ SharedQuadState* CreateTestSharedQuadState(
     gfx::Transform quad_to_target_transform,
     const gfx::Rect& rect,
     RenderPass* render_pass) {
-  const gfx::Size layer_bounds = rect.size();
+  const gfx::Rect layer_rect = rect;
   const gfx::Rect visible_layer_rect = rect;
   const gfx::Rect clip_rect = rect;
   const bool is_clipped = false;
@@ -70,9 +70,9 @@ SharedQuadState* CreateTestSharedQuadState(
   const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
   int sorting_context_id = 0;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(quad_to_target_transform, layer_bounds,
-                       visible_layer_rect, clip_rect, is_clipped, opacity,
-                       blend_mode, sorting_context_id);
+  shared_state->SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
+                       clip_rect, is_clipped, opacity, blend_mode,
+                       sorting_context_id);
   return shared_state;
 }
 
@@ -81,16 +81,16 @@ SharedQuadState* CreateTestSharedQuadStateClipped(
     const gfx::Rect& rect,
     const gfx::Rect& clip_rect,
     RenderPass* render_pass) {
-  const gfx::Size layer_bounds = rect.size();
+  const gfx::Rect layer_rect = rect;
   const gfx::Rect visible_layer_rect = clip_rect;
   const bool is_clipped = true;
   const float opacity = 1.0f;
   const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
   int sorting_context_id = 0;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(quad_to_target_transform, layer_bounds,
-                       visible_layer_rect, clip_rect, is_clipped, opacity,
-                       blend_mode, sorting_context_id);
+  shared_state->SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
+                       clip_rect, is_clipped, opacity, blend_mode,
+                       sorting_context_id);
   return shared_state;
 }
 

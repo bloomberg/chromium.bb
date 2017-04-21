@@ -721,7 +721,7 @@ void LaserPointerView::UpdateSurface() {
 
   cc::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->quad_layer_bounds = quad_rect.size();
+  quad_state->quad_layer_rect = quad_rect;
   quad_state->visible_quad_layer_rect = quad_rect;
   quad_state->opacity = 1.0f;
 

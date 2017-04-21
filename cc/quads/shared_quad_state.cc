@@ -28,7 +28,7 @@ SharedQuadState::~SharedQuadState() {
 }
 
 void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
-                             const gfx::Size& quad_layer_bounds,
+                             const gfx::Rect& quad_layer_rect,
                              const gfx::Rect& visible_quad_layer_rect,
                              const gfx::Rect& clip_rect,
                              bool is_clipped,
@@ -36,7 +36,7 @@ void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
                              SkBlendMode blend_mode,
                              int sorting_context_id) {
   this->quad_to_target_transform = quad_to_target_transform;
-  this->quad_layer_bounds = quad_layer_bounds;
+  this->quad_layer_rect = quad_layer_rect;
   this->visible_quad_layer_rect = visible_quad_layer_rect;
   this->clip_rect = clip_rect;
   this->is_clipped = is_clipped;
@@ -47,7 +47,7 @@ void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
 
 void SharedQuadState::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("transform", quad_to_target_transform, value);
-  MathUtil::AddToTracedValue("layer_content_bounds", quad_layer_bounds, value);
+  MathUtil::AddToTracedValue("layer_content_rect", quad_layer_rect, value);
   MathUtil::AddToTracedValue("layer_visible_content_rect",
                              visible_quad_layer_rect, value);
 

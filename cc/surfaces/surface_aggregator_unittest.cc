@@ -1042,7 +1042,7 @@ void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
                                     RenderPass* pass,
                                     const SkBlendMode blend_mode) {
   const gfx::Transform layer_to_target_transform;
-  const gfx::Size layer_bounds(size);
+  const gfx::Rect layer_rect(size);
   const gfx::Rect visible_layer_rect(size);
   const gfx::Rect clip_rect(size);
 
@@ -1051,7 +1051,7 @@ void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
 
   bool force_anti_aliasing_off = false;
   SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-  sqs->SetAll(layer_to_target_transform, layer_bounds, visible_layer_rect,
+  sqs->SetAll(layer_to_target_transform, layer_rect, visible_layer_rect,
               clip_rect, is_clipped, opacity, blend_mode, 0);
 
   SolidColorDrawQuad* color_quad =

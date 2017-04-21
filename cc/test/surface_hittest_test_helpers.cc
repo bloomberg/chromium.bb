@@ -17,8 +17,8 @@ void CreateSharedQuadState(RenderPass* pass,
                            const gfx::Transform& transform,
                            const gfx::Rect& root_rect) {
   SharedQuadState* child_shared_state = pass->CreateAndAppendSharedQuadState();
-  child_shared_state->SetAll(transform, root_rect.size(), root_rect, root_rect,
-                             false, 1.0f, SkBlendMode::kSrcOver, 0);
+  child_shared_state->SetAll(transform, root_rect, root_rect, root_rect, false,
+                             1.0f, SkBlendMode::kSrcOver, 0);
 }
 
 void CreateSolidColorDrawQuad(RenderPass* pass,

@@ -833,7 +833,7 @@ void Surface::UpdateSurface(bool full_damage) {
   gfx::Rect quad_rect = output_rect;
   cc::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->quad_layer_bounds = contents_surface_size;
+  quad_state->quad_layer_rect = gfx::Rect(contents_surface_size);
   quad_state->visible_quad_layer_rect = quad_rect;
   quad_state->opacity = state_.alpha;
 

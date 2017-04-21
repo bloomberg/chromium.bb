@@ -11,8 +11,8 @@ struct SharedQuadState {
   // gfx.mojom.Transforms quad rects into the target content space.
   gfx.mojom.Transform quad_to_target_transform;
 
-  // The size of the quads' originating layer in the space of the quad rects.
-  gfx.mojom.Size quad_layer_bounds;
+  // The rect of the quads' originating layer in the space of the quad rects.
+  gfx.mojom.Rect quad_layer_rect;
 
   // The size of the visible area in the quads' originating layer, in the space
   // of the quad rects.

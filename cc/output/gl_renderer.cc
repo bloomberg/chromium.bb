@@ -1000,7 +1000,7 @@ const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
       quad->rect != pass->output_rect)
     return nullptr;
   // The quad is expected to be the entire layer so that AA edges are correct.
-  if (gfx::Rect(quad->shared_quad_state->quad_layer_bounds) != quad->rect)
+  if (quad->shared_quad_state->quad_layer_rect != quad->rect)
     return nullptr;
   if (quad->material != DrawQuad::TILED_CONTENT)
     return nullptr;
@@ -1102,8 +1102,11 @@ bool GLRenderer::InitializeRPDQParameters(
                            static_cast<float>(dst_rect.width()),
                            static_cast<float>(dst_rect.height()));
   gfx::Transform quad_rect_matrix;
+  gfx::Rect quad_layer_rect(quad->shared_quad_state->quad_layer_rect);
+  if (params->filters)
+    quad_layer_rect = params->filters->MapRect(quad_layer_rect, local_matrix);
   QuadRectTransform(&quad_rect_matrix, params->quad_to_target_transform,
-                    params->dst_rect);
+                    gfx::RectF(quad_layer_rect));
   params->contents_device_transform =
       params->window_matrix * params->projection_matrix * quad_rect_matrix;
   params->contents_device_transform.FlattenTo2d();
@@ -1112,10 +1115,10 @@ bool GLRenderer::InitializeRPDQParameters(
   if (!params->contents_device_transform.IsInvertible())
     return false;
 
+  // TODO(sunxd): unify the anti-aliasing logic of RPDQ and TileDrawQuad.
   params->surface_quad = SharedGeometryQuad();
-
   gfx::QuadF device_layer_quad;
-  if (settings_->allow_antialiasing) {
+  if (settings_->allow_antialiasing && quad->IsEdge()) {
     bool clipped = false;
     device_layer_quad = MathUtil::MapQuad(params->contents_device_transform,
                                           params->surface_quad, &clipped);
@@ -1481,10 +1484,10 @@ bool is_bottom(const gfx::QuadF* clip_region, const DrawQuad* quad) {
     return true;
 
   return std::abs(clip_region->p3().y() -
-                  quad->shared_quad_state->quad_layer_bounds.height()) <
+                  quad->shared_quad_state->quad_layer_rect.height()) <
              kAntiAliasingEpsilon &&
          std::abs(clip_region->p4().y() -
-                  quad->shared_quad_state->quad_layer_bounds.height()) <
+                  quad->shared_quad_state->quad_layer_rect.height()) <
              kAntiAliasingEpsilon;
 }
 
@@ -1505,10 +1508,10 @@ bool is_right(const gfx::QuadF* clip_region, const DrawQuad* quad) {
     return true;
 
   return std::abs(clip_region->p2().x() -
-                  quad->shared_quad_state->quad_layer_bounds.width()) <
+                  quad->shared_quad_state->quad_layer_rect.width()) <
              kAntiAliasingEpsilon &&
          std::abs(clip_region->p3().x() -
-                  quad->shared_quad_state->quad_layer_bounds.width()) <
+                  quad->shared_quad_state->quad_layer_rect.width()) <
              kAntiAliasingEpsilon;
 }
 }  // anonymous namespace

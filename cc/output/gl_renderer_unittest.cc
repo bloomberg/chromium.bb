@@ -1977,7 +1977,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   TextureDrawQuad* overlay_quad =
       root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), viewport_size,
+  shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), gfx::Rect(viewport_size),
                        false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(viewport_size),
@@ -2173,7 +2173,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       gfx::RectF tex_coord_rect(0, 0, 1, 1);
       SharedQuadState* shared_state =
           root_pass->CreateAndAppendSharedQuadState();
-      shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, false, 1,
+      shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
                            SkBlendMode::kSrcOver, 0);
       YUVVideoDrawQuad* quad =
           root_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();

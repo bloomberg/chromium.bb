@@ -36,7 +36,7 @@ static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 TEST(DrawQuadTest, CopySharedQuadState) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
-  gfx::Size layer_bounds(26, 28);
+  gfx::Rect layer_rect(26, 28);
   gfx::Rect visible_layer_rect(10, 12, 14, 16);
   gfx::Rect clip_rect(19, 21, 23, 25);
   bool is_clipped = true;
@@ -45,7 +45,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   int sorting_context_id = 65536;
 
   std::unique_ptr<SharedQuadState> state(new SharedQuadState);
-  state->SetAll(quad_transform, layer_bounds, visible_layer_rect, clip_rect,
+  state->SetAll(quad_transform, layer_rect, visible_layer_rect, clip_rect,
                 is_clipped, opacity, blend_mode, sorting_context_id);
 
   std::unique_ptr<SharedQuadState> copy(new SharedQuadState(*state));
@@ -59,7 +59,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
 
 SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
-  gfx::Size layer_bounds(26, 28);
+  gfx::Rect layer_rect(26, 28);
   gfx::Rect visible_layer_rect(10, 12, 14, 16);
   gfx::Rect clip_rect(19, 21, 23, 25);
   bool is_clipped = false;
@@ -68,7 +68,7 @@ SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
   SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
-  state->SetAll(quad_transform, layer_bounds, visible_layer_rect, clip_rect,
+  state->SetAll(quad_transform, layer_rect, visible_layer_rect, clip_rect,
                 is_clipped, opacity, blend_mode, sorting_context_id);
   return state;
 }

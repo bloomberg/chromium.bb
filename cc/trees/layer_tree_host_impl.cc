@@ -755,7 +755,7 @@ static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
   int sorting_context_id = 0;
   SharedQuadState* shared_quad_state =
       target_render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(gfx::Transform(), root_target_rect.size(),
+  shared_quad_state->SetAll(gfx::Transform(), root_target_rect,
                             root_target_rect, root_target_rect, false, opacity,
                             SkBlendMode::kSrcOver, sorting_context_id);
 

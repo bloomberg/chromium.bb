@@ -39,7 +39,7 @@ SolidColorDrawQuad* AddQuad(RenderPass* pass,
                             const gfx::Rect& rect,
                             SkColor color) {
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, false, 1,
+  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
                        SkBlendMode::kSrcOver, 0);
   SolidColorDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -51,7 +51,7 @@ SolidColorDrawQuad* AddClippedQuad(RenderPass* pass,
                                    const gfx::Rect& rect,
                                    SkColor color) {
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, true, 1,
+  shared_state->SetAll(gfx::Transform(), rect, rect, rect, true, 1,
                        SkBlendMode::kSrcOver, 0);
   SolidColorDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -64,7 +64,7 @@ SolidColorDrawQuad* AddTransformedQuad(RenderPass* pass,
                                        SkColor color,
                                        const gfx::Transform& transform) {
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(transform, rect.size(), rect, rect, false, 1,
+  shared_state->SetAll(transform, rect, rect, rect, false, 1,
                        SkBlendMode::kSrcOver, 0);
   SolidColorDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -75,8 +75,8 @@ SolidColorDrawQuad* AddTransformedQuad(RenderPass* pass,
 void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass) {
   gfx::Rect output_rect = contributing_pass->output_rect;
   SharedQuadState* shared_state = to_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), output_rect.size(), output_rect,
-                       output_rect, false, 1, SkBlendMode::kSrcOver, 0);
+  shared_state->SetAll(gfx::Transform(), output_rect, output_rect, output_rect,
+                       false, 1, SkBlendMode::kSrcOver, 0);
   RenderPassDrawQuad* quad =
       to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id, 0,
@@ -91,14 +91,8 @@ void AddRenderPassQuad(RenderPass* to_pass,
                        SkBlendMode blend_mode) {
   gfx::Rect output_rect = contributing_pass->output_rect;
   SharedQuadState* shared_state = to_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(transform,
-                       output_rect.size(),
-                       output_rect,
-                       output_rect,
-                       false,
-                       1,
-                       blend_mode,
-                       0);
+  shared_state->SetAll(transform, output_rect, output_rect, output_rect, false,
+                       1, blend_mode, 0);
   RenderPassDrawQuad* quad =
       to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   gfx::Size arbitrary_nonzero_size(1, 1);
@@ -167,7 +161,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   resource_provider->AllocateForTesting(resource8);
 
   SharedQuadState* shared_state = to_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, false, 1,
+  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
                        SkBlendMode::kSrcOver, 0);
 
   DebugBorderDrawQuad* debug_border_quad =
@@ -226,7 +220,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
       gfx::RectF(0, 0, 100, 100), gfx::Size(100, 100), false, false);
 
   SharedQuadState* shared_state2 = to_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, false, 1,
+  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
                        SkBlendMode::kSrcOver, 0);
 
   TileDrawQuad* tile_quad = to_pass->CreateAndAppendDrawQuad<TileDrawQuad>();

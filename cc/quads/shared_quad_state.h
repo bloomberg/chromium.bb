@@ -32,7 +32,7 @@ class CC_EXPORT SharedQuadState {
   ~SharedQuadState();
 
   void SetAll(const gfx::Transform& quad_to_target_transform,
-              const gfx::Size& layer_bounds,
+              const gfx::Rect& layer_rect,
               const gfx::Rect& visible_layer_rect,
               const gfx::Rect& clip_rect,
               bool is_clipped,
@@ -43,8 +43,8 @@ class CC_EXPORT SharedQuadState {
 
   // Transforms quad rects into the target content space.
   gfx::Transform quad_to_target_transform;
-  // The size of the quads' originating layer in the space of the quad rects.
-  gfx::Size quad_layer_bounds;
+  // The rect of the quads' originating layer in the space of the quad rects.
+  gfx::Rect quad_layer_rect;
   // The size of the visible area in the quads' originating layer, in the space
   // of the quad rects.
   gfx::Rect visible_quad_layer_rect;

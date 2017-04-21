@@ -81,7 +81,7 @@ class CCParamTraitsTest : public testing::Test {
 
   void Compare(const SharedQuadState* a, const SharedQuadState* b) {
     EXPECT_EQ(a->quad_to_target_transform, b->quad_to_target_transform);
-    EXPECT_EQ(a->quad_layer_bounds, b->quad_layer_bounds);
+    EXPECT_EQ(a->quad_layer_rect, b->quad_layer_rect);
     EXPECT_EQ(a->visible_quad_layer_rect, b->visible_quad_layer_rect);
     EXPECT_EQ(a->clip_rect, b->clip_rect);
     EXPECT_EQ(a->is_clipped, b->is_clipped);
@@ -315,7 +315,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
                   arbitrary_bool1);
 
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state1_in->SetAll(arbitrary_matrix1, arbitrary_size1, arbitrary_rect1,
+  shared_state1_in->SetAll(arbitrary_matrix1, arbitrary_rect1, arbitrary_rect1,
                            arbitrary_rect2, arbitrary_bool1, arbitrary_float1,
                            arbitrary_blend_mode1, arbitrary_context_id1);
 
@@ -338,7 +338,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
                                       debugborder_in->shared_quad_state);
 
   SharedQuadState* shared_state2_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state2_in->SetAll(arbitrary_matrix2, arbitrary_size2, arbitrary_rect2,
+  shared_state2_in->SetAll(arbitrary_matrix2, arbitrary_rect2, arbitrary_rect2,
                            arbitrary_rect3, arbitrary_bool1, arbitrary_float2,
                            arbitrary_blend_mode2, arbitrary_context_id2);
   SharedQuadState* shared_state2_cmp =
@@ -357,7 +357,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       renderpass_in->render_pass_id);
 
   SharedQuadState* shared_state3_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state3_in->SetAll(arbitrary_matrix1, arbitrary_size3, arbitrary_rect3,
+  shared_state3_in->SetAll(arbitrary_matrix1, arbitrary_rect3, arbitrary_rect3,
                            arbitrary_rect1, arbitrary_bool1, arbitrary_float3,
                            arbitrary_blend_mode3, arbitrary_context_id3);
   SharedQuadState* shared_state3_cmp =
@@ -505,7 +505,7 @@ TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
 
   // The first SharedQuadState is used.
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state1_in->SetAll(gfx::Transform(), gfx::Size(1, 1), gfx::Rect(),
+  shared_state1_in->SetAll(gfx::Transform(), gfx::Rect(1, 1), gfx::Rect(),
                            gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   SolidColorDrawQuad* quad1 =
@@ -515,16 +515,16 @@ TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
 
   // The second and third SharedQuadStates are not used.
   SharedQuadState* shared_state2_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state2_in->SetAll(gfx::Transform(), gfx::Size(2, 2), gfx::Rect(),
+  shared_state2_in->SetAll(gfx::Transform(), gfx::Rect(2, 2), gfx::Rect(),
                            gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   SharedQuadState* shared_state3_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state3_in->SetAll(gfx::Transform(), gfx::Size(3, 3), gfx::Rect(),
+  shared_state3_in->SetAll(gfx::Transform(), gfx::Rect(3, 3), gfx::Rect(),
                            gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   // The fourth SharedQuadState is used.
   SharedQuadState* shared_state4_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state4_in->SetAll(gfx::Transform(), gfx::Size(4, 4), gfx::Rect(),
+  shared_state4_in->SetAll(gfx::Transform(), gfx::Rect(4, 4), gfx::Rect(),
                            gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   SolidColorDrawQuad* quad2 =
@@ -534,7 +534,7 @@ TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
 
   // The fifth is not used again.
   SharedQuadState* shared_state5_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state5_in->SetAll(gfx::Transform(), gfx::Size(5, 5), gfx::Rect(),
+  shared_state5_in->SetAll(gfx::Transform(), gfx::Rect(5, 5), gfx::Rect(),
                            gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   // 5 SharedQuadStates go in.
@@ -559,12 +559,12 @@ TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   ASSERT_EQ(2u, pass_out->shared_quad_state_list.size());
   ASSERT_EQ(2u, pass_out->quad_list.size());
 
-  EXPECT_EQ(gfx::Size(1, 1).ToString(),
+  EXPECT_EQ(gfx::Rect(1, 1).ToString(),
             pass_out->shared_quad_state_list.ElementAt(0)
-                ->quad_layer_bounds.ToString());
-  EXPECT_EQ(gfx::Size(4, 4).ToString(),
+                ->quad_layer_rect.ToString());
+  EXPECT_EQ(gfx::Rect(4, 4).ToString(),
             pass_out->shared_quad_state_list.ElementAt(1)
-                ->quad_layer_bounds.ToString());
+                ->quad_layer_rect.ToString());
 }
 
 TEST_F(CCParamTraitsTest, Resources) {

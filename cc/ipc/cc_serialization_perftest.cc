@@ -309,7 +309,7 @@ class CCSerializationPerfTest : public testing::Test {
     for (uint32_t i = 0; i < 10; ++i) {
       SharedQuadState* shared_state1_in =
           pass_in->CreateAndAppendSharedQuadState();
-      shared_state1_in->SetAll(arbitrary_matrix1, arbitrary_size1,
+      shared_state1_in->SetAll(arbitrary_matrix1, arbitrary_rect1,
                                arbitrary_rect1, arbitrary_rect2,
                                arbitrary_bool1, arbitrary_float1,
                                arbitrary_blend_mode1, arbitrary_context_id1);
@@ -355,7 +355,7 @@ class CCSerializationPerfTest : public testing::Test {
     for (uint32_t i = 0; i < 10; ++i) {
       SharedQuadState* shared_state2_in =
           pass_in->CreateAndAppendSharedQuadState();
-      shared_state2_in->SetAll(arbitrary_matrix2, arbitrary_size2,
+      shared_state2_in->SetAll(arbitrary_matrix2, arbitrary_rect2,
                                arbitrary_rect2, arbitrary_rect3,
                                arbitrary_bool1, arbitrary_float2,
                                arbitrary_blend_mode2, arbitrary_context_id2);
@@ -374,7 +374,7 @@ class CCSerializationPerfTest : public testing::Test {
     for (uint32_t i = 0; i < 5; ++i) {
       SharedQuadState* shared_state3_in =
           pass_in->CreateAndAppendSharedQuadState();
-      shared_state3_in->SetAll(arbitrary_matrix1, arbitrary_size3,
+      shared_state3_in->SetAll(arbitrary_matrix1, arbitrary_rect3,
                                arbitrary_rect3, arbitrary_rect1,
                                arbitrary_bool1, arbitrary_float3,
                                arbitrary_blend_mode3, arbitrary_context_id3);

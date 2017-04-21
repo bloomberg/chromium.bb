@@ -25,8 +25,8 @@ struct StructTraits<cc::mojom::SharedQuadStateDataView, OptSharedQuadState> {
     return input.sqs->quad_to_target_transform;
   }
 
-  static const gfx::Size& quad_layer_bounds(const OptSharedQuadState& input) {
-    return input.sqs->quad_layer_bounds;
+  static const gfx::Rect& quad_layer_rect(const OptSharedQuadState& input) {
+    return input.sqs->quad_layer_rect;
   }
 
   static const gfx::Rect& visible_quad_layer_rect(
@@ -62,8 +62,8 @@ struct StructTraits<cc::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
     return sqs.quad_to_target_transform;
   }
 
-  static const gfx::Size& quad_layer_bounds(const cc::SharedQuadState& sqs) {
-    return sqs.quad_layer_bounds;
+  static const gfx::Rect& quad_layer_rect(const cc::SharedQuadState& sqs) {
+    return sqs.quad_layer_rect;
   }
 
   static const gfx::Rect& visible_quad_layer_rect(
@@ -92,7 +92,7 @@ struct StructTraits<cc::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
   static bool Read(cc::mojom::SharedQuadStateDataView data,
                    cc::SharedQuadState* out) {
     if (!data.ReadQuadToTargetTransform(&out->quad_to_target_transform) ||
-        !data.ReadQuadLayerBounds(&out->quad_layer_bounds) ||
+        !data.ReadQuadLayerRect(&out->quad_layer_rect) ||
         !data.ReadVisibleQuadLayerRect(&out->visible_quad_layer_rect) ||
         !data.ReadClipRect(&out->clip_rect)) {
       return false;

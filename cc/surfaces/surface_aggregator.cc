@@ -361,7 +361,7 @@ void SurfaceAggregator::AddColorConversionPass() {
 
   SharedQuadState* shared_quad_state =
       color_conversion_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->quad_layer_bounds = output_rect.size();
+  shared_quad_state->quad_layer_rect = output_rect;
   shared_quad_state->visible_quad_layer_rect = output_rect;
   shared_quad_state->opacity = 1.f;
 

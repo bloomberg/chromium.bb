@@ -215,8 +215,9 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(
-        render_pass, shared_quad_state->quad_layer_bounds, shared_quad_state,
-        append_quads_data, DebugColors::DirectPictureBorderColor(),
+        render_pass, shared_quad_state->quad_layer_rect.size(),
+        shared_quad_state, append_quads_data,
+        DebugColors::DirectPictureBorderColor(),
         DebugColors::DirectPictureBorderWidth(device_scale_factor));
 
     gfx::Rect geometry_rect = shared_quad_state->visible_quad_layer_rect;
@@ -250,7 +251,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     return;
   }
 
-  AppendDebugBorderQuad(render_pass, shared_quad_state->quad_layer_bounds,
+  AppendDebugBorderQuad(render_pass, shared_quad_state->quad_layer_rect.size(),
                         shared_quad_state, append_quads_data);
 
   if (ShowDebugBorders(DebugBorderType::LAYER)) {
@@ -365,7 +366,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
           float alpha =
               (SkColorGetA(draw_info.solid_color()) * (1.0f / 255.0f)) *
               shared_quad_state->opacity;
-          if (alpha >= std::numeric_limits<float>::epsilon()) {
+          if (mask_type_ == Layer::LayerMaskType::MULTI_TEXTURE_MASK ||
+              alpha >= std::numeric_limits<float>::epsilon()) {
             SolidColorDrawQuad* quad =
                 render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
             quad->SetNew(shared_quad_state, geometry_rect,

@@ -3570,9 +3570,9 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
                 ->quad_to_target_transform.ToString());
   // The content_bounds should be scaled by the
   // MaximumTilingContentsScale on the layer.
-  EXPECT_EQ(gfx::Size(2500u, 5000u).ToString(),
-            render_pass->shared_quad_state_list.front()
-                ->quad_layer_bounds.ToString());
+  EXPECT_EQ(
+      gfx::Rect(2500u, 5000u).ToString(),
+      render_pass->shared_quad_state_list.front()->quad_layer_rect.ToString());
   // The visible_layer_rect should be scaled by the
   // MaximumTilingContentsScale on the layer.
   EXPECT_EQ(gfx::Rect(0u, 0u, 2500u, 5000u).ToString(),
