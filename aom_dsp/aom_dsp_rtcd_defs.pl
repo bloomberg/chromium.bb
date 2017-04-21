@@ -425,16 +425,18 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     specialize qw/aom_idct4x4_1_add sse2/;
 
     add_proto qw/void aom_idct8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct8x8_64_add sse2/, "$ssse3_x86_64";
+    specialize qw/aom_idct8x8_64_add sse2 ssse3/;
 
     add_proto qw/void aom_idct8x8_12_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct8x8_12_add sse2/, "$ssse3_x86_64";
+    specialize qw/aom_idct8x8_12_add sse2 ssse3/;
 
     add_proto qw/void aom_idct8x8_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct8x8_1_add sse2/;
 
     add_proto qw/void aom_idct16x16_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct16x16_256_add sse2/;
+
+    add_proto qw/void aom_idct16x16_38_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
 
     add_proto qw/void aom_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct16x16_10_add sse2/;
@@ -443,15 +445,15 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     specialize qw/aom_idct16x16_1_add sse2/;
 
     add_proto qw/void aom_idct32x32_1024_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct32x32_1024_add sse2/, "$ssse3_x86_64";
+    specialize qw/aom_idct32x32_1024_add sse2 ssse3/;
 
     add_proto qw/void aom_idct32x32_135_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct32x32_135_add sse2/, "$ssse3_x86_64";
+    specialize qw/aom_idct32x32_135_add sse2 ssse3/;
     # Need to add 135 eob idct32x32 implementations.
     $aom_idct32x32_135_add_sse2=aom_idct32x32_1024_add_sse2;
 
     add_proto qw/void aom_idct32x32_34_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct32x32_34_add sse2/, "$ssse3_x86_64";
+    specialize qw/aom_idct32x32_34_add sse2 ssse3/;
 
     add_proto qw/void aom_idct32x32_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct32x32_1_add sse2/;
@@ -480,10 +482,10 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     specialize qw/aom_idct8x8_1_add sse2 neon dspr2 msa/;
 
     add_proto qw/void aom_idct8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct8x8_64_add sse2 neon dspr2 msa/, "$ssse3_x86_64";
+    specialize qw/aom_idct8x8_64_add sse2 ssse3 neon dspr2 msa/;
 
     add_proto qw/void aom_idct8x8_12_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct8x8_12_add sse2 neon dspr2 msa/, "$ssse3_x86_64";
+    specialize qw/aom_idct8x8_12_add sse2 ssse3 neon dspr2 msa/;
 
     add_proto qw/void aom_idct16x16_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct16x16_1_add sse2 neon dspr2 msa/;
@@ -491,14 +493,16 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void aom_idct16x16_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct16x16_256_add sse2 neon dspr2 msa/;
 
+    add_proto qw/void aom_idct16x16_38_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
+
     add_proto qw/void aom_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct16x16_10_add sse2 neon dspr2 msa/;
 
     add_proto qw/void aom_idct32x32_1024_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct32x32_1024_add sse2 neon dspr2 msa/, "$ssse3_x86_64";
+    specialize qw/aom_idct32x32_1024_add sse2 ssse3 neon dspr2 msa/;
 
     add_proto qw/void aom_idct32x32_135_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct32x32_135_add sse2 neon dspr2 msa/, "$ssse3_x86_64";
+    specialize qw/aom_idct32x32_135_add sse2 ssse3 neon dspr2 msa/;
     # Need to add 135 eob idct32x32 implementations.
     $aom_idct32x32_135_add_sse2=aom_idct32x32_1024_add_sse2;
     $aom_idct32x32_135_add_neon=aom_idct32x32_1024_add_neon;
@@ -506,7 +510,7 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     $aom_idct32x32_135_add_msa=aom_idct32x32_1024_add_msa;
 
     add_proto qw/void aom_idct32x32_34_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct32x32_34_add sse2 neon dspr2 msa/, "$ssse3_x86_64";
+    specialize qw/aom_idct32x32_34_add sse2 ssse3 neon dspr2 msa/;
     # Need to add 34 eob idct32x32 neon implementation.
     $aom_idct32x32_34_add_neon=aom_idct32x32_1024_add_neon;
 

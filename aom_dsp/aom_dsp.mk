@@ -238,9 +238,7 @@ DSP_SRCS-yes            += inv_txfm.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/inv_txfm_sse2.h
 DSP_SRCS-$(HAVE_SSE2)   += x86/inv_txfm_sse2.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/inv_wht_sse2.asm
-ifeq ($(ARCH_X86_64),yes)
-DSP_SRCS-$(HAVE_SSSE3)  += x86/inv_txfm_ssse3_x86_64.asm
-endif  # ARCH_X86_64
+DSP_SRCS-$(HAVE_SSSE3)  += x86/inv_txfm_ssse3.c
 
 ifeq ($(HAVE_NEON_ASM),yes)
 DSP_SRCS-yes  += arm/save_reg_neon$(ASM)
