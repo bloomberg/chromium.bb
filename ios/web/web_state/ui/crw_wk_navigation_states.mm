@@ -90,6 +90,16 @@
   [_records setObject:record forKey:navigation];
 }
 
+- (void)removeNavigation:(WKNavigation*)navigation {
+  if (!navigation) {
+    // WKWebView may call WKNavigationDelegate callbacks with nil.
+    return;
+  }
+
+  DCHECK([_records objectForKey:navigation]);
+  [_records removeObjectForKey:navigation];
+}
+
 - (WKNavigation*)lastAddedNavigation {
   WKNavigation* result = nil;
   NSUInteger lastAddedIndex = 0;  // record indices start with 1.

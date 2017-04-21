@@ -4527,6 +4527,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // the pending load.
   _pendingNavigationInfo.reset();
   _certVerificationErrors->Clear();
+  [_navigationStates removeNavigation:navigation];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4634,6 +4635,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // appropriate time rather than invoking here.
   web::ExecuteJavaScript(webView, @"__gCrWeb.didFinishNavigation()", nil);
   [self didFinishNavigation:navigation];
+  [_navigationStates removeNavigation:navigation];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4646,6 +4648,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
             inMainFrame:YES
           forNavigation:navigation];
   _certVerificationErrors->Clear();
+  [_navigationStates removeNavigation:navigation];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4816,9 +4819,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  bool hasPendingNavigation = web::WKNavigationState::COMMITTED <=
-                              [_navigationStates lastAddedNavigationState];
-  if (hasPendingNavigation) {
+  web::WKNavigationState lastNavigationState =
+      [_navigationStates lastAddedNavigationState];
+  bool hasPendingNavigation =
+      lastNavigationState == web::WKNavigationState::REQUESTED ||
+      lastNavigationState == web::WKNavigationState::STARTED ||
+      lastNavigationState == web::WKNavigationState::REDIRECTED;
+
+  if (!hasPendingNavigation) {
     // Do not update the title if there is a navigation in progress because
     // there is no way to tell if KVO change fired for new or previous page.
     [self setNavigationItemTitle:[_webView title]];

@@ -49,13 +49,18 @@ enum class WKNavigationState : int {
 - (void)setState:(web::WKNavigationState)state
     forNavigation:(WKNavigation*)navigation;
 
+// Removes given |navigation|. Fails if |navigation| does not exist. No-op if
+// |navigation| is null.
+- (void)removeNavigation:(WKNavigation*)navigation;
+
 // WKNavigation which was added the most recently via |setState:forNavigation:|.
 // Updating navigation state via |setState:forNavigation:| does not change the
 // last added navigation. Returns nil if there are no stored navigations.
 - (WKNavigation*)lastAddedNavigation;
 
 // State of WKNavigation which was added the most recently via
-// |setState:forNavigation:|.
+// |setState:forNavigation:|. WKNavigationState::NONE if CRWWKNavigationStates
+// is empty.
 - (web::WKNavigationState)lastAddedNavigationState;
 
 @end

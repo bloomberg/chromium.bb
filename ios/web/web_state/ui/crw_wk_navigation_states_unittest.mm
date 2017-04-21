@@ -26,6 +26,15 @@ class CRWWKNavigationStatesTest : public PlatformTest {
   base::scoped_nsobject<CRWWKNavigationStates> states_;
 };
 
+// Tests |removeNavigation:| method.
+TEST_F(CRWWKNavigationStatesTest, RemovingNavigation) {
+  // navigation_1 is the only navigation and it is the latest.
+  [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
+  ASSERT_EQ(navigation1_, [states_ lastAddedNavigation]);
+  [states_ removeNavigation:navigation1_];
+  ASSERT_FALSE([states_ lastAddedNavigation]);
+}
+
 // Tests |lastAddedNavigation| method.
 TEST_F(CRWWKNavigationStatesTest, LastAddedNavigation) {
   // navigation_1 is the only navigation and it is the latest.
