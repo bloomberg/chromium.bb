@@ -82,6 +82,8 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // Returns true if the datatype started successfully.
   static bool IsSuccessfulResult(ConfigureResult result);
 
+  static std::string StateToString(State state);
+
   virtual ~DataTypeController();
 
   // Returns true if DataTypeManager should wait for LoadModels to complete

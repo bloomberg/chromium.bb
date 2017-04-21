@@ -547,7 +547,7 @@ const char* ModelTypeToString(ModelType model_type) {
   if (model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT)
     return kModelTypeInfoMap[model_type].model_type_string;
   NOTREACHED() << "No known extension for model type.";
-  return "INVALID";
+  return "Invalid";
 }
 
 // The normal rules about histograms apply here.  Always append to the bottom of

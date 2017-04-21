@@ -1783,41 +1783,33 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
     return std::move(result);
   }
 
-  DataTypeStatusTable::TypeErrorMap error_map =
-      data_type_status_table_.GetAllErrors();
-  ModelTypeSet active_types;
-  ModelTypeSet passive_types;
-  ModelSafeRoutingInfo routing_info;
-  engine_->GetModelSafeRoutingInfo(&routing_info);
-  for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
-       it != routing_info.end(); ++it) {
-    if (it->second == syncer::GROUP_PASSIVE) {
-      passive_types.Put(it->first);
-    } else {
-      active_types.Put(it->first);
-    }
-  }
-
   SyncEngine::Status detailed_status = engine_->GetDetailedStatus();
-  ModelTypeSet& throttled_types(detailed_status.throttled_types);
-  ModelTypeSet& backed_off_types(detailed_status.backed_off_types);
-  ModelTypeSet registered = GetRegisteredDataTypes();
+  const ModelTypeSet& throttled_types(detailed_status.throttled_types);
+  const ModelTypeSet& backed_off_types(detailed_status.backed_off_types);
+
   std::unique_ptr<base::DictionaryValue> type_status_header(
       new base::DictionaryValue());
-
-  type_status_header->SetString("name", "Model Type");
   type_status_header->SetString("status", "header");
-  type_status_header->SetString("value", "Group Type");
+  type_status_header->SetString("name", "Model Type");
   type_status_header->SetString("num_entries", "Total Entries");
   type_status_header->SetString("num_live", "Live Entries");
+  type_status_header->SetString("message", "Message");
+  type_status_header->SetString("state", "State");
+  type_status_header->SetString("group_type", "Group Type");
   result->Append(std::move(type_status_header));
 
-  std::unique_ptr<base::DictionaryValue> type_status;
+  const DataTypeStatusTable::TypeErrorMap error_map =
+      data_type_status_table_.GetAllErrors();
+  ModelSafeRoutingInfo routing_info;
+  engine_->GetModelSafeRoutingInfo(&routing_info);
+  const ModelTypeSet registered = GetRegisteredDataTypes();
   for (ModelTypeSet::Iterator it = registered.First(); it.Good(); it.Inc()) {
     ModelType type = it.Get();
 
-    type_status = base::MakeUnique<base::DictionaryValue>();
+    auto type_status = base::MakeUnique<base::DictionaryValue>();
     type_status->SetString("name", ModelTypeToString(type));
+    type_status->SetString("group_type",
+                           ModelSafeGroupToString(routing_info[type]));
 
     if (error_map.find(type) != error_map.end()) {
       const syncer::SyncError& error = error_map.find(type)->second;
@@ -1826,44 +1818,26 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
         case syncer::SyncError::SYNC_ERROR_SEVERITY_ERROR:
           type_status->SetString("status", "error");
           type_status->SetString(
-              "value", "Error: " + error.location().ToString() + ", " +
-                           error.GetMessagePrefix() + error.message());
+              "message", "Error: " + error.location().ToString() + ", " +
+                             error.GetMessagePrefix() + error.message());
           break;
         case syncer::SyncError::SYNC_ERROR_SEVERITY_INFO:
           type_status->SetString("status", "disabled");
-          type_status->SetString("value", error.message());
-          break;
-        default:
-          NOTREACHED() << "Unexpected error severity.";
+          type_status->SetString("message", error.message());
           break;
       }
-    } else if (syncer::IsProxyType(type) && passive_types.Has(type)) {
-      // Show a proxy type in "ok" state unless it is disabled by user.
-      DCHECK(!throttled_types.Has(type));
-      type_status->SetString("status", "ok");
-      type_status->SetString("value", "Passive");
-    } else if (throttled_types.Has(type) && passive_types.Has(type)) {
-      type_status->SetString("status", "warning");
-      type_status->SetString("value", "Passive, Throttled");
-    } else if (backed_off_types.Has(type) && passive_types.Has(type)) {
-      type_status->SetString("status", "warning");
-      type_status->SetString("value", "Passive, Backed off");
-    } else if (passive_types.Has(type)) {
-      type_status->SetString("status", "warning");
-      type_status->SetString("value", "Passive");
     } else if (throttled_types.Has(type)) {
       type_status->SetString("status", "warning");
-      type_status->SetString("value", "Throttled");
+      type_status->SetString("message", " Throttled");
     } else if (backed_off_types.Has(type)) {
       type_status->SetString("status", "warning");
-      type_status->SetString("value", "Backed off");
-    } else if (active_types.Has(type)) {
+      type_status->SetString("message", "Backed off");
+    } else if (routing_info.find(type) != routing_info.end()) {
       type_status->SetString("status", "ok");
-      type_status->SetString(
-          "value", "Active: " + ModelSafeGroupToString(routing_info[type]));
+      type_status->SetString("message", "");
     } else {
       type_status->SetString("status", "warning");
-      type_status->SetString("value", "Disabled by User");
+      type_status->SetString("message", "Disabled by User");
     }
 
     const auto& dtc_iter = data_type_controllers_.find(type);
@@ -1874,6 +1848,8 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
       dtc_iter->second->GetStatusCounters(BindToCurrentThread(
           base::Bind(&ProfileSyncService::OnDatatypeStatusCounterUpdated,
                      base::Unretained(this))));
+      type_status->SetString("state", DataTypeController::StateToString(
+                                          dtc_iter->second->state()));
     }
 
     result->Append(std::move(type_status));

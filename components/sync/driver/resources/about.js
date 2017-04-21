@@ -43,10 +43,10 @@ cr.define('chrome.sync.about_tab', function() {
       if (row.name == modelType) {
         // There are three types of counters, only "status" counters have these
         // fields. Keep the old values if updated fields are not present.
-        if (counters.numEntriesAndTombstones) {
+        if (counters.numEntriesAndTombstones !== undefined) {
           row.num_entries = counters.numEntriesAndTombstones;
         }
-        if (counters.numEntries) {
+        if (counters.numEntries !== undefined) {
           row.num_live = counters.numEntries;
         }
       }

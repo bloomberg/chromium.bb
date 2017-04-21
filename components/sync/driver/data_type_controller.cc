@@ -13,12 +13,36 @@ DataTypeController::DataTypeController(ModelType type) : type_(type) {}
 
 DataTypeController::~DataTypeController() {}
 
+// static
 bool DataTypeController::IsUnrecoverableResult(ConfigureResult result) {
   return (result == UNRECOVERABLE_ERROR);
 }
 
+// static
 bool DataTypeController::IsSuccessfulResult(ConfigureResult result) {
   return (result == OK || result == OK_FIRST_RUN);
+}
+
+// static
+std::string DataTypeController::StateToString(State state) {
+  switch (state) {
+    case NOT_RUNNING:
+      return "Not Running";
+    case MODEL_STARTING:
+      return "Model Starting";
+    case MODEL_LOADED:
+      return "Model Loaded";
+    case ASSOCIATING:
+      return "Associating";
+    case RUNNING:
+      return "Running";
+    case STOPPING:
+      return "Stopping";
+    case DISABLED:
+      return "Disabled";
+  }
+  NOTREACHED();
+  return "Invalid";
 }
 
 bool DataTypeController::ReadyForStart() const {

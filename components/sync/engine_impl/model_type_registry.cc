@@ -270,7 +270,9 @@ void ModelTypeRegistry::RequestEmitDebugInfo() {
   for (const auto& kv : data_type_debug_info_emitter_map_) {
     kv.second->EmitCommitCountersUpdate();
     kv.second->EmitUpdateCountersUpdate();
-    kv.second->EmitStatusCountersUpdate();
+    // Although this breaks encapsulation, don't emit status counters here.
+    // They've already been asked for manually on the UI thread because USS
+    // emitters don't have a working implementation yet.
   }
 }
 

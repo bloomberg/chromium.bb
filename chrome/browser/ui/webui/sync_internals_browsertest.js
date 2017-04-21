@@ -198,18 +198,22 @@ HARD_CODED_ABOUT_INFO = {
   ],
   'type_status': [
     {
+      'status': 'header',
       'name': 'Model Type',
       'num_entries': 'Total Entries',
       'num_live': 'Live Entries',
-      'status': 'header',
-      'value': 'Group Type'
+      'message': 'Message',
+      'state': 'State',
+      'group_type': 'Group Type',
     },
     {
+      'status': 'ok',
       'name': 'Bookmarks',
       'num_entries': 2793,
       'num_live': 2793,
-      'status': 'ok',
-      'value': 'Active: GROUP_UI'
+      'message': '',
+      'state': 'Running',
+      'group_type': 'Group UI',
     },
   ],
   'unrecoverable_error_detected': false
