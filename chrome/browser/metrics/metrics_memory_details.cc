@@ -179,7 +179,7 @@ void MetricsMemoryDetails::UpdateHistograms() {
         // Physical footprint was introduced in macOS 10.11.
         if (base::mac::IsAtLeastOS10_11()) {
           UMA_HISTOGRAM_MEMORY_LARGE_MB(
-              "Memory.Gpu.PhysicalFootprint.MacOS",
+              "Memory.Experimental.Gpu.PhysicalFootprint.MacOS",
               browser.processes[index].phys_footprint / 1024 / 1024);
         }
 #endif
