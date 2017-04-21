@@ -1094,27 +1094,25 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // margin-top
   static Length InitialMarginTop() { return Length(kFixed); }
-  const Length& MarginTop() const { return surround_->margin_.Top(); }
-  void SetMarginTop(const Length& v) { SET_VAR(surround_, margin_.top_, v); }
+  const Length& MarginTop() const { return surround_->margin_top_; }
+  void SetMarginTop(const Length& v) { SET_VAR(surround_, margin_top_, v); }
 
   // margin-bottom
   static Length InitialMarginBottom() { return Length(kFixed); }
-  const Length& MarginBottom() const { return surround_->margin_.Bottom(); }
+  const Length& MarginBottom() const { return surround_->margin_bottom_; }
   void SetMarginBottom(const Length& v) {
-    SET_VAR(surround_, margin_.bottom_, v);
+    SET_VAR(surround_, margin_bottom_, v);
   }
 
   // margin-left
   static Length InitialMarginLeft() { return Length(kFixed); }
-  const Length& MarginLeft() const { return surround_->margin_.Left(); }
-  void SetMarginLeft(const Length& v) { SET_VAR(surround_, margin_.left_, v); }
+  const Length& MarginLeft() const { return surround_->margin_left_; }
+  void SetMarginLeft(const Length& v) { SET_VAR(surround_, margin_left_, v); }
 
   // margin-right
   static Length InitialMarginRight() { return Length(kFixed); }
-  const Length& MarginRight() const { return surround_->margin_.Right(); }
-  void SetMarginRight(const Length& v) {
-    SET_VAR(surround_, margin_.right_, v);
-  }
+  const Length& MarginRight() const { return surround_->margin_right_; }
+  void SetMarginRight(const Length& v) { SET_VAR(surround_, margin_right_, v); }
 
   // -webkit-margin-before-collapse (aka -webkit-margin-top-collapse)
   static EMarginCollapse InitialMarginBeforeCollapse() {
@@ -2831,38 +2829,48 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Margin utility functions.
-  bool HasMargin() const { return Margin().NonZero(); }
+  bool HasMargin() const {
+    return !MarginLeft().IsZero() || !MarginRight().IsZero() ||
+           !MarginTop().IsZero() || !MarginBottom().IsZero();
+  }
   bool HasMarginBeforeQuirk() const { return MarginBefore().Quirk(); }
   bool HasMarginAfterQuirk() const { return MarginAfter().Quirk(); }
-  const LengthBox& Margin() const { return surround_->margin_; }
-  const Length& MarginBefore() const {
-    return Margin().Before(GetWritingMode());
+  const Length& MarginBefore() const { return MarginBeforeUsing(this); }
+  const Length& MarginAfter() const { return MarginAfterUsing(this); }
+  const Length& MarginStart() const { return MarginStartUsing(this); }
+  const Length& MarginEnd() const { return MarginEndUsing(this); }
+  const Length& MarginOver() const {
+    return LengthBox::Over(GetWritingMode(), MarginTop(), MarginRight());
   }
-  const Length& MarginAfter() const { return Margin().After(GetWritingMode()); }
-  const Length& MarginStart() const {
-    return Margin().Start(GetWritingMode(), Direction());
+  const Length& MarginUnder() const {
+    return LengthBox::Under(GetWritingMode(), MarginBottom(), MarginLeft());
   }
-  const Length& MarginEnd() const {
-    return Margin().end(GetWritingMode(), Direction());
+  const Length& MarginStartUsing(const ComputedStyle* other) const {
+    return LengthBox::Start(other->GetWritingMode(), other->Direction(),
+                            MarginTop(), MarginLeft(), MarginRight(),
+                            MarginBottom());
   }
-  const Length& MarginOver() const { return Margin().Over(GetWritingMode()); }
-  const Length& MarginUnder() const { return Margin().Under(GetWritingMode()); }
-  const Length& MarginStartUsing(const ComputedStyle* other_style) const {
-    return Margin().Start(other_style->GetWritingMode(),
-                          other_style->Direction());
+  const Length& MarginEndUsing(const ComputedStyle* other) const {
+    return LengthBox::End(other->GetWritingMode(), other->Direction(),
+                          MarginTop(), MarginLeft(), MarginRight(),
+                          MarginBottom());
   }
-  const Length& MarginEndUsing(const ComputedStyle* other_style) const {
-    return Margin().end(other_style->GetWritingMode(),
-                        other_style->Direction());
+  const Length& MarginBeforeUsing(const ComputedStyle* other) const {
+    return LengthBox::Before(other->GetWritingMode(), MarginTop(), MarginLeft(),
+                             MarginRight());
   }
-  const Length& MarginBeforeUsing(const ComputedStyle* other_style) const {
-    return Margin().Before(other_style->GetWritingMode());
-  }
-  const Length& MarginAfterUsing(const ComputedStyle* other_style) const {
-    return Margin().After(other_style->GetWritingMode());
+  const Length& MarginAfterUsing(const ComputedStyle* other) const {
+    return LengthBox::After(other->GetWritingMode(), MarginBottom(),
+                            MarginLeft(), MarginRight());
   }
   void SetMarginStart(const Length&);
   void SetMarginEnd(const Length&);
+  bool MarginEqual(const ComputedStyle& other) const {
+    return MarginTop() == other.MarginTop() &&
+           MarginLeft() == other.MarginLeft() &&
+           MarginRight() == other.MarginRight() &&
+           MarginBottom() == other.MarginBottom();
+  }
 
   // Padding utility functions.
   const LengthBox& Padding() const { return surround_->padding_; }

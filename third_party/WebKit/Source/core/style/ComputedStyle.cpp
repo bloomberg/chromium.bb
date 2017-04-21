@@ -527,7 +527,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   if (!diff.NeedsFullLayout() && DiffNeedsFullLayout(other))
     diff.SetNeedsFullLayout();
 
-  if (!diff.NeedsFullLayout() && Margin() != other.Margin()) {
+  if (!diff.NeedsFullLayout() && !MarginEqual(other)) {
     // Relative-positioned elements collapse their margins so need a full
     // layout.
     if (HasOutOfFlowPosition())
@@ -589,7 +589,7 @@ bool ComputedStyle::ScrollAnchorDisablingPropertyChanged(
   }
 
   if (surround_.Get() != other.surround_.Get()) {
-    if (Margin() != other.Margin() || !OffsetEqual(other) ||
+    if (!MarginEqual(other) || !OffsetEqual(other) ||
         Padding() != other.Padding())
       return true;
   }

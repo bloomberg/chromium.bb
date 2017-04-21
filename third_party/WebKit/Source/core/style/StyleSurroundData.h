@@ -51,7 +51,10 @@ class CORE_EXPORT StyleSurroundData : public RefCounted<StyleSurroundData> {
   Length right_;
   Length top_;
   Length bottom_;
-  LengthBox margin_;
+  Length margin_left_;
+  Length margin_right_;
+  Length margin_top_;
+  Length margin_bottom_;
   LengthBox padding_;
   BorderData border_;
 

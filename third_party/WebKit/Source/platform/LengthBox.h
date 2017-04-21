@@ -68,6 +68,24 @@ class PLATFORM_EXPORT LengthBox {
                              const Length& bottom,
                              const Length& left,
                              const Length& right);
+  static const Length& Start(WritingMode,
+                             TextDirection,
+                             const Length& top,
+                             const Length& left,
+                             const Length& right,
+                             const Length& bottom);
+  static const Length& End(WritingMode,
+                           TextDirection,
+                           const Length& top,
+                           const Length& left,
+                           const Length& right,
+                           const Length& bottom);
+  static const Length& Over(WritingMode,
+                            const Length& top,
+                            const Length& right);
+  static const Length& Under(WritingMode,
+                             const Length& bottom,
+                             const Length& left);
 
   const Length& Left() const { return left_; }
   const Length& Right() const { return right_; }
