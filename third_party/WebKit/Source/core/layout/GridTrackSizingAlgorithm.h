@@ -21,8 +21,6 @@ class Grid;
 class GridTrackSizingAlgorithmStrategy;
 class LayoutGrid;
 
-enum MarginDirection;
-
 enum SizingOperation { kTrackSizing, kIntrinsicSizeComputation };
 
 enum TrackSizeComputationPhase {
