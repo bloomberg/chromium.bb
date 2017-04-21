@@ -11,10 +11,6 @@
 
 class GURL;
 
-namespace gpu {
-struct VideoMemoryUsageStats;
-}
-
 namespace content {
 
 // Observers can register themselves via GpuDataManager::AddObserver, and
@@ -23,10 +19,6 @@ class CONTENT_EXPORT GpuDataManagerObserver {
  public:
   // Called for any observers whenever there is a GPU info update.
   virtual void OnGpuInfoUpdate() {}
-
-  // Called for any observers whenever there is a GPU video memory update.
-  virtual void OnVideoMemoryUsageStatsUpdate(
-      const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {}
 
   // Indicates that client 3D APIs (Pepper 3D, WebGL) were just blocked on the
   // given page, specifically because the GPU was reset recently.

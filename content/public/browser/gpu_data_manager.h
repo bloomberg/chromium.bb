@@ -16,6 +16,7 @@ class GURL;
 
 namespace gpu {
 struct GPUInfo;
+struct VideoMemoryUsageStats;
 }
 
 namespace content {
@@ -58,9 +59,10 @@ class GpuDataManager {
   // On other platforms, it's the same as IsEsentialGpuInfoAvailable().
   virtual bool IsCompleteGpuInfoAvailable() const = 0;
 
-  // Requests that the GPU process report its current video memory usage stats,
-  // which can be retrieved via the GPU data manager's on-update function.
-  virtual void RequestVideoMemoryUsageStatsUpdate() const = 0;
+  // Requests that the GPU process report its current video memory usage stats.
+  virtual void RequestVideoMemoryUsageStatsUpdate(
+      const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
+          callback) const = 0;
 
   // Returns true if SwiftShader should be used.
   virtual bool ShouldUseSwiftShader() const = 0;

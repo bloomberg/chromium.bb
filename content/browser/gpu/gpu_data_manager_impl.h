@@ -75,7 +75,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void RequestCompleteGpuInfoIfNeeded() override;
   bool IsEssentialGpuInfoAvailable() const override;
   bool IsCompleteGpuInfoAvailable() const override;
-  void RequestVideoMemoryUsageStatsUpdate() const override;
+  void RequestVideoMemoryUsageStatsUpdate(
+      const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
+          callback) const override;
   bool ShouldUseSwiftShader() const override;
   // TODO(kbr): the threading model for the GpuDataManagerObservers is
   // not well defined, and it's impossible for callers to correctly
@@ -112,9 +114,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Update the GPU feature info. This updates the blacklist and enabled status
   // of GPU rasterization. In the future this will be used for more features.
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
-
-  void UpdateVideoMemoryUsageStats(
-      const gpu::VideoMemoryUsageStats& video_memory_usage_stats);
 
   // Insert disable-feature switches corresponding to preliminary gpu feature
   // flags into the renderer process command line.

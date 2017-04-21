@@ -15,6 +15,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/task_manager/sampling/task_group.h"
 #include "chrome/browser/task_manager/sampling/task_manager_io_thread_helper.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
-#include "content/public/browser/gpu_data_manager_observer.h"
 #include "gpu/ipc/common/memory_stats.h"
 
 namespace task_manager {
@@ -30,10 +30,8 @@ namespace task_manager {
 class SharedSampler;
 
 // Defines a concrete implementation of the TaskManagerInterface.
-class TaskManagerImpl :
-    public TaskManagerInterface,
-    public TaskProviderObserver,
-    content::GpuDataManagerObserver {
+class TaskManagerImpl : public TaskManagerInterface,
+                        public TaskProviderObserver {
  public:
   ~TaskManagerImpl() override;
 
@@ -96,10 +94,6 @@ class TaskManagerImpl :
   void TaskRemoved(Task* task) override;
   void TaskUnresponsive(Task* task) override;
 
-  // content::GpuDataManagerObserver:
-  void OnVideoMemoryUsageStatsUpdate(
-      const gpu::VideoMemoryUsageStats& gpu_memory_stats) override;
-
   // The notification method on the UI thread when multiple bytes are read
   // from URLRequests. This will be called by the |io_thread_helper_|
   static void OnMultipleBytesReadUI(std::vector<BytesReadParam>* params);
@@ -108,6 +102,9 @@ class TaskManagerImpl :
   friend struct base::LazyInstanceTraitsBase<TaskManagerImpl>;
 
   TaskManagerImpl();
+
+  void OnVideoMemoryUsageStatsUpdate(
+      const gpu::VideoMemoryUsageStats& gpu_memory_stats);
 
   // task_manager::TaskManagerInterface:
   void Refresh() override;
@@ -169,6 +166,7 @@ class TaskManagerImpl :
   // running.
   bool is_running_;
 
+  base::WeakPtrFactory<TaskManagerImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(TaskManagerImpl);
 };
 

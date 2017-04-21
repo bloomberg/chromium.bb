@@ -111,9 +111,11 @@ bool GpuDataManagerImpl::IsCompleteGpuInfoAvailable() const {
   return private_->IsCompleteGpuInfoAvailable();
 }
 
-void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate() const {
+void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate(
+    const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
+        callback) const {
   base::AutoLock auto_lock(lock_);
-  private_->RequestVideoMemoryUsageStatsUpdate();
+  private_->RequestVideoMemoryUsageStatsUpdate(callback);
 }
 
 bool GpuDataManagerImpl::ShouldUseSwiftShader() const {
@@ -193,12 +195,6 @@ void GpuDataManagerImpl::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateGpuFeatureInfo(gpu_feature_info);
-}
-
-void GpuDataManagerImpl::UpdateVideoMemoryUsageStats(
-    const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {
-  base::AutoLock auto_lock(lock_);
-  private_->UpdateVideoMemoryUsageStats(video_memory_usage_stats);
 }
 
 void GpuDataManagerImpl::AppendRendererCommandLine(

@@ -264,15 +264,22 @@ bool ShouldDisableHardwareAcceleration() {
       switches::kDisableGpu);
 }
 
-void OnVideoMemoryUsageStats(const gpu::VideoMemoryUsageStats& stats) {
-  GpuDataManagerImpl::GetInstance()->UpdateVideoMemoryUsageStats(stats);
+void OnVideoMemoryUsageStats(
+    const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
+        callback,
+    const gpu::VideoMemoryUsageStats& stats) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, stats));
 }
 
-void RequestVideoMemoryUsageStats(GpuProcessHost* host) {
+void RequestVideoMemoryUsageStats(
+    const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
+        callback,
+    GpuProcessHost* host) {
   if (!host)
     return;
   host->gpu_service()->GetVideoMemoryUsageStats(
-      base::Bind(&OnVideoMemoryUsageStats));
+      base::Bind(&OnVideoMemoryUsageStats, callback));
 }
 
 void UpdateGpuInfoOnIO(const gpu::GPUInfo& gpu_info) {
@@ -450,10 +457,12 @@ bool GpuDataManagerImplPrivate::IsCompleteGpuInfoAvailable() const {
   return IsEssentialGpuInfoAvailable();
 }
 
-void GpuDataManagerImplPrivate::RequestVideoMemoryUsageStatsUpdate() const {
+void GpuDataManagerImplPrivate::RequestVideoMemoryUsageStatsUpdate(
+    const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
+        callback) const {
   GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                            false /* force_create */,
-                           base::Bind(&RequestVideoMemoryUsageStats));
+                           base::Bind(&RequestVideoMemoryUsageStats, callback));
 }
 
 bool GpuDataManagerImplPrivate::ShouldUseSwiftShader() const {
@@ -711,14 +720,6 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
   if (!use_swiftshader_) {
     gpu_feature_info_ = gpu_feature_info;
   }
-}
-
-void GpuDataManagerImplPrivate::UpdateVideoMemoryUsageStats(
-    const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {
-  GpuDataManagerImpl::UnlockedSession session(owner_);
-  observer_list_->Notify(FROM_HERE,
-                         &GpuDataManagerObserver::OnVideoMemoryUsageStatsUpdate,
-                         video_memory_usage_stats);
 }
 
 void GpuDataManagerImplPrivate::AppendRendererCommandLine(

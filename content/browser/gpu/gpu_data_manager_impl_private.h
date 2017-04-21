@@ -50,7 +50,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void RequestCompleteGpuInfoIfNeeded();
   bool IsEssentialGpuInfoAvailable() const;
   bool IsCompleteGpuInfoAvailable() const;
-  void RequestVideoMemoryUsageStatsUpdate() const;
+  void RequestVideoMemoryUsageStatsUpdate(
+      const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
+          callback) const;
   bool ShouldUseSwiftShader() const;
   void AddObserver(GpuDataManagerObserver* observer);
   void RemoveObserver(GpuDataManagerObserver* observer);
@@ -68,9 +70,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
-
-  void UpdateVideoMemoryUsageStats(
-      const gpu::VideoMemoryUsageStats& video_memory_usage_stats);
 
   void AppendRendererCommandLine(base::CommandLine* command_line) const;
 
