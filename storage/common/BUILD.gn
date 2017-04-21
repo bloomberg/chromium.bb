@@ -47,3 +47,21 @@ component("common") {
     "//url",
   ]
 }
+
+source_set("unittests") {
+  testonly = true
+
+  sources = [
+    "database/database_connections_unittest.cc",
+    "database/database_identifier_unittest.cc",
+    "fileapi/file_system_util_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//url",
+  ]
+}

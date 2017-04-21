@@ -222,7 +222,9 @@ executable("dump_file_system") {
   ]
 }
 
-test("storage_unittests") {
+source_set("unittests") {
+  testonly = true
+
   sources = [
     # This target is in the process of being populated. See
     # http://crbug.com/653751
