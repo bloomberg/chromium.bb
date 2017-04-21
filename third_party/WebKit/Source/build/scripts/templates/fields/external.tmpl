@@ -1,14 +1,15 @@
 {% import 'fields/base.tmpl' as base %}
-{% from 'fields/field.tmpl' import decode %}
+
 {% macro decl_public_methods(field) %}
-{{base.decl_public_methods(field)}}
+{{base.decl_initial_method(field)}}
+{{base.decl_getter_method(field)}}
+{{base.decl_setter_method(field)}}
 void {{field.setter_method_name}}({{field.type_name}}&& v) {
   {{field.name}} = std::move(v);
 }
+{{base.decl_resetter_method(field)}}
 {% endmacro %}
 
 {% macro decl_protected_methods(field) -%}
-{{field.type_name}}& {{field.internal_mutable_method_name}}() {
-  return {{decode(field, field.name)}};
-}
+{{base.decl_mutable_getter_method(field)}}
 {%- endmacro %}

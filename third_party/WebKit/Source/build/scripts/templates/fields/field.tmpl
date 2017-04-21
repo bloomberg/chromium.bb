@@ -14,7 +14,7 @@ static_cast<{{field.type_name}}>({{value}})
 {%- endif %}
 {% endmacro %}
 
-{% macro return_type(field) %}
+{% macro nonconst_ref(field) %}
 {% if field.is_bit_field -%}
 {{field.type_name}}
 {%- else -%}
@@ -22,7 +22,7 @@ static_cast<{{field.type_name}}>({{value}})
 {%- endif %}
 {% endmacro %}
 
-{% macro argument_type(field) %}
+{% macro const_ref(field) %}
 {% if field.is_bit_field -%}
 {{field.type_name}}
 {%- else -%}

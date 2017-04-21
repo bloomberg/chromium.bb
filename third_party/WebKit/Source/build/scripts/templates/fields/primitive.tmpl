@@ -1,6 +1,11 @@
 {% import 'fields/base.tmpl' as base %}
+
 {% macro decl_public_methods(field) -%}
-{{ base.decl_public_methods(field) }}
+{{base.decl_initial_method(field)}}
+{{base.decl_getter_method(field)}}
+{{base.decl_setter_method(field)}}
+{{base.decl_resetter_method(field)}}
 {%- endmacro %}
+
 {% macro decl_protected_methods(field) -%}
 {%- endmacro %}

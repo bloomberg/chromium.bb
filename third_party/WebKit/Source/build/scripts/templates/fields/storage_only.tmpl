@@ -1,22 +1,14 @@
-{% from 'fields/field.tmpl' import encode, decode, return_type, argument_type %}
+{% import 'fields/base.tmpl' as base %}
+
 {% macro decl_public_methods(field) -%}
 // Getters and setters not generated
 {%- endmacro %}
+
 {% macro decl_protected_methods(field) -%}
-{% if field.is_bit_field %}
-{{return_type(field)}} {{field.internal_getter_method_name}}() const {
-  return {{decode(field, field.name)}};
-}
-{% else %}
-const {{return_type(field)}} {{field.internal_getter_method_name}}() const {
-  return {{decode(field, field.name)}};
-}
-{{return_type(field)}} {{field.internal_mutable_method_name}}() {
-  return {{decode(field, field.name)}};
-}
-{% endif %}
-void {{field.internal_setter_method_name}}({{argument_type(field)}} v) {
-  {{field.name}} = {{encode(field, "v")}};
-}
+{% if not field.is_bit_field -%}
+{{base.decl_mutable_method(field)}}
+{%- endif %}
+{{base.decl_internal_getter_method(field)}}
+{{base.decl_internal_setter_method(field)}}
 {%- endmacro %}
 
