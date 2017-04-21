@@ -288,7 +288,7 @@ inline String ToCoreStringWithNullCheck(v8::Local<v8::String> value) {
 
 inline String ToCoreStringWithUndefinedOrNullCheck(
     v8::Local<v8::String> value) {
-  if (value.IsEmpty() || value->IsNull() || value->IsUndefined())
+  if (value.IsEmpty())
     return String();
   return ToCoreString(value);
 }
@@ -810,7 +810,7 @@ inline bool ToV8Sequence(v8::Local<v8::Value> value,
     return false;
   }
 
-  if (length_value->IsUndefined() || length_value->IsNull()) {
+  if (length_value->IsNullOrUndefined()) {
     // The caller is responsible for reporting a TypeError.
     return false;
   }
@@ -1035,7 +1035,7 @@ VectorType ToImplSequence(v8::Isolate* isolate,
 bool HandleOutOfMemory();
 
 inline bool IsUndefinedOrNull(v8::Local<v8::Value> value) {
-  return value.IsEmpty() || value->IsNull() || value->IsUndefined();
+  return value.IsEmpty() || value->IsNullOrUndefined();
 }
 v8::Local<v8::Function> GetBoundFunction(v8::Local<v8::Function>);
 
