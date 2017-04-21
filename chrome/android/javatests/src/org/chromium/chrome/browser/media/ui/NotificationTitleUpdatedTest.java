@@ -189,14 +189,14 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
     }
 
     @SmallTest
-    public void testMediaMetadataPersistsAfterSamePageNavigation() throws Throwable {
+    public void testMediaMetadataPersistsAfterSameDocumentNavigation() throws Throwable {
         ensureTestServer();
         loadUrl(mTestServer.getURL(TEST_PAGE_URL_1));
         simulateMediaSessionStateChanged(mTab, true, false);
         simulateMediaSessionMetadataChanged(mTab, new MediaMetadata("title2", "", ""));
         assertTitleMatches("title2");
 
-        NotificationTestUtils.simulateSamePageNavigation(
+        NotificationTestUtils.simulateSameDocumentNavigation(
                 getInstrumentation(), mTab, mTestServer.getURL(TEST_PAGE_URL_1));
         assertTitleMatches("title2");
     }

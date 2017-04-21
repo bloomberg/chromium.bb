@@ -75,14 +75,14 @@ public class NotificationActionsUpdatedTest extends ChromeActivityTestCaseBase<C
     }
 
     @SmallTest
-    public void testActionsPersistAfterSamePageNavigation() throws Throwable {
+    public void testActionsPersistAfterSameDocumentNavigation() throws Throwable {
         ensureTestServer();
         loadUrl(mTestServer.getURL(TEST_PAGE_URL));
         simulateMediaSessionActionsChanged(mTab, buildActions());
         simulateMediaSessionStateChanged(mTab, true, false);
         assertActionsMatch(buildActions());
 
-        NotificationTestUtils.simulateSamePageNavigation(
+        NotificationTestUtils.simulateSameDocumentNavigation(
                 getInstrumentation(), mTab, mTestServer.getURL(TEST_PAGE_URL));
         assertActionsMatch(buildActions());
     }

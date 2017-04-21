@@ -15,12 +15,12 @@ import org.chromium.content_public.browser.LoadUrlParams;
  */
 public class NotificationTestUtils {
     /**
-     * Simulates a same page navigation.
+     * Simulates a same document navigation.
      * @param instrumentation The Instrumentation object for the test.
      * @param tab The tab to be navigated.
      * @param url The original URL. The URL to be navigated to is |url| + "#some-anchor".
      */
-    public static void simulateSamePageNavigation(
+    public static void simulateSameDocumentNavigation(
             Instrumentation instrumentation, final Tab tab, final String url) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
