@@ -105,6 +105,10 @@ aggregate_vector_icons("chrome_vector_icons") {
   if (is_win) {
     icons += [ "open_in_phone.icon" ]
   }
+
+  if (is_chromeos) {
+    icons += [ "arc_migrate_encryption_notification.icon" ]
+  }
 }
 
 source_set("vector_icons") {

@@ -6,15 +6,16 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -57,7 +58,6 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
       IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_RESTART_BUTTON)));
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
   message_center::MessageCenter::Get()->AddNotification(
       base::MakeUnique<message_center::Notification>(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
@@ -66,8 +66,8 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
           // TODO(kinaba): crbug/710289 Change message for low-battery case.
           l10n_util::GetStringUTF16(
               IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE),
-          // TODO(kinaba): crbug/710285 Replace the icon with the final design.
-          resource_bundle.GetImageNamed(IDR_ARC_PLAY_STORE_NOTIFICATION),
+          gfx::Image(gfx::CreateVectorIcon(
+              kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
           base::string16(), GURL(), notifier_id, data,
           new ArcMigrationGuideNotificationDelegate()));
 }
