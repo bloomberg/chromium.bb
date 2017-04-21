@@ -56,6 +56,10 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled,
     RuntimeEnabledFeatures::setPaintUnderInvalidationCheckingEnabled>
     ScopedPaintUnderInvalidationCheckingForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::accessibilityObjectModelEnabled,
+    RuntimeEnabledFeatures::setAccessibilityObjectModelEnabled>
+    ScopedAccessibilityObjectModelForTest;
 
 }  // namespace blink
 
