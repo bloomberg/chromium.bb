@@ -17,6 +17,16 @@
 #include "mojo/android/system/mojo_jni_registrar.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mach_port_broker.h"
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+namespace {
+base::MachPortBroker* g_mach_broker = nullptr;
+}
+#endif
+
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
 
@@ -24,6 +34,14 @@ int main(int argc, char** argv) {
       service_manager::test::CreateTestCatalog());
 
   mojo::edk::Init();
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (!g_mach_broker) {
+    g_mach_broker = new base::MachPortBroker("Service Tests");
+    CHECK(g_mach_broker->Init());
+    mojo::edk::SetMachPortProvider(g_mach_broker);
+  }
+#endif
 
 #if defined(OS_ANDROID)
   mojo::android::RegisterSystemJni(base::android::AttachCurrentThread());
