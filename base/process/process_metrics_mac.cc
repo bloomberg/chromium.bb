@@ -18,6 +18,7 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
 
 namespace base {
@@ -95,54 +96,14 @@ bool IsAddressInSharedRegion(mach_vm_address_t addr, cpu_type_t type) {
   }
 }
 
-enum MachVMRegionResult { Finished, Error, Success };
-
-// Both |size| and |address| are in-out parameters.
-// |info| is an output parameter, only valid on Success.
-MachVMRegionResult GetTopInfo(mach_port_t task,
-                              mach_vm_size_t* size,
-                              mach_vm_address_t* address,
-                              vm_region_top_info_data_t* info) {
-  mach_msg_type_number_t info_count = VM_REGION_TOP_INFO_COUNT;
-  mach_port_t object_name;
-  kern_return_t kr = mach_vm_region(task, address, size, VM_REGION_TOP_INFO,
-                                    reinterpret_cast<vm_region_info_t>(info),
-                                    &info_count, &object_name);
-  // We're at the end of the address space.
-  if (kr == KERN_INVALID_ADDRESS)
-    return Finished;
-
-  if (kr != KERN_SUCCESS)
-    return Error;
-
-  // The kernel always returns a null object for VM_REGION_TOP_INFO, but
-  // balance it with a deallocate in case this ever changes. See 10.9.2
-  // xnu-2422.90.20/osfmk/vm/vm_map.c vm_map_region.
-  mach_port_deallocate(task, object_name);
-  return Success;
-}
-
-MachVMRegionResult GetBasicInfo(mach_port_t task,
-                                mach_vm_size_t* size,
-                                mach_vm_address_t* address,
-                                vm_region_basic_info_64* info) {
-  mach_msg_type_number_t info_count = VM_REGION_BASIC_INFO_COUNT_64;
-  mach_port_t object_name;
-  kern_return_t kr = mach_vm_region(
-      task, address, size, VM_REGION_BASIC_INFO_64,
-      reinterpret_cast<vm_region_info_t>(info), &info_count, &object_name);
+MachVMRegionResult ParseOutputFromMachVMRegion(kern_return_t kr) {
   if (kr == KERN_INVALID_ADDRESS) {
     // We're at the end of the address space.
-    return Finished;
+    return MachVMRegionResult::Finished;
   } else if (kr != KERN_SUCCESS) {
-    return Error;
+    return MachVMRegionResult::Error;
   }
-
-  // The kernel always returns a null object for VM_REGION_BASIC_INFO_64, but
-  // balance it with a deallocate in case this ever changes. See 10.9.2
-  // xnu-2422.90.20/osfmk/vm/vm_map.c vm_map_region.
-  mach_port_deallocate(task, object_name);
-  return Success;
+  return MachVMRegionResult::Success;
 }
 
 }  // namespace
@@ -224,26 +185,30 @@ bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,
   // See libtop_update_vm_regions in
   // http://www.opensource.apple.com/source/top/top-67/libtop.c
   mach_vm_size_t size = 0;
-  for (mach_vm_address_t address = MACH_VM_MIN_ADDRESS;; address += size) {
-    mach_vm_size_t size_copy = size;
-    mach_vm_address_t address_copy = address;
+  mach_vm_address_t address = MACH_VM_MIN_ADDRESS;
+  while (true) {
+    base::CheckedNumeric<mach_vm_address_t> next_address(address);
+    next_address += size;
+    if (!next_address.IsValid())
+      return false;
+    address = next_address.ValueOrDie();
 
+    mach_vm_address_t address_copy = address;
     vm_region_top_info_data_t info;
     MachVMRegionResult result = GetTopInfo(task, &size, &address, &info);
-    if (result == Error)
+    if (result == MachVMRegionResult::Error)
       return false;
-    if (result == Finished)
+    if (result == MachVMRegionResult::Finished)
       break;
 
     vm_region_basic_info_64 basic_info;
-    result = GetBasicInfo(task, &size_copy, &address_copy, &basic_info);
-    switch (result) {
-      case Finished:
-      case Error:
-        return false;
-      case Success:
-        break;
-    }
+    mach_vm_size_t dummy_size = 0;
+    result = GetBasicInfo(task, &dummy_size, &address_copy, &basic_info);
+    if (result == MachVMRegionResult::Error)
+      return false;
+    if (result == MachVMRegionResult::Finished)
+      break;
+
     bool is_wired = basic_info.user_wired_count > 0;
 
     if (IsAddressInSharedRegion(address, cpu_type) &&
@@ -501,6 +466,40 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
       saturated_cast<int>(PAGE_SIZE / 1024 * vm_info.purgeable_count);
 
   return true;
+}
+
+// Both |size| and |address| are in-out parameters.
+// |info| is an output parameter, only valid on Success.
+MachVMRegionResult GetTopInfo(mach_port_t task,
+                              mach_vm_size_t* size,
+                              mach_vm_address_t* address,
+                              vm_region_top_info_data_t* info) {
+  mach_msg_type_number_t info_count = VM_REGION_TOP_INFO_COUNT;
+  mach_port_t object_name;
+  kern_return_t kr = mach_vm_region(task, address, size, VM_REGION_TOP_INFO,
+                                    reinterpret_cast<vm_region_info_t>(info),
+                                    &info_count, &object_name);
+  // The kernel always returns a null object for VM_REGION_TOP_INFO, but
+  // balance it with a deallocate in case this ever changes. See 10.9.2
+  // xnu-2422.90.20/osfmk/vm/vm_map.c vm_map_region.
+  mach_port_deallocate(task, object_name);
+  return ParseOutputFromMachVMRegion(kr);
+}
+
+MachVMRegionResult GetBasicInfo(mach_port_t task,
+                                mach_vm_size_t* size,
+                                mach_vm_address_t* address,
+                                vm_region_basic_info_64* info) {
+  mach_msg_type_number_t info_count = VM_REGION_BASIC_INFO_COUNT_64;
+  mach_port_t object_name;
+  kern_return_t kr = mach_vm_region(
+      task, address, size, VM_REGION_BASIC_INFO_64,
+      reinterpret_cast<vm_region_info_t>(info), &info_count, &object_name);
+  // The kernel always returns a null object for VM_REGION_BASIC_INFO_64, but
+  // balance it with a deallocate in case this ever changes. See 10.9.2
+  // xnu-2422.90.20/osfmk/vm/vm_map.c vm_map_region.
+  mach_port_deallocate(task, object_name);
+  return ParseOutputFromMachVMRegion(kr);
 }
 
 }  // namespace base
