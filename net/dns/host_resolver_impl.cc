@@ -1635,22 +1635,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
                           const AddressList& addr_list) {
     DCHECK(is_proc_running());
 
-    if (!resolver_->resolved_known_ipv6_hostname_ &&
-        net_error == OK &&
-        key_.address_family == ADDRESS_FAMILY_UNSPECIFIED) {
-      if (key_.hostname == "www.google.com") {
-        resolver_->resolved_known_ipv6_hostname_ = true;
-        bool got_ipv6_address = false;
-        for (size_t i = 0; i < addr_list.size(); ++i) {
-          if (addr_list[i].GetFamily() == ADDRESS_FAMILY_IPV6) {
-            got_ipv6_address = true;
-            break;
-          }
-        }
-        UMA_HISTOGRAM_BOOLEAN("Net.UnspecResolvedIPv6", got_ipv6_address);
-      }
-    }
-
     if (dns_task_error_ != OK) {
       base::TimeDelta duration = base::TimeTicks::Now() - start_time;
       if (net_error == OK) {
@@ -2049,7 +2033,6 @@ HostResolverImpl::HostResolverImpl(
       assume_ipv6_failure_on_wifi_(false),
       use_local_ipv6_(false),
       last_ipv6_probe_result_(true),
-      resolved_known_ipv6_hostname_(false),
       additional_resolver_flags_(0),
       fallback_to_proctask_(true),
       worker_task_runner_(std::move(worker_task_runner)),
@@ -2530,7 +2513,6 @@ void HostResolverImpl::TryServingAllJobsFromHosts() {
 }
 
 void HostResolverImpl::OnIPAddressChanged() {
-  resolved_known_ipv6_hostname_ = false;
   last_ipv6_probe_time_ = base::TimeTicks();
   // Abandon all ProbeJobs.
   probe_weak_ptr_factory_.InvalidateWeakPtrs();

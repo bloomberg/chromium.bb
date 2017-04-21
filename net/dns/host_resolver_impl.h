@@ -364,10 +364,6 @@ class NET_EXPORT HostResolverImpl
   base::TimeTicks last_ipv6_probe_time_;
   bool last_ipv6_probe_result_;
 
-  // True iff ProcTask has successfully resolved a hostname known to have IPv6
-  // addresses using ADDRESS_FAMILY_UNSPECIFIED. Reset on IP address change.
-  bool resolved_known_ipv6_hostname_;
-
   // Any resolver flags that should be added to a request by default.
   HostResolverFlags additional_resolver_flags_;
 
