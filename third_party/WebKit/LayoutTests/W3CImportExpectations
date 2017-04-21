@@ -289,7 +289,8 @@ external/wpt/mathml [ Skip ]
 # external/wpt/mediasession [ Pass ]
 ## Owners: chcunningham@chromium.org,mlamouri@chromium.org
 # external/wpt/media-capabilities
-external/wpt/media-source [ Skip ]
+## Owners: chcunningham@chromium.org,wolenetz@chromium.org
+# external/wpt/media-source [ Pass ]
 ## Owners: mcasas@chromium.org
 # external/wpt/mediacapture-record [ Pass ]
 ## Owners: phoglund@chromium.org
