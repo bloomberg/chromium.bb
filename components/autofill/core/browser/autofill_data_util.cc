@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/grit/components_scaled_resources.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace autofill {
 namespace data_util {
@@ -417,6 +418,17 @@ const char* GetCardTypeForBasicCardPaymentType(
     }
   }
   return kGenericPaymentRequestData.card_type;
+}
+
+bool IsValidCountryCode(const std::string& country_code) {
+  if (country_code.size() != 2)
+    return false;
+
+  return re2::RE2::FullMatch(country_code, "^[A-Z]{2}$");
+}
+
+bool IsValidCountryCode(const base::string16& country_code) {
+  return IsValidCountryCode(base::UTF16ToUTF8(country_code));
 }
 
 }  // namespace data_util

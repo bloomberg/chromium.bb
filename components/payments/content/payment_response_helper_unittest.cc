@@ -23,6 +23,25 @@
 
 namespace payments {
 
+class FakeAddressNormalizer : public AddressNormalizer {
+ public:
+  FakeAddressNormalizer() : AddressNormalizer(nullptr, nullptr) {}
+
+  void LoadRulesForRegion(const std::string& region_code) override {}
+
+  bool AreRulesLoadedForRegion(const std::string& region_code) override {
+    return true;
+  }
+
+  void StartAddressNormalization(
+      const autofill::AutofillProfile& profile,
+      const std::string& region_code,
+      int timeout_seconds,
+      AddressNormalizer::Delegate* requester) override {
+    requester->OnAddressNormalized(profile);
+  }
+};
+
 class FakePaymentRequestDelegate : public PaymentRequestDelegate {
  public:
   FakePaymentRequestDelegate(
@@ -58,7 +77,7 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
                                                 base::ASCIIToUTF16("123"));
   }
 
-  std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource()
+  std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource()
       override {
     return nullptr;
   }
@@ -68,10 +87,15 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
     return nullptr;
   }
 
+  AddressNormalizer* GetAddressNormalizer() override {
+    return &address_normalizer_;
+  }
+
  private:
   autofill::PersonalDataManager* personal_data_manager_;
   std::string locale_;
   const GURL last_committed_url_;
+  FakeAddressNormalizer address_normalizer_;
   DISALLOW_COPY_AND_ASSIGN(FakePaymentRequestDelegate);
 };
 
@@ -140,6 +164,9 @@ class PaymentResponseHelperTest : public testing::Test,
   const mojom::PaymentResponsePtr& response() { return payment_response_; }
   autofill::AutofillProfile* test_address() { return &address_; }
   PaymentInstrument* test_instrument() { return autofill_instrument_.get(); }
+  PaymentRequestDelegate* test_payment_request_delegate() {
+    return &payment_request_delegate_;
+  }
 
  private:
   std::unique_ptr<PaymentRequestSpec> spec_;
@@ -162,7 +189,8 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_SupportedMethod) {
   // "visa" is specified directly in the supportedMethods so it is returned
   // as the method name.
   PaymentResponseHelper helper("en-US", spec(), test_instrument(),
-                               test_address(), test_address(), this);
+                               test_payment_request_delegate(), test_address(),
+                               test_address(), this);
   EXPECT_EQ("visa", response()->method_name);
   EXPECT_EQ(
       "{\"billingAddress\":"
@@ -198,7 +226,8 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_BasicCard) {
   // TODO(mathp): Currently synchronous, when async will need a RunLoop.
   // "basic-card" is specified so it is returned as the method name.
   PaymentResponseHelper helper("en-US", spec(), test_instrument(),
-                               test_address(), test_address(), this);
+                               test_payment_request_delegate(), test_address(),
+                               test_address(), this);
   EXPECT_EQ("basic-card", response()->method_name);
   EXPECT_EQ(
       "{\"billingAddress\":"
@@ -235,7 +264,8 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_ShippingAddress) {
                                     GetMethodDataForVisa());
 
   PaymentResponseHelper helper("en-US", spec(), test_instrument(),
-                               test_address(), test_address(), this);
+                               test_payment_request_delegate(), test_address(),
+                               test_address(), this);
 
   // Check that all the expected values were set.
   EXPECT_EQ("US", response()->shipping_address->country);
@@ -263,7 +293,8 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_ContactDetails_All) {
   RecreateSpecWithOptions(std::move(options));
 
   PaymentResponseHelper helper("en-US", spec(), test_instrument(),
-                               test_address(), test_address(), this);
+                               test_payment_request_delegate(), test_address(),
+                               test_address(), this);
 
   // Check that all the expected values were set.
   EXPECT_EQ("John H. Doe", response()->payer_name.value());
@@ -280,7 +311,8 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_ContactDetails_Some) {
   RecreateSpecWithOptions(std::move(options));
 
   PaymentResponseHelper helper("en-US", spec(), test_instrument(),
-                               test_address(), test_address(), this);
+                               test_payment_request_delegate(), test_address(),
+                               test_address(), this);
 
   // Check that the name was set, but not the other values.
   EXPECT_EQ("John H. Doe", response()->payer_name.value());
@@ -300,7 +332,8 @@ TEST_F(PaymentResponseHelperTest,
   RecreateSpecWithOptions(std::move(options));
 
   PaymentResponseHelper helper("en-US", spec(), test_instrument(),
-                               test_address(), test_address(), this);
+                               test_payment_request_delegate(), test_address(),
+                               test_address(), this);
 
   // Check that the phone was formatted.
   EXPECT_EQ("+15151231234", response()->payer_phone.value());

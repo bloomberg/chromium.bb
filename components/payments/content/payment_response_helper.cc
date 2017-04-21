@@ -6,35 +6,57 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/payments/content/payment_request_spec.h"
-#include "third_party/libphonenumber/phonenumber_api.h"
+#include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/payment_request_delegate.h"
 
 namespace payments {
-
-namespace {
-
-using ::i18n::phonenumbers::PhoneNumberUtil;
-
-}  // namespace
 
 PaymentResponseHelper::PaymentResponseHelper(
     const std::string& app_locale,
     PaymentRequestSpec* spec,
     PaymentInstrument* selected_instrument,
+    PaymentRequestDelegate* payment_request_delegate,
     autofill::AutofillProfile* selected_shipping_profile,
     autofill::AutofillProfile* selected_contact_profile,
     Delegate* delegate)
     : app_locale_(app_locale),
+      is_waiting_for_shipping_address_normalization_(false),
+      is_waiting_for_instrument_details_(false),
       spec_(spec),
       delegate_(delegate),
       selected_instrument_(selected_instrument),
-      selected_shipping_profile_(selected_shipping_profile),
+      payment_request_delegate_(payment_request_delegate),
       selected_contact_profile_(selected_contact_profile) {
   DCHECK(spec_);
   DCHECK(selected_instrument_);
   DCHECK(delegate_);
+
+  is_waiting_for_instrument_details_ = true;
+
+  // Start to normalize the shipping address, if necessary.
+  if (spec_->request_shipping()) {
+    DCHECK(selected_shipping_profile);
+    DCHECK(spec_->selected_shipping_option());
+
+    is_waiting_for_shipping_address_normalization_ = true;
+
+    // Use the country code from the profile if it is set, otherwise infer it
+    // from the |app_locale_|.
+    std::string country_code = base::UTF16ToUTF8(
+        selected_shipping_profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+    if (!autofill::data_util::IsValidCountryCode(country_code)) {
+      country_code =
+          autofill::AutofillCountry::CountryCodeForLocale(app_locale_);
+    }
+
+    payment_request_delegate_->GetAddressNormalizer()
+        ->StartAddressNormalization(*selected_shipping_profile, country_code,
+                                    /*timeout_seconds=*/5, this);
+  }
 
   // Start to get the instrument details. Will call back into
   // OnInstrumentDetailsReady.
@@ -83,25 +105,52 @@ PaymentResponseHelper::GetMojomPaymentAddressFromAutofillProfile(
 void PaymentResponseHelper::OnInstrumentDetailsReady(
     const std::string& method_name,
     const std::string& stringified_details) {
+  method_name_ = method_name;
+  stringified_details_ = stringified_details;
+  is_waiting_for_instrument_details_ = false;
+
+  if (!is_waiting_for_shipping_address_normalization_)
+    GeneratePaymentResponse();
+}
+
+void PaymentResponseHelper::OnAddressNormalized(
+    const autofill::AutofillProfile& normalized_profile) {
+  if (is_waiting_for_shipping_address_normalization_) {
+    shipping_address_ = normalized_profile;
+    is_waiting_for_shipping_address_normalization_ = false;
+
+    if (!is_waiting_for_instrument_details_)
+      GeneratePaymentResponse();
+  }
+}
+
+void PaymentResponseHelper::OnCouldNotNormalize(
+    const autofill::AutofillProfile& profile) {
+  // Since the phone number is formatted in either case, this profile should be
+  // used.
+  OnAddressNormalized(profile);
+}
+
+void PaymentResponseHelper::GeneratePaymentResponse() {
+  DCHECK(!is_waiting_for_instrument_details_);
+  DCHECK(!is_waiting_for_shipping_address_normalization_);
+
   mojom::PaymentResponsePtr payment_response = mojom::PaymentResponse::New();
 
   // Make sure that we return the method name that the merchant specified for
   // this instrument: cards can be either specified through their name (e.g.,
   // "visa") or through basic-card's supportedNetworks.
   payment_response->method_name =
-      spec_->IsMethodSupportedThroughBasicCard(method_name)
+      spec_->IsMethodSupportedThroughBasicCard(method_name_)
           ? kBasicCardMethodName
-          : method_name;
-  payment_response->stringified_details = stringified_details;
+          : method_name_;
+  payment_response->stringified_details = stringified_details_;
 
   // Shipping Address section
   if (spec_->request_shipping()) {
-    DCHECK(selected_shipping_profile_);
     payment_response->shipping_address =
-        GetMojomPaymentAddressFromAutofillProfile(selected_shipping_profile_,
+        GetMojomPaymentAddressFromAutofillProfile(&shipping_address_,
                                                   app_locale_);
-
-    DCHECK(spec_->selected_shipping_option());
     payment_response->shipping_option = spec_->selected_shipping_option()->id;
   }
 
@@ -124,23 +173,15 @@ void PaymentResponseHelper::OnInstrumentDetailsReady(
     // Response, as defined in the Payment Request spec. If it's not possible,
     // send the original. More info at:
     // https://w3c.github.io/browser-payment-api/#paymentrequest-updated-algorithm
-    // TODO(sebsg): Move this code to a reusable location.
     const std::string original_number =
         base::UTF16ToUTF8(selected_contact_profile_->GetInfo(
             autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
             app_locale_));
-    i18n::phonenumbers::PhoneNumber parsed_number;
-    PhoneNumberUtil* phone_number_util = PhoneNumberUtil::GetInstance();
-    if (phone_number_util->Parse(original_number, "US", &parsed_number) ==
-        ::i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
-      std::string formatted_number;
-      phone_number_util->Format(parsed_number,
-                                PhoneNumberUtil::PhoneNumberFormat::E164,
-                                &formatted_number);
-      payment_response->payer_phone = formatted_number;
-    } else {
-      payment_response->payer_phone = original_number;
-    }
+
+    const std::string default_region_code =
+        autofill::AutofillCountry::CountryCodeForLocale(app_locale_);
+    payment_response->payer_phone =
+        data_util::FormatPhoneForResponse(original_number, default_region_code);
   }
 
   delegate_->OnPaymentResponseReady(std::move(payment_response));
