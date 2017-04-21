@@ -606,6 +606,11 @@ id<GREYMatcher> GoButtonMatcher() {
 // afterwards.
 // TODO(crbug.com/711108): Move test to forms_egtest.mm.
 - (void)testBrowsingPostEntryWithKeyboard {
+// TODO(crbug.com/704618): Re-enable this test on devices.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL URL =
