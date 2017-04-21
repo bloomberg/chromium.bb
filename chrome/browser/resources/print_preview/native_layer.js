@@ -273,7 +273,7 @@ cr.define('print_preview', function() {
      *   - PAGE_PREVIEW_READY
      *   - PREVIEW_GENERATION_DONE
      *   - PREVIEW_GENERATION_FAIL
-     * @param {print_preview.Destination} destination Destination to print to.
+     * @param {!print_preview.Destination} destination Destination to print to.
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
      *     state of the print ticket.
      * @param {!print_preview.DocumentInfo} documentInfo Document data model.
@@ -294,28 +294,27 @@ cr.define('print_preview', function() {
         'isFirstRequest': requestId == 0,
         'requestID': requestId,
         'previewModifiable': documentInfo.isModifiable,
-        'printToPDF':
-            destination != null &&
-            destination.id ==
-                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-        'printWithCloudPrint': destination != null && !destination.isLocal,
-        'printWithPrivet': destination != null && destination.isPrivet,
-        'printWithExtension': destination != null && destination.isExtension,
-        'deviceName': destination == null ? 'foo' : destination.id,
         'generateDraftData': documentInfo.isModifiable,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
         'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
         // NOTE: Even though the following fields don't directly relate to the
         // preview, they still need to be included.
-        'duplex': printTicketStore.duplex.getValue() ?
-            NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
-        'copies': 1,
+        // e.g. printing::PrintSettingsFromJobSettings() still checks for them.
         'collate': true,
-        'rasterizePDF': false,
+        'copies': 1,
+        'deviceName': destination.id,
         'dpiHorizontal': "horizontal_dpi" in printTicketStore.dpi.getValue() ?
            printTicketStore.dpi.getValue().horizontal_dpi : 0,
         'dpiVertical': "vertical_dpi" in printTicketStore.dpi.getValue() ?
            printTicketStore.dpi.getValue().vertical_dpi : 0,
+        'duplex': printTicketStore.duplex.getValue() ?
+            NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
+        'printToPDF': destination.id ==
+                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+        'printWithCloudPrint': !destination.isLocal,
+        'printWithPrivet': destination.isPrivet,
+        'printWithExtension': destination.isExtension,
+        'rasterizePDF': false,
         'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
         'shouldPrintSelectionOnly': printTicketStore.selectionOnly.getValue()
       };
@@ -369,20 +368,18 @@ cr.define('print_preview', function() {
              'Implemented for Windows only');
 
       var ticket = {
-        'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
         'mediaSize': printTicketStore.mediaSize.getValue(),
         'pageCount': printTicketStore.pageRange.getPageNumberSet().size,
         'landscape': printTicketStore.landscape.getValue(),
         'color': this.getNativeColorModel_(destination, printTicketStore.color),
-        'headerFooterEnabled': printTicketStore.headerFooter.getValue(),
+        'headerFooterEnabled': false,  // Only used in print preview
         'marginsType': printTicketStore.marginsType.getValue(),
-        'generateDraftData': true, // TODO(rltoscano): What should this be?
         'duplex': printTicketStore.duplex.getValue() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
         'copies': printTicketStore.copies.getValueAsNumber(),
         'collate': printTicketStore.collate.getValue(),
         'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
-        'shouldPrintSelectionOnly': printTicketStore.selectionOnly.getValue(),
+        'shouldPrintSelectionOnly': false,  // Only used in print preview
         'previewModifiable': documentInfo.isModifiable,
         'printToPDF': destination.id ==
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
@@ -396,8 +393,6 @@ cr.define('print_preview', function() {
         'dpiVertical': "vertical_dpi" in printTicketStore.dpi.getValue() ?
            printTicketStore.dpi.getValue().vertical_dpi : 0,
         'deviceName': destination.id,
-        'isFirstRequest': false,
-        'requestID': -1,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
         'pageWidth': documentInfo.pageSize.width,
         'pageHeight': documentInfo.pageSize.height,

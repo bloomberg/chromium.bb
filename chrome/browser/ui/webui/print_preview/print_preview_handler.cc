@@ -832,9 +832,6 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   ReportPrintDocumentTypeHistogram(print_preview_ui()->source_is_modifiable() ?
                                    HTML_DOCUMENT : PDF_DOCUMENT);
 
-  // Never try to add headers/footers here. It's already in the generated PDF.
-  settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
-
   bool print_to_pdf = false;
   bool is_cloud_printer = false;
   bool print_with_privet = false;
@@ -978,12 +975,6 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   // Do this so the initiator can open a new print preview dialog, while the
   // current print preview dialog is still handling its print job.
   ClearInitiatorDetails();
-
-  // The PDF being printed contains only the pages that the user selected,
-  // so ignore the page range and print all pages.
-  settings->Remove(printing::kSettingPageRange, nullptr);
-  // Reset selection only flag for the same reason.
-  settings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
 
   // Set ID to know whether printing is for preview.
   settings->SetInteger(printing::kPreviewUIID,
