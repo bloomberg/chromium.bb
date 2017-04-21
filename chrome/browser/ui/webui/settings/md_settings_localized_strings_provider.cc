@@ -34,7 +34,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/ash_switches.h"
 #include "ash/system/devicetype_utils.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -203,10 +202,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       "showExperimentalA11yFeatures",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableExperimentalAccessibilityFeatures));
-
-  html_source->AddBoolean("enableAdjustableLargeCursor",
-                          base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              ash::switches::kAshAdjustableLargeCursor));
 #endif
 }
 

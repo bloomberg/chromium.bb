@@ -2622,10 +2622,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kEnableTouchSupportForScreenMagnifier)},
-    {"ash-adjustable-large-cursor",
-     flag_descriptions::kEnableAdjustableLargeCursorName,
-     flag_descriptions::kEnableAdjustableLargeCursorDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshAdjustableLargeCursor)},
 #endif  // OS_CHROMEOS
 
     {"enable-zero-suggest-redirect-to-chrome",

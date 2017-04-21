@@ -5,13 +5,11 @@
 #include "ash/display/cursor_window_controller.h"
 
 #include "ash/ash_constants.h"
-#include "ash/ash_switches.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "base/command_line.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -95,9 +93,6 @@ CursorWindowController::CursorWindowController()
       cursor_set_(ui::CURSOR_SET_NORMAL),
       large_cursor_size_in_dip_(ash::kDefaultLargeCursorSize),
       delegate_(new CursorWindowDelegate()) {
-  enable_adjustable_large_cursor_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshAdjustableLargeCursor);
 }
 
 CursorWindowController::~CursorWindowController() {
@@ -116,7 +111,7 @@ void CursorWindowController::SetLargeCursorSizeInDip(
 
   large_cursor_size_in_dip_ = large_cursor_size_in_dip;
 
-  if (enable_adjustable_large_cursor_ && display_.is_valid())
+  if (display_.is_valid())
     UpdateCursorImage();
 }
 
@@ -296,8 +291,7 @@ void CursorWindowController::UpdateCursorImage() {
     // large cursor. We don't need to care about the case where cursor
     // compositing is disabled as we always use cursor compositing if
     // accessibility large cursor is enabled.
-    if (enable_adjustable_large_cursor_ &&
-        cursor_set_ == ui::CursorSetType::CURSOR_SET_LARGE &&
+    if (cursor_set_ == ui::CursorSetType::CURSOR_SET_LARGE &&
         large_cursor_size_in_dip_ != image->size().width()) {
       float rescale = static_cast<float>(large_cursor_size_in_dip_) /
                       static_cast<float>(image->size().width());

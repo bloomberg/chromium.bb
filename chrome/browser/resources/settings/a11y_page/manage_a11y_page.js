@@ -52,17 +52,6 @@ Polymer({
       },
     },
 
-    /**
-     * Whether adjustable large cursor is enabled or not.
-     * @private {boolean}
-     */
-    enableAdjustableLargeCursor_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableAdjustableLargeCursor');
-      },
-    },
-
     /** @private */
     isGuest_: {
       type: Boolean,

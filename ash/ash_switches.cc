@@ -10,9 +10,6 @@
 namespace ash {
 namespace switches {
 
-// Enables adjustable large cursor.
-const char kAshAdjustableLargeCursor[] = "ash-adjustable-large-cursor";
-
 // Enables an animated transition from the boot splash screen (Chrome logo on a
 // white background) to the login screen.  Implies
 // |kAshCopyHostBackgroundAtBoot| and doesn't make much sense if used in
