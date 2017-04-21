@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -510,9 +509,6 @@ ScreenLocker::~ScreenLocker() {
     authenticator_->SetConsumer(NULL);
   ClearErrors();
 
-  VLOG(1) << "Moving wallpaper to unlocked container";
-  ash::Shell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
-
   screen_locker_ = NULL;
   bool state = false;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
@@ -543,9 +539,6 @@ void ScreenLocker::ScreenLockReady() {
   VLOG(1) << "ScreenLocker " << this << " is ready after "
           << delta.InSecondsF() << " second(s)";
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
-
-  VLOG(1) << "Moving wallpaper to locked container";
-  ash::Shell::Get()->wallpaper_controller()->MoveToLockedContainer();
 
   bool state = true;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;

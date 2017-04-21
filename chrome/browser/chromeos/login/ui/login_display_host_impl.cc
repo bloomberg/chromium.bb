@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -537,14 +536,7 @@ void LoginDisplayHostImpl::BeforeSessionStart() {
 }
 
 void LoginDisplayHostImpl::Finalize() {
-  DVLOG(1) << "Session starting";
-  // When adding another user into the session, we defer the wallpaper's
-  // animation in order to prevent the flashing of the previous user's windows.
-  // See crbug.com/541864.
-  if (ash::ShellPort::HasInstance() &&
-      finalize_animation_type_ != ANIMATION_ADD_USER) {
-    ash::Shell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
-  }
+  DVLOG(1) << "Finalizing LoginDisplayHost. User session starting";
 
   switch (finalize_animation_type_) {
     case ANIMATION_NONE:
@@ -566,6 +558,7 @@ void LoginDisplayHostImpl::Finalize() {
       // animation (which is done by UserSwitchAnimatorChromeOS) is finished.
       // This is to guarantee OnUserSwitchAnimationFinished() is called before
       // LoginDisplayHost deletes itself.
+      // See crbug.com/541864.
       break;
     default:
       break;
@@ -655,8 +648,6 @@ void LoginDisplayHostImpl::StartUserAdding(
         ash::Shell::GetPrimaryRootWindow(),
         ash::kShellWindowId_LockScreenContainersContainer);
     lock_container->layer()->SetOpacity(1.0);
-
-    ash::Shell::Get()->wallpaper_controller()->MoveToLockedContainer();
   } else {
     NOTIMPLEMENTED();
   }
@@ -911,13 +902,6 @@ void LoginDisplayHostImpl::Observe(
                       content::NotificationService::AllSources());
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED &&
              user_manager::UserManager::Get()->IsCurrentUserNew()) {
-    if (!ash_util::IsRunningInMash()) {
-      // For new user, move wallpaper to lock container so that windows created
-      // during the user image picker step are below it.
-      ash::Shell::Get()->wallpaper_controller()->MoveToLockedContainer();
-    } else {
-      NOTIMPLEMENTED();
-    }
     registrar_.Remove(this,
                       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                       content::NotificationService::AllSources());
@@ -1042,17 +1026,9 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
   if (post_quit_task)
     base::MessageLoop::current()->QuitWhenIdle();
 
-  if (!completion_callback_.is_null())
+  if (!completion_callback_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   completion_callback_);
-
-  if (ash::Shell::HasInstance() &&
-      finalize_animation_type_ == ANIMATION_ADD_USER) {
-    if (!ash_util::IsRunningInMash()) {
-      ash::Shell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
-    } else {
-      NOTIMPLEMENTED();
-    }
   }
 }
 

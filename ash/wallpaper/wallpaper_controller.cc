@@ -168,20 +168,6 @@ void WallpaperController::CreateEmptyWallpaper() {
   InstallDesktopControllerForAllWindows();
 }
 
-bool WallpaperController::MoveToLockedContainer() {
-  if (locked_)
-    return false;
-  locked_ = true;
-  return ReparentWallpaper(GetWallpaperContainerId(true));
-}
-
-bool WallpaperController::MoveToUnlockedContainer() {
-  if (!locked_)
-    return false;
-  locked_ = false;
-  return ReparentWallpaper(GetWallpaperContainerId(false));
-}
-
 void WallpaperController::OnDisplayConfigurationChanged() {
   gfx::Size max_display_size = GetMaxDisplaySizeInNative();
   if (current_max_display_size_ != max_display_size) {
@@ -215,6 +201,11 @@ void WallpaperController::OnRootWindowAdded(WmWindow* root_window) {
 void WallpaperController::OnSessionStateChanged(
     session_manager::SessionState state) {
   CalculateWallpaperColors();
+
+  if (state == session_manager::SessionState::ACTIVE)
+    MoveToUnlockedContainer();
+  else
+    MoveToLockedContainer();
 }
 
 // static
@@ -399,6 +390,22 @@ bool WallpaperController::ShouldCalculateColors() const {
          Shell::Get()->session_controller()->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
          !image.isNull();
+}
+
+bool WallpaperController::MoveToLockedContainer() {
+  if (locked_)
+    return false;
+
+  locked_ = true;
+  return ReparentWallpaper(GetWallpaperContainerId(true));
+}
+
+bool WallpaperController::MoveToUnlockedContainer() {
+  if (!locked_)
+    return false;
+
+  locked_ = false;
+  return ReparentWallpaper(GetWallpaperContainerId(false));
 }
 
 }  // namespace ash

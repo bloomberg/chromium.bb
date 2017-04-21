@@ -12,7 +12,6 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm_display_observer.h"
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -36,7 +35,13 @@ namespace ash {
 
 class WallpaperControllerObserver;
 
-// Controls the desktop background wallpaper.
+// Controls the desktop background wallpaper:
+//   - Sets a wallpaper image and layout;
+//   - Handles display change (add/remove display, configuration change etc);
+//   - Calculates prominent color for shelf;
+//   - Move wallpaper to locked container(s) when session state is not ACTIVE to
+//     hide the user desktop and move it to unlocked container when session
+//     state is ACTIVE;
 class ASH_EXPORT WallpaperController
     : public NON_EXPORTED_BASE(mojom::WallpaperController),
       public WmDisplayObserver,
@@ -83,14 +88,6 @@ class ASH_EXPORT WallpaperController
   // crashes. An example test is SystemGestureEventFilterTest.ThreeFingerSwipe.
   void CreateEmptyWallpaper();
 
-  // Move all wallpaper widgets to the locked container.
-  // Returns true if the wallpaper moved.
-  bool MoveToLockedContainer();
-
-  // Move all wallpaper widgets to unlocked container.
-  // Returns true if the wallpaper moved.
-  bool MoveToUnlockedContainer();
-
   // WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
 
@@ -132,6 +129,9 @@ class ASH_EXPORT WallpaperController
   void OnColorCalculationComplete() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
+  FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest,
+                           WallpaperMovementDuringUnlock);
   friend class WallpaperControllerTest;
 
   // Creates a WallpaperWidgetController for |root_window|.
@@ -164,6 +164,14 @@ class ASH_EXPORT WallpaperController
   // Returns false when the color extraction algorithm shouldn't be run based on
   // system state (e.g. wallpaper image, SessionState, etc.).
   bool ShouldCalculateColors() const;
+
+  // Move all wallpaper widgets to the locked container.
+  // Returns true if the wallpaper moved.
+  bool MoveToLockedContainer();
+
+  // Move all wallpaper widgets to unlocked container.
+  // Returns true if the wallpaper moved.
+  bool MoveToUnlockedContainer();
 
   bool locked_;
 
