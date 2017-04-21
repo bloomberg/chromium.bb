@@ -354,19 +354,13 @@ bool CTLogVerifier::VerifySignature(const base::StringPiece& data_to_sign,
   if (hash_alg == NULL)
     return false;
 
-  EVP_MD_CTX ctx;
-  EVP_MD_CTX_init(&ctx);
-
-  bool ok =
-      (1 == EVP_DigestVerifyInit(&ctx, NULL, hash_alg, NULL, public_key_) &&
-       1 == EVP_DigestVerifyUpdate(&ctx, data_to_sign.data(),
-                                   data_to_sign.size()) &&
-       1 == EVP_DigestVerifyFinal(
-                &ctx, reinterpret_cast<const uint8_t*>(signature.data()),
-                signature.size()));
-
-  EVP_MD_CTX_cleanup(&ctx);
-  return ok;
+  bssl::ScopedEVP_MD_CTX ctx;
+  return EVP_DigestVerifyInit(ctx.get(), NULL, hash_alg, NULL, public_key_) &&
+         EVP_DigestVerifyUpdate(ctx.get(), data_to_sign.data(),
+                                data_to_sign.size()) &&
+         EVP_DigestVerifyFinal(
+             ctx.get(), reinterpret_cast<const uint8_t*>(signature.data()),
+             signature.size());
 }
 
 }  // namespace net
