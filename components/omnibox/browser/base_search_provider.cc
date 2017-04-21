@@ -23,6 +23,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -62,9 +63,44 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
   GURL url(deletion_url);
   DCHECK(url.is_valid());
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("omnibox_suggest_deletion", R"(
+        semantics {
+          sender: "Omnibox"
+          description:
+            "When users attempt to delete server-provided personalized search "
+            "or navigation suggestions from the omnibox dropdown, Chrome sends "
+            "a message to the server requesting deletion of the suggestion."
+          trigger:
+            "A user attempt to delete a server-provided omnibox suggestion, "
+            "for which the server provided a custom deletion URL."
+          data:
+            "No user data is explicitly sent with the request, but because the "
+            "requested URL is provided by the server for each specific "
+            "suggestion, it necessarily uniquely identifies the suggestion the "
+            "user is attempting to delete."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "Since this can only be triggered on seeing server-provided "
+            "suggestions in the omnibox dropdown, whether it is enabled is the "
+            "same as whether those suggestions are enabled.\n"
+            "Users can control this feature via the 'Use a prediction service "
+            "to help complete searches and URLs typed in the address bar' "
+            "setting under 'Privacy'. The feature is enabled by default."
+          chrome_policy {
+            SearchSuggestEnabled {
+                policy_options {mode: MANDATORY}
+                SearchSuggestEnabled: false
+            }
+          }
+        })");
   deletion_fetcher_ =
       net::URLFetcher::Create(BaseSearchProvider::kDeletionURLFetcherID, url,
-                              net::URLFetcher::GET, this);
+                              net::URLFetcher::GET, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       deletion_fetcher_.get(), data_use_measurement::DataUseUserData::OMNIBOX);
   deletion_fetcher_->SetRequestContext(request_context);
