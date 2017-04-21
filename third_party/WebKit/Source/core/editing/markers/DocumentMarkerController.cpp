@@ -252,15 +252,14 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
   MarkerLists* dst_markers = markers_.at(dst_node);
 
   bool doc_dirty = false;
-  for (size_t marker_list_index = 0; marker_list_index < src_markers->size();
-       ++marker_list_index) {
-    MarkerList* src_list = src_markers->at(marker_list_index);
+  for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+    MarkerList* src_list = ListForType(src_markers, type);
     if (!src_list)
       continue;
 
-    if (!dst_markers->at(marker_list_index))
-      dst_markers->at(marker_list_index) = new MarkerList;
-    MarkerList* dst_list = dst_markers->at(marker_list_index);
+    if (!ListForType(dst_markers, type))
+      ListForType(dst_markers, type) = new MarkerList;
+    MarkerList* dst_list = ListForType(dst_markers, type);
 
     if (DocumentMarkerListEditor::MoveMarkers(src_list, length, dst_list))
       doc_dirty = true;
@@ -291,17 +290,15 @@ void DocumentMarkerController::RemoveMarkers(
 
   bool doc_dirty = false;
   size_t empty_lists_count = 0;
-  for (size_t marker_list_index = 0;
-       marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-       ++marker_list_index) {
-    Member<MarkerList>& list = (*markers)[marker_list_index];
+  for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+    Member<MarkerList>& list = ListForType(markers, type);
     if (!list || list->IsEmpty()) {
       if (list.Get() && list->IsEmpty())
         list.Clear();
       ++empty_lists_count;
       continue;
     }
-    if (!marker_types.Contains((*list->begin())->GetType()))
+    if (!marker_types.Contains(type))
       continue;
 
     if (DocumentMarkerListEditor::RemoveMarkers(list, start_offset, length))
@@ -335,10 +332,8 @@ DocumentMarkerVector DocumentMarkerController::MarkersFor(
   if (!markers)
     return result;
 
-  for (size_t marker_list_index = 0;
-       marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-       ++marker_list_index) {
-    Member<MarkerList>& list = (*markers)[marker_list_index];
+  for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+    Member<MarkerList>& list = ListForType(markers, type);
     if (!list || list->IsEmpty() ||
         !marker_types.Contains((*list->begin())->GetType()))
       continue;
@@ -359,10 +354,8 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
   DocumentMarkerVector result;
   for (MarkerMap::iterator i = markers_.begin(); i != markers_.end(); ++i) {
     MarkerLists* markers = i->value.Get();
-    for (size_t marker_list_index = 0;
-         marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-         ++marker_list_index) {
-      Member<MarkerList>& list = (*markers)[marker_list_index];
+    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+      Member<MarkerList>& list = ListForType(markers, type);
       for (size_t j = 0; list.Get() && j < list->size(); ++j)
         result.push_back(list->at(j).Get());
     }
@@ -423,12 +416,9 @@ Vector<IntRect> DocumentMarkerController::RenderedRectsForMarkers(
     if (!node.isConnected())
       continue;
     MarkerLists* markers = node_iterator->value.Get();
-    for (size_t marker_list_index = 0;
-         marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-         ++marker_list_index) {
-      Member<MarkerList>& list = (*markers)[marker_list_index];
-      if (!list || list->IsEmpty() ||
-          (*list->begin())->GetType() != marker_type)
+    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+      Member<MarkerList>& list = ListForType(markers, type);
+      if (!list || list->IsEmpty() || type != marker_type)
         continue;
       for (unsigned marker_index = 0; marker_index < list->size();
            ++marker_index) {
@@ -514,11 +504,9 @@ void DocumentMarkerController::RemoveMarkers(
     const Node& node = *node_markers.key;
     if (!node.IsTextNode())  // MarkerRemoverPredicate requires a Text node.
       continue;
-    MarkerLists& markers = *node_markers.value;
-    for (size_t marker_list_index = 0;
-         marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-         ++marker_list_index) {
-      Member<MarkerList>& list = markers[marker_list_index];
+    MarkerLists* markers = node_markers.value;
+    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+      Member<MarkerList>& list = ListForType(markers, type);
       if (!list)
         continue;
       bool removed_markers = false;
@@ -529,8 +517,7 @@ void DocumentMarkerController::RemoveMarkers(
           removed_markers = true;
         }
       }
-      if (removed_markers &&
-          marker_list_index == DocumentMarker::kTextMatchMarkerIndex)
+      if (removed_markers && type == DocumentMarker::kTextMatch)
         InvalidatePaintForTickmarks(node);
     }
   }
@@ -567,17 +554,15 @@ void DocumentMarkerController::RemoveMarkersFromList(
   } else {
     MarkerLists* markers = iterator->value.Get();
 
-    for (size_t marker_list_index = 0;
-         marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-         ++marker_list_index) {
-      Member<MarkerList>& list = (*markers)[marker_list_index];
+    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+      Member<MarkerList>& list = ListForType(markers, type);
       if (!list || list->IsEmpty()) {
         if (list.Get() && list->IsEmpty())
           list.Clear();
         ++empty_lists_count;
         continue;
       }
-      if (marker_types.Contains((*list->begin())->GetType())) {
+      if (marker_types.Contains(type)) {
         list->clear();
         list.Clear();
         ++empty_lists_count;
@@ -618,12 +603,9 @@ void DocumentMarkerController::RepaintMarkers(
 
     // inner loop: process each marker in the current node
     MarkerLists* markers = i->value.Get();
-    for (size_t marker_list_index = 0;
-         marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-         ++marker_list_index) {
-      Member<MarkerList>& list = (*markers)[marker_list_index];
-      if (!list || list->IsEmpty() ||
-          !marker_types.Contains((*list->begin())->GetType()))
+    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+      Member<MarkerList>& list = ListForType(markers, type);
+      if (!list || list->IsEmpty() || !marker_types.Contains(type))
         continue;
 
       // cause the node to be redrawn
@@ -707,10 +689,8 @@ void DocumentMarkerController::ShowMarkers() const {
     const Node* node = node_iterator->key;
     builder.Append(String::Format("%p", node));
     MarkerLists* markers = markers_.at(node);
-    for (size_t marker_list_index = 0;
-         marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-         ++marker_list_index) {
-      Member<MarkerList>& list = (*markers)[marker_list_index];
+    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+      Member<MarkerList>& list = ListForType(markers, type);
       for (unsigned marker_index = 0; list.Get() && marker_index < list->size();
            ++marker_index) {
         DocumentMarker* marker = list->at(marker_index).Get();
