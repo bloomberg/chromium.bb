@@ -708,7 +708,8 @@ static INLINE int16_t saturate_int16(int32_t v) {
 // at precision of DIV_LUT_PREC_BITS along with the shift.
 static int16_t resolve_divisor_64(uint64_t D, int16_t *shift) {
   int64_t e, f;
-  *shift = (D >> 32) ? get_msb(D >> 32) + 32 : get_msb(D);
+  *shift = (int16_t)((D >> 32) ? get_msb((unsigned int)(D >> 32)) + 32
+                               : get_msb((unsigned int)D));
   // e is obtained from D after resetting the most significant 1 bit.
   e = D - ((uint64_t)1 << *shift);
   // Get the most significant DIV_LUT_BITS (8) bits of e into f
@@ -1554,18 +1555,18 @@ static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
 
   int64_t v;
   v = Px[0] * (int64_t)iDet;
-  wm->wmmat[2] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
+  wm->wmmat[2] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
   v = Px[1] * (int64_t)iDet;
-  wm->wmmat[3] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
+  wm->wmmat[3] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
   v = (dux << WARPEDMODEL_PREC_BITS) - sux * wm->wmmat[2] - suy * wm->wmmat[3];
-  wm->wmmat[0] = ROUND_POWER_OF_TWO_SIGNED(v, 3);
+  wm->wmmat[0] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED(v, 3));
 
   v = Py[0] * (int64_t)iDet;
-  wm->wmmat[4] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
+  wm->wmmat[4] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
   v = Py[1] * (int64_t)iDet;
-  wm->wmmat[5] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
+  wm->wmmat[5] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
   v = (duy << WARPEDMODEL_PREC_BITS) - sux * wm->wmmat[4] - suy * wm->wmmat[5];
-  wm->wmmat[1] = ROUND_POWER_OF_TWO_SIGNED(v, 3);
+  wm->wmmat[1] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED(v, 3));
 
   wm->wmmat[6] = wm->wmmat[7] = 0;
 

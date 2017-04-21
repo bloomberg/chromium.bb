@@ -11517,6 +11517,12 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
 #if CONFIG_MOTION_VAR
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
 #endif
+#if CONFIG_WARPED_MOTION
+  if (is_motion_variation_allowed_bsize(bsize) && !has_second_ref(mbmi)) {
+    int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
+    mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
+  }
+#endif
 
   if (cm->interp_filter != BILINEAR) {
     best_filter = EIGHTTAP_REGULAR;
