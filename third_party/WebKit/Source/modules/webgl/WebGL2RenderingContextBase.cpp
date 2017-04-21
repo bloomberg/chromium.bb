@@ -453,7 +453,7 @@ bool WebGL2RenderingContextBase::ValidateTexFuncLayer(const char* function_name,
       }
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
   return true;
@@ -4525,7 +4525,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniforms(
       return WebGLAny(script_state, bool_result);
     }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return ScriptValue::CreateNull(script_state);
   }
 }
@@ -5098,7 +5098,7 @@ bool WebGL2RenderingContextBase::ValidateAndUpdateBufferBindTarget(
       bound_uniform_buffer_ = buffer;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 
@@ -5168,7 +5168,7 @@ bool WebGL2RenderingContextBase::ValidateAndUpdateBufferBindBaseTarget(
       }
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 

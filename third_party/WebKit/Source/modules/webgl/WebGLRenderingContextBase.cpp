@@ -1545,7 +1545,7 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
     // succeed because cases where canvas()-buffer() is not accelerated are
     // handle before reaching this point.  If that assumption ever stops holding
     // true, we may need to implement a fallback right here.
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
   }
 
@@ -1711,7 +1711,7 @@ bool WebGLRenderingContextBase::ValidateAndUpdateBufferBindTarget(
       bound_vertex_array_object_->SetElementArrayBuffer(buffer);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 
@@ -3799,7 +3799,7 @@ ScriptValue WebGLRenderingContextBase::getVertexAttrib(
           return WebGLAny(script_state, DOMUint32Array::Create(uint_value, 4));
         }
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
           break;
       }
       return ScriptValue::CreateNull(script_state);
@@ -7067,7 +7067,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
                         "ArrayBufferView is not NULL");
       return false;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   unsigned total_bytes_required, skip_bytes;
