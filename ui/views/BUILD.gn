@@ -28,13 +28,6 @@ aggregate_vector_icons("views_vector_icons") {
     "submenu_arrow.1x.icon",
     "submenu_arrow.icon",
   ]
-
-  if (is_mac) {
-    icons += [
-      "combobox_arrow_mac_enabled.icon",
-      "combobox_arrow_mac_disabled.icon",
-    ]
-  }
 }
 
 component("views") {

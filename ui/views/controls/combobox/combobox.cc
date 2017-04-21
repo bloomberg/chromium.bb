@@ -452,7 +452,8 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
   } else {
-    arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style);
+    arrow_image_ = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_MENU_DROPARROW);
   }
 }
 
@@ -548,12 +549,6 @@ void Combobox::Layout() {
   int arrow_button_x = std::max(0, text_button_width);
   text_button_->SetBounds(0, 0, std::max(0, text_button_width), height());
   arrow_button_->SetBounds(arrow_button_x, 0, arrow_button_width, height());
-}
-
-void Combobox::OnEnabledChanged() {
-  View::OnEnabledChanged();
-  if (!UseMd())
-    arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style_);
 }
 
 void Combobox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -1013,9 +1008,9 @@ PrefixSelector* Combobox::GetPrefixSelector() {
 }
 
 int Combobox::GetArrowContainerWidth() const {
-  const int kMdPaddingWidth = 8;
-  int arrow_pad = UseMd() ? kMdPaddingWidth
-                          : PlatformStyle::kComboboxNormalArrowPadding;
+  constexpr int kMdPaddingWidth = 8;
+  constexpr int kNormalPaddingWidth = 7;
+  int arrow_pad = UseMd() ? kMdPaddingWidth : kNormalPaddingWidth;
   int padding = style_ == STYLE_NORMAL
                     ? arrow_pad * 2
                     : kActionLeftPadding + kActionRightPadding;

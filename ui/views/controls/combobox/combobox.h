@@ -101,7 +101,6 @@ class VIEWS_EXPORT Combobox : public View,
   void OnBlur() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void Layout() override;
-  void OnEnabledChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Overridden from PrefixDelegate:

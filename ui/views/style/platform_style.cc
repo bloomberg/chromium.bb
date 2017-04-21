@@ -36,7 +36,6 @@ const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
 
 #if !defined(OS_MACOSX)
 
-const int PlatformStyle::kComboboxNormalArrowPadding = 7;
 const int PlatformStyle::kMinLabelButtonWidth = 70;
 const int PlatformStyle::kMinLabelButtonHeight = 33;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = true;
@@ -52,13 +51,6 @@ const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
 const bool PlatformStyle::kTreeViewUsesOpenIcon = true;
 const bool PlatformStyle::kUseRipples = true;
 const bool PlatformStyle::kMirrorBubbleArrowInRTLByDefault = true;
-
-// static
-gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
-                                                  Combobox::Style style) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return *rb.GetImageSkiaNamed(IDR_MENU_DROPARROW);
-}
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {

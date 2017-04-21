@@ -5,20 +5,15 @@
 #include "ui/views/style/platform_style.h"
 
 #include "base/memory/ptr_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button.h"
 #import "ui/views/controls/scrollbar/cocoa_scroll_bar.h"
-#include "ui/views/vector_icons.h"
 
 #import <Cocoa/Cocoa.h>
 
 namespace views {
 
-const int PlatformStyle::kComboboxNormalArrowPadding = 0;
 const int PlatformStyle::kMinLabelButtonWidth = 32;
 const int PlatformStyle::kMinLabelButtonHeight = 30;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = false;
@@ -44,21 +39,6 @@ const CustomButton::KeyClickAction PlatformStyle::kKeyClickActionOnSpace =
 // On Mac, the Return key is used to perform the default action even when a
 // control is focused.
 const bool PlatformStyle::kReturnClicksFocusedControl = false;
-
-// static
-gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
-                                                  Combobox::Style style) {
-  // TODO(ellyjones): IDR_MENU_DROPARROW is a cross-platform image that doesn't
-  // look right on Mac. See https://crbug.com/384071.
-  if (style == Combobox::STYLE_ACTION) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    return *rb.GetImageSkiaNamed(IDR_MENU_DROPARROW);
-  }
-  const int kComboboxArrowWidth = 24;
-  return gfx::CreateVectorIcon(
-      is_enabled ? kComboboxArrowMacEnabledIcon : kComboboxArrowMacDisabledIcon,
-      kComboboxArrowWidth, SK_ColorBLACK);
-}
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
