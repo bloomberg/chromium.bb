@@ -20,7 +20,7 @@ class OmniboxPopupViewMac;
 // Right hand side of the separator (e.g. a hyphen).
 @property(readonly, retain, nonatomic) NSAttributedString* description;
 
-// NOTE: While |prefix_| is used only for postfix suggestions, it still needs
+// NOTE: While |prefix_| is used only for tail suggestions, it still needs
 // to be a member of the class. This allows the |NSAttributedString| instance
 // to stay alive between the call to |drawTitle| and the actual paint event
 // which accesses the |NSAttributedString| instance.
@@ -33,7 +33,7 @@ class OmniboxPopupViewMac;
 // Uncommon icon that only shows on answer rows (e.g. weather).
 @property(readonly, retain, nonatomic) NSImage* answerImage;
 
-// The offset at which the infinite suggestion contents should be displayed.
+// The offset at which the tail suggestion contents should be displayed.
 @property(readonly, nonatomic) CGFloat contentsOffset;
 @property(readonly, nonatomic) BOOL isContentsRTL;
 

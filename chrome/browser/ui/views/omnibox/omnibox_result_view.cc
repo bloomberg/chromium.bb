@@ -407,7 +407,7 @@ int OmniboxResultView::DrawRenderText(
   const int remaining_width = mirroring_context_->remaining_width(x);
   int right_x = x + max_width;
 
-  // Infinite suggestions should appear with the leading ellipses vertically
+  // Tail suggestions should appear with the leading ellipses vertically
   // stacked.
   if (render_text_type == CONTENTS &&
       match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
@@ -428,8 +428,8 @@ int OmniboxResultView::DrawRenderText(
     const int max_match_contents_width = model_->max_match_contents_width();
 
     if (is_ui_rtl != is_match_contents_rtl) {
-      // RTL infinite suggestions appear near the left edge in LTR UI, while LTR
-      // infinite suggestions appear near the right edge in RTL UI. This is
+      // RTL tail suggestions appear near the left edge in LTR UI, while LTR
+      // tail suggestions appear near the right edge in RTL UI. This is
       // against the natural horizontal alignment of the text. We reduce the
       // width of the box for suggestion display, so that the suggestions appear
       // in correct confines.  This reduced width allows us to modify the text

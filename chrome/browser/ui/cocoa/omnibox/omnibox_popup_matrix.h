@@ -64,7 +64,7 @@ class OmniboxPopupMatrixObserver {
   ui::ScopedCrTrackingArea trackingArea_;
   NSAttributedString* separator_;
 
-  // The width of widest match contents in a set of infinite suggestions.
+  // The width of widest match contents in a set of tail suggestions.
   CGFloat maxMatchContentsWidth_;
 
   CGFloat answerLineHeight_;

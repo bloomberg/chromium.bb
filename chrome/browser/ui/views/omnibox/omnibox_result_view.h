@@ -102,7 +102,7 @@ class OmniboxResultView : public views::View,
   // Draws given |render_text| on |canvas| at given location (|x|, |y|).
   // |contents| indicates if the |render_text| is for the match contents,
   // separator, or description.  Additional properties from |match| are used to
-  // render Infinite suggestions correctly.  If |max_width| is a non-negative
+  // render tail suggestions correctly.  If |max_width| is a non-negative
   // number, the text will be elided to fit within |max_width|.  Returns the x
   // position to the right of the string.
   int DrawRenderText(const AutocompleteMatch& match,

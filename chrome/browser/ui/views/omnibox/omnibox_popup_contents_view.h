@@ -158,7 +158,7 @@ class OmniboxPopupContentsView : public views::View,
   int start_margin_;
   int end_margin_;
 
-  // When the dropdown is not wide enough while displaying postfix suggestions,
+  // When the dropdown is not wide enough while displaying tail suggestions,
   // we use the width of widest match contents to shift the suggestions so that
   // the widest suggestion just reaches the end edge.
   int max_match_contents_width_;
