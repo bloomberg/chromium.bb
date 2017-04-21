@@ -55,7 +55,10 @@ std::unique_ptr<ui::Event> CoalesceEvents(std::unique_ptr<ui::Event> first,
                                           std::unique_ptr<ui::Event> second) {
   DCHECK(first->type() == ui::ET_POINTER_MOVED)
       << " Non-move events cannot be merged yet.";
-  // For mouse moves, the new event just replaces the old event.
+  // For mouse moves, the new event just replaces the old event, but we need to
+  // use the latency from the old event.
+  second->set_latency(*first->latency());
+  second->latency()->set_coalesced();
   return second;
 }
 
