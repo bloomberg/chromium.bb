@@ -198,10 +198,11 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   EXPECT_TRUE(object->BackgroundChangedSinceLastPaintInvalidation());
   object->SetNeedsPaintPropertyUpdate();
   EXPECT_TRUE(object->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(object->Parent()->DescendantNeedsPaintPropertyUpdate());
   object->bitfields_.SetDescendantNeedsPaintPropertyUpdate(true);
   EXPECT_TRUE(object->DescendantNeedsPaintPropertyUpdate());
 
-  ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
+  ScopedSlimmingPaintInvalidationForTest enable_sp_invalidation(true);
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);
   object->GetMutableForPainting().ClearPaintFlags();
 
@@ -213,6 +214,21 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   EXPECT_FALSE(object->BackgroundChangedSinceLastPaintInvalidation());
   EXPECT_FALSE(object->NeedsPaintPropertyUpdate());
   EXPECT_FALSE(object->DescendantNeedsPaintPropertyUpdate());
+}
+
+TEST_F(LayoutObjectTest, SubtreeNeedsPaintPropertyUpdate) {
+  LayoutObject* object = GetDocument().body()->GetLayoutObject();
+  object->SetSubtreeNeedsPaintPropertyUpdate();
+  EXPECT_TRUE(object->SubtreeNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(object->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(object->Parent()->DescendantNeedsPaintPropertyUpdate());
+
+  ScopedSlimmingPaintInvalidationForTest enable_sp_invalidation(true);
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);
+  object->GetMutableForPainting().ClearPaintFlags();
+
+  EXPECT_FALSE(object->SubtreeNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(object->NeedsPaintPropertyUpdate());
 }
 
 TEST_F(LayoutObjectTest, NeedsPaintOffsetAndVisualRectUpdate) {

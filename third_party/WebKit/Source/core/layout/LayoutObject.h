@@ -1853,7 +1853,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetSubtreeNeedsPaintPropertyUpdate() {
     bitfields_.SetSubtreeNeedsPaintPropertyUpdate(true);
-    bitfields_.SetNeedsPaintPropertyUpdate(true);
+    SetNeedsPaintPropertyUpdate();
   }
   bool SubtreeNeedsPaintPropertyUpdate() const {
     return bitfields_.SubtreeNeedsPaintPropertyUpdate();
