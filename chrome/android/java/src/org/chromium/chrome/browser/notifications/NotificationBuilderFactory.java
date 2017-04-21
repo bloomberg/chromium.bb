@@ -31,7 +31,7 @@ public class NotificationBuilderFactory {
      *                  {@link ChannelsInitializer#ensureInitialized(String)}.
      */
     public static ChromeNotificationBuilder createChromeNotificationBuilder(
-            boolean preferCompat, @ChannelsInitializer.ChannelId String channelId) {
+            boolean preferCompat, @ChannelDefinitions.ChannelId String channelId) {
         Context context = ContextUtils.getApplicationContext();
         if (BuildInfo.isAtLeastO()) {
             return createNotificationBuilderForO(channelId, context);
@@ -42,9 +42,10 @@ public class NotificationBuilderFactory {
 
     @SuppressLint("NewApi") // for Context.getSystemService(Class)
     private static ChromeNotificationBuilder createNotificationBuilderForO(
-            @ChannelsInitializer.ChannelId String channelId, Context context) {
+            @ChannelDefinitions.ChannelId String channelId, Context context) {
         return new NotificationBuilderForO(context, channelId,
-                new ChannelsInitializer(new NotificationManagerProxyImpl(
-                        context.getSystemService(NotificationManager.class))));
+                new ChannelsInitializer(new NotificationManagerProxyImpl(context.getSystemService(
+                                                NotificationManager.class)),
+                        new ChannelDefinitions()));
     }
 }

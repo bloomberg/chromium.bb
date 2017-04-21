@@ -24,7 +24,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.notifications.ChannelsInitializer;
+import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -171,7 +171,7 @@ public class ContentSuggestionsNotificationHelper {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_BROWSER)
+                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_BROWSER)
                         .setAutoCancel(true)
                         .setContentIntent(contentIntent)
                         .setDeleteIntent(deleteIntent)

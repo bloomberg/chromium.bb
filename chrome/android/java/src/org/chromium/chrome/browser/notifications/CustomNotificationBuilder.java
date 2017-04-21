@@ -142,7 +142,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         // TODO(crbug.com/697104) We should probably use a Compat builder.
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(
-                        false /* preferCompat */, ChannelsInitializer.CHANNEL_ID_SITES);
+                        false /* preferCompat */, ChannelDefinitions.CHANNEL_ID_SITES);
         builder.setTicker(mTickerText);
         builder.setContentIntent(mContentIntent);
         builder.setDeleteIntent(mDeleteIntent);

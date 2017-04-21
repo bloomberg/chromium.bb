@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 public class NotificationBuilderForO extends NotificationBuilder {
     private static final String TAG = "NotifBuilderForO";
 
-    public NotificationBuilderForO(Context context, @ChannelsInitializer.ChannelId String channelId,
+    public NotificationBuilderForO(Context context, @ChannelDefinitions.ChannelId String channelId,
             ChannelsInitializer channelsInitializer) {
         super(context);
         assert BuildInfo.isAtLeastO();

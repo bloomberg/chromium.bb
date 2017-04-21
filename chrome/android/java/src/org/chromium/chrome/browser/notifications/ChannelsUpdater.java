@@ -34,10 +34,12 @@ public class ChannelsUpdater {
         public static final ChannelsUpdater INSTANCE = !BuildInfo.isAtLeastO()
                 ? new ChannelsUpdater(false /* isAtLeastO */, null, null, -1)
                 : new ChannelsUpdater(true /* isAtLeastO */, ContextUtils.getAppSharedPreferences(),
-                          new ChannelsInitializer(new NotificationManagerProxyImpl(
-                                  (NotificationManager) ContextUtils.getApplicationContext()
-                                          .getSystemService(Context.NOTIFICATION_SERVICE))),
-                          ChannelsInitializer.CHANNELS_VERSION);
+                          new ChannelsInitializer(
+                                  new NotificationManagerProxyImpl(
+                                          (NotificationManager) ContextUtils.getApplicationContext()
+                                                  .getSystemService(Context.NOTIFICATION_SERVICE)),
+                                  new ChannelDefinitions()),
+                          ChannelDefinitions.CHANNELS_VERSION);
     }
 
     @VisibleForTesting

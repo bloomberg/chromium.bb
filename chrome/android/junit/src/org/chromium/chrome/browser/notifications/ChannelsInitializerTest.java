@@ -28,125 +28,125 @@ public class ChannelsInitializerTest {
     @Before
     public void setUp() throws Exception {
         mMockNotificationManager = new MockNotificationManagerProxy();
-        mChannelsInitializer = new ChannelsInitializer(mMockNotificationManager);
+        mChannelsInitializer =
+                new ChannelsInitializer(mMockNotificationManager, new ChannelDefinitions());
     }
 
     @Test
     public void testInitializeStartupChannels() throws Exception {
         mChannelsInitializer.initializeStartupChannels();
         assertThat(mMockNotificationManager.getNotificationChannelIds(),
-                containsInAnyOrder(ChannelsInitializer.CHANNEL_ID_BROWSER,
-                        ChannelsInitializer.CHANNEL_ID_DOWNLOADS,
-                        ChannelsInitializer.CHANNEL_ID_INCOGNITO,
-                        ChannelsInitializer.CHANNEL_ID_SITES,
-                        ChannelsInitializer.CHANNEL_ID_MEDIA));
+                containsInAnyOrder(ChannelDefinitions.CHANNEL_ID_BROWSER,
+                        ChannelDefinitions.CHANNEL_ID_DOWNLOADS,
+                        ChannelDefinitions.CHANNEL_ID_INCOGNITO,
+                        ChannelDefinitions.CHANNEL_ID_SITES, ChannelDefinitions.CHANNEL_ID_MEDIA));
     }
 
     @Test
     public void testEnsureInitialized_browserChannel() throws Exception {
-        mChannelsInitializer.ensureInitialized(ChannelsInitializer.CHANNEL_ID_BROWSER);
+        mChannelsInitializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_BROWSER);
 
         assertThat(mMockNotificationManager.getChannels().size(), is(1));
-        ChannelsInitializer.Channel channel = mMockNotificationManager.getChannels().get(0);
-        assertThat(channel.mId, is(ChannelsInitializer.CHANNEL_ID_BROWSER));
+        ChannelDefinitions.Channel channel = mMockNotificationManager.getChannels().get(0);
+        assertThat(channel.mId, is(ChannelDefinitions.CHANNEL_ID_BROWSER));
         assertThat(
                 channel.mNameResId, is(org.chromium.chrome.R.string.notification_category_browser));
         assertThat(channel.mImportance, is(NotificationManager.IMPORTANCE_LOW));
-        assertThat(channel.mGroupId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(channel.mGroupId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
 
         assertThat(mMockNotificationManager.getNotificationChannelGroups().size(), is(1));
-        ChannelsInitializer.ChannelGroup group =
+        ChannelDefinitions.ChannelGroup group =
                 mMockNotificationManager.getNotificationChannelGroups().get(0);
-        assertThat(group.mId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(group.mId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
         assertThat(group.mNameResId,
                 is(org.chromium.chrome.R.string.notification_category_group_general));
     }
 
     @Test
     public void testEnsureInitialized_downloadsChannel() throws Exception {
-        mChannelsInitializer.ensureInitialized(ChannelsInitializer.CHANNEL_ID_DOWNLOADS);
+        mChannelsInitializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_DOWNLOADS);
 
         assertThat(mMockNotificationManager.getChannels().size(), is(1));
-        ChannelsInitializer.Channel channel = mMockNotificationManager.getChannels().get(0);
-        assertThat(channel.mId, is(ChannelsInitializer.CHANNEL_ID_DOWNLOADS));
+        ChannelDefinitions.Channel channel = mMockNotificationManager.getChannels().get(0);
+        assertThat(channel.mId, is(ChannelDefinitions.CHANNEL_ID_DOWNLOADS));
         assertThat(channel.mNameResId,
                 is(org.chromium.chrome.R.string.notification_category_downloads));
         assertThat(channel.mImportance, is(NotificationManager.IMPORTANCE_LOW));
-        assertThat(channel.mGroupId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(channel.mGroupId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
 
         assertThat(mMockNotificationManager.getNotificationChannelGroups().size(), is(1));
-        ChannelsInitializer.ChannelGroup group =
+        ChannelDefinitions.ChannelGroup group =
                 mMockNotificationManager.getNotificationChannelGroups().get(0);
-        assertThat(group.mId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(group.mId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
         assertThat(group.mNameResId,
                 is(org.chromium.chrome.R.string.notification_category_group_general));
     }
 
     @Test
     public void testEnsureInitialized_incognitoChannel() throws Exception {
-        mChannelsInitializer.ensureInitialized(ChannelsInitializer.CHANNEL_ID_INCOGNITO);
+        mChannelsInitializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_INCOGNITO);
 
         assertThat(mMockNotificationManager.getChannels().size(), is(1));
-        ChannelsInitializer.Channel channel = mMockNotificationManager.getChannels().get(0);
-        assertThat(channel.mId, is(ChannelsInitializer.CHANNEL_ID_INCOGNITO));
+        ChannelDefinitions.Channel channel = mMockNotificationManager.getChannels().get(0);
+        assertThat(channel.mId, is(ChannelDefinitions.CHANNEL_ID_INCOGNITO));
         assertThat(channel.mNameResId,
                 is(org.chromium.chrome.R.string.notification_category_incognito));
         assertThat(channel.mImportance, is(NotificationManager.IMPORTANCE_LOW));
-        assertThat(channel.mGroupId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(channel.mGroupId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
 
         assertThat(mMockNotificationManager.getNotificationChannelGroups().size(), is(1));
-        ChannelsInitializer.ChannelGroup group =
+        ChannelDefinitions.ChannelGroup group =
                 mMockNotificationManager.getNotificationChannelGroups().get(0);
-        assertThat(group.mId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(group.mId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
         assertThat(group.mNameResId,
                 is(org.chromium.chrome.R.string.notification_category_group_general));
     }
 
     @Test
     public void testEnsureInitialized_mediaChannel() throws Exception {
-        mChannelsInitializer.ensureInitialized(ChannelsInitializer.CHANNEL_ID_MEDIA);
+        mChannelsInitializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_MEDIA);
 
         assertThat(mMockNotificationManager.getChannels().size(), is(1));
-        ChannelsInitializer.Channel channel = mMockNotificationManager.getChannels().get(0);
-        assertThat(channel.mId, is(ChannelsInitializer.CHANNEL_ID_MEDIA));
+        ChannelDefinitions.Channel channel = mMockNotificationManager.getChannels().get(0);
+        assertThat(channel.mId, is(ChannelDefinitions.CHANNEL_ID_MEDIA));
         assertThat(
                 channel.mNameResId, is(org.chromium.chrome.R.string.notification_category_media));
         assertThat(channel.mImportance, is(NotificationManager.IMPORTANCE_LOW));
-        assertThat(channel.mGroupId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(channel.mGroupId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
 
         assertThat(mMockNotificationManager.getNotificationChannelGroups().size(), is(1));
-        ChannelsInitializer.ChannelGroup group =
+        ChannelDefinitions.ChannelGroup group =
                 mMockNotificationManager.getNotificationChannelGroups().get(0);
-        assertThat(group.mId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(group.mId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
         assertThat(group.mNameResId,
                 is(org.chromium.chrome.R.string.notification_category_group_general));
     }
 
     @Test
     public void testEnsureInitialized_sitesChannel() throws Exception {
-        mChannelsInitializer.ensureInitialized(ChannelsInitializer.CHANNEL_ID_SITES);
+        mChannelsInitializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_SITES);
 
         assertThat(mMockNotificationManager.getChannels().size(), is(1));
 
-        ChannelsInitializer.Channel channel = mMockNotificationManager.getChannels().get(0);
-        assertThat(channel.mId, is(ChannelsInitializer.CHANNEL_ID_SITES));
+        ChannelDefinitions.Channel channel = mMockNotificationManager.getChannels().get(0);
+        assertThat(channel.mId, is(ChannelDefinitions.CHANNEL_ID_SITES));
         assertThat(
                 channel.mNameResId, is(org.chromium.chrome.R.string.notification_category_sites));
         assertThat(channel.mImportance, is(NotificationManager.IMPORTANCE_DEFAULT));
-        assertThat(channel.mGroupId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(channel.mGroupId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
 
         assertThat(mMockNotificationManager.getNotificationChannelGroups().size(), is(1));
-        ChannelsInitializer.ChannelGroup group =
+        ChannelDefinitions.ChannelGroup group =
                 mMockNotificationManager.getNotificationChannelGroups().get(0);
-        assertThat(group.mId, is(ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+        assertThat(group.mId, is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
         assertThat(group.mNameResId,
                 is(org.chromium.chrome.R.string.notification_category_group_general));
     }
 
     @Test
     public void testEnsureInitialized_multipleCalls() throws Exception {
-        mChannelsInitializer.ensureInitialized(ChannelsInitializer.CHANNEL_ID_SITES);
-        mChannelsInitializer.ensureInitialized(ChannelsInitializer.CHANNEL_ID_BROWSER);
+        mChannelsInitializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_SITES);
+        mChannelsInitializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_BROWSER);
         assertThat(mMockNotificationManager.getChannels().size(), is(2));
     }
 }

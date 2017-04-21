@@ -16,7 +16,7 @@ import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.ChannelsInitializer;
+import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -105,7 +105,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_BROWSER)
+                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_BROWSER)
                         .setAutoCancel(true)
                         .setContentIntent(contentIntent)
                         .setContentTitle(title)

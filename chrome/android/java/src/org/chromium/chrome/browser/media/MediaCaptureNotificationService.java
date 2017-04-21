@@ -17,7 +17,7 @@ import android.util.SparseIntArray;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.ChannelsInitializer;
+import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -165,7 +165,7 @@ public class MediaCaptureNotificationService extends Service {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_MEDIA)
+                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_MEDIA)
                         .setAutoCancel(false)
                         .setOngoing(true)
                         .setContentTitle(mContext.getString(R.string.app_name))

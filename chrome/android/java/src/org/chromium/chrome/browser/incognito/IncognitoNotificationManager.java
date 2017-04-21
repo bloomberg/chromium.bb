@@ -10,7 +10,7 @@ import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.ChannelsInitializer;
+import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -35,7 +35,7 @@ public class IncognitoNotificationManager {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_INCOGNITO)
+                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_INCOGNITO)
                         .setContentTitle(title)
                         .setContentIntent(
                                 IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(

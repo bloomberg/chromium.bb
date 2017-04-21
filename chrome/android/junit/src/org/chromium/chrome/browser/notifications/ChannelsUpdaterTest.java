@@ -31,7 +31,8 @@ public class ChannelsUpdaterTest {
     @Before
     public void setUp() throws Exception {
         mMockNotificationManager = new MockNotificationManagerProxy();
-        mChannelsInitializer = new ChannelsInitializer(mMockNotificationManager);
+        mChannelsInitializer =
+                new ChannelsInitializer(mMockNotificationManager, new ChannelDefinitions());
         mMockSharedPreferences = new InMemorySharedPreferences();
     }
 
@@ -84,23 +85,22 @@ public class ChannelsUpdaterTest {
 
         assertThat(mMockNotificationManager.getChannels().size(), is(greaterThan(0)));
         assertThat(mMockNotificationManager.getNotificationChannelIds(),
-                containsInAnyOrder(ChannelsInitializer.CHANNEL_ID_BROWSER,
-                        ChannelsInitializer.CHANNEL_ID_DOWNLOADS,
-                        ChannelsInitializer.CHANNEL_ID_INCOGNITO,
-                        ChannelsInitializer.CHANNEL_ID_SITES,
-                        ChannelsInitializer.CHANNEL_ID_MEDIA));
+                containsInAnyOrder(ChannelDefinitions.CHANNEL_ID_BROWSER,
+                        ChannelDefinitions.CHANNEL_ID_DOWNLOADS,
+                        ChannelDefinitions.CHANNEL_ID_INCOGNITO,
+                        ChannelDefinitions.CHANNEL_ID_SITES, ChannelDefinitions.CHANNEL_ID_MEDIA));
         assertThat(mMockSharedPreferences.getInt(ChannelsUpdater.CHANNELS_VERSION_KEY, -1), is(21));
     }
 
     // Suppressed in order to construct the old channels with invalid parameters.
     @SuppressWarnings("WrongConstant")
     @Test
-    public void testUpdateChannels_deletesOldChannelsAndCreatesExpectedOnes() throws Exception {
-        mMockNotificationManager.createNotificationChannel(new ChannelsInitializer.Channel(
+    public void testUpdateChannels_deletesLegacyChannelsAndCreatesExpectedOnes() throws Exception {
+        mMockNotificationManager.createNotificationChannel(new ChannelDefinitions.Channel(
                 "OldChannel", 8292304, NotificationManager.IMPORTANCE_HIGH,
-                ChannelsInitializer.CHANNEL_GROUP_ID_GENERAL));
+                ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
         mMockNotificationManager.createNotificationChannel(
-                new ChannelsInitializer.Channel("AnotherOldChannel", 8292304,
+                new ChannelDefinitions.Channel("AnotherOldChannel", 8292304,
                         NotificationManager.IMPORTANCE_LOW, "OldChannelGroup"));
         assertThat(mMockNotificationManager.getNotificationChannelIds(),
                 containsInAnyOrder("OldChannel", "AnotherOldChannel"));
@@ -110,10 +110,9 @@ public class ChannelsUpdaterTest {
         updater.updateChannels();
 
         assertThat(mMockNotificationManager.getNotificationChannelIds(),
-                containsInAnyOrder(ChannelsInitializer.CHANNEL_ID_BROWSER,
-                        ChannelsInitializer.CHANNEL_ID_DOWNLOADS,
-                        ChannelsInitializer.CHANNEL_ID_INCOGNITO,
-                        ChannelsInitializer.CHANNEL_ID_SITES,
-                        ChannelsInitializer.CHANNEL_ID_MEDIA));
+                containsInAnyOrder(ChannelDefinitions.CHANNEL_ID_BROWSER,
+                        ChannelDefinitions.CHANNEL_ID_DOWNLOADS,
+                        ChannelDefinitions.CHANNEL_ID_INCOGNITO,
+                        ChannelDefinitions.CHANNEL_ID_SITES, ChannelDefinitions.CHANNEL_ID_MEDIA));
     }
 }

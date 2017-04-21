@@ -18,10 +18,10 @@ public interface NotificationManagerProxy {
     void cancel(int id);
     void cancel(String tag, int id);
     void cancelAll();
-    void createNotificationChannel(ChannelsInitializer.Channel channel);
-    void createNotificationChannelGroup(ChannelsInitializer.ChannelGroup channelGroup);
+    void createNotificationChannel(ChannelDefinitions.Channel channel);
+    void createNotificationChannelGroup(ChannelDefinitions.ChannelGroup channelGroup);
     List<String> getNotificationChannelIds();
-    void deleteNotificationChannel(@ChannelsInitializer.ChannelId String id);
+    void deleteNotificationChannel(@ChannelDefinitions.ChannelId String id);
 
     void notify(int id, Notification notification);
     void notify(String tag, int id, Notification notification);

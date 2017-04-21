@@ -20,7 +20,7 @@ import android.os.IBinder;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.ChannelsInitializer;
+import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -152,7 +152,7 @@ public class PhysicalWebBroadcastService extends Service {
         ChromeNotificationBuilder notificationBuilder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_BROWSER)
+                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_BROWSER)
                         .setSmallIcon(R.drawable.ic_image_white_24dp)
                         .setContentTitle(getString(R.string.physical_web_broadcast_notification))
                         .setContentText(displayUrl)

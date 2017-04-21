@@ -38,7 +38,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.notifications.ChannelsInitializer;
+import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -811,7 +811,7 @@ public class MediaNotificationManager {
     @VisibleForTesting
     void updateNotificationBuilder() {
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
-                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_MEDIA);
+                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_MEDIA);
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 
         // TODO(zqzhang): It's weird that setShowWhen() doesn't work on K. Calling setWhen() to

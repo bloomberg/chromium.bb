@@ -45,7 +45,7 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
     }
 
     @Override
-    public void createNotificationChannel(ChannelsInitializer.Channel channel) {
+    public void createNotificationChannel(ChannelDefinitions.Channel channel) {
         assert BuildInfo.isAtLeastO();
         /*
         The code in the try-block uses reflection in order to compile as it calls APIs newer than
@@ -85,7 +85,7 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
     }
 
     @Override
-    public void createNotificationChannelGroup(ChannelsInitializer.ChannelGroup channelGroup) {
+    public void createNotificationChannelGroup(ChannelDefinitions.ChannelGroup channelGroup) {
         assert BuildInfo.isAtLeastO();
         /*
         The code in the try-block uses reflection in order to compile as it calls APIs newer than
@@ -141,7 +141,7 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
     }
 
     @Override
-    public void deleteNotificationChannel(@ChannelsInitializer.ChannelId String id) {
+    public void deleteNotificationChannel(@ChannelDefinitions.ChannelId String id) {
         assert BuildInfo.isAtLeastO();
         /*
         The code in the try-block uses reflection in order to compile as it calls APIs newer than
