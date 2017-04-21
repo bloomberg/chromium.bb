@@ -148,6 +148,7 @@ group("gn_all") {
       "//tools/gn",
       "//tools/gn:gn_unittests",
       "//tools/perf/clear_system_cache",
+      "//tools/traffic_annotation/auditor:traffic_annotation_auditor",
       "//ui/accessibility:accessibility_unittests",
       "//ui/accessibility/extensions",
     ]
