@@ -10,8 +10,8 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/web/public/test/http_server.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #include "ios/web/public/test/response_providers/data_response_provider.h"
 #include "ios/web/public/test/response_providers/error_page_response_provider.h"
@@ -30,14 +30,14 @@ using chrome_test_util::WebViewNotContainingText;
 using web::test::HttpServer;
 
 // Tests display of error pages for bad URLs.
-@interface ErrorPageTestCase : ChromeTestCase
+@interface ExternalURLErrorPageTestCase : ChromeTestCase
 
 // Checks that the DNS error page is not visible.
 - (void)checkErrorPageIsNotVisible;
 
 @end
 
-@implementation ErrorPageTestCase
+@implementation ExternalURLErrorPageTestCase
 
 #pragma mark - utilities
 

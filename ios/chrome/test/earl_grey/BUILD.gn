@@ -138,6 +138,7 @@ chrome_ios_eg_test("ios_chrome_smoke_egtests") {
 chrome_ios_eg_test("ios_chrome_external_url_egtests") {
   deps = [
     "//ios/chrome/browser/translate:external_url_eg_tests",
+    "//ios/chrome/browser/ui:external_url_eg_tests",
   ]
 }
 
