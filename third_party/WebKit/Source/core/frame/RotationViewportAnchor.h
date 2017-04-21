@@ -5,6 +5,7 @@
 #ifndef RotationViewportAnchor_h
 #define RotationViewportAnchor_h
 
+#include "core/CoreExport.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
@@ -27,7 +28,7 @@ class VisualViewport;
 // viewport origin maintains its orientation relative to the anchor. If there is
 // no node or it is lost during the resize, we fall back to the resize anchor
 // logic.
-class RotationViewportAnchor {
+class CORE_EXPORT RotationViewportAnchor {
   STACK_ALLOCATED();
 
  public:

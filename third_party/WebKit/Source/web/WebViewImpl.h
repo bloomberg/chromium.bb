@@ -32,6 +32,7 @@
 #define WebViewImpl_h
 
 #include <memory>
+#include "core/frame/ResizeViewportAnchor.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
@@ -64,7 +65,6 @@
 #include "web/EditorClientImpl.h"
 #include "web/MediaKeysClientImpl.h"
 #include "web/PageWidgetDelegate.h"
-#include "web/ResizeViewportAnchor.h"
 #include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
 #include "web/WebExport.h"

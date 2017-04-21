@@ -5,6 +5,7 @@
 #ifndef ResizeViewportAnchor_h
 #define ResizeViewportAnchor_h
 
+#include "core/CoreExport.h"
 #include "core/page/Page.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -19,7 +20,7 @@ class FrameView;
 // It is needed when the layout viewport grows (causing its own scroll position
 // to be clamped) and also when it shrinks (causing the visual viewport's scroll
 // position to be clamped).
-class ResizeViewportAnchor final
+class CORE_EXPORT ResizeViewportAnchor final
     : public GarbageCollected<ResizeViewportAnchor> {
   WTF_MAKE_NONCOPYABLE(ResizeViewportAnchor);
 
