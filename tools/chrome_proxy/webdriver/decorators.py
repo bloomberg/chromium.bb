@@ -117,3 +117,11 @@ def ChromeVersionAfterM(milestone):
         args[0].skipTest('This test does not run below M%d.' % milestone)
     return wrapper
   return puesdo_wrapper
+
+def Slow(func):
+  def wrapper(*args, **kwargs):
+    if ParseFlags().skip_slow:
+      args[0].skipTest('Skipping slow test.')
+    else:
+      func(*args, **kwargs)
+  return wrapper

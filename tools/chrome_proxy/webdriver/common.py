@@ -72,6 +72,8 @@ def ParseFlags():
     'successful test run, also pass --disable_buffer. Default=ERROR')
   parser.add_argument('--log_file', help='If given, write logging statements '
     'to the given file instead of stderr.')
+  parser.add_argument('--skip_slow', action='store_true', help='If set, tests '
+    'marked as slow will be skipped.', default=False)
   return parser.parse_args(sys.argv[1:])
 
 def GetLogger(name='common'):
