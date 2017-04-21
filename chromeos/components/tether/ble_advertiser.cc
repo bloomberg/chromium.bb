@@ -32,7 +32,7 @@ void BleAdvertiser::BleAdvertisementUnregisterHandlerImpl::
 
 BleAdvertiser::IndividualAdvertisement::IndividualAdvertisement(
     scoped_refptr<device::BluetoothAdapter> adapter,
-    std::unique_ptr<cryptauth::EidGenerator::DataWithTimestamp>
+    std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
         advertisement_data,
     std::shared_ptr<BleAdvertisementUnregisterHandler> unregister_handler)
     : adapter_(adapter),
@@ -157,24 +157,23 @@ BleAdvertiser::BleAdvertiser(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const LocalDeviceDataProvider* local_device_data_provider,
     const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher)
-    : BleAdvertiser(
-          adapter,
-          base::WrapUnique(new BleAdvertisementUnregisterHandlerImpl()),
-          cryptauth::EidGenerator::GetInstance(),
-          remote_beacon_seed_fetcher,
-          local_device_data_provider) {}
+    : BleAdvertiser(adapter,
+                    base::MakeUnique<BleAdvertisementUnregisterHandlerImpl>(),
+                    base::MakeUnique<cryptauth::ForegroundEidGenerator>(),
+                    remote_beacon_seed_fetcher,
+                    local_device_data_provider) {}
 
 BleAdvertiser::~BleAdvertiser() {}
 
 BleAdvertiser::BleAdvertiser(
     scoped_refptr<device::BluetoothAdapter> adapter,
     std::unique_ptr<BleAdvertisementUnregisterHandler> unregister_handler,
-    const cryptauth::EidGenerator* eid_generator,
+    std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
     const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
     const LocalDeviceDataProvider* local_device_data_provider)
     : adapter_(adapter),
       unregister_handler_(std::move(unregister_handler)),
-      eid_generator_(eid_generator),
+      eid_generator_(std::move(eid_generator)),
       remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
       local_device_data_provider_(local_device_data_provider) {}
 
@@ -212,9 +211,9 @@ bool BleAdvertiser::StartAdvertisingToDevice(
     return false;
   }
 
-  std::unique_ptr<cryptauth::EidGenerator::DataWithTimestamp> advertisement =
-      eid_generator_->GenerateAdvertisement(local_device_public_key,
-                                            remote_beacon_seeds);
+  std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
+      advertisement = eid_generator_->GenerateAdvertisement(
+          local_device_public_key, remote_beacon_seeds);
   if (!advertisement) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
                     << remote_device.GetTruncatedDeviceIdForLogs() << ". "

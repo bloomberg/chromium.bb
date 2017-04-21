@@ -61,17 +61,17 @@ BleScanner::BleScanner(
     const LocalDeviceDataProvider* local_device_data_provider)
     : BleScanner(base::MakeUnique<ServiceDataProviderImpl>(),
                  adapter,
-                 cryptauth::EidGenerator::GetInstance(),
+                 base::WrapUnique(new cryptauth::ForegroundEidGenerator()),
                  local_device_data_provider) {}
 
 BleScanner::BleScanner(
     std::unique_ptr<ServiceDataProvider> service_data_provider,
     scoped_refptr<device::BluetoothAdapter> adapter,
-    const cryptauth::EidGenerator* eid_generator,
+    std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
     const LocalDeviceDataProvider* local_device_data_provider)
     : service_data_provider_(std::move(service_data_provider)),
       adapter_(adapter),
-      eid_generator_(eid_generator),
+      eid_generator_(std::move(eid_generator)),
       local_device_data_provider_(local_device_data_provider),
       is_initializing_discovery_session_(false),
       discovery_session_(nullptr),
@@ -103,7 +103,7 @@ bool BleScanner::RegisterScanFilterForDevice(
     return false;
   }
 
-  std::unique_ptr<cryptauth::EidGenerator::EidData> scan_filters =
+  std::unique_ptr<cryptauth::ForegroundEidGenerator::EidData> scan_filters =
       eid_generator_->GenerateBackgroundScanFilter(local_device_beacon_seeds);
   if (!scan_filters) {
     PA_LOG(WARNING) << "Error generating background scan filters. Cannot scan";

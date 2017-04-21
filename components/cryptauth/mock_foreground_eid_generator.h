@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_BLE_MOCK_EID_GENERATOR_H_
-#define COMPONENTS_CRYPTAUTH_BLE_MOCK_EID_GENERATOR_H_
+#ifndef COMPONENTS_CRYPTAUTH_BLE_MOCK_FOREGROUND_EID_GENERATOR_H_
+#define COMPONENTS_CRYPTAUTH_BLE_MOCK_FOREGROUND_EID_GENERATOR_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "components/cryptauth/eid_generator.h"
+#include "components/cryptauth/foreground_eid_generator.h"
 
 namespace cryptauth {
 
 class BeaconSeed;
 struct RemoteDevice;
 
-// Mock class for EidGenerator. Note that GoogleMock cannot be used to mock this
-// class because GoogleMock's mock functions cannot return a |std::unique_ptr|.
-class MockEidGenerator : public EidGenerator {
+// Mock class for ForegroundEidGenerator. Note that GoogleMock cannot be used to
+// mock this class because GoogleMock's mock functions cannot return a
+// |std::unique_ptr|.
+class MockForegroundEidGenerator : public ForegroundEidGenerator {
  public:
-  MockEidGenerator();
-  ~MockEidGenerator() override;
+  MockForegroundEidGenerator();
+  ~MockForegroundEidGenerator() override;
 
   // Setters for the return values of the overridden functions below.
   void set_background_scan_filter(
@@ -42,27 +43,25 @@ class MockEidGenerator : public EidGenerator {
     identified_device_ = identified_device;
   }
 
-  // EidGenerator:
+  // ForegroundEidGenerator:
   std::unique_ptr<EidData> GenerateBackgroundScanFilter(
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds)
-          const override;
+      const override;
   std::unique_ptr<DataWithTimestamp> GenerateAdvertisement(
       const std::string& advertising_device_public_key,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds)
-          const override;
+      const override;
   std::vector<std::string> GeneratePossibleAdvertisements(
       const std::string& advertising_device_public_key,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds)
-          const override;
+      const override;
   RemoteDevice const* IdentifyRemoteDeviceByAdvertisement(
       const std::string& advertisement_service_data,
       const std::vector<RemoteDevice>& device_list,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds)
-          const override;
+      const override;
 
-  int num_identify_calls() {
-    return num_identify_calls_;
-  }
+  int num_identify_calls() { return num_identify_calls_; }
 
  private:
   std::unique_ptr<EidData> background_scan_filter_;
@@ -75,4 +74,4 @@ class MockEidGenerator : public EidGenerator {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_BLE_MOCK_EID_GENERATOR_H_
+#endif  // COMPONENTS_CRYPTAUTH_BLE_MOCK_FOREGROUND_EID_GENERATOR_H_

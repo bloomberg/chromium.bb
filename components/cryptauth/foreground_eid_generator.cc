@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/eid_generator.h"
+#include "components/cryptauth/foreground_eid_generator.h"
 
 #include <cstring>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "base/sys_byteorder.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/raw_eid_generator.h"
+#include "components/cryptauth/raw_eid_generator_impl.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "crypto/sha2.h"
 
 namespace cryptauth {
 
@@ -23,45 +23,21 @@ const int64_t kNoTimestamp = 0;
 const int64_t kMaxPositiveInt64TValue = 0x7FFFFFFF;
 }  // namespace
 
-const int64_t EidGenerator::kNumMsInEidPeriod =
+const int64_t ForegroundEidGenerator::kNumMsInEidPeriod =
     base::TimeDelta::FromHours(8).InMilliseconds();
-const int64_t EidGenerator::kNumMsInBeginningOfEidPeriod =
+const int64_t ForegroundEidGenerator::kNumMsInBeginningOfEidPeriod =
     base::TimeDelta::FromHours(2).InMilliseconds();
-const int32_t EidGenerator::kNumBytesInEidValue = 2;
-const int8_t EidGenerator::kBluetooth4Flag = 0x01;
+const int8_t ForegroundEidGenerator::kBluetooth4Flag = 0x01;
 
-// static
-EidGenerator* EidGenerator::GetInstance() {
-  return base::Singleton<EidGenerator>::get();
-}
-
-std::string EidGenerator::EidComputationHelperImpl::GenerateEidDataForDevice(
-    const std::string& eid_seed,
-    const int64_t start_of_period_timestamp_ms,
-    const std::string* extra_entropy) {
-  // The data to hash is the eid seed, followed by the extra entropy (if it
-  // exists), followed by the timestamp.
-  std::string to_hash = eid_seed;
-  if (extra_entropy) {
-    to_hash += *extra_entropy;
-  }
-  uint64_t timestamp_data =
-      base::HostToNet64(static_cast<uint64_t>(start_of_period_timestamp_ms));
-  to_hash.append(reinterpret_cast<char*>(&timestamp_data), sizeof(uint64_t));
-
-  std::string result = crypto::SHA256HashString(to_hash);
-  result.resize(EidGenerator::kNumBytesInEidValue);
-  return result;
-}
-
-EidGenerator::EidData::EidData(const DataWithTimestamp current_data,
-                               std::unique_ptr<DataWithTimestamp> adjacent_data)
+ForegroundEidGenerator::EidData::EidData(
+    const DataWithTimestamp current_data,
+    std::unique_ptr<DataWithTimestamp> adjacent_data)
     : current_data(current_data), adjacent_data(std::move(adjacent_data)) {}
 
-EidGenerator::EidData::~EidData() {}
+ForegroundEidGenerator::EidData::~EidData() {}
 
-EidGenerator::EidData::AdjacentDataType
-EidGenerator::EidData::GetAdjacentDataType() const {
+ForegroundEidGenerator::EidData::AdjacentDataType
+ForegroundEidGenerator::EidData::GetAdjacentDataType() const {
   if (!adjacent_data) {
     return AdjacentDataType::NONE;
   }
@@ -73,7 +49,7 @@ EidGenerator::EidData::GetAdjacentDataType() const {
   return AdjacentDataType::FUTURE;
 }
 
-std::string EidGenerator::EidData::DataInHex() const {
+std::string ForegroundEidGenerator::EidData::DataInHex() const {
   std::string str = "[" + current_data.DataInHex();
 
   if (adjacent_data) {
@@ -83,7 +59,7 @@ std::string EidGenerator::EidData::DataInHex() const {
   return str + "]";
 }
 
-EidGenerator::DataWithTimestamp::DataWithTimestamp(
+ForegroundEidGenerator::DataWithTimestamp::DataWithTimestamp(
     const std::string& data,
     const int64_t start_timestamp_ms,
     const int64_t end_timestamp_ms)
@@ -94,7 +70,7 @@ EidGenerator::DataWithTimestamp::DataWithTimestamp(
   DCHECK(data.size());
 }
 
-EidGenerator::DataWithTimestamp::DataWithTimestamp(
+ForegroundEidGenerator::DataWithTimestamp::DataWithTimestamp(
     const DataWithTimestamp& other)
     : data(other.data),
       start_timestamp_ms(other.start_timestamp_ms),
@@ -103,12 +79,12 @@ EidGenerator::DataWithTimestamp::DataWithTimestamp(
   DCHECK(data.size());
 }
 
-bool EidGenerator::DataWithTimestamp::ContainsTime(
+bool ForegroundEidGenerator::DataWithTimestamp::ContainsTime(
     const int64_t timestamp_ms) const {
   return start_timestamp_ms <= timestamp_ms && timestamp_ms < end_timestamp_ms;
 }
 
-std::string EidGenerator::DataWithTimestamp::DataInHex() const {
+std::string ForegroundEidGenerator::DataWithTimestamp::DataInHex() const {
   std::stringstream ss;
   ss << "0x" << std::hex;
 
@@ -119,20 +95,20 @@ std::string EidGenerator::DataWithTimestamp::DataInHex() const {
   return ss.str();
 }
 
-EidGenerator::EidGenerator()
-    : EidGenerator(base::WrapUnique(new EidComputationHelperImpl()),
-                   base::WrapUnique(new base::DefaultClock())) {}
+ForegroundEidGenerator::ForegroundEidGenerator()
+    : ForegroundEidGenerator(base::MakeUnique<RawEidGeneratorImpl>(),
+                             base::MakeUnique<base::DefaultClock>()) {}
 
-EidGenerator::EidGenerator(
-    std::unique_ptr<EidComputationHelper> computation_helper,
+ForegroundEidGenerator::ForegroundEidGenerator(
+    std::unique_ptr<RawEidGenerator> raw_eid_generator,
     std::unique_ptr<base::Clock> clock)
     : clock_(std::move(clock)),
-      eid_computation_helper_(std::move(computation_helper)) {}
+      raw_eid_generator_(std::move(raw_eid_generator)) {}
 
-EidGenerator::~EidGenerator() {}
+ForegroundEidGenerator::~ForegroundEidGenerator() {}
 
-std::unique_ptr<EidGenerator::EidData>
-EidGenerator::GenerateBackgroundScanFilter(
+std::unique_ptr<ForegroundEidGenerator::EidData>
+ForegroundEidGenerator::GenerateBackgroundScanFilter(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
   std::unique_ptr<EidPeriodTimestamps> timestamps =
       GetEidPeriodTimestamps(scanning_device_beacon_seeds);
@@ -159,8 +135,8 @@ EidGenerator::GenerateBackgroundScanFilter(
   return base::WrapUnique(new EidData(*current_eid, std::move(adjacent_eid)));
 }
 
-std::unique_ptr<EidGenerator::DataWithTimestamp>
-EidGenerator::GenerateAdvertisement(
+std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+ForegroundEidGenerator::GenerateAdvertisement(
     const std::string& advertising_device_public_key,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
   std::unique_ptr<EidPeriodTimestamps> timestamps =
@@ -175,7 +151,7 @@ EidGenerator::GenerateAdvertisement(
                                timestamps->current_period_end_timestamp_ms);
 }
 
-RemoteDevice const* EidGenerator::IdentifyRemoteDeviceByAdvertisement(
+RemoteDevice const* ForegroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
     const std::string& advertisement_service_data,
     const std::vector<RemoteDevice>& device_list,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
@@ -183,7 +159,7 @@ RemoteDevice const* EidGenerator::IdentifyRemoteDeviceByAdvertisement(
   // bytes. The bytes following these are flags, so they are not needed to
   // identify the device which sent a message.
   std::string service_data_without_flags = advertisement_service_data;
-  service_data_without_flags.resize(2 * kNumBytesInEidValue);
+  service_data_without_flags.resize(2 * RawEidGenerator::kNumBytesInEidValue);
 
   for (const auto& remote_device : device_list) {
     std::vector<std::string> possible_advertisements =
@@ -199,7 +175,7 @@ RemoteDevice const* EidGenerator::IdentifyRemoteDeviceByAdvertisement(
   return nullptr;
 }
 
-std::vector<std::string> EidGenerator::GeneratePossibleAdvertisements(
+std::vector<std::string> ForegroundEidGenerator::GeneratePossibleAdvertisements(
     const std::string& advertising_device_public_key,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
   std::vector<std::string> possible_advertisements;
@@ -235,8 +211,8 @@ std::vector<std::string> EidGenerator::GeneratePossibleAdvertisements(
   return possible_advertisements;
 }
 
-std::unique_ptr<EidGenerator::DataWithTimestamp>
-EidGenerator::GenerateAdvertisement(
+std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+ForegroundEidGenerator::GenerateAdvertisement(
     const std::string& advertising_device_public_key,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
     const int64_t start_of_period_timestamp_ms,
@@ -261,8 +237,8 @@ EidGenerator::GenerateAdvertisement(
                                                 end_of_period_timestamp_ms));
 }
 
-std::unique_ptr<EidGenerator::DataWithTimestamp>
-EidGenerator::GenerateEidDataWithTimestamp(
+std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+ForegroundEidGenerator::GenerateEidDataWithTimestamp(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
     const int64_t start_of_period_timestamp_ms,
     const int64_t end_of_period_timestamp_ms) const {
@@ -271,26 +247,26 @@ EidGenerator::GenerateEidDataWithTimestamp(
                                       end_of_period_timestamp_ms, nullptr);
 }
 
-std::unique_ptr<EidGenerator::DataWithTimestamp>
-EidGenerator::GenerateEidDataWithTimestamp(
+std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+ForegroundEidGenerator::GenerateEidDataWithTimestamp(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
     const int64_t start_of_period_timestamp_ms,
     const int64_t end_of_period_timestamp_ms,
-    const std::string* extra_entropy) const {
+    std::string const* extra_entropy) const {
   std::unique_ptr<std::string> eid_seed = GetEidSeedForPeriod(
       scanning_device_beacon_seeds, start_of_period_timestamp_ms);
   if (!eid_seed) {
     return nullptr;
   }
 
-  std::string eid_data = eid_computation_helper_->GenerateEidDataForDevice(
+  std::string eid_data = raw_eid_generator_->GenerateEid(
       *eid_seed, start_of_period_timestamp_ms, extra_entropy);
 
   return base::WrapUnique(new DataWithTimestamp(
       eid_data, start_of_period_timestamp_ms, end_of_period_timestamp_ms));
 }
 
-std::unique_ptr<std::string> EidGenerator::GetEidSeedForPeriod(
+std::unique_ptr<std::string> ForegroundEidGenerator::GetEidSeedForPeriod(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
     const int64_t start_of_period_timestamp_ms) const {
   for (auto seed : scanning_device_beacon_seeds) {
@@ -303,14 +279,14 @@ std::unique_ptr<std::string> EidGenerator::GetEidSeedForPeriod(
   return nullptr;
 }
 
-std::unique_ptr<EidGenerator::EidPeriodTimestamps>
-EidGenerator::GetEidPeriodTimestamps(
+std::unique_ptr<ForegroundEidGenerator::EidPeriodTimestamps>
+ForegroundEidGenerator::GetEidPeriodTimestamps(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
   return GetEidPeriodTimestamps(scanning_device_beacon_seeds, false);
 }
 
-std::unique_ptr<EidGenerator::EidPeriodTimestamps>
-EidGenerator::GetEidPeriodTimestamps(
+std::unique_ptr<ForegroundEidGenerator::EidPeriodTimestamps>
+ForegroundEidGenerator::GetEidPeriodTimestamps(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
     const bool allow_non_current_periods) const {
   base::Time now = clock_->Now();
@@ -365,7 +341,8 @@ EidGenerator::GetEidPeriodTimestamps(
   return nullptr;
 }
 
-std::unique_ptr<BeaconSeed> EidGenerator::GetBeaconSeedForCurrentPeriod(
+std::unique_ptr<BeaconSeed>
+ForegroundEidGenerator::GetBeaconSeedForCurrentPeriod(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
     const int64_t current_time_ms) const {
   for (auto seed : scanning_device_beacon_seeds) {
@@ -386,8 +363,8 @@ std::unique_ptr<BeaconSeed> EidGenerator::GetBeaconSeedForCurrentPeriod(
   return nullptr;
 }
 
-std::unique_ptr<EidGenerator::EidPeriodTimestamps>
-EidGenerator::GetClosestPeriod(
+std::unique_ptr<ForegroundEidGenerator::EidPeriodTimestamps>
+ForegroundEidGenerator::GetClosestPeriod(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
     const int64_t current_time_ms) const {
   int64_t smallest_diff_so_far_ms = kMaxPositiveInt64TValue;
@@ -436,7 +413,7 @@ EidGenerator::GetClosestPeriod(
       start_of_period_timestamp_ms, end_of_period_timestamp_ms});
 }
 
-bool EidGenerator::IsCurrentTimeAtStartOfEidPeriod(
+bool ForegroundEidGenerator::IsCurrentTimeAtStartOfEidPeriod(
     const int64_t start_of_period_timestamp_ms,
     const int64_t end_of_period_timestamp_ms,
     const int64_t current_timestamp_ms) {

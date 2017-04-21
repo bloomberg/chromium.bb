@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/mock_local_device_data_provider.h"
-#include "components/cryptauth/mock_eid_generator.h"
+#include "components/cryptauth/mock_foreground_eid_generator.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -99,16 +99,17 @@ const std::string fake_beacon_seed2_data = "fakeBeaconSeed2Data";
 const int64_t fake_beacon_seed2_start_ms = adjacent_eid_start_ms;
 const int64_t fake_beacon_seed2_end_ms = adjacent_eid_end_ms;
 
-std::unique_ptr<cryptauth::EidGenerator::EidData>
+std::unique_ptr<cryptauth::ForegroundEidGenerator::EidData>
 CreateFakeBackgroundScanFilter() {
-  cryptauth::EidGenerator::DataWithTimestamp current(
+  cryptauth::ForegroundEidGenerator::DataWithTimestamp current(
       current_eid_data, current_eid_start_ms, current_eid_end_ms);
 
-  std::unique_ptr<cryptauth::EidGenerator::DataWithTimestamp> adjacent =
-      base::MakeUnique<cryptauth::EidGenerator::DataWithTimestamp>(
+  std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
+      adjacent = base::MakeUnique<
+          cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
           adjacent_eid_data, adjacent_eid_start_ms, adjacent_eid_end_ms);
 
-  return base::MakeUnique<cryptauth::EidGenerator::EidData>(
+  return base::MakeUnique<cryptauth::ForegroundEidGenerator::EidData>(
       current, std::move(adjacent));
 }
 
@@ -152,7 +153,9 @@ class BleScannerTest : public testing::Test {
   void SetUp() override {
     test_service_data_provider_ = new TestServiceDataProvider();
 
-    mock_eid_generator_ = base::MakeUnique<cryptauth::MockEidGenerator>();
+    std::unique_ptr<cryptauth::MockForegroundEidGenerator> eid_generator =
+        base::MakeUnique<cryptauth::MockForegroundEidGenerator>();
+    mock_eid_generator_ = eid_generator.get();
     mock_eid_generator_->set_background_scan_filter(
         CreateFakeBackgroundScanFilter());
 
@@ -178,7 +181,7 @@ class BleScannerTest : public testing::Test {
 
     ble_scanner_ = base::WrapUnique(new BleScanner(
         base::WrapUnique(test_service_data_provider_), mock_adapter_,
-        mock_eid_generator_.get(), mock_local_device_data_provider_.get()));
+        std::move(eid_generator), mock_local_device_data_provider_.get()));
 
     mock_observer_ = base::MakeUnique<MockBleScannerObserver>();
     ble_scanner_->AddObserver(mock_observer_.get());
@@ -223,7 +226,7 @@ class BleScannerTest : public testing::Test {
   std::unique_ptr<MockBleScannerObserver> mock_observer_;
 
   TestServiceDataProvider* test_service_data_provider_;
-  std::unique_ptr<cryptauth::MockEidGenerator> mock_eid_generator_;
+  cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
   std::unique_ptr<MockLocalDeviceDataProvider> mock_local_device_data_provider_;
 
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;

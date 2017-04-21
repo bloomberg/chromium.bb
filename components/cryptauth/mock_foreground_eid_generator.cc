@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/mock_eid_generator.h"
+#include "components/cryptauth/mock_foreground_eid_generator.h"
 
 #include "base/memory/ptr_util.h"
 
 namespace cryptauth {
 
-MockEidGenerator::MockEidGenerator() : background_scan_filter_(nullptr),
-                                       advertisement_(nullptr),
-                                       possible_advertisements_(nullptr),
-                                       identified_device_(nullptr),
-                                       num_identify_calls_(0) {}
+MockForegroundEidGenerator::MockForegroundEidGenerator()
+    : background_scan_filter_(nullptr),
+      advertisement_(nullptr),
+      possible_advertisements_(nullptr),
+      identified_device_(nullptr),
+      num_identify_calls_(0) {}
 
-MockEidGenerator::~MockEidGenerator() {}
+MockForegroundEidGenerator::~MockForegroundEidGenerator() {}
 
-std::unique_ptr<EidGenerator::EidData>
-MockEidGenerator::GenerateBackgroundScanFilter(
+std::unique_ptr<ForegroundEidGenerator::EidData>
+MockForegroundEidGenerator::GenerateBackgroundScanFilter(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
   if (!background_scan_filter_) {
     return nullptr;
   }
 
-  std::unique_ptr<EidGenerator::DataWithTimestamp> adjacent_data;
+  std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp> adjacent_data;
   if (background_scan_filter_->adjacent_data) {
     adjacent_data = base::MakeUnique<DataWithTimestamp>(
         background_scan_filter_->adjacent_data->data,
@@ -31,25 +32,25 @@ MockEidGenerator::GenerateBackgroundScanFilter(
         background_scan_filter_->adjacent_data->end_timestamp_ms);
   }
 
-  return base::MakeUnique<EidData>(
-      background_scan_filter_->current_data, std::move(adjacent_data));
+  return base::MakeUnique<EidData>(background_scan_filter_->current_data,
+                                   std::move(adjacent_data));
 }
 
-std::unique_ptr<EidGenerator::DataWithTimestamp>
-MockEidGenerator::GenerateAdvertisement(
+std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+MockForegroundEidGenerator::GenerateAdvertisement(
     const std::string& advertising_device_public_key,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
   if (!advertisement_) {
     return nullptr;
   }
 
-  return base::MakeUnique<DataWithTimestamp>(
-      advertisement_->data,
-      advertisement_->start_timestamp_ms,
-      advertisement_->end_timestamp_ms);
+  return base::MakeUnique<DataWithTimestamp>(advertisement_->data,
+                                             advertisement_->start_timestamp_ms,
+                                             advertisement_->end_timestamp_ms);
 }
 
-std::vector<std::string> MockEidGenerator::GeneratePossibleAdvertisements(
+std::vector<std::string>
+MockForegroundEidGenerator::GeneratePossibleAdvertisements(
     const std::string& advertising_device_public_key,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
   if (!possible_advertisements_) {
@@ -59,7 +60,8 @@ std::vector<std::string> MockEidGenerator::GeneratePossibleAdvertisements(
   return *possible_advertisements_;
 }
 
-RemoteDevice const* MockEidGenerator::IdentifyRemoteDeviceByAdvertisement(
+RemoteDevice const*
+MockForegroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
     const std::string& advertisement_service_data,
     const std::vector<RemoteDevice>& device_list,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {

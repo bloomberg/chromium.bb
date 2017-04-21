@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/cryptauth/eid_generator.h"
+#include "components/cryptauth/foreground_eid_generator.h"
 #include "components/cryptauth/remote_device.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -70,7 +70,7 @@ class BleAdvertiser {
    public:
     IndividualAdvertisement(
         scoped_refptr<device::BluetoothAdapter> adapter,
-        std::unique_ptr<cryptauth::EidGenerator::DataWithTimestamp>
+        std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
             advertisement_data,
         std::shared_ptr<BleAdvertisementUnregisterHandler> unregister_handler);
 
@@ -104,7 +104,7 @@ class BleAdvertiser {
 
     scoped_refptr<device::BluetoothAdapter> adapter_;
     bool is_initializing_advertising_;
-    std::unique_ptr<cryptauth::EidGenerator::DataWithTimestamp>
+    std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
         advertisement_data_;
     std::shared_ptr<BleAdvertisementUnregisterHandler> unregister_handler_;
     scoped_refptr<device::BluetoothAdvertisement> advertisement_;
@@ -117,15 +117,15 @@ class BleAdvertiser {
   BleAdvertiser(
       scoped_refptr<device::BluetoothAdapter> adapter,
       std::unique_ptr<BleAdvertisementUnregisterHandler> unregister_handler,
-      const cryptauth::EidGenerator* eid_generator,
+      std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
       const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
       const LocalDeviceDataProvider* local_device_data_provider);
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
   std::shared_ptr<BleAdvertisementUnregisterHandler> unregister_handler_;
 
+  std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator_;
   // Not owned by this instance and must outlive it.
-  const cryptauth::EidGenerator* eid_generator_;
   const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher_;
   const LocalDeviceDataProvider* local_device_data_provider_;
 

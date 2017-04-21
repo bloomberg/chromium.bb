@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_BLE_EID_GENERATOR_H_
-#define COMPONENTS_CRYPTAUTH_BLE_EID_GENERATOR_H_
+#ifndef COMPONENTS_CRYPTAUTH_BLE_FOREGROUND_EID_GENERATOR_H_
+#define COMPONENTS_CRYPTAUTH_BLE_FOREGROUND_EID_GENERATOR_H_
 
 #include <memory>
 #include <string>
@@ -11,15 +11,23 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/time/clock.h"
 
 namespace cryptauth {
 
 class BeaconSeed;
+class RawEidGenerator;
 struct RemoteDevice;
 
-// Generates ephemeral ID (EID) values for BLE communication in ProximityAuth.
+// Generates ephemeral ID (EID) values that are broadcast for foreground BLE
+// advertisements in the ProximityAuth protocol.
+//
+// When advertising in foreground mode, we don't care about battery consumption
+// while advertising. We assume, however, that the scanning side is
+// battery-conscious, and is using hardware-based scanning.
+//
+// For the inverse of this model, in which advertising is battery-sensitive, see
+// BackgroundEidGenerator.
 //
 // A peripheral-role device advertises a 4-byte advertisement with two parts: a
 // 2-byte EID which is specific to the central-role device with which it intends
@@ -30,7 +38,7 @@ struct RemoteDevice;
 // EIDs.
 //
 // See go/proximity-auth-ble-advertising.
-class EidGenerator {
+class ForegroundEidGenerator {
  public:
   // Stores EID-related data and timestamps at which time this data becomes
   // active or inactive.
@@ -72,8 +80,8 @@ class EidGenerator {
   // recipient should advertise back instead of initializing a connection.
   static const int8_t kBluetooth4Flag;
 
-  static EidGenerator* GetInstance();
-  virtual ~EidGenerator();
+  ForegroundEidGenerator();
+  virtual ~ForegroundEidGenerator();
 
   // Generates EID data for the given EID seeds to be used as a background scan
   // filter. In the normal case, two DataWithTimestamp values are returned, one
@@ -103,12 +111,7 @@ class EidGenerator {
       const std::vector<RemoteDevice>& device_list,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const;
 
- protected:
-  EidGenerator();
-
  private:
-  friend struct base::DefaultSingletonTraits<EidGenerator>;
-
   struct EidPeriodTimestamps {
     int64_t current_period_start_timestamp_ms;
     int64_t current_period_end_timestamp_ms;
@@ -116,28 +119,11 @@ class EidGenerator {
     int64_t adjacent_period_end_timestamp_ms;
   };
 
-  class EidComputationHelper {
-   public:
-    virtual std::string GenerateEidDataForDevice(
-        const std::string& eid_seed,
-        const int64_t start_of_period_timestamp_ms,
-        const std::string* extra_entropy) = 0;
-  };
-
-  class EidComputationHelperImpl : public EidComputationHelper {
-   public:
-    std::string GenerateEidDataForDevice(
-        const std::string& eid_seed,
-        const int64_t start_of_period_timestamp_ms,
-        const std::string* extra_entropy) override;
-  };
-
   static const int64_t kNumMsInEidPeriod;
   static const int64_t kNumMsInBeginningOfEidPeriod;
-  static const int32_t kNumBytesInEidValue;
 
-  EidGenerator(std::unique_ptr<EidComputationHelper> computation_helper,
-               std::unique_ptr<base::Clock> clock);
+  ForegroundEidGenerator(std::unique_ptr<RawEidGenerator> raw_eid_generator,
+                         std::unique_ptr<base::Clock> clock);
 
   std::unique_ptr<DataWithTimestamp> GenerateAdvertisement(
       const std::string& advertising_device_public_key,
@@ -154,7 +140,7 @@ class EidGenerator {
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
       const int64_t start_of_period_timestamp_ms,
       const int64_t end_of_period_timestamp_ms,
-      const std::string* extra_entropy) const;
+      std::string const* extra_entropy) const;
 
   std::unique_ptr<std::string> GetEidSeedForPeriod(
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
@@ -182,55 +168,36 @@ class EidGenerator {
 
   std::unique_ptr<base::Clock> clock_;
 
-  std::unique_ptr<EidComputationHelper> eid_computation_helper_;
+  std::unique_ptr<RawEidGenerator> raw_eid_generator_;
 
-  DISALLOW_COPY_AND_ASSIGN(EidGenerator);
+  DISALLOW_COPY_AND_ASSIGN(ForegroundEidGenerator);
 
-  friend class CryptAuthEidGeneratorTest;
+  friend class CryptAuthForegroundEidGeneratorTest;
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthForegroundEidGeneratorTest,
+                           GenerateBackgroundScanFilter_UsingRealEids);
   FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestGenerateEidDataForDevice_UsingRealEidComputationHelper);
+      CryptAuthForegroundEidGeneratorTest,
+      GeneratePossibleAdvertisements_CurrentAndPastAdjacentPeriods);
   FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestGeneratePossibleAdvertisements_CurrentAndPastAdjacentPeriods);
-  FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
+      CryptAuthForegroundEidGeneratorTest,
       testGeneratePossibleAdvertisements_CurrentAndFutureAdjacentPeriods);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthForegroundEidGeneratorTest,
+                           GeneratePossibleAdvertisements_OnlyCurrentPeriod);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthForegroundEidGeneratorTest,
+                           GeneratePossibleAdvertisements_OnlyFuturePeriod);
   FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestGeneratePossibleAdvertisements_OnlyCurrentPeriod);
-  FRIEND_TEST_ALL_PREFIXES(CryptAuthEidGeneratorTest,
-                           TestGeneratePossibleAdvertisements_OnlyFuturePeriod);
+      CryptAuthForegroundEidGeneratorTest,
+      GeneratePossibleAdvertisements_NoAdvertisements_SeedsTooFarInFuture);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthForegroundEidGeneratorTest,
+                           GeneratePossibleAdvertisements_OnlyPastPeriod);
   FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestGeneratePossibleAdvertisements_NoAdvertisements_SeedsTooFarInFuture);
-  FRIEND_TEST_ALL_PREFIXES(CryptAuthEidGeneratorTest,
-                           TestGeneratePossibleAdvertisements_OnlyPastPeriod);
+      CryptAuthForegroundEidGeneratorTest,
+      GeneratePossibleAdvertisements_NoAdvertisements_SeedsTooFarInPast);
   FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestGeneratePossibleAdvertisements_NoAdvertisements_SeedsTooFarInPast);
-  FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestGeneratePossibleAdvertisements_NoAdvertisements_EmptySeeds);
-  FRIEND_TEST_ALL_PREFIXES(CryptAuthEidGeneratorTest,
-                           TestEidComputationHelperImpl_ProducesTwoByteValue);
-  FRIEND_TEST_ALL_PREFIXES(CryptAuthEidGeneratorTest,
-                           TestEidComputationHelperImpl_Deterministic);
-  FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestEidComputationHelperImpl_ChangingSeedChangesOutput);
-  FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestEidComputationHelperImpl_ChangingTimestampChangesOutput);
-  FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestEidComputationHelperImpl_ChangingExtraEntropyChangesOutput);
-  FRIEND_TEST_ALL_PREFIXES(
-      CryptAuthEidGeneratorTest,
-      TestEidComputationHelper_ChangingTimestampWithLongExtraEntropy);
-  FRIEND_TEST_ALL_PREFIXES(CryptAuthEidGeneratorTest,
-                           TestEidComputationHelper_EnsureTestVectorsPass);
+      CryptAuthForegroundEidGeneratorTest,
+      GeneratePossibleAdvertisements_NoAdvertisements_EmptySeeds);
 };
-}
 
-#endif  // COMPONENTS_CRYPTAUTH_BLE_EID_GENERATOR_H_
+}  // cryptauth
+
+#endif  // COMPONENTS_CRYPTAUTH_BLE_FOREGROUND_EID_GENERATOR_H_

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/mock_local_device_data_provider.h"
-#include "components/cryptauth/mock_eid_generator.h"
+#include "components/cryptauth/mock_foreground_eid_generator.h"
 #include "components/cryptauth/mock_remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -80,15 +80,15 @@ class MockBluetoothAdapterWithAdvertisements
   ~MockBluetoothAdapterWithAdvertisements() override {}
 };
 
-std::vector<cryptauth::EidGenerator::DataWithTimestamp>
+std::vector<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
 GenerateFakeAdvertisements() {
-  cryptauth::EidGenerator::DataWithTimestamp advertisement1("advertisement1",
-                                                            1000L, 2000L);
-  cryptauth::EidGenerator::DataWithTimestamp advertisement2("advertisement2",
-                                                            2000L, 3000L);
+  cryptauth::ForegroundEidGenerator::DataWithTimestamp advertisement1(
+      "advertisement1", 1000L, 2000L);
+  cryptauth::ForegroundEidGenerator::DataWithTimestamp advertisement2(
+      "advertisement2", 2000L, 3000L);
 
-  std::vector<cryptauth::EidGenerator::DataWithTimestamp> advertisements = {
-      advertisement1, advertisement2};
+  std::vector<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
+      advertisements = {advertisement1, advertisement2};
   return advertisements;
 }
 
@@ -157,7 +157,9 @@ class BleAdvertiserTest : public testing::Test {
 
     test_unregister_handler_ = new TestBleAdvertisementUnregisterHandler();
 
-    mock_eid_generator_ = base::MakeUnique<cryptauth::MockEidGenerator>();
+    std::unique_ptr<cryptauth::MockForegroundEidGenerator> eid_generator =
+        base::MakeUnique<cryptauth::MockForegroundEidGenerator>();
+    mock_eid_generator_ = eid_generator.get();
 
     mock_seed_fetcher_ =
         base::MakeUnique<cryptauth::MockRemoteBeaconSeedFetcher>();
@@ -180,7 +182,7 @@ class BleAdvertiserTest : public testing::Test {
 
     ble_advertiser_ = base::WrapUnique(new BleAdvertiser(
         mock_adapter_, base::WrapUnique(test_unregister_handler_),
-        mock_eid_generator_.get(), mock_seed_fetcher_.get(),
+        std::move(eid_generator), mock_seed_fetcher_.get(),
         mock_local_data_provider_.get()));
   }
 
@@ -259,7 +261,7 @@ class BleAdvertiserTest : public testing::Test {
   scoped_refptr<StrictMock<MockBluetoothAdapterWithAdvertisements>>
       mock_adapter_;
   TestBleAdvertisementUnregisterHandler* test_unregister_handler_;
-  std::unique_ptr<cryptauth::MockEidGenerator> mock_eid_generator_;
+  cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
   std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
   std::unique_ptr<MockLocalDeviceDataProvider> mock_local_data_provider_;
 
@@ -269,7 +271,7 @@ class BleAdvertiserTest : public testing::Test {
       individual_advertisements_;
 
   const std::vector<cryptauth::RemoteDevice> fake_devices_;
-  const std::vector<cryptauth::EidGenerator::DataWithTimestamp>
+  const std::vector<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
       fake_advertisements_;
 
  private:
@@ -323,7 +325,7 @@ TEST_F(BleAdvertiserTest, AdapterPoweredOffWhenAdvertisementRegistered) {
   EXPECT_CALL(*mock_adapter_, IsPowered()).Times(1).WillOnce(Return(false));
 
   mock_eid_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::EidGenerator::DataWithTimestamp>(
+      base::MakeUnique<cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
           fake_advertisements_[0]));
 
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
@@ -340,7 +342,7 @@ TEST_F(BleAdvertiserTest, RegisteringAdvertisementFails) {
   EXPECT_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_)).Times(1);
 
   mock_eid_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::EidGenerator::DataWithTimestamp>(
+      base::MakeUnique<cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
           fake_advertisements_[0]));
 
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
@@ -360,7 +362,7 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully) {
   EXPECT_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_)).Times(1);
 
   mock_eid_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::EidGenerator::DataWithTimestamp>(
+      base::MakeUnique<cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
           fake_advertisements_[0]));
 
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
@@ -386,7 +388,7 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
 
   // First device.
   mock_eid_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::EidGenerator::DataWithTimestamp>(
+      base::MakeUnique<cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
           fake_advertisements_[0]));
 
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
@@ -400,7 +402,7 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
 
   // Second device.
   mock_eid_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::EidGenerator::DataWithTimestamp>(
+      base::MakeUnique<cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
           fake_advertisements_[1]));
 
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[1]));
@@ -431,7 +433,7 @@ TEST_F(BleAdvertiserTest, TooManyDevicesRegistered) {
   EXPECT_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_)).Times(3);
 
   mock_eid_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::EidGenerator::DataWithTimestamp>(
+      base::MakeUnique<cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
           fake_advertisements_[0]));
 
   // Should succeed for the first two devices.
@@ -462,7 +464,7 @@ TEST_F(BleAdvertiserTest, AdapterPowerChange_StartsOffThenTurnsOn) {
   EXPECT_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_)).Times(1);
 
   mock_eid_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::EidGenerator::DataWithTimestamp>(
+      base::MakeUnique<cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
           fake_advertisements_[0]));
 
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
@@ -488,7 +490,7 @@ TEST_F(BleAdvertiserTest, AdvertisementReleased) {
   EXPECT_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_)).Times(2);
 
   mock_eid_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::EidGenerator::DataWithTimestamp>(
+      base::MakeUnique<cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
           fake_advertisements_[0]));
 
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));

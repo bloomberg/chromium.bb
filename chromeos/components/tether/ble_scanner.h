@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/components/tether/local_device_data_provider.h"
-#include "components/cryptauth/eid_generator.h"
+#include "components/cryptauth/foreground_eid_generator.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
@@ -78,7 +78,7 @@ class BleScanner : public device::BluetoothAdapter::Observer {
 
   BleScanner(std::unique_ptr<ServiceDataProvider> service_data_provider,
              scoped_refptr<device::BluetoothAdapter> adapter,
-             const cryptauth::EidGenerator* eid_generator,
+             std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
              const LocalDeviceDataProvider* local_device_data_provider);
 
   void UpdateDiscoveryStatus();
@@ -95,9 +95,9 @@ class BleScanner : public device::BluetoothAdapter::Observer {
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
-  // |eid_generator_| and |local_device_data_provider_| are not owned by this
-  // instance and must outlive it.
-  const cryptauth::EidGenerator* eid_generator_;
+  std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator_;
+  // |local_device_data_provider_| is not owned by this instance and must
+  // outlive it.
   const LocalDeviceDataProvider* local_device_data_provider_;
 
   bool is_initializing_discovery_session_;
