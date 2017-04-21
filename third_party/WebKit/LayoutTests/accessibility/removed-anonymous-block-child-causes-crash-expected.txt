@@ -1,6 +1,6 @@
 a
 a
-In certain cases removing a decendent from an anonymous block element does not update the parent chain correctly. This can cause a crash.
+In certain cases removing a descendant from an anonymous block element does not update the parent chain correctly. This can cause a crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

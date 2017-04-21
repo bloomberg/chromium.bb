@@ -7,12 +7,12 @@
         document.getElementById('div').removeChild(document.getElementById('div').children[2]);
     }
 
-    function queryIsEnabledOnDecendants(accessibilityObject) {
+    function queryIsEnabledOnDescendants(accessibilityObject) {
         accessibilityObject.isEnabled
 
         var count = accessibilityObject.childrenCount;
         for (var i = 0; i < count; ++i)
-            queryIsEnabledOnDecendants(accessibilityObject.childAtIndex(i));
+            queryIsEnabledOnDescendants(accessibilityObject.childAtIndex(i));
     }
 </script>
 <script src="../resources/js-test.js"></script>
@@ -31,18 +31,18 @@
 <div id="console"></div>
 
 <script>
-    description("In certain cases removing a decendent from an anonymous block element does not update the parent chain correctly. This can cause a crash.");
+    description("In certain cases removing a descendant from an anonymous block element does not update the parent chain correctly. This can cause a crash.");
 
     if (window.accessibilityController) {
         // First build up full accessibility tree.
         document.body.focus();
-        queryIsEnabledOnDecendants(accessibilityController.focusedElement);
-        
+        queryIsEnabledOnDescendants(accessibilityController.focusedElement);
+
         removeElement()
-        
+
         // Now call isEnabled on each accessibility object.
         document.body.focus();
-        queryIsEnabledOnDecendants(accessibilityController.focusedElement);
+        queryIsEnabledOnDescendants(accessibilityController.focusedElement);
     }
 
 </script>
