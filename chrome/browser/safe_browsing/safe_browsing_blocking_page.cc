@@ -106,7 +106,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     : BaseBlockingPage(
           ui_manager,
           web_contents,
-          unsafe_resources[0].url,
+          main_frame_url,
           unsafe_resources,
           CreateControllerClient(web_contents, unsafe_resources, ui_manager),
           display_options) {

@@ -78,6 +78,9 @@ const char kEmptyPage[] = "empty.html";
 const char kHTTPSPage[] = "/ssl/google.html";
 const char kMaliciousPage[] = "safe_browsing/malware.html";
 const char kCrossSiteMaliciousPage[] = "safe_browsing/malware2.html";
+const char kPageWithCrossOriginMaliciousIframe[] =
+    "safe_browsing/malware3.html";
+const char kCrossOriginMaliciousIframeHost[] = "malware.test";
 const char kMaliciousIframe[] = "safe_browsing/malware_iframe.html";
 const char kUnrelatedUrl[] = "https://www.google.com";
 
@@ -424,6 +427,27 @@ class SafeBrowsingBlockingPageBrowserTest
     GURL url = net::URLRequestMockHTTPJob::GetMockUrl(kCrossSiteMaliciousPage);
     GURL iframe_url = net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe);
     SetURLThreatType(iframe_url, testing::get<0>(GetParam()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(WaitForReady());
+    return url;
+  }
+
+  // Adds a safebrowsing threat results to the fake safebrowsing service, and
+  // navigates to a page with a cross-origin iframe containing the threat site.
+  // Returns the url of the parent page and sets |iframe_url| to the malicious
+  // cross-origin iframe.
+  GURL SetupCrossOriginThreatIframeWarningAndNavigate(GURL* iframe_url) {
+    content::SetupCrossSiteRedirector(embedded_test_server());
+    EXPECT_TRUE(embedded_test_server()->Start());
+    GURL url = embedded_test_server()->GetURL(
+        std::string("/") + kPageWithCrossOriginMaliciousIframe);
+    *iframe_url =
+        embedded_test_server()->GetURL(std::string("/") + kMaliciousIframe);
+    GURL::Replacements replace_host;
+    replace_host.SetHostStr(kCrossOriginMaliciousIframeHost);
+    *iframe_url = iframe_url->ReplaceComponents(replace_host);
+    SetURLThreatType(*iframe_url, testing::get<0>(GetParam()));
 
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(WaitForReady());
@@ -1295,8 +1319,13 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
       net::URLRequestMockHTTPJob::GetMockUrl("http://example.test");
   ui_test_utils::NavigateToURL(browser(), start_url);
 
-  // The security indicator should be downgraded while the interstitial shows.
-  SetupThreatIframeWarningAndNavigate();
+  // The security indicator should be downgraded while the interstitial
+  // shows. Load a cross-origin iframe to be sure that the main frame origin
+  // (rather than the subresource origin) is being added and removed from the
+  // whitelist; this is a regression test for https://crbug.com/710955.
+  GURL bad_iframe_url;
+  GURL main_url =
+      SetupCrossOriginThreatIframeWarningAndNavigate(&bad_iframe_url);
   WebContents* error_tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(error_tab);
   ExpectSecurityIndicatorDowngrade(error_tab, 0u);
@@ -1320,6 +1349,13 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   ASSERT_TRUE(entry);
   EXPECT_EQ(start_url, entry->GetURL());
   ExpectNoSecurityIndicatorDowngrade(post_tab);
+
+  // Clear the malicious subresource URL, and check that the hostname of the
+  // interstitial is no longer marked as Dangerous.
+  ClearBadURL(bad_iframe_url);
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  ExpectNoSecurityIndicatorDowngrade(
+      browser()->tab_strip_model()->GetActiveWebContents());
 }
 
 // Test that the security indicator is downgraded after clicking through a
