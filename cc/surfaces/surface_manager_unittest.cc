@@ -5,25 +5,27 @@
 #include <stddef.h>
 
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/framesink_manager_client.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/surfaces/surface_resource_holder_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 
-class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
+class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
  public:
-  explicit FakeSurfaceFactoryClient(const FrameSinkId& frame_sink_id)
+  explicit FakeFrameSinkManagerClient(const FrameSinkId& frame_sink_id)
       : source_(nullptr), manager_(nullptr), frame_sink_id_(frame_sink_id) {}
 
-  FakeSurfaceFactoryClient(const FrameSinkId& frame_sink_id,
-                           SurfaceManager* manager)
+  FakeFrameSinkManagerClient(const FrameSinkId& frame_sink_id,
+                             SurfaceManager* manager)
       : source_(nullptr), manager_(nullptr), frame_sink_id_(frame_sink_id) {
     DCHECK(manager);
     Register(manager);
   }
 
-  ~FakeSurfaceFactoryClient() override {
+  ~FakeFrameSinkManagerClient() override {
     if (manager_) {
       Unregister();
     }
@@ -36,21 +38,20 @@ class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
   void Register(SurfaceManager* manager) {
     EXPECT_EQ(nullptr, manager_);
     manager_ = manager;
-    manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
+    manager_->RegisterFrameSinkManagerClient(frame_sink_id_, this);
   }
 
   void Unregister() {
     EXPECT_NE(manager_, nullptr);
-    manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
+    manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
     manager_ = nullptr;
   }
 
-  // SurfaceFactoryClient implementation.
-  void ReturnResources(const ReturnedResourceArray& resources) override {}
+  // FrameSinkManagerClient implementation.
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {
     DCHECK(!source_ || !begin_frame_source);
     source_ = begin_frame_source;
-  };
+  }
 
  private:
   BeginFrameSource* source_;
@@ -80,8 +81,8 @@ class SurfaceManagerTest : public testing::Test {
 };
 
 TEST_F(SurfaceManagerTest, SingleClients) {
-  FakeSurfaceFactoryClient client(FrameSinkId(1, 1));
-  FakeSurfaceFactoryClient other_client(FrameSinkId(2, 2));
+  FakeFrameSinkManagerClient client(FrameSinkId(1, 1));
+  FakeFrameSinkManagerClient other_client(FrameSinkId(2, 2));
   StubBeginFrameSource source;
 
   EXPECT_EQ(nullptr, client.source());
@@ -120,11 +121,11 @@ TEST_F(SurfaceManagerTest, MultipleDisplays) {
 
   // root1 -> A -> B
   // root2 -> C
-  FakeSurfaceFactoryClient root1(FrameSinkId(1, 1), &manager_);
-  FakeSurfaceFactoryClient root2(FrameSinkId(2, 2), &manager_);
-  FakeSurfaceFactoryClient client_a(FrameSinkId(3, 3), &manager_);
-  FakeSurfaceFactoryClient client_b(FrameSinkId(4, 4), &manager_);
-  FakeSurfaceFactoryClient client_c(FrameSinkId(5, 5), &manager_);
+  FakeFrameSinkManagerClient root1(FrameSinkId(1, 1), &manager_);
+  FakeFrameSinkManagerClient root2(FrameSinkId(2, 2), &manager_);
+  FakeFrameSinkManagerClient client_a(FrameSinkId(3, 3), &manager_);
+  FakeFrameSinkManagerClient client_b(FrameSinkId(4, 4), &manager_);
+  FakeFrameSinkManagerClient client_c(FrameSinkId(5, 5), &manager_);
 
   manager_.RegisterBeginFrameSource(&root1_source, root1.frame_sink_id());
   manager_.RegisterBeginFrameSource(&root2_source, root2.frame_sink_id());
@@ -192,9 +193,9 @@ TEST_F(SurfaceManagerTest, ParentWithoutClientRetained) {
   constexpr FrameSinkId kFrameSinkIdB(3, 3);
   constexpr FrameSinkId kFrameSinkIdC(4, 4);
 
-  FakeSurfaceFactoryClient root(kFrameSinkIdRoot, &manager_);
-  FakeSurfaceFactoryClient client_b(kFrameSinkIdB, &manager_);
-  FakeSurfaceFactoryClient client_c(kFrameSinkIdC, &manager_);
+  FakeFrameSinkManagerClient root(kFrameSinkIdRoot, &manager_);
+  FakeFrameSinkManagerClient client_b(kFrameSinkIdB, &manager_);
+  FakeFrameSinkManagerClient client_c(kFrameSinkIdC, &manager_);
 
   manager_.RegisterBeginFrameSource(&root_source, root.frame_sink_id());
   EXPECT_EQ(&root_source, root.source());
@@ -231,9 +232,9 @@ TEST_F(SurfaceManagerTest,
   constexpr FrameSinkId kFrameSinkIdB(3, 3);
   constexpr FrameSinkId kFrameSinkIdC(4, 4);
 
-  FakeSurfaceFactoryClient root(kFrameSinkIdRoot, &manager_);
-  FakeSurfaceFactoryClient client_b(kFrameSinkIdB, &manager_);
-  FakeSurfaceFactoryClient client_c(kFrameSinkIdC, &manager_);
+  FakeFrameSinkManagerClient root(kFrameSinkIdRoot, &manager_);
+  FakeFrameSinkManagerClient client_b(kFrameSinkIdB, &manager_);
+  FakeFrameSinkManagerClient client_c(kFrameSinkIdC, &manager_);
 
   // Set up initial hierarchy: root -> A -> B.
   // Note that A does not have a SurfaceFactoryClient.
@@ -364,9 +365,9 @@ class SurfaceManagerOrderingTest : public SurfaceManagerTest {
 
   StubBeginFrameSource source_;
   // A -> B -> C hierarchy, with A always having the BFS.
-  FakeSurfaceFactoryClient client_a_;
-  FakeSurfaceFactoryClient client_b_;
-  FakeSurfaceFactoryClient client_c_;
+  FakeFrameSinkManagerClient client_a_;
+  FakeFrameSinkManagerClient client_b_;
+  FakeFrameSinkManagerClient client_c_;
 
   bool hierarchy_registered_;
   bool clients_registered_;

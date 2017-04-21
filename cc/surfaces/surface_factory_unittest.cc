@@ -16,11 +16,15 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/surfaces/framesink_manager_client.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/surfaces/surface_resource_holder_client.h"
+#include "cc/test/fake_surface_resource_holder_client.h"
 #include "cc/test/scheduler_test_common.h"
+#include "cc/test/stub_surface_factory_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -36,35 +40,6 @@ static auto kArbitrarySourceId1 =
 static auto kArbitrarySourceId2 =
     base::UnguessableToken::Deserialize(0xdead, 0xbee0);
 
-class TestSurfaceFactoryClient : public SurfaceFactoryClient {
- public:
-  TestSurfaceFactoryClient() : begin_frame_source_(nullptr) {}
-  ~TestSurfaceFactoryClient() override {}
-
-  void ReturnResources(const ReturnedResourceArray& resources) override {
-    returned_resources_.insert(
-        returned_resources_.end(), resources.begin(), resources.end());
-  }
-
-  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {
-    begin_frame_source_ = begin_frame_source;
-  }
-
-  const ReturnedResourceArray& returned_resources() const {
-    return returned_resources_;
-  }
-
-  void clear_returned_resources() { returned_resources_.clear(); }
-
-  BeginFrameSource* begin_frame_source() const { return begin_frame_source_; }
-
- private:
-  ReturnedResourceArray returned_resources_;
-  BeginFrameSource* begin_frame_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSurfaceFactoryClient);
-};
-
 gpu::SyncToken GenTestSyncToken(int id) {
   gpu::SyncToken token;
   token.Set(gpu::CommandBufferNamespace::GPU_IO, 0,
@@ -75,8 +50,10 @@ gpu::SyncToken GenTestSyncToken(int id) {
 class SurfaceFactoryTest : public testing::Test, public SurfaceObserver {
  public:
   SurfaceFactoryTest()
-      : factory_(
-            new SurfaceFactory(kArbitraryFrameSinkId, &manager_, &client_)),
+      : factory_(new SurfaceFactory(kArbitraryFrameSinkId,
+                                    &manager_,
+                                    &stub_surface_factory_client_,
+                                    &fake_surface_resource_holder_client_)),
         local_surface_id_(3, kArbitraryToken),
         frame_sync_token_(GenTestSyncToken(4)),
         consumer_sync_token_(GenTestSyncToken(5)) {
@@ -138,7 +115,7 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceObserver {
                                            size_t expected_resources,
                                            gpu::SyncToken expected_sync_token) {
     const ReturnedResourceArray& actual_resources =
-        client_.returned_resources();
+        fake_surface_resource_holder_client_.returned_resources();
     ASSERT_EQ(expected_resources, actual_resources.size());
     for (size_t i = 0; i < expected_resources; ++i) {
       ReturnedResource resource = actual_resources[i];
@@ -146,7 +123,7 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceObserver {
       EXPECT_EQ(expected_returned_ids[i], resource.id);
       EXPECT_EQ(expected_returned_counts[i], resource.count);
     }
-    client_.clear_returned_resources();
+    fake_surface_resource_holder_client_.clear_returned_resources();
   }
 
   void RefCurrentFrameResources() {
@@ -157,7 +134,8 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceObserver {
 
  protected:
   SurfaceManager manager_;
-  TestSurfaceFactoryClient client_;
+  StubSurfaceFactoryClient stub_surface_factory_client_;
+  FakeSurfaceResourceHolderClient fake_surface_resource_holder_client_;
   std::unique_ptr<SurfaceFactory> factory_;
   LocalSurfaceId local_surface_id_;
   SurfaceId last_created_surface_id_;
@@ -182,8 +160,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimple) {
   // All of the resources submitted in the first frame are still in use at this
   // time by virtue of being in the pending frame, so none can be returned to
   // the client yet.
-  EXPECT_EQ(0u, client_.returned_resources().size());
-  client_.clear_returned_resources();
+  EXPECT_EQ(0u,
+            fake_surface_resource_holder_client_.returned_resources().size());
+  fake_surface_resource_holder_client_.clear_returned_resources();
 
   // The second frame references no resources of first frame and thus should
   // make all resources of first frame available to be returned.
@@ -203,8 +182,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimple) {
   // All of the resources submitted in the third frame are still in use at this
   // time by virtue of being in the pending frame, so none can be returned to
   // the client yet.
-  EXPECT_EQ(0u, client_.returned_resources().size());
-  client_.clear_returned_resources();
+  EXPECT_EQ(0u,
+            fake_surface_resource_holder_client_.returned_resources().size());
+  fake_surface_resource_holder_client_.clear_returned_resources();
 
   // The forth frame references no resources of third frame and thus should
   // make all resources of third frame available to be returned.
@@ -230,8 +210,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimpleWithProviderHoldingAlive) {
   // All of the resources submitted in the first frame are still in use at this
   // time by virtue of being in the pending frame, so none can be returned to
   // the client yet.
-  EXPECT_EQ(0u, client_.returned_resources().size());
-  client_.clear_returned_resources();
+  EXPECT_EQ(0u,
+            fake_surface_resource_holder_client_.returned_resources().size());
+  fake_surface_resource_holder_client_.clear_returned_resources();
 
   // Hold on to everything.
   RefCurrentFrameResources();
@@ -240,8 +221,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimpleWithProviderHoldingAlive) {
   // available to be returned as soon as the resource provider releases them.
   SubmitCompositorFrameWithResources(NULL, 0);
 
-  EXPECT_EQ(0u, client_.returned_resources().size());
-  client_.clear_returned_resources();
+  EXPECT_EQ(0u,
+            fake_surface_resource_holder_client_.returned_resources().size());
+  fake_surface_resource_holder_client_.clear_returned_resources();
 
   int release_counts[] = {1, 1, 1};
   UnrefResources(first_frame_ids, release_counts, arraysize(first_frame_ids));
@@ -273,7 +255,8 @@ TEST_F(SurfaceFactoryTest, ResourceReusedBeforeReturn) {
   // Now it should be returned.
   // We don't care how many entries are in the returned array for 7, so long as
   // the total returned count matches the submitted count.
-  const ReturnedResourceArray& returned = client_.returned_resources();
+  const ReturnedResourceArray& returned =
+      fake_surface_resource_holder_client_.returned_resources();
   size_t return_count = 0;
   for (size_t i = 0; i < returned.size(); ++i) {
     EXPECT_EQ(7u, returned[i].id);
@@ -306,8 +289,9 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
   // submitted resources.
   SubmitCompositorFrameWithResources(NULL, 0);
 
-  EXPECT_EQ(0u, client_.returned_resources().size());
-  client_.clear_returned_resources();
+  EXPECT_EQ(0u,
+            fake_surface_resource_holder_client_.returned_resources().size());
+  fake_surface_resource_holder_client_.clear_returned_resources();
 
   // Expected current refs:
   //  3 -> 2
@@ -319,8 +303,9 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
     int counts[] = {1, 1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
 
-    EXPECT_EQ(0u, client_.returned_resources().size());
-    client_.clear_returned_resources();
+    EXPECT_EQ(0u,
+              fake_surface_resource_holder_client_.returned_resources().size());
+    fake_surface_resource_holder_client_.clear_returned_resources();
 
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
 
@@ -371,8 +356,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   // All of the resources submitted in the first frame are still in use at this
   // time by virtue of being in the pending frame, so none can be returned to
   // the client yet.
-  EXPECT_EQ(0u, client_.returned_resources().size());
-  client_.clear_returned_resources();
+  EXPECT_EQ(0u,
+            fake_surface_resource_holder_client_.returned_resources().size());
+  fake_surface_resource_holder_client_.clear_returned_resources();
 
   // The second frame references some of the same resources, but some different
   // ones. We expect to receive back resource 1 with a count of 1 since it was
@@ -414,13 +400,15 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   SubmitCompositorFrameWithResources(fourth_frame_ids,
                                      arraysize(fourth_frame_ids));
 
-  EXPECT_EQ(0u, client_.returned_resources().size());
+  EXPECT_EQ(0u,
+            fake_surface_resource_holder_client_.returned_resources().size());
 
   RefCurrentFrameResources();
 
   // All resources are still being used by the external reference, so none can
   // be returned to the client.
-  EXPECT_EQ(0u, client_.returned_resources().size());
+  EXPECT_EQ(0u,
+            fake_surface_resource_holder_client_.returned_resources().size());
 
   // Release resources associated with the first RefCurrentFrameResources() call
   // first.
@@ -447,7 +435,8 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
 
   // Resources 12 and 13 are still in use by the current frame, so they
   // shouldn't be available to be returned.
-  EXPECT_EQ(0u, client_.returned_resources().size());
+  EXPECT_EQ(0u,
+            fake_surface_resource_holder_client_.returned_resources().size());
 
   // If we submit an empty frame, however, they should become available.
   SubmitCompositorFrameWithResources(NULL, 0u);
@@ -520,10 +509,12 @@ TEST_F(SurfaceFactoryTest, EvictSurface) {
   local_surface_id_ = LocalSurfaceId();
 
   EXPECT_TRUE(manager_.GetSurfaceForId(id));
-  EXPECT_TRUE(client_.returned_resources().empty());
+  EXPECT_TRUE(
+      fake_surface_resource_holder_client_.returned_resources().empty());
   factory_->EvictSurface();
   EXPECT_FALSE(manager_.GetSurfaceForId(id));
-  EXPECT_FALSE(client_.returned_resources().empty());
+  EXPECT_FALSE(
+      fake_surface_resource_holder_client_.returned_resources().empty());
   EXPECT_EQ(1u, execute_count);
 }
 
@@ -549,10 +540,12 @@ TEST_F(SurfaceFactoryTest, EvictSurfaceDependencyUnRegistered) {
       SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
 
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
-  EXPECT_TRUE(client_.returned_resources().empty());
+  EXPECT_TRUE(
+      fake_surface_resource_holder_client_.returned_resources().empty());
   factory_->EvictSurface();
   EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
-  EXPECT_FALSE(client_.returned_resources().empty());
+  EXPECT_FALSE(
+      fake_surface_resource_holder_client_.returned_resources().empty());
   EXPECT_EQ(1u, execute_count);
 }
 
@@ -580,21 +573,25 @@ TEST_F(SurfaceFactoryTest, EvictSurfaceDependencyRegistered) {
       SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
 
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
-  EXPECT_TRUE(client_.returned_resources().empty());
+  EXPECT_TRUE(
+      fake_surface_resource_holder_client_.returned_resources().empty());
   factory_->EvictSurface();
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
-  EXPECT_TRUE(client_.returned_resources().empty());
+  EXPECT_TRUE(
+      fake_surface_resource_holder_client_.returned_resources().empty());
   EXPECT_EQ(0u, execute_count);
 
   manager_.SatisfySequence(SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
   EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
-  EXPECT_FALSE(client_.returned_resources().empty());
+  EXPECT_FALSE(
+      fake_surface_resource_holder_client_.returned_resources().empty());
 }
 
 TEST_F(SurfaceFactoryTest, DestroySequence) {
   LocalSurfaceId local_surface_id2(5, kArbitraryToken);
-  std::unique_ptr<SurfaceFactory> factory2(
-      new SurfaceFactory(kArbitraryFrameSinkId, &manager_, &client_));
+  std::unique_ptr<SurfaceFactory> factory2(new SurfaceFactory(
+      kArbitraryFrameSinkId, &manager_, &stub_surface_factory_client_,
+      &fake_surface_resource_holder_client_));
   SurfaceId id2(kArbitraryFrameSinkId, local_surface_id2);
   factory2->SubmitCompositorFrame(local_surface_id2, CompositorFrame(),
                                   SurfaceFactory::DrawCallback(),
@@ -653,8 +650,9 @@ TEST_F(SurfaceFactoryTest, InvalidFrameSinkId) {
 TEST_F(SurfaceFactoryTest, DestroyCycle) {
   LocalSurfaceId local_surface_id2(5, kArbitraryToken);
   SurfaceId id2(kArbitraryFrameSinkId, local_surface_id2);
-  std::unique_ptr<SurfaceFactory> factory2(
-      new SurfaceFactory(kArbitraryFrameSinkId, &manager_, &client_));
+  std::unique_ptr<SurfaceFactory> factory2(new SurfaceFactory(
+      kArbitraryFrameSinkId, &manager_, &stub_surface_factory_client_,
+      &fake_surface_resource_holder_client_));
   manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   // Give id2 a frame that references local_surface_id_.
   {

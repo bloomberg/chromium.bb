@@ -36,6 +36,7 @@
 namespace cc {
 class BeginFrameSource;
 class CompositorFrame;
+class FrameSinkManagerClient;
 class Surface;
 class SurfaceFactory;
 class SurfaceFactoryClient;
@@ -111,15 +112,15 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // However, DelegatedFrameHost can register itself as a client before its
   // relationship with the ui::Compositor is known.
 
-  // Associates a SurfaceFactoryClient with the surface id frame_sink_id it
+  // Associates a FrameSinkManagerClient with the surface id frame_sink_id it
   // uses.
-  // SurfaceFactoryClient and surface namespaces/allocators have a 1:1 mapping.
-  // Caller guarantees the client is alive between register/unregister.
+  // FrameSinkManagerClient and surface namespaces/allocators have a 1:1
+  // mapping. Caller guarantees the client is alive between register/unregister.
   // Reregistering the same namespace when a previous client is active is not
   // valid.
-  void RegisterSurfaceFactoryClient(const FrameSinkId& frame_sink_id,
-                                    SurfaceFactoryClient* client);
-  void UnregisterSurfaceFactoryClient(const FrameSinkId& frame_sink_id);
+  void RegisterFrameSinkManagerClient(const FrameSinkId& frame_sink_id,
+                                      FrameSinkManagerClient* client);
+  void UnregisterFrameSinkManagerClient(const FrameSinkId& frame_sink_id);
 
   // Associates a |source| with a particular namespace.  That namespace and
   // any children of that namespace with valid clients can potentially use

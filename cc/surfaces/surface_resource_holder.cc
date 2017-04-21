@@ -4,13 +4,12 @@
 
 #include "cc/surfaces/surface_resource_holder.h"
 
-#include "cc/surfaces/surface_factory_client.h"
-
+#include "cc/surfaces/surface_resource_holder_client.h"
 namespace cc {
 
-SurfaceResourceHolder::SurfaceResourceHolder(SurfaceFactoryClient* client)
-    : client_(client) {
-}
+SurfaceResourceHolder::SurfaceResourceHolder(
+    SurfaceResourceHolderClient* client)
+    : client_(client) {}
 
 SurfaceResourceHolder::~SurfaceResourceHolder() {
 }

@@ -7,12 +7,14 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/surfaces/framesink_manager_client.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/surfaces/surface_resource_holder_client.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
+#include "cc/test/stub_surface_factory_client.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,10 +26,12 @@ namespace {
 static const base::UnguessableToken kArbitraryToken =
     base::UnguessableToken::Create();
 
-class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
+class StubSurfaceResourceHolderClient : public SurfaceResourceHolderClient {
  public:
+  StubSurfaceResourceHolderClient() = default;
+  ~StubSurfaceResourceHolderClient() override = default;
+
   void ReturnResources(const ReturnedResourceArray& resources) override {}
-  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {}
 };
 
 class SurfaceAggregatorPerfTest : public testing::Test {
@@ -49,8 +53,9 @@ class SurfaceAggregatorPerfTest : public testing::Test {
                const std::string& name) {
     std::vector<std::unique_ptr<SurfaceFactory>> child_factories(num_surfaces);
     for (int i = 0; i < num_surfaces; i++)
-      child_factories[i].reset(
-          new SurfaceFactory(FrameSinkId(1, i + 1), &manager_, &empty_client_));
+      child_factories[i].reset(new SurfaceFactory(
+          FrameSinkId(1, i + 1), &manager_, &stub_surface_factory_client_,
+          &stub_surface_resource_holder_client_));
     aggregator_.reset(new SurfaceAggregator(&manager_, resource_provider_.get(),
                                             optimize_damage));
     for (int i = 0; i < num_surfaces; i++) {
@@ -103,7 +108,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     }
 
     SurfaceFactory root_factory(FrameSinkId(1, num_surfaces + 1), &manager_,
-                                &empty_client_);
+                                &stub_surface_factory_client_,
+                                &stub_surface_resource_holder_client_);
     timer_.Reset();
     do {
       std::unique_ptr<RenderPass> pass(RenderPass::Create());
@@ -144,7 +150,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 
  protected:
   SurfaceManager manager_;
-  EmptySurfaceFactoryClient empty_client_;
+  StubSurfaceResourceHolderClient stub_surface_resource_holder_client_;
+  StubSurfaceFactoryClient stub_surface_factory_client_;
   scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;

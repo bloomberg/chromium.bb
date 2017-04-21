@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "cc/surfaces/framesink_manager_client.h"
 #include "cc/surfaces/surface_factory_client.h"
 
 #if DCHECK_IS_ON()
@@ -43,9 +44,9 @@ void FrameSinkManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
   valid_frame_sink_ids_.erase(frame_sink_id);
 }
 
-void FrameSinkManager::RegisterSurfaceFactoryClient(
+void FrameSinkManager::RegisterFrameSinkManagerClient(
     const FrameSinkId& frame_sink_id,
-    SurfaceFactoryClient* client) {
+    FrameSinkManagerClient* client) {
   DCHECK(client);
   DCHECK_EQ(valid_frame_sink_ids_.count(frame_sink_id), 1u);
 
@@ -58,7 +59,7 @@ void FrameSinkManager::RegisterSurfaceFactoryClient(
   }
 }
 
-void FrameSinkManager::UnregisterSurfaceFactoryClient(
+void FrameSinkManager::UnregisterFrameSinkManagerClient(
     const FrameSinkId& frame_sink_id) {
   DCHECK_EQ(valid_frame_sink_ids_.count(frame_sink_id), 1u);
   auto client_iter = clients_.find(frame_sink_id);

@@ -14,7 +14,7 @@
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
-class SurfaceFactoryClient;
+class SurfaceResourceHolderClient;
 
 // A SurfaceResourceHolder manages the lifetime of resources submitted by a
 // particular SurfaceFactory. Each resource is held by the service until
@@ -22,7 +22,7 @@ class SurfaceFactoryClient;
 // resource providers.
 class CC_SURFACES_EXPORT SurfaceResourceHolder {
  public:
-  explicit SurfaceResourceHolder(SurfaceFactoryClient* client);
+  explicit SurfaceResourceHolder(SurfaceResourceHolderClient* client);
   ~SurfaceResourceHolder();
 
   void Reset();
@@ -31,7 +31,7 @@ class CC_SURFACES_EXPORT SurfaceResourceHolder {
   void UnrefResources(const ReturnedResourceArray& resources);
 
  private:
-  SurfaceFactoryClient* client_;
+  SurfaceResourceHolderClient* client_;
 
   struct ResourceRefs {
     ResourceRefs();

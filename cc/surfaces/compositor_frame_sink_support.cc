@@ -47,7 +47,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // call back into here and access |client_| so we should destroy
   // |surface_factory_|'s resources early on.
   surface_factory_->EvictSurface();
-  surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
+  surface_manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
   if (handles_frame_sink_id_invalidation_)
     surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
@@ -91,13 +91,6 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
   }
   begin_frame_source_ = begin_frame_source;
   UpdateNeedsBeginFramesInternal();
-}
-
-void CompositorFrameSinkSupport::WillDrawSurface(
-    const LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {
-  if (client_)
-    client_->WillDrawSurface(local_surface_id, damage_rect);
 }
 
 void CompositorFrameSinkSupport::EvictFrame() {
@@ -213,6 +206,13 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
   surface_returned_resources_.clear();
 }
 
+void CompositorFrameSinkSupport::WillDrawSurface(
+    const LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {
+  if (client_)
+    client_->WillDrawSurface(local_surface_id, damage_rect);
+}
+
 void CompositorFrameSinkSupport::ForceReclaimResources() {
   DCHECK(surface_factory_);
   surface_factory_->ClearSurface();
@@ -238,11 +238,11 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
 void CompositorFrameSinkSupport::Init(SurfaceManager* surface_manager,
                                       bool needs_sync_points) {
   surface_manager_ = surface_manager;
-  surface_factory_ =
-      base::MakeUnique<SurfaceFactory>(frame_sink_id_, surface_manager_, this);
+  surface_factory_ = base::MakeUnique<SurfaceFactory>(
+      frame_sink_id_, surface_manager_, this, this);
   if (handles_frame_sink_id_invalidation_)
     surface_manager_->RegisterFrameSinkId(frame_sink_id_);
-  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
+  surface_manager_->RegisterFrameSinkManagerClient(frame_sink_id_, this);
   surface_factory_->set_needs_sync_points(needs_sync_points);
 }
 

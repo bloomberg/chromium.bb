@@ -13,10 +13,12 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/framesink_manager_client.h"
 #include "cc/surfaces/referenced_surface_tracker.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_resource_holder_client.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
@@ -26,7 +28,9 @@ class SurfaceManager;
 
 class CC_SURFACES_EXPORT CompositorFrameSinkSupport
     : public SurfaceFactoryClient,
-      public BeginFrameObserver {
+      public BeginFrameObserver,
+      public SurfaceResourceHolderClient,
+      public FrameSinkManagerClient {
  public:
   static std::unique_ptr<CompositorFrameSinkSupport> Create(
       CompositorFrameSinkSupportClient* client,
@@ -52,10 +56,12 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void ReferencedSurfacesChanged(
       const LocalSurfaceId& local_surface_id,
       const std::vector<SurfaceId>* active_referenced_surfaces) override;
+
+  // SurfaceResourceHolderClient implementation.
   void ReturnResources(const ReturnedResourceArray& resources) override;
+
+  // FrameSinkManagerClient implementation.
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
 
   void EvictFrame();
   void SetNeedsBeginFrame(bool needs_begin_frame);
@@ -86,6 +92,8 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void RemoveTopLevelRootReference(const SurfaceId& surface_id);
 
   void DidReceiveCompositorFrameAck();
+  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect);
 
   // BeginFrameObserver implementation.
   void OnBeginFrame(const BeginFrameArgs& args) override;

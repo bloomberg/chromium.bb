@@ -407,15 +407,15 @@ void SurfaceManager::RemoveTemporaryReference(const SurfaceId& surface_id,
     temporary_reference_ranges_.erase(frame_sink_id);
 }
 
-void SurfaceManager::RegisterSurfaceFactoryClient(
+void SurfaceManager::RegisterFrameSinkManagerClient(
     const FrameSinkId& frame_sink_id,
-    SurfaceFactoryClient* client) {
-  framesink_manager_.RegisterSurfaceFactoryClient(frame_sink_id, client);
+    FrameSinkManagerClient* client) {
+  framesink_manager_.RegisterFrameSinkManagerClient(frame_sink_id, client);
 }
 
-void SurfaceManager::UnregisterSurfaceFactoryClient(
+void SurfaceManager::UnregisterFrameSinkManagerClient(
     const FrameSinkId& frame_sink_id) {
-  framesink_manager_.UnregisterSurfaceFactoryClient(frame_sink_id);
+  framesink_manager_.UnregisterFrameSinkManagerClient(frame_sink_id);
 }
 
 void SurfaceManager::RegisterBeginFrameSource(

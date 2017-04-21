@@ -12,24 +12,15 @@
 
 namespace cc {
 
-class BeginFrameSource;
 class SurfaceId;
 
 class CC_SURFACES_EXPORT SurfaceFactoryClient {
  public:
-  virtual ~SurfaceFactoryClient() {}
+  virtual ~SurfaceFactoryClient() = default;
 
   virtual void ReferencedSurfacesChanged(
       const LocalSurfaceId& local_surface_id,
-      const std::vector<SurfaceId>* active_referenced_surfaces) {}
-
-  virtual void ReturnResources(const ReturnedResourceArray& resources) = 0;
-
-  virtual void WillDrawSurface(const LocalSurfaceId& local_surface_id,
-                               const gfx::Rect& damage_rect) {}
-
-  // This allows the SurfaceFactory to pass a BeginFrameSource to use.
-  virtual void SetBeginFrameSource(BeginFrameSource* begin_frame_source) = 0;
+      const std::vector<SurfaceId>* active_referenced_surfaces) = 0;
 };
 
 }  // namespace cc

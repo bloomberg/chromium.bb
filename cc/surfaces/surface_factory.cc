@@ -17,13 +17,15 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
-SurfaceFactory::SurfaceFactory(const FrameSinkId& frame_sink_id,
-                               SurfaceManager* manager,
-                               SurfaceFactoryClient* client)
+SurfaceFactory::SurfaceFactory(
+    const FrameSinkId& frame_sink_id,
+    SurfaceManager* manager,
+    SurfaceFactoryClient* client,
+    SurfaceResourceHolderClient* resource_holder_client)
     : frame_sink_id_(frame_sink_id),
       manager_(manager),
       client_(client),
-      holder_(client),
+      holder_(resource_holder_client),
       needs_sync_points_(true),
       weak_factory_(this) {}
 

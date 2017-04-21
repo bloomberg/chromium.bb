@@ -18,7 +18,7 @@
 
 namespace cc {
 class BeginFrameSource;
-class SurfaceFactoryClient;
+class FrameSinkManagerClient;
 
 namespace test {
 class CompositorFrameSinkSupportTest;
@@ -43,12 +43,12 @@ class CC_SURFACES_EXPORT FrameSinkManager {
   // However, DelegatedFrameHost can register itself as a client before its
   // relationship with the ui::Compositor is known.
 
-  // Associates a SurfaceFactoryClient with the  frame_sink_id it  uses.
-  // SurfaceFactoryClient and framesink allocators have a 1:1 mapping.
+  // Associates a FrameSinkManagerClient with the frame_sink_id it uses.
+  // FrameSinkManagerClient and framesink allocators have a 1:1 mapping.
   // Caller guarantees the client is alive between register/unregister.
-  void RegisterSurfaceFactoryClient(const FrameSinkId& frame_sink_id,
-                                    SurfaceFactoryClient* client);
-  void UnregisterSurfaceFactoryClient(const FrameSinkId& frame_sink_id);
+  void RegisterFrameSinkManagerClient(const FrameSinkId& frame_sink_id,
+                                      FrameSinkManagerClient* client);
+  void UnregisterFrameSinkManagerClient(const FrameSinkId& frame_sink_id);
 
   // Associates a |source| with a particular framesink.  That framesink and
   // any children of that framesink with valid clients can potentially use
@@ -103,7 +103,7 @@ class CC_SURFACES_EXPORT FrameSinkManager {
     std::vector<FrameSinkId> children;
   };
 
-  std::unordered_map<FrameSinkId, SurfaceFactoryClient*, FrameSinkIdHash>
+  std::unordered_map<FrameSinkId, FrameSinkManagerClient*, FrameSinkIdHash>
       clients_;
 
   std::unordered_map<FrameSinkId, FrameSinkSourceMapping, FrameSinkIdHash>

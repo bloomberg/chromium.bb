@@ -41,7 +41,8 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
 
   SurfaceFactory(const FrameSinkId& frame_sink_id,
                  SurfaceManager* manager,
-                 SurfaceFactoryClient* client);
+                 SurfaceFactoryClient* client,
+                 SurfaceResourceHolderClient* resource_holder_client);
   ~SurfaceFactory() override;
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
