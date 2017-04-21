@@ -17,7 +17,7 @@ namespace {
 // Tests that the labels and image are set properly after a call to
 // |configureCell:|.
 TEST(PaymentRequestPageInfoItemTest, TextLabels) {
-  PageInfoItem* item = [[PageInfoItem alloc] initWithType:0];
+  PageInfoItem* item = [[PageInfoItem alloc] init];
 
   UIImage* pageFavicon = ios_internal::CollectionViewTestImage();
   NSString* pageTitle = @"The Greatest Website Ever";

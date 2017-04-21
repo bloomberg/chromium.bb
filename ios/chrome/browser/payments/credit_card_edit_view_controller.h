@@ -21,9 +21,12 @@ typedef NS_ENUM(NSInteger, CreditCardEditViewControllerState) {
 @protocol CreditCardEditViewControllerDataSource<
     PaymentRequestEditViewControllerDataSource>
 
-// Returns an item that identifies the server card being edited. Returns nil for
-// local cards or when a card is being created.
+// Returns an item that identifies the credit card being edited. May return nil.
 - (CollectionViewItem*)serverCardSummaryItem;
+
+// Returns an item that displays a list of payment method type icons for the
+// accepted payment methods. May return nil.
+- (CollectionViewItem*)acceptedPaymentMethodsItem;
 
 // Returns the billing address label from an autofill profile with the given
 // guid. Returns nil if the profile does not have an address.

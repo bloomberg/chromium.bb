@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/grit/components_scaled_resources.h"
+#import "ios/chrome/browser/payments/cells/accepted_payment_methods_item.h"
 #import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
@@ -56,6 +57,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierNativeAppCell,
   SectionIdentifierAutofill,
   SectionIdentifierPayments,
+  SectionIdentifierPaymentsNoBackground,
   SectionIdentifierAccountCell,
   SectionIdentifierAccountControlCell,
   SectionIdentifierFooters,
@@ -96,6 +98,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Image fixed horizontal size.
 const CGFloat kHorizontalImageFixedSize = 40;
+
+// Credit Card icon size.
+const CGFloat kCardTypeIconDimension = 25.0;
 
 }  // namespace
 
@@ -258,6 +263,7 @@ const CGFloat kHorizontalImageFixedSize = 40;
   [model addSectionWithIdentifier:SectionIdentifierPayments];
   [model addItem:[self paymentsItemWithWrappingTextandOptionalImage]
       toSectionWithIdentifier:SectionIdentifierPayments];
+
   PriceItem* priceItem1 =
       [[PriceItem alloc] initWithType:ItemTypePaymentsSingleLine];
   priceItem1.item = @"Total";
@@ -305,6 +311,11 @@ const CGFloat kHorizontalImageFixedSize = 40;
   profileItem3.email = @"foo@bar.com";
   [model addItem:profileItem3
       toSectionWithIdentifier:SectionIdentifierPayments];
+
+  // Payments cells with no background.
+  [model addSectionWithIdentifier:SectionIdentifierPaymentsNoBackground];
+  [model addItem:[self acceptedPaymentMethodsItem]
+      toSectionWithIdentifier:SectionIdentifierPaymentsNoBackground];
 
   // Account cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountCell];
@@ -407,6 +418,7 @@ const CGFloat kHorizontalImageFixedSize = 40;
   NSInteger sectionIdentifier =
       [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
   switch (sectionIdentifier) {
+    case SectionIdentifierPaymentsNoBackground:
     case SectionIdentifierFooters:
       // Display the Learn More footer without any background image or
       // shadowing.
@@ -554,6 +566,31 @@ const CGFloat kHorizontalImageFixedSize = 40;
   item.text = @"If you want to display a long text that wraps to the next line "
               @"and may need to feature an image this is the cell to use.";
   item.image = [UIImage imageNamed:@"app_icon_placeholder"];
+  return item;
+}
+
+- (CollectionViewItem*)acceptedPaymentMethodsItem {
+  AcceptedPaymentMethodsItem* item = [[AcceptedPaymentMethodsItem alloc]
+      initWithType:ItemTypePaymentsDynamicHeight];
+  item.message = @"Cards accepted:";
+
+  NSMutableArray* cardTypeIcons = [NSMutableArray array];
+  const char* cardTypes[]{autofill::kVisaCard,
+                          autofill::kMasterCard,
+                          autofill::kAmericanExpressCard,
+                          autofill::kJCBCard,
+                          autofill::kDinersCard,
+                          autofill::kDiscoverCard};
+  for (const std::string& cardType : cardTypes) {
+    autofill::data_util::PaymentRequestData data =
+        autofill::data_util::GetPaymentRequestData(cardType);
+    UIImage* cardTypeIcon =
+        ResizeImage(NativeImage(data.icon_resource_id),
+                    CGSizeMake(kCardTypeIconDimension, kCardTypeIconDimension),
+                    ProjectionMode::kAspectFillNoClipping);
+    [cardTypeIcons addObject:cardTypeIcon];
+  }
+  item.methodTypeIcons = cardTypeIcons;
   return item;
 }
 

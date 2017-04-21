@@ -16,7 +16,7 @@ namespace {
 
 // Tests that the labels are set properly after a call to |configureCell:|.
 TEST(PaymentRequestPriceItemTest, TextLabels) {
-  PriceItem* priceItem = [[PriceItem alloc] initWithType:0];
+  PriceItem* priceItem = [[PriceItem alloc] init];
 
   NSString* item = @"Total";
   NSString* notification = @"Updated";

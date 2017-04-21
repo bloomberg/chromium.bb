@@ -32,13 +32,15 @@ NSString* const kCreditCardEditCollectionViewId =
     @"kCreditCardEditCollectionViewId";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierCardSummary = kSectionIdentifierEnumStart,
+  SectionIdentifierAcceptedMethods = kSectionIdentifierEnumStart,
+  SectionIdentifierCardSummary,
   SectionIdentifierBillingAddress,
   SectionIdentifierSaveCard,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeCardSummary = kItemTypeEnumStart,
+  ItemTypeAcceptedMethods = kItemTypeEnumStart,
+  ItemTypeCardSummary,
   ItemTypeBillingAddress,
   ItemTypeSaveCard,
 };
@@ -171,6 +173,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [model addItem:serverCardSummaryItem
         toSectionWithIdentifier:SectionIdentifierCardSummary];
   }
+
+  // Accepted payment methods section.
+  CollectionViewItem* acceptedMethodsItem =
+      [_dataSource acceptedPaymentMethodsItem];
+  if (acceptedMethodsItem) {
+    [model addSectionWithIdentifier:SectionIdentifierAcceptedMethods];
+    acceptedMethodsItem.type = ItemTypeAcceptedMethods;
+    [model addItem:acceptedMethodsItem
+        toSectionWithIdentifier:SectionIdentifierAcceptedMethods];
+  }
 }
 
 - (void)loadFooterItems {
@@ -285,6 +297,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
+    case ItemTypeAcceptedMethods:
     case ItemTypeCardSummary:
     case ItemTypeSaveCard:
       break;
@@ -306,6 +319,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switch (item.type) {
     case ItemTypeBillingAddress:
       return MDCCellDefaultOneLineHeight;
+    case ItemTypeAcceptedMethods:
     case ItemTypeCardSummary:
     case ItemTypeSaveCard:
       return [MDCCollectionViewCell
@@ -321,12 +335,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (type) {
+    case ItemTypeAcceptedMethods:
     case ItemTypeCardSummary:
     case ItemTypeSaveCard:
       return YES;
     default:
       return [super collectionView:collectionView
            hidesInkViewAtIndexPath:indexPath];
+  }
+}
+
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldHideItemBackgroundAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
+  switch (type) {
+    case ItemTypeAcceptedMethods:
+      return YES;
+    default:
+      return [super collectionView:collectionView
+          shouldHideItemBackgroundAtIndexPath:indexPath];
   }
 }
 

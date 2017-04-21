@@ -12,6 +12,7 @@
 #import "components/autofill/ios/browser/credit_card_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/payments/cells/accepted_payment_methods_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_editor_field.h"
@@ -27,9 +28,11 @@
 
 namespace {
 using ::AutofillUITypeFromAutofillType;
+using ::autofill::data_util::GetCardTypeForBasicCardPaymentType;
+using ::autofill::data_util::GetPaymentRequestData;
 using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 
-const CGFloat kCardTypeIconDimension = 25.0;
+const CGFloat kCardTypeIconDimension = 20.0;
 }  // namespace
 
 @interface CreditCardEditViewControllerMediator ()
@@ -66,6 +69,7 @@ const CGFloat kCardTypeIconDimension = 25.0;
 }
 
 - (CollectionViewItem*)serverCardSummaryItem {
+  // Return nil if creating or editing a local card.
   if (!_creditCard || autofill::IsCreditCardLocal(*_creditCard))
     return nil;
 
@@ -79,6 +83,35 @@ const CGFloat kCardTypeIconDimension = 25.0;
           .icon_resource_id;
   cardSummaryItem.methodTypeIcon = NativeImage(cardTypeIconID);
   return cardSummaryItem;
+}
+
+- (CollectionViewItem*)acceptedPaymentMethodsItem {
+  // Return nil if a server card is being edited.
+  if (_creditCard && !autofill::IsCreditCardLocal(*_creditCard))
+    return nil;
+
+  NSMutableArray* cardTypeIcons = [NSMutableArray array];
+  for (const auto& supportedNetwork :
+       _paymentRequest->supported_card_networks()) {
+    const std::string cardType =
+        GetCardTypeForBasicCardPaymentType(supportedNetwork);
+    const autofill::data_util::PaymentRequestData& cardData =
+        GetPaymentRequestData(cardType);
+    UIImage* cardTypeIcon =
+        ResizeImage(NativeImage(cardData.icon_resource_id),
+                    CGSizeMake(kCardTypeIconDimension, kCardTypeIconDimension),
+                    ProjectionMode::kAspectFillNoClipping);
+    cardTypeIcon.accessibilityLabel =
+        l10n_util::GetNSString(cardData.a11y_label_resource_id);
+    [cardTypeIcons addObject:cardTypeIcon];
+  }
+
+  AcceptedPaymentMethodsItem* acceptedMethodsItem =
+      [[AcceptedPaymentMethodsItem alloc] init];
+  acceptedMethodsItem.message =
+      l10n_util::GetNSString(IDS_PAYMENTS_ACCEPTED_CARDS_LABEL);
+  acceptedMethodsItem.methodTypeIcons = cardTypeIcons;
+  return acceptedMethodsItem;
 }
 
 - (NSString*)billingAddressLabelForProfileWithGUID:(NSString*)profileGUID {

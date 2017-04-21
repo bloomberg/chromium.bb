@@ -17,7 +17,7 @@ namespace {
 // Tests that the text label and the image are set properly after a call to
 // |configureCell:|.
 TEST(PaymentRequestPaymentsTextItemTest, TextLabelAndImage) {
-  PaymentsTextItem* item = [[PaymentsTextItem alloc] initWithType:0];
+  PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
 
   NSString* text = @"Lorem ipsum";
   NSString* detailText = @"Dolor sit amet";

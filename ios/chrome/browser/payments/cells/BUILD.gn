@@ -4,6 +4,8 @@
 
 source_set("cells") {
   sources = [
+    "accepted_payment_methods_item.h",
+    "accepted_payment_methods_item.mm",
     "autofill_profile_item.h",
     "autofill_profile_item.mm",
     "page_info_item.h",
@@ -31,6 +33,7 @@ source_set("cells") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "accepted_payment_methods_item_unittest.mm",
     "autofill_profile_item_unittest.mm",
     "page_info_item_unittest.mm",
     "payment_method_item_unittest.mm",

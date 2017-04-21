@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/field_types.h"
+#import "ios/chrome/browser/payments/cells/accepted_payment_methods_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/payments/payment_request_editor_field.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
@@ -33,6 +34,10 @@
 
 - (CollectionViewItem*)serverCardSummaryItem {
   return [[PaymentMethodItem alloc] init];
+}
+
+- (CollectionViewItem*)acceptedPaymentMethodsItem {
+  return [[AcceptedPaymentMethodsItem alloc] init];
 }
 
 - (NSArray<EditorField*>*)editorFields {
@@ -96,10 +101,12 @@ TEST_F(PaymentRequestCreditCardEditViewControllerTest, TestModel) {
       setState:CreditCardEditViewControllerStateEdit];
   [GetCreditCardEditViewController() loadModel];
 
-  // There is one section for every textfield (there are four textfields in
-  // total), one for the server card summary section, one for the footer, and
-  // one for the billing address ID item.
-  ASSERT_EQ(7, NumberOfSections());
+  // There is one section containing the credit card type icons for the accepted
+  // payment methods. In addition to that, there is one section for every
+  // textfield (there are four textfields in total), one for the server card
+  // summary section, one for the footer, and one for the billing address ID
+  // item.
+  ASSERT_EQ(8, NumberOfSections());
 
   // The server card summary section is the first section and has one item of
   // the type PaymentMethodItem.
@@ -107,11 +114,13 @@ TEST_F(PaymentRequestCreditCardEditViewControllerTest, TestModel) {
   id item = GetCollectionViewItem(0, 0);
   EXPECT_TRUE([item isMemberOfClass:[PaymentMethodItem class]]);
 
-  // The next four sections have only one item of the type AutofillEditItem.
+  // The next section is the accepted payment methods section and has one item
+  // of the type AcceptedPaymentMethodsItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(1)));
   item = GetCollectionViewItem(1, 0);
-  EXPECT_TRUE([item isMemberOfClass:[AutofillEditItem class]]);
+  EXPECT_TRUE([item isMemberOfClass:[AcceptedPaymentMethodsItem class]]);
 
+  // The next four sections have only one item of the type AutofillEditItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(2)));
   item = GetCollectionViewItem(2, 0);
   EXPECT_TRUE([item isMemberOfClass:[AutofillEditItem class]]);
@@ -124,10 +133,14 @@ TEST_F(PaymentRequestCreditCardEditViewControllerTest, TestModel) {
   item = GetCollectionViewItem(4, 0);
   EXPECT_TRUE([item isMemberOfClass:[AutofillEditItem class]]);
 
-  // The billing address section contains one item which is of the type
-  // CollectionViewDetailItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(5)));
   item = GetCollectionViewItem(5, 0);
+  EXPECT_TRUE([item isMemberOfClass:[AutofillEditItem class]]);
+
+  // The billing address section contains one item which is of the type
+  // CollectionViewDetailItem.
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(6)));
+  item = GetCollectionViewItem(6, 0);
   EXPECT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
   CollectionViewDetailItem* billing_address_item = item;
   EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
@@ -135,8 +148,8 @@ TEST_F(PaymentRequestCreditCardEditViewControllerTest, TestModel) {
 
   // The footer section contains one item which is of the type
   // CollectionViewFooterItem.
-  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(6)));
-  item = GetCollectionViewItem(6, 0);
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(7)));
+  item = GetCollectionViewItem(7, 0);
   EXPECT_TRUE([item isMemberOfClass:[CollectionViewFooterItem class]]);
 }
 
@@ -153,12 +166,12 @@ TEST_F(PaymentRequestCreditCardEditViewControllerTest,
 
   // There is an extra section containing a switch that allows the user to save
   // the credit card locally.
-  ASSERT_EQ(8, NumberOfSections());
+  ASSERT_EQ(9, NumberOfSections());
 
   // The switch section is the last section before the footer and has one item
   // of the type CollectionViewSwitchItem. The switch is on by defualt.
-  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(6)));
-  id item = GetCollectionViewItem(6, 0);
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(7)));
+  id item = GetCollectionViewItem(7, 0);
   EXPECT_TRUE([item isMemberOfClass:[CollectionViewSwitchItem class]]);
   CollectionViewSwitchItem* switch_item = item;
   EXPECT_EQ(YES, [switch_item isOn]);
