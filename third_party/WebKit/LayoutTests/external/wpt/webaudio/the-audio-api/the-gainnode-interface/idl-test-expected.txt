@@ -1,0 +1,30 @@
+This is a testharness.js-based test.
+PASS GainNode interface: existence and properties of interface object 
+PASS GainNode interface object length 
+PASS GainNode interface object name 
+FAIL GainNode interface: existence and properties of interface prototype object assert_equals: class string of GainNode.prototype expected "[object GainNodePrototype]" but got "[object GainNode]"
+PASS GainNode interface: existence and properties of interface prototype object's "constructor" property 
+PASS GainNode interface: attribute gain 
+PASS GainNode must be primary interface of gain_node 
+PASS Stringification of gain_node 
+PASS GainNode interface: gain_node must inherit property "gain" with the proper type (0) 
+PASS AudioNode interface: gain_node must inherit property "connect" with the proper type (0) 
+PASS AudioNode interface: calling connect(AudioNode,unsigned long,unsigned long) on gain_node with too few arguments must throw TypeError 
+PASS AudioNode interface: gain_node must inherit property "connect" with the proper type (1) 
+PASS AudioNode interface: calling connect(AudioParam,unsigned long) on gain_node with too few arguments must throw TypeError 
+PASS AudioNode interface: gain_node must inherit property "disconnect" with the proper type (2) 
+PASS AudioNode interface: calling disconnect(unsigned long) on gain_node with too few arguments must throw TypeError 
+PASS AudioNode interface: gain_node must inherit property "context" with the proper type (3) 
+PASS AudioNode interface: gain_node must inherit property "numberOfInputs" with the proper type (4) 
+PASS AudioNode interface: gain_node must inherit property "numberOfOutputs" with the proper type (5) 
+PASS AudioNode interface: gain_node must inherit property "channelCount" with the proper type (6) 
+PASS AudioNode interface: gain_node must inherit property "channelCountMode" with the proper type (7) 
+PASS AudioNode interface: gain_node must inherit property "channelInterpretation" with the proper type (8) 
+PASS EventTarget interface: gain_node must inherit property "addEventListener" with the proper type (0) 
+PASS EventTarget interface: calling addEventListener(DOMString,EventListener,boolean) on gain_node with too few arguments must throw TypeError 
+PASS EventTarget interface: gain_node must inherit property "removeEventListener" with the proper type (1) 
+PASS EventTarget interface: calling removeEventListener(DOMString,EventListener,boolean) on gain_node with too few arguments must throw TypeError 
+PASS EventTarget interface: gain_node must inherit property "dispatchEvent" with the proper type (2) 
+PASS EventTarget interface: calling dispatchEvent(Event) on gain_node with too few arguments must throw TypeError 
+Harness: the test ran to completion.
+

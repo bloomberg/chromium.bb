@@ -1,0 +1,27 @@
+This is a testharness.js-based test.
+PASS AudioBuffer interface: existence and properties of interface object 
+PASS AudioBuffer interface object length 
+PASS AudioBuffer interface object name 
+FAIL AudioBuffer interface: existence and properties of interface prototype object assert_equals: class string of AudioBuffer.prototype expected "[object AudioBufferPrototype]" but got "[object AudioBuffer]"
+PASS AudioBuffer interface: existence and properties of interface prototype object's "constructor" property 
+PASS AudioBuffer interface: attribute sampleRate 
+PASS AudioBuffer interface: attribute length 
+PASS AudioBuffer interface: attribute duration 
+PASS AudioBuffer interface: attribute numberOfChannels 
+PASS AudioBuffer interface: operation getChannelData(unsigned long) 
+PASS AudioBuffer interface: operation copyFromChannel(Float32Array,unsigned long,unsigned long) 
+PASS AudioBuffer interface: operation copyToChannel(Float32Array,unsigned long,unsigned long) 
+PASS AudioBuffer must be primary interface of audio_buffer 
+PASS Stringification of audio_buffer 
+PASS AudioBuffer interface: audio_buffer must inherit property "sampleRate" with the proper type (0) 
+PASS AudioBuffer interface: audio_buffer must inherit property "length" with the proper type (1) 
+PASS AudioBuffer interface: audio_buffer must inherit property "duration" with the proper type (2) 
+PASS AudioBuffer interface: audio_buffer must inherit property "numberOfChannels" with the proper type (3) 
+PASS AudioBuffer interface: audio_buffer must inherit property "getChannelData" with the proper type (4) 
+PASS AudioBuffer interface: calling getChannelData(unsigned long) on audio_buffer with too few arguments must throw TypeError 
+PASS AudioBuffer interface: audio_buffer must inherit property "copyFromChannel" with the proper type (5) 
+PASS AudioBuffer interface: calling copyFromChannel(Float32Array,unsigned long,unsigned long) on audio_buffer with too few arguments must throw TypeError 
+PASS AudioBuffer interface: audio_buffer must inherit property "copyToChannel" with the proper type (6) 
+PASS AudioBuffer interface: calling copyToChannel(Float32Array,unsigned long,unsigned long) on audio_buffer with too few arguments must throw TypeError 
+Harness: the test ran to completion.
+
