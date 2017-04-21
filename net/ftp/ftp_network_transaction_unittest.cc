@@ -1705,6 +1705,15 @@ TEST_P(FtpNetworkTransactionTest, ExtraQuitResponses) {
   ExecuteTransaction(&ctrl_socket, "ftp://host/", ERR_INVALID_RESPONSE);
 }
 
+// Test case for https://crbug.com/633841 - similar to the ExtraQuitResponses
+// test case, but with an empty response.
+TEST_P(FtpNetworkTransactionTest, EmptyQuitResponse) {
+  FtpSocketDataProviderDirectoryListing ctrl_socket;
+  ctrl_socket.InjectFailure(FtpSocketDataProvider::PRE_QUIT,
+                            FtpSocketDataProvider::QUIT, "");
+  ExecuteTransaction(&ctrl_socket, "ftp://host/", OK);
+}
+
 TEST_P(FtpNetworkTransactionTest, InvalidRemoteDirectory) {
   FtpSocketDataProviderFileDownload ctrl_socket;
   TransactionFailHelper(
