@@ -927,7 +927,10 @@ test("content_browsertests") {
       "../browser/webrtc/webrtc_webcam_browsertest.cc",
       "../browser/webrtc/webrtc_webcam_browsertest.h",
     ]
-    deps += [ "//testing/perf" ]
+    deps += [
+      "//testing/perf",
+      "//content/public/common:features",
+    ]
   }
 
   if (enable_plugins) {
