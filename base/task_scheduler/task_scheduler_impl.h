@@ -42,9 +42,6 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // |name| is used to label threads and histograms. It should identify the
   // component that creates the TaskScheduler. |init_params| contains params to
   // initialize worker pools.
-  //
-  // Note: The names and priority hints in |init_params| are ignored.
-  // https://crbug.com/690706
   static std::unique_ptr<TaskSchedulerImpl> Create(
       StringPiece name,
       const TaskScheduler::InitParams& init_params);

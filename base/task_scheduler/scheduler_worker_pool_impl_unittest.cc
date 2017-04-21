@@ -91,8 +91,7 @@ class TaskSchedulerWorkerPoolImplTest
   void StartWorkerPool(TimeDelta suggested_reclaim_time, size_t num_workers) {
     ASSERT_TRUE(worker_pool_);
     worker_pool_->Start(SchedulerWorkerPoolParams(
-        "TestWorkerPool", ThreadPriority::NORMAL, StandbyThreadPolicy::LAZY,
-        num_workers, suggested_reclaim_time));
+        StandbyThreadPolicy::LAZY, num_workers, suggested_reclaim_time));
   }
 
   void CreateAndStartWorkerPool(TimeDelta suggested_reclaim_time,

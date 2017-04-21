@@ -145,9 +145,6 @@ class BASE_EXPORT TaskScheduler {
   // the TaskScheduler. |init_params| is used to initialize the worker pools.
   // CHECKs on failure. For tests, prefer base::test::ScopedTaskScheduler
   // (ensures isolation).
-  //
-  // Note: The names and priority hints in |init_params| are ignored (ref. TODO
-  // to remove them).
   static void CreateAndSetDefaultTaskScheduler(StringPiece name,
                                                const InitParams& init_params);
 
