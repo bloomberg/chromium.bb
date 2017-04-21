@@ -166,7 +166,7 @@ class GclientApi(recipe_api.RecipeApi):
       if fixed_revision:
         revisions.extend(['--revision', '%s@%s' % (name, fixed_revision)])
 
-    test_data_paths = set(cfg.got_revision_mapping.keys() +
+    test_data_paths = set(self.got_revision_reverse_mapping(cfg).values() +
                           [s.name for s in cfg.solutions])
     step_test_data = lambda: (
       self.test_api.output_json(test_data_paths))
@@ -195,12 +195,12 @@ class GclientApi(recipe_api.RecipeApi):
                  **kwargs)
     finally:
       result = self.m.step.active_result
-      data = result.json.output
-      for path, info in data['solutions'].iteritems():
+      solutions = result.json.output['solutions']
+      for propname, path in sorted(
+          self.got_revision_reverse_mapping(cfg).iteritems()):
         # gclient json paths always end with a slash
-        path = path.rstrip('/')
-        if path in cfg.got_revision_mapping:
-          propname = cfg.got_revision_mapping[path]
+        info = solutions.get(path + '/') or solutions.get(path)
+        if info:
           result.presentation.properties[propname] = info['revision']
 
     return result
