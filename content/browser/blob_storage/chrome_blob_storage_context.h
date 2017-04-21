@@ -29,6 +29,8 @@ namespace content {
 class BlobHandle;
 class BrowserContext;
 struct ChromeBlobStorageContextDeleter;
+class ResourceRequestBodyImpl;
+class ResourceContext;
 
 // A context class that keeps track of BlobStorageController used by the chrome.
 // There is an instance associated with each BrowserContext. There could be
@@ -81,6 +83,16 @@ struct ChromeBlobStorageContextDeleter {
     context->DeleteOnCorrectThread();
   }
 };
+
+// Returns the BlobStorageContext associated with the
+// ChromeBlobStorageContext instance passed in.
+storage::BlobStorageContext* GetBlobStorageContext(
+    ChromeBlobStorageContext* blob_storage_context);
+
+// Attaches blob data handles to the ResourceRequestBodyImpl body passed in.
+// This is used for POST and PUT requests.
+void AttachRequestBodyBlobDataHandles(ResourceRequestBodyImpl* body,
+                                      ResourceContext* resource_context);
 
 }  // namespace content
 

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_NETWORK_SERVICE_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
@@ -20,6 +21,7 @@ struct RedirectInfo;
 namespace content {
 
 class ResourceContext;
+class NavigationPostDataHandler;
 
 // This is an implementation of NavigationURLLoader used when
 // --enable-network-service is used.
@@ -58,6 +60,9 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
   void OnComplete(
       const ResourceRequestCompletionStatus& completion_status) override;
 
+  // Initiates the request.
+  void StartURLRequest(std::unique_ptr<ResourceRequest> request);
+
  private:
   void ConnectURLLoaderFactory(
       std::unique_ptr<service_manager::Connector> connector);
@@ -69,6 +74,8 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
   scoped_refptr<ResourceResponse> response_;
   SSLStatus ssl_status_;
+
+  base::WeakPtrFactory<NavigationURLLoaderNetworkService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderNetworkService);
 };

@@ -265,33 +265,6 @@ bool IsValidatedSCT(
   return sct_status.status == net::ct::SCT_STATUS_OK;
 }
 
-storage::BlobStorageContext* GetBlobStorageContext(
-    ChromeBlobStorageContext* blob_storage_context) {
-  if (!blob_storage_context)
-    return NULL;
-  return blob_storage_context->context();
-}
-
-void AttachRequestBodyBlobDataHandles(
-    ResourceRequestBodyImpl* body,
-    storage::BlobStorageContext* blob_context) {
-  DCHECK(blob_context);
-  for (size_t i = 0; i < body->elements()->size(); ++i) {
-    const ResourceRequestBodyImpl::Element& element = (*body->elements())[i];
-    if (element.type() != ResourceRequestBodyImpl::Element::TYPE_BLOB)
-      continue;
-    std::unique_ptr<storage::BlobDataHandle> handle =
-        blob_context->GetBlobDataFromUUID(element.blob_uuid());
-    DCHECK(handle);
-    if (!handle)
-      continue;
-    // Ensure the blob and any attached shareable files survive until
-    // upload completion. The |body| takes ownership of |handle|.
-    const void* key = handle.get();
-    body->SetUserData(key, handle.release());
-  }
-}
-
 // Returns the PreviewsState after requesting it from the delegate. The
 // PreviewsState is a bitmask of potentially several Previews optimizations.
 PreviewsState GetPreviewsState(PreviewsState previews_state,
@@ -1298,9 +1271,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       // Attaches the BlobDataHandles to request_body not to free the blobs and
       // any attached shareable files until upload completion. These data will
       // be used in UploadDataStream and ServiceWorkerURLRequestJob.
-      AttachRequestBodyBlobDataHandles(
-          request_data.request_body.get(),
-          blob_context);
+      AttachRequestBodyBlobDataHandles(request_data.request_body.get(),
+                                       resource_context);
     }
     new_request->set_upload(UploadDataStreamBuilder::Build(
         request_data.request_body.get(), blob_context,
@@ -2009,7 +1981,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // Resolve elements from request_body and prepare upload data.
   ResourceRequestBodyImpl* body = info.common_params.post_data.get();
   if (body) {
-    AttachRequestBodyBlobDataHandles(body, blob_context);
+    AttachRequestBodyBlobDataHandles(body, resource_context);
     // TODO(davidben): The FileSystemContext is null here. In the case where
     // another renderer requested this navigation, this should be the same
     // FileSystemContext passed into ShouldServiceRequest.
