@@ -48,7 +48,11 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate)
       model_(delegate->GetModel()),
       search_box_view_(nullptr),
       contents_view_(nullptr) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  SetLayoutManager(
+      switches::IsAnswerCardEnabled()
+          ? static_cast<views::LayoutManager*>(new views::FillLayout)
+          : static_cast<views::LayoutManager*>(
+                new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0)));
   model_->AddObserver(this);
 }
 
@@ -155,6 +159,10 @@ void AppListMainView::UpdateCustomLauncherPageVisibility() {
     // Hide the view immediately otherwise.
     custom_page->SetVisible(false);
   }
+}
+
+const char* AppListMainView::GetClassName() const {
+  return "AppListMainView";
 }
 
 void AppListMainView::OnCustomLauncherPageEnabledStateChanged(bool enabled) {

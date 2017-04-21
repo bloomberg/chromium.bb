@@ -475,6 +475,10 @@ bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
   return handled;
 }
 
+const char* ContentsView::GetClassName() const {
+  return "ContentsView";
+}
+
 void ContentsView::TotalPagesChanged() {
 }
 

@@ -67,6 +67,9 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   bool ShouldShowCustomLauncherPage() const;
   void UpdateCustomLauncherPageVisibility();
 
+  // Overridden from views::View:
+  const char* GetClassName() const override;
+
   // Overridden from AppListModelObserver:
   void OnCustomLauncherPageEnabledStateChanged(bool enabled) override;
   void OnSearchEngineIsGoogleChanged(bool is_google) override;

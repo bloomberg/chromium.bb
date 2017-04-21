@@ -123,6 +123,10 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
+const char* SearchResultPageView::GetClassName() const {
+  return "SearchResultPageView";
+}
+
 void SearchResultPageView::ClearSelectedIndex() {
   if (HasSelection())
     result_container_views_[selected_index_]->ClearSelectedIndex();
@@ -208,7 +212,9 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
     AppListModel::State state) const {
-  gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
+  gfx::Rect onscreen_bounds = switches::IsAnswerCardEnabled()
+                                  ? GetFullContentsBounds()
+                                  : GetDefaultContentsBounds();
   switch (state) {
     case AppListModel::STATE_SEARCH_RESULTS:
       return onscreen_bounds;

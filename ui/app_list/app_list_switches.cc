@@ -83,5 +83,9 @@ std::string AnswerServerUrl() {
       kAnswerServerUrl);
 }
 
+bool IsAnswerCardEnabled() {
+  return !AnswerServerUrl().empty();
+}
+
 }  // namespace switches
 }  // namespace app_list

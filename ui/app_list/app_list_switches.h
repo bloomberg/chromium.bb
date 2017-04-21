@@ -39,6 +39,8 @@ bool APP_LIST_EXPORT IsDriveSearchInChromeLauncherEnabled();
 
 std::string APP_LIST_EXPORT AnswerServerUrl();
 
+bool APP_LIST_EXPORT IsAnswerCardEnabled();
+
 }  // namespace switches
 }  // namespace app_list
 
