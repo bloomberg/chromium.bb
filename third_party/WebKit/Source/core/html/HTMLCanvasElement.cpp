@@ -888,24 +888,6 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   return true;
 }
 
-namespace {
-
-class UnacceleratedSurfaceFactory
-    : public RecordingImageBufferFallbackSurfaceFactory {
- public:
-  virtual std::unique_ptr<ImageBufferSurface> CreateSurface(
-      const IntSize& size,
-      OpacityMode opacity_mode,
-      const CanvasColorParams& color_params) {
-    return WTF::WrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacity_mode, kInitializeImagePixels, color_params));
-  }
-
-  virtual ~UnacceleratedSurfaceFactory() {}
-};
-
-}  // namespace
-
 bool HTMLCanvasElement::ShouldUseDisplayList() {
   // Rasterization of web contents will blend in the output space. Only embed
   // the canvas as a display list if it intended to do output space blending as
@@ -928,8 +910,8 @@ HTMLCanvasElement::CreateWebGLImageBufferSurface(OpacityMode opacity_mode) {
   // If 3d, but the use of the canvas will be for non-accelerated content
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
-  auto surface = WTF::WrapUnique(new AcceleratedImageBufferSurface(
-      size(), opacity_mode, context_->color_params()));
+  auto surface = WTF::MakeUnique<AcceleratedImageBufferSurface>(
+      size(), opacity_mode, context_->color_params());
   if (surface->IsValid())
     return std::move(surface);
   return nullptr;
@@ -956,10 +938,9 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(OpacityMode opacity_mode,
   if (context_provider->IsSoftwareRendering())
     return nullptr;  // Don't use accelerated canvas with swiftshader.
 
-  std::unique_ptr<ImageBufferSurface> surface =
-      WTF::WrapUnique(new Canvas2DImageBufferSurface(
-          std::move(context_provider), size(), *msaa_sample_count, opacity_mode,
-          Canvas2DLayerBridge::kEnableAcceleration, context_->color_params()));
+  auto surface = WTF::MakeUnique<Canvas2DImageBufferSurface>(
+      std::move(context_provider), size(), *msaa_sample_count, opacity_mode,
+      Canvas2DLayerBridge::kEnableAcceleration, context_->color_params());
   if (!surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kGPUAccelerated2DCanvasImageBufferCreationFailed);
@@ -968,16 +949,15 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(OpacityMode opacity_mode,
 
   CanvasMetrics::CountCanvasContextUsage(
       CanvasMetrics::kGPUAccelerated2DCanvasImageBufferCreated);
-  return surface;
+  return std::move(surface);
 }
 
 std::unique_ptr<ImageBufferSurface>
 HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
     OpacityMode opacity_mode) {
   if (ShouldUseDisplayList()) {
-    auto surface = WTF::WrapUnique(new RecordingImageBufferSurface(
-        size(), WTF::WrapUnique(new UnacceleratedSurfaceFactory), opacity_mode,
-        context_->color_params()));
+    auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+        size(), opacity_mode, context_->color_params());
     if (surface->IsValid()) {
       CanvasMetrics::CountCanvasContextUsage(
           CanvasMetrics::kDisplayList2DCanvasImageBufferCreated);
@@ -987,13 +967,12 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
     // here.
   }
 
-  auto surface_factory = WTF::MakeUnique<UnacceleratedSurfaceFactory>();
-  auto surface = surface_factory->CreateSurface(size(), opacity_mode,
-                                                context_->color_params());
+  auto surface = WTF::MakeUnique<UnacceleratedImageBufferSurface>(
+      size(), opacity_mode, kInitializeImagePixels, context_->color_params());
   if (surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kUnaccelerated2DCanvasImageBufferCreated);
-    return surface;
+    return std::move(surface);
   }
 
   CanvasMetrics::CountCanvasContextUsage(
@@ -1479,7 +1458,7 @@ void HTMLCanvasElement::CreateLayer() {
     layer_tree_view =
         frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
     surface_layer_bridge_ =
-        WTF::WrapUnique(new CanvasSurfaceLayerBridge(this, layer_tree_view));
+        WTF::MakeUnique<CanvasSurfaceLayerBridge>(this, layer_tree_view);
     // Creates a placeholder layer first before Surface is created.
     surface_layer_bridge_->CreateSolidColorLayer();
   }

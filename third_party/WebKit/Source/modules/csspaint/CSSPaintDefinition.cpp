@@ -90,9 +90,8 @@ PassRefPtr<Image> CSSPaintDefinition::Paint(
   DCHECK(layout_object.GetNode());
 
   PaintRenderingContext2D* rendering_context = PaintRenderingContext2D::Create(
-      ImageBuffer::Create(WTF::WrapUnique(
-          new RecordingImageBufferSurface(size, nullptr /* fallbackFactory */,
-                                          has_alpha_ ? kNonOpaque : kOpaque))),
+      ImageBuffer::Create(WTF::WrapUnique(new RecordingImageBufferSurface(
+          size, has_alpha_ ? kNonOpaque : kOpaque))),
       has_alpha_, zoom);
   PaintSize* paint_size = PaintSize::Create(specified_size);
   StylePropertyMapReadonly* style_map =

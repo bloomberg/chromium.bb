@@ -16,20 +16,7 @@
 namespace blink {
 
 class ImageBuffer;
-class RecordingImageBufferSurfaceTest;
-
-class RecordingImageBufferFallbackSurfaceFactory {
-  USING_FAST_MALLOC(RecordingImageBufferFallbackSurfaceFactory);
-  WTF_MAKE_NONCOPYABLE(RecordingImageBufferFallbackSurfaceFactory);
-
- public:
-  virtual std::unique_ptr<ImageBufferSurface>
-  CreateSurface(const IntSize&, OpacityMode, const CanvasColorParams&) = 0;
-  virtual ~RecordingImageBufferFallbackSurfaceFactory() {}
-
- protected:
-  RecordingImageBufferFallbackSurfaceFactory() {}
-};
+class UnacceleratedImageBufferSurface;
 
 class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   WTF_MAKE_NONCOPYABLE(RecordingImageBufferSurface);
@@ -42,8 +29,6 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   // Only #getRecord should be used to access the resulting frame.
   RecordingImageBufferSurface(
       const IntSize&,
-      std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory>
-          fallback_factory = nullptr,
       OpacityMode = kNonOpaque,
       const CanvasColorParams& = CanvasColorParams());
   ~RecordingImageBufferSurface() override;
@@ -116,7 +101,6 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   };
 
  private:
-  friend class RecordingImageBufferSurfaceTest;  // for unit testing
   void FallBackToRasterCanvas(FallbackReason);
   void InitializeCurrentFrame();
   bool FinalizeFrameInternal(FallbackReason*);
@@ -124,7 +108,7 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
 
   std::unique_ptr<PaintRecorder> current_frame_;
   sk_sp<PaintRecord> previous_frame_;
-  std::unique_ptr<ImageBufferSurface> fallback_surface_;
+  std::unique_ptr<UnacceleratedImageBufferSurface> fallback_surface_;
   ImageBuffer* image_buffer_;
   int initial_save_count_;
   int current_frame_pixel_count_;
@@ -133,7 +117,6 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   bool did_record_draw_commands_in_current_frame_;
   bool current_frame_has_expensive_op_;
   bool previous_frame_has_expensive_op_;
-  std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> fallback_factory_;
 };
 
 }  // namespace blink

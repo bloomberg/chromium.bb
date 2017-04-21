@@ -525,35 +525,15 @@ void ImageBuffer::UpdateGPUMemoryUsage() const {
   }
 }
 
-namespace {
-
-class UnacceleratedSurfaceFactory
-    : public RecordingImageBufferFallbackSurfaceFactory {
- public:
-  virtual std::unique_ptr<ImageBufferSurface> CreateSurface(
-      const IntSize& size,
-      OpacityMode opacity_mode,
-      const CanvasColorParams& color_params) {
-    return WTF::WrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacity_mode, kInitializeImagePixels, color_params));
-  }
-
-  virtual ~UnacceleratedSurfaceFactory() {}
-};
-
-}  // namespace
-
 void ImageBuffer::DisableAcceleration() {
   if (!IsAccelerated())
     return;
 
   // Create and configure a recording (unaccelerated) surface.
-  std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surface_factory =
-      WTF::MakeUnique<UnacceleratedSurfaceFactory>();
   std::unique_ptr<ImageBufferSurface> surface =
       WTF::WrapUnique(new RecordingImageBufferSurface(
-          surface_->size(), std::move(surface_factory),
-          surface_->GetOpacityMode(), surface_->color_params()));
+          surface_->size(), surface_->GetOpacityMode(),
+          surface_->color_params()));
   SetSurface(std::move(surface));
 }
 

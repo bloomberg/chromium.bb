@@ -5,11 +5,13 @@
 #include "platform/graphics/RecordingImageBufferSurface.h"
 
 #include <memory>
+
 #include "platform/Histogram.h"
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
@@ -18,8 +20,6 @@ namespace blink {
 
 RecordingImageBufferSurface::RecordingImageBufferSurface(
     const IntSize& size,
-    std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory>
-        fallback_factory,
     OpacityMode opacity_mode,
     const CanvasColorParams& color_params)
     : ImageBufferSurface(size, opacity_mode, color_params),
@@ -29,8 +29,7 @@ RecordingImageBufferSurface::RecordingImageBufferSurface(
       frame_was_cleared_(true),
       did_record_draw_commands_in_current_frame_(false),
       current_frame_has_expensive_op_(false),
-      previous_frame_has_expensive_op_(false),
-      fallback_factory_(std::move(fallback_factory)) {
+      previous_frame_has_expensive_op_(false) {
   InitializeCurrentFrame();
 }
 
@@ -68,10 +67,9 @@ bool RecordingImageBufferSurface::WritePixels(const SkImageInfo& orig_info,
                                               int x,
                                               int y) {
   if (!fallback_surface_) {
-    if (x <= 0 && y <= 0 && x + orig_info.width() >= size().Width() &&
-        y + orig_info.height() >= size().Height()) {
+    IntRect write_rect(x, y, orig_info.width(), orig_info.height());
+    if (write_rect.Contains(IntRect(IntPoint(), size())))
       WillOverwriteCanvas();
-    }
     FallBackToRasterCanvas(kFallbackReasonWritePixels);
   }
   return fallback_surface_->WritePixels(orig_info, pixels, row_bytes, x, y);
@@ -79,7 +77,6 @@ bool RecordingImageBufferSurface::WritePixels(const SkImageInfo& orig_info,
 
 void RecordingImageBufferSurface::FallBackToRasterCanvas(
     FallbackReason reason) {
-  DCHECK(fallback_factory_);
   CHECK(reason != kFallbackReasonUnknown);
 
   if (fallback_surface_) {
@@ -93,8 +90,8 @@ void RecordingImageBufferSurface::FallBackToRasterCanvas(
                                kFallbackReasonCount));
   canvas_fallback_histogram.Count(reason);
 
-  fallback_surface_ = fallback_factory_->CreateSurface(size(), GetOpacityMode(),
-                                                       color_params());
+  fallback_surface_ = WTF::WrapUnique(new UnacceleratedImageBufferSurface(
+      size(), GetOpacityMode(), kInitializeImagePixels, color_params()));
   fallback_surface_->SetImageBuffer(image_buffer_);
 
   if (previous_frame_) {
@@ -230,8 +227,6 @@ sk_sp<PaintRecord> RecordingImageBufferSurface::GetRecord() {
   FallbackReason fallback_reason = kFallbackReasonUnknown;
   bool can_use_record = FinalizeFrameInternal(&fallback_reason);
 
-  DCHECK(can_use_record || fallback_factory_);
-
   if (can_use_record) {
     return previous_frame_;
   }
@@ -320,9 +315,8 @@ bool RecordingImageBufferSurface::FinalizeFrameInternal(
     return false;
   }
 
-  if (fallback_factory_ &&
-      current_frame_->getRecordingCanvas()->getSaveCount() - 1 >
-          ExpensiveCanvasHeuristicParameters::kExpensiveRecordingStackDepth) {
+  if (current_frame_->getRecordingCanvas()->getSaveCount() - 1 >
+      ExpensiveCanvasHeuristicParameters::kExpensiveRecordingStackDepth) {
     // (getSaveCount() decremented to account  for the intial recording canvas
     // save frame.)
     *fallback_reason = kFallbackReasonRunawayStateStack;
