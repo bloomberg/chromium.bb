@@ -39,6 +39,11 @@ class MediaBrowserTest : public ContentBrowserTest {
   // titles. Returns the matching title.
   std::string RunTest(const GURL& gurl, const std::string& expected_title);
 
+  // Encodes |original_message| to be used in a URI query parameter suitable for
+  // decoding and usage with DecodeURIComponent in test pages that verify error
+  // message contents.
+  std::string EncodeErrorMessage(const std::string& original_message);
+
   // Adds titles that RunTest() should wait for.
   virtual void AddTitlesToAwait(content::TitleWatcher* title_watcher);
 };

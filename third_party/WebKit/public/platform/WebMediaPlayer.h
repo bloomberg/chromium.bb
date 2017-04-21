@@ -159,7 +159,12 @@ class WebMediaPlayer {
   virtual NetworkState GetNetworkState() const = 0;
   virtual ReadyState GetReadyState() const = 0;
 
-  virtual WebString GetErrorMessage() = 0;
+  // Returns an implementation-specific human readable error message, or an
+  // empty string if no message is available. The message should begin with a
+  // UA-specific-error-code (without any ':'), optionally followed by ': ' and
+  // further description of the error.
+  virtual WebString GetErrorMessage() const = 0;
+
   virtual bool DidLoadingProgress() = 0;
 
   virtual bool HasSingleSecurityOrigin() const = 0;

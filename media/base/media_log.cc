@@ -8,6 +8,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 
 namespace media {
@@ -168,42 +169,32 @@ std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
 }
 
 std::string MediaLog::PipelineStatusToString(PipelineStatus status) {
+#define STRINGIFY_STATUS_CASE(status) \
+  case status:                        \
+    return #status
+
   switch (status) {
-    case PIPELINE_OK:
-      return "pipeline: ok";
-    case PIPELINE_ERROR_NETWORK:
-      return "pipeline: network error";
-    case PIPELINE_ERROR_DECODE:
-      return "pipeline: decode error";
-    case PIPELINE_ERROR_ABORT:
-      return "pipeline: abort";
-    case PIPELINE_ERROR_INITIALIZATION_FAILED:
-      return "pipeline: initialization failed";
-    case PIPELINE_ERROR_COULD_NOT_RENDER:
-      return "pipeline: could not render";
-    case PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED:
-      return "pipeline: external renderer failed";
-    case PIPELINE_ERROR_READ:
-      return "pipeline: read error";
-    case PIPELINE_ERROR_INVALID_STATE:
-      return "pipeline: invalid state";
-    case DEMUXER_ERROR_COULD_NOT_OPEN:
-      return "demuxer: could not open";
-    case DEMUXER_ERROR_COULD_NOT_PARSE:
-      return "demuxer: could not parse";
-    case DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
-      return "demuxer: no supported streams";
-    case DECODER_ERROR_NOT_SUPPORTED:
-      return "decoder: not supported";
-    case CHUNK_DEMUXER_ERROR_APPEND_FAILED:
-      return "chunk demuxer: append failed";
-    case CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR:
-      return "chunk demuxer: application requested decode error on eos";
-    case CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR:
-      return "chunk demuxer: application requested network error on eos";
-    case AUDIO_RENDERER_ERROR:
-      return "audio renderer: output device reported an error";
+    STRINGIFY_STATUS_CASE(PIPELINE_OK);
+    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_NETWORK);
+    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_DECODE);
+    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_ABORT);
+    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_INITIALIZATION_FAILED);
+    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_COULD_NOT_RENDER);
+    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED);
+    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_READ);
+    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_INVALID_STATE);
+    STRINGIFY_STATUS_CASE(DEMUXER_ERROR_COULD_NOT_OPEN);
+    STRINGIFY_STATUS_CASE(DEMUXER_ERROR_COULD_NOT_PARSE);
+    STRINGIFY_STATUS_CASE(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
+    STRINGIFY_STATUS_CASE(DECODER_ERROR_NOT_SUPPORTED);
+    STRINGIFY_STATUS_CASE(CHUNK_DEMUXER_ERROR_APPEND_FAILED);
+    STRINGIFY_STATUS_CASE(CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR);
+    STRINGIFY_STATUS_CASE(CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR);
+    STRINGIFY_STATUS_CASE(AUDIO_RENDERER_ERROR);
   }
+
+#undef STRINGIFY_STATUS_CASE
+
   NOTREACHED();
   return NULL;
 }
@@ -218,9 +209,31 @@ std::string MediaLog::MediaEventToLogString(const MediaLogEvent& event) {
     PipelineStatus status = static_cast<PipelineStatus>(error_code);
     return EventTypeToString(event.type) + " " + PipelineStatusToString(status);
   }
+
   std::string params_json;
   base::JSONWriter::Write(event.params, &params_json);
   return EventTypeToString(event.type) + " " + params_json;
+}
+
+std::string MediaLog::MediaEventToMessageString(const MediaLogEvent& event) {
+  switch (event.type) {
+    case MediaLogEvent::PIPELINE_ERROR: {
+      int error_code = 0;
+      event.params.GetInteger("pipeline_error", &error_code);
+      DCHECK_NE(error_code, 0);
+      return PipelineStatusToString(static_cast<PipelineStatus>(error_code));
+    }
+    case MediaLogEvent::MEDIA_ERROR_LOG_ENTRY: {
+      std::string result = "";
+      if (event.params.GetString(MediaLogLevelToString(MEDIALOG_ERROR),
+                                 &result))
+        base::ReplaceChars(result, "\n", " ", &result);
+      return result;
+    }
+    default:
+      NOTREACHED();
+      return "";
+  }
 }
 
 std::string MediaLog::BufferingStateToString(BufferingState state) {
@@ -240,7 +253,7 @@ MediaLog::~MediaLog() {}
 
 void MediaLog::AddEvent(std::unique_ptr<MediaLogEvent> event) {}
 
-std::string MediaLog::GetLastErrorMessage() {
+std::string MediaLog::GetErrorMessage() {
   return "";
 }
 

@@ -21,4 +21,8 @@ WebSize EmptyWebMediaPlayer::NaturalSize() const {
   return WebSize(0, 0);
 }
 
+WebString EmptyWebMediaPlayer::GetErrorMessage() const {
+  return WebString();
+}
+
 }  // namespace blink

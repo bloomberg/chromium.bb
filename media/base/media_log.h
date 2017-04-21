@@ -36,10 +36,20 @@ class MEDIA_EXPORT MediaLog {
   static std::string MediaLogLevelToString(MediaLogLevel level);
   static MediaLogEvent::Type MediaLogLevelToEventType(MediaLogLevel level);
   static std::string EventTypeToString(MediaLogEvent::Type type);
+
+  // Returns a string version of the status, unique to each PipelineStatus, and
+  // not including any ':'. This makes it suitable for usage in
+  // MediaError.message as the UA-specific-error-code.
   static std::string PipelineStatusToString(PipelineStatus status);
+
   static std::string BufferingStateToString(BufferingState state);
 
   static std::string MediaEventToLogString(const MediaLogEvent& event);
+
+  // Returns a string usable as part of a MediaError.message, for only
+  // PIPELINE_ERROR or MEDIA_ERROR_LOG_ENTRY events, with any newlines replaced
+  // with whitespace in the latter kind of events.
+  static std::string MediaEventToMessageString(const MediaLogEvent& event);
 
   MediaLog();
   virtual ~MediaLog();
@@ -48,8 +58,12 @@ class MEDIA_EXPORT MediaLog {
   // with it.
   virtual void AddEvent(std::unique_ptr<MediaLogEvent> event);
 
-  // Retrieve an error message, if any.
-  virtual std::string GetLastErrorMessage();
+  // Returns a string usable as the contents of a MediaError.message.
+  // This method returns an incomplete message if it is called before the
+  // pertinent events for the error have been added to the log.
+  // Note: The base class definition only produces empty messages. See
+  // RenderMediaLog for where this method is meaningful.
+  virtual std::string GetErrorMessage();
 
   // Records the domain and registry of the current frame security origin to a
   // Rappor privacy-preserving metric. See:

@@ -17,6 +17,7 @@
 #include "media/base/test_data_util.h"
 #include "media/media_features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "url/url_util.h"
 
 namespace content {
 
@@ -70,6 +71,14 @@ std::string MediaBrowserTest::RunTest(const GURL& gurl,
   return base::UTF16ToASCII(result);
 }
 
+std::string MediaBrowserTest::EncodeErrorMessage(
+    const std::string& original_message) {
+  url::RawCanonOutputT<char> buffer;
+  url::EncodeURIComponent(original_message.data(), original_message.size(),
+                          &buffer);
+  return std::string(buffer.data(), buffer.length());
+}
+
 void MediaBrowserTest::AddTitlesToAwait(content::TitleWatcher* title_watcher) {
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEnded));
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kError));
@@ -100,6 +109,17 @@ class MediaTest : public testing::WithParamInterface<bool>,
     base::StringPairs query_params;
     query_params.push_back(std::make_pair(tag, media_file));
     RunMediaTestPage("player.html", query_params, kEnded, http);
+  }
+
+  void RunErrorMessageTest(const std::string& tag,
+                           const std::string& media_file,
+                           const std::string& expected_error_substring,
+                           bool http) {
+    base::StringPairs query_params;
+    query_params.push_back(std::make_pair(tag, media_file));
+    query_params.push_back(std::make_pair(
+        "error_substr", EncodeErrorMessage(expected_error_substring)));
+    RunMediaTestPage("player.html", query_params, kErrorEvent, http);
   }
 
   void RunVideoSizeTest(const char* media_file, int width, int height) {
@@ -257,6 +277,23 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm192kHz) {
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
   PlayVideo("tulip2.webm", GetParam());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoErrorMissingResource) {
+  RunErrorMessageTest("video", "nonexistent_file.webm",
+                      "MEDIA_ELEMENT_ERROR: Format error", GetParam());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoErrorEmptySrcAttribute) {
+  RunErrorMessageTest("video", "", "MEDIA_ELEMENT_ERROR: Empty src attribute",
+                      GetParam());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoErrorNoSupportedStreams) {
+  RunErrorMessageTest(
+      "video", "no_streams.webm",
+      "DEMUXER_ERROR_NO_SUPPORTED_STREAMS: FFmpegDemuxer: no supported streams",
+      GetParam());
 }
 
 // Covers tear-down when navigating away as opposed to browser exiting.

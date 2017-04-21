@@ -39,7 +39,7 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
 
   // MediaLog implementation.
   void AddEvent(std::unique_ptr<media::MediaLogEvent> event) override;
-  std::string GetLastErrorMessage() override;
+  std::string GetErrorMessage() override;
   void RecordRapporWithSecurityOrigin(const std::string& metric) override;
 
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
@@ -60,7 +60,7 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   // |lock_| protects access to all of the following member variables.  It
   // allows any render process thread to AddEvent(), while preserving their
   // sequence for throttled send on |task_runner_| and coherent retrieval by
-  // GetLastErrorMessage().
+  // GetErrorMessage().
   mutable base::Lock lock_;
   std::unique_ptr<base::TickClock> tick_clock_;
   base::TimeTicks last_ipc_send_time_;
@@ -73,8 +73,12 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   std::unique_ptr<media::MediaLogEvent> last_buffered_extents_changed_event_;
   std::unique_ptr<media::MediaLogEvent> last_duration_changed_event_;
 
-  // Holds a copy of the most recent MEDIA_ERROR_LOG_ENTRY, if any.
-  std::unique_ptr<media::MediaLogEvent> last_media_error_log_entry_;
+  // Holds the earliest MEDIA_ERROR_LOG_ENTRY event added to this log. This is
+  // most likely to contain the most specific information available describing
+  // any eventual fatal error.
+  // TODO(wolenetz): Introduce a reset method to clear this in cases like
+  // non-fatal error recovery like decoder fallback.
+  std::unique_ptr<media::MediaLogEvent> cached_media_error_for_message_;
 
   // Holds a copy of the most recent PIPELINE_ERROR, if any.
   std::unique_ptr<media::MediaLogEvent> last_pipeline_error_;

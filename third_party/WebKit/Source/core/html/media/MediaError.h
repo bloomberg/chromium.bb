@@ -29,11 +29,13 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-class CORE_EXPORT MediaError final : public GarbageCollected<MediaError>,
-                                     public ScriptWrappable {
+class CORE_EXPORT MediaError final
+    : public GarbageCollectedFinalized<MediaError>,
+      public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -44,16 +46,24 @@ class CORE_EXPORT MediaError final : public GarbageCollected<MediaError>,
     kMediaErrSrcNotSupported,
   };
 
-  static MediaError* Create(ErrorCode code) { return new MediaError(code); }
+  static MediaError* Create(ErrorCode code, const String& message) {
+    return new MediaError(code, message);
+  }
 
   ErrorCode code() const { return code_; }
+
+  // Returns either an empty string, or a human readable string describing
+  // additional error detail.
+  String message() const { return message_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  MediaError(ErrorCode code) : code_(code) {}
+  MediaError(ErrorCode code, const String& message)
+      : code_(code), message_(message) {}
 
   ErrorCode code_;
+  String message_;
 };
 
 }  // namespace blink

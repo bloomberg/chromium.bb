@@ -14,6 +14,9 @@ async_test(function(t) {
         assert_not_equals(video.error, null);
         assert_equals(video.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
 
+        // Actual message can vary greatly, so we only verify the attribute's type.
+        assert_equals(typeof video.error.message, 'string', 'MediaError.message type');
+
         assert_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
 
         assert_true(isNaN(video.duration));

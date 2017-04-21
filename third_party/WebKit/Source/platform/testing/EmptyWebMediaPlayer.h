@@ -37,7 +37,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   double CurrentTime() const override { return 0.0; }
   NetworkState GetNetworkState() const override { return kNetworkStateEmpty; }
   ReadyState GetReadyState() const override { return kReadyStateHaveNothing; }
-  WebString GetErrorMessage() override { return WebString(); }
+  WebString GetErrorMessage() const override;
   bool DidLoadingProgress() override { return false; }
   bool HasSingleSecurityOrigin() const override { return true; }
   bool DidPassCORSAccessCheck() const override { return true; }
