@@ -109,7 +109,7 @@ void AppMenuButton::ShowMenu(bool for_drop) {
                         base::TimeTicks::Now() - menu_open_time);
   }
 
-  if (severity_ != AppMenuIconController::Severity::NONE)
+  if (animation_ && severity_ != AppMenuIconController::Severity::NONE)
     animation_->StartAnimation();
 }
 
