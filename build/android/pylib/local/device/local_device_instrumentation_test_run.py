@@ -76,11 +76,21 @@ class LocalDeviceInstrumentationTestRun(
     @trace_event.traced
     def individual_device_set_up(dev, host_device_tuples):
       steps = []
+
       def install_helper(apk, permissions):
-        return lambda: dev.Install(apk, permissions=permissions)
+        @trace_event.traced("apk_path")
+        def install_helper_internal(apk_path=apk.path):
+          # pylint: disable=unused-argument
+          dev.Install(apk, permissions=permissions)
+        return install_helper_internal
+
       def incremental_install_helper(dev, apk, script):
-        return lambda: local_device_test_run.IncrementalInstall(
-                           dev, apk, script)
+        @trace_event.traced("apk_path")
+        def incremental_install_helper_internal(apk_path=apk.path):
+          # pylint: disable=unused-argument
+          local_device_test_run.IncrementalInstall(
+              dev, apk, script)
+        return incremental_install_helper_internal
 
       if self._test_instance.apk_under_test:
         if self._test_instance.apk_under_test_incremental_install_script:
@@ -108,6 +118,7 @@ class LocalDeviceInstrumentationTestRun(
       steps.extend(install_helper(apk, None)
                    for apk in self._test_instance.additional_apks)
 
+      @trace_event.traced
       def set_debug_app():
         # Set debug app in order to enable reading command line flags on user
         # builds
@@ -120,7 +131,7 @@ class LocalDeviceInstrumentationTestRun(
             dev.RunShellCommand(['am', 'set-debug-app', '--persistent',
                                   self._test_instance.package_info.package],
                                 check_return=True)
-
+      @trace_event.traced
       def edit_shared_prefs():
         for pref in self._test_instance.edit_shared_prefs:
           prefs = shared_prefs.SharedPrefs(dev, pref['package'],
@@ -145,6 +156,7 @@ class LocalDeviceInstrumentationTestRun(
                   str(type(value)), key))
           prefs.Commit()
 
+      @trace_event.traced
       def push_test_data():
         device_root = posixpath.join(dev.GetExternalStoragePath(),
                                      'chromium_tests_root')
@@ -160,6 +172,7 @@ class LocalDeviceInstrumentationTestRun(
           dev.RunShellCommand(['rm', '-rf', device_root], check_return=True)
           dev.RunShellCommand(['mkdir', '-p', device_root], check_return=True)
 
+      @trace_event.traced
       def create_flag_changer():
         if self._test_instance.flags:
           if not self._test_instance.package_info:
