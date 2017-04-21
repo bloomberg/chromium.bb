@@ -2435,8 +2435,10 @@ LayoutRect LayoutBox::LocalVisualRect() const {
   if (Style()->Visibility() != EVisibility::kVisible)
     return LayoutRect();
 
-  if (HasMask() && !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (HasMask() && !ShouldClipOverflow() &&
+      !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return LayoutRect(Layer()->BoxForFilterOrMask());
+
   return SelfVisualOverflowRect();
 }
 

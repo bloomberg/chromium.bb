@@ -232,4 +232,35 @@ TEST_F(LayoutBoxTest, ControlClip) {
 #endif
 }
 
+TEST_F(LayoutBoxTest, LocalVisualRectWithMask) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(
+      "<div id='target' style='-webkit-mask-image: url(#a);"
+      "     width: 100px; height: 100px; background: blue'>"
+      "  <div style='width: 300px; height: 10px; background: green'></div>"
+      "</div>");
+
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  EXPECT_TRUE(target->HasMask());
+  EXPECT_EQ(LayoutRect(0, 0, 300, 100), target->LocalVisualRect());
+}
+
+TEST_F(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(
+      "<div id='target' style='-webkit-mask-image: url(#a); overflow: hidden;"
+      "     width: 100px; height: 100px; background: blue'>"
+      "  <div style='width: 300px; height: 10px; background: green'></div>"
+      "</div>");
+
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  EXPECT_TRUE(target->HasMask());
+  EXPECT_TRUE(target->HasOverflowClip());
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->LocalVisualRect());
+}
+
 }  // namespace blink
