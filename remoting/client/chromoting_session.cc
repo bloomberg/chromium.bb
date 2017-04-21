@@ -50,7 +50,7 @@ ChromotingSession::ChromotingSession(
     std::unique_ptr<protocol::VideoRenderer> video_renderer,
     base::WeakPtr<protocol::AudioStub> audio_player,
     const ConnectToHostInfo& info,
-    protocol::ClientAuthenticationConfig& client_auth_config)
+    const protocol::ClientAuthenticationConfig& client_auth_config)
     : delegate_(delegate),
       connection_info_(info),
       client_auth_config_(client_auth_config),

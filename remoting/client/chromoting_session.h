@@ -70,12 +70,13 @@ class ChromotingSession : public ClientUserInterface,
   };
 
   // Initiates a connection with the specified host. Call from the UI thread.
-  ChromotingSession(base::WeakPtr<ChromotingSession::Delegate> delegate,
-                    std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
-                    std::unique_ptr<protocol::VideoRenderer> video_renderer,
-                    base::WeakPtr<protocol::AudioStub> audio_player,
-                    const ConnectToHostInfo& info,
-                    protocol::ClientAuthenticationConfig& client_auth_config);
+  ChromotingSession(
+      base::WeakPtr<ChromotingSession::Delegate> delegate,
+      std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
+      std::unique_ptr<protocol::VideoRenderer> video_renderer,
+      base::WeakPtr<protocol::AudioStub> audio_player,
+      const ConnectToHostInfo& info,
+      const protocol::ClientAuthenticationConfig& client_auth_config);
 
   ~ChromotingSession() override;
 

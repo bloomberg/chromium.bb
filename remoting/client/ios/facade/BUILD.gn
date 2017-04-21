@@ -12,6 +12,8 @@ source_set("facade") {
     "host_info.h",
     "host_list_fetcher.cc",
     "host_list_fetcher.h",
+    "ios_client_runtime_delegate.h",
+    "ios_client_runtime_delegate.mm",
     "remoting_service.h",
     "remoting_service.mm",
   ]
