@@ -24,6 +24,7 @@ struct PaymentRequestData {
   const char* card_type;
   const char* basic_card_payment_type;
   const int icon_resource_id;
+  const int a11y_label_resource_id;
 };
 
 // Returns true if |name| looks like a CJK name (or some kind of mish-mash of

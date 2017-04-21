@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 
 namespace autofill {
@@ -23,17 +24,20 @@ namespace {
 // spec types and icons. Note that "generic" is not in the spec.
 // https://w3c.github.io/webpayments-methods-card/#method-id
 const PaymentRequestData kPaymentRequestData[]{
-    {"americanExpressCC", "amex", IDR_AUTOFILL_PR_AMEX},
-    {"dinersCC", "diners", IDR_AUTOFILL_PR_DINERS},
-    {"discoverCC", "discover", IDR_AUTOFILL_PR_DISCOVER},
-    {"jcbCC", "jcb", IDR_AUTOFILL_PR_JCB},
-    {"masterCardCC", "mastercard", IDR_AUTOFILL_PR_MASTERCARD},
-    {"mirCC", "mir", IDR_AUTOFILL_PR_MIR},
-    {"unionPayCC", "unionpay", IDR_AUTOFILL_PR_UNIONPAY},
-    {"visaCC", "visa", IDR_AUTOFILL_PR_VISA},
+    {"americanExpressCC", "amex", IDR_AUTOFILL_PR_AMEX, IDS_AUTOFILL_CC_AMEX},
+    {"dinersCC", "diners", IDR_AUTOFILL_PR_DINERS, IDS_AUTOFILL_CC_DINERS},
+    {"discoverCC", "discover", IDR_AUTOFILL_PR_DISCOVER,
+     IDS_AUTOFILL_CC_DISCOVER},
+    {"jcbCC", "jcb", IDR_AUTOFILL_PR_JCB, IDS_AUTOFILL_CC_JCB},
+    {"masterCardCC", "mastercard", IDR_AUTOFILL_PR_MASTERCARD,
+     IDS_AUTOFILL_CC_MASTERCARD},
+    {"mirCC", "mir", IDR_AUTOFILL_PR_MIR, IDS_AUTOFILL_CC_MIR},
+    {"unionPayCC", "unionpay", IDR_AUTOFILL_PR_UNIONPAY,
+     IDS_AUTOFILL_CC_UNION_PAY},
+    {"visaCC", "visa", IDR_AUTOFILL_PR_VISA, IDS_AUTOFILL_CC_VISA},
 };
-const PaymentRequestData kGenericPaymentRequestData = {"genericCC", "generic",
-                                                       IDR_AUTOFILL_PR_GENERIC};
+const PaymentRequestData kGenericPaymentRequestData = {
+    "genericCC", "generic", IDR_AUTOFILL_PR_GENERIC, IDS_AUTOFILL_CC_GENERIC};
 
 const char* const name_prefixes[] = {
     "1lt",     "1st", "2lt", "2nd",    "3rd",  "admiral", "capt",
