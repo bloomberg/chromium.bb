@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
 #include "base/strings/string_util.h"
@@ -232,4 +233,156 @@ int ChromeDesktopImpl::GetNetworkConnection() const {
 void ChromeDesktopImpl::SetNetworkConnection(
     int network_connection) {
   network_connection_ = network_connection;
+}
+
+Status ChromeDesktopImpl::GetWindowPosition(const std::string& target_id,
+                                            int* x,
+                                            int* y) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  *x = window.left;
+  *y = window.top;
+  return Status(kOk);
+}
+
+Status ChromeDesktopImpl::GetWindowSize(const std::string& target_id,
+                                        int* width,
+                                        int* height) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  *width = window.width;
+  *height = window.height;
+  return Status(kOk);
+}
+
+Status ChromeDesktopImpl::SetWindowPosition(const std::string& target_id,
+                                            int x,
+                                            int y) {
+  auto bounds = base::MakeUnique<base::DictionaryValue>();
+  bounds->SetInteger("left", x);
+  bounds->SetInteger("top", y);
+  return SetWindowBounds(target_id, std::move(bounds));
+}
+
+Status ChromeDesktopImpl::SetWindowSize(const std::string& target_id,
+                                        int width,
+                                        int height) {
+  auto bounds = base::MakeUnique<base::DictionaryValue>();
+  bounds->SetInteger("width", width);
+  bounds->SetInteger("height", height);
+  return SetWindowBounds(target_id, std::move(bounds));
+}
+
+Status ChromeDesktopImpl::MaximizeWindow(const std::string& target_id) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  if (window.state == "maximized")
+    return Status(kOk);
+
+  if (window.state != "normal") {
+    // always restore window to normal first, since chrome ui doesn't allow
+    // maximizing a minimized or fullscreen window.
+    status = SetWindowState(window.id, "normal");
+    if (status.IsError())
+      return status;
+  }
+
+  return SetWindowState(window.id, "maximized");
+}
+
+Status ChromeDesktopImpl::ParseWindow(
+    std::unique_ptr<base::DictionaryValue> params,
+    Window* window) {
+  if (!params->GetInteger("windowId", &window->id))
+    return Status(kUnknownError, "no window id in response");
+
+  const base::Value* value = nullptr;
+  const base::DictionaryValue* bounds_dict = nullptr;
+  if (!params->Get("bounds", &value) || !value->GetAsDictionary(&bounds_dict))
+    return Status(kUnknownError, "no window bounds in response");
+
+  if (!bounds_dict->GetString("windowState", &window->state))
+    return Status(kUnknownError, "no window state in window bounds");
+
+  if (!bounds_dict->GetInteger("left", &window->left))
+    return Status(kUnknownError, "no left offset in window bounds");
+  if (!bounds_dict->GetInteger("top", &window->top))
+    return Status(kUnknownError, "no top offset in window bounds");
+  if (!bounds_dict->GetInteger("width", &window->width))
+    return Status(kUnknownError, "no width in window bounds");
+  if (!bounds_dict->GetInteger("height", &window->height))
+    return Status(kUnknownError, "no height in window bounds");
+
+  return Status(kOk);
+}
+
+Status ChromeDesktopImpl::GetWindow(const std::string& target_id,
+                                    Window* window) {
+  Status status = devtools_websocket_client_->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue params;
+  params.SetString("targetId", target_id);
+  std::unique_ptr<base::DictionaryValue> result;
+  status = devtools_websocket_client_->SendCommandAndGetResult(
+      "Browser.getWindowForTarget", params, &result);
+  if (status.IsError())
+    return status;
+
+  return ParseWindow(std::move(result), window);
+}
+
+Status ChromeDesktopImpl::SetWindowState(int window_id,
+                                         const std::string& window_state) {
+  Status status = devtools_websocket_client_->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue params;
+  params.SetInteger("windowId", window_id);
+  auto bounds_object = base::MakeUnique<base::DictionaryValue>();
+  bounds_object->SetString("windowState", window_state);
+  params.Set("bounds", std::move(bounds_object));
+  status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
+                                                   params);
+  if (status.IsError())
+    return status;
+
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  return Status(kOk);
+}
+
+Status ChromeDesktopImpl::SetWindowBounds(
+    const std::string& target_id,
+    std::unique_ptr<base::DictionaryValue> bounds) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  if (window.state != "normal") {
+    status = SetWindowState(window.id, "normal");
+    if (status.IsError())
+      return status;
+  }
+
+  base::DictionaryValue params;
+  params.SetInteger("windowId", window.id);
+  params.Set("bounds", std::move(bounds));
+  status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
+                                                   params);
+  if (status.IsError())
+    return status;
+
+  return Status(kOk);
 }

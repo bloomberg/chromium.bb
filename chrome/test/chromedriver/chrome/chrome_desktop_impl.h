@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/process.h"
+#include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
 namespace base {
@@ -66,7 +67,29 @@ class ChromeDesktopImpl : public ChromeImpl {
   int GetNetworkConnection() const;
   void SetNetworkConnection(int network_connection);
 
+  Status GetWindowPosition(const std::string& target_id, int* x, int* y);
+  Status GetWindowSize(const std::string& target_id, int* width, int* height);
+  Status SetWindowPosition(const std::string& target_id, int x, int y);
+  Status SetWindowSize(const std::string& target_id, int width, int height);
+  Status MaximizeWindow(const std::string& target_id);
+
  private:
+  struct Window {
+    int id;
+    std::string state;
+    int left;
+    int top;
+    int width;
+    int height;
+  };
+  Status ParseWindow(std::unique_ptr<base::DictionaryValue> params,
+                     Window* window);
+
+  Status GetWindow(const std::string& target_id, Window* window);
+  Status SetWindowState(int window_id, const std::string& window_state);
+  Status SetWindowBounds(const std::string& target_id,
+                         std::unique_ptr<base::DictionaryValue> bounds);
+
   base::Process process_;
   base::CommandLine command_;
   base::ScopedTempDir user_data_dir_;

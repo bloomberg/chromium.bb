@@ -40,6 +40,10 @@
 
 namespace {
 
+// The minimium chrome build no that supports window management devtools
+// commands.
+const int kBrowserWindowDevtoolsBuildNo = 3076;
+
 const int kWifiMask = 0x2;
 const int k4GMask = 0x8;
 const int k3GMask = 0x10;
@@ -656,13 +660,19 @@ Status ExecuteGetWindowPosition(Session* session,
   if (status.IsError())
     return status;
 
-  AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
-  if (status.IsError())
-    return status;
-
   int x, y;
-  status = extension->GetWindowPosition(&x, &y);
+
+  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo) {
+    status = desktop->GetWindowPosition(session->window, &x, &y);
+  } else {
+    AutomationExtension* extension = NULL;
+    status =
+        desktop->GetAutomationExtension(&extension, session->w3c_compliant);
+    if (status.IsError())
+      return status;
+
+    status = extension->GetWindowPosition(&x, &y);
+  }
   if (status.IsError())
     return status;
 
@@ -686,6 +696,11 @@ Status ExecuteSetWindowPosition(Session* session,
   if (status.IsError())
     return status;
 
+  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo) {
+    return desktop->SetWindowPosition(session->window, static_cast<int>(x),
+                                      static_cast<int>(y));
+  }
+
   AutomationExtension* extension = NULL;
   status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
   if (status.IsError())
@@ -702,13 +717,19 @@ Status ExecuteGetWindowSize(Session* session,
   if (status.IsError())
     return status;
 
-  AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
-  if (status.IsError())
-    return status;
-
   int width, height;
-  status = extension->GetWindowSize(&width, &height);
+
+  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo) {
+    status = desktop->GetWindowSize(session->window, &width, &height);
+  } else {
+    AutomationExtension* extension = NULL;
+    status =
+        desktop->GetAutomationExtension(&extension, session->w3c_compliant);
+    if (status.IsError())
+      return status;
+
+    status = extension->GetWindowSize(&width, &height);
+  }
   if (status.IsError())
     return status;
 
@@ -733,6 +754,11 @@ Status ExecuteSetWindowSize(Session* session,
   if (status.IsError())
     return status;
 
+  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo) {
+    return desktop->SetWindowSize(session->window, static_cast<int>(width),
+                                  static_cast<int>(height));
+  }
+
   AutomationExtension* extension = NULL;
   status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
   if (status.IsError())
@@ -749,6 +775,9 @@ Status ExecuteMaximizeWindow(Session* session,
   Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsError())
     return status;
+
+  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo)
+    return desktop->MaximizeWindow(session->window);
 
   AutomationExtension* extension = NULL;
   status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
