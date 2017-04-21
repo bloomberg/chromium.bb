@@ -409,8 +409,10 @@ const NSInteger kFullscreenLeftOffset = 40;
                           NSWidth([closeButton frame]) +
                           chrome_style::kCloseButtonPadding;
 
-  bubbleFrame.size.width = std::max(
-      NSWidth(bubbleFrame), std::max(titleRowWidth, maxPermissionLineWidth));
+  bubbleFrame.size.width =
+      std::max(NSWidth(bubbleFrame),
+               std::max(titleRowWidth, maxPermissionLineWidth)) +
+      kHorizontalPadding;
 
   // Now that the bubble's dimensions have been set, lay out the buttons and
   // menus.
