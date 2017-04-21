@@ -65,7 +65,7 @@ DOMException* ConvertFatalTransferStatus(const UsbTransferStatus& status) {
     case UsbTransferStatus::SHORT_PACKET:
       return nullptr;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
 }
@@ -80,7 +80,7 @@ String ConvertTransferStatus(const UsbTransferStatus& status) {
     case UsbTransferStatus::BABBLE:
       return "babble";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "";
   }
 }
@@ -660,7 +660,7 @@ void USBDevice::AsyncOpen(ScriptPromiseResolver* resolver,
 
   switch (error) {
     case UsbOpenDeviceError::ALREADY_OPEN:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     // fall through
     case UsbOpenDeviceError::OK:
       OnDeviceOpenedOrClosed(true /* opened */);

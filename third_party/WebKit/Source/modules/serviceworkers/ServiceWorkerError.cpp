@@ -78,7 +78,7 @@ ExceptionParams GetExceptionParams(const WebServiceWorkerError& web_error) {
                              web_error.message);
     case WebServiceWorkerError::kErrorTypeNavigation:
       // ErrorTypeNavigation should have bailed out before calling this.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return ExceptionParams(kUnknownError);
     case WebServiceWorkerError::kErrorTypeNetwork:
       return ExceptionParams(kNetworkError,
@@ -108,10 +108,10 @@ ExceptionParams GetExceptionParams(const WebServiceWorkerError& web_error) {
                              web_error.message);
     case WebServiceWorkerError::kErrorTypeType:
       // ErrorTypeType should have been handled before reaching this point.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return ExceptionParams(kUnknownError);
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ExceptionParams(kUnknownError);
 }
 

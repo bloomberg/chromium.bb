@@ -99,7 +99,7 @@ String ServiceWorker::state() const {
   switch (handle_->ServiceWorker()->GetState()) {
     case kWebServiceWorkerStateUnknown:
       // The web platform should never see this internal state
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "unknown";
     case kWebServiceWorkerStateInstalling:
       return "installing";
@@ -112,7 +112,7 @@ String ServiceWorker::state() const {
     case kWebServiceWorkerStateRedundant:
       return "redundant";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return g_null_atom;
   }
 }

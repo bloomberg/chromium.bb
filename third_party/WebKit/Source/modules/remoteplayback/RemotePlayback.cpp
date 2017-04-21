@@ -35,7 +35,7 @@ const AtomicString& RemotePlaybackStateToString(WebRemotePlaybackState state) {
       return disconnected_value;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return disconnected_value;
 }
 

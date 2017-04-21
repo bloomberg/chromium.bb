@@ -23,7 +23,7 @@ String ConvertDirectionToEnum(const UsbTransferDirection& direction) {
     case UsbTransferDirection::OUTBOUND:
       return "out";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "";
   }
 }
@@ -37,7 +37,7 @@ String ConvertTypeToEnum(const UsbTransferType& type) {
     case UsbTransferType::ISOCHRONOUS:
       return "isochronous";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "";
   }
 }

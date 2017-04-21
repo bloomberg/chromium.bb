@@ -48,7 +48,7 @@ static UseCounter::Feature AlgorithmIdToFeature(WebCryptoAlgorithmId id) {
       return UseCounter::kCryptoAlgorithmPbkdf2;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return static_cast<UseCounter::Feature>(0);
 }
 

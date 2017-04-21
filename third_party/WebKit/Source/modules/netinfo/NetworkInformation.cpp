@@ -36,7 +36,7 @@ String ConnectionTypeToString(WebConnectionType type) {
     case kWebConnectionTypeUnknown:
       return "unknown";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "none";
 }
 

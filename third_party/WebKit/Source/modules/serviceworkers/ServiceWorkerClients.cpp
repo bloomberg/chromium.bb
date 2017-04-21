@@ -58,7 +58,7 @@ WebServiceWorkerClientType GetClientType(const String& type) {
     return kWebServiceWorkerClientTypeSharedWorker;
   if (type == "all")
     return kWebServiceWorkerClientTypeAll;
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return kWebServiceWorkerClientTypeWindow;
 }
 

@@ -30,10 +30,10 @@ ServiceWorkerClient* ServiceWorkerClient::Take(
     case kWebServiceWorkerClientTypeSharedWorker:
       return ServiceWorkerClient::Create(*web_client);
     case kWebServiceWorkerClientTypeLast:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -61,7 +61,7 @@ String ServiceWorkerClient::frameType() const {
       return "top-level";
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 

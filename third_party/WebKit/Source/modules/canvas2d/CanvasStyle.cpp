@@ -85,7 +85,7 @@ bool ParseColorOrCurrentColor(Color& parsed_color,
     case kParseFailed:
       return false;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }
@@ -121,7 +121,7 @@ void CanvasStyle::ApplyToFlags(PaintFlags& flags) const {
           flags, AffineTransformToSkMatrix(GetCanvasPattern()->GetTransform()));
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 

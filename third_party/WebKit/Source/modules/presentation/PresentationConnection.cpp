@@ -62,7 +62,7 @@ const AtomicString& ConnectionStateToString(
       return terminated_value;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return terminated_value;
 }
 
@@ -81,7 +81,7 @@ const AtomicString& ConnectionCloseReasonToString(
       return went_away_value;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return error_value;
 }
 
@@ -346,7 +346,7 @@ String PresentationConnection::binaryType() const {
     case kBinaryTypeArrayBuffer:
       return "arraybuffer";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 
@@ -359,7 +359,7 @@ void PresentationConnection::setBinaryType(const String& binary_type) {
     binary_type_ = kBinaryTypeArrayBuffer;
     return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void PresentationConnection::DidReceiveTextMessage(const WebString& message) {
@@ -388,7 +388,7 @@ void PresentationConnection::DidReceiveBinaryMessage(const uint8_t* data,
       DispatchEvent(MessageEvent::Create(buffer));
       return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 WebPresentationConnectionState PresentationConnection::GetState() {

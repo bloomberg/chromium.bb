@@ -180,7 +180,7 @@ static String CustomHandlersStateString(
       return declined_handler;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 

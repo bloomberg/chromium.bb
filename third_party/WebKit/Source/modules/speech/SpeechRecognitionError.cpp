@@ -49,7 +49,7 @@ static String ErrorCodeToString(SpeechRecognitionError::ErrorCode code) {
       return "language-not-supported";
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 

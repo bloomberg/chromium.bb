@@ -987,7 +987,7 @@ bool ParseAlgorithmParams(const Dictionary& raw,
       context.Add("Pbkdf2Params");
       return ParsePbkdf2Params(raw, params, context, error);
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

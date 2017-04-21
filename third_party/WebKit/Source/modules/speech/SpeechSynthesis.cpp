@@ -179,7 +179,7 @@ void SpeechSynthesis::BoundaryEventOccurred(
                 char_index, sentence_boundary_string);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 

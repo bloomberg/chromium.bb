@@ -81,7 +81,7 @@ String PermissionStatus::state() const {
       return "prompt";
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "denied";
 }
 

@@ -17,7 +17,7 @@ String AppBannerPromptResult::outcome() const {
       return "dismissed";
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 

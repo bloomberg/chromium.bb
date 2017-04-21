@@ -73,7 +73,7 @@ const AtomicString& ScreenOrientation::OrientationTypeToString(
       return orientation_map[i].name;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return g_null_atom;
 }
 
@@ -87,7 +87,7 @@ static WebScreenOrientationLockType StringToOrientationLock(
           orientation_map[i].orientation);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return kWebScreenOrientationLockDefault;
 }
 
