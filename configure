@@ -718,6 +718,11 @@ process_toolchain() {
         fi
         # gtest makes heavy use of undefined pre-processor symbols
         check_cflags "-Wundef" && add_cflags_only "-Wundef"
+        if ! enabled highbitdepth; then
+          # Avoid this warning for third_party C++ sources. Some reorganization
+          # would be needed to apply this only to test/*.cc.
+          check_cflags -Wshorten-64-to-32 && add_cflags_only -Wshorten-64-to-32
+        fi
     fi
 
     if enabled icc; then

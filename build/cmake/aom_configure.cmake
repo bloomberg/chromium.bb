@@ -133,6 +133,9 @@ else ()
   add_compiler_flag_if_supported("-Wuninitialized")
   add_compiler_flag_if_supported("-Wunused")
   add_compiler_flag_if_supported("-Wvla")
+  if (NOT CONFIG_HIGHBITDEPTH)
+    add_c_flag_if_supported("-Wshorten-64-to-32")
+  endif ()
 
   # Add -Wshadow only for C files to avoid massive gtest warning spam.
   add_c_flag_if_supported("-Wshadow")
