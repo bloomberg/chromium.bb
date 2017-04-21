@@ -24,12 +24,12 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
-import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -633,9 +633,25 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
             }
         }));
 
+        // Defines one gigantic link spanning the whole page that creates a new
+        // window with chrome/test/data/android/google.html.
+        final String hrefLink = UrlUtils.encodeHtmlDataUri("<html>"
+                + "  <head>"
+                + "    <title>href link page</title>"
+                + "    <meta name='viewport'"
+                + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
+                + "    <style>"
+                + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
+                + "    </style>"
+                + "  </head>"
+                + "  <body>"
+                + "    <a href='" + mTestServer.getURL("/chrome/test/data/android/google.html")
+                + "' target='_blank'><div></div></a>"
+                + "  </body>"
+                + "</html>");
+
         // Open a tab via an external application.
-        final Intent intent = new Intent(
-                Intent.ACTION_VIEW, Uri.parse(MultiActivityTestBase.HREF_LINK));
+        final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(hrefLink));
         intent.setClassName(getInstrumentation().getTargetContext().getPackageName(),
                 ChromeTabbedActivity.class.getName());
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, "com.legit.totes");

@@ -33,6 +33,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Tests that WebappActivities are launched correctly.
@@ -60,6 +61,8 @@ public class WebappModeTest extends MultiActivityTestBase {
     private static final String WEBAPP_ICON = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXB"
             + "IWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wQIFB4cxOfiSQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdG"
             + "ggR0lNUFeBDhcAAAAMSURBVAjXY2AUawEAALcAnI/TkI8AAAAASUVORK5CYII=";
+
+    private EmbeddedTestServer mTestServer;
 
     private Intent createIntent(String id, String url, String title, String icon, boolean addMac) {
         Intent intent = new Intent();
@@ -115,6 +118,14 @@ public class WebappModeTest extends MultiActivityTestBase {
                                 WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
                     }
                 });
+
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
@@ -245,7 +256,7 @@ public class WebappModeTest extends MultiActivityTestBase {
     @MediumTest
     @Feature({"Webapps"})
     public void testWebappHandlesWindowOpenInTabbedMode() throws Exception {
-        triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class, ONCLICK_LINK, true);
+        triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class, getOnClickLinkUrl(), true);
     }
 
     /**
@@ -254,7 +265,8 @@ public class WebappModeTest extends MultiActivityTestBase {
     @MediumTest
     @Feature({"Webapps"})
     public void testWebappHandlesSuppressedWindowOpenInTabbedMode() throws Exception {
-        triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class, HREF_NO_REFERRER_LINK, false);
+        triggerWindowOpenAndWaitForLoad(
+                ChromeTabbedActivity.class, getHrefNoReferrerLinkUrl(), false);
     }
 
     private <T extends ChromeActivity> void triggerWindowOpenAndWaitForLoad(
@@ -283,10 +295,10 @@ public class WebappModeTest extends MultiActivityTestBase {
         };
         ChromeActivity secondActivity = ActivityUtils.waitForActivity(
                 getInstrumentation(), classToWaitFor, fgTrigger);
-        waitForFullLoad(secondActivity, "Page 4");
+        waitForFullLoad(secondActivity, "The Google");
         if (checkContents) {
-            assertEquals("New WebContents was not created",
-                    SUCCESS_URL, firstActivity.getActivityTab().getUrl());
+            assertEquals("New WebContents was not created", "SUCCESS",
+                    firstActivity.getActivityTab().getTitle());
         }
         assertNotSame("Wrong Activity in foreground",
                 firstActivity, ApplicationStatus.getLastTrackedFocusedActivity());
@@ -335,5 +347,50 @@ public class WebappModeTest extends MultiActivityTestBase {
         if (!rootView.hasWindowFocus()) return false;
 
         return true;
+    }
+
+    /** Defines one gigantic link spanning the whole page that creates a new
+     *  window with chrome/test/data/android/google.html. Disallowing a referrer from being
+     *  sent triggers another codepath.
+     */
+    private String getHrefNoReferrerLinkUrl() {
+        return UrlUtils.encodeHtmlDataUri("<html>"
+                + "  <head>"
+                + "    <title>href no referrer link page</title>"
+                + "    <meta name='viewport'"
+                + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
+                + "    <style>"
+                + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
+                + "    </style>"
+                + "  </head>"
+                + "  <body>"
+                + "    <a href='" + mTestServer.getURL("/chrome/test/data/android/google.html")
+                + "' target='_blank' rel='noreferrer'><div></div></a>"
+                + "  </body>");
+    }
+
+    /** Returns a URL where clicking the body triggers a window.open() call to open
+     * chrome/test/data/android/google.html. */
+    private String getOnClickLinkUrl() {
+        return UrlUtils.encodeHtmlDataUri("<html>"
+                + "  <head>"
+                + "    <title>window.open page</title>"
+                + "    <meta name='viewport'"
+                + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
+                + "    <style>"
+                + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
+                + "    </style>"
+                + "    <script>"
+                + "      function openNewWindow() {"
+                + "        var site = window.open('"
+                + mTestServer.getURL("/chrome/test/data/android/google.html") + "');"
+                + "        document.title = site ? 'SUCCESS' : 'FAILURE';"
+                + "      }"
+                + "    </script>"
+                + "  </head>"
+                + "  <body id='body'>"
+                + "    <div onclick='openNewWindow()'></div>"
+                + "  </body>"
+                + "</html>");
     }
 }
