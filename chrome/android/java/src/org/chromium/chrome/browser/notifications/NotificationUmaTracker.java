@@ -4,22 +4,30 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.annotation.TargetApi;
+import android.app.NotificationManager;
 import android.content.SharedPreferences;
 import android.support.annotation.IntDef;
 import android.support.v4.app.NotificationManagerCompat;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Helper class to make tracking notification UMA stats easier for various features.  Having a
  * single entry point here to make more complex tracking easier to add in the future.
  */
 public class NotificationUmaTracker {
+    private static final String TAG = "NotifsUMATracker";
+
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({DOWNLOAD_FILES, DOWNLOAD_PAGES, CLOSE_INCOGNITO, CONTENT_SUGGESTION,
             SYSTEM_NOTIFICATION_TYPE_BOUNDARY})
@@ -64,16 +72,48 @@ public class NotificationUmaTracker {
      * types.  Splits the logs by the global enabled state of notifications and also logs the last
      * notification shown prior to the global notifications state being disabled by the user.
      * @param type The type of notification that was shown.
+     * @param channelId The id of the notification channel set on the notification.
      * @see SystemNotificationType
      */
-    public void onNotificationShown(@SystemNotificationType int type) {
-        if (mNotificationManager.areNotificationsEnabled()) {
-            saveLastShownNotification(type);
-            recordHistogram("Mobile.SystemNotification.Shown", type);
-        } else {
+    public void onNotificationShown(
+            @SystemNotificationType int type, @ChannelDefinitions.ChannelId String channelId) {
+        if (!mNotificationManager.areNotificationsEnabled()) {
             logPotentialBlockedCause();
             recordHistogram("Mobile.SystemNotification.Blocked", type);
+            return;
         }
+        if (BuildInfo.isAtLeastO() && isChannelBlocked(channelId)) {
+            recordHistogram("Mobile.SystemNotification.ChannelBlocked", type);
+            return;
+        }
+        saveLastShownNotification(type);
+        recordHistogram("Mobile.SystemNotification.Shown", type);
+    }
+
+    @TargetApi(26)
+    private boolean isChannelBlocked(@ChannelDefinitions.ChannelId String channelId) {
+        // Use non-compat notification manager as compat does not have getNotificationChannel (yet).
+        NotificationManager notificationManager =
+                ContextUtils.getApplicationContext().getSystemService(NotificationManager.class);
+        /*
+        The code in the try-block uses reflection in order to compile as it calls APIs newer than
+        our compileSdkVersion of Android. The equivalent code without reflection looks like this:
+
+            NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
+            return (channel.getImportance() == NotificationManager.IMPORTANCE_NONE);
+         */
+        // TODO(crbug.com/707804) Remove the following reflection once compileSdk is bumped to O.
+        try {
+            Method getNotificationChannel = notificationManager.getClass().getMethod(
+                    "getNotificationChannel", String.class);
+            Object channel = getNotificationChannel.invoke(notificationManager, channelId);
+            Method getImportance = channel.getClass().getMethod("getImportance");
+            int importance = (int) getImportance.invoke(channel);
+            return (importance == NotificationManager.IMPORTANCE_NONE);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            Log.e(TAG, "Error checking channel importance:", e);
+        }
+        return false;
     }
 
     private void saveLastShownNotification(@SystemNotificationType int type) {
