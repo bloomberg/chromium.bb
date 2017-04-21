@@ -64,7 +64,11 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int plane,
   ConvolveParams conv_params;
   conv_params.ref = ref;
   conv_params.round = CONVOLVE_OPT_NO_ROUND;
+#if CONFIG_COMPOUND_ROUND
+  conv_params.round_0 = FILTER_BITS;
+#else
   conv_params.round_0 = 5;
+#endif
   conv_params.round_1 = 0;
   conv_params.dst = dst;
   conv_params.dst_stride = dst_stride;

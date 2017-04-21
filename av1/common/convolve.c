@@ -230,8 +230,13 @@ void av1_convolve_2d(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
       for (k = 0; k < filter_params_x->taps; ++k) {
         sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
       }
+#if CONFIG_COMPOUND_ROUND
+      im_block[y * im_stride + x] =
+          clip_pixel(ROUND_POWER_OF_TWO_SIGNED(sum, conv_params->round_0));
+#else
       im_block[y * im_stride + x] =
           ROUND_POWER_OF_TWO_SIGNED(sum, conv_params->round_0);
+#endif
     }
   }
 
