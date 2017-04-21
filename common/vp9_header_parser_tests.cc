@@ -59,7 +59,7 @@ class Vp9HeaderParserTests : public ::testing::Test {
     CreateAndLoadSegment(filename, 4);
   }
 
-  void ProcessTheFrames() {
+  void ProcessTheFrames(bool invalid_bitstream) {
     unsigned char* data = NULL;
     size_t data_len = 0;
     const mkvparser::Tracks* const parser_tracks = segment_->GetTracks();
@@ -96,7 +96,7 @@ class Vp9HeaderParserTests : public ::testing::Test {
             }
             ASSERT_FALSE(frame.Read(&reader_, data));
             parser_.SetFrame(data, data_len);
-            parser_.ParseUncompressedHeader();
+            ASSERT_EQ(parser_.ParseUncompressedHeader(), !invalid_bitstream);
           }
         }
 
@@ -119,8 +119,8 @@ class Vp9HeaderParserTests : public ::testing::Test {
 };
 
 TEST_F(Vp9HeaderParserTests, VideoOnlyFile) {
-  CreateAndLoadSegment("test_stereo_left_right.webm");
-  ProcessTheFrames();
+  ASSERT_NO_FATAL_FAILURE(CreateAndLoadSegment("test_stereo_left_right.webm"));
+  ProcessTheFrames(false);
   EXPECT_EQ(256, parser_.width());
   EXPECT_EQ(144, parser_.height());
   EXPECT_EQ(1, parser_.column_tiles());
@@ -128,8 +128,9 @@ TEST_F(Vp9HeaderParserTests, VideoOnlyFile) {
 }
 
 TEST_F(Vp9HeaderParserTests, Muxed) {
-  CreateAndLoadSegment("bbb_480p_vp9_opus_1second.webm", 4);
-  ProcessTheFrames();
+  ASSERT_NO_FATAL_FAILURE(
+      CreateAndLoadSegment("bbb_480p_vp9_opus_1second.webm", 4));
+  ProcessTheFrames(false);
   EXPECT_EQ(854, parser_.width());
   EXPECT_EQ(480, parser_.height());
   EXPECT_EQ(2, parser_.column_tiles());
