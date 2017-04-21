@@ -358,4 +358,80 @@ TEST_F(APIRequestHandlerTest, RequestThread) {
   thread.reset();
 }
 
+TEST_F(APIRequestHandlerTest, SettingLastError) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  base::Optional<std::string> logged_error;
+  auto get_parent = [](v8::Local<v8::Context> context) {
+    return context->Global();
+  };
+
+  auto log_error = [](base::Optional<std::string>* logged_error,
+                      v8::Local<v8::Context> context,
+                      const std::string& error) { *logged_error = error; };
+
+  APIRequestHandler request_handler(
+      base::Bind(&DoNothingWithRequest),
+      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
+      APILastError(base::Bind(get_parent),
+                   base::Bind(log_error, &logged_error)));
+
+  const char kReportExposedLastError[] =
+      "(function() {\n"
+      "  if (this.lastError)\n"
+      "    this.seenLastError = this.lastError.message;\n"
+      "})";
+  auto get_exposed_error = [context]() {
+    return GetStringPropertyFromObject(context->Global(), context,
+                                       "seenLastError");
+  };
+
+  {
+    // Test a successful function call. No last error should be emitted to the
+    // console or exposed to the callback.
+    v8::Local<v8::Function> callback =
+        FunctionFromString(context, kReportExposedLastError);
+    int request_id = request_handler.StartRequest(
+        context, kMethod, base::MakeUnique<base::ListValue>(), callback,
+        v8::Local<v8::Function>(), binding::RequestThread::UI);
+    request_handler.CompleteRequest(request_id, base::ListValue(),
+                                    std::string());
+    EXPECT_FALSE(logged_error);
+    EXPECT_EQ("undefined", get_exposed_error());
+    logged_error.reset();
+  }
+
+  {
+    // Test a function call resulting in an error. Since the callback checks the
+    // last error, no error should be logged to the console (but it should be
+    // exposed to the callback).
+    v8::Local<v8::Function> callback =
+        FunctionFromString(context, kReportExposedLastError);
+    int request_id = request_handler.StartRequest(
+        context, kMethod, base::MakeUnique<base::ListValue>(), callback,
+        v8::Local<v8::Function>(), binding::RequestThread::UI);
+    request_handler.CompleteRequest(request_id, base::ListValue(),
+                                    "some error");
+    EXPECT_FALSE(logged_error);
+    EXPECT_EQ("\"some error\"", get_exposed_error());
+    logged_error.reset();
+  }
+
+  {
+    // Test a function call resulting in an error that goes unchecked by the
+    // callback. The error should be logged.
+    v8::Local<v8::Function> callback =
+        FunctionFromString(context, "(function() {})");
+    int request_id = request_handler.StartRequest(
+        context, kMethod, base::MakeUnique<base::ListValue>(), callback,
+        v8::Local<v8::Function>(), binding::RequestThread::UI);
+    request_handler.CompleteRequest(request_id, base::ListValue(),
+                                    "some error");
+    ASSERT_TRUE(logged_error);
+    EXPECT_EQ("Unchecked runtime.lastError: some error", *logged_error);
+    logged_error.reset();
+  }
+}
+
 }  // namespace extensions
