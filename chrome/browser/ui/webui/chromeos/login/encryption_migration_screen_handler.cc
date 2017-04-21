@@ -198,7 +198,7 @@ void EncryptionMigrationScreenHandler::HandleSkipMigration() {
 }
 
 void EncryptionMigrationScreenHandler::HandleRequestRestart() {
-  chrome::AttemptRestart();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
 void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
@@ -313,7 +313,7 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
       break;
     case cryptohome::DIRCRYPTO_MIGRATION_SUCCESS:
       // Restart immediately after successful migration.
-      chrome::AttemptRestart();
+      DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
       break;
     case cryptohome::DIRCRYPTO_MIGRATION_FAILED:
       UpdateUIState(UIState::MIGRATION_FAILED);
