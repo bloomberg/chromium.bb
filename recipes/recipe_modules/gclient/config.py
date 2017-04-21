@@ -552,6 +552,7 @@ def infradata_master_manager(c):
   soln.name = 'infra-data-master-manager'
   soln.url = (
       'https://chrome-internal.googlesource.com/infradata/master-manager.git')
+  del c.got_revision_mapping['infra_internal']
   c.got_revision_mapping['infra-data-master-manager'] = 'got_revision'
 
 @config_ctx()
