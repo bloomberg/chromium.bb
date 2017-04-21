@@ -379,6 +379,16 @@ public class VideoCaptureCamera2 extends VideoCapture {
         if (mExposureMode == AndroidMeteringMode.NONE
                 || mExposureMode == AndroidMeteringMode.FIXED) {
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF);
+
+            // We need to configure by hand the exposure time when AE mode is off.  Set it to the
+            // middle of the allowed range. Further tuning will be done via |mIso|.
+            final CameraCharacteristics cameraCharacteristics =
+                    getCameraCharacteristics(mContext, mId);
+            Range<Long> range = cameraCharacteristics.get(
+                    CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
+            requestBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,
+                    range.getLower() + (range.getUpper() + range.getLower()) / 2 /* nanoseconds*/);
+
         } else {
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
             requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, mAeFpsRange);
