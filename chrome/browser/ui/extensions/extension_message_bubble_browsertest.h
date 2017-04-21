@@ -107,8 +107,9 @@ class ExtensionMessageBubbleBrowserTest
   void TestDevModeBubbleIsntShownTwice();
 
   // Tests that the bubble indicating an extension is controlling a user's
-  // new tab page is shown.
-  void TestControlledNewTabPageBubbleShown();
+  // new tab page is shown. When |click_learn_more| is true, the bubble is
+  // closed by clicking the Learn More link, otherwise CloseBubble() is used.
+  void TestControlledNewTabPageBubbleShown(bool click_learn_more);
 
   // Tests that the bubble indicating an extension is controlling a user's
   // home page is shown.

@@ -27,8 +27,7 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
     : views::BubbleDialogDelegateView(anchor_view,
                                       views::BubbleBorder::TOP_RIGHT),
       delegate_(std::move(delegate)),
-      close_reason_(
-          ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION),
+      delegate_notified_of_close_(false),
       item_list_(nullptr),
       link_(nullptr),
       anchored_to_action_(anchored_to_action) {
@@ -90,18 +89,28 @@ base::string16 ToolbarActionsBarBubbleViews::GetWindowTitle() const {
 }
 
 bool ToolbarActionsBarBubbleViews::Cancel() {
+  DCHECK(!delegate_notified_of_close_);
+  delegate_notified_of_close_ = true;
   delegate_->OnBubbleClosed(
       ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION);
   return true;
 }
 
 bool ToolbarActionsBarBubbleViews::Accept() {
+  DCHECK(!delegate_notified_of_close_);
+  delegate_notified_of_close_ = true;
   delegate_->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE);
   return true;
 }
 
 bool ToolbarActionsBarBubbleViews::Close() {
-  delegate_->OnBubbleClosed(close_reason_);
+  // If the user took any action, the delegate will have been notified already.
+  // Otherwise, this was dismissal due to deactivation.
+  if (!delegate_notified_of_close_) {
+    delegate_notified_of_close_ = true;
+    delegate_->OnBubbleClosed(
+        ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION);
+  }
   return true;
 }
 
@@ -159,6 +168,12 @@ base::string16 ToolbarActionsBarBubbleViews::GetDialogButtonLabel(
 
 void ToolbarActionsBarBubbleViews::LinkClicked(views::Link* link,
                                                int event_flags) {
-  close_reason_ = ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE;
+  DCHECK(!delegate_notified_of_close_);
+  delegate_notified_of_close_ = true;
+  delegate_->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE);
+  // Note that the Widget may or may not already be closed at this point,
+  // depending on delegate_->ShouldCloseOnDeactivate(). Widget::Close() protects
+  // against multiple calls (so long as they are not nested), and Widget
+  // destruction is asynchronous, so it is safe to call Close() again.
   GetWidget()->Close();
 }

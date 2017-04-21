@@ -92,12 +92,17 @@ void ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(
 
 void ExtensionMessageBubbleViewBrowserTest::ShowDialog(
     const std::string& name) {
-  // TODO(tapted): Add cases for all bubble types.
-  EXPECT_EQ("devmode_warning", name);
-
   // When invoked this way, the dialog test harness must close the bubble.
   base::AutoReset<bool> guard(&block_close_, true);
-  TestBubbleAnchoredToExtensionAction();
+
+  if (name == "devmode_warning") {
+    TestBubbleAnchoredToExtensionAction();
+  } else if (name == "ntp_override") {
+    TestControlledNewTabPageBubbleShown(false);
+  } else {
+    // TODO(tapted): Add cases for all bubble types.
+    ADD_FAILURE() << "Unknown dialog: " << name;
+  }
 }
 
 void ExtensionMessageBubbleViewBrowserTest::CheckBubbleNative(
@@ -193,7 +198,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestControlledNewTabPageMessageBubble) {
-  TestControlledNewTabPageBubbleShown();
+  TestControlledNewTabPageBubbleShown(false);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       TestControlledNewTabPageMessageBubbleLearnMore) {
+  TestControlledNewTabPageBubbleShown(true);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
@@ -224,6 +234,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestControlledStartupNotShownOnRestart) {
   TestControlledStartupNotShownOnRestart();
+}
+
+// BrowserDialogTest for the warning bubble that appears when opening a new tab
+// and an extension is controlling it. Only shown on Windows.
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       InvokeDialog_ntp_override) {
+  RunDialog();
 }
 
 #endif  // defined(OS_WIN)

@@ -55,7 +55,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   void LinkClicked(views::Link* source, int event_flags) override;
 
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
-  ToolbarActionsBarBubbleDelegate::CloseAction close_reason_;
+  bool delegate_notified_of_close_;
   views::Label* item_list_;
   views::Link* link_;
   const bool anchored_to_action_;
