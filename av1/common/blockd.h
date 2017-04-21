@@ -1147,6 +1147,18 @@ static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
 }
 #endif  // CONFIG_EXT_INTER
 
+#if CONFIG_VAR_TX
+static INLINE int get_vartx_max_txsize(const MB_MODE_INFO *const mbmi,
+                                       BLOCK_SIZE bsize) {
+#if CONFIG_CB4X4
+  (void)mbmi;
+  return max_txsize_rect_lookup[bsize];
+#endif  // CONFIG_C4X4
+  return mbmi->sb_type < BLOCK_8X8 ? max_txsize_rect_lookup[mbmi->sb_type]
+                                   : max_txsize_rect_lookup[bsize];
+}
+#endif  // CONFIG_VAR_TX
+
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {
   return (bsize >= BLOCK_8X8);

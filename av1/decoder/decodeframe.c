@@ -1794,7 +1794,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #endif
 
 #if CONFIG_VAR_TX
-        const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
+        const TX_SIZE max_tx_size = get_vartx_max_txsize(mbmi, plane_bsize);
         const int bh_var_tx = tx_size_high_unit[max_tx_size];
         const int bw_var_tx = tx_size_wide_unit[max_tx_size];
         for (row = 0; row < max_blocks_high; row += bh_var_tx)
