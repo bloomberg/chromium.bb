@@ -270,7 +270,7 @@ bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
 void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-  if (command_line->HasSwitch(switches::kWebViewSandboxedRenderer)) {
+  if (!command_line->HasSwitch(switches::kSingleProcess)) {
     // The only kind of a child process WebView can have is renderer.
     DCHECK_EQ(switches::kRendererProcess,
               command_line->GetSwitchValueASCII(switches::kProcessType));
