@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
+
 from common import ParseFlags
+from common import TestDriver
 
 
 # Platform-specific decorators.
@@ -72,3 +75,45 @@ def NotMac(func):
     else:
       args[0].skipTest('This test does not run on Mac OS.')
   return wrapper
+
+chrome_version = None
+
+def GetChromeVersion():
+  with TestDriver() as t:
+    t.LoadURL('http://check.googlezip.net/connect')
+    ua = t.ExecuteJavascriptStatement('navigator.userAgent')
+    match = re.search('Chrome/[0-9\.]+', ua)
+    if not match:
+      raise Exception('Could not find Chrome version in User-Agent: %s' % ua)
+    chrome_version = ua[match.start():match.end()]
+    version = chrome_version[chrome_version.find('/') + 1:]
+    version_split = version.split('.')
+    milestone = int(version_split[0])
+    print 'Running on Chrome M%d (%s)' % (milestone, version)
+    return milestone
+
+def ChromeVersionBeforeM(milestone):
+  def puesdo_wrapper(func):
+    def wrapper(*args, **kwargs):
+      global chrome_version
+      if chrome_version == None:
+        chrome_version = GetChromeVersion()
+      if chrome_version < milestone:
+        func(*args, **kwargs)
+      else:
+        args[0].skipTest('This test does not run above M%d.' % milestone)
+    return wrapper
+  return puesdo_wrapper
+
+def ChromeVersionAfterM(milestone):
+  def puesdo_wrapper(func):
+    def wrapper(*args, **kwargs):
+      global chrome_version
+      if chrome_version == None:
+        chrome_version = GetChromeVersion()
+      if chrome_version >= milestone:
+        func(*args, **kwargs)
+      else:
+        args[0].skipTest('This test does not run below M%d.' % milestone)
+    return wrapper
+  return puesdo_wrapper
