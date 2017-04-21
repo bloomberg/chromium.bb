@@ -14,7 +14,6 @@ import threading
 import time
 
 from chromite.lib import cros_logging as logging
-from chromite.lib import signals
 
 
 class TimeoutError(Exception):
@@ -34,6 +33,32 @@ def Timedelta(num, zero_ok=False):
   return num
 
 
+def _ScheduleTimer(seconds, interval=0):
+  """Schedules the timer to raise SIGALRM.
+
+  If |seconds| is less than minimum resolution, it would be round up to the
+  resolution.
+  Note: if the seconds is very short, the signal can be delivered almost
+  immediately, so that handler can be called even in this stack.
+
+  Args:
+    seconds: How long to wait before sending SIGALRM, in seconds.
+    interval: (Optional) interval schedule for the timer.
+  """
+  # Min resolution of itimer. See man setitimer(2) for details.
+  MIN_SECONDS = 0.000001
+  signal.setitimer(signal.ITIMER_REAL, max(seconds, MIN_SECONDS), interval)
+
+
+def _CancelTimer():
+  """Cancels the currently scheduled SIGALRM timer.
+
+  Returns:
+    Previous timer, which is a pair of scheduled timeout and interval.
+  """
+  return signal.setitimer(signal.ITIMER_REAL, 0)
+
+
 @contextlib.contextmanager
 def Timeout(max_run_time,
             error_message="Timeout occurred- waited %(time)s seconds.",
@@ -45,7 +70,7 @@ def Timeout(max_run_time,
 
   Args:
     max_run_time: How long to wait before sending SIGALRM.  May be a number
-      (in seconds) or a datetime.timedelta object.
+      (in seconds, can be fractional) or a datetime.timedelta object.
     error_message: Optional string to wrap in the TimeoutError exception on
       timeout. If not provided, default template will be used.
     reason_message: Optional string to be appended to the TimeoutError
@@ -53,7 +78,7 @@ def Timeout(max_run_time,
       a purpose-specific message without overriding the default template in
       |error_message|.
   """
-  max_run_time = int(Timedelta(max_run_time).total_seconds())
+  max_run_time = Timedelta(max_run_time).total_seconds()
   if reason_message:
     error_message += reason_message
 
@@ -61,31 +86,27 @@ def Timeout(max_run_time,
   def kill_us(sig_num, frame):
     raise TimeoutError(error_message % {'time': max_run_time})
 
+  previous_time = time.time()
+  previous_timeout, previous_interval = _CancelTimer()
   original_handler = signal.signal(signal.SIGALRM, kill_us)
-  previous_time = int(time.time())
-
-  # Signal the min in case the leftover time was smaller than this timeout.
-  remaining_timeout = signal.alarm(0)
-  if remaining_timeout:
-    signal.alarm(min(remaining_timeout, max_run_time))
-  else:
-    signal.alarm(max_run_time)
 
   try:
+    # Signal the min in case the leftover time was smaller than this timeout.
+    # This needs to be called in try block, otherwise, finally may not be
+    # called in case that the timeout duration is too short.
+    _ScheduleTimer(min(previous_timeout or float('inf'), max_run_time))
     yield
   finally:
     # Cancel the alarm request and restore the original handler.
-    signal.alarm(0)
+    _CancelTimer()
     signal.signal(signal.SIGALRM, original_handler)
 
     # Ensure the previous handler will fire if it was meant to.
-    if remaining_timeout > 0:
-      # Signal the previous handler if it would have already passed.
-      time_left = remaining_timeout - (int(time.time()) - previous_time)
-      if time_left <= 0:
-        signals.RelaySignal(original_handler, signal.SIGALRM, None)
-      else:
-        signal.alarm(time_left)
+    if previous_timeout:
+      remaining_timeout = previous_timeout - (time.time() - previous_time)
+      # It is ok to pass negative remaining_timeout. Please see also comments
+      # of _ScheduleTimer for more details.
+      _ScheduleTimer(remaining_timeout, previous_interval)
 
 
 @contextlib.contextmanager
@@ -102,12 +123,12 @@ def FatalTimeout(max_run_time, display_message=None):
   manager.
 
   Args:
-    max_run_time: How long to wait.  May be a number (in seconds) or a
-      datetime.timedelta object.
+    max_run_time: How long to wait.  May be a number (in seconds, can be
+      fractional) or a datetime.timedelta object.
     display_message: Optional string message to be included in timeout
       error message, if the timeout occurs.
   """
-  max_run_time = int(Timedelta(max_run_time).total_seconds())
+  max_run_time = Timedelta(max_run_time).total_seconds()
 
   # pylint: disable=W0613
   def kill_us(sig_num, frame):
@@ -118,7 +139,7 @@ def FatalTimeout(max_run_time, display_message=None):
     # Note that there is a potential conflict via this code, and
     # RunCommand's kill_timeout; thus we set the alarming interval
     # fairly high.
-    signal.alarm(60)
+    _ScheduleTimer(60)
 
     # The cbuildbot stage that gets aborted by this timeout should be treated as
     # failed by buildbot.
@@ -130,21 +151,17 @@ def FatalTimeout(max_run_time, display_message=None):
     logging.error(error_message)
     raise SystemExit(error_message)
 
+  if signal.getitimer(signal.ITIMER_REAL)[0]:
+    raise Exception('FatalTimeout cannot be used in parallel to other alarm '
+                    'handling code; failing')
+
   original_handler = signal.signal(signal.SIGALRM, kill_us)
-  remaining_timeout = signal.alarm(max_run_time)
-  if remaining_timeout:
-    # Restore things to the way they were.
-    signal.signal(signal.SIGALRM, original_handler)
-    signal.alarm(remaining_timeout)
-    # ... and now complain.  Unfortunately we can't easily detect this
-    # upfront, thus the reset dance above.
-    raise Exception("_Timeout cannot be used in parallel to other alarm "
-                    "handling code; failing")
   try:
+    _ScheduleTimer(max_run_time)
     yield
   finally:
     # Cancel the alarm request and restore the original handler.
-    signal.alarm(0)
+    _CancelTimer()
     signal.signal(signal.SIGALRM, original_handler)
 
 
@@ -154,9 +171,11 @@ def TimeoutDecorator(max_time):
   # signal.alarm, in case they get mocked out later. We want to ensure that
   # tests don't accidentally mock out the functions used by Timeout.
   def _Save():
-    return time.time, signal.signal, signal.alarm
+    return (time.time, signal.signal, signal.setitimer, signal.getitimer,
+            signal.SIGALRM, signal.ITIMER_REAL)
   def _Restore(values):
-    (time.time, signal.signal, signal.alarm) = values
+    (time.time, signal.signal, signal.setitimer, signal.getitimer,
+     signal.SIGALRM, signal.ITIMER_REAL) = values
   builtins = _Save()
 
   def NestedTimeoutDecorator(func):
