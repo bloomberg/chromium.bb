@@ -135,6 +135,10 @@ static NSString* gUserAgentProduct = nil;
   return net::NSURLWithGURL(_webState->GetVisibleURL());
 }
 
+- (NSURL*)lastCommittedURL {
+  return net::NSURLWithGURL(_webState->GetLastCommittedURL());
+}
+
 - (NSString*)title {
   return base::SysUTF16ToNSString(_webState->GetTitle());
 }

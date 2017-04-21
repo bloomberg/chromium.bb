@@ -41,8 +41,11 @@ CWV_EXPORT
 // Whether or not this web view is loading a page.
 @property(nonatomic, readonly) BOOL isLoading;
 
-// The current URL, for display to the user.
+// The URL displayed in the url bar.
 @property(nonatomic, readonly) NSURL* visibleURL;
+
+// The URL of the current document.
+@property(nonatomic, readonly) NSURL* lastCommittedURL;
 
 // The current page title.
 @property(nonatomic, readonly, copy) NSString* title;
