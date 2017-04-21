@@ -195,12 +195,6 @@ inline void V8SetReturnValue(const CallbackInfo& callback_info, Node* impl) {
 }
 
 template <typename CallbackInfo, typename T>
-inline void V8SetReturnValue(const CallbackInfo& callback_info,
-                             PassRefPtr<T> impl) {
-  V8SetReturnValue(callback_info, impl.Get());
-}
-
-template <typename CallbackInfo, typename T>
 inline void V8SetReturnValue(const CallbackInfo& callbackInfo,
                              NotShared<T> notShared) {
   V8SetReturnValue(callbackInfo, notShared.View());
@@ -220,12 +214,6 @@ inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
   v8::Local<v8::Object> wrapper =
       impl->Wrap(callback_info.GetIsolate(), callback_info.Holder());
   V8SetReturnValue(callback_info, wrapper);
-}
-
-template <typename CallbackInfo, typename T>
-inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
-                                         PassRefPtr<T> impl) {
-  V8SetReturnValueForMainWorld(callback_info, impl.Get());
 }
 
 template <typename CallbackInfo>
@@ -250,13 +238,6 @@ inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
                                  const ScriptWrappable* wrappable) {
   V8SetReturnValueFast(callback_info, ScriptWrappable::FromNode(impl),
                        wrappable);
-}
-
-template <typename CallbackInfo, typename T, typename Wrappable>
-inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
-                                 PassRefPtr<T> impl,
-                                 const Wrappable* wrappable) {
-  V8SetReturnValueFast(callback_info, impl.Get(), wrappable);
 }
 
 template <typename CallbackInfo, typename T>
