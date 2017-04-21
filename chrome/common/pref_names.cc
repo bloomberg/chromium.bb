@@ -936,6 +936,9 @@ const char kFingerprintUnlockFeatureNotificationShown[] =
 const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
 const char kQuickUnlockPinSecret[] = "quick_unlock.pin.secret";
 
+// An integer pref. Indicates the number of fingerprint records registered.
+const char kQuickUnlockFingerprintRecord[] = "quick_unlock.fingerprint.record";
+
 // An integer pref. Holds one of several values:
 // 0: Supported. Device is in supported state.
 // 1: Security Only. Device is in Security-Only update (after initial 5 years).

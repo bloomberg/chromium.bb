@@ -22,6 +22,11 @@ class FingerprintStorageUnitTest : public testing::Test {
   // testing::Test:
   void SetUp() override { quick_unlock::EnableForTesting(); }
 
+  void SetRecords(int records_number) {
+    profile_->GetPrefs()->SetInteger(prefs::kQuickUnlockFingerprintRecord,
+                                     records_number);
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
 
@@ -37,10 +42,6 @@ class FingerprintStorageTestApi {
   explicit FingerprintStorageTestApi(
       quick_unlock::FingerprintStorage* fingerprint_storage)
       : fingerprint_storage_(fingerprint_storage) {}
-
-  void SetEnrollments(bool has_enrollments) {
-    fingerprint_storage_->has_enrollments_ = has_enrollments;
-  }
 
   bool IsFingerprintAuthenticationAvailable() const {
     return fingerprint_storage_->IsFingerprintAuthenticationAvailable();
@@ -73,7 +74,7 @@ TEST_F(FingerprintStorageUnitTest, UnlockAttemptCount) {
 }
 
 // Verifies that authentication is not available when
-// 1. No enrollments registered
+// 1. No fingerprint records registered
 // 2. Too many authentication attempts
 TEST_F(FingerprintStorageUnitTest, AuthenticationUnAvailable) {
   quick_unlock::FingerprintStorage* fingerprint_storage =
@@ -81,16 +82,17 @@ TEST_F(FingerprintStorageUnitTest, AuthenticationUnAvailable) {
           ->fingerprint_storage();
   FingerprintStorageTestApi test_api(fingerprint_storage);
 
-  EXPECT_FALSE(fingerprint_storage->HasEnrollment());
-  test_api.SetEnrollments(true);
-  EXPECT_TRUE(fingerprint_storage->HasEnrollment());
+  EXPECT_FALSE(fingerprint_storage->HasRecord());
+  SetRecords(1);
+  EXPECT_TRUE(fingerprint_storage->HasRecord());
   EXPECT_EQ(0, fingerprint_storage->unlock_attempt_count());
   EXPECT_TRUE(test_api.IsFingerprintAuthenticationAvailable());
 
-  // No enrollment registered makes fingerprint authentication unavailable.
-  test_api.SetEnrollments(false);
+  // No fingerprint records registered makes fingerprint authentication
+  // unavailable.
+  SetRecords(0);
   EXPECT_FALSE(test_api.IsFingerprintAuthenticationAvailable());
-  test_api.SetEnrollments(true);
+  SetRecords(1);
   EXPECT_TRUE(test_api.IsFingerprintAuthenticationAvailable());
 
   // Too many authentication attempts make fingerprint authentication

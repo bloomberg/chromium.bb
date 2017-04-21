@@ -6,10 +6,16 @@
 
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
 namespace quick_unlock {
+
+// static
+void FingerprintStorage::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kQuickUnlockFingerprintRecord, 0);
+}
 
 FingerprintStorage::FingerprintStorage(PrefService* pref_service)
     : pref_service_(pref_service) {}
@@ -20,11 +26,11 @@ bool FingerprintStorage::IsFingerprintAuthenticationAvailable() const {
   const bool exceeded_unlock_attempts =
       unlock_attempt_count() >= kMaximumUnlockAttempts;
 
-  return IsFingerprintEnabled() && HasEnrollment() && !exceeded_unlock_attempts;
+  return IsFingerprintEnabled() && HasRecord() && !exceeded_unlock_attempts;
 }
 
-bool FingerprintStorage::HasEnrollment() const {
-  return has_enrollments_;
+bool FingerprintStorage::HasRecord() const {
+  return pref_service_->GetInteger(prefs::kQuickUnlockFingerprintRecord) != 0;
 }
 
 void FingerprintStorage::AddUnlockAttempt() {

@@ -82,8 +82,8 @@ Polymer({
    * @private
    */
   onFingerprintsChanged_: function(fingerprintInfo) {
-    this.fingerprints_ = fingerprintInfo.fingerprintsList;
-    this.$.fingerprintsList.notifyResize();
+    // Update iron-list.
+    this.fingerprints_ = fingerprintInfo.fingerprintsList.slice();
     this.$$('.action-button').disabled = fingerprintInfo.isMaxed;
   },
 
@@ -105,7 +105,11 @@ Polymer({
    * @private
    */
   onFingerprintLabelChanged_: function(e) {
-    this.browserProxy_.changeEnrollmentLabel(e.model.index, e.model.item);
+    this.browserProxy_.changeEnrollmentLabel(e.model.index, e.model.item).then(
+        function(success) {
+          if (success)
+            this.updateFingerprintsList_();
+        }.bind(this));
   },
 
   /**

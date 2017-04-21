@@ -315,6 +315,7 @@ extern const char kHatsSurveyCycleEndTimestamp[];
 extern const char kHatsDeviceIsSelected[];
 extern const char kQuickUnlockPinSalt[];
 extern const char kQuickUnlockPinSecret[];
+extern const char kQuickUnlockFingerprintRecord[];
 extern const char kEolStatus[];
 extern const char kEolNotificationDismissed[];
 extern const char kPinUnlockFeatureNotificationShown[];

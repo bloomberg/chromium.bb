@@ -27,7 +27,7 @@ TestFingerprintBrowserProxy.prototype = {
 
   /** @ param {!Array<string>} fingerprints */
   setFingerprints: function(fingerprints) {
-    this.fingerprintsList_ = fingerprints;
+    this.fingerprintsList_ = fingerprints.slice();
   },
 
   /**
@@ -47,7 +47,7 @@ TestFingerprintBrowserProxy.prototype = {
   getFingerprintsList: function() {
     this.methodCalled('getFingerprintsList');
     /** @type {settings.FingerprintInfo} */
-    var fingerprintInfo = {fingerprintsList: this.fingerprintsList_,
+    var fingerprintInfo = {fingerprintsList: this.fingerprintsList_.slice(),
         isMaxed: this.fingerprintsList_.length >= 5};
     return Promise.resolve(fingerprintInfo);
   },
@@ -85,6 +85,7 @@ TestFingerprintBrowserProxy.prototype = {
   changeEnrollmentLabel: function(index, newLabel) {
     this.fingerprintsList_[index] = newLabel;
     this.methodCalled('changeEnrollmentLabel', index, newLabel);
+    return Promise.resolve(true);
   },
 };
 
@@ -159,10 +160,12 @@ suite('settings-fingerprint-list', function() {
       // Verify that by tapping the continue button we should exit the dialog
       // and the fingerprint list should have one fingerprint registered.
       MockInteractions.tap(dialog.$.closeButton);
-      return browserProxy.whenCalled('getFingerprintsList').then(
+      return PolymerTest.flushTasks().then(function() {
+        browserProxy.whenCalled('getFingerprintsList').then(
           function() {
             assertEquals(1, fingerprintList.fingerprints_.length);
           });
+      });
     });
   });
 
@@ -254,7 +257,10 @@ suite('settings-fingerprint-list', function() {
       // label gets changed as expected.
       fingerprintList.onFingerprintLabelChanged_(
           createFakeEvent(0, 'New Label 1'));
-      return browserProxy.whenCalled('changeEnrollmentLabel');
+
+      return Promise.all([
+          browserProxy.whenCalled('changeEnrollmentLabel'),
+          browserProxy.whenCalled('getFingerprintsList')]);
     }).then(function() {
       assertEquals('New Label 1', fingerprintList.fingerprints_[0]);
     });

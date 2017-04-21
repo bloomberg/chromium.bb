@@ -8,4 +8,5 @@ include_rules = [
   "+components/webapks_ui",
   "-chrome/browser/ui/views",
   "+mash/public/interfaces",
+  "+services/device/public/interfaces",
 ]

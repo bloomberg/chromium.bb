@@ -58,10 +58,7 @@
         <div class="settings-box first">
           <span class="middle">[[getInstructionMessage_(step_)]]</span>
         </div>
-        <!-- TODO(sammiequon): on-click and on-dblclik are temporary, remove
-          once we can interact with the fingerprint hardware -->
-        <settings-fingerprint-progress-arc id="arc" on-click="handleClick_"
-            on-dblclick="handleDoubleClick_">
+        <settings-fingerprint-progress-arc id="arc">
         </settings-fingerprint-progress-arc>
         <div id="imageDiv">
           <iron-icon id="image" icon="settings:fingerprint" step$="[[step_]]">

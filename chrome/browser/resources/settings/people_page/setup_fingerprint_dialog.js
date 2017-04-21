@@ -19,9 +19,11 @@ settings.FingerprintSetupStep = {
 /**
  * The estimated amount of complete scans needed to enroll a fingerprint. Used
  * to help us estimate the progress of an enroll session.
+ * TODO(xiaoyinh@): This will be replaced by percentage of completion in the
+ * future.
  * @const {number}
  */
-var SUCCESSFUL_SCANS_TO_COMPLETE = 5;
+var SUCCESSFUL_SCANS_TO_COMPLETE = 15;
 
 /**
  * The amount of millseconds after a successful but not completed scan before a
@@ -134,32 +136,6 @@ Polymer({
   },
 
   /**
-   * Function to help test functionality without the fingerprint sensor.
-   * TODO(sammiequon): Remove this when the fingerprint proxy is ready.
-   * @param {Event} e The mouse click event.
-   * @private
-   */
-  handleClick_: function(e) {
-    var complete = this.receivedScanCount_ == SUCCESSFUL_SCANS_TO_COMPLETE - 1;
-    this.onScanReceived_({result: settings.FingerprintResultType.SUCCESS,
-      isComplete: complete});
-
-    if (complete)
-      this.browserProxy_.fakeScanComplete();
-  },
-
-  /**
-   * Function to help test functionality without the fingerprint sensor.
-   * TODO(sammiequon): Remove this when the fingerprint proxy is ready.
-   * @param {Event} e The mouse click event.
-   * @private
-   */
-  handleDoubleClick_: function(e) {
-    this.onScanReceived_({result: settings.FingerprintResultType.TOO_FAST,
-      isComplete: false /*isComplete*/});
-  },
-
-  /**
    * Advances steps, shows problems and animates the progress as needed based on
    * scan results.
    * @param {!settings.FingerprintScan} scan
@@ -183,10 +159,6 @@ Polymer({
           this.step_ = settings.FingerprintSetupStep.READY;
           this.$.arc.animate(this.receivedScanCount_ * slice, 2 * Math.PI);
           this.clearSensorMessageTimeout_();
-          // TODO(sammiequon): Keep increasing scan counts after the scan is
-          // complete, so we don't send more fake scans complete signals. Remove
-          // this with the fake scan.
-          this.receivedScanCount_++;
         } else {
           this.setProblem_(scan.result);
           if (scan.result == settings.FingerprintResultType.SUCCESS) {
@@ -254,6 +226,9 @@ Polymer({
         break;
       case settings.FingerprintResultType.TOO_FAST:
         this.problemMessage_ = this.i18n('configureFingerprintTooFast');
+        break;
+      case settings.FingerprintResultType.IMMOBILE:
+        this.problemMessage_ = this.i18n('configureFingerprintImmobile');
         break;
       default:
         assertNotReached();

@@ -1199,6 +1199,7 @@ split_static_library("ui") {
       "//device/bluetooth",
       "//extensions/common:mojo",
       "//mash/public/interfaces",
+      "//services/device/public/interfaces",
       "//ui/vector_icons",
     ]
   }

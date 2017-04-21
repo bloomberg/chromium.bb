@@ -16,6 +16,7 @@ settings.FingerprintResultType = {
   SENSOR_DIRTY: 3,
   TOO_SLOW: 4,
   TOO_FAST: 5,
+  IMMOBILE: 6,
 };
 
 /**
@@ -83,6 +84,7 @@ cr.define('settings', function() {
     /**
      * @param {number} index
      * @param {string} newLabel
+     * @return {!Promise<boolean>}
      */
     changeEnrollmentLabel: function(index, newLabel) {},
 
@@ -138,7 +140,7 @@ cr.define('settings', function() {
 
     /** @override */
     changeEnrollmentLabel: function(index, newLabel) {
-      chrome.send('changeEnrollmentLabel', [index, newLabel]);
+      return cr.sendWithPromise('changeEnrollmentLabel', index, newLabel);
     },
 
     /** @override */

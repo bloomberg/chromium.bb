@@ -23,6 +23,7 @@
       "requires": {
         "accessibility_autoclick": [ "ash:autoclick" ],
         "ash": [ "ash" ],
+        "device": [ "device:fingerprint" ],
         "identity": [ "identity_manager" ],
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
