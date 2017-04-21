@@ -9,8 +9,7 @@ import android.content.Context;
 import org.chromium.base.VisibleForTesting;
 
 /**
- * Factory to create a LocationProvider to allow us to inject
- * a mock for tests.
+ * Factory to create a LocationProvider to allow us to inject a mock for tests.
  */
 public class LocationProviderFactory {
     private static LocationProviderFactory.LocationProvider sProviderImpl;
@@ -20,8 +19,9 @@ public class LocationProviderFactory {
      */
     public interface LocationProvider {
         /**
-         * Start listening for location updates.
-         * @param enableHighAccuracy Whether or not to enable high accuracy location providers.
+         * Start listening for location updates. Calling several times before stop() is interpreted
+         * as restart.
+         * @param enableHighAccuracy Whether or not to enable high accuracy location.
          */
         public void start(boolean enableHighAccuracy);
 
@@ -40,12 +40,15 @@ public class LocationProviderFactory {
 
     @VisibleForTesting
     public static void setLocationProviderImpl(LocationProviderFactory.LocationProvider provider) {
-        assert sProviderImpl == null;
         sProviderImpl = provider;
     }
 
     public static LocationProvider create(Context context) {
-        if (sProviderImpl == null) {
+        if (sProviderImpl != null) return sProviderImpl;
+
+        if (LocationProviderGmsCore.isGooglePlayServicesAvailable(context)) {
+            sProviderImpl = new LocationProviderGmsCore(context);
+        } else {
             sProviderImpl = new LocationProviderAndroid(context);
         }
         return sProviderImpl;
