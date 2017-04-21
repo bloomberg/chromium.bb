@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
-#import "chrome/browser/ui/cocoa/passwords/credentials_selection_view.h"
+#import "chrome/browser/ui/cocoa/passwords/credentials_selection_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/update_pending_password_view_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"

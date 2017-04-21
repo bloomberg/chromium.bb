@@ -49,6 +49,7 @@ void LocationBarBubbleDelegateView::WebContentMouseHandler::OnTouchEvent(
 
 LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
     views::View* anchor_view,
+    const gfx::Point& anchor_point,
     content::WebContents* web_contents)
     : BubbleDialogDelegateView(anchor_view,
                                anchor_view ? views::BubbleBorder::TOP_RIGHT
@@ -61,12 +62,21 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
         content::Source<FullscreenController>(
             browser->exclusive_access_manager()->fullscreen_controller()));
   }
+  if (!anchor_view)
+    SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
+
   // Compensate for built-in vertical padding in the anchor view's image.
   // In the case of Harmony, this is just compensating for the location bar's
   // border thickness, as the bubble's top border should overlap it.
+  // When anchor is controlled by the |anchor_point| this inset is ignored.
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 }
+
+LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
+    views::View* anchor_view,
+    content::WebContents* web_contents)
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents) {}
 
 LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {}
 

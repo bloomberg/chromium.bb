@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/passwords/update_pending_password_view_controller.h"
 
-#import "chrome/browser/ui/cocoa/passwords/credentials_selection_view.h"
+#import "chrome/browser/ui/cocoa/passwords/credentials_selection_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"

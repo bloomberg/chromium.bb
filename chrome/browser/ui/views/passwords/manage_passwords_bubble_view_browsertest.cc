@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "ui/base/ui_base_switches.h"
 
 class ManagePasswordsBubbleDialogViewTest
     : public SupportsTestDialog<ManagePasswordsTest> {
@@ -26,6 +28,13 @@ class ManagePasswordsBubbleDialogViewTest
       ADD_FAILURE() << "Unknown dialog type";
       return;
     }
+  }
+
+  // content::BrowserTestBase:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+#if defined(OS_MACOSX)
+    command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+#endif
   }
 
  private:

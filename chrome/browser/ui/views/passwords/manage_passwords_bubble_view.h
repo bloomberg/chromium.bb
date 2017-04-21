@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "ui/base/ui_features.h"
 
 namespace content {
 class WebContents;
@@ -25,9 +26,11 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
  public:
   static constexpr int kDesiredBubbleWidth = 370;
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
                          DisplayReason reason);
+#endif
 
   // Closes the existing bubble.
   static void CloseCurrentBubble();
@@ -39,6 +42,11 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
   static ManagePasswordsBubbleView* manage_password_bubble() {
     return manage_passwords_bubble_;
   }
+
+  ManagePasswordsBubbleView(content::WebContents* web_contents,
+                            views::View* anchor_view,
+                            const gfx::Point& anchor_point,
+                            DisplayReason reason);
 
   content::WebContents* web_contents() const;
 
@@ -62,9 +70,6 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
   class SignInPromoView;
   class UpdatePendingView;
 
-  ManagePasswordsBubbleView(content::WebContents* web_contents,
-                            views::View* anchor_view,
-                            DisplayReason reason);
   ~ManagePasswordsBubbleView() override;
 
   // LocationBarBubbleDelegateView:

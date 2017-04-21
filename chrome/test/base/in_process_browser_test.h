@@ -18,6 +18,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_fake_full_keyboard_access.h"
+#endif
+
 namespace base {
 
 class CommandLine;
@@ -264,6 +268,12 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
   std::unique_ptr<ScopedBundleSwizzlerMac> bundle_swizzler_;
+
+  // Enable fake full keyboard access by default, so that tests don't depend on
+  // system setting of the test machine. Also, this helps to make tests on Mac
+  // more consistent with other platforms, where most views are focusable by
+  // default.
+  ui::test::ScopedFakeFullKeyboardAccess faked_full_keyboard_access_;
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)

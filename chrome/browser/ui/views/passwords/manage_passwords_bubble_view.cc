@@ -8,13 +8,15 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
@@ -24,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/native_theme.h"
@@ -38,6 +41,10 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.h"
@@ -235,10 +242,15 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
   Browser* browser =
       chrome::FindBrowserWithWebContents(parent_->web_contents());
   DCHECK(browser);
+
+// Sign-in dialogs opened for inactive browser windows do not auto-close on
+// MacOS. This matches existing Cocoa bubble behavior.
+// TODO(varkha): Remove the limitation as part of http://crbug/671916 .
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   observed_browser_.Add(browser_view->GetWidget());
-
-  if (browser_view->IsActive())
+#endif
+  if (browser->window()->IsActive())
     timer_.Start(FROM_HERE, GetTimeout(), this, &AutoSigninView::OnTimer);
 }
 
@@ -697,6 +709,7 @@ void ManagePasswordsBubbleView::UpdatePendingView::StyledLabelLinkClicked(
 ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
     NULL;
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // static
 void ManagePasswordsBubbleView::ShowBubble(
     content::WebContents* web_contents,
@@ -718,8 +731,9 @@ void ManagePasswordsBubbleView::ShowBubble(
           browser_view->GetLocationBarView()->manage_passwords_icon_view();
     }
   }
-  manage_passwords_bubble_ = new ManagePasswordsBubbleView(
-      web_contents, anchor_view, reason);
+  new ManagePasswordsBubbleView(web_contents, anchor_view, gfx::Point(),
+                                reason);
+  DCHECK(manage_passwords_bubble_);
 
   if (is_fullscreen)
     manage_passwords_bubble_->set_parent_window(web_contents->GetNativeView());
@@ -739,6 +753,7 @@ void ManagePasswordsBubbleView::ShowBubble(
 
   manage_passwords_bubble_->ShowForReason(reason);
 }
+#endif  // !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
 // static
 void ManagePasswordsBubbleView::CloseCurrentBubble() {
@@ -760,18 +775,20 @@ content::WebContents* ManagePasswordsBubbleView::web_contents() const {
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
     views::View* anchor_view,
+    const gfx::Point& anchor_point,
     DisplayReason reason)
-    : LocationBarBubbleDelegateView(anchor_view, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
       model_(PasswordsModelDelegateFromWebContents(web_contents),
              reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
                                  : ManagePasswordsBubbleModel::USER_ACTION),
       initially_focused_view_(nullptr) {
   mouse_handler_.reset(new WebContentMouseHandler(this, this->web_contents()));
+  manage_passwords_bubble_ = this;
 }
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
   if (manage_passwords_bubble_ == this)
-    manage_passwords_bubble_ = NULL;
+    manage_passwords_bubble_ = nullptr;
 }
 
 views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/passwords/credentials_selection_view.h"
+#import "chrome/browser/ui/cocoa/passwords/credentials_selection_view_cocoa.h"
 
 #include <stddef.h>
 
@@ -61,8 +61,8 @@ NSPopUpButton* CreateUsernamesPopUpButton(
 
     // Create the pop up button with usernames and the password field.
     usernamePopUpButton_.reset([CreateUsernamesPopUpButton(
-        model_->local_credentials(),
-        model_->pending_password().username_value) retain]);
+        model_->local_credentials(), model_->pending_password().username_value)
+        retain]);
     passwordField_.reset(
         [PasswordLabel(model_->pending_password().password_value) retain]);
 
