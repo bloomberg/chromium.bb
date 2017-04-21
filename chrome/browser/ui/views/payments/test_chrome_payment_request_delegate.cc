@@ -45,7 +45,7 @@ bool TestChromePaymentRequestDelegate::IsSslCertificateValid() {
   return is_valid_ssl_;
 }
 
-std::unique_ptr<const ::i18n::addressinput::Source>
+std::unique_ptr<::i18n::addressinput::Source>
 TestChromePaymentRequestDelegate::GetAddressInputSource() {
   if (address_input_provider_)
     return address_input_provider_->GetAddressInputSource();

@@ -80,8 +80,8 @@ void PaymentRequestState::GeneratePaymentResponse() {
 
   // Once the response is ready, will call back into OnPaymentResponseReady.
   response_helper_ = base::MakeUnique<PaymentResponseHelper>(
-      app_locale_, spec_, selected_instrument_, selected_shipping_profile_,
-      selected_contact_profile_, this);
+      app_locale_, spec_, selected_instrument_, payment_request_delegate_,
+      selected_shipping_profile_, selected_contact_profile_, this);
 }
 
 void PaymentRequestState::AddAutofillPaymentInstrument(

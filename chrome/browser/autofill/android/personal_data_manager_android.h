@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/payments/core/address_normalizer.h"
+#include "components/payments/core/address_normalizer_impl.h"
 
 namespace autofill {
 
@@ -360,7 +360,7 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   PersonalDataManager* personal_data_manager_;
 
   // The address validator used to normalize addresses.
-  payments::AddressNormalizer address_normalizer_;
+  payments::AddressNormalizerImpl address_normalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerAndroid);
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/address_normalizer.h"
+#include "components/payments/core/address_normalizer_impl.h"
 
 #include <stddef.h>
 #include <utility>
@@ -123,22 +123,22 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
 
 }  // namespace
 
-AddressNormalizer::AddressNormalizer(std::unique_ptr<Source> source,
-                                     std::unique_ptr<Storage> storage)
+AddressNormalizerImpl::AddressNormalizerImpl(std::unique_ptr<Source> source,
+                                             std::unique_ptr<Storage> storage)
     : address_validator_(std::move(source), std::move(storage), this) {}
 
-AddressNormalizer::~AddressNormalizer() {}
+AddressNormalizerImpl::~AddressNormalizerImpl() {}
 
-void AddressNormalizer::LoadRulesForRegion(const std::string& region_code) {
+void AddressNormalizerImpl::LoadRulesForRegion(const std::string& region_code) {
   address_validator_.LoadRules(region_code);
 }
 
-bool AddressNormalizer::AreRulesLoadedForRegion(
+bool AddressNormalizerImpl::AreRulesLoadedForRegion(
     const std::string& region_code) {
   return address_validator_.AreRulesLoadedForRegion(region_code);
 }
 
-void AddressNormalizer::StartAddressNormalization(
+void AddressNormalizerImpl::StartAddressNormalization(
     const AutofillProfile& profile,
     const std::string& region_code,
     int timeout_seconds,
@@ -173,7 +173,7 @@ void AddressNormalizer::StartAddressNormalization(
   }
 }
 
-void AddressNormalizer::OnAddressValidationRulesLoaded(
+void AddressNormalizerImpl::OnAddressValidationRulesLoaded(
     const std::string& region_code,
     bool success) {
   // Check if an address normalization is pending.

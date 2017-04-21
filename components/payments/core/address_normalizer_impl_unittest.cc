@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/address_normalizer.h"
+#include "components/payments/core/address_normalizer_impl.h"
 
 #include <utility>
 
@@ -79,13 +79,13 @@ class ChromiumTestdataSource : public TestdataSource {
   DISALLOW_COPY_AND_ASSIGN(ChromiumTestdataSource);
 };
 
-// A test subclass of the AddressNormalizer. Used to simulate rules not being
-// loaded.
-class TestAddressNormalizer : public AddressNormalizer {
+// A test subclass of the AddressNormalizerImpl. Used to simulate rules not
+// being loaded.
+class TestAddressNormalizer : public AddressNormalizerImpl {
  public:
   TestAddressNormalizer(std::unique_ptr<::i18n::addressinput::Source> source,
                         std::unique_ptr<::i18n::addressinput::Storage> storage)
-      : AddressNormalizer(std::move(source), std::move(storage)),
+      : AddressNormalizerImpl(std::move(source), std::move(storage)),
         should_load_rules_(true) {}
 
   ~TestAddressNormalizer() override {}
@@ -96,7 +96,7 @@ class TestAddressNormalizer : public AddressNormalizer {
 
   void LoadRulesForRegion(const std::string& region_code) override {
     if (should_load_rules_) {
-      AddressNormalizer::LoadRulesForRegion(region_code);
+      AddressNormalizerImpl::LoadRulesForRegion(region_code);
     }
   }
 

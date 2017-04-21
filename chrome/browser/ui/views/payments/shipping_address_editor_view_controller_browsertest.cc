@@ -42,7 +42,7 @@ class PaymentRequestShippingAddressEditorTest
   void EnableAddressInputOverride() { SetAddressInputOverride(this); }
 
   // TestChromePaymentRequestDelegate::AddressInputProvider.
-  std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource()
+  std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource()
       override {
     return base::MakeUnique<TestSource>(address_input_override_data_);
   }

@@ -6,21 +6,21 @@
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_RESPONSE_HELPER_H_
 
 #include "base/macros.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/mojom/payment_request.mojom.h"
 
-namespace autofill {
-class AutofillProfile;
-}  // namespace autofill
-
 namespace payments {
 
+class PaymentRequestDelegate;
 class PaymentRequestSpec;
 
 // TODO(sebsg): Asynchronously normalize the billing and shipping addresses
 // before adding them to the PaymentResponse.
 // A helper class to facilitate the creation of the PaymentResponse.
-class PaymentResponseHelper : public PaymentInstrument::Delegate {
+class PaymentResponseHelper : public PaymentInstrument::Delegate,
+                              AddressNormalizer::Delegate {
  public:
   class Delegate {
    public:
@@ -34,6 +34,7 @@ class PaymentResponseHelper : public PaymentInstrument::Delegate {
   PaymentResponseHelper(const std::string& app_locale,
                         PaymentRequestSpec* spec,
                         PaymentInstrument* selected_instrument,
+                        PaymentRequestDelegate* payment_request_delegate,
                         autofill::AutofillProfile* selected_shipping_profile,
                         autofill::AutofillProfile* selected_contact_profile,
                         Delegate* delegate);
@@ -51,17 +52,33 @@ class PaymentResponseHelper : public PaymentInstrument::Delegate {
       const std::string& stringified_details) override;
   void OnInstrumentDetailsError() override {}
 
+  // AddressNormalizer::Delegate
+  void OnAddressNormalized(
+      const autofill::AutofillProfile& normalized_profile) override;
+  void OnCouldNotNormalize(const autofill::AutofillProfile& profile) override;
+
  private:
+  // Generates the Payment Response and sends it to the delegate.
+  void GeneratePaymentResponse();
+
   const std::string& app_locale_;
+  bool is_waiting_for_shipping_address_normalization_;
+  bool is_waiting_for_instrument_details_;
 
   // Not owned, cannot be null.
   PaymentRequestSpec* spec_;
   Delegate* delegate_;
   PaymentInstrument* selected_instrument_;
+  PaymentRequestDelegate* payment_request_delegate_;
 
   // Not owned, can be null (dependent on the spec).
-  autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_contact_profile_;
+
+  autofill::AutofillProfile shipping_address_;
+
+  // Instrument Details.
+  std::string method_name_;
+  std::string stringified_details_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentResponseHelper);
 };

@@ -4,8 +4,9 @@
 
 static_library("core") {
   sources = [
-    "address_normalizer.cc",
     "address_normalizer.h",
+    "address_normalizer_impl.cc",
+    "address_normalizer_impl.h",
     "autofill_payment_instrument.cc",
     "autofill_payment_instrument.h",
     "basic_card_response.cc",
@@ -49,7 +50,7 @@ static_library("core") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "address_normalizer_unittest.cc",
+    "address_normalizer_impl_unittest.cc",
     "autofill_payment_instrument_unittest.cc",
     "basic_card_response_unittest.cc",
     "currency_formatter_unittest.cc",

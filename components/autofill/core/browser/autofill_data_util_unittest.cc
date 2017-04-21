@@ -198,5 +198,46 @@ TEST(AutofillDataUtilTest, ProfileMatchesFullName) {
       ProfileMatchesFullName(base::UTF8ToUTF16("Kirby Puckett"), profile));
 }
 
+struct ValidCountryCodeTestCase {
+  std::string country_code;
+  bool expected_result;
+};
+
+class ValidCountryCodeTest
+    : public testing::TestWithParam<ValidCountryCodeTestCase> {};
+
+TEST_P(ValidCountryCodeTest, ValidCountryCode) {
+  auto test_case = GetParam();
+  EXPECT_EQ(test_case.expected_result,
+            IsValidCountryCode(test_case.country_code));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    AutofillDataUtil,
+    ValidCountryCodeTest,
+    testing::Values(
+        // Valid country codes.
+        ValidCountryCodeTestCase{"US", true},
+        ValidCountryCodeTestCase{"CA", true},
+        ValidCountryCodeTestCase{"CN", true},
+
+        // Country names should not be considered valid.
+        ValidCountryCodeTestCase{"United States", false},
+        ValidCountryCodeTestCase{"Canada", false},
+        ValidCountryCodeTestCase{"China", false},
+
+        // Codes with numbers should not be considered valid.
+        ValidCountryCodeTestCase{"C2", false},
+
+        // Three letters abbreviations should not be considered valid.
+        ValidCountryCodeTestCase{"USA", false},
+        ValidCountryCodeTestCase{"CAN", false},
+        ValidCountryCodeTestCase{"CHN", false},
+
+        // Lowercase is invalid.
+        ValidCountryCodeTestCase{"us", false},
+        ValidCountryCodeTestCase{"Ca", false},
+        ValidCountryCodeTestCase{"cN", false}));
+
 }  // namespace data_util
 }  // namespace autofill

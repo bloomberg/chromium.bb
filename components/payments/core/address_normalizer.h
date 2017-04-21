@@ -5,23 +5,12 @@
 #ifndef COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_H_
 #define COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_H_
 
-#include <map>
-#include <memory>
 #include <string>
-#include <vector>
 
-#include "base/macros.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
 namespace autofill {
 class AutofillProfile;
-}
-
-namespace i18n {
-namespace libadderssinput {
-class Source;
-class Storage;
-}
 }
 
 namespace payments {
@@ -49,16 +38,12 @@ class AddressNormalizer : public autofill::LoadRulesListener {
     virtual ~Request() {}
   };
 
-  AddressNormalizer(std::unique_ptr<::i18n::addressinput::Source> source,
-                    std::unique_ptr<::i18n::addressinput::Storage> storage);
-  ~AddressNormalizer() override;
-
   // Start loading the validation rules for the specified |region_code|.
-  virtual void LoadRulesForRegion(const std::string& region_code);
+  virtual void LoadRulesForRegion(const std::string& region_code) = 0;
 
   // Returns whether the rules for the specified |region_code| have finished
   // loading.
-  bool AreRulesLoadedForRegion(const std::string& region_code);
+  virtual bool AreRulesLoadedForRegion(const std::string& region_code) = 0;
 
   // Starts the normalization of the |profile| based on the |region_code|. The
   // normalized profile will be returned to the |requester| possibly
@@ -68,25 +53,11 @@ class AddressNormalizer : public autofill::LoadRulesListener {
   // happen synchronously, or not at all if the rules are not already loaded.
   // Will start loading the rules for the |region_code| if they had not started
   // loading.
-  void StartAddressNormalization(const autofill::AutofillProfile& profile,
-                                 const std::string& region_code,
-                                 int timeout_seconds,
-                                 Delegate* requester);
-
- private:
-  // Called when the validation rules for the |region_code| have finished
-  // loading. Implementation of the LoadRulesListener interface.
-  void OnAddressValidationRulesLoaded(const std::string& region_code,
-                                      bool success) override;
-
-  // Map associating a region code to pending normalizations.
-  std::map<std::string, std::vector<std::unique_ptr<Request>>>
-      pending_normalization_;
-
-  // The address validator used to normalize addresses.
-  autofill::AddressValidator address_validator_;
-
-  DISALLOW_COPY_AND_ASSIGN(AddressNormalizer);
+  virtual void StartAddressNormalization(
+      const autofill::AutofillProfile& profile,
+      const std::string& region_code,
+      int timeout_seconds,
+      Delegate* requester) = 0;
 };
 
 }  // namespace payments

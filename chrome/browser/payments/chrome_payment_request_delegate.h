@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/payments/core/address_normalizer_impl.h"
 #include "components/payments/core/payment_request_delegate.h"
 
 namespace content {
@@ -22,7 +23,7 @@ class PaymentRequestDialog;
 class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
  public:
   explicit ChromePaymentRequestDelegate(content::WebContents* web_contents);
-  ~ChromePaymentRequestDelegate() override {}
+  ~ChromePaymentRequestDelegate() override;
 
   // PaymentRequestDelegate:
   void ShowDialog(PaymentRequest* request) override;
@@ -37,10 +38,11 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
       const autofill::CreditCard& credit_card,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate) override;
-  std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource()
+  std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource()
       override;
   std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
       override;
+  AddressNormalizer* GetAddressNormalizer() override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This
@@ -51,6 +53,9 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
  private:
   // Not owned but outlives the PaymentRequest object that owns this.
   content::WebContents* web_contents_;
+
+  // The address normalizer to use for the duration of the Payment Request.
+  AddressNormalizerImpl address_normalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePaymentRequestDelegate);
 };
