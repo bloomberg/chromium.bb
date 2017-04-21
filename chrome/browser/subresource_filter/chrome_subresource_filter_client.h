@@ -76,13 +76,17 @@ class ChromeSubresourceFilterClient
   subresource_filter::VerifiedRulesetDealer::Handle* GetRulesetDealer()
       override;
 
+  bool did_show_ui_for_navigation() const {
+    return did_show_ui_for_navigation_;
+  }
+
   static void LogAction(SubresourceFilterAction action);
 
  private:
   ContentSetting GetContentSettingForUrl(const GURL& url);
   std::set<std::string> whitelisted_hosts_;
   content::WebContents* web_contents_;
-  bool shown_for_navigation_;
+  bool did_show_ui_for_navigation_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSubresourceFilterClient);
 };

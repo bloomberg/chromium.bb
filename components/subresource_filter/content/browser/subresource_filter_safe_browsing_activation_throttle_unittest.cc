@@ -11,6 +11,7 @@
 #include "base/test/histogram_tester.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
@@ -52,64 +53,6 @@ enum RedirectChainMatchPattern {
   NO_REDIRECTS_HIT,  // Redirect chain consists of single URL, aka no redirects
                      // has happened, and this URL was a Safe Browsing hit.
   NUM_HIT_PATTERNS,
-};
-
-// Database manager that allows any URL to be configured as blacklisted for
-// testing.
-class FakeSafeBrowsingDatabaseManager
-    : public safe_browsing::TestSafeBrowsingDatabaseManager {
- public:
-  FakeSafeBrowsingDatabaseManager() : simulate_timeout_(false) {}
-
-  void AddBlacklistedUrl(const GURL& url,
-                         safe_browsing::SBThreatType threat_type) {
-    url_to_threat_type_[url] = threat_type;
-  }
-
-  void SimulateTimeout() { simulate_timeout_ = true; }
-
- protected:
-  ~FakeSafeBrowsingDatabaseManager() override {}
-
-  bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override {
-    if (simulate_timeout_)
-      return false;
-    if (!url_to_threat_type_.count(url))
-      return true;
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&Client::OnCheckBrowseUrlResult, base::Unretained(client),
-                   url, url_to_threat_type_[url],
-                   safe_browsing::ThreatMetadata()));
-    return false;
-  }
-
-  bool CheckResourceUrl(const GURL& url, Client* client) override {
-    return true;
-  }
-
-  bool IsSupported() const override { return true; }
-  bool ChecksAreAlwaysAsync() const override { return false; }
-  bool CanCheckResourceType(
-      content::ResourceType /* resource_type */) const override {
-    return true;
-  }
-
-  safe_browsing::ThreatSource GetThreatSource() const override {
-    return safe_browsing::ThreatSource::LOCAL_PVER4;
-  }
-
-  bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
-                         Client* client) override {
-    return true;
-  }
-
- private:
-  std::map<GURL, safe_browsing::SBThreatType> url_to_threat_type_;
-  bool simulate_timeout_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingDatabaseManager);
 };
 
 class MockSubresourceFilterClient

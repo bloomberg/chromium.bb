@@ -168,8 +168,11 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
       << "NavigationSimulator::Redirect cannot be called after the "
          "navigation has finished";
 
-  if (state_ == INITIALIZATION)
+  if (state_ == INITIALIZATION) {
     Start();
+    if (state_ == FAILED)
+      return;
+  }
 
   navigation_url_ = new_url;
 
@@ -225,8 +228,11 @@ void NavigationSimulator::Commit() {
       << "NavigationSimulator::Commit cannot be called after the "
          "navigation has finished";
 
-  if (state_ == INITIALIZATION)
+  if (state_ == INITIALIZATION) {
     Start();
+    if (state_ == FAILED)
+      return;
+  }
 
   PrepareCompleteCallbackOnHandle();
   if (IsBrowserSideNavigationEnabled() &&

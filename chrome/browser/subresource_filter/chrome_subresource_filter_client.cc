@@ -21,7 +21,7 @@
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
-    : web_contents_(web_contents), shown_for_navigation_(false) {
+    : web_contents_(web_contents), did_show_ui_for_navigation_(false) {
   DCHECK(web_contents);
   // Ensure the content settings manager is initialized.
   SubresourceFilterContentSettingsManagerFactory::EnsureForProfile(
@@ -32,10 +32,10 @@ ChromeSubresourceFilterClient::~ChromeSubresourceFilterClient() {}
 
 void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
     bool visibility) {
-  if (shown_for_navigation_ && visibility)
+  if (did_show_ui_for_navigation_ && visibility)
     return;
 
-  shown_for_navigation_ = visibility;
+  did_show_ui_for_navigation_ = visibility;
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
 
