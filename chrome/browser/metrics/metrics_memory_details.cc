@@ -20,6 +20,10 @@
 #include "content/public/common/process_type.h"
 #include "ppapi/features/features.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 MemoryGrowthTracker::MemoryGrowthTracker() {
 }
 
@@ -171,6 +175,14 @@ void MetricsMemoryDetails::UpdateHistograms() {
         other_count++;
         continue;
       case content::PROCESS_TYPE_GPU:
+#if defined(OS_MACOSX)
+        // Physical footprint was introduced in macOS 10.11.
+        if (base::mac::IsAtLeastOS10_11()) {
+          UMA_HISTOGRAM_MEMORY_LARGE_MB(
+              "Memory.Gpu.PhysicalFootprint.MacOS",
+              browser.processes[index].phys_footprint / 1024 / 1024);
+        }
+#endif
         UMA_HISTOGRAM_MEMORY_KB("Memory.Gpu", sample);
         if (num_open_fds != -1 && open_fds_soft_limit != -1) {
           UMA_HISTOGRAM_COUNTS_10000("Memory.Gpu.OpenFDs", num_open_fds);

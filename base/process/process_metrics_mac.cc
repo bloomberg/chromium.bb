@@ -13,6 +13,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/ptr_util.h"
@@ -22,6 +23,38 @@
 namespace base {
 
 namespace {
+
+#if !defined(MAC_OS_X_VERSION_10_11) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_11
+// The |phys_footprint| field was introduced in 10.11.
+struct ChromeTaskVMInfo {
+  mach_vm_size_t virtual_size;
+  integer_t region_count;
+  integer_t page_size;
+  mach_vm_size_t resident_size;
+  mach_vm_size_t resident_size_peak;
+  mach_vm_size_t device;
+  mach_vm_size_t device_peak;
+  mach_vm_size_t internal;
+  mach_vm_size_t internal_peak;
+  mach_vm_size_t external;
+  mach_vm_size_t external_peak;
+  mach_vm_size_t reusable;
+  mach_vm_size_t reusable_peak;
+  mach_vm_size_t purgeable_volatile_pmap;
+  mach_vm_size_t purgeable_volatile_resident;
+  mach_vm_size_t purgeable_volatile_virtual;
+  mach_vm_size_t compressed;
+  mach_vm_size_t compressed_peak;
+  mach_vm_size_t compressed_lifetime;
+  mach_vm_size_t phys_footprint;
+};
+mach_msg_type_number_t ChromeTaskVMInfoCount =
+    sizeof(ChromeTaskVMInfo) / sizeof(natural_t);
+#else
+using ChromeTaskVMInfo = task_vm_info;
+mach_msg_type_number_t ChromeTaskVMInfoCount = TASK_VM_INFO_REV1_COUNT;
+#endif  // MAC_OS_X_VERSION_10_11
 
 bool GetTaskInfo(mach_port_t task, task_basic_info_64* task_info_data) {
   if (task == MACH_PORT_NULL)
@@ -288,6 +321,20 @@ bool ProcessMetrics::GetCommittedAndWorkingSetKBytes(
   ws_usage->shared = 0;
 
   return true;
+}
+
+size_t ProcessMetrics::GetPhysicalFootprint() const {
+  if (mac::IsAtMostOS10_10())
+    return 0;
+
+  ChromeTaskVMInfo task_vm_info;
+  mach_msg_type_number_t count = ChromeTaskVMInfoCount;
+  kern_return_t result =
+      task_info(TaskForPid(process_), TASK_VM_INFO,
+                reinterpret_cast<task_info_t>(&task_vm_info), &count);
+  if (result != KERN_SUCCESS)
+    return 0;
+  return task_vm_info.phys_footprint;
 }
 
 #define TIME_VALUE_TO_TIMEVAL(a, r) do {  \

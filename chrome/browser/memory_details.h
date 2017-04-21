@@ -69,6 +69,9 @@ struct ProcessMemoryInformation {
   RendererProcessType renderer_type;
   // A collection of titles used, i.e. for a tab it'll show all the page titles.
   std::vector<base::string16> titles;
+  // The physical footprint is a macOS concept that tracks anonymous,
+  // non-discardable memory.
+  size_t phys_footprint;
 };
 
 typedef std::vector<ProcessMemoryInformation> ProcessMemoryInformationList;

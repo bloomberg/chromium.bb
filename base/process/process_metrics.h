@@ -162,6 +162,12 @@ class BASE_EXPORT ProcessMetrics {
   // system call.
   bool GetCommittedAndWorkingSetKBytes(CommittedKBytes* usage,
                                        WorkingSetKBytes* ws_usage) const;
+
+  // Returns the physical footprint, only available on macOS 10.11+. This
+  // measures anonymous, non-discardable memory. Returns 0 on error, or if the
+  // measurement was unavailable.
+  size_t GetPhysicalFootprint() const;
+
   // Returns private, shared, and total resident bytes. |locked_bytes| refers to
   // bytes that must stay resident. |locked_bytes| only counts bytes locked by
   // this task, not bytes locked by the kernel.
