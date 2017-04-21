@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.notifications;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import android.app.NotificationManager;
@@ -30,6 +33,21 @@ public class ChannelsInitializerTest {
         mMockNotificationManager = new MockNotificationManagerProxy();
         mChannelsInitializer =
                 new ChannelsInitializer(mMockNotificationManager, new ChannelDefinitions());
+    }
+
+    @Test
+    public void testDeleteLegacyChannels_noopOnCurrentDefinitions() throws Exception {
+        assertThat(mMockNotificationManager.getNotificationChannelIds(), is(empty()));
+
+        mChannelsInitializer.deleteLegacyChannels();
+        assertThat(mMockNotificationManager.getNotificationChannelIds(), is(empty()));
+
+        mChannelsInitializer.initializeStartupChannels();
+        assertThat(mMockNotificationManager.getNotificationChannelIds(), is(not(empty())));
+
+        int nChannels = mMockNotificationManager.getNotificationChannelIds().size();
+        mChannelsInitializer.deleteLegacyChannels();
+        assertThat(mMockNotificationManager.getNotificationChannelIds(), hasSize(nChannels));
     }
 
     @Test

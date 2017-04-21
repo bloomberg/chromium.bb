@@ -59,8 +59,7 @@ public class ChannelsUpdater {
     public void updateChannels() {
         if (!mIsAtLeastO) return;
         assert mChannelsInitializer != null;
-        // TODO(crbug.com/710843) Iterate through existing channels instead of deleting them all.
-        mChannelsInitializer.deleteAllChannels();
+        mChannelsInitializer.deleteLegacyChannels();
         mChannelsInitializer.initializeStartupChannels();
         storeChannelVersionInPrefs();
     }

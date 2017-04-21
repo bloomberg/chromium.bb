@@ -33,13 +33,17 @@ public class ChannelDefinitions {
     static final String CHANNEL_GROUP_ID_GENERAL = "general";
     /**
      * Version number identifying the current set of channels. This must be incremented whenever
-     * any channels are added or removed from the set of channels created in
-     * {@link ChannelsInitializer#initializeStartupChannels()}.
+     * the set of channels returned by {@link #getStartupChannelIds()} or
+     * {@link #getLegacyChannelIds()} changes.
      */
     static final int CHANNELS_VERSION = 0;
 
-    // To define a new channel, add the channel ID to this StringDef and add a new entry to
-    // PredefinedChannels.MAP below with the appropriate channel parameters.
+    /**
+     * To define a new channel, add the channel ID to this StringDef and add a new entry to
+     * PredefinedChannels.MAP below with the appropriate channel parameters.
+     * To remove an existing channel, remove the ID from this StringDef, remove its entry from
+     * Predefined Channels.MAP, and add the ID to the LEGACY_CHANNELS_ID array below.
+     */
     @StringDef({CHANNEL_ID_BROWSER, CHANNEL_ID_DOWNLOADS, CHANNEL_ID_INCOGNITO, CHANNEL_ID_MEDIA,
             CHANNEL_ID_SITES})
     @Retention(RetentionPolicy.SOURCE)
@@ -55,6 +59,7 @@ public class ChannelDefinitions {
         /**
          * The set of predefined channels to be initialized on startup. CHANNELS_VERSION must be
          * incremented every time an entry is modified, removed or added to this map.
+         * If an entry is removed from here then it must be added to the LEGACY_CHANNEL_IDs array.
          */
         static final Map<String, Channel> MAP;
         static {
@@ -83,6 +88,13 @@ public class ChannelDefinitions {
         }
     }
 
+    /**
+     * When channels become deprecated they should be removed from PredefinedChannels and their ids
+     * added to this array so they can be deleted on upgrade.
+     * We also want to keep track of old channel ids so they aren't accidentally reused.
+     */
+    private static final String[] LEGACY_CHANNEL_IDS = {};
+
     // Map defined in static inner class so it's only initialized lazily.
     private static class PredefinedChannelGroups {
         static final Map<String, ChannelGroup> MAP;
@@ -95,9 +107,20 @@ public class ChannelDefinitions {
         }
     }
 
+    /**
+     * @return A set of channel ids of channels that should be initialized on startup.
+     */
     Set<String> getStartupChannelIds() {
         // CHANNELS_VERSION must be incremented if the set of channels returned here changes.
         return PredefinedChannels.MAP.keySet();
+    }
+
+    /**
+     * @return An array of old ChannelIds that may have been returned by
+     * {@link #getStartupChannelIds} in the past, but are no longer in use.
+     */
+    public String[] getLegacyChannelIds() {
+        return LEGACY_CHANNEL_IDS;
     }
 
     ChannelGroup getChannelGroupFromId(Channel channel) {

@@ -1664,6 +1664,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationManagerServiceLifecycleTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationManagerNotificationTest.java",
   "junit/src/org/chromium/chrome/browser/metrics/VariationsSessionTest.java",
+  "junit/src/org/chromium/chrome/browser/notifications/ChannelDefinitionsTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/ChannelsInitializerTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/ChannelsUpdaterTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",

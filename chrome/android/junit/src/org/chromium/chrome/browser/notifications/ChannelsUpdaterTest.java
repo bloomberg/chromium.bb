@@ -92,10 +92,17 @@ public class ChannelsUpdaterTest {
         assertThat(mMockSharedPreferences.getInt(ChannelsUpdater.CHANNELS_VERSION_KEY, -1), is(21));
     }
 
-    // Suppressed in order to construct the old channels with invalid parameters.
+    // Warnings suppressed in order to construct the legacy channels with invalid channel ids.
     @SuppressWarnings("WrongConstant")
     @Test
     public void testUpdateChannels_deletesLegacyChannelsAndCreatesExpectedOnes() throws Exception {
+        // Fake some legacy channels (since we don't have any yet).
+        ChannelDefinitions channelDefinitions = new ChannelDefinitions() {
+            @Override
+            public String[] getLegacyChannelIds() {
+                return new String[] {"OldChannel", "AnotherOldChannel"};
+            }
+        };
         mMockNotificationManager.createNotificationChannel(new ChannelDefinitions.Channel(
                 "OldChannel", 8292304, NotificationManager.IMPORTANCE_HIGH,
                 ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
@@ -105,8 +112,8 @@ public class ChannelsUpdaterTest {
         assertThat(mMockNotificationManager.getNotificationChannelIds(),
                 containsInAnyOrder("OldChannel", "AnotherOldChannel"));
 
-        ChannelsUpdater updater = new ChannelsUpdater(
-                true /* isAtLeastO */, mMockSharedPreferences, mChannelsInitializer, 12);
+        ChannelsUpdater updater = new ChannelsUpdater(true /* isAtLeastO */, mMockSharedPreferences,
+                new ChannelsInitializer(mMockNotificationManager, channelDefinitions), 12);
         updater.updateChannels();
 
         assertThat(mMockNotificationManager.getNotificationChannelIds(),

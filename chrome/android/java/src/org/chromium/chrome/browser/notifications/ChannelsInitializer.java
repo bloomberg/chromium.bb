@@ -28,8 +28,12 @@ public class ChannelsInitializer {
         }
     }
 
-    void deleteAllChannels() {
-        for (String channelId : mNotificationManager.getNotificationChannelIds()) {
+    /**
+     * Cleans up any old channels that are no longer required from previous versions of the app.
+     * It's safe to call this multiple times since deleting an already-deleted channel is a no-op.
+     */
+    void deleteLegacyChannels() {
+        for (String channelId : mChannelDefinitions.getLegacyChannelIds()) {
             mNotificationManager.deleteNotificationChannel(channelId);
         }
     }
