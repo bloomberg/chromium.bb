@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
@@ -28,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/login/base_screen_handler_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
@@ -264,6 +267,29 @@ void WebUIScreenLocker::OnLockAnimationFinished() {
       ->SetCapture(nullptr);
   GetWebUI()->CallJavascriptFunctionUnsafe(
       "cr.ui.Oobe.animateOnceFullyDisplayed");
+}
+
+void WebUIScreenLocker::SetFingerprintState(const AccountId& account_id,
+                                            FingerprintState state) {
+  // TODO(xiaoyinh@): Modify JS side to consolidate removeUserPodFingerprintIcon
+  // and setUserPodFingerprintIcon into single JS function.
+  if (state == FingerprintState::kRemoved) {
+    GetWebUI()->CallJavascriptFunctionUnsafe(
+        "login.AccountPickerScreen.removeUserPodFingerprintIcon",
+        ::login::MakeValue(account_id));
+    return;
+  }
+
+  chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      chromeos::quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
+  if (!quick_unlock_storage ||
+      !quick_unlock_storage->IsFingerprintAuthenticationAvailable()) {
+    state = FingerprintState::kHidden;
+  }
+  GetWebUI()->CallJavascriptFunctionUnsafe(
+      "login.AccountPickerScreen.setUserPodFingerprintIcon",
+      ::login::MakeValue(account_id),
+      ::login::MakeValue(static_cast<int>(state)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -59,7 +59,10 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/service_manager_connection.h"
 #include "media/audio/sounds/sounds_manager.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -75,6 +78,21 @@ namespace {
 // on successful authentication before unlocking, but we want to be sure that
 // unlock happens even if animations are broken.
 const int kUnlockGuardTimeoutMs = 400;
+
+// Returns true if fingerprint authentication is available for one of the
+// |users|.
+bool IsFingerprintAuthenticationAvailableForUsers(
+    const user_manager::UserList& users) {
+  for (auto* user : users) {
+    quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+        quick_unlock::QuickUnlockFactory::GetForUser(user);
+    if (quick_unlock_storage &&
+        quick_unlock_storage->IsFingerprintAuthenticationAvailable()) {
+      return true;
+    }
+  }
+  return false;
+}
 
 // Observer to start ScreenLocker when locking the screen is requested.
 class ScreenLockObserver : public SessionManagerClient::StubDelegate,
@@ -144,8 +162,7 @@ ScreenLocker* ScreenLocker::screen_locker_ = NULL;
 // ScreenLocker, public:
 
 ScreenLocker::ScreenLocker(const user_manager::UserList& users)
-    : users_(users),
-      weak_factory_(this) {
+    : users_(users), binding_(this), weak_factory_(this) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 
@@ -155,6 +172,10 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
                       bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(device::mojom::kServiceName, &fp_service_);
+  fp_service_->AddFingerprintObserver(binding_.CreateInterfacePtrAndBind());
 }
 
 void ScreenLocker::Init() {
@@ -190,10 +211,8 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationFailureTime", delta);
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "ScreenLocker.AuthenticationFailure",
-      is_pin_attempt_ ? UnlockType::AUTH_PIN : UnlockType::AUTH_PASSWORD,
-      UnlockType::AUTH_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("ScreenLocker.AuthenticationFailure",
+                            unlock_attempt_type_, UnlockType::AUTH_COUNT);
 
   EnableInput();
   // Don't enable signout button here as we're showing
@@ -219,10 +238,8 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationSuccessTime", delta);
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "ScreenLocker.AuthenticationSuccess",
-      is_pin_attempt_ ? UnlockType::AUTH_PIN : UnlockType::AUTH_PASSWORD,
-      UnlockType::AUTH_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("ScreenLocker.AuthenticationSuccess",
+                            unlock_attempt_type_, UnlockType::AUTH_COUNT);
 
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
@@ -245,6 +262,10 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
     if (quick_unlock_storage) {
       quick_unlock_storage->pin_storage()->ResetUnlockAttemptCount();
       quick_unlock_storage->fingerprint_storage()->ResetUnlockAttemptCount();
+    }
+    if (should_have_fingerprint_auth_session_) {
+      fp_service_->EndCurrentAuthSession(base::Bind(
+          &ScreenLocker::OnEndCurrentAuthSession, weak_factory_.GetWeakPtr()));
     }
 
     UserSessionManager::GetInstance()->UpdateEasyUnlockKeys(user_context);
@@ -271,6 +292,10 @@ void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
           user_context.GetAccountId());
   if (quick_unlock_storage)
     quick_unlock_storage->MarkStrongAuth();
+  if (should_have_fingerprint_auth_session_) {
+    fp_service_->EndCurrentAuthSession(base::Bind(
+        &ScreenLocker::OnEndCurrentAuthSession, weak_factory_.GetWeakPtr()));
+  }
 }
 
 void ScreenLocker::UnlockOnLoginSuccess() {
@@ -297,7 +322,8 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
 
   authentication_start_time_ = base::Time::Now();
   web_ui()->SetInputEnabled(false);
-  is_pin_attempt_ = user_context.IsUsingPin();
+  if (user_context.IsUsingPin())
+    unlock_attempt_type_ = AUTH_PIN;
 
   const user_manager::User* user = FindUnlockUser(user_context.GetAccountId());
   if (user) {
@@ -308,7 +334,8 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
     // otherwise we will timeout PIN if the user enters their account password
     // incorrectly more than a few times.
     int dummy_value;
-    if (is_pin_attempt_ && base::StringToInt(pin, &dummy_value)) {
+    if (unlock_attempt_type_ == AUTH_PIN &&
+        base::StringToInt(pin, &dummy_value)) {
       quick_unlock::QuickUnlockStorage* quick_unlock_storage =
           quick_unlock::QuickUnlockFactory::GetForUser(user);
       if (quick_unlock_storage &&
@@ -555,6 +582,10 @@ void ScreenLocker::ScreenLockReady() {
   input_method::InputMethodManager::Get()
       ->GetActiveIMEState()
       ->EnableLockScreenLayouts();
+  should_have_fingerprint_auth_session_ =
+      IsFingerprintAuthenticationAvailableForUsers(users_);
+  if (should_have_fingerprint_auth_session_)
+    fp_service_->StartAuthSession();
 }
 
 bool ScreenLocker::IsUserLoggedIn(const AccountId& account_id) const {
@@ -563,6 +594,69 @@ bool ScreenLocker::IsUserLoggedIn(const AccountId& account_id) const {
       return true;
   }
   return false;
+}
+
+void ScreenLocker::OnAuthScanDone(
+    uint32_t scan_result,
+    const std::unordered_map<std::string, std::vector<std::string>>& matches) {
+  unlock_attempt_type_ = AUTH_FINGERPRINT;
+  user_manager::User* active_user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      quick_unlock::QuickUnlockFactory::GetForUser(active_user);
+  if (!quick_unlock_storage ||
+      !quick_unlock_storage->IsFingerprintAuthenticationAvailable()) {
+    return;
+  }
+
+  if (scan_result != biod::ScanResult::SCAN_RESULT_SUCCESS) {
+    OnFingerprintAuthFailure(*active_user);
+    return;
+  }
+
+  UserContext user_context(active_user->GetAccountId());
+  if (!base::ContainsKey(matches, active_user->username_hash())) {
+    OnFingerprintAuthFailure(*active_user);
+    return;
+  }
+  web_ui()->SetFingerprintState(active_user->GetAccountId(),
+                                WebUIScreenLocker::FingerprintState::kSignin);
+  OnAuthSuccess(user_context);
+}
+
+void ScreenLocker::OnSessionFailed() {
+  LOG(ERROR) << "Fingerprint session failed.";
+}
+
+void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
+  UMA_HISTOGRAM_ENUMERATION("ScreenLocker.AuthenticationFailure",
+                            unlock_attempt_type_, UnlockType::AUTH_COUNT);
+
+  web_ui()->SetFingerprintState(user.GetAccountId(),
+                                WebUIScreenLocker::FingerprintState::kFailed);
+
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      quick_unlock::QuickUnlockFactory::GetForUser(&user);
+  if (quick_unlock_storage &&
+      quick_unlock_storage->IsFingerprintAuthenticationAvailable()) {
+    quick_unlock_storage->fingerprint_storage()->AddUnlockAttempt();
+    if (quick_unlock_storage->fingerprint_storage()->ExceededUnlockAttempts()) {
+      web_ui()->SetFingerprintState(
+          user.GetAccountId(), WebUIScreenLocker::FingerprintState::kRemoved);
+      web_ui()->ShowErrorMessage(IDS_LOGIN_ERROR_FINGERPRINT_MAX_ATTEMPT,
+                                 HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    }
+  }
+
+  if (auth_status_consumer_) {
+    AuthFailure failure(AuthFailure::UNLOCK_FAILED);
+    auth_status_consumer_->OnAuthFailure(failure);
+  }
+}
+
+void ScreenLocker::OnEndCurrentAuthSession(bool success) {
+  LOG_IF(ERROR, !success)
+      << "Failed to end current fingerprint authentication session.";
 }
 
 }  // namespace chromeos

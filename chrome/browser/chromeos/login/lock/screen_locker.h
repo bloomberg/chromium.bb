@@ -19,6 +19,8 @@
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/device/public/interfaces/fingerprint.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
@@ -39,7 +41,8 @@ class WebUIScreenLockerTester;
 // ScreenLocker creates a WebUIScreenLocker which will display the lock UI.
 // As well, it takes care of authenticating the user and managing a global
 // instance of itself which will be deleted when the system is unlocked.
-class ScreenLocker : public AuthStatusConsumer {
+class ScreenLocker : public AuthStatusConsumer,
+                     public device::mojom::FingerprintObserver {
  public:
   explicit ScreenLocker(const user_manager::UserList& users);
 
@@ -122,13 +125,26 @@ class ScreenLocker : public AuthStatusConsumer {
   // Track whether the user used pin or password to unlock the lock screen.
   // Values corrospond to UMA histograms, do not modify, or add or delete other
   // than directly before AUTH_COUNT.
-  enum UnlockType { AUTH_PASSWORD = 0, AUTH_PIN, AUTH_COUNT };
+  enum UnlockType { AUTH_PASSWORD = 0, AUTH_PIN, AUTH_FINGERPRINT, AUTH_COUNT };
 
   struct AuthenticationParametersCapture {
     UserContext user_context;
   };
 
   ~ScreenLocker() override;
+
+  // fingerprint::mojom::FingerprintObserver:
+  void OnAuthScanDone(
+      uint32_t scan_result,
+      const std::unordered_map<std::string, std::vector<std::string>>& matches)
+      override;
+  void OnSessionFailed() override;
+  void OnRestarted() override{};
+  void OnEnrollScanDone(uint32_t scan_result,
+                        bool enroll_session_complete) override{};
+
+  void OnFingerprintAuthFailure(const user_manager::User& user);
+  void OnEndCurrentAuthSession(bool success);
 
   // Sets the authenticator.
   void SetAuthenticator(Authenticator* authenticator);
@@ -183,8 +199,8 @@ class ScreenLocker : public AuthStatusConsumer {
   // Number of bad login attempts in a row.
   int incorrect_passwords_count_ = 0;
 
-  // Whether the last password entered was a pin or not.
-  bool is_pin_attempt_ = false;
+  // Type of the last unlock attempt.
+  UnlockType unlock_attempt_type_ = AUTH_PASSWORD;
 
   // Copy of parameters passed to last call of OnLoginSuccess for usage in
   // UnlockOnLoginSuccess().
@@ -194,6 +210,12 @@ class ScreenLocker : public AuthStatusConsumer {
   std::unique_ptr<ScreenlockIconProvider> screenlock_icon_provider_;
 
   scoped_refptr<input_method::InputMethodManager::State> saved_ime_state_;
+
+  device::mojom::FingerprintPtr fp_service_;
+  mojo::Binding<device::mojom::FingerprintObserver> binding_;
+
+  // True if lock screen should have a fingerprint auth session.
+  bool should_have_fingerprint_auth_session_ = false;
 
   base::WeakPtrFactory<ScreenLocker> weak_factory_;
 

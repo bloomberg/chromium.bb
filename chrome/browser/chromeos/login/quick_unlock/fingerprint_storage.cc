@@ -23,10 +23,7 @@ FingerprintStorage::FingerprintStorage(PrefService* pref_service)
 FingerprintStorage::~FingerprintStorage() {}
 
 bool FingerprintStorage::IsFingerprintAuthenticationAvailable() const {
-  const bool exceeded_unlock_attempts =
-      unlock_attempt_count() >= kMaximumUnlockAttempts;
-
-  return IsFingerprintEnabled() && HasRecord() && !exceeded_unlock_attempts;
+  return !ExceededUnlockAttempts() && IsFingerprintEnabled() && HasRecord();
 }
 
 bool FingerprintStorage::HasRecord() const {
@@ -39,6 +36,10 @@ void FingerprintStorage::AddUnlockAttempt() {
 
 void FingerprintStorage::ResetUnlockAttemptCount() {
   unlock_attempt_count_ = 0;
+}
+
+bool FingerprintStorage::ExceededUnlockAttempts() const {
+  return unlock_attempt_count() >= kMaximumUnlockAttempts;
 }
 
 }  // namespace quick_unlock

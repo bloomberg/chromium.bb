@@ -49,6 +49,14 @@ class WebUIScreenLocker : public WebUILoginView,
                           public display::DisplayObserver,
                           public content::WebContentsObserver {
  public:
+  enum class FingerprintState {
+    kHidden,
+    kDefault,
+    kSignin,
+    kFailed,
+    kRemoved,
+  };
+
   // Request lock screen preload when the user is idle. Does nothing if
   // preloading is disabled or if the preload hueristics return false.
   static void RequestPreload();
@@ -88,6 +96,8 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // Called by ScreenLocker to notify that ash lock animation finishes.
   void OnLockAnimationFinished();
+
+  void SetFingerprintState(const AccountId& account_id, FingerprintState state);
 
  private:
   friend class test::WebUIScreenLockerTester;

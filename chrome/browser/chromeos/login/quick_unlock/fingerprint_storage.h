@@ -37,6 +37,9 @@ class FingerprintStorage {
   // Reset the number of unlock attempts to 0.
   void ResetUnlockAttemptCount();
 
+  // Returns true if the user has exceeded fingerprint unlock attempts.
+  bool ExceededUnlockAttempts() const;
+
   int unlock_attempt_count() const { return unlock_attempt_count_; }
 
  private:
