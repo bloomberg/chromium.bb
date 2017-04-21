@@ -21,6 +21,8 @@ message SignedData {
 
 // Request from device to server to register a device, user or browser.
 message DeviceRegisterRequest {
+  reserved 5;
+
   // Reregister device without erasing server state.  It can be used
   // to refresh dmtoken etc.  Client MUST set this value to true if it
   // reuses an existing device id.
@@ -51,9 +53,6 @@ message DeviceRegisterRequest {
   // model name is not available, client SHOULD send generic name like
   // "Android", or "Chrome OS".
   optional string machine_model = 4;
-
-  // OBSOLETE: Legacy auto-enrollment is not longer supported.
-  optional bool OBSOLETE_auto_enrolled = 5 [deprecated = true];
 
   // Indicates a requisition of the registering entity that the server can act
   // upon. This allows clients to pass hints e.g. at device enrollment time
@@ -550,60 +549,6 @@ message ActiveTimePeriod {
   optional int32 active_duration = 2;
 }
 
-// This captures launch events for one app/extension or other installments.
-message InstallableLaunch {
-  optional string install_id = 1;
-
-  // Time duration where this report covers. These are required
-  // and the record will be ignored if not set.
-  optional TimePeriod duration = 2;
-
-  // Client will send at most 50 timestamps to DM. All the rest
-  // launch activities will be summed into the total count.
-  // We will distribute the count evenly among the time span when
-  // doing time based aggregation.
-  repeated int64 timestamp = 3;
-  optional int64 total_count = 4;
-}
-
-// OBSOLETE: Used to report the device location.
-message OBSOLETE_DeviceLocation {
-  enum ErrorCode {
-    ERROR_CODE_NONE                 = 0;
-    ERROR_CODE_POSITION_UNAVAILABLE = 1;
-  }
-
-  // Latitude in decimal degrees north (WGS84 coordinate frame).
-  optional double latitude = 1;
-
-  // Longitude in decimal degrees west (WGS84 coordinate frame).
-  optional double longitude = 2;
-
-  // Altitude in meters (above WGS84 datum).
-  optional double altitude = 3;
-
-  // Accuracy of horizontal position in meters.
-  optional double accuracy = 4;
-
-  // Accuracy of altitude in meters.
-  optional double altitude_accuracy = 5;
-
-  // Heading in decimal degrees clockwise from true north.
-  optional double heading = 6;
-
-  // Horizontal component of device velocity in meters per second.
-  optional double speed = 7;
-
-  // Time of position measurement in milisecons since Epoch in UTC time.
-  optional int64 timestamp = 8;
-
-  // Error code, see enum above.
-  optional ErrorCode error_code = 9;
-
-  // Human-readable error message.
-  optional string error_message = 10;
-}
-
 // Details about a network interface.
 message NetworkInterface {
   // Indicates the type of network device.
@@ -707,6 +652,8 @@ message CPUTempInfo {
 
 // Report device level status.
 message DeviceStatusReportRequest {
+  reserved 4, 7, 13;
+
   // The OS version reported by the device is a platform version
   // e.g. 1435.0.2011_12_16_1635.
   optional string os_version = 1;
@@ -716,20 +663,12 @@ message DeviceStatusReportRequest {
   // If the mode is unknown, this field should not be set.
   optional string boot_mode = 3;
 
-  // OBSOLETE: Device active times collection since last report rpc call.
-  // No longer used -- use active_period instead.
-  repeated TimePeriod OBSOLETE_active_time = 4 [deprecated = true];
-
   // The browser version string as shown in the About dialog.
   // e.g. 17.0.963.18.
   optional string browser_version = 5;
 
   // A list of periods when the device was active, aggregated by day.
   repeated ActiveTimePeriod active_period = 6;
-
-  // OBSOLETE: The device location.
-  optional OBSOLETE_DeviceLocation OBSOLETE_device_location = 7
-    [deprecated = true];
 
   // List of network interfaces.
   repeated NetworkInterface network_interface = 8;
@@ -745,9 +684,6 @@ message DeviceStatusReportRequest {
 
   // Samples of CPU utilization (0-100), sampled once every 120 seconds.
   repeated int32 cpu_utilization_pct = 12;
-
-  // OBSOLETE: Free RAM (unreliable due to GC).
-  optional int64 OBSOLETE_system_ram_free = 13 [deprecated = true];
 
   // Total RAM on the device.
   optional int64 system_ram_total = 14;
@@ -820,25 +756,13 @@ message AndroidStatus {
 
 // Report current active session (a user on one device) level status.
 message SessionStatusReportRequest {
-  // OBSOLETE: Installed apps for this user on this device.
-  // No longer used -- use installed_apps instead.
-  repeated string OBSOLETE_installed_app_id = 1 [deprecated = true];
-
-  // OBSOLETE: Installed extensions for this user on this device.
-  // No longer used -- use installed_extensions instead.
-  repeated string OBSOLETE_installed_extension_id = 2 [deprecated = true];
-
-  // One stat per app for top 30 apps.
-  repeated InstallableLaunch app_launch_stat = 3;
+  reserved 1, 2, 3, 6;
 
   // If this is a kiosk session, this is the device local account ID.
   optional string device_local_account_id = 4;
 
   // Information about installed apps for this user on this device.
   repeated AppStatus installed_apps = 5;
-
-  // Information about installed extensions for this user on this device.
-  repeated AppStatus installed_extensions = 6;
 
   // Information about ARC status.
   optional AndroidStatus android_status = 7;
