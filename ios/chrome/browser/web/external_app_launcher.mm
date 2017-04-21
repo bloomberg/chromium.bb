@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/web/external_app_launcher.h"
 
 #include "base/ios/ios_util.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -17,6 +16,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 typedef void (^AlertHandler)(UIAlertAction* action);
@@ -27,11 +30,11 @@ NSSet<NSString*>* ITMSSchemes() {
   static dispatch_once_t once;
   dispatch_once(&once, ^{
     schemes =
-        [[NSSet setWithObjects:@"itms", @"itmss", @"itms-apps", @"itms-appss",
-                               // There's no evidence that itms-bookss is
-                               // actually supported, but over-inclusion
-                               // costs less than under-inclusion.
-                               @"itms-books", @"itms-bookss", nil] retain];
+        [NSSet setWithObjects:@"itms", @"itmss", @"itms-apps", @"itms-appss",
+                              // There's no evidence that itms-bookss is
+                              // actually supported, but over-inclusion
+                              // costs less than under-inclusion.
+                              @"itms-books", @"itms-bookss", nil];
   });
   return schemes;
 }

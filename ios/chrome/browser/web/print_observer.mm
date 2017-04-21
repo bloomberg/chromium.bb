@@ -6,12 +6,15 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/values.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/web/public/web_state/web_state.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Prefix for print JavaScript command.
@@ -36,8 +39,8 @@ void PrintObserver::WebStateDestroyed() {
 bool PrintObserver::OnPrintCommand(const base::DictionaryValue&,
                                    const GURL&,
                                    bool) {
-  base::scoped_nsobject<GenericChromeCommand> print_command(
-      [[GenericChromeCommand alloc] initWithTag:IDC_PRINT]);
+  GenericChromeCommand* print_command =
+      [[GenericChromeCommand alloc] initWithTag:IDC_PRINT];
   [web_state()->GetView() chromeExecuteCommand:print_command];
   return true;
 }

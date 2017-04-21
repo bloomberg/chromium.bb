@@ -6,10 +6,12 @@
 
 #include <memory>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/timer/timer.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -29,7 +31,7 @@ base::TimeDelta GetAutoReloadTime(size_t reload_count) {
   int _reloadCount;
   BOOL _shouldReload;
   BOOL _online;
-  id<AutoReloadDelegate> _delegate;
+  __weak id<AutoReloadDelegate> _delegate;
   std::unique_ptr<base::Timer> _timer;
 }
 
@@ -102,11 +104,10 @@ base::TimeDelta GetAutoReloadTime(size_t reload_count) {
 }
 
 - (void)startTimer {
-  base::WeakNSObject<AutoReloadController> weakSelf(self);
+  __weak AutoReloadController* weakSelf = self;
   base::TimeDelta delay = GetAutoReloadTime(_reloadCount);
-  _timer->Start(FROM_HERE, delay, base::BindBlock(^{
-                  base::scoped_nsobject<AutoReloadController> strongSelf(
-                      [weakSelf retain]);
+  _timer->Start(FROM_HERE, delay, base::BindBlockArc(^{
+                  AutoReloadController* strongSelf = weakSelf;
                   // self owns the timer owns this closure, so self must outlive
                   // this closure.
                   DCHECK(strongSelf);

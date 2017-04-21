@@ -6,11 +6,14 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/web/error_page_generator.h"
 #include "ios/web/public/referrer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @implementation ErrorPageContent
 
@@ -35,13 +38,13 @@
               isPost:(BOOL)isPost
          isIncognito:(BOOL)isIncognito {
   ErrorPageGenerator* generator =
-      [[[ErrorPageGenerator alloc] initWithError:error
-                                          isPost:isPost
-                                     isIncognito:isIncognito] autorelease];
+      [[ErrorPageGenerator alloc] initWithError:error
+                                         isPost:isPost
+                                    isIncognito:isIncognito];
 
-  base::scoped_nsobject<StaticHtmlViewController> HTMLViewController(
+  StaticHtmlViewController* HTMLViewController =
       [[StaticHtmlViewController alloc] initWithGenerator:generator
-                                             browserState:browserState]);
+                                             browserState:browserState];
   return [super initWithLoader:loader
       staticHTMLViewController:HTMLViewController
                            URL:url];

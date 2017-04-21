@@ -168,6 +168,7 @@ js_compile_bundle("chrome_bundle") {
 }
 
 source_set("web_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "auto_reload_bridge.h",
     "auto_reload_bridge.mm",

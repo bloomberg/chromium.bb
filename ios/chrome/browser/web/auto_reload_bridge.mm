@@ -6,19 +6,21 @@
 
 #include <memory>
 
-#include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/web/public/navigation_manager.h"
 #include "net/base/network_change_notifier.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 class NetworkChangeObserverBridge;
 }  // namespace
 
 @interface AutoReloadBridge () {
-  base::WeakNSObject<Tab> _tab;
-  base::scoped_nsobject<AutoReloadController> _controller;
+  __weak Tab* _tab;
+  AutoReloadController* _controller;
   std::unique_ptr<NetworkChangeObserverBridge> _networkBridge;
 }
 
@@ -44,7 +46,7 @@ class NetworkChangeObserverBridge
   }
 
  private:
-  AutoReloadBridge* bridge_;
+  __weak AutoReloadBridge* bridge_;
 };
 
 }  // namespace
@@ -55,9 +57,9 @@ class NetworkChangeObserverBridge
   DCHECK(tab);
   if ((self = [super init])) {
     BOOL online = !net::NetworkChangeNotifier::IsOffline();
-    _tab.reset(tab);
-    _controller.reset([[AutoReloadController alloc] initWithDelegate:self
-                                                        onlineStatus:online]);
+    _tab = tab;
+    _controller = [[AutoReloadController alloc] initWithDelegate:self
+                                                    onlineStatus:online];
     _networkBridge.reset(new NetworkChangeObserverBridge(self));
   }
   return self;
