@@ -21,7 +21,7 @@ class InfoBarViewDelegate;
 @property(nonatomic, assign) CGFloat visibleHeight;
 
 // Label text with links initialized with |stringAsLink:|.
-@property(nonatomic, readonly) NSString* markedLabel;
+@property(nonatomic, strong, readonly) NSString* markedLabel;
 
 // Stops propagating events to delegate.
 - (void)resetDelegate;
