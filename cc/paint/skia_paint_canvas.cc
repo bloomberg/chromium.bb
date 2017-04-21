@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/paint/paint_canvas.h"
+#include "cc/paint/skia_paint_canvas.h"
 
 #include "base/memory/ptr_util.h"
 #include "cc/paint/display_item_list.h"
-#include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkMetaData.h"
