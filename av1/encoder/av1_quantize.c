@@ -438,6 +438,138 @@ void av1_quantize_skip(intptr_t n_coeffs, tran_low_t *qcoeff_ptr,
   *eob_ptr = 0;
 }
 
+static void quantize_fp_helper_c(
+    const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
+    const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
+    const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
+    tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
+    const int16_t *scan, const int16_t *iscan,
+#if CONFIG_AOM_QM
+    const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr,
+#endif
+    int log_scale) {
+  int i, eob = -1;
+  // TODO(jingning) Decide the need of these arguments after the
+  // quantization process is completed.
+  (void)zbin_ptr;
+  (void)quant_shift_ptr;
+  (void)iscan;
+#if CONFIG_AOM_QM
+  const qm_val_t *qm_ptr = qparam->qmatrix;
+  const qm_val_t *iqm_ptr = qparam->iqmatrix;
+#endif  // CONFIG_AOM_QM
+
+  memset(qcoeff_ptr, 0, n_coeffs * sizeof(*qcoeff_ptr));
+  memset(dqcoeff_ptr, 0, n_coeffs * sizeof(*dqcoeff_ptr));
+
+  if (!skip_block) {
+    // Quantization pass: All coefficients with index >= zero_flag are
+    // skippable. Note: zero_flag can be zero.
+    for (i = 0; i < n_coeffs; i++) {
+      const int rc = scan[i];
+      const int coeff = coeff_ptr[rc];
+#if CONFIG_AOM_QM
+      const qm_val_t wt = qm_ptr[rc];
+      const qm_val_t iwt = iqm_ptr[rc];
+      const int dequant =
+          (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
+          AOM_QM_BITS;
+#endif
+      const int coeff_sign = (coeff >> 31);
+      int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
+      int tmp32 = 0;
+#if CONFIG_AOM_QM
+      if (abs_coeff * wt >=
+          (dequant_ptr[rc != 0] << (AOM_QM_BITS - (1 + log_scale)))) {
+#else
+      if (abs_coeff >= (dequant_ptr[rc != 0] >> (1 + log_scale))) {
+#endif
+        abs_coeff += ROUND_POWER_OF_TWO(round_ptr[rc != 0], log_scale);
+        abs_coeff = clamp(abs_coeff, INT16_MIN, INT16_MAX);
+#if CONFIG_AOM_QM
+        tmp32 = (int)((abs_coeff * wt * quant_ptr[rc != 0]) >>
+                      ((16 - log_scale) + AOM_QM_BITS));
+        qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
+        dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant / (1 << log_scale);
+#else
+        tmp32 = (int)((abs_coeff * quant_ptr[rc != 0]) >> (16 - log_scale));
+        qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
+        dqcoeff_ptr[rc] =
+            qcoeff_ptr[rc] * dequant_ptr[rc != 0] / (1 << log_scale);
+#endif
+      }
+
+      if (tmp32) eob = i;
+    }
+  }
+  *eob_ptr = eob + 1;
+}
+
+void av1_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+                       int skip_block, const int16_t *zbin_ptr,
+                       const int16_t *round_ptr, const int16_t *quant_ptr,
+                       const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
+                       tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr,
+                       uint16_t *eob_ptr, const int16_t *scan,
+                       const int16_t *iscan
+#if CONFIG_AOM_QM
+                       ,
+                       const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+#endif
+                       ) {
+  quantize_fp_helper_c(coeff_ptr, n_coeffs, skip_block, zbin_ptr, round_ptr,
+                       quant_ptr, quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr,
+                       dequant_ptr, eob_ptr, scan, iscan,
+#if CONFIG_AOM_QM
+                       qm_ptr, iqm_ptr,
+#endif
+                       0);
+}
+
+void av1_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+                             int skip_block, const int16_t *zbin_ptr,
+                             const int16_t *round_ptr, const int16_t *quant_ptr,
+                             const int16_t *quant_shift_ptr,
+                             tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
+                             const int16_t *dequant_ptr, uint16_t *eob_ptr,
+                             const int16_t *scan, const int16_t *iscan
+#if CONFIG_AOM_QM
+                             ,
+                             const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+#endif
+                             ) {
+  quantize_fp_helper_c(coeff_ptr, n_coeffs, skip_block, zbin_ptr, round_ptr,
+                       quant_ptr, quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr,
+                       dequant_ptr, eob_ptr, scan, iscan,
+#if CONFIG_AOM_QM
+                       qm_ptr, iqm_ptr,
+#endif
+                       1);
+}
+
+#if CONFIG_TX64X64
+void av1_quantize_fp_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+                             int skip_block, const int16_t *zbin_ptr,
+                             const int16_t *round_ptr, const int16_t *quant_ptr,
+                             const int16_t *quant_shift_ptr,
+                             tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
+                             const int16_t *dequant_ptr, uint16_t *eob_ptr,
+                             const int16_t *scan, const int16_t *iscan
+#if CONFIG_AOM_QM
+                             ,
+                             const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+#endif
+                             ) {
+  quantize_fp_helper_c(coeff_ptr, n_coeffs, skip_block, zbin_ptr, round_ptr,
+                       quant_ptr, quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr,
+                       dequant_ptr, eob_ptr, scan, iscan,
+#if CONFIG_AOM_QM
+                       qm_ptr, iqm_ptr,
+#endif
+                       2);
+}
+#endif  // CONFIG_TX64X64
+
 void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             const MACROBLOCK_PLANE *p, tran_low_t *qcoeff_ptr,
                             const MACROBLOCKD_PLANE *pd,
@@ -455,14 +587,14 @@ void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
       if (n_coeffs < 16) {
         // TODO(jingning): Need SIMD implementation for smaller block size
         // quantization.
-        av1_quantize_fp_c(coeff_ptr, n_coeffs, skip_block, p->zbin, p->round_fp,
-                          p->quant_fp, p->quant_shift, qcoeff_ptr, dqcoeff_ptr,
-                          pd->dequant, eob_ptr, sc->scan, sc->iscan
+        quantize_fp_helper_c(coeff_ptr, n_coeffs, skip_block, p->zbin,
+                             p->round_fp, p->quant_fp, p->quant_shift,
+                             qcoeff_ptr, dqcoeff_ptr, pd->dequant, eob_ptr,
+                             sc->scan, sc->iscan,
 #if CONFIG_AOM_QM
-                          ,
-                          qm_ptr, iqm_ptr
+                             qm_ptr, iqm_ptr,
 #endif
-                          );
+                             qparam->log_scale);
       } else {
         av1_quantize_fp(coeff_ptr, n_coeffs, skip_block, p->zbin, p->round_fp,
                         p->quant_fp, p->quant_shift, qcoeff_ptr, dqcoeff_ptr,
@@ -1348,62 +1480,6 @@ void av1_highbd_quantize_dc_nuq_facade(
 #endif  // CONFIG_NEW_QUANT
 #endif  // CONFIG_HIGHBITDEPTH
 
-void av1_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                       int skip_block, const int16_t *zbin_ptr,
-                       const int16_t *round_ptr, const int16_t *quant_ptr,
-                       const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
-                       tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr,
-                       uint16_t *eob_ptr, const int16_t *scan,
-                       const int16_t *iscan
-#if CONFIG_AOM_QM
-                       ,
-                       const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-                       ) {
-  int i, eob = -1;
-  // TODO(jingning) Decide the need of these arguments after the
-  // quantization process is completed.
-  (void)zbin_ptr;
-  (void)quant_shift_ptr;
-  (void)iscan;
-
-  memset(qcoeff_ptr, 0, n_coeffs * sizeof(*qcoeff_ptr));
-  memset(dqcoeff_ptr, 0, n_coeffs * sizeof(*dqcoeff_ptr));
-
-  if (!skip_block) {
-    // Quantization pass: All coefficients with index >= zero_flag are
-    // skippable. Note: zero_flag can be zero.
-    for (i = 0; i < n_coeffs; i++) {
-      const int rc = scan[i];
-      const int coeff = coeff_ptr[rc];
-#if CONFIG_AOM_QM
-      const qm_val_t wt = qm_ptr[rc];
-      const qm_val_t iwt = iqm_ptr[rc];
-      const int dequant =
-          (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
-          AOM_QM_BITS;
-#endif
-      const int coeff_sign = (coeff >> 31);
-      const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-
-      int64_t tmp = clamp(abs_coeff + round_ptr[rc != 0], INT16_MIN, INT16_MAX);
-      int tmp32;
-#if CONFIG_AOM_QM
-      tmp32 = (int)((tmp * wt * quant_ptr[rc != 0]) >> (16 + AOM_QM_BITS));
-      qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
-      dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant;
-#else
-      tmp32 = (int)((tmp * quant_ptr[rc != 0]) >> 16);
-      qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
-      dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant_ptr[rc != 0];
-#endif
-
-      if (tmp32) eob = i;
-    }
-  }
-  *eob_ptr = eob + 1;
-}
-
 #if CONFIG_HIGHBITDEPTH
 void av1_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
                               int skip_block, const int16_t *zbin_ptr,
@@ -1464,132 +1540,6 @@ void av1_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
 }
 
 #endif  // CONFIG_HIGHBITDEPTH
-
-// TODO(jingning) Refactor this file and combine functions with similar
-// operations.
-void av1_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                             int skip_block, const int16_t *zbin_ptr,
-                             const int16_t *round_ptr, const int16_t *quant_ptr,
-                             const int16_t *quant_shift_ptr,
-                             tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                             const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                             const int16_t *scan, const int16_t *iscan
-#if CONFIG_AOM_QM
-                             ,
-                             const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-                             ) {
-  int i, eob = -1;
-  (void)zbin_ptr;
-  (void)quant_shift_ptr;
-  (void)iscan;
-
-  memset(qcoeff_ptr, 0, n_coeffs * sizeof(*qcoeff_ptr));
-  memset(dqcoeff_ptr, 0, n_coeffs * sizeof(*dqcoeff_ptr));
-
-  if (!skip_block) {
-    for (i = 0; i < n_coeffs; i++) {
-      const int rc = scan[i];
-      const int coeff = coeff_ptr[rc];
-#if CONFIG_AOM_QM
-      const qm_val_t wt = qm_ptr[rc];
-      const qm_val_t iwt = iqm_ptr[rc];
-      const int dequant =
-          (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
-          AOM_QM_BITS;
-      int64_t tmp = 0;
-#endif
-      const int coeff_sign = (coeff >> 31);
-      int tmp32 = 0;
-      int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-
-#if CONFIG_AOM_QM
-      if (abs_coeff * wt >= (dequant_ptr[rc != 0] << (AOM_QM_BITS - 2))) {
-#else
-      if (abs_coeff >= (dequant_ptr[rc != 0] >> 2)) {
-#endif
-        abs_coeff += ROUND_POWER_OF_TWO(round_ptr[rc != 0], 1);
-        abs_coeff = clamp(abs_coeff, INT16_MIN, INT16_MAX);
-#if CONFIG_AOM_QM
-        tmp = abs_coeff * wt;
-        tmp32 = (int)(tmp * quant_ptr[rc != 0]) >> (AOM_QM_BITS + 15);
-        qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
-        dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant) / 2;
-#else
-        tmp32 = (abs_coeff * quant_ptr[rc != 0]) >> 15;
-        qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
-        dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant_ptr[rc != 0]) / 2;
-#endif
-      }
-
-      if (tmp32) eob = i;
-    }
-  }
-  *eob_ptr = eob + 1;
-}
-
-#if CONFIG_TX64X64
-void av1_quantize_fp_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                             int skip_block, const int16_t *zbin_ptr,
-                             const int16_t *round_ptr, const int16_t *quant_ptr,
-                             const int16_t *quant_shift_ptr,
-                             tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                             const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                             const int16_t *scan, const int16_t *iscan
-#if CONFIG_AOM_QM
-                             ,
-                             const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-                             ) {
-  int i, eob = -1;
-  (void)zbin_ptr;
-  (void)quant_shift_ptr;
-  (void)iscan;
-
-  memset(qcoeff_ptr, 0, n_coeffs * sizeof(*qcoeff_ptr));
-  memset(dqcoeff_ptr, 0, n_coeffs * sizeof(*dqcoeff_ptr));
-
-  if (!skip_block) {
-    for (i = 0; i < n_coeffs; i++) {
-      const int rc = scan[i];
-      const int coeff = coeff_ptr[rc];
-#if CONFIG_AOM_QM
-      const qm_val_t wt = qm_ptr[rc];
-      const qm_val_t iwt = iqm_ptr[rc];
-      const int dequant =
-          (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
-          AOM_QM_BITS;
-      int64_t tmp = 0;
-#endif
-      const int coeff_sign = (coeff >> 31);
-      int tmp32 = 0;
-      int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-
-#if CONFIG_AOM_QM
-      if (abs_coeff * wt >= (dequant_ptr[rc != 0] << (AOM_QM_BITS - 3))) {
-#else
-      if (abs_coeff >= (dequant_ptr[rc != 0] >> 3)) {
-#endif
-        abs_coeff += ROUND_POWER_OF_TWO(round_ptr[rc != 0], 2);
-        abs_coeff = clamp(abs_coeff, INT16_MIN, INT16_MAX);
-#if CONFIG_AOM_QM
-        tmp = abs_coeff * wt;
-        tmp32 = (int)(tmp * quant_ptr[rc != 0]) >> (AOM_QM_BITS + 14);
-        qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
-        dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant) / 4;
-#else
-        tmp32 = (abs_coeff * quant_ptr[rc != 0]) >> 14;
-        qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
-        dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant_ptr[rc != 0]) / 4;
-#endif
-      }
-
-      if (tmp32) eob = i;
-    }
-  }
-  *eob_ptr = eob + 1;
-}
-#endif  // CONFIG_TX64X64
 
 void av1_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                       int skip_block, const int16_t *zbin_ptr,
