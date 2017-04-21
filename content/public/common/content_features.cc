@@ -100,6 +100,13 @@ const base::Feature kGuestViewCrossProcessFrames{
 const base::Feature kHeapCompaction{"HeapCompaction",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Blink's idle time spell checker.
+// Design: https://goo.gl/zONC3v
+// Note: The feature is implemented in Blink, and is independent to the
+// ENABLE_SPELLCHECK build flag defined in components/spellcheck.
+const base::Feature kIdleTimeSpellChecking{"IdleTimeSpellChecking",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables lazily parsing css properties for performance.
 const base::Feature kLazyParseCSS{"LazyParseCSS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

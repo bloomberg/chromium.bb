@@ -3032,4 +3032,11 @@ const char kEnableWebNfcDescription[] = "Enable WebNFC support.";
 
 #endif  // defined(OS_ANDROID)
 
+const char kEnableIdleTimeSpellCheckingName[] =
+    "Enable idle time spell checker";
+
+const char kEnableIdleTimeSpellCheckingDescription[] =
+    "Make spell-checking code run only when the browser is idle, so that input "
+    "latency is reduced, especially when editing long articles, emails, etc.";
+
 }  // namespace flag_descriptions
