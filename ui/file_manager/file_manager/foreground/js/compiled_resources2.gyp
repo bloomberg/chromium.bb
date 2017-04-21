@@ -268,10 +268,19 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'metadata_box_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'metadata_box_controller',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:file_type',
+        '../elements/compiled_resources2.gyp:files_metadata_box',
+        '../elements/compiled_resources2.gyp:files_quick_view',
+        '<(EXTERNS_GYP):file_manager_private',
+        'metadata/compiled_resources2.gyp:metadata_model',
+        'quick_view_model',
+        'ui/compiled_resources2.gyp:file_metadata_formatter',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'metadata_update_controller',
       'dependencies': [
@@ -332,10 +341,22 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'quick_view_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'quick_view_controller',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:list_selection_model',
+        'dialog_type',
+        'file_selection',
+        'metadata/compiled_resources2.gyp:metadata_model',
+        'metadata_box_controller',
+        'quick_view_model',
+        'quick_view_uma',
+        'task_controller',
+        'ui/compiled_resources2.gyp:list_container',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'quick_view_model',
       'dependencies': [
