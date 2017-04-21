@@ -959,6 +959,9 @@ class EVENTS_EXPORT KeyEvent : public Event {
   std::unique_ptr<Properties> properties_;
 
   static KeyEvent* last_key_event_;
+#if defined(USE_X11)
+  static KeyEvent* last_ibus_key_event_;
+#endif
 };
 
 class EVENTS_EXPORT ScrollEvent : public MouseEvent {

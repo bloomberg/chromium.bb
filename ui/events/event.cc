@@ -190,17 +190,16 @@ bool IsX11SendEventTrue(const base::NativeEvent& event) {
 #endif
 }
 
-bool X11EventHasNonStandardState(const base::NativeEvent& event) {
 #if defined(USE_X11)
+bool X11EventHasNonStandardState(const base::NativeEvent& event) {
   const unsigned int kAllStateMask =
       Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask |
       Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask | ShiftMask |
       LockMask | ControlMask | AnyModifier;
+
   return event && (event->xkey.state & ~kAllStateMask) != 0;
-#else
-  return false;
-#endif
 }
+#endif
 
 }  // namespace
 
@@ -1084,43 +1083,53 @@ PointerEvent::PointerEvent(EventType type,
 // KeyEvent
 
 // static
-KeyEvent* KeyEvent::last_key_event_ = NULL;
+KeyEvent* KeyEvent::last_key_event_ = nullptr;
+#if defined(USE_X11)
+KeyEvent* KeyEvent::last_ibus_key_event_ = nullptr;
+#endif
 
 // static
 bool KeyEvent::IsRepeated(const KeyEvent& event) {
   // A safe guard in case if there were continous key pressed events that are
   // not auto repeat.
   const int kMaxAutoRepeatTimeMs = 2000;
-  // Ignore key events that have non standard state masks as it may be
-  // reposted by an IME. IBUS-GTK uses this field to detect the
-  // re-posted event for example. crbug.com/385873.
-  if (X11EventHasNonStandardState(event.native_event()))
-    return false;
+  KeyEvent** last_key_event;
+#if defined(USE_X11)
+  // Use a different static variable for key events that have non standard
+  // state masks as it may be reposted by an IME. IBUS-GTK uses this field
+  // to detect the re-posted event for example. crbug.com/385873.
+  last_key_event = X11EventHasNonStandardState(event.native_event())
+                       ? &last_ibus_key_event_
+                       : &last_key_event_;
+#else
+  last_key_event = &last_key_event_;
+#endif
   if (event.is_char())
     return false;
   if (event.type() == ui::ET_KEY_RELEASED) {
-    delete last_key_event_;
-    last_key_event_ = NULL;
+    delete *last_key_event;
+    *last_key_event = nullptr;
     return false;
   }
+
   CHECK_EQ(ui::ET_KEY_PRESSED, event.type());
-  if (!last_key_event_) {
-    last_key_event_ = new KeyEvent(event);
+  if (!(*last_key_event)) {
+    *last_key_event = new KeyEvent(event);
     return false;
-  } else if (event.time_stamp() == last_key_event_->time_stamp()) {
+  } else if (event.time_stamp() == (*last_key_event)->time_stamp()) {
     // The KeyEvent is created from the same native event.
-    return (last_key_event_->flags() & ui::EF_IS_REPEAT) != 0;
+    return ((*last_key_event)->flags() & ui::EF_IS_REPEAT) != 0;
   }
-  if (event.key_code() == last_key_event_->key_code() &&
-      event.flags() == (last_key_event_->flags() & ~ui::EF_IS_REPEAT) &&
-      (event.time_stamp() - last_key_event_->time_stamp()).InMilliseconds() <
+  if (event.key_code() == (*last_key_event)->key_code() &&
+      event.flags() == ((*last_key_event)->flags() & ~ui::EF_IS_REPEAT) &&
+      (event.time_stamp() - (*last_key_event)->time_stamp()).InMilliseconds() <
           kMaxAutoRepeatTimeMs) {
-    last_key_event_->set_time_stamp(event.time_stamp());
-    last_key_event_->set_flags(last_key_event_->flags() | ui::EF_IS_REPEAT);
+    (*last_key_event)->set_time_stamp(event.time_stamp());
+    (*last_key_event)->set_flags((*last_key_event)->flags() | ui::EF_IS_REPEAT);
     return true;
   }
-  delete last_key_event_;
-  last_key_event_ = new KeyEvent(event);
+  delete *last_key_event;
+  *last_key_event = new KeyEvent(event);
   return false;
 }
 
