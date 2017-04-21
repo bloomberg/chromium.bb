@@ -475,7 +475,8 @@ void UserMediaClientImpl::SetupVideoInput(
     base::PostTaskAndReplyWithResult(
         worker_task_runner_.get(), FROM_HERE,
         base::Bind(&SelectSettingsVideoContentCapture,
-                   user_media_request.VideoConstraints()),
+                   user_media_request.VideoConstraints(),
+                   video_controls.stream_source),
         base::Bind(&UserMediaClientImpl::FinalizeSelectVideoContentSettings,
                    weak_factory_.GetWeakPtr(), user_media_request));
   }

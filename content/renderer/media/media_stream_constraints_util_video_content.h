@@ -29,8 +29,9 @@ CONTENT_EXPORT extern const double kDefaultScreenCastFrameRate;
 
 // This function performs source, source-settings and track-settings selection
 // for content video capture based on the given |constraints|.
-VideoCaptureSettings CONTENT_EXPORT SelectSettingsVideoContentCapture(
-    const blink::WebMediaConstraints& constraints);
+VideoCaptureSettings CONTENT_EXPORT
+SelectSettingsVideoContentCapture(const blink::WebMediaConstraints& constraints,
+                                  const std::string& stream_source);
 
 }  // namespace content
 

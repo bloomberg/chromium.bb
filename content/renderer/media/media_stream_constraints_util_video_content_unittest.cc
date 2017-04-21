@@ -7,6 +7,7 @@
 #include <cmath>
 #include <string>
 
+#include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/mock_constraint_factory.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,10 +53,12 @@ void CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(
 
 class MediaStreamConstraintsUtilVideoContentTest : public testing::Test {
  protected:
-  VideoCaptureSettings SelectSettings() {
+  VideoCaptureSettings SelectSettings(
+      const std::string& stream_source =
+          std::string(kMediaStreamSourceScreen)) {
     blink::WebMediaConstraints constraints =
         constraint_factory_.CreateWebMediaConstraints();
-    return SelectSettingsVideoContentCapture(constraints);
+    return SelectSettingsVideoContentCapture(constraints, stream_source);
   }
 
   MockConstraintFactory constraint_factory_;
@@ -1959,6 +1962,16 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
+    auto result = SelectSettings(kMediaStreamSourceTab);
+    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
+    // Default policy for tab capture is fixed resolution.
+    EXPECT_EQ(media::RESOLUTION_POLICY_FIXED_RESOLUTION,
+              result.ResolutionChangePolicy());
+    CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
+  }
+  {
+    constraint_factory_.Reset();
     constraint_factory_.basic().width.SetIdeal(630);
     constraint_factory_.basic().height.SetIdeal(470);
     auto result = SelectSettings();
@@ -2011,34 +2024,32 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.SetIdeal(630);
-    constraint_factory_.basic().width.SetMin(629);
-    constraint_factory_.basic().width.SetMax(631);
-    constraint_factory_.basic().height.SetIdeal(470);
-    constraint_factory_.basic().height.SetMin(469);
+    constraint_factory_.basic().width.SetMax(800);
+    constraint_factory_.basic().height.SetMax(600);
+    constraint_factory_.basic().width.SetMin(400);
+    constraint_factory_.basic().height.SetMin(300);
     auto result = SelectSettings();
-    EXPECT_EQ(630, result.Width());
-    EXPECT_EQ(470, result.Height());
-    // Min/Max ranges prevent the resolution from being adjusted.
-    EXPECT_EQ(media::RESOLUTION_POLICY_FIXED_RESOLUTION,
+    EXPECT_EQ(800, result.Width());
+    EXPECT_EQ(600, result.Height());
+    // When the aspect ratio of the max resolution equals the aspect ratio of
+    // the min resolution, the algorithm sets fixed aspect ratio policy.
+    EXPECT_EQ(media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO,
               result.ResolutionChangePolicy());
-    EXPECT_EQ(629.0 / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(631.0 / 469.0, result.track_adapter_settings().max_aspect_ratio);
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().aspect_ratio.SetExact(1.32);
-    constraint_factory_.basic().height.SetIdeal(480);
+    constraint_factory_.basic().width.SetMax(800);
+    constraint_factory_.basic().height.SetMax(600);
+    constraint_factory_.basic().width.SetMin(400);
+    constraint_factory_.basic().height.SetMin(400);
     auto result = SelectSettings();
-    EXPECT_EQ(std::round(480 * 1.32), result.Width());
-    EXPECT_EQ(480, result.Height());
-    // Exact aspect ratio prevents the resolution from being adjusted.
-    EXPECT_EQ(media::RESOLUTION_POLICY_FIXED_RESOLUTION,
+    EXPECT_EQ(800, result.Width());
+    EXPECT_EQ(600, result.Height());
+    // When the aspect ratio of the max resolution differs from the aspect ratio
+    // of the min resolution, the algorithm sets any-within-limit policy.
+    EXPECT_EQ(media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT,
               result.ResolutionChangePolicy());
-    EXPECT_EQ(1.32, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(1.32, result.track_adapter_settings().max_aspect_ratio);
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
   {

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "media/base/limits.h"
@@ -158,35 +159,36 @@ ResolutionSet ScreenCastResolutionCapabilities() {
                        kMinScreenCastAspectRatio, kMaxScreenCastAspectRatio);
 }
 
-// TODO(guidou): Update this policy to better match the way
-// WebContentsCaptureMachine::ComputeOptimalViewSize() interprets
-// resolution-change policies. See http://crbug.com/701302.
+// This algorithm for selecting policy matches the old non-spec compliant
+// algorithm in order to be more compatible with existing applications.
+// TODO(guidou): Update this algorithm to properly take into account the minimum
+// width and height, and the aspect_ratio constraint once most existing
+// applications migrate to the new syntax. See http://crbug.com/701302.
 media::ResolutionChangePolicy SelectResolutionPolicyFromCandidates(
-    const ResolutionSet& resolution_set) {
-  ResolutionSet capabilities = ScreenCastResolutionCapabilities();
-  // TODO(guidou): Since the real maximum screen resolution is not known, use
-  // max_width and max_height from |resolution_set| as the actual capability,
-  // if necessary, to decide the resolution policy. Update this to use the
-  // actual capability once the actual screen resolution is used as default.
-  // http://crbug.com/257097
-  int capabilities_max_height =
-      std::min(resolution_set.max_height(), capabilities.max_height());
-  int capabilities_max_width =
-      std::min(resolution_set.max_width(), capabilities.max_width());
-  double capabilities_min_aspect_ratio =
-      static_cast<double>(capabilities.min_width()) / capabilities_max_height;
-  double capabilities_max_aspect_ratio =
-      static_cast<double>(capabilities_max_width) / capabilities.min_height();
-  bool can_adjust_resolution =
-      resolution_set.min_height() <= capabilities.min_height() &&
-      resolution_set.max_height() >= capabilities_max_height &&
-      resolution_set.min_width() <= capabilities.min_width() &&
-      resolution_set.max_width() >= capabilities_max_width &&
-      resolution_set.min_aspect_ratio() <= capabilities_min_aspect_ratio &&
-      resolution_set.max_aspect_ratio() >= capabilities_max_aspect_ratio;
+    const ResolutionSet& resolution_set,
+    media::ResolutionChangePolicy default_policy) {
+  if (resolution_set.max_height() < kMaxScreenCastDimension &&
+      resolution_set.max_width() < kMaxScreenCastDimension &&
+      resolution_set.min_height() > kMinScreenCastDimension &&
+      resolution_set.min_width() > kMinScreenCastDimension) {
+    if (resolution_set.min_height() == resolution_set.max_height() &&
+        resolution_set.min_width() == resolution_set.max_width()) {
+      return media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+    }
 
-  return can_adjust_resolution ? media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT
-                               : media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+    int approx_aspect_ratio_min_resolution =
+        100 * resolution_set.min_width() / resolution_set.min_height();
+    int approx_aspect_ratio_max_resolution =
+        100 * resolution_set.max_width() / resolution_set.max_height();
+    if (approx_aspect_ratio_min_resolution ==
+        approx_aspect_ratio_max_resolution) {
+      return media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+    }
+
+    return media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+  }
+
+  return default_policy;
 }
 
 int RoundToInt(double d) {
@@ -217,7 +219,8 @@ media::VideoCaptureParams SelectVideoCaptureParamsFromCandidates(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
     int default_height,
     int default_width,
-    double default_frame_rate) {
+    double default_frame_rate,
+    media::ResolutionChangePolicy default_resolution_policy) {
   double requested_frame_rate = SelectFrameRateFromCandidates(
       candidates.frame_rate_set(), basic_constraint_set, default_frame_rate);
   Point requested_resolution =
@@ -227,8 +230,8 @@ media::VideoCaptureParams SelectVideoCaptureParamsFromCandidates(
   params.requested_format = media::VideoCaptureFormat(
       ToGfxSize(requested_resolution), static_cast<float>(requested_frame_rate),
       media::PIXEL_FORMAT_I420);
-  params.resolution_change_policy =
-      SelectResolutionPolicyFromCandidates(candidates.resolution_set());
+  params.resolution_change_policy = SelectResolutionPolicyFromCandidates(
+      candidates.resolution_set(), default_resolution_policy);
   // Content capture always uses default power-line frequency.
   DCHECK(params.IsValid());
 
@@ -288,7 +291,8 @@ int ClampToValidDimension(int value) {
 
 VideoCaptureSettings SelectResultFromCandidates(
     const VideoContentCaptureCandidates& candidates,
-    const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
+    const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+    const std::string& stream_source) {
   std::string device_id = SelectDeviceIDFromCandidates(
       candidates.device_id_set(), basic_constraint_set);
   // If a maximum width or height is explicitly given, use them as default.
@@ -324,10 +328,17 @@ VideoCaptureSettings SelectResultFromCandidates(
   double default_frame_rate = candidates.has_explicit_max_frame_rate()
                                   ? candidates.frame_rate_set().Max()
                                   : kDefaultScreenCastFrameRate;
+
+  // This default comes from the old algorithm.
+  media::ResolutionChangePolicy default_resolution_policy =
+      stream_source == kMediaStreamSourceTab
+          ? media::RESOLUTION_POLICY_FIXED_RESOLUTION
+          : media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+
   media::VideoCaptureParams capture_params =
-      SelectVideoCaptureParamsFromCandidates(candidates, basic_constraint_set,
-                                             default_height, default_width,
-                                             default_frame_rate);
+      SelectVideoCaptureParamsFromCandidates(
+          candidates, basic_constraint_set, default_height, default_width,
+          default_frame_rate, default_resolution_policy);
 
   base::Optional<bool> noise_reduction = SelectNoiseReductionFromCandidates(
       candidates.noise_reduction_set(), basic_constraint_set);
@@ -364,7 +375,8 @@ VideoCaptureSettings UnsatisfiedConstraintsResult(
 }  // namespace
 
 VideoCaptureSettings SelectSettingsVideoContentCapture(
-    const blink::WebMediaConstraints& constraints) {
+    const blink::WebMediaConstraints& constraints,
+    const std::string& stream_source) {
   VideoContentCaptureCandidates candidates;
   candidates.set_resolution_set(ScreenCastResolutionCapabilities());
   candidates.set_frame_rate_set(
@@ -386,7 +398,8 @@ VideoCaptureSettings SelectSettingsVideoContentCapture(
   }
 
   DCHECK(!candidates.IsEmpty());
-  return SelectResultFromCandidates(candidates, constraints.Basic());
+  return SelectResultFromCandidates(candidates, constraints.Basic(),
+                                    stream_source);
 }
 
 }  // namespace content
