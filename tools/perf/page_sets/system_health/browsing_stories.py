@@ -68,6 +68,9 @@ class _ArticleBrowsingStory(_BrowsingStory):
   ITEMS_TO_VISIT = 4
   MAIN_PAGE_SCROLL_REPEAT = 0
   ABSTRACT_STORY = True
+  # Some devices take long to load news webpages crbug.com/713036. Set to None
+  # because we cannot access DEFAULT_WEB_CONTENTS_TIMEOUT from this file.
+  COMPLETE_STATE_WAIT_TIMEOUT = None
 
   def _DidLoadDocument(self, action_runner):
     for i in xrange(self.ITEMS_TO_VISIT):
@@ -77,7 +80,11 @@ class _ArticleBrowsingStory(_BrowsingStory):
       self._ScrollMainPage(action_runner)
 
   def _ReadNextArticle(self, action_runner):
-    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    if self.COMPLETE_STATE_WAIT_TIMEOUT is not None:
+      action_runner.tab.WaitForDocumentReadyStateToBeComplete(
+          timeout=self.COMPLETE_STATE_WAIT_TIMEOUT)
+    else:
+      action_runner.tab.WaitForDocumentReadyStateToBeComplete()
     action_runner.Wait(self.ITEM_READ_TIME_IN_SECONDS/2.0)
     action_runner.RepeatableBrowserDrivenScroll(
         repeat_count=self.ITEM_SCROLL_REPEAT)
@@ -570,7 +577,6 @@ class BrowseTOIMobileStory(_ArticleBrowsingStory):
   ITEM_SELECTOR = '.dummy-img'
 
 
-@decorators.Disabled('android')  # crbug.com/713036.
 class BrowseGloboMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:news:globo'
   URL = 'http://www.globo.com'
@@ -579,6 +585,7 @@ class BrowseGloboMobileStory(_ArticleBrowsingStory):
 
   ITEMS_TO_VISIT = 4
   ITEM_SELECTOR = '.hui-premium__title'
+  COMPLETE_STATE_WAIT_TIMEOUT = 150
 
 
 class BrowseCricBuzzMobileStory(_ArticleBrowsingStory):
