@@ -1392,7 +1392,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     const tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
     const uint16_t eob = p->eobs[block];
 
-    unsigned int tmp;
+    int64_t tmp;
 
     assert(cpi != NULL);
     assert(tx_size_wide_log2[0] == tx_size_high_log2[0]);
@@ -1430,7 +1430,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         tmp = ROUND_POWER_OF_TWO(tmp, (xd->bd - 8) * 2);
 #endif  // CONFIG_HIGHBITDEPTH
     }
-    *out_sse = (int64_t)tmp * 16;
+    *out_sse = tmp * 16;
 
     if (eob) {
       if (output_status == OUTPUT_HAS_DECODED_PIXELS) {
