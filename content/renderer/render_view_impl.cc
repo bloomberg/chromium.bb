@@ -726,7 +726,7 @@ void RenderViewImpl::Initialize(
     OnEnableAutoResize(params.min_size, params.max_size);
   }
 
-  new IdleUserDetector(this);
+  idle_user_detector_.reset(new IdleUserDetector(this));
 
   GetContentClient()->renderer()->RenderViewCreated(this);
 
@@ -766,6 +766,7 @@ RenderViewImpl::~RenderViewImpl() {
     DCHECK_NE(this, it->second) << "Failed to call Close?";
 #endif
 
+  idle_user_detector_.reset();
   for (auto& observer : observers_)
     observer.RenderViewGone();
   for (auto& observer : observers_)
@@ -2660,21 +2661,29 @@ void RenderViewImpl::OnDiscardInputEvent(
     const std::vector<const blink::WebInputEvent*>& coalesced_events,
     const ui::LatencyInfo& latency_info,
     InputEventDispatchType dispatch_type) {
-  if (!input_event || (dispatch_type != DISPATCH_TYPE_BLOCKING &&
-                       dispatch_type != DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN)) {
+  if (!input_event || dispatch_type == DISPATCH_TYPE_NON_BLOCKING) {
     return;
-  }
-
-  if (dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) {
-    NotifyInputEventHandled(input_event->GetType(),
-                            blink::WebInputEventResult::kNotHandled,
-                            INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   }
 
   std::unique_ptr<InputEventAck> ack(new InputEventAck(
       InputEventAckSource::MAIN_THREAD, input_event->GetType(),
       INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
   OnInputEventAck(std::move(ack));
+}
+
+InputEventAckState RenderViewImpl::HandleInputEvent(
+    const blink::WebCoalescedInputEvent& input_event,
+    const ui::LatencyInfo& latency_info,
+    InputEventDispatchType dispatch_type) {
+  if (is_swapped_out_) {
+    OnDiscardInputEvent(&input_event.Event(),
+                        input_event.GetCoalescedEventsPointers(), latency_info,
+                        dispatch_type);
+    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  }
+  idle_user_detector_->ActivityDetected();
+  return RenderWidget::HandleInputEvent(input_event, latency_info,
+                                        dispatch_type);
 }
 
 }  // namespace content

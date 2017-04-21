@@ -22,6 +22,7 @@ struct DidOverscrollParams;
 
 namespace content {
 class InputHandlerManager;
+class MainThreadEventQueue;
 
 class CONTENT_EXPORT InputHandlerManagerClient {
  public:
@@ -29,15 +30,11 @@ class CONTENT_EXPORT InputHandlerManagerClient {
 
   // Called from the main thread.
   virtual void SetInputHandlerManager(InputHandlerManager*) = 0;
-  virtual void NotifyInputEventHandled(int routing_id,
-                                       blink::WebInputEvent::Type type,
-                                       blink::WebInputEventResult result,
-                                       InputEventAckState ack_result) = 0;
-  virtual void ProcessRafAlignedInput(int routing_id,
-                                      base::TimeTicks frame_time) = 0;
 
   // Called from the compositor thread.
-  virtual void RegisterRoutingID(int routing_id) = 0;
+  virtual void RegisterRoutingID(
+      int routing_id,
+      const scoped_refptr<MainThreadEventQueue>& input_event_queue) = 0;
   virtual void UnregisterRoutingID(int routing_id) = 0;
   virtual void RegisterAssociatedRenderFrameRoutingID(
       int render_frame_routing_id,

@@ -28,6 +28,8 @@ class IdleUserDetector : public RenderViewObserver {
   IdleUserDetector(RenderView* render_view);
   ~IdleUserDetector() override;
 
+  void ActivityDetected();
+
  private:
   // RenderViewObserver implementation:
   bool OnMessageReceived(const IPC::Message& message) override;

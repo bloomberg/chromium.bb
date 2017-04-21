@@ -53,6 +53,7 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/input_handler_manager.h"
+#include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -400,6 +401,9 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_internal_) << "Leaking our WebWidget!";
+
+  if (input_event_queue_)
+    input_event_queue_->ClearClient();
 
   // If we are swapped out, we have released already.
   if (!is_swapped_out_ && RenderProcess::current())
@@ -818,6 +822,22 @@ void RenderWidget::OnHandleInputEvent(
       latency_info, dispatch_type);
 }
 
+InputEventAckState RenderWidget::HandleInputEvent(
+    const blink::WebCoalescedInputEvent& input_event,
+    const ui::LatencyInfo& latency_info,
+    InputEventDispatchType dispatch_type) {
+  return input_handler_->HandleInputEvent(input_event, latency_info,
+                                          dispatch_type);
+}
+
+void RenderWidget::SendInputEventAck(blink::WebInputEvent::Type type,
+                                     InputEventAckState ack_result,
+                                     uint32_t touch_event_id) {
+  InputEventAck ack(InputEventAckSource::MAIN_THREAD, type, ack_result,
+                    touch_event_id);
+  Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
+}
+
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
   if (GetWebWidget())
     GetWebWidget()->SetCursorVisibilityState(is_visible);
@@ -872,13 +892,10 @@ void RenderWidget::RecordWheelAndTouchScrollingCount(
 }
 
 void RenderWidget::BeginMainFrame(double frame_time_sec) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  // render_thread may be NULL in tests.
-  InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : NULL;
-  if (input_handler_manager)
-    input_handler_manager->ProcessRafAlignedInputOnMainThread(
-        routing_id_, ui::EventTimeStampFromSeconds(frame_time_sec));
+  if (input_event_queue_) {
+    input_event_queue_->DispatchRafAlignedInput(
+        ui::EventTimeStampFromSeconds(frame_time_sec));
+  }
 
   GetWebWidget()->BeginFrame(frame_time_sec);
 }
@@ -1043,19 +1060,6 @@ void RenderWidget::OnInputEventAck(
     std::unique_ptr<InputEventAck> input_event_ack) {
   SendOrCrash(
       new InputHostMsg_HandleInputEvent_ACK(routing_id_, *input_event_ack));
-}
-
-void RenderWidget::NotifyInputEventHandled(
-    blink::WebInputEvent::Type handled_type,
-    blink::WebInputEventResult result,
-    InputEventAckState ack_result) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : NULL;
-  if (input_handler_manager) {
-    input_handler_manager->NotifyInputEventHandledOnMainThread(
-        routing_id_, handled_type, result, ack_result);
-  }
 }
 
 void RenderWidget::SetInputHandler(RenderWidgetInputHandler* input_handler) {
@@ -1321,8 +1325,11 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   InputHandlerManager* input_handler_manager =
       render_thread ? render_thread->input_handler_manager() : NULL;
   if (input_handler_manager) {
+    input_event_queue_ = new MainThreadEventQueue(
+        this, render_thread->GetRendererScheduler()->CompositorTaskRunner(),
+        render_thread->GetRendererScheduler());
     input_handler_manager->AddInputHandler(
-        routing_id_, compositor()->GetInputHandler(),
+        routing_id_, compositor()->GetInputHandler(), input_event_queue_,
         weak_ptr_factory_.GetWeakPtr(),
         compositor_deps_->IsScrollAnimatorEnabled());
     has_added_input_handler_ = true;

@@ -57,13 +57,9 @@ InputEventFilter::InputEventFilter(
       main_listener_(main_listener),
       sender_(NULL),
       target_task_runner_(target_task_runner),
-      input_handler_manager_(NULL),
-      renderer_scheduler_(NULL) {
+      input_handler_manager_(NULL) {
   DCHECK(target_task_runner_.get());
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
-  renderer_scheduler_ =
-      render_thread_impl ? render_thread_impl->GetRendererScheduler() : nullptr;
 }
 
 void InputEventFilter::SetInputHandlerManager(
@@ -72,11 +68,12 @@ void InputEventFilter::SetInputHandlerManager(
   input_handler_manager_ = input_handler_manager;
 }
 
-void InputEventFilter::RegisterRoutingID(int routing_id) {
+void InputEventFilter::RegisterRoutingID(
+    int routing_id,
+    const scoped_refptr<MainThreadEventQueue>& input_event_queue) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
-  route_queues_[routing_id] = new MainThreadEventQueue(
-      routing_id, this, main_task_runner_, renderer_scheduler_);
+  route_queues_[routing_id] = input_event_queue;
 }
 
 void InputEventFilter::RegisterAssociatedRenderFrameRoutingID(
@@ -131,39 +128,6 @@ void InputEventFilter::DispatchNonBlockingEventToMainThread(
                               DISPATCH_TYPE_NON_BLOCKING,
                               INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   }
-}
-
-void InputEventFilter::NotifyInputEventHandled(
-    int routing_id,
-    blink::WebInputEvent::Type type,
-    blink::WebInputEventResult result,
-    InputEventAckState ack_result) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  scoped_refptr<MainThreadEventQueue> queue;
-  {
-    base::AutoLock locked(routes_lock_);
-    RouteQueueMap::iterator iter = route_queues_.find(routing_id);
-    if (iter == route_queues_.end() || !iter->second)
-      return;
-    queue = iter->second;
-  }
-
-  queue->EventHandled(type, result, ack_result);
-}
-
-void InputEventFilter::ProcessRafAlignedInput(int routing_id,
-                                              base::TimeTicks frame_time) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  scoped_refptr<MainThreadEventQueue> queue;
-  {
-    base::AutoLock locked(routes_lock_);
-    RouteQueueMap::iterator iter = route_queues_.find(routing_id);
-    if (iter == route_queues_.end() || !iter->second)
-      return;
-    queue = iter->second;
-  }
-
-  queue->DispatchRafAlignedInput(frame_time);
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
@@ -329,42 +293,6 @@ void InputEventFilter::SendMessageOnIOThread(
   s_send_failure_count_++;
   base::debug::SetCrashKeyValue("input-event-filter-send-failure",
                                 base::IntToString(s_send_failure_count_));
-}
-
-void InputEventFilter::HandleEventOnMainThread(
-    int routing_id,
-    const blink::WebCoalescedInputEvent* event,
-    const ui::LatencyInfo& latency_info,
-    InputEventDispatchType dispatch_type) {
-  TRACE_EVENT_INSTANT0("input", "InputEventFilter::HandlEventOnMainThread",
-                       TRACE_EVENT_SCOPE_THREAD);
-  IPC::Message new_msg = InputMsg_HandleInputEvent(
-      routing_id, &event->Event(), event->GetCoalescedEventsPointers(),
-      latency_info, dispatch_type);
-  main_listener_.Run(new_msg);
-}
-
-void InputEventFilter::SendInputEventAck(int routing_id,
-                                         blink::WebInputEvent::Type type,
-                                         InputEventAckState ack_result,
-                                         uint32_t touch_event_id) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  InputEventAck ack(InputEventAckSource::MAIN_THREAD, type, ack_result,
-                    touch_event_id);
-  SendMessage(std::unique_ptr<IPC::Message>(
-      new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
-}
-
-void InputEventFilter::NeedsMainFrame(int routing_id) {
-  if (target_task_runner_->BelongsToCurrentThread()) {
-    input_handler_manager_->NeedsMainFrame(routing_id);
-    return;
-  }
-
-  CHECK(target_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&InputEventFilter::NeedsMainFrame, this, routing_id)))
-      << "PostTask failed";
 }
 
 }  // namespace content

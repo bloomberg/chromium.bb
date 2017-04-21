@@ -7,6 +7,7 @@
 
 #include <deque>
 #include "base/feature_list.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_event_dispatch_type.h"
@@ -20,22 +21,22 @@
 
 namespace content {
 
+// All interaction with the MainThreadEventQueueClient will occur
+// on the main thread.
 class CONTENT_EXPORT MainThreadEventQueueClient {
  public:
   // Handle an |event| that was previously queued (possibly
-  // coalesced with another event) to the |routing_id|'s
-  // channel. Implementors must implement this callback.
-  virtual void HandleEventOnMainThread(
-      int routing_id,
-      const blink::WebCoalescedInputEvent* event,
-      const ui::LatencyInfo& latency,
+  // coalesced with another event). Implementors must implement
+  // this callback.
+  virtual InputEventAckState HandleInputEvent(
+      const blink::WebCoalescedInputEvent& event,
+      const ui::LatencyInfo& latency_info,
       InputEventDispatchType dispatch_type) = 0;
 
-  virtual void SendInputEventAck(int routing_id,
-                                 blink::WebInputEvent::Type type,
+  virtual void SendInputEventAck(blink::WebInputEvent::Type type,
                                  InputEventAckState ack_result,
                                  uint32_t touch_event_id) = 0;
-  virtual void NeedsMainFrame(int routing_id) = 0;
+  virtual void SetNeedsMainFrame() = 0;
 };
 
 // MainThreadEventQueue implements a queue for events that need to be
@@ -78,7 +79,6 @@ class CONTENT_EXPORT MainThreadEventQueue
     : public base::RefCountedThreadSafe<MainThreadEventQueue> {
  public:
   MainThreadEventQueue(
-      int routing_id,
       MainThreadEventQueueClient* client,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
       blink::scheduler::RendererScheduler* renderer_scheduler);
@@ -92,20 +92,24 @@ class CONTENT_EXPORT MainThreadEventQueue
   void DispatchRafAlignedInput(base::TimeTicks frame_time);
   void QueueClosure(const base::Closure& closure);
 
-  // Call once the main thread has handled an outstanding |type| event
-  // in flight.
-  void EventHandled(blink::WebInputEvent::Type type,
-                    blink::WebInputEventResult result,
-                    InputEventAckState ack_result);
+  void ClearClient();
 
- private:
+ protected:
   friend class base::RefCountedThreadSafe<MainThreadEventQueue>;
-  ~MainThreadEventQueue();
+  virtual ~MainThreadEventQueue();
   void QueueEvent(std::unique_ptr<MainThreadEventQueueTask> event);
   void PostTaskToMainThread();
   void DispatchEvents();
   void DispatchInFlightEvent();
   void PossiblyScheduleMainFrame();
+  void SetNeedsMainFrame();
+  InputEventAckState HandleEventOnMainThread(
+      const blink::WebCoalescedInputEvent& event,
+      const ui::LatencyInfo& latency,
+      InputEventDispatchType dispatch_type);
+  void SendInputEventAck(const blink::WebInputEvent& event,
+                         InputEventAckState ack_result,
+                         uint32_t touch_event_id);
 
   void SendEventToMainThread(const blink::WebInputEvent* event,
                              const ui::LatencyInfo& latency,
@@ -115,9 +119,9 @@ class CONTENT_EXPORT MainThreadEventQueue
   bool IsRafAlignedEvent(
       const std::unique_ptr<MainThreadEventQueueTask>& item) const;
 
+  friend class QueuedWebInputEvent;
   friend class MainThreadEventQueueTest;
   friend class MainThreadEventQueueInitializationTest;
-  int routing_id_;
   MainThreadEventQueueClient* client_;
   std::unique_ptr<MainThreadEventQueueTask> in_flight_event_;
   bool last_touch_start_forced_nonblocking_due_to_fling_;

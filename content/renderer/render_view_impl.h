@@ -93,6 +93,7 @@ class ICCProfile;
 
 namespace content {
 
+class IdleUserDetector;
 class RendererDateTimePicker;
 class RenderViewImplTest;
 class RenderViewObserver;
@@ -380,6 +381,11 @@ class CONTENT_EXPORT RenderViewImpl
   base::WeakPtr<RenderViewImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
+
+  InputEventAckState HandleInputEvent(
+      const blink::WebCoalescedInputEvent& input_event,
+      const ui::LatencyInfo& latency_info,
+      InputEventDispatchType dispatch_type) override;
 
  protected:
   // RenderWidget overrides:
@@ -810,6 +816,8 @@ class CONTENT_EXPORT RenderViewImpl
 
   typedef std::map<cc::SharedBitmapId, cc::SharedBitmap*> BitmapMap;
   BitmapMap disambiguation_bitmaps_;
+
+  std::unique_ptr<IdleUserDetector> idle_user_detector_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

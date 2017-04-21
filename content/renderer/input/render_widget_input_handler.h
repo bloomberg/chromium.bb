@@ -38,7 +38,7 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   virtual ~RenderWidgetInputHandler();
 
   // Handle input events from the input event provider.
-  virtual void HandleInputEvent(
+  virtual InputEventAckState HandleInputEvent(
       const blink::WebCoalescedInputEvent& coalesced_event,
       const ui::LatencyInfo& latency_info,
       InputEventDispatchType dispatch_type);

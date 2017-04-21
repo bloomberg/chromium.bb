@@ -42,8 +42,7 @@ class Sender;
 namespace content {
 
 class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
-                                        public IPC::MessageFilter,
-                                        public MainThreadEventQueueClient {
+                                        public IPC::MessageFilter {
  public:
   InputEventFilter(
       const base::Callback<void(const IPC::Message&)>& main_listener,
@@ -61,7 +60,9 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   // InputHostMsg_HandleInputEvent_ACK.
   //
   void SetInputHandlerManager(InputHandlerManager*) override;
-  void RegisterRoutingID(int routing_id) override;
+  void RegisterRoutingID(
+      int routing_id,
+      const scoped_refptr<MainThreadEventQueue>& input_event_queue) override;
   void UnregisterRoutingID(int routing_id) override;
   void RegisterAssociatedRenderFrameRoutingID(
       int render_frame_routing_id,
@@ -77,33 +78,11 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
       ui::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info) override;
 
-  void NotifyInputEventHandled(int routing_id,
-                               blink::WebInputEvent::Type type,
-                               blink::WebInputEventResult result,
-                               InputEventAckState ack_result) override;
-  void ProcessRafAlignedInput(int routing_id,
-                              base::TimeTicks frame_time) override;
-
   // IPC::MessageFilter methods:
   void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
   bool OnMessageReceived(const IPC::Message& message) override;
-
-  // MainThreadEventQueueClient methods:
-  void HandleEventOnMainThread(int routing_id,
-                               const blink::WebCoalescedInputEvent* event,
-                               const ui::LatencyInfo& latency,
-                               InputEventDispatchType dispatch_type) override;
-  // Send an InputEventAck IPC message. |touch_event_id| represents
-  // the unique event id for the original WebTouchEvent and should
-  // be 0 if otherwise. See WebInputEventTraits::GetUniqueTouchEventId.
-  void SendInputEventAck(int routing_id,
-                         blink::WebInputEvent::Type type,
-                         InputEventAckState ack_result,
-                         uint32_t touch_event_id) override;
-
-  void NeedsMainFrame(int routing_id) override;
 
  private:
   ~InputEventFilter() override;
@@ -149,8 +128,6 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   // Maps RenderFrame routing ids to RenderView routing ids so that
   // events sent down the two routing pipes can be handled synchronously.
   AssociatedRoutes associated_routes_;
-
-  blink::scheduler::RendererScheduler* renderer_scheduler_;
 };
 
 }  // namespace content

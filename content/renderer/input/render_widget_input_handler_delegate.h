@@ -53,13 +53,6 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
   virtual void OnInputEventAck(
       std::unique_ptr<InputEventAck> input_event_ack) = 0;
 
-  // Called when an event with a notify dispatch type
-  // (DISPATCH_TYPE_*_NOTIFY_MAIN) of |handled_type| has been processed
-  // by the main thread.
-  virtual void NotifyInputEventHandled(blink::WebInputEvent::Type handled_type,
-                                       blink::WebInputEventResult result,
-                                       InputEventAckState ack_result) = 0;
-
   // Notifies the delegate of the |input_handler| managing it.
   virtual void SetInputHandler(RenderWidgetInputHandler* input_handler) = 0;
 

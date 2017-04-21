@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input_messages.h"
+#include "content/renderer/render_widget.h"
 
 namespace content {
 
@@ -30,20 +31,18 @@ class QueuedClosure : public MainThreadEventQueueTask {
 
   bool IsWebInputEvent() const override { return false; }
 
-  void Dispatch(int routing_id, MainThreadEventQueueClient*) override {
-    closure_.Run();
-  }
-
-  void EventHandled(int routing_id,
-                    blink::scheduler::RendererScheduler* renderer_scheduler,
-                    MainThreadEventQueueClient* client,
-                    blink::WebInputEvent::Type type,
-                    blink::WebInputEventResult result,
-                    InputEventAckState ack_result) override {}
+  void Dispatch(MainThreadEventQueue*) override { closure_.Run(); }
 
  private:
   base::Closure closure_;
 };
+
+// Time interval at which touchmove events during scroll will be skipped
+// during rAF signal.
+const base::TimeDelta kAsyncTouchMoveInterval =
+    base::TimeDelta::FromMilliseconds(200);
+
+}  // namespace
 
 class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
                             public MainThreadEventQueueTask {
@@ -98,7 +97,7 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
 
   bool IsWebInputEvent() const override { return true; }
 
-  void Dispatch(int routing_id, MainThreadEventQueueClient* client) override {
+  void Dispatch(MainThreadEventQueue* queue) override {
     // Report the coalesced count only for continuous events; otherwise
     // the zero value would be dominated by non-continuous events.
     base::TimeTicks now = base::TimeTicks::Now();
@@ -120,35 +119,10 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
           (now - creationTimestamp()).InMicroseconds(), 1, kTenSeconds, 50);
     }
 
-    InputEventDispatchType dispatch_type = dispatchType();
-    if (!blockingCoalescedEventIds().empty()) {
-      switch (dispatch_type) {
-        case DISPATCH_TYPE_BLOCKING:
-          dispatch_type = DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN;
-          break;
-        case DISPATCH_TYPE_NON_BLOCKING:
-          dispatch_type = DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN;
-          break;
-        default:
-          NOTREACHED();
-      }
-    }
-    client->HandleEventOnMainThread(routing_id, &coalesced_event(),
-                                    latencyInfo(), dispatch_type);
-  }
-
-  void EventHandled(int routing_id,
-                    blink::scheduler::RendererScheduler* renderer_scheduler,
-                    MainThreadEventQueueClient* client,
-                    blink::WebInputEvent::Type type,
-                    blink::WebInputEventResult result,
-                    InputEventAckState ack_result) override {
-    for (const auto id : blockingCoalescedEventIds()) {
-      client->SendInputEventAck(routing_id, type, ack_result, id);
-      if (renderer_scheduler) {
-        renderer_scheduler->DidHandleInputEventOnMainThread(event(), result);
-      }
-    }
+    InputEventAckState ack_result = queue->HandleEventOnMainThread(
+        coalesced_event(), latencyInfo(), dispatchType());
+    for (const auto id : blockingCoalescedEventIds())
+      queue->SendInputEventAck(event(), ack_result, id);
   }
 
   bool originallyCancelable() const { return originally_cancelable_; }
@@ -219,37 +193,16 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   bool originally_cancelable_;
 };
 
-// Time interval at which touchmove events will be skipped during rAF signal.
-const base::TimeDelta kAsyncTouchMoveInterval =
-    base::TimeDelta::FromMilliseconds(200);
-
-bool IsAsyncTouchMove(
-    const std::unique_ptr<MainThreadEventQueueTask>& queued_item) {
-  if (!queued_item->IsWebInputEvent())
-    return false;
-  const QueuedWebInputEvent* event =
-      static_cast<const QueuedWebInputEvent*>(queued_item.get());
-  if (event->event().GetType() != blink::WebInputEvent::kTouchMove)
-    return false;
-  const blink::WebTouchEvent& touch_event =
-      static_cast<const blink::WebTouchEvent&>(event->event());
-  return touch_event.moved_beyond_slop_region && !event->originallyCancelable();
-}
-
-}  // namespace
-
 MainThreadEventQueue::SharedState::SharedState()
     : sent_main_frame_request_(false), sent_post_task_(false) {}
 
 MainThreadEventQueue::SharedState::~SharedState() {}
 
 MainThreadEventQueue::MainThreadEventQueue(
-    int routing_id,
     MainThreadEventQueueClient* client,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     blink::scheduler::RendererScheduler* renderer_scheduler)
-    : routing_id_(routing_id),
-      client_(client),
+    : client_(client),
       last_touch_start_forced_nonblocking_due_to_fling_(false),
       enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
           features::kPassiveEventListenersDueToFling)),
@@ -390,7 +343,7 @@ void MainThreadEventQueue::QueueClosure(const base::Closure& closure) {
 
 void MainThreadEventQueue::DispatchInFlightEvent() {
   if (in_flight_event_) {
-    in_flight_event_->Dispatch(routing_id_, client_);
+    in_flight_event_->Dispatch(this);
     in_flight_event_.reset();
   }
 }
@@ -409,7 +362,7 @@ void MainThreadEventQueue::PossiblyScheduleMainFrame() {
     }
   }
   if (needs_main_frame)
-    client_->NeedsMainFrame(routing_id_);
+    SetNeedsMainFrame();
 }
 
 void MainThreadEventQueue::DispatchEvents() {
@@ -443,13 +396,17 @@ void MainThreadEventQueue::DispatchEvents() {
   PossiblyScheduleMainFrame();
 }
 
-void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
-                                        blink::WebInputEventResult result,
-                                        InputEventAckState ack_result) {
-  if (in_flight_event_) {
-    in_flight_event_->EventHandled(routing_id_, renderer_scheduler_, client_,
-                                   type, result, ack_result);
-  }
+static bool IsAsyncTouchMove(
+    const std::unique_ptr<MainThreadEventQueueTask>& queued_item) {
+  if (!queued_item->IsWebInputEvent())
+    return false;
+  const QueuedWebInputEvent* event =
+      static_cast<const QueuedWebInputEvent*>(queued_item.get());
+  if (event->event().GetType() != blink::WebInputEvent::kTouchMove)
+    return false;
+  const blink::WebTouchEvent& touch_event =
+      static_cast<const blink::WebTouchEvent&>(event->event());
+  return touch_event.moved_beyond_slop_region && !event->originallyCancelable();
 }
 
 void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
@@ -525,7 +482,7 @@ void MainThreadEventQueue::QueueEvent(
   if (needs_post_task)
     PostTaskToMainThread();
   if (needs_main_frame)
-    client_->NeedsMainFrame(routing_id_);
+    SetNeedsMainFrame();
 }
 
 bool MainThreadEventQueue::IsRafAlignedInputDisabled() const {
@@ -547,6 +504,46 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
     default:
       return false;
   }
+}
+
+InputEventAckState MainThreadEventQueue::HandleEventOnMainThread(
+    const blink::WebCoalescedInputEvent& event,
+    const ui::LatencyInfo& latency,
+    InputEventDispatchType dispatch_type) {
+  if (client_)
+    return client_->HandleInputEvent(event, latency, dispatch_type);
+  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+}
+
+void MainThreadEventQueue::SendInputEventAck(const blink::WebInputEvent& event,
+                                             InputEventAckState ack_result,
+                                             uint32_t touch_event_id) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (!client_)
+    return;
+  client_->SendInputEventAck(event.GetType(), ack_result, touch_event_id);
+  if (renderer_scheduler_) {
+    renderer_scheduler_->DidHandleInputEventOnMainThread(
+        event, ack_result == INPUT_EVENT_ACK_STATE_CONSUMED
+                   ? blink::WebInputEventResult::kHandledApplication
+                   : blink::WebInputEventResult::kNotHandled);
+  }
+}
+
+void MainThreadEventQueue::SetNeedsMainFrame() {
+  if (main_task_runner_->BelongsToCurrentThread()) {
+    if (client_)
+      client_->SetNeedsMainFrame();
+    return;
+  }
+
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MainThreadEventQueue::SetNeedsMainFrame, this));
+}
+
+void MainThreadEventQueue::ClearClient() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  client_ = nullptr;
 }
 
 }  // namespace content

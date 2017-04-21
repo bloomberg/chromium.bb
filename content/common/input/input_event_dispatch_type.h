@@ -10,15 +10,9 @@ namespace content {
 enum InputEventDispatchType {
   // Dispatch a blocking event. Sender is waiting on an ACK.
   DISPATCH_TYPE_BLOCKING,
-  // Dispatch a blocking event and notify main thread as well. This type
-  // should only be sent from the compositor to main thread.
-  DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN,
   // Dispatch a non-blocking event. Sender will not receive an ACK.
   DISPATCH_TYPE_NON_BLOCKING,
-  // Dispatch a non-blocking event and notify main thread as well. This type
-  // should only be sent from the compositor to main thread.
-  DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
-  DISPATCH_TYPE_MAX = DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN
+  DISPATCH_TYPE_MAX = DISPATCH_TYPE_NON_BLOCKING
 };
 
 }  // namespace content

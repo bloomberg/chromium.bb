@@ -69,19 +69,20 @@ InputHandlerManager::~InputHandlerManager() {
 void InputHandlerManager::AddInputHandler(
     int routing_id,
     const base::WeakPtr<cc::InputHandler>& input_handler,
+    const scoped_refptr<MainThreadEventQueue>& input_event_queue,
     const base::WeakPtr<RenderWidget>& render_widget,
     bool enable_smooth_scrolling) {
   if (task_runner_->BelongsToCurrentThread()) {
     AddInputHandlerOnCompositorThread(
         routing_id, base::ThreadTaskRunnerHandle::Get(), input_handler,
-        render_widget, enable_smooth_scrolling);
+        input_event_queue, render_widget, enable_smooth_scrolling);
   } else {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&InputHandlerManager::AddInputHandlerOnCompositorThread,
                    base::Unretained(this), routing_id,
                    base::ThreadTaskRunnerHandle::Get(), input_handler,
-                   render_widget, enable_smooth_scrolling));
+                   input_event_queue, render_widget, enable_smooth_scrolling));
   }
 }
 
@@ -89,6 +90,7 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
     int routing_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     const base::WeakPtr<cc::InputHandler>& input_handler,
+    const scoped_refptr<MainThreadEventQueue>& input_event_queue,
     const base::WeakPtr<RenderWidget>& render_widget,
     bool enable_smooth_scrolling) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -107,7 +109,7 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
   std::unique_ptr<InputHandlerWrapper> wrapper(
       new InputHandlerWrapper(this, routing_id, main_task_runner, input_handler,
                               render_widget, enable_smooth_scrolling));
-  client_->RegisterRoutingID(routing_id);
+  client_->RegisterRoutingID(routing_id, input_event_queue);
   if (synchronous_handler_proxy_client_) {
     synchronous_handler_proxy_client_->DidAddSynchronousHandlerProxy(
         routing_id, wrapper->input_handler_proxy());
@@ -154,22 +156,6 @@ void InputHandlerManager::
                                                   render_view_routing_id);
 }
 
-void InputHandlerManager::RegisterRoutingID(int routing_id) {
-  if (task_runner_->BelongsToCurrentThread()) {
-    RegisterRoutingIDOnCompositorThread(routing_id);
-  } else {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&InputHandlerManager::RegisterRoutingIDOnCompositorThread,
-                   base::Unretained(this), routing_id));
-  }
-}
-
-void InputHandlerManager::RegisterRoutingIDOnCompositorThread(int routing_id) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->RegisterRoutingID(routing_id);
-}
-
 void InputHandlerManager::UnregisterRoutingID(int routing_id) {
   if (task_runner_->BelongsToCurrentThread()) {
     UnregisterRoutingIDOnCompositorThread(routing_id);
@@ -211,20 +197,6 @@ void InputHandlerManager::ObserveGestureEventAndResultOnCompositorThread(
   DCHECK(proxy->scroll_elasticity_controller());
   proxy->scroll_elasticity_controller()->ObserveGestureEventAndResult(
       gesture_event, scroll_result);
-}
-
-void InputHandlerManager::NotifyInputEventHandledOnMainThread(
-    int routing_id,
-    blink::WebInputEvent::Type type,
-    blink::WebInputEventResult result,
-    InputEventAckState ack_result) {
-  client_->NotifyInputEventHandled(routing_id, type, result, ack_result);
-}
-
-void InputHandlerManager::ProcessRafAlignedInputOnMainThread(
-    int routing_id,
-    base::TimeTicks frame_time) {
-  client_->ProcessRafAlignedInput(routing_id, frame_time);
 }
 
 void InputHandlerManager::HandleInputEvent(
@@ -299,14 +271,6 @@ void InputHandlerManager::DidStopFlinging(int routing_id) {
 
 void InputHandlerManager::DidAnimateForInput() {
   renderer_scheduler_->DidAnimateForInputOnCompositorThread();
-}
-
-void InputHandlerManager::NeedsMainFrame(int routing_id) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  auto it = input_handlers_.find(routing_id);
-  if (it == input_handlers_.end())
-    return;
-  it->second->NeedsMainFrame();
 }
 
 void InputHandlerManager::DispatchNonBlockingEventToMainThread(

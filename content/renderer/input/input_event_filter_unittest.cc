@@ -27,6 +27,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/mock_renderer_scheduler.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebInputEvent;
@@ -47,6 +48,8 @@ bool ShouldBlockEventStream(const blink::WebInputEvent& event) {
       event,
       base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents));
 }
+
+class MainThreadEventQueueTest;
 
 class InputEventRecorder : public content::InputHandlerManager {
  public:
@@ -100,10 +103,7 @@ class InputEventRecorder : public content::InputHandlerManager {
     }
   }
 
-  void NeedsMainFrame(int routing_id) override {
-    DCHECK_EQ(kTestRoutingID, routing_id);
-    needs_main_frame_ = true;
-  }
+  void NeedsMainFrame() { needs_main_frame_ = true; }
 
  private:
   struct Record {
@@ -121,17 +121,81 @@ class InputEventRecorder : public content::InputHandlerManager {
   std::vector<Record> records_;
 };
 
+class ReceivedEvent;
+class ReceivedMessage;
+
+class ReceivedItem {
+ public:
+  ReceivedItem() {}
+  virtual ~ReceivedItem() {}
+
+  virtual const ReceivedMessage* ItemAsmessage() const {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  virtual const ReceivedEvent* ItemAsEvent() const {
+    NOTREACHED();
+    return nullptr;
+  }
+};
+
+class ReceivedMessage : public ReceivedItem {
+ public:
+  ReceivedMessage(const IPC::Message& message) : message_(message) {}
+
+  ~ReceivedMessage() override {}
+
+  const IPC::Message& message() const { return message_; }
+
+  const ReceivedMessage* ItemAsmessage() const override { return this; }
+
+ private:
+  IPC::Message message_;
+};
+
+class ReceivedEvent : public ReceivedItem {
+ public:
+  ReceivedEvent(const blink::WebCoalescedInputEvent& event,
+                InputEventDispatchType dispatch_type)
+      : event_(event.Event(), event.GetCoalescedEventsPointers()),
+        dispatch_type_(dispatch_type) {}
+
+  ~ReceivedEvent() override {}
+
+  const ReceivedEvent* ItemAsEvent() const override { return this; }
+
+  InputEventDispatchType dispatch_type() const { return dispatch_type_; }
+
+  const blink::WebInputEvent& event() const { return event_.Event(); }
+
+ private:
+  blink::WebCoalescedInputEvent event_;
+  InputEventDispatchType dispatch_type_;
+};
+
 class IPCMessageRecorder : public IPC::Listener {
  public:
   bool OnMessageReceived(const IPC::Message& message) override {
-    messages_.push_back(message);
+    std::unique_ptr<ReceivedItem> item(new ReceivedMessage(message));
+    messages_.push_back(std::move(item));
     return true;
   }
 
   size_t message_count() const { return messages_.size(); }
 
-  const IPC::Message& message_at(size_t i) const {
-    return messages_[i];
+  const ReceivedMessage& message_at(size_t i) const {
+    return *(messages_[i]->ItemAsmessage());
+  }
+
+  const ReceivedEvent& event_at(size_t i) const {
+    return *(messages_[i]->ItemAsEvent());
+  }
+
+  void AppendEvent(const blink::WebCoalescedInputEvent& event,
+                   InputEventDispatchType dispatch_type) {
+    std::unique_ptr<ReceivedItem> item(new ReceivedEvent(event, dispatch_type));
+    messages_.push_back(std::move(item));
   }
 
   void Clear() {
@@ -139,12 +203,13 @@ class IPCMessageRecorder : public IPC::Listener {
   }
 
  private:
-  std::vector<IPC::Message> messages_;
+  std::vector<std::unique_ptr<ReceivedItem>> messages_;
 };
 
 }  // namespace
 
-class InputEventFilterTest : public testing::Test {
+class InputEventFilterTest : public testing::Test,
+                             public MainThreadEventQueueClient {
  public:
   InputEventFilterTest()
       : main_task_runner_(new base::TestSimpleTaskRunner()) {}
@@ -171,7 +236,7 @@ class InputEventFilterTest : public testing::Test {
       main_task_runner_->RunUntilIdle();
       frame_time_ += kFrameInterval;
       event_recorder_->reset_needs_main_frame();
-      filter_->ProcessRafAlignedInput(kTestRoutingID, frame_time_);
+      input_event_queue_->DispatchRafAlignedInput(frame_time_);
 
       // Run queued io thread tasks.
       base::RunLoop().RunUntilIdle();
@@ -193,6 +258,26 @@ class InputEventFilterTest : public testing::Test {
     AddMessagesToFilter(messages);
   }
 
+  void RegisterRoute() {
+    input_event_queue_ =
+        new MainThreadEventQueue(this, main_task_runner_, &renderer_scheduler_);
+    filter_->RegisterRoutingID(kTestRoutingID, input_event_queue_);
+  }
+
+  InputEventAckState HandleInputEvent(
+      const blink::WebCoalescedInputEvent& event,
+      const ui::LatencyInfo& latency,
+      InputEventDispatchType dispatch_type) override {
+    message_recorder_.AppendEvent(event, dispatch_type);
+    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  }
+
+  void SendInputEventAck(blink::WebInputEvent::Type type,
+                         InputEventAckState ack_result,
+                         uint32_t touch_event_id) override {}
+
+  void SetNeedsMainFrame() override { event_recorder_->NeedsMainFrame(); }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
@@ -204,6 +289,9 @@ class InputEventFilterTest : public testing::Test {
   IPCMessageRecorder message_recorder_;
 
   scoped_refptr<InputEventFilter> filter_;
+
+  blink::scheduler::MockRendererScheduler renderer_scheduler_;
+  scoped_refptr<MainThreadEventQueue> input_event_queue_;
 
   // Used to record WebInputEvents delivered to the handler.
   std::unique_ptr<InputEventRecorder> event_recorder_;
@@ -224,7 +312,7 @@ TEST_F(InputEventFilterTest, Basic) {
   EXPECT_EQ(0U, event_recorder_->record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
 
-  filter_->RegisterRoutingID(kTestRoutingID);
+  RegisterRoute();
 
   AddEventsToFilter(kEvents, arraysize(kEvents));
   ASSERT_EQ(arraysize(kEvents), ipc_sink_.message_count());
@@ -259,15 +347,9 @@ TEST_F(InputEventFilterTest, Basic) {
   EXPECT_EQ(1u, message_recorder_.message_count());
 
   {
-    const IPC::Message& message = message_recorder_.message_at(0);
-
-    ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    InputMsg_HandleInputEvent::Param params;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = std::get<0>(params);
-
-    EXPECT_EQ(kEvents[2].size(), event->size());
-    EXPECT_TRUE(memcmp(&kEvents[2], event, event->size()) == 0);
+    const WebInputEvent& event = message_recorder_.event_at(0).event();
+    EXPECT_EQ(kEvents[2].size(), event.size());
+    EXPECT_TRUE(memcmp(&kEvents[2], &event, event.size()) == 0);
   }
 
   // Now reset everything, and test that DidHandleInputEvent is called.
@@ -300,7 +382,7 @@ TEST_F(InputEventFilterTest, Basic) {
 }
 
 TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
-  filter_->RegisterRoutingID(kTestRoutingID);
+  RegisterRoute();
   event_recorder_->set_send_to_widget(true);
 
   WebMouseEvent mouse_down =
@@ -351,9 +433,15 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
   // We should have sent all messages back to the main thread and preserved
   // their relative order.
   ASSERT_EQ(message_recorder_.message_count(), messages.size());
-  for (size_t i = 0; i < messages.size(); ++i) {
-    EXPECT_EQ(message_recorder_.message_at(i).type(), messages[i].type()) << i;
+  EXPECT_EQ(WebMouseEvent::kMouseDown,
+            message_recorder_.event_at(0).event().GetType());
+  for (size_t i = 1; i < messages.size() - 1; ++i) {
+    EXPECT_EQ(message_recorder_.message_at(i).message().type(),
+              messages[i].type())
+        << i;
   }
+  EXPECT_EQ(WebMouseEvent::kMouseUp,
+            message_recorder_.event_at(messages.size() - 1).event().GetType());
 }
 
 TEST_F(InputEventFilterTest, NonBlockingWheel) {
@@ -364,7 +452,7 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
       SyntheticWebMouseWheelEventBuilder::Build(30, 30, 0, 53, 1, false),
   };
 
-  filter_->RegisterRoutingID(kTestRoutingID);
+  RegisterRoute();
   event_recorder_->set_send_to_widget(true);
   event_recorder_->set_passive(true);
 
@@ -377,38 +465,32 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
 
   // First two messages should be identical.
   for (size_t i = 0; i < 2; ++i) {
-    const IPC::Message& message = message_recorder_.message_at(i);
+    const ReceivedEvent& message = message_recorder_.event_at(i);
 
-    ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    InputMsg_HandleInputEvent::Param params;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = std::get<0>(params);
-    InputEventDispatchType dispatch_type = std::get<3>(params);
+    const WebInputEvent& event = message.event();
+    InputEventDispatchType dispatch_type = message.dispatch_type();
 
-    EXPECT_EQ(kEvents[i].size(), event->size());
+    EXPECT_EQ(kEvents[i].size(), event.size());
     kEvents[i].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
-    EXPECT_TRUE(memcmp(&kEvents[i], event, event->size()) == 0);
+    EXPECT_TRUE(memcmp(&kEvents[i], &event, event.size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 
   // Third message is coalesced.
   {
-    const IPC::Message& message = message_recorder_.message_at(2);
+    const ReceivedEvent& message = message_recorder_.event_at(2);
 
-    ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    InputMsg_HandleInputEvent::Param params;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebMouseWheelEvent* event =
-        static_cast<const WebMouseWheelEvent*>(std::get<0>(params));
-    InputEventDispatchType dispatch_type = std::get<3>(params);
+    const WebMouseWheelEvent& event =
+        static_cast<const WebMouseWheelEvent&>(message.event());
+    InputEventDispatchType dispatch_type = message.dispatch_type();
 
     kEvents[2].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
-    EXPECT_EQ(kEvents[2].size(), event->size());
-    EXPECT_EQ(kEvents[2].delta_x + kEvents[3].delta_x, event->delta_x);
-    EXPECT_EQ(kEvents[2].delta_y + kEvents[3].delta_y, event->delta_y);
+    EXPECT_EQ(kEvents[2].size(), event.size());
+    EXPECT_EQ(kEvents[2].delta_x + kEvents[3].delta_x, event.delta_x);
+    EXPECT_EQ(kEvents[2].delta_y + kEvents[3].delta_y, event.delta_y);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
@@ -425,7 +507,7 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
   kEvents[3].PressPoint(10, 10);
   kEvents[3].MovePoint(0, 35, 35);
 
-  filter_->RegisterRoutingID(kTestRoutingID);
+  RegisterRoute();
   event_recorder_->set_send_to_widget(true);
   event_recorder_->set_passive(true);
 
@@ -438,37 +520,31 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
 
   // First two messages should be identical.
   for (size_t i = 0; i < 2; ++i) {
-    const IPC::Message& message = message_recorder_.message_at(i);
+    const ReceivedEvent& message = message_recorder_.event_at(i);
 
-    ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    InputMsg_HandleInputEvent::Param params;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = std::get<0>(params);
-    InputEventDispatchType dispatch_type = std::get<3>(params);
+    const WebInputEvent& event = message.event();
+    InputEventDispatchType dispatch_type = message.dispatch_type();
 
-    EXPECT_EQ(kEvents[i].size(), event->size());
+    EXPECT_EQ(kEvents[i].size(), event.size());
     kEvents[i].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
-    EXPECT_TRUE(memcmp(&kEvents[i], event, event->size()) == 0);
+    EXPECT_TRUE(memcmp(&kEvents[i], &event, event.size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 
   // Third message is coalesced.
   {
-    const IPC::Message& message = message_recorder_.message_at(2);
+    const ReceivedEvent& message = message_recorder_.event_at(2);
 
-    ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    InputMsg_HandleInputEvent::Param params;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebTouchEvent* event =
-        static_cast<const WebTouchEvent*>(std::get<0>(params));
-    InputEventDispatchType dispatch_type = std::get<3>(params);
+    const WebTouchEvent& event =
+        static_cast<const WebTouchEvent&>(message.event());
+    InputEventDispatchType dispatch_type = message.dispatch_type();
 
-    EXPECT_EQ(kEvents[3].size(), event->size());
+    EXPECT_EQ(kEvents[3].size(), event.size());
     EXPECT_EQ(1u, kEvents[3].touches_length);
-    EXPECT_EQ(kEvents[3].touches[0].position.x, event->touches[0].position.x);
-    EXPECT_EQ(kEvents[3].touches[0].position.y, event->touches[0].position.y);
+    EXPECT_EQ(kEvents[3].touches[0].position.x, event.touches[0].position.x);
+    EXPECT_EQ(kEvents[3].touches[0].position.y, event.touches[0].position.y);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
@@ -482,7 +558,7 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
   SyntheticWebTouchEvent kBlockingEvents[1];
   kBlockingEvents[0].PressPoint(10, 10);
 
-  filter_->RegisterRoutingID(kTestRoutingID);
+  RegisterRoute();
   event_recorder_->set_send_to_widget(true);
   event_recorder_->set_passive(true);
   AddEventsToFilter(kEvents, arraysize(kEvents));
@@ -496,47 +572,38 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   {
-    const IPC::Message& message = message_recorder_.message_at(0);
-    ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    InputMsg_HandleInputEvent::Param params;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = std::get<0>(params);
-    InputEventDispatchType dispatch_type = std::get<3>(params);
+    const ReceivedEvent& message = message_recorder_.event_at(0);
+    const WebInputEvent& event = message.event();
+    InputEventDispatchType dispatch_type = message.dispatch_type();
 
-    EXPECT_EQ(kEvents[0].size(), event->size());
+    EXPECT_EQ(kEvents[0].size(), event.size());
     kEvents[0].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
-    EXPECT_TRUE(memcmp(&kEvents[0], event, event->size()) == 0);
+    EXPECT_TRUE(memcmp(&kEvents[0], &event, event.size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 
   {
-    const IPC::Message& message = message_recorder_.message_at(1);
-    ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    InputMsg_HandleInputEvent::Param params;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = std::get<0>(params);
-    InputEventDispatchType dispatch_type = std::get<3>(params);
+    const ReceivedEvent& message = message_recorder_.event_at(1);
+    const WebInputEvent& event = message.event();
+    InputEventDispatchType dispatch_type = message.dispatch_type();
 
-    EXPECT_EQ(kEvents[1].size(), event->size());
+    EXPECT_EQ(kEvents[1].size(), event.size());
     kEvents[1].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
-    EXPECT_TRUE(memcmp(&kEvents[1], event, event->size()) == 0);
+    EXPECT_TRUE(memcmp(&kEvents[1], &event, event.size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 
   {
-    const IPC::Message& message = message_recorder_.message_at(2);
-    ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    InputMsg_HandleInputEvent::Param params;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = std::get<0>(params);
-    InputEventDispatchType dispatch_type = std::get<3>(params);
+    const ReceivedEvent& message = message_recorder_.event_at(2);
+    const WebInputEvent& event = message.event();
+    InputEventDispatchType dispatch_type = message.dispatch_type();
 
-    EXPECT_EQ(kBlockingEvents[0].size(), event->size());
-    EXPECT_TRUE(memcmp(&kBlockingEvents[0], event, event->size()) == 0);
+    EXPECT_EQ(kBlockingEvents[0].size(), event.size());
+    EXPECT_TRUE(memcmp(&kBlockingEvents[0], &event, event.size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_BLOCKING, dispatch_type);
   }
 }
