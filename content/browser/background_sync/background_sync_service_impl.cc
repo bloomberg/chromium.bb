@@ -146,13 +146,12 @@ void BackgroundSyncServiceImpl::OnRegisterResult(
 void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
     const GetRegistrationsCallback& callback,
     BackgroundSyncStatus status,
-    std::unique_ptr<std::vector<std::unique_ptr<BackgroundSyncRegistration>>>
+    std::vector<std::unique_ptr<BackgroundSyncRegistration>>
         result_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(result_registrations);
 
   std::vector<blink::mojom::SyncRegistrationPtr> mojo_registrations;
-  for (const auto& registration : *result_registrations)
+  for (const auto& registration : result_registrations)
     mojo_registrations.push_back(ToMojoRegistration(*registration));
 
   callback.Run(static_cast<blink::mojom::BackgroundSyncError>(status),

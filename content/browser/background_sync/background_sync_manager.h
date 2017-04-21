@@ -58,10 +58,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   using StatusAndRegistrationCallback =
       base::Callback<void(BackgroundSyncStatus,
                           std::unique_ptr<BackgroundSyncRegistration>)>;
-  using StatusAndRegistrationsCallback =
-      base::Callback<void(BackgroundSyncStatus,
-                          std::unique_ptr<std::vector<
-                              std::unique_ptr<BackgroundSyncRegistration>>>)>;
+  using StatusAndRegistrationsCallback = base::Callback<void(
+      BackgroundSyncStatus,
+      std::vector<std::unique_ptr<BackgroundSyncRegistration>>)>;
 
   static std::unique_ptr<BackgroundSyncManager> Create(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);

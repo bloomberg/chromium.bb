@@ -216,8 +216,8 @@ void BackgroundSyncManager::GetRegistrations(
         FROM_HERE,
         base::Bind(
             callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-            base::Passed(base::MakeUnique<std::vector<
-                             std::unique_ptr<BackgroundSyncRegistration>>>())));
+            base::Passed(
+                std::vector<std::unique_ptr<BackgroundSyncRegistration>>())));
     return;
   }
 
@@ -314,13 +314,11 @@ void BackgroundSyncManager::InitImpl(const base::Closure& callback) {
     return;
   }
 
-  std::unique_ptr<BackgroundSyncParameters> parameters_copy(
-      new BackgroundSyncParameters(*parameters_));
-
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&GetControllerParameters, service_worker_context_,
-                 base::Passed(std::move(parameters_copy))),
+                 base::Passed(
+                     base::MakeUnique<BackgroundSyncParameters>(*parameters_))),
       base::Bind(&BackgroundSyncManager::InitDidGetControllerParameters,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -671,9 +669,8 @@ void BackgroundSyncManager::RegisterDidStore(
                   "failure.";
     BackgroundSyncMetrics::CountRegisterFailure(
         BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    DisableAndClearManager(base::Bind(
-        callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-        base::Passed(std::unique_ptr<BackgroundSyncRegistration>())));
+    DisableAndClearManager(
+        base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR, nullptr));
     return;
   }
 
@@ -788,8 +785,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     const StatusAndRegistrationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto out_registrations = base::MakeUnique<
-      std::vector<std::unique_ptr<BackgroundSyncRegistration>>>();
+  std::vector<std::unique_ptr<BackgroundSyncRegistration>> out_registrations;
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -806,7 +802,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     for (const auto& tag_and_registration : registrations.registration_map) {
       const BackgroundSyncRegistration& registration =
           tag_and_registration.second;
-      out_registrations->push_back(
+      out_registrations.push_back(
           base::MakeUnique<BackgroundSyncRegistration>(registration));
     }
   }
