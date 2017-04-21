@@ -108,6 +108,8 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
         boolean tabAlreadyShowing = mTabModelSelector.getCurrentTab() == mTab;
         if (tabAlreadyShowing) onNewTabPageShown();
 
+        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+
         // TODO(twellington): disallow moving the NTP to the other window in Android N+
         //                    multi-window mode.
     }
@@ -159,7 +161,6 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
         // NTPs to remain open after the user leaves them.
         if (getLayoutManager() != null && getLayoutManager().overviewVisible()) return;
 
-        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
         mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
                 BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
     }

@@ -76,7 +76,7 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
         loadUrl(UrlConstants.NTP_URL);
         NewTabPageTestUtils.waitForNtpLoaded(tab);
 
-        validateState(true, true);
+        validateState(true, true, true);
 
         // Close the new tab.
         closeNewTab();
@@ -149,7 +149,7 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
             }
         });
 
-        validateState(false, false);
+        validateState(false, false, true);
 
         // Select the NTP.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -159,13 +159,13 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
             }
         });
 
-        validateState(true, true);
+        validateState(true, false, false);
     }
 
     private void createNewTab(boolean incognito) throws InterruptedException, TimeoutException {
         ChromeTabUtils.fullyLoadUrlInNewTab(
                 getInstrumentation(), getActivity(), UrlConstants.NTP_URL, incognito);
-        validateState(true, true);
+        validateState(true, true, true);
     }
 
     private void closeNewTab() throws InterruptedException, TimeoutException {
@@ -183,24 +183,28 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
 
         mTabModelObserver.mDidCloseTabCallbackHelper.waitForCallback(currentCallCount, 1);
 
-        validateState(false, true);
+        validateState(false, true, true);
     }
 
-    private void validateState(boolean newTabPageSelected, boolean animatesToState)
-            throws InterruptedException, TimeoutException {
+    private void validateState(boolean newTabPageSelected, boolean animatesToState,
+            boolean bottomSheetStateChanging) throws InterruptedException, TimeoutException {
         // Wait for two calls if animating; one is to SHEET_STATE_SCROLLING and the other is to the
         // final state.
-        mBottomSheetObserver.mStateChangedCallbackHelper.waitForCallback(
-                mStateChangeCurrentCalls, animatesToState ? 2 : 1);
+        if (bottomSheetStateChanging) {
+            mBottomSheetObserver.mStateChangedCallbackHelper.waitForCallback(
+                    mStateChangeCurrentCalls, animatesToState ? 2 : 1);
+        }
+
+        int expectedEndState = !bottomSheetStateChanging
+                ? mBottomSheet.getSheetState()
+                : newTabPageSelected ? BottomSheet.SHEET_STATE_HALF : BottomSheet.SHEET_STATE_PEEK;
+
+        assertEquals("Sheet state incorrect", expectedEndState, mBottomSheet.getSheetState());
 
         if (newTabPageSelected) {
-            assertEquals("Sheet should be at half height", BottomSheet.SHEET_STATE_HALF,
-                    mBottomSheet.getSheetState());
             assertFalse(mFadingBackgroundView.isEnabled());
             assertEquals(0f, mFadingBackgroundView.getAlpha());
         } else {
-            assertEquals("Sheet should be peeking", BottomSheet.SHEET_STATE_PEEK,
-                    mBottomSheet.getSheetState());
             assertTrue(mFadingBackgroundView.isEnabled());
         }
 
