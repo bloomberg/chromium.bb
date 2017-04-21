@@ -13,7 +13,6 @@ import android.os.Bundle;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.List;
 
@@ -38,20 +37,17 @@ public class LocationProviderAndroid
 
     @Override
     public void start(boolean enableHighAccuracy) {
-        ThreadUtils.assertOnUiThread();
         unregisterFromLocationUpdates();
         registerForLocationUpdates(enableHighAccuracy);
     }
 
     @Override
     public void stop() {
-        ThreadUtils.assertOnUiThread();
         unregisterFromLocationUpdates();
     }
 
     @Override
     public boolean isRunning() {
-        ThreadUtils.assertOnUiThread();
         return mIsRunning;
     }
 
@@ -61,7 +57,7 @@ public class LocationProviderAndroid
         // possible that we receive callbacks after unregistering. At this point, the
         // native object will no longer exist.
         if (mIsRunning) {
-            LocationProviderAdapter.onNewLocationAvailable(location);
+            updateNewLocation(location);
         }
     }
 
@@ -74,12 +70,7 @@ public class LocationProviderAndroid
     @Override
     public void onProviderDisabled(String provider) {}
 
-    @VisibleForTesting
-    public void setLocationManagerForTesting(LocationManager manager) {
-        mLocationManager = manager;
-    }
-
-    private void createLocationManagerIfNeeded() {
+    private void ensureLocationManagerCreated() {
         if (mLocationManager != null) return;
         mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         if (mLocationManager == null) {
@@ -91,7 +82,7 @@ public class LocationProviderAndroid
      * Registers this object with the location service.
      */
     private void registerForLocationUpdates(boolean enableHighAccuracy) {
-        createLocationManagerIfNeeded();
+        ensureLocationManagerCreated();
         if (usePassiveOneShotLocation()) return;
 
         assert !mIsRunning;
@@ -112,8 +103,8 @@ public class LocationProviderAndroid
             unregisterFromLocationUpdates();
             // Propagate an error to JavaScript, this can happen in case of WebView
             // when the embedding app does not have sufficient permissions.
-            LocationProviderAdapter.newErrorAvailable(
-                    "application does not have sufficient geolocation permissions.");
+            LocationProviderAdapter.newErrorAvailable("application does not have sufficient "
+                    + "geolocation permissions.");
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Caught IllegalArgumentException registering for location updates.");
             unregisterFromLocationUpdates();
@@ -125,26 +116,33 @@ public class LocationProviderAndroid
      * Unregisters this object from the location service.
      */
     private void unregisterFromLocationUpdates() {
-        if (!mIsRunning) return;
-        mIsRunning = false;
-        mLocationManager.removeUpdates(this);
+        if (mIsRunning) {
+            mIsRunning = false;
+            mLocationManager.removeUpdates(this);
+        }
+    }
+
+    private void updateNewLocation(Location location) {
+        LocationProviderAdapter.newLocationAvailable(location.getLatitude(),
+                location.getLongitude(), location.getTime() / 1000.0, location.hasAltitude(),
+                location.getAltitude(), location.hasAccuracy(), location.getAccuracy(),
+                location.hasBearing(), location.getBearing(), location.hasSpeed(),
+                location.getSpeed());
     }
 
     private boolean usePassiveOneShotLocation() {
-        if (!isOnlyPassiveLocationProviderEnabled()) {
-            return false;
-        }
+        if (!isOnlyPassiveLocationProviderEnabled()) return false;
 
         // Do not request a location update if the only available location provider is
         // the passive one. Make use of the last known location and call
-        // onNewLocationAvailable directly.
+        // onLocationChanged directly.
         final Location location =
                 mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
         if (location != null) {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    LocationProviderAdapter.onNewLocationAvailable(location);
+                    updateNewLocation(location);
                 }
             });
         }
@@ -156,7 +154,7 @@ public class LocationProviderAndroid
      * in the system.
      */
     private boolean isOnlyPassiveLocationProviderEnabled() {
-        final List<String> providers = mLocationManager.getProviders(true);
+        List<String> providers = mLocationManager.getProviders(true);
         return providers != null && providers.size() == 1
                 && providers.get(0).equals(LocationManager.PASSIVE_PROVIDER);
     }

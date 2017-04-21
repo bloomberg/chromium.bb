@@ -5,7 +5,6 @@
 import("//build/config/features.gni")
 
 if (is_android) {
-  import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
@@ -128,15 +127,11 @@ if (is_android) {
       "android/java/src/org/chromium/device/geolocation/LocationProviderAdapter.java",
       "android/java/src/org/chromium/device/geolocation/LocationProviderAndroid.java",
       "android/java/src/org/chromium/device/geolocation/LocationProviderFactory.java",
-      "android/java/src/org/chromium/device/geolocation/LocationProviderGmsCore.java",
     ]
 
     deps = [
       ":geolocation",
       ":geolocation_jni_headers",
-      "$google_play_services_package:google_play_services_base_java",
-      "$google_play_services_package:google_play_services_basement_java",
-      "$google_play_services_package:google_play_services_location_java",
       "//base:base_java",
     ]
   }

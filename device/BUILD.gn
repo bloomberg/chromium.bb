@@ -7,7 +7,6 @@ import("//build/config/features.gni")
 import("//testing/test.gni")
 
 if (is_android) {
-  import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
@@ -301,20 +300,14 @@ if (is_android) {
     java_files = [
       "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java",
       "generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
-      "geolocation/android/junit/src/org/chromium/device/geolocation/LocationProviderTest.java",
       "nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java",
     ]
     deps = [
-      "$google_play_services_package:google_play_services_base_java",
-      "$google_play_services_package:google_play_services_basement_java",
-      "$google_play_services_package:google_play_services_location_java",
       "//base:base_java",
       "//base:base_java_test_support",
       "//device/gamepad:java",
       "//device/generic_sensor:java",
       "//device/generic_sensor/public/interfaces:interfaces_java",
-      "//device/geolocation:geolocation_java",
-      "//device/geolocation:geolocation_java_test_support",
       "//device/nfc:mojo_bindings_java",
       "//device/nfc/android:java",
       "//mojo/public/java:bindings_java",
