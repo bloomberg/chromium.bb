@@ -139,11 +139,6 @@ AudioOutputDelegateImpl::~AudioOutputDelegateImpl() {
       base::Passed(&reader_), controller_));
 }
 
-scoped_refptr<media::AudioOutputController>
-AudioOutputDelegateImpl::GetController() const {
-  return controller_;
-}
-
 int AudioOutputDelegateImpl::GetStreamId() const {
   return stream_id_;
 }
@@ -199,6 +194,11 @@ void AudioOutputDelegateImpl::OnError() {
 
   audio_log_->OnError(stream_id_);
   subscriber_->OnStreamError(stream_id_);
+}
+
+media::AudioOutputController* AudioOutputDelegateImpl::GetControllerForTesting()
+    const {
+  return controller_.get();
 }
 
 }  // namespace content

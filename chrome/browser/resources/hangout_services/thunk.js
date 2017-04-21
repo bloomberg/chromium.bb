@@ -144,15 +144,6 @@ chrome.runtime.onMessageExternal.addListener(
         } else if (method == 'getSinks') {
           chrome.webrtcAudioPrivate.getSinks(doSendResponse);
           return true;
-        } else if (method == 'getActiveSink') {
-          chrome.webrtcAudioPrivate.getActiveSink(
-              requestInfo, doSendResponse);
-          return true;
-        } else if (method == 'setActiveSink') {
-          var sinkId = message['sinkId'];
-          chrome.webrtcAudioPrivate.setActiveSink(
-              requestInfo, sinkId, doSendResponse);
-          return true;
         } else if (method == 'getAssociatedSink') {
           var sourceId = message['sourceId'];
           chrome.webrtcAudioPrivate.getAssociatedSink(

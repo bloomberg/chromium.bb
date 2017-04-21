@@ -146,9 +146,6 @@ class MockRenderProcessHost : public RenderProcessHost {
     process_handle = std::move(new_handle);
   }
 
-  void GetAudioOutputControllers(
-      const GetAudioOutputControllersCallback& callback) const override {}
-
   void OverrideBinderForTesting(const std::string& interface_name,
                                 const InterfaceBinder& binder);
 

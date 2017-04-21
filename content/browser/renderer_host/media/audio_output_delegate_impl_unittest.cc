@@ -266,7 +266,7 @@ class AudioOutputDelegateTest : public testing::Test {
           kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
           kDefaultDeviceId);
 
-      delegate.GetController()->StartDiverting(&stream);
+      delegate.GetControllerForTesting()->StartDiverting(&stream);
 
       SyncWithAllThreads();
 
@@ -293,7 +293,7 @@ class AudioOutputDelegateTest : public testing::Test {
           kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
           kDefaultDeviceId);
 
-      delegate.GetController()->StartDiverting(&stream);
+      delegate.GetControllerForTesting()->StartDiverting(&stream);
 
       SyncWithAllThreads();
       delegate.OnPauseStream();
@@ -324,7 +324,7 @@ class AudioOutputDelegateTest : public testing::Test {
           kDefaultDeviceId);
 
       delegate.OnPlayStream();
-      delegate.GetController()->StartDiverting(&stream);
+      delegate.GetControllerForTesting()->StartDiverting(&stream);
 
       SyncWithAllThreads();
 
@@ -351,7 +351,7 @@ class AudioOutputDelegateTest : public testing::Test {
           kRenderProcessId, media::AudioParameters::UnavailableDeviceParams(),
           kDefaultDeviceId);
 
-      delegate.GetController()->OnError(nullptr);
+      delegate.GetControllerForTesting()->OnError(nullptr);
 
       SyncWithAllThreads();
 
@@ -424,7 +424,7 @@ class AudioOutputDelegateTest : public testing::Test {
           kDefaultDeviceId);
       SyncWithAllThreads();
 
-      delegate.GetController()->OnError(nullptr);
+      delegate.GetControllerForTesting()->OnError(nullptr);
     }
     SyncWithAllThreads();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);

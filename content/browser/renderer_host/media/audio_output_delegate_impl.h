@@ -47,7 +47,6 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
   ~AudioOutputDelegateImpl() override;
 
   // AudioOutputDelegate implementation.
-  scoped_refptr<media::AudioOutputController> GetController() const override;
   int GetStreamId() const override;
   void OnPlayStream() override;
   void OnPauseStream() override;
@@ -55,10 +54,12 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
 
  private:
   class ControllerEventHandler;
+  friend class AudioOutputDelegateTest;
 
   void SendCreatedNotification();
   void OnError();
   void UpdatePlayingState(bool playing);
+  media::AudioOutputController* GetControllerForTesting() const;
 
   // This is the event handler which |this| send notifications to.
   EventHandler* subscriber_;

@@ -101,26 +101,6 @@ void AudioOutputController::SetVolume(double volume) {
       &AudioOutputController::DoSetVolume, this, volume));
 }
 
-void AudioOutputController::GetOutputDeviceId(
-    base::Callback<void(const std::string&)> callback) const {
-  CHECK_EQ(AudioManager::Get(), audio_manager_);
-  base::PostTaskAndReplyWithResult(
-      message_loop_.get(),
-      FROM_HERE,
-      base::Bind(&AudioOutputController::DoGetOutputDeviceId, this),
-      callback);
-}
-
-void AudioOutputController::SwitchOutputDevice(
-    const std::string& output_device_id, const base::Closure& callback) {
-  CHECK_EQ(AudioManager::Get(), audio_manager_);
-  message_loop_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&AudioOutputController::DoSwitchOutputDevice, this,
-                 output_device_id),
-      callback);
-}
-
 void AudioOutputController::DoCreate(bool is_for_device_change) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CreateTime");
@@ -261,31 +241,6 @@ void AudioOutputController::DoSetVolume(double volume) {
     default:
       return;
   }
-}
-
-std::string AudioOutputController::DoGetOutputDeviceId() const {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  return output_device_id_;
-}
-
-void AudioOutputController::DoSwitchOutputDevice(
-    const std::string& output_device_id) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-
-  if (state_ == kClosed)
-    return;
-
-  if (output_device_id == output_device_id_)
-    return;
-
-  output_device_id_ = output_device_id;
-
-  // If output is currently diverted, we must not call OnDeviceChange
-  // since it would break the diverted setup. Once diversion is
-  // finished using StopDiverting() the output will switch to the new
-  // device ID.
-  if (stream_ != diverting_to_stream_)
-    OnDeviceChange();
 }
 
 void AudioOutputController::DoReportError() {

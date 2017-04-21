@@ -110,16 +110,6 @@ function getSinks(callback) {
   sendMessage({'method': 'getSinks'}, callback);
 }
 
-// Will call |callback(activeSink)| on completion.
-function getActiveSink(callback) {
-  sendMessage({'method': 'getActiveSink'}, callback);
-}
-
-// Will call |callback()| on completion.
-function setActiveSink(sinkId, callback) {
-  sendMessage({'method': 'setActiveSink', 'sinkId': sinkId}, callback);
-}
-
 // Will call |callback(sinkId)| on completion.
 function getAssociatedSink(sourceId, callback) {
   sendMessage({'method': 'getAssociatedSink', 'sourceId': sourceId},
@@ -149,8 +139,6 @@ var TESTS = [
   testDisabledLoggingWithStopAndUpload,
   testEnabledLoggingButDiscard,
   testGetSinks,
-  testGetActiveSink,
-  testSetActiveSink,
   testGetAssociatedSink,
   testIsExtensionEnabled,
   testSendingToInvalidExtension,
@@ -326,25 +314,6 @@ function testGetSinks(callback) {
   getSinks(function(sinks) {
       // Some bots may have no audio sinks installed, in which case we
       // will get an empty list here.
-      callback('');
-    });
-}
-
-function testGetActiveSink(callback) {
-  getActiveSink(function(sinkId) {
-      if (sinkId == '') {
-        callback('Got empty sink ID.');
-      } else {
-        callback('');
-      }
-    });
-}
-
-function testSetActiveSink(callback) {
-  getSinks(function(sinks) {
-      for (var i = 0; i < sinks.length; ++i) {
-        setActiveSink(sinks[i].sinkId);
-      }
       callback('');
     });
 }

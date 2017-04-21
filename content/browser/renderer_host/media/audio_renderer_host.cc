@@ -84,14 +84,6 @@ AudioRendererHost::~AudioRendererHost() {
   DCHECK(delegates_.empty());
 }
 
-void AudioRendererHost::GetOutputControllers(
-    const RenderProcessHost::GetAudioOutputControllersCallback&
-        callback) const {
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioRendererHost::DoGetOutputControllers, this), callback);
-}
-
 void AudioRendererHost::OnChannelClosing() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   delegates_.clear();
@@ -154,17 +146,6 @@ void AudioRendererHost::DidValidateRenderFrame(int stream_id, bool is_valid) {
   DLOG(WARNING) << "Render frame for stream (id=" << stream_id
                 << ") no longer exists.";
   OnStreamError(stream_id);
-}
-
-RenderProcessHost::AudioOutputControllerList
-AudioRendererHost::DoGetOutputControllers() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  RenderProcessHost::AudioOutputControllerList controllers;
-  for (const auto& delegate : delegates_)
-    controllers.push_back(delegate->GetController());
-
-  return controllers;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -80,11 +80,6 @@ class CONTENT_EXPORT AudioRendererHost
                     MediaStreamManager* media_stream_manager,
                     const std::string& salt);
 
-  // Calls |callback| with the list of AudioOutputControllers for this object.
-  void GetOutputControllers(
-      const RenderProcessHost::GetAudioOutputControllersCallback&
-          callback) const;
-
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
   void OnDestruct() const override;
@@ -179,8 +174,6 @@ class CONTENT_EXPORT AudioRendererHost
   // Updates status of stream for AudioStreamMonitor and updates
   // the number of playing streams.
   void StreamStateChanged(int stream_id, bool is_playing);
-
-  RenderProcessHost::AudioOutputControllerList DoGetOutputControllers() const;
 
   // Send an error message to the renderer.
   void SendErrorMessage(int stream_id);

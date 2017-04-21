@@ -29,10 +29,6 @@ class SharedPersistentMemoryAllocator;
 class TimeDelta;
 }
 
-namespace media {
-class AudioOutputController;
-}
-
 namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
@@ -297,16 +293,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // value.
   // Note: Do not use! Will disappear after PlzNavitate is completed.
   virtual const base::TimeTicks& GetInitTimeForNavigationMetrics() const = 0;
-
-  // Retrieves the list of AudioOutputController objects associated
-  // with this object and passes it to the callback you specify, on
-  // the same thread on which you called the method.
-  typedef std::list<scoped_refptr<media::AudioOutputController>>
-      AudioOutputControllerList;
-  typedef base::Callback<void(const AudioOutputControllerList&)>
-      GetAudioOutputControllersCallback;
-  virtual void GetAudioOutputControllers(
-      const GetAudioOutputControllersCallback& callback) const = 0;
 
   // Returns true if this process currently has backgrounded priority.
   virtual bool IsProcessBackgrounded() const = 0;

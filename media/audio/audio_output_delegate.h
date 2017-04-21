@@ -19,8 +19,6 @@ class CancelableSyncSocket;
 
 namespace media {
 
-class AudioOutputController;
-
 class MEDIA_EXPORT AudioOutputDelegate {
  public:
   // An AudioOutputDelegate must not call back to its EventHandler in its
@@ -44,14 +42,6 @@ class MEDIA_EXPORT AudioOutputDelegate {
   AudioOutputDelegate();
   virtual ~AudioOutputDelegate();
 
-  // TODO(maxmorin): Remove GetController() when crbug.com/647185 is closed.
-  // This function is used to provide control of the audio stream to
-  // WebrtcAudioPrivateGetActiveSinkFunction and others in the webrtc extension
-  // API. Since the controller is shared, this means that it might outlive the
-  // AudioOutputDelegate. In this case, it is still safe to call functions on
-  // the controller, but it will not do anything. The controller is also shared
-  // with AudioStreamMonitor.
-  virtual scoped_refptr<AudioOutputController> GetController() const = 0;
   virtual int GetStreamId() const = 0;
 
   // Stream control:

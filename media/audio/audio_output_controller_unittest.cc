@@ -244,20 +244,6 @@ class AudioOutputControllerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SwitchDevice(bool diverting) {
-    if (!diverting) {
-      // Expect the current stream to close and a new stream to start
-      // playing if not diverting. When diverting, nothing happens
-      // until diverting is stopped.
-      EXPECT_CALL(mock_event_handler_, OnControllerPlaying());
-    }
-
-    controller_->SwitchOutputDevice(
-        AudioDeviceDescription::GetDefaultDeviceName(),
-        base::Bind(&base::DoNothing));
-    base::RunLoop().RunUntilIdle();
-  }
-
   void Close() {
     EXPECT_CALL(mock_sync_reader_, Close());
 
@@ -324,27 +310,10 @@ TEST_F(AudioOutputControllerTest, PlayDeviceChangeClose) {
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, PlaySwitchDeviceClose) {
-  Create(kSamplesPerPacket);
-  Play();
-  SwitchDevice(false);
-  Close();
-}
-
 TEST_F(AudioOutputControllerTest, PlayDivertRevertClose) {
   Create(kSamplesPerPacket);
   Play();
   DivertWhilePlaying();
-  ReadDivertedAudioData();
-  RevertWhilePlaying();
-  Close();
-}
-
-TEST_F(AudioOutputControllerTest, PlayDivertSwitchDeviceRevertClose) {
-  Create(kSamplesPerPacket);
-  Play();
-  DivertWhilePlaying();
-  SwitchDevice(true);
   ReadDivertedAudioData();
   RevertWhilePlaying();
   Close();
@@ -417,22 +386,6 @@ TEST_F(AudioOutputControllerTest, DuplicateDivertInteract) {
 
   StopDuplicating(&mock_sink);
   RevertWhilePlaying();
-  Close();
-}
-
-TEST_F(AudioOutputControllerTest, DuplicateSwitchDeviceInteract) {
-  Create(kSamplesPerPacket);
-  MockAudioPushSink mock_sink;
-  Play();
-  StartDuplicating(&mock_sink);
-  ReadDuplicatedAudioData({&mock_sink});
-
-  // Switching device would trigger a read, and in turn it would trigger a push
-  // to sink.
-  EXPECT_CALL(mock_sink, OnDataCheck(kBufferNonZeroData));
-  SwitchDevice(false);
-
-  StopDuplicating(&mock_sink);
   Close();
 }
 

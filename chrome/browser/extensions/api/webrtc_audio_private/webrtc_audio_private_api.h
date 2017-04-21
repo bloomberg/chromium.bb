@@ -63,19 +63,6 @@ class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
   virtual void OnOutputDeviceDescriptions(
       std::unique_ptr<media::AudioDeviceDescriptions> device_descriptions);
 
-  // Retrieve the list of AudioOutputController objects. Calls back
-  // via OnControllerList.
-  //
-  // Returns false on error, in which case it has set |error_| and the
-  // entire function should fail.
-  //
-  // Call from any thread. Callback will occur on originating thread.
-  bool GetControllerList(const api::webrtc_audio_private::RequestInfo& request);
-
-  // Must override this if you call GetControllerList.
-  virtual void OnControllerList(
-      const content::RenderProcessHost::AudioOutputControllerList& list);
-
   // Calculates a single HMAC. Call from any thread. Calls back via
   // OnHMACCalculated on UI thread.
   //
@@ -130,55 +117,6 @@ class WebrtcAudioPrivateGetSinksFunction : public WebrtcAudioPrivateFunction {
   void OnOutputDeviceDescriptions(
       std::unique_ptr<media::AudioDeviceDescriptions> raw_ids) override;
   void DoneOnUIThread();
-};
-
-class WebrtcAudioPrivateGetActiveSinkFunction
-    : public WebrtcAudioPrivateFunction {
- protected:
-  ~WebrtcAudioPrivateGetActiveSinkFunction() override {}
-
- private:
-  DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.getActiveSink",
-                             WEBRTC_AUDIO_PRIVATE_GET_ACTIVE_SINK);
-
-  bool RunAsync() override;
-  void OnControllerList(
-      const content::RenderProcessHost::AudioOutputControllerList& controllers)
-      override;
-  void OnHMACCalculated(const std::string& hmac) override;
-};
-
-class WebrtcAudioPrivateSetActiveSinkFunction
-    : public WebrtcAudioPrivateFunction {
- public:
-  WebrtcAudioPrivateSetActiveSinkFunction();
-
- protected:
-  ~WebrtcAudioPrivateSetActiveSinkFunction() override;
-
- private:
-  DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.setActiveSink",
-                             WEBRTC_AUDIO_PRIVATE_SET_ACTIVE_SINK);
-
-  bool RunAsync() override;
-  void OnControllerList(
-      const content::RenderProcessHost::AudioOutputControllerList& controllers)
-      override;
-  void OnOutputDeviceDescriptions(
-      std::unique_ptr<media::AudioDeviceDescriptions> device_descriptions)
-      override;
-  void SwitchDone();
-  void DoneOnUIThread();
-
-  api::webrtc_audio_private::RequestInfo request_info_;
-  std::string sink_id_;
-
-  // Filled in by OnControllerList.
-  content::RenderProcessHost::AudioOutputControllerList controllers_;
-
-  // Number of sink IDs we are still waiting for. Can become greater
-  // than 0 in OnControllerList, decreases on every OnSinkId call.
-  size_t num_remaining_sink_ids_;
 };
 
 class WebrtcAudioPrivateGetAssociatedSinkFunction

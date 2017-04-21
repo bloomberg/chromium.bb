@@ -280,9 +280,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
     is_for_guests_only_ = is_for_guests_only;
   }
 
-  void GetAudioOutputControllers(
-      const GetAudioOutputControllersCallback& callback) const override;
-
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
   // Launch the zygote early in the browser startup.
   static void EarlyZygoteLaunch();
