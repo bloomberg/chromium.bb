@@ -165,6 +165,9 @@ const char kDisableDemoMode[] = "disable-demo-mode";
 // If this switch is set, the device cannot be remotely disabled by its owner.
 const char kDisableDeviceDisabling[] = "disable-device-disabling";
 
+// Disable encryption migration for user's cryptohome to run latest Arc.
+const char kDisableEncryptionMigration[] = "disable-encryption-migration";
+
 // Disables notification when device is in end of life status.
 const char kDisableEolNotification[] = "disable-eol-notification";
 

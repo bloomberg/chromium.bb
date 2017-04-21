@@ -2295,7 +2295,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-encryption-migration",
      flag_descriptions::kEnableEncryptionMigrationName,
      flag_descriptions::kEnableEncryptionMigrationDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableEncryptionMigration)},
+     ENABLE_DISABLE_VALUE_TYPE(
+         chromeos::switches::kEnableEncryptionMigration,
+         chromeos::switches::kDisableEncryptionMigration)},
 #endif  // OS_CHROMEOS
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",
