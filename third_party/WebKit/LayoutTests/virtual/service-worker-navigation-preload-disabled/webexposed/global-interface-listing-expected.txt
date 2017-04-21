@@ -8576,8 +8576,8 @@ interface Worker : EventTarget
     setter onmessage
 interface Worklet
     attribute @@toStringTag
+    method addModule
     method constructor
-    method import
 interface WritableStream
     getter locked
     method abort

@@ -20,7 +20,7 @@ function testRunnerGeometryLogging(tests, workletCode) {
         testRunner.dumpAsText();
     }
 
-    paintWorklet.import('resources/paint-logging-green.js').then(function() {
+    paintWorklet.addModule('resources/paint-logging-green.js').then(function() {
         tests.reduce(function(chain, obj) {
             return chain.then(function() {
                 console.log('The worklet should log: \'width: ' + obj.expected.width + ', height: ' + obj.expected.height + '\'');

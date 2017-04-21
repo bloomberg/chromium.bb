@@ -10,7 +10,7 @@ function importPaintWorkletAndTerminateTestAfterAsyncPaint(code) {
     }
 
     var blob = new Blob([code]);
-    paintWorklet.import(URL.createObjectURL(blob)).then(function() {
+    paintWorklet.addModule(URL.createObjectURL(blob)).then(function() {
         runAfterLayoutAndPaint(function() {
             if (window.testRunner) {
                 testRunner.notifyDone();

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>Worklet: import() on a detached iframe</title>
+<title>Worklet: addModule() on a detached iframe</title>
 <body>
 </body>
 <script src="../../resources/testharness.js"></script>
@@ -18,7 +18,7 @@ function with_iframe(url) {
 }
 
 // This test should be in chromium/ because the spec does not define behavior in
-// the case where import() is called from a detached frame.
+// the case where addModule() is called from a detached frame.
 promise_test(t => {
   const kFrameUrl = 'resources/blank.html';
   const kScriptUrl = 'resources/empty-worklet-script.js';
@@ -27,10 +27,10 @@ promise_test(t => {
     .then(frame => {
         let worklet = frame.contentWindow.paintWorklet;
         frame.remove();
-        return worklet.import(kScriptUrl);
+        return worklet.addModule(kScriptUrl);
       })
-    .then(() => assert_unreached('import() should fail.'))
+    .then(() => assert_unreached('addModule() should fail.'))
     .catch(e => assert_equals(e.name, 'InvalidStateError', e));
-}, 'import() on a detached iframe should be rejected.');
+}, 'addModule() on a detached iframe should be rejected.');
 
 </script>

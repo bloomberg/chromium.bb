@@ -30,7 +30,7 @@ class CORE_EXPORT ThreadedWorklet : public Worklet,
   virtual ~ThreadedWorklet() = default;
 
   // Worklet
-  ScriptPromise import(ScriptState*, const String& url) final;
+  ScriptPromise addModule(ScriptState*, const String& url) final;
 
   // WorkletScriptLoader::Client
   void NotifyWorkletScriptLoadingFinished(WorkletScriptLoader*,

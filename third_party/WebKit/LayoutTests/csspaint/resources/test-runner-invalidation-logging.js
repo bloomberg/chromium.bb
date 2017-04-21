@@ -32,7 +32,7 @@ function testRunnerInvalidationLogging(imageType, tests) {
         }
     `;
 
-    paintWorklet.import(URL.createObjectURL(new Blob([workletCode]))).then(function() {
+    paintWorklet.addModule(URL.createObjectURL(new Blob([workletCode]))).then(function() {
         for (let i = 0; i < tests.length; i++) {
             tests[i].paintName = 'paint-' + i;
             registerTest(imageType, tests[i]);

@@ -17,8 +17,8 @@ namespace blink {
 
 MainThreadWorklet::MainThreadWorklet(LocalFrame* frame) : Worklet(frame) {}
 
-ScriptPromise MainThreadWorklet::import(ScriptState* script_state,
-                                        const String& url) {
+ScriptPromise MainThreadWorklet::addModule(ScriptState* script_state,
+                                           const String& url) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(

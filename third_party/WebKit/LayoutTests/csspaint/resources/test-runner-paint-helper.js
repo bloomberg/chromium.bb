@@ -19,7 +19,7 @@ function runner(tests) {
                 console.log('The worklet should not throw an error.');
             }
             var blob = new Blob([obj.script], {type: 'text/javascript'});
-            return paintWorklet.import(URL.createObjectURL(blob));
+            return paintWorklet.addModule(URL.createObjectURL(blob));
         });
     }, Promise.resolve()).then(function() {
         if (window.testRunner) {

@@ -34,8 +34,8 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
   virtual bool IsInitialized() const { return true; }
 
   // Worklet.idl
-  // import() imports ES6 module scripts.
-  virtual ScriptPromise import(ScriptState*, const String& url) = 0;
+  // addModule() imports ES6 module scripts.
+  virtual ScriptPromise addModule(ScriptState*, const String& url) = 0;
 
   // Returns a proxy to WorkletGlobalScope on the context thread.
   virtual WorkletGlobalScopeProxy* GetWorkletGlobalScopeProxy() const = 0;
