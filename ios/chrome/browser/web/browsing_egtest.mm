@@ -441,6 +441,11 @@ id<GREYMatcher> GoButtonMatcher() {
 // does not change the page and that the back button works as expected
 // afterwards.
 - (void)testBrowsingPostToSamePage {
+// TODO(crbug.com/714303): Re-enable this test on devices.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL firstURL = web::test::HttpServer::MakeUrl("http://first");
