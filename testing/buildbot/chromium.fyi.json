@@ -11769,6 +11769,17 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mash_browser_tests"
+      },
+      {
+        "args": [
+          "--override-use-software-gl-for-tests",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.mus.browser_tests.filter"
+        ],
+        "hard_timeout": 60,
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mus_browser_tests"
       }
     ]
   },

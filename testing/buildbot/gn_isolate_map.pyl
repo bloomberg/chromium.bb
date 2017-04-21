@@ -736,6 +736,16 @@
     "label": "//mojo/android:mojo_test_apk",
     "type": "console_test_launcher",
   },
+  "mus_browser_tests": {
+    "label": "//chrome/test:mus_browser_tests",
+    "label_type": "group",
+    "type": "windowed_test_launcher",
+    "executable": "browser_tests",
+    "args": [
+      "--run-in-mus",
+      "--service-overrides=../../chrome/app/mash/mash_service_overrides.json",
+    ],
+  },
   "mus_clipboard_unittests": {
     "label": "//services/ui/clipboard:mus_clipboard_unittests",
     "type": "windowed_test_launcher",
