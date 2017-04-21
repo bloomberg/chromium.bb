@@ -195,7 +195,9 @@ public class PaymentManifestVerifier implements ManifestDownloadCallback, Manife
             formatter.format("%02x", b);
         }
 
-        return builder.toString();
+        String result = builder.toString();
+        formatter.close();
+        return result;
     }
 
     @Override
@@ -212,6 +214,7 @@ public class PaymentManifestVerifier implements ManifestDownloadCallback, Manife
 
         mPendingWebAppManifestsCount = webAppManifestUris.length;
         for (int i = 0; i < webAppManifestUris.length; i++) {
+            if (mAtLeastOneManifestFailedToDownloadOrParse) return;
             assert webAppManifestUris[i] != null;
             mDownloader.downloadWebAppManifest(webAppManifestUris[i], this);
         }

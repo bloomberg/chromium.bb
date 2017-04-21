@@ -9,6 +9,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.Signature;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -202,5 +203,112 @@ public class PaymentManifestVerifierTest {
 
         Mockito.verify(mCallback).onInvalidPaymentApp(mMethodName, mAlicePay);
         Mockito.verify(mCallback).onValidPaymentApp(mMethodName, mBobPay);
+    }
+
+    private class CountingParser extends PaymentManifestParser {
+        public int mParseWebAppManifestCounter;
+    }
+
+    private class CountingDownloader extends PaymentManifestDownloader {
+        public int mDownloadWebAppManifestCounter;
+        public CountingDownloader() {
+            super(null);
+        }
+    }
+
+    /** If a single web app manifest fails to download, all downloads should be aborted. */
+    @Test
+    public void testFirstOfTwoManifestsFailsToDownload() {
+        CountingParser parser = new CountingParser() {
+            @Override
+            public void parsePaymentMethodManifest(String content, ManifestParseCallback callback) {
+                try {
+                    callback.onPaymentMethodManifestParseSuccess(
+                            new URI[] {new URI("https://alicepay.com/app.json"),
+                                    new URI("https://bobpay.com/app.json")});
+                } catch (URISyntaxException e) {
+                    assert false;
+                }
+            }
+
+            @Override
+            public void parseWebAppManifest(String content, ManifestParseCallback callback) {
+                mParseWebAppManifestCounter++;
+                callback.onManifestParseFailure();
+            }
+        };
+
+        CountingDownloader downloader = new CountingDownloader() {
+            @Override
+            public void downloadPaymentMethodManifest(URI uri, ManifestDownloadCallback callback) {
+                callback.onPaymentMethodManifestDownloadSuccess("some content");
+            }
+
+            @Override
+            public void downloadWebAppManifest(URI uri, ManifestDownloadCallback callback) {
+                if (mDownloadWebAppManifestCounter++ == 0) {
+                    callback.onManifestDownloadFailure();
+                } else {
+                    callback.onWebAppManifestDownloadSuccess("some content");
+                }
+            }
+        };
+
+        PaymentManifestVerifier verifier = new PaymentManifestVerifier(
+                mMethodName, mMatchingApps, downloader, parser, mPackageManagerDelegate, mCallback);
+
+        verifier.verify();
+
+        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
+        Assert.assertEquals(1, downloader.mDownloadWebAppManifestCounter);
+        Assert.assertEquals(0, parser.mParseWebAppManifestCounter);
+    }
+
+    /** If a single web app manifest fails to parse, all downloads should be aborted. */
+    @Test
+    public void testFirstOfTwoManifestsFailsToParse() {
+        CountingParser parser = new CountingParser() {
+            @Override
+            public void parsePaymentMethodManifest(String content, ManifestParseCallback callback) {
+                try {
+                    callback.onPaymentMethodManifestParseSuccess(
+                            new URI[] {new URI("https://alicepay.com/app.json"),
+                                    new URI("https://bobpay.com/app.json")});
+                } catch (URISyntaxException e) {
+                    assert false;
+                }
+            }
+
+            @Override
+            public void parseWebAppManifest(String content, ManifestParseCallback callback) {
+                if (mParseWebAppManifestCounter++ == 0) {
+                    callback.onManifestParseFailure();
+                } else {
+                    callback.onWebAppManifestParseSuccess(new WebAppManifestSection[0]);
+                }
+            }
+        };
+
+        CountingDownloader downloader = new CountingDownloader() {
+            @Override
+            public void downloadPaymentMethodManifest(URI uri, ManifestDownloadCallback callback) {
+                callback.onPaymentMethodManifestDownloadSuccess("some content");
+            }
+
+            @Override
+            public void downloadWebAppManifest(URI uri, ManifestDownloadCallback callback) {
+                mDownloadWebAppManifestCounter++;
+                callback.onWebAppManifestDownloadSuccess("some content");
+            }
+        };
+
+        PaymentManifestVerifier verifier = new PaymentManifestVerifier(
+                mMethodName, mMatchingApps, downloader, parser, mPackageManagerDelegate, mCallback);
+
+        verifier.verify();
+
+        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
+        Assert.assertEquals(1, downloader.mDownloadWebAppManifestCounter);
+        Assert.assertEquals(1, parser.mParseWebAppManifestCounter);
     }
 }
