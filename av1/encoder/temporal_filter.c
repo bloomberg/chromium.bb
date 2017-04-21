@@ -258,6 +258,10 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   int distortion;
   unsigned int sse;
   int cost_list[5];
+  int tmp_col_min = x->mv_col_min;
+  int tmp_col_max = x->mv_col_max;
+  int tmp_row_min = x->mv_row_min;
+  int tmp_row_max = x->mv_row_max;
 
   MV best_ref_mv1 = { 0, 0 };
   MV best_ref_mv1_full; /* full-pixel value of best_ref_mv1 */
@@ -278,6 +282,8 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   step_param = mv_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
+  av1_set_mv_search_range(x, &best_ref_mv1);
+
 #if CONFIG_REF_MV
   x->mvcost = x->mv_cost_stack[0];
   x->nmvjointcost = x->nmv_vec_cost[0];
@@ -289,6 +295,11 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   av1_hex_search(x, &best_ref_mv1_full, step_param, sadpb, 1,
                  cond_cost_list(cpi, cost_list), &cpi->fn_ptr[BLOCK_16X16], 0,
                  &best_ref_mv1);
+
+  x->mv_col_min = tmp_col_min;
+  x->mv_col_max = tmp_col_max;
+  x->mv_row_min = tmp_row_min;
+  x->mv_row_max = tmp_row_max;
 
   // Ignore mv costing by sending NULL pointer instead of cost array
   bestsme = cpi->find_fractional_mv_step(

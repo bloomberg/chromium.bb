@@ -53,6 +53,21 @@ void av1_set_mv_search_range(MACROBLOCK *x, const MV *mv) {
   if (x->mv_row_max > row_max) x->mv_row_max = row_max;
 }
 
+void av1_set_subpel_mv_search_range(const MACROBLOCK *x, int *col_min,
+                                    int *col_max, int *row_min, int *row_max,
+                                    const MV *ref_mv) {
+  const int max_mv = MAX_FULL_PEL_VAL * 8;
+  const int minc = AOMMAX(x->mv_col_min * 8, ref_mv->col - max_mv);
+  const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv->col + max_mv);
+  const int minr = AOMMAX(x->mv_row_min * 8, ref_mv->row - max_mv);
+  const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv->row + max_mv);
+
+  *col_min = AOMMAX(MV_LOW + 1, minc);
+  *col_max = AOMMIN(MV_UPP - 1, maxc);
+  *row_min = AOMMAX(MV_LOW + 1, minr);
+  *row_max = AOMMIN(MV_UPP - 1, maxr);
+}
+
 int av1_init_search_range(int size) {
   int sr = 0;
   // Minimum search size no matter what the passed in value.
@@ -277,33 +292,32 @@ static INLINE const uint8_t *upre(const uint8_t *buf, int stride, int r,
     }                                              \
   }
 
-#define SETUP_SUBPEL_SEARCH                                         \
-  const uint8_t *const src_address = x->plane[0].src.buf;           \
-  const int src_stride = x->plane[0].src.stride;                    \
-  const MACROBLOCKD *xd = &x->e_mbd;                                \
-  unsigned int besterr = INT_MAX;                                   \
-  unsigned int sse;                                                 \
-  unsigned int whichdir;                                            \
-  int thismse;                                                      \
-  MV *bestmv = &x->best_mv.as_mv;                                   \
-  const unsigned int halfiters = iters_per_step;                    \
-  const unsigned int quarteriters = iters_per_step;                 \
-  const unsigned int eighthiters = iters_per_step;                  \
-  const int y_stride = xd->plane[0].pre[0].stride;                  \
-  const int offset = bestmv->row * y_stride + bestmv->col;          \
-  const uint8_t *const y = xd->plane[0].pre[0].buf;                 \
-                                                                    \
-  int br = bestmv->row * 8;                                         \
-  int bc = bestmv->col * 8;                                         \
-  int hstep = 4;                                                    \
-  const int minc = AOMMAX(x->mv_col_min * 8, ref_mv->col - MV_MAX); \
-  const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv->col + MV_MAX); \
-  const int minr = AOMMAX(x->mv_row_min * 8, ref_mv->row - MV_MAX); \
-  const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv->row + MV_MAX); \
-  int tr = br;                                                      \
-  int tc = bc;                                                      \
-                                                                    \
-  bestmv->row *= 8;                                                 \
+#define SETUP_SUBPEL_SEARCH                                              \
+  const uint8_t *const src_address = x->plane[0].src.buf;                \
+  const int src_stride = x->plane[0].src.stride;                         \
+  const MACROBLOCKD *xd = &x->e_mbd;                                     \
+  unsigned int besterr = INT_MAX;                                        \
+  unsigned int sse;                                                      \
+  unsigned int whichdir;                                                 \
+  int thismse;                                                           \
+  MV *bestmv = &x->best_mv.as_mv;                                        \
+  const unsigned int halfiters = iters_per_step;                         \
+  const unsigned int quarteriters = iters_per_step;                      \
+  const unsigned int eighthiters = iters_per_step;                       \
+  const int y_stride = xd->plane[0].pre[0].stride;                       \
+  const int offset = bestmv->row * y_stride + bestmv->col;               \
+  const uint8_t *const y = xd->plane[0].pre[0].buf;                      \
+                                                                         \
+  int br = bestmv->row * 8;                                              \
+  int bc = bestmv->col * 8;                                              \
+  int hstep = 4;                                                         \
+  int minc, maxc, minr, maxr;                                            \
+  int tr = br;                                                           \
+  int tc = bc;                                                           \
+                                                                         \
+  av1_set_subpel_mv_search_range(x, &minc, &maxc, &minr, &maxr, ref_mv); \
+                                                                         \
+  bestmv->row *= 8;                                                      \
   bestmv->col *= 8;
 
 static unsigned int setup_center_error(
@@ -433,10 +447,6 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
   bestmv->row = br;
   bestmv->col = bc;
 
-  if ((abs(bestmv->col - ref_mv->col) > (MAX_FULL_PEL_VAL << 3)) ||
-      (abs(bestmv->row - ref_mv->row) > (MAX_FULL_PEL_VAL << 3)))
-    return INT_MAX;
-
   return besterr;
 }
 
@@ -498,10 +508,6 @@ int av1_find_best_sub_pixel_tree_pruned_more(
 
   bestmv->row = br;
   bestmv->col = bc;
-
-  if ((abs(bestmv->col - ref_mv->col) > (MAX_FULL_PEL_VAL << 3)) ||
-      (abs(bestmv->row - ref_mv->row) > (MAX_FULL_PEL_VAL << 3)))
-    return INT_MAX;
 
   return besterr;
 }
@@ -587,10 +593,6 @@ int av1_find_best_sub_pixel_tree_pruned(
   bestmv->row = br;
   bestmv->col = bc;
 
-  if ((abs(bestmv->col - ref_mv->col) > (MAX_FULL_PEL_VAL << 3)) ||
-      (abs(bestmv->row - ref_mv->row) > (MAX_FULL_PEL_VAL << 3)))
-    return INT_MAX;
-
   return besterr;
 }
 
@@ -674,16 +676,15 @@ int av1_find_best_sub_pixel_tree(MACROBLOCK *x, const MV *ref_mv, int allow_hp,
   int bc = bestmv->col * 8;
   int hstep = 4;
   int iter, round = 3 - forced_stop;
-  const int minc = AOMMAX(x->mv_col_min * 8, ref_mv->col - MV_MAX);
-  const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv->col + MV_MAX);
-  const int minr = AOMMAX(x->mv_row_min * 8, ref_mv->row - MV_MAX);
-  const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv->row + MV_MAX);
   int tr = br;
   int tc = bc;
   const MV *search_step = search_step_table;
   int idx, best_idx = -1;
   unsigned int cost_array[5];
   int kr, kc;
+  int minc, maxc, minr, maxr;
+
+  av1_set_subpel_mv_search_range(x, &minc, &maxc, &minr, &maxr, ref_mv);
 
   if (!allow_hp)
     if (round == 3) round = 2;
@@ -810,10 +811,6 @@ int av1_find_best_sub_pixel_tree(MACROBLOCK *x, const MV *ref_mv, int allow_hp,
 
   bestmv->row = br;
   bestmv->col = bc;
-
-  if ((abs(bestmv->col - ref_mv->col) > (MAX_FULL_PEL_VAL << 3)) ||
-      (abs(bestmv->row - ref_mv->row) > (MAX_FULL_PEL_VAL << 3)))
-    return INT_MAX;
 
   return besterr;
 }
@@ -2409,13 +2406,11 @@ int av1_find_best_masked_sub_pixel_tree(
   int br = bestmv->row * 8;
   int bc = bestmv->col * 8;
   int hstep = 4;
-  const int minc = AOMMAX(x->mv_col_min * 8, ref_mv->col - MV_MAX);
-  const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv->col + MV_MAX);
-  const int minr = AOMMAX(x->mv_row_min * 8, ref_mv->row - MV_MAX);
-  const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv->row + MV_MAX);
-
   int tr = br;
   int tc = bc;
+  int minc, maxc, minr, maxr;
+
+  av1_set_subpel_mv_search_range(x, &minc, &maxc, &minr, &maxr, ref_mv);
 
   // central mv
   bestmv->row *= 8;
@@ -2462,10 +2457,6 @@ int av1_find_best_masked_sub_pixel_tree(
 
   bestmv->row = br;
   bestmv->col = bc;
-
-  if ((abs(bestmv->col - ref_mv->col) > (MAX_FULL_PEL_VAL << 3)) ||
-      (abs(bestmv->row - ref_mv->row) > (MAX_FULL_PEL_VAL << 3)))
-    return INT_MAX;
 
   return besterr;
 }
@@ -2552,10 +2543,6 @@ int av1_find_best_masked_sub_pixel_tree_up(
   int hstep = 4;
   int iter;
   int round = 3 - forced_stop;
-  const int minc = AOMMAX(x->mv_col_min * 8, ref_mv->col - MV_MAX);
-  const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv->col + MV_MAX);
-  const int minr = AOMMAX(x->mv_row_min * 8, ref_mv->row - MV_MAX);
-  const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv->row + MV_MAX);
   int tr = br;
   int tc = bc;
   const MV *search_step = search_step_table;
@@ -2569,6 +2556,10 @@ int av1_find_best_masked_sub_pixel_tree_up(
   const uint8_t *y;
 
   const struct buf_2d backup_pred = pd->pre[is_second];
+  int minc, maxc, minr, maxr;
+
+  av1_set_subpel_mv_search_range(x, &minc, &maxc, &minr, &maxr, ref_mv);
+
   if (use_upsampled_ref) {
     int ref = xd->mi[0]->mbmi.ref_frame[is_second];
     const YV12_BUFFER_CONFIG *upsampled_ref = get_upsampled_ref(cpi, ref);
@@ -2703,10 +2694,6 @@ int av1_find_best_masked_sub_pixel_tree_up(
   if (use_upsampled_ref) {
     pd->pre[is_second] = backup_pred;
   }
-
-  if ((abs(bestmv->col - ref_mv->col) > (MAX_FULL_PEL_VAL << 3)) ||
-      (abs(bestmv->row - ref_mv->row) > (MAX_FULL_PEL_VAL << 3)))
-    return INT_MAX;
 
   return besterr;
 }
@@ -3054,10 +3041,6 @@ int av1_find_best_obmc_sub_pixel_tree_up(
   int hstep = 4;
   int iter;
   int round = 3 - forced_stop;
-  const int minc = AOMMAX(x->mv_col_min * 8, ref_mv->col - MV_MAX);
-  const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv->col + MV_MAX);
-  const int minr = AOMMAX(x->mv_row_min * 8, ref_mv->row - MV_MAX);
-  const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv->row + MV_MAX);
   int tr = br;
   int tc = bc;
   const MV *search_step = search_step_table;
@@ -3071,6 +3054,10 @@ int av1_find_best_obmc_sub_pixel_tree_up(
   const uint8_t *y;
 
   const struct buf_2d backup_pred = pd->pre[is_second];
+  int minc, maxc, minr, maxr;
+
+  av1_set_subpel_mv_search_range(x, &minc, &maxc, &minr, &maxr, ref_mv);
+
   if (use_upsampled_ref) {
     int ref = xd->mi[0]->mbmi.ref_frame[is_second];
     const YV12_BUFFER_CONFIG *upsampled_ref = get_upsampled_ref(cpi, ref);
@@ -3200,10 +3187,6 @@ int av1_find_best_obmc_sub_pixel_tree_up(
   if (use_upsampled_ref) {
     pd->pre[is_second] = backup_pred;
   }
-
-  if ((abs(bestmv->col - ref_mv->col) > (MAX_FULL_PEL_VAL << 3)) ||
-      (abs(bestmv->row - ref_mv->row) > (MAX_FULL_PEL_VAL << 3)))
-    return INT_MAX;
 
   return besterr;
 }
