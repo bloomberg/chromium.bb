@@ -102,9 +102,6 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Network activation failed.
   static const char kErrorActivateFailed[];
 
-  // Network was enabled/disabled when it was not available.
-  static const char kEnabledOrDisabledWhenNotAvailable[];
-
   ~NetworkConnectionHandler() override;
 
   void AddObserver(NetworkConnectionObserver* observer);

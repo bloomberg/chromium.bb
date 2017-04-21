@@ -112,7 +112,6 @@ class CHROMEOS_EXPORT ManagedState {
 
  private:
   friend class NetworkChangeNotifierChromeosUpdateTest;
-  friend class NetworkStateHandler;
 
   ManagedType managed_type_;
 

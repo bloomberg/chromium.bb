@@ -47,8 +47,6 @@ class ActiveHostNetworkStateUpdaterTest : public NetworkStateTest {
   void SetUp() override {
     DBusThreadManager::Initialize();
     NetworkStateTest::SetUp();
-    network_state_handler()->SetTetherTechnologyState(
-        NetworkStateHandler::TECHNOLOGY_ENABLED);
     SetUpTetherNetwork();
     SetUpWifiNetwork();
 

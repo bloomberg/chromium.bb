@@ -21,9 +21,7 @@
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/tether_constants.h"
@@ -128,7 +126,9 @@ NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
   std::string technology = GetTechnologyForType(type);
 
   if (technology == kTypeTether) {
-    return tether_technology_state_;
+    bool is_tether_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kEnableTether);
+    return is_tether_enabled ? TECHNOLOGY_ENABLED : TECHNOLOGY_UNAVAILABLE;
   }
 
   TechnologyState state;
@@ -154,25 +154,6 @@ void NetworkStateHandler::SetTechnologyEnabled(
     const network_handler::ErrorCallback& error_callback) {
   std::vector<std::string> technologies = GetTechnologiesForType(type);
   for (const std::string& technology : technologies) {
-    if (technology == kTypeTether) {
-      if (tether_technology_state_ != TECHNOLOGY_ENABLED &&
-          tether_technology_state_ != TECHNOLOGY_AVAILABLE) {
-        NET_LOG(ERROR) << "SetTechnologyEnabled() called for the Tether "
-                       << "DeviceState, but the current state was not "
-                       << "TECHNOLOGY_ENABLED or TECHNOLOGY_AVAILABLE.";
-        network_handler::RunErrorCallback(
-            error_callback, kTetherDevicePath,
-            NetworkConnectionHandler::kEnabledOrDisabledWhenNotAvailable, "");
-        continue;
-      }
-
-      // Tether does not exist in Shill, so set |tether_technology_state_| and
-      // skip the below interactions with |shill_property_handler_|.
-      tether_technology_state_ =
-          enabled ? TECHNOLOGY_ENABLED : TECHNOLOGY_AVAILABLE;
-      continue;
-    }
-
     if (!shill_property_handler_->IsTechnologyAvailable(technology))
       continue;
     NET_LOG_USER("SetTechnologyEnabled",
@@ -184,54 +165,11 @@ void NetworkStateHandler::SetTechnologyEnabled(
   NotifyDeviceListChanged();
 }
 
-void NetworkStateHandler::SetTetherTechnologyState(
-    TechnologyState technology_state) {
-  if (tether_technology_state_ == technology_state)
-    return;
-
-  tether_technology_state_ = technology_state;
-  EnsureTetherDeviceState();
-
-  // Signal Device/Technology state changed.
-  NotifyDeviceListChanged();
-}
-
-void NetworkStateHandler::SetTetherScanState(bool is_scanning) {
-  DeviceState* tether_device_state =
-      GetModifiableDeviceState(kTetherDevicePath);
-  DCHECK(tether_device_state);
-
-  bool was_scanning = tether_device_state->scanning();
-  tether_device_state->set_scanning(is_scanning);
-
-  if (was_scanning && !is_scanning) {
-    // If a scan was in progress but has completed, notify observers.
-    NotifyScanCompleted(tether_device_state);
-  }
-}
-
 void NetworkStateHandler::SetProhibitedTechnologies(
     const std::vector<std::string>& prohibited_technologies,
     const network_handler::ErrorCallback& error_callback) {
-  // Make a copy of |prohibited_technologies| since the list may be edited
-  // within this function.
-  std::vector<std::string> prohibited_technologies_copy =
-      prohibited_technologies;
-
-  for (auto it = prohibited_technologies_copy.begin();
-       it < prohibited_technologies_copy.end(); ++it) {
-    if (*it == kTypeTether) {
-      // If Tether networks are prohibited, set |tether_technology_state_| and
-      // remove |kTypeTether| from the list before passing it to
-      // |shill_property_handler_| below. Shill does not have a concept of
-      // Tether networks, so it cannot prohibit that technology type.
-      tether_technology_state_ = TECHNOLOGY_PROHIBITED;
-      it = prohibited_technologies_copy.erase(it);
-    }
-  }
-
-  shill_property_handler_->SetProhibitedTechnologies(
-      prohibited_technologies_copy, error_callback);
+  shill_property_handler_->SetProhibitedTechnologies(prohibited_technologies,
+                                                     error_callback);
   // Signal Device/Technology state changed.
   NotifyDeviceListChanged();
 }
@@ -362,7 +300,7 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
   if (!network_list_sorted_)
     SortNetworkList();  // Sort to ensure visible networks are listed first.
 
-  // If |type| matches Tether networks and at least one Tether network is
+  // If |type| matches tether networks and at least one tether network is
   // present, return the first network (since it has been sorted already).
   if (type.MatchesPattern(NetworkTypePattern::Tether()) &&
       !tether_network_list_.empty()) {
@@ -385,14 +323,9 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
 std::string NetworkStateHandler::FormattedHardwareAddressForType(
     const NetworkTypePattern& type) const {
   const NetworkState* network = ConnectedNetworkByType(type);
-  if (network && network->type() == kTypeTether) {
-    // If this is a Tether network, get the MAC address corresponding to that
-    // network instead.
-    network = GetNetworkStateFromGuid(network->tether_guid());
-  }
   const DeviceState* device = network ? GetDeviceState(network->device_path())
                                       : GetDeviceStateByType(type);
-  if (!device || device->mac_address().empty())
+  if (!device)
     return std::string();
   return network_util::FormattedMacAddress(device->mac_address());
 }
@@ -428,7 +361,7 @@ void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
 
   if (type.Equals(NetworkTypePattern::Tether()) ||
       (limit != 0 && count >= limit)) {
-    // If only searching for Tether networks, there is no need to continue
+    // If only searching for tether networks, there is no need to continue
     // searching through other network types; likewise, if the limit has already
     // been reached, there is no need to continue searching.
     return;
@@ -499,12 +432,6 @@ void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
   DCHECK(battery_percentage >= 0 && battery_percentage <= 100);
   DCHECK(signal_strength >= 0 && signal_strength <= 100);
 
-  if (tether_technology_state_ != TECHNOLOGY_ENABLED) {
-    NET_LOG(ERROR) << "AddTetherNetworkState() called when Tether networks "
-                   << "are not enabled. Cannot add NetworkState.";
-    return;
-  }
-
   // If the network already exists, do nothing.
   if (GetNetworkStateFromGuid(guid)) {
     NET_LOG(ERROR) << "AddTetherNetworkState: " << name
@@ -536,12 +463,6 @@ bool NetworkStateHandler::UpdateTetherNetworkProperties(
     const std::string& carrier,
     int battery_percentage,
     int signal_strength) {
-  if (tether_technology_state_ != TECHNOLOGY_ENABLED) {
-    NET_LOG(ERROR) << "UpdateTetherNetworkProperties() called when Tether "
-                   << "networks are not enabled. Cannot update.";
-    return false;
-  }
-
   NetworkState* tether_network_state = GetModifiableNetworkStateFromGuid(guid);
   if (!tether_network_state)
     return false;
@@ -573,13 +494,6 @@ void NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
 bool NetworkStateHandler::AssociateTetherNetworkStateWithWifiNetwork(
     const std::string& tether_network_guid,
     const std::string& wifi_network_guid) {
-  if (tether_technology_state_ != TECHNOLOGY_ENABLED) {
-    NET_LOG(ERROR) << "AssociateTetherNetworkStateWithWifiNetwork() called "
-                   << "when Tether networks are not enabled. Cannot "
-                   << "associate.";
-    return false;
-  }
-
   NetworkState* tether_network =
       GetModifiableNetworkStateFromGuid(tether_network_guid);
   if (!tether_network) {
@@ -611,14 +525,14 @@ bool NetworkStateHandler::AssociateTetherNetworkStateWithWifiNetwork(
 
 void NetworkStateHandler::SetTetherNetworkStateDisconnected(
     const std::string& guid) {
-  // TODO(khorimoto): Remove the Tether network as the default network, and
+  // TODO(khorimoto): Remove the tether network as the default network, and
   // send a connection status change.
   SetTetherNetworkStateConnectionState(guid, shill::kStateDisconnect);
 }
 
 void NetworkStateHandler::SetTetherNetworkStateConnecting(
     const std::string& guid) {
-  // TODO(khorimoto): Set the Tether network as the default network, and send
+  // TODO(khorimoto): Set the tether network as the default network, and send
   // a connection status change.
   SetTetherNetworkStateConnectionState(guid, shill::kStateConfiguration);
 }
@@ -650,41 +564,6 @@ void NetworkStateHandler::SetTetherNetworkStateConnectionState(
   NotifyNetworkListChanged();
 }
 
-void NetworkStateHandler::EnsureTetherDeviceState() {
-  bool should_be_present =
-      tether_technology_state_ != TechnologyState::TECHNOLOGY_UNAVAILABLE;
-
-  for (auto it = device_list_.begin(); it < device_list_.end(); ++it) {
-    std::string path = (*it)->path();
-    if (path == kTetherDevicePath) {
-      // If the Tether DeviceState is in the list and it should not be, remove
-      // it and return. If it is in the list and it should be, the list is
-      // already valid, so return without removing it.
-      if (!should_be_present)
-        device_list_.erase(it);
-      return;
-    }
-  }
-
-  if (!should_be_present) {
-    // If the Tether DeviceState was not in the list and it should not be, the
-    // list is already valid, so return.
-    return;
-  }
-
-  // The Tether DeviceState is not present in the list, but it should be. Since
-  // Tether networks are not recognized by Shill, they will never receive an
-  // update, so set properties on the state here.
-  std::unique_ptr<ManagedState> tether_device_state = ManagedState::Create(
-      ManagedState::ManagedType::MANAGED_TYPE_DEVICE, kTetherDevicePath);
-  tether_device_state->set_update_received();
-  tether_device_state->set_update_requested(false);
-  tether_device_state->set_name(kTetherDeviceName);
-  tether_device_state->set_type(kTypeTether);
-
-  device_list_.push_back(std::move(tether_device_state));
-}
-
 void NetworkStateHandler::GetDeviceList(DeviceStateList* list) const {
   GetDeviceListByType(NetworkTypePattern::Default(), list);
 }
@@ -693,7 +572,6 @@ void NetworkStateHandler::GetDeviceListByType(const NetworkTypePattern& type,
                                               DeviceStateList* list) const {
   DCHECK(list);
   list->clear();
-
   for (auto iter = device_list_.begin(); iter != device_list_.end(); ++iter) {
     const DeviceState* device = (*iter)->AsDeviceState();
     DCHECK(device);
@@ -846,17 +724,6 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
       managed_map.erase(found);
     }
     list_entries.insert(path);
-  }
-
-  if (type == ManagedState::ManagedType::MANAGED_TYPE_DEVICE) {
-    // Also move the Tether DeviceState if it exists. This will not happen as
-    // part of the loop above since |entries| will never contain the Tether
-    // path.
-    auto iter = managed_map.find(kTetherDevicePath);
-    if (iter != managed_map.end()) {
-      managed_list->push_back(std::move(iter->second));
-      managed_map.erase(iter);
-    }
   }
 
   if (type != ManagedState::ManagedType::MANAGED_TYPE_NETWORK)
@@ -1104,7 +971,7 @@ void NetworkStateHandler::ManagedStateListChanged(
   }
 }
 
-// TODO(khorimoto): Add sorting for the Tether network list as well.
+// TODO(khorimoto): Add sorting for the tether network list as well.
 void NetworkStateHandler::SortNetworkList() {
   // Note: usually active networks will precede inactive networks, however
   // this may briefly be untrue during state transitions (e.g. a network may
@@ -1408,8 +1275,6 @@ std::vector<std::string> NetworkStateHandler::GetTechnologiesForType(
     technologies.emplace_back(shill::kTypeBluetooth);
   if (type.MatchesType(shill::kTypeVPN))
     technologies.emplace_back(shill::kTypeVPN);
-  if (type.MatchesType(kTypeTether))
-    technologies.emplace_back(kTypeTether);
 
   CHECK_GT(technologies.size(), 0ul);
   return technologies;

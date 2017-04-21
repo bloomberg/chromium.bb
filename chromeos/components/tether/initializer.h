@@ -39,7 +39,6 @@ class HostScanDevicePrioritizer;
 class LocalDeviceDataProvider;
 class NotificationPresenter;
 class TetherConnector;
-class TetherDeviceStateManager;
 class TetherHostFetcher;
 class WifiHotspotConnector;
 
@@ -95,7 +94,6 @@ class Initializer : public OAuth2TokenService::Observer {
   // Declare new objects in the order that they will be created during
   // initialization to ensure that they are destroyed in the correct order. This
   // order will be enforced by InitializerTest.TestCreateAndDestroy.
-  std::unique_ptr<TetherDeviceStateManager> tether_device_state_manager_;
   std::unique_ptr<TetherHostFetcher> tether_host_fetcher_;
   std::unique_ptr<LocalDeviceDataProvider> local_device_data_provider_;
   std::unique_ptr<cryptauth::RemoteBeaconSeedFetcher>

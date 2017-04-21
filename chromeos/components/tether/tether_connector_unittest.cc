@@ -148,8 +148,6 @@ class TetherConnectorTest : public NetworkStateTest {
   void SetUp() override {
     DBusThreadManager::Initialize();
     NetworkStateTest::SetUp();
-    network_state_handler()->SetTetherTechnologyState(
-        NetworkStateHandler::TECHNOLOGY_ENABLED);
 
     fake_operation_factory_ =
         base::WrapUnique(new FakeConnectTetheringOperationFactory());

@@ -22,12 +22,6 @@ CHROMEOS_EXPORT extern const char kTetherBatteryPercentage[];
 CHROMEOS_EXPORT extern const char kTetherCarrier[];
 CHROMEOS_EXPORT extern const char kTetherSignalStrength[];
 
-// The device path used for the tether DeviceState.
-CHROMEOS_EXPORT extern const char kTetherDevicePath[];
-
-// The name used for the tether DeviceState.
-CHROMEOS_EXPORT extern const char kTetherDeviceName[];
-
 }  // namespace chromeos
 
 #endif  // CHROMEOS_NETWORK_TETHER_CONSTANTS_H_
