@@ -36,21 +36,6 @@
 
 #pragma mark - Coordinator lifecycle management
 
-- (void)dealloc {
-  // TODO(rohitrao): The __weak pointers in the CommandDispatcher appear to have
-  // already been zeroed out by this point, so stopDispatchingToTarget:self does
-  // not appear to properly delete the forwarding entries for this target.  Work
-  // around this by calling stopDispatchingForSelector: instead.
-
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
-  [dispatcher stopDispatchingForSelector:@selector(showFindInPage)];
-  [dispatcher stopDispatchingForSelector:@selector(hideFindInPage)];
-
-  [dispatcher stopDispatchingForSelector:@selector(findStringInPage:)];
-  [dispatcher stopDispatchingForSelector:@selector(findNextInPage)];
-  [dispatcher stopDispatchingForSelector:@selector(findPreviousInPage)];
-}
-
 - (void)wasAddedToParentCoordinator:(BrowserCoordinator*)parent {
   DCHECK(self.browser);
 

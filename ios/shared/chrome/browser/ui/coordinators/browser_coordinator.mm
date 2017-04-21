@@ -57,6 +57,12 @@
   }
 }
 
+- (void)dealloc {
+  for (BrowserCoordinator* child in self.children) {
+    [self removeChildCoordinator:child];
+  }
+}
+
 @end
 
 @implementation BrowserCoordinator (Internal)
