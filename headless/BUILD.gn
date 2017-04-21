@@ -351,7 +351,9 @@ component("headless") {
     }
   }
 
-  if (!is_mac) {
+  if (is_mac) {
+    deps += [ ":mac_helpers" ]
+  } else {
     deps += [ "//ui/aura" ]
   }
 
@@ -458,6 +460,22 @@ repack("headless_browser_tests_pak") {
   ]
 }
 
+if (is_mac) {
+  copy("mac_helpers") {
+    sources = [
+      "$root_out_dir/crashpad_handler",
+    ]
+
+    deps = [
+      "//third_party/crashpad/crashpad/handler:crashpad_handler",
+    ]
+
+    outputs = [
+      "$root_out_dir/Helpers/{{source_file_part}}",
+    ]
+  }
+}
+
 test("headless_browsertests") {
   sources = [
     "lib/embedder_mojo_browsertest.cc",
@@ -486,6 +504,10 @@ test("headless_browsertests") {
     "//third_party/tlslite/",
     "test/data/",
   ]
+
+  if (is_mac) {
+    data += [ "$root_out_dir/Helpers/crashpad_handler" ]
+  }
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
