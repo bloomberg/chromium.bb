@@ -88,6 +88,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLSlotElement.h"
@@ -2098,8 +2099,11 @@ void Node::HandleLocalEvents(Event& event) {
   if (!HasEventTargetData())
     return;
 
-  if (IsDisabledFormControl(this) && event.IsMouseEvent())
+  if (IsDisabledFormControl(this) && event.IsMouseEvent()) {
+    UseCounter::Count(GetDocument(),
+                      UseCounter::kDispatchMouseEventOnDisabledFormControl);
     return;
+  }
 
   FireEventListeners(&event);
 }

@@ -1579,6 +1579,7 @@ class CORE_EXPORT UseCounter {
     kGamepadAxes = 1964,
     kGamepadButtons = 1965,
     kVibrateWithoutUserGesture = 1966,
+    kDispatchMouseEventOnDisabledFormControl = 1967,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
