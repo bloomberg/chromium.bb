@@ -90,7 +90,7 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
 //
 ACTION_P2(ScheduleCallback2, result0, result1) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg0, result0, result1));
+      FROM_HERE, base::BindOnce(arg0, result0, result1));
 }
 
 // Struct for holding the result of calling DetermineDownloadTarget.
@@ -153,7 +153,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
     base::FilePath path_to_return = MockReserveVirtualPath(
         download, virtual_path, create_directory, conflict_action, &result);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, result, path_to_return));
+        FROM_HERE, base::BindOnce(callback, result, path_to_return));
   }
 
   MOCK_METHOD5(

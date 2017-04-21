@@ -24,7 +24,8 @@ void OnCanDownloadDecided(base::WeakPtr<DownloadResourceThrottle> throttle,
                           bool allow) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DownloadResourceThrottle::ContinueDownload, throttle, allow));
+      base::BindOnce(&DownloadResourceThrottle::ContinueDownload, throttle,
+                     allow));
 }
 
 void CanDownload(
@@ -90,11 +91,12 @@ DownloadResourceThrottle::DownloadResourceThrottle(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CanDownloadOnUIThread,
-                 base::Passed(std::unique_ptr<DownloadRequestInfo>(
-                     new DownloadRequestInfo(
-                         limiter, web_contents_getter, url, request_method,
-                         base::Bind(&OnCanDownloadDecided, AsWeakPtr()))))));
+      base::BindOnce(
+          &CanDownloadOnUIThread,
+          base::Passed(
+              std::unique_ptr<DownloadRequestInfo>(new DownloadRequestInfo(
+                  limiter, web_contents_getter, url, request_method,
+                  base::Bind(&OnCanDownloadDecided, AsWeakPtr()))))));
 }
 
 DownloadResourceThrottle::~DownloadResourceThrottle() {

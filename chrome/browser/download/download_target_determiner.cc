@@ -499,8 +499,8 @@ void IsHandledBySafePlugin(content::ResourceContext* resource_context,
       (plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(callback, is_handled_safely));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(callback, is_handled_safely));
 }
 
 }  // namespace
@@ -525,13 +525,10 @@ DownloadTargetDeterminer::Result
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &IsHandledBySafePlugin,
-          GetProfile()->GetResourceContext(),
-          net::FilePathToFileURL(local_path_),
-          mime_type_,
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &IsHandledBySafePlugin, GetProfile()->GetResourceContext(),
+          net::FilePathToFileURL(local_path_), mime_type_,
           RETRY_IF_STALE_PLUGIN_LIST,
           base::Bind(&DownloadTargetDeterminer::DetermineIfHandledSafelyDone,
                      weak_ptr_factory_.GetWeakPtr())));
@@ -779,7 +776,8 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf(
   target_info->is_filetype_handled_safely = is_filetype_handled_safely_;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(completion_callback_, base::Passed(&target_info)));
+      FROM_HERE,
+      base::BindOnce(completion_callback_, base::Passed(&target_info)));
   completion_callback_.Reset();
   delete this;
 }

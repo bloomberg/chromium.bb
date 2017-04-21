@@ -58,11 +58,11 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
                            const ConfirmationCallback& callback) override {
     file_chooser_displayed_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback,
-                              (file_chooser_enabled_
-                                   ? DownloadConfirmationResult::CONFIRMED
-                                   : DownloadConfirmationResult::CANCELED),
-                              suggested_path));
+        FROM_HERE, base::BindOnce(callback,
+                                  (file_chooser_enabled_
+                                       ? DownloadConfirmationResult::CONFIRMED
+                                       : DownloadConfirmationResult::CANCELED),
+                                  suggested_path));
   }
 
   void OpenDownload(content::DownloadItem* item) override {}

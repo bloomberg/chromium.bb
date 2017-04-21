@@ -97,13 +97,13 @@ class NullWebContentsDelegate : public content::WebContentsDelegate {
 //     .WillOnce(ScheduleCallback(false));
 ACTION_P(ScheduleCallback, result0) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(arg0, result0));
+                                                base::BindOnce(arg0, result0));
 }
 
 // Similar to ScheduleCallback, but binds 2 arguments.
 ACTION_P2(ScheduleCallback2, result0, result1) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg0, result0, result1));
+      FROM_HERE, base::BindOnce(arg0, result0, result1));
 }
 
 // Used with DownloadTestCase. Indicates the type of test case. The expectations

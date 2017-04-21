@@ -141,8 +141,8 @@ void DownloadShelf::AddDownload(DownloadItem* download) {
     // download, then the user won't have time to interact with it.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&DownloadShelf::ShowDownloadById,
-                   weak_ptr_factory_.GetWeakPtr(), download->GetId()),
+        base::BindOnce(&DownloadShelf::ShowDownloadById,
+                       weak_ptr_factory_.GetWeakPtr(), download->GetId()),
         GetTransientDownloadShowDelay());
   } else {
     ShowDownload(download);

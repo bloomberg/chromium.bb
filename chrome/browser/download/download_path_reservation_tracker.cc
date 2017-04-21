@@ -354,8 +354,9 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
       // Update the reservation.
       base::FilePath new_target_path = download->GetTargetFilePath();
       if (new_target_path != last_target_path_) {
-        BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-            &UpdateReservation, download, new_target_path));
+        BrowserThread::PostTask(
+            BrowserThread::FILE, FROM_HERE,
+            base::BindOnce(&UpdateReservation, download, new_target_path));
         last_target_path_ = new_target_path;
       }
       break;
@@ -374,8 +375,8 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
       // restarted. Holding on to the reservation now would prevent the name
       // from being used for a subsequent retry attempt.
 
-      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-          &RevokeReservation, download));
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::BindOnce(&RevokeReservation, download));
       download->RemoveUserData(&kUserDataKey);
       break;
 
@@ -388,8 +389,8 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
 void DownloadItemObserver::OnDownloadDestroyed(DownloadItem* download) {
   // Items should be COMPLETE/INTERRUPTED/CANCELLED before being destroyed.
   NOTREACHED();
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &RevokeReservation, download));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::BindOnce(&RevokeReservation, download));
 }
 
 // static

@@ -320,7 +320,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
         prefs::kSaveFileDefaultDirectory, save_dir_.GetPath());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   GURL NavigateToMockURL(const std::string& prefix) {

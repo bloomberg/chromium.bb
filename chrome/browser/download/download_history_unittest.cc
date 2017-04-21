@@ -58,9 +58,10 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   void QueryDownloads(
       const history::HistoryService::DownloadQueryCallback& callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeHistoryAdapter::QueryDownloadsDone,
-            base::Unretained(this), callback));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&FakeHistoryAdapter::QueryDownloadsDone,
+                       base::Unretained(this), callback));
   }
 
   void QueryDownloadsDone(
