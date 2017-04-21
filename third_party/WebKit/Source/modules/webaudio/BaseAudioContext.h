@@ -51,7 +51,6 @@ namespace blink {
 
 class AnalyserNode;
 class AudioBuffer;
-class AudioBufferCallback;
 class AudioBufferSourceNode;
 class AudioContextOptions;
 class AudioListener;
@@ -62,6 +61,8 @@ class ChannelSplitterNode;
 class ConstantSourceNode;
 class ConvolverNode;
 class DelayNode;
+class DecodeErrorCallback;
+class DecodeSuccessCallback;
 class Document;
 class DynamicsCompressorNode;
 class ExceptionState;
@@ -169,16 +170,25 @@ class MODULES_EXPORT BaseAudioContext
   // Asynchronous audio file data decoding.
   ScriptPromise decodeAudioData(ScriptState*,
                                 DOMArrayBuffer* audio_data,
-                                AudioBufferCallback* success_callback,
-                                AudioBufferCallback* error_callback,
+                                DecodeSuccessCallback*,
+                                DecodeErrorCallback*,
+                                ExceptionState&);
+
+  ScriptPromise decodeAudioData(ScriptState*,
+                                DOMArrayBuffer* audio_data,
+                                ExceptionState&);
+
+  ScriptPromise decodeAudioData(ScriptState*,
+                                DOMArrayBuffer* audio_data,
+                                DecodeSuccessCallback*,
                                 ExceptionState&);
 
   // Handles the promise and callbacks when |decodeAudioData| is finished
   // decoding.
   void HandleDecodeAudioData(AudioBuffer*,
                              ScriptPromiseResolver*,
-                             AudioBufferCallback* success_callback,
-                             AudioBufferCallback* error_callback);
+                             DecodeSuccessCallback*,
+                             DecodeErrorCallback*);
 
   AudioListener* listener() { return listener_; }
 

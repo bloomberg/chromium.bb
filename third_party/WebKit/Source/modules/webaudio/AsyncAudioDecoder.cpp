@@ -24,9 +24,11 @@
  */
 
 #include "modules/webaudio/AsyncAudioDecoder.h"
+
+#include "bindings/modules/v8/DecodeErrorCallback.h"
+#include "bindings/modules/v8/DecodeSuccessCallback.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/webaudio/AudioBuffer.h"
-#include "modules/webaudio/AudioBufferCallback.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/audio/AudioBus.h"
@@ -40,8 +42,8 @@ namespace blink {
 
 void AsyncAudioDecoder::DecodeAsync(DOMArrayBuffer* audio_data,
                                     float sample_rate,
-                                    AudioBufferCallback* success_callback,
-                                    AudioBufferCallback* error_callback,
+                                    DecodeSuccessCallback* success_callback,
+                                    DecodeErrorCallback* error_callback,
                                     ScriptPromiseResolver* resolver,
                                     BaseAudioContext* context) {
   DCHECK(IsMainThread());
@@ -62,8 +64,8 @@ void AsyncAudioDecoder::DecodeAsync(DOMArrayBuffer* audio_data,
 void AsyncAudioDecoder::DecodeOnBackgroundThread(
     DOMArrayBuffer* audio_data,
     float sample_rate,
-    AudioBufferCallback* success_callback,
-    AudioBufferCallback* error_callback,
+    DecodeSuccessCallback* success_callback,
+    DecodeErrorCallback* error_callback,
     ScriptPromiseResolver* resolver,
     BaseAudioContext* context) {
   DCHECK(!IsMainThread());
@@ -89,8 +91,8 @@ void AsyncAudioDecoder::DecodeOnBackgroundThread(
 }
 
 void AsyncAudioDecoder::NotifyComplete(DOMArrayBuffer*,
-                                       AudioBufferCallback* success_callback,
-                                       AudioBufferCallback* error_callback,
+                                       DecodeSuccessCallback* success_callback,
+                                       DecodeErrorCallback* error_callback,
                                        AudioBus* audio_bus,
                                        ScriptPromiseResolver* resolver,
                                        BaseAudioContext* context) {

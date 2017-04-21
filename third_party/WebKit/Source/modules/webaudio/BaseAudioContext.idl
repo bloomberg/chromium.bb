@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 // See https://webaudio.github.io/web-audio-api/#BaseAudioContext
+
 enum AudioContextState {
     "suspended",
     "running",
     "closed"
 };
+
+callback DecodeErrorCallback = void (DOMException error);
+callback DecodeSuccessCallback = void (AudioBuffer decodedData);
 
 [
     ActiveScriptWrappable,
@@ -31,7 +35,7 @@ enum AudioContextState {
     [RaisesException] AudioBuffer createBuffer(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate);
 
     // Asynchronous audio file data decoding.
-    [RaisesException, MeasureAs=AudioContextDecodeAudioData, CallWith=ScriptState] Promise<AudioBuffer> decodeAudioData(ArrayBuffer audioData, optional AudioBufferCallback successCallback, optional AudioBufferCallback errorCallback);
+    [RaisesException, MeasureAs=AudioContextDecodeAudioData, CallWith=ScriptState] Promise<AudioBuffer> decodeAudioData(ArrayBuffer audioData, optional DecodeSuccessCallback successCallback, optional DecodeErrorCallback  errorCallback);
 
     // Sources
     [RaisesException, MeasureAs=AudioContextCreateBufferSource] AudioBufferSourceNode createBufferSource();

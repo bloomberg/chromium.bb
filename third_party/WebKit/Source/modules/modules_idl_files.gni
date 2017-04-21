@@ -281,7 +281,6 @@ modules_idl_files =
                     "vr/VRStageParameters.idl",
                     "webaudio/AnalyserNode.idl",
                     "webaudio/AudioBuffer.idl",
-                    "webaudio/AudioBufferCallback.idl",
                     "webaudio/AudioBufferSourceNode.idl",
                     "webaudio/AudioContext.idl",
                     "webaudio/AudioDestinationNode.idl",
