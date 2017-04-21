@@ -716,7 +716,8 @@ void PrintVP9Info(const uint8_t* data, int size, FILE* o, int64_t time_ns,
       return;
     }
     parser->SetFrame(data, frame_length);
-    parser->ParseUncompressedHeader();
+    if (!parser->ParseUncompressedHeader())
+      return;
     level_stats->AddFrame(*parser, time_ns);
 
     // const int frame_marker = (data[0] >> 6) & 0x3;
