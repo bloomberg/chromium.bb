@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_preview_data_service.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
@@ -25,9 +26,10 @@
 //    a) There is a new data.
 //    b) When PrintPreviewDataStore is destroyed.
 //
-class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
+class PrintPreviewDataStore {
  public:
   PrintPreviewDataStore() {}
+  ~PrintPreviewDataStore() {}
 
   // Get the preview page for the specified |index|.
   void GetPreviewDataForIndex(
@@ -60,8 +62,6 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
   }
 
  private:
-  friend class base::RefCounted<PrintPreviewDataStore>;
-
   // 1:1 relationship between page index and its associated preview data.
   // Key: Page index is zero-based and can be
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent complete preview
@@ -69,8 +69,6 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
   // Value: Preview data.
   using PreviewPageDataMap =
       std::map<int, scoped_refptr<base::RefCountedBytes>>;
-
-  ~PrintPreviewDataStore() {}
 
   static bool IsInvalidIndex(int index) {
     return (index != printing::COMPLETE_PREVIEW_DOCUMENT_INDEX &&
@@ -107,11 +105,8 @@ void PrintPreviewDataService::SetDataEntry(
     int32_t preview_ui_id,
     int index,
     scoped_refptr<base::RefCountedBytes> data_bytes) {
-  if (!base::ContainsKey(data_store_map_, preview_ui_id)) {
-    data_store_map_[preview_ui_id] =
-        make_scoped_refptr(new PrintPreviewDataStore());
-  }
-
+  if (!base::ContainsKey(data_store_map_, preview_ui_id))
+    data_store_map_[preview_ui_id] = base::MakeUnique<PrintPreviewDataStore>();
   data_store_map_[preview_ui_id]->SetPreviewDataForIndex(index,
                                                          std::move(data_bytes));
 }

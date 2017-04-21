@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -57,7 +58,7 @@ class PrintPreviewDataService {
   // Key: PrintPreviewUI ID.
   // Value: Print preview data store object.
   using PreviewDataStoreMap =
-      std::map<int32_t, scoped_refptr<PrintPreviewDataStore>>;
+      std::map<int32_t, std::unique_ptr<PrintPreviewDataStore>>;
 
   PrintPreviewDataService();
   ~PrintPreviewDataService();
