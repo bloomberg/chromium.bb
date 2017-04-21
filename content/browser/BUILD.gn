@@ -725,8 +725,6 @@ source_set("browser") {
     "gpu/gpu_main_thread_factory.h",
     "gpu/gpu_process_host.cc",
     "gpu/gpu_process_host.h",
-    "gpu/gpu_process_host_ui_shim.cc",
-    "gpu/gpu_process_host_ui_shim.h",
     "gpu/shader_cache_factory.cc",
     "gpu/shader_cache_factory.h",
     "histogram_controller.cc",

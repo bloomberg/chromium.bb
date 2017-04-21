@@ -173,9 +173,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   bool Init();
 
-  // Post an IPC message to the UI shim's message handler on the UI thread.
-  void RouteOnUIThread(const IPC::Message& message);
-
   // BrowserChildProcessHostDelegate implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;

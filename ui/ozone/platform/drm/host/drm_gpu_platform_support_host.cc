@@ -82,7 +82,7 @@ void CursorIPC::Send(IPC::Message* message) {
 }  // namespace
 
 DrmGpuPlatformSupportHost::DrmGpuPlatformSupportHost(DrmCursor* cursor)
-    : cursor_(cursor) {}
+    : cursor_(cursor), weak_ptr_factory_(this) {}
 
 DrmGpuPlatformSupportHost::~DrmGpuPlatformSupportHost() {}
 
@@ -105,31 +105,23 @@ bool DrmGpuPlatformSupportHost::IsConnected() {
 
 void DrmGpuPlatformSupportHost::OnGpuProcessLaunched(
     int host_id,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
     const base::Callback<void(IPC::Message*)>& send_callback) {
+  DCHECK(!ui_runner->BelongsToCurrentThread());
+  ui_runner_ = std::move(ui_runner);
   TRACE_EVENT1("drm", "DrmGpuPlatformSupportHost::OnGpuProcessLaunched",
                "host_id", host_id);
   host_id_ = host_id;
-  send_runner_ = send_runner;
+  send_runner_ = std::move(send_runner);
   send_callback_ = send_callback;
 
   for (GpuThreadObserver& observer : gpu_thread_observers_)
     observer.OnGpuProcessLaunched();
-}
 
-void DrmGpuPlatformSupportHost::OnChannelEstablished() {
-  TRACE_EVENT0("drm", "DrmGpuPlatformSupportHost::OnChannelEstablished");
-  channel_established_ = true;
-
-  for (GpuThreadObserver& observer : gpu_thread_observers_)
-    observer.OnGpuThreadReady();
-
-  // The cursor is special since it will process input events on the IO thread
-  // and can by-pass the UI thread. This means that we need to special case it
-  // and notify it after all other observers/handlers are notified such that the
-  // (windowing) state on the GPU can be initialized before the cursor is
-  // allowed to IPC messages (which are targeted to a specific window).
-  cursor_->SetDrmCursorProxy(new CursorIPC(send_runner_, send_callback_));
+  ui_runner_->PostTask(
+      FROM_HERE, base::Bind(&DrmGpuPlatformSupportHost::OnChannelEstablished,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DrmGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
@@ -174,6 +166,21 @@ void DrmGpuPlatformSupportHost::RegisterHandlerForDrmDisplayHostManager(
 
 void DrmGpuPlatformSupportHost::UnRegisterHandlerForDrmDisplayHostManager() {
   display_manager_ = nullptr;
+}
+
+void DrmGpuPlatformSupportHost::OnChannelEstablished() {
+  TRACE_EVENT0("drm", "DrmGpuPlatformSupportHost::OnChannelEstablished");
+  channel_established_ = true;
+
+  for (GpuThreadObserver& observer : gpu_thread_observers_)
+    observer.OnGpuThreadReady();
+
+  // The cursor is special since it will process input events on the IO thread
+  // and can by-pass the UI thread. This means that we need to special case it
+  // and notify it after all other observers/handlers are notified such that the
+  // (windowing) state on the GPU can be initialized before the cursor is
+  // allowed to IPC messages (which are targeted to a specific window).
+  cursor_->SetDrmCursorProxy(new CursorIPC(send_runner_, send_callback_));
 }
 
 bool DrmGpuPlatformSupportHost::OnMessageReceivedForDrmDisplayHostManager(

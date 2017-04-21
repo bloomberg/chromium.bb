@@ -30,15 +30,15 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
                                   public GpuThreadAdapter,
                                   public IPC::Sender {
  public:
-  DrmGpuPlatformSupportHost(DrmCursor* cursor);
+  explicit DrmGpuPlatformSupportHost(DrmCursor* cursor);
   ~DrmGpuPlatformSupportHost() override;
 
   // GpuPlatformSupportHost:
   void OnGpuProcessLaunched(
       int host_id,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
       scoped_refptr<base::SingleThreadTaskRunner> send_runner,
       const base::Callback<void(IPC::Message*)>& send_callback) override;
-  void OnChannelEstablished() override;
   void OnChannelDestroyed(int host_id) override;
 
   // IPC::Listener:
@@ -95,6 +95,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
                               const gfx::Rect& bounds) override;
 
  private:
+  void OnChannelEstablished();
   bool OnMessageReceivedForDrmDisplayHostManager(const IPC::Message& message);
   void OnUpdateNativeDisplays(
       const std::vector<DisplaySnapshot_Params>& displays);
@@ -113,6 +114,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   int host_id_ = -1;
   bool channel_established_ = false;
 
+  scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> send_runner_;
   base::Callback<void(IPC::Message*)> send_callback_;
 
@@ -121,6 +123,9 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
 
   DrmCursor* cursor_;                              // Not owned.
   base::ObserverList<GpuThreadObserver> gpu_thread_observers_;
+
+  base::WeakPtrFactory<DrmGpuPlatformSupportHost> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DrmGpuPlatformSupportHost);
 };
 
 }  // namespace ui

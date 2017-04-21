@@ -29,10 +29,10 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/field_trial_recorder.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/common/child_process_host_impl.h"
@@ -71,6 +71,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "content/public/browser/android/java_interfaces.h"
+#include "media/mojo/interfaces/android_overlay.mojom.h"
 #endif
 
 #if defined(OS_WIN)
@@ -194,6 +196,7 @@ void RunCallbackOnIO(GpuProcessHost::GpuProcessKind kind,
 }
 
 #if defined(USE_OZONE)
+// The ozone platform use this callback to send IPC messages to the gpu process.
 void SendGpuProcessMessage(base::WeakPtr<GpuProcessHost> host,
                            IPC::Message* message) {
   if (host)
@@ -201,7 +204,26 @@ void SendGpuProcessMessage(base::WeakPtr<GpuProcessHost> host,
   else
     delete message;
 }
+
+void RouteMessageToOzoneOnUI(const IPC::Message& message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ui::OzonePlatform::GetInstance()
+      ->GetGpuPlatformSupportHost()
+      ->OnMessageReceived(message);
+}
+
 #endif  // defined(USE_OZONE)
+
+void OnGpuProcessHostDestroyedOnUI(int host_id, const std::string& message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  GpuDataManagerImpl::GetInstance()->AddLogMessage(
+      logging::LOG_ERROR, "GpuProcessHostUIShim", message);
+#if defined(USE_OZONE)
+  ui::OzonePlatform::GetInstance()
+      ->GetGpuPlatformSupportHost()
+      ->OnChannelDestroyed(host_id);
+#endif
+}
 
 // NOTE: changes to this class need to be reviewed by the security team.
 class GpuSandboxedProcessLauncherDelegate
@@ -306,12 +328,33 @@ class GpuSandboxedProcessLauncherDelegate
 #endif  // OS_WIN
 };
 
+#if defined(OS_ANDROID)
+template <typename Interface>
+void BindJavaInterface(mojo::InterfaceRequest<Interface> request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::GetGlobalJavaInterfaces()->GetInterface(std::move(request));
+}
+#endif  // defined(OS_ANDROID)
+
 }  // anonymous namespace
 
 class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
  public:
   ConnectionFilterImpl() {
-    GpuProcessHostUIShim::RegisterUIThreadMojoInterfaces(&registry_);
+    auto task_runner = BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+    registry_.AddInterface(base::Bind(&FieldTrialRecorder::Create),
+                           task_runner);
+    registry_.AddInterface(
+        base::Bind(
+            &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
+            base::Unretained(
+                memory_instrumentation::CoordinatorImpl::GetInstance())),
+        task_runner);
+#if defined(OS_ANDROID)
+    registry_.AddInterface(
+        base::Bind(&BindJavaInterface<media::mojom::AndroidOverlayProvider>),
+        task_runner);
+#endif
   }
 
  private:
@@ -466,15 +509,6 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 
   g_gpu_process_hosts[kind] = this;
 
-  // Post a task to create the corresponding GpuProcessHostUIShim. The
-  // GpuProcessHostUIShim will be destroyed when the GpuProcessHost is
-  // destroyed, which happens when the corresponding GPU process terminates or
-  // fails to launch. On browser exit, the shim can be leaked.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&GpuProcessHostUIShim::Create), host_id));
-
   process_.reset(new BrowserChildProcessHostImpl(
       PROCESS_TYPE_GPU, this, mojom::kGpuServiceName));
 }
@@ -562,11 +596,9 @@ GpuProcessHost::~GpuProcessHost() {
   if (block_offscreen_contexts)
     BlockLiveOffscreenContexts();
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&GpuProcessHostUIShim::Destroy,
-                                     host_id_,
-                                     message));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
 }
 
 bool GpuProcessHost::Init() {
@@ -619,18 +651,12 @@ bool GpuProcessHost::Init() {
   ui::OzonePlatform::GetInstance()
       ->GetGpuPlatformSupportHost()
       ->OnGpuProcessLaunched(
-          host_id_, base::ThreadTaskRunnerHandle::Get(),
+          host_id_, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+          base::ThreadTaskRunnerHandle::Get(),
           base::Bind(&SendGpuProcessMessage, weak_ptr_factory_.GetWeakPtr()));
 #endif
 
   return true;
-}
-
-void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&RouteToGpuProcessHostUIShimTask, host_id_, message));
 }
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
@@ -652,7 +678,10 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
-  RouteOnUIThread(message);
+#if defined(USE_OZONE)
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&RouteMessageToOzoneOnUI, message));
+#endif
   return true;
 }
 
