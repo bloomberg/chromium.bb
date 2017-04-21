@@ -84,8 +84,7 @@ SampleMap::~SampleMap() {}
 
 void SampleMap::Accumulate(Sample value, Count count) {
   sample_counts_[value] += count;
-  IncreaseSum(static_cast<int64_t>(count) * value);
-  IncreaseRedundantCount(count);
+  IncreaseSumAndCount(static_cast<int64_t>(count) * value, count);
 }
 
 Count SampleMap::GetCount(Sample value) const {
