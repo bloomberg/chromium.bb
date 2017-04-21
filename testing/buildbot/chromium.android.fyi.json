@@ -31,7 +31,7 @@
       },
       {
         "override_compile_targets": [
-          "breakpad_unittests_deps"
+          "breakpad_unittests"
         ],
         "test": "breakpad_unittests"
       },
@@ -88,7 +88,7 @@
       },
       {
         "override_compile_targets": [
-          "sandbox_linux_unittests_deps"
+          "sandbox_linux_unittests"
         ],
         "test": "sandbox_linux_unittests"
       },
@@ -133,7 +133,7 @@
       },
       {
         "override_compile_targets": [
-          "breakpad_unittests_deps"
+          "breakpad_unittests"
         ],
         "test": "breakpad_unittests"
       },
@@ -190,7 +190,7 @@
       },
       {
         "override_compile_targets": [
-          "sandbox_linux_unittests_deps"
+          "sandbox_linux_unittests"
         ],
         "test": "sandbox_linux_unittests"
       },
@@ -849,7 +849,7 @@
       },
       {
         "override_compile_targets": [
-          "breakpad_unittests_deps"
+          "breakpad_unittests"
         ],
         "override_isolate_target": "breakpad_unittests",
         "swarming": {
@@ -1521,7 +1521,7 @@
       },
       {
         "override_compile_targets": [
-          "sandbox_linux_unittests_deps"
+          "sandbox_linux_unittests"
         ],
         "override_isolate_target": "sandbox_linux_unittests",
         "swarming": {
@@ -1804,7 +1804,7 @@
       },
       {
         "override_compile_targets": [
-          "breakpad_unittests_deps"
+          "breakpad_unittests"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -1917,7 +1917,7 @@
       },
       {
         "override_compile_targets": [
-          "sandbox_linux_unittests_deps"
+          "sandbox_linux_unittests"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -1998,7 +1998,7 @@
       },
       {
         "override_compile_targets": [
-          "breakpad_unittests_deps"
+          "breakpad_unittests"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -2111,7 +2111,7 @@
       },
       {
         "override_compile_targets": [
-          "sandbox_linux_unittests_deps"
+          "sandbox_linux_unittests"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false

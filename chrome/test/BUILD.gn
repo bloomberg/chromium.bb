@@ -250,15 +250,6 @@ static_library("test_support") {
   }
 }
 
-# TODO(GYP_GONE): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("telemetry_gpu_integration_test_run") {
-  testonly = true
-  deps = [
-    ":telemetry_gpu_integration_test",
-  ]
-}
-
 group("telemetry_gpu_integration_test") {
   testonly = true
   deps = [
@@ -1094,15 +1085,6 @@ if (!is_android) {
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
 
-  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("telemetry_unittests_run") {
-    testonly = true
-    deps = [
-      ":telemetry_unittests",
-    ]
-  }
-
   group("telemetry_unittests") {
     testonly = true
     deps = [
@@ -1155,8 +1137,8 @@ if (!is_android) {
   }
 
   # TODO(GYP_GONE): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("tab_capture_end2end_tests_run") {
+  # This target exist only for compatibility w/ GYP.
+  group("tab_capture_end2end_tests") {
     testonly = true
     deps = [
       ":browser_tests",
@@ -2986,15 +2968,6 @@ if (!is_android) {
     # This target should not require the Chrome executable to run.
     assert_no_deps = [ "//chrome" ]
   }
-}
-
-# TODO(GYP_GONE): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("telemetry_perf_unittests_run") {
-  testonly = true
-  deps = [
-    ":telemetry_perf_unittests",
-  ]
 }
 
 group("telemetry_perf_unittests") {
@@ -5170,15 +5143,6 @@ if (is_android) {
 }
 
 if (is_chromeos && enable_package_mash_services) {
-  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("mash_browser_tests_run") {
-    testonly = true
-    deps = [
-      ":mash_browser_tests",
-    ]
-  }
-
   group("mash_browser_tests") {
     testonly = true
     data_deps = [
