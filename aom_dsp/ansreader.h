@@ -24,7 +24,7 @@
 #include "aom_dsp/ans.h"
 #include "aom_ports/mem_ops.h"
 #if CONFIG_ACCOUNTING
-#include "av1/common/accounting.h"
+#include "av1/decoder/accounting.h"
 #endif
 
 #ifdef __cplusplus

@@ -23,7 +23,7 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/decoder/dthread.h"
 #if CONFIG_ACCOUNTING
-#include "av1/common/accounting.h"
+#include "av1/decoder/accounting.h"
 #endif
 #if CONFIG_INSPECTION
 #include "av1/decoder/inspection.h"

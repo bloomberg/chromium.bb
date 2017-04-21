@@ -16,7 +16,7 @@ extern "C" {
 #endif  // __cplusplus
 
 #if CONFIG_ACCOUNTING
-#include "av1/common/accounting.h"
+#include "av1/decoder/accounting.h"
 #endif
 
 typedef void (*aom_inspect_cb)(void *decoder, void *data);

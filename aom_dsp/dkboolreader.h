@@ -28,7 +28,7 @@
 #include "aom/aom_integer.h"
 #include "aom_dsp/prob.h"
 #if CONFIG_ACCOUNTING
-#include "av1/common/accounting.h"
+#include "av1/decoder/accounting.h"
 #endif
 
 #ifdef __cplusplus

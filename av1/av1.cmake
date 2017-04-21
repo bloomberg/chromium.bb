@@ -206,13 +206,6 @@ set(AOM_AV1_ENCODER_MSA_INTRIN
     "${AOM_ROOT}/av1/encoder/mips/msa/fdct_msa.h"
     "${AOM_ROOT}/av1/encoder/mips/msa/temporal_filter_msa.c")
 
-if (CONFIG_ACCOUNTING)
-  set(AOM_AV1_COMMON_SOURCES
-      ${AOM_AV1_COMMON_SOURCES}
-      "${AOM_ROOT}/av1/common/accounting.c"
-      "${AOM_ROOT}/av1/common/accounting.h")
-endif ()
-
 if (CONFIG_HIGHBITDEPTH)
   set(AOM_AV1_COMMON_SSE4_1_INTRIN
       ${AOM_AV1_COMMON_SSE4_1_INTRIN}
@@ -291,6 +284,13 @@ if (CONFIG_FILTER_INTRA)
   set(AOM_AV1_COMMON_SSE4_1_INTRIN
       ${AOM_AV1_COMMON_SSE4_1_INTRIN}
       "${AOM_ROOT}/av1/common/x86/filterintra_sse4.c")
+endif ()
+
+if (CONFIG_ACCOUNTING)
+  set(AOM_AV1_DECODER_SOURCES
+      ${AOM_AV1_DECODER_SOURCES}
+      "${AOM_ROOT}/av1/decoder/accounting.c"
+      "${AOM_ROOT}/av1/decoder/accounting.h")
 endif ()
 
 if (CONFIG_INSPECTION)

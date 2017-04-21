@@ -33,7 +33,7 @@
 #include "av1/common/odintrin.h"
 
 #if CONFIG_ACCOUNTING
-#include "av1/common/accounting.h"
+#include "av1/decoder/accounting.h"
 #define ACCT_STR_NAME acct_str
 #define ACCT_STR_PARAM , const char *ACCT_STR_NAME
 #define ACCT_STR_ARG(s) , s

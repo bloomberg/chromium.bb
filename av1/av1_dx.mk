@@ -33,6 +33,11 @@ AV1_DX_SRCS-yes += decoder/decoder.h
 AV1_DX_SRCS-yes += decoder/dsubexp.c
 AV1_DX_SRCS-yes += decoder/dsubexp.h
 
+ifeq ($(CONFIG_ACCOUNTING),yes)
+AV1_DX_SRCS-yes += decoder/accounting.h
+AV1_DX_SRCS-yes += decoder/accounting.c
+endif
+
 ifeq ($(CONFIG_INSPECTION),yes)
 AV1_DX_SRCS-yes += decoder/inspection.c
 AV1_DX_SRCS-yes += decoder/inspection.h

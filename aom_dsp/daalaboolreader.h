@@ -16,7 +16,7 @@
 #include "aom_dsp/entdec.h"
 #include "aom_dsp/prob.h"
 #if CONFIG_ACCOUNTING
-#include "av1/common/accounting.h"
+#include "av1/decoder/accounting.h"
 #endif
 #if CONFIG_BITSTREAM_DEBUG
 #include <stdio.h>
