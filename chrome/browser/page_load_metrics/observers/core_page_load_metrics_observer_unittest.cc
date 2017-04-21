@@ -418,12 +418,12 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
   page_load_metrics::ExtraRequestInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       0 /* original_network_content_length */},
+       0 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       1024 * 40 /* original_network_content_length */},
+       1024 * 40 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
   };
 
   int64_t network_bytes = 0;
@@ -504,12 +504,12 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
   page_load_metrics::ExtraRequestInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       0 /* original_network_content_length */},
+       0 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       1024 * 40 /* original_network_content_length */},
+       1024 * 40 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
   };
 
   int64_t network_bytes = 0;
@@ -584,17 +584,17 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
   page_load_metrics::ExtraRequestInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       0 /* original_network_content_length */},
+       0 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       1024 * 40 /* original_network_content_length */},
+       1024 * 40 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
   };
 
   int64_t network_bytes = 0;
   int64_t cache_bytes = 0;
-  for (auto request : resources) {
+  for (const auto& request : resources) {
     SimulateLoadedResource(request);
     if (!request.was_cached) {
       network_bytes += request.raw_body_bytes;

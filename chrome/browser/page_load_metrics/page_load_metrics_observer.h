@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_OBSERVER_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_OBSERVER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -199,10 +201,9 @@ struct PageLoadExtraInfo {
 struct ExtraRequestInfo {
   ExtraRequestInfo(bool was_cached,
                    int64_t raw_body_bytes,
-                   bool data_reduction_proxy_used,
-                   int64_t original_network_content_length);
-
-  ExtraRequestInfo(const ExtraRequestInfo& other);
+                   int64_t original_network_content_length,
+                   std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
+                       data_reduction_proxy_data);
 
   ~ExtraRequestInfo();
 
@@ -212,12 +213,13 @@ struct ExtraRequestInfo {
   // The number of body (not header) prefilter bytes.
   const int64_t raw_body_bytes;
 
-  // Whether this request used Data Reduction Proxy.
-  const bool data_reduction_proxy_used;
-
   // The number of body (not header) bytes that the data reduction proxy saw
   // before it compressed the requests.
   const int64_t original_network_content_length;
+
+  // Data related to data saver.
+  const std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
+      data_reduction_proxy_data;
 };
 
 // Interface for PageLoadMetrics observers. All instances of this class are

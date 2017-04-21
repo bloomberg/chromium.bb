@@ -996,8 +996,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
                                 : net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
                 data->effective_connection_type());
       EXPECT_TRUE(data->used_data_reduction_proxy());
-      EXPECT_EQ(GURL(kTestURL), data->request_url());
-      EXPECT_EQ("fake-session", data->session_key());
+      EXPECT_EQ(test.main_frame ? GURL(kTestURL) : GURL(), data->request_url());
+      EXPECT_EQ(test.main_frame ? "fake-session" : "", data->session_key());
       EXPECT_EQ(test.lofi_on, data->lofi_requested());
     }
   }
@@ -1317,8 +1317,10 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
       response_headers += "Chrome-Proxy-Content-Transform: empty-image\r\n";
 
     response_headers += "\r\n";
-    FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
-
+    auto request =
+        FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
+    EXPECT_EQ(tests[i].lofi_response,
+              DataReductionProxyData::GetData(*request)->lofi_received());
     VerifyDidNotifyLoFiResponse(tests[i].lofi_response);
   }
 }
@@ -1346,7 +1348,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "x-original-content-length: 200\r\n";
 
   response_headers += "\r\n";
-  FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
+  auto request =
+      FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
+  EXPECT_TRUE(DataReductionProxyData::GetData(*request)->lite_page_received());
 
   histogram_tester.ExpectBucketCount(kLoFiTransformationTypeHistogram,
                                      LITE_PAGE, 1);

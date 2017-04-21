@@ -15,11 +15,16 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -65,6 +70,19 @@ class TestPreviewsWebContentsObserver
 
   content::ReloadType last_navigation_reload_type() {
     return last_navigation_reload_type_;
+  }
+
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    ChromeNavigationData* chrome_navigation_data = new ChromeNavigationData();
+    content::WebContentsTester::For(web_contents())
+        ->SetNavigationData(navigation_handle,
+                            base::WrapUnique(chrome_navigation_data));
+    data_reduction_proxy::DataReductionProxyData* data =
+        new data_reduction_proxy::DataReductionProxyData();
+    chrome_navigation_data->SetDataReductionProxyData(base::WrapUnique(data));
+    data->set_used_data_reduction_proxy(true);
+    data->set_page_id(1u);
   }
 
   void DidFinishNavigation(
@@ -202,6 +220,14 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
                            1);
   EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
                    data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
+
+  auto* data_reduction_proxy_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
+
+  EXPECT_EQ(0u, data_reduction_proxy_settings->data_reduction_proxy_service()
+                    ->pingback_client()
+                    ->OptOutsSizeForTesting());
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestUserDismissal) {
@@ -243,6 +269,8 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestTabClosedDismissal) {
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
   base::HistogramTester tester;
 
+  NavigateAndCommit(GURL(kTestUrl));
+
   ConfirmInfoBarDelegate* infobar = CreateInfoBar(
       PreviewsInfoBarDelegate::LOFI, true /* is_data_saver_user */);
 
@@ -257,6 +285,14 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
   EXPECT_EQ(1, drp_test_context_->pref_service()->GetInteger(
                    data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
   EXPECT_TRUE(user_opt_out_.value());
+
+  auto* data_reduction_proxy_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
+
+  EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
+                    ->pingback_client()
+                    ->OptOutsSizeForTesting());
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLitePage) {
@@ -281,6 +317,14 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLitePage) {
   EXPECT_EQ(content::ReloadType::DISABLE_LOFI_MODE,
             TestPreviewsWebContentsObserver::FromWebContents(web_contents())
                 ->last_navigation_reload_type());
+
+  auto* data_reduction_proxy_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
+
+  EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
+                    ->pingback_client()
+                    ->OptOutsSizeForTesting());
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
@@ -421,4 +465,62 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDisablesLoFi) {
   EXPECT_EQ(content::ReloadType::DISABLE_LOFI_MODE,
             TestPreviewsWebContentsObserver::FromWebContents(web_contents())
                 ->last_navigation_reload_type());
+
+  auto* data_reduction_proxy_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
+
+  EXPECT_EQ(0u, data_reduction_proxy_settings->data_reduction_proxy_service()
+                    ->pingback_client()
+                    ->OptOutsSizeForTesting());
+}
+
+TEST_F(PreviewsInfoBarDelegateUnitTest, PingbackClientClearedTabClosed) {
+  base::HistogramTester tester;
+
+  NavigateAndCommit(GURL(kTestUrl));
+
+  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
+      PreviewsInfoBarDelegate::LITE_PAGE, true /* is_data_saver_user */);
+
+  // Simulate clicking the infobar link.
+  if (infobar->LinkClicked(WindowOpenDisposition::CURRENT_TAB))
+    infobar_service()->infobar_at(0)->RemoveSelf();
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+
+  tester.ExpectBucketCount(
+      kUMAPreviewsInfoBarActionLitePage,
+      PreviewsInfoBarDelegate::INFOBAR_LOAD_ORIGINAL_CLICKED, 1);
+
+  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+
+  EXPECT_EQ(content::ReloadType::DISABLE_LOFI_MODE,
+            TestPreviewsWebContentsObserver::FromWebContents(web_contents())
+                ->last_navigation_reload_type());
+
+  auto* data_reduction_proxy_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
+
+  EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
+                    ->pingback_client()
+                    ->OptOutsSizeForTesting());
+
+  {
+    std::unique_ptr<content::NavigationHandle> navigation_handle(
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            GURL("url"), main_rfh(), true));
+  }
+
+  SetContents(nullptr);
+
+  EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
+                    ->pingback_client()
+                    ->OptOutsSizeForTesting());
+
+  drp_test_context_->RunUntilIdle();
+
+  EXPECT_EQ(0u, data_reduction_proxy_settings->data_reduction_proxy_service()
+                    ->pingback_client()
+                    ->OptOutsSizeForTesting());
 }

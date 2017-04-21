@@ -26,7 +26,8 @@ struct DataReductionProxyPageLoadTiming {
           parse_blocked_on_script_load_duration,
       const base::Optional<base::TimeDelta>& parse_stop,
       int64_t network_bytes,
-      int64_t original_network_bytes);
+      int64_t original_network_bytes,
+      bool app_background_occurred);
 
   DataReductionProxyPageLoadTiming(
       const DataReductionProxyPageLoadTiming& other);
@@ -57,6 +58,8 @@ struct DataReductionProxyPageLoadTiming {
   // The number of bytes that would have been served over the network if the
   // user were not using data reduction proxy, not including headers.
   const int64_t original_network_bytes;
+  // True when android app background occurred during the page load lifetime.
+  const bool app_background_occurred;
 };
 
 }  // namespace data_reduction_proxy

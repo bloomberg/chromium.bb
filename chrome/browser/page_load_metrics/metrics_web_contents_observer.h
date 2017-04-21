@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -76,13 +77,15 @@ class MetricsWebContentsObserver
 
   // A resource request completed on the IO thread. This method is invoked on
   // the UI thread.
-  void OnRequestComplete(const content::GlobalRequestID& request_id,
-                         content::ResourceType resource_type,
-                         bool was_cached,
-                         bool used_data_reduction_proxy,
-                         int64_t raw_body_bytes,
-                         int64_t original_content_length,
-                         base::TimeTicks creation_time);
+  void OnRequestComplete(
+      const content::GlobalRequestID& request_id,
+      content::ResourceType resource_type,
+      bool was_cached,
+      std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
+          data_reduction_proxy_data,
+      int64_t raw_body_bytes,
+      int64_t original_content_length,
+      base::TimeTicks creation_time);
 
   // Invoked on navigations where a navigation delay was added by the
   // DelayNavigationThrottle. This is a temporary method that will be removed

@@ -120,7 +120,7 @@ class DataReductionProxyConfigServiceClient
 
   // Examines |response_headers| to determine if an authentication failure
   // occurred on a Data Reduction Proxy. Returns true if authentication failure
-  // occured, and the session key specified in |request_headers| matches the
+  // occurred, and the session key specified in |request_headers| matches the
   // current session in use by the client. If an authentication failure is
   // detected,  it fetches a new config.
   bool ShouldRetryDueToAuthFailure(

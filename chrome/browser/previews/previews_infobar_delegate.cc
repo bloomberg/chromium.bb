@@ -5,12 +5,15 @@
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -147,16 +150,25 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (infobar_type_ == LITE_PAGE || infobar_type_ == LOFI) {
+    auto* data_reduction_proxy_settings =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+            web_contents->GetBrowserContext());
+    data_reduction_proxy_settings->IncrementLoFiUserRequestsForImages();
+    PreviewsInfoBarTabHelper* infobar_tab_helper =
+        PreviewsInfoBarTabHelper::FromWebContents(web_contents);
+    if (infobar_tab_helper &&
+        infobar_tab_helper->committed_data_saver_navigation_id()) {
+      data_reduction_proxy_settings->data_reduction_proxy_service()
+          ->pingback_client()
+          ->AddOptOut(
+              infobar_tab_helper->committed_data_saver_navigation_id().value());
+    }
+
     if (infobar_type_ == LITE_PAGE)
       web_contents->GetController().Reload(
           content::ReloadType::DISABLE_LOFI_MODE, true);
     else if (infobar_type_ == LOFI)
       web_contents->ReloadLoFiImages();
-
-    auto* data_reduction_proxy_settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-            web_contents->GetBrowserContext());
-    data_reduction_proxy_settings->IncrementLoFiUserRequestsForImages();
   } else if (infobar_type_ == OFFLINE) {
     // Prevent LoFi and lite page modes from showing after reload.
     // TODO(ryansturm): rename DISABLE_LOFI_MODE to DISABLE_PREVIEWS.

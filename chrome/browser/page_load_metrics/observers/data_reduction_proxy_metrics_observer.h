@@ -110,7 +110,8 @@ class DataReductionProxyMetricsObserver
  private:
   // Sends the page load information to the pingback client.
   void SendPingback(const page_load_metrics::PageLoadTiming& timing,
-                    const page_load_metrics::PageLoadExtraInfo& info);
+                    const page_load_metrics::PageLoadExtraInfo& info,
+                    bool app_background_occurred);
 
   // Records UMA of page size when the observer is about to be deleted.
   void RecordPageSizeUMA() const;

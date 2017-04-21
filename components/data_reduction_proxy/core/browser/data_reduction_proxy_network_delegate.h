@@ -115,6 +115,15 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   void OnCompletedInternal(net::URLRequest* request,
                            bool started) override;
 
+  // Checks if a LoFi or Lite Pages response was received and sets the state on
+  // DataReductionProxyData for |request|.
+  void OnHeadersReceivedInternal(
+      net::URLRequest* request,
+      const net::CompletionCallback& callback,
+      const net::HttpResponseHeaders* original_response_headers,
+      scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url) override;
+
   // Calculates actual data usage that went over the network at the HTTP layer
   // (e.g. not including network layer overhead) and estimates original data
   // usage for |request|.

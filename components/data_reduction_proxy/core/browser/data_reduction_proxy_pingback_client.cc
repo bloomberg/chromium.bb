@@ -6,9 +6,11 @@
 
 #include <stdint.h>
 
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
@@ -36,7 +38,8 @@ static const char kHistogramAttempted[] =
 // timing and data reduction proxy state.
 void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
                               const DataReductionProxyPageLoadTiming& timing,
-                              PageloadMetrics* request) {
+                              PageloadMetrics* request,
+                              bool opted_out) {
   request->set_session_key(request_data.session_key());
   // For the timing events, any of them could be zero. Fill the message as a
   // best effort.
@@ -96,6 +99,28 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   if (request_data.page_id()) {
     request->set_page_id(request_data.page_id().value());
   }
+
+  bool was_preview_shown = false;
+  if (request_data.lofi_received()) {
+    request->set_previews_type(PageloadMetrics_PreviewsType_LOFI);
+    was_preview_shown = true;
+  } else if (request_data.lite_page_received()) {
+    request->set_previews_type(PageloadMetrics_PreviewsType_LITE_PAGE);
+    was_preview_shown = true;
+  } else {
+    request->set_previews_type(PageloadMetrics_PreviewsType_NONE);
+  }
+
+  if (!was_preview_shown || timing.app_background_occurred) {
+    request->set_previews_opt_out(PageloadMetrics_PreviewsOptOut_UNKNOWN);
+    return;
+  }
+
+  if (opted_out) {
+    request->set_previews_opt_out(PageloadMetrics_PreviewsOptOut_OPT_OUT);
+    return;
+  }
+  request->set_previews_opt_out(PageloadMetrics_PreviewsOptOut_NON_OPT_OUT);
 }
 
 // Adds |current_time| as the metrics sent time to |request_data|, and returns
@@ -119,6 +144,7 @@ DataReductionProxyPingbackClient::DataReductionProxyPingbackClient(
       pingback_reporting_fraction_(0.0) {}
 
 DataReductionProxyPingbackClient::~DataReductionProxyPingbackClient() {
+  DCHECK(opt_outs_.empty());
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -141,8 +167,18 @@ void DataReductionProxyPingbackClient::SendPingback(
   UMA_HISTOGRAM_BOOLEAN(kHistogramAttempted, send_pingback);
   if (!send_pingback)
     return;
+
+  bool opted_out = false;
+  if (request_data.page_id()) {
+    auto opt_out = opt_outs_.find(NavigationID(request_data.page_id().value(),
+                                               request_data.session_key()));
+    opted_out = opt_out != opt_outs_.end();
+    if (opted_out)
+      opt_outs_.erase(opt_out);
+  }
+
   PageloadMetrics* pageload_metrics = metrics_request_.add_pageloads();
-  AddDataToPageloadMetrics(request_data, timing, pageload_metrics);
+  AddDataToPageloadMetrics(request_data, timing, pageload_metrics, opted_out);
   if (current_fetcher_.get())
     return;
   DCHECK_EQ(1, metrics_request_.pageloads_size());
@@ -189,6 +225,28 @@ void DataReductionProxyPingbackClient::SetPingbackReportingFraction(
   DCHECK_LE(0.0f, pingback_reporting_fraction);
   DCHECK_GE(1.0f, pingback_reporting_fraction);
   pingback_reporting_fraction_ = pingback_reporting_fraction;
+}
+
+void DataReductionProxyPingbackClient::AddOptOut(
+    const NavigationID& navigation_id) {
+  opt_outs_.emplace(navigation_id);
+}
+
+void DataReductionProxyPingbackClient::ClearNavigationKeySync(
+    const NavigationID& navigation_id) {
+  opt_outs_.erase(navigation_id);
+}
+
+void DataReductionProxyPingbackClient::ClearNavigationKeyAsync(
+    const NavigationID& navigation_id) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyPingbackClient::ClearNavigationKeySync,
+                 base::Unretained(this), navigation_id));
+}
+
+size_t DataReductionProxyPingbackClient::OptOutsSizeForTesting() const {
+  return opt_outs_.size();
 }
 
 }  // namespace data_reduction_proxy

@@ -174,7 +174,7 @@ DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
   // notification, so we send a pingback with data collected up to this point.
   if (info.did_commit) {
     RecordPageSizeUMA();
-    SendPingback(timing, info);
+    SendPingback(timing, info, true /* app_background_occurred */);
   }
   return STOP_OBSERVING;
 }
@@ -183,7 +183,7 @@ void DataReductionProxyMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageSizeUMA();
-  SendPingback(timing, info);
+  SendPingback(timing, info, false /* app_background_occurred */);
 }
 
 void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
@@ -271,7 +271,8 @@ void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
 
 void DataReductionProxyMetricsObserver::SendPingback(
     const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::PageLoadExtraInfo& info,
+    bool app_background_occurred) {
   // TODO(ryansturm): Move to OnFirstBackgroundEvent to handle some fast
   // shutdown cases. crbug.com/618072
   if (!browser_context_ || !data_)
@@ -325,7 +326,7 @@ void DataReductionProxyMetricsObserver::SendPingback(
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint,
       parse_blocked_on_script_load_duration, parse_stop, network_bytes_,
-      original_network_bytes_);
+      original_network_bytes_, app_background_occurred);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 
@@ -419,13 +420,20 @@ void DataReductionProxyMetricsObserver::OnParseStop(
 
 void DataReductionProxyMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestInfo& extra_request_info) {
+  if (extra_request_info.data_reduction_proxy_data &&
+      extra_request_info.data_reduction_proxy_data->lofi_received()) {
+    data_->set_lofi_received(true);
+  }
   if (extra_request_info.was_cached)
     return;
   original_network_bytes_ += extra_request_info.original_network_content_length;
   network_bytes_ += extra_request_info.raw_body_bytes;
   num_network_resources_++;
-  if (!extra_request_info.data_reduction_proxy_used)
+  if (!extra_request_info.data_reduction_proxy_data ||
+      !extra_request_info.data_reduction_proxy_data
+           ->used_data_reduction_proxy()) {
     return;
+  }
   num_data_reduction_proxy_resources_++;
   network_bytes_proxied_ += extra_request_info.raw_body_bytes;
 }

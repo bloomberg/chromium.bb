@@ -4,6 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 
+#include <utility>
+
 namespace page_load_metrics {
 
 PageLoadExtraInfo::PageLoadExtraInfo(
@@ -54,16 +56,16 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
       page_load_metrics::PageLoadMetadata());
 }
 
-ExtraRequestInfo::ExtraRequestInfo(bool was_cached,
-                                   int64_t raw_body_bytes,
-                                   bool data_reduction_proxy_used,
-                                   int64_t original_network_content_length)
+ExtraRequestInfo::ExtraRequestInfo(
+    bool was_cached,
+    int64_t raw_body_bytes,
+    int64_t original_network_content_length,
+    std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
+        data_reduction_proxy_data)
     : was_cached(was_cached),
       raw_body_bytes(raw_body_bytes),
-      data_reduction_proxy_used(data_reduction_proxy_used),
-      original_network_content_length(original_network_content_length) {}
-
-ExtraRequestInfo::ExtraRequestInfo(const ExtraRequestInfo& other) = default;
+      original_network_content_length(original_network_content_length),
+      data_reduction_proxy_data(std::move(data_reduction_proxy_data)) {}
 
 ExtraRequestInfo::~ExtraRequestInfo() {}
 

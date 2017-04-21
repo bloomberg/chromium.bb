@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -44,21 +45,36 @@ TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {
   data->set_lofi_requested(false);
   EXPECT_FALSE(data->lofi_requested());
 
+  EXPECT_FALSE(data->lite_page_received());
+  data->set_lite_page_received(true);
+  EXPECT_TRUE(data->lite_page_received());
+  data->set_lite_page_received(false);
+  EXPECT_FALSE(data->lite_page_received());
+
+  EXPECT_FALSE(data->lofi_received());
+  data->set_lofi_received(true);
+  EXPECT_TRUE(data->lofi_received());
+  data->set_lofi_received(false);
+  EXPECT_FALSE(data->lofi_received());
+
   EXPECT_EQ(std::string(), data->session_key());
-  EXPECT_EQ(GURL(std::string()), data->request_url());
   std::string session_key = "test-key";
   data->set_session_key(session_key);
   EXPECT_EQ(session_key, data->session_key());
+
+  EXPECT_EQ(GURL(std::string()), data->request_url());
   GURL test_url("test-url");
   data->set_request_url(test_url);
   EXPECT_EQ(test_url, data->request_url());
+
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             data->effective_connection_type());
   data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
             data->effective_connection_type());
-  uint64_t page_id = 1;
+
   EXPECT_FALSE(data->page_id());
+  uint64_t page_id = 1;
   data->set_page_id(page_id);
   EXPECT_EQ(page_id, data->page_id().value());
 }
@@ -84,7 +100,7 @@ TEST_F(DataReductionProxyDataTest, AddToURLRequest) {
 TEST_F(DataReductionProxyDataTest, DeepCopy) {
   const struct {
     bool data_reduction_used;
-    bool lofi_on;
+    bool lofi_test_value;
   } tests[] = {
       {
           false, true,
@@ -105,13 +121,17 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
     static const GURL kTestURL("test-url");
     std::unique_ptr<DataReductionProxyData> data(new DataReductionProxyData());
     data->set_used_data_reduction_proxy(tests[i].data_reduction_used);
-    data->set_lofi_requested(tests[i].lofi_on);
+    data->set_lofi_requested(tests[i].lofi_test_value);
+    data->set_lite_page_received(tests[i].lofi_test_value);
+    data->set_lofi_received(tests[i].lofi_test_value);
     data->set_session_key(kSessionKey);
     data->set_request_url(kTestURL);
     data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
     data->set_page_id(2u);
     std::unique_ptr<DataReductionProxyData> copy = data->DeepCopy();
-    EXPECT_EQ(tests[i].lofi_on, copy->lofi_requested());
+    EXPECT_EQ(tests[i].lofi_test_value, copy->lofi_requested());
+    EXPECT_EQ(tests[i].lofi_test_value, copy->lite_page_received());
+    EXPECT_EQ(tests[i].lofi_test_value, copy->lofi_received());
     EXPECT_EQ(tests[i].data_reduction_used, copy->used_data_reduction_proxy());
     EXPECT_EQ(kSessionKey, copy->session_key());
     EXPECT_EQ(kTestURL, copy->request_url());

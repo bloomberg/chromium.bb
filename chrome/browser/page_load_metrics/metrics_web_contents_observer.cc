@@ -256,7 +256,8 @@ void MetricsWebContentsObserver::OnRequestComplete(
     const content::GlobalRequestID& request_id,
     content::ResourceType resource_type,
     bool was_cached,
-    bool used_data_reduction_proxy,
+    std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
+        data_reduction_proxy_data,
     int64_t raw_body_bytes,
     int64_t original_content_length,
     base::TimeTicks creation_time) {
@@ -264,8 +265,8 @@ void MetricsWebContentsObserver::OnRequestComplete(
       GetTrackerOrNullForRequest(request_id, resource_type, creation_time);
   if (tracker) {
     ExtraRequestInfo extra_request_info(
-        was_cached, raw_body_bytes, used_data_reduction_proxy,
-        was_cached ? 0 : original_content_length);
+        was_cached, raw_body_bytes, was_cached ? 0 : original_content_length,
+        std::move(data_reduction_proxy_data));
     tracker->OnLoadedResource(extra_request_info);
   }
 }

@@ -5,8 +5,12 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PINGBACK_CLIENT_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PINGBACK_CLIENT_H_
 
+#include <stdint.h>
+
 #include <memory>
+#include <set>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -27,6 +31,8 @@ namespace data_reduction_proxy {
 class DataReductionProxyData;
 struct DataReductionProxyPageLoadTiming;
 
+using NavigationID = std::pair<uint64_t, std::string>;
+
 // Manages pingbacks about page load timing information to the data saver proxy
 // server. This class is not thread safe.
 class DataReductionProxyPingbackClient : public net::URLFetcherDelegate {
@@ -45,6 +51,17 @@ class DataReductionProxyPingbackClient : public net::URLFetcherDelegate {
   // Sets the probability of actually sending a pingback to the server for any
   // call to SendPingback.
   void SetPingbackReportingFraction(float pingback_reporting_fraction);
+
+  // Adds an opt out for |tab_identifier_key| for a data saver |page_id|. An opt
+  // out occurs when users dismiss the preview in favor of the full page.
+  void AddOptOut(const NavigationID& navigation_id);
+
+  // Removes any stored data associated with |tab_identifier_key| in a task that
+  // runs later.
+  void ClearNavigationKeyAsync(const NavigationID& navigation_id);
+
+  // The total number of pending loads being tracked due to opt outs.
+  size_t OptOutsSizeForTesting() const;
 
  protected:
   // Generates a float in the range [0, 1). Virtualized in testing.
@@ -66,6 +83,9 @@ class DataReductionProxyPingbackClient : public net::URLFetcherDelegate {
   // reset to an empty RecordPageloadMetricsRequest.
   void CreateFetcherForDataAndStart();
 
+  // Removes any stored data associated with |tab_identifier_key|.
+  void ClearNavigationKeySync(const NavigationID& navigation_id);
+
   net::URLRequestContextGetter* url_request_context_;
 
   // The URL for the data saver proxy's ping back service.
@@ -79,6 +99,9 @@ class DataReductionProxyPingbackClient : public net::URLFetcherDelegate {
 
   // The probability of sending a pingback to the server.
   float pingback_reporting_fraction_;
+
+  // The map of tab identifier keys to page IDs.
+  std::set<NavigationID> opt_outs_;
 
   base::ThreadChecker thread_checker_;
 

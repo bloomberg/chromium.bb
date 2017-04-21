@@ -72,23 +72,23 @@ class TabRestorePageLoadMetricsObserverTest
     page_load_metrics::ExtraRequestInfo resources[] = {
         // Cached request.
         {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-         false /* data_reduction_proxy_used*/,
-         0 /* original_network_content_length */},
+         0 /* original_network_content_length */,
+         nullptr /* data_reduction_proxy_data */},
         // Uncached non-proxied request.
         {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-         false /* data_reduction_proxy_used*/,
-         1024 * 40 /* original_network_content_length */},
+         1024 * 40 /* original_network_content_length */,
+         nullptr /* data_reduction_proxy_data */},
         // Uncached proxied request with .1 compression ratio.
         {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-         false /* data_reduction_proxy_used*/,
-         1024 * 40 /* original_network_content_length */},
+         1024 * 40 /* original_network_content_length */,
+         nullptr /* data_reduction_proxy_data */},
         // Uncached proxied request with .5 compression ratio.
         {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-         false /* data_reduction_proxy_used*/,
-         1024 * 40 /* original_network_content_length */},
+         1024 * 40 /* original_network_content_length */,
+         nullptr /* data_reduction_proxy_data */},
     };
 
-    for (auto request : resources) {
+    for (const auto& request : resources) {
       SimulateLoadedResource(request);
       if (!request.was_cached) {
         network_bytes_ += request.raw_body_bytes;

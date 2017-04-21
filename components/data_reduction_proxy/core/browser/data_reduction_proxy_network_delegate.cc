@@ -297,14 +297,17 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   data = DataReductionProxyData::GetDataAndCreateIfNecessary(request);
   if (data) {
     data->set_used_data_reduction_proxy(true);
-    data->set_session_key(
-        data_reduction_proxy_request_options_->GetSecureSession());
-    data->set_request_url(request->url());
-    if ((request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) &&
-        request->context()->network_quality_estimator()) {
-      data->set_effective_connection_type(request->context()
-                                              ->network_quality_estimator()
-                                              ->GetEffectiveConnectionType());
+    // Only set GURL, NQE and session key string for main frame requests since
+    // they are not needed for sub-resources.
+    if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
+      data->set_session_key(
+          data_reduction_proxy_request_options_->GetSecureSession());
+      data->set_request_url(request->url());
+      if (request->context()->network_quality_estimator()) {
+        data->set_effective_connection_type(request->context()
+                                                ->network_quality_estimator()
+                                                ->GetEffectiveConnectionType());
+      }
     }
   }
 
@@ -412,6 +415,25 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   CalculateAndRecordDataUsage(*request, request_type);
 
   RecordContentLength(*request, request_type, original_content_length);
+}
+
+void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
+    net::URLRequest* request,
+    const net::CompletionCallback& callback,
+    const net::HttpResponseHeaders* original_response_headers,
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
+  if (!original_response_headers)
+    return;
+  if (IsEmptyImagePreview(*original_response_headers)) {
+    DataReductionProxyData* data =
+        DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+    data->set_lofi_received(true);
+  } else if (IsLitePagePreview(*original_response_headers)) {
+    DataReductionProxyData* data =
+        DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+    data->set_lite_page_received(true);
+  }
 }
 
 void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(

@@ -62,10 +62,15 @@ class TestPingbackClient
     timing_.reset(
         new data_reduction_proxy::DataReductionProxyPageLoadTiming(timing));
     send_pingback_called_ = true;
+    data_ = data.DeepCopy();
   }
 
   data_reduction_proxy::DataReductionProxyPageLoadTiming* timing() const {
     return timing_.get();
+  }
+
+  const data_reduction_proxy::DataReductionProxyData& data() const {
+    return *data_;
   }
 
   bool send_pingback_called() const { return send_pingback_called_; }
@@ -78,6 +83,7 @@ class TestPingbackClient
  private:
   std::unique_ptr<data_reduction_proxy::DataReductionProxyPageLoadTiming>
       timing_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data_;
   bool send_pingback_called_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPingbackClient);
@@ -193,6 +199,11 @@ class DataReductionProxyMetricsObserverTest
                        pingback_client_->timing()->load_event_start);
     ExpectEqualOrUnset(timing_.paint_timing.first_image_paint,
                        pingback_client_->timing()->first_image_paint);
+  }
+
+  void ValidateLoFiInPingback(bool lofi_expected) {
+    EXPECT_TRUE(pingback_client_->send_pingback_called());
+    EXPECT_EQ(lofi_expected, pingback_client_->data().lofi_received());
   }
 
   void ValidateHistograms() {
@@ -397,6 +408,25 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   timing_.document_timing.load_event_start = base::nullopt;
   RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
+  ValidateLoFiInPingback(false);
+
+  ResetTest();
+
+  std::unique_ptr<DataReductionProxyData> data =
+      base::MakeUnique<DataReductionProxyData>();
+  data->set_used_data_reduction_proxy(true);
+  data->set_lofi_received(true);
+
+  // Verify LoFi is tracked when a LoFi response is received.
+  page_load_metrics::ExtraRequestInfo resource = {
+      true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+      0 /* original_network_content_length */, std::move(data)};
+
+  RunTest(true, false);
+  SimulateLoadedResource(resource);
+  NavigateToUntrackedUrl();
+  ValidateTimes();
+  ValidateLoFiInPingback(true);
 
   ResetTest();
   // Verify that when data reduction proxy was not used, SendPingback is not
@@ -418,24 +448,26 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
 
   RunTest(true, false);
 
+  std::unique_ptr<DataReductionProxyData> data =
+      base::MakeUnique<DataReductionProxyData>();
+  data->set_used_data_reduction_proxy(true);
+
   // Prepare 4 resources of varying size and configurations.
   page_load_metrics::ExtraRequestInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       0 /* original_network_content_length */},
+       0 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       1024 * 40 /* original_network_content_length */},
+       1024 * 40 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
       // Uncached proxied request with .1 compression ratio.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       true /* data_reduction_proxy_used*/,
-       1024 * 40 * 10 /* original_network_content_length */},
+       1024 * 40 * 10 /* original_network_content_length */, data->DeepCopy()},
       // Uncached proxied request with .5 compression ratio.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       true /* data_reduction_proxy_used*/,
-       1024 * 40 * 5 /* original_network_content_length */},
+       1024 * 40 * 5 /* original_network_content_length */, std::move(data)},
   };
 
   int network_resources = 0;
@@ -443,14 +475,15 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   int64_t network_bytes = 0;
   int64_t drp_bytes = 0;
   int64_t ocl_bytes = 0;
-  for (auto request : resources) {
+  for (const auto& request : resources) {
     SimulateLoadedResource(request);
     if (!request.was_cached) {
       network_bytes += request.raw_body_bytes;
       ocl_bytes += request.original_network_content_length;
       ++network_resources;
     }
-    if (request.data_reduction_proxy_used) {
+    if (request.data_reduction_proxy_data &&
+        request.data_reduction_proxy_data->used_data_reduction_proxy()) {
       drp_bytes += request.raw_body_bytes;
       ++drp_resources;
     }
@@ -467,24 +500,26 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
 
   RunTest(true, false);
 
+  std::unique_ptr<DataReductionProxyData> data =
+      base::MakeUnique<DataReductionProxyData>();
+  data->set_used_data_reduction_proxy(true);
+
   // Prepare 4 resources of varying size and configurations.
   page_load_metrics::ExtraRequestInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       0 /* original_network_content_length */},
+       0 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       false /* data_reduction_proxy_used*/,
-       1024 * 40 /* original_network_content_length */},
+       1024 * 40 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */},
       // Uncached proxied request with .1 compression ratio.
       {false /*was_cached*/, 1024 * 40 * 10 /* raw_body_bytes */,
-       true /* data_reduction_proxy_used*/,
-       1024 * 40 /* original_network_content_length */},
+       1024 * 40 /* original_network_content_length */, data->DeepCopy()},
       // Uncached proxied request with .5 compression ratio.
       {false /*was_cached*/, 1024 * 40 * 5 /* raw_body_bytes */,
-       true /* data_reduction_proxy_used*/,
-       1024 * 40 /* original_network_content_length */},
+       1024 * 40 /* original_network_content_length */, std::move(data)},
   };
 
   int network_resources = 0;
@@ -492,14 +527,15 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   int64_t network_bytes = 0;
   int64_t drp_bytes = 0;
   int64_t ocl_bytes = 0;
-  for (auto request : resources) {
+  for (const auto& request : resources) {
     SimulateLoadedResource(request);
     if (!request.was_cached) {
       network_bytes += request.raw_body_bytes;
       ocl_bytes += request.original_network_content_length;
       ++network_resources;
     }
-    if (request.data_reduction_proxy_used) {
+    if (request.data_reduction_proxy_data &&
+        request.data_reduction_proxy_data->used_data_reduction_proxy()) {
       drp_bytes += request.raw_body_bytes;
       ++drp_resources;
     }

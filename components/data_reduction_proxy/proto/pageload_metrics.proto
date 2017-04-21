@@ -34,6 +34,26 @@ message PageloadMetrics {
     EFFECTIVE_CONNECTION_TYPE_4G = 5;
   };
 
+  // The various opt out states seen by server previews.
+  enum PreviewsOptOut {
+    // Set for non-previews navigations and app background navigations.
+    UNKNOWN = 0;
+    // Set for previews navigations that clicked "show original".
+    OPT_OUT = 1;
+    // Set for previews navigations that did not click "show original".
+    NON_OPT_OUT = 2;
+  }
+
+  // The various server previews that can be shown.
+  enum PreviewsType {
+    // No server preview was applied.
+    NONE = 0;
+    // Image placeholders were used on the page.
+    LOFI = 1;
+    // The main resource was a lite page.
+    LITE_PAGE = 2;
+  }
+
   // The session key used to load the page.
   optional string session_key = 1;
   // The time at which the first request of the pageload was made, according to
@@ -75,4 +95,10 @@ message PageloadMetrics {
 
   // The unique identifier for the page load.
   optional uint64 page_id = 16;
+
+  // The opt out state of the page load.
+  optional PreviewsOptOut previews_opt_out = 17;
+
+  // The previews type that was used on the page.
+  optional PreviewsType previews_type = 18;
 }

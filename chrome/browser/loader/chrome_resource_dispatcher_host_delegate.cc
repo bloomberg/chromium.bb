@@ -351,7 +351,8 @@ void NotifyUIThreadOfRequestComplete(
     const content::GlobalRequestID& request_id,
     ResourceType resource_type,
     bool was_cached,
-    bool used_data_reduction_proxy,
+    std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
+        data_reduction_proxy_data,
     int net_error,
     int64_t total_received_bytes,
     int64_t raw_body_bytes,
@@ -380,9 +381,10 @@ void NotifyUIThreadOfRequestComplete(
       page_load_metrics::MetricsWebContentsObserver::FromWebContents(
           web_contents);
   if (metrics_observer) {
-    metrics_observer->OnRequestComplete(
-        request_id, resource_type, was_cached, used_data_reduction_proxy,
-        raw_body_bytes, original_content_length, request_creation_time);
+    metrics_observer->OnRequestComplete(request_id, resource_type, was_cached,
+                                        std::move(data_reduction_proxy_data),
+                                        raw_body_bytes, original_content_length,
+                                        request_creation_time);
   }
 }
 
@@ -823,9 +825,12 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
 
   data_reduction_proxy::DataReductionProxyData* data =
       data_reduction_proxy::DataReductionProxyData::GetData(*url_request);
-  bool used_data_reduction_proxy = data && data->used_data_reduction_proxy();
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
+      data_reduction_proxy_data;
+  if (data)
+    data_reduction_proxy_data = data->DeepCopy();
   int64_t original_content_length =
-      used_data_reduction_proxy
+      data && data->used_data_reduction_proxy()
           ? data_reduction_proxy::util::CalculateEffectiveOCL(*url_request)
           : url_request->GetRawBodyBytes();
 
@@ -834,8 +839,9 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
       base::BindOnce(&NotifyUIThreadOfRequestComplete,
                      info->GetWebContentsGetterForRequest(), url_request->url(),
                      info->GetGlobalRequestID(), info->GetResourceType(),
-                     url_request->was_cached(), used_data_reduction_proxy,
-                     net_error, url_request->GetTotalReceivedBytes(),
+                     url_request->was_cached(),
+                     base::Passed(&data_reduction_proxy_data), net_error,
+                     url_request->GetTotalReceivedBytes(),
                      url_request->GetRawBodyBytes(), original_content_length,
                      url_request->creation_time(),
                      base::TimeTicks::Now() - url_request->creation_time()));

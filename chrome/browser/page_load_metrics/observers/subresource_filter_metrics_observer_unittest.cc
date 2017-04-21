@@ -155,8 +155,8 @@ TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
 
   SimulateLoadedResource({false /* was_cached */,
                           1024 * 40 /* raw_body_bytes */,
-                          false /* data_reduction_proxy_used */,
-                          0 /* original_network_content_length */});
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */});
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -167,12 +167,12 @@ TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
 
   SimulateLoadedResource({false /* was_cached */,
                           1024 * 20 /* raw_body_bytes */,
-                          false /* data_reduction_proxy_used */,
-                          0 /* original_network_content_length */});
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */});
 
   SimulateLoadedResource({true /* was_cached */, 1024 * 10 /* raw_body_bytes */,
-                          false /* data_reduction_proxy_used */,
-                          0 /* original_network_content_length */});
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */});
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramSubresourceFilterCount, 1);
@@ -250,8 +250,8 @@ TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
 
   SimulateLoadedResource({false /* was_cached */,
                           1024 * 40 /* raw_body_bytes */,
-                          false /* data_reduction_proxy_used */,
-                          0 /* original_network_content_length */});
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */});
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -262,12 +262,12 @@ TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
 
   SimulateLoadedResource({false /* was_cached */,
                           1024 * 20 /* raw_body_bytes */,
-                          false /* data_reduction_proxy_used */,
-                          0 /* original_network_content_length */});
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */});
 
   SimulateLoadedResource({true /* was_cached */, 1024 * 10 /* raw_body_bytes */,
-                          false /* data_reduction_proxy_used */,
-                          0 /* original_network_content_length */});
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */});
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramSubresourceFilterCount, 1);
