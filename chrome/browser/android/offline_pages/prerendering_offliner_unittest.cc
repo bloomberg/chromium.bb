@@ -256,7 +256,7 @@ void PrerenderingOfflinerTest::OnCancel(int64_t offline_id) {
   cancel_callback_called_ = true;
 }
 
-TEST_F(PrerenderingOfflinerTest, LoadAndSaveBadUrl) {
+TEST_F(PrerenderingOfflinerTest, DISABLED_LoadAndSaveBadUrl) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(
       kRequestId, kFileUrl, kClientId, creation_time, kUserRequested);
@@ -265,7 +265,7 @@ TEST_F(PrerenderingOfflinerTest, LoadAndSaveBadUrl) {
   EXPECT_TRUE(loader()->IsIdle());
 }
 
-TEST_F(PrerenderingOfflinerTest, LoadAndSavePrerenderingDisabled) {
+TEST_F(PrerenderingOfflinerTest, DISABLED_LoadAndSavePrerenderingDisabled) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(
       kRequestId, kHttpUrl, kClientId, creation_time, kUserRequested);
@@ -276,7 +276,7 @@ TEST_F(PrerenderingOfflinerTest, LoadAndSavePrerenderingDisabled) {
 }
 
 TEST_F(PrerenderingOfflinerTest,
-       LoadAndSaveBlockThirdPartyCookiesForCustomTabs) {
+       DISABLED_LoadAndSaveBlockThirdPartyCookiesForCustomTabs) {
   base::Time creation_time = base::Time::Now();
   ClientId custom_tabs_client_id("custom_tabs", "88");
   SavePageRequest request(kRequestId, kHttpUrl, custom_tabs_client_id,
@@ -288,7 +288,7 @@ TEST_F(PrerenderingOfflinerTest,
 }
 
 TEST_F(PrerenderingOfflinerTest,
-       LoadAndSaveBlockOnDisabledPrerendererForCustomTabs) {
+       DISABLED_LoadAndSaveBlockOnDisabledPrerendererForCustomTabs) {
   base::Time creation_time = base::Time::Now();
   ClientId custom_tabs_client_id("custom_tabs", "88");
   SavePageRequest request(kRequestId, kHttpUrl, custom_tabs_client_id,
@@ -301,7 +301,7 @@ TEST_F(PrerenderingOfflinerTest,
   EXPECT_TRUE(loader()->IsIdle());
 }
 
-TEST_F(PrerenderingOfflinerTest, LoadAndSaveLoadStartedButFails) {
+TEST_F(PrerenderingOfflinerTest, DISABLED_LoadAndSaveLoadStartedButFails) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(
       kRequestId, kHttpUrl, kClientId, creation_time, kUserRequested);
@@ -318,7 +318,7 @@ TEST_F(PrerenderingOfflinerTest, LoadAndSaveLoadStartedButFails) {
   EXPECT_FALSE(SaveInProgress());
 }
 
-TEST_F(PrerenderingOfflinerTest, CancelWhenLoading) {
+TEST_F(PrerenderingOfflinerTest, DISABLED_CancelWhenLoading) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(
       kRequestId, kHttpUrl, kClientId, creation_time, kUserRequested);
@@ -433,7 +433,8 @@ TEST_F(PrerenderingOfflinerTest, LoadAndSaveLoadedButThenCanceledFromLoader) {
   EXPECT_TRUE(SaveInProgress());
 }
 
-TEST_F(PrerenderingOfflinerTest, ForegroundTransitionCancelsOnLowEndDevice) {
+TEST_F(PrerenderingOfflinerTest,
+       DISABLED_ForegroundTransitionCancelsOnLowEndDevice) {
   offliner()->SetLowEndDeviceForTesting(true);
 
   base::Time creation_time = base::Time::Now();
@@ -506,7 +507,7 @@ TEST_F(PrerenderingOfflinerTest,
 }
 
 TEST_F(PrerenderingOfflinerTest,
-       HandleTimeoutCompletedTriesMetWithoutLowbarMet) {
+       DISABLED_HandleTimeoutCompletedTriesMetWithoutLowbarMet) {
   offliner()->SetLowEndDeviceForTesting(false);
 
   base::Time creation_time = base::Time::Now();
@@ -520,7 +521,8 @@ TEST_F(PrerenderingOfflinerTest,
   EXPECT_FALSE(loader()->start_snapshot_called());
 }
 
-TEST_F(PrerenderingOfflinerTest, HandleTimeoutStartedTriesMetWithoutLowbarMet) {
+TEST_F(PrerenderingOfflinerTest,
+       DISABLED_HandleTimeoutStartedTriesMetWithoutLowbarMet) {
   offliner()->SetLowEndDeviceForTesting(false);
 
   base::Time creation_time = base::Time::Now();
@@ -548,7 +550,7 @@ TEST_F(PrerenderingOfflinerTest, HandleTimeoutWithLowbarAndStartedTriesMet) {
   EXPECT_TRUE(loader()->start_snapshot_called());
 }
 
-TEST_F(PrerenderingOfflinerTest, HandleTimeoutWithOnlyLowbarMet) {
+TEST_F(PrerenderingOfflinerTest, DISABLED_HandleTimeoutWithOnlyLowbarMet) {
   offliner()->SetLowEndDeviceForTesting(false);
 
   base::Time creation_time = base::Time::Now();
