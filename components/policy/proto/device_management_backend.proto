@@ -1003,9 +1003,12 @@ message RemoteCommand {
   // client, defined as current_server_time - command_generated_time.
   optional int64 age_of_command = 3;
 
-  // Extra parameters for this command, expected to be a JSON string.
-  // If the command type is DEVICE_SCREENSHOT, the format of the JSON payload
-  // is: {"fileUploadUrl" : url_string}
+  // Extra parameters for this command, expected to be a JSON string. The exact
+  // format of the JSON payload depends on the command type specified by the
+  // |type| field:
+  // |DEVICE_SCREENSHOT|: {"fileUploadUrl" : url_string}.
+  // |DEVICE_SET_VOLUME|: {"volume": volume_value}, where volume_value must be
+  // an integer between 0 and 100.
   optional string payload = 4;
 }
 
