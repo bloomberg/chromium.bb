@@ -127,61 +127,6 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
     return True
 
 
-@benchmark.Owner(emails=['jochen@chromium.org'])
-class V8TodoMVC(perf_benchmark.PerfBenchmark):
-  """Measures V8 Execution metrics on the TodoMVC examples."""
-  page_set = page_sets.TodoMVCPageSet
-
-  def CreateTimelineBasedMeasurementOptions(self):
-    return CreateV8TimelineBasedMeasurementOptions()
-
-  @classmethod
-  def Name(cls):
-    return 'v8.todomvc'
-
-  @classmethod
-  def ShouldDisable(cls, possible_browser):
-    # This benchmark is flaky on Samsung Galaxy S5s.
-    # http://crbug.com/644826
-    return possible_browser.platform.GetDeviceTypeName() == 'SM-G900H'
-
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
-
-@benchmark.Disabled('all')
-@benchmark.Owner(emails=['mvstaton@chromium.org'])
-class V8TodoMVCTurbo(V8TodoMVC):
-  """Measures V8 Execution metrics on the TodoMVC examples
-  using Ignition+TurboFan."""
-
-  page_set = page_sets.TodoMVCPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8TodoMVCTurbo, self).SetExtraBrowserOptions(options)
-    v8_helper.EnableTurbo(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.todomvc-turbo'
-
-
-@benchmark.Owner(emails=['hablich@chromium.org'])
-class V8TodoMVCClassic(V8TodoMVC):
-  """Measures V8 Execution metrics on the TodoMVC examples
-  using the Classic pipeline."""
-
-  page_set = page_sets.TodoMVCPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8TodoMVCClassic, self).SetExtraBrowserOptions(options)
-    v8_helper.EnableClassic(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.todomvc-classic'
-
-
 @benchmark.Owner(emails=['ulan@chromium.org'])
 class V8InfiniteScroll(_InfiniteScrollBenchmark):
   """Measures V8 GC metrics and memory usage while scrolling the top web pages.
