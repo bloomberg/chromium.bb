@@ -1417,6 +1417,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BLUETOOTH_DEVICE_CONNECTED" desc="Content description for the connected icon next to connected Bluetooth devices.">
         Connected Device
       </message>
+      <message name="IDS_SIGNAL_STRENGTH_LEVEL_N_BARS" desc="Text to be shown next to devices indicating their received signal strength. [ICU Syntax]">
+        {N_BARS, plural,
+          =1 {Signal Strength Level: # bar}
+          other {Signal Strength Level: # bars}}
+      </message>
 
       <!-- Hint of sync error solution strings -->
       <message name="IDS_SYNC_ERROR_CARD_TITLE" desc="Title of the Sync Error Card. [CHAR-LIMIT=32]">

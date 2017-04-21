@@ -106,7 +106,8 @@ void BluetoothChooserAndroid::AddOrUpdateDevice(
   ScopedJavaLocalRef<jstring> java_device_name =
       ConvertUTF16ToJavaString(env, device_name);
   Java_BluetoothChooserDialog_addOrUpdateDevice(
-      env, java_dialog_, java_device_id, java_device_name, is_gatt_connected);
+      env, java_dialog_, java_device_id, java_device_name, is_gatt_connected,
+      signal_strength_level);
 }
 
 void BluetoothChooserAndroid::OnDialogFinished(

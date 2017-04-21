@@ -226,8 +226,18 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mChooserDialog.addOrUpdateDevice("id-1", "Name 1", false /* isGATTConnected */);
-                mChooserDialog.addOrUpdateDevice("id-2", "Name 2", true /* isGATTConnected */);
+                // Add non-connected device with no signal strength.
+                mChooserDialog.addOrUpdateDevice("id-1", "Name 1", false /* isGATTConnected */,
+                        -1 /* signalStrengthLevel */);
+                // Add connected device with no signal strength.
+                mChooserDialog.addOrUpdateDevice(
+                        "id-2", "Name 2", true /* isGATTConnected */, -1 /* signalStrengthLevel */);
+                // Add non-connected device with signal strength level 1.
+                mChooserDialog.addOrUpdateDevice(
+                        "id-3", "Name 3", false /* isGATTConnected */, 1 /* signalStrengthLevel */);
+                // Add connected device with signal strength level 1.
+                mChooserDialog.addOrUpdateDevice(
+                        "id-4", "Name 4", true /* isGATTConnected */, 1 /* signalStrengthLevel */);
             }
         });
 
@@ -246,6 +256,13 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         assertTrue(itemAdapter.getItem(0).hasSameContents(
                 "id-1", "Name 1", null /* icon */, null /* iconDescription */));
         assertTrue(itemAdapter.getItem(1).hasSameContents("id-2", "Name 2",
+                mChooserDialog.mConnectedIcon, mChooserDialog.mConnectedIconDescription));
+        assertTrue(itemAdapter.getItem(2).hasSameContents("id-3", "Name 3",
+                mChooserDialog.mSignalStrengthLevelIcon[1],
+                getActivity().getResources().getQuantityString(
+                        R.plurals.signal_strength_level_n_bars, 1, 1)));
+        // We show the connected icon even if the device has a signal strength.
+        assertTrue(itemAdapter.getItem(3).hasSameContents("id-4", "Name 4",
                 mChooserDialog.mConnectedIcon, mChooserDialog.mConnectedIconDescription));
 
         selectItem(mChooserDialog, 2);
