@@ -211,16 +211,16 @@ unsigned StyleRule::AverageSizeInBytes() {
 StyleRule::StyleRule(CSSSelectorList selector_list,
                      StylePropertySet* properties)
     : StyleRuleBase(kStyle),
+      should_consider_for_matching_rules_(kConsiderIfNonEmpty),
       selector_list_(std::move(selector_list)),
-      properties_(properties),
-      should_consider_for_matching_rules_(kConsiderIfNonEmpty) {}
+      properties_(properties) {}
 
 StyleRule::StyleRule(CSSSelectorList selector_list,
                      CSSLazyPropertyParser* lazy_property_parser)
     : StyleRuleBase(kStyle),
+      should_consider_for_matching_rules_(kAlwaysConsider),
       selector_list_(std::move(selector_list)),
-      lazy_property_parser_(lazy_property_parser),
-      should_consider_for_matching_rules_(kAlwaysConsider) {}
+      lazy_property_parser_(lazy_property_parser) {}
 
 const StylePropertySet& StyleRule::Properties() const {
   if (!properties_) {
@@ -232,9 +232,9 @@ const StylePropertySet& StyleRule::Properties() const {
 
 StyleRule::StyleRule(const StyleRule& o)
     : StyleRuleBase(o),
+      should_consider_for_matching_rules_(kConsiderIfNonEmpty),
       selector_list_(o.selector_list_.Copy()),
-      properties_(o.Properties().MutableCopy()),
-      should_consider_for_matching_rules_(kConsiderIfNonEmpty) {}
+      properties_(o.Properties().MutableCopy()) {}
 
 StyleRule::~StyleRule() {}
 

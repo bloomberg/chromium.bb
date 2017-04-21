@@ -132,10 +132,6 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   StyleRule(CSSSelectorList, CSSLazyPropertyParser*);
   StyleRule(const StyleRule&);
 
-  CSSSelectorList selector_list_;
-  mutable Member<StylePropertySet> properties_;
-  mutable Member<CSSLazyPropertyParser> lazy_property_parser_;
-
   // Whether or not we should consider this for matching rules. Usually we try
   // to avoid considering empty property sets, as an optimization. This is
   // not possible for lazy properties, which always need to be considered. The
@@ -146,6 +142,10 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
     kConsiderIfNonEmpty,
   };
   mutable ConsiderForMatching should_consider_for_matching_rules_;
+
+  CSSSelectorList selector_list_;
+  mutable Member<StylePropertySet> properties_;
+  mutable Member<CSSLazyPropertyParser> lazy_property_parser_;
 };
 
 class StyleRuleFontFace : public StyleRuleBase {
