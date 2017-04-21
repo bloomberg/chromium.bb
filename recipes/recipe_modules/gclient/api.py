@@ -126,6 +126,24 @@ class GclientApi(recipe_api.RecipeApi):
   def config_to_pythonish(cfg):
     return jsonish_to_python(cfg.as_jsonish(), True)
 
+  # TODO(machenbach): Remove this method when the old mapping is deprecated.
+  @staticmethod
+  def got_revision_reverse_mapping(cfg):
+    """Returns the merged got_revision_reverse_mapping.
+
+    Returns (dict): A mapping from property name -> project name. It merges the
+        values of the deprecated got_revision_mapping and the new
+        got_revision_reverse_mapping.
+    """
+    rev_map = cfg.got_revision_mapping.as_jsonish()
+    reverse_rev_map = cfg.got_revision_reverse_mapping.as_jsonish()
+    combined_length = len(rev_map) + len(reverse_rev_map)
+    reverse_rev_map.update({v: k for k, v in rev_map.iteritems()})
+
+    # Make sure we never have duplicate values in the old map.
+    assert combined_length == len(reverse_rev_map)
+    return reverse_rev_map
+
   def resolve_revision(self, revision):
     if hasattr(revision, 'resolve'):
       return revision.resolve(self.m.properties)

@@ -86,6 +86,8 @@ def RunSteps(api):
         gclient_config=bl_cfg,
         with_branch_heads=True)
 
+  api.gclient.got_revision_reverse_mapping(bl_cfg)
+
   api.gclient.break_locks()
 
   del api.gclient.spec_alias

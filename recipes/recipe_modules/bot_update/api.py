@@ -171,17 +171,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     self.m.gclient.set_patch_project_revision(
         self.m.properties.get('patch_project'), cfg)
 
-    # TODO(machenbach): Deprecate rev_map. We'll do a three-way dance.
-    # When all users of got_revision_mapping use got_revision_reverse_mapping
-    # we can remove the old one. Make sure nobody uses both.
-    rev_map = cfg.got_revision_mapping.as_jsonish()
-    reverse_rev_map = cfg.got_revision_reverse_mapping.as_jsonish()
-    assert not rev_map or not reverse_rev_map
-    if rev_map:
-      reverse_rev_map = {v: k for k, v in rev_map.iteritems()}
-
-      # Make sure we never have duplicate values in the old map.
-      assert len(rev_map) == len(reverse_rev_map)
+    reverse_rev_map = self.m.gclient.got_revision_reverse_mapping(cfg)
 
     flags = [
         # What do we want to check out (spec/root/rev/reverse_rev_map).
@@ -378,15 +368,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
     Returns (list of str): All properties that'll hold the checked-out revision
         of the given project. An empty list if no such properties exist.
     """
-    cfg = self.m.gclient.c
-    if cfg.got_revision_mapping:
-      prop = cfg.got_revision_mapping.get(project_name)
-      return [prop] if prop else []
     # Sort for determinism. We might have several properties for the same
     # project, e.g. got_revision and got_webrtc_revision.
+    rev_reverse_map = self.m.gclient.got_revision_reverse_mapping(
+        self.m.gclient.c)
     return sorted(
         prop
-        for prop, project in cfg.got_revision_reverse_mapping.iteritems()
+        for prop, project in rev_reverse_map.iteritems()
         if project == project_name
     )
 
