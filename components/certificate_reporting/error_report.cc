@@ -93,10 +93,7 @@ ErrorReport::ErrorReport(const std::string& hostname,
 #if defined(OS_ANDROID)
   CertLoggerFeaturesInfo* features_info = cert_report_->mutable_features_info();
   features_info->set_android_aia_fetching_status(
-      base::FeatureList::IsEnabled(
-          net::CertVerifyProcAndroid::kAIAFetchingFeature)
-          ? CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED
-          : CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_DISABLED);
+      CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED);
 #endif
 }
 

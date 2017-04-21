@@ -241,31 +241,8 @@ TEST(ErrorReportTest, NetworkTimeQueryingFeatureInfo) {
 
 #if defined(OS_ANDROID)
 // Tests that information about the Android AIA fetching feature is included in
-// the report when the feature is disabled.
-TEST(ErrorReportTest, AndroidAIAFetchingFeatureDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      net::CertVerifyProcAndroid::kAIAFetchingFeature);
-
-  SSLInfo ssl_info;
-  ASSERT_NO_FATAL_FAILURE(
-      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
-  ErrorReport report(kDummyHostname, ssl_info);
-  std::string serialized_report;
-  ASSERT_TRUE(report.Serialize(&serialized_report));
-  CertLoggerRequest parsed;
-  ASSERT_TRUE(parsed.ParseFromString(serialized_report));
-  EXPECT_EQ(CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_DISABLED,
-            parsed.features_info().android_aia_fetching_status());
-}
-
-// Tests that information about the Android AIA fetching feature is included in
-// the report when the feature is enabled.
+// the report.
 TEST(ErrorReportTest, AndroidAIAFetchingFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      net::CertVerifyProcAndroid::kAIAFetchingFeature);
-
   SSLInfo ssl_info;
   ASSERT_NO_FATAL_FAILURE(
       GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));

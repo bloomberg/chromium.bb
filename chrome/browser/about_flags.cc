@@ -2590,12 +2590,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(arc::kShowArcFilesAppFeature)},
 #endif // defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID)
-    {"aia-fetching", flag_descriptions::kAiaFetchingName,
-     flag_descriptions::kAiaFetchingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(net::CertVerifyProcAndroid::kAIAFetchingFeature)},
-#endif
-
 #if defined(OS_CHROMEOS)
     {"force-enable-stylus-tools",
      flag_descriptions::kForceEnableStylusToolsName,

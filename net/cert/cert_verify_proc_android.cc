@@ -166,9 +166,6 @@ android::CertVerifyStatusAndroid TryVerifyWithAIAFetching(
     scoped_refptr<CertNetFetcher> cert_net_fetcher,
     CertVerifyResult* verify_result,
     std::vector<std::string>* verified_chain) {
-  if (!base::FeatureList::IsEnabled(CertVerifyProcAndroid::kAIAFetchingFeature))
-    return android::CERT_VERIFY_STATUS_ANDROID_NO_TRUSTED_ROOT;
-
   if (!cert_net_fetcher)
     return android::CERT_VERIFY_STATUS_ANDROID_NO_TRUSTED_ROOT;
 
@@ -348,10 +345,6 @@ bool GetChainDEREncodedBytes(X509Certificate* cert,
 }
 
 }  // namespace
-
-// static.
-const base::Feature CertVerifyProcAndroid::kAIAFetchingFeature{
-    "AndroidAIAFetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
 CertVerifyProcAndroid::CertVerifyProcAndroid() {}
 
