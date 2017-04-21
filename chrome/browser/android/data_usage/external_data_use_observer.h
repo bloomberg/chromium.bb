@@ -78,7 +78,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
     return external_data_use_reporter_;
   }
 
-  void SetRegisterGoogleVariationID(bool register_google_variation_id);
+  void SetProfileSigninStatus(bool signin_status);
 
  private:
   friend class DataUseTabModelTest;
@@ -134,6 +134,9 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 
   // True if |this| is currently registered as a data use observer.
   bool registered_as_data_use_observer_;
+
+  // True if profile is signed in and authenticated.
+  bool profile_signin_status_;
 
   base::ThreadChecker thread_checker_;
 

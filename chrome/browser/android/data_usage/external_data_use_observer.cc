@@ -79,6 +79,7 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       fetch_matching_rules_duration_(
           base::TimeDelta::FromSeconds(GetFetchMatchingRulesDurationSeconds())),
       registered_as_data_use_observer_(false),
+      profile_signin_status_(false),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(data_use_aggregator_);
@@ -191,6 +192,15 @@ void ExternalDataUseObserver::ShouldRegisterAsDataUseObserver(
     data_use_aggregator_->RemoveObserver(this);
 
   registered_as_data_use_observer_ = should_register;
+
+  // It is okay to use base::Unretained here since
+  // |external_data_use_observer_bridge_| is owned by |this|, and is destroyed
+  // on UI thread when |this| is destroyed.
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalDataUseObserverBridge::RegisterGoogleVariationID,
+                 base::Unretained(external_data_use_observer_bridge_),
+                 registered_as_data_use_observer_ && profile_signin_status_));
 }
 
 void ExternalDataUseObserver::FetchMatchingRules() {
@@ -217,17 +227,18 @@ DataUseTabModel* ExternalDataUseObserver::GetDataUseTabModel() const {
   return data_use_tab_model_;
 }
 
-void ExternalDataUseObserver::SetRegisterGoogleVariationID(
-    bool register_google_variation_id) {
+void ExternalDataUseObserver::SetProfileSigninStatus(bool signin_status) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  profile_signin_status_ = signin_status;
+
   // It is okay to use base::Unretained here since
   // |external_data_use_observer_bridge_| is owned by |this|, and is destroyed
   // on UI thread when |this| is destroyed.
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ExternalDataUseObserverBridge::SetRegisterGoogleVariationID,
+      base::Bind(&ExternalDataUseObserverBridge::RegisterGoogleVariationID,
                  base::Unretained(external_data_use_observer_bridge_),
-                 register_google_variation_id));
+                 registered_as_data_use_observer_ && profile_signin_status_));
 }
 
 }  // namespace android

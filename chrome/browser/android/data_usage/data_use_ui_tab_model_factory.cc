@@ -37,16 +37,14 @@ DataUseTabModel* GetDataUseTabModelOnIOThread(IOThread* io_thread) {
   return io_thread->globals()->external_data_use_observer->GetDataUseTabModel();
 }
 
-void SetRegisterGoogleVariationIDOnIOThread(IOThread* io_thread,
-                                            bool register_google_variation_id) {
+void SetProfileSigninStatusOnIOThread(IOThread* io_thread, bool signin_status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Avoid null pointer referencing during browser shutdown.
-  if (io_thread && !io_thread->globals() &&
+  if (io_thread && io_thread->globals() &&
       io_thread->globals()->external_data_use_observer) {
-    io_thread->globals()
-        ->external_data_use_observer->SetRegisterGoogleVariationID(
-            register_google_variation_id);
+    io_thread->globals()->external_data_use_observer->SetProfileSigninStatus(
+        signin_status);
   }
 }
 
@@ -95,7 +93,7 @@ KeyedService* DataUseUITabModelFactory::BuildServiceInstanceFor(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetRegisterGoogleVariationIDOnIOThread,
+      base::Bind(&SetProfileSigninStatusOnIOThread,
                  g_browser_process->io_thread(),
                  signin_manager && signin_manager->IsAuthenticated()));
 
