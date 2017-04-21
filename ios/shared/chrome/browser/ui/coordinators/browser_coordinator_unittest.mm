@@ -21,6 +21,8 @@
 @property(nonatomic, copy) void (^stopHandler)();
 @property(nonatomic) BOOL wasAddedCalled;
 @property(nonatomic) BOOL willBeRemovedCalled;
+@property(nonatomic, copy) void (^willBeRemovedHandler)();
+@property(nonatomic) BOOL removeCalled;
 @property(nonatomic) BOOL childDidStartCalled;
 @property(nonatomic) BOOL childWillStopCalled;
 @end
@@ -30,6 +32,8 @@
 @synthesize stopHandler = _stopHandler;
 @synthesize wasAddedCalled = _wasAddedCalled;
 @synthesize willBeRemovedCalled = _willBeRemovedCalled;
+@synthesize willBeRemovedHandler = _willBeRemovedHandler;
+@synthesize removeCalled = _removeCalled;
 @synthesize childDidStartCalled = _childDidStartCalled;
 @synthesize childWillStopCalled = _childWillStopCalled;
 
@@ -48,18 +52,29 @@
 }
 
 - (void)wasAddedToParentCoordinator:(BrowserCoordinator*)parentCoordinator {
+  [super wasAddedToParentCoordinator:parentCoordinator];
   self.wasAddedCalled = YES;
 }
 
 - (void)willBeRemovedFromParentCoordinator {
+  [super willBeRemovedFromParentCoordinator];
   self.willBeRemovedCalled = YES;
+  if (self.willBeRemovedHandler)
+    self.willBeRemovedHandler();
+}
+
+- (void)removeChildCoordinator:(BrowserCoordinator*)childCoordinator {
+  [super removeChildCoordinator:childCoordinator];
+  self.removeCalled = YES;
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
+  [super childCoordinatorDidStart:childCoordinator];
   self.childDidStartCalled = YES;
 }
 
 - (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
+  [super childCoordinatorWillStop:childCoordinator];
   self.childWillStopCalled = YES;
 }
 
@@ -261,4 +276,42 @@ TEST_F(BrowserCoordinatorTest, BrowserIsNilAfterCoordinatorIsRemoved) {
   [parent removeChildCoordinator:child];
 
   EXPECT_EQ(nil, child.browser);
+}
+
+TEST_F(BrowserCoordinatorTest, RemoveRemovesGrandChildren) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+  TestCoordinator* grandChild = [[TestCoordinator alloc] init];
+  [child addChildCoordinator:grandChild];
+  [parent addChildCoordinator:child];
+
+  EXPECT_FALSE(grandChild.willBeRemovedCalled);
+  EXPECT_FALSE(child.removeCalled);
+
+  // Remove the child.
+  [parent removeChildCoordinator:child];
+
+  EXPECT_TRUE(grandChild.willBeRemovedCalled);
+  EXPECT_TRUE(child.removeCalled);
+}
+
+TEST_F(BrowserCoordinatorTest,
+       RemoveRemovesGrandChildThenCallWillRemoveOnChild) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+  TestCoordinator* grandChild = [[TestCoordinator alloc] init];
+  [child addChildCoordinator:grandChild];
+  [parent addChildCoordinator:child];
+  EXPECT_FALSE(grandChild.willBeRemovedCalled);
+  EXPECT_FALSE(child.removeCalled);
+  __weak TestCoordinator* weakChild = child;
+  child.willBeRemovedHandler = ^{
+    EXPECT_TRUE(grandChild.willBeRemovedCalled);
+    EXPECT_TRUE(weakChild.removeCalled);
+  };
+
+  // Remove the child.
+  [parent removeChildCoordinator:child];
+
+  EXPECT_TRUE(child.willBeRemovedCalled);
 }

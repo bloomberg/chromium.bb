@@ -49,11 +49,11 @@
 // Adds |coordinator| as a child, taking ownership of it, setting the receiver's
 // viewController (if any) as the child's baseViewController, and setting
 // the receiver's |browser| as the child's |browser|.
-- (void)addChildCoordinator:(BrowserCoordinator*)coordinator;
+- (void)addChildCoordinator:(BrowserCoordinator*)childCoordinator;
 
 // Removes |coordinator| as a child, relinquishing ownership of it. If
 // |coordinator| isn't a child of the receiver, this method does nothing.
-- (void)removeChildCoordinator:(BrowserCoordinator*)coordinator;
+- (void)removeChildCoordinator:(BrowserCoordinator*)childCoordinator;
 
 // Called when this coordinator is added to a parent coordinator.
 - (void)wasAddedToParentCoordinator:(BrowserCoordinator*)parentCoordinator;
