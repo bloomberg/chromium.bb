@@ -35,7 +35,17 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void DidPrepareTiles() override {}
   void DidCompletePageScaleAnimationOnImplThread() override {}
   void OnDrawForCompositorFrameSink(bool resourceless_software_draw) override {}
-  void NeedsImplSideInvalidation() override {}
+  void NeedsImplSideInvalidation() override;
+
+  void reset_did_request_impl_side_invalidation() {
+    did_request_impl_side_invalidation_ = false;
+  }
+  bool did_request_impl_side_invalidation() const {
+    return did_request_impl_side_invalidation_;
+  }
+
+ private:
+  bool did_request_impl_side_invalidation_ = false;
 };
 
 }  // namespace cc

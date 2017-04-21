@@ -15,12 +15,15 @@ PrioritizedTile::PrioritizedTile(Tile* tile,
                                  const PictureLayerTiling* source_tiling,
                                  const TilePriority& priority,
                                  bool is_occluded,
-                                 bool is_process_for_images_only)
+                                 bool is_process_for_images_only,
+                                 bool should_decode_checkered_images_for_tile)
     : tile_(tile),
       source_tiling_(source_tiling),
       priority_(priority),
       is_occluded_(is_occluded),
-      is_process_for_images_only_(is_process_for_images_only) {}
+      is_process_for_images_only_(is_process_for_images_only),
+      should_decode_checkered_images_for_tile_(
+          should_decode_checkered_images_for_tile) {}
 
 PrioritizedTile::~PrioritizedTile() = default;
 

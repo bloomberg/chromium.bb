@@ -164,10 +164,12 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
-      draw_info.set_resource(resource_pool_->AcquireResource(
-          tiles[i]->desired_texture_size(),
-          raster_buffer_provider_->GetResourceFormat(false),
-          client_->GetRasterColorSpace()));
+      draw_info.set_resource(
+          resource_pool_->AcquireResource(
+              tiles[i]->desired_texture_size(),
+              raster_buffer_provider_->GetResourceFormat(false),
+              client_->GetRasterColorSpace()),
+          false);
       draw_info.set_resource_ready_for_draw();
     }
   }
@@ -235,6 +237,9 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   ActivationStateAsValue();
 
   void ActivationStateAsValueInto(base::trace_event::TracedValue* state);
+  int num_of_tiles_with_checker_images() const {
+    return num_of_tiles_with_checker_images_;
+  }
 
  protected:
   friend class Tile;
@@ -283,13 +288,15 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
     std::vector<PrioritizedTile> tiles_to_raster;
     std::vector<PrioritizedTile> tiles_to_process_for_images;
+    CheckerImageTracker::ImageDecodeQueue checker_image_decode_queue;
   };
 
   void FreeResourcesForTile(Tile* tile);
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
   scoped_refptr<TileTask> CreateRasterTask(
       const PrioritizedTile& prioritized_tile,
-      const gfx::ColorSpace& color_space);
+      const gfx::ColorSpace& color_space,
+      CheckerImageTracker::ImageDecodeQueue* checker_image_decode_queue);
 
   std::unique_ptr<EvictionTilePriorityQueue>
   FreeTileResourcesUntilUsageIsWithinLimit(
@@ -320,6 +327,16 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
       void (TileManager::*callback)());
   PrioritizedWorkToSchedule AssignGpuMemoryToTiles();
   void ScheduleTasks(const PrioritizedWorkToSchedule& work_to_schedule);
+
+  void PartitionImagesForCheckering(
+      const PrioritizedTile& prioritized_tile,
+      const gfx::ColorSpace& raster_color_space,
+      std::vector<DrawImage>* sync_decoded_images,
+      std::vector<sk_sp<const SkImage>>* checkered_images);
+  void AddCheckeredImagesToDecodeQueue(
+      const PrioritizedTile& prioritized_tile,
+      const gfx::ColorSpace& raster_color_space,
+      CheckerImageTracker::ImageDecodeQueue* image_decode_queue);
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   ScheduledTasksStateAsValue() const;
@@ -374,6 +391,10 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   std::unordered_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
   std::vector<scoped_refptr<TileTask>> locked_image_tasks_;
+
+  // Number of tiles with a checker-imaged resource or active raster tasks which
+  // will create a checker-imaged resource.
+  int num_of_tiles_with_checker_images_ = 0;
 
   // We need two WeakPtrFactory objects as the invalidation pattern of each is
   // different. The |task_set_finished_weak_ptr_factory_| is invalidated any

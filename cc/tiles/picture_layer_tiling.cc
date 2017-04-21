@@ -804,6 +804,39 @@ bool PictureLayerTiling::IsTileRequiredForDraw(const Tile* tile) const {
   return true;
 }
 
+bool PictureLayerTiling::ShouldDecodeCheckeredImagesForTile(
+    const Tile* tile) const {
+  // If this is the pending tree and the tile is not occluded, any checkered
+  // images on this tile should be decoded.
+  if (tree_ == PENDING_TREE)
+    return !IsTileOccludedOnCurrentTree(tile);
+
+  DCHECK_EQ(tree_, ACTIVE_TREE);
+  const PictureLayerTiling* pending_twin =
+      client_->GetPendingOrActiveTwinTiling(this);
+
+  // If we don't have a pending twin, then 2 cases are possible. Either we don't
+  // have a pending tree, in which case we should be decoding images for tiles
+  // which are unoccluded.
+  // If we do have a pending tree, then not having a twin implies that this
+  // tiling will be evicted upon activation. TODO(khushalsagar): Plumb this
+  // information here and return false for this case.
+  if (!pending_twin)
+    return !IsTileOccludedOnCurrentTree(tile);
+
+  // If the tile will be replaced upon activation, then we don't need to process
+  // it for checkered images. Since once the pending tree is activated, it is
+  // the new active tree's content that we will invalidate and replace once the
+  // decode finishes.
+  if (!TilingMatchesTileIndices(pending_twin) ||
+      pending_twin->TileAt(tile->tiling_i_index(), tile->tiling_j_index())) {
+    return false;
+  }
+
+  // Ask the pending twin if this tile will become occluded upon activation.
+  return !pending_twin->IsTileOccludedOnCurrentTree(tile);
+}
+
 void PictureLayerTiling::UpdateRequiredStatesOnTile(Tile* tile) const {
   tile->set_required_for_activation(IsTileRequiredForActivation(tile));
   tile->set_required_for_draw(IsTileRequiredForDraw(tile));
@@ -832,7 +865,8 @@ PrioritizedTile PictureLayerTiling::MakePrioritizedTile(
        tile_priority.distance_to_visible >
            0.5f * max_skewport_extent_in_screen_space_);
   return PrioritizedTile(tile, this, tile_priority, IsTileOccluded(tile),
-                         process_for_images_only);
+                         process_for_images_only,
+                         ShouldDecodeCheckeredImagesForTile(tile));
 }
 
 std::map<const Tile*, PrioritizedTile>

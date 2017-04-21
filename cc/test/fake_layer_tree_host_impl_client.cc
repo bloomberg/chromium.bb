@@ -14,4 +14,8 @@ bool FakeLayerTreeHostImplClient::IsInsideDraw() {
 void FakeLayerTreeHostImplClient::PostAnimationEventsToMainThreadOnImplThread(
     std::unique_ptr<MutatorEvents> events) {}
 
+void FakeLayerTreeHostImplClient::NeedsImplSideInvalidation() {
+  did_request_impl_side_invalidation_ = true;
+}
+
 }  // namespace cc

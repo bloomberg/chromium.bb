@@ -36,26 +36,17 @@ CheckerImageTracker::~CheckerImageTracker() {
     image_controller_->UnlockImageDecode(it.second);
 }
 
-void CheckerImageTracker::FilterImagesForCheckeringForTile(
-    std::vector<DrawImage>* images,
-    ImageIdFlatSet* checkered_images,
-    WhichTree tree) {
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "CheckerImageTracker::FilterImagesForCheckeringForTile", "tree",
-               tree);
-  DCHECK(checkered_images->empty());
+void CheckerImageTracker::ScheduleImageDecodeQueue(
+    ImageDecodeQueue image_decode_queue) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "CheckerImageTracker::ScheduleImageDecodeQueue");
+  // Only checker-imaged (async updated) images are decoded using the image
+  // decode service. If |enable_checker_imaging_| is false, no image should
+  // be checkered.
+  DCHECK(image_decode_queue.empty() || enable_checker_imaging_);
 
-  base::EraseIf(*images,
-                [this, tree, &checkered_images](const DrawImage& draw_image) {
-                  const sk_sp<const SkImage>& image = draw_image.image();
-                  DCHECK(image->isLazyGenerated());
-                  if (ShouldCheckerImage(image, tree)) {
-                    ScheduleImageDecodeIfNecessary(image);
-                    checkered_images->insert(image->uniqueID());
-                    return true;
-                  }
-                  return false;
-                });
+  image_decode_queue_ = std::move(image_decode_queue);
+  ScheduleNextImageDecode();
 }
 
 const ImageIdFlatSet& CheckerImageTracker::TakeImagesToInvalidateOnSyncTree() {
@@ -90,14 +81,14 @@ void CheckerImageTracker::DidFinishImageDecode(
   TRACE_EVENT_ASYNC_END0("cc", "CheckerImageTracker::DeferImageDecode",
                          image_id);
 
-  DCHECK_NE(result, ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED);
-  DCHECK_NE(pending_image_decodes_.count(image_id), 0u);
-  DCHECK_NE(image_async_decode_state_.count(image_id), 0u);
+  DCHECK_NE(ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED, result);
+  DCHECK_EQ(outstanding_image_decode_->uniqueID(), image_id);
 
-  pending_image_decodes_.erase(image_id);
-
+  outstanding_image_decode_ = nullptr;
   image_async_decode_state_[image_id] = DecodePolicy::SYNC_DECODED_ONCE;
   images_pending_invalidation_.insert(image_id);
+
+  ScheduleNextImageDecode();
   client_->NeedsInvalidationForCheckerImagedTiles();
 }
 
@@ -137,35 +128,48 @@ bool CheckerImageTracker::ShouldCheckerImage(const sk_sp<const SkImage>& image,
   return it->second == DecodePolicy::ASYNC;
 }
 
-void CheckerImageTracker::ScheduleImageDecodeIfNecessary(
-    const sk_sp<const SkImage>& image) {
+void CheckerImageTracker::ScheduleNextImageDecode() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "CheckerImageTracker::ScheduleImageDecodeIfNecessary");
-  ImageId image_id = image->uniqueID();
-
-  // Once an image has been decoded, they can still be present in the decode
-  // queue (duplicate entries), or while an image is still being skipped on the
-  // active tree. Check if the image is still ASYNC to see if a decode is
-  // needed.
-  auto it = image_async_decode_state_.find(image_id);
-  DCHECK(it != image_async_decode_state_.end());
-  if (it->second != DecodePolicy::ASYNC)
+               "CheckerImageTracker::ScheduleNextImageDecode");
+  // We can have only one outsanding decode pending completion with the decode
+  // service. We'll come back here when it is completed.
+  if (outstanding_image_decode_)
     return;
 
-  // If a decode request is pending, we don't need to schedule another decode.
-  if (pending_image_decodes_.count(image_id) != 0) {
+  while (!image_decode_queue_.empty()) {
+    auto candidate = std::move(image_decode_queue_.front());
+    image_decode_queue_.erase(image_decode_queue_.begin());
+
+    // Once an image has been decoded, it can still be present in the decode
+    // queue (duplicate entries), or while an image is still being skipped on
+    // the active tree. Check if the image is still ASYNC to see if a decode is
+    // needed.
+    ImageId image_id = candidate->uniqueID();
+    auto it = image_async_decode_state_.find(image_id);
+    DCHECK(it != image_async_decode_state_.end());
+    if (it->second != DecodePolicy::ASYNC)
+      continue;
+
+    outstanding_image_decode_ = std::move(candidate);
+    break;
+  }
+
+  // We either found an image to decode or we reached the end of the queue. If
+  // we couldn't find an image, we're done.
+  if (!outstanding_image_decode_) {
+    DCHECK(image_decode_queue_.empty());
     return;
   }
 
+  ImageId image_id = outstanding_image_decode_->uniqueID();
+  DCHECK_EQ(image_id_to_decode_request_id_.count(image_id), 0u);
   TRACE_EVENT_ASYNC_BEGIN0("cc", "CheckerImageTracker::DeferImageDecode",
                            image_id);
-  DCHECK_EQ(image_id_to_decode_request_id_.count(image_id), 0U);
-
   image_id_to_decode_request_id_[image_id] =
       image_controller_->QueueImageDecode(
-          image, base::Bind(&CheckerImageTracker::DidFinishImageDecode,
-                            weak_factory_.GetWeakPtr(), image_id));
-  pending_image_decodes_.insert(image_id);
+          outstanding_image_decode_,
+          base::Bind(&CheckerImageTracker::DidFinishImageDecode,
+                     weak_factory_.GetWeakPtr(), image_id));
 }
 
 }  // namespace cc

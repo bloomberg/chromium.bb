@@ -22,7 +22,7 @@ void TileDrawInfo::AsValueInto(base::trace_event::TracedValue* state) const {
 
 Resource* TileDrawInfo::TakeResource() {
   Resource* resource = resource_;
-  set_resource(nullptr);
+  set_resource(nullptr, false);
   return resource;
 }
 

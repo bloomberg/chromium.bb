@@ -200,8 +200,23 @@ bool TilingSetRasterQueueAll::OnePriorityRectIterator::
 
 bool TilingSetRasterQueueAll::OnePriorityRectIterator::IsTileValid(
     const Tile* tile) const {
-  if (!tile || !TileNeedsRaster(tile))
+  if (!tile)
     return false;
+
+  // A tile is valid for raster if it needs raster and is unoccluded.
+  bool tile_is_valid_for_raster =
+      tile->draw_info().NeedsRaster() && !tiling_->IsTileOccluded(tile);
+
+  // A tile is not valid for the raster queue if it is not valid for raster or
+  // processing for checker-images.
+  if (!tile_is_valid_for_raster) {
+    bool tile_is_valid_for_checker_images =
+        tile->draw_info().is_checker_imaged() &&
+        tiling_->ShouldDecodeCheckeredImagesForTile(tile);
+    if (!tile_is_valid_for_checker_images)
+      return false;
+  }
+
   // After the pending visible rect has been processed, we must return false
   // for pending visible rect tiles as tiling iterators do not ignore those
   // tiles.

@@ -56,6 +56,8 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
 
   AnimationHost* animation_host() const;
 
+  FakeLayerTreeHostImplClient* client() { return &client_; }
+
  private:
   FakeLayerTreeHostImplClient client_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;

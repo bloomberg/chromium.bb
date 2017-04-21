@@ -46,6 +46,7 @@ class TestLayerTreeHostBase : public testing::Test {
                         const gfx::Size& tile_size,
                         const Region& invalidation);
   void ActivateTree();
+  void PerformImplSideInvalidation();
   void RebuildPropertyTreesOnPendingTree();
 
   FakeLayerTreeHostImpl* host_impl() const { return host_impl_.get(); }

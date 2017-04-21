@@ -108,6 +108,10 @@ class CC_EXPORT PictureLayerTiling {
   bool IsTileRequiredForActivation(const Tile* tile) const;
   bool IsTileRequiredForDraw(const Tile* tile) const;
 
+  // Returns true if the tile should be processed for decoding images skipped
+  // during rasterization.
+  bool ShouldDecodeCheckeredImagesForTile(const Tile* tile) const;
+
   void set_resolution(TileResolution resolution) {
     resolution_ = resolution;
     may_contain_low_resolution_tiles_ |= resolution == LOW_RESOLUTION;

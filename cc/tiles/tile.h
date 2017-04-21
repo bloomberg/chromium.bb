@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "cc/paint/draw_image.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/tile_draw_info.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
@@ -117,6 +118,15 @@ class CC_EXPORT Tile {
     return is_solid_color_analysis_performed_;
   }
 
+  bool set_raster_task_scheduled_with_checker_images(bool has_checker_images) {
+    bool previous_value = raster_task_scheduled_with_checker_images_;
+    raster_task_scheduled_with_checker_images_ = has_checker_images;
+    return previous_value;
+  }
+  bool raster_task_scheduled_with_checker_images() const {
+    return raster_task_scheduled_with_checker_images_;
+  }
+
   const PictureLayerTiling* tiling() const { return tiling_; }
   void set_tiling(const PictureLayerTiling* tiling) { tiling_ = tiling; }
 
@@ -158,6 +168,10 @@ class CC_EXPORT Tile {
   Id invalidated_id_;
 
   unsigned scheduled_priority_;
+
+  // Set to true if there is a raster task scheduled for this tile that will
+  // rasterize a resource with checker images.
+  bool raster_task_scheduled_with_checker_images_ = false;
   scoped_refptr<TileTask> raster_task_;
 
   DISALLOW_COPY_AND_ASSIGN(Tile);

@@ -159,6 +159,18 @@ void TestLayerTreeHostBase::ActivateTree() {
   host_impl()->active_tree()->UpdateDrawProperties(update_lcd_text);
 }
 
+void TestLayerTreeHostBase::PerformImplSideInvalidation() {
+  DCHECK(host_impl()->active_tree());
+  DCHECK(!host_impl()->pending_tree());
+  DCHECK(host_impl()->recycle_tree());
+
+  host_impl()->CreatePendingTree();
+  host_impl()->sync_tree()->InvalidateRegionForImages(
+      host_impl()->tile_manager()->TakeImagesToInvalidateOnSyncTree());
+  pending_layer_ = old_pending_layer_;
+  old_pending_layer_ = nullptr;
+}
+
 void TestLayerTreeHostBase::RebuildPropertyTreesOnPendingTree() {
   host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
   host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();

@@ -37,16 +37,12 @@ class CC_EXPORT CheckerImageTracker {
                       bool enable_checker_imaging);
   ~CheckerImageTracker();
 
-  // Given the |images| for a tile, filters the images which will be deferred
-  // asynchronously using the image decoded service, eliminating them from
-  // |images| adds them to the |checkered_images| set, so they can be skipped
-  // during the rasterization of this tile.
-  // The entries remaining in |images| are for images for which a cached decode
-  // from the image decode service is available, or which must be decoded before
-  // before this tile can be rasterized.
-  void FilterImagesForCheckeringForTile(std::vector<DrawImage>* images,
-                                        ImageIdFlatSet* checkered_images,
-                                        WhichTree tree);
+  // Returns true if the decode for |image| will be deferred to the image decode
+  // service and it should be be skipped during raster.
+  bool ShouldCheckerImage(const sk_sp<const SkImage>& image, WhichTree tree);
+
+  using ImageDecodeQueue = std::vector<sk_sp<const SkImage>>;
+  void ScheduleImageDecodeQueue(ImageDecodeQueue image_decode_queue);
 
   // Returns the set of images to invalidate on the sync tree.
   const ImageIdFlatSet& TakeImagesToInvalidateOnSyncTree();
@@ -70,11 +66,9 @@ class CC_EXPORT CheckerImageTracker {
                             ImageController::ImageDecodeRequestId request_id,
                             ImageController::ImageDecodeResult result);
 
-  // Returns true if the decode for |image| will be deferred to the image decode
-  // service and it should be be skipped during raster.
-  bool ShouldCheckerImage(const sk_sp<const SkImage>& image, WhichTree tree);
-
-  void ScheduleImageDecodeIfNecessary(const sk_sp<const SkImage>& image);
+  // Called when the next request in the |image_decode_queue_| should be
+  // scheduled with the image decode service.
+  void ScheduleNextImageDecode();
 
   ImageController* image_controller_;
   CheckerImageTrackerClient* client_;
@@ -87,11 +81,14 @@ class CC_EXPORT CheckerImageTracker {
   // A set of images which were invalidated on the current sync tree.
   ImageIdFlatSet invalidated_images_on_current_sync_tree_;
 
-  // A set of images which are currently pending decode from the image decode
-  // service.
-  // TODO(khushalsagar): This should be a queue that gets re-built each time we
-  // do a PrepareTiles? See crbug.com/689184.
-  ImageIdFlatSet pending_image_decodes_;
+  // The queue of images pending decode. We maintain a queue to ensure that the
+  // order in which images are decoded is aligned with the priority of the tiles
+  // dependent on these images.
+  ImageDecodeQueue image_decode_queue_;
+
+  // The currently outstanding image decode that has been scheduled with the
+  // decode service. There can be only one outstanding decode at a time.
+  sk_sp<const SkImage> outstanding_image_decode_;
 
   // A map of ImageId to its DecodePolicy.
   // TODO(khushalsagar): Limit the size of this set.

@@ -44,9 +44,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
    protected:
     ~OnePriorityRectIterator() = default;
-    bool TileNeedsRaster(const Tile* tile) const {
-      return tile->draw_info().NeedsRaster() && !tiling_->IsTileOccluded(tile);
-    }
 
     template <typename TilingIteratorType>
     void AdvanceToNextTile(TilingIteratorType* iterator);

@@ -77,6 +77,11 @@ class CC_EXPORT TileDrawInfo {
     return resource_ ? IsResourceFormatCompressed(resource_->format()) : false;
   }
 
+  bool is_checker_imaged() const {
+    DCHECK(!resource_is_checker_imaged_ || resource_);
+    return resource_is_checker_imaged_;
+  }
+
   void SetSolidColorForTesting(SkColor color) { set_solid_color(color); }
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
@@ -87,9 +92,13 @@ class CC_EXPORT TileDrawInfo {
 
   const Resource* resource() const { return resource_; }
 
-  void set_resource(Resource* resource) {
+  void set_resource(Resource* resource, bool resource_is_checker_imaged) {
+    DCHECK(!resource_is_checker_imaged || resource)
+        << "Need to have a resource for it to be checker-imaged";
+
     mode_ = RESOURCE_MODE;
     is_resource_ready_to_draw_ = false;
+    resource_is_checker_imaged_ = resource_is_checker_imaged;
     resource_ = resource;
   }
 
@@ -111,6 +120,10 @@ class CC_EXPORT TileDrawInfo {
   Resource* resource_ = nullptr;
   bool contents_swizzled_ = false;
   bool is_resource_ready_to_draw_ = false;
+
+  // Set to true if |resource_| was rasterized with checker-imaged content. The
+  // flag can only be true iff we have a valid |resource_|.
+  bool resource_is_checker_imaged_ = false;
 };
 
 }  // namespace cc

@@ -64,6 +64,10 @@ class FakeRecordingSource : public RecordingSource {
     clear_canvas_with_debug_color_ = clear;
   }
 
+  void set_fill_with_nonsolid_color(bool nonsolid) {
+    client_.set_fill_with_nonsolid_color(nonsolid);
+  }
+
   void Rerecord() {
     SetNeedsDisplayRect(recorded_viewport_);
     Region invalidation;

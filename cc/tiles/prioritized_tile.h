@@ -24,7 +24,8 @@ class CC_EXPORT PrioritizedTile {
                   const PictureLayerTiling* source_tiling,
                   const TilePriority& priority,
                   bool is_occluded,
-                  bool is_process_for_images_only);
+                  bool is_process_for_images_only,
+                  bool should_decode_checkered_images_for_tile);
   ~PrioritizedTile();
 
   Tile* tile() const { return tile_; }
@@ -36,6 +37,9 @@ class CC_EXPORT PrioritizedTile {
   bool is_process_for_images_only() const {
     return is_process_for_images_only_;
   }
+  bool should_decode_checkered_images_for_tile() const {
+    return should_decode_checkered_images_for_tile_;
+  }
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
@@ -45,6 +49,7 @@ class CC_EXPORT PrioritizedTile {
   TilePriority priority_;
   bool is_occluded_ = false;
   bool is_process_for_images_only_ = false;
+  bool should_decode_checkered_images_for_tile_ = false;
 };
 
 }  // namespace cc
