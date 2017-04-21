@@ -308,8 +308,9 @@ public class DownloadNotificationService extends Service {
             boolean isSummaryNotification =
                     notification.getId() == NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY;
 
-            if (addedNotification != null && addedNotification.first == notification.getId())
+            if (addedNotification != null && addedNotification.first == notification.getId()) {
                 continue;
+            }
 
             int icon =
                     notification.getNotification().extras.getInt(EXTRA_NOTIFICATION_BUNDLE_ICON_ID);
