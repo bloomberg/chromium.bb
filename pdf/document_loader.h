@@ -110,7 +110,7 @@ class DocumentLoader {
   ChunkStream chunk_stream_;
   bool partial_document_;
   bool request_pending_;
-  typedef std::list<std::pair<size_t, size_t> > PendingRequests;
+  typedef std::list<std::pair<size_t, size_t>> PendingRequests;
   PendingRequests pending_requests_;
   // The starting position of the HTTP request currently being processed.
   size_t current_request_offset_;
@@ -130,7 +130,7 @@ class DocumentLoader {
   bool is_multipart_;
   std::string multipart_boundary_;
   uint32_t requests_count_;
-  std::vector<std::vector<unsigned char> > chunk_buffer_;
+  std::vector<std::vector<unsigned char>> chunk_buffer_;
 };
 
 }  // namespace chrome_pdf

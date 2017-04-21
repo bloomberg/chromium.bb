@@ -26,8 +26,7 @@ bool g_sdk_initialized_via_pepper = false;
 
 }  // namespace
 
-PDFModule::PDFModule() {
-}
+PDFModule::PDFModule() {}
 
 PDFModule::~PDFModule() {
   if (g_sdk_initialized_via_pepper) {
@@ -58,7 +57,6 @@ pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
 
   return new OutOfProcessInstance(instance);
 }
-
 
 // Implementation of Global PPP functions ---------------------------------
 int32_t PPP_InitializeModule(PP_Module module_id,

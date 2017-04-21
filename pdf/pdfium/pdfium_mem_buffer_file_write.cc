@@ -11,8 +11,7 @@ PDFiumMemBufferFileWrite::PDFiumMemBufferFileWrite() {
   WriteBlock = &WriteBlockImpl;
 }
 
-PDFiumMemBufferFileWrite::~PDFiumMemBufferFileWrite() {
-}
+PDFiumMemBufferFileWrite::~PDFiumMemBufferFileWrite() {}
 
 int PDFiumMemBufferFileWrite::WriteBlockImpl(FPDF_FILEWRITE* this_file_write,
                                              const void* data,
@@ -28,6 +27,4 @@ int PDFiumMemBufferFileWrite::DoWriteBlock(const void* data,
   return 1;
 }
 
-
 }  // namespace chrome_pdf
-

@@ -18,11 +18,9 @@
 
 namespace chrome_pdf {
 
-ChunkStream::ChunkStream() : stream_size_(0) {
-}
+ChunkStream::ChunkStream() : stream_size_(0) {}
 
-ChunkStream::~ChunkStream() {
-}
+ChunkStream::~ChunkStream() {}
 
 void ChunkStream::Clear() {
   chunks_.clear();
@@ -87,8 +85,9 @@ bool ChunkStream::ReadData(size_t offset, size_t size, void* buffer) const {
 }
 
 bool ChunkStream::GetMissedRanges(
-    size_t offset, size_t size,
-    std::vector<std::pair<size_t, size_t> >* ranges) const {
+    size_t offset,
+    size_t size,
+    std::vector<std::pair<size_t, size_t>>* ranges) const {
   if (IsRangeAvailable(offset, size))
     return false;
 
@@ -125,8 +124,8 @@ bool ChunkStream::GetMissedRanges(
 
   // Add last chunk.
   if (cur_offset < offset + size)
-    ranges->push_back(std::pair<size_t, size_t>(cur_offset,
-        offset + size - cur_offset));
+    ranges->push_back(
+        std::pair<size_t, size_t>(cur_offset, offset + size - cur_offset));
 
   return true;
 }

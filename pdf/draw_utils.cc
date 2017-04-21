@@ -36,9 +36,8 @@ inline uint32_t MakePixel(uint8_t red,
                           uint8_t blue,
                           uint8_t alpha) {
   return (static_cast<uint32_t>(alpha) << 24) |
-      (static_cast<uint32_t>(red) << 16) |
-      (static_cast<uint32_t>(green) << 8) |
-      static_cast<uint32_t>(blue);
+         (static_cast<uint32_t>(red) << 16) |
+         (static_cast<uint32_t>(green) << 8) | static_cast<uint32_t>(blue);
 }
 
 inline uint8_t ProcessColor(uint8_t src_color,
@@ -69,9 +68,9 @@ ShadowMatrix::ShadowMatrix(uint32_t depth, double factor, uint32_t background)
     for (uint32_t x = 0; x <= y; x++) {
       // Fill cache if needed.
       if (pow_pv[x] == 0.0)
-        pow_pv[x] =  pow(x, pv);
+        pow_pv[x] = pow(x, pv);
       if (pow_pv[y] == 0.0)
-        pow_pv[y] =  pow(y, pv);
+        pow_pv[y] = pow(y, pv);
 
       // v - is a value for the smoothing function.
       // If x == 0 simplify calculations.
@@ -103,8 +102,7 @@ ShadowMatrix::ShadowMatrix(uint32_t depth, double factor, uint32_t background)
   }
 }
 
-ShadowMatrix::~ShadowMatrix() {
-}
+ShadowMatrix::~ShadowMatrix() {}
 
 void PaintShadow(pp::ImageData* image,
                  const pp::Rect& clip_rc,
@@ -152,13 +150,13 @@ void DrawShadow(pp::ImageData* image,
   PaintShadow(image, rc.Intersect(clip_rc), shadow_rc, matrix);
 
   // Fill bottom part.
-  rc = pp::Rect(shadow_rc.x(), object_rc.bottom(),
-                shadow_rc.width(), shadow_rc.bottom() - object_rc.bottom());
+  rc = pp::Rect(shadow_rc.x(), object_rc.bottom(), shadow_rc.width(),
+                shadow_rc.bottom() - object_rc.bottom());
   PaintShadow(image, rc.Intersect(clip_rc), shadow_rc, matrix);
 
   // Fill left part.
-  rc = pp::Rect(shadow_rc.x(), object_rc.y(),
-                object_rc.x() - shadow_rc.x(), object_rc.height());
+  rc = pp::Rect(shadow_rc.x(), object_rc.y(), object_rc.x() - shadow_rc.x(),
+                object_rc.height());
   PaintShadow(image, rc.Intersect(clip_rc), shadow_rc, matrix);
 
   // Fill right part.
@@ -168,4 +166,3 @@ void DrawShadow(pp::ImageData* image,
 }
 
 }  // namespace chrome_pdf
-

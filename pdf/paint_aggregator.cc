@@ -40,12 +40,10 @@ PaintAggregator::PaintUpdate::PaintUpdate(const PaintUpdate& that) = default;
 
 PaintAggregator::PaintUpdate::~PaintUpdate() = default;
 
-PaintAggregator::InternalPaintUpdate::InternalPaintUpdate() :
-    synthesized_scroll_damage_rect_(false) {
-}
+PaintAggregator::InternalPaintUpdate::InternalPaintUpdate()
+    : synthesized_scroll_damage_rect_(false) {}
 
-PaintAggregator::InternalPaintUpdate::~InternalPaintUpdate() {
-}
+PaintAggregator::InternalPaintUpdate::~InternalPaintUpdate() {}
 
 pp::Rect PaintAggregator::InternalPaintUpdate::GetScrollDamage() const {
   // Should only be scrolling in one direction at a time.
@@ -83,8 +81,7 @@ pp::Rect PaintAggregator::InternalPaintUpdate::GetScrollDamage() const {
   return scroll_rect.Intersect(damaged_rect);
 }
 
-PaintAggregator::PaintAggregator() {
-}
+PaintAggregator::PaintAggregator() {}
 
 bool PaintAggregator::HasPendingUpdate() const {
   return !update_.scroll_rect.IsEmpty() || !update_.paint_rects.empty();
@@ -121,8 +118,8 @@ PaintAggregator::PaintUpdate PaintAggregator::GetPendingUpdate() {
 void PaintAggregator::SetIntermediateResults(
     const std::vector<ReadyRect>& ready,
     const std::vector<pp::Rect>& pending) {
-  update_.ready_rects.insert(
-      update_.ready_rects.end(), ready.begin(), ready.end());
+  update_.ready_rects.insert(update_.ready_rects.end(), ready.begin(),
+                             ready.end());
   update_.paint_rects = pending;
 }
 
@@ -283,8 +280,7 @@ void PaintAggregator::InvalidateRectInternal(const pp::Rect& rect_old,
 
   // If the new paint overlaps with a scroll, then also invalidate the rect in
   // its new position.
-  if (check_scroll &&
-      !update_.scroll_rect.IsEmpty() &&
+  if (check_scroll && !update_.scroll_rect.IsEmpty() &&
       update_.scroll_rect.Intersects(rect)) {
     InvalidateRectInternal(ScrollPaintRect(rect, update_.scroll_delta), false);
   }

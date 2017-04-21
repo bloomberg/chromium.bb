@@ -10,12 +10,9 @@
 
 namespace chrome_pdf {
 
-PreviewModeClient::PreviewModeClient(Client* client)
-    : client_(client) {
-}
+PreviewModeClient::PreviewModeClient(Client* client) : client_(client) {}
 
-void PreviewModeClient::DocumentSizeUpdated(const pp::Size& size) {
-}
+void PreviewModeClient::DocumentSizeUpdated(const pp::Size& size) {}
 
 void PreviewModeClient::Invalidate(const pp::Rect& rect) {
   NOTREACHED();

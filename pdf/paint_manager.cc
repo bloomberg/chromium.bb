@@ -48,8 +48,7 @@ PaintManager::PaintManager(pp::Instance* instance,
   DCHECK(client);
 }
 
-PaintManager::~PaintManager() {
-}
+PaintManager::~PaintManager() {}
 
 // static
 pp::Size PaintManager::GetNewContextSize(const pp::Size& current_context_size,
@@ -77,10 +76,10 @@ pp::Size PaintManager::GetNewContextSize(const pp::Size& current_context_size,
       plugin_size.height() > current_context_size.height() ||
       plugin_size.width() < min_size.width() ||
       plugin_size.height() < min_size.height()) {
-      // Create a larger context than needed so that if we only resize by a
-      // small margin, we don't need a new context.
-      result = pp::Size(plugin_size.width() + kBufferSize,
-                        plugin_size.height() + kBufferSize);
+    // Create a larger context than needed so that if we only resize by a
+    // small margin, we don't need a new context.
+    result = pp::Size(plugin_size.width() + kBufferSize,
+                      plugin_size.height() + kBufferSize);
   }
 
   return result;
@@ -188,8 +187,7 @@ void PaintManager::EnsureCallbackPending() {
     return;
 
   pp::Module::Get()->core()->CallOnMainThread(
-      0,
-      callback_factory_.NewCallback(&PaintManager::OnManualCallbackComplete),
+      0, callback_factory_.NewCallback(&PaintManager::OnManualCallbackComplete),
       0);
   manual_callback_pending_ = true;
 }
@@ -281,8 +279,8 @@ void PaintManager::DoPaint() {
   }
 
   for (const auto& ready_rect : ready_now) {
-    graphics_.PaintImageData(
-        ready_rect.image_data, ready_rect.offset, ready_rect.rect);
+    graphics_.PaintImageData(ready_rect.image_data, ready_rect.offset,
+                             ready_rect.rect);
   }
 
   Flush();

@@ -136,6 +136,7 @@ class PDFiumEngine : public PDFEngine,
    public:
     explicit SelectionChangeInvalidator(PDFiumEngine* engine);
     ~SelectionChangeInvalidator();
+
    private:
     // Sets the given container to the all the currently visible selection
     // rectangles, in screen coordinates.
@@ -182,7 +183,7 @@ class PDFiumEngine : public PDFEngine,
     size_t IncrementIndex();
 
    private:
-    bool valid_;  // Whether |index_| is valid or not.
+    bool valid_;    // Whether |index_| is valid or not.
     size_t index_;  // The current search result, 0-based.
 
     DISALLOW_COPY_AND_ASSIGN(FindTextIndex);
@@ -199,16 +200,16 @@ class PDFiumEngine : public PDFEngine,
   };
 
   // PDFium interface to get block of data.
-  static int GetBlock(void* param, unsigned long position,
-                      unsigned char* buffer, unsigned long size);
+  static int GetBlock(void* param,
+                      unsigned long position,
+                      unsigned char* buffer,
+                      unsigned long size);
 
   // PDFium interface to check is block of data is available.
-  static FPDF_BOOL IsDataAvail(FX_FILEAVAIL* param,
-                               size_t offset, size_t size);
+  static FPDF_BOOL IsDataAvail(FX_FILEAVAIL* param, size_t offset, size_t size);
 
   // PDFium interface to request download of the block of data.
-  static void AddSegment(FX_DOWNLOADHINTS* param,
-                         size_t offset, size_t size);
+  static void AddSegment(FX_DOWNLOADHINTS* param, size_t offset, size_t size);
 
   // We finished getting the pdf file, so load it. This will complete
   // asynchronously (due to password fetching) and may be run multiple times.
@@ -225,8 +226,7 @@ class PDFiumEngine : public PDFEngine,
   void GetPasswordAndLoad();
 
   // Called when the password has been retrieved.
-  void OnGetPasswordComplete(int32_t result,
-                             const pp::Var& password);
+  void OnGetPasswordComplete(int32_t result, const pp::Var& password);
 
   // Continues loading the document when the password has been retrieved, or if
   // there is no password. If there is no password, then |password| is empty.
@@ -380,8 +380,12 @@ class PDFiumEngine : public PDFEngine,
 
   // Given a rectangle in screen coordinates, returns the coordinates in the
   // units that PDFium rendering functions expect.
-  void GetPDFiumRect(int page_index, const pp::Rect& rect, int* start_x,
-                     int* start_y, int* size_x, int* size_y) const;
+  void GetPDFiumRect(int page_index,
+                     const pp::Rect& rect,
+                     int* start_x,
+                     int* start_y,
+                     int* size_x,
+                     int* size_y) const;
 
   // Returns the rendering flags to pass to PDFium.
   int GetRenderingFlags() const;
@@ -674,7 +678,7 @@ class PDFiumEngine : public PDFEngine,
 
   // Used to manage timers that form fill API needs.  The pair holds the timer
   // period, in ms, and the callback function.
-  std::map<int, std::pair<int, TimerCallback> > timers_;
+  std::map<int, std::pair<int, TimerCallback>> timers_;
   int next_timer_id_;
 
   // Holds the zero-based page index of the last page that the mouse clicked on.

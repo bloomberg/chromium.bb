@@ -116,7 +116,8 @@ class PaintManager {
 
   // You must call this function before using if you use the 0-arg constructor.
   // See the constructor for what these arguments mean.
-  void Initialize(pp::Instance* instance, Client* client,
+  void Initialize(pp::Instance* instance,
+                  Client* client,
                   bool is_always_opaque);
 
   // Sets the size of the plugin. If the size is the same as the previous call,

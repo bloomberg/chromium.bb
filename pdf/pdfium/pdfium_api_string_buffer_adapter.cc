@@ -23,8 +23,7 @@ PDFiumAPIStringBufferAdapter<StringType>::PDFiumAPIStringBufferAdapter(
       data_(base::WriteInto(str, expected_size + 1)),
       expected_size_(expected_size),
       check_expected_size_(check_expected_size),
-      is_closed_(false) {
-}
+      is_closed_(false) {}
 
 template <class StringType>
 PDFiumAPIStringBufferAdapter<StringType>::~PDFiumAPIStringBufferAdapter() {

@@ -21,10 +21,7 @@ class PDFiumEngine;
 // Wrapper around a page from the document.
 class PDFiumPage {
  public:
-  PDFiumPage(PDFiumEngine* engine,
-             int i,
-             const pp::Rect& r,
-             bool available);
+  PDFiumPage(PDFiumEngine* engine, int i, const pp::Rect& r, bool available);
   PDFiumPage(const PDFiumPage& that);
   ~PDFiumPage();
 
@@ -70,8 +67,11 @@ class PDFiumPage {
   // index if it's near a character, and also the type of text.
   // Target is optional. It will be filled in for WEBLINK_AREA or
   // DOCLINK_AREA only.
-  Area GetCharIndex(const pp::Point& point, int rotation, int* char_index,
-                    int* form_type, LinkTarget* target);
+  Area GetCharIndex(const pp::Point& point,
+                    int rotation,
+                    int* char_index,
+                    int* form_type,
+                    LinkTarget* target);
 
   // Gets the character at the given index.
   base::char16 GetCharAtIndex(int index);
@@ -94,7 +94,7 @@ class PDFiumPage {
   bool available() const { return available_; }
   void set_available(bool available) { available_ = available; }
   void set_calculated_links(bool calculated_links) {
-     calculated_links_ = calculated_links;
+    calculated_links_ = calculated_links;
   }
 
  private:

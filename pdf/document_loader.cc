@@ -80,31 +80,33 @@ bool ResponseStatusSuccess(const pp::URLLoader& loader) {
 }
 
 bool IsValidContentType(const std::string& type) {
-  return (base::EndsWith(type, "/pdf", base::CompareCase::INSENSITIVE_ASCII) ||
-          base::EndsWith(type, ".pdf", base::CompareCase::INSENSITIVE_ASCII) ||
-          base::EndsWith(type, "/x-pdf",
-                         base::CompareCase::INSENSITIVE_ASCII) ||
-          base::EndsWith(type, "/*", base::CompareCase::INSENSITIVE_ASCII) ||
-          base::EndsWith(type, "/acrobat",
-                         base::CompareCase::INSENSITIVE_ASCII) ||
-          base::EndsWith(type, "/unknown",
-                         base::CompareCase::INSENSITIVE_ASCII));
+  return base::EndsWith(type, "/pdf", base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, ".pdf", base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, "/x-pdf", base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, "/*", base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, "/acrobat",
+                        base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, "/unknown", base::CompareCase::INSENSITIVE_ASCII);
 }
 
 }  // namespace
 
-DocumentLoader::Client::~Client() {
-}
+DocumentLoader::Client::~Client() {}
 
 DocumentLoader::DocumentLoader(Client* client)
-    : client_(client), partial_document_(false), request_pending_(false),
-      current_pos_(0), current_chunk_size_(0), current_chunk_read_(0),
-      document_size_(0), header_request_(true), is_multipart_(false) {
+    : client_(client),
+      partial_document_(false),
+      request_pending_(false),
+      current_pos_(0),
+      current_chunk_size_(0),
+      current_chunk_read_(0),
+      document_size_(0),
+      header_request_(true),
+      is_multipart_(false) {
   loader_factory_.Initialize(this);
 }
 
-DocumentLoader::~DocumentLoader() {
-}
+DocumentLoader::~DocumentLoader() {}
 
 bool DocumentLoader::Init(const pp::URLLoader& loader,
                           const std::string& url,
@@ -181,8 +183,7 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
 
   // Enable partial loading only if file size is above the threshold.
   // It will allow avoiding latency for multiple requests.
-  if (content_length > kMinFileSize &&
-      accept_ranges_bytes &&
+  if (content_length > kMinFileSize && accept_ranges_bytes &&
       !content_encoded) {
     LoadPartialDocument();
   } else {
@@ -223,7 +224,7 @@ uint32_t DocumentLoader::GetAvailableData() const {
     return current_pos_;
   }
 
-  std::vector<std::pair<size_t, size_t> > ranges;
+  std::vector<std::pair<size_t, size_t>> ranges;
   chunk_stream_.GetMissedRanges(0, document_size_, &ranges);
   uint32_t available = document_size_;
   for (const auto& range : ranges)
@@ -232,8 +233,7 @@ uint32_t DocumentLoader::GetAvailableData() const {
 }
 
 void DocumentLoader::ClearPendingRequests() {
-  pending_requests_.erase(pending_requests_.begin(),
-                          pending_requests_.end());
+  pending_requests_.erase(pending_requests_.begin(), pending_requests_.end());
 }
 
 bool DocumentLoader::GetBlock(uint32_t position,
@@ -266,7 +266,7 @@ void DocumentLoader::RequestData(uint32_t position, uint32_t size) {
 void DocumentLoader::RemoveCompletedRanges() {
   // Split every request that has been partially downloaded already into smaller
   // requests.
-  std::vector<std::pair<size_t, size_t> > ranges;
+  std::vector<std::pair<size_t, size_t>> ranges;
   auto it = pending_requests_.begin();
   while (it != pending_requests_.end()) {
     chunk_stream_.GetMissedRanges(it->first, it->second, &ranges);
@@ -416,7 +416,7 @@ void DocumentLoader::DidOpen(int32_t result) {
 
 void DocumentLoader::ReadMore() {
   pp::CompletionCallback callback =
-        loader_factory_.NewCallback(&DocumentLoader::DidRead);
+      loader_factory_.NewCallback(&DocumentLoader::DidRead);
   int rv = loader_.ReadResponseBody(buffer_, sizeof(buffer_), callback);
   if (rv != PP_OK_COMPLETIONPENDING)
     callback.Run(rv);
@@ -515,7 +515,7 @@ void DocumentLoader::DidRead(int32_t result) {
 
 bool DocumentLoader::SatisfyingRequest(size_t offset, size_t size) const {
   return offset <= current_pos_ + kDefaultRequestSize &&
-      current_pos_ < offset + size;
+         current_pos_ < offset + size;
 }
 
 void DocumentLoader::ReadComplete() {

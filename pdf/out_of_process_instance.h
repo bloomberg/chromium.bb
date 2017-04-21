@@ -68,9 +68,8 @@ class OutOfProcessInstance : public pp::Instance,
   // pp::Printing_Dev implementation.
   uint32_t QuerySupportedPrintOutputFormats() override;
   int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) override;
-  pp::Resource PrintPages(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count) override;
+  pp::Resource PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
+                          uint32_t page_range_count) override;
   void PrintEnd() override;
   bool IsPrintScalingDisabled() override;
 
@@ -166,8 +165,9 @@ class OutOfProcessInstance : public pp::Instance,
 
   void LoadUrl(const std::string& url);
   void LoadPreviewUrl(const std::string& url);
-  void LoadUrlInternal(const std::string& url, pp::URLLoader* loader,
-                       void (OutOfProcessInstance::* method)(int32_t));
+  void LoadUrlInternal(const std::string& url,
+                       pp::URLLoader* loader,
+                       void (OutOfProcessInstance::*method)(int32_t));
 
   // Creates a URL loader and allows it to access all urls, i.e. not just the
   // frame's origin.
@@ -270,9 +270,7 @@ class OutOfProcessInstance : public pp::Instance,
   std::vector<BackgroundPart> background_parts_;
 
   struct PrintSettings {
-    PrintSettings() {
-      Clear();
-    }
+    PrintSettings() { Clear(); }
     void Clear() {
       is_printing = false;
       print_pages_called_ = false;

@@ -29,8 +29,9 @@ class ChunkStream {
   bool ReadData(size_t offset, size_t size, void* buffer) const;
 
   // Returns vector of pairs where first is an offset, second is a size.
-  bool GetMissedRanges(size_t offset, size_t size,
-      std::vector<std::pair<size_t, size_t> >* ranges) const;
+  bool GetMissedRanges(size_t offset,
+                       size_t size,
+                       std::vector<std::pair<size_t, size_t>>* ranges) const;
   bool IsRangeAvailable(size_t offset, size_t size) const;
   size_t GetFirstMissingByte() const;
 

@@ -14,8 +14,7 @@ PDFiumRange::PDFiumRange(PDFiumPage* page, int char_index, int char_count)
     : page_(page),
       char_index_(char_index),
       char_count_(char_count),
-      cached_screen_rects_zoom_(0) {
-}
+      cached_screen_rects_zoom_(0) {}
 
 PDFiumRange::PDFiumRange(const PDFiumRange& that) = default;
 
@@ -68,8 +67,7 @@ base::string16 PDFiumRange::GetText() const {
   }
 
   if (count > 0) {
-    PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(&rv,
-                                                                    count,
+    PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(&rv, count,
                                                                     false);
     unsigned short* data =
         reinterpret_cast<unsigned short*>(api_string_adapter.GetData());

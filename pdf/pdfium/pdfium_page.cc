@@ -69,9 +69,9 @@ pp::FloatRect GetFloatCharRectInPixels(FPDF_PAGE page,
   return FloatPageRectToPixelRect(page, page_coords);
 }
 
-bool OverlapsOnYAxis(const pp::FloatRect &a, const pp::FloatRect& b) {
-  return !(a.IsEmpty() || b.IsEmpty() ||
-           a.bottom() < b.y() || b.bottom() < a.y());
+bool OverlapsOnYAxis(const pp::FloatRect& a, const pp::FloatRect& b) {
+  return !(a.IsEmpty() || b.IsEmpty() || a.bottom() < b.y() ||
+           b.bottom() < a.y());
 }
 
 }  // namespace
@@ -188,8 +188,8 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
     if (!base::IsUnicodeWhitespace(character)) {
       // TODO(dmazzoni): this assumes horizontal text.
       // https://crbug.com/580311
-      pp::FloatRect char_rect = GetFloatCharRectInPixels(
-          page, text_page, char_index);
+      pp::FloatRect char_rect =
+          GetFloatCharRectInPixels(page, text_page, char_index);
       if (!char_rect.IsEmpty() && !OverlapsOnYAxis(text_run_bounds, char_rect))
         break;
 
@@ -244,11 +244,11 @@ PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
   pp::Point point2 = point - rect_.point();
   double new_x;
   double new_y;
-  FPDF_DeviceToPage(GetPage(), 0, 0, rect_.width(), rect_.height(),
-        rotation, point2.x(), point2.y(), &new_x, &new_y);
+  FPDF_DeviceToPage(GetPage(), 0, 0, rect_.width(), rect_.height(), rotation,
+                    point2.x(), point2.y(), &new_x, &new_y);
 
-  int rv = FPDFText_GetCharIndexAtPos(
-      GetTextPage(), new_x, new_y, kTolerance, kTolerance);
+  int rv = FPDFText_GetCharIndexAtPos(GetTextPage(), new_x, new_y, kTolerance,
+                                      kTolerance);
   *char_index = rv;
 
   FPDF_LINK link = FPDFLink_GetLinkAtPoint(GetPage(), new_x, new_y);
@@ -305,39 +305,41 @@ int PDFiumPage::GetCharCount() {
 }
 
 PDFiumPage::Area PDFiumPage::GetLinkTarget(
-    FPDF_LINK link, PDFiumPage::LinkTarget* target) const {
+    FPDF_LINK link,
+    PDFiumPage::LinkTarget* target) const {
   FPDF_DEST dest = FPDFLink_GetDest(engine_->doc(), link);
   if (dest)
     return GetDestinationTarget(dest, target);
 
   FPDF_ACTION action = FPDFLink_GetAction(link);
   if (action) {
+    // TODO(gene): We don't support PDFACTION_REMOTEGOTO and
+    // PDFACTION_LAUNCH at the moment.
     switch (FPDFAction_GetType(action)) {
       case PDFACTION_GOTO: {
-          FPDF_DEST dest = FPDFAction_GetDest(engine_->doc(), action);
-          if (dest)
-            return GetDestinationTarget(dest, target);
-          // TODO(gene): We don't fully support all types of the in-document
-          // links. Need to implement that. There is a bug to track that:
-          // http://code.google.com/p/chromium/issues/detail?id=55776
-        } break;
+        FPDF_DEST dest = FPDFAction_GetDest(engine_->doc(), action);
+        if (dest)
+          return GetDestinationTarget(dest, target);
+        // TODO(gene): We don't fully support all types of the in-document
+        // links. Need to implement that. There is a bug to track that:
+        // http://code.google.com/p/chromium/issues/detail?id=55776
+        break;
+      }
       case PDFACTION_URI: {
-          if (target) {
-            size_t buffer_size =
-                FPDFAction_GetURIPath(engine_->doc(), action, nullptr, 0);
-            if (buffer_size > 0) {
-              PDFiumAPIStringBufferAdapter<std::string> api_string_adapter(
-                  &target->url, buffer_size, true);
-              void* data = api_string_adapter.GetData();
-              size_t bytes_written = FPDFAction_GetURIPath(
-                  engine_->doc(), action, data, buffer_size);
-              api_string_adapter.Close(bytes_written);
-            }
+        if (target) {
+          size_t buffer_size =
+              FPDFAction_GetURIPath(engine_->doc(), action, nullptr, 0);
+          if (buffer_size > 0) {
+            PDFiumAPIStringBufferAdapter<std::string> api_string_adapter(
+                &target->url, buffer_size, true);
+            void* data = api_string_adapter.GetData();
+            size_t bytes_written = FPDFAction_GetURIPath(engine_->doc(), action,
+                                                         data, buffer_size);
+            api_string_adapter.Close(bytes_written);
           }
-          return WEBLINK_AREA;
-        } break;
-      // TODO(gene): We don't support PDFACTION_REMOTEGOTO and PDFACTION_LAUNCH
-      // at the moment.
+        }
+        return WEBLINK_AREA;
+      }
     }
   }
 
@@ -345,7 +347,8 @@ PDFiumPage::Area PDFiumPage::GetLinkTarget(
 }
 
 PDFiumPage::Area PDFiumPage::GetDestinationTarget(
-    FPDF_DEST destination, PDFiumPage::LinkTarget* target) const {
+    FPDF_DEST destination,
+    PDFiumPage::LinkTarget* target) const {
   if (target)
     target->page = FPDFDest_GetPageIndex(engine_->doc(), destination);
   return DOCLINK_AREA;
