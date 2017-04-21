@@ -74,10 +74,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
       RenderViewHost(),
       "navigator.credentials.get({password: true})"
       ".then(cred => window.location = '/password/done.html')"));
-  WaitForPasswordStore();
-  ASSERT_EQ(
-      password_manager::ui::CREDENTIAL_REQUEST_STATE,
-      PasswordsModelDelegateFromWebContents(WebContents())->GetState());
+  // Mojo calls from the renderer are asynchronous.
+  BubbleObserver(WebContents()).WaitForAccountChooser();
   PasswordsModelDelegateFromWebContents(WebContents())->ChooseCredential(
       signin_form,
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
@@ -134,9 +132,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
                              ".then(cred => "
                              "window.location = '/password/done.html'))"));
 
-  WaitForPasswordStore();
-  ASSERT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
-            PasswordsModelDelegateFromWebContents(WebContents())->GetState());
+  // Mojo calls from the renderer are asynchronous.
+  BubbleObserver(WebContents()).WaitForAccountChooser();
   PasswordsModelDelegateFromWebContents(WebContents())
       ->ChooseCredential(
           signin_form,
