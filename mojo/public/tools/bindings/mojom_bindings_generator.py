@@ -288,7 +288,7 @@ def main():
   generate_parser.add_argument("--variant", dest="variant", default=None,
                                help="output a named variant of the bindings")
   generate_parser.add_argument(
-      "--bytecode_path", type=str, required=True, help=(
+      "--bytecode_path", required=True, help=(
           "the path from which to load template bytecode; to generate template "
           "bytecode, run %s precompile BYTECODE_PATH" % os.path.basename(
               sys.argv[0])))
@@ -303,21 +303,21 @@ def main():
       help="Use the new module loading approach and the core API exposed by "
       "Web IDL. This option only affects the JavaScript bindings.")
   generate_parser.add_argument(
-      "--export_attribute", type=str, default="",
+      "--export_attribute", default="",
       help="Optional attribute to specify on class declaration to export it "
       "for the component build.")
   generate_parser.add_argument(
-      "--export_header", type=str, default="",
+      "--export_header", default="",
       help="Optional header to include in the generated headers to support the "
       "component build.")
   generate_parser.add_argument(
       "--generate_non_variant_code", action="store_true",
       help="Generate code that is shared by different variants.")
   generate_parser.add_argument(
-      "--depfile", type=str,
+      "--depfile",
       help="A file into which the list of input files will be written.")
   generate_parser.add_argument(
-      "--depfile_target", type=str,
+      "--depfile_target",
       help="The target name to use in the depfile.")
   generate_parser.set_defaults(func=_Generate)
 
