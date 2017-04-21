@@ -91,10 +91,18 @@ ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
     // associated crash keys once crbug.com/629521 is fixed.
     bool fd_valid = fcntl(dmabuf_fd_.get(), F_GETFD) != -1 ||
                     logging::GetLastSystemErrorCode() != EBADF;
+    int minor = -1;
+    int major = -1;
+    struct stat buf;
+    if (!fstat(dmabuf_fd_.get(), &buf)) {
+      minor = minor(buf.st_dev);
+      major = major(buf.st_dev);
+    }
+
     std::string mmap_params = base::StringPrintf(
         "(addr=nullptr, length=%zu, prot=(PROT_READ | PROT_WRITE), "
-        "flags=MAP_SHARED, fd=%d[valid=%d], offset=0)",
-        map_size, dmabuf_fd_.get(), fd_valid);
+        "flags=MAP_SHARED, fd=%d[valid=%d, minor=%d, major=%d], offset=0)",
+        map_size, dmabuf_fd_.get(), fd_valid, minor, major);
     std::string errno_str = logging::SystemErrorCodeToString(mmap_error);
     std::unique_ptr<base::ProcessMetrics> process_metrics(
         base::ProcessMetrics::CreateCurrentProcessMetrics());
@@ -109,6 +117,13 @@ ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
                << ", buffer_size: (" << size.ToString()
                << "),  errno: " << errno_str
                << " , number_of_fds: " << number_of_fds;
+    LOG(ERROR) << "NativePixmapHandle:";
+    LOG(ERROR) << "Number of fds: " << handle.fds.size();
+    LOG(ERROR) << "Number of planes: " << handle.planes.size();
+    for (const auto& plane : handle.planes) {
+      LOG(ERROR) << "stride  " << plane.stride << " offset " << plane.offset
+                 << " size " << plane.size;
+    }
     CHECK(false) << "Failed to mmap dmabuf.";
   }
 }
