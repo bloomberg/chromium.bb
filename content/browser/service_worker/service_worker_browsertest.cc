@@ -2256,14 +2256,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
   EXPECT_EQ(1, GetRequestCount(kPageUrl));
 }
 
-// Flaky on Win/Mac: http://crbug.com/533631
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_ResponseFromHTTPSServiceWorkerIsMarkedAsSecure DISABLED_ResponseFromHTTPSServiceWorkerIsMarkedAsSecure
-#else
-#define MAYBE_ResponseFromHTTPSServiceWorkerIsMarkedAsSecure ResponseFromHTTPSServiceWorkerIsMarkedAsSecure
-#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
-                       MAYBE_ResponseFromHTTPSServiceWorkerIsMarkedAsSecure) {
+                       ResponseFromHTTPSServiceWorkerIsMarkedAsSecure) {
   StartServerAndNavigateToSetup();
   const char kPageUrl[] = "/service_worker/fetch_event_blob.html";
   const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
