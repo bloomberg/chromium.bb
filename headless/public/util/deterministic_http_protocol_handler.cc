@@ -10,6 +10,7 @@
 #include "headless/public/util/deterministic_dispatcher.h"
 #include "headless/public/util/generic_url_request_job.h"
 #include "headless/public/util/http_url_fetcher.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 

@@ -342,6 +342,7 @@ if (is_win) {
       "//components/policy:generated",
       "//content/app/resources",
       "//crypto",
+      "//headless:headless_shell_browser_lib",
       "//net:net_resources",
       "//ppapi/features",
       "//third_party/cld",
@@ -432,6 +433,7 @@ if (is_win) {
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
         "//content/public/app:child",
+        "//headless:headless_shell_child_lib",
       ]
 
       ldflags = [

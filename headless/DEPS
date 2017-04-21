@@ -3,6 +3,7 @@ include_rules = [
   "+components/crash/content/browser",
   "+content/public/app",
   "+content/public/browser",
+  "+content/public/renderer",
   "+content/public/common",
   "+content/public/test",
   "+mojo/public",
@@ -16,5 +17,6 @@ include_rules = [
   "+ui/gfx/geometry",
   "+ui/gl",
   "+ui/ozone/public",
+  "+sandbox/win/src",
   "+services/service_manager/public",
 ]
