@@ -292,8 +292,8 @@ bool ReadFile(const base::FilePath& file_path,
   return res;
 }
 
-POLICY_EXPORT bool ReadDataInternal(const uint8_t* data,
-                                    size_t data_size,
+POLICY_EXPORT bool ReadDataInternal(const uint8_t* preg_data,
+                                    size_t preg_data_size,
                                     const base::string16& root,
                                     RegistryDict* dict,
                                     PolicyLoadStatus* status,
@@ -302,16 +302,16 @@ POLICY_EXPORT bool ReadDataInternal(const uint8_t* data,
   DCHECK(root.empty() || root.back() != kRegistryPathSeparator[0]);
 
   // Check data size.
-  if (data_size > kMaxPRegFileSize) {
-    LOG(ERROR) << "PReg " << debug_name << " too large: " << data_size;
+  if (preg_data_size > kMaxPRegFileSize) {
+    LOG(ERROR) << "PReg " << debug_name << " too large: " << preg_data_size;
     *status = POLICY_LOAD_STATUS_TOO_BIG;
     return false;
   }
 
   // Check the header.
   const int kHeaderSize = arraysize(kPRegFileHeader);
-  if (!data || data_size < kHeaderSize ||
-      memcmp(kPRegFileHeader, data, kHeaderSize) != 0) {
+  if (!preg_data || preg_data_size < kHeaderSize ||
+      memcmp(kPRegFileHeader, preg_data, kHeaderSize) != 0) {
     LOG(ERROR) << "Bad PReg " << debug_name;
     *status = POLICY_LOAD_STATUS_PARSE_ERROR;
     return false;
@@ -320,8 +320,8 @@ POLICY_EXPORT bool ReadDataInternal(const uint8_t* data,
   // Parse data, which is expected to be UCS-2 and little-endian. The latter I
   // couldn't find documentation on, but the example I saw were all
   // little-endian. It'd be interesting to check on big-endian hardware.
-  const uint8_t* cursor = data + kHeaderSize;
-  const uint8_t* end = data + data_size;
+  const uint8_t* cursor = preg_data + kHeaderSize;
+  const uint8_t* end = preg_data + preg_data_size;
   while (true) {
     if (cursor == end)
       return true;
@@ -376,7 +376,7 @@ POLICY_EXPORT bool ReadDataInternal(const uint8_t* data,
   }
 
   LOG(ERROR) << "Error parsing PReg " << debug_name << " at offset "
-             << (reinterpret_cast<const uint8_t*>(cursor - 1) - data);
+             << (reinterpret_cast<const uint8_t*>(cursor - 1) - preg_data);
   *status = POLICY_LOAD_STATUS_PARSE_ERROR;
   return false;
 }

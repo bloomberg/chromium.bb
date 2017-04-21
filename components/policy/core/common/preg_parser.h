@@ -39,13 +39,13 @@ POLICY_EXPORT bool ReadFile(const base::FilePath& file_path,
                             RegistryDict* dict,
                             PolicyLoadStatusSample* status_sample);
 
-// Similar to ReadFile, but reads from |data| of length |data_size| instead of
-// a file, and writes status to the enum PolicyLoadStatus, which does not record
-// UMA stats, unlike |PolicyLoadStatusSample|. |debug_name| is printed out along
-// with error messages. Used internally and for testing only. All other callers
-// should use ReadFile instead.
-POLICY_EXPORT bool ReadDataInternal(const uint8_t* data,
-                                    size_t data_size,
+// Similar to ReadFile, but reads from |preg_data| of length |preg_data_size|
+// instead of a file, and writes status to the enum PolicyLoadStatus, which does
+// not record UMA stats, unlike |PolicyLoadStatusSample|. |debug_name| is
+// printed out along with error messages. Used internally and for testing only.
+// All other callers should use ReadFile instead.
+POLICY_EXPORT bool ReadDataInternal(const uint8_t* preg_data,
+                                    size_t preg_data_size,
                                     const base::string16& root,
                                     RegistryDict* dict,
                                     PolicyLoadStatus* status,
