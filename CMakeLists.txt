@@ -125,7 +125,9 @@ set(AOM_ENCODER_APP_UTIL_SOURCES
     "${AOM_ROOT}/warnings.c"
     "${AOM_ROOT}/warnings.h"
     "${AOM_ROOT}/y4minput.c"
-    "${AOM_ROOT}/y4minput.h")
+    "${AOM_ROOT}/y4minput.h"
+    "${AOM_ROOT}/examples/encoder_util.h"
+    "${AOM_ROOT}/examples/encoder_util.c")
 
 set(AOM_ENCODER_STATS_SOURCES
     "${AOM_ROOT}/aomstats.c"

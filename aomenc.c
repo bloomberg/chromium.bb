@@ -32,6 +32,7 @@
 #include "./args.h"
 #include "./ivfenc.h"
 #include "./tools_common.h"
+#include "examples/encoder_util.h"
 
 #if CONFIG_AV1_ENCODER
 #include "aom/aomcx.h"
@@ -613,230 +614,6 @@ void usage_exit(void) {
   fprintf(stderr, "Use --codec to switch to a non-default encoder.\n\n");
 
   exit(EXIT_FAILURE);
-}
-
-#define mmin(a, b) ((a) < (b) ? (a) : (b))
-
-#if CONFIG_HIGHBITDEPTH
-static void find_mismatch_high(const aom_image_t *const img1,
-                               const aom_image_t *const img2, int yloc[4],
-                               int uloc[4], int vloc[4]) {
-  uint16_t *plane1, *plane2;
-  uint32_t stride1, stride2;
-  const uint32_t bsize = 64;
-  const uint32_t bsizey = bsize >> img1->y_chroma_shift;
-  const uint32_t bsizex = bsize >> img1->x_chroma_shift;
-  const uint32_t c_w =
-      (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;
-  const uint32_t c_h =
-      (img1->d_h + img1->y_chroma_shift) >> img1->y_chroma_shift;
-  int match = 1;
-  uint32_t i, j;
-  yloc[0] = yloc[1] = yloc[2] = yloc[3] = -1;
-  plane1 = (uint16_t *)img1->planes[AOM_PLANE_Y];
-  plane2 = (uint16_t *)img2->planes[AOM_PLANE_Y];
-  stride1 = img1->stride[AOM_PLANE_Y] / 2;
-  stride2 = img2->stride[AOM_PLANE_Y] / 2;
-  for (i = 0, match = 1; match && i < img1->d_h; i += bsize) {
-    for (j = 0; match && j < img1->d_w; j += bsize) {
-      int k, l;
-      const int si = mmin(i + bsize, img1->d_h) - i;
-      const int sj = mmin(j + bsize, img1->d_w) - j;
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(plane1 + (i + k) * stride1 + j + l) !=
-              *(plane2 + (i + k) * stride2 + j + l)) {
-            yloc[0] = i + k;
-            yloc[1] = j + l;
-            yloc[2] = *(plane1 + (i + k) * stride1 + j + l);
-            yloc[3] = *(plane2 + (i + k) * stride2 + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  uloc[0] = uloc[1] = uloc[2] = uloc[3] = -1;
-  plane1 = (uint16_t *)img1->planes[AOM_PLANE_U];
-  plane2 = (uint16_t *)img2->planes[AOM_PLANE_U];
-  stride1 = img1->stride[AOM_PLANE_U] / 2;
-  stride2 = img2->stride[AOM_PLANE_U] / 2;
-  for (i = 0, match = 1; match && i < c_h; i += bsizey) {
-    for (j = 0; match && j < c_w; j += bsizex) {
-      int k, l;
-      const int si = mmin(i + bsizey, c_h - i);
-      const int sj = mmin(j + bsizex, c_w - j);
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(plane1 + (i + k) * stride1 + j + l) !=
-              *(plane2 + (i + k) * stride2 + j + l)) {
-            uloc[0] = i + k;
-            uloc[1] = j + l;
-            uloc[2] = *(plane1 + (i + k) * stride1 + j + l);
-            uloc[3] = *(plane2 + (i + k) * stride2 + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  vloc[0] = vloc[1] = vloc[2] = vloc[3] = -1;
-  plane1 = (uint16_t *)img1->planes[AOM_PLANE_V];
-  plane2 = (uint16_t *)img2->planes[AOM_PLANE_V];
-  stride1 = img1->stride[AOM_PLANE_V] / 2;
-  stride2 = img2->stride[AOM_PLANE_V] / 2;
-  for (i = 0, match = 1; match && i < c_h; i += bsizey) {
-    for (j = 0; match && j < c_w; j += bsizex) {
-      int k, l;
-      const int si = mmin(i + bsizey, c_h - i);
-      const int sj = mmin(j + bsizex, c_w - j);
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(plane1 + (i + k) * stride1 + j + l) !=
-              *(plane2 + (i + k) * stride2 + j + l)) {
-            vloc[0] = i + k;
-            vloc[1] = j + l;
-            vloc[2] = *(plane1 + (i + k) * stride1 + j + l);
-            vloc[3] = *(plane2 + (i + k) * stride2 + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-}
-#endif
-
-static void find_mismatch(const aom_image_t *const img1,
-                          const aom_image_t *const img2, int yloc[4],
-                          int uloc[4], int vloc[4]) {
-  const uint32_t bsize = 64;
-  const uint32_t bsizey = bsize >> img1->y_chroma_shift;
-  const uint32_t bsizex = bsize >> img1->x_chroma_shift;
-  const uint32_t c_w =
-      (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;
-  const uint32_t c_h =
-      (img1->d_h + img1->y_chroma_shift) >> img1->y_chroma_shift;
-  int match = 1;
-  uint32_t i, j;
-  yloc[0] = yloc[1] = yloc[2] = yloc[3] = -1;
-  for (i = 0, match = 1; match && i < img1->d_h; i += bsize) {
-    for (j = 0; match && j < img1->d_w; j += bsize) {
-      int k, l;
-      const int si = mmin(i + bsize, img1->d_h) - i;
-      const int sj = mmin(j + bsize, img1->d_w) - j;
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(img1->planes[AOM_PLANE_Y] +
-                (i + k) * img1->stride[AOM_PLANE_Y] + j + l) !=
-              *(img2->planes[AOM_PLANE_Y] +
-                (i + k) * img2->stride[AOM_PLANE_Y] + j + l)) {
-            yloc[0] = i + k;
-            yloc[1] = j + l;
-            yloc[2] = *(img1->planes[AOM_PLANE_Y] +
-                        (i + k) * img1->stride[AOM_PLANE_Y] + j + l);
-            yloc[3] = *(img2->planes[AOM_PLANE_Y] +
-                        (i + k) * img2->stride[AOM_PLANE_Y] + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  uloc[0] = uloc[1] = uloc[2] = uloc[3] = -1;
-  for (i = 0, match = 1; match && i < c_h; i += bsizey) {
-    for (j = 0; match && j < c_w; j += bsizex) {
-      int k, l;
-      const int si = mmin(i + bsizey, c_h - i);
-      const int sj = mmin(j + bsizex, c_w - j);
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(img1->planes[AOM_PLANE_U] +
-                (i + k) * img1->stride[AOM_PLANE_U] + j + l) !=
-              *(img2->planes[AOM_PLANE_U] +
-                (i + k) * img2->stride[AOM_PLANE_U] + j + l)) {
-            uloc[0] = i + k;
-            uloc[1] = j + l;
-            uloc[2] = *(img1->planes[AOM_PLANE_U] +
-                        (i + k) * img1->stride[AOM_PLANE_U] + j + l);
-            uloc[3] = *(img2->planes[AOM_PLANE_U] +
-                        (i + k) * img2->stride[AOM_PLANE_U] + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-  vloc[0] = vloc[1] = vloc[2] = vloc[3] = -1;
-  for (i = 0, match = 1; match && i < c_h; i += bsizey) {
-    for (j = 0; match && j < c_w; j += bsizex) {
-      int k, l;
-      const int si = mmin(i + bsizey, c_h - i);
-      const int sj = mmin(j + bsizex, c_w - j);
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(img1->planes[AOM_PLANE_V] +
-                (i + k) * img1->stride[AOM_PLANE_V] + j + l) !=
-              *(img2->planes[AOM_PLANE_V] +
-                (i + k) * img2->stride[AOM_PLANE_V] + j + l)) {
-            vloc[0] = i + k;
-            vloc[1] = j + l;
-            vloc[2] = *(img1->planes[AOM_PLANE_V] +
-                        (i + k) * img1->stride[AOM_PLANE_V] + j + l);
-            vloc[3] = *(img2->planes[AOM_PLANE_V] +
-                        (i + k) * img2->stride[AOM_PLANE_V] + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-}
-
-static int compare_img(const aom_image_t *const img1,
-                       const aom_image_t *const img2) {
-  uint32_t l_w = img1->d_w;
-  uint32_t c_w = (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;
-  const uint32_t c_h =
-      (img1->d_h + img1->y_chroma_shift) >> img1->y_chroma_shift;
-  uint32_t i;
-  int match = 1;
-
-  match &= (img1->fmt == img2->fmt);
-  match &= (img1->d_w == img2->d_w);
-  match &= (img1->d_h == img2->d_h);
-#if CONFIG_HIGHBITDEPTH
-  if (img1->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
-    l_w *= 2;
-    c_w *= 2;
-  }
-#endif
-
-  for (i = 0; i < img1->d_h; ++i)
-    match &= (memcmp(img1->planes[AOM_PLANE_Y] + i * img1->stride[AOM_PLANE_Y],
-                     img2->planes[AOM_PLANE_Y] + i * img2->stride[AOM_PLANE_Y],
-                     l_w) == 0);
-
-  for (i = 0; i < c_h; ++i)
-    match &= (memcmp(img1->planes[AOM_PLANE_U] + i * img1->stride[AOM_PLANE_U],
-                     img2->planes[AOM_PLANE_U] + i * img2->stride[AOM_PLANE_U],
-                     c_w) == 0);
-
-  for (i = 0; i < c_h; ++i)
-    match &= (memcmp(img1->planes[AOM_PLANE_V] + i * img1->stride[AOM_PLANE_V],
-                     img2->planes[AOM_PLANE_V] + i * img2->stride[AOM_PLANE_V],
-                     c_w) == 0);
-
-  return match;
 }
 
 #define NELEMENTS(x) (sizeof(x) / sizeof(x[0]))
@@ -1839,16 +1616,16 @@ static void test_decode(struct stream_state *stream,
   ctx_exit_on_error(&stream->encoder, "Failed to get encoder reference frame");
   ctx_exit_on_error(&stream->decoder, "Failed to get decoder reference frame");
 
-  if (!compare_img(&enc_img, &dec_img)) {
+  if (!aom_compare_img(&enc_img, &dec_img)) {
     int y[4], u[4], v[4];
 #if CONFIG_HIGHBITDEPTH
     if (enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
-      find_mismatch_high(&enc_img, &dec_img, y, u, v);
+      aom_find_mismatch_high(&enc_img, &dec_img, y, u, v);
     } else {
-      find_mismatch(&enc_img, &dec_img, y, u, v);
+      aom_find_mismatch(&enc_img, &dec_img, y, u, v);
     }
 #else
-    find_mismatch(&enc_img, &dec_img, y, u, v);
+    aom_find_mismatch(&enc_img, &dec_img, y, u, v);
 #endif
     stream->decoder.err = 1;
     warn_or_exit_on_error(&stream->decoder, fatal == TEST_DECODE_FATAL,

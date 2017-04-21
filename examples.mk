@@ -92,6 +92,7 @@ aomenc.SRCS                 += ivfdec.c ivfdec.h
 aomenc.SRCS                 += ivfenc.c ivfenc.h
 aomenc.SRCS                 += rate_hist.c rate_hist.h
 aomenc.SRCS                 += tools_common.c tools_common.h
+aomenc.SRCS                 += examples/encoder_util.h examples/encoder_util.c
 aomenc.SRCS                 += warnings.c warnings.h
 aomenc.SRCS                 += aom_ports/mem_ops.h
 aomenc.SRCS                 += aom_ports/mem_ops_aligned.h
@@ -203,6 +204,8 @@ ifeq ($(CONFIG_DECODERS),yes)
 EXAMPLES-$(CONFIG_ENCODERS)        += aom_cx_set_ref.c
 aom_cx_set_ref.SRCS                += ivfenc.h ivfenc.c
 aom_cx_set_ref.SRCS                += tools_common.h tools_common.c
+aom_cx_set_ref.SRCS                += examples/encoder_util.h
+aom_cx_set_ref.SRCS                += examples/encoder_util.c
 aom_cx_set_ref.SRCS                += video_common.h
 aom_cx_set_ref.SRCS                += video_writer.h video_writer.c
 aom_cx_set_ref.SRCS                += aom_ports/msvc.h
