@@ -430,8 +430,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     // Set up test data.
     device_policy_.SetDefaultNewSigningKey();
     device_policy_.policy_data().set_timestamp(
-        (base::Time::NowFromSystemTime() -
-         base::Time::UnixEpoch()).InMilliseconds());
+        base::Time::NowFromSystemTime().ToJavaTime());
     device_policy_.Build();
 
     register_response_.mutable_register_response()->set_device_management_token(

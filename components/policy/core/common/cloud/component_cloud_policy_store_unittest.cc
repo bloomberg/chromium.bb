@@ -175,7 +175,8 @@ TEST_F(ComponentCloudPolicyStoreTest, ValidatePolicyWrongTimestamp) {
   EXPECT_TRUE(store_->Store(kTestPolicyNS, CreateSerializedResponse(),
                             CreatePolicyData(), TestPolicyHash(), kTestPolicy));
 
-  const int64_t kPastTimestamp = base::TimeDelta::FromDays(1).InMilliseconds();
+  const int64_t kPastTimestamp =
+      (base::Time() + base::TimeDelta::FromDays(1)).ToJavaTime();
   CHECK_GT(ComponentPolicyBuilder::kFakeTimestamp, kPastTimestamp);
   builder_.policy_data().set_timestamp(kPastTimestamp);
   EXPECT_FALSE(store_->ValidatePolicy(kTestPolicyNS, CreateResponse(),

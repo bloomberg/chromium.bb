@@ -237,11 +237,8 @@ void CloudPolicyClient::FetchPolicy() {
     if (IsChromePolicy(type_to_fetch.first)) {
       if (submit_machine_id_ && !machine_id_.empty())
         fetch_request->set_machine_id(machine_id_);
-      if (!last_policy_timestamp_.is_null()) {
-        base::TimeDelta timestamp(
-            last_policy_timestamp_ - base::Time::UnixEpoch());
-        fetch_request->set_timestamp(timestamp.InMilliseconds());
-      }
+      if (!last_policy_timestamp_.is_null())
+        fetch_request->set_timestamp(last_policy_timestamp_.ToJavaTime());
       if (!invalidation_payload_.empty()) {
         fetch_request->set_invalidation_version(invalidation_version_);
         fetch_request->set_invalidation_payload(invalidation_payload_);

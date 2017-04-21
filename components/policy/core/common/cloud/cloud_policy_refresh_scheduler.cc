@@ -239,9 +239,7 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
   // fetching again on startup; the Android logic differs from the desktop in
   // this aspect.
   if (store_->has_policy() && store_->policy()->has_timestamp()) {
-    last_refresh_ =
-        base::Time::UnixEpoch() +
-        base::TimeDelta::FromMilliseconds(store_->policy()->timestamp());
+    last_refresh_ = base::Time::FromJavaTime(store_->policy()->timestamp());
     last_refresh_ticks_ = base::TimeTicks::Now() +
                           (last_refresh_ - base::Time::NowFromSystemTime());
   }
@@ -251,9 +249,7 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
   // immediate refresh is intentional.
   if (store_->has_policy() && store_->policy()->has_timestamp() &&
       !store_->is_managed()) {
-    last_refresh_ =
-        base::Time::UnixEpoch() +
-        base::TimeDelta::FromMilliseconds(store_->policy()->timestamp());
+    last_refresh_ = base::Time::FromJavaTime(store_->policy()->timestamp());
     last_refresh_ticks_ = base::TimeTicks::Now() +
                           (last_refresh_ - base::Time::NowFromSystemTime());
   }

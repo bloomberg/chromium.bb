@@ -72,10 +72,6 @@ const DomainConstants* GetDomainConstantsForType(const std::string& type) {
   return nullptr;
 }
 
-base::Time GetTimeFromPolicyTimestamp(int64_t timestamp) {
-  return base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(timestamp);
-}
-
 }  // namespace
 
 ComponentCloudPolicyStore::Delegate::~Delegate() {}
@@ -171,7 +167,7 @@ void ComponentCloudPolicyStore::Load() {
         policy_bundle_.Get(ns).Swap(&policy);
         cached_hashes_[ns] = payload.secure_hash();
         stored_policy_times_[ns] =
-            GetTimeFromPolicyTimestamp(policy_data.timestamp());
+            base::Time::FromJavaTime(policy_data.timestamp());
       } else {
         // The data for this proto couldn't be loaded or is corrupted.
         Delete(ns);
@@ -201,8 +197,7 @@ bool ComponentCloudPolicyStore::Store(
   // And expose the policy.
   policy_bundle_.Get(ns).Swap(&policy);
   cached_hashes_[ns] = secure_hash;
-  stored_policy_times_[ns] =
-      GetTimeFromPolicyTimestamp(policy_data->timestamp());
+  stored_policy_times_[ns] = base::Time::FromJavaTime(policy_data->timestamp());
   delegate_->OnComponentCloudPolicyStoreUpdated();
   return true;
 }

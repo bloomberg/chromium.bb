@@ -285,7 +285,7 @@ void CloudPolicyInvalidatorTest::StorePolicy(PolicyObject object,
     data->set_invalidation_source(GetPolicyObjectId(object).source());
     data->set_invalidation_name(GetPolicyObjectId(object).name());
   }
-  data->set_timestamp((time - base::Time::UnixEpoch()).InMilliseconds());
+  data->set_timestamp(time.ToJavaTime());
   // Swap the policy value if a policy change is desired.
   if (policy_changed)
     policy_value_cur_ = policy_value_cur_ == policy_value_a_ ?

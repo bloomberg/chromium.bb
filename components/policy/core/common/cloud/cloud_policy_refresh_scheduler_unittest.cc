@@ -51,11 +51,8 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
     base::Time now = base::Time::NowFromSystemTime();
     base::TimeDelta initial_age =
         base::TimeDelta::FromMinutes(kInitialCacheAgeMinutes);
-    store_.policy_->set_timestamp(
-        ((now - initial_age) - base::Time::UnixEpoch()).InMilliseconds());
-    last_update_ =
-        base::Time::UnixEpoch() +
-        base::TimeDelta::FromMilliseconds(store_.policy_->timestamp());
+    store_.policy_->set_timestamp((now - initial_age).ToJavaTime());
+    last_update_ = base::Time::FromJavaTime(store_.policy_->timestamp());
     last_update_ticks_ = base::TimeTicks::Now() +
                          (last_update_ - base::Time::NowFromSystemTime());
   }

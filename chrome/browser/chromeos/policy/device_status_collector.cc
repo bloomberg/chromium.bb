@@ -106,7 +106,7 @@ int64_t TimestampToDayKey(Time timestamp) {
   Time out_time;
   bool conversion_success = Time::FromUTCExploded(exploded, &out_time);
   DCHECK(conversion_success);
-  return (out_time - Time::UnixEpoch()).InMilliseconds();
+  return out_time.ToJavaTime();
 }
 
 // Helper function (invoked via blocking pool) to fetch information about

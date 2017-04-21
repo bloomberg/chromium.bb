@@ -537,8 +537,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithMetaData) {
   em::PolicyFetchRequest* policy_fetch_request =
       policy_request_.mutable_policy_request()->mutable_request(0);
   policy_fetch_request->set_machine_id(kMachineID);
-  policy_fetch_request->set_timestamp(
-      (timestamp - base::Time::UnixEpoch()).InMilliseconds());
+  policy_fetch_request->set_timestamp(timestamp.ToJavaTime());
   policy_fetch_request->set_public_key_version(42);
 
   ExpectPolicyFetch(kDMToken);

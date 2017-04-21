@@ -113,11 +113,8 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
 
   // Timestamp.
   base::Time policy_timestamp;
-  if (policy && policy->has_timestamp()) {
-    policy_timestamp =
-        base::Time::UnixEpoch() +
-        base::TimeDelta::FromMilliseconds(policy->timestamp());
-  }
+  if (policy && policy->has_timestamp())
+    policy_timestamp = base::Time::FromJavaTime(policy->timestamp());
   client_->set_last_policy_timestamp(policy_timestamp);
 
   // Public key version.

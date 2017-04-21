@@ -80,8 +80,7 @@ TEST_F(CloudPolicyServiceTest, PolicyUpdateSuccess) {
               SetupRegistration(store_.policy_->request_token(),
                                 store_.policy_->device_id())).Times(1);
   store_.NotifyStoreLoaded();
-  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(32),
-            client_.last_policy_timestamp_);
+  EXPECT_EQ(base::Time::FromJavaTime(32), client_.last_policy_timestamp_);
   EXPECT_TRUE(client_.submit_machine_id_);
   EXPECT_TRUE(client_.public_key_version_valid_);
   EXPECT_EQ(17, client_.public_key_version_);
