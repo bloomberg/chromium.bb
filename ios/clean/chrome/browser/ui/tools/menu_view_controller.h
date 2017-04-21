@@ -10,6 +10,7 @@
 #import "ios/clean/chrome/browser/ui/tools/tools_consumer.h"
 
 @protocol FindInPageVisibilityCommands;
+@protocol NavigationCommands;
 @protocol ToolsMenuCommands;
 
 // View controller that displays a vertical list of buttons to act as a menu.
@@ -18,8 +19,9 @@
 @interface MenuViewController : UIViewController<ToolsConsumer>
 
 // The dispatcher for this view controller.
-@property(nonatomic, weak) id<FindInPageVisibilityCommands, ToolsMenuCommands>
-    dispatcher;
+@property(nonatomic, weak)
+    id<FindInPageVisibilityCommands, NavigationCommands, ToolsMenuCommands>
+        dispatcher;
 
 @end
 

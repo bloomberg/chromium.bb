@@ -6,9 +6,11 @@
 
 #include "base/i18n/rtl.h"
 #import "base/logging.h"
+#import "base/mac/foundation_util.h"
 #import "base/macros.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/clean/chrome/browser/ui/commands/find_in_page_visibility_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
 #import "ios/clean/chrome/browser/ui/tools/menu_overflow_controls_stackview.h"
@@ -26,6 +28,7 @@ const CGFloat kMenuItemHeight = 48;
 }
 
 @interface MenuViewController ()<ToolsActions>
+@property(nonatomic, strong) UIStackView* menuStackView;
 @property(nonatomic, strong) NSArray<ToolsMenuItem*>* menuItems;
 @property(nonatomic, strong)
     MenuOverflowControlsStackView* toolbarOverflowStackView;
@@ -35,6 +38,7 @@ const CGFloat kMenuItemHeight = 48;
 @implementation MenuViewController
 @synthesize dispatcher = _dispatcher;
 @synthesize menuItems = _menuItems;
+@synthesize menuStackView = _menuStackView;
 @synthesize toolbarOverflowStackView = _toolbarOverflowStackView;
 @synthesize displayOverflowControls = _displayOverflowControls;
 
@@ -52,6 +56,7 @@ const CGFloat kMenuItemHeight = 48;
   NSMutableArray<UIButton*>* buttons =
       [[NSMutableArray alloc] initWithCapacity:_menuItems.count];
 
+  // Load menu items.
   for (ToolsMenuItem* item in _menuItems) {
     UIButton* menuButton = [UIButton buttonWithType:UIButtonTypeSystem];
     menuButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -60,11 +65,12 @@ const CGFloat kMenuItemHeight = 48;
     [menuButton setContentEdgeInsets:UIEdgeInsetsMakeDirected(0, 10.0f, 0, 0)];
     [menuButton.titleLabel setFont:[MDCTypography subheadFont]];
     [menuButton.titleLabel setTextAlignment:NSTextAlignmentNatural];
-    [menuButton addTarget:self
-                   action:@selector(closeToolsMenu:)
+    [menuButton addTarget:self.dispatcher
+                   action:@selector(closeToolsMenu)
          forControlEvents:UIControlEventTouchUpInside];
     if (item.action) {
-      id target = (item.action == @selector(showFindInPage)) ? self : nil;
+      id target =
+          (item.action == @selector(showFindInPage)) ? self.dispatcher : nil;
       [menuButton addTarget:target
                      action:item.action
            forControlEvents:UIControlEventTouchUpInside];
@@ -73,50 +79,61 @@ const CGFloat kMenuItemHeight = 48;
   }
 
   // Placeholder stack view to hold menu contents.
-  UIStackView* menu = [[UIStackView alloc] initWithArrangedSubviews:buttons];
-  menu.translatesAutoresizingMaskIntoConstraints = NO;
-  menu.axis = UILayoutConstraintAxisVertical;
-  menu.distribution = UIStackViewDistributionFillEqually;
-  menu.alignment = UIStackViewAlignmentLeading;
+  self.menuStackView = [[UIStackView alloc] initWithArrangedSubviews:buttons];
+  self.menuStackView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.menuStackView.axis = UILayoutConstraintAxisVertical;
+  self.menuStackView.distribution = UIStackViewDistributionFillEqually;
+  self.menuStackView.alignment = UIStackViewAlignmentLeading;
 
   // Stack view to hold overflow ToolbarButtons.
   if (self.traitCollection.horizontalSizeClass ==
           UIUserInterfaceSizeClassCompact &&
       self.displayOverflowControls) {
-    self.toolbarOverflowStackView =
-        [[MenuOverflowControlsStackView alloc] init];
-    // PLACEHOLDER: ToolsMenuButton might end up being part of the MenuVC's view
-    // instead of the StackView. We are waiting confirmation on this.
-    [self.toolbarOverflowStackView.toolsMenuButton
-               addTarget:nil
-                  action:@selector(closeToolsMenu:)
-        forControlEvents:UIControlEventTouchUpInside];
-    [menu insertArrangedSubview:self.toolbarOverflowStackView atIndex:0];
-    [NSLayoutConstraint activateConstraints:@[
-      [self.toolbarOverflowStackView.leadingAnchor
-          constraintEqualToAnchor:menu.leadingAnchor],
-      [self.toolbarOverflowStackView.trailingAnchor
-          constraintEqualToAnchor:menu.trailingAnchor],
-    ]];
+    [self setUpOverFlowControlsStackView];
   }
 
-  [self.view addSubview:menu];
+  // Setup constraints.
+  [self.view addSubview:self.menuStackView];
   [NSLayoutConstraint activateConstraints:@[
-    [menu.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-    [menu.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-    [menu.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
-    [menu.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [self.menuStackView.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.menuStackView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+    [self.menuStackView.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
+    [self.menuStackView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
   ]];
 }
 
-#pragma mark - ToolsMenuCommands
+- (void)setUpOverFlowControlsStackView {
+  self.toolbarOverflowStackView = [[MenuOverflowControlsStackView alloc] init];
+  // PLACEHOLDER: ToolsMenuButton might end up being part of the MenuVC's view
+  // instead of the StackView. We are waiting confirmation on this.
+  for (UIView* view in self.toolbarOverflowStackView.arrangedSubviews) {
+    if ([view isKindOfClass:[ToolbarButton class]]) {
+      ToolbarButton* button = base::mac::ObjCCastStrict<ToolbarButton>(view);
+      [button addTarget:self.dispatcher
+                    action:@selector(closeToolsMenu)
+          forControlEvents:UIControlEventTouchUpInside];
+    }
+  }
+  [self.toolbarOverflowStackView.reloadButton
+             addTarget:self.dispatcher
+                action:@selector(reloadPage)
+      forControlEvents:UIControlEventTouchUpInside];
+  [self.toolbarOverflowStackView.stopButton
+             addTarget:self.dispatcher
+                action:@selector(stopLoadingPage)
+      forControlEvents:UIControlEventTouchUpInside];
 
-- (void)closeToolsMenu:(id)sender {
-  [self.dispatcher closeToolsMenu];
-}
-
-- (void)showFindInPage {
-  [self.dispatcher showFindInPage];
+  [self.menuStackView insertArrangedSubview:self.toolbarOverflowStackView
+                                    atIndex:0];
+  [NSLayoutConstraint activateConstraints:@[
+    [self.toolbarOverflowStackView.leadingAnchor
+        constraintEqualToAnchor:self.menuStackView.leadingAnchor],
+    [self.toolbarOverflowStackView.trailingAnchor
+        constraintEqualToAnchor:self.menuStackView.trailingAnchor],
+  ]];
 }
 
 #pragma mark - Tools Consumer
