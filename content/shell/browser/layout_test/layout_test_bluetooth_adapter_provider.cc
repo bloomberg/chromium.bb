@@ -164,28 +164,6 @@ void NotifyDeviceChanged(MockBluetoothAdapter* adapter,
     observer.DeviceChanged(adapter, device);
 }
 
-void PerformCharacteristicReadValue(
-    MockBluetoothAdapter* adapter,
-    MockBluetoothGattCharacteristic* characteristic,
-    const BluetoothRemoteGattCharacteristic::ValueCallback& callback,
-    const std::vector<uint8_t>& value) {
-  for (auto& observer : adapter->GetObservers()) {
-    observer.GattCharacteristicValueChanged(adapter, characteristic, value);
-  }
-  callback.Run(value);
-}
-
-void PerformDescriptorReadValue(
-    MockBluetoothAdapter* adapter,
-    MockBluetoothGattDescriptor* descriptor,
-    const BluetoothRemoteGattDescriptor::ValueCallback& callback,
-    const std::vector<uint8_t>& value) {
-  for (auto& observer : adapter->GetObservers()) {
-    observer.GattDescriptorValueChanged(adapter, descriptor, value);
-  }
-  callback.Run(value);
-}
-
 }  // namespace
 
 namespace content {
@@ -724,15 +702,8 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
       measurement_interval.get();
 
   ON_CALL(*measurement_interval, ReadRemoteCharacteristic(_, _))
-      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
-          [adapter_ptr, measurement_ptr]() {
-            std::vector<uint8_t> interval({1});
-            for (auto& observer : adapter_ptr->GetObservers()) {
-              observer.GattCharacteristicValueChanged(
-                  adapter_ptr, measurement_ptr, interval);
-            }
-            return interval;
-          }));
+      .WillByDefault(
+          RunCallback<0 /* success_callback */>(std::vector<uint8_t>({1})));
 
   ON_CALL(*measurement_interval, WriteRemoteCharacteristic(_, _, _))
       .WillByDefault(RunCallback<1 /* success_callback */>());
@@ -1048,9 +1019,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
               error_callback) {
         base::Closure pending;
         if (succeeds) {
-          pending = base::Bind(&PerformCharacteristicReadValue,
-                               base::RetainedRef(adapter_ptr), measurement_ptr,
-                               callback, std::vector<uint8_t>({1}));
+          pending = base::Bind(callback, std::vector<uint8_t>({1}));
         } else {
           pending = base::Bind(error_callback,
                                BluetoothRemoteGattService::GATT_ERROR_FAILED);
@@ -1125,9 +1094,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           const BluetoothRemoteGattDescriptor::ErrorCallback& error_callback) {
         base::Closure pending;
         if (succeeds) {
-          pending = base::Bind(
-              &PerformDescriptorReadValue, base::RetainedRef(adapter_ptr),
-              user_descriptor_ptr, callback, std::vector<uint8_t>({1}));
+          pending = base::Bind(callback, std::vector<uint8_t>({1}));
         } else {
           pending = base::Bind(error_callback,
                                BluetoothRemoteGattService::GATT_ERROR_FAILED);
@@ -1613,44 +1580,20 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
       body_sensor_location_chest(GetBaseGATTCharacteristic(
           "Body Sensor Location Chest", heart_rate.get(), kBodySensorLocation,
           BluetoothRemoteGattCharacteristic::PROPERTY_READ));
-  BluetoothRemoteGattCharacteristic* location_chest_ptr =
-      body_sensor_location_chest.get();
 
   ON_CALL(*body_sensor_location_chest, ReadRemoteCharacteristic(_, _))
-      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
-          [adapter, location_chest_ptr]() {
-            std::vector<uint8_t> location(1 /* size */);
-            location[0] = 1;  // Chest
-            // Read a characteristic has a side effect of
-            // GattCharacteristicValueChanged being called.
-            for (auto& observer : adapter->GetObservers()) {
-              observer.GattCharacteristicValueChanged(
-                  adapter, location_chest_ptr, location);
-            }
-            return location;
-          }));
+      .WillByDefault(RunCallback<0 /* success_callback */>(
+          std::vector<uint8_t>({1} /* Chest */)));
 
   // Body Sensor Location Characteristic (Wrist)
   std::unique_ptr<NiceMockBluetoothGattCharacteristic>
       body_sensor_location_wrist(GetBaseGATTCharacteristic(
           "Body Sensor Location Wrist", heart_rate.get(), kBodySensorLocation,
           BluetoothRemoteGattCharacteristic::PROPERTY_READ));
-  BluetoothRemoteGattCharacteristic* location_wrist_ptr =
-      body_sensor_location_wrist.get();
 
   ON_CALL(*body_sensor_location_wrist, ReadRemoteCharacteristic(_, _))
-      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
-          [adapter, location_wrist_ptr]() {
-            std::vector<uint8_t> location(1 /* size */);
-            location[0] = 2;  // Wrist
-            // Read a characteristic has a side effect of
-            // GattCharacteristicValueChanged being called.
-            for (auto& observer : adapter->GetObservers()) {
-              observer.GattCharacteristicValueChanged(
-                  adapter, location_wrist_ptr, location);
-            }
-            return location;
-          }));
+      .WillByDefault(RunCallback<0 /* success_callback */>(
+          std::vector<uint8_t>({2} /* Wrist */)));
 
   heart_rate->AddMockCharacteristic(std::move(heart_rate_measurement));
   heart_rate->AddMockCharacteristic(std::move(body_sensor_location_chest));
