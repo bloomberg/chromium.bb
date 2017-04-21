@@ -134,7 +134,7 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
     // Should be merged with WebGL counterpart in CanvasRenderingContext, once no-longer experimental
     [RuntimeEnabled=ExperimentalCanvasFeatures] boolean isContextLost();
 
-    [MeasureAs=GetCanvas2DContextAttributes] CanvasRenderingContext2DSettings getContextAttributes();
+    [RuntimeEnabled=ExperimentalCanvasFeatures, MeasureAs=GetCanvas2DContextAttributes] CanvasRenderingContext2DSettings getContextAttributes();
 
     // FIXME: factor out to CanvasDrawingStyles
     // line caps/joins

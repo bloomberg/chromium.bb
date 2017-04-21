@@ -531,7 +531,6 @@ interface CanvasRenderingContext2D
     method fill
     method fillRect
     method fillText
-    method getContextAttributes
     method getImageData
     method getLineDash
     method isPointInPath
