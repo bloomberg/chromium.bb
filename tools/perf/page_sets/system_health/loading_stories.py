@@ -123,10 +123,11 @@ class LoadTumblrStory(_LoadingStory):
 ################################################################################
 
 
-class LoadBbcStory(_LoadingStory):
+class LoadBbcDesktopStory(_LoadingStory):
   NAME = 'load:news:bbc'
   # Redirects to the "http://" version.
   URL = 'https://www.bbc.co.uk/news/world-asia-china-36189636'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadCnnStory(_LoadingStory):
@@ -136,14 +137,16 @@ class LoadCnnStory(_LoadingStory):
   TAGS = [story_tags.JAVASCRIPT_HEAVY]
 
 
-class LoadFlipboardStory(_LoadingStory):
+class LoadFlipboardDesktopStory(_LoadingStory):
   NAME = 'load:news:flipboard'
   URL = 'https://flipboard.com/explore'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
-class LoadHackerNewsStory(_LoadingStory):
+class LoadHackerNewsDesktopStory(_LoadingStory):
   NAME = 'load:news:hackernews'
   URL = 'https://news.ycombinator.com'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadNytimesDesktopStory(_LoadingStory):
@@ -175,18 +178,6 @@ class LoadRedditMobileStory(_LoadingStory):
   NAME = 'load:news:reddit'
   URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-
-
-class LoadSohuMobileStory(_LoadingStory):
-  NAME = 'load:news:sohu'
-  # Using "https://" leads to missing images and scripts on mobile (due to
-  # mixed content).
-  URL = 'http://m.sohu.com/n/447433356/'
-  # The desktop page (http://news.sohu.com/20160503/n447433356.shtml) almost
-  # always fails to completely load due to
-  # https://github.com/chromium/web-page-replay/issues/74.
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.INTERNATIONAL]
 
 
 class LoadWashingtonPostMobileStory(_LoadingStory):
@@ -253,14 +244,16 @@ class LoadSoundCloudStory(_LoadingStory):
   URL = 'https://soundcloud.com/lifeofdesiigner/desiigner-panda'
 
 
-class Load9GagStory(_LoadingStory):
+class Load9GagDesktopStory(_LoadingStory):
   NAME = 'load:media:9gag'
   URL = 'https://www.9gag.com/'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
-class LoadFlickrStory(_LoadingStory):
+class LoadFlickrDesktopStory(_LoadingStory):
   NAME = 'load:media:flickr'
   URL = 'https://www.flickr.com/photos/tags/farm'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
   def _DidLoadDocument(self, action_runner):
     # Wait until the 'Recently tagged' view loads.

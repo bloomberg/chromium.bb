@@ -147,15 +147,6 @@ class InstagramMobileStory(_ArticleBrowsingStory):
     action_runner.NavigateBack()
 
 
-class FlipboardMobileStory(_ArticleBrowsingStory):
-  NAME = 'browse:news:flipboard'
-  URL = 'https://flipboard.com/explore'
-  IS_SINGLE_PAGE_APP = True
-  ITEM_SELECTOR = '.grad-top'
-  ITEM_SCROLL_REPEAT = 4
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-
-
 class FlipboardDesktopStory(_ArticleBrowsingStory):
   NAME = 'browse:news:flipboard'
   URL = 'https://flipboard.com/explore'
@@ -166,20 +157,11 @@ class FlipboardDesktopStory(_ArticleBrowsingStory):
 
 # crbug.com/657665 for win and mac
 @decorators.Disabled('win', 'mac')
-class HackerNewsStory(_ArticleBrowsingStory):
+class HackerNewsDesktopStory(_ArticleBrowsingStory):
   NAME = 'browse:news:hackernews'
   URL = 'https://news.ycombinator.com'
   ITEM_SELECTOR = '.athing .title > a'
-
-
-class NytimesMobileStory(_ArticleBrowsingStory):
-  """The third top website in http://www.alexa.com/topsites/category/News"""
-  NAME = 'browse:news:nytimes'
-  URL = 'http://mobile.nytimes.com'
-  ITEM_SELECTOR = '.sfgAsset-link'
-  # Visiting more items causes OOM.
-  ITEMS_TO_VISIT = 2
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class NytimesDesktopStory(_ArticleBrowsingStory):
