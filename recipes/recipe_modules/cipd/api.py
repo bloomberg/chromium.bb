@@ -61,9 +61,10 @@ class PackageDefinition(object):
   def _rel_path(self, path):
     """Returns a forward-slash-delimited version of `path` which is relative to
     the package root. Will raise ValueError if path is not inside the root."""
-    if not self.package_root.is_parent_of(path):
-      raise ValueError('path %r is not a child of the package root %r' %
-                       (path, self.package_root))
+    if path != self.package_root and not self.package_root.is_parent_of(path):
+      raise ValueError(
+          'path %r is not the package root %r and not a child thereof' %
+          (path, self.package_root))
     # we know that root has the same base and some prefix of path
     return '/'.join(path.pieces[len(self.package_root.pieces):])
 
