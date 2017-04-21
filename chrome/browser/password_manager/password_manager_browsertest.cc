@@ -1344,23 +1344,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoLastLoadGoodLastLoad) {
   EXPECT_FALSE(password_store->IsEmpty());
 }
 
-// In some situations, multiple PasswordFormManager instances from
-// PasswordManager::pending_login_managers_ would match (via DoesManage) a form
-// to be provisionally saved. One of them might be a complete match, the other
-// all-but-action match. Normally, the former should be preferred, but if the
-// former has not finished matching, and the latter has, the latter should be
-// used (otherwise we'd give up even though we could have saved the password).
-//
-// Disabled on Mac and Linux due to flakiness: http://crbug.com/477812
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_PreferPasswordFormManagerWhichFinishedMatching \
-  DISABLED_PreferPasswordFormManagerWhichFinishedMatching
-#else
-#define MAYBE_PreferPasswordFormManagerWhichFinishedMatching \
-  PreferPasswordFormManagerWhichFinishedMatching
-#endif
+// Fill out a form and click a button. The Javascript removes the form, creates
+// a similar one with another action, fills it out and submits. Chrome can
+// manage to detect the new one and create a complete matching
+// PasswordFormManager. Otherwise, the all-but-action matching PFM should be
+// used. Regardless of the internals the user sees the bubble in 100% cases.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       MAYBE_PreferPasswordFormManagerWhichFinishedMatching) {
+                       PreferPasswordFormManagerWhichFinishedMatching) {
   NavigateToFile("/password/create_form_copy_on_submit.html");
 
   NavigationObserver observer(WebContents());
@@ -1373,6 +1363,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
   observer.Wait();
 
+  WaitForPasswordStore();
   EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
 }
 
