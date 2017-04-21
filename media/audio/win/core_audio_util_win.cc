@@ -7,6 +7,7 @@
 #include <devicetopology.h>
 #include <dxdiag.h>
 #include <functiondiscoverykeys_devpkey.h>
+#include <objbase.h>
 #include <stddef.h>
 
 #include "base/command_line.h"
@@ -829,8 +830,7 @@ ScopedComPtr<IAudioRenderClient> CoreAudioUtil::CreateRenderClient(
   // Get access to the IAudioRenderClient interface. This interface
   // enables us to write output data to a rendering endpoint buffer.
   ScopedComPtr<IAudioRenderClient> audio_render_client;
-  HRESULT hr = client->GetService(__uuidof(IAudioRenderClient),
-                                  audio_render_client.ReceiveVoid());
+  HRESULT hr = client->GetService(IID_PPV_ARGS(&audio_render_client));
   if (FAILED(hr)) {
     DVLOG(1) << "IAudioClient::GetService: " << std::hex << hr;
     return ScopedComPtr<IAudioRenderClient>();

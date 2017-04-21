@@ -6,6 +6,7 @@
 
 #include <mfapi.h>
 #include <mferror.h>
+#include <objbase.h>
 #include <stddef.h>
 
 #include "base/command_line.h"
@@ -170,7 +171,7 @@ static void GetDeviceDescriptorsDirectShow(Descriptors* device_descriptors) {
        enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK;
        moniker.Reset()) {
     ScopedComPtr<IPropertyBag> prop_bag;
-    hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
+    hr = moniker->BindToStorage(0, 0, IID_PPV_ARGS(&prop_bag));
     if (FAILED(hr))
       continue;
 

@@ -16,6 +16,7 @@
 #include <mfapi.h>
 #include <mferror.h>
 #include <ntverp.h>
+#include <objbase.h>
 #include <stddef.h>
 #include <string.h>
 #include <wmcodecdsp.h>
@@ -336,8 +337,7 @@ HRESULT CreateCOMObjectFromDll(HMODULE dll,
                     E_FAIL);
 
   base::win::ScopedComPtr<IClassFactory> factory;
-  HRESULT hr =
-      get_class_object(clsid, __uuidof(IClassFactory), factory.ReceiveVoid());
+  HRESULT hr = get_class_object(clsid, IID_PPV_ARGS(&factory));
   RETURN_ON_HR_FAILURE(hr, "DllGetClassObject failed", hr);
 
   hr = factory->CreateInstance(NULL, iid, object);
@@ -721,8 +721,7 @@ bool DXVAVideoDecodeAccelerator::CreateVideoProcessor() {
   if (video_processor_service_.Get())
     return true;
   HRESULT hr = DXVA2CreateVideoService(d3d9_device_ex_.Get(),
-                                       IID_IDirectXVideoProcessorService,
-                                       video_processor_service_.ReceiveVoid());
+                                       IID_PPV_ARGS(&video_processor_service_));
   RETURN_ON_HR_FAILURE(hr, "DXVA2CreateVideoService failed", false);
 
   // TODO(Hubbe): Use actual video settings.
@@ -1310,8 +1309,7 @@ std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxH264Resolution() {
   }
 
   base::win::ScopedComPtr<ID3D11VideoDevice> video_device;
-  hr = device.QueryInterface(__uuidof(ID3D11VideoDevice),
-                             video_device.ReceiveVoid());
+  hr = device.QueryInterface(IID_PPV_ARGS(&video_device));
   if (FAILED(hr))
     return max_resolution;
 
@@ -1510,8 +1508,8 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     RETURN_ON_FAILURE(false, "Unsupported codec.", false);
   }
 
-  HRESULT hr = CreateCOMObjectFromDll(
-      decoder_dll, clsid, __uuidof(IMFTransform), decoder_.ReceiveVoid());
+  HRESULT hr = CreateCOMObjectFromDll(decoder_dll, clsid,
+                                      IID_PPV_ARGS(&decoder_));
   RETURN_ON_HR_FAILURE(hr, "Failed to create decoder instance", false);
 
   RETURN_ON_FAILURE(CheckDecoderDxvaSupport(),

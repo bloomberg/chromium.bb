@@ -5,6 +5,7 @@
 #include "media/audio/win/audio_low_latency_output_win.h"
 
 #include <Functiondiscoverykeys_devpkey.h>
+#include <objbase.h>
 
 #include <climits>
 
@@ -240,8 +241,7 @@ bool WASAPIAudioOutputStream::Open() {
   audio_client_ = audio_client;
   audio_render_client_ = audio_render_client;
 
-  hr = audio_client_->GetService(__uuidof(IAudioClock),
-                                 audio_clock_.ReceiveVoid());
+  hr = audio_client_->GetService(IID_PPV_ARGS(&audio_clock_));
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get IAudioClock service.";
     return false;

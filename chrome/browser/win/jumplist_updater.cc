@@ -5,6 +5,7 @@
 #include "chrome/browser/win/jumplist_updater.h"
 
 #include <windows.h>
+#include <objbase.h>
 #include <propkey.h>
 #include <shobjidl.h>
 
@@ -146,8 +147,7 @@ bool JumpListUpdater::BeginUpdate() {
   // removed list and prevent us from adding the same item.
   UINT max_slots;
   base::win::ScopedComPtr<IObjectArray> removed;
-  result = destination_list_->BeginList(&max_slots, __uuidof(*removed),
-                                        removed.ReceiveVoid());
+  result = destination_list_->BeginList(&max_slots, IID_PPV_ARGS(&removed));
   if (FAILED(result))
     return false;
 

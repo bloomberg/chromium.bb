@@ -6,6 +6,7 @@
 
 #include <ks.h>
 #include <ksmedia.h>
+#include <objbase.h>
 
 #include <algorithm>
 #include <list>
@@ -86,7 +87,7 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
        enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK;
        moniker.Reset()) {
     ScopedComPtr<IPropertyBag> prop_bag;
-    hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
+    hr = moniker->BindToStorage(0, 0, IID_PPV_ARGS(&prop_bag));
     if (FAILED(hr))
       continue;
 
@@ -106,8 +107,7 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
       const std::string device_path(base::SysWideToUTF8(V_BSTR(name.ptr())));
       if (device_path.compare(device_id) == 0) {
         // We have found the requested device
-        hr = moniker->BindToObject(0, 0, IID_IBaseFilter,
-                                   capture_filter.ReceiveVoid());
+        hr = moniker->BindToObject(0, 0, IID_PPV_ARGS(&capture_filter));
         DLOG_IF(ERROR, FAILED(hr)) << "Failed to bind camera filter: "
                                    << logging::SystemErrorCodeToString(hr);
         break;

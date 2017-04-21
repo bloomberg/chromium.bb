@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include <SensorsApi.h>
-#include <Sensors.h>      // NOLINT
-#include <Propvarutil.h>  // NOLINT
+#include <objbase.h>
+#include <propvarutil.h>
+#include <sensors.h>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -193,8 +194,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
     sensor_collection_ = new NiceMock<MockISensorCollection>();
     sensor_manager_ = new NiceMock<MockISensorManager>();
     base::win::ScopedComPtr<ISensorManager> manager;
-    sensor_manager_->QueryInterface(__uuidof(ISensorManager),
-                                    manager.ReceiveVoid());
+    sensor_manager_->QueryInterface(IID_PPV_ARGS(&manager));
 
     // Overrides default ISensorManager with mocked interface.
     PlatformSensorProviderWin::GetInstance()->SetSensorManagerForTesting(
@@ -351,8 +351,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
     // it when there are not more references.
     auto* mock_report = new NiceMock<MockISensorDataReport>();
     base::win::ScopedComPtr<ISensorDataReport> data_report;
-    mock_report->QueryInterface(__uuidof(ISensorDataReport),
-                                data_report.ReceiveVoid());
+    mock_report->QueryInterface(IID_PPV_ARGS(&data_report));
 
     EXPECT_CALL(*mock_report, GetTimestamp(_))
         .WillOnce(Invoke([](SYSTEMTIME* timestamp) {

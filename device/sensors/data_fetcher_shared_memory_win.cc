@@ -8,6 +8,7 @@
 #include <InitGuid.h>
 #include <PortableDeviceTypes.h>
 #include <Sensors.h>
+#include <objbase.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -401,8 +402,7 @@ bool DataFetcherSharedMemory::RegisterForSensor(
   }
 
   base::win::ScopedComPtr<ISensorEvents> sensor_events;
-  hr = event_sink->QueryInterface(__uuidof(ISensorEvents),
-                                  sensor_events.ReceiveVoid());
+  hr = event_sink->QueryInterface(IID_PPV_ARGS(&sensor_events));
   if (FAILED(hr) || !sensor_events.Get())
     return false;
 

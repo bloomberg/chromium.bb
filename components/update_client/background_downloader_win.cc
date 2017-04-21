@@ -6,6 +6,7 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <objbase.h>
 #include <stddef.h>
 
 #include <stdint.h>
@@ -140,7 +141,7 @@ template <typename T>
 HRESULT GetInterfaceFromGit(const ScopedComPtr<IGlobalInterfaceTable>& git,
                             DWORD cookie,
                             ScopedComPtr<T>* p) {
-  return git->GetInterfaceFromGlobal(cookie, __uuidof(T), p->ReceiveVoid());
+  return git->GetInterfaceFromGlobal(cookie, IID_PPV_ARGS(p));
 }
 
 // Registers an interface pointer in GIT and returns its corresponding |cookie|.

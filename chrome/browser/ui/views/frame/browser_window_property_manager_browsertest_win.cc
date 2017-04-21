@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
+#include <objbase.h>
 #include <shlobj.h>  // Must be before propkey.
 #include <propkey.h>
 #include <shellapi.h>
 #include <stddef.h>
+
+#include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -61,8 +62,7 @@ void ValidateBrowserWindowProperties(
   HWND hwnd = views::HWNDForNativeWindow(browser->window()->GetNativeWindow());
 
   base::win::ScopedComPtr<IPropertyStore> pps;
-  HRESULT result = SHGetPropertyStoreForWindow(hwnd, IID_IPropertyStore,
-                                               pps.ReceiveVoid());
+  HRESULT result = SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(&pps));
   EXPECT_TRUE(SUCCEEDED(result));
 
   base::win::ScopedPropVariant prop_var;
@@ -105,8 +105,7 @@ void ValidateHostedAppWindowProperties(const Browser* browser,
   HWND hwnd = views::HWNDForNativeWindow(browser->window()->GetNativeWindow());
 
   base::win::ScopedComPtr<IPropertyStore> pps;
-  HRESULT result =
-      SHGetPropertyStoreForWindow(hwnd, IID_IPropertyStore, pps.ReceiveVoid());
+  HRESULT result = SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(&pps));
   EXPECT_TRUE(SUCCEEDED(result));
 
   base::win::ScopedPropVariant prop_var;

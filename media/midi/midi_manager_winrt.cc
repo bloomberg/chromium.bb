@@ -11,6 +11,7 @@
 #include <cfgmgr32.h>
 #include <comdef.h>
 #include <devpkey.h>
+#include <objbase.h>
 #include <robuffer.h>
 #include <windows.devices.enumeration.h>
 #include <windows.devices.midi.h>
@@ -175,7 +176,7 @@ ScopedComPtr<InterfaceType> WrlStaticsFactory() {
   }
 
   HRESULT hr = GetCombaseFunctions()->RoGetActivationFactory(
-      class_id_hstring.get(), __uuidof(InterfaceType), com_ptr.ReceiveVoid());
+      class_id_hstring.get(), IID_PPV_ARGS(&com_ptr));
   if (FAILED(hr)) {
     VLOG(1) << "RoGetActivationFactory failed: " << PrintHr(hr);
     com_ptr = nullptr;
