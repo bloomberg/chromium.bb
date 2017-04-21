@@ -44,8 +44,8 @@ _DEFAULT_TARGETS = [
     # because it has resources as deps of android_apk() rather than using an
     #  android_library() intermediate target.
     # '//android_webview:system_webview_apk',
-    '//android_webview/test:android_webview_apk',
-    '//android_webview/test:android_webview_test_apk',
+    '//android_webview/test:webview_instrumentation_apk',
+    '//android_webview/test:webview_instrumentation_test_apk',
     '//base:base_junit_tests',
     '//chrome/android:chrome_junit_tests',
     '//chrome/android:chrome_public_apk',

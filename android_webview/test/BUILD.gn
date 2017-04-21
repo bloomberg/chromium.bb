@@ -15,45 +15,57 @@ group("test") {
   ]
 }
 
-android_apk("android_webview_apk") {
-  deps = [
-    ":android_webview_apk_assets",
-    ":android_webview_apk_resources",
-    "//android_webview:android_webview_java",
-    "//android_webview:locale_pak_assets",
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//components/policy/android:policy_java_test_support",
-    "//content/public/android:content_java",
-    "//ui/android:ui_java",
-  ]
+# TODO(ctzsm): Remove template after WebViewInstrumentation is validated. (crbug/701938)
+template("webview_instrumentation_apk_tmpl") {
+  android_apk(target_name) {
+    forward_variables_from(invoker, "*")
 
+    deps = [
+      ":android_webview_apk_assets",
+      ":android_webview_apk_resources",
+      "//android_webview:android_webview_java",
+      "//android_webview:locale_pak_assets",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//components/policy/android:policy_java_test_support",
+      "//content/public/android:content_java",
+      "//ui/android:ui_java",
+    ]
+
+    android_manifest = "shell/AndroidManifest.xml"
+    java_files = [
+      "shell/src/org/chromium/android_webview/shell/AwShellActivity.java",
+      "shell/src/org/chromium/android_webview/shell/AwShellApplication.java",
+      "shell/src/org/chromium/android_webview/shell/AwShellResourceProvider.java",
+      "shell/src/org/chromium/android_webview/shell/AwShellSwitches.java",
+      "shell/src/org/chromium/android_webview/shell/DrawGL.java",
+      "shell/src/org/chromium/android_webview/test/AwInstrumentationTestRunner.java",
+      "shell/src/org/chromium/android_webview/test/AwTestContainerView.java",
+      "shell/src/org/chromium/android_webview/test/AwTestRunnerActivity.java",
+      "shell/src/org/chromium/android_webview/test/NullContentsClient.java",
+      "shell/src/org/chromium/android_webview/test/SecondBrowserProcess.java",
+      "shell/src/org/chromium/android_webview/test/TestContentProvider.java",
+    ]
+    shared_libraries = [
+      ":libdrawgl",
+      ":libstandalonelibwebviewchromium",
+    ]
+
+    native_lib_version_rule = "//build/util:chrome_version_json"
+    _native_lib_file =
+        rebase_path("$root_gen_dir/CHROME_VERSION.json", root_build_dir)
+    native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
+
+    enable_multidex = true
+  }
+}
+
+webview_instrumentation_apk_tmpl("webview_instrumentation_apk") {
+  apk_name = "WebViewInstrumentation"
+}
+
+webview_instrumentation_apk_tmpl("android_webview_apk") {
   apk_name = "AndroidWebView"
-  android_manifest = "shell/AndroidManifest.xml"
-  java_files = [
-    "shell/src/org/chromium/android_webview/shell/AwShellActivity.java",
-    "shell/src/org/chromium/android_webview/shell/AwShellApplication.java",
-    "shell/src/org/chromium/android_webview/shell/AwShellResourceProvider.java",
-    "shell/src/org/chromium/android_webview/shell/AwShellSwitches.java",
-    "shell/src/org/chromium/android_webview/shell/DrawGL.java",
-    "shell/src/org/chromium/android_webview/test/AwInstrumentationTestRunner.java",
-    "shell/src/org/chromium/android_webview/test/AwTestContainerView.java",
-    "shell/src/org/chromium/android_webview/test/AwTestRunnerActivity.java",
-    "shell/src/org/chromium/android_webview/test/NullContentsClient.java",
-    "shell/src/org/chromium/android_webview/test/SecondBrowserProcess.java",
-    "shell/src/org/chromium/android_webview/test/TestContentProvider.java",
-  ]
-  shared_libraries = [
-    ":libdrawgl",
-    ":libstandalonelibwebviewchromium",
-  ]
-
-  native_lib_version_rule = "//build/util:chrome_version_json"
-  _native_lib_file =
-      rebase_path("$root_gen_dir/CHROME_VERSION.json", root_build_dir)
-  native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
-
-  enable_multidex = true
 }
 
 android_resources("android_webview_apk_resources") {
@@ -98,130 +110,143 @@ shared_library("libstandalonelibwebviewchromium") {
   configs += [ "//build/config/android:hide_all_but_jni" ]
 }
 
-instrumentation_test_apk("android_webview_test_apk") {
+# TODO(ctzsm): Remove it after WebViewInstrumentationTest is validated. (crbug/701938)
+template("webview_instrumentation_test_tmpl") {
+  instrumentation_test_apk(target_name) {
+    forward_variables_from(invoker, "*")
+
+    android_manifest = "../javatests/AndroidManifest.xml"
+    deps = [
+      "//android_webview:android_webview_crash_services_java",
+      "//android_webview:android_webview_java",
+      "//android_webview:android_webview_platform_services_java",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//components/minidump_uploader:minidump_uploader_java",
+      "//components/minidump_uploader:minidump_uploader_javatests",
+      "//components/policy/android:policy_java",
+      "//components/policy/android:policy_java_test_support",
+      "//components/safe_browsing_db/android:safe_browsing_java",
+      "//components/web_contents_delegate_android:web_contents_delegate_android_java",
+      "//content/public/android:content_java",
+      "//content/public/test/android:content_java_test_support",
+      "//device/geolocation:geolocation_java",
+      "//device/geolocation:geolocation_java_test_support",
+      "//net/android:net_java",
+      "//net/android:net_java_test_support",
+      "//third_party/android_support_test_runner:runner_java",
+      "//ui/android:ui_java",
+    ]
+    java_files = [
+      "../javatests/src/org/chromium/android_webview/test/AcceptLanguageTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AndroidScrollIntegrationTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AndroidViewIntegrationTest.java",
+      "../javatests/src/org/chromium/android_webview/test/ArchiveTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsAnchorViewTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientAutoLoginTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientCallbackHelperTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientFaviconTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientFullScreenTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientGetDefaultVideoPosterTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientGetVideoLoadingProgressViewTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientOnFormResubmissionTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientOnRenderProcessGoneTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientOnScaleChangedTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientOnUnhandledKeyEventTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientShouldInterceptRequestTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientShouldOverrideUrlLoadingTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsClientVisitedHistoryTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsGarbageCollectionTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsLifecycleNotifierTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsRenderTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsStaticsTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwContentsTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwDebugTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwFormDatabaseTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwImeTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwJavaBridgeTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwLayoutSizerTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwLegacyQuirksTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwPermissionManagerTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwQuotaManagerBridgeTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwScrollOffsetManagerTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwSecondBrowserProcessTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwServiceWorkerClientTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwSettingsTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwStrictModeTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwTestBase.java",
+      "../javatests/src/org/chromium/android_webview/test/AwWebContentsObserverTest.java",
+      "../javatests/src/org/chromium/android_webview/test/AwZoomTest.java",
+      "../javatests/src/org/chromium/android_webview/test/CleanupReferenceTest.java",
+      "../javatests/src/org/chromium/android_webview/test/ClearHistoryTest.java",
+      "../javatests/src/org/chromium/android_webview/test/ClientAddMessageToConsoleTest.java",
+      "../javatests/src/org/chromium/android_webview/test/ClientOnPageFinishedTest.java",
+      "../javatests/src/org/chromium/android_webview/test/ClientOnPageStartedTest.java",
+      "../javatests/src/org/chromium/android_webview/test/ClientOnReceivedError2Test.java",
+      "../javatests/src/org/chromium/android_webview/test/ClientOnReceivedErrorTest.java",
+      "../javatests/src/org/chromium/android_webview/test/ClientOnReceivedHttpErrorTest.java",
+      "../javatests/src/org/chromium/android_webview/test/ConsoleMessagesForBlockedLoadsTest.java",
+      "../javatests/src/org/chromium/android_webview/test/ContentViewMiscTest.java",
+      "../javatests/src/org/chromium/android_webview/test/CookieManagerStartupTest.java",
+      "../javatests/src/org/chromium/android_webview/test/CookieManagerTest.java",
+      "../javatests/src/org/chromium/android_webview/test/DisableHardwareAccelerationForTest.java",
+      "../javatests/src/org/chromium/android_webview/test/FullScreenVideoTestAwContentsClient.java",
+      "../javatests/src/org/chromium/android_webview/test/GeolocationTest.java",
+      "../javatests/src/org/chromium/android_webview/test/GetTitleTest.java",
+      "../javatests/src/org/chromium/android_webview/test/HttpAuthDatabaseTest.java",
+      "../javatests/src/org/chromium/android_webview/test/HttpCacheTest.java",
+      "../javatests/src/org/chromium/android_webview/test/KeySystemTest.java",
+      "../javatests/src/org/chromium/android_webview/test/LoadDataWithBaseUrlTest.java",
+      "../javatests/src/org/chromium/android_webview/test/LoadUrlTest.java",
+      "../javatests/src/org/chromium/android_webview/test/MediaAccessPermissionRequestTest.java",
+      "../javatests/src/org/chromium/android_webview/test/NavigationHistoryTest.java",
+      "../javatests/src/org/chromium/android_webview/test/PlatformMediaCodecTest.java",
+      "../javatests/src/org/chromium/android_webview/test/PolicyUrlFilteringTest.java",
+      "../javatests/src/org/chromium/android_webview/test/PopupWindowTest.java",
+      "../javatests/src/org/chromium/android_webview/test/PostMessageTest.java",
+      "../javatests/src/org/chromium/android_webview/test/RenderProcessGoneHelper.java",
+      "../javatests/src/org/chromium/android_webview/test/SaveRestoreStateTest.java",
+      "../javatests/src/org/chromium/android_webview/test/SafeBrowsingTest.java",
+      "../javatests/src/org/chromium/android_webview/test/StandaloneAwQuotaManagerBridgeTest.java",
+      "../javatests/src/org/chromium/android_webview/test/TestAwContents.java",
+      "../javatests/src/org/chromium/android_webview/test/TestAwContentsClient.java",
+      "../javatests/src/org/chromium/android_webview/test/TestAwServiceWorkerClient.java",
+      "../javatests/src/org/chromium/android_webview/test/UserAgentTest.java",
+      "../javatests/src/org/chromium/android_webview/test/VisualStateTest.java",
+      "../javatests/src/org/chromium/android_webview/test/WebKitHitTestTest.java",
+      "../javatests/src/org/chromium/android_webview/test/WebViewAsynchronousFindApisTest.java",
+      "../javatests/src/org/chromium/android_webview/test/WebViewFindApisTestBase.java",
+      "../javatests/src/org/chromium/android_webview/test/WebViewModalDialogOverrideTest.java",
+      "../javatests/src/org/chromium/android_webview/test/crash/CrashReceiverServiceTest.java",
+      "../javatests/src/org/chromium/android_webview/test/crash/MinidumpUploaderTest.java",
+      "../javatests/src/org/chromium/android_webview/test/crash/VisualStateCallbackTest.java",
+      "../javatests/src/org/chromium/android_webview/test/util/AwQuotaManagerBridgeTestUtil.java",
+      "../javatests/src/org/chromium/android_webview/test/util/AwTestTouchUtils.java",
+      "../javatests/src/org/chromium/android_webview/test/util/CommonResources.java",
+      "../javatests/src/org/chromium/android_webview/test/util/CookieUtils.java",
+      "../javatests/src/org/chromium/android_webview/test/util/GraphicsTestUtils.java",
+      "../javatests/src/org/chromium/android_webview/test/util/ImagePageGenerator.java",
+      "../javatests/src/org/chromium/android_webview/test/util/JSUtils.java",
+      "../javatests/src/org/chromium/android_webview/test/util/JavascriptEventObserver.java",
+      "../javatests/src/org/chromium/android_webview/test/util/VideoSurfaceViewUtils.java",
+      "../javatests/src/org/chromium/android_webview/test/util/VideoTestUtil.java",
+      "../javatests/src/org/chromium/android_webview/test/util/VideoTestWebServer.java",
+    ]
+    data = [
+      "data/",
+    ]
+    additional_apks = [ "//net/android:net_test_support_apk" ]
+  }
+}
+
+webview_instrumentation_test_tmpl("webview_instrumentation_test_apk") {
+  apk_name = "WebViewInstrumentationTest"
+  apk_under_test = ":webview_instrumentation_apk"
+}
+
+webview_instrumentation_test_tmpl("android_webview_test_apk") {
   apk_name = "AndroidWebViewTest"
   apk_under_test = ":android_webview_apk"
-  android_manifest = "../javatests/AndroidManifest.xml"
-  deps = [
-    "//android_webview:android_webview_crash_services_java",
-    "//android_webview:android_webview_java",
-    "//android_webview:android_webview_platform_services_java",
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//components/minidump_uploader:minidump_uploader_java",
-    "//components/minidump_uploader:minidump_uploader_javatests",
-    "//components/policy/android:policy_java",
-    "//components/policy/android:policy_java_test_support",
-    "//components/safe_browsing_db/android:safe_browsing_java",
-    "//components/web_contents_delegate_android:web_contents_delegate_android_java",
-    "//content/public/android:content_java",
-    "//content/public/test/android:content_java_test_support",
-    "//device/geolocation:geolocation_java",
-    "//device/geolocation:geolocation_java_test_support",
-    "//net/android:net_java",
-    "//net/android:net_java_test_support",
-    "//third_party/android_support_test_runner:runner_java",
-    "//ui/android:ui_java",
-  ]
-  java_files = [
-    "../javatests/src/org/chromium/android_webview/test/AcceptLanguageTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AndroidScrollIntegrationTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AndroidViewIntegrationTest.java",
-    "../javatests/src/org/chromium/android_webview/test/ArchiveTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsAnchorViewTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientAutoLoginTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientCallbackHelperTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientFaviconTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientFullScreenTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientGetDefaultVideoPosterTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientGetVideoLoadingProgressViewTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientOnFormResubmissionTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientOnRenderProcessGoneTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientOnScaleChangedTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientOnUnhandledKeyEventTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientShouldInterceptRequestTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientShouldOverrideUrlLoadingTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsClientVisitedHistoryTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsGarbageCollectionTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsLifecycleNotifierTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsRenderTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsStaticsTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwContentsTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwDebugTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwFormDatabaseTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwImeTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwJavaBridgeTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwLayoutSizerTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwLegacyQuirksTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwPermissionManagerTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwQuotaManagerBridgeTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwScrollOffsetManagerTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwSecondBrowserProcessTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwServiceWorkerClientTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwSettingsTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwStrictModeTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwTestBase.java",
-    "../javatests/src/org/chromium/android_webview/test/AwWebContentsObserverTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwZoomTest.java",
-    "../javatests/src/org/chromium/android_webview/test/CleanupReferenceTest.java",
-    "../javatests/src/org/chromium/android_webview/test/ClearHistoryTest.java",
-    "../javatests/src/org/chromium/android_webview/test/ClientAddMessageToConsoleTest.java",
-    "../javatests/src/org/chromium/android_webview/test/ClientOnPageFinishedTest.java",
-    "../javatests/src/org/chromium/android_webview/test/ClientOnPageStartedTest.java",
-    "../javatests/src/org/chromium/android_webview/test/ClientOnReceivedError2Test.java",
-    "../javatests/src/org/chromium/android_webview/test/ClientOnReceivedErrorTest.java",
-    "../javatests/src/org/chromium/android_webview/test/ClientOnReceivedHttpErrorTest.java",
-    "../javatests/src/org/chromium/android_webview/test/ConsoleMessagesForBlockedLoadsTest.java",
-    "../javatests/src/org/chromium/android_webview/test/ContentViewMiscTest.java",
-    "../javatests/src/org/chromium/android_webview/test/CookieManagerStartupTest.java",
-    "../javatests/src/org/chromium/android_webview/test/CookieManagerTest.java",
-    "../javatests/src/org/chromium/android_webview/test/DisableHardwareAccelerationForTest.java",
-    "../javatests/src/org/chromium/android_webview/test/FullScreenVideoTestAwContentsClient.java",
-    "../javatests/src/org/chromium/android_webview/test/GeolocationTest.java",
-    "../javatests/src/org/chromium/android_webview/test/GetTitleTest.java",
-    "../javatests/src/org/chromium/android_webview/test/HttpAuthDatabaseTest.java",
-    "../javatests/src/org/chromium/android_webview/test/HttpCacheTest.java",
-    "../javatests/src/org/chromium/android_webview/test/KeySystemTest.java",
-    "../javatests/src/org/chromium/android_webview/test/LoadDataWithBaseUrlTest.java",
-    "../javatests/src/org/chromium/android_webview/test/LoadUrlTest.java",
-    "../javatests/src/org/chromium/android_webview/test/MediaAccessPermissionRequestTest.java",
-    "../javatests/src/org/chromium/android_webview/test/NavigationHistoryTest.java",
-    "../javatests/src/org/chromium/android_webview/test/PlatformMediaCodecTest.java",
-    "../javatests/src/org/chromium/android_webview/test/PolicyUrlFilteringTest.java",
-    "../javatests/src/org/chromium/android_webview/test/PopupWindowTest.java",
-    "../javatests/src/org/chromium/android_webview/test/PostMessageTest.java",
-    "../javatests/src/org/chromium/android_webview/test/RenderProcessGoneHelper.java",
-    "../javatests/src/org/chromium/android_webview/test/SaveRestoreStateTest.java",
-    "../javatests/src/org/chromium/android_webview/test/SafeBrowsingTest.java",
-    "../javatests/src/org/chromium/android_webview/test/StandaloneAwQuotaManagerBridgeTest.java",
-    "../javatests/src/org/chromium/android_webview/test/TestAwContents.java",
-    "../javatests/src/org/chromium/android_webview/test/TestAwContentsClient.java",
-    "../javatests/src/org/chromium/android_webview/test/TestAwServiceWorkerClient.java",
-    "../javatests/src/org/chromium/android_webview/test/UserAgentTest.java",
-    "../javatests/src/org/chromium/android_webview/test/VisualStateTest.java",
-    "../javatests/src/org/chromium/android_webview/test/WebKitHitTestTest.java",
-    "../javatests/src/org/chromium/android_webview/test/WebViewAsynchronousFindApisTest.java",
-    "../javatests/src/org/chromium/android_webview/test/WebViewFindApisTestBase.java",
-    "../javatests/src/org/chromium/android_webview/test/WebViewModalDialogOverrideTest.java",
-    "../javatests/src/org/chromium/android_webview/test/crash/CrashReceiverServiceTest.java",
-    "../javatests/src/org/chromium/android_webview/test/crash/MinidumpUploaderTest.java",
-    "../javatests/src/org/chromium/android_webview/test/crash/VisualStateCallbackTest.java",
-    "../javatests/src/org/chromium/android_webview/test/util/AwQuotaManagerBridgeTestUtil.java",
-    "../javatests/src/org/chromium/android_webview/test/util/AwTestTouchUtils.java",
-    "../javatests/src/org/chromium/android_webview/test/util/CommonResources.java",
-    "../javatests/src/org/chromium/android_webview/test/util/CookieUtils.java",
-    "../javatests/src/org/chromium/android_webview/test/util/GraphicsTestUtils.java",
-    "../javatests/src/org/chromium/android_webview/test/util/ImagePageGenerator.java",
-    "../javatests/src/org/chromium/android_webview/test/util/JSUtils.java",
-    "../javatests/src/org/chromium/android_webview/test/util/JavascriptEventObserver.java",
-    "../javatests/src/org/chromium/android_webview/test/util/VideoSurfaceViewUtils.java",
-    "../javatests/src/org/chromium/android_webview/test/util/VideoTestUtil.java",
-    "../javatests/src/org/chromium/android_webview/test/util/VideoTestWebServer.java",
-  ]
-  data = [
-    "data/",
-  ]
-  additional_apks = [ "//net/android:net_test_support_apk" ]
 }
 
 test("android_webview_unittests") {
