@@ -38,8 +38,18 @@ NSString* GetStringValue(id value) {
 // property on |_label|.
 @property(nonatomic, assign, getter=isRespondingToKVO) BOOL respondingToKVO;
 
+// The number of times this observer has been asked to observe the label. When
+// reaching zero, the label stops being observed.
+@property(nonatomic, assign) NSInteger observingCount;
+
 // Initializes a LabelObserver that observes |label|.
 - (instancetype)initWithLabel:(UILabel*)label NS_DESIGNATED_INITIALIZER;
+
+// Adds |self| as observer for the |_label|.
+- (void)registerAsObserver;
+
+// Removes |self| as observer for the |_label|.
+- (void)removeObserver;
 
 // Performs all LabelObserverActions in |actions|.
 - (void)performActions:(NSArray*)actions;
@@ -62,6 +72,7 @@ static NSSet* textKeys;
 @implementation LabelObserver
 
 @synthesize respondingToKVO = _respondingToKVO;
+@synthesize observingCount = _observingCount;
 
 + (void)initialize {
   if (self == [LabelObserver class]) {
@@ -79,25 +90,14 @@ static NSSet* textKeys;
   if ((self = [super init])) {
     DCHECK(label);
     _label.reset(label);
-    for (NSSet* keySet in @[ styleKeys, layoutKeys, textKeys ]) {
-      for (NSString* key in keySet) {
-        [_label addObserver:self
-                 forKeyPath:key
-                    options:NSKeyValueObservingOptionNew
-                    context:nullptr];
-      }
-    }
     [self resetLabelAttributes];
   }
   return self;
 }
 
 - (void)dealloc {
-  for (NSSet* keySet in @[ styleKeys, layoutKeys, textKeys ]) {
-    for (NSString* key in keySet) {
-      [_label removeObserver:self forKeyPath:key];
-    }
-  }
+  objc_setAssociatedObject(_label, kLabelObserverKey, nil,
+                           OBJC_ASSOCIATION_ASSIGN);
   [super dealloc];
 }
 
@@ -110,10 +110,27 @@ static NSSet* textKeys;
   if (!observer) {
     observer = [[LabelObserver alloc] initWithLabel:label];
     objc_setAssociatedObject(label, kLabelObserverKey, observer,
-                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    [observer release];
+                             OBJC_ASSOCIATION_ASSIGN);
+    [observer autorelease];
   }
   return observer;
+}
+
+- (void)startObserving {
+  if (self.observingCount == 0) {
+    [self registerAsObserver];
+  }
+  self.observingCount++;
+}
+
+- (void)stopObserving {
+  if (self.observingCount == 0)
+    return;
+
+  self.observingCount--;
+  if (self.observingCount == 0) {
+    [self removeObserver];
+  }
 }
 
 - (void)addStyleChangedAction:(LabelObserverAction)action {
@@ -141,6 +158,25 @@ static NSSet* textKeys;
 }
 
 #pragma mark -
+
+- (void)registerAsObserver {
+  for (NSSet* keySet in @[ styleKeys, layoutKeys, textKeys ]) {
+    for (NSString* key in keySet) {
+      [_label addObserver:self
+               forKeyPath:key
+                  options:NSKeyValueObservingOptionNew
+                  context:nullptr];
+    }
+  }
+}
+
+- (void)removeObserver {
+  for (NSSet* keySet in @[ styleKeys, layoutKeys, textKeys ]) {
+    for (NSString* key in keySet) {
+      [_label removeObserver:self forKeyPath:key];
+    }
+  };
+}
 
 - (void)performActions:(NSArray*)actions {
   for (LabelObserverAction action in actions)

@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/CRUILabel+AttributeUtils.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
+#import "ios/chrome/browser/ui/util/label_observer.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -92,8 +93,12 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 @property(strong, nonatomic, readonly) UIImageView* imageView;
 // The "Terms of Service" label.
 @property(strong, nonatomic, readonly) UILabel* TOSLabel;
+// Observer for setting the size of the TOSLabel with cr_lineHeight.
+@property(strong, nonatomic) LabelObserver* TOSObserver;
 // The stats reporting opt-in label.
 @property(strong, nonatomic, readonly) UILabel* optInLabel;
+// Observer for setting the size of the optInLabel with cr_lineHeight.
+@property(strong, nonatomic) LabelObserver* optInObserver;
 // The stats reporting opt-in checkbox button.
 @property(strong, nonatomic, readonly) UIButton* checkBoxButton;
 // The "Accept & Continue" button.
@@ -135,6 +140,8 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 @implementation WelcomeToChromeView
 
 @synthesize delegate = _delegate;
+@synthesize TOSObserver = _TOSObserver;
+@synthesize optInObserver = _optInObserver;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -177,6 +184,11 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
                      [weakSelf OKButton].alpha = 1.0;
                    }
                    completion:nil];
+}
+
+- (void)dealloc {
+  [self.TOSObserver stopObserving];
+  [self.optInObserver stopObserving];
 }
 
 #pragma mark - Accessors
@@ -223,6 +235,10 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 - (UILabel*)TOSLabel {
   if (!_TOSLabel) {
     _TOSLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    // Add an observer to the label to be able to keep the cr_lineHeight.
+    self.TOSObserver = [LabelObserver observerForLabel:_TOSLabel];
+    [self.TOSObserver startObserving];
+
     [_TOSLabel setNumberOfLines:0];
     [_TOSLabel setTextAlignment:NSTextAlignmentCenter];
   }
@@ -232,6 +248,10 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 - (UILabel*)optInLabel {
   if (!_optInLabel) {
     _optInLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    // Add an observer to the label to be able to keep the cr_lineHeight.
+    self.optInObserver = [LabelObserver observerForLabel:_optInLabel];
+    [self.optInObserver startObserving];
+
     [_optInLabel setNumberOfLines:0];
     [_optInLabel
         setText:l10n_util::GetNSString(IDS_IOS_FIRSTRUN_NEW_OPT_IN_LABEL)];

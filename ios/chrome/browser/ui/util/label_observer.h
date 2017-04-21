@@ -16,12 +16,20 @@
 @interface LabelObserver : NSObject
 
 // Returns the LabelObserver for |label|, laziliy instantiating one if
-// necessary.  LabelObservers are associated with the label, and will be
-// deallocated upon |label|'s deallocation.
+// necessary. LabelObservers are associated with label but must be kept alive by
+// the caller. |-startObserving| must be called before the |label| is observed.
 + (instancetype)observerForLabel:(UILabel*)label;
 
 // LabelObservers should be created via |+observerForLabel:|.
 - (instancetype)init NS_UNAVAILABLE;
+
+// Starts observing the label. For each call to this function, |-stopObserving|
+// should be called before |label| is deallocated.
+- (void)startObserving;
+
+// Stops observing the label. The label stop being observed once the number of
+// call to this function match the number of call to |-startObserving|.
+- (void)stopObserving;
 
 // Block type that takes a label.  Blocks registered for a label will be called
 // when property values are updated.

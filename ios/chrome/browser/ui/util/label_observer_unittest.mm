@@ -17,12 +17,17 @@ class LabelObserverTest : public PlatformTest {
  protected:
   void SetUp() override {
     label_.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    observer_.reset([[LabelObserver observerForLabel:label_.get()] retain]);
+    [observer_ startObserving];
   }
 
+  ~LabelObserverTest() override { [observer_ stopObserving]; }
+
   UILabel* label() { return label_.get(); }
-  LabelObserver* observer() { return [LabelObserver observerForLabel:label()]; }
+  LabelObserver* observer() { return observer_.get(); }
 
   base::scoped_nsobject<UILabel> label_;
+  base::scoped_nsobject<LabelObserver> observer_;
 };
 
 // Tests that all types of LabelObserverActions are successfully called.

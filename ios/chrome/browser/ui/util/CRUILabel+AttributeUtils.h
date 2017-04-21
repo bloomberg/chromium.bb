@@ -8,10 +8,10 @@
 #import <UIKit/UIKit.h>
 
 @interface UILabel (CRUILabelAttributeUtils)
+// The height of the label.
+// Make sure to create a LabelObserver for this label and start observing before
+// setting this property.
 @property(nonatomic, assign, setter=cr_setLineHeight:) CGFloat cr_lineHeight;
-
-// Adjusts the line height of the receiver so that the lines will evenly f
-- (void)cr_adjustLineHeightForMaximimumLines:(NSUInteger)maximumLines;
 
 @end
 

@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/util/CRUILabel+AttributeUtils.h"
 
 #import "base/mac/scoped_nsobject.h"
+#import "ios/chrome/browser/ui/util/label_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -15,7 +16,12 @@ class UILabelAttributeUtilsTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     _scopedLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _observer.reset(
+        [[LabelObserver observerForLabel:_scopedLabel.get()] retain]);
+    [_observer startObserving];
   }
+
+  ~UILabelAttributeUtilsTest() override { [_observer stopObserving]; }
 
   void CheckLabelLineHeight(CGFloat expected_height) {
     UILabel* label = _scopedLabel.get();
@@ -29,15 +35,34 @@ class UILabelAttributeUtilsTest : public PlatformTest {
     EXPECT_EQ(expected_height, label.cr_lineHeight);
   }
   base::scoped_nsobject<UILabel> _scopedLabel;
+  base::scoped_nsobject<LabelObserver> _observer;
 };
 }
 
-TEST_F(UILabelAttributeUtilsTest, CleanupTest) {
+TEST_F(UILabelAttributeUtilsTest, TwoObservers) {
   UILabel* label = _scopedLabel.get();
-  // Setting a lineheight will create an observer object.
+  label.text = @"sample text";
+
+  // Add a second observer.
+  base::scoped_nsobject<LabelObserver> secondObserver(
+      [[LabelObserver observerForLabel:label] retain]);
+  [secondObserver startObserving];
+
+  // Modify the line height with two observers.
   label.cr_lineHeight = 18.0;
-  // The observer should stop observing cleanly when the label is deallocated.
-  EXPECT_NO_FATAL_FAILURE(_scopedLabel.reset());
+  CheckLabelLineHeight(18.0);
+  [secondObserver stopObserving];
+  secondObserver.reset();
+
+  // Even when one observer is stopped, the second is still observing.
+  label.cr_lineHeight = 21.0;
+  CheckLabelLineHeight(21.0);
+
+  // Once both are stopped, the height isn't persisted when the text changes.
+  [_observer stopObserving];
+  label.cr_lineHeight = 25.0;
+  label.text = @"longer sample text";
+  CheckLabelLineHeight(0);
 }
 
 TEST_F(UILabelAttributeUtilsTest, SettingTests) {

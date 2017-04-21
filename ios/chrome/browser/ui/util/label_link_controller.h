@@ -45,8 +45,8 @@ class GURL;
 // attributed text accordingly.
 @property(nonatomic, retain) UIFont* linkFont;
 
-// Creates a new controller for |label|, whose lifetime is expected to exceed
-// that of the receiver. |action| is the block called for any tapped link.
+// Creates a new controller for |label|, keeping a strong reference. |action| is
+// the block called for any tapped link.
 - (instancetype)initWithLabel:(UILabel*)label
                        action:(ProceduralBlockWithURL)action;
 

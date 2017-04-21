@@ -133,7 +133,7 @@
 @implementation LabelLinkController {
   // Ivars immutable for the lifetime of the object.
   base::mac::ScopedBlock<ProceduralBlockWithURL> _action;
-  base::WeakNSObject<UILabel> _label;  // weak
+  base::scoped_nsobject<UILabel> _label;
   base::scoped_nsobject<UITapGestureRecognizer> _linkTapRecognizer;
 
   // Ivas backing properties.
@@ -151,6 +151,7 @@
   // Internal tracking.
   BOOL _justUpdatedStyles;
   base::scoped_nsobject<NSMutableArray> _linkButtons;
+  base::scoped_nsobject<LabelObserver> _labelObserver;
 }
 
 @synthesize showTapAreas = _showTapAreas;
@@ -161,11 +162,13 @@
                        action:(ProceduralBlockWithURL)action {
   if ((self = [super init])) {
     DCHECK(label);
-    _label.reset(label);
+    _label.reset([label retain]);
     _action.reset(action, base::scoped_policy::RETAIN);
     _linkUnderlineStyle = NSUnderlineStyleNone;
     [self reset];
 
+    _labelObserver.reset([[LabelObserver observerForLabel:_label] retain]);
+    [_labelObserver startObserving];
     [self addLabelObserverActions];
 
     self.textMapperClass = [CoreTextRegionMapper class];
@@ -183,9 +186,8 @@
 }
 
 - (void)addLabelObserverActions {
-  LabelObserver* observer = [LabelObserver observerForLabel:_label];
   base::WeakNSObject<LabelLinkController> weakSelf(self);
-  [observer addStyleChangedAction:^(UILabel* label) {
+  [_labelObserver addStyleChangedAction:^(UILabel* label) {
     // One of the style properties has been changed, which will silently
     // update the label's attributedText.
     if (!weakSelf)
@@ -193,7 +195,7 @@
     base::scoped_nsobject<LabelLinkController> strongSelf([weakSelf retain]);
     [strongSelf labelStyleInvalidated];
   }];
-  [observer addTextChangedAction:^(UILabel* label) {
+  [_labelObserver addTextChangedAction:^(UILabel* label) {
     if (!weakSelf)
       return;
     base::scoped_nsobject<LabelLinkController> strongSelf([weakSelf retain]);
@@ -207,7 +209,7 @@
       [strongSelf reset];
     }
   }];
-  [observer addLayoutChangedAction:^(UILabel* label) {
+  [_labelObserver addLayoutChangedAction:^(UILabel* label) {
     if (!weakSelf)
       return;
     base::scoped_nsobject<LabelLinkController> strongSelf([weakSelf retain]);
@@ -223,6 +225,7 @@
 
 - (void)dealloc {
   [self clearTapButtons];
+  [_labelObserver stopObserving];
   [super dealloc];
 }
 

@@ -74,21 +74,4 @@ CGFloat GetAssociatedLineHeight(UILabel* label) {
   self.attributedText = newString;
 }
 
-- (void)cr_adjustLineHeightForMaximimumLines:(NSUInteger)maximumLines {
-  CGSize labelSize = self.bounds.size;
-  CGFloat lineHeight = self.cr_lineHeight;
-  CGFloat numberOfLines = floorf(labelSize.height / lineHeight);
-  CGSize maxSize = CGSizeMake(labelSize.width, CGFLOAT_MAX);
-  CGSize textSize = [self sizeThatFits:maxSize];
-
-  // |textSize.height| should be a multiple of |lineHeight|. If this is not the
-  // case, then it is safer to fit one more line to ensure that the text of the
-  // label is not cropped.
-  CGFloat requiredNumberOfLines = ceilf(textSize.height / lineHeight);
-  if (requiredNumberOfLines > numberOfLines) {
-    requiredNumberOfLines = MIN(requiredNumberOfLines, maximumLines);
-    self.cr_lineHeight = floorf(labelSize.height / requiredNumberOfLines);
-  }
-}
-
 @end
