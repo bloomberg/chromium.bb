@@ -20,11 +20,7 @@ namespace payments {
 
 ChromePaymentRequestDelegate::ChromePaymentRequestDelegate(
     content::WebContents* web_contents)
-    : dialog_(nullptr),
-      web_contents_(web_contents),
-      address_normalizer_(GetAddressInputSource(), GetAddressInputStorage()) {}
-
-ChromePaymentRequestDelegate::~ChromePaymentRequestDelegate() {}
+    : dialog_(nullptr), web_contents_(web_contents) {}
 
 void ChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   DCHECK_EQ(nullptr, dialog_);
@@ -75,7 +71,7 @@ void ChromePaymentRequestDelegate::DoFullCardRequest(
   dialog_->ShowCvcUnmaskPrompt(credit_card, result_delegate, web_contents_);
 }
 
-std::unique_ptr<::i18n::addressinput::Source>
+std::unique_ptr<const ::i18n::addressinput::Source>
 ChromePaymentRequestDelegate::GetAddressInputSource() {
   return base::WrapUnique(new autofill::ChromeMetadataSource(
       I18N_ADDRESS_VALIDATION_DATA_URL,
@@ -84,10 +80,6 @@ ChromePaymentRequestDelegate::GetAddressInputSource() {
 std::unique_ptr<::i18n::addressinput::Storage>
 ChromePaymentRequestDelegate::GetAddressInputStorage() {
   return autofill::ValidationRulesStorageFactory::CreateStorage();
-}
-
-AddressNormalizer* ChromePaymentRequestDelegate::GetAddressNormalizer() {
-  return &address_normalizer_;
 }
 
 }  // namespace payments

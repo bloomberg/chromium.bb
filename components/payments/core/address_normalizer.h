@@ -58,7 +58,7 @@ class AddressNormalizer : public autofill::LoadRulesListener {
 
   // Returns whether the rules for the specified |region_code| have finished
   // loading.
-  virtual bool AreRulesLoadedForRegion(const std::string& region_code);
+  bool AreRulesLoadedForRegion(const std::string& region_code);
 
   // Starts the normalization of the |profile| based on the |region_code|. The
   // normalized profile will be returned to the |requester| possibly
@@ -68,11 +68,10 @@ class AddressNormalizer : public autofill::LoadRulesListener {
   // happen synchronously, or not at all if the rules are not already loaded.
   // Will start loading the rules for the |region_code| if they had not started
   // loading.
-  virtual void StartAddressNormalization(
-      const autofill::AutofillProfile& profile,
-      const std::string& region_code,
-      int timeout_seconds,
-      Delegate* requester);
+  void StartAddressNormalization(const autofill::AutofillProfile& profile,
+                                 const std::string& region_code,
+                                 int timeout_seconds,
+                                 Delegate* requester);
 
  private:
   // Called when the validation rules for the |region_code| have finished

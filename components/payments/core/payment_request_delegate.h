@@ -29,7 +29,6 @@ class PersonalDataManager;
 
 namespace payments {
 
-class AddressNormalizer;
 class PaymentRequest;
 
 class PaymentRequestDelegate {
@@ -70,14 +69,10 @@ class PaymentRequestDelegate {
           result_delegate) = 0;
 
   // Returns the source and storage for country/region data loads.
-  virtual std::unique_ptr<::i18n::addressinput::Source>
+  virtual std::unique_ptr<const ::i18n::addressinput::Source>
   GetAddressInputSource() = 0;
   virtual std::unique_ptr<::i18n::addressinput::Storage>
   GetAddressInputStorage() = 0;
-
-  // Returns a pointer to the address normalizer to use for the duration of this
-  // Payment Request.
-  virtual AddressNormalizer* GetAddressNormalizer() = 0;
 };
 
 }  // namespace payments

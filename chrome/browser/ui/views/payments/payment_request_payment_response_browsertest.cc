@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseShippingAddressTest,
                       "\"postalCode\": \"48838\"", "\"sortingCode\": \"\"",
                       "\"languageCode\": \"\"", "\"organization\": \"ACME\"",
                       "\"recipient\": \"Jane A. Smith\"",
-                      "\"phone\": \"+13105557889\""});
+                      "\"phone\": \"13105557889\""});
 
   // Test that the shipping option was sent to the merchant.
   ExpectBodyContains({"\"shippingOption\": \"freeShippingOption\""});

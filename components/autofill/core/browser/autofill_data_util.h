@@ -56,10 +56,6 @@ const PaymentRequestData& GetPaymentRequestData(const std::string& type);
 // API basic card payment spec |type|.
 const char* GetCardTypeForBasicCardPaymentType(const std::string& type);
 
-// Returns whether the specified |country_code| is a valid country code.
-bool IsValidCountryCode(const std::string& country_code);
-bool IsValidCountryCode(const base::string16& country_code);
-
 }  // namespace data_util
 }  // namespace autofill
 

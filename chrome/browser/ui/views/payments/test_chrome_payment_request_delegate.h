@@ -36,7 +36,7 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   // This class allows tests to provide their own AddressInput data.
   class AddressInputProvider {
    public:
-    virtual std::unique_ptr<::i18n::addressinput::Source>
+    virtual std::unique_ptr<const ::i18n::addressinput::Source>
     GetAddressInputSource() = 0;
     virtual std::unique_ptr<::i18n::addressinput::Storage>
     GetAddressInputStorage() = 0;
@@ -50,7 +50,7 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   void ShowDialog(PaymentRequest* request) override;
   bool IsIncognito() const override;
   bool IsSslCertificateValid() override;
-  std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource()
+  std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource()
       override;
   std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
       override;
