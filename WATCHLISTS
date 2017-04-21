@@ -1854,7 +1854,6 @@
                       'msramek+watch@chromium.org'],
     'bubble': ['hcarmona+bubble@chromium.org',
                'groby+bubble@chromium.org',
-               'msw+watch@chromium.org',
                'rouslan+bubble@chromium.org'],
     'cache_storage': ['jkarlin+watch@chromium.org',
                       'nhiroki@chromium.org'],
