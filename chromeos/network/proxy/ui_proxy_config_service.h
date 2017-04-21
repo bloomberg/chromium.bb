@@ -50,6 +50,10 @@ class CHROMEOS_EXPORT UIProxyConfigService {
   void SetProxyConfig(const std::string& network_guid,
                       const UIProxyConfig& config);
 
+  // Returns true if there is a default network and it has a proxy configuration
+  // with mode == MODE_FIXED_SERVERS.
+  bool HasDefaultNetworkProxyConfigured();
+
  private:
   // Determines effective proxy config based on prefs from config tracker,
   // |network| and if user is using shared proxies.  The effective config is

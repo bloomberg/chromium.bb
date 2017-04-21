@@ -153,6 +153,20 @@ void UIProxyConfigService::SetProxyConfig(const std::string& network_guid,
   current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;
 }
 
+bool UIProxyConfigService::HasDefaultNetworkProxyConfigured() {
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  if (!network)
+    return false;
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  std::unique_ptr<ProxyConfigDictionary> proxy_dict =
+      proxy_config::GetProxyConfigForNetwork(nullptr, local_state_prefs_,
+                                             *network, &onc_source);
+  ProxyPrefs::ProxyMode mode;
+  return (proxy_dict && proxy_dict->GetMode(&mode) &&
+          mode == ProxyPrefs::MODE_FIXED_SERVERS);
+}
+
 void UIProxyConfigService::DetermineEffectiveConfig(
     const NetworkState& network) {
   DCHECK(local_state_prefs_);

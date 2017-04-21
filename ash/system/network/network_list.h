@@ -29,6 +29,7 @@ namespace ash {
 
 struct NetworkInfo;
 class NetworkListDelegate;
+class TriView;
 
 // A list of available networks of a given type. This class is used for all
 // network types except VPNs. For VPNs, see the |VPNList| class.
@@ -66,6 +67,10 @@ class NetworkListView : public NetworkListViewBase,
   // Adds new or updates existing child views including header row and messages.
   // Returns a set of guids for the added network connections.
   std::unique_ptr<std::set<std::string>> UpdateNetworkListEntries();
+
+  // Creates the view which displays a warning message, if a VPN or proxy is
+  // being used.
+  TriView* CreateConnectionWarning();
 
   // Adds or updates child views representing the network connections when
   // |is_wifi| is matching the attribute of a network connection starting at
@@ -117,6 +122,7 @@ class NetworkListView : public NetworkListViewBase,
   views::Separator* cellular_separator_view_;
   views::Separator* tether_separator_view_;
   views::Separator* wifi_separator_view_;
+  TriView* connection_warning_;
 
   // An owned list of network info.
   std::vector<std::unique_ptr<NetworkInfo>> network_list_;

@@ -14,6 +14,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "net/proxy/proxy_config.h"
@@ -28,20 +29,6 @@ const char kNetworkStateOnline[] = "online";
 const char kNetworkStateCaptivePortal[] = "behind captive portal";
 const char kNetworkStateConnecting[] = "connecting";
 const char kNetworkStateProxyAuthRequired[] = "proxy auth required";
-
-bool HasDefaultNetworkProxyConfigured() {
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  if (!network)
-    return false;
-  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
-  std::unique_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(
-          NULL, g_browser_process->local_state(), *network, &onc_source);
-  ProxyPrefs::ProxyMode mode;
-  return (proxy_dict && proxy_dict->GetMode(&mode) &&
-          mode == ProxyPrefs::MODE_FIXED_SERVERS);
-}
 
 NetworkStateInformer::State GetStateForDefaultNetwork() {
   const NetworkState* network =
@@ -62,13 +49,17 @@ NetworkStateInformer::State GetStateForDefaultNetwork() {
     // NetworkPortalDetector's state of current network is unknown.
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
         (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-         !HasDefaultNetworkProxyConfigured() &&
+         !NetworkHandler::Get()
+              ->ui_proxy_config_service()
+              ->HasDefaultNetworkProxyConfigured() &&
          network->connection_state() == shill::kStateOnline)) {
       return NetworkStateInformer::ONLINE;
     }
     if (status ==
             NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED &&
-        HasDefaultNetworkProxyConfigured()) {
+        NetworkHandler::Get()
+            ->ui_proxy_config_service()
+            ->HasDefaultNetworkProxyConfigured()) {
       return NetworkStateInformer::PROXY_AUTH_REQUIRED;
     }
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||

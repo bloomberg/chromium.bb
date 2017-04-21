@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tri_view.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -23,13 +24,16 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/device_event_log/device_event_log.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/toggle_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -289,7 +293,8 @@ NetworkListView::NetworkListView(NetworkListDelegate* delegate)
       wifi_header_view_(nullptr),
       cellular_separator_view_(nullptr),
       tether_separator_view_(nullptr),
-      wifi_separator_view_(nullptr) {
+      wifi_separator_view_(nullptr),
+      connection_warning_(nullptr) {
   CHECK(delegate_);
 }
 
@@ -478,12 +483,27 @@ std::unique_ptr<std::set<std::string>>
 NetworkListView::UpdateNetworkListEntries() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
+  // Keep an index where the next child should be inserted.
+  int index = 0;
+
+  bool show_connection_warning =
+      !!NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
+          NetworkTypePattern::VPN());
+  show_connection_warning =
+      show_connection_warning || NetworkHandler::Get()
+                                     ->ui_proxy_config_service()
+                                     ->HasDefaultNetworkProxyConfigured();
+
+  if (show_connection_warning) {
+    if (!connection_warning_)
+      connection_warning_ = CreateConnectionWarning();
+    PlaceViewAtIndex(connection_warning_, index++);
+  }
+
   // First add high-priority networks (not Wi-Fi nor cellular).
   std::unique_ptr<std::set<std::string>> new_guids =
-      UpdateNetworkChildren(NetworkInfo::Type::UNKNOWN, 0);
-
-  // Keep an index where the next child should be inserted.
-  int index = new_guids->size();
+      UpdateNetworkChildren(NetworkInfo::Type::UNKNOWN, index);
+  index += new_guids->size();
 
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   if (pattern.MatchesPattern(NetworkTypePattern::Cellular())) {
@@ -676,6 +696,36 @@ bool NetworkListView::NeedUpdateViewForNetwork(const NetworkInfo& info) const {
   } else {
     return *found->second != info;
   }
+}
+
+TriView* NetworkListView::CreateConnectionWarning() {
+  // Set up layout and apply sticky row property.
+  TriView* connection_warning = TrayPopupUtils::CreateDefaultRowView();
+  TrayPopupUtils::ConfigureAsStickyHeader(connection_warning);
+  connection_warning->set_background(
+      views::Background::CreateSolidBackground(kHeaderBackgroundColor));
+
+  // Set 'info' icon on left side.
+  views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
+  image_view->SetImage(
+      gfx::CreateVectorIcon(kSystemMenuInfoIcon, kMenuIconColor));
+  image_view->set_background(
+      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
+  connection_warning->AddView(TriView::Container::START, image_view);
+
+  // Set message label in middle of row.
+  views::Label* label = TrayPopupUtils::CreateDefaultLabel();
+  label->SetText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING));
+  label->set_background(
+      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+  style.SetupLabel(label);
+  connection_warning->AddView(TriView::Container::CENTER, label);
+
+  // Nothing to the right of the text.
+  connection_warning->SetContainerVisible(TriView::Container::END, false);
+  return connection_warning;
 }
 
 }  // namespace ash

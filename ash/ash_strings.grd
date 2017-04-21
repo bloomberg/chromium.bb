@@ -874,6 +874,9 @@ Press Search or Shift to cancel.
       <message name="IDS_ASH_STATUS_TRAY_ADD_CONNECTION" desc="Title for control to add a new network connection." >
         Add connection
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING" desc="The label used in the tray popup to warn users their network may be monitored." >
+        Network may be monitored
+      </message>
 
       <message name="IDS_ASH_VIRTUAL_KEYBOARD_TRAY_ACCESSIBLE_NAME" desc="The accessible text for virtual keyboard icon in status tray.">
         Show on-screen keyboard
