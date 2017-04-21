@@ -29,6 +29,10 @@ source_set("pipeline_integration_test_base") {
 
   if (media_use_ffmpeg) {
     sources = [
+      "fake_encrypted_media.cc",
+      "fake_encrypted_media.h",
+      "mock_media_source.cc",
+      "mock_media_source.h",
       "pipeline_integration_test_base.cc",
       "pipeline_integration_test_base.h",
     ]

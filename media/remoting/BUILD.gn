@@ -76,13 +76,20 @@ source_set("media_remoting_tests") {
   sources = [
     "courier_renderer_unittest.cc",
     "demuxer_stream_adapter_unittest.cc",
+    "end2end_test_renderer.cc",
+    "end2end_test_renderer.h",
     "fake_media_resource.cc",
     "fake_media_resource.h",
     "fake_remoter.cc",
     "fake_remoter.h",
+    "integration_test.cc",
     "proto_utils_unittest.cc",
+    "receiver.cc",
+    "receiver.h",
     "renderer_controller_unittest.cc",
     "rpc_broker_unittest.cc",
+    "stream_provider.cc",
+    "stream_provider.h",
   ]
 
   deps = [
@@ -93,6 +100,7 @@ source_set("media_remoting_tests") {
     "//media",
     "//media/base:test_support",
     "//media/mojo/interfaces:remoting",
+    "//media/test:pipeline_integration_test_base",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
