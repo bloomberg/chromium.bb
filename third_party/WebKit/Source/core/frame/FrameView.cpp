@@ -3623,9 +3623,20 @@ IntPoint FrameView::ConvertToLayoutItem(const LayoutItem& layout_item,
   return RoundedIntPoint(layout_item.AbsoluteToLocal(point, kUseTransforms));
 }
 
+IntPoint FrameView::ConvertSelfToChild(const FrameViewBase* child,
+                                       const IntPoint& point) const {
+  // TODO(joelhockey): Remove this check once Scrollbar no longer inherits from
+  // FrameViewBase.
+  DCHECK(!IsFrameViewScrollbar(child));
+  IntPoint new_point = point;
+  new_point = FrameToContents(point);
+  new_point.MoveBy(-child->Location());
+  return new_point;
+}
+
 IntRect FrameView::ConvertToContainingFrameViewBase(
     const IntRect& local_rect) const {
-  if (const FrameView* parent_view = ToFrameView(Parent())) {
+  if (const FrameView* parent = ToFrameView(Parent())) {
     // Get our layoutObject in the parent view
     LayoutPartItem layout_item = frame_->OwnerLayoutItem();
     if (layout_item.IsNull())
@@ -3635,7 +3646,7 @@ IntRect FrameView::ConvertToContainingFrameViewBase(
     // Add borders and padding??
     rect.Move((layout_item.BorderLeft() + layout_item.PaddingLeft()).ToInt(),
               (layout_item.BorderTop() + layout_item.PaddingTop()).ToInt());
-    return parent_view->ConvertFromLayoutItem(layout_item, rect);
+    return parent->ConvertFromLayoutItem(layout_item, rect);
   }
 
   return local_rect;
@@ -3643,17 +3654,11 @@ IntRect FrameView::ConvertToContainingFrameViewBase(
 
 IntRect FrameView::ConvertFromContainingFrameViewBase(
     const IntRect& parent_rect) const {
-  if (const FrameView* parent_view = ToFrameView(Parent())) {
-    // Get our layoutObject in the parent view
-    LayoutPartItem layout_item = frame_->OwnerLayoutItem();
-    if (layout_item.IsNull())
-      return parent_rect;
-
-    IntRect rect = parent_view->ConvertToLayoutItem(layout_item, parent_rect);
-    // Subtract borders and padding
-    rect.Move((-layout_item.BorderLeft() - layout_item.PaddingLeft()).ToInt(),
-              (-layout_item.BorderTop() - layout_item.PaddingTop()).ToInt());
-    return rect;
+  if (const FrameView* parent = ToFrameView(Parent())) {
+    IntRect local_rect = parent_rect;
+    local_rect.SetLocation(
+        parent->ConvertSelfToChild(this, local_rect.Location()));
+    return local_rect;
   }
 
   return parent_rect;
@@ -3661,7 +3666,7 @@ IntRect FrameView::ConvertFromContainingFrameViewBase(
 
 IntPoint FrameView::ConvertToContainingFrameViewBase(
     const IntPoint& local_point) const {
-  if (const FrameView* parent_view = ToFrameView(Parent())) {
+  if (const FrameView* parent = ToFrameView(Parent())) {
     // Get our layoutObject in the parent view
     LayoutPartItem layout_item = frame_->OwnerLayoutItem();
     if (layout_item.IsNull())
@@ -3672,7 +3677,7 @@ IntPoint FrameView::ConvertToContainingFrameViewBase(
     // Add borders and padding
     point.Move((layout_item.BorderLeft() + layout_item.PaddingLeft()).ToInt(),
                (layout_item.BorderTop() + layout_item.PaddingTop()).ToInt());
-    return parent_view->ConvertFromLayoutItem(layout_item, point);
+    return parent->ConvertFromLayoutItem(layout_item, point);
   }
 
   return local_point;
@@ -3680,14 +3685,13 @@ IntPoint FrameView::ConvertToContainingFrameViewBase(
 
 IntPoint FrameView::ConvertFromContainingFrameViewBase(
     const IntPoint& parent_point) const {
-  if (const FrameView* parent_view = ToFrameView(Parent())) {
+  if (const FrameView* parent = ToFrameView(Parent())) {
     // Get our layoutObject in the parent view
     LayoutPartItem layout_item = frame_->OwnerLayoutItem();
     if (layout_item.IsNull())
       return parent_point;
 
-    IntPoint point =
-        parent_view->ConvertToLayoutItem(layout_item, parent_point);
+    IntPoint point = parent->ConvertToLayoutItem(layout_item, parent_point);
     // Subtract borders and padding
     point.Move((-layout_item.BorderLeft() - layout_item.PaddingLeft()).ToInt(),
                (-layout_item.BorderTop() - layout_item.PaddingTop()).ToInt());
@@ -3817,11 +3821,11 @@ void FrameView::RemoveAnimatingScrollableArea(ScrollableArea* scrollable_area) {
   animating_scrollable_areas_->erase(scrollable_area);
 }
 
-void FrameView::SetParent(FrameViewBase* parent_view) {
-  if (parent_view == Parent())
+void FrameView::SetParent(FrameViewBase* parent) {
+  if (parent == Parent())
     return;
 
-  FrameViewBase::SetParent(parent_view);
+  FrameViewBase::SetParent(parent);
 
   UpdateParentScrollableAreaSet();
   SetupRenderThrottling();
@@ -4698,32 +4702,20 @@ bool FrameView::ScrollbarCornerPresent() const {
          (VerticalScrollbar() && Height() - VerticalScrollbar()->Height() > 0);
 }
 
-IntRect FrameView::ConvertFromScrollbarToContainingFrameViewBase(
-    const Scrollbar& scrollbar,
-    const IntRect& local_rect) const {
-  // Scrollbars won't be transformed within us
-  IntRect new_rect = local_rect;
-  new_rect.MoveBy(scrollbar.Location());
-  return new_rect;
+IntRect FrameView::ConvertToRootFrame(const IntRect& local_rect) const {
+  if (const FrameView* parent = ToFrameView(Parent())) {
+    IntRect parent_rect = ConvertToContainingFrameViewBase(local_rect);
+    return parent->ConvertToRootFrame(parent_rect);
+  }
+  return local_rect;
 }
 
-IntRect FrameView::ConvertFromContainingFrameViewBaseToScrollbar(
-    const Scrollbar& scrollbar,
-    const IntRect& parent_rect) const {
-  IntRect new_rect = parent_rect;
-  // Scrollbars won't be transformed within us
-  new_rect.MoveBy(-scrollbar.Location());
-  return new_rect;
-}
-
-// FIXME: test these on windows
-IntPoint FrameView::ConvertFromScrollbarToContainingFrameViewBase(
-    const Scrollbar& scrollbar,
-    const IntPoint& local_point) const {
-  // Scrollbars won't be transformed within us
-  IntPoint new_point = local_point;
-  new_point.MoveBy(scrollbar.Location());
-  return new_point;
+IntPoint FrameView::ConvertToRootFrame(const IntPoint& local_point) const {
+  if (const FrameView* parent = ToFrameView(Parent())) {
+    IntPoint parent_point = ConvertToContainingFrameViewBase(local_point);
+    return parent->ConvertToRootFrame(parent_point);
+  }
+  return local_point;
 }
 
 IntPoint FrameView::ConvertFromContainingFrameViewBaseToScrollbar(

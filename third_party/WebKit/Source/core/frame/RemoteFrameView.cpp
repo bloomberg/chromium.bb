@@ -104,9 +104,9 @@ void RemoteFrameView::FrameRectsChanged() {
   // containing local frame root. The position of the local root within
   // any remote frames, if any, is accounted for by the embedder.
   IntRect new_rect = FrameRect();
-  if (Parent() && Parent()->IsFrameView())
-    new_rect = Parent()->ConvertToRootFrame(
-        ToFrameView(Parent())->ContentsToFrame(new_rect));
+  if (const FrameView* parent = ToFrameView(Parent()))
+    new_rect = parent->ConvertToRootFrame(parent->ContentsToFrame(new_rect));
+
   remote_frame_->Client()->FrameRectsChanged(new_rect);
 
   UpdateRemoteViewportIntersection();
@@ -133,6 +133,18 @@ void RemoteFrameView::SetParentVisible(bool visible) {
     return;
 
   remote_frame_->Client()->VisibilityChanged(IsVisible());
+}
+
+IntRect RemoteFrameView::ConvertFromContainingFrameViewBase(
+    const IntRect& parent_rect) const {
+  if (const FrameView* parent = ToFrameView(Parent())) {
+    IntRect local_rect = parent_rect;
+    local_rect.SetLocation(
+        parent->ConvertSelfToChild(this, local_rect.Location()));
+    return local_rect;
+  }
+
+  return parent_rect;
 }
 
 DEFINE_TRACE(RemoteFrameView) {

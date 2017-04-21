@@ -263,9 +263,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   IntRect ConvertFromScrollbarToContainingFrameViewBase(
       const Scrollbar&,
       const IntRect&) const override;
-  IntRect ConvertFromContainingFrameViewBaseToScrollbar(
-      const Scrollbar&,
-      const IntRect&) const override;
   IntPoint ConvertFromScrollbarToContainingFrameViewBase(
       const Scrollbar&,
       const IntPoint&) const override;

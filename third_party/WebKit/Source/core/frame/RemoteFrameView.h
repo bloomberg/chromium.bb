@@ -45,6 +45,8 @@ class RemoteFrameView final : public FrameViewBase, public FrameOrPlugin {
   void Show() override;
   void SetParentVisible(bool) override;
 
+  IntRect ConvertFromContainingFrameViewBase(const IntRect&) const override;
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

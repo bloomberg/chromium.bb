@@ -329,19 +329,6 @@ IntRect PaintLayerScrollableArea::ConvertFromScrollbarToContainingFrameViewBase(
                                                      rect);
 }
 
-IntRect PaintLayerScrollableArea::ConvertFromContainingFrameViewBaseToScrollbar(
-    const Scrollbar& scrollbar,
-    const IntRect& parent_rect) const {
-  LayoutView* view = Box().View();
-  if (!view)
-    return parent_rect;
-
-  IntRect rect = view->GetFrameView()->ConvertToLayoutItem(
-      LayoutBoxItem(&Box()), parent_rect);
-  rect.Move(-ScrollbarOffset(scrollbar));
-  return rect;
-}
-
 IntPoint
 PaintLayerScrollableArea::ConvertFromScrollbarToContainingFrameViewBase(
     const Scrollbar& scrollbar,

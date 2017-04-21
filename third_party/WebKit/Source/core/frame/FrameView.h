@@ -624,23 +624,9 @@ class CORE_EXPORT FrameView final
   // event handlers (like Win32).
   Scrollbar* ScrollbarAtFramePoint(const IntPoint&);
 
-  IntPoint ConvertChildToSelf(const FrameViewBase* child,
-                              const IntPoint& point) const override {
-    IntPoint new_point = point;
-    if (!IsFrameViewScrollbar(child))
-      new_point = ContentsToFrame(point);
-    new_point.MoveBy(child->Location());
-    return new_point;
-  }
-
-  IntPoint ConvertSelfToChild(const FrameViewBase* child,
-                              const IntPoint& point) const override {
-    IntPoint new_point = point;
-    if (!IsFrameViewScrollbar(child))
-      new_point = FrameToContents(point);
-    new_point.MoveBy(-child->Location());
-    return new_point;
-  }
+  IntRect ConvertToRootFrame(const IntRect&) const;
+  IntPoint ConvertToRootFrame(const IntPoint&) const;
+  IntPoint ConvertSelfToChild(const FrameViewBase*, const IntPoint&) const;
 
   // FrameViewBase override. Handles painting of the contents of the view as
   // well as the scrollbars.
@@ -660,15 +646,6 @@ class CORE_EXPORT FrameView final
   bool ScrollbarCornerPresent() const;
   IntRect ScrollCornerRect() const override;
 
-  IntRect ConvertFromScrollbarToContainingFrameViewBase(
-      const Scrollbar&,
-      const IntRect&) const override;
-  IntRect ConvertFromContainingFrameViewBaseToScrollbar(
-      const Scrollbar&,
-      const IntRect&) const override;
-  IntPoint ConvertFromScrollbarToContainingFrameViewBase(
-      const Scrollbar&,
-      const IntPoint&) const override;
   IntPoint ConvertFromContainingFrameViewBaseToScrollbar(
       const Scrollbar&,
       const IntPoint&) const override;
@@ -969,12 +946,12 @@ class CORE_EXPORT FrameView final
   void ContentsResized() override;
   void ScrollbarExistenceDidChange();
 
-  // Override FrameViewBase methods to do point conversion via layoutObjects, in
-  // order to take transforms into account.
-  IntRect ConvertToContainingFrameViewBase(const IntRect&) const override;
-  IntRect ConvertFromContainingFrameViewBase(const IntRect&) const override;
-  IntPoint ConvertToContainingFrameViewBase(const IntPoint&) const override;
-  IntPoint ConvertFromContainingFrameViewBase(const IntPoint&) const override;
+  // Methods to do point conversion via layoutObjects, in order to take
+  // transforms into account.
+  IntRect ConvertToContainingFrameViewBase(const IntRect&) const;
+  IntPoint ConvertToContainingFrameViewBase(const IntPoint&) const;
+  IntRect ConvertFromContainingFrameViewBase(const IntRect&) const;
+  IntPoint ConvertFromContainingFrameViewBase(const IntPoint&) const;
 
   void DidChangeGlobalRootScroller() override;
 

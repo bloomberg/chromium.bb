@@ -569,6 +569,19 @@ bool Scrollbar::IsWindowActive() const {
   return scrollable_area_ && scrollable_area_->IsActive();
 }
 
+IntPoint Scrollbar::ConvertFromRootFrame(
+    const IntPoint& point_in_root_frame) const {
+  if (const FrameViewBase* parent = Parent()) {
+    IntPoint parent_point = parent->ConvertFromRootFrame(point_in_root_frame);
+    if (scrollable_area_) {
+      return scrollable_area_->ConvertFromContainingFrameViewBaseToScrollbar(
+          *this, parent_point);
+    }
+  }
+
+  return point_in_root_frame;
+}
+
 IntRect Scrollbar::ConvertToContainingFrameViewBase(
     const IntRect& local_rect) const {
   if (scrollable_area_) {
@@ -576,27 +589,7 @@ IntRect Scrollbar::ConvertToContainingFrameViewBase(
         *this, local_rect);
   }
 
-  return FrameViewBase::ConvertToContainingFrameViewBase(local_rect);
-}
-
-IntRect Scrollbar::ConvertFromContainingFrameViewBase(
-    const IntRect& parent_rect) const {
-  if (scrollable_area_) {
-    return scrollable_area_->ConvertFromContainingFrameViewBaseToScrollbar(
-        *this, parent_rect);
-  }
-
-  return FrameViewBase::ConvertFromContainingFrameViewBase(parent_rect);
-}
-
-IntPoint Scrollbar::ConvertToContainingFrameViewBase(
-    const IntPoint& local_point) const {
-  if (scrollable_area_) {
-    return scrollable_area_->ConvertFromScrollbarToContainingFrameViewBase(
-        *this, local_point);
-  }
-
-  return FrameViewBase::ConvertToContainingFrameViewBase(local_point);
+  return local_rect;
 }
 
 IntPoint Scrollbar::ConvertFromContainingFrameViewBase(
@@ -606,7 +599,7 @@ IntPoint Scrollbar::ConvertFromContainingFrameViewBase(
         *this, parent_point);
   }
 
-  return FrameViewBase::ConvertFromContainingFrameViewBase(parent_point);
+  return parent_point;
 }
 
 float Scrollbar::ScrollableAreaCurrentPos() const {

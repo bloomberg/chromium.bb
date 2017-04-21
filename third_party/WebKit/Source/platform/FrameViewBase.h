@@ -89,27 +89,29 @@ class PLATFORM_EXPORT FrameViewBase
 
   virtual void HandleEvent(Event*) {}
 
-  IntRect ConvertToRootFrame(const IntRect&) const;
+  // ConvertFromRootFrame must be in FrameViewBase rather than FrameView
+  // to be visible to Scrollbar::ConvertFromRootFrame and
+  // RemoteFrameView::UpdateRemoteViewportIntersection. The related
+  // ConvertFromContainingFrameViewBase must be declared locally to be visible.
   IntRect ConvertFromRootFrame(const IntRect&) const;
-
-  IntPoint ConvertToRootFrame(const IntPoint&) const;
   IntPoint ConvertFromRootFrame(const IntPoint&) const;
   FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
+  // TODO(joelhockey): Change all these to pure virtual functions
+  // Once RemoteFrameView no longer inherits from FrameViewBase.
+  virtual IntRect ConvertFromContainingFrameViewBase(
+      const IntRect& parent_rect) const {
+    NOTREACHED();
+    return parent_rect;
+  }
+  virtual IntPoint ConvertFromContainingFrameViewBase(
+      const IntPoint& parent_point) const {
+    NOTREACHED();
+    return parent_point;
+  }
 
   virtual void FrameRectsChanged() {}
 
   virtual void GeometryMayHaveChanged() {}
-
-  virtual IntRect ConvertToContainingFrameViewBase(const IntRect&) const;
-  virtual IntRect ConvertFromContainingFrameViewBase(const IntRect&) const;
-  virtual IntPoint ConvertToContainingFrameViewBase(const IntPoint&) const;
-  virtual IntPoint ConvertFromContainingFrameViewBase(const IntPoint&) const;
-
-  // Virtual methods to convert points to/from child frameviewbases.
-  virtual IntPoint ConvertChildToSelf(const FrameViewBase*,
-                                      const IntPoint&) const;
-  virtual IntPoint ConvertSelfToChild(const FrameViewBase*,
-                                      const IntPoint&) const;
 
   // Notifies this frameviewbase that it will no longer be receiving events.
   virtual void EventListenersRemoved() {}

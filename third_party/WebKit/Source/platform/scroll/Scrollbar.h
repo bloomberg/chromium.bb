@@ -86,9 +86,7 @@ class PLATFORM_EXPORT Scrollbar : public FrameViewBase,
   bool IsScrollableAreaActive() const override;
 
   IntPoint ConvertFromRootFrame(
-      const IntPoint& point_in_root_frame) const override {
-    return FrameViewBase::ConvertFromRootFrame(point_in_root_frame);
-  }
+      const IntPoint& point_in_root_frame) const override;
 
   bool IsCustomScrollbar() const override { return false; }
   ScrollbarOrientation Orientation() const override { return orientation_; }
@@ -157,10 +155,7 @@ class PLATFORM_EXPORT Scrollbar : public FrameViewBase,
 
   ScrollbarTheme& GetTheme() const { return theme_; }
 
-  IntRect ConvertToContainingFrameViewBase(const IntRect&) const override;
-  IntRect ConvertFromContainingFrameViewBase(const IntRect&) const override;
-
-  IntPoint ConvertToContainingFrameViewBase(const IntPoint&) const override;
+  IntRect ConvertToContainingFrameViewBase(const IntRect&) const;
   IntPoint ConvertFromContainingFrameViewBase(const IntPoint&) const override;
 
   void MoveThumb(int pos, bool dragging_document = false);
