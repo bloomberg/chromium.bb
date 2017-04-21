@@ -788,16 +788,18 @@ class ChannelAssociatedGroupController
     if (!endpoint)
       return;
 
+    // Careful, if the endpoint is detached its members are cleared. Check for
+    // that before dereferencing.
+    mojo::InterfaceEndpointClient* client = endpoint->client();
+    if (!client)
+      return;
+
     DCHECK(endpoint->task_runner()->BelongsToCurrentThread());
     MessageWrapper message_wrapper = endpoint->PopSyncMessage(message_id);
 
     // The message must have already been dequeued by the endpoint waking up
     // from a sync wait. Nothing to do.
     if (message_wrapper.value().IsNull())
-      return;
-
-    mojo::InterfaceEndpointClient* client = endpoint->client();
-    if (!client)
       return;
 
     bool result = false;
