@@ -286,7 +286,7 @@ Under Debian the usage is fairly straightforward:
 $ sudo apt install sudo apt install electric-fence
 #+END_SRC
 
-Then compile [[How to debug][as above]] and invoke the debugger [[How to debug][as above]]. Inside ~gdb~
+Then compile [[#how-to-debug][as above]] and invoke the debugger [[#how-to-debug][as above]]. Inside ~gdb~
 set up ~LOUIS_TABLEPATH~ and ~LD_PRELOAD~ as follows:
 
 #+BEGIN_SRC shell
