@@ -7,11 +7,13 @@
 
 #include <memory>
 
+#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Canvas;
+class FontList;
 }  // namespace gfx
 
 namespace vr_shell {
@@ -28,6 +30,8 @@ class UITexture {
  protected:
   virtual void Draw(gfx::Canvas* canvas) = 0;
   virtual void SetSize() = 0;
+  static bool IsRTL();
+  static gfx::FontList GetFontList(int size, base::string16 text);
 
   int texture_handle_;
   int texture_size_;

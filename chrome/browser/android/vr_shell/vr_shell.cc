@@ -413,6 +413,8 @@ void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
                                            jint height,
                                            jfloat dpr) {
   TRACE_EVENT0("gpu", "VrShell::ContentPhysicalBoundsChanged");
+  // TODO(acondor): Set the device scale factor for font rendering on the
+  // VR Shell textures.
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::ContentPhysicalBoundsChanged,
                                      gl_thread_->GetVrShellGl(), width,
                                      height));

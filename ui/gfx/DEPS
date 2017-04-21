@@ -1,6 +1,7 @@
 include_rules = [
   "+base",
   "+cc/paint",
+  "+device/vr/features.h",
   "+skia/ext",
   "+third_party/harfbuzz-ng",
   "+third_party/skia",

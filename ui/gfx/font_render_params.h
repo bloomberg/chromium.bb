@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "device/vr/features.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gfx_export.h"
@@ -112,7 +113,8 @@ GFX_EXPORT FontRenderParams GetFontRenderParams(
 GFX_EXPORT void ClearFontRenderParamsCacheForTest();
 #endif
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || \
+    (defined(OS_ANDROID) && BUILDFLAG(ENABLE_VR))
 // Gets the device scale factor to query the FontRenderParams.
 GFX_EXPORT float GetFontRenderParamsDeviceScaleFactor();
 

@@ -255,12 +255,13 @@ component("gfx") {
     "//base:base_static",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//device/vr:features",
     "//skia",
     "//third_party/zlib",
   ]
 
   # Text rendering conditions (complicated so separated out).
-  if (use_aura || is_mac) {
+  if (use_aura || is_mac || (is_android && enable_vr)) {
     # Mac doesn't use RenderTextHarfBuzz by default yet.
     sources += [
       "harfbuzz_font_skia.cc",
@@ -282,7 +283,7 @@ component("gfx") {
     # We don't support RenderText on these platforms.
   }
 
-  if (is_android && use_aura) {
+  if (is_android && enable_vr) {
     sources -= [
       "platform_font_android.cc",
       "text_utils_android.cc",
@@ -306,7 +307,7 @@ component("gfx") {
 
   # Android.
   if (is_android) {
-    if (use_aura) {
+    if (enable_vr) {
       sources -= [ "canvas_notimplemented.cc" ]
       sources += [ "font_fallback_android.cc" ]
     } else {

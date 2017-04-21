@@ -19,6 +19,7 @@ class InsecureContentPermanentTexture : public UITexture {
   void SetSize() override;
 
   int height_;
+  int width_;
 };
 
 }  // namespace vr_shell
