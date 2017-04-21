@@ -65,7 +65,7 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(
 }
 
 EventReaderLibevdevCros::~EventReaderLibevdevCros() {
-  DCHECK(!watching_);
+  Stop();
   EvdevClose(&evdev_);
 }
 

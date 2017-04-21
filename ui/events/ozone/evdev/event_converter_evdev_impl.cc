@@ -53,7 +53,6 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
       dispatcher_(dispatcher) {}
 
 EventConverterEvdevImpl::~EventConverterEvdevImpl() {
-  DCHECK(!enabled_);
 }
 
 void EventConverterEvdevImpl::OnFileCanReadWithoutBlocking(int fd) {

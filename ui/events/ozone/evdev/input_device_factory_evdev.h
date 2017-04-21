@@ -98,9 +98,6 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
                                  const std::string& name,
                                  bool value);
 
-  // Owned per-device event converters (by path).
-  std::map<base::FilePath, std::unique_ptr<EventConverterEvdev>> converters_;
-
   // Task runner for our thread.
   scoped_refptr<base::TaskRunner> task_runner_;
 
@@ -136,6 +133,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
   // Device settings. These primarily affect libgestures behavior.
   InputDeviceSettingsEvdev input_device_settings_;
+
+  // Owned per-device event converters (by path).
+  // NB: This should be destroyed early, before any shared state.
+  std::map<base::FilePath, std::unique_ptr<EventConverterEvdev>> converters_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<InputDeviceFactoryEvdev> weak_ptr_factory_;

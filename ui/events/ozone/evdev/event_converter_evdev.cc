@@ -37,8 +37,6 @@ EventConverterEvdev::EventConverterEvdev(int fd,
       controller_(FROM_HERE) {}
 
 EventConverterEvdev::~EventConverterEvdev() {
-  DCHECK(!enabled_);
-  DCHECK(!watching_);
 }
 
 void EventConverterEvdev::Start() {
