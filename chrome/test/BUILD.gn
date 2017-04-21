@@ -1171,6 +1171,7 @@ static_library("browser_tests_runner") {
 
     data_deps = [
       ":mash_browser_tests_catalog_copy",
+      ":mus_browser_tests_catalog_copy",
       "//mash/session",
     ]
   } else {
@@ -5187,6 +5188,46 @@ if (is_chromeos && enable_package_mash_services) {
     ]
     deps = [
       ":mash_browser_tests_catalog",
+    ]
+  }
+
+  group("mus_browser_tests_run") {
+    testonly = true
+    deps = [
+      ":mus_browser_tests",
+    ]
+  }
+
+  group("mus_browser_tests") {
+    testonly = true
+    data_deps = [
+      ":browser_tests",
+      "//chrome/app/mash:mash_service_overrides",
+    ]
+  }
+
+  service_manifest("mus_browser_tests_manifest") {
+    name = "mus_browser_tests"
+
+    source = "base/mus_browser_tests_manifest.json"
+    packaged_services = [ "//services/ui:manifest" ]
+  }
+
+  catalog("mus_browser_tests_catalog") {
+    testonly = true
+    embedded_services = [ ":mus_browser_tests_manifest" ]
+    standalone_services = [ "//services/tracing:manifest" ]
+    catalog_deps = [ "//chrome/app:catalog_for_mus" ]
+  }
+
+  copy("mus_browser_tests_catalog_copy") {
+    testonly = true
+    sources = get_target_outputs(":mus_browser_tests_catalog")
+    outputs = [
+      "${root_out_dir}/mus_browser_tests_catalog.json",
+    ]
+    deps = [
+      ":mus_browser_tests_catalog",
     ]
   }
 }

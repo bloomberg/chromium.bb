@@ -42,7 +42,19 @@ class MojoTestConnector {
   // browser_tests.
   static const char kMashApp[];
 
-  explicit MojoTestConnector(std::unique_ptr<base::Value> catalog_contents);
+  // Enumeration of the possible chrome-ash configurations supported by this
+  // test.
+  enum class Config {
+    // Aura is backed by mus, but chrome and ash are still in the same process.
+    MUS,
+
+    // Aura is backed by mus and chrome and ash are in separate processes. In
+    // this mode chrome code can only use ash code in ash/public/cpp.
+    MASH,
+  };
+
+  MojoTestConnector(std::unique_ptr<base::Value> catalog_contents,
+                    Config config);
   ~MojoTestConnector();
 
   // Initializes the background thread the ServiceManager runs on.
@@ -54,6 +66,8 @@ class MojoTestConnector {
 
  private:
   class ServiceProcessLauncherDelegateImpl;
+
+  const Config config_;
 
   std::unique_ptr<ServiceProcessLauncherDelegateImpl>
       service_process_launcher_delegate_;

@@ -40,8 +40,10 @@
 
 namespace {
 
-const base::FilePath::CharType kCatalogFilename[] =
+const base::FilePath::CharType kMashCatalogFilename[] =
     FILE_PATH_LITERAL("mash_browser_tests_catalog.json");
+const base::FilePath::CharType kMusCatalogFilename[] =
+    FILE_PATH_LITERAL("mus_browser_tests_catalog.json");
 
 void ConnectToDefaultApps(service_manager::Connector* connector) {
   connector->StartService(mash::session::mojom::kServiceName);
@@ -74,7 +76,12 @@ class MashTestSuite : public ChromeTestSuite {
 // Used to setup the command line for passing a mojo channel to tests.
 class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
  public:
-  MashTestLauncherDelegate() : ChromeTestLauncherDelegate(nullptr) {}
+  MashTestLauncherDelegate() : ChromeTestLauncherDelegate(nullptr) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    config_ = command_line->HasSwitch("run-in-mash")
+                  ? MojoTestConnector::Config::MASH
+                  : MojoTestConnector::Config::MUS;
+  }
   ~MashTestLauncherDelegate() override {}
 
   MojoTestConnector* GetMojoTestConnectorForSingleProcess() {
@@ -84,7 +91,7 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
         content::kSingleProcessTestsFlag));
     DCHECK(test_suite_);
     test_suite_->SetMojoTestConnector(
-        base::MakeUnique<MojoTestConnector>(ReadCatalogManifest()));
+        base::MakeUnique<MojoTestConnector>(ReadCatalogManifest(), config_));
     return test_suite_->mojo_test_connector();
   }
 
@@ -103,7 +110,7 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
       base::TestLauncher::LaunchOptions* test_launch_options) override {
     if (!mojo_test_connector_) {
       mojo_test_connector_ =
-          base::MakeUnique<MojoTestConnector>(ReadCatalogManifest());
+          base::MakeUnique<MojoTestConnector>(ReadCatalogManifest(), config_);
       context_.reset(new service_manager::ServiceContext(
           base::MakeUnique<mash::MashPackagedService>(),
           mojo_test_connector_->Init()));
@@ -129,7 +136,9 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
     std::string catalog_contents;
     base::FilePath exe_path;
     base::PathService::Get(base::DIR_EXE, &exe_path);
-    base::FilePath catalog_path = exe_path.Append(kCatalogFilename);
+    base::FilePath catalog_path = exe_path.Append(
+        config_ == MojoTestConnector::Config::MASH ? kMashCatalogFilename
+                                                   : kMusCatalogFilename);
     bool result = base::ReadFileToString(catalog_path, &catalog_contents);
     DCHECK(result);
     std::unique_ptr<base::Value> manifest_value =
@@ -137,6 +146,8 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
     DCHECK(manifest_value);
     return manifest_value;
   }
+
+  MojoTestConnector::Config config_;
 
   std::unique_ptr<MashTestSuite> test_suite_;
   std::unique_ptr<MojoTestConnector> mojo_test_connector_;
@@ -173,8 +184,10 @@ void StartChildApp(service_manager::mojom::ServiceRequest service_request) {
 bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch("run-in-mash"))
+  if (!command_line->HasSwitch("run-in-mash") &&
+      !command_line->HasSwitch("run-in-mus")) {
     return false;
+  }
 
   if (command_line->HasSwitch(MojoTestConnector::kMashApp)) {
 #if defined(OS_LINUX)

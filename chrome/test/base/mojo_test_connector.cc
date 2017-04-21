@@ -36,7 +36,8 @@
 
 namespace {
 
-const char kTestRunnerName[] = "mash_browser_tests";
+const char kMashTestRunnerName[] = "mash_browser_tests";
+const char kMusTestRunnerName[] = "mus_browser_tests";
 
 // State created per test to register a client process with the background
 // service manager.
@@ -49,10 +50,11 @@ class MojoTestState : public content::TestState {
   ~MojoTestState() override {}
 
   void Init(base::CommandLine* command_line,
-            base::TestLauncher::LaunchOptions* test_launch_options) {
+            base::TestLauncher::LaunchOptions* test_launch_options,
+            const std::string& mus_config_switch) {
     command_line->AppendSwitch(MojoTestConnector::kTestSwitch);
     command_line->AppendSwitch(switches::kChildProcess);
-    command_line->AppendSwitchASCII(switches::kMusConfig, switches::kMash);
+    command_line->AppendSwitchASCII(switches::kMusConfig, mus_config_switch);
 
     platform_channel_ = base::MakeUnique<mojo::edk::PlatformChannelPair>();
 
@@ -150,7 +152,9 @@ void RemoveMashFromBrowserTests(base::CommandLine* command_line) {
 class MojoTestConnector::ServiceProcessLauncherDelegateImpl
     : public service_manager::ServiceProcessLauncher::Delegate {
  public:
-  ServiceProcessLauncherDelegateImpl() {}
+  explicit ServiceProcessLauncherDelegateImpl(
+      const std::string& test_runner_name)
+      : test_runner_name_(test_runner_name) {}
   ~ServiceProcessLauncherDelegateImpl() override {}
 
  private:
@@ -159,7 +163,7 @@ class MojoTestConnector::ServiceProcessLauncherDelegateImpl
       const service_manager::Identity& target,
       base::CommandLine* command_line) override {
     if (target.name() != content::mojom::kPackagedServicesServiceName) {
-      if (target.name() == kTestRunnerName) {
+      if (target.name() == test_runner_name_) {
         RemoveMashFromBrowserTests(command_line);
         command_line->SetProgram(
             base::CommandLine::ForCurrentProcess()->GetProgram());
@@ -176,6 +180,8 @@ class MojoTestConnector::ServiceProcessLauncherDelegateImpl
     *command_line = base::CommandLine(argv);
   }
 
+  const std::string test_runner_name_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncherDelegateImpl);
 };
 
@@ -185,9 +191,12 @@ const char MojoTestConnector::kTestSwitch[] = "is_test";
 const char MojoTestConnector::kMashApp[] = "mash-app";
 
 MojoTestConnector::MojoTestConnector(
-    std::unique_ptr<base::Value> catalog_contents)
-    : service_process_launcher_delegate_(
-          new ServiceProcessLauncherDelegateImpl),
+    std::unique_ptr<base::Value> catalog_contents,
+    Config config)
+    : config_(config),
+      service_process_launcher_delegate_(new ServiceProcessLauncherDelegateImpl(
+          config == MojoTestConnector::Config::MASH ? kMashTestRunnerName
+                                                    : kMusTestRunnerName)),
       background_service_manager_(nullptr),
       catalog_contents_(std::move(catalog_contents)) {}
 
@@ -216,7 +225,9 @@ service_manager::mojom::ServiceRequest MojoTestConnector::Init() {
           service_process_launcher_delegate_.get(),
           std::move(catalog_contents_));
   background_service_manager_->RegisterService(
-      service_manager::Identity(kTestRunnerName,
+      service_manager::Identity(config_ == MojoTestConnector::Config::MASH
+                                    ? kMashTestRunnerName
+                                    : kMusTestRunnerName,
                                 service_manager::mojom::kRootUserID),
       std::move(service), nullptr);
   return request;
@@ -229,6 +240,8 @@ std::unique_ptr<content::TestState> MojoTestConnector::PrepareForTest(
     base::TestLauncher::LaunchOptions* test_launch_options) {
   auto test_state =
       base::MakeUnique<MojoTestState>(background_service_manager_.get());
-  test_state->Init(command_line, test_launch_options);
+  test_state->Init(command_line, test_launch_options,
+                   config_ == MojoTestConnector::Config::MASH ? switches::kMash
+                                                              : switches::kMus);
   return test_state;
 }
