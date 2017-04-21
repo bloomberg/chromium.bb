@@ -84,6 +84,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   web_view_.Client()->ShowValidationMessage(
       anchor_in_viewport, message_, ToWebTextDirection(message_dir),
       sub_message, ToWebTextDirection(sub_message_dir));
+  web_view_.ChromeClient().RegisterPopupOpeningObserver(this);
 
   finish_time_ =
       MonotonicallyIncreasingTime() +
@@ -105,6 +106,7 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
   message_ = String();
   finish_time_ = 0;
   web_view_.Client()->HideValidationMessage();
+  web_view_.ChromeClient().UnregisterPopupOpeningObserver(this);
 }
 
 bool ValidationMessageClientImpl::IsValidationMessageVisible(
@@ -148,6 +150,11 @@ void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
 }
 
 void ValidationMessageClientImpl::WillBeDestroyed() {
+  if (current_anchor_)
+    HideValidationMessage(*current_anchor_);
+}
+
+void ValidationMessageClientImpl::WillOpenPopup() {
   if (current_anchor_)
     HideValidationMessage(*current_anchor_);
 }
