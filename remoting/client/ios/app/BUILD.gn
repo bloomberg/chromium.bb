@@ -60,7 +60,7 @@ tweak_info_plist("tweak_info_plist") {
 }
 
 ios_app_bundle("ios_remoting_app") {
-  output_name = "remoting-ios"
+  output_name = "$remoting_ios_executable_name"
 
   entitlements_path = "resources/Remoting.entitlements"
   info_plist_target = ":tweak_info_plist"
