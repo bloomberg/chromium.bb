@@ -967,7 +967,7 @@ InspectorTest.dumpInspectorHighlightJSON = function(idValue, callback)
 
     function nodeResolved(node)
     {
-        InspectorTest.DOMAgent.getHighlightObjectForTest(node.id, report);
+        InspectorTest.OverlayAgent.getHighlightObjectForTest(node.id, report);
     }
 
     function report(error, result)

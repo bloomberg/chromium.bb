@@ -162,7 +162,7 @@
 #include "web/DedicatedWorkerMessagingProxyProviderImpl.h"
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
-#include "web/InspectorOverlay.h"
+#include "web/InspectorOverlayAgent.h"
 #include "web/LinkHighlightImpl.h"
 #include "web/PageOverlay.h"
 #include "web/PrerendererClientImpl.h"
@@ -432,9 +432,9 @@ WebDevToolsAgentImpl* WebViewImpl::MainFrameDevToolsAgentImpl() {
   return main_frame ? main_frame->DevToolsAgentImpl() : nullptr;
 }
 
-InspectorOverlay* WebViewImpl::GetInspectorOverlay() {
+InspectorOverlayAgent* WebViewImpl::GetInspectorOverlay() {
   if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
-    return devtools->Overlay();
+    return devtools->OverlayAgent();
   return nullptr;
 }
 
@@ -2026,7 +2026,7 @@ void WebViewImpl::UpdateAllLifecyclePhases() {
   PageWidgetDelegate::UpdateAllLifecyclePhases(*page_,
                                                *MainFrameImpl()->GetFrame());
 
-  if (InspectorOverlay* overlay = GetInspectorOverlay()) {
+  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
     overlay->UpdateAllLifecyclePhases();
     // TODO(chrishtr): integrate paint into the overlay's lifecycle.
     if (overlay->GetPageOverlay() &&
@@ -2169,7 +2169,7 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   if (dev_tools_emulator_->HandleInputEvent(input_event))
     return WebInputEventResult::kHandledSuppressed;
 
-  if (InspectorOverlay* overlay = GetInspectorOverlay()) {
+  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
     if (overlay->HandleInputEvent(input_event))
       return WebInputEventResult::kHandledSuppressed;
   }
@@ -4132,7 +4132,7 @@ AnimationWorkletProxyClient* WebViewImpl::CreateAnimationWorkletProxyClient() {
 void WebViewImpl::UpdatePageOverlays() {
   if (page_color_overlay_)
     page_color_overlay_->Update();
-  if (InspectorOverlay* overlay = GetInspectorOverlay()) {
+  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
     PageOverlay* inspector_page_overlay = overlay->GetPageOverlay();
     if (inspector_page_overlay)
       inspector_page_overlay->Update();
