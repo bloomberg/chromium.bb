@@ -403,22 +403,17 @@ static void ComputeListOfNonEmptySurfaces(LayerTreeImpl* layer_tree_impl,
       ClearIsDrawnRenderSurfaceLayerListMember(&surface->layer_list(),
                                                &property_trees->scroll_tree);
       surface->ClearLayerLists();
-      if (!is_root) {
-        LayerImplList& target_list = target_surface->layer_list();
-        auto it = std::find(target_list.begin(), target_list.end(), layer);
-        if (it != target_list.end()) {
-          target_list.erase(it);
-          // This surface has an empty content rect. If its target's layer list
-          // had no other layers, then its target would also have had an empty
-          // content rect, meaning it would have been removed and had its layer
-          // list cleared when we visited it, unless the target surface is the
-          // root surface.
-          DCHECK(!target_surface->layer_list().empty() ||
-                 target_surface->render_target() == target_surface);
-        } else {
-          // This layer was removed when the target itself was cleared.
-          DCHECK(target_surface->layer_list().empty());
-        }
+      LayerImplList& target_list = target_surface->layer_list();
+      auto it = std::find(target_list.begin(), target_list.end(), layer);
+      if (it != target_list.end()) {
+        target_list.erase(it);
+        // This surface has an empty content rect. If its target's layer list
+        // had no other layers, then its target would also have had an empty
+        // content rect, meaning it would have been removed and had its layer
+        // list cleared when we visited it, unless the target surface is the
+        // root surface.
+        DCHECK(!target_surface->layer_list().empty() ||
+               target_surface->render_target() == target_surface);
       }
       continue;
     }
