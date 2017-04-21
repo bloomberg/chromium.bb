@@ -1560,9 +1560,28 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_TRANSLATE_NEVER_TRANSLATE_SITE" desc="Text to display on the never translate site (like www.google.com) button. [CHAR-LIMIT=64]">
         Never translate this site
       </message>
-      <message name="IDS_TRANSLATE_NEVER_TRANSLATE_LANGUAGE" meaning="Android" desc="Text to display on the never translate language button. [CHAR-LIMIT=64]">
+      <message name="IDS_TRANSLATE_NEVER_TRANSLATE_LANGUAGE" desc="Text that appears on a button. Chrome asks the user if they want to translate a page from the source language into another, target language that the user may have shown interest in before. User can click the 'Never Translate' button to indicate that they never want Chrome to translate pages in this language. Imperative. [CHAR-LIMIT=64]">
         Never translate <ph name="LANGUAGE">%1$s<ex>French</ex></ph>
       </message>
+      <message name="IDS_TRANSLATE_INFOBAR_MORE_LANGUAGE" desc="Option in the Chrome menu. Lets the user open a dialog to choose other target languages for translation, from a list of available languages. [CHAR-LIMIT=64]">
+        More languages
+      </message>
+      <message name="IDS_TRANSLATE_INFOBAR_NOT_SOURCE_LANGUAGE" desc="Option in the Chrome menu. Lets the user select another language as source language to translate. [CHAR-LIMIT=64]">
+        Page is not in <ph name="LANGUAGE">%1$s<ex>French</ex></ph>
+      </message>
+      <message name="IDS_TRANSLATE_SNACKBAR_ALWAYS_TRANSLATE" desc="Text to be displayed in translate snackbar that lets the user know pages in this source language will be translated to target language automatically. [CHAR-LIMIT=64]">
+        Sites in <ph name="SOURCE_LANGUAGE">%1$s<ex>French</ex></ph> will be translated to <ph name="TARGET_LANGUAGE">%2$s<ex>English</ex></ph>
+      </message>
+      <message name="IDS_TRANSLATE_SNACKBAR_LANGUAGE_NEVER" desc="Text to be displayed in translate snackbar that lets the user know sites in this language will not be translated. [CHAR-LIMIT=64]">
+        Sites in <ph name="LANGUAGE">%1$s<ex>French</ex></ph> will not be translated
+      </message>
+      <message name="IDS_TRANSLATE_SNACKBAR_SITE_NEVER" desc="Text to be displayed in translate snackbar that lets the user know this site will not be translated. [CHAR-LIMIT=64]">
+        This site will not be translated
+      </message>
+      <message name="IDS_TRANSLATE_SNACKBAR_CANCEL" desc="A text label on the translate snackbar widget to cancel the this selection. [CHAR-LIMIT=16]">
+        Cancel
+      </message>
+
       <message name="IDS_MENU_PRINT" desc="Menu item for printing the current page. [CHAR-LIMIT=27]">
         Print…
       </message>
