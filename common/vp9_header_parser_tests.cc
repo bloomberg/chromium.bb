@@ -59,6 +59,18 @@ class Vp9HeaderParserTests : public ::testing::Test {
     CreateAndLoadSegment(filename, 4);
   }
 
+  // Load a corrupted segment with no expectation of correctness.
+  void CreateAndLoadInvalidSegment(const std::string& filename) {
+    filename_ = test::GetTestFilePath(filename);
+    ASSERT_EQ(0, reader_.Open(filename_.c_str()));
+    is_reader_open_ = true;
+    pos_ = 0;
+    mkvparser::EBMLHeader ebml_header;
+    ebml_header.Parse(&reader_, pos_);
+    ASSERT_EQ(0, mkvparser::Segment::CreateInstance(&reader_, pos_, segment_));
+    ASSERT_GE(0, segment_->Load());
+  }
+
   void ProcessTheFrames(bool invalid_bitstream) {
     unsigned char* data = NULL;
     size_t data_len = 0;
@@ -135,6 +147,22 @@ TEST_F(Vp9HeaderParserTests, Muxed) {
   EXPECT_EQ(480, parser_.height());
   EXPECT_EQ(2, parser_.column_tiles());
   EXPECT_EQ(1, parser_.frame_parallel_mode());
+}
+
+TEST_F(Vp9HeaderParserTests, Invalid) {
+  const char* files[] = {
+      "invalid/invalid_vp9_bitstream-bug_1416.webm",
+      "invalid/invalid_vp9_bitstream-bug_1417.webm",
+  };
+
+  for (int i = 0; i < static_cast<int>(sizeof(files) / sizeof(files[0])); ++i) {
+    SCOPED_TRACE(files[i]);
+    ASSERT_NO_FATAL_FAILURE(CreateAndLoadInvalidSegment(files[i]));
+    ProcessTheFrames(true);
+    CloseReader();
+    delete segment_;
+    segment_ = NULL;
+  }
 }
 
 }  // namespace
