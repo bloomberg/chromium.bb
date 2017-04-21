@@ -23,6 +23,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
@@ -98,7 +99,8 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
 
   std::unique_ptr<net::URLRequest> CreateRequest(const GURL& url) {
     return url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY,
-                                              &url_request_delegate_);
+                                              &url_request_delegate_,
+                                              TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   // Creates a ServiceWorkerContextHandler directly.

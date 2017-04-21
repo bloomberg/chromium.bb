@@ -20,6 +20,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
@@ -193,7 +194,8 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {
   // Read the main script from the diskcache.
   std::unique_ptr<net::URLRequest> request =
       url_request_context_->CreateRequest(main_script_.url,
-                                          net::DEFAULT_PRIORITY, &delegate_);
+                                          net::DEFAULT_PRIORITY, &delegate_,
+                                          TRAFFIC_ANNOTATION_FOR_TESTS);
   test_job_interceptor_->set_main_intercept_job(
       base::MakeUnique<ServiceWorkerReadFromCacheJob>(
           request.get(), nullptr /* NetworkDelegate */,
@@ -211,7 +213,8 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ReadImportedScript) {
   // Read the imported script from the diskcache.
   std::unique_ptr<net::URLRequest> request =
       url_request_context_->CreateRequest(imported_script_.url,
-                                          net::DEFAULT_PRIORITY, &delegate_);
+                                          net::DEFAULT_PRIORITY, &delegate_,
+                                          TRAFFIC_ANNOTATION_FOR_TESTS);
   test_job_interceptor_->set_main_intercept_job(
       base::MakeUnique<ServiceWorkerReadFromCacheJob>(
           request.get(), nullptr /* NetworkDelegate */, RESOURCE_TYPE_SCRIPT,
@@ -240,7 +243,8 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ResourceNotFound) {
   // Attempt to read it from the disk cache.
   std::unique_ptr<net::URLRequest> request =
       url_request_context_->CreateRequest(main_script_.url,
-                                          net::DEFAULT_PRIORITY, &delegate_);
+                                          net::DEFAULT_PRIORITY, &delegate_,
+                                          TRAFFIC_ANNOTATION_FOR_TESTS);
   const int64_t kNonexistentResourceId = 100;
   test_job_interceptor_->set_main_intercept_job(
       base::MakeUnique<ServiceWorkerReadFromCacheJob>(

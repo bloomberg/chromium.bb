@@ -19,6 +19,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -123,7 +124,8 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
   std::unique_ptr<net::URLRequest> CreateRequest(const GURL& request_url,
                                                  ResourceType resource_type) {
     std::unique_ptr<net::URLRequest> request = request_context_.CreateRequest(
-        request_url, net::DEFAULT_PRIORITY, &request_delegate_);
+        request_url, net::DEFAULT_PRIORITY, &request_delegate_,
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     ResourceRequestInfo::AllocateForTesting(
         request.get(), resource_type, &resource_context_,
         -1 /* render_process_id */, -1 /* render_view_id */,

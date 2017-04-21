@@ -45,6 +45,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -271,7 +272,7 @@ class ServiceWorkerURLRequestJobTest
                    bool expect_valid_ssl) {
     request_ = url_request_context_.CreateRequest(
         GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-        &url_request_delegate_);
+        &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
 
     request_->set_method("GET");
     request_->Start();
@@ -322,7 +323,7 @@ class ServiceWorkerURLRequestJobTest
     version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
     request_ = url_request_context_.CreateRequest(
         GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-        &url_request_delegate_);
+        &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     request_->set_method("GET");
     request_->Start();
 
@@ -452,7 +453,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   request_->set_method("GET");
   request_->Start();
@@ -614,7 +615,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
 
@@ -667,7 +668,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveRead) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
   std::string expected_response;
@@ -768,7 +769,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Abort) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
 
@@ -822,7 +823,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_AbortBeforeData) {
 
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
   base::RunLoop().RunUntilIdle();
@@ -880,7 +881,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_AbortAfterData) {
 
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
   base::RunLoop().RunUntilIdle();
@@ -923,7 +924,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveReadAndAbort) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
   std::string expected_response;
@@ -991,7 +992,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
 
@@ -1165,7 +1166,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, CancelRequest) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
-      &url_request_delegate_);
+      &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
   base::RunLoop().RunUntilIdle();
