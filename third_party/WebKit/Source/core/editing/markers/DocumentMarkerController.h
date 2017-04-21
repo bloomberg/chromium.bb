@@ -79,11 +79,6 @@ class CORE_EXPORT DocumentMarkerController final
   void PrepareForDestruction();
   void RemoveMarkersInRange(const EphemeralRange&, DocumentMarker::MarkerTypes);
   void RemoveMarkers(
-      Node*,
-      unsigned start_offset,
-      int length,
-      DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
-  void RemoveMarkers(
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   void RemoveMarkers(
       Node*,
@@ -136,6 +131,10 @@ class CORE_EXPORT DocumentMarkerController final
   bool PossiblyHasMarkers(DocumentMarker::MarkerTypes);
   void RemoveMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
   void RemoveMarkers(TextIterator&, DocumentMarker::MarkerTypes);
+  void RemoveMarkersInternal(Node*,
+                             unsigned start_offset,
+                             int length,
+                             DocumentMarker::MarkerTypes);
 
   MarkerMap markers_;
   // Provide a quick way to determine whether a particular marker type is absent

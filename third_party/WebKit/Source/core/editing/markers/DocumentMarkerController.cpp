@@ -162,8 +162,8 @@ void DocumentMarkerController::RemoveMarkers(
 
     int start_offset = marked_text.StartOffsetInCurrentContainer();
     int end_offset = marked_text.EndOffsetInCurrentContainer();
-    RemoveMarkers(marked_text.CurrentContainer(), start_offset,
-                  end_offset - start_offset, marker_types);
+    RemoveMarkersInternal(marked_text.CurrentContainer(), start_offset,
+                          end_offset - start_offset, marker_types);
   }
 }
 
@@ -272,7 +272,7 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
   }
 }
 
-void DocumentMarkerController::RemoveMarkers(
+void DocumentMarkerController::RemoveMarkersInternal(
     Node* node,
     unsigned start_offset,
     int length,
