@@ -49,10 +49,8 @@ void FieldsetPainter::PaintBoxDecorationBackground(
                                        paint_info.phase, paint_rect);
   BoxDecorationData box_decoration_data(layout_fieldset_);
 
-  if (box_decoration_data.bleed_avoidance == kBackgroundBleedNone) {
-    BoxPainter::PaintNormalBoxShadow(paint_info, paint_rect,
-                                     layout_fieldset_.StyleRef());
-  }
+  BoxPainter::PaintNormalBoxShadow(paint_info, paint_rect,
+                                   layout_fieldset_.StyleRef());
   BoxPainter(layout_fieldset_)
       .PaintFillLayers(paint_info, box_decoration_data.background_color,
                        layout_fieldset_.Style()->BackgroundLayers(),
