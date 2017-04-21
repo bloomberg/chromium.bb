@@ -407,14 +407,13 @@ MenuController* MenuController::GetActiveInstance() {
   return active_instance_;
 }
 
-MenuItemView* MenuController::Run(Widget* parent,
-                                  MenuButton* button,
-                                  MenuItemView* root,
-                                  const gfx::Rect& bounds,
-                                  MenuAnchorPosition position,
-                                  bool context_menu,
-                                  bool is_nested_drag,
-                                  int* result_event_flags) {
+void MenuController::Run(Widget* parent,
+                         MenuButton* button,
+                         MenuItemView* root,
+                         const gfx::Rect& bounds,
+                         MenuAnchorPosition position,
+                         bool context_menu,
+                         bool is_nested_drag) {
   exit_type_ = EXIT_NONE;
   possible_drag_ = false;
   drag_in_progress_ = false;
@@ -482,7 +481,7 @@ MenuItemView* MenuController::Run(Widget* parent,
       // notification when the drag has finished.
       StartCancelAllTimer();
     }
-    return NULL;
+    return;
   }
 
   if (button)
@@ -491,8 +490,6 @@ MenuItemView* MenuController::Run(Widget* parent,
   // Make sure Chrome doesn't attempt to shut down while the menu is showing.
   if (ViewsDelegate::GetInstance())
     ViewsDelegate::GetInstance()->AddRef();
-
-  return nullptr;
 }
 
 void MenuController::Cancel(ExitType type) {

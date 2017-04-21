@@ -78,7 +78,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   void SelectionChanged(MenuItemView* menu) override;
   void WillShowMenu(MenuItemView* menu) override;
   void WillHideMenu(MenuItemView* menu) override;
-  void OnMenuClosed(MenuItemView* menu, MenuRunner::RunResult result) override;
+  void OnMenuClosed(MenuItemView* menu) override;
 
  private:
   // Implementation of BuildMenu().

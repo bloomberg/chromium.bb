@@ -38,9 +38,8 @@ void MessageViewContextMenuController::ShowContextMenuForView(
       base::Bind(&MessageViewContextMenuController::OnMenuClosed,
                  base::Unretained(this))));
 
-  menu_runner_.reset(new views::MenuRunner(
-      menu_model_adapter_->CreateMenu(),
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
+  menu_runner_.reset(new views::MenuRunner(menu_model_adapter_->CreateMenu(),
+                                           views::MenuRunner::HAS_MNEMONICS));
 
   menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), NULL,
                           gfx::Rect(point, gfx::Size()),

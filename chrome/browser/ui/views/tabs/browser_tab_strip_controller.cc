@@ -125,14 +125,9 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
   void RunMenuAt(const gfx::Point& point, ui::MenuSourceType source_type) {
-    if (menu_runner_->RunMenuAt(tab_->GetWidget(),
-                                NULL,
-                                gfx::Rect(point, gfx::Size()),
-                                views::MENU_ANCHOR_TOPLEFT,
-                                source_type) ==
-        views::MenuRunner::MENU_DELETED) {
-      return;
-    }
+    menu_runner_->RunMenuAt(tab_->GetWidget(), NULL,
+                            gfx::Rect(point, gfx::Size()),
+                            views::MENU_ANCHOR_TOPLEFT, source_type);
   }
 
   // Overridden from ui::SimpleMenuModel::Delegate:

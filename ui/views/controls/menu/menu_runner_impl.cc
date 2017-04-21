@@ -73,16 +73,16 @@ void MenuRunnerImpl::Release() {
   delete this;
 }
 
-MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
-                                                MenuButton* button,
-                                                const gfx::Rect& bounds,
-                                                MenuAnchorPosition anchor,
-                                                int32_t run_types) {
+void MenuRunnerImpl::RunMenuAt(Widget* parent,
+                               MenuButton* button,
+                               const gfx::Rect& bounds,
+                               MenuAnchorPosition anchor,
+                               int32_t run_types) {
   closing_event_time_ = base::TimeTicks();
   if (running_) {
     // Ignore requests to show the menu while it's already showing. MenuItemView
     // doesn't handle this very well (meaning it crashes).
-    return MenuRunner::NORMAL_EXIT;
+    return;
   }
 
   MenuController* controller = MenuController::GetActiveInstance();
@@ -104,7 +104,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
         // We can't open another menu, otherwise the message loop would become
         // twice nested. This isn't necessarily a problem, but generally isn't
         // expected.
-        return MenuRunner::NORMAL_EXIT;
+        return;
       }
       // Drop menus don't block the message loop, so it's ok to create a new
       // MenuController.
@@ -128,13 +128,9 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
                        has_mnemonics,
                        !for_drop_ && ShouldShowMnemonics(button));
 
-  int mouse_event_flags = 0;
   controller->Run(parent, button, menu_, bounds, anchor,
                   (run_types & MenuRunner::CONTEXT_MENU) != 0,
-                  (run_types & MenuRunner::NESTED_DRAG) != 0,
-                  &mouse_event_flags);
-  // We finish processing results in OnMenuClosed.
-  return MenuRunner::NORMAL_EXIT;
+                  (run_types & MenuRunner::NESTED_DRAG) != 0);
 }
 
 void MenuRunnerImpl::Cancel() {
@@ -177,10 +173,8 @@ void MenuRunnerImpl::OnMenuClosed(NotifyType type,
                                            mouse_event_flags);
     }
     // Only notify the delegate if it did not delete this.
-    if (!ref)
-      return;
-    else if (type == NOTIFY_DELEGATE)
-      menu_->GetDelegate()->OnMenuClosed(menu, MenuRunner::NORMAL_EXIT);
+    if (ref && type == NOTIFY_DELEGATE)
+      menu_->GetDelegate()->OnMenuClosed(menu);
   }
 }
 

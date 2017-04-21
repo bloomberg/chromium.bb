@@ -133,8 +133,7 @@ void TreeViewExample::ShowContextMenuForView(View* source,
   context_menu_model_->AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
   context_menu_model_->AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));
   context_menu_model_->AddItem(ID_ADD, ASCIIToUTF16("Add"));
-  context_menu_runner_.reset(
-      new MenuRunner(context_menu_model_.get(), MenuRunner::ASYNC));
+  context_menu_runner_.reset(new MenuRunner(context_menu_model_.get(), 0));
   context_menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
                                   MENU_ANCHOR_TOPLEFT, source_type);

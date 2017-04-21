@@ -45,17 +45,11 @@ class MenuRunnerTestAPI;
 }
 
 // MenuRunner is responsible for showing (running) the menu and additionally
-// owning the MenuItemView. RunMenuAt() runs a nested message loop. It is safe
-// to delete MenuRunner at any point, but MenuRunner internally only deletes the
-// MenuItemView *after* the nested message loop completes. If MenuRunner is
-// deleted while the menu is showing the delegate of the menu is reset. This is
-// done to ensure delegates aren't notified after they may have been deleted.
-//
-// NOTE: while you can delete a MenuRunner at any point, the nested message loop
-// won't return immediately. This means if you delete the object that owns
-// the MenuRunner while the menu is running, your object is effectively still
-// on the stack. A return value of MENU_DELETED indicated this. In most cases
-// if RunMenuAt() returns MENU_DELETED, you should return immediately.
+// owning the MenuItemView. It is safe to delete MenuRunner at any point, but
+// MenuRunner will not notify you of the closure caused by a deletion.
+// If MenuRunner is deleted while the menu is showing the delegate of the menu
+// is reset. This is done to ensure delegates aren't notified after they may
+// have been deleted.
 //
 // Similarly you should avoid creating MenuRunner on the stack. Doing so means
 // MenuRunner may not be immediately destroyed if your object is destroyed,
@@ -91,18 +85,6 @@ class VIEWS_EXPORT MenuRunner {
     // the caller is responsible for closing the menu upon completion of the
     // drag-and-drop.
     NESTED_DRAG = 1 << 5,
-
-    // Used for showing a menu which does NOT block the caller. Instead the
-    // delegate is notified when the menu closes via OnMenuClosed.
-    ASYNC = 1 << 6,
-  };
-
-  enum RunResult {
-    // Indicates RunMenuAt is returning because the MenuRunner was deleted.
-    MENU_DELETED,
-
-    // Indicates RunMenuAt returned and MenuRunner was not deleted.
-    NORMAL_EXIT
   };
 
   // Creates a new MenuRunner, which may use a native menu if available.
@@ -118,17 +100,14 @@ class VIEWS_EXPORT MenuRunner {
   MenuRunner(MenuItemView* menu, int32_t run_types);
   ~MenuRunner();
 
-  // Runs the menu. If this returns MENU_DELETED the method is returning
-  // because the MenuRunner was deleted.
-  // Typically callers should NOT do any processing if this returns
-  // MENU_DELETED.
+  // Runs the menu. MenuDelegate::OnMenuClosed will be notified of the results.
   // If |anchor| uses a |BUBBLE_..| type, the bounds will get determined by
   // using |bounds| as the thing to point at in screen coordinates.
-  RunResult RunMenuAt(Widget* parent,
-                      MenuButton* button,
-                      const gfx::Rect& bounds,
-                      MenuAnchorPosition anchor,
-                      ui::MenuSourceType source_type);
+  void RunMenuAt(Widget* parent,
+                 MenuButton* button,
+                 const gfx::Rect& bounds,
+                 MenuAnchorPosition anchor,
+                 ui::MenuSourceType source_type);
 
   // Returns true if we're in a nested message loop running the menu.
   bool IsRunning() const;

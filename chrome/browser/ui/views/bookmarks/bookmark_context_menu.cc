@@ -54,8 +54,7 @@ BookmarkContextMenu::BookmarkContextMenu(
       menu_runner_(new views::MenuRunner(menu_,
                                          views::MenuRunner::HAS_MNEMONICS |
                                              views::MenuRunner::IS_NESTED |
-                                             views::MenuRunner::CONTEXT_MENU |
-                                             views::MenuRunner::ASYNC)),
+                                             views::MenuRunner::CONTEXT_MENU)),
       observer_(NULL),
       close_on_remove_(close_on_remove) {
   ui::SimpleMenuModel* menu_model = controller_->menu_model();
@@ -110,8 +109,7 @@ bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
   return (id != IDC_BOOKMARK_BAR_REMOVE) || close_on_remove_;
 }
 
-void BookmarkContextMenu::OnMenuClosed(views::MenuItemView* menu,
-                                       views::MenuRunner::RunResult result) {
+void BookmarkContextMenu::OnMenuClosed(views::MenuItemView* menu) {
   if (observer_)
     observer_->OnContextMenuClosed();
 }

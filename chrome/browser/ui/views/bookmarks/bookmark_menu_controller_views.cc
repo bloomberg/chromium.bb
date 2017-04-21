@@ -38,7 +38,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
   menu_delegate_->Init(this, NULL, node, start_child_index,
                        BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                        BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER);
-  int run_type = views::MenuRunner::ASYNC;
+  int run_type = 0;
   if (for_drop)
     run_type |= views::MenuRunner::FOR_DROP;
   menu_runner_.reset(new views::MenuRunner(menu_delegate_->menu(), run_type));
@@ -58,11 +58,8 @@ void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar) {
   menu_delegate_->GetBookmarkModel()->AddObserver(this);
   // We only delete ourself after the menu completes, so we can safely ignore
   // the return value.
-  ignore_result(menu_runner_->RunMenuAt(menu_delegate_->parent(),
-                                        menu_button,
-                                        bounds,
-                                        anchor,
-                                        ui::MENU_SOURCE_NONE));
+  menu_runner_->RunMenuAt(menu_delegate_->parent(), menu_button, bounds, anchor,
+                          ui::MENU_SOURCE_NONE);
 }
 
 void BookmarkMenuController::Cancel() {
@@ -152,8 +149,7 @@ int BookmarkMenuController::GetDragOperations(MenuItemView* sender) {
   return menu_delegate_->GetDragOperations(sender);
 }
 
-void BookmarkMenuController::OnMenuClosed(views::MenuItemView* menu,
-                                          views::MenuRunner::RunResult result) {
+void BookmarkMenuController::OnMenuClosed(views::MenuItemView* menu) {
   delete this;
 }
 

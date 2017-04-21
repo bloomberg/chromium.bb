@@ -121,11 +121,11 @@ void MenuRunnerImplCocoa::Release() {
   }
 }
 
-MenuRunner::RunResult MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
-                                                     MenuButton* button,
-                                                     const gfx::Rect& bounds,
-                                                     MenuAnchorPosition anchor,
-                                                     int32_t run_types) {
+void MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
+                                    MenuButton* button,
+                                    const gfx::Rect& bounds,
+                                    MenuAnchorPosition anchor,
+                                    int32_t run_types) {
   DCHECK(run_types & kNativeRunTypes);
   DCHECK(!IsRunning());
   DCHECK(parent);
@@ -155,15 +155,13 @@ MenuRunner::RunResult MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
 
   if (delete_after_run_) {
     delete this;
-    return MenuRunner::MENU_DELETED;
+    return;
   }
 
   // Don't invoke the callback if Release() was called, since that usually means
   // the owning instance is being destroyed.
   if (!on_menu_closed_callback_.is_null())
     on_menu_closed_callback_.Run();
-
-  return MenuRunner::NORMAL_EXIT;
 }
 
 void MenuRunnerImplCocoa::Cancel() {

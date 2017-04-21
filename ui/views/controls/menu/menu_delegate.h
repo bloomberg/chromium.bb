@@ -195,7 +195,7 @@ class VIEWS_EXPORT MenuDelegate {
 
   // Notification the menu has closed. This will not be called if MenuRunner is
   // deleted during calls to ExecuteCommand().
-  virtual void OnMenuClosed(MenuItemView* menu, MenuRunner::RunResult result) {}
+  virtual void OnMenuClosed(MenuItemView* menu) {}
 
   // If the user drags the mouse outside the bounds of the menu the delegate
   // is queried for a sibling menu to show. If this returns non-null the

@@ -802,7 +802,7 @@ void AppMenu::Init(ui::MenuModel* model) {
                                // so we get the taller menu style.
   PopulateMenu(root_, model);
 
-  int32_t types = views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC;
+  int32_t types = views::MenuRunner::HAS_MNEMONICS;
   if (for_drop()) {
     // We add NESTED_DRAG since currently the only operation to open the app
     // menu for is an extension action drag, which is controlled by the child
@@ -1035,8 +1035,7 @@ bool AppMenu::ShouldCloseOnDragComplete() {
   return false;
 }
 
-void AppMenu::OnMenuClosed(views::MenuItemView* menu,
-                           views::MenuRunner::RunResult result) {
+void AppMenu::OnMenuClosed(views::MenuItemView* menu) {
   if (bookmark_menu_delegate_.get()) {
     BookmarkModel* model =
         BookmarkModelFactory::GetForBrowserContext(browser_->profile());

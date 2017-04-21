@@ -274,8 +274,8 @@ void ToolbarActionView::DoShowContextMenu(
   gfx::Point screen_loc;
   ConvertPointToScreen(this, &screen_loc);
 
-  int run_types = views::MenuRunner::HAS_MNEMONICS |
-                  views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC;
+  int run_types =
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;
   if (delegate_->ShownInsideMenu())
     run_types |= views::MenuRunner::IS_NESTED;
 
@@ -294,9 +294,8 @@ void ToolbarActionView::DoShowContextMenu(
   menu_ = menu_adapter_->CreateMenu();
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
-  ignore_result(
-      menu_runner_->RunMenuAt(parent, this, gfx::Rect(screen_loc, size()),
-                              views::MENU_ANCHOR_TOPLEFT, source_type));
+  menu_runner_->RunMenuAt(parent, this, gfx::Rect(screen_loc, size()),
+                          views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 bool ToolbarActionView::CloseActiveMenuIfNeeded() {

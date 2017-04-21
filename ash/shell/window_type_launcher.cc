@@ -328,14 +328,10 @@ void WindowTypeLauncher::ShowContextMenuForView(
                        base::ASCIIToUTF16("Toggle FullScreen"),
                        MenuItemView::NORMAL);
   // MenuRunner takes ownership of root.
-  menu_runner_.reset(new MenuRunner(root, MenuRunner::HAS_MNEMONICS |
-                                              views::MenuRunner::CONTEXT_MENU |
-                                              views::MenuRunner::ASYNC));
-  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-                              views::MENU_ANCHOR_TOPLEFT,
-                              source_type) == MenuRunner::MENU_DELETED) {
-    return;
-  }
+  menu_runner_.reset(new MenuRunner(
+      root, MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+  menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
+                          views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 }  // namespace shell

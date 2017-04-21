@@ -27,9 +27,6 @@ class TestMenuDelegate : public MenuDelegate {
   int execute_command_id() const { return execute_command_id_; }
   int on_menu_closed_called() const { return on_menu_closed_called_count_; }
   MenuItemView* on_menu_closed_menu() const { return on_menu_closed_menu_; }
-  MenuRunner::RunResult on_menu_closed_run_result() const {
-    return on_menu_closed_run_result_;
-  }
   bool on_perform_drop_called() { return on_perform_drop_called_; }
   int will_hide_menu_count() { return will_hide_menu_count_; }
   MenuItemView* will_hide_menu() { return will_hide_menu_; }
@@ -40,7 +37,7 @@ class TestMenuDelegate : public MenuDelegate {
                        const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
   void ExecuteCommand(int id) override;
-  void OnMenuClosed(MenuItemView* menu, MenuRunner::RunResult result) override;
+  void OnMenuClosed(MenuItemView* menu) override;
   int OnPerformDrop(MenuItemView* menu,
                     DropPosition position,
                     const ui::DropTargetEvent& event) override;
@@ -61,9 +58,8 @@ class TestMenuDelegate : public MenuDelegate {
   // The number of times OnMenuClosed was called.
   int on_menu_closed_called_count_;
 
-  // The values of the last call to OnMenuClosed.
+  // The value of the last call to OnMenuClosed.
   MenuItemView* on_menu_closed_menu_;
-  MenuRunner::RunResult on_menu_closed_run_result_;
 
   // The number of times WillHideMenu was called.
   int will_hide_menu_count_ = 0;

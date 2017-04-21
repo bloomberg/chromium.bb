@@ -269,8 +269,7 @@ void MenuModelAdapter::WillHideMenu(MenuItemView* menu) {
   NOTREACHED();
 }
 
-void MenuModelAdapter::OnMenuClosed(MenuItemView* menu,
-                                    MenuRunner::RunResult result) {
+void MenuModelAdapter::OnMenuClosed(MenuItemView* menu) {
   if (!on_menu_closed_callback_.is_null())
     on_menu_closed_callback_.Run();
 }

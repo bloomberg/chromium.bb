@@ -707,12 +707,10 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
     return;
 
   menu_runner_ = base::MakeUnique<views::MenuRunner>(
-      menu_model_adapter_->CreateMenu(),
-      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC);
-  ignore_result(
-      menu_runner_->RunMenuAt(wallpaper_widget_controller()->widget(), nullptr,
-                              gfx::Rect(location_in_screen, gfx::Size()),
-                              views::MENU_ANCHOR_TOPLEFT, source_type));
+      menu_model_adapter_->CreateMenu(), views::MenuRunner::CONTEXT_MENU);
+  menu_runner_->RunMenuAt(wallpaper_widget_controller()->widget(), nullptr,
+                          gfx::Rect(location_in_screen, gfx::Size()),
+                          views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {

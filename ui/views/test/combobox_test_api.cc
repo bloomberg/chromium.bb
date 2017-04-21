@@ -24,14 +24,13 @@ class TestMenuRunnerHandler : public MenuRunnerHandler {
  public:
   explicit TestMenuRunnerHandler(int* show_counter)
       : show_counter_(show_counter) {}
-  MenuRunner::RunResult RunMenuAt(Widget* parent,
-                                  MenuButton* button,
-                                  const gfx::Rect& bounds,
-                                  MenuAnchorPosition anchor,
-                                  ui::MenuSourceType source_type,
-                                  int32_t types) override {
+  void RunMenuAt(Widget* parent,
+                 MenuButton* button,
+                 const gfx::Rect& bounds,
+                 MenuAnchorPosition anchor,
+                 ui::MenuSourceType source_type,
+                 int32_t types) override {
     *show_counter_ += 1;
-    return MenuRunner::NORMAL_EXIT;
   }
 
  private:

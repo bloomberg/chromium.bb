@@ -109,9 +109,8 @@ void PermissionMenuButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 void PermissionMenuButton::OnMenuButtonClicked(views::MenuButton* source,
                                                const gfx::Point& point,
                                                const ui::Event* event) {
-  menu_runner_.reset(new views::MenuRunner(
-      menu_model_,
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
+  menu_runner_.reset(
+      new views::MenuRunner(menu_model_, views::MenuRunner::HAS_MNEMONICS));
 
   gfx::Point p(point);
   p.Offset(is_rtl_display_ ? source->width() : -source->width(), 0);

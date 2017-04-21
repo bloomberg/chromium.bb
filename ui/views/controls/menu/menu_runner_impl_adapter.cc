@@ -26,13 +26,12 @@ void MenuRunnerImplAdapter::Release() {
   delete this;
 }
 
-MenuRunner::RunResult MenuRunnerImplAdapter::RunMenuAt(
-    Widget* parent,
-    MenuButton* button,
-    const gfx::Rect& bounds,
-    MenuAnchorPosition anchor,
-    int32_t types) {
-  return impl_->RunMenuAt(parent, button, bounds, anchor, types);
+void MenuRunnerImplAdapter::RunMenuAt(Widget* parent,
+                                      MenuButton* button,
+                                      const gfx::Rect& bounds,
+                                      MenuAnchorPosition anchor,
+                                      int32_t types) {
+  impl_->RunMenuAt(parent, button, bounds, anchor, types);
 }
 
 void MenuRunnerImplAdapter::Cancel() {

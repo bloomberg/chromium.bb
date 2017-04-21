@@ -1649,7 +1649,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
       base::Bind(&ShelfView::OnMenuClosed, base::Unretained(this), ink_drop)));
 
   closing_event_time_ = base::TimeTicks();
-  int run_types = views::MenuRunner::ASYNC;
+  int run_types = 0;
   if (context_menu)
     run_types |= views::MenuRunner::CONTEXT_MENU;
   launcher_menu_runner_.reset(

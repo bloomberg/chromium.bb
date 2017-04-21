@@ -598,11 +598,8 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
   event_generator()->PressTouchId(1);
   event_generator()->ReleaseTouchId(0);
 
-  int mouse_event_flags = 0;
-  MenuItemView* run_result = menu_controller()->Run(
-      owner(), nullptr, menu_item(), gfx::Rect(), MENU_ANCHOR_TOPLEFT, false,
-      false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  menu_controller()->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                         MENU_ANCHOR_TOPLEFT, false, false);
 
   MenuControllerTest::ReleaseTouchId(1);
   TestAsyncEscapeKey();
@@ -913,11 +910,8 @@ TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
   EXPECT_EQ(button2, GetHotButton());
 
   MenuController* controller = menu_controller();
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
-                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
 
   // |button2| should stay in hot-tracked state but menu controller should not
   // track it anymore (preventing resetting hot-tracked state when changing
@@ -941,12 +935,8 @@ TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
 // MenuControllerDelegate when Accept is called.
 TEST_F(MenuControllerTest, AsynchronousAccept) {
   MenuController* controller = menu_controller();
-
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
-                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
   EXPECT_EQ(0, delegate->on_menu_closed_called());
 
@@ -966,11 +956,8 @@ TEST_F(MenuControllerTest, AsynchronousAccept) {
 TEST_F(MenuControllerTest, AsynchronousCancelAll) {
   MenuController* controller = menu_controller();
 
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
-                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
   EXPECT_EQ(0, delegate->on_menu_closed_called());
 
@@ -994,11 +981,8 @@ TEST_F(MenuControllerTest, AsynchronousNestedDelegate) {
   controller->AddNestedDelegate(nested_delegate.get());
   EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
 
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
-                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
 
   controller->CancelAll();
   EXPECT_EQ(delegate, GetCurrentDelegate());
@@ -1113,11 +1097,8 @@ TEST_F(MenuControllerTest, DoubleAsynchronousNested) {
 
   // Nested run
   controller->AddNestedDelegate(nested_delegate.get());
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
-                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
 
   controller->CancelAll();
   EXPECT_EQ(1, delegate->on_menu_closed_called());
@@ -1137,11 +1118,8 @@ TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
   EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
 
   MenuItemView* item = menu_item();
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, item, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                      false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, item, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                  false, false);
 
   // Show a sub menu to target with a pointer selection. However have the event
   // occur outside of the bounds of the entire menu.
@@ -1204,11 +1182,8 @@ TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
   EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
 
   MenuItemView* item = menu_item();
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, item, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                      false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, item, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                  false, false);
 
   // Show a sub menu to target with a pointer selection. However have the event
   // occur outside of the bounds of the entire menu.
@@ -1242,11 +1217,8 @@ TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
   EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
 
   MenuItemView* item = menu_item();
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, item, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                      false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, item, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                  false, false);
 
   // Show a sub menu to target with a tap event.
   SubmenuView* sub_menu = item->GetSubmenu();
@@ -1271,12 +1243,8 @@ TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
 TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
   ExitMenuRun();
   MenuController* controller = menu_controller();
-
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
-                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
   EXPECT_EQ(MenuController::EXIT_NONE, controller->exit_type());
   ui::CancelModeEvent cancel_event;
   event_generator()->Dispatch(&cancel_event);
@@ -1288,11 +1256,8 @@ TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
 TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
   ExitMenuRun();
   MenuController* controller = menu_controller();
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(nullptr, nullptr, menu_item(), gfx::Rect(),
-                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(nullptr, nullptr, menu_item(), gfx::Rect(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
 }
 
 // Tests that if a MenuController is destroying during drag/drop, and another
@@ -1337,12 +1302,8 @@ TEST_F(MenuControllerTest, CancelAllDuringDrag) {
 TEST_F(MenuControllerTest, DestroyedDuringViewsRelease) {
   ExitMenuRun();
   MenuController* controller = menu_controller();
-
-  int mouse_event_flags = 0;
-  MenuItemView* run_result =
-      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
-                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
   TestDestroyedDuringViewsRelease();
 }
 
@@ -1393,11 +1354,9 @@ TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
   std::unique_ptr<TestMenuControllerDelegate> nested_controller_delegate_1 =
       base::MakeUnique<TestMenuControllerDelegate>();
   controller->AddNestedDelegate(nested_controller_delegate_1.get());
-  int mouse_event_flags = 0;
-  MenuItemView* run_result = controller->Run(
-      owner(), nullptr, nested_menu_item_1.get(), gfx::Rect(150, 50, 100, 100),
-      MENU_ANCHOR_TOPLEFT, true, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, nested_menu_item_1.get(),
+                  gfx::Rect(150, 50, 100, 100), MENU_ANCHOR_TOPLEFT, true,
+                  false);
 
   SubmenuView* nested_menu_submenu = nested_menu_item_1->GetSubmenu();
   nested_menu_submenu->SetBounds(0, 0, 100, 100);
@@ -1446,10 +1405,9 @@ TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
   std::unique_ptr<TestMenuControllerDelegate> nested_controller_delegate_2 =
       base::MakeUnique<TestMenuControllerDelegate>();
   controller->AddNestedDelegate(nested_controller_delegate_2.get());
-  run_result = controller->Run(
-      owner(), nullptr, nested_menu_item_2.get(), gfx::Rect(150, 50, 100, 100),
-      MENU_ANCHOR_TOPLEFT, true, false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
+  controller->Run(owner(), nullptr, nested_menu_item_2.get(),
+                  gfx::Rect(150, 50, 100, 100), MENU_ANCHOR_TOPLEFT, true,
+                  false);
 
   // The escapce key should only close the nested menu. SelectByChar should not
   // crash.

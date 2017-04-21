@@ -246,18 +246,12 @@ void BookmarkEditorView::ShowContextMenuForView(
        tree_model_->GetRoot());
 
   context_menu_runner_.reset(new views::MenuRunner(
-      GetMenuModel(), views::MenuRunner::HAS_MNEMONICS |
-                          views::MenuRunner::CONTEXT_MENU |
-                          views::MenuRunner::ASYNC));
+      GetMenuModel(),
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
 
-  if (context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-                                      NULL,
-                                      gfx::Rect(point, gfx::Size()),
-                                      views::MENU_ANCHOR_TOPRIGHT,
-                                      source_type) ==
-      views::MenuRunner::MENU_DELETED) {
-    return;
-  }
+  context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
+                                  NULL, gfx::Rect(point, gfx::Size()),
+                                  views::MENU_ANCHOR_TOPRIGHT, source_type);
 }
 
 const char* BookmarkEditorView::GetClassName() const {

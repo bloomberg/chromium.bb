@@ -30,8 +30,7 @@ void DownloadShelfContextMenuView::Run(
 
   menu_runner_.reset(new views::MenuRunner(
       menu_model,
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU |
-          views::MenuRunner::ASYNC,
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
       base::Bind(&DownloadShelfContextMenuView::OnMenuClosed,
                  base::Unretained(this), on_menu_closed_callback)));
 

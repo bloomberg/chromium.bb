@@ -114,7 +114,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
   int IsAsync() const { return GetParam() == MenuType::VIEWS; }
 
   // Runs the menu after registering |callback| as the menu open callback.
-  MenuRunner::RunResult RunMenu(const base::Closure& callback) {
+  void RunMenu(const base::Closure& callback) {
     if (IsAsync()) {
       // Cancelling an async menu under MenuController::OpenMenuImpl() (which
       // invokes WillShowMenu()) will cause a UAF when that same function tries
@@ -126,15 +126,14 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
                      base::Unretained(this), callback));
     }
 
-    // Always pass ASYNC, even though native menus will be sync.
-    int run_types = MenuRunner::CONTEXT_MENU | MenuRunner::ASYNC;
-    return MaybeRunAsync(runner_->RunMenuAt(parent_, nullptr, gfx::Rect(),
-                                            MENU_ANCHOR_TOPLEFT, run_types));
+    runner_->RunMenuAt(parent_, nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                       MenuRunner::CONTEXT_MENU);
+    MaybeRunAsync();
   }
 
   // Runs then cancels a combobox menu and captures the frame of the anchoring
   // view.
-  MenuRunner::RunResult RunMenuAt(const gfx::Rect& anchor) {
+  void RunMenuAt(const gfx::Rect& anchor) {
     last_anchor_frame_ = NSZeroRect;
 
     // Should be one child (the compositor layer) before showing, and it should
@@ -149,13 +148,12 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
     else
       menu_->set_menu_open_callback(callback);
 
-    MenuRunner::RunResult result = MaybeRunAsync(
-        runner_->RunMenuAt(parent_, nullptr, anchor, MENU_ANCHOR_TOPLEFT,
-                           MenuRunner::COMBOBOX | MenuRunner::ASYNC));
+    runner_->RunMenuAt(parent_, nullptr, anchor, MENU_ANCHOR_TOPLEFT,
+                       MenuRunner::COMBOBOX);
+    MaybeRunAsync();
 
     // Ensure the anchor view is removed.
     EXPECT_EQ(1u, [[parent_->GetNativeView() subviews] count]);
-    return result;
   }
 
   void MenuCancelCallback() {
@@ -213,12 +211,10 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
 
   // Run a nested message loop so that async and sync menus can be tested the
   // same way.
-  MenuRunner::RunResult MaybeRunAsync(MenuRunner::RunResult run_result) {
+  void MaybeRunAsync() {
     if (!IsAsync())
-      return run_result;
+      return;
 
-    // Async menus should always return NORMAL_EXIT.
-    EXPECT_EQ(MenuRunner::NORMAL_EXIT, run_result);
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -227,7 +223,6 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
 
     // |quit_closure_| should be run by QuitAsyncRunLoop(), not the timeout.
     EXPECT_TRUE(quit_closure_.is_null());
-    return run_result;
   }
 
   void QuitAsyncRunLoop() {
@@ -253,11 +248,10 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
 TEST_P(MenuRunnerCocoaTest, RunMenuAndCancel) {
   base::TimeTicks min_time = ui::EventTimeForNow();
 
-  MenuRunner::RunResult result = RunMenu(base::Bind(
-      &MenuRunnerCocoaTest::MenuCancelCallback, base::Unretained(this)));
+  RunMenu(base::Bind(&MenuRunnerCocoaTest::MenuCancelCallback,
+                     base::Unretained(this)));
 
   EXPECT_EQ(1, menu_close_count_);
-  EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
   EXPECT_FALSE(runner_->IsRunning());
 
   if (GetParam() == MenuType::VIEWS) {
@@ -277,30 +271,21 @@ TEST_P(MenuRunnerCocoaTest, RunMenuAndCancel) {
 }
 
 TEST_P(MenuRunnerCocoaTest, RunMenuAndDelete) {
-  MenuRunner::RunResult result = RunMenu(base::Bind(
-      &MenuRunnerCocoaTest::MenuDeleteCallback, base::Unretained(this)));
+  RunMenu(base::Bind(&MenuRunnerCocoaTest::MenuDeleteCallback,
+                     base::Unretained(this)));
   // Note the close callback is NOT invoked for deleted menus.
   EXPECT_EQ(0, menu_close_count_);
-
-  // Async menus always return NORMAL from RunMenuAt().
-  if (GetParam() == MenuType::VIEWS)
-    EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
-  else
-    EXPECT_EQ(MenuRunner::MENU_DELETED, result);
 }
 
 // Ensure a menu can be safely released immediately after a call to Cancel() in
 // the same run loop iteration.
 TEST_P(MenuRunnerCocoaTest, DestroyAfterCanceling) {
-  MenuRunner::RunResult result =
-      RunMenu(base::Bind(&MenuRunnerCocoaTest::MenuCancelAndDeleteCallback,
-                         base::Unretained(this)));
+  RunMenu(base::Bind(&MenuRunnerCocoaTest::MenuCancelAndDeleteCallback,
+                     base::Unretained(this)));
 
   if (IsAsync()) {
-    EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
     EXPECT_EQ(1, menu_close_count_);
   } else {
-    EXPECT_EQ(MenuRunner::MENU_DELETED, result);
     // For a synchronous menu, the deletion happens before the cancel can be
     // processed, so the close callback will not be invoked.
     EXPECT_EQ(0, menu_close_count_);
@@ -309,9 +294,8 @@ TEST_P(MenuRunnerCocoaTest, DestroyAfterCanceling) {
 
 TEST_P(MenuRunnerCocoaTest, RunMenuTwice) {
   for (int i = 0; i < 2; ++i) {
-    MenuRunner::RunResult result = RunMenu(base::Bind(
-        &MenuRunnerCocoaTest::MenuCancelCallback, base::Unretained(this)));
-    EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
+    RunMenu(base::Bind(&MenuRunnerCocoaTest::MenuCancelCallback,
+                       base::Unretained(this)));
     EXPECT_FALSE(runner_->IsRunning());
     EXPECT_EQ(i + 1, menu_close_count_);
   }

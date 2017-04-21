@@ -15,7 +15,6 @@ TestMenuDelegate::TestMenuDelegate()
     : execute_command_id_(0),
       on_menu_closed_called_count_(0),
       on_menu_closed_menu_(nullptr),
-      on_menu_closed_run_result_(MenuRunner::MENU_DELETED),
       on_perform_drop_called_(false) {}
 
 TestMenuDelegate::~TestMenuDelegate() {}
@@ -33,11 +32,9 @@ void TestMenuDelegate::ExecuteCommand(int id) {
   execute_command_id_ = id;
 }
 
-void TestMenuDelegate::OnMenuClosed(MenuItemView* menu,
-                                    MenuRunner::RunResult result) {
+void TestMenuDelegate::OnMenuClosed(MenuItemView* menu) {
   on_menu_closed_called_count_++;
   on_menu_closed_menu_ = menu;
-  on_menu_closed_run_result_ = result;
 }
 
 int TestMenuDelegate::OnPerformDrop(MenuItemView* menu,

@@ -438,12 +438,11 @@ class NavButton : public views::LabelButton {
         model_.get(),
         base::Bind(&NavButton::OnMenuClosed, base::Unretained(this))));
     menu_model_adapter_->set_triggerable_event_flags(triggerable_event_flags());
-    menu_runner_.reset(new views::MenuRunner(
-        menu_model_adapter_->CreateMenu(),
-        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
-    ignore_result(menu_runner_->RunMenuAt(
-        GetWidget(), nullptr, gfx::Rect(menu_position, gfx::Size(0, 0)),
-        views::MENU_ANCHOR_TOPLEFT, source_type));
+    menu_runner_.reset(new views::MenuRunner(menu_model_adapter_->CreateMenu(),
+                                             views::MenuRunner::HAS_MNEMONICS));
+    menu_runner_->RunMenuAt(GetWidget(), nullptr,
+                            gfx::Rect(menu_position, gfx::Size(0, 0)),
+                            views::MENU_ANCHOR_TOPLEFT, source_type);
   }
 
   void OnMenuClosed() {

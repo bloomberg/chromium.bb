@@ -117,9 +117,8 @@ void PermissionCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void PermissionCombobox::OnMenuButtonClicked(views::MenuButton* source,
                                              const gfx::Point& point,
                                              const ui::Event* event) {
-  menu_runner_.reset(new views::MenuRunner(
-      model_.get(),
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
+  menu_runner_.reset(
+      new views::MenuRunner(model_.get(), views::MenuRunner::HAS_MNEMONICS));
 
   gfx::Point p(point);
   p.Offset(-source->width(), 0);

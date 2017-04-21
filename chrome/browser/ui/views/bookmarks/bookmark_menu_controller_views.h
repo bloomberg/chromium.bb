@@ -106,8 +106,7 @@ class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
   void WriteDragData(views::MenuItemView* sender,
                      ui::OSExchangeData* data) override;
   int GetDragOperations(views::MenuItemView* sender) override;
-  void OnMenuClosed(views::MenuItemView* menu,
-                    views::MenuRunner::RunResult result) override;
+  void OnMenuClosed(views::MenuItemView* menu) override;
   views::MenuItemView* GetSiblingMenu(views::MenuItemView* menu,
                                       const gfx::Point& screen_point,
                                       views::MenuAnchorPosition* anchor,

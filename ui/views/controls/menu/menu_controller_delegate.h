@@ -22,10 +22,9 @@ class MenuControllerDelegate {
     DONT_NOTIFY_DELEGATE
   };
 
-  // Invoked when MenuController closes a menu and the MenuController was
-  // configured for asynchronous or drop (MenuRunner::ASYNC,
-  // MenuRunner::FOR_DROP). |mouse_event_flags| are the flags set on the
-  // ui::MouseEvent which selected |menu|, otherwise 0.
+  // Invoked when MenuController closes. unless the owner deletes the
+  // MenuController during MenuDelegate::ExecuteCommand. |mouse_event_flags| are
+  // the flags set on the ui::MouseEvent which selected |menu|, otherwise 0.
   virtual void OnMenuClosed(NotifyType type,
                             MenuItemView* menu,
                             int mouse_event_flags) = 0;

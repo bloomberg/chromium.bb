@@ -67,8 +67,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   bool IsCommandEnabled(int command_id) const override;
   bool IsCommandVisible(int command_id) const override;
   bool ShouldCloseAllMenusOnExecute(int id) override;
-  void OnMenuClosed(views::MenuItemView* menu,
-                    views::MenuRunner::RunResult result) override;
+  void OnMenuClosed(views::MenuItemView* menu) override;
 
   // Overridden from BookmarkContextMenuControllerDelegate:
   void CloseMenu() override;

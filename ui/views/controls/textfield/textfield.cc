@@ -1051,11 +1051,9 @@ void Textfield::ShowContextMenuForView(View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
   UpdateContextMenu();
-  ignore_result(context_menu_runner_->RunMenuAt(GetWidget(),
-                                                NULL,
-                                                gfx::Rect(point, gfx::Size()),
-                                                MENU_ANCHOR_TOPLEFT,
-                                                source_type));
+  context_menu_runner_->RunMenuAt(GetWidget(), NULL,
+                                  gfx::Rect(point, gfx::Size()),
+                                  MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2038,10 +2036,9 @@ void Textfield::UpdateContextMenu() {
     if (controller_)
       controller_->UpdateContextMenu(context_menu_contents_.get());
   }
-  context_menu_runner_.reset(new MenuRunner(context_menu_contents_.get(),
-                                            MenuRunner::HAS_MNEMONICS |
-                                                MenuRunner::CONTEXT_MENU |
-                                                MenuRunner::ASYNC));
+  context_menu_runner_.reset(
+      new MenuRunner(context_menu_contents_.get(),
+                     MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU));
 }
 
 bool Textfield::ImeEditingAllowed() const {

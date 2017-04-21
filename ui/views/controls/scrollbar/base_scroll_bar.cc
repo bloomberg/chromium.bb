@@ -273,9 +273,8 @@ void BaseScrollBar::ShowContextMenuForView(View* source,
 
   views::MenuItemView* menu = new views::MenuItemView(this);
   // MenuRunner takes ownership of |menu|.
-  menu_runner_.reset(new MenuRunner(menu, MenuRunner::HAS_MNEMONICS |
-                                              views::MenuRunner::CONTEXT_MENU |
-                                              views::MenuRunner::ASYNC));
+  menu_runner_.reset(new MenuRunner(
+      menu, MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollHere);
   menu->AppendSeparator();
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollStart);

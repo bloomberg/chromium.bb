@@ -281,8 +281,8 @@ void TranslateBubbleView::OnMenuButtonClicked(views::MenuButton* source,
         DenialMenuItem::NEVER_TRANSLATE_SITE,
         IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
 
-    denial_menu_runner_.reset(new views::MenuRunner(denial_menu_model_.get(),
-                                                    views::MenuRunner::ASYNC));
+    denial_menu_runner_.reset(
+        new views::MenuRunner(denial_menu_model_.get(), 0));
   }
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
   denial_menu_runner_->RunMenuAt(source->GetWidget(), source, screen_bounds,

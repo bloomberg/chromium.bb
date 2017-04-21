@@ -463,7 +463,7 @@ class MenuViewDragAndDropForDropStayOpen : public MenuViewDragAndDropTest {
 
 int MenuViewDragAndDropForDropStayOpen::GetMenuRunnerFlags() {
   return views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::NESTED_DRAG |
-         views::MenuRunner::FOR_DROP | views::MenuRunner::ASYNC;
+         views::MenuRunner::FOR_DROP;
 }
 
 void MenuViewDragAndDropForDropStayOpen::DoTestWithMenuOpen() {
@@ -495,8 +495,7 @@ class MenuViewDragAndDropForDropCancel : public MenuViewDragAndDropTest {
 };
 
 int MenuViewDragAndDropForDropCancel::GetMenuRunnerFlags() {
-  return views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::FOR_DROP |
-         views::MenuRunner::ASYNC;
+  return views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::FOR_DROP;
 }
 
 void MenuViewDragAndDropForDropCancel::DoTestWithMenuOpen() {

@@ -302,8 +302,7 @@ void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
                                                 MediaGalleryPrefId id) {
   context_menu_runner_.reset(new views::MenuRunner(
       controller_->GetContextMenu(id),
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU |
-          views::MenuRunner::ASYNC,
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
       base::Bind(&MediaGalleriesDialogViews::OnMenuClosed,
                  base::Unretained(this))));
 

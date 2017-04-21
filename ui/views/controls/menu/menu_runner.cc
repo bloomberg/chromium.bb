@@ -28,11 +28,11 @@ MenuRunner::~MenuRunner() {
   impl_->Release();
 }
 
-MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
-                                            MenuButton* button,
-                                            const gfx::Rect& bounds,
-                                            MenuAnchorPosition anchor,
-                                            ui::MenuSourceType source_type) {
+void MenuRunner::RunMenuAt(Widget* parent,
+                           MenuButton* button,
+                           const gfx::Rect& bounds,
+                           MenuAnchorPosition anchor,
+                           ui::MenuSourceType source_type) {
   // If we are shown on mouse press, we will eat the subsequent mouse down and
   // the parent widget will not be able to reset its state (it might have mouse
   // capture from the mouse down). So we clear its state here.
@@ -40,8 +40,9 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
     parent->GetRootView()->SetMouseHandler(nullptr);
 
   if (runner_handler_.get()) {
-    return runner_handler_->RunMenuAt(
-        parent, button, bounds, anchor, source_type, run_types_);
+    runner_handler_->RunMenuAt(parent, button, bounds, anchor, source_type,
+                               run_types_);
+    return;
   }
 
   // The parent of the nested menu will have created a DisplayChangeListener, so
@@ -68,7 +69,7 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
     }
   }
 
-  return impl_->RunMenuAt(parent, button, bounds, anchor, run_types_);
+  impl_->RunMenuAt(parent, button, bounds, anchor, run_types_);
 }
 
 bool MenuRunner::IsRunning() const {

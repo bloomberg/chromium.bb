@@ -674,12 +674,11 @@ void Label::ShowContextMenuForView(View* source,
     return;
 
   context_menu_runner_.reset(
-      new MenuRunner(&context_menu_contents_, MenuRunner::HAS_MNEMONICS |
-                                                  MenuRunner::CONTEXT_MENU |
-                                                  MenuRunner::ASYNC));
-  ignore_result(context_menu_runner_->RunMenuAt(
-      GetWidget(), nullptr, gfx::Rect(point, gfx::Size()), MENU_ANCHOR_TOPLEFT,
-      source_type));
+      new MenuRunner(&context_menu_contents_,
+                     MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU));
+  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
+                                  gfx::Rect(point, gfx::Size()),
+                                  MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 bool Label::GetDecoratedWordAtPoint(const gfx::Point& point,

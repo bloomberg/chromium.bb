@@ -179,8 +179,7 @@ ExampleMenuButton::~ExampleMenuButton() {
 void ExampleMenuButton::OnMenuButtonClicked(MenuButton* source,
                                             const gfx::Point& point,
                                             const ui::Event* event) {
-  menu_runner_.reset(new MenuRunner(
-      GetMenuModel(), MenuRunner::HAS_MNEMONICS | MenuRunner::ASYNC));
+  menu_runner_.reset(new MenuRunner(GetMenuModel(), MenuRunner::HAS_MNEMONICS));
 
   menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), this,
                           gfx::Rect(point, gfx::Size()), MENU_ANCHOR_TOPRIGHT,

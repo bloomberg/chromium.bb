@@ -268,9 +268,8 @@ void TaskManagerView::ShowContextMenuForView(views::View* source,
                               l10n_util::GetStringUTF16(table_column.id));
   }
 
-  menu_runner_.reset(new views::MenuRunner(
-      menu_model_.get(),
-      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
+  menu_runner_.reset(new views::MenuRunner(menu_model_.get(),
+                                           views::MenuRunner::CONTEXT_MENU));
 
   menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
                           views::MENU_ANCHOR_TOPLEFT, source_type);

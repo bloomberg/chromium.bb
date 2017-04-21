@@ -40,11 +40,11 @@ class VIEWS_EXPORT MenuRunnerImpl
 
   bool IsRunning() const override;
   void Release() override;
-  MenuRunner::RunResult RunMenuAt(Widget* parent,
-                                  MenuButton* button,
-                                  const gfx::Rect& bounds,
-                                  MenuAnchorPosition anchor,
-                                  int32_t run_types) override;
+  void RunMenuAt(Widget* parent,
+                 MenuButton* button,
+                 const gfx::Rect& bounds,
+                 MenuAnchorPosition anchor,
+                 int32_t run_types) override;
   void Cancel() override;
   base::TimeTicks GetClosingEventTime() const override;
 
@@ -58,12 +58,6 @@ class VIEWS_EXPORT MenuRunnerImpl
   friend class ::views::test::MenuRunnerDestructionTest;
 
   ~MenuRunnerImpl() override;
-
-  // Cleans up after the menu is no longer showing. |result| is the menu that
-  // the user selected, or NULL if nothing was selected.
-  MenuRunner::RunResult MenuDone(NotifyType type,
-                                 MenuItemView* result,
-                                 int mouse_event_flags);
 
   // Returns true if mnemonics should be shown in the menu.
   bool ShouldShowMnemonics(MenuButton* button);

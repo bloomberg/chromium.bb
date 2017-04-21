@@ -96,8 +96,7 @@ class AppMenu : public views::MenuDelegate,
   void WillShowMenu(views::MenuItemView* menu) override;
   void WillHideMenu(views::MenuItemView* menu) override;
   bool ShouldCloseOnDragComplete() override;
-  void OnMenuClosed(views::MenuItemView* menu,
-                    views::MenuRunner::RunResult result) override;
+  void OnMenuClosed(views::MenuItemView* menu) override;
   bool ShouldExecuteCommandWithoutClosingMenu(int command_id,
                                               const ui::Event& event) override;
 

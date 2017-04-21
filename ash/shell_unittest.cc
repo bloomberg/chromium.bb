@@ -357,14 +357,11 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
                               ->GetRootWindowController()
                               ->wallpaper_widget_controller()
                               ->widget();
-  std::unique_ptr<views::MenuRunner> menu_runner(new views::MenuRunner(
-      menu_model.get(),
-      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
+  std::unique_ptr<views::MenuRunner> menu_runner(
+      new views::MenuRunner(menu_model.get(), views::MenuRunner::CONTEXT_MENU));
 
-  EXPECT_EQ(views::MenuRunner::NORMAL_EXIT,
-            menu_runner->RunMenuAt(widget, NULL, gfx::Rect(),
-                                   views::MENU_ANCHOR_TOPLEFT,
-                                   ui::MENU_SOURCE_MOUSE));
+  menu_runner->RunMenuAt(widget, NULL, gfx::Rect(), views::MENU_ANCHOR_TOPLEFT,
+                         ui::MENU_SOURCE_MOUSE);
   LockScreenAndVerifyMenuClosed();
 }
 
