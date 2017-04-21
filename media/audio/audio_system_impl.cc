@@ -97,9 +97,10 @@ void AudioSystemImpl::GetInputStreamParameters(
     const std::string& device_id,
     OnAudioParamsCallback on_params_cb) const {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
-    GetTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(on_params_cb, GetInputParametersOnDeviceThread(
-                                                audio_manager_, device_id)));
+    GetTaskRunner()->PostTask(FROM_HERE,
+                              base::BindOnce(std::move(on_params_cb),
+                                             GetInputParametersOnDeviceThread(
+                                                 audio_manager_, device_id)));
     return;
   }
   base::PostTaskAndReplyWithResult(
@@ -113,9 +114,10 @@ void AudioSystemImpl::GetOutputStreamParameters(
     const std::string& device_id,
     OnAudioParamsCallback on_params_cb) const {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
-    GetTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(on_params_cb, GetOutputParametersOnDeviceThread(
-                                                audio_manager_, device_id)));
+    GetTaskRunner()->PostTask(FROM_HERE,
+                              base::BindOnce(std::move(on_params_cb),
+                                             GetOutputParametersOnDeviceThread(
+                                                 audio_manager_, device_id)));
     return;
   }
   base::PostTaskAndReplyWithResult(
@@ -128,8 +130,8 @@ void AudioSystemImpl::GetOutputStreamParameters(
 void AudioSystemImpl::HasInputDevices(OnBoolCallback on_has_devices_cb) const {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
     GetTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(on_has_devices_cb, audio_manager_->HasAudioInputDevices()));
+        FROM_HERE, base::BindOnce(std::move(on_has_devices_cb),
+                                  audio_manager_->HasAudioInputDevices()));
     return;
   }
   base::PostTaskAndReplyWithResult(
@@ -142,8 +144,8 @@ void AudioSystemImpl::HasInputDevices(OnBoolCallback on_has_devices_cb) const {
 void AudioSystemImpl::HasOutputDevices(OnBoolCallback on_has_devices_cb) const {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
     GetTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(on_has_devices_cb, audio_manager_->HasAudioOutputDevices()));
+        FROM_HERE, base::BindOnce(std::move(on_has_devices_cb),
+                                  audio_manager_->HasAudioOutputDevices()));
     return;
   }
   base::PostTaskAndReplyWithResult(
@@ -158,9 +160,10 @@ void AudioSystemImpl::GetDeviceDescriptions(
     bool for_input) {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
     GetTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(on_descriptions_cb,
-                              base::Passed(GetDeviceDescriptionsOnDeviceThread(
-                                  audio_manager_, for_input))));
+        FROM_HERE,
+        base::BindOnce(std::move(on_descriptions_cb),
+                       base::Passed(GetDeviceDescriptionsOnDeviceThread(
+                           audio_manager_, for_input))));
     return;
   }
 
@@ -176,9 +179,9 @@ void AudioSystemImpl::GetAssociatedOutputDeviceID(
     OnDeviceIdCallback on_device_id_cb) {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
     GetTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(on_device_id_cb, audio_manager_->GetAssociatedOutputDeviceID(
-                                        input_device_id)));
+        FROM_HERE, base::BindOnce(std::move(on_device_id_cb),
+                                  audio_manager_->GetAssociatedOutputDeviceID(
+                                      input_device_id)));
     return;
   }
   base::PostTaskAndReplyWithResult(
@@ -196,12 +199,13 @@ void AudioSystemImpl::GetInputDeviceInfo(
   // asynchronously, so we always post GetInputDeviceInfoOnDeviceThread(), which
   // will syncronously call the (bound to current loop or not) callback.
   GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&GetInputDeviceInfoOnDeviceThread,
-                            base::Unretained(audio_manager_), input_device_id,
-                            GetTaskRunner()->BelongsToCurrentThread()
-                                ? std::move(on_input_device_info_cb)
-                                : media::BindToCurrentLoop(
-                                      std::move(on_input_device_info_cb))));
+      FROM_HERE,
+      base::BindOnce(
+          &GetInputDeviceInfoOnDeviceThread, base::Unretained(audio_manager_),
+          input_device_id,
+          GetTaskRunner()->BelongsToCurrentThread()
+              ? std::move(on_input_device_info_cb)
+              : media::BindToCurrentLoop(std::move(on_input_device_info_cb))));
 }
 
 base::SingleThreadTaskRunner* AudioSystemImpl::GetTaskRunner() const {
