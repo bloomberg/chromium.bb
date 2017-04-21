@@ -22,6 +22,9 @@ class RenderWidgetHostConnector {
   explicit RenderWidgetHostConnector(WebContents* web_contents);
   virtual ~RenderWidgetHostConnector();
 
+  // Establish initial connection to rwhva if it is present.
+  void Initialize();
+
   // Method to set itself to the |new_rwhva|, and null out the reference
   // in |old_rwvha|. Example:
   //

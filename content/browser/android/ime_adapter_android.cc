@@ -70,8 +70,9 @@ jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
-  return reinterpret_cast<intptr_t>(
-      new ImeAdapterAndroid(env, obj, web_contents));
+  auto* ime_adapter = new ImeAdapterAndroid(env, obj, web_contents);
+  ime_adapter->Initialize();
+  return reinterpret_cast<intptr_t>(ime_adapter);
 }
 
 // Callback from Java to convert BackgroundColorSpan data to a

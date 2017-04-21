@@ -30,12 +30,11 @@ class RenderWidgetHostConnector::Observer
   void RenderWidgetHostViewDestroyed(
       RenderWidgetHostViewAndroid* rwhva) override;
 
+  void UpdateRenderWidgetHostView(RenderWidgetHostViewAndroid* new_rwhva);
+  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
   RenderWidgetHostViewAndroid* active_rwhva() const { return active_rwhva_; }
 
  private:
-  void UpdateRenderWidgetHostView(RenderWidgetHostViewAndroid* new_rwhva);
-  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
-
   RenderWidgetHostConnector* const connector_;
 
   // Active RenderWidgetHostView connected to this instance. Can also point to
@@ -126,6 +125,11 @@ RenderWidgetHostConnector::Observer::GetRenderWidgetHostViewAndroid() const {
 
 RenderWidgetHostConnector::RenderWidgetHostConnector(WebContents* web_contents)
     : render_widget_observer_(new Observer(web_contents, this)) {}
+
+void RenderWidgetHostConnector::Initialize() {
+  render_widget_observer_->UpdateRenderWidgetHostView(
+      render_widget_observer_->GetRenderWidgetHostViewAndroid());
+}
 
 RenderWidgetHostConnector::~RenderWidgetHostConnector() {}
 
