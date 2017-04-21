@@ -10,25 +10,25 @@
     width: 100%;
 }
 </style>
-<p>crbug.com/637811: There should be a green box below.</p>
+<p>crbug.com/637811: There should be no box below.</p>
 <table style="width: 100px;">
     <tr>
         <td>
             <div style="height: 50px; width: 50px;"></div>
         </td>
         <td class="full">
-            <table id="test" class="full" data-expected-height=50 data-expected-width=40></table>
+            <table id="test" class="full" data-expected-height=0 data-expected-width=40></table>
         </td>
     </tr>
 </table>
-<p>crbug.com/637811: There should be a green box below.</p>
+<p>crbug.com/637811: There should be no box below.</p>
 <table style="width: 100px;">
     <tr>
         <td>
             <div style="height: 50px; width: 50px;"></div>
         </td>
         <td class="full">
-            <div id="test" class="full" data-expected-height=50 data-expected-width=40></div>
+            <div id="test" class="full" data-expected-height=0 data-expected-width=40></div>
         </td>
     </tr>
 </table>

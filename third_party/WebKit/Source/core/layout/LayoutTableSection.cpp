@@ -1114,9 +1114,18 @@ int LayoutTableSection::DistributeExtraLogicalHeightToRows(
   return extra_logical_height - remaining_extra_logical_height;
 }
 
+bool CellHasExplicitlySpecifiedHeight(const LayoutTableCell& cell) {
+  if (cell.Style()->LogicalHeight().IsFixed())
+    return true;
+  LayoutBlock* cb = cell.ContainingBlock();
+  if (cb->AvailableLogicalHeightForPercentageComputation() == -1)
+    return false;
+  return true;
+}
+
 static bool ShouldFlexCellChild(const LayoutTableCell& cell,
                                 LayoutObject* cell_descendant) {
-  if (!cell.Style()->LogicalHeight().IsSpecified())
+  if (!CellHasExplicitlySpecifiedHeight(cell))
     return false;
   if (cell_descendant->Style()->OverflowY() == EOverflow::kVisible ||
       cell_descendant->Style()->OverflowY() == EOverflow::kHidden)
@@ -1961,7 +1970,7 @@ void LayoutTableSection::RelayoutCellIfFlexed(LayoutTableCell& cell,
   // can't hope to match the behavior perfectly, but we'll continue to refine it
   // as we discover new bugs. :)
   bool cell_children_flex = false;
-  bool flex_all_children = cell.Style()->LogicalHeight().IsSpecified() ||
+  bool flex_all_children = CellHasExplicitlySpecifiedHeight(cell) ||
                            (!Table()->Style()->LogicalHeight().IsAuto() &&
                             row_height != cell.LogicalHeight());
 
