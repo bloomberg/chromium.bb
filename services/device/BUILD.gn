@@ -75,7 +75,11 @@ source_set("tests") {
 
   if (is_chromeos) {
     sources += [ "fingerprint/fingerprint_chromeos_unittest.cc" ]
-    deps += [ "//services/device/fingerprint" ]
+    deps += [
+      "//chromeos",
+      "//dbus",
+      "//services/device/fingerprint",
+    ]
   }
 
   if (is_android) {

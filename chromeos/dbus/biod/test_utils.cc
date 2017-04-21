@@ -34,12 +34,6 @@ void CopyDBusMethodCallStatus(DBusMethodCallStatus* dest_status,
   *dest_status = src_status;
 }
 
-void CopyBiometricType(biod::BiometricType* dest_type,
-                       biod::BiometricType src_type) {
-  CHECK(dest_type);
-  *dest_type = src_type;
-}
-
 TestBiodObserver::TestBiodObserver() {}
 
 TestBiodObserver::~TestBiodObserver() {}

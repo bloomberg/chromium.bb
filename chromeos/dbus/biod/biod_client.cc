@@ -18,6 +18,11 @@ namespace chromeos {
 
 namespace {
 
+// TODO(xiaoyinh@): Use the constant from service_constants.h
+// crbug.com/713420
+const char kBiometricsManagerPath[] =
+    "/org/chromium/BiometricsDaemon/FpcBiometricsManager";
+
 // D-Bus response handler for methods that use void callbacks.
 void OnVoidResponse(const VoidDBusMethodCallback& callback,
                     dbus::Response* response) {
@@ -182,7 +187,7 @@ class BiodClientImpl : public BiodClient {
     bus_ = bus;
 
     biod_proxy_ = bus->GetObjectProxy(biod::kBiodServiceName,
-                                      dbus::ObjectPath(biod::kBiodServicePath));
+                                      dbus::ObjectPath(kBiometricsManagerPath));
 
     biod_proxy_->SetNameOwnerChangedCallback(
         base::Bind(&BiodClientImpl::NameOwnerChangedReceived,
@@ -268,7 +273,7 @@ class BiodClientImpl : public BiodClient {
       }
     }
 
-    callback.Run(static_cast<biod::BiometricType>(result));
+    callback.Run(result);
   }
 
   void OnRequestRecordLabel(const LabelCallback& callback,
@@ -276,7 +281,7 @@ class BiodClientImpl : public BiodClient {
     std::string result;
     if (response) {
       dbus::MessageReader reader(response);
-      if (!reader.PopString(&result))
+      if (!reader.PopVariantOfString(&result))
         LOG(ERROR) << biod::kRecordLabelProperty << " had incorrect response.";
     }
 
@@ -331,16 +336,16 @@ class BiodClientImpl : public BiodClient {
     while (array_reader.HasMoreData()) {
       dbus::MessageReader entry_reader(nullptr);
       std::string user_id;
-      std::vector<std::string> labels;
+      std::vector<dbus::ObjectPath> paths;
       if (!array_reader.PopDictEntry(&entry_reader) ||
           !entry_reader.PopString(&user_id) ||
-          !entry_reader.PopArrayOfStrings(&labels)) {
+          !entry_reader.PopArrayOfObjectPaths(&paths)) {
         LOG(ERROR) << "Error reading signal from biometrics: "
                    << signal->ToString();
         return;
       }
 
-      matches[user_id] = std::move(labels);
+      matches[user_id] = std::move(paths);
     }
 
     for (auto& observer : observers_) {

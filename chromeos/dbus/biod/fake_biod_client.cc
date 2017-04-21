@@ -82,7 +82,7 @@ void FakeBiodClient::SendAuthScanDone(const std::string& fingerprint,
                   record->fake_fingerprint.end(),
                   fingerprint) != record->fake_fingerprint.end()) {
       const std::string& user_id = record->user_id;
-      matches[user_id].push_back(record->label);
+      matches[user_id].push_back(entry.first);
     }
   }
 
@@ -168,7 +168,9 @@ void FakeBiodClient::StartAuthSession(const ObjectPathCallback& callback) {
 void FakeBiodClient::RequestType(const BiometricTypeCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, biod::BiometricType::BIOMETRIC_TYPE_FINGERPRINT));
+      base::Bind(callback,
+                 static_cast<uint32_t>(
+                     biod::BiometricType::BIOMETRIC_TYPE_FINGERPRINT)));
 }
 
 void FakeBiodClient::CancelEnrollSession(

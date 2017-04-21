@@ -24,7 +24,10 @@ component("fingerprint") {
       "fingerprint_chromeos.cc",
       "fingerprint_chromeos.h",
     ]
-    deps += [ "//dbus" ]
+    deps += [
+      "//chromeos",
+      "//dbus",
+    ]
   } else {
     sources += [ "fingerprint_default.cc" ]
   }

@@ -8,12 +8,10 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "chromeos/dbus/biod/biod_client.h"
+#include "dbus/object_path.h"
 #include "services/device/fingerprint/fingerprint_export.h"
 #include "services/device/public/interfaces/fingerprint.mojom.h"
-
-namespace dbus {
-class ObjectPath;
-}
 
 namespace device {
 
@@ -21,61 +19,59 @@ namespace device {
 // This is used to connect to biod(through dbus) and perform fingerprint related
 // operations. It observes signals from biod.
 class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
-    : public NON_EXPORTED_BASE(mojom::Fingerprint) {
+    : public NON_EXPORTED_BASE(mojom::Fingerprint),
+      public chromeos::BiodClient::Observer {
  public:
   explicit FingerprintChromeOS();
   ~FingerprintChromeOS() override;
 
   // mojom::Fingerprint:
-  // TODO(xiaoyinh@): Update the function once biod change has landed.
-  void GetFingerprintsList(
-      const GetFingerprintsListCallback& callback) override;
-  void StartEnroll(const std::string& user_id,
-                   const std::string& label) override;
-  void CancelCurrentEnroll() override;
-  void GetLabel(int32_t index, const GetLabelCallback& callback) override;
-  void SetLabel(const std::string& label, int32_t index) override;
-  void RemoveEnrollment(int32_t index) override;
-  void StartAuthentication() override;
-  void EndCurrentAuthentication() override;
-  void DestroyAllEnrollments() override;
+  void GetRecordsForUser(const std::string& user_id,
+                         const GetRecordsForUserCallback& callback) override;
+  void StartEnrollSession(const std::string& user_id,
+                          const std::string& label) override;
+  void CancelCurrentEnrollSession(
+      const CancelCurrentEnrollSessionCallback& callback) override;
+  void RequestRecordLabel(const std::string& record_path,
+                          const RequestRecordLabelCallback& callback) override;
+  void SetRecordLabel(const std::string& record_path,
+                      const std::string& new_label,
+                      const SetRecordLabelCallback& callback) override;
+  void RemoveRecord(const std::string& record_path,
+                    const RemoveRecordCallback& callback) override;
+  void StartAuthSession() override;
+  void EndCurrentAuthSession(
+      const EndCurrentAuthSessionCallback& callback) override;
+  void DestroyAllRecords(const DestroyAllRecordsCallback& callback) override;
+  void RequestType(const RequestTypeCallback& callback) override;
   void AddFingerprintObserver(mojom::FingerprintObserverPtr observer) override;
 
  private:
   friend class FingerprintChromeOSTest;
 
-  void BiodBiometricClientRestarted();
-  void BiometricsScanEventReceived(uint32_t scan_result, bool is_complete);
-  // TODO(xiaoyinh@): Update the function once biod change has landed.
-  void BiometricsAttemptEventReceived(
-      uint32_t scan_result,
-      const std::vector<std::string>& recognized_user_ids);
-  void BiometricsFailureReceived();
+  // chromeos::BiodClient::Observer:
+  void BiodServiceRestarted() override;
+  void BiodEnrollScanDoneReceived(biod::ScanResult scan_result,
+                                  bool enroll_session_complete) override;
+  void BiodAuthScanDoneReceived(
+      biod::ScanResult scan_result,
+      const chromeos::AuthScanMatches& matches) override;
+  void BiodSessionFailedReceived() override;
 
   void OnFingerprintObserverDisconnected(mojom::FingerprintObserver* observer);
-  void OnStartEnroll(const dbus::ObjectPath& enroll_path);
-  void OnStartAuthentication(const dbus::ObjectPath& auth_path);
-  void OnGetFingerprintsList(
-      const GetFingerprintsListCallback& callback,
-      const std::vector<dbus::ObjectPath>& enrollment_paths);
-  void OnGetLabelFromEnrollmentPath(const GetFingerprintsListCallback& callback,
-                                    size_t num_enrollments,
-                                    std::vector<std::string>* out_labels,
-                                    const std::string& label);
-
-  void OnGetLabel(int index,
-                  const GetLabelCallback& callback,
-                  const std::vector<dbus::ObjectPath>& enrollment_paths);
-  void OnSetLabel(const std::string& new_label,
-                  int index,
-                  const std::vector<dbus::ObjectPath>& enrollment_paths);
-  void OnRemoveEnrollment(
-      int index,
-      const std::vector<dbus::ObjectPath>& enrollment_paths);
+  void OnStartEnrollSession(const dbus::ObjectPath& enroll_path);
+  void OnStartAuthSession(const dbus::ObjectPath& auth_path);
+  void OnGetRecordsForUser(const GetRecordsForUserCallback& callback,
+                           const std::vector<dbus::ObjectPath>& record_paths);
+  void OnGetLabelFromRecordPath(const GetRecordsForUserCallback& callback,
+                                size_t num_records,
+                                const dbus::ObjectPath& record_path,
+                                const std::string& label);
 
   std::vector<mojom::FingerprintObserverPtr> observers_;
-  std::unique_ptr<dbus::ObjectPath> current_enroll_path_;
-  std::unique_ptr<dbus::ObjectPath> current_auth_path_;
+  std::unique_ptr<dbus::ObjectPath> current_enroll_session_path_;
+  std::unique_ptr<dbus::ObjectPath> current_auth_session_path_;
+  std::unordered_map<std::string, std::string> records_path_to_label_;
 
   base::WeakPtrFactory<FingerprintChromeOS> weak_ptr_factory_;
 

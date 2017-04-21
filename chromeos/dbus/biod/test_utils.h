@@ -33,10 +33,6 @@ void CopyString(std::string* dest_str, const std::string& src_str);
 void CopyDBusMethodCallStatus(DBusMethodCallStatus* dest_status,
                               DBusMethodCallStatus src_status);
 
-// Copies |src_type| to |dest_type|.
-void CopyBiometricType(biod::BiometricType* dest_type,
-                       biod::BiometricType src_type);
-
 // Implementation of BiodClient::Observer for testing.
 class TestBiodObserver : public BiodClient::Observer {
  public:

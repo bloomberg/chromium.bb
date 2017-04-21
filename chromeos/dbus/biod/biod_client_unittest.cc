@@ -35,6 +35,11 @@ const char kInvalidTestPath[] = "/invalid/test/path";
 // determine when empty values have been assigned.
 const char kInvalidString[] = "invalidString";
 
+// TODO(xiaoyinh@): Use the constant from service_constants.h
+// crbug.com/713420
+const char kBiometricsManagerPath[] =
+    "/org/chromium/BiometricsDaemon/FpcBiometricsManager";
+
 // Matcher that verifies that a dbus::Message has member |name|.
 MATCHER_P(HasMember, name, "") {
   if (arg->GetMember() != name) {
@@ -65,7 +70,7 @@ class BiodClientTest : public testing::Test {
 
     proxy_ =
         new dbus::MockObjectProxy(bus_.get(), biod::kBiodServiceName,
-                                  dbus::ObjectPath(biod::kBiodServicePath));
+                                  dbus::ObjectPath(kBiometricsManagerPath));
 
     // |client_|'s Init() method should request a proxy for communicating with
     // biometrics api.
@@ -81,6 +86,10 @@ class BiodClientTest : public testing::Test {
 
     // Execute callbacks posted by Init().
     base::RunLoop().RunUntilIdle();
+  }
+
+  void GetBiometricType(uint32_t type) {
+    biometric_type_ = static_cast<biod::BiometricType>(type);
   }
 
  protected:
@@ -128,7 +137,7 @@ class BiodClientTest : public testing::Test {
       dbus::MessageWriter entry_writer(nullptr);
       array_writer.OpenDictEntry(&entry_writer);
       entry_writer.AppendString(match.first);
-      entry_writer.AppendArrayOfStrings(match.second);
+      entry_writer.AppendArrayOfObjectPaths(match.second);
       array_writer.CloseContainer(&entry_writer);
     }
     writer.CloseContainer(&array_writer);
@@ -155,6 +164,8 @@ class BiodClientTest : public testing::Test {
   // Maps from biod signal name to the corresponding callback provided by
   // |client_|.
   std::map<std::string, dbus::ObjectProxy::SignalCallback> signal_callbacks_;
+
+  biod::BiometricType biometric_type_;
 
  private:
   // Handles calls to |proxy_|'s ConnectToSignal() method.
@@ -338,22 +349,21 @@ TEST_F(BiodClientTest, TestRequestBiometricType) {
 
   // Create a fake response with biometric type. The get label call should
   // return this exact biometric type.
-  biod::BiometricType returned_biometric_type = biod::BIOMETRIC_TYPE_MAX;
+  biometric_type_ = biod::BIOMETRIC_TYPE_MAX;
   AddMethodExpectation(dbus::kDBusPropertiesGet, std::move(response));
   client_->RequestType(
-      base::Bind(&test_utils::CopyBiometricType, &returned_biometric_type));
+      base::Bind(&BiodClientTest::GetBiometricType, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kFakeBiometricType, returned_biometric_type);
+  EXPECT_EQ(kFakeBiometricType, biometric_type_);
 
   // Verify that by sending a null reponse, the result is an unknown biometric
   // type.
-  returned_biometric_type = biod::BIOMETRIC_TYPE_MAX;
+  biometric_type_ = biod::BIOMETRIC_TYPE_MAX;
   AddMethodExpectation(dbus::kDBusPropertiesGet, nullptr);
   client_->RequestType(
-      base::Bind(&test_utils::CopyBiometricType, &returned_biometric_type));
+      base::Bind(&BiodClientTest::GetBiometricType, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(biod::BiometricType::BIOMETRIC_TYPE_UNKNOWN,
-            returned_biometric_type);
+  EXPECT_EQ(biod::BiometricType::BIOMETRIC_TYPE_UNKNOWN, biometric_type_);
 }
 
 TEST_F(BiodClientTest, TestRequestRecordLabel) {
@@ -362,7 +372,7 @@ TEST_F(BiodClientTest, TestRequestRecordLabel) {
 
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
-  writer.AppendString(kFakeLabel);
+  writer.AppendVariantOfString(kFakeLabel);
 
   // Create a fake response with string. The get label call should return this
   // exact string.

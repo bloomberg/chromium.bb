@@ -21,11 +21,11 @@
 namespace chromeos {
 
 // Each time the sensor detects a scan, an object containing all the users, each
-// with the labels of all the matched stored biometrics is returned. The users
-// are unique identifiers which are assigned by Chrome. The labels represent the
-// names the user gave their biometric.
+// with the object paths of all the matched stored biometrics is returned. The
+// users are unique identifiers which are assigned by Chrome. The object path
+// represent the object path of the biometric.
 using AuthScanMatches =
-    std::unordered_map<std::string, std::vector<std::string>>;
+    std::unordered_map<std::string, std::vector<dbus::ObjectPath>>;
 
 // BiodClient is used to communicate with a biod D-Bus manager
 // interface.
@@ -75,7 +75,7 @@ class CHROMEOS_EXPORT BiodClient : public DBusClient {
 
   // BiometricTypeCallback is used for the GetType method. It receives
   // one argument which states the type of biometric.
-  using BiometricTypeCallback = base::Callback<void(biod::BiometricType)>;
+  using BiometricTypeCallback = base::Callback<void(uint32_t)>;
 
   // LabelCallback is for the RequestRecordLabel method.
   using LabelCallback = base::Callback<void(const std::string& label)>;
