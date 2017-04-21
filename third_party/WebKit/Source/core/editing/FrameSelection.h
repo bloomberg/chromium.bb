@@ -185,7 +185,7 @@ class CORE_EXPORT FrameSelection final
 
   void DidLayout();
   bool NeedsLayoutSelectionUpdate() const;
-  void CommitAppearanceIfNeeded(LayoutView&);
+  void CommitAppearanceIfNeeded();
   void SetCaretVisible(bool caret_is_visible);
   void ScheduleVisualUpdate() const;
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded() const;

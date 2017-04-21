@@ -615,7 +615,8 @@ void LayoutView::ClearSelection() {
 
 void LayoutView::CommitPendingSelection() {
   TRACE_EVENT0("blink", "LayoutView::commitPendingSelection");
-  frame_view_->GetFrame().Selection().CommitAppearanceIfNeeded(*this);
+  DCHECK(!NeedsLayout());
+  frame_view_->GetFrame().Selection().CommitAppearanceIfNeeded();
 }
 
 bool LayoutView::ShouldUsePrintingLayout() const {

@@ -45,23 +45,6 @@ const VisibleSelection& LayoutSelection::GetVisibleSelection() const {
   return frame_selection_->ComputeVisibleSelectionInDOMTree();
 }
 
-static bool IsSelectionInDocument(
-    const VisibleSelectionInFlatTree& visible_selection,
-    const Document& document) {
-  const PositionInFlatTree& start = visible_selection.Start();
-  if (start.IsNotNull() &&
-      (!start.IsConnected() || start.GetDocument() != document))
-    return false;
-  const PositionInFlatTree& end = visible_selection.end();
-  if (end.IsNotNull() && (!end.IsConnected() || end.GetDocument() != document))
-    return false;
-  const PositionInFlatTree extent = visible_selection.Extent();
-  if (extent.IsNotNull() &&
-      (!extent.IsConnected() || extent.GetDocument() != document))
-    return false;
-  return true;
-}
-
 SelectionInFlatTree LayoutSelection::CalcVisibleSelection(
     const VisibleSelectionInFlatTree& original_selection) const {
   const PositionInFlatTree& start = original_selection.Start();
@@ -324,7 +307,7 @@ void LayoutSelection::SetSelection(
 }
 
 void LayoutSelection::SelectionStartEnd(int& start_pos, int& end_pos) {
-  Commit(*frame_selection_->GetDocument().GetLayoutView());
+  Commit();
   start_pos = selection_start_pos_;
   end_pos = selection_end_pos_;
 }
@@ -346,18 +329,13 @@ void LayoutSelection::SetHasPendingSelection(PaintHint hint) {
     force_hide_ = false;
 }
 
-void LayoutSelection::Commit(LayoutView& layout_view) {
+void LayoutSelection::Commit() {
   if (!HasPendingSelection())
     return;
-  DCHECK(!layout_view.NeedsLayout());
   has_pending_selection_ = false;
 
   const VisibleSelectionInFlatTree& original_selection =
       frame_selection_->ComputeVisibleSelectionInFlatTree();
-
-  // Skip if pending VisibilePositions became invalid before we reach here.
-  if (!IsSelectionInDocument(original_selection, layout_view.GetDocument()))
-    return;
 
   // Construct a new VisibleSolution, since visibleSelection() is not
   // necessarily valid, and the following steps assume a valid selection. See
@@ -397,8 +375,7 @@ void LayoutSelection::Commit(LayoutView& layout_view) {
   LayoutObject* end_layout_object = end_pos.AnchorNode()->GetLayoutObject();
   if (!start_layout_object || !end_layout_object)
     return;
-  DCHECK(layout_view == start_layout_object->View());
-  DCHECK(layout_view == end_layout_object->View());
+  DCHECK(start_layout_object->View() == end_layout_object->View());
   SetSelection(start_layout_object, start_pos.ComputeEditingOffset(),
                end_layout_object, end_pos.ComputeEditingOffset());
 }
@@ -429,7 +406,7 @@ IntRect LayoutSelection::SelectionBounds() {
   typedef HashSet<const LayoutBlock*> VisitedContainingBlockSet;
   VisitedContainingBlockSet visited_containing_blocks;
 
-  Commit(*frame_selection_->GetDocument().GetLayoutView());
+  Commit();
   LayoutObject* os = selection_start_;
   LayoutObject* stop =
       LayoutObjectAfterPosition(selection_end_, selection_end_pos_);

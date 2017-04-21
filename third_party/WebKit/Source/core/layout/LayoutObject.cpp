@@ -1454,6 +1454,7 @@ Color LayoutObject::SelectionEmphasisMarkColor(
 }
 
 void LayoutObject::SelectionStartEnd(int& start_pos, int& end_pos) const {
+  DCHECK(!View()->NeedsLayout());
   GetFrame()->Selection().LayoutSelectionStartEnd(start_pos, end_pos);
 }
 

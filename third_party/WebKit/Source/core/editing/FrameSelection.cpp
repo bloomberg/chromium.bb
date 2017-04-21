@@ -787,8 +787,8 @@ bool FrameSelection::NeedsLayoutSelectionUpdate() const {
   return layout_selection_->HasPendingSelection();
 }
 
-void FrameSelection::CommitAppearanceIfNeeded(LayoutView& layout_view) {
-  return layout_selection_->Commit(layout_view);
+void FrameSelection::CommitAppearanceIfNeeded() {
+  return layout_selection_->Commit();
 }
 
 void FrameSelection::DidLayout() {
