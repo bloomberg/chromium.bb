@@ -30,12 +30,12 @@
 
 #if defined(USE_LIBV4L2)
 // Auto-generated for dlopen libv4l2 libraries
-#include "media/gpu/v4l2_stubs.h"
+#include "media/gpu/v4l2/v4l2_stubs.h"
 #include "third_party/v4l-utils/lib/include/libv4l2.h"
 
-using media_gpu::kModuleV4l2;
-using media_gpu::InitializeStubs;
-using media_gpu::StubPathMap;
+using media_gpu_v4l2::kModuleV4l2;
+using media_gpu_v4l2::InitializeStubs;
+using media_gpu_v4l2::StubPathMap;
 
 static const base::FilePath::CharType kV4l2Lib[] =
     FILE_PATH_LITERAL("/usr/lib/libv4l2.so");

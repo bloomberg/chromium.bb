@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 
 // Auto-generated for dlopen libva libraries
-#include "media/gpu/va_stubs.h"
+#include "media/gpu/vaapi/va_stubs.h"
 
 #include "media/gpu/vaapi_picture.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -32,14 +32,14 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif  // USE_X11
 
-using media_gpu::kModuleVa;
+using media_gpu_vaapi::kModuleVa;
 #if defined(USE_X11)
-using media_gpu::kModuleVa_x11;
+using media_gpu_vaapi::kModuleVa_x11;
 #elif defined(USE_OZONE)
-using media_gpu::kModuleVa_drm;
+using media_gpu_vaapi::kModuleVa_drm;
 #endif  // USE_X11
-using media_gpu::InitializeStubs;
-using media_gpu::StubPathMap;
+using media_gpu_vaapi::InitializeStubs;
+using media_gpu_vaapi::StubPathMap;
 
 #define LOG_VA_ERROR_AND_REPORT(va_error, err_msg)                  \
   do {                                                              \

@@ -24,28 +24,28 @@ if (is_chromeos && current_cpu != "arm") {
 
     script = "../../tools/generate_stubs/generate_stubs.py"
     sources = [
-      "va.sigs",
+      "vaapi/va.sigs",
     ]
     inputs = [
       extra_header,
     ]
     if (use_x11) {
-      sources += [ "va_x11.sigs" ]
+      sources += [ "vaapi/va_x11.sigs" ]
     }
     if (use_ozone) {
-      sources += [ "va_drm.sigs" ]
+      sources += [ "vaapi/va_drm.sigs" ]
     }
     stubs_filename_root = "va_stubs"
 
     outputs = [
-      "$target_gen_dir/$stubs_filename_root.cc",
-      "$target_gen_dir/$stubs_filename_root.h",
+      "$target_gen_dir/vaapi/$stubs_filename_root.cc",
+      "$target_gen_dir/vaapi/$stubs_filename_root.h",
     ]
     args = [
       "-i",
-      rebase_path("$target_gen_dir", root_build_dir),
+      rebase_path("$target_gen_dir/vaapi", root_build_dir),
       "-o",
-      rebase_path("$target_gen_dir", root_build_dir),
+      rebase_path("$target_gen_dir/vaapi", root_build_dir),
       "-t",
       "posix_stubs",
       "-e",
@@ -53,7 +53,7 @@ if (is_chromeos && current_cpu != "arm") {
       "-s",
       stubs_filename_root,
       "-p",
-      "media/gpu",
+      "media/gpu/vaapi",
     ]
 
     args += rebase_path(sources, root_build_dir)
@@ -66,7 +66,7 @@ if (is_chromeos && use_v4lplugin) {
 
     script = "../../tools/generate_stubs/generate_stubs.py"
     sources = [
-      "v4l2.sig",
+      "v4l2/v4l2.sig",
     ]
     inputs = [
       extra_header,
@@ -74,14 +74,14 @@ if (is_chromeos && use_v4lplugin) {
     stubs_filename_root = "v4l2_stubs"
 
     outputs = [
-      "$target_gen_dir/$stubs_filename_root.cc",
-      "$target_gen_dir/$stubs_filename_root.h",
+      "$target_gen_dir/v4l2/$stubs_filename_root.cc",
+      "$target_gen_dir/v4l2/$stubs_filename_root.h",
     ]
     args = [
       "-i",
-      rebase_path("$target_gen_dir", root_build_dir),
+      rebase_path("$target_gen_dir/v4l2", root_build_dir),
       "-o",
-      rebase_path("$target_gen_dir", root_build_dir),
+      rebase_path("$target_gen_dir/v4l2", root_build_dir),
       "-t",
       "posix_stubs",
       "-e",
@@ -89,7 +89,7 @@ if (is_chromeos && use_v4lplugin) {
       "-s",
       stubs_filename_root,
       "-p",
-      "media/gpu",
+      "media/gpu/v4l2",
     ]
 
     args += rebase_path(sources, root_build_dir)
