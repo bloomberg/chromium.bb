@@ -1,0 +1,11 @@
+CONSOLE ERROR: line 66: Uncaught ReferenceError: PerfTestRunner is not defined
+This test verifies PerfTestRunner.computeStatistics(), including: min, max, median, mean, variance, and stdev.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+Ensure no latent divide by 0's for an odd number of elements.
+data = [0,0,0,0,0]
+FAIL successfullyParsed should be true. Was false.
+
+TEST COMPLETE
+
