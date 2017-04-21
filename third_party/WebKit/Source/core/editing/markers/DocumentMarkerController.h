@@ -77,9 +77,7 @@ class CORE_EXPORT DocumentMarkerController final
   void MoveMarkers(Node* src_node, int length, Node* dst_node);
 
   void PrepareForDestruction();
-  void RemoveMarkers(
-      const EphemeralRange&,
-      DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+  void RemoveMarkersInRange(const EphemeralRange&, DocumentMarker::MarkerTypes);
   void RemoveMarkers(
       Node*,
       unsigned start_offset,

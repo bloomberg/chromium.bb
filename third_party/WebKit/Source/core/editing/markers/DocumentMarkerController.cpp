@@ -167,7 +167,7 @@ void DocumentMarkerController::RemoveMarkers(
   }
 }
 
-void DocumentMarkerController::RemoveMarkers(
+void DocumentMarkerController::RemoveMarkersInRange(
     const EphemeralRange& range,
     DocumentMarker::MarkerTypes marker_types) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());

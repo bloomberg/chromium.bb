@@ -266,7 +266,7 @@ void SpellCheckRequester::DidCheckSucceed(
         DocumentMarker::SpellCheckClientMarkers();
     if (processing_request_->IsValid()) {
       Range* checking_range = processing_request_->CheckingRange();
-      GetFrame().GetDocument()->Markers().RemoveMarkers(
+      GetFrame().GetDocument()->Markers().RemoveMarkersInRange(
           EphemeralRange(checking_range), markers);
     }
   }

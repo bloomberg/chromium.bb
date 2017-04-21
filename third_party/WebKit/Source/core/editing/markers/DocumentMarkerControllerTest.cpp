@@ -278,8 +278,8 @@ TEST_F(DocumentMarkerControllerTest, RemoveStartOfMarker) {
 
   // Remove markers that overlap "a"
   marker_range = EphemeralRange(Position(text, 0), Position(text, 1));
-  GetDocument().Markers().RemoveMarkers(marker_range,
-                                        DocumentMarker::AllMarkers());
+  GetDocument().Markers().RemoveMarkersInRange(marker_range,
+                                               DocumentMarker::AllMarkers());
 
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
@@ -298,8 +298,8 @@ TEST_F(DocumentMarkerControllerTest, RemoveMiddleOfMarker) {
 
   // Remove markers that overlap "b"
   marker_range = EphemeralRange(Position(text, 1), Position(text, 2));
-  GetDocument().Markers().RemoveMarkers(marker_range,
-                                        DocumentMarker::AllMarkers());
+  GetDocument().Markers().RemoveMarkersInRange(marker_range,
+                                               DocumentMarker::AllMarkers());
 
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
@@ -318,8 +318,8 @@ TEST_F(DocumentMarkerControllerTest, RemoveEndOfMarker) {
 
   // Remove markers that overlap "c"
   marker_range = EphemeralRange(Position(text, 2), Position(text, 3));
-  GetDocument().Markers().RemoveMarkers(marker_range,
-                                        DocumentMarker::AllMarkers());
+  GetDocument().Markers().RemoveMarkersInRange(marker_range,
+                                               DocumentMarker::AllMarkers());
 
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }

@@ -763,8 +763,8 @@ void SpellChecker::UpdateMarkersForWordsAffectedByEditing(
   // as well. So we need to get the continous range of of marker that contains
   // the word in question, and remove marker on that whole range.
   const EphemeralRange word_range(remove_marker_start, remove_marker_end);
-  document->Markers().RemoveMarkers(word_range,
-                                    DocumentMarker::MisspellingMarkers());
+  document->Markers().RemoveMarkersInRange(
+      word_range, DocumentMarker::MisspellingMarkers());
 }
 
 void SpellChecker::DidEndEditingOnTextField(Element* e) {
@@ -1032,7 +1032,7 @@ void SpellChecker::RemoveMarkers(const EphemeralRange& range,
   if (range.IsNull())
     return;
 
-  GetFrame().GetDocument()->Markers().RemoveMarkers(range, marker_types);
+  GetFrame().GetDocument()->Markers().RemoveMarkersInRange(range, marker_types);
 }
 
 // TODO(xiaochengh): This function is only used by unit tests. We should move it

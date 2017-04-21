@@ -108,7 +108,7 @@ void HotModeSpellCheckRequester::CheckSpellingAt(const Position& position) {
   const EphemeralRange& current_word =
       CurrentWordIfTypingInPartialWord(*root_editable);
   if (current_word.IsNotNull()) {
-    root_editable->GetDocument().Markers().RemoveMarkers(
+    root_editable->GetDocument().Markers().RemoveMarkersInRange(
         current_word, DocumentMarker::MisspellingMarkers());
     return;
   }
