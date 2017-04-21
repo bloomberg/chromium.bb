@@ -275,7 +275,8 @@ void AppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
   if (!g_open_app_immediately_for_testing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&AppMenuButton::ShowMenu, weak_factory_.GetWeakPtr(), true),
+        base::BindOnce(&AppMenuButton::ShowMenu, weak_factory_.GetWeakPtr(),
+                       true),
         base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
   } else {
     ShowMenu(true);

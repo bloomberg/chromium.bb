@@ -448,7 +448,7 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
   // Notify the |callback_| asynchronously because it may need to destroy
   // DesktopMediaPicker.
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback_, source));
+                                   base::BindOnce(callback_, source));
   callback_.Reset();
 }
 

@@ -793,8 +793,8 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
     // Need to update pref because we have extra icons. But can't call
     // UpdatePrefs() directly within observation closure.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ToolbarActionsModel::UpdatePrefs,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ToolbarActionsModel::UpdatePrefs,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

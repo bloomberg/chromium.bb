@@ -159,8 +159,9 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
   CardUnmaskPromptViewTester::For(controller()->view())->Close();
   // Wait a little while; there should be no crash.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&content::MessageLoopRunner::Quit,
-                            base::Unretained(runner_.get())),
+      FROM_HERE,
+      base::BindOnce(&content::MessageLoopRunner::Quit,
+                     base::Unretained(runner_.get())),
       2 * controller()->GetSuccessMessageDuration());
   runner_->Run();
 }

@@ -114,8 +114,9 @@ void CardUnmaskPromptViews::GotVerificationResult(
         IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS));
     progress_throbber_->SetChecked(true);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&CardUnmaskPromptViews::ClosePrompt,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&CardUnmaskPromptViews::ClosePrompt,
+                       weak_ptr_factory_.GetWeakPtr()),
         controller_->GetSuccessMessageDuration());
   } else {
     // TODO(estade): it's somewhat jarring when the error comes back too

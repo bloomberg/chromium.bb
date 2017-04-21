@@ -491,8 +491,8 @@ void FastUnloadController::ClearUnloadState(content::WebContents* contents) {
 
 void FastUnloadController::PostTaskForProcessPendingTabs() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FastUnloadController::ProcessPendingTabs,
-                            weak_factory_.GetWeakPtr(), false));
+      FROM_HERE, base::BindOnce(&FastUnloadController::ProcessPendingTabs,
+                                weak_factory_.GetWeakPtr(), false));
 }
 
 }  // namespace chrome

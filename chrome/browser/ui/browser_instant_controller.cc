@@ -49,9 +49,9 @@ class TabReloader : public content::WebContentsUserData<TabReloader> {
   explicit TabReloader(content::WebContents* web_contents)
       : web_contents_(web_contents), weak_ptr_factory_(this) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&TabReloader::ReloadImpl, weak_ptr_factory_.GetWeakPtr()));
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&TabReloader::ReloadImpl,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
   ~TabReloader() override {}
 

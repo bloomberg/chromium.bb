@@ -302,8 +302,8 @@ void ShippingAddressEditorViewController::OnDataChanged() {
   // The editor can't be updated while in the middle of a combobox event.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ShippingAddressEditorViewController::UpdateEditorView,
-                 base::Unretained(this)));
+      base::BindOnce(&ShippingAddressEditorViewController::UpdateEditorView,
+                     base::Unretained(this)));
 }
 
 bool ShippingAddressEditorViewController::SaveFieldsToProfile(

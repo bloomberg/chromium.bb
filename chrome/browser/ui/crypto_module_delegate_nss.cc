@@ -75,14 +75,12 @@ std::string ChromeNSSCryptoModuleDelegate::RequestPassword(
   event_.Reset();
 
   if (BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&ChromeNSSCryptoModuleDelegate::ShowDialog,
-                     // This method blocks on |event_| until the task completes,
-                     // so there's no need to ref-count.
-                     base::Unretained(this),
-                     slot_name,
-                     retry))) {
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(
+              &ChromeNSSCryptoModuleDelegate::ShowDialog,
+              // This method blocks on |event_| until the task completes,
+              // so there's no need to ref-count.
+              base::Unretained(this), slot_name, retry))) {
     event_.Wait();
   }
   *cancelled = cancelled_;

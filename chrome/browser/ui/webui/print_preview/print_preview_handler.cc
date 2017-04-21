@@ -1473,10 +1473,11 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
   }
 
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
-      base::Bind(&PrintToPdfCallback, data, print_to_pdf_path_,
-                 pdf_file_saved_closure_));
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
+      base::BindOnce(&PrintToPdfCallback, data, print_to_pdf_path_,
+                     pdf_file_saved_closure_));
   print_to_pdf_path_.clear();
   ClosePreviewDialog();
 }

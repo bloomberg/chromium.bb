@@ -42,7 +42,7 @@ class NewTabPageInterceptorTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     path_ = ui_test_utils::GetTestFilePath(base::FilePath(), base::FilePath());
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&SetUrlRequestMock, path_));
+                            base::BindOnce(&SetUrlRequestMock, path_));
   }
 
   const GURL& new_tab_url() const { return new_tab_url_; }

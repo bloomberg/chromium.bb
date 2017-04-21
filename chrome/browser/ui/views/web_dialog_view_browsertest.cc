@@ -61,8 +61,8 @@ class TestWebDialogView : public views::WebDialogView {
       // loop.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&base::MessageLoop::QuitWhenIdle,
-                     base::Unretained(base::MessageLoop::current())));
+          base::BindOnce(&base::MessageLoop::QuitWhenIdle,
+                         base::Unretained(base::MessageLoop::current())));
     }
 
     last_size_ = bounds.size();

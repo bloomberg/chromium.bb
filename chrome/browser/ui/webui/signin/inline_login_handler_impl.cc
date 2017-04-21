@@ -252,8 +252,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
       // middle of any webui handler code.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&InlineLoginHandlerImpl::CloseTab, handler_,
-                     signin::ShouldShowAccountManagement(current_url_)));
+          base::BindOnce(&InlineLoginHandlerImpl::CloseTab, handler_,
+                         signin::ShouldShowAccountManagement(current_url_)));
     }
 
     if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
@@ -858,9 +858,9 @@ void InlineLoginHandlerImpl::SyncStarterCallback(
   } else if (auto_close) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&InlineLoginHandlerImpl::CloseTab,
-                   weak_factory_.GetWeakPtr(),
-                   signin::ShouldShowAccountManagement(current_url)));
+        base::BindOnce(&InlineLoginHandlerImpl::CloseTab,
+                       weak_factory_.GetWeakPtr(),
+                       signin::ShouldShowAccountManagement(current_url)));
   } else {
     RedirectToNtpOrAppsPageIfNecessary(contents, access_point);
   }

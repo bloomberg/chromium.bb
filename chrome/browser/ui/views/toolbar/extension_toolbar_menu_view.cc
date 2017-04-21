@@ -101,8 +101,9 @@ void ExtensionToolbarMenuView::OnToolbarActionDragDone() {
   if (app_menu_->for_drop() ||
       container_->toolbar_actions_bar()->GetIconCount() == 0) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&ExtensionToolbarMenuView::CloseAppMenu,
-                              weak_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&ExtensionToolbarMenuView::CloseAppMenu,
+                       weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(g_close_menu_delay));
   }
 }

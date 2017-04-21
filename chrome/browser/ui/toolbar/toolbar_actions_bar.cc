@@ -372,8 +372,8 @@ void ToolbarActionsBar::CreateActions() {
     // CreateActions() can be called as part of the browser window set up, which
     // we need to let finish before showing the actions.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ToolbarActionsBar::MaybeShowExtensionBubble,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ToolbarActionsBar::MaybeShowExtensionBubble,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -582,9 +582,9 @@ void ToolbarActionsBar::ShowToolbarActionBubble(
 void ToolbarActionsBar::ShowToolbarActionBubbleAsync(
     std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ToolbarActionsBar::ShowToolbarActionBubble,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            base::Passed(std::move(bubble))));
+      FROM_HERE, base::BindOnce(&ToolbarActionsBar::ShowToolbarActionBubble,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Passed(std::move(bubble))));
 }
 
 void ToolbarActionsBar::MaybeShowExtensionBubble() {
@@ -607,9 +607,10 @@ void ToolbarActionsBar::MaybeShowExtensionBubble() {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate(
       new ExtensionMessageBubbleBridge(std::move(controller)));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ToolbarActionsBar::ShowToolbarActionBubble,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            base::Passed(std::move(delegate))),
+      FROM_HERE,
+      base::BindOnce(&ToolbarActionsBar::ShowToolbarActionBubble,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(std::move(delegate))),
       base::TimeDelta::FromSeconds(
           g_extension_bubble_appearance_wait_time_in_seconds));
 }

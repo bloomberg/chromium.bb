@@ -402,7 +402,8 @@ void PrintDialogGtk2::PrintDocument(const printing::MetafilePlayer& metafile,
   // No errors, continue printing.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrintDialogGtk2::SendDocumentToPrinter, this, document_name));
+      base::BindOnce(&PrintDialogGtk2::SendDocumentToPrinter, this,
+                     document_name));
 }
 
 void PrintDialogGtk2::AddRefToDialog() {
@@ -529,9 +530,9 @@ void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job,
     LOG(ERROR) << "Printing failed: " << error->message;
   if (print_job)
     g_object_unref(print_job);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::DeleteFile), path_to_pdf_, false));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                         path_to_pdf_, false));
   // Printing finished. Matches AddRef() in PrintDocument();
   Release();
 }

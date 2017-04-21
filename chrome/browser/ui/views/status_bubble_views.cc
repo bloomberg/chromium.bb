@@ -266,8 +266,9 @@ void StatusBubbleViews::StatusView::StartTimer(base::TimeDelta time) {
     timer_factory_.InvalidateWeakPtrs();
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&StatusBubbleViews::StatusView::OnTimer,
-                            timer_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&StatusBubbleViews::StatusView::OnTimer,
+                     timer_factory_.GetWeakPtr()),
       time);
 }
 
@@ -778,8 +779,9 @@ void StatusBubbleViews::SetURL(const GURL& url) {
     } else if (url_formatter::FormatUrl(url).length() >
                url_text_.length()) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&StatusBubbleViews::ExpandBubble,
-                                expand_timer_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&StatusBubbleViews::ExpandBubble,
+                         expand_timer_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
     }
   }

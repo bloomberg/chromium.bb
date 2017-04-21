@@ -336,8 +336,8 @@ void ChromeAppDelegate::OnHide() {
   // the window.
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&ChromeAppDelegate::RelinquishKeepAliveAfterTimeout,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ChromeAppDelegate::RelinquishKeepAliveAfterTimeout,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kAppWindowFirstShowTimeoutSeconds));
 }
 

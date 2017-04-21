@@ -47,8 +47,8 @@ OneClickSigninSyncObserver::OneClickSigninSyncObserver(
     // because it's possible for e.g. WebContentsDestroyed() to be called
     // before this task has a chance to run.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&OneClickSigninSyncObserver::DeleteObserver,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&OneClickSigninSyncObserver::DeleteObserver,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -75,7 +75,7 @@ void OneClickSigninSyncObserver::OnStateChanged(syncer::SyncService* sync) {
     // Close the Gaia sign-in tab via a task to make sure we aren't in the
     // middle of any WebUI handler code.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&CloseTab, base::Unretained(web_contents())));
+        FROM_HERE, base::BindOnce(&CloseTab, base::Unretained(web_contents())));
   } else {
     if (sync_service->IsFirstSetupInProgress()) {
       // Sync setup has not completed yet. Wait for it to complete.

@@ -1596,8 +1596,8 @@ bool BrowserView::CanActivate() const {
   // that doesn't have the modal dialog the windows keep trying to get the focus
   // from each other on Windows. http://crbug.com/141650.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BrowserView::ActivateAppModalDialog,
-                            activate_modal_dialog_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&BrowserView::ActivateAppModalDialog,
+                                activate_modal_dialog_factory_.GetWeakPtr()));
 #endif
   return false;
 }

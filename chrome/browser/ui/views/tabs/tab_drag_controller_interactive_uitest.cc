@@ -804,7 +804,8 @@ class MaximizedBrowserWindowWaiter {
   bool CheckMaximized() {
     if (!window_->IsMaximized()) {
       base::MessageLoop::current()->task_runner()->PostTask(
-          FROM_HERE, base::Bind(
+          FROM_HERE,
+          base::BindOnce(
               base::IgnoreResult(&MaximizedBrowserWindowWaiter::CheckMaximized),
               base::Unretained(this)));
       return false;

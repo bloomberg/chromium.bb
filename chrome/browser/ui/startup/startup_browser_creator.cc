@@ -203,8 +203,8 @@ class ProfileLaunchObserver : public content::NotificationObserver {
     // open and activate before trying to activate |profile_to_activate_|.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&ProfileLaunchObserver::ActivateProfile,
-                   base::Unretained(this)));
+        base::BindOnce(&ProfileLaunchObserver::ActivateProfile,
+                       base::Unretained(this)));
     // Avoid posting more than once before ActivateProfile gets called.
     registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                       content::NotificationService::AllSources());
@@ -688,7 +688,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
               .MayBlock()
               .WithPriority(base::TaskPriority::BACKGROUND)
               .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN),
-          base::Bind(&DumpBrowserHistograms, output_file));
+          base::BindOnce(&DumpBrowserHistograms, output_file));
     }
     silent_launch = true;
   }

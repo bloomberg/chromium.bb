@@ -374,7 +374,7 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
     proxy_->OnWebUIDeleted();
     // Notify the handler on the IO thread that the renderer is gone.
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&IOThreadImpl::Detach, proxy_));
+                            base::BindOnce(&IOThreadImpl::Detach, proxy_));
   }
 }
 
@@ -593,7 +593,7 @@ void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(method, io_thread, base::Owned(list_copy)));
+      base::BindOnce(method, io_thread, base::Owned(list_copy)));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::Detach() {
@@ -986,8 +986,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnSetCaptureMode(
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     const net::NetLogEntry& entry) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&IOThreadImpl::AddEntryToQueue, this,
-                                     base::Passed(entry.ToValue())));
+                          base::BindOnce(&IOThreadImpl::AddEntryToQueue, this,
+                                         base::Passed(entry.ToValue())));
 }
 
 // Note that this can be called from ANY THREAD.
@@ -1004,8 +1004,8 @@ void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&IOThreadImpl::SendJavascriptCommand, this,
-                                     command, base::Passed(&arg)));
+                          base::BindOnce(&IOThreadImpl::SendJavascriptCommand,
+                                         this, command, base::Passed(&arg)));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(
@@ -1015,7 +1015,7 @@ void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(
     pending_entries_.reset(new base::ListValue());
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&IOThreadImpl::PostPendingEntries, this),
+        base::BindOnce(&IOThreadImpl::PostPendingEntries, this),
         base::TimeDelta::FromMilliseconds(kNetLogEventDelayMilliseconds));
   }
   pending_entries_->Append(std::move(entry));

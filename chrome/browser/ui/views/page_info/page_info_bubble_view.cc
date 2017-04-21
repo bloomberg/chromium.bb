@@ -507,8 +507,8 @@ void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
   // a crash in the base class which needs to complete the mouse event handling.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&PageInfoBubbleView::HandleLinkClickedAsync,
-                 weak_factory_.GetWeakPtr(), source));
+      base::BindOnce(&PageInfoBubbleView::HandleLinkClickedAsync,
+                     weak_factory_.GetWeakPtr(), source));
 }
 
 gfx::Size PageInfoBubbleView::GetPreferredSize() const {

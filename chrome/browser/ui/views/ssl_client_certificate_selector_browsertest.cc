@@ -83,8 +83,8 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SSLClientCertificateSelectorTest::SetUpOnIOThread,
-                   base::Unretained(this)));
+        base::BindOnce(&SSLClientCertificateSelectorTest::SetUpOnIOThread,
+                       base::Unretained(this)));
 
     io_loop_finished_event_.Wait();
 
@@ -114,8 +114,8 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SSLClientCertificateSelectorTest::CleanUpOnIOThread,
-                   base::Unretained(this)));
+        base::BindOnce(&SSLClientCertificateSelectorTest::CleanUpOnIOThread,
+                       base::Unretained(this)));
 
     io_loop_finished_event_.Wait();
 

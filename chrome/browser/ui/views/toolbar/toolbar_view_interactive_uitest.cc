@@ -118,8 +118,9 @@ void ToolbarViewInteractiveUITest::DoDragAndDrop(const gfx::Point& start,
   }
 
   dnd_thread_->task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(base::IgnoreResult(&ui_controls::SendMouseMove),
-                            end.x(), end.y()),
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove), end.x(),
+                     end.y()),
       base::TimeDelta::FromMilliseconds(200));
   runner->Run();
 

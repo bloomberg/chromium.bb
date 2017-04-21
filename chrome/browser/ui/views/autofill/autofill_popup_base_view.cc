@@ -137,8 +137,8 @@ void AutofillPopupBaseView::OnMouseExited(const ui::MouseEvent& event) {
   // OnMouseExited event. Pressing return should activate the current selection
   // via AcceleratorPressed, so we need to let that run first.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AutofillPopupBaseView::ClearSelection,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&AutofillPopupBaseView::ClearSelection,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutofillPopupBaseView::OnMouseMoved(const ui::MouseEvent& event) {

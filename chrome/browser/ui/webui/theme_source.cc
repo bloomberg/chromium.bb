@@ -227,7 +227,7 @@ void ThemeSource::SendThemeImage(
     // crbug.com/449277
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&ProcessResourceOnUiThread, resource_id, scale, data),
-        base::Bind(callback, data));
+        base::BindOnce(&ProcessResourceOnUiThread, resource_id, scale, data),
+        base::BindOnce(callback, data));
   }
 }

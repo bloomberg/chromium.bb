@@ -38,8 +38,8 @@ void WriterCallback(const base::FilePath& path, const std::string& data) {
 
 void WriteFileOnFileThread(const base::FilePath& path,
                            const std::string& data) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, base::Bind(&WriterCallback, path, data));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::BindOnce(&WriterCallback, path, data));
 }
 
 std::string WrapAt64(const std::string &str) {

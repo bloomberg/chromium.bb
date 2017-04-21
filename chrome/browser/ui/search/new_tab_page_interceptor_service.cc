@@ -116,8 +116,8 @@ void NewTabPageInterceptorService::OnTemplateURLServiceChanged() {
   GURL new_tab_page_url(search::GetNewTabPageURL(profile_));
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&NewTabPageInterceptor::SetNewTabPageURL, interceptor_,
-                 new_tab_page_url));
+      base::BindOnce(&NewTabPageInterceptor::SetNewTabPageURL, interceptor_,
+                     new_tab_page_url));
 }
 
 std::unique_ptr<net::URLRequestInterceptor>

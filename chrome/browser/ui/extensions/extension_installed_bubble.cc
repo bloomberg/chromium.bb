@@ -86,8 +86,9 @@ class ExtensionInstalledBubbleObserver
       // views created which we can inspect for the purpose of previewing of
       // pointing to them.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&ExtensionInstalledBubbleObserver::Initialize,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE,
+          base::BindOnce(&ExtensionInstalledBubbleObserver::Initialize,
+                         weak_factory_.GetWeakPtr()));
     }
   }
 
@@ -122,8 +123,9 @@ class ExtensionInstalledBubbleObserver
     }
     if (animation_wait_retries_++ < kAnimationWaitRetries) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&ExtensionInstalledBubbleObserver::Show,
-                                weak_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&ExtensionInstalledBubbleObserver::Show,
+                         weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kAnimationWaitMs));
     } else {
       // Retries are over; won't try again.

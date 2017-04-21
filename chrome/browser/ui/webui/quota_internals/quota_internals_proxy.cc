@@ -28,7 +28,7 @@ void QuotaInternalsProxy::RequestInfo(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&QuotaInternalsProxy::RequestInfo, this, quota_manager));
+        base::BindOnce(&QuotaInternalsProxy::RequestInfo, this, quota_manager));
     return;
   }
   quota_manager_ = quota_manager;
@@ -72,18 +72,18 @@ void QuotaInternalsProxy::RequestInfo(
 
 QuotaInternalsProxy::~QuotaInternalsProxy() {}
 
-#define RELAY_TO_HANDLER(func, arg_t) \
-  void QuotaInternalsProxy::func(arg_t arg) {                 \
-    if (!handler_)                                            \
-      return;                                                 \
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {     \
-      BrowserThread::PostTask(                                \
-          BrowserThread::UI, FROM_HERE,                       \
-          base::Bind(&QuotaInternalsProxy::func, this, arg)); \
-      return;                                                 \
-    }                                                         \
-                                                              \
-    handler_->func(arg);                                      \
+#define RELAY_TO_HANDLER(func, arg_t)                             \
+  void QuotaInternalsProxy::func(arg_t arg) {                     \
+    if (!handler_)                                                \
+      return;                                                     \
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {         \
+      BrowserThread::PostTask(                                    \
+          BrowserThread::UI, FROM_HERE,                           \
+          base::BindOnce(&QuotaInternalsProxy::func, this, arg)); \
+      return;                                                     \
+    }                                                             \
+                                                                  \
+    handler_->func(arg);                                          \
   }
 
 RELAY_TO_HANDLER(ReportAvailableSpace, int64_t)

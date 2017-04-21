@@ -206,8 +206,8 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
     source_view->OnFocus();
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&DesktopMediaListView::AcceptSelection,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&DesktopMediaListView::AcceptSelection,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 

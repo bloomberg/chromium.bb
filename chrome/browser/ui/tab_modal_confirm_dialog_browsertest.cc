@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, Navigate) {
 
 IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, Quit) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&chrome::AttemptExit));
+      FROM_HERE, base::BindOnce(&chrome::AttemptExit));
   content::RunMessageLoop();
   EXPECT_EQ(0, accepted_count_);
   EXPECT_EQ(0, canceled_count_);

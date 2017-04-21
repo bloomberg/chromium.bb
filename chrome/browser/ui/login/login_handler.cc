@@ -121,9 +121,8 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
   DCHECK(info);
   web_contents_getter_ = info->GetWebContentsGetterForRequest();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoginHandler::AddObservers, this));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&LoginHandler::AddObservers, this));
 }
 
 void LoginHandler::OnRequestCancelled() {
@@ -211,10 +210,10 @@ void LoginHandler::SetAuth(const base::string16& username,
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoginHandler::CloseContentsDeferred, this));
+      base::BindOnce(&LoginHandler::CloseContentsDeferred, this));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&LoginHandler::SetAuthDeferred, this, username, password));
+      base::BindOnce(&LoginHandler::SetAuthDeferred, this, username, password));
 }
 
 void LoginHandler::CancelAuth() {
@@ -312,15 +311,14 @@ void LoginHandler::ReleaseSoon() {
   if (!TestAndSetAuthHandled()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&LoginHandler::CancelAuthDeferred, this));
+        base::BindOnce(&LoginHandler::CancelAuthDeferred, this));
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&LoginHandler::NotifyAuthCancelled, this, false));
+        base::BindOnce(&LoginHandler::NotifyAuthCancelled, this, false));
   }
 
-  BrowserThread::PostTask(
-    BrowserThread::UI, FROM_HERE,
-    base::Bind(&LoginHandler::RemoveObservers, this));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&LoginHandler::RemoveObservers, this));
 
   // Delete this object once all InvokeLaters have been called.
   BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, this);
@@ -420,15 +418,16 @@ void LoginHandler::DoCancelAuth(bool dismiss_navigation) {
     NotifyAuthCancelled(dismiss_navigation);
   } else {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&LoginHandler::NotifyAuthCancelled, this,
-                                       dismiss_navigation));
+                            base::BindOnce(&LoginHandler::NotifyAuthCancelled,
+                                           this, dismiss_navigation));
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoginHandler::CloseContentsDeferred, this));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&LoginHandler::CancelAuthDeferred, this));
+      base::BindOnce(&LoginHandler::CloseContentsDeferred, this));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&LoginHandler::CancelAuthDeferred, this));
 }
 
 // Calls CancelAuth from the IO loop.
@@ -664,8 +663,8 @@ LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
   LoginHandler* handler = LoginHandler::Create(auth_info, request);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoginHandler::LoginDialogCallback, request->url(),
-                 base::RetainedRef(auth_info), base::RetainedRef(handler),
-                 is_main_frame));
+      base::BindOnce(&LoginHandler::LoginDialogCallback, request->url(),
+                     base::RetainedRef(auth_info), base::RetainedRef(handler),
+                     is_main_frame));
   return handler;
 }

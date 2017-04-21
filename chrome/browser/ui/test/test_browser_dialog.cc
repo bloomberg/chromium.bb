@@ -42,8 +42,8 @@ class WidgetCloser : public views::WidgetObserver {
       return;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&WidgetCloser::CloseNow, weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&WidgetCloser::CloseNow,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   // WidgetObserver:

@@ -1056,7 +1056,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&BookmarkBarViewTest9::Step4, this),
+        FROM_HERE, base::BindOnce(&BookmarkBarViewTest9::Step4, this),
         base::TimeDelta::FromMilliseconds(200));
   }
 
@@ -1072,7 +1072,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     // which can interfere with Done. We need to run Done in the
     // next execution loop.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ViewEventTestBase::Done, this));
+        FROM_HERE, base::BindOnce(&ViewEventTestBase::Done, this));
   }
 
   int start_y_;
@@ -1367,8 +1367,9 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
 
     // For some reason return isn't processed correctly unless we delay.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&BookmarkBarViewTest12::Step5, this,
-                              base::Unretained(dialog)),
+        FROM_HERE,
+        base::BindOnce(&BookmarkBarViewTest12::Step5, this,
+                       base::Unretained(dialog)),
         base::TimeDelta::FromSeconds(1));
   }
 

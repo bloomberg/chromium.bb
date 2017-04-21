@@ -611,7 +611,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
     chrome_browser_net::Predictor* predictor = profile_->GetNetworkPredictor();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&AboutDnsHandler::StartOnIOThread, this, predictor));
+        base::BindOnce(&AboutDnsHandler::StartOnIOThread, this, predictor));
   }
 
   void StartOnIOThread(chrome_browser_net::Predictor* predictor) {
@@ -625,7 +625,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&AboutDnsHandler::FinishOnUIThread, this, data));
+        base::BindOnce(&AboutDnsHandler::FinishOnUIThread, this, data));
   }
 
   void FinishOnUIThread(const std::string& data) {

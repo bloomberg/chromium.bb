@@ -80,13 +80,12 @@ void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
   base::string16* profile_path_buffer = new base::string16;
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::FILE, FROM_HERE,
-          base::Bind(&GetFilePaths, Profile::FromWebUI(web_ui())->GetPath(),
+      base::BindOnce(&GetFilePaths, Profile::FromWebUI(web_ui())->GetPath(),
                      base::Unretained(exec_path_buffer),
                      base::Unretained(profile_path_buffer)),
-          base::Bind(&VersionHandler::OnGotFilePaths,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Owned(exec_path_buffer),
-                     base::Owned(profile_path_buffer)));
+      base::BindOnce(
+          &VersionHandler::OnGotFilePaths, weak_ptr_factory_.GetWeakPtr(),
+          base::Owned(exec_path_buffer), base::Owned(profile_path_buffer)));
 
   // Respond with the variations info immediately.
   web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnVariationInfo,

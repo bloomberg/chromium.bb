@@ -226,10 +226,11 @@ void NetInternalsTest::MessageHandler::AddCacheEntry(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AddCacheEntryOnIOThread,
-                 base::RetainedRef(browser()->profile()->GetRequestContext()),
-                 hostname, ip_literal, static_cast<int>(net_error),
-                 static_cast<int>(expire_days_from_now)));
+      base::BindOnce(
+          &AddCacheEntryOnIOThread,
+          base::RetainedRef(browser()->profile()->GetRequestContext()),
+          hostname, ip_literal, static_cast<int>(net_error),
+          static_cast<int>(expire_days_from_now)));
 }
 
 void NetInternalsTest::MessageHandler::ChangeNetwork(

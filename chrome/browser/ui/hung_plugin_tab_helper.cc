@@ -401,9 +401,9 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
   PluginStateMap::iterator found = hung_plugins_.find(child_id);
   DCHECK(found != hung_plugins_.end());
 
-  content::BrowserThread::PostTask(content::BrowserThread::IO,
-                                   FROM_HERE,
-                                   base::Bind(&KillPluginOnIOThread, child_id));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&KillPluginOnIOThread, child_id));
   CloseBar(found->second.get());
 }
 

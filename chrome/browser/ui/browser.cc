@@ -1176,7 +1176,8 @@ void Browser::TabStripEmpty() {
   //       times. This is because it does not close the window if tabs are
   //       still present.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
 
   // Instant may have visible WebContents that need to be detached before the
   // window system closes.
@@ -2205,8 +2206,9 @@ void Browser::ScheduleUIUpdate(WebContents* source,
   if (!chrome_updater_factory_.HasWeakPtrs()) {
     // No task currently scheduled, start another.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&Browser::ProcessPendingUIUpdates,
-                              chrome_updater_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&Browser::ProcessPendingUIUpdates,
+                       chrome_updater_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kUIUpdateCoalescingTimeMS));
   }
 }

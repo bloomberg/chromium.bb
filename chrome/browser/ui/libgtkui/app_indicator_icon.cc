@@ -194,8 +194,7 @@ AppIndicatorIcon::~AppIndicatorIcon() {
     app_indicator_set_status(icon_, APP_INDICATOR_STATUS_PASSIVE);
     g_object_unref(icon_);
     content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE,
-        base::Bind(&DeleteTempDirectory, temp_dir_));
+        FROM_HERE, base::BindOnce(&DeleteTempDirectory, temp_dir_));
   }
 }
 
@@ -363,8 +362,7 @@ void AppIndicatorIcon::SetImageFromFile(const SetImageFromFileParams& params) {
 
   if (temp_dir_ != params.parent_temp_dir) {
     content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE,
-        base::Bind(&DeleteTempDirectory, temp_dir_));
+        FROM_HERE, base::BindOnce(&DeleteTempDirectory, temp_dir_));
     temp_dir_ = params.parent_temp_dir;
   }
 }
