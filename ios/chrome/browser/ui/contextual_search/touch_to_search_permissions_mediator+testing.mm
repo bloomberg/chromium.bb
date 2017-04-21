@@ -4,6 +4,10 @@
 
 #import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator+testing.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ios {
 class ChromeBrowserState;
 }

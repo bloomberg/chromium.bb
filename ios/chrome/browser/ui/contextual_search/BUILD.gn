@@ -104,6 +104,7 @@ source_set("contextual_search") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "touch_to_search_permissions_mediator+testing.h",
