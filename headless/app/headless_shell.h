@@ -86,7 +86,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
                     const base::FilePath file_name,
                     base::File::Error error_code);
   void OnFileWritten(const base::FilePath file_name,
-                     const int length,
+                     const size_t length,
                      base::File::Error error_code,
                      int write_result);
   void OnFileClosed(base::File::Error error_code);

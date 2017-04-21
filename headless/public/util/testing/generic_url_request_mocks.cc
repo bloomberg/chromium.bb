@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/http/http_response_headers.h"
 
 namespace net {
 class URLRequestJob;
