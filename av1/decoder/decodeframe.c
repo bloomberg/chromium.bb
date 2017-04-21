@@ -3248,12 +3248,11 @@ static void get_tile_buffers(
   const int tile_rows = cm->tile_rows;
   int tc = 0;
   int first_tile_in_tg = 0;
-  int hdr_offset;
   struct aom_read_bit_buffer rb_tg_hdr;
   uint8_t clear_data[MAX_AV1_HEADER_SIZE];
   const int num_tiles = tile_rows * tile_cols;
   const int num_bits = OD_ILOG(num_tiles) - 1;
-  const int hdr_size = pbi->uncomp_hdr_size + pbi->first_partition_size;
+  const size_t hdr_size = pbi->uncomp_hdr_size + pbi->first_partition_size;
   const int tg_size_bit_offset = pbi->tg_size_bit_offset;
 #if CONFIG_DEPENDENT_HORZTILES
   int tile_group_start_col = 0;
@@ -3264,7 +3263,7 @@ static void get_tile_buffers(
     for (c = 0; c < tile_cols; ++c, ++tc) {
       TileBufferDec *const buf = &tile_buffers[r][c];
       const int is_last = (r == tile_rows - 1) && (c == tile_cols - 1);
-      hdr_offset = (tc && tc == first_tile_in_tg) ? hdr_size : 0;
+      const size_t hdr_offset = (tc && tc == first_tile_in_tg) ? hdr_size : 0;
 
       buf->col = c;
       if (hdr_offset) {
