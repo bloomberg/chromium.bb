@@ -1269,8 +1269,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   NavigateToFile("/password/between_parsing_and_rendering.html");
 
   NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
   std::string submit =
       "document.getElementById('username').value = 'temp';"
       "document.getElementById('password').value = 'random';"
@@ -1278,7 +1276,36 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
   observer.Wait();
 
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
+  EXPECT_TRUE(BubbleObserver(WebContents()).IsShowingSavePrompt());
+}
+
+// Test that if a hidden form gets dynamically added between the form parsing
+// and rendering, it still is registered, and autofilling works.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       HiddenFormAddedBetweenParsingAndRendering) {
+  // At first let us save a credential to the password store.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.action = embedded_test_server()->base_url();
+  signin_form.username_value = base::ASCIIToUTF16("admin");
+  signin_form.password_value = base::ASCIIToUTF16("12345");
+  password_store->AddLogin(signin_form);
+
+  NavigateToFile("/password/between_parsing_and_rendering.html?hidden");
+
+  std::string show_form =
+      "document.getElementsByTagName('form')[0].style.display = 'block'";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), show_form));
+
+  // Wait until the username is filled, to make sure autofill kicked in.
+  WaitForElementValue("username", "admin");
+  CheckElementValue("password", "12345");
 }
 
 // Test that if there was no previous page load then the PasswordManagerDriver

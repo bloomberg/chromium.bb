@@ -9,9 +9,10 @@ Three main points to note:
    the form is not registered during form parsing stage
    (as in PasswordManager::OnPasswordFormsParsed).
 2. The form gets created before the rendering stage, so it gets
-   registered during PasswordManager::OnPasswordFormsRendered.
-3. The form gets created before the main frame loads. Therefore
-   the form is not registered during OnDynamicFormsSeen.
+   registered during PasswordManager::OnPasswordFormsRendered unless
+   it is hidden.
+3. The form gets created after the document loads. Therefore
+   the form is registered during OnDynamicFormsSeen.
 
 The goal is to make sure that there is enough time between the form
 creation and the frame load, so that OnDynamicFormsSeen is not
@@ -26,7 +27,10 @@ some webkit-only rules for background properties.
     <script src="form_utils.js"></script>
     <script>
 function onLoadHandler() {
-  document.body.appendChild(createSimplePasswordForm());
+  var form = createSimplePasswordForm();
+  if (location.search == '?hidden')
+    form.style.display = 'none';
+  document.body.appendChild(form);
 }
     </script>
     <style>
