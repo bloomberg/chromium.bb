@@ -719,10 +719,10 @@ static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
 }
 
 static int adst_vs_flipadst(const AV1_COMP *cpi, BLOCK_SIZE bsize, uint8_t *src,
-                            int src_stride, uint8_t *dst, int dst_stride,
-                            double *hdist, double *vdist) {
+                            int src_stride, uint8_t *dst, int dst_stride) {
   int prune_bitmask = 0;
   double svm_proj_h = 0, svm_proj_v = 0;
+  double hdist[3] = { 0, 0, 0 }, vdist[3] = { 0, 0, 0 };
   get_energy_distribution_fine(cpi, bsize, src, src_stride, dst, dst_stride,
                                hdist, vdist);
 
@@ -744,8 +744,8 @@ static int adst_vs_flipadst(const AV1_COMP *cpi, BLOCK_SIZE bsize, uint8_t *src,
 }
 
 #if CONFIG_EXT_TX
-static void get_horver_correlation(int16_t *diff, int stride, int w, int h,
-                                   double *hcorr, double *vcorr) {
+static void get_horver_correlation(const int16_t *diff, int stride, int w,
+                                   int h, double *hcorr, double *vcorr) {
   // Returns hor/ver correlation coefficient
   const int num = (h - 1) * (w - 1);
   double num_r;
@@ -788,41 +788,42 @@ static void get_horver_correlation(int16_t *diff, int stride, int w, int h,
   }
 }
 
-int dct_vs_idtx(int16_t *diff, int stride, int w, int h, double *hcorr,
-                double *vcorr) {
+int dct_vs_idtx(const int16_t *diff, int stride, int w, int h) {
+  double hcorr, vcorr;
   int prune_bitmask = 0;
-  get_horver_correlation(diff, stride, w, h, hcorr, vcorr);
+  get_horver_correlation(diff, stride, w, h, &hcorr, &vcorr);
 
-  if (*vcorr > FAST_EXT_TX_CORR_MID + FAST_EXT_TX_CORR_MARGIN)
+  if (vcorr > FAST_EXT_TX_CORR_MID + FAST_EXT_TX_CORR_MARGIN)
     prune_bitmask |= 1 << IDTX_1D;
-  else if (*vcorr < FAST_EXT_TX_CORR_MID - FAST_EXT_TX_CORR_MARGIN)
+  else if (vcorr < FAST_EXT_TX_CORR_MID - FAST_EXT_TX_CORR_MARGIN)
     prune_bitmask |= 1 << DCT_1D;
 
-  if (*hcorr > FAST_EXT_TX_CORR_MID + FAST_EXT_TX_CORR_MARGIN)
+  if (hcorr > FAST_EXT_TX_CORR_MID + FAST_EXT_TX_CORR_MARGIN)
     prune_bitmask |= 1 << (IDTX_1D + 8);
-  else if (*hcorr < FAST_EXT_TX_CORR_MID - FAST_EXT_TX_CORR_MARGIN)
+  else if (hcorr < FAST_EXT_TX_CORR_MID - FAST_EXT_TX_CORR_MARGIN)
     prune_bitmask |= 1 << (DCT_1D + 8);
   return prune_bitmask;
 }
 
 // Performance drop: 0.5%, Speed improvement: 24%
 static int prune_two_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
-                             MACROBLOCK *x, MACROBLOCKD *xd, int adst_flipadst,
-                             int dct_idtx) {
-  struct macroblock_plane *const p = &x->plane[0];
-  struct macroblockd_plane *const pd = &xd->plane[0];
-  const BLOCK_SIZE bs = get_plane_block_size(bsize, pd);
-  const int bw = 4 << (b_width_log2_lookup[bs]);
-  const int bh = 4 << (b_height_log2_lookup[bs]);
-  double hdist[3] = { 0, 0, 0 }, vdist[3] = { 0, 0, 0 };
-  double hcorr, vcorr;
+                             MACROBLOCK *x, const MACROBLOCKD *xd,
+                             int adst_flipadst, int dct_idtx) {
   int prune = 0;
-  av1_subtract_plane(x, bsize, 0);
 
-  if (adst_flipadst)
+  if (adst_flipadst) {
+    const struct macroblock_plane *const p = &x->plane[0];
+    const struct macroblockd_plane *const pd = &xd->plane[0];
     prune |= adst_vs_flipadst(cpi, bsize, p->src.buf, p->src.stride,
-                              pd->dst.buf, pd->dst.stride, hdist, vdist);
-  if (dct_idtx) prune |= dct_vs_idtx(p->src_diff, bw, bw, bh, &hcorr, &vcorr);
+                              pd->dst.buf, pd->dst.stride);
+  }
+  if (dct_idtx) {
+    av1_subtract_plane(x, bsize, 0);
+    const struct macroblock_plane *const p = &x->plane[0];
+    const int bw = 4 << (b_width_log2_lookup[bsize]);
+    const int bh = 4 << (b_height_log2_lookup[bsize]);
+    prune |= dct_vs_idtx(p->src_diff, bw, bw, bh);
+  }
 
   return prune;
 }
@@ -830,13 +831,11 @@ static int prune_two_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
 
 // Performance drop: 0.3%, Speed improvement: 5%
 static int prune_one_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
-                             MACROBLOCK *x, MACROBLOCKD *xd) {
-  struct macroblock_plane *const p = &x->plane[0];
-  struct macroblockd_plane *const pd = &xd->plane[0];
-  double hdist[3] = { 0, 0, 0 }, vdist[3] = { 0, 0, 0 };
-  av1_subtract_plane(x, bsize, 0);
+                             const MACROBLOCK *x, const MACROBLOCKD *xd) {
+  const struct macroblock_plane *const p = &x->plane[0];
+  const struct macroblockd_plane *const pd = &xd->plane[0];
   return adst_vs_flipadst(cpi, bsize, p->src.buf, p->src.stride, pd->dst.buf,
-                          pd->dst.stride, hdist, vdist);
+                          pd->dst.stride);
 }
 
 static int prune_tx_types(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
