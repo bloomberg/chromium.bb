@@ -1871,7 +1871,7 @@ void Node::DidMoveToNewDocument(Document& old_document) {
     }
   }
 
-  old_document.Markers().RemoveMarkers(this);
+  old_document.Markers().RemoveMarkersForNode(this);
   if (GetDocument().GetPage() &&
       GetDocument().GetPage() != old_document.GetPage()) {
     GetDocument().GetPage()->GetEventHandlerRegistry().DidMoveIntoPage(*this);

@@ -474,7 +474,7 @@ DEFINE_TRACE(DocumentMarkerController) {
   SynchronousMutationObserver::Trace(visitor);
 }
 
-void DocumentMarkerController::RemoveMarkers(
+void DocumentMarkerController::RemoveMarkersForNode(
     Node* node,
     DocumentMarker::MarkerTypes marker_types) {
   if (!PossiblyHasMarkers(marker_types))

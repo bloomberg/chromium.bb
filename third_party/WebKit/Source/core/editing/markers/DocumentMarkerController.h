@@ -70,7 +70,7 @@ class CORE_EXPORT DocumentMarkerController final
   void RemoveMarkersInRange(const EphemeralRange&, DocumentMarker::MarkerTypes);
   void RemoveMarkers(
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
-  void RemoveMarkers(
+  void RemoveMarkersForNode(
       Node*,
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);

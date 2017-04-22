@@ -788,8 +788,10 @@ void SpellChecker::RemoveSpellingAndGrammarMarkers(const HTMLElement& element,
   DocumentMarker::MarkerTypes marker_types(DocumentMarker::kSpelling);
   marker_types.Add(DocumentMarker::kGrammar);
   for (Node& node : NodeTraversal::InclusiveDescendantsOf(element)) {
-    if (elements_type == ElementsType::kAll || !HasEditableStyle(node))
-      GetFrame().GetDocument()->Markers().RemoveMarkers(&node, marker_types);
+    if (elements_type == ElementsType::kAll || !HasEditableStyle(node)) {
+      GetFrame().GetDocument()->Markers().RemoveMarkersForNode(&node,
+                                                               marker_types);
+    }
   }
 }
 
