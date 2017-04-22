@@ -94,8 +94,12 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (2,126) size 385x22 [r=5 c=0 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 222x19
                   text run at (1,1) width 222: "image with value property changed"
-              LayoutTableCell {TD} at (389,126) size 240x22 [r=5 c=1 rs=1 cs=1]
-                LayoutBlockFlow {INPUT} at (1,1) size 40x20
+              LayoutTableCell {TD} at (389,128) size 240x18 [r=5 c=1 rs=1 cs=1]
+                LayoutBlockFlow {INPUT} at (1,1) size 36x16
+                  LayoutInline {SPAN} at (0,0) size 36x16
+                    LayoutInline {SPAN} at (0,0) size 36x16
+                      LayoutText {#text} at (0,0) size 36x16
+                        text run at (0,0) width 36: "before"
               LayoutTableCell {TD} at (631,126) size 62x22 [r=5 c=2 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 28x19
                   text run at (1,1) width 28: "after"
@@ -208,12 +212,6 @@ layer at (400,166) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
     LayoutText {#text} at (0,0) size 30x16
       text run at (0,0) width 30: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
-layer at (398,263) size 40x20 clip at (399,264) size 38x18
-  LayoutBlockFlow {DIV} at (0,0) size 40x20 [border: (1px solid #C0C0C0)]
-layer at (400,265) size 36x16
-  LayoutBlockFlow {DIV} at (2,2) size 36x16
-    LayoutText {#text} at (0,0) size 36x16
-      text run at (0,0) width 36: "before"
 layer at (400,314) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
     LayoutText {#text} at (0,0) size 26x16

@@ -47,7 +47,6 @@ layer at (0,0) size 800x600
                 LayoutImage {IMG} at (348,0) size 88x18
                 LayoutBlockFlow {IMG} at (436,0) size 55x18
 layer at (444,322) size 55x18 clip at (445,323) size 53x16 scrollHeight 18
-  LayoutBlockFlow {DIV} at (0,0) size 55x18 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {SPAN} at (0,0) size 55x18 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
-layer at (462,324) size 35x0
-  LayoutBlockFlow {DIV} at (18,2) size 35x0
+    LayoutInline {SPAN} at (0,0) size 0x0

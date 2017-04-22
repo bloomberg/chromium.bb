@@ -7,22 +7,20 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 777x39
           text run at (0,0) width 777: "This tests whether alt text is shown for image elements with no src attribute. You should see \"Success\" twice, followed by a"
           text run at (0,20) width 92: "blue rectangle."
-      LayoutBlockFlow {P} at (0,56) size 784x101
-        LayoutBlockFlow {IMG} at (0,0) size 54x24
-        LayoutBR {BR} at (54,24) size 0x0
-        LayoutBlockFlow {IMG} at (0,24) size 102x52 [border: (1px solid #000000)]
-        LayoutBR {BR} at (102,75) size 0x0
-        LayoutImage {IMG} at (0,76) size 75x25
-        LayoutBR {BR} at (75,101) size 0x0
-layer at (8,64) size 54x24 clip at (9,65) size 52x22
-  LayoutBlockFlow {DIV} at (0,0) size 54x24 [border: (1px solid #C0C0C0)]
-layer at (10,66) size 50x20
-  LayoutBlockFlow {DIV} at (2,2) size 50x20
-    LayoutText {#text} at (0,0) size 50x19
-      text run at (0,0) width 50: "Success"
-layer at (9,89) size 100x50 clip at (10,90) size 98x48
-  LayoutBlockFlow {DIV} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
-layer at (11,91) size 96x20
-  LayoutBlockFlow {DIV} at (2,2) size 96x20
-    LayoutText {#text} at (0,0) size 50x19
-      text run at (0,0) width 50: "Success"
+      LayoutBlockFlow {P} at (0,56) size 784x97
+        LayoutBlockFlow {IMG} at (0,0) size 50x20
+          LayoutInline {SPAN} at (0,0) size 50x19
+            LayoutInline {SPAN} at (0,0) size 50x19
+              LayoutText {#text} at (0,0) size 50x19
+                text run at (0,0) width 50: "Success"
+        LayoutBR {BR} at (50,15) size 0x0
+        LayoutBlockFlow {IMG} at (0,20) size 102x52 [border: (1px solid #000000)]
+        LayoutBR {BR} at (102,71) size 0x0
+        LayoutImage {IMG} at (0,72) size 75x25
+        LayoutBR {BR} at (75,97) size 0x0
+layer at (9,85) size 100x50 clip at (10,86) size 98x48
+  LayoutBlockFlow {SPAN} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
+    LayoutInline {SPAN} at (0,0) size 50x19
+      LayoutText {#text} at (18,2) size 50x19
+        text run at (18,2) width 50: "Success"

@@ -1716,12 +1716,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
     // The iframe attempts to open a popup window, but it shouldn't be able to.
     // Previous popup is still open.
     EXPECT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-    // Assume the broken image width is less than 100.
-    int img_width = 0;
+    // The broken image width is zero.
+    int img_width = 99;
     EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
         tab, "window.domAutomationController.send(ImageWidth());", &img_width));
-    EXPECT_GT(img_width, 0);
-    EXPECT_LT(img_width, 100);
+    EXPECT_EQ(img_width, 0);
     // Check that variable |foo| is not set.
     bool js_result = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(

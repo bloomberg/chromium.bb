@@ -9,19 +9,16 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (0,0) size 296x46 [bgcolor=#FFFF00] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {CENTER} at (3,3) size 290x40
                 LayoutInline {A} at (0,0) size 0x0 [color=#0000EE]
-                  LayoutBlockFlow (floating) {IMG} at (0,0) size 20x20
+                  LayoutBlockFlow (floating) {IMG} at (0,0) size 0x0
+                    LayoutInline {SPAN} at (0,0) size 0x0
+                      LayoutInline {SPAN} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
-                LayoutInline {A} at (0,0) size 189x39 [color=#0000EE]
-                  LayoutInline {FONT} at (0,0) size 189x39 [color=#000000]
-                    LayoutText {#text} at (64,0) size 185x19
-                      text run at (64,0) width 111: "Free Homepage! "
-                      text run at (174,0) width 75: "Free Email!"
-                    LayoutBR {BR} at (248,15) size 1x0
+                LayoutInline {A} at (0,0) size 184x39 [color=#0000EE]
+                  LayoutInline {FONT} at (0,0) size 184x39 [color=#000000]
+                    LayoutText {#text} at (53,0) size 184x19
+                      text run at (53,0) width 110: "Free Homepage! "
+                      text run at (163,0) width 74: "Free Email!"
+                    LayoutBR {BR} at (237,15) size 0x0
                     LayoutText {#text} at (60,20) size 170x19
                       text run at (60,20) width 41: "It's all "
                       text run at (101,20) width 129: "yours at ACMEcity!"
-layer at (13,13) size 20x20 clip at (14,14) size 18x18
-  LayoutBlockFlow {DIV} at (0,0) size 20x20 [border: (1px solid #C0C0C0)]
-    LayoutImage (floating) {IMG} at (2,2) size 16x16
-layer at (31,15) size 0x0
-  LayoutBlockFlow {DIV} at (18,2) size 0x0

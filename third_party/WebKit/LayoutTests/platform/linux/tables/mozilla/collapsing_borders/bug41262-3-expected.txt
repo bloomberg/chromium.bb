@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 scrollHeight 680
+layer at (0,0) size 800x600 scrollHeight 676
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x680 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow {HTML} at (0,0) size 800x680
-    LayoutBlockFlow {BODY} at (8,16) size 784x648
+layer at (0,0) size 800x676 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x676
+    LayoutBlockFlow {BODY} at (8,16) size 784x644
       LayoutBlockFlow {P} at (0,0) size 784x60
         LayoutText {#text} at (0,0) size 780x59
           text run at (0,0) width 463: "Following table should have 6px solid blue border around cell 3, red 5px "
@@ -89,7 +89,7 @@ layer at (0,0) size 800x680 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell {TD} at (102,222) size 51x55 [border: (1px solid #FF0000)] [r=4 c=2 rs=1 cs=1]
               LayoutText {#text} at (17,17) size 16x19
                 text run at (17,17) width 16: "15"
-      LayoutBlockFlow {P} at (0,460) size 784x44
+      LayoutBlockFlow {P} at (0,460) size 784x40
         LayoutText {#text} at (0,0) size 357x19
           text run at (0,0) width 357: "This is an example rendering for the previous table from "
         LayoutInline {A} at (0,0) size 410x19 [color=#0000EE]
@@ -98,9 +98,13 @@ layer at (0,0) size 800x680 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutText {#text} at (766,0) size 9x19
           text run at (766,0) width 9: ": "
         LayoutBR {BR} at (0,0) size 0x0
-        LayoutBlockFlow {IMG} at (0,20) size 232.72x24
+        LayoutBlockFlow {IMG} at (0,20) size 212.72x20
+          LayoutInline {SPAN} at (0,0) size 213x19
+            LayoutInline {SPAN} at (0,0) size 213x19
+              LayoutText {#text} at (0,0) size 213x19
+                text run at (0,0) width 213: "[Example rendering from w3.org]"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,520) size 784x40
+      LayoutBlockFlow {P} at (0,516) size 784x40
         LayoutText {#text} at (0,0) size 755x39
           text run at (0,0) width 493: "Following table should have 2px solid black line between rows. There should "
           text run at (493,0) width 262: "be a total of two lines. There will be three"
@@ -110,7 +114,7 @@ layer at (0,0) size 800x680 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (213,23) width 112: "tr:first-child"
         LayoutText {#text} at (325,20) size 4x19
           text run at (325,20) width 4: "."
-      LayoutTable {TABLE} at (0,576) size 150x72 [border: (1px none #808080)]
+      LayoutTable {TABLE} at (0,572) size 150x72 [border: (1px none #808080)]
         LayoutTableSection {TBODY} at (0,1) size 150x71
           LayoutTableRow {TR} at (0,0) size 150x24 [border: (2px solid #000000) none]
             LayoutTableCell {TD} at (0,0) size 50x24 [border: (1px none #000000)] [r=0 c=0 rs=1 cs=1]
@@ -142,10 +146,3 @@ layer at (0,0) size 800x680 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell {TD} at (100,48) size 50x23 [border: (1px none #000000)] [r=2 c=2 rs=1 cs=1]
               LayoutText {#text} at (17,2) size 16x19
                 text run at (17,2) width 16: "13"
-layer at (8,496) size 233x24 clip at (9,497) size 231x22
-  LayoutBlockFlow {DIV} at (0,0) size 232.72x24 [border: (1px solid #C0C0C0)]
-    LayoutImage (floating) {IMG} at (2,2) size 16x16
-layer at (26,498) size 213x20
-  LayoutBlockFlow {DIV} at (18,2) size 212.72x20
-    LayoutText {#text} at (0,0) size 213x19
-      text run at (0,0) width 213: "[Example rendering from w3.org]"

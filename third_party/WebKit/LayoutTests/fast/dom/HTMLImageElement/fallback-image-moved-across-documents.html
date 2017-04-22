@@ -37,7 +37,7 @@ promise_test(t => {
   return eventWatcher.wait_for("error").then(_ => {
     window.setTimeout(_ => document.body.append(i));
     return eventWatcher.wait_for("error").then(_ => {
-      assert_equals(i.clientWidth, 20, "Fallback content should be displayed.");
+      assert_equals(i.clientWidth, 0, "Fallback content will not be displayed, fallback content is treated as display:none.");
     });
   });
 }, "Infinitely nested fallback content shadow trees should not be created, or this test will never terminate.");

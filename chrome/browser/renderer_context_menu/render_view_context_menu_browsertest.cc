@@ -743,7 +743,10 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
     // Go to a page with an image in it. The test server doesn't serve the image
     // with the right MIME type, so use a data URL to make a page containing it.
     GURL image_url(embedded_test_server()->GetURL(image_path));
-    GURL page("data:text/html,<img src='" + image_url.spec() + "'>");
+    GURL page(
+        "data:text/html,<img width=50 height=50 "
+        "src='" +
+        image_url.spec() + "'>");
     ui_test_utils::NavigateToURL(browser(), page);
   }
 

@@ -8,6 +8,9 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,2) size 598x77
             LayoutTableCell {TD} at (2,2) size 594x77 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=3]
               LayoutBlockFlow {IMG} at (2,2) size 590x73
+                LayoutBlockFlow {SPAN} at (0,0) size 590x73 [border: (1px solid #C0C0C0)]
+                  LayoutImage (floating) {IMG} at (2,2) size 16x16
+                  LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,81) size 598x96
             LayoutTableCell {TD} at (2,81) size 114x44 [bgcolor=#94BD73] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
@@ -30,10 +33,16 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,179) size 598x37
             LayoutTableCell {TD} at (2,179) size 594x37 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=3]
               LayoutBlockFlow {IMG} at (2,2) size 589x33
+                LayoutBlockFlow {SPAN} at (0,0) size 589x33 [border: (1px solid #C0C0C0)]
+                  LayoutImage (floating) {IMG} at (2,2) size 16x16
+                  LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,218) size 598x43
             LayoutTableCell {TD} at (2,218) size 114x43 [border: (1px inset #808080)] [r=3 c=0 rs=1 cs=1]
               LayoutBlockFlow {IMG} at (2,2) size 110x39
+                LayoutBlockFlow {SPAN} at (0,0) size 110x39 [border: (1px solid #C0C0C0)]
+                  LayoutImage (floating) {IMG} at (2,2) size 16x16
+                  LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TH} at (118,227) size 478x24 [border: (1px inset #808080)] [r=3 c=1 rs=1 cs=2]
               LayoutText {#text} at (208,2) size 62x19
@@ -88,6 +97,9 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,2) size 598x77
             LayoutTableCell {TD} at (2,2) size 594x77 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=3]
               LayoutBlockFlow {IMG} at (2,2) size 590x73
+                LayoutBlockFlow {SPAN} at (0,0) size 590x73 [border: (1px solid #C0C0C0)]
+                  LayoutImage (floating) {IMG} at (2,2) size 16x16
+                  LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,81) size 598x96
             LayoutTableCell {TD} at (2,81) size 111x44 [bgcolor=#94BD73] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
@@ -136,23 +148,3 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBlockFlow {P} at (2,74) size 446x20
                 LayoutText {#text} at (0,0) size 68x19
                   text run at (0,0) width 68: "etc., etc. ..."
-layer at (13,13) size 590x73 clip at (14,14) size 588x71
-  LayoutBlockFlow {DIV} at (0,0) size 590x73 [border: (1px solid #C0C0C0)]
-    LayoutImage (floating) {IMG} at (2,2) size 16x16
-layer at (31,15) size 570x0
-  LayoutBlockFlow {DIV} at (18,2) size 570x0
-layer at (13,190) size 589x33 clip at (14,191) size 587x31
-  LayoutBlockFlow {DIV} at (0,0) size 589x33 [border: (1px solid #C0C0C0)]
-    LayoutImage (floating) {IMG} at (2,2) size 16x16
-layer at (31,192) size 569x0
-  LayoutBlockFlow {DIV} at (18,2) size 569x0
-layer at (13,229) size 110x39 clip at (14,230) size 108x37
-  LayoutBlockFlow {DIV} at (0,0) size 110x39 [border: (1px solid #C0C0C0)]
-    LayoutImage (floating) {IMG} at (2,2) size 16x16
-layer at (31,231) size 90x0
-  LayoutBlockFlow {DIV} at (18,2) size 90x0
-layer at (13,591) size 590x73 backgroundClip at (13,591) size 590x9 clip at (14,592) size 588x8
-  LayoutBlockFlow {DIV} at (0,0) size 590x73 [border: (1px solid #C0C0C0)]
-    LayoutImage (floating) {IMG} at (2,2) size 16x16
-layer at (31,593) size 570x0
-  LayoutBlockFlow {DIV} at (18,2) size 570x0

@@ -8,6 +8,11 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
         LayoutBR {BR} at (0,0) size 0x0
         LayoutBlockFlow (floating) {IMG} at (2,31) size 250x125 [bgcolor=#FFA500]
+          LayoutBlockFlow {SPAN} at (0,0) size 250x125 [border: (1px solid #C0C0C0)]
+            LayoutImage (floating) {IMG} at (2,2) size 16x16
+            LayoutInline {SPAN} at (0,0) size 172x19
+              LayoutText {#text} at (18,2) size 172x19
+                text run at (18,2) width 172: "Theme Park Roller Coaster"
         LayoutText {#text} at (255,31) size 193x139
           text run at (255,31) width 186: "Theme Park Roller Coaster is"
           text run at (255,51) width 193: "an excellent game that lets you"
@@ -25,9 +30,3 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (2,22) size 166x19
             text run at (2,22) width 166: "Second non-breaking line."
         LayoutText {#text} at (0,0) size 0x0
-layer at (10,39) size 250x125 clip at (11,40) size 248x123
-  LayoutBlockFlow {DIV} at (0,0) size 250x125 [border: (1px solid #C0C0C0)]
-layer at (12,41) size 246x20
-  LayoutBlockFlow {DIV} at (2,2) size 246x20
-    LayoutText {#text} at (0,0) size 172x19
-      text run at (0,0) width 172: "Theme Park Roller Coaster"
