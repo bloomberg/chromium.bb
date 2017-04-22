@@ -138,14 +138,8 @@ chromium_strings.grd. -->
         Chrome
       </message>
       <if expr="is_win">
-        <message name="IDS_SXS_SHORTCUT_NAME" desc="The Chrome shortcut name for canary channel">
+        <message name="IDS_SXS_SHORTCUT_NAME" desc="The Chrome short cut name for SxS channel">
           Google Chrome Canary
-        </message>
-        <message name="IDS_SHORTCUT_NAME_BETA" desc="The Chrome shortcut name for beta channel">
-          Google Chrome Beta
-        </message>
-        <message name="IDS_SHORTCUT_NAME_DEV" desc="The Chrome shortcut name for dev channel">
-          Google Chrome Dev
         </message>
         <message name="IDS_PRODUCT_DESCRIPTION" desc="Browser description">
           Google Chrome is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.
@@ -866,14 +860,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY" desc="Name for the Chrome Apps Start Menu folder name for the Canary channel.">
         Chrome Canary Apps
       </message>
-      <if expr="is_win">
-        <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_BETA" desc="Name for the Chrome Apps Start Menu folder name for the Beta channel.">
-          Chrome Beta Apps
-        </message>
-        <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_DEV" desc="Name for the Chrome Apps Start Menu folder name for the Dev channel.">
-          Chrome Dev Apps
-        </message>
-      </if>
 
       <!-- Chrome Conflicts bubble -->
       <if expr="is_win">
@@ -1012,26 +998,14 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         <message name="IDS_INBOUND_MDNS_RULE_NAME" desc="The name of the firewall rule allowing inbound mDNS traffic.">
           Google Chrome (mDNS-In)
         </message>
-        <message name="IDS_INBOUND_MDNS_RULE_NAME_BETA" desc="The name of the firewall rule allowing inbound mDNS traffic for beta.">
-          Google Chrome Beta (mDNS-In)
-        </message>
         <message name="IDS_INBOUND_MDNS_RULE_NAME_CANARY" desc="The name of the firewall rule allowing inbound mDNS traffic for canary.">
           Google Chrome Canary (mDNS-In)
-        </message>
-        <message name="IDS_INBOUND_MDNS_RULE_NAME_DEV" desc="The name of the firewall rule allowing inbound mDNS traffic for dev.">
-          Google Chrome Dev (mDNS-In)
         </message>
         <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION" desc="The description of the firewall rule allowing inbound mDNS traffic.">
           Inbound rule for Google Chrome to allow mDNS traffic.
         </message>
-        <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION_BETA" desc="The description of the firewall rule allowing inbound mDNS traffic beta.">
-          Inbound rule for Google Chrome Beta to allow mDNS traffic.
-        </message>
         <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY" desc="The description of the firewall rule allowing inbound mDNS traffic canary.">
           Inbound rule for Google Chrome Canary to allow mDNS traffic.
-        </message>
-        <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION_DEV" desc="The description of the firewall rule allowing inbound mDNS traffic dev.">
-          Inbound rule for Google Chrome Dev to allow mDNS traffic.
         </message>
       </if>
 

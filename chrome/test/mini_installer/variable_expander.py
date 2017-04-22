@@ -61,32 +61,19 @@ class VariableExpander:
 
     The constructor initializes a variable dictionary that maps variables to
     their values. These are the only acceptable variables:
-        * $BRAND: the browser brand (e.g., "Google Chrome" or "Chromium").
         * $CHROME_DIR: the directory of Chrome (or Chromium) from the base
             installation directory.
         * $CHROME_HTML_PROG_ID: 'ChromeHTML' (or 'ChromiumHTM').
         * $CHROME_LONG_NAME: 'Google Chrome' (or 'Chromium').
-        * $CHROME_LONG_NAME_BETA: 'Google Chrome Beta' if $BRAND is 'Google
-        *   Chrome'.
-        * $CHROME_LONG_NAME_DEV: 'Google Chrome Dev' if $BRAND is 'Google
-        *   Chrome'.
-        * $CHROME_LONG_NAME_SXS: 'Google Chrome SxS' if $BRAND is 'Google
-        *   Chrome'.
+        * $CHROME_LONG_NAME_SXS: 'Google Chrome SxS' if $SUPPORTS_SXS.
         * $CHROME_SHORT_NAME: 'Chrome' (or 'Chromium').
-        * $CHROME_SHORT_NAME_BETA: 'ChromeBeta' if $BRAND is 'Google Chrome'.
-        * $CHROME_SHORT_NAME_DEV: 'ChromeDev' if $BRAND is 'Google Chrome'.
-        * $CHROME_SHORT_NAME_SXS: 'ChromeCanary' if $BRAND is 'Google Chrome'.
+        * $CHROME_SHORT_NAME_SXS: 'ChromeCanary' if $SUPPORTS_SXS.
         * $CHROME_UPDATE_REGISTRY_SUBKEY: the registry key, excluding the root
             key, of Chrome for Google Update.
-        * $CHROME_UPDATE_REGISTRY_SUBKEY_DEV: the registry key, excluding the
-            root key, of Chrome Dev for Google Update.
-        * $CHROME_UPDATE_REGISTRY_SUBKEY_BETA: the registry key, excluding the
-            root key, of Chrome Beta for Google Update.
         * $CHROME_UPDATE_REGISTRY_SUBKEY_SXS: the registry key, excluding the
             root key, of Chrome SxS for Google Update.
         * $LAUNCHER_UPDATE_REGISTRY_SUBKEY: the registry key, excluding the root
-            key, of the app launcher for Google Update if $BRAND is 'Google
-        *   Chrome'.
+            key, of the app launcher for Google Update if $SUPPORTS_SXS.
         * $LOCAL_APPDATA: the unquoted path to the Local Application Data
             folder.
         * $MINI_INSTALLER: the unquoted path to the mini_installer.
@@ -96,6 +83,8 @@ class VariableExpander:
         * $NEXT_VERSION_MINI_INSTALLER_FILE_VERSION: the file version of
             $NEXT_VERSION_MINI_INSTALLER.
         * $PROGRAM_FILES: the unquoted path to the Program Files folder.
+        * $SUPPORTS_SXS: a boolean indicating whether or not SxS installs
+            are supported by the mini_installer under test.
         * $USER_SPECIFIC_REGISTRY_SUFFIX: the output from the function
             _GetUserSpecificRegistrySuffix().
         * $VERSION_[XP/SERVER_2003/VISTA/WIN7/WIN8/WIN8_1/WIN10]: a 2-tuple
@@ -135,7 +124,6 @@ class VariableExpander:
     mini_installer_product_name = _GetProductName(mini_installer_abspath)
     if mini_installer_product_name == 'Google Chrome Installer':
       self._variable_mapping.update({
-          'BRAND': 'Google Chrome',
           'BINARIES_UPDATE_REGISTRY_SUBKEY': (
             'Software\\Google\\Update\\Clients\\'
             '{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}'),
@@ -149,21 +137,10 @@ class VariableExpander:
           'CHROME_CLIENT_STATE_KEY': (
             'Software\\Google\\Update\\ClientState\\'
             '{8A69D345-D564-463c-AFF1-A69D9E530F96}'),
-          'CHROME_DIR_BETA': 'Google\\Chrome Beta',
-          'CHROME_DIR_DEV': 'Google\\Chrome Dev',
+          'SUPPORTS_SXS': True,
           'CHROME_DIR_SXS': 'Google\\Chrome SxS',
-          'CHROME_LONG_NAME_BETA': 'Google Chrome Beta',
-          'CHROME_LONG_NAME_DEV': 'Google Chrome Dev',
           'CHROME_LONG_NAME_SXS': 'Google Chrome SxS',
-          'CHROME_SHORT_NAME_BETA': 'ChromeBeta',
-          'CHROME_SHORT_NAME_DEV': 'ChromeDev',
           'CHROME_SHORT_NAME_SXS': 'ChromeCanary',
-          'CHROME_UPDATE_REGISTRY_SUBKEY_BETA': (
-            'Software\\Google\\Update\\Clients\\'
-            '{8237E44A-0054-442C-B6B6-EA0509993955}'),
-          'CHROME_UPDATE_REGISTRY_SUBKEY_DEV': (
-            'Software\\Google\\Update\\Clients\\'
-            '{401C381F-E0DE-4B85-8BD8-3F3F14FBDA57}'),
           'CHROME_UPDATE_REGISTRY_SUBKEY_SXS': (
             'Software\\Google\\Update\\Clients\\'
             '{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}'),
@@ -173,7 +150,6 @@ class VariableExpander:
       })
     elif mini_installer_product_name == 'Chromium Installer':
       self._variable_mapping.update({
-          'BRAND': 'Chromium',
           'BINARIES_UPDATE_REGISTRY_SUBKEY': 'Software\\Chromium Binaries',
           'CHROME_DIR': 'Chromium',
           'CHROME_HTML_PROG_ID': 'ChromiumHTM',
@@ -181,6 +157,7 @@ class VariableExpander:
           'CHROME_SHORT_NAME': 'Chromium',
           'CHROME_UPDATE_REGISTRY_SUBKEY': 'Software\\Chromium',
           'CHROME_CLIENT_STATE_KEY': 'Software\\Chromium',
+          'SUPPORTS_SXS': False
       })
     else:
       raise KeyError("Unknown mini_installer product name '%s'" %

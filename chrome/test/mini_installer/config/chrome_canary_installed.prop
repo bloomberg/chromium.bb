@@ -1,5 +1,5 @@
 {
-  "Condition": "'$BRAND' == 'Google Chrome'",
+  "Condition": "$SUPPORTS_SXS",
   "Files": {
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome.exe": {"exists": true},
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome.VisualElementsManifest.xml": {"exists": true},

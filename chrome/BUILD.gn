@@ -1430,12 +1430,8 @@ copy("visual_elements_resources") {
 
   if (is_chrome_branded) {
     sources += [
-      "//chrome/app/theme/$branding_path_component/win/tiles/LogoBeta.png",
       "//chrome/app/theme/$branding_path_component/win/tiles/LogoCanary.png",
-      "//chrome/app/theme/$branding_path_component/win/tiles/LogoDev.png",
-      "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoBeta.png",
       "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoCanary.png",
-      "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoDev.png",
     ]
   }
 

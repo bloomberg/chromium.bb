@@ -140,25 +140,6 @@ constexpr TestData kTestData[] = {
         STABLE_INDEX, false, L"",
     },
     {
-        L"C:\\Program Files (x86)\\Google\\Chrome "
-        L"Beta\\Application\\chrome.exe",
-        BETA_INDEX, true, L"beta",
-    },
-    {
-        L"C:\\Users\\user\\AppData\\Local\\Google\\Chrome Beta\\Application"
-        L"\\chrome.exe",
-        BETA_INDEX, false, L"beta",
-    },
-    {
-        L"C:\\Program Files (x86)\\Google\\Chrome Dev\\Application\\chrome.exe",
-        DEV_INDEX, true, L"dev",
-    },
-    {
-        L"C:\\Users\\user\\AppData\\Local\\Google\\Chrome Dev\\Application"
-        L"\\chrome.exe",
-        DEV_INDEX, false, L"dev",
-    },
-    {
         L"C:\\Users\\user\\AppData\\Local\\Google\\Chrome SxS\\Application"
         L"\\chrome.exe",
         CANARY_INDEX, false, L"canary",

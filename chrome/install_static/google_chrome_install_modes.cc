@@ -47,52 +47,6 @@ const InstallConstants kInstallModes[] = {
         icon_resources::kApplicationIndex,  // App icon resource index.
         IDR_MAINFRAME,                      // App icon resource id.
     },
-    // A secondary install mode for Google Chrome Beta
-    {
-        sizeof(kInstallModes[0]),
-        BETA_INDEX,     // The mode for the side-by-side beta channel.
-        "chrome-beta",  // Install switch.
-        L" Beta",       // Install suffix.
-        L"Beta",        // Logo suffix.
-        L"{8237E44A-0054-442C-B6B6-EA0509993955}",  // A distinct app GUID.
-        L"Google Chrome Beta",                      // A distinct base_app_name.
-        L"ChromeBeta",                              // A distinct base_app_id.
-        L"ChromeBHTML",                             // ProgID prefix.
-        L"Chrome Beta HTML Document",               // ProgID description.
-        L"{8237E44A-0054-442C-B6B6-EA0509993955}",  // Active Setup GUID.
-        L"",                                        // CommandExecuteImpl CLSID.
-        L"beta",                                    // Forced channel name.
-        ChannelStrategy::FIXED,
-        true,   // Supports system-level installs.
-        false,  // Does not support in-product set as default browser UX.
-        true,   // Supports retention experiments.
-        false,  // Did not support multi-install.
-        icon_resources::kBetaApplicationIndex,  // App icon resource index.
-        IDR_X005_BETA,                          // App icon resource id.
-    },
-    // A secondary install mode for Google Chrome Dev
-    {
-        sizeof(kInstallModes[0]),
-        DEV_INDEX,     // The mode for the side-by-side dev channel.
-        "chrome-dev",  // Install switch.
-        L" Dev",       // Install suffix.
-        L"Dev",        // Logo suffix.
-        L"{401C381F-E0DE-4B85-8BD8-3F3F14FBDA57}",  // A distinct app GUID.
-        L"Google Chrome Dev",                       // A distinct base_app_name.
-        L"ChromeDev",                               // A distinct base_app_id.
-        L"ChromeDHTML",                             // ProgID prefix.
-        L"Chrome Dev HTML Document",                // ProgID description.
-        L"{401C381F-E0DE-4B85-8BD8-3F3F14FBDA57}",  // Active Setup GUID.
-        L"",                                        // CommandExecuteImpl CLSID.
-        L"dev",                                     // Forced channel name.
-        ChannelStrategy::FIXED,
-        true,   // Supports system-level installs.
-        false,  // Does not support in-product set as default browser UX.
-        true,   // Supports retention experiments.
-        false,  // Did not support multi-install.
-        icon_resources::kDevApplicationIndex,  // App icon resource index.
-        IDR_X004_DEV,                          // App icon resource id.
-    },
     // A secondary install mode for Google Chrome SxS (canary).
     {
         sizeof(kInstallModes[0]),

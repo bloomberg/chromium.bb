@@ -52,13 +52,9 @@ locales\*.pak: %(VersionDir)s\Locales
 # VisualElementsManifest.xml is based on the existence of
 # %(VersionDir)\VisualElements.
 Logo.png: %(VersionDir)s\VisualElements\
-LogoBeta.png: %(VersionDir)s\VisualElements\
 LogoCanary.png: %(VersionDir)s\VisualElements\
-LogoDev.png: %(VersionDir)s\VisualElements\
 SmallLogo.png: %(VersionDir)s\VisualElements\
-SmallLogoBeta.png: %(VersionDir)s\VisualElements\
 SmallLogoCanary.png: %(VersionDir)s\VisualElements\
-SmallLogoDev.png: %(VersionDir)s\VisualElements\
 
 #
 # SwiftShader sub-dir

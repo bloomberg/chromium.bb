@@ -207,17 +207,9 @@ def RunCleanCommand(force_clean, variable_expander):
     (True, '$CHROME_LONG_NAME', '--system-level',
      '$CHROME_UPDATE_REGISTRY_SUBKEY'),
   ]
-  if variable_expander.Expand('$BRAND') == 'Google Chrome':
-    data.extend([(False, '$CHROME_LONG_NAME_BETA', '',
-                  '$CHROME_UPDATE_REGISTRY_SUBKEY_BETA'),
-                 (True, '$CHROME_LONG_NAME_BETA', '--system-level',
-                  '$CHROME_UPDATE_REGISTRY_SUBKEY_BETA'),
-                 (False, '$CHROME_LONG_NAME_DEV', '',
-                  '$CHROME_UPDATE_REGISTRY_SUBKEY_DEV'),
-                 (True, '$CHROME_LONG_NAME_DEV', '--system-level',
-                  '$CHROME_UPDATE_REGISTRY_SUBKEY_DEV'),
-                 (False, '$CHROME_LONG_NAME_SXS', '',
-                  '$CHROME_UPDATE_REGISTRY_SUBKEY_SXS')])
+  if variable_expander.Expand('$SUPPORTS_SXS') == 'True':
+    data.append((False, '$CHROME_LONG_NAME_SXS', '',
+                 '$CHROME_UPDATE_REGISTRY_SUBKEY_SXS'))
 
   interactive_option = '--interactive' if not force_clean else ''
   for system_level, product_name, product_switch, registry_subkey in data:

@@ -7,16 +7,9 @@
 
 // The appid included by the mini_installer.
 namespace google_update {
-
 extern const wchar_t kAppGuid[];
-extern const wchar_t kMultiInstallAppGuid[];
-
-#if defined(GOOGLE_CHROME_BUILD)
-extern const wchar_t kBetaAppGuid[];
-extern const wchar_t kDevAppGuid[];
 extern const wchar_t kSxSAppGuid[];
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
-}  // namespace google_update
+extern const wchar_t kMultiInstallAppGuid[];
+}
 
 #endif  // CHROME_INSTALLER_MINI_INSTALLER_APPID_H_
