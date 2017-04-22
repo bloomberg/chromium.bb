@@ -189,6 +189,9 @@ typedef base::Callback<void(const std::string& session_id,
 
 // Called when the CDM changes the expiration time of a session.
 // See http://w3c.github.io/encrypted-media/#update-expiration
+// A null base::Time() will be translated to NaN in Javascript, which means "no
+// such time exists or if the license explicitly never expires, as determined
+// by the CDM", according to the EME spec.
 typedef base::Callback<void(const std::string& session_id,
                             base::Time new_expiry_time)>
     SessionExpirationUpdateCB;
