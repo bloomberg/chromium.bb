@@ -225,7 +225,11 @@ def main(argv=None):
       'win32':    ['msvs', 'ninja'],
       'linux2':   ['make', 'ninja'],
       'linux3':   ['make', 'ninja'],
-      'darwin':   ['make', 'ninja', 'xcode', 'xcode-ninja'],
+
+      # TODO: Re-enable xcode-ninja.
+      # https://bugs.chromium.org/p/gyp/issues/detail?id=530
+      # 'darwin':   ['make', 'ninja', 'xcode', 'xcode-ninja'],
+      'darwin':   ['make', 'ninja', 'xcode'],
     }[sys.platform]
 
   for format in format_list:
