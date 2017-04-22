@@ -84,7 +84,7 @@ service_manifest("mash_manifest") {
 
 catalog("catalog") {
   embedded_services = [ ":mash_manifest" ]
-  catalog_deps = [ "//chrome/app:catalog_for_mus" ]
+  catalog_deps = [ "//chrome/app:catalog_for_mash" ]
   standalone_services = [
     "//mash/example/views_examples:manifest",
     "//mash/simple_wm:manifest",
@@ -121,7 +121,7 @@ if (is_chromeos) {
 
   catalog("catalog_mus") {
     embedded_services = [ ":mus_manifest" ]
-    catalog_deps = [ "//chrome/app:catalog_for_mus" ]
+    catalog_deps = [ "//chrome/app:catalog" ]
   }
 
   catalog_cpp_source("chrome_mus_catalog") {

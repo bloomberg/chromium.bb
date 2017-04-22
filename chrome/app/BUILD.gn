@@ -492,16 +492,14 @@ if (use_aura) {
     ":chrome_content_utility_manifest",
   ]
 
-  if (enable_package_mash_services) {
-    catalog("catalog_for_mus") {
-      embedded_services =
-          chrome_embedded_services +
-          [ ":chrome_content_packaged_services_manifest_for_mash" ]
-    }
-  }
-
   catalog("catalog") {
     embedded_services = chrome_embedded_services +
                         [ ":chrome_content_packaged_services_manifest" ]
+  }
+
+  catalog("catalog_for_mash") {
+    embedded_services =
+        chrome_embedded_services +
+        [ ":chrome_content_packaged_services_manifest_for_mash" ]
   }
 }

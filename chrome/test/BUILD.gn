@@ -5177,7 +5177,7 @@ if (is_chromeos && enable_package_mash_services) {
     testonly = true
     embedded_services = [ ":mash_browser_tests_manifest" ]
     standalone_services = [ "//services/tracing:manifest" ]
-    catalog_deps = [ "//chrome/app:catalog_for_mus" ]
+    catalog_deps = [ "//chrome/app:catalog_for_mash" ]
   }
 
   copy("mash_browser_tests_catalog_copy") {
@@ -5217,7 +5217,7 @@ if (is_chromeos && enable_package_mash_services) {
     testonly = true
     embedded_services = [ ":mus_browser_tests_manifest" ]
     standalone_services = [ "//services/tracing:manifest" ]
-    catalog_deps = [ "//chrome/app:catalog_for_mus" ]
+    catalog_deps = [ "//chrome/app:catalog" ]
   }
 
   copy("mus_browser_tests_catalog_copy") {
