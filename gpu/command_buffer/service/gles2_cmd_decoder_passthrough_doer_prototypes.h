@@ -796,6 +796,9 @@ error::Error DoBindUniformLocationCHROMIUM(GLuint program,
                                            GLint location,
                                            const char* name);
 error::Error DoBindTexImage2DCHROMIUM(GLenum target, GLint imageId);
+error::Error DoBindTexImage2DWithInternalformatCHROMIUM(GLenum target,
+                                                        GLenum internalformat,
+                                                        GLint imageId);
 error::Error DoReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId);
 error::Error DoTraceBeginCHROMIUM(const char* category_name,
                                   const char* trace_name);

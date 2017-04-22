@@ -32,10 +32,10 @@ New Tokens
 
 New Procedures and Functions
 
-    GLuint CreateImageCHROMIUM(ClientBuffer buffer,
-                               GLsizei width,
-                               GLsizei height,
-                               GLenum internalformat)
+  GLuint CreateImageCHROMIUM(ClientBuffer buffer,
+                             GLsizei width,
+                             GLsizei height,
+                             GLenum internalformat)
 
     Create an image from <buffer> with width equal to <width> and
     height equal to <height> and format equal to <internalformat>.
@@ -50,9 +50,39 @@ New Procedures and Functions
     COMPRESSED_RGB_S3TC_DXT1_EXT, COMPRESSED_RGBA_S3TC_DXT5_EXT or
     ETC1_RGB8_OES.
 
-    void DestroyImageCHROMIUM(GLuint image_id)
+  void DestroyImageCHROMIUM(GLuint image_id)
 
     Frees the image previously created by a call to CreateImageCHROMIUM.
+
+    INVALID_OPERATION is generated if <image_id> is not a valid image id.
+
+  void BindTexImage2DCHROMIUM(GLenum target, GLint image_id)
+
+    Binds the texture object currently bound to <target> to the image
+    <image_id> previously created by a call to CreateImageCHROMIUM.
+
+    INVALID_OPERATION is generated if no texture is bound to <target>.
+
+    INVALID_OPERATION is generated if <image_id> is not a valid image id.
+
+  void BindTexImage2DWithInternalformatCHROMIUM(GLenum target,
+                                                GLenum internalformat,
+                                                GLint image_id)
+
+    Behaves exactly like BindTexImage2DCHROMIUM, but forces the
+    texture to use the specified <internalformat> rather than the
+    default one. This function is provided solely as a workaround for
+    driver bugs on some platforms. BindTexImage2DCHROMIUM should be
+    used by almost all users.
+
+  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint image_id)
+
+    Unbinds the texture object bound to <target> from the image
+    <image_id> previously created by a call to CreateImageCHROMIUM. If
+    the texture is not currently bound to the image, has no effect,
+    though may still generate errors.
+
+    INVALID_OPERATION is generated if no texture is bound to <target>.
 
     INVALID_OPERATION is generated if <image_id> is not a valid image id.
 

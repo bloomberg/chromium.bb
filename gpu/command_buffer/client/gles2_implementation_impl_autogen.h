@@ -3195,6 +3195,21 @@ void GLES2Implementation::BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
   CheckGLError();
 }
 
+void GLES2Implementation::BindTexImage2DWithInternalformatCHROMIUM(
+    GLenum target,
+    GLenum internalformat,
+    GLint imageId) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glBindTexImage2DWithInternalformatCHROMIUM("
+                     << GLES2Util::GetStringTextureBindTarget(target) << ", "
+                     << GLES2Util::GetStringEnum(internalformat) << ", "
+                     << imageId << ")");
+  helper_->BindTexImage2DWithInternalformatCHROMIUM(target, internalformat,
+                                                    imageId);
+  CheckGLError();
+}
+
 void GLES2Implementation::ReleaseTexImage2DCHROMIUM(GLenum target,
                                                     GLint imageId) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

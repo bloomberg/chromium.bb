@@ -1415,6 +1415,13 @@ void GL_APIENTRY GLES2BindUniformLocationCHROMIUM(GLuint program,
 void GL_APIENTRY GLES2BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
   gles2::GetGLContext()->BindTexImage2DCHROMIUM(target, imageId);
 }
+void GL_APIENTRY
+GLES2BindTexImage2DWithInternalformatCHROMIUM(GLenum target,
+                                              GLenum internalformat,
+                                              GLint imageId) {
+  gles2::GetGLContext()->BindTexImage2DWithInternalformatCHROMIUM(
+      target, internalformat, imageId);
+}
 void GL_APIENTRY GLES2ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
   gles2::GetGLContext()->ReleaseTexImage2DCHROMIUM(target, imageId);
 }
@@ -2817,6 +2824,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glBindTexImage2DCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glBindTexImage2DCHROMIUM),
+    },
+    {
+        "glBindTexImage2DWithInternalformatCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glBindTexImage2DWithInternalformatCHROMIUM),
     },
     {
         "glReleaseTexImage2DCHROMIUM",

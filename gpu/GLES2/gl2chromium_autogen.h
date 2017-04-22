@@ -310,6 +310,8 @@
   GLES2_GET_FUN(CreateAndConsumeTextureCHROMIUM)
 #define glBindUniformLocationCHROMIUM GLES2_GET_FUN(BindUniformLocationCHROMIUM)
 #define glBindTexImage2DCHROMIUM GLES2_GET_FUN(BindTexImage2DCHROMIUM)
+#define glBindTexImage2DWithInternalformatCHROMIUM \
+  GLES2_GET_FUN(BindTexImage2DWithInternalformatCHROMIUM)
 #define glReleaseTexImage2DCHROMIUM GLES2_GET_FUN(ReleaseTexImage2DCHROMIUM)
 #define glTraceBeginCHROMIUM GLES2_GET_FUN(TraceBeginCHROMIUM)
 #define glTraceEndCHROMIUM GLES2_GET_FUN(TraceEndCHROMIUM)

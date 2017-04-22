@@ -4278,6 +4278,11 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': "CHROMIUM_image",
   },
+  'BindTexImage2DWithInternalformatCHROMIUM': {
+    'decoder_func': 'DoBindTexImage2DWithInternalformatCHROMIUM',
+    'unit_test': False,
+    'extension': "CHROMIUM_image",
+  },
   'ReleaseTexImage2DCHROMIUM': {
     'decoder_func': 'DoReleaseTexImage2DCHROMIUM',
     'unit_test': False,
