@@ -218,8 +218,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac only.
 
     # Fails on all GPU types.
+    self.Flaky('conformance/context/context-release-upon-reload.html',
+        ['mac'], bug=713829)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
-              ['mac'], bug=709351)
+        ['mac'], bug=709351)
     self.Fail('conformance2/rendering/' +
         'blitframebuffer-resolve-to-back-buffer.html',
         ['mac'], bug=699566)
@@ -553,8 +555,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd', 'intel'], bug=679691)
 
     # Mac Intel
-    self.Flaky('conformance/context/context-release-upon-reload.html',
-      ['sierra', 'intel'], bug=713829)
     self.Fail(
       'conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-float.html',
       ['sierra', 'intel'], bug=663188)
