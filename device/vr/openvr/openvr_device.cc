@@ -216,7 +216,7 @@ device::mojom::VRPosePtr OpenVRDevice::OpenVRRenderLoop::getPose() {
   vr::TrackedDevicePose_t poses[vr::k_unMaxTrackedDeviceCount];
 
   vr_system_->GetDeviceToAbsoluteTrackingPose(
-      vr::TrackingUniverseStanding, 0.0f, poses, vr::k_unMaxTrackedDeviceCount);
+      vr::TrackingUniverseSeated, 0.0f, poses, vr::k_unMaxTrackedDeviceCount);
   const auto& hmdPose = poses[vr::k_unTrackedDeviceIndex_Hmd];
   if (hmdPose.bPoseIsValid && hmdPose.bDeviceIsConnected) {
     const auto& transform = hmdPose.mDeviceToAbsoluteTracking;
