@@ -11,6 +11,7 @@
 
 // Utility functions used by encoder binaries.
 
+#include <assert.h>
 #include <string.h>
 
 #include "./encoder_util.h"
@@ -114,95 +115,64 @@ void aom_find_mismatch_high(const aom_image_t *const img1,
 }
 #endif
 
+static void find_mismatch_plane(const aom_image_t *const img1,
+                                const aom_image_t *const img2, int plane,
+                                int loc[4]) {
+  const unsigned char *const p1 = img1->planes[plane];
+  const int p1_stride = img1->stride[plane];
+  const unsigned char *const p2 = img2->planes[plane];
+  const int p2_stride = img2->stride[plane];
+  const uint32_t bsize = 64;
+  const int is_y_plane = (plane == AOM_PLANE_Y);
+  const uint32_t bsizex = is_y_plane ? bsize : bsize >> img1->x_chroma_shift;
+  const uint32_t bsizey = is_y_plane ? bsize : bsize >> img1->y_chroma_shift;
+  const uint32_t c_w =
+      is_y_plane ? img1->d_w
+                 : (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;
+  const uint32_t c_h =
+      is_y_plane ? img1->d_h
+                 : (img1->d_h + img1->y_chroma_shift) >> img1->y_chroma_shift;
+  assert(img1->d_w == img2->d_w && img1->d_h == img2->d_h);
+  assert(img1->x_chroma_shift == img2->x_chroma_shift &&
+         img1->y_chroma_shift == img2->y_chroma_shift);
+  loc[0] = loc[1] = loc[2] = loc[3] = -1;
+  int match = 1;
+  uint32_t i, j;
+  for (i = 0; match && i < c_h; i += bsizey) {
+    for (j = 0; match && j < c_w; j += bsizex) {
+      const int si =
+          is_y_plane ? mmin(i + bsizey, c_h) - i : mmin(i + bsizey, c_h - i);
+      const int sj =
+          is_y_plane ? mmin(j + bsizex, c_w) - j : mmin(j + bsizex, c_w - j);
+      int k, l;
+      for (k = 0; match && k < si; ++k) {
+        for (l = 0; match && l < sj; ++l) {
+          const int row = i + k;
+          const int col = j + l;
+          const int offset1 = row * p1_stride + col;
+          const int offset2 = row * p2_stride + col;
+          const int val1 = p1[offset1];
+          const int val2 = p2[offset2];
+          if (val1 != val2) {
+            loc[0] = row;
+            loc[1] = col;
+            loc[2] = val1;
+            loc[3] = val2;
+            match = 0;
+            break;
+          }
+        }
+      }
+    }
+  }
+}
+
 void aom_find_mismatch(const aom_image_t *const img1,
                        const aom_image_t *const img2, int yloc[4], int uloc[4],
                        int vloc[4]) {
-  const uint32_t bsize = 64;
-  const uint32_t bsizey = bsize >> img1->y_chroma_shift;
-  const uint32_t bsizex = bsize >> img1->x_chroma_shift;
-  const uint32_t c_w =
-      (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;
-  const uint32_t c_h =
-      (img1->d_h + img1->y_chroma_shift) >> img1->y_chroma_shift;
-  int match = 1;
-  uint32_t i, j;
-  yloc[0] = yloc[1] = yloc[2] = yloc[3] = -1;
-  for (i = 0, match = 1; match && i < img1->d_h; i += bsize) {
-    for (j = 0; match && j < img1->d_w; j += bsize) {
-      int k, l;
-      const int si = mmin(i + bsize, img1->d_h) - i;
-      const int sj = mmin(j + bsize, img1->d_w) - j;
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(img1->planes[AOM_PLANE_Y] +
-                (i + k) * img1->stride[AOM_PLANE_Y] + j + l) !=
-              *(img2->planes[AOM_PLANE_Y] +
-                (i + k) * img2->stride[AOM_PLANE_Y] + j + l)) {
-            yloc[0] = i + k;
-            yloc[1] = j + l;
-            yloc[2] = *(img1->planes[AOM_PLANE_Y] +
-                        (i + k) * img1->stride[AOM_PLANE_Y] + j + l);
-            yloc[3] = *(img2->planes[AOM_PLANE_Y] +
-                        (i + k) * img2->stride[AOM_PLANE_Y] + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  uloc[0] = uloc[1] = uloc[2] = uloc[3] = -1;
-  for (i = 0, match = 1; match && i < c_h; i += bsizey) {
-    for (j = 0; match && j < c_w; j += bsizex) {
-      int k, l;
-      const int si = mmin(i + bsizey, c_h - i);
-      const int sj = mmin(j + bsizex, c_w - j);
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(img1->planes[AOM_PLANE_U] +
-                (i + k) * img1->stride[AOM_PLANE_U] + j + l) !=
-              *(img2->planes[AOM_PLANE_U] +
-                (i + k) * img2->stride[AOM_PLANE_U] + j + l)) {
-            uloc[0] = i + k;
-            uloc[1] = j + l;
-            uloc[2] = *(img1->planes[AOM_PLANE_U] +
-                        (i + k) * img1->stride[AOM_PLANE_U] + j + l);
-            uloc[3] = *(img2->planes[AOM_PLANE_U] +
-                        (i + k) * img2->stride[AOM_PLANE_U] + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-  // TODO(urvang): Refactor the 3 for loops for Y, U, V?
-  vloc[0] = vloc[1] = vloc[2] = vloc[3] = -1;
-  for (i = 0, match = 1; match && i < c_h; i += bsizey) {
-    for (j = 0; match && j < c_w; j += bsizex) {
-      int k, l;
-      const int si = mmin(i + bsizey, c_h - i);
-      const int sj = mmin(j + bsizex, c_w - j);
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(img1->planes[AOM_PLANE_V] +
-                (i + k) * img1->stride[AOM_PLANE_V] + j + l) !=
-              *(img2->planes[AOM_PLANE_V] +
-                (i + k) * img2->stride[AOM_PLANE_V] + j + l)) {
-            vloc[0] = i + k;
-            vloc[1] = j + l;
-            vloc[2] = *(img1->planes[AOM_PLANE_V] +
-                        (i + k) * img1->stride[AOM_PLANE_V] + j + l);
-            vloc[3] = *(img2->planes[AOM_PLANE_V] +
-                        (i + k) * img2->stride[AOM_PLANE_V] + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
+  find_mismatch_plane(img1, img2, AOM_PLANE_Y, yloc);
+  find_mismatch_plane(img1, img2, AOM_PLANE_U, uloc);
+  find_mismatch_plane(img1, img2, AOM_PLANE_V, vloc);
 }
 
 int aom_compare_img(const aom_image_t *const img1,
