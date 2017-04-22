@@ -45,12 +45,13 @@ function test()
     function testOverride(angle, orientation, next)
     {
         InspectorTest.addConsoleSniffer(addDumpResult.bind(null, next));
-        InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}}, function() {});
+        InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}});
     }
 
-    function testError(angle, orientation, next)
+    async function testError(angle, orientation, next)
     {
-        InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}}, next);
+        await InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}});
+        next();
     }
 
     var original;

@@ -16,15 +16,11 @@ function foo()
 function test()
 {
     InspectorTest.runDebuggerTestSuite([
-        function testSetNoneOfURLAndRegex(next)
+        async function testSetNoneOfURLAndRegex(next)
         {
-            InspectorTest.DebuggerAgent.invoke_setBreakpointByUrl({lineNumber: 1}, step2);
-
-            function step2(error)
-            {
-                InspectorTest.addResult(error);
-                next();
-            }
+            var response = await InspectorTest.DebuggerAgent.invoke_setBreakpointByUrl({lineNumber: 1});
+            InspectorTest.addResult(response[Protocol.Error]);
+            next();
         },
 
         function testSetBothURLAndRegex(next)
@@ -40,20 +36,13 @@ function test()
             }
         },
 
-        function testSetByRegex(next)
+        async function testSetByRegex(next)
         {
-            InspectorTest.DebuggerAgent.invoke_setBreakpointByUrl({urlRegex: "debugger-set-breakpoint.*", lineNumber:8}, step2);
-
-            function step2(result)
-            {
-                InspectorTest.runTestFunctionAndWaitUntilPaused(step3);
-            }
-        
-            function step3(callFrames)
-            {
+            await InspectorTest.DebuggerAgent.invoke_setBreakpointByUrl({urlRegex: "debugger-set-breakpoint.*", lineNumber:8});
+            InspectorTest.runTestFunctionAndWaitUntilPaused(callFrames => {
                 InspectorTest.captureStackTrace(callFrames);
                 next();
-            }
+            });
         }
     ]);
 }
