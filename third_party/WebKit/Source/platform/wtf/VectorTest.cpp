@@ -365,7 +365,7 @@ TEST(VectorTest, ContainerAnnotations) {
   vector_a.push_back(10);
   vector_a.ReserveCapacity(32);
 
-  volatile int* int_pointer_a = vector_a.Data();
+  volatile int* int_pointer_a = vector_a.data();
   EXPECT_DEATH(int_pointer_a[1] = 11, "container-overflow");
   vector_a.push_back(11);
   int_pointer_a[1] = 11;
@@ -373,28 +373,28 @@ TEST(VectorTest, ContainerAnnotations) {
   EXPECT_DEATH((void)int_pointer_a[2], "container-overflow");
   vector_a.ShrinkToFit();
   vector_a.ReserveCapacity(16);
-  int_pointer_a = vector_a.Data();
+  int_pointer_a = vector_a.data();
   EXPECT_DEATH((void)int_pointer_a[2], "container-overflow");
 
   Vector<int> vector_b(vector_a);
   vector_b.ReserveCapacity(16);
-  volatile int* int_pointer_b = vector_b.Data();
+  volatile int* int_pointer_b = vector_b.data();
   EXPECT_DEATH((void)int_pointer_b[2], "container-overflow");
 
   Vector<int> vector_c((Vector<int>(vector_a)));
-  volatile int* int_pointer_c = vector_c.Data();
+  volatile int* int_pointer_c = vector_c.data();
   EXPECT_DEATH((void)int_pointer_c[2], "container-overflow");
   vector_c.push_back(13);
   vector_c.Swap(vector_b);
 
-  volatile int* int_pointer_b2 = vector_b.Data();
-  volatile int* int_pointer_c2 = vector_c.Data();
+  volatile int* int_pointer_b2 = vector_b.data();
+  volatile int* int_pointer_c2 = vector_c.data();
   int_pointer_b2[2] = 13;
   EXPECT_DEATH((void)int_pointer_b2[3], "container-overflow");
   EXPECT_DEATH((void)int_pointer_c2[2], "container-overflow");
 
   vector_b = vector_c;
-  volatile int* int_pointer_b3 = vector_b.Data();
+  volatile int* int_pointer_b3 = vector_b.data();
   EXPECT_DEATH((void)int_pointer_b3[2], "container-overflow");
 }
 #endif  // defined(ANNOTATE_CONTIGUOUS_CONTAINER)

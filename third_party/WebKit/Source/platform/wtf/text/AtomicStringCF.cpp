@@ -49,9 +49,9 @@ PassRefPtr<StringImpl> AtomicString::Add(CFStringRef string) {
         reinterpret_cast<const UChar*>(ptr), length);
 
   Vector<UniChar, 1024> uchar_buffer(length);
-  CFStringGetCharacters(string, CFRangeMake(0, length), uchar_buffer.Data());
+  CFStringGetCharacters(string, CFRangeMake(0, length), uchar_buffer.data());
   return AtomicStringTable::Instance().Add(
-      reinterpret_cast<const UChar*>(uchar_buffer.Data()), length);
+      reinterpret_cast<const UChar*>(uchar_buffer.data()), length);
 }
 
 }  // namespace WTF

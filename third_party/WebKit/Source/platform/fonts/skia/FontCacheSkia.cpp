@@ -243,7 +243,7 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
 #if OS(WIN)
   if (sideloaded_fonts_) {
     HashMap<String, sk_sp<SkTypeface>>::iterator sideloaded_font =
-        sideloaded_fonts_->Find(name.Data());
+        sideloaded_fonts_->Find(name.data());
     if (sideloaded_font != sideloaded_fonts_->end())
       return sideloaded_font->value;
   }

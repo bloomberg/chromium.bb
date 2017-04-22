@@ -152,7 +152,7 @@ PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
     CString family_name = font_description.Family().Family().Utf8();
 
     SkTypeface* typeface = font_manager_->matchFamilyStyleCharacter(
-        family_name.Data(), font_description.SkiaFontStyle(), &bcp47_locale,
+        family_name.data(), font_description.SkiaFontStyle(), &bcp47_locale,
         locale_count, character);
     if (typeface) {
       SkString skia_family;
@@ -391,7 +391,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
 
   std::unique_ptr<FontPlatformData> result =
       WTF::WrapUnique(new FontPlatformData(
-          tf, name.Data(), font_size,
+          tf, name.data(), font_size,
           (font_description.Weight() >= kFontWeight600 && !tf->isBold()) ||
               font_description.IsSyntheticBold(),
           ((font_description.Style() == kFontStyleItalic ||

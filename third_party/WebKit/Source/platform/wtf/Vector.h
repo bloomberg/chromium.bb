@@ -1016,10 +1016,6 @@ class Vector
   T* data() { return Base::Buffer(); }
   const T* data() const { return Base::Buffer(); }
 
-  // TODO(dcheng): Temporary alias to make removing this easier.
-  T* Data() { return data(); }
-  const T* Data() const { return data(); }
-
   // Iterators and reverse iterators. They are invalidated on a reallocation.
   iterator begin() { return data(); }
   iterator end() { return begin() + size_; }

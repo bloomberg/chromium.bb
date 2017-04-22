@@ -84,8 +84,6 @@ class WTF_EXPORT CString {
 
   // The bytes of the string, always NUL terminated. May be null.
   const char* data() const { return buffer_ ? buffer_->data() : 0; }
-  // TODO(dcheng): Temporary alias to make removing this easier.
-  const char* Data() const { return data(); }
 
   // The length of the data(), *not* including the NUL terminator.
   size_t length() const { return buffer_ ? buffer_->length() : 0; }

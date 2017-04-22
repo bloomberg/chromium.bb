@@ -73,7 +73,7 @@ TEST(HyphenationTest, LastHyphenLocation) {
     if (location_index > 0 && location == locations[location_index - 1])
       location_index--;
     EXPECT_EQ(locations[location_index], location) << String::Format(
-        "lastHyphenLocation(%s, %zd)", word.Utf8().Data(), before_index);
+        "lastHyphenLocation(%s, %zd)", word.Utf8().data(), before_index);
   }
 
   EXPECT_EQ(location_index, 0u)

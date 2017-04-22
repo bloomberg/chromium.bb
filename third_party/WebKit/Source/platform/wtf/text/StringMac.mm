@@ -37,16 +37,16 @@ String::String(NSString* str) {
     CFIndex convertedsize =
         CFStringGetBytes(reinterpret_cast<CFStringRef>(str),
                          CFRangeMake(0, size), kCFStringEncodingISOLatin1, 0,
-                         false, lchar_buffer.Data(), size, &used_buf_len);
+                         false, lchar_buffer.data(), size, &used_buf_len);
     if ((convertedsize == size) && (used_buf_len == size)) {
-      impl_ = StringImpl::Create(lchar_buffer.Data(), size);
+      impl_ = StringImpl::Create(lchar_buffer.data(), size);
       return;
     }
 
     Vector<UChar, 1024> uchar_buffer(size);
     CFStringGetCharacters(reinterpret_cast<CFStringRef>(str),
-                          CFRangeMake(0, size), uchar_buffer.Data());
-    impl_ = StringImpl::Create(uchar_buffer.Data(), size);
+                          CFRangeMake(0, size), uchar_buffer.data());
+    impl_ = StringImpl::Create(uchar_buffer.data(), size);
   }
 }
 
