@@ -88,6 +88,7 @@ void NavigationMetricsRecorder::DidFinishNavigation(
       !ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
                                     ui::PAGE_TRANSITION_TYPED)) {
     if (!navigation_handle->GetPreviousURL().is_empty()) {
+      // TODO(meacer): Remove once data URL navigations are blocked.
       rappor::SampleDomainAndRegistryFromGURL(
           rappor_service_, "Navigation.Scheme.Data",
           navigation_handle->GetPreviousURL());
@@ -96,6 +97,7 @@ void NavigationMetricsRecorder::DidFinishNavigation(
     // Also record the mime type of the data: URL.
     std::string mime_type;
     std::string charset;
+    // TODO(meacer): Remove once data URL navigations are blocked.
     if (net::DataURL::Parse(last_committed_entry->GetVirtualURL(), &mime_type,
                             &charset, nullptr)) {
       RecordDataURLMimeType(mime_type);

@@ -34,6 +34,10 @@ PLATFORM_EXPORT PassRefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
     const KURL&,
     ResourceResponse&);
 
+// Returns true if the URL is a data URL and its MIME type is in the list of
+// supported/recognized MIME types.
+PLATFORM_EXPORT bool IsDataURLMimeTypeSupported(const KURL&);
+
 PLATFORM_EXPORT bool IsRedirectResponseCode(int);
 
 }  // NetworkUtils

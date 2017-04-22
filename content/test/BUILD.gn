@@ -608,6 +608,7 @@ test("content_browsertests") {
     "../browser/fileapi/file_system_browsertest.cc",
     "../browser/fileapi/fileapi_browsertest.cc",
     "../browser/find_request_manager_browsertest.cc",
+    "../browser/frame_host/data_url_navigation_browsertest.cc",
     "../browser/frame_host/form_submission_throttle_browsertest.cc",
     "../browser/frame_host/frame_tree_browsertest.cc",
     "../browser/frame_host/interstitial_page_impl_browsertest.cc",
@@ -987,6 +988,10 @@ test("content_browsertests") {
       # The cast shell media pipeline doesn't produce real video frames that we
       # can inspect.
       "../browser/media/media_color_browsertest.cc",
+
+      # The cast shell has plugin support but no pdf, causing data URL PDF tests
+      # to fail.
+      "../browser/frame_host/data_url_navigation_browsertest.cc",
     ]
   }
 }

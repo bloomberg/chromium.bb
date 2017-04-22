@@ -430,6 +430,28 @@ function testChromeExtensionRelativePath() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that guests are blocked from navigating the webview to a
+// data URL.
+function testContentInitiatedNavigationToDataUrlBlocked() {
+  var navUrl = "data:text/html,foo";
+  var webview = document.createElement('webview');
+  webview.addEventListener('consolemessage', function(e) {
+    if (e.message.startsWith(
+        'Not allowed to navigate top frame to data URL:')) {
+      embedder.test.succeed();
+    }
+  });
+  webview.addEventListener('loadstop', function(e) {
+    if (webview.getAttribute('src') == navUrl) {
+      embedder.test.fail();
+    }
+  });
+  webview.setAttribute('src',
+      'data:text/html,<script>window.location.href = "' + navUrl +
+      '";</scr' + 'ipt>');
+  document.body.appendChild(webview);
+}
+
 // Tests that a <webview> that starts with "display: none" style loads
 // properly.
 function testDisplayNoneWebviewLoad() {
@@ -3076,6 +3098,8 @@ embedder.test.testList = {
   'testAddAndRemoveContentScripts': testAddAndRemoveContentScripts,
   'testAddContentScriptsWithNewWindowAPI':
       testAddContentScriptsWithNewWindowAPI,
+  'testContentInitiatedNavigationToDataUrlBlocked':
+      testContentInitiatedNavigationToDataUrlBlocked,
   'testContentScriptIsInjectedAfterTerminateAndReloadWebView':
       testContentScriptIsInjectedAfterTerminateAndReloadWebView,
   'testContentScriptExistsAsLongAsWebViewTagExists':

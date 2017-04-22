@@ -169,6 +169,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidChangeScrollOffset() override;
   void DidUpdateCurrentHistoryItem() override;
 
+  bool AllowContentInitiatedDataUrlNavigations(const KURL&) override;
+
   WebCookieJar* CookieJar() const override;
   void FrameFocused() const override;
   void DidChangeName(const String&) override;

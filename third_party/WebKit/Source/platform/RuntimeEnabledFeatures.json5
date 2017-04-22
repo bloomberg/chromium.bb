@@ -71,6 +71,10 @@
       status: "test",
     },
     {
+      name: "AllowContentInitiatedDataUrlNavigations",
+      status: "stable",
+    },
+    {
       name: "AudioOutputDevices",
       status: "stable",
     },

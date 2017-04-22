@@ -16,6 +16,13 @@ const base::Feature kAccessibilityObjectModel(
     "AccessibilityObjectModel",
     base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables content-initiated, main frame navigations to data URLs.
+// TODO(meacer): Remove when the deprecation is complete.
+//               https://www.chromestatus.com/feature/5669602927312896
+const base::Feature kAllowContentInitiatedDataUrlNavigations{
+    "AllowContentInitiatedDataUrlNavigations",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables asm.js to WebAssembly V8 backend.
 // http://asmjs.org/spec/latest/
 const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",

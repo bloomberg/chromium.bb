@@ -650,6 +650,8 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebString UserAgentOverride() override;
   blink::WebString DoNotTrackValue() override;
   bool AllowWebGL(bool default_value) override;
+  bool AllowContentInitiatedDataUrlNavigations(
+      const blink::WebURL& url) override;
   blink::WebScreenOrientationClient* GetWebScreenOrientationClient() override;
   void PostAccessibilityEvent(const blink::WebAXObject& obj,
                               blink::WebAXEvent event) override;

@@ -112,7 +112,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             @Override
             public boolean isSatisfied() {
                 if (getNumInfobarsShowing() != 0) return false;
-                return TextUtils.equals("Popup #3", selector.getCurrentTab().getTitle());
+                return TextUtils.equals("Three", selector.getCurrentTab().getTitle());
             }
         }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
@@ -126,7 +126,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             public boolean isSatisfied() {
                 if (getNumInfobarsShowing() != 0) return false;
                 if (selector.getTotalTabCount() != 7) return false;
-                return TextUtils.equals("Popup #3", selector.getCurrentTab().getTitle());
+                return TextUtils.equals("Three", selector.getCurrentTab().getTitle());
             }
         }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         assertNotSame(currentTabId, selector.getCurrentTab().getId());

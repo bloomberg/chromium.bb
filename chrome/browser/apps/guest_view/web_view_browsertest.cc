@@ -1298,6 +1298,12 @@ IN_PROC_BROWSER_TEST_P(WebViewTest,
              NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_P(WebViewTest,
+                       Shim_TestContentInitiatedNavigationToDataUrlBlocked) {
+  TestHelper("testContentInitiatedNavigationToDataUrlBlocked", "web_view/shim",
+             NO_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDisplayNoneWebviewLoad) {
   TestHelper("testDisplayNoneWebviewLoad", "web_view/shim", NO_TEST_SERVER);
 }

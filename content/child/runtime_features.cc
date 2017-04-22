@@ -370,6 +370,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
                                                 false);
   }
 
+  WebRuntimeFeatures::EnableFeatureFromString(
+      "AllowContentInitiatedDataUrlNavigations",
+      base::FeatureList::IsEnabled(
+          features::kAllowContentInitiatedDataUrlNavigations));
+
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc))
     WebRuntimeFeatures::EnableWebNfc(true);

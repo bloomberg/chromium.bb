@@ -71,6 +71,7 @@ TestNavigationObserver::TestNavigationObserver(
     : navigation_started_(false),
       navigations_completed_(0),
       number_of_navigations_(number_of_navigations),
+      last_navigation_succeeded_(false),
       message_loop_runner_(new MessageLoopRunner(quit_mode)),
       web_contents_created_callback_(
           base::Bind(&TestNavigationObserver::OnWebContentsCreated,

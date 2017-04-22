@@ -13,7 +13,7 @@ function runTest() {
     } else {
         // Navigate a timeout to make sure we generate a history entry that we
         // can go back to.
-        setTimeout(function() {location.href = 'data:text/html,<script>history.back();</' + 'script>';}, 0);
+        setTimeout(function() {location.href = '../../resources/back.html';}, 0);
         sessionStorage.didNav = true;
     }
 }

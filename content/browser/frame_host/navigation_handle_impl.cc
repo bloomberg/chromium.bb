@@ -13,6 +13,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/ancestor_throttle.h"
+#include "content/browser/frame_host/data_url_navigation_throttle.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/form_submission_throttle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -681,14 +682,6 @@ void NavigationHandleImpl::DidCommitNavigation(
   } else {
     state_ = DID_COMMIT;
   }
-
-  if (url_.SchemeIs(url::kDataScheme) && IsInMainFrame() &&
-      IsRendererInitiated()) {
-    GetRenderFrameHost()->AddMessageToConsole(
-        CONSOLE_MESSAGE_LEVEL_WARNING,
-        "Upcoming versions will block content-initiated top frame navigations "
-        "to data: URLs. For more information, see https://goo.gl/BaZAea.");
-  }
 }
 
 void NavigationHandleImpl::Transfer() {
@@ -929,6 +922,13 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   // |throttles_to_register| for registering all throttles.
   std::vector<std::unique_ptr<NavigationThrottle>> throttles_to_register =
       GetDelegate()->CreateThrottlesForNavigation(this);
+
+  // Check for renderer-inititated main frame navigations to data URLs. This is
+  // done first as it may block the main frame navigation altogether.
+  std::unique_ptr<NavigationThrottle> data_url_navigation_throttle =
+      DataUrlNavigationThrottle::CreateThrottleForNavigation(this);
+  if (data_url_navigation_throttle)
+    throttles_to_register.push_back(std::move(data_url_navigation_throttle));
 
   std::unique_ptr<content::NavigationThrottle> ancestor_throttle =
       content::AncestorThrottle::MaybeCreateThrottleFor(this);

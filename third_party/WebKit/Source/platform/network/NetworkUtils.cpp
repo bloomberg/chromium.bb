@@ -105,6 +105,16 @@ PassRefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
   return data;
 }
 
+bool IsDataURLMimeTypeSupported(const KURL& url) {
+  std::string utf8_mime_type;
+  std::string utf8_charset;
+  if (net::DataURL::Parse(WebStringToGURL(url.GetString()), &utf8_mime_type,
+                          &utf8_charset, nullptr)) {
+    return mime_util::IsSupportedMimeType(utf8_mime_type);
+  }
+  return false;
+}
+
 bool IsRedirectResponseCode(int response_code) {
   return net::HttpResponseHeaders::IsRedirectResponseCode(response_code);
 }

@@ -89,6 +89,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -712,6 +713,23 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
 
   if (!request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
     ReportLocalLoadFailed(frame_, url.ElidedString());
+    return false;
+  }
+
+  // Block renderer-initiated loads of data URLs in the top frame. If the mime
+  // type of the data URL is supported, the URL will eventually be rendered, so
+  // block it here. Otherwise, the load might be handled by a plugin or end up
+  // as a download, so allow it to let the embedder figure out what to do with
+  // it.
+  if (frame_->IsMainFrame() &&
+      !request.GetResourceRequest().IsSameDocumentNavigation() &&
+      !frame_->Client()->AllowContentInitiatedDataUrlNavigations(
+          request.OriginDocument()->Url()) &&
+      url.ProtocolIsData() && NetworkUtils::IsDataURLMimeTypeSupported(url)) {
+    frame_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel,
+        "Not allowed to navigate top frame to data URL: " +
+            url.ElidedString()));
     return false;
   }
 

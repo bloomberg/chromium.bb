@@ -236,6 +236,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidChangeScrollOffset() {}
   virtual void DidUpdateCurrentHistoryItem() {}
 
+  // Called when a content-initiated, main frame navigation to a data URL is
+  // about to occur.
+  virtual bool AllowContentInitiatedDataUrlNavigations(const KURL&) {
+    return false;
+  }
+
   virtual WebCookieJar* CookieJar() const = 0;
 
   virtual void DidChangeName(const String&) {}

@@ -330,6 +330,14 @@ class BLINK_EXPORT WebFrameClient {
     return WebHistoryItem();
   }
 
+  // Asks the embedder whether the frame is allowed to navigate the main frame
+  // to a data URL.
+  // TODO(crbug.com/713259): Move renderer side checks to
+  //                         RenderFrameImpl::DecidePolicyForNavigation().
+  virtual bool AllowContentInitiatedDataUrlNavigations(const WebURL&) {
+    return false;
+  }
+
   // Navigational notifications ------------------------------------------
 
   // These notifications bracket any loading that occurs in the WebFrame.

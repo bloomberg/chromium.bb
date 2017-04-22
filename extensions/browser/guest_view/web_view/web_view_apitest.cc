@@ -618,6 +618,11 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNavigationToExternalProtocol) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       TestContentInitiatedNavigationToDataUrlBlocked) {
+  RunTest("testContentInitiatedNavigationToDataUrlBlocked", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
                        TestNavOnConsecutiveSrcAttributeChanges) {
   RunTest("testNavOnConsecutiveSrcAttributeChanges", "web_view/apitest");
 }

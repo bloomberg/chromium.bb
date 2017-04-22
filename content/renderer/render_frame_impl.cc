@@ -4712,6 +4712,12 @@ bool RenderFrameImpl::AllowWebGL(bool default_value) {
   return !blocked;
 }
 
+bool RenderFrameImpl::AllowContentInitiatedDataUrlNavigations(
+    const blink::WebURL& url) {
+  // Error pages can navigate to data URLs.
+  return url.GetString() == kUnreachableWebDataURL;
+}
+
 blink::WebScreenOrientationClient*
 RenderFrameImpl::GetWebScreenOrientationClient() {
   if (!screen_orientation_dispatcher_)

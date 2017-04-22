@@ -465,6 +465,28 @@ function testChromeExtensionURL() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that guests are blocked from navigating the webview to a
+// data URL.
+function testContentInitiatedNavigationToDataUrlBlocked() {
+  var navUrl = "data:text/html,foo";
+  var webview = document.createElement('webview');
+  webview.addEventListener('consolemessage', function(e) {
+    if (e.message.startsWith(
+        'Not allowed to navigate top frame to data URL:')) {
+      embedder.test.succeed();
+    }
+  });
+  webview.addEventListener('loadstop', function(e) {
+    if (webview.getAttribute('src') == navUrl) {
+      embedder.test.fail();
+    }
+  });
+  webview.setAttribute('src',
+      'data:text/html,<script>window.location.href = "' + navUrl +
+      '";</scr' + 'ipt>');
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the load event fires when the a new page is
 // loaded.
 // TODO(fsamuel): Add a test to verify that subframe loads within a guest
@@ -1229,6 +1251,12 @@ function testNavOnSrcAttributeChange() {
 }
 
 // This test verifies that new window attachment functions as expected.
+//
+// TODO(crbug.com/594215) Test that opening a new window with a data URL is
+// blocked. There is currently no way to test this, as the block message is
+// printed on the new window which never gets created, so the message is lost.
+// Also test that opening a new window with a data URL when the webview is
+// already on a data URL is allowed.
 function testNewWindow() {
   var webview = document.createElement('webview');
   webview.addEventListener('newwindow', function(e) {
@@ -1753,6 +1781,8 @@ embedder.test.testList = {
   'testCannotMutateEventName': testCannotMutateEventName,
   'testChromeExtensionRelativePath': testChromeExtensionRelativePath,
   'testChromeExtensionURL': testChromeExtensionURL,
+  'testContentInitiatedNavigationToDataUrlBlocked':
+      testContentInitiatedNavigationToDataUrlBlocked,
   'testContentLoadEvent': testContentLoadEvent,
   'testDeclarativeWebRequestAPI': testDeclarativeWebRequestAPI,
   'testDeclarativeWebRequestAPISendMessage':

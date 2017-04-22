@@ -29,7 +29,7 @@
 
         setTimeout(function() {
           window.name = 'verification';
-          window.location = "data:text/html,<script>history.back();</scr" + "ipt>";
+          window.location = "../../../resources/back.html";
         }, 0);
       } else {
         assert_array_equals([internals.visualViewportWidth(), internals.visualViewportHeight()], [400, 300], 'page scale is restored');

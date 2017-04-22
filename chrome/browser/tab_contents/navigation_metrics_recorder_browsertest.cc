@@ -17,14 +17,6 @@ namespace {
 
 typedef InProcessBrowserTest NavigationMetricsRecorderBrowserTest;
 
-// Performs a content initiated navigation to |url|.
-void RedirectToUrl(content::WebContents* web_contents, const GURL& url) {
-  content::TestNavigationObserver observer(web_contents, 1);
-  EXPECT_TRUE(content::ExecuteScript(
-      web_contents, std::string("window.location.href='") + url.spec() + "'"));
-  observer.Wait();
-}
-
 IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, TestMetrics) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -46,79 +38,54 @@ IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, TestMetrics) {
                                5 /* data: */, 1);
   // Since there was no previous URL, Rappor shouldn't record anything.
   EXPECT_EQ(0, rappor_service.GetReportsCount());
-
-  // Navigate to an empty page and redirect it to a data: URL. Rappor should
-  // record a report.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  content::TestNavigationObserver observer(web_contents, 1);
-  EXPECT_TRUE(content::ExecuteScript(
-      web_contents, "window.location.href='data:text/html, <html></html>'"));
-  observer.Wait();
-
-  EXPECT_EQ(1, rappor_service.GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service.GetRecordedSampleForMetric(
-      "Navigation.Scheme.Data", &sample, &type));
-  EXPECT_EQ("about://", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, DataURLMimeTypes) {
   base::HistogramTester histograms;
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
 
   // HTML:
-  RedirectToUrl(web_contents, GURL("data:text/html, <html></html>"));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL("data:text/html, <html></html>"));
   histograms.ExpectTotalCount("Navigation.MainFrameScheme", 1);
   histograms.ExpectBucketCount("Navigation.MainFrameScheme", 5 /* data: */, 1);
   histograms.ExpectTotalCount("Navigation.MainFrameSchemeDifferentPage", 1);
   histograms.ExpectBucketCount("Navigation.MainFrameSchemeDifferentPage",
                                5 /* data: */, 1);
-  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 1);
-  histograms.ExpectBucketCount("Navigation.MainFrameScheme.DataUrl.MimeType",
-                               NavigationMetricsRecorder::MIME_TYPE_HTML, 1);
+  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 0);
 
   // SVG:
-  RedirectToUrl(web_contents,
-                GURL("data:image/svg+xml,<!DOCTYPE svg><svg version=\"1.1\" "
-                     "xmlns=\"http://www.w3.org/2000/svg\"></svg>"));
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("data:image/svg+xml,<!DOCTYPE svg><svg version=\"1.1\" "
+                      "xmlns=\"http://www.w3.org/2000/svg\"></svg>"));
   histograms.ExpectTotalCount("Navigation.MainFrameScheme", 2);
   histograms.ExpectBucketCount("Navigation.MainFrameScheme", 5 /* data: */, 2);
   histograms.ExpectTotalCount("Navigation.MainFrameSchemeDifferentPage", 2);
   histograms.ExpectBucketCount("Navigation.MainFrameSchemeDifferentPage",
                                5 /* data: */, 2);
-  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 2);
-  histograms.ExpectBucketCount("Navigation.MainFrameScheme.DataUrl.MimeType",
-                               NavigationMetricsRecorder::MIME_TYPE_SVG, 1);
+  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 0);
 
   // Base64 encoded HTML:
-  RedirectToUrl(web_contents,
-                GURL("data:text/html;base64, PGh0bWw+YmFzZTY0PC9odG1sPg=="));
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html;base64, PGh0bWw+YmFzZTY0PC9odG1sPg=="));
   histograms.ExpectTotalCount("Navigation.MainFrameScheme", 3);
   histograms.ExpectBucketCount("Navigation.MainFrameScheme", 5 /* data: */, 3);
   histograms.ExpectTotalCount("Navigation.MainFrameSchemeDifferentPage", 3);
   histograms.ExpectBucketCount("Navigation.MainFrameSchemeDifferentPage",
                                5 /* data: */, 3);
-  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 3);
-  histograms.ExpectBucketCount("Navigation.MainFrameScheme.DataUrl.MimeType",
-                               NavigationMetricsRecorder::MIME_TYPE_HTML, 2);
+  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 0);
 
   // Plain text:
-  RedirectToUrl(web_contents, GURL("data:text/plain, test"));
+  ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain, test"));
   histograms.ExpectTotalCount("Navigation.MainFrameScheme", 4);
   histograms.ExpectBucketCount("Navigation.MainFrameScheme", 5 /* data: */, 4);
   histograms.ExpectTotalCount("Navigation.MainFrameSchemeDifferentPage", 4);
   histograms.ExpectBucketCount("Navigation.MainFrameSchemeDifferentPage",
                                5 /* data: */, 4);
-  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 4);
-  histograms.ExpectBucketCount("Navigation.MainFrameScheme.DataUrl.MimeType",
-                               NavigationMetricsRecorder::MIME_TYPE_OTHER, 1);
+  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 0);
 
   // Base64 encoded PNG:
-  RedirectToUrl(
-      web_contents,
+  ui_test_utils::NavigateToURL(
+      browser(),
       GURL("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA"
            "AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO"
            "9TXL0Y4OHwAAAABJRU5ErkJggg=="));
@@ -127,9 +94,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, DataURLMimeTypes) {
   histograms.ExpectTotalCount("Navigation.MainFrameSchemeDifferentPage", 5);
   histograms.ExpectBucketCount("Navigation.MainFrameSchemeDifferentPage",
                                5 /* data: */, 5);
-  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 5);
-  histograms.ExpectBucketCount("Navigation.MainFrameScheme.DataUrl.MimeType",
-                               NavigationMetricsRecorder::MIME_TYPE_OTHER, 2);
+  histograms.ExpectTotalCount("Navigation.MainFrameScheme.DataUrl.MimeType", 0);
 }
 
 }  // namespace

@@ -177,6 +177,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // enabled. Make it work in both modes.
   bool is_form_submission() const { return is_form_submission_; }
 
+  // Whether the navigation request is a download. This is useful when the
+  // navigation hasn't committed yet, in which case HasCommitted() will return
+  // false even if the navigation request is not a download.
+  bool is_download() const { return is_download_; }
+
   // The NavigatorDelegate to notify/query for various navigation events.
   // Normally this is the WebContents, except if this NavigationHandle was
   // created during a navigation to an interstitial page. In this case it will
