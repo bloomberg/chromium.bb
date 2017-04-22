@@ -797,12 +797,18 @@ def main(argv):
     start_date = options.start_date
   else:
     assert options.past_month or options.past_week or options.past_day
+    # Database search results will include both the starting and ending
+    # days.  So, the number of days to subtract is one less than the
+    # length of the search period.
+    #
+    # For instance, the starting day for the week ending 2014-04-21
+    # should be 2017-04-15 (date - 6 days).
     if options.past_month:
-      start_date = end_date - datetime.timedelta(days=30)
+      start_date = end_date - datetime.timedelta(days=29)
     elif options.past_week:
-      start_date = end_date - datetime.timedelta(days=7)
+      start_date = end_date - datetime.timedelta(days=6)
     else:
-      start_date = end_date - datetime.timedelta(days=1)
+      start_date = end_date
 
   if options.build_type == 'cq':
     master_config = constants.CQ_MASTER
