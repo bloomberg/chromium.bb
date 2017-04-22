@@ -51,6 +51,11 @@ Polymer({
         this.lightDomChanged_.bind(this));
   },
 
+  /** @override */
+  attached: function() {
+    this.outline_ = cr.ui.FocusOutlineManager.forDocument(document);
+  },
+
   /**
    * @param {!Event} e
    * @private
@@ -82,7 +87,19 @@ Polymer({
       // the currentRouteChanged callback. Using 'iron-select' listener which
       // fires after the animation has finished allows focus() to work as
       // expected.
-      this.querySelector(selector).focus();
+      var toFocus = this.querySelector(selector);
+      var suppressInk = !this.outline_.visible;
+      var origNoInk;
+
+      if (suppressInk) {
+        origNoInk = toFocus.noink;
+        toFocus.noink = true;
+      }
+
+      toFocus.focus();
+
+      if (suppressInk)
+        toFocus.noink = origNoInk;
     }
   },
 

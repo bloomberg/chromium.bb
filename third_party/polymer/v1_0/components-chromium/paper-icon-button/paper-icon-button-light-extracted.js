@@ -14,11 +14,11 @@ Polymer({
       },
 
       _rippleDown: function() {
-        this.getRipple().downAction();
+        this.getRipple().uiDownAction();
       },
 
       _rippleUp: function() {
-        this.getRipple().upAction();
+        this.getRipple().uiUpAction();
       },
 
       /**

@@ -24,3 +24,21 @@ index 78a2a9ec621c..8b776dd790ea 100644
      },
  
      _ariaDescribedByChanged: function(ariaDescribedBy) {
+diff --git a/components-chromium/paper-icon-button/paper-icon-button-light-extracted.js b/components-chromium/paper-icon-button/paper-icon-button-light-extracted.js
+index bac589c7274c..bc25f54320fb 100644
+--- a/components-chromium/paper-icon-button/paper-icon-button-light-extracted.js
++++ b/components-chromium/paper-icon-button/paper-icon-button-light-extracted.js
+@@ -14,11 +14,11 @@ Polymer({
+       },
+
+       _rippleDown: function() {
+-        this.getRipple().downAction();
++        this.getRipple().uiDownAction();
+       },
+
+       _rippleUp: function() {
+-        this.getRipple().upAction();
++        this.getRipple().uiUpAction();
+       },
+
+       /**
