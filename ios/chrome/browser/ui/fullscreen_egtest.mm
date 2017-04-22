@@ -139,6 +139,11 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 // Verifies that the toolbar properly appears/disappears when scrolling up/down
 // on a PDF that is long in length and wide in width.
 - (void)testLongPDFScroll {
+// TODO(crbug.com/714329): Re-enable this test on devices.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
