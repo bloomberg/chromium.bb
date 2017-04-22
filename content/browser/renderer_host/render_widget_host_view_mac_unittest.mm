@@ -40,6 +40,7 @@
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
+#import "ui/base/test/scoped_fake_nswindow_focus.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
@@ -464,6 +465,10 @@ TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
   WindowedNotificationObserver observer(
       NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       Source<RenderWidgetHost>(rwh));
+
+  // Key equivalents are only sent to the renderer if the window is key.
+  ui::test::ScopedFakeNSWindowFocus key_window_faker;
+  [[view->cocoa_view() window] makeKeyWindow];
 
   // Command-ESC will destroy the view, while the window is still in
   // |-performKeyEquivalent:|.  There are other cases where this can
@@ -1793,6 +1798,48 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
   is_child_msg_for_monitor_request = std::get<1>(child_msg_params);
   EXPECT_FALSE(is_child_msg_for_immediate_request);
   EXPECT_FALSE(is_child_msg_for_monitor_request);
+}
+
+// Ensure RenderWidgetHostViewMac claims hotkeys when AppKit spams the UI with
+// -performKeyEquivalent:, but only when the window is key.
+TEST_F(RenderWidgetHostViewMacTest, ForwardKeyEquivalentsOnlyIfKey) {
+  // This test needs an NSWindow. |rwhv_cocoa_| isn't in one, but going
+  // fullscreen conveniently puts it in one.
+  EXPECT_FALSE([rwhv_cocoa_ window]);
+  rwhv_mac_->InitAsFullscreen(nullptr);
+  NSWindow* window = [rwhv_cocoa_ window];
+  EXPECT_TRUE(window);
+
+  MockRenderProcessHost* process_host = test_rvh()->GetProcess();
+  process_host->sink().ClearMessages();
+
+  ui::test::ScopedFakeNSWindowFocus key_window_faker;
+  EXPECT_FALSE([window isKeyWindow]);
+  EXPECT_EQ(0U, process_host->sink().message_count());
+
+  // Cmd+x.
+  NSEvent* key_down =
+      cocoa_test_event_utils::KeyEventWithType(NSKeyDown, NSCommandKeyMask);
+
+  // Sending while not key should forward along the responder chain (e.g. to the
+  // mainMenu). Note the event is being sent to the NSWindow, which may also ask
+  // other parts of the UI to handle it, but in the test they should all say
+  // "NO" as well.
+  EXPECT_FALSE([window performKeyEquivalent:key_down]);
+  EXPECT_EQ(0U, process_host->sink().message_count());
+
+  // Make key and send again. Event should be seen.
+  [window makeKeyWindow];
+  EXPECT_TRUE([window isKeyWindow]);
+  process_host->sink().ClearMessages();  // Ignore the focus messages.
+
+  // -performKeyEquivalent: now returns YES to prevent further propagation, and
+  // the event is sent to the renderer.
+  EXPECT_TRUE([window performKeyEquivalent:key_down]);
+  EXPECT_EQ(2U, process_host->sink().message_count());
+  EXPECT_EQ("RawKeyDown Char", GetInputMessageTypes(process_host));
+
+  rwhv_mac_->release_pepper_fullscreen_window_for_testing();
 }
 
 }  // namespace content

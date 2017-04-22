@@ -2017,8 +2017,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   // |performKeyEquivalent:| is sent to all views of a window, not only down the
   // responder chain (cf. "Handling Key Equivalents" in
   // http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/EventOverview/HandlingKeyEvents/HandlingKeyEvents.html
-  // ). We only want to handle key equivalents if we're first responder.
-  if ([[self window] firstResponder] != self)
+  // ). A |performKeyEquivalent:| may also bubble up from a dialog child window
+  // to perform browser commands such as switching tabs. We only want to handle
+  // key equivalents if we're first responder in the keyWindow.
+  if (![[self window] isKeyWindow] || [[self window] firstResponder] != self)
     return NO;
 
   // If the event is reserved by the system, then do not pass it to web content.
