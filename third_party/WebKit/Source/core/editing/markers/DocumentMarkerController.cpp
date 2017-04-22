@@ -45,18 +45,6 @@
 
 namespace blink {
 
-MarkerRemoverPredicate::MarkerRemoverPredicate(const Vector<String>& words)
-    : words_(words) {}
-
-bool MarkerRemoverPredicate::operator()(const DocumentMarker& document_marker,
-                                        const Text& text_node) const {
-  unsigned start = document_marker.StartOffset();
-  unsigned length = document_marker.EndOffset() - document_marker.StartOffset();
-
-  String marker_text = text_node.data().Substring(start, length);
-  return words_.Contains(marker_text);
-}
-
 namespace {
 
 DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
@@ -498,8 +486,8 @@ void DocumentMarkerController::RemoveMarkers(
     RemoveMarkersFromList(iterator, marker_types);
 }
 
-void DocumentMarkerController::RemoveMarkers(
-    const MarkerRemoverPredicate& should_remove_marker) {
+void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
+    const Vector<String>& words) {
   for (auto& node_markers : markers_) {
     const Node& node = *node_markers.key;
     if (!node.IsTextNode())  // MarkerRemoverPredicate requires a Text node.
@@ -511,8 +499,13 @@ void DocumentMarkerController::RemoveMarkers(
         continue;
       bool removed_markers = false;
       for (size_t j = list->size(); j > 0; --j) {
-        if (should_remove_marker(*list->at(j - 1),
-                                 static_cast<const Text&>(node))) {
+        const DocumentMarker& marker = *list->at(j - 1);
+
+        const unsigned start = marker.StartOffset();
+        const unsigned length = marker.EndOffset() - marker.StartOffset();
+
+        const String marker_text = ToText(node).data().Substring(start, length);
+        if (words.Contains(marker_text)) {
           list->erase(j - 1);
           removed_markers = true;
         }

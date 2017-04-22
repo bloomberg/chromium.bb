@@ -926,11 +926,9 @@ void SpellChecker::RemoveSpellingMarkers() {
 
 void SpellChecker::RemoveSpellingMarkersUnderWords(
     const Vector<String>& words) {
-  MarkerRemoverPredicate remover_predicate(words);
-
   DocumentMarkerController& marker_controller =
       GetFrame().GetDocument()->Markers();
-  marker_controller.RemoveMarkers(remover_predicate);
+  marker_controller.RemoveSpellingMarkersUnderWords(words);
   marker_controller.RepaintMarkers();
 }
 

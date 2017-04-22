@@ -42,16 +42,6 @@ namespace blink {
 
 class Node;
 class RenderedDocumentMarker;
-class Text;
-
-class MarkerRemoverPredicate final {
- public:
-  explicit MarkerRemoverPredicate(const Vector<String>& words);
-  bool operator()(const DocumentMarker&, const Text&) const;
-
- private:
-  Vector<String> words_;
-};
 
 class CORE_EXPORT DocumentMarkerController final
     : public GarbageCollected<DocumentMarkerController>,
@@ -83,7 +73,7 @@ class CORE_EXPORT DocumentMarkerController final
   void RemoveMarkers(
       Node*,
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
-  void RemoveMarkers(const MarkerRemoverPredicate& should_remove_marker);
+  void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
   void RepaintMarkers(
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   // Returns true if markers within a range are found.
