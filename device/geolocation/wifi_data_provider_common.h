@@ -50,9 +50,10 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderCommon
  protected:
   ~WifiDataProviderCommon() override;
 
+  // TODO(mcasas): change return types and possibly names of these two methods,
+  // see https://crbug.com/714348.
   // Returns ownership.
   virtual WlanApiInterface* NewWlanApi() = 0;
-
   // Returns ownership.
   virtual WifiPollingPolicy* NewPollingPolicy() = 0;
 

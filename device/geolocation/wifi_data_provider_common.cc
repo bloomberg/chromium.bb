@@ -13,7 +13,7 @@
 namespace device {
 
 base::string16 MacAddressAsString16(const uint8_t mac_as_int[6]) {
-  // mac_as_int is big-endian. Write in byte chunks.
+  // |mac_as_int| is big-endian. Write in byte chunks.
   // Format is XX-XX-XX-XX-XX-XX.
   static const char* const kMacFormatString = "%02x-%02x-%02x-%02x-%02x-%02x";
   return base::ASCIIToUTF16(base::StringPrintf(
@@ -27,17 +27,17 @@ WifiDataProviderCommon::WifiDataProviderCommon()
 WifiDataProviderCommon::~WifiDataProviderCommon() {}
 
 void WifiDataProviderCommon::StartDataProvider() {
-  DCHECK(wlan_api_ == NULL);
+  DCHECK(!wlan_api_);
   wlan_api_.reset(NewWlanApi());
-  if (wlan_api_ == NULL) {
+  if (!wlan_api_) {
     // Error! Can't do scans, so don't try and schedule one.
     is_first_scan_complete_ = true;
     return;
   }
 
-  DCHECK(polling_policy_ == NULL);
+  DCHECK(!polling_policy_);
   polling_policy_.reset(NewPollingPolicy());
-  DCHECK(polling_policy_ != NULL);
+  DCHECK(polling_policy_);
 
   // Perform first scan ASAP regardless of the polling policy. If this scan
   // fails we'll retry at a rate in line with the polling policy.
