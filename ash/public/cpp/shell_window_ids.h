@@ -113,7 +113,7 @@ enum ShellWindowId {
   // The topmost container, used for power off animation.
   kShellWindowId_PowerButtonAnimationContainer,
 
-  kShellWindowId_Min = kShellWindowId_NonLockScreenContainersContainer,
+  kShellWindowId_Min = kShellWindowId_ScreenRotationContainer,
   kShellWindowId_Max = kShellWindowId_PowerButtonAnimationContainer,
 };
 
