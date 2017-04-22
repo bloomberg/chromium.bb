@@ -12,6 +12,7 @@
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 #include "components/feature_engagement_tracker/internal/model_impl.h"
 #include "components/feature_engagement_tracker/internal/never_condition_validator.h"
+#include "components/feature_engagement_tracker/internal/never_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/single_invalid_configuration.h"
 #include "components/feature_engagement_tracker/public/feature_constants.h"
@@ -37,7 +38,8 @@ CreateDemoModeFeatureEngagementTracker() {
 
   return base::MakeUnique<FeatureEngagementTrackerImpl>(
       base::MakeUnique<InMemoryStore>(), std::move(configuration),
-      base::MakeUnique<OnceConditionValidator>());
+      base::MakeUnique<OnceConditionValidator>(),
+      base::MakeUnique<NeverStorageValidator>());
 }
 
 }  // namespace
@@ -53,24 +55,27 @@ FeatureEngagementTracker* FeatureEngagementTracker::Create(
     return CreateDemoModeFeatureEngagementTracker().release();
 
   std::unique_ptr<Store> store = base::MakeUnique<InMemoryStore>();
-  // TODO(nyquist): Create FinchConfiguration to parse configuration.
   std::unique_ptr<Configuration> configuration =
       base::MakeUnique<SingleInvalidConfiguration>();
-  std::unique_ptr<ConditionValidator> validator =
+  std::unique_ptr<ConditionValidator> condition_validator =
       base::MakeUnique<NeverConditionValidator>();
+  std::unique_ptr<StorageValidator> storage_validator =
+      base::MakeUnique<NeverStorageValidator>();
 
   return new FeatureEngagementTrackerImpl(
-      std::move(store), std::move(configuration), std::move(validator));
+      std::move(store), std::move(configuration),
+      std::move(condition_validator), std::move(storage_validator));
 }
 
 FeatureEngagementTrackerImpl::FeatureEngagementTrackerImpl(
     std::unique_ptr<Store> store,
     std::unique_ptr<Configuration> configuration,
-    std::unique_ptr<ConditionValidator> condition_validator)
+    std::unique_ptr<ConditionValidator> condition_validator,
+    std::unique_ptr<StorageValidator> storage_validator)
     : condition_validator_(std::move(condition_validator)),
       weak_ptr_factory_(this) {
-  model_ =
-      base::MakeUnique<ModelImpl>(std::move(store), std::move(configuration));
+  model_ = base::MakeUnique<ModelImpl>(
+      std::move(store), std::move(configuration), std::move(storage_validator));
   model_->Initialize(
       base::Bind(&FeatureEngagementTrackerImpl::OnModelInitializationFinished,
                  weak_ptr_factory_.GetWeakPtr()));

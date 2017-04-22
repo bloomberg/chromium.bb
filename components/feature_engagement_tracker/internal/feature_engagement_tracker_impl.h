@@ -12,12 +12,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
-#include "components/feature_engagement_tracker/internal/condition_validator.h"
-#include "components/feature_engagement_tracker/internal/model.h"
 #include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
 
 namespace feature_engagement_tracker {
+class Configuration;
+class ConditionValidator;
+class Model;
 class Store;
+class StorageValidator;
 
 // The internal implementation of the FeatureEngagementTracker.
 class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
@@ -26,7 +28,8 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
   FeatureEngagementTrackerImpl(
       std::unique_ptr<Store> store,
       std::unique_ptr<Configuration> configuration,
-      std::unique_ptr<ConditionValidator> condition_validator);
+      std::unique_ptr<ConditionValidator> condition_validator,
+      std::unique_ptr<StorageValidator> storage_validator);
   ~FeatureEngagementTrackerImpl() override;
 
   // FeatureEngagementTracker implementation.

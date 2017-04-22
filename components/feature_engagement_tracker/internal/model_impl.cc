@@ -16,15 +16,18 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/storage_validator.h"
 #include "components/feature_engagement_tracker/internal/store.h"
 
 namespace feature_engagement_tracker {
 
 ModelImpl::ModelImpl(std::unique_ptr<Store> store,
-                     std::unique_ptr<Configuration> configuration)
+                     std::unique_ptr<Configuration> configuration,
+                     std::unique_ptr<StorageValidator> storage_validator)
     : Model(),
       store_(std::move(store)),
       configuration_(std::move(configuration)),
+      storage_validator_(std::move(storage_validator)),
       ready_(false),
       currently_showing_(false),
       weak_factory_(this) {}
@@ -60,6 +63,8 @@ const Event& ModelImpl::GetEvent(const std::string& event_name) {
 void ModelImpl::IncrementEvent(const std::string& event_name) {
   // TODO(nyquist): Add support for pending events, and also add UMA.
   DCHECK(ready_);
+
+  // TODO(nyquist): Use StorageValidator to check if the event should be stored.
 
   Event& event = GetNonConstEvent(event_name);
   uint32_t current_day = GetCurrentDay();
@@ -100,7 +105,7 @@ void ModelImpl::OnStoreLoaded(const OnModelInitializationFinished& callback,
     events_[event.name()] = event;
   }
 
-  // TODO(nyquist): Clear expired data.
+  // TODO(nyquist): Use StorageValidator to only keep relevant event data.
 
   ready_ = true;
 

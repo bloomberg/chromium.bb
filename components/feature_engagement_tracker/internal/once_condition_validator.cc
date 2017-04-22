@@ -4,7 +4,6 @@
 
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 
-#include "base/feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
 

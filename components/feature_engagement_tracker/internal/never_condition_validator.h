@@ -5,17 +5,16 @@
 #ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_NEVER_CONDITION_VALIDATOR_H_
 #define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_NEVER_CONDITION_VALIDATOR_H_
 
-#include <unordered_set>
-
 #include "base/macros.h"
 #include "components/feature_engagement_tracker/internal/condition_validator.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/feature_list.h"
 
 namespace base {
 struct Feature;
 }  // namespace base
 
 namespace feature_engagement_tracker {
+class Model;
 
 // An ConditionValidator that never acknowledges that a feature has met its
 // conditions.

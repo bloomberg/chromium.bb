@@ -4,9 +4,12 @@
 
 #include "components/feature_engagement_tracker/internal/never_condition_validator.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,6 +49,8 @@ class TestModel : public Model {
   }
 
   void IncrementEvent(const std::string& event_name) override {}
+
+  uint32_t GetCurrentDay() override { return 0u; }
 
  private:
   FeatureConfig feature_config_;

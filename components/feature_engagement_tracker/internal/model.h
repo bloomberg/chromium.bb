@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/feature_engagement_tracker/internal/configuration.h"
 
 namespace base {
 struct Feature;
@@ -18,6 +17,7 @@ struct Feature;
 
 namespace feature_engagement_tracker {
 class Event;
+struct FeatureConfig;
 
 // A Model provides all necessary runtime state.
 class Model {
@@ -54,6 +54,9 @@ class Model {
   // Increments the counter for today for how many times the event has happened.
   // If the event has never happened before, the Event object will be created.
   virtual void IncrementEvent(const std::string& event_name) = 0;
+
+  // Returns the number of days since epoch (1970-01-01) in the local timezone.
+  virtual uint32_t GetCurrentDay() = 0;
 
  protected:
   Model() = default;

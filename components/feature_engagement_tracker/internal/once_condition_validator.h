@@ -9,13 +9,14 @@
 
 #include "base/macros.h"
 #include "components/feature_engagement_tracker/internal/condition_validator.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/feature_list.h"
 
 namespace base {
 struct Feature;
 }  // namespace base
 
 namespace feature_engagement_tracker {
+class Model;
 
 // An ConditionValidator that will ensure that each base::Feature will meet
 // conditions maximum one time for any given session.

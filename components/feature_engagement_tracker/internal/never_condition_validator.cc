@@ -4,8 +4,6 @@
 
 #include "components/feature_engagement_tracker/internal/never_condition_validator.h"
 
-#include "components/feature_engagement_tracker/internal/model.h"
-
 namespace feature_engagement_tracker {
 
 NeverConditionValidator::NeverConditionValidator() = default;

@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 
@@ -21,13 +20,16 @@ struct Feature;
 }
 
 namespace feature_engagement_tracker {
+class Configuration;
+class StorageValidator;
 class Store;
 
 // A ModelImpl provides the default implementation of the Model.
 class ModelImpl : public Model {
  public:
   ModelImpl(std::unique_ptr<Store> store,
-            std::unique_ptr<Configuration> configuration);
+            std::unique_ptr<Configuration> configuration,
+            std::unique_ptr<StorageValidator> storage_validator);
   ~ModelImpl() override;
 
   // Model implementation.
@@ -39,11 +41,7 @@ class ModelImpl : public Model {
   bool IsCurrentlyShowing() const override;
   const Event& GetEvent(const std::string& event_name) override;
   void IncrementEvent(const std::string& event_name) override;
-
- protected:
-  // Returns the number of days since epoch (1970-01-01) in the local timezone.
-  // Protected and virtual for testing.
-  virtual uint32_t GetCurrentDay();
+  uint32_t GetCurrentDay() override;
 
  private:
   // Callback for loading the underlying store.
@@ -60,6 +58,10 @@ class ModelImpl : public Model {
 
   // The current configuration for all features.
   std::unique_ptr<Configuration> configuration_;
+
+  // A utility for checking whether new events should be stored and for whether
+  // old events should be kept.
+  std::unique_ptr<StorageValidator> storage_validator_;
 
   // An in-memory representation of all events.
   std::map<std::string, Event> events_;

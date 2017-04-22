@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
+#include "components/feature_engagement_tracker/internal/never_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,8 +43,10 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
     std::unique_ptr<Store> store = base::MakeUnique<InMemoryStore>();
     std::unique_ptr<EditableConfiguration> configuration =
         base::MakeUnique<EditableConfiguration>();
-    std::unique_ptr<ConditionValidator> validator =
+    std::unique_ptr<ConditionValidator> condition_validator =
         base::MakeUnique<OnceConditionValidator>();
+    std::unique_ptr<StorageValidator> storage_validator =
+        base::MakeUnique<NeverStorageValidator>();
 
     RegisterFeatureConfig(configuration.get(), kTestFeatureFoo, true);
     RegisterFeatureConfig(configuration.get(), kTestFeatureBar, true);
@@ -53,7 +56,8 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
         {kTestFeatureFoo, kTestFeatureBar, kTestFeatureQux}, {});
 
     tracker_.reset(new FeatureEngagementTrackerImpl(
-        std::move(store), std::move(configuration), std::move(validator)));
+        std::move(store), std::move(configuration),
+        std::move(condition_validator), std::move(storage_validator)));
     // Ensure all initialization is finished.
     base::RunLoop().RunUntilIdle();
   }

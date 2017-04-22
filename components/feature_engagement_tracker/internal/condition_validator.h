@@ -5,14 +5,17 @@
 #ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_CONDITION_VALIDATOR_H_
 #define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_CONDITION_VALIDATOR_H_
 
+#include <string>
+
 #include "base/macros.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/feature_list.h"
 
 namespace base {
 struct Feature;
 }  // namespace base
 
 namespace feature_engagement_tracker {
+class Model;
 
 // A ConditionValidator checks the requred conditions for a given feature,
 // and checks if all conditions are met.

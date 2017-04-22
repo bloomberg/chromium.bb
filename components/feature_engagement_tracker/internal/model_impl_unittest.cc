@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
+#include "components/feature_engagement_tracker/internal/never_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -124,8 +125,11 @@ std::unique_ptr<TestInMemoryStore> CreatePrefilledStore() {
 class TestModelImpl : public ModelImpl {
  public:
   TestModelImpl(std::unique_ptr<Store> store,
-                std::unique_ptr<Configuration> configuration)
-      : ModelImpl(std::move(store), std::move(configuration)),
+                std::unique_ptr<Configuration> configuration,
+                std::unique_ptr<StorageValidator> storage_validator)
+      : ModelImpl(std::move(store),
+                  std::move(configuration),
+                  std::move(storage_validator)),
         current_day_(0) {}
   ~TestModelImpl() override {}
 
@@ -155,7 +159,8 @@ class ModelImplTest : public ::testing::Test {
     std::unique_ptr<TestInMemoryStore> store = CreateStore();
     store_ = store.get();
 
-    model_.reset(new TestModelImpl(std::move(store), std::move(configuration)));
+    model_.reset(new TestModelImpl(std::move(store), std::move(configuration),
+                                   base::MakeUnique<NeverStorageValidator>()));
   }
 
   virtual std::unique_ptr<TestInMemoryStore> CreateStore() {
