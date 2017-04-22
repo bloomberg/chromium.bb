@@ -484,6 +484,7 @@ post_process_cmdline() {
     soft_enable delta_q
     soft_enable tile_groups
     soft_enable rect_tx
+    soft_enable global_motion
     soft_enable cdef
     soft_enable ec_adapt
     soft_enable new_tokenset
