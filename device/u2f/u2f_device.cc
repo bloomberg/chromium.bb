@@ -20,7 +20,7 @@ void U2fDevice::Register(const std::vector<uint8_t>& app_param,
   std::unique_ptr<U2fApduCommand> register_cmd =
       U2fApduCommand::CreateRegister(app_param, challenge_param);
   if (!register_cmd) {
-    callback.Run(ReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
+    callback.Run(U2fReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
     return;
   }
   DeviceTransact(std::move(register_cmd),
@@ -35,7 +35,7 @@ void U2fDevice::Sign(const std::vector<uint8_t>& app_param,
   std::unique_ptr<U2fApduCommand> sign_cmd =
       U2fApduCommand::CreateSign(app_param, challenge_param, key_handle);
   if (!sign_cmd) {
-    callback.Run(ReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
+    callback.Run(U2fReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
     return;
   }
   DeviceTransact(std::move(sign_cmd),
@@ -59,22 +59,22 @@ void U2fDevice::OnRegisterComplete(
     bool success,
     std::unique_ptr<U2fApduResponse> register_response) {
   if (!success || !register_response) {
-    callback.Run(ReturnCode::FAILURE, std::vector<uint8_t>());
+    callback.Run(U2fReturnCode::FAILURE, std::vector<uint8_t>());
     return;
   }
   switch (register_response->status()) {
     case U2fApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
-      callback.Run(ReturnCode::CONDITIONS_NOT_SATISFIED,
+      callback.Run(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
                    std::vector<uint8_t>());
       break;
     case U2fApduResponse::Status::SW_NO_ERROR:
-      callback.Run(ReturnCode::SUCCESS, register_response->data());
+      callback.Run(U2fReturnCode::SUCCESS, register_response->data());
       break;
     case U2fApduResponse::Status::SW_WRONG_DATA:
-      callback.Run(ReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
+      callback.Run(U2fReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
       break;
     default:
-      callback.Run(ReturnCode::FAILURE, std::vector<uint8_t>());
+      callback.Run(U2fReturnCode::FAILURE, std::vector<uint8_t>());
       break;
   }
 }
@@ -83,22 +83,21 @@ void U2fDevice::OnSignComplete(const MessageCallback& callback,
                                bool success,
                                std::unique_ptr<U2fApduResponse> sign_response) {
   if (!success || !sign_response) {
-    callback.Run(ReturnCode::FAILURE, std::vector<uint8_t>());
+    callback.Run(U2fReturnCode::FAILURE, std::vector<uint8_t>());
     return;
   }
   switch (sign_response->status()) {
     case U2fApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
-      callback.Run(ReturnCode::CONDITIONS_NOT_SATISFIED,
+      callback.Run(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
                    std::vector<uint8_t>());
       break;
     case U2fApduResponse::Status::SW_NO_ERROR:
-      callback.Run(ReturnCode::SUCCESS, sign_response->data());
+      callback.Run(U2fReturnCode::SUCCESS, sign_response->data());
       break;
     case U2fApduResponse::Status::SW_WRONG_DATA:
-      callback.Run(ReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
-      break;
+    case U2fApduResponse::Status::SW_WRONG_LENGTH:
     default:
-      callback.Run(ReturnCode::FAILURE, std::vector<uint8_t>());
+      callback.Run(U2fReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
       break;
   }
 }
