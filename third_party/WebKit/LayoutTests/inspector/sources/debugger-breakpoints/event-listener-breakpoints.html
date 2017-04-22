@@ -72,11 +72,10 @@ function onVideoPlay()
 
 function test()
 {
-    var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
     var testFunctions = [
         function testClickBreakpoint(next)
         {
-            pane._setBreakpoint("listener:click");
+            InspectorTest.setEventListenerBreakpoint("listener:click", true);
             InspectorTest.waitUntilPaused(paused);
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
 
@@ -84,7 +83,7 @@ function test()
             {
                 InspectorTest.captureStackTrace(callFrames);
                 printEventTargetName(auxData);
-                pane._removeBreakpoint("listener:click");
+                InspectorTest.setEventListenerBreakpoint("listener:click", false);
                 InspectorTest.resumeExecution(resumed);
             }
 
@@ -96,7 +95,7 @@ function test()
 
         function testAuxclickBreakpoint(next)
         {
-            pane._setBreakpoint("listener:auxclick");
+            InspectorTest.setEventListenerBreakpoint("listener:auxclick", true);
             InspectorTest.waitUntilPaused(paused);
             InspectorTest.evaluateInPageWithTimeout("addListenerAndAuxclick()");
 
@@ -104,7 +103,7 @@ function test()
             {
                 InspectorTest.captureStackTrace(callFrames);
                 printEventTargetName(auxData);
-                pane._removeBreakpoint("listener:auxclick");
+                InspectorTest.setEventListenerBreakpoint("listener:auxclick", false);
                 InspectorTest.resumeExecution(resumed);
             }
 
@@ -116,22 +115,22 @@ function test()
 
         function testTimerFiredBreakpoint(next)
         {
-            pane._setBreakpoint("instrumentation:setTimeout.callback");
+            InspectorTest.setEventListenerBreakpoint("instrumentation:setTimeout.callback", true);
             InspectorTest.waitUntilPaused(paused);
             InspectorTest.evaluateInPage("setTimeout(timerFired, 10)");
 
             function paused(callFrames)
             {
                 InspectorTest.captureStackTrace(callFrames);
-                pane._removeBreakpoint("instrumentation:setTimeout.callback");
+                InspectorTest.setEventListenerBreakpoint("instrumentation:setTimeout.callback", false);
                 InspectorTest.resumeExecution(next);
             }
         },
 
         function testLoadBreakpointOnXHR(next)
         {
-            pane._setBreakpoint("listener:load", ["xmlHTTPrequest"]); // test case-insensitive match
-            pane._setBreakpoint("listener:error", ["XMLHttpRequest"]);
+            InspectorTest.setEventListenerBreakpoint("listener:load", true, "xmlhttprequest");
+            InspectorTest.setEventListenerBreakpoint("listener:error", true, "xmlhttprequest");
             InspectorTest.waitUntilPaused(paused);
             InspectorTest.evaluateInPageWithTimeout("addLoadListeners()");
 
@@ -139,8 +138,8 @@ function test()
             {
                 InspectorTest.captureStackTrace(callFrames);
                 printEventTargetName(auxData);
-                pane._removeBreakpoint("listener:load", ["XMLHttpRequest"]);
-                pane._removeBreakpoint("listener:error", ["xmlHTTPrequest"]);
+                InspectorTest.setEventListenerBreakpoint("listener:load", false, "xmlhttprequest");
+                InspectorTest.setEventListenerBreakpoint("listener:error", false, "xmlhttprequest");
                 InspectorTest.resumeExecution(resumed);
             }
 
@@ -152,7 +151,7 @@ function test()
 
         function testMediaEventBreakpoint(next)
         {
-            pane._setBreakpoint("listener:play", ["audio", "video"]);
+            InspectorTest.setEventListenerBreakpoint("listener:play", true, "audio");
             InspectorTest.waitUntilPaused(paused);
             InspectorTest.evaluateInPageWithTimeout("playVideo()");
 
@@ -160,7 +159,7 @@ function test()
             {
                 InspectorTest.captureStackTrace(callFrames);
                 printEventTargetName(auxData);
-                pane._removeBreakpoint("listener:play", ["audio", "video"]);
+                InspectorTest.setEventListenerBreakpoint("listener:play", false, "audio");
                 InspectorTest.resumeExecution(next);
             }
         }
@@ -170,7 +169,7 @@ function test()
         testFunctions.push(
             function testPointerEventBreakpoint(next)
             {
-                pane._setBreakpoint("listener:pointerdown");
+                InspectorTest.setEventListenerBreakpoint("listener:pointerdown", true);
                 InspectorTest.waitUntilPaused(paused);
                 InspectorTest.evaluateInPageWithTimeout("addListenerAndPointerDown()");
 
@@ -178,7 +177,7 @@ function test()
                 {
                     InspectorTest.captureStackTrace(callFrames);
                     printEventTargetName(auxData);
-                    pane._removeBreakpoint("listener:pointerdown");
+                    InspectorTest.setEventListenerBreakpoint("listener:pointerdown", false);
                     InspectorTest.resumeExecution(resumed);
                 }
 

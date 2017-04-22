@@ -22,8 +22,7 @@ function test()
 
     function start()
     {
-        var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-        pane._setBreakpoint("listener:click");
+        InspectorTest.setEventListenerBreakpoint("listener:click", true);
         InspectorTest.waitUntilPaused(paused);
         InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
     }

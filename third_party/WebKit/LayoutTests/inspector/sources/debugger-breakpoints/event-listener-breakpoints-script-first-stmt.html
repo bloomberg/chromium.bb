@@ -29,14 +29,13 @@ function callback2()
 
 function test()
 {
-    var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
     var numberOfPauses = 2;
 
     InspectorTest.startDebuggerTest(step1, true);
 
     function step1()
     {
-        pane._setBreakpoint("instrumentation:scriptFirstStatement");
+        InspectorTest.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", true);
         InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
@@ -54,7 +53,7 @@ function test()
 
     function step2()
     {
-        pane._removeBreakpoint("instrumentation:scriptFirstStatement");
+        InspectorTest.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", false);
         InspectorTest.completeDebuggerTest();
     }
 }

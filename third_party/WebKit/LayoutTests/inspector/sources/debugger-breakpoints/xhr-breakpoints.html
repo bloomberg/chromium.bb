@@ -16,7 +16,7 @@ function test()
     InspectorTest.runDebuggerTestSuite([
         function testXHRBreakpoint(next)
         {
-            SDK.xhrBreakpointManager.addBreakpoint("foo", true);
+            SDK.domDebuggerManager.addXHRBreakpoint("foo", true);
             InspectorTest.waitUntilPaused(step1);
             InspectorTest.evaluateInPageWithTimeout("sendRequest('/foo?a=b')");
 
@@ -33,14 +33,14 @@ function test()
 
             function step3()
             {
-                SDK.xhrBreakpointManager.removeBreakpoint("foo");
+                SDK.domDebuggerManager.removeXHRBreakpoint("foo");
                 InspectorTest.evaluateInPage("sendRequest('/foo?a=b')", next);
             }
         },
 
         function testPauseOnAnyXHR(next)
         {
-            SDK.xhrBreakpointManager.addBreakpoint("", true);
+            SDK.domDebuggerManager.addXHRBreakpoint("", true);
             InspectorTest.waitUntilPaused(pausedFoo);
             InspectorTest.evaluateInPageWithTimeout("sendRequest('/foo?a=b')");
 
@@ -58,7 +58,7 @@ function test()
             {
                 function resumed()
                 {
-                    SDK.xhrBreakpointManager.removeBreakpoint("");
+                    SDK.domDebuggerManager.removeXHRBreakpoint("");
                     InspectorTest.evaluateInPage("sendRequest('/baz?a=b')", next);
                 }
                 InspectorTest.resumeExecution(resumed);
@@ -67,7 +67,7 @@ function test()
 
         function testDisableBreakpoint(next)
         {
-            SDK.xhrBreakpointManager.addBreakpoint("", true);
+            SDK.domDebuggerManager.addXHRBreakpoint("", true);
             InspectorTest.waitUntilPaused(paused);
             InspectorTest.evaluateInPage("sendRequest('/foo')");
 
@@ -75,7 +75,7 @@ function test()
             {
                 function resumed()
                 {
-                    SDK.xhrBreakpointManager.toggleBreakpoint("", false);
+                    SDK.domDebuggerManager.toggleXHRBreakpoint("", false);
                     InspectorTest.waitUntilPaused(pausedAgain);
                     InspectorTest.evaluateInPage("sendRequest('/foo')", next);
                 }

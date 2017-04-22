@@ -731,4 +731,17 @@ InspectorTest.clickJavaScriptSourceFrameBreakpoint = function(sourceFrame, lineN
     }
 }
 
+InspectorTest.setEventListenerBreakpoint = function(id, enabled, targetName)
+{
+    var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
+    var auxData = {'eventName': id};
+    if (targetName)
+        auxData.targetName = targetName;
+    var breakpoint = SDK.domDebuggerManager.resolveEventListenerBreakpoint(auxData);
+    if (breakpoint.enabled() !== enabled) {
+        pane._breakpoints.get(breakpoint).checkbox.checked = enabled;
+        pane._breakpointCheckboxClicked(breakpoint);
+    }
+}
+
 };

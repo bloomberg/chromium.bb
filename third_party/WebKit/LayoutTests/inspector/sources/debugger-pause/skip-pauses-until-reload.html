@@ -82,9 +82,8 @@ function test()
     function setUpEventBreakpoints()
     {
         testRunner.logToStderr("setUpEventBreakpoints");
-        var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
         InspectorTest.addResult("Set up Event breakpoints.");
-        pane._setBreakpoint("listener:click");
+        InspectorTest.setEventListenerBreakpoint("listener:click", true);
         InspectorTest.deprecatedRunAfterPendingDispatches(didSetUp);
     }
 
@@ -136,8 +135,7 @@ function test()
     function completeTest()
     {
         testRunner.logToStderr("completeTest");
-        var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-        pane._removeBreakpoint("listener:click");
+        InspectorTest.setEventListenerBreakpoint("listener:click", false);
         InspectorTest.completeDebuggerTest();
     }
 }; 

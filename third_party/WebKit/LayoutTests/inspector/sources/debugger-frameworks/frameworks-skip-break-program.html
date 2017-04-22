@@ -27,8 +27,6 @@ function test()
     var frameworkRegexString = "/framework\\.js$";
     Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
-    var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-
     InspectorTest.startDebuggerTest(step1, true);
 
     function step1()
@@ -39,7 +37,7 @@ function test()
     function step2()
     {
         InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
-        pane._setBreakpoint("instrumentation:setTimeout");
+        InspectorTest.setEventListenerBreakpoint("instrumentation:setTimeout", true);
         InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
     }
 
@@ -52,7 +50,7 @@ function test()
     function completeTest()
     {
         InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        pane._removeBreakpoint("instrumentation:setTimeout");
+        InspectorTest.setEventListenerBreakpoint("instrumentation:setTimeout", false);
         InspectorTest.completeDebuggerTest();
     }
 }

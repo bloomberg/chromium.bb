@@ -28,11 +28,10 @@ function addListenerAndClick()
 
 function test()
 {
-    var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
     InspectorTest.runDebuggerTestSuite([
         function testClickBreakpoint(next)
         {
-            pane._setBreakpoint("listener:click");
+            InspectorTest.setEventListenerBreakpoint("listener:click", true);
             InspectorTest.waitUntilPaused(paused1);
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
 
@@ -72,7 +71,7 @@ function test()
             function paused4(callFrames)
             {
                 InspectorTest.captureStackTrace(callFrames);
-                pane._removeBreakpoint("listener:click");
+                InspectorTest.setEventListenerBreakpoint("listener:click", false);
                 InspectorTest.resumeExecution(next);
             }
         }
