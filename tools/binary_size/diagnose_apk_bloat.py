@@ -10,8 +10,8 @@ Run diagnose_apk_bloat.py -h for detailed usage help.
 
 import argparse
 import collections
+from contextlib import contextmanager
 import distutils.spawn
-import itertools
 import json
 import multiprocessing
 import os
@@ -36,9 +36,10 @@ _DEFAULT_TARGET = 'monochrome_public_apk'
 _global_restore_checkout_func = None
 
 
-def _RestoreFunc(subrepo):
+def _SetRestoreFunc(subrepo):
   branch = _GitCmd(['rev-parse', '--abbrev-ref', 'HEAD'], subrepo)
-  return lambda: _GitCmd(['checkout', branch], subrepo)
+  global _global_restore_checkout_func
+  _global_restore_checkout_func = lambda: _GitCmd(['checkout', branch], subrepo)
 
 
 class BaseDiff(object):
@@ -241,7 +242,7 @@ class _BuildArchive(object):
     self.rev = rev
     self.metadata = _GenerateMetadata([self], build, metadata_path, subrepo)
 
-  def ArchiveBuildResults(self):
+  def ArchiveBuildResults(self, bs_dir):
     """Save build artifacts necessary for diffing."""
     _Print('Saving build results to: {}', self.dir)
     _EnsureDirsExist(self.dir)
@@ -249,7 +250,7 @@ class _BuildArchive(object):
     self._ArchiveFile(build.main_lib_path)
     lib_name_noext = os.path.splitext(os.path.basename(build.main_lib_path))[0]
     size_path = os.path.join(self.dir, lib_name_noext + '.size')
-    supersize_path = os.path.join(_SRC_ROOT, 'tools/binary_size/supersize')
+    supersize_path = os.path.join(bs_dir, 'supersize')
     tool_prefix = _FindToolPrefix(build.output_directory)
     supersize_cmd = [supersize_path, 'archive', size_path, '--elf-file',
                      build.main_lib_path, '--tool-prefix', tool_prefix,
@@ -478,7 +479,7 @@ def _Die(s, *args, **kwargs):
   sys.exit(1)
 
 
-def _DownloadBuildArtifacts(archive, build, depot_tools_path=None):
+def _DownloadBuildArtifacts(archive, build, bs_dir, depot_tools_path):
   """Download artifacts from arm32 chromium perf builder."""
   if depot_tools_path:
     gsutil_path = os.path.join(depot_tools_path, 'gsutil.py')
@@ -491,12 +492,12 @@ def _DownloadBuildArtifacts(archive, build, depot_tools_path=None):
 
   download_dir = tempfile.mkdtemp(dir=_SRC_ROOT)
   try:
-    _DownloadAndArchive(gsutil_path, archive, download_dir, build)
+    _DownloadAndArchive(gsutil_path, archive, download_dir, build, bs_dir)
   finally:
     shutil.rmtree(download_dir)
 
 
-def _DownloadAndArchive(gsutil_path, archive, dl_dir, build):
+def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, bs_dir):
   dl_file = 'full-build-linux_%s.zip' % archive.rev
   dl_url = 'gs://chrome-perf/Android Builder/%s' % dl_file
   dl_dst = os.path.join(dl_dir, dl_file)
@@ -521,7 +522,7 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build):
     _ExtractFiles(to_extract, _CLOUD_OUT_DIR, extract_dir, z)
     dl_out = os.path.join(extract_dir, _CLOUD_OUT_DIR)
     build.output_directory, output_directory = dl_out, build.output_directory
-    archive.ArchiveBuildResults()
+    archive.ArchiveBuildResults(bs_dir)
     build.output_directory = output_directory
 
 
@@ -544,10 +545,24 @@ def _PrintAndWriteToFile(logfile, s):
   logfile.write('%s\n' % s)
 
 
+@contextmanager
+def _TmpBinarySizeDir():
+  """Recursively copy files to a temp dir and yield the tmp binary_size dir."""
+  # Needs to be at same level of nesting as the real //tools/binary_size
+  # since supersize uses this to find d3 in //third_party.
+  tmp_dir = tempfile.mkdtemp(dir=_SRC_ROOT)
+  try:
+    bs_dir = os.path.join(tmp_dir, 'binary_size')
+    shutil.copytree(os.path.join(_SRC_ROOT, 'tools', 'binary_size'), bs_dir)
+    yield bs_dir
+  finally:
+    shutil.rmtree(tmp_dir)
+
+
 def main():
   parser = argparse.ArgumentParser(
       description='Find the cause of APK size bloat.')
-  parser.add_argument('--archive-dir',
+  parser.add_argument('--archive-directory',
                       default=_DEFAULT_ARCHIVE_DIR,
                       help='Where results are stored.')
   parser.add_argument('rev',
@@ -618,7 +633,7 @@ def main():
 
   subrepo = args.subrepo or _SRC_ROOT
   _EnsureDirectoryClean(subrepo)
-  _global_restore_checkout_func = _RestoreFunc(subrepo)
+  _SetRestoreFunc(subrepo)
   revs = _GenerateRevList(args.rev,
                           args.reference_rev or args.rev + '^',
                           args.all,
@@ -629,29 +644,30 @@ def main():
         ResourceSizesDiff(
             build.apk_name, slow_options=args.include_slow_options)
     ]
-  diff_mngr = _DiffArchiveManager(revs, args.archive_dir, diffs, build, subrepo)
+  diff_mngr = _DiffArchiveManager(
+      revs, args.archive_directory, diffs, build, subrepo)
   consecutive_failures = 0
-  for i, archive in enumerate(diff_mngr.IterArchives()):
-    if archive.Exists():
-      _Print('Found matching metadata for {}, skipping build step.',
-             archive.rev)
-    else:
-      if build.IsCloud():
-        _DownloadBuildArtifacts(archive, build,
-                                depot_tools_path=args.depot_tools_path)
+  with _TmpBinarySizeDir() as bs_dir:
+    for i, archive in enumerate(diff_mngr.IterArchives()):
+      if archive.Exists():
+        _Print('Found matching metadata for {}, skipping build step.',
+               archive.rev)
       else:
-        build_success = _SyncAndBuild(archive, build, subrepo)
-        if not build_success:
-          consecutive_failures += 1
-          if consecutive_failures > _ALLOWED_CONSECUTIVE_FAILURES:
-            _Die('{} builds failed in a row, last failure was {}.',
-                 consecutive_failures, archive.rev)
+        if build.IsCloud():
+          _DownloadBuildArtifacts(archive, build, bs_dir, args.depot_tools_path)
         else:
-          archive.ArchiveBuildResults()
-          consecutive_failures = 0
+          build_success = _SyncAndBuild(archive, build, subrepo)
+          if not build_success:
+            consecutive_failures += 1
+            if consecutive_failures > _ALLOWED_CONSECUTIVE_FAILURES:
+              _Die('{} builds failed in a row, last failure was {}.',
+                   consecutive_failures, archive.rev)
+          else:
+            archive.ArchiveBuildResults(bs_dir)
+            consecutive_failures = 0
 
-    if i != 0:
-      diff_mngr.MaybeDiff(i - 1, i)
+      if i != 0:
+        diff_mngr.MaybeDiff(i - 1, i)
 
   _global_restore_checkout_func()
 
