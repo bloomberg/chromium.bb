@@ -469,7 +469,7 @@
     },
     {
       name: "GamepadExtensions",
-      origin_trial_feature_name: "WebVR",
+      origin_trial_feature_name: "WebVR1.1",
       status: "test",
     },
     {
@@ -1039,7 +1039,7 @@
     },
     {
       name: "WebVR",
-      origin_trial_feature_name: "WebVR",
+      origin_trial_feature_name: "WebVR1.1",
       status: "test",
     },
     {
