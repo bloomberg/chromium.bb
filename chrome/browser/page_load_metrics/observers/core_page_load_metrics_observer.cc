@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "chrome/browser/browser_process.h"
@@ -250,9 +251,17 @@ CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
       num_cache_resources_(0),
       num_network_resources_(0),
       cache_bytes_(0),
-      network_bytes_(0) {}
+      network_bytes_(0),
+      redirect_chain_size_(0) {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+CorePageLoadMetricsObserver::OnRedirect(
+    content::NavigationHandle* navigation_handle) {
+  redirect_chain_size_++;
+  return CONTINUE_OBSERVING;
+}
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 CorePageLoadMetricsObserver::OnCommit(
@@ -264,6 +273,8 @@ CorePageLoadMetricsObserver::OnCommit(
     was_no_store_main_resource_ =
         headers->HasHeaderValue("cache-control", "no-store");
   }
+  UMA_HISTOGRAM_COUNTS_100("PageLoad.Navigation.RedirectChainLength",
+                           redirect_chain_size_);
   return CONTINUE_OBSERVING;
 }
 
