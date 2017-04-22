@@ -559,7 +559,7 @@ int amdgpu_cs_wait_semaphore(amdgpu_context_handle ctx,
 	if (ring >= AMDGPU_CS_MAX_RINGS)
 		return -EINVAL;
 	/* must signal first */
-	if (NULL == sem->signal_fence.context)
+	if (!sem->signal_fence.context)
 		return -EINVAL;
 
 	pthread_mutex_lock(&ctx->sequence_mutex);
