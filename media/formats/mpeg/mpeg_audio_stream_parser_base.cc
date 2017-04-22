@@ -54,6 +54,7 @@ MPEGAudioStreamParserBase::MPEGAudioStreamParserBase(uint32_t start_code_mask,
                                                      AudioCodec audio_codec,
                                                      int codec_delay)
     : state_(UNINITIALIZED),
+      media_log_(nullptr),
       in_media_segment_(false),
       start_code_mask_(start_code_mask),
       audio_codec_(audio_codec),
