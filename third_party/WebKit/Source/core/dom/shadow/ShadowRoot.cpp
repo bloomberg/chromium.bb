@@ -158,9 +158,6 @@ void ShadowRoot::RecalcStyle(StyleRecalcChange change) {
 }
 
 void ShadowRoot::RebuildLayoutTree(Text*& next_text_sibling) {
-  // ShadowRoot doesn't support custom callbacks.
-  DCHECK(!HasCustomStyleCallbacks());
-
   if (!NeedsReattachLayoutTree() && !ChildNeedsReattachLayoutTree()) {
     SkipRebuildLayoutTree(next_text_sibling);
     return;
