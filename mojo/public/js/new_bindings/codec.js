@@ -464,9 +464,9 @@
   };
 
 
-  // MessageBuilder -----------------------------------------------------------
+  // MessageV0Builder ---------------------------------------------------------
 
-  function MessageBuilder(messageName, payloadSize) {
+  function MessageV0Builder(messageName, payloadSize) {
     // Currently, we don't compute the payload size correctly ahead of time.
     // Instead, we resize the buffer at the end.
     var numberOfBytes = kMessageHeaderSize + payloadSize;
@@ -481,16 +481,16 @@
     encoder.writeUint32(0);  // padding.
   }
 
-  MessageBuilder.prototype.createEncoder = function(size) {
+  MessageV0Builder.prototype.createEncoder = function(size) {
     var pointer = this.buffer.alloc(size);
     return new Encoder(this.buffer, this.handles, pointer);
   };
 
-  MessageBuilder.prototype.encodeStruct = function(cls, val) {
+  MessageV0Builder.prototype.encodeStruct = function(cls, val) {
     cls.encode(this.createEncoder(cls.encodedSize), val);
   };
 
-  MessageBuilder.prototype.finish = function() {
+  MessageV0Builder.prototype.finish = function() {
     // TODO(abarth): Rather than resizing the buffer at the end, we could
     // compute the size we need ahead of time, like we do in C++.
     this.buffer.trim();
@@ -501,9 +501,9 @@
     return message;
   };
 
-  // MessageWithRequestIDBuilder -----------------------------------------------
+  // MessageV1Builder -----------------------------------------------
 
-  function MessageWithRequestIDBuilder(messageName, payloadSize, flags,
+  function MessageV1Builder(messageName, payloadSize, flags,
                                        requestID) {
     // Currently, we don't compute the payload size correctly ahead of time.
     // Instead, we resize the buffer at the end.
@@ -520,11 +520,11 @@
     encoder.writeUint64(requestID);
   }
 
-  MessageWithRequestIDBuilder.prototype =
-      Object.create(MessageBuilder.prototype);
+  MessageV1Builder.prototype =
+      Object.create(MessageV0Builder.prototype);
 
-  MessageWithRequestIDBuilder.prototype.constructor =
-      MessageWithRequestIDBuilder;
+  MessageV1Builder.prototype.constructor =
+      MessageV1Builder;
 
   // MessageReader ------------------------------------------------------------
 
@@ -877,8 +877,8 @@
   internal.align = align;
   internal.isAligned = isAligned;
   internal.Message = Message;
-  internal.MessageBuilder = MessageBuilder;
-  internal.MessageWithRequestIDBuilder = MessageWithRequestIDBuilder;
+  internal.MessageV0Builder = MessageV0Builder;
+  internal.MessageV1Builder = MessageV1Builder;
   internal.MessageReader = MessageReader;
   internal.kArrayHeaderSize = kArrayHeaderSize;
   internal.kMapStructPayloadSize = kMapStructPayloadSize;

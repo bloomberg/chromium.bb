@@ -100,7 +100,7 @@ define([
 
   function structEncodeDecode(struct) {
     var structClass = struct.constructor;
-    var builder = new codec.MessageBuilder(1234, structClass.encodedSize);
+    var builder = new codec.MessageV0Builder(1234, structClass.encodedSize);
     builder.encodeStruct(structClass, struct);
     var message = builder.finish();
 

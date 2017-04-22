@@ -17,7 +17,7 @@ define("mojo/public/js/lib/pipe_control_message_proxy", [
     var payloadSize =
         pipeControlMessages.RunOrClosePipeMessageParams.encodedSize;
 
-    var builder = new codec.MessageBuilder(messageName, payloadSize);
+    var builder = new codec.MessageV0Builder(messageName, payloadSize);
     builder.encodeStruct(pipeControlMessages.RunOrClosePipeMessageParams,
                          runOrClosePipeMessageParams);
     var message = builder.finish();

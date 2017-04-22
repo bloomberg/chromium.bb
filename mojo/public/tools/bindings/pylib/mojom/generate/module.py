@@ -817,7 +817,17 @@ def HasCallbacks(interface):
 # Finds out whether an interface passes associated interfaces and associated
 # interface requests.
 def PassesAssociatedKinds(interface):
-  def _ContainsAssociatedKinds(kind, visited_kinds):
+  visited_kinds = set()
+  for method in interface.methods:
+    if MethodPassesAssociatedKinds(method, visited_kinds):
+      return True
+  return False
+
+
+# Finds out whether a method passes associated interfaces and associated
+# interface requests.
+def MethodPassesAssociatedKinds(method, visited_kinds=None):
+  def _ContainsAssociatedKinds(kind):
     if kind in visited_kinds:
       # No need to examine the kind again.
       return False
@@ -825,26 +835,27 @@ def PassesAssociatedKinds(interface):
     if IsAssociatedKind(kind):
       return True
     if IsArrayKind(kind):
-      return _ContainsAssociatedKinds(kind.kind, visited_kinds)
+      return _ContainsAssociatedKinds(kind.kind)
     if IsStructKind(kind) or IsUnionKind(kind):
       for field in kind.fields:
-        if _ContainsAssociatedKinds(field.kind, visited_kinds):
+        if _ContainsAssociatedKinds(field.kind):
           return True
     if IsMapKind(kind):
       # No need to examine the key kind, only primitive kinds and non-nullable
       # string are allowed to be key kinds.
-      return _ContainsAssociatedKinds(kind.value_kind, visited_kinds)
+      return _ContainsAssociatedKinds(kind.value_kind)
     return False
 
-  visited_kinds = set()
-  for method in interface.methods:
-    for param in method.parameters:
-      if _ContainsAssociatedKinds(param.kind, visited_kinds):
+  if visited_kinds is None:
+    visited_kinds = set()
+
+  for param in method.parameters:
+    if _ContainsAssociatedKinds(param.kind):
+      return True
+  if method.response_parameters != None:
+    for param in method.response_parameters:
+      if _ContainsAssociatedKinds(param.kind):
         return True
-    if method.response_parameters != None:
-      for param in method.response_parameters:
-        if _ContainsAssociatedKinds(param.kind, visited_kinds):
-          return True
   return False
 
 

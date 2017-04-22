@@ -109,6 +109,8 @@ define("mojo/public/js/validator", [
 
   function isNullable(type) {
     return type === codec.NullableString || type === codec.NullableHandle ||
+        type === codec.NullableAssociatedInterfacePtrInfo ||
+        type === codec.NullableAssociatedInterfaceRequest ||
         type === codec.NullableInterface ||
         type === codec.NullableInterfaceRequest ||
         type instanceof codec.NullableArrayOf ||

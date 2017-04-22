@@ -92,6 +92,20 @@ define("mojo/public/js/lib/interface_endpoint_handle", [
     }
   };
 
+  State.prototype.notifyAssociation = function(interfaceId,
+                                               peerGroupController) {
+    var cachedPeerState = this.peerState_;
+    this.peerState_ = null;
+
+    this.pendingAssociation = false;
+
+    if (cachedPeerState) {
+      cachedPeerState.onAssociated(interfaceId, peerGroupController);
+      return true;
+    }
+    return false;
+  };
+
   State.prototype.onAssociated = function(interfaceId,
       associatedGroupController) {
     if (!this.pendingAssociation) {
@@ -116,6 +130,14 @@ define("mojo/public/js/lib/interface_endpoint_handle", [
     this.runAssociationEventHandler(
         AssociationEvent.PEER_CLOSED_BEFORE_ASSOCIATION);
   };
+
+  function createPairPendingAssociation() {
+    var handle0 = new InterfaceEndpointHandle();
+    var handle1 = new InterfaceEndpointHandle();
+    handle0.state_.initPendingState(handle1.state_);
+    handle1.state_.initPendingState(handle0.state_);
+    return {handle0: handle0, handle1: handle1};
+  }
 
   function InterfaceEndpointHandle(interfaceId, associatedGroupController) {
     this.state_ = new State(interfaceId, associatedGroupController);
@@ -146,13 +168,20 @@ define("mojo/public/js/lib/interface_endpoint_handle", [
     this.state_.setAssociationEventHandler(handler);
   };
 
+  InterfaceEndpointHandle.prototype.notifyAssociation = function(interfaceId,
+      peerGroupController) {
+    return this.state_.notifyAssociation(interfaceId, peerGroupController);
+  };
+
   InterfaceEndpointHandle.prototype.reset = function(reason) {
     this.state_.close(reason);
     this.state_ = new State();
   };
 
   var exports = {};
+  exports.AssociationEvent = AssociationEvent;
   exports.InterfaceEndpointHandle = InterfaceEndpointHandle;
+  exports.createPairPendingAssociation = createPairPendingAssociation;
 
   return exports;
 });

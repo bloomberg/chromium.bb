@@ -7,6 +7,16 @@
                                                    handleOrPtrInfo);
   }
 
+  function Associated{{interface.name}}Ptr(associatedInterfacePtrInfo) {
+    this.ptr = new associatedBindings.AssociatedInterfacePtrController(
+        {{interface.name}}, associatedInterfacePtrInfo);
+  }
+
+  Associated{{interface.name}}Ptr.prototype =
+      Object.create({{interface.name}}Ptr.prototype);
+  Associated{{interface.name}}Ptr.prototype.constructor =
+      Associated{{interface.name}}Ptr;
+
   function {{interface.name}}Proxy(receiver) {
     this.receiver_ = receiver;
   }
@@ -28,19 +38,34 @@
 {%- endfor %}
 
 {%- if method.response_parameters == None %}
-    var builder = new codec.MessageBuilder(
+{%-   if method|method_passes_associated_kinds and not use_new_js_bindings %}
+    var builder = new codec.MessageV2Builder(
+        k{{interface.name}}_{{method.name}}_Name,
+        codec.align({{interface.name}}_{{method.name}}_Params.encodedSize));
+    builder.setPayload({{interface.name}}_{{method.name}}_Params, params);
+{%-   else %}
+    var builder = new codec.MessageV0Builder(
         k{{interface.name}}_{{method.name}}_Name,
         codec.align({{interface.name}}_{{method.name}}_Params.encodedSize));
     builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
+{%-   endif %}
     var message = builder.finish();
     this.receiver_.accept(message);
 {%- else %}
     return new Promise(function(resolve, reject) {
-      var builder = new codec.MessageWithRequestIDBuilder(
+{%-   if method|method_passes_associated_kinds and not use_new_js_bindings %}
+      var builder = new codec.MessageV2Builder(
+          k{{interface.name}}_{{method.name}}_Name,
+          codec.align({{interface.name}}_{{method.name}}_Params.encodedSize),
+          codec.kMessageExpectsResponse, 0);
+      builder.setPayload({{interface.name}}_{{method.name}}_Params, params);
+{%-   else %}
+      var builder = new codec.MessageV1Builder(
           k{{interface.name}}_{{method.name}}_Name,
           codec.align({{interface.name}}_{{method.name}}_Params.encodedSize),
           codec.kMessageExpectsResponse, 0);
       builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
+{%-   endif %}
       var message = builder.finish();
       this.receiver_.acceptAndExpectResponse(message).then(function(message) {
         var reader = new codec.MessageReader(message);
@@ -102,12 +127,22 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
 {%-     for parameter in method.response_parameters %}
         responseParams.{{parameter.name}} = response.{{parameter.name}};
 {%-     endfor %}
-        var builder = new codec.MessageWithRequestIDBuilder(
+{%- if method|method_passes_associated_kinds and not use_new_js_bindings %}
+        var builder = new codec.MessageV2Builder(
+            k{{interface.name}}_{{method.name}}_Name,
+            codec.align({{interface.name}}_{{method.name}}_ResponseParams
+                .encodedSize),
+            codec.kMessageIsResponse, reader.requestID);
+        builder.setPayload({{interface.name}}_{{method.name}}_ResponseParams,
+                             responseParams);
+{%- else %}
+        var builder = new codec.MessageV1Builder(
             k{{interface.name}}_{{method.name}}_Name,
             codec.align({{interface.name}}_{{method.name}}_ResponseParams.encodedSize),
             codec.kMessageIsResponse, reader.requestID);
         builder.encodeStruct({{interface.name}}_{{method.name}}_ResponseParams,
                              responseParams);
+{%- endif %}
         var message = builder.finish();
         responder.accept(message);
       });

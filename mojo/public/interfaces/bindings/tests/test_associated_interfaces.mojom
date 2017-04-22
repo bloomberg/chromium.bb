@@ -45,6 +45,11 @@ interface IntegerSenderConnection {
   AsyncGetSender() => (associated IntegerSender sender);
 };
 
+interface IntegerSenderConnectionAtBothEnds {
+  GetSender(associated IntegerSender& sender);
+  SetSender(associated IntegerSender sender) => (int32 value);
+};
+
 interface AssociatedPingProvider {
   GetPing(associated PingService& request);
 };

@@ -9,7 +9,7 @@
     var messageName = mojo.interface_control2.kRunOrClosePipeMessageId;
     var payloadSize =
         mojo.interface_control2.RunOrClosePipeMessageParams.encodedSize;
-    var builder = new internal.MessageBuilder(messageName, payloadSize);
+    var builder = new internal.MessageV0Builder(messageName, payloadSize);
     builder.encodeStruct(mojo.interface_control2.RunOrClosePipeMessageParams,
                          runOrClosePipeMessageParams);
     var message = builder.finish();
@@ -58,7 +58,7 @@
     var messageName = mojo.interface_control2.kRunMessageId;
     var payloadSize = mojo.interface_control2.RunMessageParams.encodedSize;
     // |requestID| is set to 0, but is later properly set by Router.
-    var builder = new internal.MessageWithRequestIDBuilder(messageName,
+    var builder = new internal.MessageV1Builder(messageName,
         payloadSize, internal.kMessageExpectsResponse, 0);
     builder.encodeStruct(mojo.interface_control2.RunMessageParams,
                          runMessageParams);

@@ -43,9 +43,10 @@ define("mojo/public/js/codec", [
 
   // Decoder ------------------------------------------------------------------
 
-  function Decoder(buffer, handles, base) {
+  function Decoder(buffer, handles, associatedEndpointHandles, base) {
     this.buffer = buffer;
     this.handles = handles;
+    this.associatedEndpointHandles = associatedEndpointHandles;
     this.base = base;
     this.next = base;
   }
@@ -129,11 +130,16 @@ define("mojo/public/js/codec", [
   };
 
   Decoder.prototype.decodeAndCreateDecoder = function(pointer) {
-    return new Decoder(this.buffer, this.handles, pointer);
+    return new Decoder(this.buffer, this.handles,
+        this.associatedEndpointHandles, pointer);
   };
 
   Decoder.prototype.decodeHandle = function() {
     return this.handles[this.readUint32()] || null;
+  };
+
+  Decoder.prototype.decodeAssociatedEndpointHandle = function() {
+    return this.associatedEndpointHandles[this.readUint32()] || null;
   };
 
   Decoder.prototype.decodeString = function() {
@@ -214,9 +220,10 @@ define("mojo/public/js/codec", [
 
   // Encoder ------------------------------------------------------------------
 
-  function Encoder(buffer, handles, base) {
+  function Encoder(buffer, handles, associatedEndpointHandles, base) {
     this.buffer = buffer;
     this.handles = handles;
+    this.associatedEndpointHandles = associatedEndpointHandles;
     this.base = base;
     this.next = base;
   }
@@ -303,13 +310,23 @@ define("mojo/public/js/codec", [
   Encoder.prototype.createAndEncodeEncoder = function(size) {
     var pointer = this.buffer.alloc(align(size));
     this.encodePointer(pointer);
-    return new Encoder(this.buffer, this.handles, pointer);
+    return new Encoder(this.buffer, this.handles,
+        this.associatedEndpointHandles, pointer);
   };
 
   Encoder.prototype.encodeHandle = function(handle) {
     if (handle) {
       this.handles.push(handle);
       this.writeUint32(this.handles.length - 1);
+    } else {
+      this.writeUint32(kEncodedInvalidHandleValue);
+    }
+  };
+
+  Encoder.prototype.encodeAssociatedEndpointHandle = function(endpointHandle) {
+    if (endpointHandle) {
+      this.associatedEndpointHandles.push(endpointHandle);
+      this.writeUint32(this.associatedEndpointHandles.length - 1);
     } else {
       this.writeUint32(kEncodedInvalidHandleValue);
     }
@@ -436,9 +453,14 @@ define("mojo/public/js/codec", [
   var kMessageExpectsResponse = 1 << 0;
   var kMessageIsResponse      = 1 << 1;
 
-  function Message(buffer, handles) {
+  function Message(buffer, handles, associatedEndpointHandles) {
+    if (associatedEndpointHandles === undefined) {
+      associatedEndpointHandles = [];
+    }
+
     this.buffer = buffer;
     this.handles = handles;
+    this.associatedEndpointHandles = associatedEndpointHandles;
   }
 
   Message.prototype.getHeaderNumBytes = function() {
@@ -467,6 +489,7 @@ define("mojo/public/js/codec", [
     }
 
     var decoder = new Decoder(this.buffer, this.handles,
+        this.associatedEndpointHandles,
         kMessagePayloadInterfaceIdsPointerOffset);
     var payloadInterfaceIds = decoder.decodeArrayPointer(Uint32);
     return payloadInterfaceIds;
@@ -489,10 +512,70 @@ define("mojo/public/js/codec", [
     this.buffer.setUint32(kMessageInterfaceIdOffset, interfaceId);
   };
 
+  Message.prototype.setPayloadInterfaceIds_ = function(payloadInterfaceIds) {
+    if (this.getHeaderVersion() < 2) {
+      throw new Error(
+          "Version of message does not support payload interface ids");
+    }
 
-  // MessageBuilder -----------------------------------------------------------
+    var decoder = new Decoder(this.buffer, this.handles,
+        this.associatedEndpointHandles,
+        kMessagePayloadInterfaceIdsPointerOffset);
+    var payloadInterfaceIdsOffset = decoder.decodePointer();
+    var encoder = new Encoder(this.buffer, this.handles,
+        this.associatedEndpointHandles,
+        payloadInterfaceIdsOffset);
+    encoder.encodeArray(Uint32, payloadInterfaceIds);
+  };
 
-  function MessageBuilder(messageName, payloadSize) {
+  Message.prototype.serializeAssociatedEndpointHandles = function(
+      associatedGroupController) {
+    if (this.associatedEndpointHandles.length > 0) {
+      if (this.getHeaderVersion() < 2) {
+        throw new Error(
+            "Version of message does not support associated endpoint handles");
+      }
+
+      var data = [];
+      for (var i = 0; i < this.associatedEndpointHandles.length; i++) {
+        var handle = this.associatedEndpointHandles[i];
+        data.push(associatedGroupController.associateInterface(handle));
+      }
+      this.associatedEndpointHandles = [];
+      this.setPayloadInterfaceIds_(data);
+    }
+  };
+
+  Message.prototype.deserializeAssociatedEndpointHandles = function(
+      associatedGroupController) {
+    if (this.getHeaderVersion() < 2) {
+      return true;
+    }
+
+    this.associatedEndpointHandles = [];
+    var ids = this.getPayloadInterfaceIds();
+
+    var result = true;
+    for (var i = 0; i < ids.length; i++) {
+      var handle = associatedGroupController.createLocalEndpointHandle(ids[i]);
+      if (types.isValidInterfaceId(ids[i]) && !handle.isValid()) {
+        // |ids[i]| itself is valid but handle creation failed. In that case,
+        // mark deserialization as failed but continue to deserialize the
+        // rest of handles.
+        result = false;
+      }
+      this.associatedEndpointHandles.push(handle);
+      ids[i] = types.kInvalidInterfaceId;
+    }
+
+    this.setPayloadInterfaceIds_(ids);
+    return result;
+  };
+
+
+  // MessageV0Builder ---------------------------------------------------------
+
+  function MessageV0Builder(messageName, payloadSize) {
     // Currently, we don't compute the payload size correctly ahead of time.
     // Instead, we resize the buffer at the end.
     var numberOfBytes = kMessageV0HeaderSize + payloadSize;
@@ -507,16 +590,16 @@ define("mojo/public/js/codec", [
     encoder.writeUint32(0);  // padding.
   }
 
-  MessageBuilder.prototype.createEncoder = function(size) {
+  MessageV0Builder.prototype.createEncoder = function(size) {
     var pointer = this.buffer.alloc(size);
-    return new Encoder(this.buffer, this.handles, pointer);
+    return new Encoder(this.buffer, this.handles, [], pointer);
   };
 
-  MessageBuilder.prototype.encodeStruct = function(cls, val) {
+  MessageV0Builder.prototype.encodeStruct = function(cls, val) {
     cls.encode(this.createEncoder(cls.encodedSize), val);
   };
 
-  MessageBuilder.prototype.finish = function() {
+  MessageV0Builder.prototype.finish = function() {
     // TODO(abarth): Rather than resizing the buffer at the end, we could
     // compute the size we need ahead of time, like we do in C++.
     this.buffer.trim();
@@ -527,9 +610,9 @@ define("mojo/public/js/codec", [
     return message;
   };
 
-  // MessageWithRequestIDBuilder -----------------------------------------------
+  // MessageV1Builder -----------------------------------------------
 
-  function MessageWithRequestIDBuilder(messageName, payloadSize, flags,
+  function MessageV1Builder(messageName, payloadSize, flags,
                                        requestID) {
     // Currently, we don't compute the payload size correctly ahead of time.
     // Instead, we resize the buffer at the end.
@@ -546,16 +629,71 @@ define("mojo/public/js/codec", [
     encoder.writeUint64(requestID);
   }
 
-  MessageWithRequestIDBuilder.prototype =
-      Object.create(MessageBuilder.prototype);
+  MessageV1Builder.prototype =
+      Object.create(MessageV0Builder.prototype);
 
-  MessageWithRequestIDBuilder.prototype.constructor =
-      MessageWithRequestIDBuilder;
+  MessageV1Builder.prototype.constructor =
+      MessageV1Builder;
+
+  // MessageV2 -----------------------------------------------
+
+  function MessageV2Builder(messageName, payloadSize, flags, requestID) {
+    // Currently, we don't compute the payload size correctly ahead of time.
+    // Instead, we resize the buffer at the end.
+    var numberOfBytes = kMessageV2HeaderSize + payloadSize;
+    this.buffer = new buffer.Buffer(numberOfBytes);
+    this.handles = [];
+
+    this.payload = null;
+    this.associatedEndpointHandles = [];
+
+    this.encoder = this.createEncoder(kMessageV2HeaderSize);
+    this.encoder.writeUint32(kMessageV2HeaderSize);
+    this.encoder.writeUint32(2);  // version.
+    // Gets set to an appropriate interfaceId for the endpoint by the Router.
+    this.encoder.writeUint32(0);  // interface ID.
+    this.encoder.writeUint32(messageName);
+    this.encoder.writeUint32(flags);
+    this.encoder.writeUint32(0);  // padding.
+    this.encoder.writeUint64(requestID);
+  }
+
+  MessageV2Builder.prototype.createEncoder = function(size) {
+    var pointer = this.buffer.alloc(size);
+    return new Encoder(this.buffer, this.handles,
+        this.associatedEndpointHandles, pointer);
+  };
+
+  MessageV2Builder.prototype.setPayload = function(cls, val) {
+    this.payload = {cls: cls, val: val};
+  };
+
+  MessageV2Builder.prototype.finish = function() {
+    if (!this.payload) {
+      throw new Error("Payload needs to be set before calling finish");
+    }
+
+    this.encoder.encodeStructPointer(this.payload.cls, this.payload.val);
+    this.encoder.encodeArrayPointer(Uint32,
+        new Array(this.associatedEndpointHandles.length));
+
+    this.buffer.trim();
+    var message = new Message(this.buffer, this.handles,
+        this.associatedEndpointHandles);
+    this.buffer = null;
+    this.handles = null;
+    this.encoder = null;
+    this.payload = null;
+    this.associatedEndpointHandles = null;
+
+    return message;
+  };
 
   // MessageReader ------------------------------------------------------------
 
   function MessageReader(message) {
-    this.decoder = new Decoder(message.buffer, message.handles, 0);
+    this.decoder = new Decoder(message.buffer, message.handles,
+        message.associatedEndpointHandles, 0);
     var messageHeaderSize = this.decoder.readUint32();
     this.payloadSize = message.buffer.byteLength - messageHeaderSize;
     var version = this.decoder.readUint32();
@@ -858,11 +996,30 @@ define("mojo/public/js/codec", [
 
   AssociatedInterfacePtrInfo.prototype.encodedSize = 8;
 
+  AssociatedInterfacePtrInfo.decode = function(decoder) {
+    return new types.AssociatedInterfacePtrInfo(
+      decoder.decodeAssociatedEndpointHandle(), decoder.readUint32());
+  };
+
+  AssociatedInterfacePtrInfo.encode = function(encoder, val) {
+    var associatedinterfacePtrInfo =
+        val ? val : new types.AssociatedInterfacePtrInfo(null, 0);
+    encoder.encodeAssociatedEndpointHandle(
+        associatedinterfacePtrInfo.interfaceEndpointHandle);
+    encoder.writeUint32(associatedinterfacePtrInfo.version);
+  };
+
   function NullableAssociatedInterfacePtrInfo() {
   }
 
   NullableAssociatedInterfacePtrInfo.encodedSize =
       AssociatedInterfacePtrInfo.encodedSize;
+
+  NullableAssociatedInterfacePtrInfo.decode =
+      AssociatedInterfacePtrInfo.decode;
+
+  NullableAssociatedInterfacePtrInfo.encode =
+      AssociatedInterfacePtrInfo.encode;
 
   function InterfaceRequest() {
   }
@@ -889,6 +1046,16 @@ define("mojo/public/js/codec", [
   function AssociatedInterfaceRequest() {
   }
 
+  AssociatedInterfaceRequest.decode = function(decoder) {
+    var handle = decoder.decodeAssociatedEndpointHandle();
+    return new types.AssociatedInterfaceRequest(handle);
+  };
+
+  AssociatedInterfaceRequest.encode = function(encoder, val) {
+    encoder.encodeAssociatedEndpointHandle(
+        val ? val.interfaceEndpointHandle : null);
+  };
+
   AssociatedInterfaceRequest.encodedSize = 4;
 
   function NullableAssociatedInterfaceRequest() {
@@ -896,6 +1063,12 @@ define("mojo/public/js/codec", [
 
   NullableAssociatedInterfaceRequest.encodedSize =
       AssociatedInterfaceRequest.encodedSize;
+
+  NullableAssociatedInterfaceRequest.decode =
+      AssociatedInterfaceRequest.decode;
+
+  NullableAssociatedInterfaceRequest.encode =
+      AssociatedInterfaceRequest.encode;
 
   function MapOf(keyClass, valueClass) {
     this.keyClass = keyClass;
@@ -922,8 +1095,9 @@ define("mojo/public/js/codec", [
   exports.align = align;
   exports.isAligned = isAligned;
   exports.Message = Message;
-  exports.MessageBuilder = MessageBuilder;
-  exports.MessageWithRequestIDBuilder = MessageWithRequestIDBuilder;
+  exports.MessageV0Builder = MessageV0Builder;
+  exports.MessageV1Builder = MessageV1Builder;
+  exports.MessageV2Builder = MessageV2Builder;
   exports.MessageReader = MessageReader;
   exports.kArrayHeaderSize = kArrayHeaderSize;
   exports.kMapStructPayloadSize = kMapStructPayloadSize;

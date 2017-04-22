@@ -26,7 +26,7 @@ define([
     var messageName = 42;
     var payloadSize = sample.Bar.encodedSize;
 
-    var builder = new codec.MessageBuilder(messageName, payloadSize);
+    var builder = new codec.MessageV0Builder(messageName, payloadSize);
     builder.encodeStruct(sample.Bar, bar);
 
     var message = builder.finish();
@@ -98,7 +98,7 @@ define([
     var messageName = 31;
     var payloadSize = 304;
 
-    var builder = new codec.MessageBuilder(messageName, payloadSize);
+    var builder = new codec.MessageV0Builder(messageName, payloadSize);
     builder.encodeStruct(sample.Foo, foo);
 
     var message = builder.finish();
@@ -165,7 +165,7 @@ define([
     r.name = "rectangle";
     r.rects = new Array(createRect(1, 2, 3, 4), createRect(10, 20, 30, 40));
 
-    var builder = new codec.MessageBuilder(1, structs.NamedRegion.encodedSize);
+    var builder = new codec.MessageV0Builder(1, structs.NamedRegion.encodedSize);
     builder.encodeStruct(structs.NamedRegion, r);
     var reader = new codec.MessageReader(builder.finish());
     var result = reader.decodeStruct(structs.NamedRegion);
@@ -181,7 +181,7 @@ define([
     var single_bool = new structs.SingleBoolStruct();
     single_bool.value = true;
 
-    var builder = new codec.MessageBuilder(
+    var builder = new codec.MessageV0Builder(
         1, structs.SingleBoolStruct.encodedSize);
     builder.encodeStruct(structs.SingleBoolStruct, single_bool);
     var reader = new codec.MessageReader(builder.finish());
@@ -195,7 +195,7 @@ define([
       var messageName = 42;
       var payloadSize = encodedSize || cls.encodedSize;
 
-      var builder = new codec.MessageBuilder(messageName, payloadSize);
+      var builder = new codec.MessageV0Builder(messageName, payloadSize);
       builder.encodeStruct(cls, input)
       var message = builder.finish();
 
@@ -253,7 +253,7 @@ define([
     var messageName = 42;
     var payloadSize = 24;
 
-    var builder = new codec.MessageBuilder(messageName, payloadSize);
+    var builder = new codec.MessageV0Builder(messageName, payloadSize);
     var encoder = builder.createEncoder(8);
     encoder.encodeStringPointer(str);
     var message = builder.finish();
@@ -276,7 +276,7 @@ define([
   }, 'utf8');
 
   test(() => {
-    var encoder = new codec.MessageBuilder(42, 24).createEncoder(8);
+    var encoder = new codec.MessageV0Builder(42, 24).createEncoder(8);
     function DummyClass() {};
     var testCases = [
       // method, args, invalid examples, valid examples
@@ -294,7 +294,7 @@ define([
       var invalidExamples = test[2];
       var validExamples = test[3];
 
-      var encoder = new codec.MessageBuilder(42, 24).createEncoder(8);
+      var encoder = new codec.MessageV0Builder(42, 24).createEncoder(8);
       invalidExamples.forEach(function(invalid) {
         assert_throws(null, function() {
           method.apply(encoder, baseArgs.concat(invalid));
@@ -302,7 +302,7 @@ define([
       });
 
       validExamples.forEach(function(valid) {
-        var encoder = new codec.MessageBuilder(42, 24).createEncoder(8);
+        var encoder = new codec.MessageV0Builder(42, 24).createEncoder(8);
         method.apply(encoder, baseArgs.concat(valid));
       });
     });

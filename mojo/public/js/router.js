@@ -74,10 +74,47 @@ define("mojo/public/js/router", [
     this.setInterfaceIdNamespaceBit_ = setInterfaceIdNamespaceBit;
     this.controlMessageHandler_ = new PipeControlMessageHandler(this);
     this.controlMessageProxy_ = new PipeControlMessageProxy(this.connector_);
-    this.nextInterfaceIdValue = 1;
+    this.nextInterfaceIdValue_ = 1;
     this.encounteredError_ = false;
     this.endpoints_ = new Map();
   }
+
+  Router.prototype.associateInterface = function(handleToSend) {
+    if (!handleToSend.pendingAssociation()) {
+      return types.kInvalidInterfaceId;
+    }
+
+    var id = 0;
+    do {
+      if (this.nextInterfaceIdValue_ >= types.kInterfaceIdNamespaceMask) {
+        this.nextInterfaceIdValue_ = 1;
+      }
+      id = this.nextInterfaceIdValue_++;
+      if (this.setInterfaceIdNamespaceBit_) {
+        id += types.kInterfaceIdNamespaceMask;
+      }
+    } while (this.endpoints_.has(id));
+
+    var endpoint = new InterfaceEndpoint(this, id);
+    this.endpoints_.set(id, endpoint);
+    if (this.encounteredError_) {
+      this.updateEndpointStateMayRemove(endpoint,
+          EndpointStateUpdateType.PEER_ENDPOINT_CLOSED);
+    }
+    endpoint.handleCreated = true;
+
+    if (!handleToSend.notifyAssociation(id, this)) {
+      // The peer handle of |handleToSend|, which is supposed to join this
+      // associated group, has been closed.
+      this.updateEndpointStateMayRemove(endpoint,
+          EndpointStateUpdateType.ENDPOINT_CLOSED);
+
+      pipeControlMessageproxy.notifyPeerEndpointClosed(id,
+          handleToSend.disconnectReason());
+    }
+
+    return id;
+  };
 
   Router.prototype.attachEndpointClient = function(
       interfaceEndpointHandle, interfaceEndpointClient) {
@@ -149,21 +186,25 @@ define("mojo/public/js/router", [
     var ok = false;
     if (err !== validator.validationError.NONE) {
       validator.reportValidationError(err);
-    } else if (controlMessageHandler.isPipeControlMessage(message)) {
-      ok = this.controlMessageHandler_.accept(message);
-    } else {
-      var interfaceId = message.getInterfaceId();
-      var endpoint = this.endpoints_.get(interfaceId);
-      if (!endpoint || endpoint.closed) {
-        return true;
-      }
+    } else if (message.deserializeAssociatedEndpointHandles(this)) {
+      if (controlMessageHandler.isPipeControlMessage(message)) {
+        ok = this.controlMessageHandler_.accept(message);
+      } else {
+        var interfaceId = message.getInterfaceId();
+        var endpoint = this.endpoints_.get(interfaceId);
+        if (!endpoint || endpoint.closed) {
+          return true;
+        }
 
-      if (!endpoint.client) {
-        // We need to wait until a client is attached in order to dispatch
-        // further messages.
-        return false;
+        if (!endpoint.client) {
+          // We need to wait until a client is attached in order to dispatch
+          // further messages.
+          // TODO(wangjimmy): Cache the message and send when the appropriate
+          // endpoint client is attached.
+          return false;
+        }
+        ok = endpoint.client.handleIncomingMessage(message, messageValidator);
       }
-      ok = endpoint.client.handleIncomingMessage_(message);
     }
 
     if (!ok) {

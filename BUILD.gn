@@ -897,6 +897,7 @@ if (!is_ios) {
     data_deps = [
       ":layout_test_data_mojo_bindings",
       "//content/shell:content_shell",
+      "//mojo/public/interfaces/bindings/tests:test_associated_interfaces",
       "//mojo/public/interfaces/bindings/tests:test_interfaces",
       "//third_party/WebKit/public:blink_devtools_frontend_resources_files",
       "//third_party/mesa:osmesa",

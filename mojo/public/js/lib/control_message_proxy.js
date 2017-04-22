@@ -17,7 +17,7 @@ define("mojo/public/js/lib/control_message_proxy", [
 
     var messageName = controlMessages.kRunOrClosePipeMessageId;
     var payloadSize = controlMessages.RunOrClosePipeMessageParams.encodedSize;
-    var builder = new codec.MessageBuilder(messageName, payloadSize);
+    var builder = new codec.MessageV0Builder(messageName, payloadSize);
     builder.encodeStruct(controlMessages.RunOrClosePipeMessageParams,
                          runOrClosePipeMessageParams);
     var message = builder.finish();
@@ -66,7 +66,7 @@ define("mojo/public/js/lib/control_message_proxy", [
     var messageName = controlMessages.kRunMessageId;
     var payloadSize = controlMessages.RunMessageParams.encodedSize;
     // |requestID| is set to 0, but is later properly set by Router.
-    var builder = new codec.MessageWithRequestIDBuilder(messageName,
+    var builder = new codec.MessageV1Builder(messageName,
         payloadSize, codec.kMessageExpectsResponse, 0);
     builder.encodeStruct(controlMessages.RunMessageParams, runMessageParams);
     var message = builder.finish();

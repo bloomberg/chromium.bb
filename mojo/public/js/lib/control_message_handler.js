@@ -75,7 +75,7 @@ define("mojo/public/js/lib/control_message_handler", [
     var messageName = controlMessages.kRunMessageId;
     var payloadSize = controlMessages.RunResponseMessageParams.encodedSize;
     var requestID = reader.requestID;
-    var builder = new codec.MessageWithRequestIDBuilder(messageName,
+    var builder = new codec.MessageV1Builder(messageName,
         payloadSize, codec.kMessageIsResponse, requestID);
     builder.encodeStruct(controlMessages.RunResponseMessageParams,
                          runResponseMessageParams);

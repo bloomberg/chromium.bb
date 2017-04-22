@@ -21,8 +21,8 @@ define("mojo/public/js/lib/interface_endpoint_client", [
   var ControlMessageHandler = controlMessageHandler.ControlMessageHandler;
   var ControlMessageProxy = controlMessageProxy.ControlMessageProxy;
   var MessageReader = codec.MessageReader;
-  var Validator = validator.Validator;
   var InterfaceEndpointHandle = interfaceEndpointHandle.InterfaceEndpointHandle;
+  var AssociationEvent = interfaceEndpointHandle.AssociationEvent;
 
   function InterfaceEndpointClient(interfaceEndpointHandle, receiver,
       interfaceVersion) {
@@ -62,12 +62,10 @@ define("mojo/public/js/lib/interface_endpoint_client", [
 
   InterfaceEndpointClient.prototype.onAssociationEvent = function(
       associationEvent) {
-    if (associationEvent ===
-        InterfaceEndpointHandle.AssociationEvent.ASSOCIATED) {
+    if (associationEvent === AssociationEvent.ASSOCIATED) {
       this.initControllerIfNecessary_();
     } else if (associationEvent ===
-        InterfaceEndpointHandle.AssociationEvent
-                               .PEER_CLOSED_BEFORE_ASSOCIATION) {
+          AssociationEvent.PEER_CLOSED_BEFORE_ASSOCIATION) {
       timer.createOneShot(0, this.notifyError.bind(this,
           this.handle_.disconnectReason()));
     }
@@ -96,6 +94,11 @@ define("mojo/public/js/lib/interface_endpoint_client", [
   };
 
   InterfaceEndpointClient.prototype.accept = function(message) {
+    if (message.associatedEndpointHandles.length > 0) {
+      message.serializeAssociatedEndpointHandles(
+          this.handle_.groupController());
+    }
+
     if (this.encounteredError_) {
       return false;
     }
@@ -106,6 +109,11 @@ define("mojo/public/js/lib/interface_endpoint_client", [
 
   InterfaceEndpointClient.prototype.acceptAndExpectResponse = function(
       message) {
+    if (message.associatedEndpointHandles.length > 0) {
+      message.serializeAssociatedEndpointHandles(
+          this.handle_.groupController());
+    }
+
     if (this.encounteredError_) {
       return Promise.reject();
     }
@@ -144,10 +152,9 @@ define("mojo/public/js/lib/interface_endpoint_client", [
     this.connectionErrorHandler_ = handler;
   };
 
-  InterfaceEndpointClient.prototype.handleIncomingMessage_ = function(
-      message) {
+  InterfaceEndpointClient.prototype.handleIncomingMessage = function(message,
+      messageValidator) {
     var noError = validator.validationError.NONE;
-    var messageValidator = new Validator(message);
     var err = noError;
     for (var i = 0; err === noError && i < this.payloadValidators_.length; ++i)
       err = this.payloadValidators_[i](messageValidator);

@@ -72,7 +72,7 @@
     var payloadSize =
         mojo.interface_control2.RunResponseMessageParams.encodedSize;
     var requestID = reader.requestID;
-    var builder = new internal.MessageWithRequestIDBuilder(messageName,
+    var builder = new internal.MessageV1Builder(messageName,
         payloadSize, internal.kMessageIsResponse, requestID);
     builder.encodeStruct(mojo.interface_control2.RunResponseMessageParams,
                          runResponseMessageParams);

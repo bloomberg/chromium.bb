@@ -365,6 +365,7 @@ class Generator(generator.Generator):
     "is_struct_pointer_field": IsStructPointerField,
     "is_union_field": IsUnionField,
     "js_type": JavaScriptType,
+    "method_passes_associated_kinds": mojom.MethodPassesAssociatedKinds,
     "payload_size": JavaScriptPayloadSize,
     "get_relative_path": GetRelativePath,
     "stylize_method": generator.StudlyCapsToCamel,
