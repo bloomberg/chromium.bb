@@ -2613,6 +2613,55 @@ TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
   view_->window_->RemoveObserver(&observer);
 }
 
+// When the DelegatedFrameHost does not have a frame from the renderer, it has
+// no reason to lock the compositor as there can't be guttering around a
+// renderer frame that doesn't exist.
+TEST_F(RenderWidgetHostViewAuraTest, MissingFramesDontLock) {
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size = view_rect.size();
+
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+
+  // The view is resized before the first frame, which should not lock the
+  // compositor as it's never received a frame to show yet.
+  view_->SetSize(view_rect.size());
+
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
+
+  // Submit a frame of initial size to make a frame present in
+  // DelegatedFrameHost, at which point locking becomes feasible if resized.
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
+  view_->RunOnCompositingDidCommit();
+
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
+
+  // The view is resized and has its frame evicted, before a new frame arrives.
+  // The resize will lock the compositor, but when evicted, it should no longer
+  // be locked.
+  view_rect.SetRect(0, 0, 150, 150);
+  view_->SetSize(view_rect.size());
+  EXPECT_TRUE(view_->resize_locked());
+  EXPECT_TRUE(view_->compositor_locked());
+
+  view_->ClearCompositorFrame();
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
+
+  // And future resizes after eviction should not lock the compositor since
+  // there is no frame present.
+  view_rect.SetRect(0, 0, 120, 120);
+  view_->SetSize(view_rect.size());
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
+}
+
 TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
