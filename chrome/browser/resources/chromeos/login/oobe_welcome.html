@@ -242,7 +242,7 @@
             on-default-network-changed="onDefaultNetworkChanged_"
             on-network-item-selected="onNetworkListNetworkItemSelected_"
             on-custom-item-selected="onNetworkListCustomItemSelected_"
-            custom-items="[[getNetworkCustomItems_()]]"
+            custom-items="[[getNetworkCustomItems_(isConnected_)]]"
             no-bottom-scroll-border
             class="focus-on-show">
         </cr-network-select>

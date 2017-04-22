@@ -196,12 +196,13 @@ Polymer({
   },
 
   /**
-   * Returns custom items for network selector.
+   * Returns custom items for network selector. Shows 'Proxy settings' only
+   * when connected to a network.
    * @private
    */
-  getNetworkCustomItems_: function() {
+  getNetworkCustomItems_: function(isConnected_) {
     var self = this;
-    return [
+    var items = [
       {
         customItemName: 'proxySettingsMenuName',
         polymerIcon: 'oobe-welcome-20:add-proxy',
@@ -224,6 +225,9 @@ Polymer({
         },
       },
     ];
+    if (isConnected_)
+      return items;
+    return items.slice(1);
   },
 
   /**
