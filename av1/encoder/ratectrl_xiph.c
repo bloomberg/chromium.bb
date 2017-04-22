@@ -1145,14 +1145,14 @@ int od_enc_rc_update_state(od_rc_state *rc, int64_t bits, int is_golden_frame,
   return dropped;
 }
 
-static inline void od_rc_buffer_val(od_rc_state *rc, int64_t val, int bytes) {
+static INLINE void od_rc_buffer_val(od_rc_state *rc, int64_t val, int bytes) {
   while (bytes-- > 0) {
     rc->twopass_buffer[rc->twopass_buffer_bytes++] = (uint8_t)(val & 0xFF);
     val >>= 8;
   }
 }
 
-static inline int64_t od_rc_unbuffer_val(od_rc_state *rc, int bytes) {
+static INLINE int64_t od_rc_unbuffer_val(od_rc_state *rc, int bytes) {
   int64_t ret = 0;
   int shift = 0;
   while (bytes-- > 0) {

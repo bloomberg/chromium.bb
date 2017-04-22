@@ -33,7 +33,7 @@ static __m128i horizontal_sum_epi32(__m128i x) {
   return x;
 }
 
-static inline float rsqrtf(float x) {
+static INLINE float rsqrtf(float x) {
   float y;
   _mm_store_ss(&y, _mm_rsqrt_ss(_mm_load_ss(&x)));
   return y;

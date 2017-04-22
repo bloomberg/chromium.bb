@@ -694,7 +694,7 @@ static const uint16_t div_lut[DIV_LUT_NUM + 1] = {
   8240,  8224,  8208,  8192,
 };
 
-static inline int16_t saturate_int16(int32_t v) {
+static INLINE int16_t saturate_int16(int32_t v) {
   if (v > 32767)
     return 32767;
   else if (v < -32768)
