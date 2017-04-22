@@ -8,9 +8,8 @@
 #import <UIKit/UIKit.h>
 #include <vector>
 
+#import "ios/chrome/browser/payments/payment_items_display_view_controller_data_source.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
-
-class PaymentRequest;
 
 // The accessibility identifiers of the cells in the collection view.
 extern NSString* const kPaymentItemsDisplayItemID;
@@ -33,7 +32,8 @@ extern NSString* const kPaymentItemsDisplayItemID;
 
 // View controller responsible for presenting the payment items from the payment
 // request. The payment items are the line items that should sum to the total
-// payment (e.g. individual goods/services, tax, shipping).
+// payment (e.g. individual goods/services, tax, shipping). This view controller
+// also features a "Pay" button to confirm the payment.
 @interface PaymentItemsDisplayViewController : CollectionViewController
 
 // The delegate to be notified when the user selects touches the return button
@@ -41,11 +41,12 @@ extern NSString* const kPaymentItemsDisplayItemID;
 @property(nonatomic, weak)
     id<PaymentItemsDisplayViewControllerDelegate> delegate;
 
-// Initializes this object with an instance of PaymentRequest which has a copy
-// of web::PaymentRequest as provided by the page invoking the Payment Request
-// API. This object will not take ownership of |paymentRequest|.
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
-                      payButtonEnabled:(BOOL)payButtonEnabled
+// The data source for this view controller.
+@property(nonatomic, weak) id<PaymentItemsDisplayViewControllerDataSource>
+    dataSource;
+
+// Initializes this object with the given state for the "Pay" button.
+- (instancetype)initWithPayButtonEnabled:(BOOL)payButtonEnabled
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

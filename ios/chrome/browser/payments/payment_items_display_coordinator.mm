@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/payments/payment_items_display_coordinator.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/payments/payment_items_display_mediator.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/web/public/payments/payment_request.h"
 
@@ -14,6 +15,7 @@
 
 @interface PaymentItemsDisplayCoordinator () {
   PaymentItemsDisplayViewController* _viewController;
+  PaymentItemsDisplayMediator* _mediator;
 }
 
 @end
@@ -26,9 +28,11 @@
 - (void)start {
   BOOL payButtonEnabled = _paymentRequest->selected_credit_card() != nil;
   _viewController = [[PaymentItemsDisplayViewController alloc]
-      initWithPaymentRequest:_paymentRequest
-            payButtonEnabled:payButtonEnabled];
+      initWithPayButtonEnabled:payButtonEnabled];
   [_viewController setDelegate:self];
+  _mediator = [[PaymentItemsDisplayMediator alloc]
+      initWithPaymentRequest:self.paymentRequest];
+  [_viewController setDataSource:_mediator];
   [_viewController loadModel];
 
   DCHECK([self baseViewController].navigationController);
@@ -41,6 +45,7 @@
   [[self baseViewController].navigationController
       popViewControllerAnimated:YES];
   _viewController = nil;
+  _mediator = nil;
 }
 
 #pragma mark - PaymentItemsDisplayViewControllerDelegate

@@ -9,6 +9,7 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
+#import "ios/chrome/browser/payments/payment_items_display_view_controller_data_source.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
@@ -20,6 +21,25 @@
 #error "This file requires ARC support."
 #endif
 
+@interface TestPaymentItemsDisplayMediator
+    : NSObject<PaymentItemsDisplayViewControllerDataSource>
+
+@end
+
+@implementation TestPaymentItemsDisplayMediator
+
+#pragma mark - PaymentItemsDisplayViewControllerDataSource
+
+- (CollectionViewItem*)totalItem {
+  return [[PriceItem alloc] init];
+}
+
+- (NSArray<CollectionViewItem*>*)lineItems {
+  return @[ [[PriceItem alloc] init] ];
+}
+
+@end
+
 class PaymentRequestPaymentItemsDisplayViewControllerTest
     : public CollectionViewControllerTest {
  protected:
@@ -27,10 +47,11 @@ class PaymentRequestPaymentItemsDisplayViewControllerTest
     payment_request_ = base::MakeUnique<PaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
-
-    return [[PaymentItemsDisplayViewController alloc]
-        initWithPaymentRequest:payment_request_.get()
-              payButtonEnabled:YES];
+    mediator_ = [[TestPaymentItemsDisplayMediator alloc] init];
+    PaymentItemsDisplayViewController* viewController = [
+        [PaymentItemsDisplayViewController alloc] initWithPayButtonEnabled:YES];
+    [viewController setDataSource:mediator_];
+    return viewController;
   }
 
   PaymentItemsDisplayViewController* GetPaymentItemsViewController() {
@@ -40,6 +61,7 @@ class PaymentRequestPaymentItemsDisplayViewControllerTest
 
   autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<PaymentRequest> payment_request_;
+  TestPaymentItemsDisplayMediator* mediator_ = nil;
 };
 
 // Tests that the correct number of items are displayed after loading the model.

@@ -5,22 +5,17 @@
 #import "ios/chrome/browser/payments/payment_items_display_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/credit_card.h"
-#include "components/payments/core/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/payments/payment_items_display_view_controller_actions.h"
-#include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -50,21 +45,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface PaymentItemsDisplayViewController ()<
     PaymentItemsDisplayViewControllerActions> {
   MDCButton* _payButton;
-
-  // The PaymentRequest object having a copy of web::PaymentRequest as provided
-  // by the page invoking the Payment Request API. This is a weak pointer and
-  // should outlive this class.
-  PaymentRequest* _paymentRequest;
 }
 
 @end
 
 @implementation PaymentItemsDisplayViewController
-@synthesize delegate = _delegate;
 
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
-                      payButtonEnabled:(BOOL)payButtonEnabled {
-  DCHECK(paymentRequest);
+@synthesize delegate = _delegate;
+@synthesize dataSource = _dataSource;
+
+- (instancetype)initWithPayButtonEnabled:(BOOL)payButtonEnabled {
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
     [self setTitle:l10n_util::GetNSString(IDS_PAYMENTS_ORDER_SUMMARY_LABEL)];
 
@@ -110,8 +100,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     UIBarButtonItem* payButtonItem =
         [[UIBarButtonItem alloc] initWithCustomView:buttonView];
     [self navigationItem].rightBarButtonItem = payButtonItem;
-
-    _paymentRequest = paymentRequest;
   }
   return self;
 }
@@ -131,38 +119,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)loadModel {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
-  [model addSectionWithIdentifier:SectionIdentifierPayment];
 
   // Add the total entry.
-  PriceItem* totalItem =
-      [[PriceItem alloc] initWithType:ItemTypePaymentItemTotal];
-  totalItem.accessibilityIdentifier = kPaymentItemsDisplayItemID;
-  totalItem.item =
-      base::SysUTF16ToNSString(_paymentRequest->payment_details().total.label);
-  payments::CurrencyFormatter* currencyFormatter =
-      _paymentRequest->GetOrCreateCurrencyFormatter();
-  totalItem.price = SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-      IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
-      base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
-      currencyFormatter->Format(base::UTF16ToASCII(
-          _paymentRequest->payment_details().total.amount.value))));
-
-  [model addItem:totalItem toSectionWithIdentifier:SectionIdentifierPayment];
+  [model addSectionWithIdentifier:SectionIdentifierPayment];
+  CollectionViewItem* totalItem = [_dataSource totalItem];
+  if (totalItem) {
+    totalItem.type = ItemTypePaymentItemTotal;
+    totalItem.accessibilityIdentifier = kPaymentItemsDisplayItemID;
+    [model addItem:totalItem toSectionWithIdentifier:SectionIdentifierPayment];
+  }
 
   // Add the line item entries.
-  for (const auto& paymentItem :
-       _paymentRequest->payment_details().display_items) {
-    PriceItem* paymentItemItem =
-        [[PriceItem alloc] initWithType:ItemTypePaymentItem];
-    paymentItemItem.accessibilityIdentifier = kPaymentItemsDisplayItemID;
-    paymentItemItem.item = base::SysUTF16ToNSString(paymentItem.label);
-    payments::CurrencyFormatter* currencyFormatter =
-        _paymentRequest->GetOrCreateCurrencyFormatter();
-    paymentItemItem.price = SysUTF16ToNSString(currencyFormatter->Format(
-        base::UTF16ToASCII(paymentItem.amount.value)));
-    [model addItem:paymentItemItem
-        toSectionWithIdentifier:SectionIdentifierPayment];
-  }
+  [[_dataSource lineItems]
+      enumerateObjectsUsingBlock:^(CollectionViewItem* item, NSUInteger index,
+                                   BOOL* stop) {
+        item.type = ItemTypePaymentItem;
+        item.accessibilityIdentifier = kPaymentItemsDisplayItemID;
+        [model addItem:item toSectionWithIdentifier:SectionIdentifierPayment];
+      }];
 }
 
 - (void)viewDidLoad {
@@ -186,24 +160,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypePaymentItemTotal: {
-      PriceCell* priceCell = base::mac::ObjCCastStrict<PriceCell>(cell);
-      priceCell.itemLabel.font =
-          [[MDFRobotoFontLoader sharedInstance] boldFontOfSize:14];
-      priceCell.itemLabel.textColor = [[MDCPalette greyPalette] tint600];
-      priceCell.priceLabel.font =
-          [[MDFRobotoFontLoader sharedInstance] boldFontOfSize:14];
-      priceCell.priceLabel.textColor = [[MDCPalette greyPalette] tint900];
+      if ([cell isKindOfClass:[PriceCell class]]) {
+        PriceCell* priceCell = base::mac::ObjCCastStrict<PriceCell>(cell);
+        priceCell.priceLabel.font = [MDCTypography body2Font];
+      }
       break;
     }
     case ItemTypePaymentItem: {
-      PriceCell* priceCell = base::mac::ObjCCastStrict<PriceCell>(cell);
-      priceCell.itemLabel.font =
-          [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
-      priceCell.itemLabel.textColor = [[MDCPalette greyPalette] tint900];
-
-      priceCell.priceLabel.font =
-          [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
-      priceCell.priceLabel.textColor = [[MDCPalette greyPalette] tint900];
+      if ([cell isKindOfClass:[PriceCell class]]) {
+        PriceCell* priceCell = base::mac::ObjCCastStrict<PriceCell>(cell);
+        priceCell.itemLabel.font = [MDCTypography body1Font];
+      }
       break;
     }
     default:
