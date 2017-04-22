@@ -15,7 +15,20 @@
 
 namespace blink {
 
-MainThreadWorklet::MainThreadWorklet(LocalFrame* frame) : Worklet(frame) {}
+namespace {
+
+int32_t GetNextRequestId() {
+  DCHECK(IsMainThread());
+  static int32_t next_request_id = 1;
+  CHECK_LT(next_request_id, std::numeric_limits<int32_t>::max());
+  return next_request_id++;
+}
+
+}  // namespace
+
+MainThreadWorklet::MainThreadWorklet(LocalFrame* frame) : Worklet(frame) {
+  DCHECK(resolver_map_.IsEmpty());
+}
 
 ScriptPromise MainThreadWorklet::addModule(ScriptState* script_state,
                                            const String& url) {
@@ -36,42 +49,36 @@ ScriptPromise MainThreadWorklet::addModule(ScriptState* script_state,
   if (!IsInitialized())
     Initialize();
 
+  int32_t request_id = GetNextRequestId();
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-
-  WorkletScriptLoader* script_loader =
-      WorkletScriptLoader::Create(frame_->GetDocument()->Fetcher(), this);
-  loader_to_resolver_map_.Set(script_loader, resolver);
-  script_loader->FetchScript(script_url);
+  resolver_map_.Set(request_id, resolver);
+  GetWorkletGlobalScopeProxy()->FetchAndInvokeScript(request_id, script_url);
   return promise;
 }
 
-void MainThreadWorklet::NotifyWorkletScriptLoadingFinished(
-    WorkletScriptLoader* script_loader,
-    const ScriptSourceCode& source_code) {
+void MainThreadWorklet::DidFetchAndInvokeScript(int32_t request_id,
+                                                bool success) {
   DCHECK(IsMainThread());
-  ScriptPromiseResolver* resolver = loader_to_resolver_map_.at(script_loader);
-  loader_to_resolver_map_.erase(script_loader);
-
-  if (!script_loader->WasScriptLoadSuccessful()) {
+  ScriptPromiseResolver* resolver = resolver_map_.at(request_id);
+  if (!resolver)
+    return;
+  resolver_map_.erase(request_id);
+  if (!success) {
     resolver->Reject(DOMException::Create(kNetworkError));
     return;
   }
-
-  GetWorkletGlobalScopeProxy()->EvaluateScript(source_code);
   resolver->Resolve();
 }
 
 void MainThreadWorklet::ContextDestroyed(ExecutionContext* execution_context) {
   DCHECK(IsMainThread());
-  for (const auto& script_loader : loader_to_resolver_map_.Keys())
-    script_loader->Cancel();
-  loader_to_resolver_map_.Clear();
+  resolver_map_.Clear();
   Worklet::ContextDestroyed(execution_context);
 }
 
 DEFINE_TRACE(MainThreadWorklet) {
-  visitor->Trace(loader_to_resolver_map_);
+  visitor->Trace(resolver_map_);
   Worklet::Trace(visitor);
 }
 

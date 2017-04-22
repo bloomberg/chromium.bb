@@ -27,7 +27,8 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
                                          const KURL&,
                                          const String& user_agent,
                                          PassRefPtr<SecurityOrigin>,
-                                         v8::Isolate*);
+                                         v8::Isolate*,
+                                         WorkletObjectProxy*);
   ~PaintWorkletGlobalScope() override;
   void Dispose() final;
 
@@ -46,7 +47,8 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
                           const KURL&,
                           const String& user_agent,
                           PassRefPtr<SecurityOrigin>,
-                          v8::Isolate*);
+                          v8::Isolate*,
+                          WorkletObjectProxy*);
 
   typedef HeapHashMap<String, Member<CSSPaintDefinition>> DefinitionMap;
   DefinitionMap paint_definitions_;

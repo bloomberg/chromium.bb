@@ -21,10 +21,12 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
     const KURL& url,
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
-    v8::Isolate* isolate) {
+    v8::Isolate* isolate,
+    WorkletObjectProxy* object_proxy) {
   PaintWorkletGlobalScope* paint_worklet_global_scope =
       new PaintWorkletGlobalScope(frame, url, user_agent,
-                                  std::move(security_origin), isolate);
+                                  std::move(security_origin), isolate,
+                                  object_proxy);
   paint_worklet_global_scope->ScriptController()->InitializeContextIfNeeded();
   MainThreadDebugger::Instance()->ContextCreated(
       paint_worklet_global_scope->ScriptController()->GetScriptState(),
@@ -38,12 +40,14 @@ PaintWorkletGlobalScope::PaintWorkletGlobalScope(
     const KURL& url,
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
-    v8::Isolate* isolate)
+    v8::Isolate* isolate,
+    WorkletObjectProxy* object_proxy)
     : MainThreadWorkletGlobalScope(frame,
                                    url,
                                    user_agent,
                                    std::move(security_origin),
-                                   isolate) {}
+                                   isolate,
+                                   object_proxy) {}
 
 PaintWorkletGlobalScope::~PaintWorkletGlobalScope() {}
 

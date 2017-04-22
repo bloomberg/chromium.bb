@@ -11,6 +11,19 @@
 
 namespace blink {
 
+namespace {
+
+class WorkletObjectProxyForTest final
+    : public GarbageCollectedFinalized<WorkletObjectProxyForTest>,
+      public WorkletObjectProxy {
+  USING_GARBAGE_COLLECTED_MIXIN(WorkletObjectProxyForTest);
+
+ public:
+  void DidFetchAndInvokeScript(int32_t request_id, bool success) {}
+};
+
+}  // namespace
+
 class MainThreadWorkletTest : public ::testing::Test {
  public:
   void SetUp() override {
@@ -19,7 +32,8 @@ class MainThreadWorkletTest : public ::testing::Test {
     security_origin_ = SecurityOrigin::Create(url);
     global_scope_ = new MainThreadWorkletGlobalScope(
         &page_->GetFrame(), url, "fake user agent", security_origin_.Get(),
-        ToIsolate(page_->GetFrame().GetDocument()));
+        ToIsolate(page_->GetFrame().GetDocument()),
+        new WorkletObjectProxyForTest);
   }
 
   void TearDown() override { global_scope_->TerminateWorkletGlobalScope(); }

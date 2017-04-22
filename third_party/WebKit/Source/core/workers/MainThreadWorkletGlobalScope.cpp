@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/dom/Document.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
@@ -18,9 +19,11 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
     const KURL& url,
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
-    v8::Isolate* isolate)
+    v8::Isolate* isolate,
+    WorkletObjectProxy* object_proxy)
     : WorkletGlobalScope(url, user_agent, std::move(security_origin), isolate),
-      ContextClient(frame) {}
+      ContextClient(frame),
+      object_proxy_(object_proxy) {}
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
 
@@ -45,13 +48,41 @@ WorkerThread* MainThreadWorkletGlobalScope::GetThread() const {
   return nullptr;
 }
 
+void MainThreadWorkletGlobalScope::FetchAndInvokeScript(
+    int32_t request_id,
+    const KURL& script_url) {
+  DCHECK(IsMainThread());
+  // TODO(nhiroki): Replace this with module script loading.
+  WorkletScriptLoader* script_loader =
+      WorkletScriptLoader::Create(GetFrame()->GetDocument()->Fetcher(), this);
+  script_loader->set_request_id(request_id);
+  loader_set_.insert(script_loader);
+  script_loader->FetchScript(script_url);
+}
+
 void MainThreadWorkletGlobalScope::EvaluateScript(
     const ScriptSourceCode& script_source_code) {
-  ScriptController()->Evaluate(script_source_code);
+  // This should be called only for threaded worklets that still use classic
+  // script loading.
+  NOTREACHED();
 }
 
 void MainThreadWorkletGlobalScope::TerminateWorkletGlobalScope() {
+  for (const auto& script_loader : loader_set_)
+    script_loader->Cancel();
   Dispose();
+}
+
+void MainThreadWorkletGlobalScope::NotifyWorkletScriptLoadingFinished(
+    WorkletScriptLoader* script_loader,
+    const ScriptSourceCode& source_code) {
+  DCHECK(IsMainThread());
+  int32_t request_id = script_loader->request_id();
+  loader_set_.erase(script_loader);
+  bool success = script_loader->WasScriptLoadSuccessful();
+  if (success)
+    ScriptController()->Evaluate(source_code);
+  object_proxy_->DidFetchAndInvokeScript(request_id, success);
 }
 
 void MainThreadWorkletGlobalScope::AddConsoleMessage(
@@ -61,6 +92,13 @@ void MainThreadWorkletGlobalScope::AddConsoleMessage(
 
 void MainThreadWorkletGlobalScope::ExceptionThrown(ErrorEvent* event) {
   MainThreadDebugger::Instance()->ExceptionThrown(this, event);
+}
+
+DEFINE_TRACE(MainThreadWorkletGlobalScope) {
+  visitor->Trace(loader_set_);
+  visitor->Trace(object_proxy_);
+  WorkletGlobalScope::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -19,7 +19,16 @@ class CORE_EXPORT WorkletGlobalScopeProxy {
  public:
   virtual ~WorkletGlobalScopeProxy() {}
 
+  // Runs the "fetch and invoke a worklet script" algorithm:
+  // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
+  virtual void FetchAndInvokeScript(int32_t request_id,
+                                    const KURL& script_url) {}
+
+  // Evaluates the given script source code. This should be called only for
+  // threaded worklets that still use classic script loading.
   virtual void EvaluateScript(const ScriptSourceCode&) = 0;
+
+  // Terminates the worklet global scope from the main thread.
   virtual void TerminateWorkletGlobalScope() = 0;
 };
 
