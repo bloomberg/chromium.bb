@@ -1134,7 +1134,9 @@ gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
   return gfx::ToEnclosingRect(bounds);
 }
 
+//
 // AXPlatformNodeDelegate.
+//
 const ui::AXNodeData& BrowserAccessibility::GetData() const {
   CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
   if (node_)
@@ -1149,17 +1151,20 @@ gfx::NativeWindow BrowserAccessibility::GetTopLevelWidget() {
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetParent() {
-  NOTREACHED();
+  auto* parent = PlatformGetParent();
+  if (parent && parent->platform_node_)
+    return parent->platform_node_->GetNativeViewAccessible();
   return nullptr;
 }
 
 int BrowserAccessibility::GetChildCount() {
-  NOTREACHED();
-  return -1;
+  return PlatformChildCount();
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::ChildAtIndex(int index) {
-  NOTREACHED();
+  auto* child = PlatformGetChild(index);
+  if (child && child->platform_node_)
+    return child->platform_node_->GetNativeViewAccessible();
   return nullptr;
 }
 
