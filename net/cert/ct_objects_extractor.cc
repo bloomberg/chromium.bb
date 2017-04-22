@@ -173,9 +173,9 @@ bool ExtractEmbeddedSCTList(X509Certificate::OSCertHandle cert,
                                        sct_list);
 }
 
-bool GetPrecertLogEntry(X509Certificate::OSCertHandle leaf,
-                        X509Certificate::OSCertHandle issuer,
-                        LogEntry* result) {
+bool GetPrecertSignedEntry(X509Certificate::OSCertHandle leaf,
+                           X509Certificate::OSCertHandle issuer,
+                           SignedEntryData* result) {
   result->Reset();
 
   bssl::UniquePtr<X509> leaf_x509(OSCertHandleToOpenSSL(leaf));
@@ -228,8 +228,8 @@ bool GetPrecertLogEntry(X509Certificate::OSCertHandle leaf,
   if (!asn1::ExtractSPKIFromDERCert(issuer_der, &issuer_key))
     return false;
 
-  // Fill in the LogEntry.
-  result->type = ct::LogEntry::LOG_ENTRY_TYPE_PRECERT;
+  // Fill in the SignedEntryData.
+  result->type = ct::SignedEntryData::LOG_ENTRY_TYPE_PRECERT;
   result->tbs_certificate.swap(to_be_signed);
   crypto::SHA256HashString(issuer_key, result->issuer_key_hash.data,
                            sizeof(result->issuer_key_hash.data));
@@ -237,7 +237,8 @@ bool GetPrecertLogEntry(X509Certificate::OSCertHandle leaf,
   return true;
 }
 
-bool GetX509LogEntry(X509Certificate::OSCertHandle leaf, LogEntry* result) {
+bool GetX509SignedEntry(X509Certificate::OSCertHandle leaf,
+                        SignedEntryData* result) {
   DCHECK(leaf);
 
   std::string encoded;
@@ -245,7 +246,7 @@ bool GetX509LogEntry(X509Certificate::OSCertHandle leaf, LogEntry* result) {
     return false;
 
   result->Reset();
-  result->type = ct::LogEntry::LOG_ENTRY_TYPE_X509;
+  result->type = ct::SignedEntryData::LOG_ENTRY_TYPE_X509;
   result->leaf_certificate.swap(encoded);
   return true;
 }

@@ -25,17 +25,12 @@
 #include "net/log/net_log.h"
 
 using net::SHA256HashValue;
-using net::ct::LogEntry;
 using net::ct::MerkleAuditProof;
 using net::ct::MerkleTreeLeaf;
 using net::ct::SignedCertificateTimestamp;
 using net::ct::SignedTreeHead;
 
 // Overview of the process for auditing CT log entries
-//
-// A CT log entry, represented by net::ct::LogEntry, is made up of the
-// end-entity certificate and the Signed Certificate Timestamp associated with
-// it.
 //
 // In this file, obsered CT log entries are audited for inclusion in the CT log.
 // A pre-requirement for auditing a log entry is having a Signed Tree Head (STH)

@@ -85,7 +85,7 @@ CTLogVerifier::CTLogVerifier(const base::StringPiece& description,
   DCHECK(!dns_domain_.empty());
 }
 
-bool CTLogVerifier::Verify(const ct::LogEntry& entry,
+bool CTLogVerifier::Verify(const ct::SignedEntryData& entry,
                            const ct::SignedCertificateTimestamp& sct) const {
   if (sct.log_id != key_id()) {
     DVLOG(1) << "SCT is not signed by this log.";
@@ -96,7 +96,7 @@ bool CTLogVerifier::Verify(const ct::LogEntry& entry,
     return false;
 
   std::string serialized_log_entry;
-  if (!ct::EncodeLogEntry(entry, &serialized_log_entry)) {
+  if (!ct::EncodeSignedEntry(entry, &serialized_log_entry)) {
     DVLOG(1) << "Unable to serialize entry.";
     return false;
   }
