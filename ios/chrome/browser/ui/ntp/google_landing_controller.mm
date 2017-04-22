@@ -6,68 +6,29 @@
 
 #include <algorithm>
 
-#include "base/i18n/case_conversion.h"
-#import "base/ios/weak_nsobject.h"
-#include "base/json/json_reader.h"
-#include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/favicon/core/large_icon_service.h"
-#include "components/keyed_service/core/service_access_type.h"
-#include "components/ntp_tiles/most_visited_sites.h"
-#include "components/ntp_tiles/ntp_tile.h"
-#include "components/rappor/rappor_service_impl.h"
-#include "components/search_engines/template_url_service.h"
-#include "components/search_engines/template_url_service_observer.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/favicon/favicon_loader.h"
-#include "ios/chrome/browser/favicon/favicon_service_factory.h"
-#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
-#include "ios/chrome/browser/favicon/large_icon_cache.h"
-#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
-#include "ios/chrome/browser/notification_promo.h"
-#include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
-#import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/ntp/most_visited_cell.h"
 #import "ios/chrome/browser/ui/ntp/most_visited_layout.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
-#import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/ntp/whats_new_header_view.h"
-#import "ios/chrome/browser/ui/orientation_limiting_navigation_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/ui/logo_vendor.h"
-#include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::UserMetricsAction;
@@ -99,7 +60,6 @@ const CGFloat kNTPSearchFieldBottomPadding = 16;
 const CGFloat kWhatsNewHeaderHiddenHeight = 8;
 const CGFloat kDoodleTopMarginIPadPortrait = 82;
 const CGFloat kDoodleTopMarginIPadLandscape = 82;
-const NSInteger kMaxNumMostVisitedFavicons = 8;
 const NSInteger kMaxNumMostVisitedFaviconRows = 2;
 const CGFloat kMaxSearchFieldFrameMargin = 200;
 const CGFloat kShiftTilesDownAnimationDuration = 0.2;
@@ -108,38 +68,6 @@ const CGFloat kMostVisitedPaddingIPhone = 16;
 const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
 }  // namespace
-
-namespace google_landing {
-
-// Observer used to hide the Google logo and doodle if the TemplateURLService
-// changes.
-class SearchEngineObserver : public TemplateURLServiceObserver {
- public:
-  SearchEngineObserver(GoogleLandingController* owner,
-                       TemplateURLService* urlService);
-  ~SearchEngineObserver() override;
-  void OnTemplateURLServiceChanged() override;
-
- private:
-  base::WeakNSObject<GoogleLandingController> _owner;
-  TemplateURLService* _templateURLService;  // weak
-};
-
-SearchEngineObserver::SearchEngineObserver(GoogleLandingController* owner,
-                                           TemplateURLService* urlService)
-    : _owner(owner), _templateURLService(urlService) {
-  _templateURLService->AddObserver(this);
-}
-
-SearchEngineObserver::~SearchEngineObserver() {
-  _templateURLService->RemoveObserver(this);
-}
-
-void SearchEngineObserver::OnTemplateURLServiceChanged() {
-  [_owner reload];
-}
-
-}  // namespace google_landing
 
 @interface GoogleLandingController (UsedByGoogleLandingView)
 // Update frames for subviews depending on the interface orientation.
@@ -160,11 +88,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 @implementation GoogleLandingView
 
-- (void)layoutSubviews {
-  [super layoutSubviews];
-  [_googleLanding updateSubviewFrames];
-}
-
 - (void)setFrameDelegate:(GoogleLandingController*)delegate {
   _googleLanding = delegate;
 }
@@ -184,8 +107,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 @end
 
-@interface GoogleLandingController ()<MostVisitedSitesObserving,
-                                      OverscrollActionsControllerDelegate,
+@interface GoogleLandingController ()<OverscrollActionsControllerDelegate,
                                       UICollectionViewDataSource,
                                       UICollectionViewDelegate,
                                       UICollectionViewDelegateFlowLayout,
@@ -193,16 +115,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                                       WhatsNewHeaderViewDelegate> {
   // Fake omnibox.
   base::scoped_nsobject<UIButton> _searchTapTarget;
-
-  // Controller to fetch and show doodles or a default Google logo.
-  base::scoped_nsprotocol<id<LogoVendor>> _doodleController;
-
-  // Most visited data from the MostVisitedSites service (copied upon receiving
-  // the callback).
-  ntp_tiles::NTPTilesVector _mostVisitedData;
-
-  // |YES| if impressions were logged already and shouldn't be logged again.
-  BOOL _recordedPageImpression;
 
   // A collection view for the most visited sites.
   base::scoped_nsobject<UICollectionView> _mostVisitedView;
@@ -214,9 +126,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   // |YES| when notifications indicate the omnibox is focused.
   BOOL _omniboxFocused;
 
-  // Delegate to focus and blur the omnibox.
-  base::WeakNSProtocol<id<OmniboxFocuser>> _focuser;
-
   // Tap and swipe gesture recognizers when the omnibox is focused.
   base::scoped_nsobject<UITapGestureRecognizer> _tapGestureRecognizer;
   base::scoped_nsobject<UISwipeGestureRecognizer> _swipeGestureRecognizer;
@@ -224,56 +133,62 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   // Handles displaying the context menu for all form factors.
   base::scoped_nsobject<ContextMenuCoordinator> _contextMenuCoordinator;
 
-  // What's new promo.
-  std::unique_ptr<NotificationPromoWhatsNew> _notification_promo;
-
-  // A MostVisitedSites::Observer bridge object to get notified of most visited
-  // sites changes.
-  std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge>
-      _most_visited_observer_bridge;
-
-  std::unique_ptr<ntp_tiles::MostVisitedSites> _most_visited_sites;
-
   // URL of the last deleted most viewed entry. If present the UI to restore it
   // is shown.
   base::scoped_nsobject<NSURL> _deletedUrl;
-
-  // Listen for default search engine changes.
-  std::unique_ptr<google_landing::SearchEngineObserver> _observer;
-  TemplateURLService* _templateURLService;  // weak
 
   // |YES| if the view has finished its first layout. This is useful when
   // determining if the view has sized itself for tablet.
   BOOL _viewLoaded;
 
+  // |YES| if the fakebox header should be animated on scroll.
   BOOL _animateHeader;
+
+  // |YES| if the collection scrollView is scrolled all the way to the top. Used
+  // to lock this position in place on various frame changes.
   BOOL _scrolledToTop;
+
+  // |YES| if this NTP panel is visible.  When set to |NO| various UI updates
+  // are ignored.
   BOOL _isShowing;
+
   CFTimeInterval _shiftTilesDownStartTime;
   CGSize _mostVisitedCellSize;
-  NSUInteger _maxNumMostVisited;
-  ios::ChromeBrowserState* _browserState;  // Weak.
-  id<UrlLoader> _loader;                   // Weak.
-  std::unique_ptr<
-      suggestions::SuggestionsService::ResponseCallbackList::Subscription>
-      _suggestionsServiceResponseSubscription;
   base::scoped_nsobject<NSLayoutConstraint> _hintLabelLeadingConstraint;
   base::scoped_nsobject<NSLayoutConstraint> _voiceTapTrailingConstraint;
   base::scoped_nsobject<NSMutableArray> _supplementaryViews;
   base::scoped_nsobject<NewTabPageHeaderView> _headerView;
   base::scoped_nsobject<WhatsNewHeaderView> _promoHeaderView;
-  base::WeakNSProtocol<id<WebToolbarDelegate>> _webToolbarDelegate;
-  base::scoped_nsobject<TabModel> _tabModel;
 }
-
-// Whether the Google logo or doodle is being shown.
-@property(nonatomic, readonly, getter=isShowingLogo) BOOL showingLogo;
-
-@property(nonatomic) id<UrlLoader> loader;
 
 // Redeclare the |view| property to be the GoogleLandingView subclass instead of
 // a generic UIView.
 @property(nonatomic, readwrite, strong) GoogleLandingView* view;
+
+// Whether the Google logo or doodle is being shown.
+@property(nonatomic, assign) BOOL logoIsShowing;
+
+// Exposes view and methods to drive the doodle.
+@property(nonatomic, assign) id<LogoVendor> logoVendor;
+
+// |YES| if this consumer is incognito.
+@property(nonatomic, assign) BOOL isOffTheRecord;
+
+// |YES| if this consumer is has voice search enabled.
+@property(nonatomic, assign) BOOL voiceSearchIsEnabled;
+
+// Gets the maximum number of sites shown.
+@property(nonatomic, assign) NSUInteger maximumMostVisitedSitesShown;
+
+// Gets the text of a what's new promo.
+@property(nonatomic, retain) NSString* promoText;
+
+// Gets the icon of a what's new promo.
+// TODO(crbug.com/694750): This should not be WhatsNewIcon.
+@property(nonatomic, assign) WhatsNewIcon promoIcon;
+
+// |YES| if a what's new promo can be displayed.
+@property(nonatomic, assign) BOOL promoCanShow;
 
 // iPhone landscape uses a slightly different layout for the doodle and search
 // field frame. Returns the proper frame from |frames| based on orientation,
@@ -285,8 +200,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 - (CGRect)searchFieldFrame;
 // Returns the height to use for the What's New promo view.
 - (CGFloat)promoHeaderHeight;
-// Add the LogoController view.
-- (void)addDoodle;
 // Add fake search field and voice search microphone.
 - (void)addSearchField;
 // Add most visited collection view.
@@ -313,19 +226,12 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 - (void)setFlowLayoutInset:(UICollectionViewFlowLayout*)layout;
 // Instructs the UICollectionView and UIView to reload it's data and layout.
 - (void)reloadData;
-// Logs a histogram due to a Most Visited item being opened.
-- (void)logMostVisitedClick:(const NSUInteger)visitedIndex
-                   tileType:(ntp_tiles::TileVisualType)tileType;
-// Returns the size of |_mostVisitedData|.
+// Returns the size of |self.mostVisitedData|.
 - (NSUInteger)numberOfItems;
 // Returns the number of non empty tiles (as opposed to the placeholder tiles).
 - (NSInteger)numberOfNonEmptyTilesShown;
-// Returns the URL for the mosted visited item in |_mostVisitedData|.
+// Returns the URL for the mosted visited item in |self.mostVisitedData|.
 - (GURL)urlForIndex:(NSUInteger)index;
-// Removes a blacklisted URL in both |_mostVisitedData|.
-- (void)removeBlacklistedURL:(const GURL&)url;
-// Adds URL to the blacklist in both |_mostVisitedData|.
-- (void)addBlacklistedURL:(const GURL&)url;
 // Returns the expected height of the NewTabPageHeaderView.
 - (CGFloat)heightForSectionWithOmnibox;
 // Returns the nearest ancestor view that is kind of |aClass|.
@@ -333,105 +239,112 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 // Updates the collection view's scroll view offset for the next frame of the
 // shiftTilesDown animation.
 - (void)shiftTilesDownAnimationDidFire:(CADisplayLink*)link;
-// Returns the size to use for Most Visited cells in the NTP contained in
-// |view|.
-+ (CGSize)mostVisitedCellSizeForView:(UIView*)view;
+// Returns the size to use for Most Visited cells in the NTP.
+- (CGSize)mostVisitedCellSize;
 // Returns the padding for use between Most Visited cells.
-+ (CGFloat)mostVisitedCellPadding;
+- (CGFloat)mostVisitedCellPadding;
 
 @end
 
 @implementation GoogleLandingController
 
 @dynamic view;
-@synthesize loader = _loader;
+@synthesize logoVendor = _logoVendor;
+@synthesize dataSource = _dataSource;
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
-
-+ (NSUInteger)maxSitesShown {
-  return kMaxNumMostVisitedFavicons;
-}
-
-- (id)initWithLoader:(id<UrlLoader>)loader
-          browserState:(ios::ChromeBrowserState*)browserState
-               focuser:(id<OmniboxFocuser>)focuser
-    webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
-              tabModel:(TabModel*)tabModel {
-  self = [super init];
-  if (self) {
-    DCHECK(browserState);
-    _browserState = browserState;
-    _loader = loader;
-    _isShowing = YES;
-    _maxNumMostVisited = [GoogleLandingController maxSitesShown];
-
-    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-    [defaultCenter
-        addObserver:self
-           selector:@selector(locationBarBecomesFirstResponder)
-               name:ios_internal::kLocationBarBecomesFirstResponderNotification
-             object:nil];
-    [defaultCenter
-        addObserver:self
-           selector:@selector(locationBarResignsFirstResponder)
-               name:ios_internal::kLocationBarResignsFirstResponderNotification
-             object:nil];
-    [defaultCenter
-        addObserver:self
-           selector:@selector(orientationDidChange:)
-               name:UIApplicationDidChangeStatusBarOrientationNotification
-             object:nil];
-
-    _notification_promo.reset(new NotificationPromoWhatsNew(
-        GetApplicationContext()->GetLocalState()));
-    _notification_promo->Init();
-    _tapGestureRecognizer.reset([[UITapGestureRecognizer alloc]
-        initWithTarget:self
-                action:@selector(blurOmnibox)]);
-    [_tapGestureRecognizer setDelegate:self];
-    _swipeGestureRecognizer.reset([[UISwipeGestureRecognizer alloc]
-        initWithTarget:self
-                action:@selector(blurOmnibox)]);
-    [_swipeGestureRecognizer
-        setDirection:UISwipeGestureRecognizerDirectionDown];
-
-    _focuser.reset(focuser);
-    _webToolbarDelegate.reset(webToolbarDelegate);
-    _tabModel.reset([tabModel retain]);
-
-    _scrolledToTop = NO;
-    _animateHeader = YES;
-  }
-  return self;
-}
+@synthesize isOffTheRecord = _isOffTheRecord;
+@synthesize logoIsShowing = _logoIsShowing;
+@synthesize promoText = _promoText;
+@synthesize promoIcon = _promoIcon;
+@synthesize promoCanShow = _promoCanShow;
+@synthesize maximumMostVisitedSitesShown = _maximumMostVisitedSitesShown;
+@synthesize voiceSearchIsEnabled = _voiceSearchIsEnabled;
 
 - (void)loadView {
-  self.view =
-      [[GoogleLandingView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  self.view = [[[GoogleLandingView alloc]
+      initWithFrame:[UIScreen mainScreen].bounds] autorelease];
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
   [self.view setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                  UIViewAutoresizingFlexibleWidth];
   [self.view setFrameDelegate:self];
+
   // Initialise |shiftTilesDownStartTime| to a sentinel value to indicate that
   // the animation has not yet started.
   _shiftTilesDownStartTime = -1;
-  _mostVisitedCellSize =
-      [GoogleLandingController mostVisitedCellSizeForView:self.view];
-  [self addDoodle];
+  _mostVisitedCellSize = [self mostVisitedCellSize];
+  _isShowing = YES;
+  _scrolledToTop = NO;
+  _animateHeader = YES;
+
+  _tapGestureRecognizer.reset([[UITapGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(blurOmnibox)]);
+  [_tapGestureRecognizer setDelegate:self];
+  _swipeGestureRecognizer.reset([[UISwipeGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(blurOmnibox)]);
+  [_swipeGestureRecognizer setDirection:UISwipeGestureRecognizerDirectionDown];
+
   [self addSearchField];
   [self addMostVisited];
   [self addOverscrollActions];
   [self reload];
 }
 
-+ (CGSize)mostVisitedCellSizeForView:(UIView*)view {
+- (void)viewDidLayoutSubviews {
+  [self updateSubviewFrames];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+  void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) = ^(
+      id<UIViewControllerTransitionCoordinatorContext> context) {
+    if (IsIPadIdiom() && _scrolledToTop) {
+      // Keep the most visited thumbnails scrolled to the top.
+      [_mostVisitedView setContentOffset:CGPointMake(0, [self pinnedOffsetY])];
+      return;
+    };
+
+    // Invalidate the layout so that the collection view's header size is reset
+    // for the new orientation.
+    if (!_scrolledToTop) {
+      [[_mostVisitedView collectionViewLayout] invalidateLayout];
+    }
+
+    // Call -scrollViewDidScroll: so that the omnibox's frame is adjusted for
+    // the scroll view's offset.
+    [self scrollViewDidScroll:_mostVisitedView];
+
+  };
+  [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [_mostVisitedView setDelegate:nil];
+  [_mostVisitedView setDataSource:nil];
+  [_overscrollActionsController invalidate];
+  [super dealloc];
+}
+
+#pragma mark - Private
+
+- (CGSize)mostVisitedCellSize {
   if (IsIPadIdiom()) {
     // On iPads, split-screen and slide-over may require showing smaller cells.
     CGSize maximumCellSize = [MostVisitedCell maximumSize];
-    CGSize viewSize = view.bounds.size;
+    CGSize viewSize = self.view.bounds.size;
     CGFloat smallestDimension =
         viewSize.height > viewSize.width ? viewSize.width : viewSize.height;
     CGFloat cellWidth = AlignValueToPixel(
-        (smallestDimension - 3 * [self.class mostVisitedCellPadding]) / 2);
+        (smallestDimension - 3 * [self mostVisitedCellPadding]) / 2);
     if (cellWidth < maximumCellSize.width) {
       return CGSizeMake(cellWidth, cellWidth);
     } else {
@@ -442,49 +355,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   }
 }
 
-+ (CGFloat)mostVisitedCellPadding {
+- (CGFloat)mostVisitedCellPadding {
   return IsIPadIdiom() ? kMostVisitedPaddingIPadFavicon
                        : kMostVisitedPaddingIPhone;
-}
-
-- (void)orientationDidChange:(NSNotification*)notification {
-  if (IsIPadIdiom() && _scrolledToTop) {
-    // Keep the most visited thumbnails scrolled to the top.
-    base::WeakNSObject<GoogleLandingController> weakSelf(self);
-    dispatch_after(
-        dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
-          base::scoped_nsobject<GoogleLandingController> strongSelf(
-              [weakSelf retain]);
-          if (!strongSelf)
-            return;
-
-          [strongSelf.get()->_mostVisitedView
-              setContentOffset:CGPointMake(0, [strongSelf pinnedOffsetY])];
-        });
-    return;
-  }
-
-  // Call inside a block to avoid the animation that -orientationDidChange is
-  // wrapped inside.
-  base::WeakNSObject<GoogleLandingController> weakSelf(self);
-  void (^layoutBlock)(void) = ^{
-    base::scoped_nsobject<GoogleLandingController> strongSelf(
-        [weakSelf retain]);
-    // Invalidate the layout so that the collection view's header size is reset
-    // for the new orientation.
-    if (!_scrolledToTop) {
-      [[strongSelf.get()->_mostVisitedView collectionViewLayout]
-          invalidateLayout];
-      [[strongSelf view] setNeedsLayout];
-    }
-
-    // Call -scrollViewDidScroll: so that the omnibox's frame is adjusted for
-    // the scroll view's offset.
-    [self scrollViewDidScroll:_mostVisitedView];
-  };
-
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(),
-                 layoutBlock);
 }
 
 - (CGFloat)viewWidth {
@@ -493,7 +366,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 - (int)numberOfColumns {
   CGFloat width = [self viewWidth];
-  CGFloat padding = [self.class mostVisitedCellPadding];
+  CGFloat padding = [self mostVisitedCellPadding];
   // Try to fit 4 columns.
   if (width >= 5 * padding + _mostVisitedCellSize.width * 4)
     return 4;
@@ -513,18 +386,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 - (CGFloat)leftMargin {
   int columns = [self numberOfColumns];
   CGFloat whitespace = [self viewWidth] - columns * _mostVisitedCellSize.width -
-                       (columns - 1) * [self.class mostVisitedCellPadding];
+                       (columns - 1) * [self mostVisitedCellPadding];
   CGFloat margin = AlignValueToPixel(whitespace / 2);
-  DCHECK(margin >= [self.class mostVisitedCellPadding]);
+  DCHECK(margin >= [self mostVisitedCellPadding]);
   return margin;
-}
-
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [_mostVisitedView setDelegate:nil];
-  [_mostVisitedView setDataSource:nil];
-  [_overscrollActionsController invalidate];
-  [super dealloc];
 }
 
 - (CGRect)doodleFrame {
@@ -532,7 +397,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       {{0, 66}, {0, 120}}, {{0, 56}, {0, 120}},
   };
   CGRect doodleFrame = [self getOrientationFrame:kDoodleFrame];
-  if (!IsIPadIdiom() && !self.showingLogo)
+  if (!IsIPadIdiom() && !self.logoIsShowing)
     doodleFrame.size.height = kNonGoogleSearchDoodleHeight;
   if (IsIPadIdiom()) {
     doodleFrame.origin.y = IsPortrait() ? kDoodleTopMarginIPadPortrait
@@ -574,33 +439,13 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 - (CGFloat)promoHeaderHeight {
   CGFloat promoMaxWidth = [self viewWidth] - 2 * [self leftMargin];
-  NSString* text = base::SysUTF8ToNSString(_notification_promo->promo_text());
+  NSString* text = self.promoText;
   return [WhatsNewHeaderView heightToFitText:text inWidth:promoMaxWidth];
 }
 
-- (ToolbarController*)relinquishedToolbarController {
-  return [_headerView relinquishedToolbarController];
-}
-
-- (void)reparentToolbarController {
-  [_headerView reparentToolbarController];
-}
-
-- (BOOL)isShowingLogo {
-  return [_doodleController isShowingLogo];
-}
-
 - (void)updateLogoAndFakeboxDisplay {
-  BOOL showLogo = NO;
-  TemplateURL* defaultURL = _templateURLService->GetDefaultSearchProvider();
-  if (defaultURL) {
-    showLogo =
-        defaultURL->GetEngineType(_templateURLService->search_terms_data()) ==
-        SEARCH_ENGINE_GOOGLE;
-  }
-
-  if (self.showingLogo != showLogo) {
-    [_doodleController setShowingLogo:showLogo];
+  if (self.logoVendor.showingLogo != self.logoIsShowing) {
+    self.logoVendor.showingLogo = self.logoIsShowing;
     if (_viewLoaded) {
       [self updateSubviewFrames];
 
@@ -622,23 +467,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       [_promoHeaderView setFrame:whatsNewFrame];
     }
     if (IsIPadIdiom())
-      [_searchTapTarget setHidden:!self.showingLogo];
+      [_searchTapTarget setHidden:!self.logoIsShowing];
   }
-}
-
-// Initialize and add a Google Doodle widget, show a Google logo by default.
-- (void)addDoodle {
-  if (!_doodleController) {
-    _doodleController.reset(ios::GetChromeBrowserProvider()->CreateLogoVendor(
-        _browserState, _loader));
-  }
-  [[_doodleController view] setFrame:[self doodleFrame]];
-
-  _templateURLService =
-      ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
-  _observer.reset(
-      new google_landing::SearchEngineObserver(self, _templateURLService));
-  _templateURLService->Load();
 }
 
 // Initialize and add a search field tap target and a voice search button.
@@ -764,9 +594,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                                             IDS_IOS_ACCNAME_VOICE_SEARCH)];
   [voiceTapTarget setAccessibilityIdentifier:@"Voice Search"];
 
-  if (ios::GetChromeBrowserProvider()
-          ->GetVoiceSearchProvider()
-          ->IsVoiceSearchEnabled()) {
+  if (self.voiceSearchIsEnabled) {
     [voiceTapTarget addTarget:self
                        action:@selector(loadVoiceSearch:)
              forControlEvents:UIControlEventTouchUpInside];
@@ -779,17 +607,13 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 }
 
 - (void)loadVoiceSearch:(id)sender {
-  DCHECK(ios::GetChromeBrowserProvider()
-             ->GetVoiceSearchProvider()
-             ->IsVoiceSearchEnabled());
+  DCHECK(self.voiceSearchIsEnabled);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisitedVoiceSearch"));
   [sender chromeExecuteCommand:sender];
 }
 
 - (void)preloadVoiceSearch:(id)sender {
-  DCHECK(ios::GetChromeBrowserProvider()
-             ->GetVoiceSearchProvider()
-             ->IsVoiceSearchEnabled());
+  DCHECK(self.voiceSearchIsEnabled);
   [sender removeTarget:self
                 action:@selector(preloadVoiceSearch:)
       forControlEvents:UIControlEventTouchDown];
@@ -813,13 +637,12 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 }
 
 - (void)updateSubviewFrames {
-  _mostVisitedCellSize =
-      [GoogleLandingController mostVisitedCellSizeForView:self.view];
+  _mostVisitedCellSize = [self mostVisitedCellSize];
   UICollectionViewFlowLayout* flowLayout =
       base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
           [_mostVisitedView collectionViewLayout]);
   [flowLayout setItemSize:_mostVisitedCellSize];
-  [[_doodleController view] setFrame:[self doodleFrame]];
+  self.logoVendor.view.frame = [self doodleFrame];
 
   [self setFlowLayoutInset:flowLayout];
   [flowLayout invalidateLayout];
@@ -855,7 +678,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
   if (!_viewLoaded) {
     _viewLoaded = YES;
-    [_doodleController fetchDoodle];
+    [self.logoVendor fetchDoodle];
   }
   [self.delegate updateNtpBarShadowForPanelController:self];
 }
@@ -872,7 +695,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   [flowLayout setScrollDirection:UICollectionViewScrollDirectionVertical];
   [flowLayout setItemSize:_mostVisitedCellSize];
   [flowLayout setMinimumInteritemSpacing:8];
-  [flowLayout setMinimumLineSpacing:[self.class mostVisitedCellPadding]];
+  [flowLayout setMinimumLineSpacing:[self mostVisitedCellPadding]];
   DCHECK(!_mostVisitedView);
   _mostVisitedView.reset([[UICollectionView alloc]
              initWithFrame:mostVisitedFrame
@@ -896,12 +719,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   [_mostVisitedView setAccessibilityIdentifier:@"Google Landing"];
 
   [self.view addSubview:_mostVisitedView];
-  _most_visited_sites =
-      IOSMostVisitedSitesFactory::NewForBrowserState(_browserState);
-  _most_visited_observer_bridge.reset(
-      new ntp_tiles::MostVisitedSitesObserverBridge(self));
-  _most_visited_sites->SetMostVisitedURLsObserver(
-      _most_visited_observer_bridge.get(), kMaxNumMostVisitedFavicons);
 }
 
 - (void)updateSearchField {
@@ -924,10 +741,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 // Check to see if the promo label should be hidden.
 - (void)hideWhatsNewIfNecessary {
-  if (![_promoHeaderView isHidden] && _notification_promo &&
-      !_notification_promo->CanShow()) {
+  if (![_promoHeaderView isHidden] && !self.promoCanShow) {
     [_promoHeaderView setHidden:YES];
-    _notification_promo.reset();
     [self.view setNeedsLayout];
   }
 }
@@ -963,7 +778,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
         if (_scrolledToTop) {
           _animateHeader = NO;
           if (!IsIPadIdiom()) {
-            [_focuser onFakeboxAnimationComplete];
+            [self.dataSource onFakeboxAnimationComplete];
             [_headerView fadeOutShadow];
             [_searchTapTarget setHidden:YES];
           }
@@ -972,12 +787,12 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 }
 
 - (void)searchFieldTapped:(id)sender {
-  [_focuser focusFakebox];
+  [self.dataSource focusFakebox];
 }
 
 - (void)blurOmnibox {
   if (_omniboxFocused) {
-    [_focuser cancelOmniboxEdit];
+    [self.dataSource cancelOmniboxEdit];
   } else {
     [self locationBarResignsFirstResponder];
   }
@@ -1000,7 +815,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   _scrolledToTop = NO;
   if (!IsIPadIdiom()) {
     [_searchTapTarget setHidden:NO];
-    [_focuser onFakeboxBlur];
+    [self.dataSource onFakeboxBlur];
   }
 
   // Reload most visited sites in case the number of placeholder cells needs to
@@ -1056,17 +871,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   }
 }
 
-- (void)logMostVisitedClick:(const NSUInteger)visitedIndex
-                   tileType:(ntp_tiles::TileVisualType)tileType {
-  new_tab_page_uma::RecordAction(
-      _browserState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
-  base::RecordAction(UserMetricsAction("MobileNTPMostVisited"));
-  const ntp_tiles::NTPTile& tile = _mostVisitedData[visitedIndex];
-  ntp_tiles::metrics::RecordTileClick(visitedIndex, tile.source, tileType);
-}
-
 - (void)reloadData {
-  // -reloadData updates from |_mostVisitedData|.
+  // -reloadData updates from |self.mostVisitedData|.
   // -invalidateLayout is necessary because sometimes the flowLayout has the
   // wrong cached size and will throw an internal exception if the
   // -numberOfItems shrinks. -setNeedsLayout is needed in case
@@ -1077,16 +883,12 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   [self.view setNeedsLayout];
 }
 
-- (void)willUpdateSnapshot {
-  [_overscrollActionsController clear];
-}
-
 - (CGFloat)heightForSectionWithOmnibox {
   CGFloat headerHeight =
       CGRectGetMaxY([self searchFieldFrame]) + kNTPSearchFieldBottomPadding;
   if (IsIPadIdiom()) {
-    if (self.showingLogo) {
-      if (!_notification_promo || !_notification_promo->CanShow()) {
+    if (self.logoIsShowing) {
+      if (!self.promoCanShow) {
         UIInterfaceOrientation orient =
             [[UIApplication sharedApplication] statusBarOrientation];
         const CGFloat kTopSpacingMaterialPortrait = 56;
@@ -1102,34 +904,14 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   return headerHeight;
 }
 
-#pragma mark - MostVisitedSitesObserving
+#pragma mark - ToolbarOwner
 
-- (void)onMostVisitedURLsAvailable:(const ntp_tiles::NTPTilesVector&)data {
-  _mostVisitedData = data;
-  [self reloadData];
-
-  if (data.size() && !_recordedPageImpression) {
-    _recordedPageImpression = YES;
-    std::vector<ntp_tiles::metrics::TileImpression> tiles;
-    for (const ntp_tiles::NTPTile& ntpTile : data) {
-      tiles.emplace_back(ntpTile.source, ntp_tiles::UNKNOWN_TILE_TYPE,
-                         ntpTile.url);
-    }
-    ntp_tiles::metrics::RecordPageImpression(
-        tiles, GetApplicationContext()->GetRapporServiceImpl());
-  }
+- (ToolbarController*)relinquishedToolbarController {
+  return [_headerView relinquishedToolbarController];
 }
 
-- (void)onIconMadeAvailable:(const GURL&)siteUrl {
-  for (size_t i = 0; i < [self numberOfItems]; ++i) {
-    const ntp_tiles::NTPTile& ntpTile = _mostVisitedData[i];
-    if (ntpTile.url == siteUrl) {
-      NSIndexPath* indexPath =
-          [NSIndexPath indexPathForRow:i inSection:SectionWithMostVisited];
-      [_mostVisitedView reloadItemsAtIndexPaths:@[ indexPath ]];
-      break;
-    }
-  }
+- (void)reparentToolbarController {
+  [_headerView reparentToolbarController];
 }
 
 #pragma mark - UICollectionView Methods.
@@ -1144,7 +926,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     ((UICollectionViewFlowLayout*)collectionViewLayout).headerReferenceSize =
         CGSizeMake(0, headerHeight);
   } else if (section == SectionWithMostVisited) {
-    if (_notification_promo && _notification_promo->CanShow()) {
+    if (self.promoCanShow) {
       headerHeight = [self promoHeaderHeight];
     } else {
       headerHeight = kWhatsNewHeaderHiddenHeight;
@@ -1181,11 +963,11 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   const NSUInteger visitedIndex = indexPath.row;
   [self blurOmnibox];
   DCHECK(visitedIndex < [self numberOfItems]);
-  [self logMostVisitedClick:visitedIndex tileType:cell.tileType];
-  [_loader loadURL:[self urlForIndex:visitedIndex]
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-      rendererInitiated:NO];
+  [self.dataSource logMostVisitedClick:visitedIndex tileType:cell.tileType];
+  [self.dataSource loadURL:[self urlForIndex:visitedIndex]
+                  referrer:web::Referrer()
+                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
+         rendererInitiated:NO];
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -1205,19 +987,14 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
               UICollectionElementKindSectionHeader
                              withReuseIdentifier:@"header"
                                     forIndexPath:indexPath] retain]);
-      [_headerView addSubview:[_doodleController view]];
+      [_headerView addSubview:[self.logoVendor view]];
       [_headerView addSubview:_searchTapTarget];
       [_headerView addViewsToSearchField:_searchTapTarget];
 
       if (!IsIPadIdiom()) {
-        ReadingListModel* readingListModel =
-            ReadingListModelFactory::GetForBrowserState(_browserState);
         // iPhone header also contains a toolbar since the normal toolbar is
         // hidden.
-        [_headerView addToolbarWithDelegate:_webToolbarDelegate
-                                    focuser:_focuser
-                                   tabModel:_tabModel
-                           readingListModel:readingListModel];
+        [_headerView addToolbarWithDataSource:self.dataSource];
       }
       [_supplementaryViews addObject:_headerView];
     }
@@ -1233,11 +1010,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                                     forIndexPath:indexPath] retain]);
       [_promoHeaderView setSideMargin:[self leftMargin]];
       [_promoHeaderView setDelegate:self];
-      if (_notification_promo && _notification_promo->CanShow()) {
-        [_promoHeaderView
-            setText:base::SysUTF8ToNSString(_notification_promo->promo_text())];
-        [_promoHeaderView setIcon:_notification_promo->icon()];
-        _notification_promo->HandleViewed();
+      if (self.promoCanShow) {
+        [_promoHeaderView setText:self.promoText];
+        [_promoHeaderView setIcon:self.promoIcon];
+        [self.dataSource promoViewed];
       }
       [_supplementaryViews addObject:_promoHeaderView];
     }
@@ -1262,7 +1038,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   // Phone always contains the maximum number of cells. Cells in excess of the
   // number of thumbnails are used solely for layout/sizing.
   if (!IsIPadIdiom())
-    return _maxNumMostVisited;
+    return self.maximumMostVisitedSitesShown;
 
   return [self numberOfNonEmptyTilesShown];
 }
@@ -1288,10 +1064,11 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     return cell;
   }
 
-  const ntp_tiles::NTPTile& ntpTile = _mostVisitedData[indexPath.row];
+  const ntp_tiles::NTPTile& ntpTile =
+      [self.dataSource mostVisitedAtIndex:indexPath.row];
   NSString* title = base::SysUTF16ToNSString(ntpTile.title);
 
-  [cell setupWithURL:ntpTile.url title:title browserState:_browserState];
+  [cell setupWithURL:ntpTile.url title:title dataSource:self.dataSource];
 
   base::scoped_nsobject<UILongPressGestureRecognizer> longPress(
       [[UILongPressGestureRecognizer alloc]
@@ -1345,18 +1122,19 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       if (!strongSelf)
         return;
       MostVisitedCell* cell = (MostVisitedCell*)sender.view;
-      [strongSelf logMostVisitedClick:index tileType:cell.tileType];
-      [[strongSelf loader] webPageOrderedOpen:url
-                                     referrer:web::Referrer()
-                                 inBackground:YES
-                                     appendTo:kCurrentTab];
+      [[strongSelf dataSource] logMostVisitedClick:index
+                                          tileType:cell.tileType];
+      [[strongSelf dataSource] webPageOrderedOpen:url
+                                         referrer:web::Referrer()
+                                     inBackground:YES
+                                         appendTo:kCurrentTab];
     };
     [_contextMenuCoordinator
         addItemWithTitle:l10n_util::GetNSStringWithFixup(
                              IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
                   action:action];
 
-    if (!_browserState->IsOffTheRecord()) {
+    if (!self.isOffTheRecord) {
       // Open in Incognito Tab.
       action = ^{
         base::scoped_nsobject<GoogleLandingController> strongSelf(
@@ -1364,12 +1142,13 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
         if (!strongSelf)
           return;
         MostVisitedCell* cell = (MostVisitedCell*)sender.view;
-        [strongSelf logMostVisitedClick:index tileType:cell.tileType];
-        [[strongSelf loader] webPageOrderedOpen:url
-                                       referrer:web::Referrer()
-                                    inIncognito:YES
-                                   inBackground:NO
-                                       appendTo:kCurrentTab];
+        [[strongSelf dataSource] logMostVisitedClick:index
+                                            tileType:cell.tileType];
+        [[strongSelf dataSource] webPageOrderedOpen:url
+                                           referrer:web::Referrer()
+                                        inIncognito:YES
+                                       inBackground:NO
+                                           appendTo:kCurrentTab];
       };
       [_contextMenuCoordinator
           addItemWithTitle:l10n_util::GetNSStringWithFixup(
@@ -1387,7 +1166,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       if (!strongSelf)
         return;
       base::RecordAction(UserMetricsAction("MostVisited_UrlBlacklisted"));
-      [strongSelf addBlacklistedURL:url];
+      [[strongSelf dataSource] addBlacklistedURL:url];
       [strongSelf showMostVisitedUndoForURL:net::NSURLWithGURL(url)];
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
@@ -1410,7 +1189,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
         [weakSelf retain]);
     if (!strongSelf)
       return;
-    [strongSelf removeBlacklistedURL:net::GURLWithNSURL(_deletedUrl)];
+    [[strongSelf dataSource]
+        removeBlacklistedURL:net::GURLWithNSURL(_deletedUrl)];
   };
   action.title = l10n_util::GetNSString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE);
   action.accessibilityIdentifier = @"Undo";
@@ -1425,30 +1205,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 }
 
 - (void)onPromoLabelTapped {
-  [_focuser cancelOmniboxEdit];
-  _notification_promo->HandleClosed();
+  [self.dataSource cancelOmniboxEdit];
   [_promoHeaderView setHidden:YES];
   [self.view setNeedsLayout];
-
-  if (_notification_promo->IsURLPromo()) {
-    [_loader webPageOrderedOpen:_notification_promo->url()
-                       referrer:web::Referrer()
-                   inBackground:NO
-                       appendTo:kCurrentTab];
-    _notification_promo.reset();
-    return;
-  }
-
-  if (_notification_promo->IsChromeCommand()) {
-    base::scoped_nsobject<GenericChromeCommand> command(
-        [[GenericChromeCommand alloc]
-            initWithTag:_notification_promo->command_id()]);
-    [self.view chromeExecuteCommand:command];
-    _notification_promo.reset();
-    return;
-  }
-
-  NOTREACHED();
+  [self.dataSource promoTapped];
 }
 
 // Returns the Y value to use for the scroll view's contentOffset when scrolling
@@ -1469,7 +1229,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   // Fetch the doodle after the view finishes laying out. Otherwise, tablet
   // may fetch the wrong sized doodle.
   if (_viewLoaded)
-    [_doodleController fetchDoodle];
+    [self.logoVendor fetchDoodle];
   [self updateLogoAndFakeboxDisplay];
   [self hideWhatsNewIfNecessary];
 }
@@ -1522,10 +1282,14 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   return alpha;
 }
 
+- (void)willUpdateSnapshot {
+  [_overscrollActionsController clear];
+}
+
 #pragma mark - LogoAnimationControllerOwnerOwner
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
-  return [_doodleController logoAnimationControllerOwner];
+  return [self.logoVendor logoAnimationControllerOwner];
 }
 
 #pragma mark - UIScrollViewDelegate Methods.
@@ -1538,7 +1302,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   CGFloat pinnedOffsetY = [self pinnedOffsetY];
   if (_omniboxFocused && scrollView.dragging &&
       scrollView.contentOffset.y < pinnedOffsetY) {
-    [_focuser cancelOmniboxEdit];
+    [self.dataSource cancelOmniboxEdit];
   }
 
   if (IsIPadIdiom()) {
@@ -1611,32 +1375,20 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 #pragma mark - Most visited / Suggestions service wrapper methods.
 
-- (suggestions::SuggestionsService*)suggestionsService {
-  return suggestions::SuggestionsServiceFactory::GetForBrowserState(
-      _browserState);
-}
-
 - (NSUInteger)numberOfItems {
-  NSUInteger numItems = _mostVisitedData.size();
+  NSUInteger numItems = [self.dataSource mostVisitedSize];
   NSUInteger maxItems = [self numberOfColumns] * kMaxNumMostVisitedFaviconRows;
   return MIN(maxItems, numItems);
 }
 
 - (NSInteger)numberOfNonEmptyTilesShown {
-  NSInteger numCells = MIN([self numberOfItems], _maxNumMostVisited);
+  NSInteger numCells =
+      MIN([self numberOfItems], self.maximumMostVisitedSitesShown);
   return MAX(numCells, [self numberOfColumns]);
 }
 
 - (GURL)urlForIndex:(NSUInteger)index {
-  return _mostVisitedData[index].url;
-}
-
-- (void)addBlacklistedURL:(const GURL&)url {
-  _most_visited_sites->AddOrRemoveBlacklistedUrl(url, true);
-}
-
-- (void)removeBlacklistedURL:(const GURL&)url {
-  _most_visited_sites->AddOrRemoveBlacklistedUrl(url, false);
+  return [self.dataSource mostVisitedAtIndex:index].url;
 }
 
 #pragma mark - GoogleLandingController (ExposedForTesting) methods.
@@ -1710,6 +1462,26 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     return view;
   }
   return [self nearestAncestorOfView:[view superview] withClass:aClass];
+}
+
+#pragma mark - GoogleLandingConsumer
+
+- (void)setLogoIsShowing:(BOOL)logoIsShowing {
+  _logoIsShowing = logoIsShowing;
+  [self updateLogoAndFakeboxDisplay];
+}
+
+- (void)mostVisitedDataUpdated {
+  [self reloadData];
+}
+
+- (void)mostVisitedIconMadeAvailableAtIndex:(NSUInteger)index {
+  if (index > [self numberOfItems])
+    return;
+
+  NSIndexPath* indexPath =
+      [NSIndexPath indexPathForRow:index inSection:SectionWithMostVisited];
+  [_mostVisitedView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
 
 @end

@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_controller.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/chrome/browser/ui/ntp/incognito_panel_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
@@ -113,6 +114,8 @@ enum {
   id<NewTabPageControllerObserver> newTabPageObserver_;     // Weak.
 
   NewTabPageView* newTabPageView_;
+
+  base::scoped_nsobject<GoogleLandingMediator> googleLandingMediator_;
 
   base::scoped_nsobject<RecentTabsPanelController> openTabsController_;
   // Has the scrollView been initialized.
@@ -533,12 +536,15 @@ enum {
     [bookmarkController_ setDelegate:self];
   } else if (item.identifier == NewTabPage::kMostVisitedPanel) {
     if (!googleLandingController_) {
-      googleLandingController_.reset([[GoogleLandingController alloc]
-              initWithLoader:loader_
+      googleLandingController_.reset([[GoogleLandingController alloc] init]);
+      googleLandingMediator_.reset([[GoogleLandingMediator alloc]
+            initWithConsumer:googleLandingController_
                 browserState:browserState_
+                      loader:loader_
                      focuser:focuser_
           webToolbarDelegate:webToolbarDelegate_
                     tabModel:tabModel_]);
+      [googleLandingController_ setDataSource:googleLandingMediator_];
     }
     panelController = googleLandingController_;
     view = [googleLandingController_ view];

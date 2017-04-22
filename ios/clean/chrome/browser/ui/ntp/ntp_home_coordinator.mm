@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_coordinator.h"
 
 #import "ios/chrome/browser/ui/ntp/google_landing_controller.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_mediator.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
@@ -15,23 +16,28 @@
 
 @interface NTPHomeCoordinator ()
 @property(nonatomic, strong) NTPHomeMediator* mediator;
+@property(nonatomic, strong) GoogleLandingMediator* googleLandingMediator;
 @property(nonatomic, strong) GoogleLandingController* viewController;
 @end
 
 @implementation NTPHomeCoordinator
 @synthesize mediator = _mediator;
+@synthesize googleLandingMediator = _googleLandingMediator;
 @synthesize viewController = _viewController;
 
 - (void)start {
-  // PLACEHOLDER: Re-using old view controllers for now.
+  // PLACEHOLDER: self.mediator and self.oldMediator should be merged together.
   self.mediator = [[NTPHomeMediator alloc] init];
   self.mediator.dispatcher = static_cast<id>(self.browser->dispatcher());
-  self.viewController = [[GoogleLandingController alloc]
-          initWithLoader:self.mediator
+  self.viewController = [[GoogleLandingController alloc] init];
+  self.googleLandingMediator = [[GoogleLandingMediator alloc]
+        initWithConsumer:self.viewController
             browserState:self.browser->browser_state()
+                  loader:self.mediator
                  focuser:self.mediator
       webToolbarDelegate:nil
                 tabModel:nil];
+  self.viewController.dataSource = self.googleLandingMediator;
   [super start];
 }
 

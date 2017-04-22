@@ -9,11 +9,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 
-@protocol OmniboxFocuser;
-@class TabModel;
-@protocol WebToolbarDelegate;
-
-class ReadingListModel;
+@protocol GoogleLandingDataSource;
 
 // Header view for the Material Design NTP. The header view contains all views
 // that are displayed above the list of most visited sites, which includes the
@@ -25,10 +21,7 @@ class ReadingListModel;
 
 // Creates a NewTabPageToolbarController using the given |toolbarDelegate|,
 // |focuser| and |readingListModel|, and adds the toolbar view to self.
-- (void)addToolbarWithDelegate:(id<WebToolbarDelegate>)toolbarDelegate
-                       focuser:(id<OmniboxFocuser>)focuser
-                      tabModel:(TabModel*)tabModel
-              readingListModel:(ReadingListModel*)readingListModel;
+- (void)addToolbarWithDataSource:(id<GoogleLandingDataSource>)dataSource;
 
 // Changes the frame of |searchField| based on its |initialFrame| and the scroll
 // view's y |offset|. Also adjust the alpha values for |_searchBoxBorder| and

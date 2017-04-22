@@ -20,7 +20,7 @@
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
-#include "ios/chrome/browser/ui/ntp/google_landing_controller.h"
+#include "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -229,7 +229,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 - (void)onMostVisitedURLsAvailable:
     (const history::MostVisitedURLList&)top_sites {
   NSUInteger sitesToIndex =
-      MIN(top_sites.size(), [GoogleLandingController maxSitesShown]);
+      MIN(top_sites.size(), [GoogleLandingMediator maxSitesShown]);
   for (size_t i = 0; i < sitesToIndex; i++) {
     const GURL& URL = top_sites[i].url;
 
@@ -247,8 +247,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
     (const suggestions::SuggestionsProfile&)suggestionsProfile {
   size_t size = suggestionsProfile.suggestions_size();
   if (size) {
-    NSUInteger sitesToIndex =
-        MIN(size, [GoogleLandingController maxSitesShown]);
+    NSUInteger sitesToIndex = MIN(size, [GoogleLandingMediator maxSitesShown]);
     for (size_t i = 0; i < sitesToIndex; i++) {
       const suggestions::ChromeSuggestion& suggestion =
           suggestionsProfile.suggestions(i);

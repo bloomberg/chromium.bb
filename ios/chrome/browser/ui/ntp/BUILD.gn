@@ -113,8 +113,12 @@ source_set("ntp_internal") {
   sources = [
     "centering_scrollview.h",
     "centering_scrollview.mm",
+    "google_landing_consumer.h",
     "google_landing_controller.h",
     "google_landing_controller.mm",
+    "google_landing_data_source.h",
+    "google_landing_mediator.h",
+    "google_landing_mediator.mm",
     "incognito_panel_controller.h",
     "incognito_panel_controller.mm",
     "most_visited_cell.h",

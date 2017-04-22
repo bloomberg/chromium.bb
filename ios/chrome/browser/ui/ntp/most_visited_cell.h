@@ -10,17 +10,13 @@
 #include "components/ntp_tiles/metrics.h"
 #include "url/gurl.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
+@protocol GoogleLandingDataSource;
 
 // Cell showing each most visited image, favicon and title.
 @interface MostVisitedCell : UICollectionViewCell
 
 // URL of the top site.
 @property(nonatomic, assign) GURL URL;
-// Reference to the relevant ChromeBrowserState
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 // Type of tile (icon, scrabble tile, default)
 @property(nonatomic, readonly) ntp_tiles::TileVisualType tileType;
 
@@ -34,7 +30,7 @@ class ChromeBrowserState;
 // Setup the display state of the cell.
 - (void)setupWithURL:(GURL)URL
                title:(NSString*)title
-        browserState:(ios::ChromeBrowserState*)browserState;
+          dataSource:(id<GoogleLandingDataSource>)dataSource;
 
 // Preferred maximum cell size.
 + (CGSize)maximumSize;

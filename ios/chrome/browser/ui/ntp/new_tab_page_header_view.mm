@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/image_util.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -65,19 +66,16 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   [self addSubview:[_toolbarController view]];
 }
 
-- (void)addToolbarWithDelegate:(id<WebToolbarDelegate>)toolbarDelegate
-                       focuser:(id<OmniboxFocuser>)focuser
-                      tabModel:(TabModel*)tabModel
-              readingListModel:(ReadingListModel*)readingListModel {
+- (void)addToolbarWithDataSource:(id<GoogleLandingDataSource>)dataSource {
   DCHECK(!_toolbarController);
-  DCHECK(focuser);
+  DCHECK(dataSource);
 
   _toolbarController.reset([[NewTabPageToolbarController alloc]
-      initWithToolbarDelegate:toolbarDelegate
-                      focuser:focuser]);
-  _toolbarController.get().readingListModel = readingListModel;
+      initWithToolbarDelegate:[dataSource toolbarDelegate]
+                      focuser:dataSource]);
+  _toolbarController.get().readingListModel = [dataSource readingListModel];
   [_tabModel removeObserver:self];
-  _tabModel.reset([tabModel retain]);
+  _tabModel.reset([[dataSource tabModel] retain]);
   [self addTabModelObserver];
 
   UIView* toolbarView = [_toolbarController view];

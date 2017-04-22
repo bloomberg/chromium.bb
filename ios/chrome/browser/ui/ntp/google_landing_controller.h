@@ -9,34 +9,21 @@
 
 #include <memory>
 
+#import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
-@protocol OmniboxFocuser;
-@class TabModel;
-@protocol UrlLoader;
-@protocol WebToolbarDelegate;
-
-namespace ios {
-class ChromeBrowserState;
-}
+@protocol GoogleLandingDataSource;
 
 // Google centric new tab page.
 @interface GoogleLandingController
-    : UIViewController<LogoAnimationControllerOwnerOwner,
+    : UIViewController<GoogleLandingConsumer,
+                       LogoAnimationControllerOwnerOwner,
                        NewTabPagePanelProtocol,
                        ToolbarOwner>
 
-// Initialization method.
-- (id)initWithLoader:(id<UrlLoader>)loader
-          browserState:(ios::ChromeBrowserState*)browserState
-               focuser:(id<OmniboxFocuser>)focuser
-    webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
-              tabModel:(TabModel*)tabModel;
-
-// Get the maximum number of sites shown.
-+ (NSUInteger)maxSitesShown;
+@property(nonatomic, assign) id<GoogleLandingDataSource> dataSource;
 
 @end
 

@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_controller.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/web/public/test/test_web_thread.h"
@@ -53,9 +54,11 @@ class GoogleLandingControllerTest : public BlockCleanupTest {
 
     // Set up stub UrlLoader.
     mockUrlLoader_ = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
-    controller_ = [[GoogleLandingController alloc]
-            initWithLoader:(id<UrlLoader>)mockUrlLoader_
+    controller_ = [[GoogleLandingController alloc] init];
+    mediator_ = [[GoogleLandingMediator alloc]
+          initWithConsumer:controller_
               browserState:chrome_browser_state_.get()
+                    loader:(id<UrlLoader>)mockUrlLoader_
                    focuser:nil
         webToolbarDelegate:nil
                   tabModel:nil];
@@ -67,6 +70,7 @@ class GoogleLandingControllerTest : public BlockCleanupTest {
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   OCMockObject* mockUrlLoader_;
+  GoogleLandingMediator* mediator_;
   GoogleLandingController* controller_;
 };
 
