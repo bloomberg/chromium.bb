@@ -628,12 +628,7 @@ component("views") {
           "widget/desktop_aura/desktop_window_tree_host_win.h",
         ]
       } else if (use_ozone) {
-        sources += [
-          "widget/desktop_aura/desktop_factory_ozone.cc",
-          "widget/desktop_aura/desktop_factory_ozone.h",
-          "widget/desktop_aura/desktop_screen_ozone.cc",
-          "widget/desktop_aura/desktop_window_tree_host_ozone.cc",
-        ]
+        sources += [ "widget/desktop_aura/desktop_window_tree_host_ozone.cc" ]
       }
       if (is_linux) {
         sources += [ "style/platform_style_linux.cc" ]
