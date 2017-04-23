@@ -40,8 +40,6 @@
 // Hide toolbar subviews that should not be displayed on the new tab page.
 - (void)hideToolbarViewsForNewTabPage;
 
-// Updates the toolbar tab count;
-- (void)setToolbarTabCount:(int)tabCount;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_HEADER_VIEW_H_

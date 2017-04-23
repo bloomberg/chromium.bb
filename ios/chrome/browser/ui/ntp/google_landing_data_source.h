@@ -65,6 +65,8 @@ class LargeIconService;
 // Gets the toolbar delegate.
 - (id<WebToolbarDelegate>)toolbarDelegate;
 
+// Gets the tab model.
+- (TabModel*)tabModel;
 
 @end
 

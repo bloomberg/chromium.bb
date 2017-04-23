@@ -12,7 +12,6 @@
 @protocol GoogleLandingConsumer;
 @protocol OmniboxFocuser;
 @protocol UrlLoader;
-class WebStateList;
 
 namespace ios {
 class ChromeBrowserState;
@@ -26,8 +25,7 @@ class ChromeBrowserState;
                           loader:(id<UrlLoader>)loader
                          focuser:(id<OmniboxFocuser>)focuser
               webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
-                    webStateList:(WebStateList*)webStateList
-    NS_DESIGNATED_INITIALIZER;
+                        tabModel:(TabModel*)tabModel NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Get the maximum number of sites shown.

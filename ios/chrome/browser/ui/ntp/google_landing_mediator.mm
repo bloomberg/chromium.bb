@@ -31,8 +31,6 @@
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/url_loader.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 
@@ -81,8 +79,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 }  // namespace google_landing
 
-@interface GoogleLandingMediator ()<MostVisitedSitesObserving,
-                                    WebStateListObserving> {
+@interface GoogleLandingMediator ()<MostVisitedSitesObserving> {
   // The ChromeBrowserState associated with this mediator.
   ios::ChromeBrowserState* _browserState;  // Weak.
 
@@ -115,9 +112,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
   base::WeakNSProtocol<id<WebToolbarDelegate>> _webToolbarDelegate;
 
-  // Observes the WebStateList so that this mediator can update the UI when the
-  // active WebState changes.
-  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  base::scoped_nsobject<TabModel> _tabModel;
 
   // What's new promo.
   std::unique_ptr<NotificationPromoWhatsNew> _notification_promo;
@@ -125,9 +120,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 // Consumer to handle google landing update notifications.
 @property(nonatomic) id<GoogleLandingConsumer> consumer;
-
-// The WebStateList that is being observed by this mediator.
-@property(nonatomic, assign) WebStateList* webStateList;
 
 // Perform initial setup.
 - (void)setUp;
@@ -137,14 +129,13 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 @implementation GoogleLandingMediator
 
 @synthesize consumer = _consumer;
-@synthesize webStateList = _webStateList;
 
 - (instancetype)initWithConsumer:(id<GoogleLandingConsumer>)consumer
                     browserState:(ios::ChromeBrowserState*)browserState
                           loader:(id<UrlLoader>)loader
                          focuser:(id<OmniboxFocuser>)focuser
               webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
-                    webStateList:(WebStateList*)webStateList {
+                        tabModel:(TabModel*)tabModel {
   self = [super init];
   if (self) {
     _consumer = consumer;
@@ -152,18 +143,13 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     _loader = loader;
     _focuser.reset(focuser);
     _webToolbarDelegate.reset(webToolbarDelegate);
-    _webStateList = webStateList;
-
-    _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
-    _webStateList->AddObserver(_webStateListObserver.get());
-
+    _tabModel.reset([tabModel retain]);
     [self setUp];
   }
   return self;
 }
 
 - (void)dealloc {
-  _webStateList->RemoveObserver(_webStateListObserver.get());
   [[NSNotificationCenter defaultCenter] removeObserver:self.consumer];
   [super dealloc];
 }
@@ -175,7 +161,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                                          ->IsVoiceSearchEnabled()];
   [_consumer
       setMaximumMostVisitedSitesShown:[GoogleLandingMediator maxSitesShown]];
-  [_consumer setTabCount:self.webStateList->count()];
 
   // Set up template URL service to listen for default search engine changes.
   _templateURLService =
@@ -265,20 +250,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   }
 }
 
-#pragma mark - WebStateListObserving
-
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index {
-  [self.consumer setTabCount:self.webStateList->count()];
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
-  [self.consumer setTabCount:self.webStateList->count()];
-}
-
 #pragma mark - GoogleLandingDataSource
 
 - (void)addBlacklistedURL:(const GURL&)url {
@@ -320,6 +291,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 - (id<WebToolbarDelegate>)toolbarDelegate {
   return _webToolbarDelegate;
+}
+
+- (TabModel*)tabModel {
+  return _tabModel;
 }
 
 - (void)promoViewed {

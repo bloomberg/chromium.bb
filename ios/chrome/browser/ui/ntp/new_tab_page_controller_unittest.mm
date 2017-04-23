@@ -17,8 +17,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#import "ios/chrome/browser/sessions/test_session_service.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/test/block_cleanup_test.h"
@@ -89,10 +87,6 @@ class NewTabPageControllerTest : public BlockCleanupTest {
             chrome_browser_state_.get()));
     GURL url(kChromeUINewTabURL);
     parentViewController_ = [[UIViewController alloc] init];
-    tabModel_ = [[TabModel alloc]
-        initWithSessionWindow:nil
-               sessionService:[[TestSessionService alloc] init]
-                 browserState:chrome_browser_state_.get()];
     controller_ =
         [[NewTabPageController alloc] initWithUrl:url
                                            loader:nil
@@ -101,7 +95,7 @@ class NewTabPageControllerTest : public BlockCleanupTest {
                                      browserState:chrome_browser_state_.get()
                                        colorCache:nil
                                webToolbarDelegate:nil
-                                         tabModel:tabModel_
+                                         tabModel:nil
                              parentViewController:parentViewController_];
 
     incognitoController_ = [[NewTabPageController alloc]
@@ -121,8 +115,6 @@ class NewTabPageControllerTest : public BlockCleanupTest {
     incognitoController_ = nil;
     controller_ = nil;
     parentViewController_ = nil;
-    [tabModel_ browserStateDestroyed];
-    tabModel_ = nil;
 
     // There may be blocks released below that have weak references to |profile|
     // owned by chrome_browser_state_.  Ensure BlockCleanupTest::TearDown() is
@@ -134,7 +126,6 @@ class NewTabPageControllerTest : public BlockCleanupTest {
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  TabModel* tabModel_;
   UIViewController* parentViewController_;
   NewTabPageController* controller_;
   NewTabPageController* incognitoController_;

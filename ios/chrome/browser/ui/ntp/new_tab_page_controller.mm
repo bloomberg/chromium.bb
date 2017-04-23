@@ -543,7 +543,7 @@ enum {
                       loader:loader_
                      focuser:focuser_
           webToolbarDelegate:webToolbarDelegate_
-                webStateList:[tabModel_ webStateList]]);
+                    tabModel:tabModel_]);
       [googleLandingController_ setDataSource:googleLandingMediator_];
     }
     panelController = googleLandingController_;

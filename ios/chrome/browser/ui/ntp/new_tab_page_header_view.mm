@@ -25,8 +25,9 @@ const CGFloat kMaxConstraintConstantDiff = 5;
 
 }  // namespace
 
-@interface NewTabPageHeaderView () {
+@interface NewTabPageHeaderView ()<TabModelObserver> {
   base::scoped_nsobject<NewTabPageToolbarController> _toolbarController;
+  base::scoped_nsobject<TabModel> _tabModel;
   base::scoped_nsobject<UIImageView> _searchBoxBorder;
   base::scoped_nsobject<UIImageView> _shadow;
 }
@@ -44,6 +45,7 @@ const CGFloat kMaxConstraintConstantDiff = 5;
 }
 
 - (void)dealloc {
+  [_tabModel removeObserver:self];
   [super dealloc];
 }
 
@@ -72,6 +74,9 @@ const CGFloat kMaxConstraintConstantDiff = 5;
       initWithToolbarDelegate:[dataSource toolbarDelegate]
                       focuser:dataSource]);
   _toolbarController.get().readingListModel = [dataSource readingListModel];
+  [_tabModel removeObserver:self];
+  _tabModel.reset([[dataSource tabModel] retain]);
+  [self addTabModelObserver];
 
   UIView* toolbarView = [_toolbarController view];
   CGRect toolbarFrame = self.bounds;
@@ -88,8 +93,9 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   [_toolbarController hideViewsForNewTabPage:YES];
 };
 
-- (void)setToolbarTabCount:(int)tabCount {
-  [_toolbarController setTabCount:tabCount];
+- (void)addTabModelObserver {
+  [_tabModel addObserver:self];
+  [_toolbarController setTabCount:[_tabModel count]];
 }
 
 - (void)addViewsToSearchField:(UIView*)searchField {
@@ -114,6 +120,11 @@ const CGFloat kMaxConstraintConstantDiff = 5;
                                UIViewAutoresizingFlexibleTopMargin];
   [searchField addSubview:_shadow];
   [_shadow setAlpha:0];
+}
+
+- (void)tabModelDidChangeTabCount:(TabModel*)model {
+  DCHECK(model == _tabModel);
+  [_toolbarController setTabCount:[_tabModel count]];
 }
 
 - (void)updateSearchField:(UIView*)searchField
