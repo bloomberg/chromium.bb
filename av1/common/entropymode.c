@@ -772,7 +772,7 @@ static const aom_prob default_inter_compound_mode_probs
       { 25, 29, 50, 192, 64, 192, 128, 180, 180 },   // 6 = two intra neighbours
     };
 
-#if CONFIG_COMPOUND_SEGMENT
+#if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 static const aom_prob
     default_compound_type_probs[BLOCK_SIZES][COMPOUND_TYPES - 1] = {
 #if CONFIG_CB4X4
@@ -785,7 +785,7 @@ static const aom_prob
       { 255, 200 }, { 255, 200 }, { 255, 200 },
 #endif  // CONFIG_EXT_PARTITION
     };
-#else  // !CONFIG_COMPOUND_SEGMENT
+#elif !CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 static const aom_prob
     default_compound_type_probs[BLOCK_SIZES][COMPOUND_TYPES - 1] = {
 #if CONFIG_CB4X4
@@ -797,7 +797,22 @@ static const aom_prob
       { 255 }, { 255 }, { 255 },
 #endif  // CONFIG_EXT_PARTITION
     };
-#endif  // CONFIG_COMPOUND_SEGMENT
+#elif CONFIG_COMPOUND_SEGMENT && !CONFIG_WEDGE
+static const aom_prob
+    default_compound_type_probs[BLOCK_SIZES][COMPOUND_TYPES - 1] = {
+#if CONFIG_CB4X4
+      { 208 }, { 208 }, { 208 },
+#endif
+      { 208 }, { 208 }, { 208 }, { 208 }, { 208 }, { 208 }, { 216 },
+      { 216 }, { 216 }, { 224 }, { 224 }, { 240 }, { 240 },
+#if CONFIG_EXT_PARTITION
+      { 255 }, { 255 }, { 255 },
+#endif  // CONFIG_EXT_PARTITION
+    };
+#else
+static const aom_prob default_compound_type_probs[BLOCK_SIZES]
+                                                 [COMPOUND_TYPES - 1];
+#endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 
 static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS] = {
   208, 208, 208, 208,
@@ -968,15 +983,21 @@ const aom_tree_index av1_inter_compound_mode_tree
   -INTER_COMPOUND_OFFSET(NEAR_NEWMV), -INTER_COMPOUND_OFFSET(NEW_NEARMV)
 };
 
-#if CONFIG_COMPOUND_SEGMENT
+#if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
   -COMPOUND_AVERAGE, 2, -COMPOUND_WEDGE, -COMPOUND_SEG
 };
-#else  // !CONFIG_COMPOUND_SEGMENT
+#elif !CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
   -COMPOUND_AVERAGE, -COMPOUND_WEDGE
 };
-#endif  // CONFIG_COMPOUND_SEGMENT
+#elif CONFIG_COMPOUND_SEGMENT && !CONFIG_WEDGE
+const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
+  -COMPOUND_AVERAGE, -COMPOUND_SEG
+};
+#else
+const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {};
+#endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 /* clang-format on */
 #endif  // CONFIG_EXT_INTER
 
@@ -3470,11 +3491,13 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
           pre_fc->wedge_interintra_prob[i], counts->wedge_interintra[i]);
   }
 
+#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
   for (i = 0; i < BLOCK_SIZES; ++i) {
     aom_tree_merge_probs(av1_compound_type_tree, pre_fc->compound_type_prob[i],
                          counts->compound_interinter[i],
                          fc->compound_type_prob[i]);
   }
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; i++)
