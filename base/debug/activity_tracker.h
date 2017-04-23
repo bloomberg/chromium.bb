@@ -1022,9 +1022,12 @@ class BASE_EXPORT GlobalActivityTracker {
                                code);
   }
 
+  // Marks the tracked data as deleted.
+  void MarkDeleted();
+
   // Gets the process ID used for tracking. This is typically the same as what
   // the OS thinks is the current process but can be overridden for testing.
-  int64_t process_id() { return process_id_; };
+  int64_t process_id() { return process_id_; }
 
   // Accesses the process data record for storing arbitrary key/value pairs.
   // Updates to this are thread-safe.

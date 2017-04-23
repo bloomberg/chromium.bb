@@ -11,6 +11,7 @@
 
 #include "base/debug/activity_analyzer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -228,6 +229,8 @@ CollectionStatus Extract(const base::FilePath& stability_file,
       !thread_analyzer) {
     return DEBUG_FILE_NO_DATA;
   }
+
+  report->set_is_complete(global_analyzer->IsDataComplete());
 
   // Collect log messages.
   for (const std::string& message : log_messages) {

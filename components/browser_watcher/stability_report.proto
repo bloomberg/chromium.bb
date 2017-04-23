@@ -187,8 +187,12 @@ message FieldTrial {
 // A stability report contains information pertaining to the execution of a
 // single logical instance of a "chrome browser". It is comprised of information
 // about the system state and about the chrome browser's processes.
-// Next id: 6
+// Next id: 7
 message StabilityReport {
+  // Whether the report is complete. Reports can be incomplete when the
+  // recording size quota is hit.
+  optional bool is_complete = 6;
+
   optional SystemState system_state = 1;
   // TODO(manzagop): revisit whether a single repeated field should contain all
   //     processes, or whether it's preferable to have separate fields per type.

@@ -338,7 +338,7 @@ TEST(PostmortemReportCollectorTest, CollectRandomFile) {
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName, nullptr);
   StabilityReport report;
-  ASSERT_EQ(DEBUG_FILE_NO_DATA, collector.CollectOneReport(file_path, &report));
+  ASSERT_NE(SUCCESS, collector.CollectOneReport(file_path, &report));
 }
 
 namespace {

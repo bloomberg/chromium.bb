@@ -186,6 +186,10 @@ class BASE_EXPORT GlobalActivityAnalyzer {
   // This will return {0,0} if no mapping could be found.
   ProgramLocation GetProgramLocationFromAddress(uint64_t address);
 
+  // Returns whether the data is complete. Data can be incomplete if the
+  // recording size quota is hit.
+  bool IsDataComplete() const;
+
  private:
   using AnalyzerMap =
       std::map<ThreadKey, std::unique_ptr<ThreadActivityAnalyzer>>;

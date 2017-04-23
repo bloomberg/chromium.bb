@@ -1321,7 +1321,7 @@ GlobalActivityTracker::ReleaseForTesting() {
 
   subtle::Release_Store(&g_tracker_, 0);
   return WrapUnique(tracker);
-};
+}
 
 ThreadActivityTracker* GlobalActivityTracker::CreateTrackerForCurrentThread() {
   DCHECK(!this_thread_tracker_.Get());
@@ -1599,6 +1599,10 @@ void GlobalActivityTracker::RecordFieldTrial(const std::string& trial_name,
                                              StringPiece group_name) {
   const std::string key = std::string("FieldTrial.") + trial_name;
   process_data_.SetString(key, group_name);
+}
+
+void GlobalActivityTracker::MarkDeleted() {
+  allocator_->SetMemoryState(PersistentMemoryAllocator::MEMORY_DELETED);
 }
 
 GlobalActivityTracker::GlobalActivityTracker(
