@@ -33,7 +33,6 @@ class LatencyInfo;
 
 namespace cc {
 
-class BeginFrameSource;
 class CompositorFrame;
 class CopyOutputRequest;
 class SurfaceFactory;
@@ -164,10 +163,6 @@ class CC_SURFACES_EXPORT Surface {
   int frame_index_;
   bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;
-
-  // This surface may have multiple BeginFrameSources if it is
-  // on multiple Displays.
-  std::set<BeginFrameSource*> begin_frame_sources_;
 
   SurfaceDependencies blocking_surfaces_;
   base::ObserverList<PendingFrameObserver, true> observers_;
