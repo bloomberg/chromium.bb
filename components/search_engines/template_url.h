@@ -671,7 +671,7 @@ class TemplateURL {
       const GURL& url,
       const TemplateURLRef::SearchTermsArgs& search_terms_args,
       const SearchTermsData& search_terms_data,
-      GURL* result);
+      GURL* result) const;
 
   // Encodes the search terms from |search_terms_args| so that we know the
   // |input_encoding|. Returns the |encoded_terms| and the

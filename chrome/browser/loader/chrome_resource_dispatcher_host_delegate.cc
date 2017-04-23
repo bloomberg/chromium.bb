@@ -311,7 +311,7 @@ void LogMainFrameMetricsOnUIThread(const GURL& url,
         TemplateURLServiceFactory::GetForProfile(profile);
     if (!template_url_service)
       return;
-    TemplateURL* default_provider =
+    const TemplateURL* default_provider =
         template_url_service->GetDefaultSearchProvider();
     if (!default_provider)
       return;

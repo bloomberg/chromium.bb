@@ -2625,7 +2625,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
     TemplateURLService* service =
         ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
-    TemplateURL* defaultURL = service->GetDefaultSearchProvider();
+    const TemplateURL* defaultURL = service->GetDefaultSearchProvider();
     if (defaultURL && !defaultURL->image_url().empty() &&
         defaultURL->image_url_ref().IsValid(service->search_terms_data())) {
       title = l10n_util::GetNSStringF(IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE,
@@ -3190,7 +3190,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   TemplateURLService* templateUrlService =
       ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
-  TemplateURL* defaultURL = templateUrlService->GetDefaultSearchProvider();
+  const TemplateURL* defaultURL =
+      templateUrlService->GetDefaultSearchProvider();
   DCHECK(!defaultURL->image_url().empty());
   DCHECK(defaultURL->image_url_ref().IsValid(
       templateUrlService->search_terms_data()));

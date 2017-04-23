@@ -266,7 +266,8 @@ GURL ContextualSearchDelegate::BuildRequestUrl() {
 std::string ContextualSearchDelegate::GetSearchTermResolutionUrlString(
     const std::string& selected_text,
     const std::string& base_page_url) {
-  TemplateURL* template_url = template_url_service_->GetDefaultSearchProvider();
+  const TemplateURL* template_url =
+      template_url_service_->GetDefaultSearchProvider();
 
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());

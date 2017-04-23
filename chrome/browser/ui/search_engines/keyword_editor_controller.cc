@@ -76,7 +76,7 @@ void KeywordEditorController::RemoveTemplateURL(int index) {
   base::RecordAction(UserMetricsAction("KeywordEditor_RemoveKeyword"));
 }
 
-TemplateURL* KeywordEditorController::GetDefaultSearchProvider() {
+const TemplateURL* KeywordEditorController::GetDefaultSearchProvider() {
   return url_model_->GetDefaultSearchProvider();
 }
 

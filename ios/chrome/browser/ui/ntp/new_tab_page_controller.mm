@@ -353,7 +353,7 @@ enum {
   TemplateURLService* service =
       ios::TemplateURLServiceFactory::GetForBrowserState(browserState_);
   if (service) {
-    TemplateURL* defaultURL = service->GetDefaultSearchProvider();
+    const TemplateURL* defaultURL = service->GetDefaultSearchProvider();
     if (defaultURL &&
         defaultURL->GetEngineType(service->search_terms_data()) !=
             SEARCH_ENGINE_GOOGLE) {

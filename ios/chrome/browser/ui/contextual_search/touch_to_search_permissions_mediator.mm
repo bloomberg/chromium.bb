@@ -212,7 +212,8 @@ const struct {
   if (!templateUrlService)
     return NO;
 
-  TemplateURL* defaultURL = templateUrlService->GetDefaultSearchProvider();
+  const TemplateURL* defaultURL =
+      templateUrlService->GetDefaultSearchProvider();
 
   // Contextual search is supported if the template URL has a non-empty
   // contextual search URL.

@@ -92,7 +92,8 @@ void GoogleLogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
   if (!template_url_service)
     return;
 
-  TemplateURL* template_url = template_url_service->GetDefaultSearchProvider();
+  const TemplateURL* template_url =
+      template_url_service->GetDefaultSearchProvider();
   if (!template_url ||
       !template_url->url_ref().HasGoogleBaseURLs(
           template_url_service->search_terms_data()))

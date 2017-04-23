@@ -245,7 +245,8 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
     return std::string();
   }
 
-  TemplateURL* template_url = template_url_service_->GetDefaultSearchProvider();
+  const TemplateURL* template_url =
+      template_url_service_->GetDefaultSearchProvider();
 
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
@@ -373,7 +374,7 @@ bool ContextualSearchDelegate::CanSendPageURL(
     return false;
 
   // Ensure that the default search provider is Google.
-  TemplateURL* default_search_provider =
+  const TemplateURL* default_search_provider =
       template_url_service->GetDefaultSearchProvider();
   bool is_default_search_provider_google =
       default_search_provider &&

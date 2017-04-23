@@ -179,7 +179,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
            GetStringFromJS(contents, "prefetchQuery", &prefetch_query_value_);
   }
 
-  TemplateURL* GetDefaultSearchProviderTemplateURL() {
+  const TemplateURL* GetDefaultSearchProviderTemplateURL() {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
     if (template_url_service)
@@ -188,7 +188,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
   }
 
   bool AddSearchToHistory(base::string16 term, int visit_count) {
-    TemplateURL* template_url = GetDefaultSearchProviderTemplateURL();
+    const TemplateURL* template_url = GetDefaultSearchProviderTemplateURL();
     if (!template_url)
       return false;
 

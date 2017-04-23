@@ -2423,11 +2423,11 @@ TEST_F(TemplateURLServiceSyncTest, MergeConflictingPrepopulatedEngine) {
       syncer::SEARCH_ENGINES, list, PassProcessor(),
       CreateAndPassSyncErrorFactory());
 
-  result_turl = model()->GetDefaultSearchProvider();
-  EXPECT_TRUE(result_turl);
-  EXPECT_EQ(ASCIIToUTF16("new_kw"), result_turl->keyword());
-  EXPECT_EQ(ASCIIToUTF16("my name"), result_turl->short_name());
-  EXPECT_EQ(default_turl->url(), result_turl->url());
+  const TemplateURL* final_turl = model()->GetDefaultSearchProvider();
+  EXPECT_TRUE(final_turl);
+  EXPECT_EQ(ASCIIToUTF16("new_kw"), final_turl->keyword());
+  EXPECT_EQ(ASCIIToUTF16("my name"), final_turl->short_name());
+  EXPECT_EQ(default_turl->url(), final_turl->url());
 }
 
 TEST_F(TemplateURLServiceSyncTest, MergeNonEditedPrepopulatedEngine) {

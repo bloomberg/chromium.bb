@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverrideDSE) {
       TemplateURLServiceFactory::GetForProfile(profile());
   ASSERT_TRUE(url_service);
   EXPECT_TRUE(VerifyTemplateURLServiceLoad(url_service));
-  TemplateURL* default_provider = url_service->GetDefaultSearchProvider();
+  const TemplateURL* default_provider = url_service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_provider);
   EXPECT_EQ(TemplateURL::NORMAL, default_provider->type());
 
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverrideDSE) {
       test_data_dir_.AppendASCII("settings_override"), kFlagEnableFileAccess,
       "10");
   ASSERT_TRUE(extension);
-  TemplateURL* current_dse = url_service->GetDefaultSearchProvider();
+  const TemplateURL* current_dse = url_service->GetDefaultSearchProvider();
   EXPECT_EQ(TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, current_dse->type());
 
   std::unique_ptr<TemplateURLData> extension_dse =
@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PRE_OverridenDSEPersists) {
       TemplateURLServiceFactory::GetForProfile(profile());
   ASSERT_TRUE(url_service);
   EXPECT_TRUE(VerifyTemplateURLServiceLoad(url_service));
-  TemplateURL* default_provider = url_service->GetDefaultSearchProvider();
+  const TemplateURL* default_provider = url_service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_provider);
   // Check that default provider is normal before extension is
   // installed and loaded.
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverridenDSEPersists) {
   ASSERT_TRUE(url_service);
   EXPECT_TRUE(VerifyTemplateURLServiceLoad(url_service));
   EXPECT_TRUE(url_service->IsExtensionControlledDefaultSearch());
-  TemplateURL* default_provider = url_service->GetDefaultSearchProvider();
+  const TemplateURL* default_provider = url_service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_provider);
   ExpectSimilar(extension_dse.get(), &default_provider->data());
 }
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BeforeTemplateUrlServiceLoad) {
       test_data_dir_.AppendASCII("settings_override"), kFlagEnableFileAccess,
       "10");
   ASSERT_TRUE(extension);
-  TemplateURL* current_dse = url_service->GetDefaultSearchProvider();
+  const TemplateURL* current_dse = url_service->GetDefaultSearchProvider();
   EXPECT_EQ(TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, current_dse->type());
   EXPECT_TRUE(url_service->IsExtensionControlledDefaultSearch());
 

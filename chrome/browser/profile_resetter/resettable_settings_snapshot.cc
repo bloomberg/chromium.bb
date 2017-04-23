@@ -64,7 +64,7 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(profile);
   DCHECK(service);
-  TemplateURL* dse = service->GetDefaultSearchProvider();
+  const TemplateURL* dse = service->GetDefaultSearchProvider();
   if (dse)
     dse_url_ = dse->url();
 
@@ -292,7 +292,7 @@ std::unique_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(profile);
   DCHECK(service);
-  TemplateURL* dse = service->GetDefaultSearchProvider();
+  const TemplateURL* dse = service->GetDefaultSearchProvider();
   if (dse) {
     AddPair(list.get(),
             l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_DSE),

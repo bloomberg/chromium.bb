@@ -100,7 +100,8 @@ void SpecialLocaleHandler::OverrideDefaultSearchProvider(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   // If the user has changed their default search provider, no-op.
-  TemplateURL* current_dsp = template_url_service_->GetDefaultSearchProvider();
+  const TemplateURL* current_dsp =
+      template_url_service_->GetDefaultSearchProvider();
   if (!current_dsp ||
       current_dsp->prepopulate_id() != TemplateURLPrepopulateData::google.id) {
     return;
@@ -117,7 +118,8 @@ void SpecialLocaleHandler::SetGoogleAsDefaultSearch(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   // If the user has changed their default search provider, no-op.
-  TemplateURL* current_dsp = template_url_service_->GetDefaultSearchProvider();
+  const TemplateURL* current_dsp =
+      template_url_service_->GetDefaultSearchProvider();
   if (!current_dsp ||
       current_dsp->prepopulate_id() != GetDesignatedSearchEngine()) {
     return;

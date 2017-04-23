@@ -955,7 +955,7 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedEnginesUpdatesSyncGuid) {
                   ->GetString(prefs::kSyncedDefaultSearchProviderGUID)
                   .empty());
 
-  TemplateURL* initial_dse = model()->GetDefaultSearchProvider();
+  const TemplateURL* initial_dse = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(initial_dse);
 
   // Add user provided default search engine.
@@ -1047,7 +1047,7 @@ TEST_F(TemplateURLServiceTest,
                   .empty());
 
   // Get initial DSE to check its guid later.
-  TemplateURL* initial_dse = model()->GetDefaultSearchProvider();
+  const TemplateURL* initial_dse = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(initial_dse);
 
   // Add user provided default search engine.
@@ -1327,7 +1327,7 @@ TEST_F(TemplateURLServiceTest, LoadRetainsModifiedProvider) {
 TEST_F(TemplateURLServiceTest, LoadSavesPrepopulatedDefaultSearchProvider) {
   test_util()->VerifyLoad();
   // Verify that the default search provider is set to something.
-  TemplateURL* default_search = model()->GetDefaultSearchProvider();
+  const TemplateURL* default_search = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search != NULL);
   std::unique_ptr<TemplateURL> cloned_url(
       new TemplateURL(default_search->data()));
@@ -1398,10 +1398,16 @@ TEST_F(TemplateURLServiceTest, LoadEnsuresDefaultSearchProviderExists) {
   EXPECT_TRUE(model()->GetDefaultSearchProvider()->SupportsReplacement(
       search_terms_data()));
 
-  // Make default search provider unusable (no search terms).
-  model()->ResetTemplateURL(model()->GetDefaultSearchProvider(),
-                            ASCIIToUTF16("test"), ASCIIToUTF16("test"),
-                            "http://example.com/");
+  // Force the model to load and make sure we have a default search provider.
+  const TemplateURL* default_search = model()->GetDefaultSearchProvider();
+  EXPECT_TRUE(default_search);
+  EXPECT_TRUE(default_search->SupportsReplacement(search_terms_data()));
+
+  // Make default search provider unusable (no search terms).  Using
+  // GetTemplateURLForKeyword() returns a non-const pointer.
+  model()->ResetTemplateURL(
+      model()->GetTemplateURLForKeyword(default_search->keyword()),
+      ASCIIToUTF16("test"), ASCIIToUTF16("test"), "http://example.com/");
   base::RunLoop().RunUntilIdle();
 
   // Reset the model and load it. There should be a usable default search

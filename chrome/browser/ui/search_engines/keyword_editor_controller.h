@@ -48,7 +48,7 @@ class KeywordEditorController {
   void RemoveTemplateURL(int index);
 
   // Returns the default search provider.
-  TemplateURL* GetDefaultSearchProvider();
+  const TemplateURL* GetDefaultSearchProvider();
 
   // Make the TemplateURL at the specified index (into the TableModel) the
   // default search provider.  Return the new index, or -1 if nothing was done.

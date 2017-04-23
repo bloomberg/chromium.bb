@@ -104,7 +104,7 @@ struct HistoryURLProviderParams {
   HistoryURLProviderParams(const AutocompleteInput& input,
                            bool trim_http,
                            const AutocompleteMatch& what_you_typed_match,
-                           TemplateURL* default_search_provider,
+                           const TemplateURL* default_search_provider,
                            const SearchTermsData& search_terms_data);
   ~HistoryURLProviderParams();
 

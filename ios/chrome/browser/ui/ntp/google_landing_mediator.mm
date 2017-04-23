@@ -223,7 +223,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 - (void)updateShowLogo {
   BOOL showLogo = NO;
-  TemplateURL* defaultURL = _templateURLService->GetDefaultSearchProvider();
+  const TemplateURL* defaultURL =
+      _templateURLService->GetDefaultSearchProvider();
   if (defaultURL) {
     showLogo =
         defaultURL->GetEngineType(_templateURLService->search_terms_data()) ==

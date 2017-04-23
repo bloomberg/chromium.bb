@@ -419,7 +419,7 @@ HistoryURLProviderParams::HistoryURLProviderParams(
     const AutocompleteInput& input,
     bool trim_http,
     const AutocompleteMatch& what_you_typed_match,
-    TemplateURL* default_search_provider,
+    const TemplateURL* default_search_provider,
     const SearchTermsData& search_terms_data)
     : origin_task_runner(base::SequencedTaskRunnerHandle::Get()),
       input(input),
@@ -504,7 +504,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // retrieve these on the UI thread, and the second pass runs on the history
   // thread. |template_url_service| can be null when testing.
   TemplateURLService* template_url_service = client()->GetTemplateURLService();
-  TemplateURL* default_search_provider = template_url_service ?
+  const TemplateURL* default_search_provider = template_url_service ?
       template_url_service->GetDefaultSearchProvider() : nullptr;
 
   // Create the data structure for the autocomplete passes.  We'll save this off

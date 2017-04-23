@@ -85,7 +85,7 @@ base::Feature kUseGoogleLocalNtp {
   "UseGoogleLocalNtp", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
-TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
+const TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
   if (profile) {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile);
@@ -141,7 +141,8 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
   if (new_tab_url.is_valid() && MatchesOriginAndPath(url, new_tab_url))
     return true;
 
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  const TemplateURL* template_url =
+      GetDefaultSearchProviderTemplateURL(profile);
   if (!template_url)
     return false;
 
@@ -218,7 +219,8 @@ struct NewTabURLDetails {
     if (command_line->HasSwitch(switches::kForceLocalNtp))
       return NewTabURLDetails(local_url, NEW_TAB_URL_VALID);
 
-    TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+    const TemplateURL* template_url =
+        GetDefaultSearchProviderTemplateURL(profile);
     if (!profile || !template_url)
       return NewTabURLDetails(local_url, NEW_TAB_URL_BAD);
 
@@ -261,7 +263,8 @@ base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url) {
     return prerenderer->get_last_query();
   }
 
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  const TemplateURL* template_url =
+      GetDefaultSearchProviderTemplateURL(profile);
   base::string16 search_terms;
   if (template_url)
     template_url->ExtractSearchTermsFromURL(
@@ -350,7 +353,8 @@ GURL GetInstantURL(Profile* profile, bool force_instant_results) {
   if (!IsInstantExtendedAPIEnabled() || !IsSuggestPrefEnabled(profile))
     return GURL();
 
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  const TemplateURL* template_url =
+      GetDefaultSearchProviderTemplateURL(profile);
   if (!template_url)
     return GURL();
 
@@ -380,7 +384,8 @@ GURL GetInstantURL(Profile* profile, bool force_instant_results) {
 // Returns URLs associated with the default search engine for |profile|.
 std::vector<GURL> GetSearchURLs(Profile* profile) {
   std::vector<GURL> result;
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  const TemplateURL* template_url =
+      GetDefaultSearchProviderTemplateURL(profile);
   if (!template_url)
     return result;
   for (const TemplateURLRef& ref : template_url->url_refs()) {

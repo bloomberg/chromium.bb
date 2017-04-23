@@ -1350,7 +1350,7 @@ bool TemplateURL::ReplaceSearchTermsInURL(
     const GURL& url,
     const TemplateURLRef::SearchTermsArgs& search_terms_args,
     const SearchTermsData& search_terms_data,
-    GURL* result) {
+    GURL* result) const {
   // TODO(beaudoin): Use AQS from |search_terms_args| too.
   url::Parsed::ComponentType search_term_component;
   url::Component search_terms_position;
