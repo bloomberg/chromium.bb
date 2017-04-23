@@ -49,9 +49,6 @@ using ::AutofillTypeFromAutofillUIType;
                         ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CARD)
                         : l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD_LABEL);
   [_viewController setTitle:title];
-  [_viewController setState:_creditCard
-                                ? CreditCardEditViewControllerStateEdit
-                                : CreditCardEditViewControllerStateCreate];
   if (_creditCard && !_creditCard->billing_address_id().empty())
     [_viewController
         setBillingAddressGUID:base::SysUTF8ToNSString(
@@ -62,6 +59,8 @@ using ::AutofillTypeFromAutofillUIType;
   _mediator = [[CreditCardEditViewControllerMediator alloc]
       initWithPaymentRequest:_paymentRequest
                   creditCard:_creditCard];
+  [_mediator setState:_creditCard ? CreditCardEditViewControllerStateEdit
+                                  : CreditCardEditViewControllerStateCreate];
   [_viewController setDataSource:_mediator];
 
   [_viewController loadModel];

@@ -8,22 +8,13 @@
 #import <UIKit/UIKit.h>
 #include <vector>
 
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
-
+#import "ios/chrome/browser/payments/payment_request_edit_view_controller_data_source.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
+#import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
 extern NSString* const kWarningMessageAccessibilityID;
 
-@class EditorField;
 @class PaymentRequestEditViewController;
-
-// Data source protocol for PaymentRequestEditViewController.
-@protocol PaymentRequestEditViewControllerDataSource<NSObject>
-
-// Returns the list of field definitions for the editor.
-- (NSArray<EditorField*>*)editorFields;
-
-@end
 
 // Validator protocol for PaymentRequestEditViewController.
 @protocol PaymentRequestEditViewControllerValidator<NSObject>

@@ -80,6 +80,7 @@ source_set("payments_ui") {
   sources = [
     "credit_card_edit_view_controller.h",
     "credit_card_edit_view_controller.mm",
+    "credit_card_edit_view_controller_data_source.h",
     "payment_items_display_view_controller.h",
     "payment_items_display_view_controller.mm",
     "payment_items_display_view_controller_actions.h",
@@ -88,6 +89,7 @@ source_set("payments_ui") {
     "payment_request_edit_view_controller.h",
     "payment_request_edit_view_controller.mm",
     "payment_request_edit_view_controller_actions.h",
+    "payment_request_edit_view_controller_data_source.h",
     "payment_request_editor_field.h",
     "payment_request_editor_field.mm",
     "payment_request_error_view_controller.h",

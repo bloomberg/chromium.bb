@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_PAYMENTS_CREDIT_CARD_EDIT_MEDIATOR_H_
 #define IOS_CHROME_BROWSER_PAYMENTS_CREDIT_CARD_EDIT_MEDIATOR_H_
 
-#import "ios/chrome/browser/payments/credit_card_edit_view_controller.h"
+#import "ios/chrome/browser/payments/credit_card_edit_view_controller_data_source.h"
 
 class PaymentRequest;
 

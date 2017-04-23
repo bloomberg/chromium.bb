@@ -8,8 +8,8 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/payments/cells/payments_has_accessory_type.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+
+@class CollectionViewItem;
 
 // The possible states the view controller can be in.
 typedef NS_ENUM(NSUInteger, PaymentRequestSelectorState) {

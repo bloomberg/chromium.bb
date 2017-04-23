@@ -53,6 +53,7 @@ const CGFloat kCardTypeIconDimension = 20.0;
 
 @implementation CreditCardEditViewControllerMediator
 
+@synthesize state = _state;
 @synthesize paymentRequest = _paymentRequest;
 @synthesize creditCard = _creditCard;
 @synthesize editorFields = _editorFields;

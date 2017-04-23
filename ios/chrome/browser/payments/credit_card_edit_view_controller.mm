@@ -61,7 +61,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize delegate = _delegate;
 @synthesize dataSource = _dataSource;
 @synthesize billingAddressGUID = _billingAddressGUID;
-@synthesize state = _state;
 
 #pragma mark - Initialization
 
@@ -149,7 +148,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super loadModel];
 
   // If editing a credit card, set the card type icon (e.g. "Visa").
-  if (_state == CreditCardEditViewControllerStateEdit) {
+  if (_dataSource.state == CreditCardEditViewControllerStateEdit) {
     for (EditorField* field in _fields) {
       AutofillEditItem* item = field.item;
       if (field.autofillUIType == AutofillUITypeCreditCardNumber) {
@@ -206,7 +205,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   // "Save card" section. Visible only when creating a card.
-  if (_state == CreditCardEditViewControllerStateCreate) {
+  if (_dataSource.state == CreditCardEditViewControllerStateCreate) {
     [model addSectionWithIdentifier:SectionIdentifierSaveCard];
     CollectionViewSwitchItem* saveCardItem =
         [[CollectionViewSwitchItem alloc] initWithType:ItemTypeSaveCard];

@@ -32,6 +32,8 @@
 
 @implementation TestCreditCardEditViewControllerMediator
 
+@synthesize state = _state;
+
 - (CollectionViewItem*)serverCardSummaryItem {
   return [[PaymentMethodItem alloc] init];
 }
@@ -97,8 +99,7 @@ TEST_F(PaymentRequestCreditCardEditViewControllerTest, TestModel) {
   CreateController();
   CheckController();
 
-  [GetCreditCardEditViewController()
-      setState:CreditCardEditViewControllerStateEdit];
+  [mediator_ setState:CreditCardEditViewControllerStateEdit];
   [GetCreditCardEditViewController() loadModel];
 
   // There is one section containing the credit card type icons for the accepted
@@ -160,8 +161,7 @@ TEST_F(PaymentRequestCreditCardEditViewControllerTest,
   CreateController();
   CheckController();
 
-  [GetCreditCardEditViewController()
-      setState:CreditCardEditViewControllerStateCreate];
+  [mediator_ setState:CreditCardEditViewControllerStateCreate];
   [GetCreditCardEditViewController() loadModel];
 
   // There is an extra section containing a switch that allows the user to save

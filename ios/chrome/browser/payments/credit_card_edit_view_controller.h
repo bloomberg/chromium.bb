@@ -5,37 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_PAYMENTS_CREDIT_CARD_EDIT_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_PAYMENTS_CREDIT_CARD_EDIT_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/payments/credit_card_edit_view_controller_data_source.h"
 #import "ios/chrome/browser/payments/payment_request_edit_view_controller.h"
 
-@class EditorField;
 @class CreditCardEditViewController;
-
-typedef NS_ENUM(NSInteger, CreditCardEditViewControllerState) {
-  // The view controller is used to create a new credit card.
-  CreditCardEditViewControllerStateCreate,
-  // The view controller is used to edit a credit card.
-  CreditCardEditViewControllerStateEdit,
-};
-
-// Data source protocol for CreditCardEditViewController.
-@protocol CreditCardEditViewControllerDataSource<
-    PaymentRequestEditViewControllerDataSource>
-
-// Returns an item that identifies the credit card being edited. May return nil.
-- (CollectionViewItem*)serverCardSummaryItem;
-
-// Returns an item that displays a list of payment method type icons for the
-// accepted payment methods. May return nil.
-- (CollectionViewItem*)acceptedPaymentMethodsItem;
-
-// Returns the billing address label from an autofill profile with the given
-// guid. Returns nil if the profile does not have an address.
-- (NSString*)billingAddressLabelForProfileWithGUID:(NSString*)profileGUID;
-
-// Returns the credit card type icon corresponding to |cardNumber|.
-- (UIImage*)cardTypeIconFromCardNumber:(NSString*)cardNumber;
-
-@end
 
 // Delegate protocol for CreditCardEditViewController.
 @protocol CreditCardEditViewControllerDelegate<NSObject>
@@ -70,10 +43,6 @@ typedef NS_ENUM(NSInteger, CreditCardEditViewControllerState) {
 
 // The billing address GUID of the card being editted, if any.
 @property(nonatomic, copy) NSString* billingAddressGUID;
-
-// The view controller's state. i.e., whether a new credit card is being created
-// or one is being edited.
-@property(nonatomic, assign) CreditCardEditViewControllerState state;
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
