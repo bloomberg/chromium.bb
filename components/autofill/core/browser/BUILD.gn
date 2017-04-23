@@ -136,8 +136,6 @@ static_library("browser") {
     "webdata/autofill_data_type_controller.h",
     "webdata/autofill_entry.cc",
     "webdata/autofill_entry.h",
-    "webdata/autofill_metadata_change_list.cc",
-    "webdata/autofill_metadata_change_list.h",
     "webdata/autofill_profile_data_type_controller.cc",
     "webdata/autofill_profile_data_type_controller.h",
     "webdata/autofill_profile_syncable_service.cc",
@@ -184,9 +182,7 @@ static_library("browser") {
   }
 
   if (!is_android) {
-    sources += [
-      "ui/save_card_bubble_controller.h",
-    ]
+    sources += [ "ui/save_card_bubble_controller.h" ]
   }
 
   configs += [ "//build/config:precompiled_headers" ]

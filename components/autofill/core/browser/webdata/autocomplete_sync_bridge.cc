@@ -15,13 +15,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/proto/autofill_sync.pb.h"
-#include "components/autofill/core/browser/webdata/autofill_metadata_change_list.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
+#include "components/sync/model_impl/sync_metadata_store_change_list.h"
 #include "net/base/escape.h"
 
 using base::Optional;
@@ -216,7 +216,8 @@ class SyncDifferenceTracker {
                               metadata_change_list.get());
       }
     }
-    return static_cast<AutofillMetadataChangeList*>(metadata_change_list.get())
+    return static_cast<syncer::SyncMetadataStoreChangeList*>(
+               metadata_change_list.get())
         ->TakeError();
   }
 
@@ -319,8 +320,8 @@ AutocompleteSyncBridge::~AutocompleteSyncBridge() {
 std::unique_ptr<MetadataChangeList>
 AutocompleteSyncBridge::CreateMetadataChangeList() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::MakeUnique<AutofillMetadataChangeList>(GetAutofillTable(),
-                                                      syncer::AUTOFILL);
+  return base::MakeUnique<syncer::SyncMetadataStoreChangeList>(
+      GetAutofillTable(), syncer::AUTOFILL);
 }
 
 Optional<syncer::ModelError> AutocompleteSyncBridge::MergeSyncData(
@@ -412,8 +413,9 @@ void AutocompleteSyncBridge::ActOnLocalChanges(
     return;
   }
 
-  auto metadata_change_list = base::MakeUnique<AutofillMetadataChangeList>(
-      GetAutofillTable(), syncer::AUTOFILL);
+  auto metadata_change_list =
+      base::MakeUnique<syncer::SyncMetadataStoreChangeList>(GetAutofillTable(),
+                                                            syncer::AUTOFILL);
   for (const auto& change : changes) {
     const std::string storage_key = GetStorageKeyFromModel(change.key());
     switch (change.type()) {

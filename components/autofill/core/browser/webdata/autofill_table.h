@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/sync_metadata_store.h"
 #include "components/webdata/common/web_database_table.h"
 
 class WebDatabase;
@@ -249,7 +250,8 @@ struct FormFieldData;
 //
 //   value              The serialized ModelTypeState record.
 
-class AutofillTable : public WebDatabaseTable {
+class AutofillTable : public WebDatabaseTable,
+                      public syncer::SyncMetadataStore {
  public:
   AutofillTable();
   ~AutofillTable() override;
@@ -426,22 +428,16 @@ class AutofillTable : public WebDatabaseTable {
   bool GetAllSyncMetadata(syncer::ModelType model_type,
                           syncer::MetadataBatch* metadata_batch);
 
-  // Update the metadata row for |model_type|, keyed by |storage_key|, to
-  // contain the contents of |metadata|.
+  // syncer::SyncMetadataStore implementation.
   bool UpdateSyncMetadata(syncer::ModelType model_type,
                           const std::string& storage_key,
-                          const sync_pb::EntityMetadata& metadata);
-
-  // Remove the metadata row of type |model_type| keyed by |storage|key|.
+                          const sync_pb::EntityMetadata& metadata) override;
   bool ClearSyncMetadata(syncer::ModelType model_type,
-                         const std::string& storage_key);
-
-  // Update the stored sync state for the |model_type|.
-  bool UpdateModelTypeState(syncer::ModelType model_type,
-                            const sync_pb::ModelTypeState& model_type_state);
-
-  // Clear the stored sync state for |model_type|.
-  bool ClearModelTypeState(syncer::ModelType model_type);
+                         const std::string& storage_key) override;
+  bool UpdateModelTypeState(
+      syncer::ModelType model_type,
+      const sync_pb::ModelTypeState& model_type_state) override;
+  bool ClearModelTypeState(syncer::ModelType model_type) override;
 
   // Table migration functions. NB: These do not and should not rely on other
   // functions in this class. The implementation of a function such as
