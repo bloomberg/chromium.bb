@@ -241,6 +241,9 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // understand, and is public.
   static void CheckFromPayload(const void*);
 
+  // Returns true if magic number is valid.
+  bool IsValid() const;
+
   static const uint32_t kZappedMagic = 0xDEAD4321;
 
  protected:
@@ -854,10 +857,17 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
   return result;
 }
 
+NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
+#if CPU(64BIT)
+  return GetMagic() == magic_;
+#else
+  return true;
+#endif
+}
+
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::CheckHeader() const {
 #if CPU(64BIT)
-  const bool good_magic = GetMagic() == magic_;
-  DCHECK(good_magic);
+  DCHECK(IsValid());
 #endif
 }
 
