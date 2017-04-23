@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS Element scrollTop/Left getter/setter test 
-PASS Element scroll test 
-PASS Element scrollTo test 
-PASS cssom-view - elementScroll 
-FAIL Element scroll maximum test assert_equals: changed scrollTop should be 636 expected 636 but got 675
-Harness: the test ran to completion.
-
