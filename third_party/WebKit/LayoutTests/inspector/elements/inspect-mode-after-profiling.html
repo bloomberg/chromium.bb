@@ -18,7 +18,7 @@ function test()
 {
     InspectorTest.cpuProfilerModel.startRecording();
     InspectorTest.cpuProfilerModel.stopRecording();
-    InspectorTest.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(clickAtInspected);
+    InspectorTest.domModel.setInspectMode(Protocol.DOM.InspectMode.SearchForNode, clickAtInspected);
 
     function clickAtInspected()
     {

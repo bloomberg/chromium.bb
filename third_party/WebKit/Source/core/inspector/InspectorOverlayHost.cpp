@@ -30,8 +30,7 @@
 
 namespace blink {
 
-InspectorOverlayHost::InspectorOverlayHost(Listener* listener)
-    : listener_(listener) {}
+InspectorOverlayHost::InspectorOverlayHost() : listener_(nullptr) {}
 
 void InspectorOverlayHost::resume() {
   if (listener_)

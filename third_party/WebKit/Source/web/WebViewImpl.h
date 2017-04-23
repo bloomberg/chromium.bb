@@ -77,7 +77,7 @@ class CompositorAnimationHost;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
-class InspectorOverlayAgent;
+class InspectorOverlay;
 class LinkHighlightImpl;
 class PageOverlay;
 class PageScaleConstraintsSet;
@@ -504,7 +504,7 @@ class WEB_EXPORT WebViewImpl final
   }
 
  private:
-  InspectorOverlayAgent* GetInspectorOverlay();
+  InspectorOverlay* GetInspectorOverlay();
 
   void SetPageScaleFactorAndLocation(float, const FloatPoint&);
   void PropagateZoomFactorToLocalFrameRoots(Frame*, float);

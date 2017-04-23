@@ -146,6 +146,7 @@ devtools_domains = [
   "network",
   "page",
   "profiler",
+  "rendering",
   "runtime",
   "security",
   "service_worker",

@@ -67,7 +67,7 @@
 #include "web/CompositorMutatorImpl.h"
 #include "web/CompositorWorkerProxyClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
-#include "web/InspectorOverlayAgent.h"
+#include "web/InspectorOverlay.h"
 #include "web/PageOverlay.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputEventConversion.h"
@@ -251,7 +251,7 @@ void WebFrameWidgetImpl::UpdateAllLifecyclePhases() {
   if (!local_root_)
     return;
 
-  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
+  if (InspectorOverlay* overlay = GetInspectorOverlay()) {
     overlay->UpdateAllLifecyclePhases();
     // TODO(chrishtr): integrate paint into the overlay's lifecycle.
     if (overlay->GetPageOverlay() &&
@@ -363,7 +363,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
   if (!GetPage())
     return WebInputEventResult::kNotHandled;
 
-  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
+  if (InspectorOverlay* overlay = GetInspectorOverlay()) {
     if (overlay->HandleInputEvent(input_event))
       return WebInputEventResult::kHandledSuppressed;
   }
@@ -1181,11 +1181,11 @@ HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
   return result;
 }
 
-InspectorOverlayAgent* WebFrameWidgetImpl::GetInspectorOverlay() {
+InspectorOverlay* WebFrameWidgetImpl::GetInspectorOverlay() {
   if (!local_root_)
     return nullptr;
   if (WebDevToolsAgentImpl* devtools = local_root_->DevToolsAgentImpl())
-    return devtools->OverlayAgent();
+    return devtools->Overlay();
   return nullptr;
 }
 
