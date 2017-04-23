@@ -25,6 +25,7 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/mojo.fyi.browser_tests.filter",
     "//testing/buildbot/filters/mojo.fyi.mus.browser_tests.filter",
     "//testing/buildbot/filters/site-per-process.browser_tests.filter",
+    "//testing/buildbot/filters/tab-capture-end2end-tests.browser_tests.filter",
   ]
 }
 

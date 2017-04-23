@@ -30,9 +30,6 @@
 #  "console_test_launcher"
 #  : the test is a gtest-based test that uses the "brave-new-test-launcher"
 #    from //base/test:test_support but does not need Xvfb.
-#  "gpu_browser_test"
-#  : the test is a subset of the browser_tests that will be run against
-#    a real GPU.
 #  "additional_compile_target"
 #  : this isn't actually a test, but we still need a mapping from the
 #    ninja target to the GN label in order to analyze it.
@@ -893,11 +890,6 @@
   "system_webview_apk": {
     "label": "//android_webview:system_webview_apk",
     "type": "additional_compile_target",
-  },
-  "tab_capture_end2end_tests": {
-    "label": "//chrome/test:browser_tests",
-    "type": "gpu_browser_test",
-    "gtest_filter": "CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
   },
   "telemetry_gpu_integration_test": {
     "label": "//chrome/test:telemetry_gpu_integration_test",

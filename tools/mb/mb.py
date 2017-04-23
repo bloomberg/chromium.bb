@@ -853,11 +853,6 @@ class MetaBuildWrapper(object):
         runtime_deps_targets = [
             target + '.runtime_deps',
             'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
-      elif isolate_map[target]['type'] == 'gpu_browser_test':
-        if self.platform == 'win32':
-          runtime_deps_targets = ['browser_tests.exe.runtime_deps']
-        else:
-          runtime_deps_targets = ['browser_tests.runtime_deps']
       elif (isolate_map[target]['type'] == 'script' or
             isolate_map[target].get('label_type') == 'group'):
         # For script targets, the build target is usually a group,
@@ -1125,19 +1120,6 @@ class MetaBuildWrapper(object):
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
       ]
-    elif test_type == 'gpu_browser_test':
-      extra_files = [
-          '../../testing/test_env.py'
-      ]
-      gtest_filter = isolate_map[target]['gtest_filter']
-      cmdline = [
-          '../../testing/test_env.py',
-          './browser_tests' + executable_suffix,
-          '--test-launcher-bot-mode',
-          '--enable-gpu',
-          '--test-launcher-jobs=1',
-          '--gtest_filter=%s' % gtest_filter,
-      ]
     elif test_type == 'script':
       extra_files = [
           '../../testing/test_env.py'
@@ -1286,16 +1268,19 @@ class MetaBuildWrapper(object):
       return 0
 
     gn_inp = {}
-    gn_inp['files'] = ['//' + f for f in inp['files'] if not f.startswith('//')]
+    gn_inp['files'] = sorted(['//' + f for f in inp['files']
+                              if not f.startswith('//')])
 
     isolate_map = self.ReadIsolateMap()
     err, gn_inp['additional_compile_targets'] = self.MapTargetsToLabels(
         isolate_map, inp['additional_compile_targets'])
+    gn_inp['additional_compile_targets'].sort()
     if err:
       raise MBErr(err)
 
     err, gn_inp['test_targets'] = self.MapTargetsToLabels(
         isolate_map, inp['test_targets'])
+    gn_inp['test_targets'].sort()
     if err:
       raise MBErr(err)
     labels_to_targets = {}

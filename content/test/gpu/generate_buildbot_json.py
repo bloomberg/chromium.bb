@@ -1470,6 +1470,13 @@ COMMON_GTESTS = {
         'os_types': ['android'],
       },
     ],
+    'args': [
+      '--enable-gpu',
+      '--test-launcher-jobs=1',
+      '--test-launcher-filter-file=../../testing/buildbot/filters/' + \
+      'tab-capture-end2end-tests.browser_tests.filter',
+    ],
+    'test': 'browser_tests',
   },
   'video_decode_accelerator_d3d11_unittest': {
     'tester_configs': [
@@ -1548,8 +1555,8 @@ NON_SWARMED_GTESTS = {
     'args': [
       '--enable-gpu',
       '--test-launcher-jobs=1',
-      '--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:' + \
-          'TabCaptureApiPixelTest.EndToEnd*'
+      '--test-launcher-filter-file=../../testing/buildbot/filters/' + \
+      'tab-capture-end2end-tests.browser_tests.filter',
     ],
     'swarming': {
       'can_use_on_swarming_builders': False,
