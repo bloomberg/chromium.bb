@@ -114,6 +114,9 @@ class MediaStreamDevicesController {
   void AndroidOSPromptAnswered(bool allowed);
 #endif  // defined(OS_ANDROID)
 
+  // Called when the request is finished and no prompt is required.
+  void RequestFinishedNoPrompt();
+
  private:
   friend class MediaStreamDevicesControllerTest;
   friend class test::MediaStreamDevicesControllerTestApi;
@@ -138,12 +141,8 @@ class MediaStreamDevicesController {
   content::MediaStreamDevices GetDevices(ContentSetting audio_setting,
                                          ContentSetting video_setting);
 
-  // Runs |callback_| with the given audio/video permission settings. If neither
-  // |audio_setting| or |video_setting| is set to allow, |denial_reason| should
-  // be set to the error to be reported when running |callback_|.
-  void RunCallback(ContentSetting audio_setting,
-                   ContentSetting video_setting,
-                   content::MediaStreamRequestResult denial_reason);
+  // Runs |callback_| with the current audio/video permission settings.
+  void RunCallback();
 
   // Called when the permission has been set to update the
   // TabSpecificContentSettings.
@@ -160,9 +159,11 @@ class MediaStreamDevicesController {
   // requested devices.
   bool IsUserAcceptAllowed(ContentSettingsType content_type) const;
 
-  // The audio/video content settings BEFORE the user clicks accept/deny.
-  ContentSetting old_audio_setting_;
-  ContentSetting old_video_setting_;
+  // The current state of the audio/video content settings which may be updated
+  // through the lifetime of the request.
+  ContentSetting audio_setting_;
+  ContentSetting video_setting_;
+  content::MediaStreamRequestResult denial_reason_;
 
   content::WebContents* web_contents_;
 
