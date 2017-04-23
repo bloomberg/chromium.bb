@@ -20,7 +20,8 @@ external/wpt/DOM-parsing [ Skip ]
 # external/wpt/FileAPI [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/IndexedDB [ Pass ]
-external/wpt/WebCryptoAPI [ Skip ]
+## Owners: eroman@chromium.org,rsleevi@chromium.org
+# external/wpt/WebCryptoAPI [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/WebIDL [ Pass ]
 external/wpt/WebIDL/invalid [ Skip ]
