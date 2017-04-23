@@ -36,17 +36,17 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // icons.  To avoid breaking existing shortcuts, add new icons at the end
 // (following the ordering described above).
 #if defined(GOOGLE_CHROME_BUILD)
-IDR_MAINFRAME           ICON                    "theme\\google_chrome\\win\\chrome.ico"
+IDR_MAINFRAME           ICON       "theme\\google_chrome\\win\\chrome.ico"
 // These three are no longer used, but remain as placeholders. (They cannot be
 // removed, or existing shortcuts to the later resources will break.)
-IDR_MAINFRAME_2         ICON                    "theme\\google_chrome\\win\\placeholder.ico"
-IDR_MAINFRAME_3         ICON                    "theme\\google_chrome\\win\\placeholder.ico"
-IDR_MAINFRAME_4         ICON                    "theme\\google_chrome\\win\\placeholder.ico"
+IDR_MAINFRAME_2         ICON       "theme\\google_chrome\\win\\placeholder.ico"
+IDR_MAINFRAME_3         ICON       "theme\\google_chrome\\win\\placeholder.ico"
+IDR_MAINFRAME_4         ICON       "theme\\google_chrome\\win\\placeholder.ico"
 // The SXS icon must have an index of 4, the constant is used in Chrome code to
 // identify it.
-IDR_SXS                 ICON                    "theme\\google_chrome\\win\\chrome_sxs.ico"
+IDR_SXS                 ICON       "theme\\google_chrome\\win\\chrome_sxs.ico"
 #else
-IDR_MAINFRAME           ICON                    "theme\\chromium\\win\\chromium.ico"
+IDR_MAINFRAME           ICON       "theme\\chromium\\win\\chromium.ico"
 #endif
 
 // Start a naming scheme to keep icons in order. A leading X is used to keep
@@ -55,12 +55,14 @@ IDR_MAINFRAME           ICON                    "theme\\chromium\\win\\chromium.
 // chrome_icon_resources_win.h should also be updated.
 
 #if defined(GOOGLE_CHROME_BUILD)
-IDR_X001_APP_LIST       ICON                    "theme\\google_chrome\\win\\app_list.ico"
-IDR_X002_APP_LIST_SXS   ICON                    "theme\\google_chrome\\win\\app_list_sxs.ico"
-IDR_X003_INCOGNITO      ICON                    "theme\\google_chrome\\win\\incognito.ico"
+IDR_X001_APP_LIST       ICON       "theme\\google_chrome\\win\\app_list.ico"
+IDR_X002_APP_LIST_SXS   ICON       "theme\\google_chrome\\win\\app_list_sxs.ico"
+IDR_X003_INCOGNITO      ICON       "theme\\google_chrome\\win\\incognito.ico"
+IDR_X004_DEV            ICON       "theme\\google_chrome\\win\\chrome_dev.ico"
+IDR_X005_BETA           ICON       "theme\\google_chrome\\win\\chrome_beta.ico"
 #else
-IDR_X001_APP_LIST       ICON                    "theme\\chromium\\win\\app_list.ico"
-IDR_X003_INCOGNITO      ICON                    "theme\\chromium\\win\\incognito.ico"
+IDR_X001_APP_LIST       ICON       "theme\\chromium\\win\\app_list.ico"
+IDR_X003_INCOGNITO      ICON       "theme\\chromium\\win\\incognito.ico"
 #endif
 
 

@@ -75,6 +75,10 @@ bool Configuration::ParseCommandLine(const wchar_t* command_line) {
     if (0 == ::lstrcmpi(args_[i], L"--system-level"))
       is_system_level_ = true;
 #if defined(GOOGLE_CHROME_BUILD)
+    else if (0 == ::lstrcmpi(args_[i], L"--chrome-beta"))
+      chrome_app_guid_ = google_update::kBetaAppGuid;
+    else if (0 == ::lstrcmpi(args_[i], L"--chrome-dev"))
+      chrome_app_guid_ = google_update::kDevAppGuid;
     else if (0 == ::lstrcmpi(args_[i], L"--chrome-sxs"))
       chrome_app_guid_ = google_update::kSxSAppGuid;
 #endif

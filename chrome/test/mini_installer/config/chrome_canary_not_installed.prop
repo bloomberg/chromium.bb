@@ -1,5 +1,5 @@
 {
-  "Condition": "$SUPPORTS_SXS",
+  "Condition": "'$BRAND' == 'Google Chrome'",
   "Files": {
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application": {
       "exists": false

@@ -136,8 +136,11 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         Chromium
       </message>
       <if expr="is_win">
-        <message name="IDS_SXS_SHORTCUT_NAME" desc="The Chrome short cut name for SxS channel">
-          Chromium
+        <message name="IDS_SXS_SHORTCUT_NAME" desc="Unused in Chromium builds" translateable="false">
+        </message>
+        <message name="IDS_SHORTCUT_NAME_BETA" desc="Unused in Chromium builds" translateable="false">
+        </message>
+        <message name="IDS_SHORTCUT_NAME_DEV" desc="Unused in Chromium builds" translateable="false">
         </message>
         <message name="IDS_PRODUCT_DESCRIPTION" desc="Browser description">
           Chromium is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.
@@ -859,6 +862,12 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY" desc="Name for the Chrome Apps Start Menu folder name.">
         Chromium Apps
       </message>
+      <if expr="is_win">
+        <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_BETA" desc="Unused in Chromium builds" translateable="false">
+        </message>
+        <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_DEV" desc="Unused in Chromium builds" translateable="false">
+        </message>
+      </if>
 
       <!-- Chrome Conflicts bubble -->
       <if expr="is_win">
@@ -997,14 +1006,20 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         <message name="IDS_INBOUND_MDNS_RULE_NAME" desc="The name of the firewall rule allowing inbound mDNS traffic.">
           Chromium (mDNS-In)
         </message>
-        <message name="IDS_INBOUND_MDNS_RULE_NAME_CANARY" desc="The name of the firewall rule allowing inbound mDNS traffic for canary.">
-          Chromium (mDNS-In)
+        <message name="IDS_INBOUND_MDNS_RULE_NAME_BETA" desc="Unused in Chromium builds" translateable="false">
+        </message>
+        <message name="IDS_INBOUND_MDNS_RULE_NAME_CANARY" desc="Unused in Chromium builds" translateable="false">
+        </message>
+        <message name="IDS_INBOUND_MDNS_RULE_NAME_DEV" desc="Unused in Chromium builds" translateable="false">
         </message>
         <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION" desc="The description of the firewall rule allowing inbound mDNS traffic.">
           Inbound rule for Chromium to allow mDNS traffic.
         </message>
-        <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY" desc="The description of the firewall rule allowing inbound mDNS traffic canary.">
-          Inbound rule for Chromium to allow mDNS traffic.
+        <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION_BETA" desc="Unused in Chromium builds" translateable="false">
+        </message>
+        <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY" desc="Unused in Chromium builds" translateable="false">
+        </message>
+        <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION_DEV" desc="Unused in Chromium builds" translateable="false">
         </message>
       </if>
 

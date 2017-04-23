@@ -17,6 +17,8 @@ enum : bool {
 // resource strings in chrome/installer/util/prebuild/create_string_rc.
 enum InstallConstantIndex {
   STABLE_INDEX,
+  BETA_INDEX,
+  DEV_INDEX,
   CANARY_INDEX,
   NUM_INSTALL_MODES,
 };

@@ -348,7 +348,8 @@ TEST_P(InstallStaticUtilTest, GetChromeInstallSubDirectory) {
   // The directory strings for the brand's install modes; parallel to
   // kInstallModes.
   static constexpr const wchar_t* kInstallDirs[] = {
-      L"Google\\Chrome", L"Google\\Chrome SxS",
+      L"Google\\Chrome", L"Google\\Chrome Beta", L"Google\\Chrome Dev",
+      L"Google\\Chrome SxS",
   };
 #else
   // The directory strings for the brand's install modes; parallel to
@@ -368,7 +369,8 @@ TEST_P(InstallStaticUtilTest, GetRegistryPath) {
   // The registry path strings for the brand's install modes; parallel to
   // kInstallModes.
   static constexpr const wchar_t* kRegistryPaths[] = {
-      L"Software\\Google\\Chrome", L"Software\\Google\\Chrome SxS",
+      L"Software\\Google\\Chrome", L"Software\\Google\\Chrome Beta",
+      L"Software\\Google\\Chrome Dev", L"Software\\Google\\Chrome SxS",
   };
 #else
   // The registry path strings for the brand's install modes; parallel to
@@ -389,6 +391,10 @@ TEST_P(InstallStaticUtilTest, GetUninstallRegistryPath) {
   // to kInstallModes.
   static constexpr const wchar_t* kUninstallRegistryPaths[] = {
       L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Google Chrome",
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"  // (cont'd)
+      L"Google Chrome Beta",
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"  // (cont'd)
+      L"Google Chrome Dev",
       L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"  // (cont'd)
       L"Google Chrome SxS",
   };
@@ -417,6 +423,8 @@ TEST_P(InstallStaticUtilTest, GetAppGuid) {
   // The app guids for the brand's install modes; parallel to kInstallModes.
   static constexpr const wchar_t* kAppGuids[] = {
       L"{8A69D345-D564-463c-AFF1-A69D9E530F96}",  // Google Chrome.
+      L"{8237E44A-0054-442C-B6B6-EA0509993955}",  // Google Chrome Beta.
+      L"{401C381F-E0DE-4B85-8BD8-3F3F14FBDA57}",  // Google Chrome Dev.
       L"{4EA16AC7-FD5A-47C3-875B-DBF4A2008C20}",  // Google Chrome SxS (Canary).
   };
   static_assert(arraysize(kAppGuids) == NUM_INSTALL_MODES,
@@ -431,7 +439,7 @@ TEST_P(InstallStaticUtilTest, GetBaseAppId) {
 #if defined(GOOGLE_CHROME_BUILD)
   // The base app ids for the brand's install modes; parallel to kInstallModes.
   static constexpr const wchar_t* kBaseAppIds[] = {
-      L"Chrome", L"ChromeCanary",
+      L"Chrome", L"ChromeBeta", L"ChromeDev", L"ChromeCanary",
   };
 #else
   // The base app ids for the brand's install modes; parallel to kInstallModes.
@@ -512,6 +520,16 @@ TEST_P(InstallStaticUtilTest, GetChromeChannelName) {
 INSTANTIATE_TEST_CASE_P(Stable,
                         InstallStaticUtilTest,
                         testing::Combine(testing::Values(STABLE_INDEX),
+                                         testing::Values("user", "system")));
+// Beta supports user and system levels.
+INSTANTIATE_TEST_CASE_P(Beta,
+                        InstallStaticUtilTest,
+                        testing::Combine(testing::Values(BETA_INDEX),
+                                         testing::Values("user", "system")));
+// Dev supports user and system levels.
+INSTANTIATE_TEST_CASE_P(Dev,
+                        InstallStaticUtilTest,
+                        testing::Combine(testing::Values(DEV_INDEX),
                                          testing::Values("user", "system")));
 // Canary is only at user level.
 INSTANTIATE_TEST_CASE_P(Canary,

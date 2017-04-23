@@ -225,6 +225,18 @@ INSTANTIATE_TEST_CASE_P(
     DefaultBrowserBeaconTest,
     testing::Combine(testing::Values(install_static::STABLE_INDEX),
                      testing::Values("user", "system")));
+// Beta supports user and system levels.
+INSTANTIATE_TEST_CASE_P(
+    Beta,
+    DefaultBrowserBeaconTest,
+    testing::Combine(testing::Values(install_static::BETA_INDEX),
+                     testing::Values("user", "system")));
+// Dev supports user and system levels.
+INSTANTIATE_TEST_CASE_P(
+    Dev,
+    DefaultBrowserBeaconTest,
+    testing::Combine(testing::Values(install_static::DEV_INDEX),
+                     testing::Values("user", "system")));
 // Canary is only at user level.
 INSTANTIATE_TEST_CASE_P(
     Canary,

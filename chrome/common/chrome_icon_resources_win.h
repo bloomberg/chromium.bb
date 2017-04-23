@@ -30,6 +30,12 @@ enum {
 
   // The Chrome incognito icon.
   kIncognitoIndex = 7,
+
+  // The Chrome Dev application icon.
+  kDevApplicationIndex = 8,
+
+  // The Chrome Beta application icon.
+  kBetaApplicationIndex = 9,
 #else   // defined(GOOGLE_CHROME_BUILD)
   // The Chromium App Launcher icon.
   kAppLauncherIndex = 1,

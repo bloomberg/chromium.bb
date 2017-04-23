@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+
 #define IDR_MAINFRAME                   101
 
 #define IDI_THROBBER_01                 102
@@ -29,5 +31,9 @@
 #define IDI_THROBBER_23                 124
 #define IDI_THROBBER_24                 125
 #define IDR_SXS                         126
+#define IDR_X004_DEV                    127
+#define IDR_X005_BETA                   128
+
+// clang-format on
 
 // Values around 1600 are used by installer/setup/build/
