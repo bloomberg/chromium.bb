@@ -142,6 +142,25 @@ class LayerTestCommon {
       return ptr;
     }
 
+    template <typename T,
+              typename A,
+              typename B,
+              typename C,
+              typename D,
+              typename E>
+    T* AddChild(LayerImpl* parent,
+                const A& a,
+                const B& b,
+                const C& c,
+                const D& d,
+                const E& e) {
+      std::unique_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
+                                           layer_impl_id_++, a, b, c, d, e);
+      T* ptr = layer.get();
+      parent->test_properties()->AddChild(std::move(layer));
+      return ptr;
+    }
+
     void CalcDrawProps(const gfx::Size& viewport_size);
     void AppendQuadsWithOcclusion(LayerImpl* layer_impl,
                                   const gfx::Rect& occluded);

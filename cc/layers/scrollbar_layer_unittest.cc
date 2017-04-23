@@ -26,6 +26,7 @@
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_scrollbar.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/mock_occlusion_tracker.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
@@ -760,6 +761,44 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
       host_impl->active_tree()->property_trees()->effect_tree.Node(
           scrollbar_layer->effect_tree_index());
   EXPECT_EQ(node->opacity, 1.f);
+}
+
+TEST_F(ScrollbarLayerTest, SubPixelCanScrollOrientation) {
+  gfx::Size viewport_size(980, 980);
+
+  LayerTestCommon::LayerImplTest impl;
+
+  LayerImpl* clip_layer = impl.AddChildToRoot<LayerImpl>();
+  LayerImpl* scroll_layer = impl.AddChild<LayerImpl>(clip_layer);
+
+  scroll_layer->SetScrollClipLayer(clip_layer->id());
+  scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
+
+  const int kTrackStart = 0;
+  const int kThumbThickness = 10;
+  const bool kIsLeftSideVerticalScrollbar = false;
+  const bool kIsOverlayScrollbar = false;
+
+  SolidColorScrollbarLayerImpl* scrollbar_layer =
+      impl.AddChild<SolidColorScrollbarLayerImpl>(
+          scroll_layer, HORIZONTAL, kThumbThickness, kTrackStart,
+          kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
+
+  scrollbar_layer->SetScrollElementId(scroll_layer->element_id());
+  clip_layer->SetBounds(gfx::Size(980, 980));
+  scroll_layer->SetBounds(gfx::Size(980, 980));
+
+  impl.CalcDrawProps(viewport_size);
+
+  // Fake clip layer length to scrollbar to mock rounding error.
+  scrollbar_layer->SetClipLayerLength(979.999939f);
+
+  EXPECT_FALSE(scrollbar_layer->CanScrollOrientation());
+
+  // Fake clip layer length to scrollable.
+  scrollbar_layer->SetClipLayerLength(979.0f);
+
+  EXPECT_TRUE(scrollbar_layer->CanScrollOrientation());
 }
 
 class ScrollbarLayerSolidColorThumbTest : public testing::Test {

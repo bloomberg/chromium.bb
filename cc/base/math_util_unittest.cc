@@ -457,9 +457,9 @@ TEST(MathUtilTest, RoundDownUnderflow) {
 }
 
 #define EXPECT_SIMILAR_VALUE(x, y) \
-  EXPECT_TRUE(MathUtil::IsNearlyTheSameForTesting(x, y))
+  EXPECT_TRUE(MathUtil::IsFloatNearlyTheSame(x, y))
 #define EXPECT_DISSIMILAR_VALUE(x, y) \
-  EXPECT_FALSE(MathUtil::IsNearlyTheSameForTesting(x, y))
+  EXPECT_FALSE(MathUtil::IsFloatNearlyTheSame(x, y))
 
 // Arbitrary point that shouldn't be different from zero.
 static const float zeroish = 1.0e-11f;

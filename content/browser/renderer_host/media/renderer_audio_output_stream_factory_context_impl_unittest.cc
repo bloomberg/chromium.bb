@@ -185,7 +185,7 @@ class MockAudioOutputStream : public media::AudioOutputStream,
       for (int frame = 0; frame < params.frames_per_buffer(); ++frame) {
         // Using EXPECT here causes massive log spam in case of a broken test,
         // and ASSERT causes it to hang, so we use CHECK.
-        CHECK(cc::MathUtil::IsNearlyTheSameForTesting(
+        CHECK(cc::MathUtil::IsFloatNearlyTheSame(
             expected_buffer->channel(0)[frame], dest->channel(0)[frame]))
             << "Got " << dest->channel(0)[frame] << ", expected "
             << expected_buffer->channel(0)[frame];

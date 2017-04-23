@@ -66,7 +66,12 @@ bool ScrollbarLayerImplBase::CanScrollOrientation() const {
       layer_tree_impl()->LayerByElementId(scroll_element_id_);
   if (!scroll_layer)
     return false;
+
   return scroll_layer->user_scrollable(orientation()) &&
+         // Ensure clip_layer_length_ smaller than scroll_layer_length_ not
+         // caused by floating error.
+         !MathUtil::IsFloatNearlyTheSame(clip_layer_length_,
+                                         scroll_layer_length_) &&
          clip_layer_length_ < scroll_layer_length_;
 }
 

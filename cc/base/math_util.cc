@@ -817,7 +817,7 @@ ScopedSubnormalFloatDisabler::~ScopedSubnormalFloatDisabler() {
 #endif
 }
 
-bool MathUtil::IsNearlyTheSameForTesting(float left, float right) {
+bool MathUtil::IsFloatNearlyTheSame(float left, float right) {
   return IsNearlyTheSame(left, right);
 }
 
