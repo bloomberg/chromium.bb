@@ -1391,8 +1391,6 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     const tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
     const uint16_t eob = p->eobs[block];
 
-    int64_t tmp;
-
     assert(cpi != NULL);
     assert(tx_size_wide_log2[0] == tx_size_high_log2[0]);
 
@@ -1409,11 +1407,11 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         for (j = 0; j < bsh; j++)
           for (i = 0; i < bsw; i++)
             pred8[j * bsw + i] = pred[j * pred_stride + i];
-        tmp = av1_daala_dist(src, src_stride, pred8, bsw, bsw, bsh, qm,
-                             use_activity_masking, x->qindex);
+        *out_sse = av1_daala_dist(src, src_stride, pred8, bsw, bsw, bsh, qm,
+                                  use_activity_masking, x->qindex);
       } else {
-        tmp = av1_daala_dist(src, src_stride, dst, dst_stride, bsw, bsh, qm,
-                             use_activity_masking, x->qindex);
+        *out_sse = av1_daala_dist(src, src_stride, dst, dst_stride, bsw, bsh,
+                                  qm, use_activity_masking, x->qindex);
       }
     } else
 #endif  // CONFIG_DAALA_DIST
@@ -1422,25 +1420,26 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       const int diff_idx = (blk_row * diff_stride + blk_col)
                            << tx_size_wide_log2[0];
       const int16_t *diff = &p->src_diff[diff_idx];
-      tmp = sum_squares_visible(xd, plane, diff, diff_stride, blk_row, blk_col,
-                                plane_bsize, tx_bsize);
+      *out_sse = sum_squares_visible(xd, plane, diff, diff_stride, blk_row,
+                                     blk_col, plane_bsize, tx_bsize);
 #if CONFIG_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-        tmp = ROUND_POWER_OF_TWO(tmp, (xd->bd - 8) * 2);
+        *out_sse = ROUND_POWER_OF_TWO(*out_sse, (xd->bd - 8) * 2);
 #endif  // CONFIG_HIGHBITDEPTH
     }
-    *out_sse = tmp * 16;
+    *out_sse *= 16;
 
     if (eob) {
       if (output_status == OUTPUT_HAS_DECODED_PIXELS) {
 #if CONFIG_DAALA_DIST
         if (plane == 0 && bsw >= 8 && bsh >= 8)
-          tmp = av1_daala_dist(src, src_stride, dst, dst_stride, bsw, bsh, qm,
-                               use_activity_masking, x->qindex);
+          *out_dist = av1_daala_dist(src, src_stride, dst, dst_stride, bsw, bsh,
+                                     qm, use_activity_masking, x->qindex);
         else
 #endif  // CONFIG_DAALA_DIST
-          tmp = pixel_sse(cpi, xd, plane, src, src_stride, dst, dst_stride,
-                          blk_row, blk_col, plane_bsize, tx_bsize);
+          *out_dist =
+              pixel_sse(cpi, xd, plane, src, src_stride, dst, dst_stride,
+                        blk_row, blk_col, plane_bsize, tx_bsize);
       } else {
 #if CONFIG_HIGHBITDEPTH
         uint8_t *recon;
@@ -1478,8 +1477,8 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
 #if CONFIG_DAALA_DIST
         if (plane == 0 && bsw >= 8 && bsh >= 8) {
-          tmp = av1_daala_dist(src, src_stride, recon, MAX_TX_SIZE, bsw, bsh,
-                               qm, use_activity_masking, x->qindex);
+          *out_dist = av1_daala_dist(src, src_stride, recon, MAX_TX_SIZE, bsw,
+                                     bsh, qm, use_activity_masking, x->qindex);
         } else {
           if (plane == 0) {
             // Save decoded pixels for inter block in pd->pred to avoid
@@ -1496,14 +1495,17 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                 pred[j * pred_stride + i] = recon[j * MAX_TX_SIZE + i];
           }
 #endif  // CONFIG_DAALA_DIST
-          tmp = pixel_sse(cpi, xd, plane, src, src_stride, recon, MAX_TX_SIZE,
-                          blk_row, blk_col, plane_bsize, tx_bsize);
+          *out_dist =
+              pixel_sse(cpi, xd, plane, src, src_stride, recon, MAX_TX_SIZE,
+                        blk_row, blk_col, plane_bsize, tx_bsize);
 #if CONFIG_DAALA_DIST
         }
 #endif  // CONFIG_DAALA_DIST
       }
+      *out_dist *= 16;
+    } else {
+      *out_dist = *out_sse;
     }
-    *out_dist = (int64_t)tmp * 16;
   }
 }
 
