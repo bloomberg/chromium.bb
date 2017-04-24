@@ -1286,19 +1286,16 @@ class MetaBuildWrapper(object):
       return 0
 
     gn_inp = {}
-    gn_inp['files'] = sorted(['//' + f for f in inp['files']
-                              if not f.startswith('//')])
+    gn_inp['files'] = ['//' + f for f in inp['files'] if not f.startswith('//')]
 
     isolate_map = self.ReadIsolateMap()
     err, gn_inp['additional_compile_targets'] = self.MapTargetsToLabels(
         isolate_map, inp['additional_compile_targets'])
-    gn_inp['additional_compile_targets'].sort()
     if err:
       raise MBErr(err)
 
     err, gn_inp['test_targets'] = self.MapTargetsToLabels(
         isolate_map, inp['test_targets'])
-    gn_inp['test_targets'].sort()
     if err:
       raise MBErr(err)
     labels_to_targets = {}
