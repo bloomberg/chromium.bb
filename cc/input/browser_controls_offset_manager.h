@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/layers/layer_impl.h"
@@ -20,8 +19,7 @@ namespace cc {
 class BrowserControlsOffsetManagerClient;
 
 // Manages the position of the browser controls.
-class CC_EXPORT BrowserControlsOffsetManager
-    : public base::SupportsWeakPtr<BrowserControlsOffsetManager> {
+class CC_EXPORT BrowserControlsOffsetManager {
  public:
   enum AnimationDirection { NO_ANIMATION, SHOWING_CONTROLS, HIDING_CONTROLS };
 
