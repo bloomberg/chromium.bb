@@ -159,7 +159,7 @@ class CORE_EXPORT FrameLoader final {
   void Detach();
 
   void FinishedParsing();
-  void DidFinishNavigation();
+  void CheckCompleted();
 
   // This prepares the FrameLoader for the next commit. It will dispatch unload
   // events, abort XHR requests and detach the document. Returns true if the

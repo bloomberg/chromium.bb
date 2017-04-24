@@ -51,8 +51,10 @@ void HTMLImportTreeRoot::StateWillChange() {
 void HTMLImportTreeRoot::StateDidChange() {
   HTMLImport::StateDidChange();
 
-  if (GetState().IsReady())
-    document_->CheckCompleted();
+  if (!GetState().IsReady())
+    return;
+  if (LocalFrame* frame = document_->GetFrame())
+    frame->Loader().CheckCompleted();
 }
 
 void HTMLImportTreeRoot::ScheduleRecalcState() {

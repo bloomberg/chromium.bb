@@ -613,11 +613,10 @@ void FrameFetchContext::RecordLoadingActivity(
 }
 
 void FrameFetchContext::DidLoadResource(Resource* resource) {
-  if (!GetDocument())
-    return;
-  FirstMeaningfulPaintDetector::From(*GetDocument()).CheckNetworkStable();
   if (resource->IsLoadEventBlockingResourceType())
-    GetDocument()->CheckCompleted();
+    GetFrame()->Loader().CheckCompleted();
+  if (GetDocument())
+    FirstMeaningfulPaintDetector::From(*GetDocument()).CheckNetworkStable();
 }
 
 void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {

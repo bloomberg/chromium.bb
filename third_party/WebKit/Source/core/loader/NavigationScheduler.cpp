@@ -507,8 +507,6 @@ void NavigationScheduler::Schedule(ScheduledNavigation* redirect) {
 
   Cancel();
   redirect_ = redirect;
-  if (redirect_->IsLocationChange())
-    frame_->GetDocument()->SuppressLoadEvent();
   StartTimer();
 }
 
