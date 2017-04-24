@@ -392,12 +392,11 @@ class SdchBrowserTest : public InProcessBrowserTest,
     int fetches = -1;
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&SdchBrowserTest::GetNumberOfDictionaryFetchesOnIOThread,
-                   base::Unretained(this),
-                   base::Unretained(profile->GetRequestContext()),
-                   &fetches),
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&SdchBrowserTest::GetNumberOfDictionaryFetchesOnIOThread,
+                       base::Unretained(this),
+                       base::Unretained(profile->GetRequestContext()),
+                       &fetches),
         run_loop.QuitClosure());
     run_loop.Run();
     DCHECK_NE(-1, fetches);
@@ -424,8 +423,8 @@ class SdchBrowserTest : public InProcessBrowserTest,
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&SdchBrowserTest::NukeSdchDictionariesOnIOThread,
-                   base::RetainedRef(url_request_context_getter_)),
+        base::BindOnce(&SdchBrowserTest::NukeSdchDictionariesOnIOThread,
+                       base::RetainedRef(url_request_context_getter_)),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -457,7 +456,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &SdchBrowserTest::SubscribeToSdchNotifications,
             base::Unretained(this),
             base::RetainedRef(second_browser_->profile()->GetRequestContext()),
@@ -479,11 +478,11 @@ class SdchBrowserTest : public InProcessBrowserTest,
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&SdchBrowserTest::SubscribeToSdchNotifications,
-                   base::Unretained(this),
-                   base::RetainedRef(
-                       incognito_browser_->profile()->GetRequestContext()),
-                   &sdch_enabled),
+        base::BindOnce(&SdchBrowserTest::SubscribeToSdchNotifications,
+                       base::Unretained(this),
+                       base::RetainedRef(
+                           incognito_browser_->profile()->GetRequestContext()),
+                       &sdch_enabled),
         run_loop.QuitClosure());
     run_loop.Run();
     DCHECK(sdch_enabled);
@@ -500,11 +499,9 @@ class SdchBrowserTest : public InProcessBrowserTest,
     base::RunLoop run_loop;
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&SdchResponseHandler::WaitAndGetRequestVector,
-                   base::Unretained(&response_handler_),
-                   num_requests,
-                   run_loop.QuitClosure(),
-                   result));
+        base::BindOnce(&SdchResponseHandler::WaitAndGetRequestVector,
+                       base::Unretained(&response_handler_), num_requests,
+                       run_loop.QuitClosure(), result));
     run_loop.Run();
   }
 
@@ -514,9 +511,9 @@ class SdchBrowserTest : public InProcessBrowserTest,
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&SdchResponseHandler::set_cache_sdch_response,
-                   base::Unretained(&response_handler_),
-                   cache_sdch_response),
+        base::BindOnce(&SdchResponseHandler::set_cache_sdch_response,
+                       base::Unretained(&response_handler_),
+                       cache_sdch_response),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -628,10 +625,10 @@ class SdchBrowserTest : public InProcessBrowserTest,
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&SdchBrowserTest::SubscribeToSdchNotifications,
-                   base::Unretained(this),
-                   base::RetainedRef(url_request_context_getter_),
-                   &sdch_enabled_),
+        base::BindOnce(&SdchBrowserTest::SubscribeToSdchNotifications,
+                       base::Unretained(this),
+                       base::RetainedRef(url_request_context_getter_),
+                       &sdch_enabled_),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -640,10 +637,9 @@ class SdchBrowserTest : public InProcessBrowserTest,
     CHECK(test_server_.ShutdownAndWaitUntilComplete());
 
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&SdchBrowserTest::UnsubscribeFromAllSdchNotifications,
-                   base::Unretained(this)));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&SdchBrowserTest::UnsubscribeFromAllSdchNotifications,
+                       base::Unretained(this)));
   }
 
   // Check if SDCH is enabled, and if so subscribe an observer to the

@@ -52,10 +52,8 @@ void OnDnsProbeFinishedOnIOThread(
     DnsProbeStatus result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, result));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(callback, result));
 }
 
 // Can only access g_browser_process->io_thread() from the browser thread,
@@ -193,12 +191,11 @@ void NetErrorTabHelper::StartDnsProbe() {
   DVLOG(1) << "Starting DNS probe.";
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&StartDnsProbeOnIOThread,
-                 base::Bind(&NetErrorTabHelper::OnDnsProbeFinished,
-                            weak_factory_.GetWeakPtr()),
-                 g_browser_process->io_thread()));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&StartDnsProbeOnIOThread,
+                     base::Bind(&NetErrorTabHelper::OnDnsProbeFinished,
+                                weak_factory_.GetWeakPtr()),
+                     g_browser_process->io_thread()));
 }
 
 void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {

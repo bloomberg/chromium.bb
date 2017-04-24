@@ -111,7 +111,7 @@ void ReportInvalidReferrerSend(const GURL& target_url,
   if (!target_url.SchemeIsHTTPOrHTTPS())
     return;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ReportInvalidReferrerSendOnUI));
+                          base::BindOnce(&ReportInvalidReferrerSendOnUI));
   base::debug::DumpWithoutCrashing();
   NOTREACHED();
 }
@@ -416,10 +416,9 @@ bool ChromeNetworkDelegate::OnCanGetCookies(
   if (info) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&TabSpecificContentSettings::CookiesRead,
-                   info->GetWebContentsGetterForRequest(),
-                   request.url(), request.first_party_for_cookies(),
-                   cookie_list, !allow));
+        base::BindOnce(&TabSpecificContentSettings::CookiesRead,
+                       info->GetWebContentsGetterForRequest(), request.url(),
+                       request.first_party_for_cookies(), cookie_list, !allow));
   }
 
   return allow;
@@ -439,10 +438,10 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
   if (info) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&TabSpecificContentSettings::CookieChanged,
-                   info->GetWebContentsGetterForRequest(),
-                   request.url(), request.first_party_for_cookies(),
-                   cookie_line, *options, !allow));
+        base::BindOnce(&TabSpecificContentSettings::CookieChanged,
+                       info->GetWebContentsGetterForRequest(), request.url(),
+                       request.first_party_for_cookies(), cookie_line, *options,
+                       !allow));
   }
 
   return allow;

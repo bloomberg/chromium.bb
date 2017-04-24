@@ -46,7 +46,7 @@ void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus,
 
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          base::Bind(&CRLSetFetcher::DoInitialLoadFromDisk, this))) {
+          base::BindOnce(&CRLSetFetcher::DoInitialLoadFromDisk, this))) {
     NOTREACHED();
   }
 }
@@ -59,7 +59,7 @@ void CRLSetFetcher::DeleteFromDisk(const base::FilePath& path) {
   SetCRLSetFilePath(path);
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          base::Bind(&CRLSetFetcher::DoDeleteFromDisk, this))) {
+          base::BindOnce(&CRLSetFetcher::DoDeleteFromDisk, this))) {
     NOTREACHED();
   }
 }
@@ -76,12 +76,9 @@ void CRLSetFetcher::DoInitialLoadFromDisk() {
 
   // Get updates, advertising the sequence number of the CRL set that we just
   // loaded, if any.
-  if (!BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(
-              &CRLSetFetcher::RegisterComponent,
-              this,
-              sequence_of_loaded_crl))) {
+  if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                               base::BindOnce(&CRLSetFetcher::RegisterComponent,
+                                              this, sequence_of_loaded_crl))) {
     NOTREACHED();
   }
 }
@@ -106,10 +103,9 @@ void CRLSetFetcher::LoadFromDisk(base::FilePath path,
 
   VLOG(1) << "Loaded " << crl_set_bytes.size() << " bytes of CRL set from disk";
 
-  if (!BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &CRLSetFetcher::SetCRLSetIfNewer, this, *out_crl_set))) {
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                               base::BindOnce(&CRLSetFetcher::SetCRLSetIfNewer,
+                                              this, *out_crl_set))) {
     NOTREACHED();
   }
 }
@@ -237,8 +233,7 @@ bool CRLSetFetcher::DoInstall(const base::DictionaryValue& manifest,
 
   if (!BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &CRLSetFetcher::SetCRLSetIfNewer, this, crl_set_))) {
+          base::BindOnce(&CRLSetFetcher::SetCRLSetIfNewer, this, crl_set_))) {
     NOTREACHED();
   }
 

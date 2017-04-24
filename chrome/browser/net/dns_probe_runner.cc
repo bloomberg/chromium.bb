@@ -97,11 +97,9 @@ void DnsProbeRunner::RunProbe(const base::Closure& callback) {
     // If the DnsTransactionFactory is NULL, then the DnsConfig is invalid, so
     // the runner can't run a transaction.  Return UNKNOWN asynchronously.
     result_ = UNKNOWN;
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&DnsProbeRunner::CallCallback,
-                   weak_factory_.GetWeakPtr()));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(&DnsProbeRunner::CallCallback,
+                                           weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -129,11 +127,9 @@ void DnsProbeRunner::OnTransactionComplete(
   result_ = EvaluateResponse(net_error, response);
   transaction_.reset();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&DnsProbeRunner::CallCallback,
-                 weak_factory_.GetWeakPtr()));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&DnsProbeRunner::CallCallback,
+                                         weak_factory_.GetWeakPtr()));
 }
 
 void DnsProbeRunner::CallCallback() {

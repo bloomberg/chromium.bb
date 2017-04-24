@@ -241,8 +241,8 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&LinkDoctorInterceptor::RequestCreated,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&LinkDoctorInterceptor::RequestCreated,
+                       weak_factory_.GetWeakPtr()));
 
     base::FilePath root_http;
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
@@ -449,9 +449,9 @@ class ErrorPageTest : public InProcessBrowserTest {
     UIThreadSearchTermsData search_terms_data(browser()->profile());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&InstallMockInterceptors,
-                   GURL(search_terms_data.GoogleBaseURLValue()),
-                   base::Passed(&owned_interceptor)));
+        base::BindOnce(&InstallMockInterceptors,
+                       GURL(search_terms_data.GoogleBaseURLValue()),
+                       base::Passed(&owned_interceptor)));
   }
 
   // Returns a GURL that results in a DNS error.
@@ -979,9 +979,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
       browser()->profile()->GetRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InterceptNetworkTransactions,
-                 base::RetainedRef(url_request_context_getter),
-                 net::ERR_FAILED));
+      base::BindOnce(&InterceptNetworkTransactions,
+                     base::RetainedRef(url_request_context_getter),
+                     net::ERR_FAILED));
 
   // With no navigation corrections to load, there's only one navigation.
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -1061,10 +1061,9 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
     // Ownership of the interceptor is passed to an object the IO thread, but a
     // pointer is kept in the test fixture.  As soon as anything calls
     // URLRequestFilter::ClearHandlers(), |interceptor_| can become invalid.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&AddInterceptorForURL, url,
-                   base::Passed(&owned_interceptor)));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(&AddInterceptorForURL, url,
+                                           base::Passed(&owned_interceptor)));
   }
 
   void NavigateToURLAndWaitForTitle(const GURL& url,
@@ -1196,13 +1195,13 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ErrorPageNavigationCorrectionsFailTest::AddFilters));
+        base::BindOnce(&ErrorPageNavigationCorrectionsFailTest::AddFilters));
   }
 
   void TearDownOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ErrorPageNavigationCorrectionsFailTest::RemoveFilters));
+        base::BindOnce(&ErrorPageNavigationCorrectionsFailTest::RemoveFilters));
   }
 
  private:
@@ -1261,9 +1260,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
       browser()->profile()->GetRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InterceptNetworkTransactions,
-                 base::RetainedRef(url_request_context_getter),
-                 net::ERR_CONNECTION_FAILED));
+      base::BindOnce(&InterceptNetworkTransactions,
+                     base::RetainedRef(url_request_context_getter),
+                     net::ERR_CONNECTION_FAILED));
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 2);
@@ -1456,15 +1455,14 @@ class ErrorPageForIDNTest : public InProcessBrowserTest {
     // Clear AcceptLanguages to force punycode decoding.
     browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages,
                                                 std::string());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ErrorPageForIDNTest::AddFilters));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(&ErrorPageForIDNTest::AddFilters));
   }
 
   void TearDownOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ErrorPageForIDNTest::RemoveFilters));
+        base::BindOnce(&ErrorPageForIDNTest::RemoveFilters));
   }
 
  private:

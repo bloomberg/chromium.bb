@@ -567,7 +567,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &PredictorBrowserTest::StartInterceptingHostWithCreateJobCallback,
             cross_site_test_server()->base_url(),
             base::Bind(&CreateEmptyBodyRequestJob)));
@@ -577,8 +577,8 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&PredictorBrowserTest::StopInterceptingHost,
-                   cross_site_test_server()->base_url()));
+        base::BindOnce(&PredictorBrowserTest::StopInterceptingHost,
+                       cross_site_test_server()->base_url()));
   }
 
   void TearDownOnMainThread() override {
@@ -602,17 +602,18 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void LearnAboutInitialNavigation(const GURL& url) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&Predictor::LearnAboutInitialNavigation,
-                                       base::Unretained(predictor()), url));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&Predictor::LearnAboutInitialNavigation,
+                       base::Unretained(predictor()), url));
     content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
 
   void LearnFromNavigation(const GURL& referring_url, const GURL& target_url) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&Predictor::LearnFromNavigation,
-                   base::Unretained(predictor()), referring_url, target_url));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(&Predictor::LearnFromNavigation,
+                                           base::Unretained(predictor()),
+                                           referring_url, target_url));
     content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
 
@@ -637,8 +638,8 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PredictorBrowserTest::FloodResolveRequests,
-                   base::Unretained(this), names));
+        base::BindOnce(&PredictorBrowserTest::FloodResolveRequests,
+                       base::Unretained(this), names));
   }
 
   void FloodResolveRequests(const std::vector<GURL>& names) {
@@ -663,8 +664,9 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PredictorBrowserTest::InstallPredictorObserverOnIOThread,
-                   base::Unretained(this), base::Unretained(predictor())),
+        base::BindOnce(
+            &PredictorBrowserTest::InstallPredictorObserverOnIOThread,
+            base::Unretained(this), base::Unretained(predictor())),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -692,8 +694,8 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PredictorBrowserTest::FlushClientSockets,
-                   base::Unretained(this)),
+        base::BindOnce(&PredictorBrowserTest::FlushClientSockets,
+                       base::Unretained(this)),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -724,8 +726,8 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PredictorBrowserTest::ExpectUrlRequestedFromPredictor,
-                   base::Unretained(this), url));
+        base::BindOnce(&PredictorBrowserTest::ExpectUrlRequestedFromPredictor,
+                       base::Unretained(this), url));
   }
 
   void ExpectUrlRequestedFromPredictor(const GURL& url) {
@@ -734,15 +736,15 @@ class PredictorBrowserTest : public InProcessBrowserTest {
 
   void DiscardAllResultsOnUIThread() {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&Predictor::DiscardAllResults,
-                                       base::Unretained(predictor())));
+                            base::BindOnce(&Predictor::DiscardAllResults,
+                                           base::Unretained(predictor())));
   }
 
   void ExpectValidPeakPendingLookupsOnUI(size_t num_names_requested) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PredictorBrowserTest::ExpectValidPeakPendingLookups,
-                   base::Unretained(this), num_names_requested));
+        base::BindOnce(&PredictorBrowserTest::ExpectValidPeakPendingLookups,
+                       base::Unretained(this), num_names_requested));
   }
 
   void ExpectValidPeakPendingLookups(size_t num_names_requested) {
@@ -970,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DontPredictBasedOnSubresources) {
   // embedded_test_server_.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &PredictorBrowserTest::StartInterceptingHostWithCreateJobCallback,
           redirector_url,
           base::Bind(
@@ -1439,7 +1441,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DoNotEvictRecentlyUsed) {
   base::RunLoop run_loop;
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&Predictor::PredictorGetHtmlInfo, predictor(), &html),
+      base::BindOnce(&Predictor::PredictorGetHtmlInfo, predictor(), &html),
       run_loop.QuitClosure());
   run_loop.Run();
 

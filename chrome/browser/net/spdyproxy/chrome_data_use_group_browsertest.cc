@@ -57,16 +57,16 @@ class ChromeDataUseGroupBrowserTest : public InProcessBrowserTest {
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromeDataUseGroupBrowserTest::SetUpOnIOThread,
-             base::Unretained(this)));
+        base::BindOnce(&ChromeDataUseGroupBrowserTest::SetUpOnIOThread,
+                       base::Unretained(this)));
     RunAllPendingInMessageLoop(content::BrowserThread::IO);
   }
 
   void TearDownOnMainThread() override {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromeDataUseGroupBrowserTest::TearDownOnIOThread,
-             base::Unretained(this)));
+        base::BindOnce(&ChromeDataUseGroupBrowserTest::TearDownOnIOThread,
+                       base::Unretained(this)));
     RunAllPendingInMessageLoop(content::BrowserThread::IO);
   }
 

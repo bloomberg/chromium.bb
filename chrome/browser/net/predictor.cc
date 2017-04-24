@@ -161,10 +161,10 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&Predictor::FinalizeInitializationOnIOThread,
-                 base::Unretained(this), urls,
-                 base::Passed(std::move(referral_list)), io_thread,
-                 profile_io_data));
+      base::BindOnce(&Predictor::FinalizeInitializationOnIOThread,
+                     base::Unretained(this), urls,
+                     base::Passed(std::move(referral_list)), io_thread,
+                     profile_io_data));
 }
 
 void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
@@ -234,8 +234,8 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&Predictor::Resolve, base::Unretained(this),
-                 CanonicalizeUrl(url), motivation));
+      base::BindOnce(&Predictor::Resolve, base::Unretained(this),
+                     CanonicalizeUrl(url), motivation));
 }
 
 void Predictor::PreconnectUrlAndSubresources(const GURL& url,
@@ -317,7 +317,7 @@ void Predictor::DiscardAllResultsAndClearPrefsOnUIThread() {
   // into the profile, but doing so would crash before this point anyways.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&Predictor::DiscardAllResults, base::Unretained(this)));
+      base::BindOnce(&Predictor::DiscardAllResults, base::Unretained(this)));
   ClearPrefsOnUIThread();
 }
 
@@ -341,9 +341,8 @@ void Predictor::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ui_weak_factory_->InvalidateWeakPtrs();
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&Predictor::Shutdown, base::Unretained(this)));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&Predictor::Shutdown, base::Unretained(this)));
 }
 
 // ---------------------- End UI methods. -------------------------------------
@@ -665,10 +664,9 @@ void Predictor::DnsPrefetchMotivatedList(
     ResolveList(urls, motivation);
   } else {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&Predictor::ResolveList, base::Unretained(this),
-                   urls, motivation));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&Predictor::ResolveList, base::Unretained(this), urls,
+                       motivation));
   }
 }
 
@@ -695,12 +693,12 @@ void Predictor::SaveStateForNextStartup() {
   // ShutdownOnUIThread, because the caller has a valid profile.
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&Predictor::WriteDnsPrefetchState, base::Unretained(this),
-                 startup_list_raw, referral_list_raw),
-      base::Bind(&Predictor::UpdatePrefsOnUIThread,
-                 ui_weak_factory_->GetWeakPtr(),
-                 base::Passed(std::move(startup_list)),
-                 base::Passed(std::move(referral_list))));
+      base::BindOnce(&Predictor::WriteDnsPrefetchState, base::Unretained(this),
+                     startup_list_raw, referral_list_raw),
+      base::BindOnce(&Predictor::UpdatePrefsOnUIThread,
+                     ui_weak_factory_->GetWeakPtr(),
+                     base::Passed(std::move(startup_list)),
+                     base::Passed(std::move(referral_list))));
 }
 
 void Predictor::UpdatePrefsOnUIThread(
@@ -734,9 +732,9 @@ void Predictor::PreconnectUrl(const GURL& url,
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&Predictor::PreconnectUrlOnIOThread, base::Unretained(this),
-                   url, first_party_for_cookies, motivation, allow_credentials,
-                   count));
+        base::BindOnce(&Predictor::PreconnectUrlOnIOThread,
+                       base::Unretained(this), url, first_party_for_cookies,
+                       motivation, allow_credentials, count));
   }
 }
 
@@ -803,10 +801,9 @@ void Predictor::PredictFrameSubresources(const GURL& url,
     PrepareFrameSubresources(url, first_party_for_cookies);
   } else {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&Predictor::PrepareFrameSubresources,
-                   base::Unretained(this), url, first_party_for_cookies));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&Predictor::PrepareFrameSubresources,
+                       base::Unretained(this), url, first_party_for_cookies));
   }
 }
 

@@ -47,8 +47,8 @@ void OverrideEffectiveConnectionTypeAndWait(net::EffectiveConnectionType type) {
   base::RunLoop run_loop;
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&OverrideEffectiveConnectionTypeOnIO, type,
-                 g_browser_process->io_thread()),
+      base::BindOnce(&OverrideEffectiveConnectionTypeOnIO, type,
+                     g_browser_process->io_thread()),
       run_loop.QuitClosure());
   run_loop.Run();
 }
@@ -60,7 +60,8 @@ void OverrideRTTsAndWait(base::TimeDelta rtt) {
   base::RunLoop run_loop;
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&OverrideRTTsAndWaitOnIO, rtt, g_browser_process->io_thread()),
+      base::BindOnce(&OverrideRTTsAndWaitOnIO, rtt,
+                     g_browser_process->io_thread()),
       run_loop.QuitClosure());
   run_loop.Run();
 }

@@ -85,8 +85,8 @@ void ForwardRequestStatus(
   if (info->GetAssociatedRenderFrame(&process_id, &render_frame_id)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&NotifyEPMRequestStatus, status, profile_id,
-                   request->identifier(), process_id, render_frame_id));
+        base::BindOnce(&NotifyEPMRequestStatus, status, profile_id,
+                       request->identifier(), process_id, render_frame_id));
   }
 }
 

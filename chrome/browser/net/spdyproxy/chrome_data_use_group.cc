@@ -47,7 +47,7 @@ void ChromeDataUseGroup::Initialize() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&ChromeDataUseGroup::InitializeOnUIThread, this));
+      base::BindOnce(&ChromeDataUseGroup::InitializeOnUIThread, this));
 }
 
 void ChromeDataUseGroup::InitializeOnUIThread() {

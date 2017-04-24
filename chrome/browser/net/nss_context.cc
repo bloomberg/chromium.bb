@@ -22,7 +22,7 @@ void DidGetCertDBOnIOThread(
     net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  response_task_runner->PostTask(FROM_HERE, base::Bind(callback, cert_db));
+  response_task_runner->PostTask(FROM_HERE, base::BindOnce(callback, cert_db));
 }
 
 // Gets NSSCertDatabase for the resource context.
@@ -49,11 +49,9 @@ void GetNSSCertDatabaseForProfile(
     const base::Callback<void(net::NSSCertDatabase*)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&GetCertDBOnIOThread,
-                                     profile->GetResourceContext(),
-                                     base::ThreadTaskRunnerHandle::Get(),
-                                     callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&GetCertDBOnIOThread, profile->GetResourceContext(),
+                     base::ThreadTaskRunnerHandle::Get(), callback));
 }
 

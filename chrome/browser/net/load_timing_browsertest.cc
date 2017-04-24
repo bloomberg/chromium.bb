@@ -142,8 +142,9 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
     }
 
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&MockUrlRequestJobWithTiming::DelayedStart,
-                              weak_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&MockUrlRequestJobWithTiming::DelayedStart,
+                       weak_factory_.GetWeakPtr()),
         time_to_wait);
   }
 
@@ -293,16 +294,16 @@ class LoadTimingBrowserTest : public InProcessBrowserTest {
     TestInterceptor* test_interceptor =
         new TestInterceptor(path, load_timing_deltas);
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&TestInterceptor::Register,
-                                       base::Unretained(test_interceptor)));
+                            base::BindOnce(&TestInterceptor::Register,
+                                           base::Unretained(test_interceptor)));
 
     // Navigate to the page.
     RunTestWithUrl(GURL(kTestUrl), navigation_deltas);
 
     // Once navigation is complete, unregister the protocol handler.
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&TestInterceptor::Unregister,
-                                        base::Unretained(test_interceptor)));
+                            base::BindOnce(&TestInterceptor::Unregister,
+                                           base::Unretained(test_interceptor)));
   }
 
  private:

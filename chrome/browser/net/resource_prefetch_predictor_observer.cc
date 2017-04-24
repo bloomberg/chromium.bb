@@ -109,10 +109,11 @@ void ResourcePrefetchPredictorObserver::OnRequestStarted(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ResourcePrefetchPredictorObserver::OnRequestStartedOnUIThread,
-                 base::Unretained(this), base::Passed(std::move(summary)),
-                 web_contents_getter, request->first_party_for_cookies(),
-                 request->creation_time()));
+      base::BindOnce(
+          &ResourcePrefetchPredictorObserver::OnRequestStartedOnUIThread,
+          base::Unretained(this), base::Passed(std::move(summary)),
+          web_contents_getter, request->first_party_for_cookies(),
+          request->creation_time()));
 
   if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
     ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_PROCESSED_REQUESTS);
@@ -144,7 +145,7 @@ void ResourcePrefetchPredictorObserver::OnRequestRedirected(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &ResourcePrefetchPredictorObserver::OnRequestRedirectedOnUIThread,
           base::Unretained(this), base::Passed(std::move(summary)),
           web_contents_getter, request->first_party_for_cookies(),
@@ -181,7 +182,7 @@ void ResourcePrefetchPredictorObserver::OnResponseStarted(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &ResourcePrefetchPredictorObserver::OnResponseStartedOnUIThread,
           base::Unretained(this), base::Passed(std::move(summary)),
           web_contents_getter, request->first_party_for_cookies(),
