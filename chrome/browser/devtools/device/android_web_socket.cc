@@ -98,7 +98,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
       response_buffer_ = response_buffer_.substr(bytes_consumed);
       response_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&AndroidWebSocket::OnFrameRead, weak_socket_, output));
+          base::BindOnce(&AndroidWebSocket::OnFrameRead, weak_socket_, output));
       parse_result = encoder_->DecodeFrame(
           response_buffer_, &bytes_consumed, &output);
     }
@@ -134,7 +134,8 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
     DCHECK(thread_checker_.CalledOnValidThread());
     socket_.reset();
     response_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&AndroidWebSocket::OnSocketClosed, weak_socket_));
+        FROM_HERE,
+        base::BindOnce(&AndroidWebSocket::OnSocketClosed, weak_socket_));
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> response_task_runner_;
@@ -176,8 +177,8 @@ void AndroidDeviceManager::AndroidWebSocket::SendFrame(
   DCHECK(socket_impl_);
   DCHECK(device_);
   device_->task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WebSocketImpl::SendFrame,
-                            base::Unretained(socket_impl_), message));
+      FROM_HERE, base::BindOnce(&WebSocketImpl::SendFrame,
+                                base::Unretained(socket_impl_), message));
 }
 
 void AndroidDeviceManager::AndroidWebSocket::Connected(
@@ -193,9 +194,9 @@ void AndroidDeviceManager::AndroidWebSocket::Connected(
   socket_impl_ = new WebSocketImpl(base::ThreadTaskRunnerHandle::Get(),
                                    weak_factory_.GetWeakPtr(), extensions,
                                    body_head, std::move(socket));
-  device_->task_runner_->PostTask(FROM_HERE,
-                                  base::Bind(&WebSocketImpl::StartListening,
-                                             base::Unretained(socket_impl_)));
+  device_->task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WebSocketImpl::StartListening,
+                                base::Unretained(socket_impl_)));
   delegate_->OnSocketOpened();
 }
 

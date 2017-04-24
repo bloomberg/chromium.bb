@@ -109,21 +109,21 @@ class CastDeviceProvider::DeviceListerDelegate
   // ServiceDiscoveryDeviceLister::Delegate implementation:
   void OnDeviceChanged(bool added,
                        const ServiceDescription& service_description) override {
-    runner_->PostTask(
-        FROM_HERE, base::Bind(&CastDeviceProvider::OnDeviceChanged, provider_,
-                              added, service_description));
+    runner_->PostTask(FROM_HERE,
+                      base::BindOnce(&CastDeviceProvider::OnDeviceChanged,
+                                     provider_, added, service_description));
   }
 
   void OnDeviceRemoved(const std::string& service_name) override {
-    runner_->PostTask(
-        FROM_HERE, base::Bind(&CastDeviceProvider::OnDeviceRemoved, provider_,
-                              service_name));
+    runner_->PostTask(FROM_HERE,
+                      base::BindOnce(&CastDeviceProvider::OnDeviceRemoved,
+                                     provider_, service_name));
   }
 
   void OnDeviceCacheFlushed() override {
     runner_->PostTask(
         FROM_HERE,
-        base::Bind(&CastDeviceProvider::OnDeviceCacheFlushed, provider_));
+        base::BindOnce(&CastDeviceProvider::OnDeviceCacheFlushed, provider_));
   }
 
  private:
@@ -146,8 +146,8 @@ void CastDeviceProvider::QueryDevices(const SerialsCallback& callback) {
         weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&DeviceListerDelegate::StartDiscovery,
-                   lister_delegate_->AsWeakPtr()));
+        base::BindOnce(&DeviceListerDelegate::StartDiscovery,
+                       lister_delegate_->AsWeakPtr()));
   }
   std::set<net::HostPortPair> targets;
   for (const auto& device_entry : device_info_map_)

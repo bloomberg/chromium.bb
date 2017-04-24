@@ -295,9 +295,9 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&DevToolsUIBindings::CallClientFunction, bindings_,
-                 "DevToolsAPI.streamWrite", base::Owned(id),
-                 base::Owned(chunkValue), base::Owned(encodedValue)));
+      base::BindOnce(&DevToolsUIBindings::CallClientFunction, bindings_,
+                     "DevToolsAPI.streamWrite", base::Owned(id),
+                     base::Owned(chunkValue), base::Owned(encodedValue)));
   return num_bytes;
 }
 

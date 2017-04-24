@@ -124,8 +124,9 @@ void DevToolsFileWatcher::SharedFileWatcher::DirectoryChanged(
 
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications,
-                 this), shedule_for);
+      base::BindOnce(
+          &DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications, this),
+      shedule_for);
   last_event_time_ = now;
 }
 
@@ -160,8 +161,8 @@ void DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications() {
 
   for (auto* watcher : listeners_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(watcher->callback_, changed_paths,
-                                       added_paths, removed_paths));
+                            base::BindOnce(watcher->callback_, changed_paths,
+                                           added_paths, removed_paths));
   }
   last_dispatch_cost_ = base::Time::Now() - start;
 }
@@ -175,9 +176,10 @@ DevToolsFileWatcher::s_shared_watcher_ = nullptr;
 DevToolsFileWatcher::DevToolsFileWatcher(const WatchCallback& callback)
     : callback_(callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&DevToolsFileWatcher::InitSharedWatcher,
-                                     base::Unretained(this)));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&DevToolsFileWatcher::InitSharedWatcher,
+                     base::Unretained(this)));
 }
 
 DevToolsFileWatcher::~DevToolsFileWatcher() {

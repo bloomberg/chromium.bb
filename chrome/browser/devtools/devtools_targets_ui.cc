@@ -79,7 +79,8 @@ class CancelableTimer {
         weak_factory_(this) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&CancelableTimer::Fire, weak_factory_.GetWeakPtr()), delay);
+        base::BindOnce(&CancelableTimer::Fire, weak_factory_.GetWeakPtr()),
+        delay);
   }
 
  private:
@@ -103,7 +104,7 @@ class WorkerObserver
     callback_ = callback;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&WorkerObserver::StartOnIOThread, this));
+        base::BindOnce(&WorkerObserver::StartOnIOThread, this));
   }
 
   void Stop() {
@@ -111,7 +112,7 @@ class WorkerObserver
     callback_ = base::Closure();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&WorkerObserver::StopOnIOThread, this));
+        base::BindOnce(&WorkerObserver::StopOnIOThread, this));
   }
 
  private:
@@ -142,7 +143,7 @@ class WorkerObserver
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WorkerObserver::NotifyOnUIThread, this));
+        base::BindOnce(&WorkerObserver::NotifyOnUIThread, this));
   }
 
   void NotifyOnUIThread() {

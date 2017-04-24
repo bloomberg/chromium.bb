@@ -741,7 +741,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   static void TerminateWorker(scoped_refptr<WorkerData> worker_data) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&TerminateWorkerOnIOThread, worker_data));
+        base::BindOnce(&TerminateWorkerOnIOThread, worker_data));
     content::RunMessageLoop();
   }
 
@@ -767,9 +767,8 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   static scoped_refptr<WorkerData> WaitForFirstSharedWorker(const char* path) {
     scoped_refptr<WorkerData> worker_data(new WorkerData());
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&WaitForFirstSharedWorkerOnIOThread, path, worker_data));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&WaitForFirstSharedWorkerOnIOThread, path, worker_data));
     content::RunMessageLoop();
     return worker_data;
   }
@@ -1669,12 +1668,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkPushTime) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&TestInterceptor::Register, push_url, file_path));
+      base::BindOnce(&TestInterceptor::Register, push_url, file_path));
 
   DispatchOnTestSuite(window_, "testPushTimes", push_url.spec().c_str());
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&TestInterceptor::Unregister, push_url));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&TestInterceptor::Unregister, push_url));
 
   CloseDevToolsWindow();
 }

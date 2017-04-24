@@ -324,7 +324,8 @@ void SimpleHttpServer::Connection::OnDataRead(int count) {
   } while (bytes_processed);
   // Posting to avoid deep recursion in case of synchronous IO
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&Connection::ReadData, weak_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&Connection::ReadData, weak_factory_.GetWeakPtr()));
 }
 
 void SimpleHttpServer::Connection::WriteData() {
@@ -358,7 +359,7 @@ void SimpleHttpServer::Connection::OnDataWritten(int count) {
     // Posting to avoid deep recursion in case of synchronous IO
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&Connection::WriteData, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&Connection::WriteData, weak_factory_.GetWeakPtr()));
   else if (read_closed_)
     delete this;
 }
@@ -371,8 +372,8 @@ void SimpleHttpServer::OnConnect() {
 
   if (accept_result != net::ERR_IO_PENDING)
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SimpleHttpServer::OnAccepted,
-                              weak_factory_.GetWeakPtr(), accept_result));
+        FROM_HERE, base::BindOnce(&SimpleHttpServer::OnAccepted,
+                                  weak_factory_.GetWeakPtr(), accept_result));
 }
 
 void SimpleHttpServer::OnAccepted(int result) {
@@ -609,14 +610,14 @@ void MockAndroidConnection::SendHTTPResponse(const std::string& body) {
 void StartMockAdbServer(FlushMode flush_mode) {
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&StartMockAdbServerOnIOThread, flush_mode),
+      base::BindOnce(&StartMockAdbServerOnIOThread, flush_mode),
       base::MessageLoop::QuitWhenIdleClosure());
   content::RunMessageLoop();
 }
 
 void StopMockAdbServer() {
   BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
-                                  base::Bind(&StopMockAdbServerOnIOThread),
+                                  base::BindOnce(&StopMockAdbServerOnIOThread),
                                   base::MessageLoop::QuitWhenIdleClosure());
   content::RunMessageLoop();
 }

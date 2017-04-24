@@ -26,8 +26,9 @@ void DevToolsNetworkControllerHandle::SetNetworkState(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DevToolsNetworkControllerHandle::SetNetworkStateOnIO,
-                 base::Unretained(this), client_id, base::Passed(&conditions)));
+      base::BindOnce(&DevToolsNetworkControllerHandle::SetNetworkStateOnIO,
+                     base::Unretained(this), client_id,
+                     base::Passed(&conditions)));
 }
 
 DevToolsNetworkController* DevToolsNetworkControllerHandle::GetController() {

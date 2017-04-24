@@ -42,8 +42,8 @@ class CheckWaiter {
     if (callback_.Run() != expected_ &&
         base::Time::NowFromSystemTime() < timeout_) {
       base::MessageLoop::current()->task_runner()->PostTask(
-          FROM_HERE, base::Bind(base::IgnoreResult(&CheckWaiter::Check),
-                                base::Unretained(this)));
+          FROM_HERE, base::BindOnce(base::IgnoreResult(&CheckWaiter::Check),
+                                    base::Unretained(this)));
       return false;
     }
 
