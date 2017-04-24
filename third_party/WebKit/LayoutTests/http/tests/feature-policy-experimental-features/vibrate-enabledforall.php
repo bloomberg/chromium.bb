@@ -22,7 +22,7 @@ if (window.testRunner) {
 
 function loaded() {
   var iframes = document.getElementsByTagName('iframe');
-  for (var i = 0; i < iframes.length; ++i) { //  < 1; ++i) { //
+  for (var i = 0; i < iframes.length; ++i) {
     var iframe = iframes[i];
     // The iframe uses eventSender to emulate a user navigatation, which requires absolute coordinates.
     iframe.contentWindow.postMessage({x: iframe.offsetLeft, y: iframe.offsetTop}, "*");
@@ -32,6 +32,6 @@ function loaded() {
 </head>
 <body onload="loaded();">
 <iframe id="f1" src="resources/feature-policy-vibrate-enabled.html"></iframe>
-<iframe id="f2" src="http://localhost:8000/feature-policy/resources/feature-policy-vibrate-enabled.html"></iframe>
+<iframe id="f2" src="http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate-enabled.html"></iframe>
 </body>
 </html>

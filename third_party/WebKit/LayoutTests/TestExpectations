@@ -3483,17 +3483,6 @@ crbug.com/713050 tables/mozilla/bugs/bug113424.html [ Failure Pass ]
 
 crbug.com/708934 fast/backgrounds/background-image-relative-url-in-iframe.html [ Failure Pass ]
 
-# Skip tests for vibrate with feature policy
-crbug.com/710850 http/tests/feature-policy/vibrate-enabledforall.php [ Skip ]
-crbug.com/710850 http/tests/feature-policy/vibrate-enabledforself.php [ Skip ]
-crbug.com/710850 http/tests/feature-policy/vibrate-disabled.php [ Skip ]
-crbug.com/710850 virtual/feature-policy/http/tests/feature-policy/vibrate-enabledforall.php [ Skip ]
-crbug.com/710850 virtual/feature-policy/http/tests/feature-policy/vibrate-enabledforself.php [ Skip ]
-crbug.com/710850 virtual/feature-policy/http/tests/feature-policy/vibrate-disabled.php [ Skip ]
-crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-enabledforall.php [ Skip ]
-crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-enabledforself.php [ Skip ]
-crbug.com/710850 virtual/mojo-loading/http/tests/feature-policy/vibrate-disabled.php [ Skip ]
-
 crbug.com/713509 crypto/subtle/worker-subtle-crypto-concurrent.html [ Pass Timeout ]
 
 crbug.com/713685 [ Linux ] fast/workers/termination-early.html [ Crash Pass ]

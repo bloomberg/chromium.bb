@@ -12,49 +12,17 @@
 
 namespace blink {
 
-WebFeaturePolicyFeature GetWebFeaturePolicyFeature(const String& feature) {
-  if (feature == "fullscreen")
-    return WebFeaturePolicyFeature::kFullscreen;
-  if (feature == "payment")
-    return WebFeaturePolicyFeature::kPayment;
-  if (feature == "vibrate")
-    return WebFeaturePolicyFeature::kVibrate;
-  if (RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled()) {
-    if (feature == "camera")
-      return WebFeaturePolicyFeature::kCamera;
-    if (feature == "eme")
-      return WebFeaturePolicyFeature::kEme;
-    if (feature == "microphone")
-      return WebFeaturePolicyFeature::kMicrophone;
-    if (feature == "speaker")
-      return WebFeaturePolicyFeature::kSpeaker;
-    if (feature == "cookie")
-      return WebFeaturePolicyFeature::kDocumentCookie;
-    if (feature == "domain")
-      return WebFeaturePolicyFeature::kDocumentDomain;
-    if (feature == "docwrite")
-      return WebFeaturePolicyFeature::kDocumentWrite;
-    if (feature == "geolocation")
-      return WebFeaturePolicyFeature::kGeolocation;
-    if (feature == "midi")
-      return WebFeaturePolicyFeature::kMidiFeature;
-    if (feature == "notifications")
-      return WebFeaturePolicyFeature::kNotifications;
-    if (feature == "push")
-      return WebFeaturePolicyFeature::kPush;
-    if (feature == "sync-script")
-      return WebFeaturePolicyFeature::kSyncScript;
-    if (feature == "sync-xhr")
-      return WebFeaturePolicyFeature::kSyncXHR;
-    if (feature == "webrtc")
-      return WebFeaturePolicyFeature::kWebRTC;
-  }
-  return WebFeaturePolicyFeature::kNotFound;
+WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
+                                          RefPtr<SecurityOrigin> origin,
+                                          Vector<String>* messages) {
+  return ParseFeaturePolicy(policy, origin, messages,
+                            GetDefaultFeatureNameMap());
 }
 
 WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
                                           RefPtr<SecurityOrigin> origin,
-                                          Vector<String>* messages) {
+                                          Vector<String>* messages,
+                                          const FeatureNameMap& feature_names) {
   Vector<WebParsedFeaturePolicyDeclaration> whitelists;
 
   // Use a reasonable parse depth limit; the actual maximum depth is only going
@@ -77,9 +45,9 @@ WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
 
     for (size_t j = 0; j < item->size(); ++j) {
       JSONObject::Entry entry = item->at(j);
-      WebFeaturePolicyFeature feature = GetWebFeaturePolicyFeature(entry.first);
-      if (feature == WebFeaturePolicyFeature::kNotFound)
+      if (!feature_names.Contains(entry.first))
         continue;  // Unrecognized feature; skip
+      WebFeaturePolicyFeature feature = feature_names.at(entry.first);
       JSONArray* targets = JSONArray::Cast(entry.second);
       if (!targets) {
         if (messages)
@@ -129,6 +97,44 @@ WebParsedFeaturePolicy GetContainerPolicyFromAllowedFeatures(
     whitelists.push_back(whitelist);
   }
   return whitelists;
+}
+
+const FeatureNameMap& GetDefaultFeatureNameMap() {
+  DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
+  if (default_feature_name_map.IsEmpty()) {
+    default_feature_name_map.Set("fullscreen",
+                                 WebFeaturePolicyFeature::kFullscreen);
+    default_feature_name_map.Set("payment", WebFeaturePolicyFeature::kPayment);
+    if (RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled()) {
+      default_feature_name_map.Set("vibrate",
+                                   WebFeaturePolicyFeature::kVibrate);
+      default_feature_name_map.Set("camera", WebFeaturePolicyFeature::kCamera);
+      default_feature_name_map.Set("eme", WebFeaturePolicyFeature::kEme);
+      default_feature_name_map.Set("microphone",
+                                   WebFeaturePolicyFeature::kMicrophone);
+      default_feature_name_map.Set("speaker",
+                                   WebFeaturePolicyFeature::kSpeaker);
+      default_feature_name_map.Set("cookie",
+                                   WebFeaturePolicyFeature::kDocumentCookie);
+      default_feature_name_map.Set("domain",
+                                   WebFeaturePolicyFeature::kDocumentDomain);
+      default_feature_name_map.Set("docwrit",
+                                   WebFeaturePolicyFeature::kDocumentWrite);
+      default_feature_name_map.Set("geolocation",
+                                   WebFeaturePolicyFeature::kGeolocation);
+      default_feature_name_map.Set("midi",
+                                   WebFeaturePolicyFeature::kMidiFeature);
+      default_feature_name_map.Set("notifications",
+                                   WebFeaturePolicyFeature::kNotifications);
+      default_feature_name_map.Set("push", WebFeaturePolicyFeature::kPush);
+      default_feature_name_map.Set("sync-script",
+                                   WebFeaturePolicyFeature::kSyncScript);
+      default_feature_name_map.Set("sync-xhr",
+                                   WebFeaturePolicyFeature::kSyncXHR);
+      default_feature_name_map.Set("webrtc", WebFeaturePolicyFeature::kWebRTC);
+    }
+  }
+  return default_feature_name_map;
 }
 
 }  // namespace blink

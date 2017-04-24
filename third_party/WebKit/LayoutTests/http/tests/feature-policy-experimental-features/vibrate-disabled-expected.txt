@@ -4,7 +4,7 @@
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
 This is a testharness.js-based test.
-PASS Any iframe may call navigator.vibrate when enabled. 
+FAIL No iframe may call navigator.vibrate when disabled. assert_false: expected false got true
 Harness: the test ran to completion.
 
 
@@ -12,6 +12,6 @@ Harness: the test ran to completion.
 Frame: '<!--framePath //<!--frame1-->-->'
 --------
 This is a testharness.js-based test.
-PASS Any iframe may call navigator.vibrate when enabled. 
+FAIL No iframe may call navigator.vibrate when disabled. assert_false: expected false got true
 Harness: the test ran to completion.
 

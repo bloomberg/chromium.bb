@@ -7,8 +7,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/HashMap.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebFeaturePolicy.h"
 
@@ -16,10 +18,10 @@
 
 namespace blink {
 
-// Returns the corresponding WebFeaturePolicyFeature enum given a feature
-// string.
-PLATFORM_EXPORT WebFeaturePolicyFeature
-GetWebFeaturePolicyFeature(const String& feature);
+// Returns a map between feature name (string) and WebFeaturePolicyFeature
+// (enum).
+typedef HashMap<String, WebFeaturePolicyFeature> FeatureNameMap;
+PLATFORM_EXPORT const FeatureNameMap& GetDefaultFeatureNameMap();
 
 // Converts a JSON feature policy string into a vector of whitelists, one for
 // each feature specified. Unrecognized features are filtered out. If |messages|
@@ -29,6 +31,15 @@ PLATFORM_EXPORT WebParsedFeaturePolicy
 ParseFeaturePolicy(const String& policy,
                    RefPtr<SecurityOrigin>,
                    Vector<String>* messages);
+
+// Converts a JSON feature policy string into a vector of whitelists (see
+// comments above), with an explicit FeatureNameMap. This method is primarily
+// used for testing.
+PLATFORM_EXPORT WebParsedFeaturePolicy
+ParseFeaturePolicy(const String& policy,
+                   RefPtr<SecurityOrigin>,
+                   Vector<String>* messages,
+                   const FeatureNameMap& feature_names);
 
 // Given a vector of WebFeaturePolicyFeatures and an origin, creates a vector of
 // whitelists, one for each feature specified.

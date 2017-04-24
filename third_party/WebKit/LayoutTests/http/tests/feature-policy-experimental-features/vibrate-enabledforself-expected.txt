@@ -1,11 +1,10 @@
-CONSOLE ERROR: line 9: Navigator.vibrate() is not enabled in feature policy for this frame.
  
 
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
 This is a testharness.js-based test.
-PASS No iframe may call navigator.vibrate when disabled. 
+PASS Any iframe may call navigator.vibrate when enabled. 
 Harness: the test ran to completion.
 
 
@@ -13,6 +12,6 @@ Harness: the test ran to completion.
 Frame: '<!--framePath //<!--frame1-->-->'
 --------
 This is a testharness.js-based test.
-PASS No iframe may call navigator.vibrate when disabled. 
+FAIL No iframe may call navigator.vibrate when disabled. assert_false: expected false got true
 Harness: the test ran to completion.
 

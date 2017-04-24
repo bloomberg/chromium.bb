@@ -32,15 +32,15 @@ HTMLIFrameElementAllow::ParseAllowedFeatureNames(
   const SpaceSplitString& tokens = this->Tokens();
 
   // Collects a list of valid feature names.
+  const FeatureNameMap& feature_name_map = GetDefaultFeatureNameMap();
   for (size_t i = 0; i < tokens.size(); ++i) {
-    WebFeaturePolicyFeature feature = GetWebFeaturePolicyFeature(tokens[i]);
-    if (feature == WebFeaturePolicyFeature::kNotFound) {
+    if (!feature_name_map.Contains(tokens[i])) {
       token_errors.Append(token_errors.IsEmpty() ? "'" : ", '");
       token_errors.Append(tokens[i]);
       token_errors.Append("'");
       ++num_token_errors;
     } else {
-      feature_names.push_back(feature);
+      feature_names.push_back(feature_name_map.at(tokens[i]));
     }
   }
 
@@ -60,8 +60,7 @@ HTMLIFrameElementAllow::ParseAllowedFeatureNames(
 
 bool HTMLIFrameElementAllow::ValidateTokenValue(const AtomicString& token_value,
                                                 ExceptionState&) const {
-  return GetWebFeaturePolicyFeature(token_value.GetString()) !=
-         WebFeaturePolicyFeature::kNotFound;
+  return GetDefaultFeatureNameMap().Contains(token_value.GetString());
 }
 
 void HTMLIFrameElementAllow::ValueWasSet() {

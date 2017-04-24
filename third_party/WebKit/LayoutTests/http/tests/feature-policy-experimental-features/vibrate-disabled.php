@@ -3,10 +3,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This test ensures that navigator.vibrate when enabled for self only works on
-// the same origin.
+// This test ensures that navigator.vibrate when disabled may not be called by
+// any iframe.
 
-Header("Feature-Policy: {\"vibrate\": [\"self\"]}");
+Header("Feature-Policy: {\"vibrate\": []}");
 ?>
 
 <!DOCTYPE html>
@@ -31,7 +31,7 @@ function loaded() {
 </script>
 </head>
 <body onload="loaded();">
-<iframe id="f1" src="resources/feature-policy-vibrate-enabled.html"></iframe>
-<iframe id="f2" src="http://localhost:8000/feature-policy/resources/feature-policy-vibrate-disabled.html"></iframe>
+<iframe id="f1" src="resources/feature-policy-vibrate-disabled.html"></iframe>
+<iframe id="f2" src="http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate-disabled.html"></iframe>
 </body>
 </html>

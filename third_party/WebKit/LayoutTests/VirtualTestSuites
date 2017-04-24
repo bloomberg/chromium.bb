@@ -493,6 +493,11 @@
     "args": ["--enable-blink-features=FeaturePolicy"]
   },
   {
+    "prefix": "feature-policy-experimental-features",
+    "base": "http/tests/feature-policy-experimental-features",
+    "args": ["--enable-blink-features=FeaturePolicy,FeaturePolicyExperimentalFeatures"]
+  },
+  {
     "prefix": "mojo-localstorage",
     "base": "external/wpt/webstorage",
     "args": ["--mojo-local-storage"]
