@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">ลงชื่อเข้าใช้ Chromium เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="3473048256428424907">เปิดโปรแกรมสแกนโค้ด QR ของ Chromium</translation>
 <translation id="3805899903892079518">Chromium ไม่มีสิทธิ์เข้าถึงรูปภาพหรือวิดีโอของคุณ เปิดใช้การเข้าถึงได้ในการตั้งค่า iOS &gt; ความเป็นส่วนตัว &gt; รูปภาพ</translation>
-<translation id="40863189315891987"><ph name="BEGIN_LINK" />ย้าย Chromium ไปที่ Dock<ph name="END_LINK" /> เพื่อให้เข้าถึงได้เร็วขึ้น</translation>
 <translation id="418271229036116702">ลงชื่อเข้าใช้ Chromium เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="4241912885070669028">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> การออกจากระบบจะลบข้อมูล Chromium ของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="4555020257205549924">เมื่อเปิดคุณลักษณะนี้ Chromium จะเสนอให้แปลหน้าต่างๆ ที่เขียนด้วยภาษาอื่นโดยใช้ Google แปลภาษา <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">ต้องการออกจาก Chromium ใช่ไหม</translation>
 <translation id="6424492062988593837">Chromium พัฒนาใหม่! มีรุ่นใหม่ให้ใช้งานแล้ว</translation>
 <translation id="6604711459180487467">รับประสบการณ์ที่ดีขึ้นใน Chromium ตามสถานที่ที่คุณอยู่</translation>
-<translation id="6989306073720242915">หากชอบ Chromium คุณสามารถ<ph name="BEGIN_LINK" />ลากไปไว้ที่ Dock<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium ไม่สามารถใช้กล้องถ่ายรูปในโหมด Split View</translation>
 <translation id="7144758435978427212">อ่านหน้าเว็บที่ส่งมาจากออบเจ็กต์ที่อยู่ใกล้เคียง เมื่อบลูทูธเปิดอยู่ Chromium สามารถรวบรวมหน้าเว็บที่เชื่อมโยงกับออบเจ็กต์รอบตัวคุณ และส่งหน้าเว็บเหล่านั้นแบบไม่ระบุตัวตนไปยัง Google เพื่อค้นหาหน้าที่มีประโยชน์ต่อคุณมากที่สุด <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium ช่วยคุณประหยัดเวลาโดยนำบัญชีของคุณไปไว้บนเว็บ คุณสามารถเพิ่มหรือนำบัญชีออกได้ในการตั้งค่า</translation>

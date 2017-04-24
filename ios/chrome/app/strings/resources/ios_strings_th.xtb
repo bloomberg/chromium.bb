@@ -184,6 +184,7 @@
 <translation id="4750394297954878236">คำแนะนำ</translation>
 <translation id="4773461607542755386">เปิดหน้านี้ในแอป <ph name="APP_NAME" /> ไหม</translation>
 <translation id="481968316161811770">คุกกี้ ข้อมูลเว็บไซต์</translation>
+<translation id="4860895144060829044">โทร</translation>
 <translation id="4875622588773761625">คุณต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> อัปเดตรหัสผ่านของคุณสำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4904877109095351937">ทำเครื่องหมายว่าอ่านแล้ว</translation>
@@ -354,7 +355,6 @@
 <translation id="8205564605687841303">ยกเลิก</translation>
 <translation id="8225985093977202398">รูปภาพและไฟล์ที่แคชไว้</translation>
 <translation id="8261506727792406068">ลบ</translation>
-<translation id="8272194309885535896">ดาวน์โหลดรูปภาพ</translation>
 <translation id="8272426682713568063">บัตรเครดิต</translation>
 <translation id="8281781826761538115">ค่าเริ่มต้น - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">ควบคุมวิธีที่ Google ใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหา โฆษณา และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>

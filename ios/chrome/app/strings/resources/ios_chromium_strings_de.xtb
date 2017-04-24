@@ -17,7 +17,6 @@
 <translation id="3413120535237193088">Melden Sie sich in Chromium an, um Ihre Lesezeichen auf allen Ihren Geräten zu haben.</translation>
 <translation id="3473048256428424907">Chromium QR-Scanner aktivieren</translation>
 <translation id="3805899903892079518">Chromium hat keinen Zugriff auf Ihre Fotos und Videos. Aktivieren Sie den Zugriff unter "iOS-Einstellungen &gt; Datenschutz &gt; Fotos".</translation>
-<translation id="40863189315891987">Für einen schnelleren Zugriff <ph name="BEGIN_LINK" />ziehen Sie Chromium in Ihr Dock<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">Melden Sie sich in Chromium an, um Ihre Tabs von anderen Geräten abzurufen.</translation>
 <translation id="4241912885070669028">Sie melden sich von einem Konto ab, das von <ph name="SIGNOUT_MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chromium-Daten von diesem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="4555020257205549924">Wenn diese Funktion aktiviert ist, haben Sie in Chromium die Möglichkeit, Seiten in anderen Sprachen mithilfe von Google Übersetzer zu übersetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Von Chromium abmelden?</translation>
 <translation id="6424492062988593837">Chromium ist jetzt noch besser! Es ist eine neue Version verfügbar.</translation>
 <translation id="6604711459180487467">Profitieren Sie von einer besseren Nutzererfahrung in Chromium auf Grundlage Ihres Standorts.</translation>
-<translation id="6989306073720242915">Sie mögen Chromium? <ph name="BEGIN_LINK" />Ziehen Sie es in Ihr Dock<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium kann die Kamera nicht im Modus "Geteilte Ansicht" nutzen</translation>
 <translation id="7144758435978427212">Entdecken Sie Webseiten, die von Objekten in Ihrer Nähe übermittelt werden. Wenn Bluetooth aktiviert ist, trägt Chromium Webseiten zusammen, die sich auf Objekte in Ihrer Nähe beziehen, und schickt die Webseiten anonym an Google, um die für Sie besonders nützlichen zu finden. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Mit Chromium sparen Sie Zeit, da Sie Ihre Konten im Web verwenden können. In den Einstellungen haben Sie die Möglichkeit, Konten hinzuzufügen oder zu entfernen.</translation>

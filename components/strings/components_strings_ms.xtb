@@ -66,6 +66,7 @@
           &lt;p&gt;Sila laraskan tarikh dan masa daripada bahagian &lt;strong&gt;Umum&lt;/strong&gt; bagi apl &lt;strong&gt;Tetapan&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Kesilapan berlaku semasa memaparkan halaman web ini.</translation>
 <translation id="1592005682883173041">Akses Data Setempat</translation>
+<translation id="1594030484168838125">Pilih</translation>
 <translation id="161042844686301425">Sian</translation>
 <translation id="1629803312968146339">Adakah anda mahu Chrome menyimpan kad ini?</translation>
 <translation id="1639239467298939599">Memuatkan</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Hantar sekarang</translation>
 <translation id="225207911366869382">Nilai ini tidak lagi digunakan untuk dasar ini.</translation>
 <translation id="2262243747453050782">Ralat HTTP</translation>
+<translation id="2270484714375784793">Nombor telefon</translation>
 <translation id="2282872951544483773">Eksperimen Tidak Tersedia</translation>
 <translation id="2292556288342944218">Akses Internet anda disekat</translation>
 <translation id="230155334948463882">Kad baharu?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">Perubahan rangkaian dikesan.</translation>
 <translation id="2916038427272391327">Tutup atur cara lain</translation>
 <translation id="2922350208395188000">Sijil pelayan tidak boleh diperiksa.</translation>
+<translation id="2928905813689894207">Alamat Pengebilan</translation>
 <translation id="2948083400971632585">Anda boleh melumpuhkan sebarang proksi yang dikonfigurasi untuk sambungan dari halaman tetapan.</translation>
 <translation id="2955913368246107853">Tutup bar cari</translation>
 <translation id="2958431318199492670">Konfigurasi rangkaian tidak mematuhi piawaian ONC. Sebahagian konfigurasi tidak boleh diimport.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Paparkan salinan disimpan</translation>
 <translation id="3008447029300691911">Masukkan CVC untuk <ph name="CREDIT_CARD" />. Setelah anda mengesahkan, butiran kad anda akan dikongsi dengan tapak ini.</translation>
 <translation id="3010559122411665027">Masukan senarai "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Disekat secara automatik</translation>
 <translation id="3024663005179499861">Jenis dasar salah</translation>
 <translation id="3032412215588512954">Adakah anda ingin memuat semula tapak ini?</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">Permintaan anda untuk mengakses tapak web ini tidak boleh dihantar kepada <ph name="NAME" />. Sila cuba lagi.</translation>
 <translation id="3355823806454867987">Tukar tetapan proksi...</translation>
 <translation id="3369192424181595722">Ralat Jam</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> item lagi...</translation>
 <translation id="337363190475750230">Nyahperuntukkan</translation>
 <translation id="3377188786107721145">Ralat menghuraikan dasar</translation>
 <translation id="3380365263193509176">Ralat tidak diketahui</translation>
@@ -491,6 +494,7 @@
 <translation id="5622887735448669177">Adakah anda ingin meninggalkan tapak ini?</translation>
 <translation id="5629630648637658800">Gagal memuatkan tetapan dasar</translation>
 <translation id="5631439013527180824">Token pengurusan peranti tidak sah</translation>
+<translation id="5659593005791499971">E-mel</translation>
 <translation id="5669703222995421982">Dapatkan kandungan yang diperibadikan</translation>
 <translation id="5675650730144413517">Halaman ini tidak berfungsi</translation>
 <translation id="5677928146339483299">Disekat</translation>
@@ -524,13 +528,13 @@
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lagi</translation>
 <translation id="6060685159320643512">Berhati-hati, percubaan ini mungkin memudaratkan</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{tiada}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Periksa mana-mana kabel dan but semula mana-mana penghala, modem atau peranti
     rangkaian lain yang mungkin anda gunakan.</translation>
 <translation id="614940544461990577">Cuba:</translation>
 <translation id="6151417162996330722">Sijil pelayan mempunyai tempoh sah yang terlalu panjang.</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6177128806592000436">Sambungan anda ke tapak ini tidak selamat</translation>
+<translation id="6184817833369986695">(kohort: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Semak sambungan Internet anda</translation>
 <translation id="6218753634732582820">Alih keluar alamat daripada Chromium?</translation>
 <translation id="6251924700383757765">Dasar privasi</translation>
@@ -628,6 +632,7 @@
 <translation id="7180611975245234373">Muat semula</translation>
 <translation id="7182878459783632708">Tiada dasar ditetapkan</translation>
 <translation id="7186367841673660872">Halaman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE" />ke<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Mengosongkan <ph name="SIZE" />. Sesetengah tapak mungkin dimuatkan dengan perlahan pada lawatan anda yang seterusnya.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> tidak mematuhi piawaian keselamatan.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> mengenai masalah ini.</translation>

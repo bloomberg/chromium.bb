@@ -27,6 +27,7 @@
 You must have Bluetooth and Location turned on in order to use the Physical Web.</translation>
 <translation id="124678866338384709">Close current tab</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1265597927250775944">Clears history and address bar suggestions.</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1283039547216852943">Tap to expand</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
@@ -35,6 +36,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1303671224831497365">No Bluetooth devices found</translation>
 <translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="1332501820983677155">Google Chrome feature shortcuts</translation>
+<translation id="1339917386316755344">Signs you out of most sites. You won't be signed out of you Google account.</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
 <translation id="1373696734384179344">Insufficient memory to download the selected content.</translation>
 <translation id="1376578503827013741">Computing…</translation>
@@ -63,7 +65,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1549000191223877751">Move to other window</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1571304935088121812">Copy username</translation>
-<translation id="1594030484168838125">Choose</translation>
 <translation id="1612196535745283361">Chrome needs location access to scan for devices. Location access is <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
@@ -255,6 +256,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3859306556332390985">Seek forward</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
+<translation id="3915590178385207649">Clears history from all signed-in devices. View other activity from your Google account at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Location is blocked</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combine my data</translation>
@@ -265,6 +267,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="395922942268463099">Pages updated regularly</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="397583555483684758">Sync has stopped working</translation>
+<translation id="3976396876660209797">Remove and recreate this shortcut</translation>
 <translation id="3985215325736559418">Do you want to download <ph name="FILE_NAME" /> again?</translation>
 <translation id="3987993985790029246">Copy link</translation>
 <translation id="3988213473815854515">Location is allowed</translation>
@@ -293,7 +296,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Sync error occurred, tap to get details.</translation>
 <translation id="4269820728363426813">Copy link address</translation>
-<translation id="4271185234001491831">Never translate <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Allowed</translation>
 <translation id="4300272766492248925">Open app</translation>
@@ -333,7 +335,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="473775607612524610">Update</translation>
 <translation id="4738836084190194332">Last synced: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Open a new tab</translation>
-<translation id="4750394297954878236">Suggestions</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4766369052440583386">Data Saver is on</translation>
 <translation id="4797039098279997504">Touch to return to <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -424,6 +425,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Allow all sites</translation>
 <translation id="5646376287012673985">Location</translation>
+<translation id="5648166631817621825">Last 7 days</translation>
 <translation id="5655963694829536461">Search your downloads</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Create event in <ph name="APP_NAME" /></translation>
@@ -559,6 +561,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Folders</translation>
 <translation id="6978479750597523876">Reset translate settings</translation>
+<translation id="6979737339423435258">All time</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="6985347914332179298">No downloads here</translation>
 <translation id="6990079615885386641">Get the app from the Google Play Store: <ph name="APP_ACTION" /></translation>
@@ -576,6 +579,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7128222689758636196">Allow for current search engine</translation>
 <translation id="7138678301420049075">Other</translation>
 <translation id="7144878232160441200">Retry</translation>
+<translation id="7149893636342594995">Last 24 Hours</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
@@ -594,6 +598,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7437998757836447326">Sign out of Chrome</translation>
 <translation id="7445411102860286510">Allow sites to automatically play muted videos (recommended)</translation>
+<translation id="7449574997654022410">Clears history and address bar suggestions. View other activity from your Google account at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
@@ -611,6 +616,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7589445247086920869">Block for current search engine</translation>
 <translation id="7593557518625677601">Open Android settings and re-enable Android system sync to start Chrome sync</translation>
 <translation id="7596558890252710462">Operating system</translation>
+<translation id="7600965453749440009">Never translate <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Sync isn't working</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> download failed due to network failures.</translation>
@@ -635,6 +641,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7829298379596169484">Accessing audio input</translation>
 <translation id="7837721118676387834">Allow auto-play of muted videos for a specific site.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
+<translation id="784934925303690534">Time range</translation>
 <translation id="7851858861565204677">Other Devices</translation>
 <translation id="7875915731392087153">Create email</translation>
 <translation id="7876243839304621966">Remove all</translation>
@@ -695,7 +702,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8489271220582375723">Open the history page</translation>
 <translation id="8493948351860045254">Free up space</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
-<translation id="8499147970084652325">Use Google servers to provide browsing suggestions.</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="8523928698583292556">Delete stored password</translation>
@@ -713,6 +719,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8639651215196239211">All downloads</translation>
 <translation id="8641930654639604085">Try to block mature sites</translation>
 <translation id="8660471606262461360">From Google Payments</translation>
+<translation id="8662811608048051533">Signs you out of most sites.</translation>
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="869891660844655955">Expiry date</translation>
 <translation id="8719023831149562936">Can’t beam current tab</translation>
@@ -723,7 +730,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8788968922598763114">Reopen the last closed tab</translation>
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
 <translation id="8812942424849541387">Control how this works in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
-<translation id="8812949859341886735">When this feature is turned on, Chrome will use Google servers to provide browsing suggestions, e.g. when you open a new tab. This includes popular websites, trending articles as well as personalised suggestions.</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883635517171802338">Block sites from showing pop-ups (recommended)</translation>
 <translation id="8847988622838149491">USB</translation>

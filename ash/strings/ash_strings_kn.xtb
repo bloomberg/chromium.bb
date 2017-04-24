@@ -29,8 +29,6 @@
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1823873187264960516">ಇಥರ್ನೆಟ್: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">ವೈ-ಫೈ ಆಫ್ ಮಾಡಲಾಗಿದೆ.</translation>
-<translation id="1854357586517521894">CAPS LOCK ಆನ್ ಆಗಿದೆ.
-    ರದ್ದುಮಾಡಲು ಹುಡುಕಾಟ ಅಥವಾ Shift ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="1864454756846565995">USB-C ಸಾಧನ (ಹಿಂದಿನ ಪೋರ್ಟ್)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ಗೆ ಪ್ರತಿಬಿಂಬಿಸುತ್ತಿದೆ</translation>
 <translation id="1919743966458266018">ಕಾರ್ಯ ನಿರ್ವಾಹಕರನ್ನು ತೆರೆಯಲು ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. ದಯವಿಟ್ಟು <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಬಳಸಿ.</translation>
@@ -70,11 +68,11 @@
 <translation id="3000461861112256445">ಮೊನೊ ಆಡಿಯೊ</translation>
 <translation id="3009178788565917040">ಔಟ್‌ಪುಟ್</translation>
 <translation id="3019353588588144572">ಬ್ಯಾಟರಿ ಪೂರ್ಣವಾಗಿ ಚಾರ್ಜ್ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_REMAINING" /></translation>
+<translation id="3050422059534974565">CAPS LOCK ಆನ್ ಆಗಿದೆ.
+ರದ್ದುಗೊಳಿಸಲು ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">ಕೆಳಗೆ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ಬ್ಲೂಟೂತ್‌)</translation>
-<translation id="3109220592788908353">CAPS LOCK ಆನ್ ಆಗಿದೆ.
-    ರದ್ದುಗೊಳಿಸಲು Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="3126069444801937830">ನವೀಕರಿಸಲು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="3147142846278915599">ಲಾಂಚರ್ (ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...)</translation>
 <translation id="315116470104423982">ಮೊಬೈಲ್ ಡೇಟಾ</translation>
@@ -205,9 +203,10 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> ನಲ್ಲಿ ಹಳೆಯ ರೆಸಲ್ಯೂಷನ್‌ಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="7209101170223508707">CAPS LOCK ಆನ್ ಆಗಿದೆ.
+ರದ್ದುಗೊಳಿಸಲು Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ</translation>
 <translation id="7246339268451149667">ಬೆರಳಚ್ಚು ಅನ್‌ಲಾಕ್ ಸಕ್ರಿಯಗೊಳಿಸುವುದೇ?</translation>
 <translation id="7256634071279256947">ಹಿಂಭಾಗದ ಮೈಕ್ರೊಫೋನ್</translation>
-<translation id="7337799137043490957">ಕೇವಲ ಬೆರಳಚ್ಚು ಸೆನ್ಸರ್‌ ಟ್ಯಾಪ್ ಮಾಡುವ ಮೂಲಕ ಲಾಕ್ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಸ್ಕಿಪ್ ಮಾಡಿ. ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="7348093485538360975">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="735745346212279324">VPN ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="742594950370306541">ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>

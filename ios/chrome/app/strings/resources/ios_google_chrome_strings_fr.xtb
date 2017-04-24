@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
 <translation id="3345341804167540816">Utilisez Chrome où que vous soyez</translation>
 <translation id="3531621179462011934">Connectez-vous à Chrome pour synchroniser vos paramètres avec tous vos appareils.</translation>
-<translation id="3601960512121168237">Vous aimez Chrome ? <ph name="BEGIN_LINK" />Placez-le dans le dock.<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Voulez-vous que Chrome enregistre votre mot de passe pour ce site ?</translation>
 <translation id="384394811301901750">Google Chrome ne peut pas utiliser votre appareil photo pour le moment</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome n'a pas accès à vos photos ni à vos vidéos. Activez l'accès dans iOS via Réglages &gt; Confidentialité &gt; Photos.</translation>
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
 <translation id="415767770115540173">Améliorez votre expérience Google dans Chrome grâce à votre position.</translation>
+<translation id="4248297594476034182">Connectez-vous à Chrome pour synchroniser vos onglets sur tous vos appareils.</translation>
 <translation id="424864128008805179">Se déconnecter de Chrome ?</translation>
 <translation id="4523886039239821078">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez les désinstaller.</translation>
 <translation id="4615174829807303908">Vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />. Cette opération entraînera la suppression de vos données Chrome de cet appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Conseil : <ph name="BEGIN_LINK" />Placez Chrome dans le dock.<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Accédez ici aux onglets ouverts sur votre ordinateur. Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de sélectionner "Se connecter à Chrome".</translation>
 <translation id="728488472449859922">Activer le lecteur de code QR Google Chrome</translation>
-<translation id="7311395200710390977">Pour un accès plus rapide, <ph name="BEGIN_LINK" />placez Chrome dans le dock<ph name="END_LINK" />.</translation>
 <translation id="7400722733683201933">À propos de Google Chrome</translation>
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>

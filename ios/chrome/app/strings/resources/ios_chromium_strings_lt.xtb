@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Prisijunkite prie „Chromium“, kad pasiektumėte žymes visuose įrenginiuose.</translation>
 <translation id="3473048256428424907">Įjunkite „Chromium“ QR skaitytuvą</translation>
 <translation id="3805899903892079518">„Chromium“ nepasiekia nuotraukų ar vaizdo įr. Įgalinkite prieigą apsil. „iOS“ nustatymai“ &gt; „Privatumas“ &gt; „Nuotraukos“.</translation>
-<translation id="40863189315891987"><ph name="BEGIN_LINK" />Perkelkite „Chromium“ į doką<ph name="END_LINK" />, kad galėtumėte greičiau ją pasiekti</translation>
 <translation id="418271229036116702">Prisijunkite prie „Chromium“, kad pasiektumėte skirtukus iš kitų įrenginių.</translation>
 <translation id="4241912885070669028">Atsijungiate nuo paskyros, kurią valdo <ph name="SIGNOUT_MANAGED_DOMAIN" />. „Chromium“ duomenys bus ištrinti iš šio įrenginio, bet liks „Google“ paskyroje.</translation>
 <translation id="4555020257205549924">Kai ši funkcija bus įjungta, „Chromium“ siūlys versti kitomis kalbomis parašytus puslapius naudojant „Google“ vertėją. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Atsijungti nuo „Chromium“?</translation>
 <translation id="6424492062988593837">„Chromium“ patobulėjo! Galima nauja versija.</translation>
 <translation id="6604711459180487467">Gaukite geresnių funkcijų naudodami vietove pagrįstą „Chromium“.</translation>
-<translation id="6989306073720242915">Patinka naudoti „Chromium“? <ph name="BEGIN_LINK" />Perkelkite ją į doką<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">„Chromium“ negali naudoti fotoaparato padalyto rodinio režimu</translation>
 <translation id="7144758435978427212">Atraskite netoliese esančių objektų siunčiamus tinklalapius. Kai „Bluetooth“ įjungta, „Chromium“ gali rinkti tinklalapius, susijusius su netoli jūsų esančiais objektais, ir anonimiškai siųsti juos „Google“, kad būtų rasti naudingiausi tinklalapiai. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">„Chromium“ taupo laiką naudodama paskyras žiniatinklyje. Paskyras galite pridėti arba pašalinti nustatymuose.</translation>

@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Ak chcete mať záložky na všetkých zariadeniach, prihláste sa do prehliadača Chromium.</translation>
 <translation id="3473048256428424907">Zapnite čítačku kódov QR Chromium</translation>
 <translation id="3805899903892079518">Chromium nemá prístup k vašim fotkám ani videám. Prístup povoľte v časti Nastavenia systému iOS &gt; Súkromie &gt; Fotky.</translation>
-<translation id="40863189315891987"><ph name="BEGIN_LINK" />Presuňte Chrome do doku<ph name="END_LINK" /> a získajte k nemu rýchlejší prístup</translation>
 <translation id="418271229036116702">Ak chcete získať karty z ďalších svojich zariadení, prihláste sa do prehliadača Chromium.</translation>
 <translation id="4241912885070669028">Odhlasujete sa z účtu spravovaného doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Touto akciou odstránite údaje prehliadača Chromium z príslušného zariadenia, avšak zostanú naďalej vo vašom účte Google.</translation>
 <translation id="4555020257205549924">Po zapnutí tejto funkcie bude prehliadač Chromium ponúkať preloženie stránok napísaných v inom jazyku pomocou Prekladača Google. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Odhlásiť sa z prehliadača Chromium?</translation>
 <translation id="6424492062988593837">Systém Chromium bol práve vylepšený. K dispozícii je nová verzia.</translation>
 <translation id="6604711459180487467">Získajte lepšie prostredie v prehliadači Chromium na základe svojej polohy.</translation>
-<translation id="6989306073720242915">Páči sa vám prehliadač Chromium? <ph name="BEGIN_LINK" />Presuňte ho do doku<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium nemôže použiť váš fotoaparát v režime Rozdelené zobrazenie</translation>
 <translation id="7144758435978427212">Objavte webové stránky odosielané objektmi v okolí. Keď je zapnuté rozhranie Bluetooth, Chromium zhromažďuje webové stránky týkajúce sa objektov okolo vás a odosiela ich anonymne do služby Google, aby tak našiel tie, ktoré sú pre vás najužitočnejšie. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Vaše účty sú na webe, čím Chromium šetrí váš čas. Účty môžete pridávať alebo odstraňovať v nastaveniach.</translation>

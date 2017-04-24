@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Přihlášení do Chrome</translation>
 <translation id="3345341804167540816">Používejte Chrome všude</translation>
 <translation id="3531621179462011934">Chcete-li nastavení synchronizovat do všech svých zařízení, přihlaste se do Chromu.</translation>
-<translation id="3601960512121168237">Líbí se vám Chrome? <ph name="BEGIN_LINK" />Přesuňte si jej do doku<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Chcete, aby aplikace Chrome uložila vaše heslo pro tento web?</translation>
 <translation id="384394811301901750">Google Chrome nyní nemůže použít fotoaparát</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome nemá přístup k vašim fotkám nebo videím. Povolte přístup v systému iOS v Nastavení &gt; Soukromí &gt; Fotky.</translation>
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky využití a zprávy o selhání.</translation>
 <translation id="415767770115540173">Služby Google mohou v prohlížeči Chrome díky údajům o poloze fungovat lépe.</translation>
+<translation id="4248297594476034182">Chcete-li karty synchronizovat do všech zařízení, přihlaste se do Chromu.</translation>
 <translation id="424864128008805179">Odhlásit se z Chromu?</translation>
 <translation id="4523886039239821078">Některé doplňky způsobují selhání prohlížeče Chrome. Prosím odinstalujte:</translation>
 <translation id="4615174829807303908">Odhlašujete se z účtu, který je spravován doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Touto akcí smažete svá data prohlížeče Chrome z tohoto zařízení, ve vašem účtu Google však vaše data zůstanou.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Přesuňte si Chrome do doku<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Karty, které máte otevřené v počítači, můžete používat přímo tady. Stačí v počítači otevřít Chrome, přejít do nabídky a vybrat možnost Přihlásit se do prohlížeče Chrome…</translation>
 <translation id="728488472449859922">Zapněte čtečku QR kódů prohlížeče Google Chrome</translation>
-<translation id="7311395200710390977">Pro snazší přístup si <ph name="BEGIN_LINK" />Chrome přesuňte do doku<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">O aplikaci Google Chrome</translation>
 <translation id="7437998757836447326">Odhlášení z Chromu</translation>
 <translation id="756809126120519699">Vymazání údajů Chromu</translation>

@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Chrome-এ প্রবেশ করুন</translation>
 <translation id="3345341804167540816">Chrome সব জায়গায় ব্যবহার করুন</translation>
 <translation id="3531621179462011934">আপনার সব ডিভাইসে আপনার সেটিংস পেতে, Chrome এ প্রবেশ করুন।</translation>
-<translation id="3601960512121168237">Chrome পছন্দ করেন? <ph name="BEGIN_LINK" />তাহলে আপনার ডকে নিয়ে যান<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">আপনি কি চান যে Chrome এই সাইটের জন্য আপনার পাসওয়ার্ড সংরক্ষণ করুক?</translation>
 <translation id="384394811301901750">Google Chrome এই মুহূর্তে আপনার ক্যামেরা ব্যবহার করতে পারছে না</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">আপনার ছবি বা ভিডিওতে Google Chrome এর অ্যাক্সেস নেই। iOS সেটিংস &gt; গোপনীয়তা &gt; ফটোগুলিতে অ্যাক্সেস সক্ষম করুন।</translation>
 <translation id="4099578267706723511">Google-এ ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি পাঠিয়ে Chrome কে আরো ভাল করে তুলতে সহায়তা করুন৷</translation>
 <translation id="415767770115540173">আপনার অবস্থানের উপর ভিত্তি করে Chrome এ আরো ভাল Google অভিজ্ঞতা পান।</translation>
+<translation id="4248297594476034182">সব ডিভাইসে আপনার বুকমার্কগুলি পেতে, Chrome এ প্রবেশ করুন।</translation>
 <translation id="424864128008805179">Chrome থেকে প্রস্থান করবেন?</translation>
 <translation id="4523886039239821078">কিছু অ্যাড-অনের কারণে Chrome ক্র্যাশ করতে পারে৷ দয়া করে আনইনস্টল করুন:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> পরিচালিত একটি অ্যাকাউন্ট থেকে আপনি প্রস্থান করুন করছেন৷ এটি এই ডিভাইস থেকে আপনার Chrome ডেটা মুছে ফেলবে, কিন্তু আপনার Google অ্যাকাউন্টে ডেটা থেকে যাবে৷</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">টিপ: <ph name="BEGIN_LINK" />Chrome কে আপনার ডকে সরান<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">সরাসরি এখান থেকে, আপনি আপনার কম্পিউটারে যে সব ট্যাব খোলা আছে সেগুলি অ্যাক্সেস করুন। শুধুমাত্র আপনার কম্পিউটারে Chrome খুলুন, মেনুতে যান এবং "Chrome এ প্রবেশ করুন..." নির্বাচন করুন।</translation>
 <translation id="728488472449859922">Google Chrome QR স্ক্যানার চালু করুন</translation>
-<translation id="7311395200710390977">দ্রুততর অ্যাক্সেসের জন্য, <ph name="BEGIN_LINK" />Chrome কে আপনার ডকে সরান<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Google Chrome সম্বন্ধে</translation>
 <translation id="7437998757836447326">Chrome থেকে প্রস্থান করুন</translation>
 <translation id="756809126120519699">Chrome ডেটা সাফ হয়েছে</translation>

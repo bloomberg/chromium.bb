@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Logga in i Chromium om du vill få tillgång till samma bokmärken på alla enheter.</translation>
 <translation id="3473048256428424907">Aktivera Chromium som QR-skanner</translation>
 <translation id="3805899903892079518">Chromium har inte åtkomst till dina foton eller videor. Aktivera åtkomst i iOS-inställningar &gt; Sekretess &gt; Foton.</translation>
-<translation id="40863189315891987">Öppna webbläsaren snabbare genom att <ph name="BEGIN_LINK" />flytta Chromium till Dock<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">Logga in i Chromium om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="4241912885070669028">Du håller på att logga ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Åtgärden raderar din data i Chromium från den här enheten, men den finns kvar på Google-kontot.</translation>
 <translation id="4555020257205549924">När den här funktionen har aktiverats visas alternativet i Chromium att översätta sidor som är skrivna på andra språk med hjälp av Google Översätt. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Vill du logga ut från Chromium?</translation>
 <translation id="6424492062988593837">Chrome har blivit ännu bättre! En ny version finns tillgänglig.</translation>
 <translation id="6604711459180487467">Ange din plats och få en bättre upplevelse när du använder Chromium.</translation>
-<translation id="6989306073720242915">Gillar du Chromium? <ph name="BEGIN_LINK" />Flytta Chromium till Dock.<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium kan inte använda kameran i delad vy</translation>
 <translation id="7144758435978427212">Upptäck webbsidor som skickats av enheter i närheten. När Bluetooth är aktiverat kan Chromium samla webbsidor som är kopplade till enheter i din omgivning, skicka dem anonymt till Google och sedan välja ut dem som är mest användbara för dig. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Med Chromium sparar du tid genom att dina konton blir tillgängliga på nätet. Du kan lägga till och ta bort konton i inställningarna.</translation>

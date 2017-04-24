@@ -66,6 +66,7 @@
           &lt;p&gt;કૃપા કરીને &lt;strong&gt;સેટિંગ્સ&lt;/strong&gt; અ‍ૅપ્લિકેશનના &lt;strong&gt;સામાન્ય&lt;/strong&gt; વિભાગમાં તારીખ અને સમય સમાયોજિત કરો.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">આ વેબપૃષ્ઠ પ્રદર્શિત કરતી વખતે કંઇક ખોટું થયું.</translation>
 <translation id="1592005682883173041">સ્થાનિક ડેટા ઍક્સેસ</translation>
+<translation id="1594030484168838125">પસંદ કરો</translation>
 <translation id="161042844686301425">સ્યાન</translation>
 <translation id="1629803312968146339">શું તમે ઇચ્છો છો કે Chrome આ કાર્ડ સાચવે?</translation>
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">હમણાં મોકલો</translation>
 <translation id="225207911366869382">આ નીતિ માટે આ મૂલ્યને નાપસંદ કરેલું છે.</translation>
 <translation id="2262243747453050782">HTTP ભૂલ</translation>
+<translation id="2270484714375784793">ફોન નંબર</translation>
 <translation id="2282872951544483773">અનુપલબ્ધ પ્રયોગો</translation>
 <translation id="2292556288342944218">તમારી ઇન્ટરનેટ ઍક્સેસ અવરોધિત છે</translation>
 <translation id="230155334948463882">નવું કાર્ડ?</translation>
@@ -258,7 +260,6 @@
 <translation id="3345135638360864351">આ સાઇટને ઍક્સેસ કરવાની તમારી વિનંતી <ph name="NAME" /> ને મોકલી શકાઈ નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="3355823806454867987">પ્રોક્સી સેટિંગ્સ બદલો...</translation>
 <translation id="3369192424181595722">ઘડિયાળ ભૂલ</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> વધુ આઇટમ...</translation>
 <translation id="337363190475750230">જોગવાઈ દૂર કરી</translation>
 <translation id="3377188786107721145">નીતિ વિશ્લેષણ ભૂલ</translation>
 <translation id="3380365263193509176">અજ્ઞાત ભૂલ</translation>
@@ -490,6 +491,7 @@
 <translation id="5622887735448669177">શું તમે આ સાઇટ છોડવા માંગો છો?</translation>
 <translation id="5629630648637658800">નીતિ સેટિંગ્સ લોડ કરવામાં નિષ્ફળ થયાં</translation>
 <translation id="5631439013527180824">અમાન્ય ઉપકરણ સંચાલન ટોકન</translation>
+<translation id="5659593005791499971">ઇમેઇલ</translation>
 <translation id="5669703222995421982">વ્યક્તિગત કરેલ સામગ્રી મેળવો</translation>
 <translation id="5675650730144413517">આ પૃષ્ઠ કામ કરી રહ્યું નથી</translation>
 <translation id="5677928146339483299">અવરોધિત</translation>
@@ -523,7 +525,6 @@
 <translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="6042308850641462728">વધુ</translation>
 <translation id="6060685159320643512">સાવચેતી રાખો, આ પ્રયોગો નુકસાનકારક હોઈ શકે છે</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{કોઈ નહીં}=1{1}one{#}other{#}}</translation>
 <translation id="6146055958333702838">કોઈપણ કેબલ્સ તપાસો અને તમે કદાચ ઉપયોગમાં લઇ રહ્યાં હોય તેવા કોઇપણ રાઉટર્સ, મૉડેમ્સ 
     અથવા અન્ય નેટવર્ક ઉપકરણોને રીબૂટ કરો.</translation>
 <translation id="614940544461990577">પ્રયાસ કરો:</translation>

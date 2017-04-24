@@ -807,7 +807,6 @@
 <translation id="216169395504480358">Wi-Fiని జోడించండి...</translation>
 <translation id="2163470535490402084">దయచేసి మీ <ph name="DEVICE_TYPE" />కి సైన్ ఇన్ చేయడానికి ఇంటర్నెట్‌కి కనెక్ట్ అవ్వండి.</translation>
 <translation id="2164862903024139959">వియత్నామీస్ కీబోర్డ్ (TCVN)</translation>
-<translation id="21655110192559039">డయల్ డివైజ్ వివరణ అన్వయ నియమం</translation>
 <translation id="2165722503303595908">కొలతలు</translation>
 <translation id="2166369534954157698">దేశ భాషలందు తెలుగు లెస్స</translation>
 <translation id="2168214441502403371">పర్షియన్ కీబోర్డ్</translation>
@@ -1090,7 +1089,7 @@
 <translation id="2565670301826831948">టచ్‌ప్యాడ్ వేగం:</translation>
 <translation id="2566124945717127842">మీ <ph name="IDS_SHORT_PRODUCT_NAME" /> పరికరాన్ని కొత్త దాని వలె రీసెట్ చేయడానికి పవర్‌వాష్ చేయండి.</translation>
 <translation id="2568774940984945469">సమాచారబార్ కంటైనర్</translation>
-<translation id="2570000010887652771">సేవ్ చేయబడిన డేటా</translation>
+<translation id="2570000010887652771">డేటా ఆదా చేయబడింది.</translation>
 <translation id="2570648609346224037">రికవరీ చిత్రాన్ని డౌన్‌లోడ్ చేస్తున్నప్పుడు సమస్య సంభవించింది.</translation>
 <translation id="257088987046510401">థీమ్‌లు</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />కి చదవడానికి మాత్రమే ప్రాప్యత మంజూరు చేయబడింది.</translation>
@@ -2070,7 +2069,6 @@
 <translation id="3936390757709632190">&amp;ఆడియోని క్రొత్త టాబ్లో తెరువు</translation>
 <translation id="3936768791051458634">ఛానెల్‌ను మార్చు...</translation>
 <translation id="3936925983113350642">మీరు ఎంచుకునే పాస్‌వర్డ్ ఈ ప్రమాణపత్రాన్ని తర్వాత పునరుద్ధరించడానికి అవసరమవుతుంది. దయచేసి దీన్ని సురక్షితమైన చోట ఎక్కడైనా వ్రాసి పెట్టుకోండి.</translation>
-<translation id="3936999098172113189"><ph name="PAGE_NUMBER" /> పేజీలను <ph name="PRINTER_NAME" />కి ముద్రించడం కోసం వేచి ఉంది</translation>
 <translation id="3937640725563832867">సర్టిఫికెట్ జారీ చేసినవారి ప్రత్యామ్నాయ పేరు</translation>
 <translation id="3940233957883229251">స్వయంచాలకంగా పునరావృతం చేయడాన్ని ప్రారంభించు</translation>
 <translation id="3941357410013254652">ఛానెల్ ID</translation>
@@ -4068,7 +4066,6 @@
 <translation id="7017480957358237747">నిర్దిష్ట వెబ్‌సైట్‌లను అనుమతించండి లేదా నిషేధించండి,</translation>
 <translation id="7017587484910029005">క్రింద ఉన్న చిత్రంలో మీరు చూస్తున్న అక్షరాలను టైప్ చెయ్యండి.</translation>
 <translation id="7018275672629230621">మీ బ్రౌజింగ్ చరిత్రని చదవడం మరియు మార్చడం</translation>
-<translation id="7018568016607642429">ప్రసార లోపం</translation>
 <translation id="7019805045859631636">వేగంగా</translation>
 <translation id="7022562585984256452">మీ హోమ్ పేజీ సెట్ చేయబడింది.</translation>
 <translation id="702373420751953740">PRL సంస్కరణ:</translation>
@@ -4974,7 +4971,6 @@
 <translation id="8418445294933751433">టాబ్ వలె &amp;చూపించు</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' కోసం శోధన ఫలితాలు</translation>
 <translation id="8420060421540670057">Google డాక్స్ ఫైల్‌లను చూపించు</translation>
-<translation id="8423869809045821924">వేరే అనువర్తనాన్ని ఉపయోగించి PDFలను తెరువు</translation>
 <translation id="8424039430705546751">క్రిందికి</translation>
 <translation id="8425213833346101688">మార్చు</translation>
 <translation id="8425492902634685834">టాస్క్‌బార్‌కి పిన్ చేయి</translation>
@@ -4991,7 +4987,6 @@
 <translation id="843760761634048214">క్రెడిట్ కార్డ్‌ను సేవ్ చేయి</translation>
 <translation id="8438601631816548197">వాయిస్ శోధన గురించి</translation>
 <translation id="8439506636278576865">ఈ భాషలో పేజీలకు అనువాదం అందించు</translation>
-<translation id="8441209996841212096">వీడియోను ప్రసారం చేస్తోంది...</translation>
 <translation id="8442145116400417142">కంటెంట్ బ్లాక్ చేయబడింది</translation>
 <translation id="8443621894987748190">మీ ఖాతా చిత్రాన్ని ఎంచుకోండి</translation>
 <translation id="8446884382197647889">మరింత తెలుసుకోండి</translation>

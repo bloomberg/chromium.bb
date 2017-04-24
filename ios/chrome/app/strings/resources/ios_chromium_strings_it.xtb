@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Accedi a Chromium per trovare i tuoi preferiti su tutti i dispositivi.</translation>
 <translation id="3473048256428424907">Attiva lo scanner QR di Chromium</translation>
 <translation id="3805899903892079518">Chromium non ha accesso alle tue foto o ai tuoi video. Attiva l'accesso in Impostazioni iOS &gt; Privacy &gt; Foto.</translation>
-<translation id="40863189315891987">Per accedere più velocemente, <ph name="BEGIN_LINK" />sposta Chromium nel dock<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">Accedi a Chromium per trovare le tue schede degli altri dispositivi.</translation>
 <translation id="4241912885070669028">Stai per uscire da un account gestito da <ph name="SIGNOUT_MANAGED_DOMAIN" />. I dati di Chromium verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo account Google.</translation>
 <translation id="4555020257205549924">Quando questa funzione è attiva, Chromium si offre di tradurre le pagine scritte in altre lingue utilizzando Google Traduttore. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Uscire da Chromium?</translation>
 <translation id="6424492062988593837">Chromium è stato migliorato. È disponibile una nuova versione.</translation>
 <translation id="6604711459180487467">Migliora la tua esperienza in Chromium tramite l'accesso alla tua posizione.</translation>
-<translation id="6989306073720242915">Ti piace Chromium? <ph name="BEGIN_LINK" />Spostalo nel dock<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium non può utilizzare la videocamera in modalità Visualizzazione divisa</translation>
 <translation id="7144758435978427212">Consente di trovare le pagine web inviate da dispositivi vicini. Quando il Bluetooth è attivo, Chromium può raccogliere le pagine web associate ai dispositivi nelle vicinanze e inviarle in forma anonima a Google per individuare le pagine più utili. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium ti fa risparmiare tempo portando i tuoi account sul Web. Puoi aggiungere o rimuovere account nelle impostazioni.</translation>

@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3345341804167540816">Use Chrome Everywhere</translation>
 <translation id="3531621179462011934">To get your settings on all your devices, sign in to Chrome.</translation>
-<translation id="3601960512121168237">Love Chrome? <ph name="BEGIN_LINK" />Move it to your dock<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Do you want Chrome to save your password for this site?</translation>
 <translation id="384394811301901750">Google Chrome can't use your camera at the moment.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
 <translation id="415767770115540173">Get a better Google experience in Chrome based on your location.</translation>
+<translation id="4248297594476034182">To get your tabs on all your devices, sign in to Chrome.</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4523886039239821078">Some add-ons cause Chrome to crash. Please uninstall:</translation>
 <translation id="4615174829807303908">You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN" />. This will delete your Chrome data from this device, but your data will remain in your Google account.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Move Chrome to your dock<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Access the tabs that you have open on your computer, right here. Just open Chrome on your computer, go to the menu, and select “Sign in to Chrome…”</translation>
 <translation id="728488472449859922">Turn on Google Chrome QR Scanner</translation>
-<translation id="7311395200710390977">For faster access, <ph name="BEGIN_LINK" />move Chrome to your dock<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">About Google Chrome</translation>
 <translation id="7437998757836447326">Sign out of Chrome</translation>
 <translation id="756809126120519699">Cleared Chrome data</translation>

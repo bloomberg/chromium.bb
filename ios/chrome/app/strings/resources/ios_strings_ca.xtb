@@ -186,6 +186,7 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="4750394297954878236">Suggeriments</translation>
 <translation id="4773461607542755386">Voleu obrir aquesta pàgina a l'aplicació <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Galetes, dades llocs</translation>
+<translation id="4860895144060829044">Truca</translation>
 <translation id="4875622588773761625">Voleu que <ph name="PASSWORD_MANAGER_BRAND" /> actualitzi la vostra contrasenya per a aquest lloc?</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4904877109095351937">Marca com a llegit</translation>
@@ -356,7 +357,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8205564605687841303">Cancel·la</translation>
 <translation id="8225985093977202398">Fitxers i imatges a memòria cau</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
-<translation id="8272194309885535896">Baixa la imatge</translation>
 <translation id="8272426682713568063">Targetes de crèdit</translation>
 <translation id="8281781826761538115">Idioma predeterminat: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Controleu com utilitza Google el vostre historial de navegació per personalitzar la Cerca, els anuncis i altres serveis de Google</translation>

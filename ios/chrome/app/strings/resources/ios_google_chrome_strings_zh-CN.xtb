@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3345341804167540816">随时随地使用 Chrome</translation>
 <translation id="3531621179462011934">要将您的设置同步到您的所有设备上，请登录 Chrome。</translation>
-<translation id="3601960512121168237">喜欢使用 Chrome？建议<ph name="BEGIN_LINK" />将它移到 Dock 中<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">希望 Chrome 保存您登录此网站时所用的密码吗？</translation>
 <translation id="384394811301901750">Google Chrome 目前无法使用您的相机</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome 无权访问您的照片或视频。请依次点按 iOS 中的“设置”&gt;“隐私”&gt;“照片”，授予其访问权限。</translation>
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="415767770115540173">要在 Chrome 中获得更好的 Google 使用体验，需要用到您的位置信息。</translation>
+<translation id="4248297594476034182">要将您的标签页同步到您的所有设备上，请登录 Chrome。</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4523886039239821078">部分插件导致 Chrome 崩溃，请卸载这些插件：</translation>
 <translation id="4615174829807303908">您正要退出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理的帐号。退出后，您的 Chrome 数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">提示：<ph name="BEGIN_LINK" />将 Chrome 移到 Dock 中<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">您可直接在此处使用您在计算机上打开的标签页。只需在计算机上打开 Chrome，转到菜单，然后选择“登录 Chrome…”即可</translation>
 <translation id="728488472449859922">开启 Google Chrome QR 码扫描器</translation>
-<translation id="7311395200710390977">为了更快速地访问 Chrome，请<ph name="BEGIN_LINK" />将它移到 Dock 中<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">关于Google Chrome</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>

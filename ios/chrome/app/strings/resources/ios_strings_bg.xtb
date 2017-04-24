@@ -186,6 +186,7 @@
 <translation id="4750394297954878236">Предложения</translation>
 <translation id="4773461607542755386">Да се отвори ли стр. в приложението <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">„Бисквитки“ и данни за сайтове</translation>
+<translation id="4860895144060829044">Обаждане</translation>
 <translation id="4875622588773761625">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за този сайт?</translation>
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4904877109095351937">Означаване като прочетено</translation>
@@ -356,7 +357,6 @@
 <translation id="8205564605687841303">Отказ</translation>
 <translation id="8225985093977202398">Кеширани изображения и файлове</translation>
 <translation id="8261506727792406068">Изтриване</translation>
-<translation id="8272194309885535896">Изтегляне на изображението</translation>
 <translation id="8272426682713568063">Кредитни карти</translation>
 <translation id="8281781826761538115">Стандартно – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Контролирайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google</translation>

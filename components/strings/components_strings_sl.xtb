@@ -66,6 +66,7 @@
       &lt;p&gt;V razdelku &lt;strong&gt;Splošno&lt;/strong&gt; aplikacije &lt;strong&gt;Nastavitve&lt;/strong&gt; prilagodite datum in uro.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Med prikazom spletne strani je prišlo do napake.</translation>
 <translation id="1592005682883173041">Dostop do lokalnih podatkov</translation>
+<translation id="1594030484168838125">Izberi</translation>
 <translation id="161042844686301425">Cianova</translation>
 <translation id="1629803312968146339">Ali želite, da Chrome shrani to kartico?</translation>
 <translation id="1639239467298939599">Nalaganje</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Pošlji</translation>
 <translation id="225207911366869382">Vrednost za ta pravilnik je zastarela.</translation>
 <translation id="2262243747453050782">Napaka HTTP</translation>
+<translation id="2270484714375784793">Telefonska številka</translation>
 <translation id="2282872951544483773">Preizkusi, ki niso na voljo</translation>
 <translation id="2292556288342944218">Internetni dostop je blokiran</translation>
 <translation id="230155334948463882">Nova kartica?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">Zaznana je bila sprememba omrežja.</translation>
 <translation id="2916038427272391327">Zaprite druge programe</translation>
 <translation id="2922350208395188000">Potrdila strežnika ni mogoče preveriti.</translation>
+<translation id="2928905813689894207">Naslov za izstavitev računa</translation>
 <translation id="2948083400971632585">Namestniške strežnike, konfigurirane za povezavo, lahko onemogočite na strani z nastavitvami.</translation>
 <translation id="2955913368246107853">Zapri vrstico za iskanje</translation>
 <translation id="2958431318199492670">Omrežna konfiguracija ne ustreza standardu ONC. Deli konfiguracije morda niso bili uvoženi.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Pokaži shranjeno kopijo</translation>
 <translation id="3008447029300691911">Vnesite CVC za <ph name="CREDIT_CARD" />. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o vaši kartici.</translation>
 <translation id="3010559122411665027">Vnos na sznamu »<ph name="ENTRY_INDEX" />«: <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Samodejno blokirano</translation>
 <translation id="3024663005179499861">Napačna vrsta pravilnika</translation>
 <translation id="3032412215588512954">Ali želite znova naložiti to spletno mesto?</translation>
 <translation id="3037605927509011580">Ti šment!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">Zahteve za dostop do tega spletnega mesta ni bilo mogoče poslati osebi <ph name="NAME" />. Poskusite znova.</translation>
 <translation id="3355823806454867987">Spremeni nastavitve proxyja ...</translation>
 <translation id="3369192424181595722">Napaka ure</translation>
-<translation id="337311366426640088">Še toliko elementov: <ph name="ITEM_COUNT" /> ...</translation>
 <translation id="337363190475750230">Nepripravljen</translation>
 <translation id="3377188786107721145">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="3380365263193509176">Neznana napaka</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">Ali želite zapustiti to spletno mesto?</translation>
 <translation id="5629630648637658800">Nastavitev pravilnika ni bilo mogoče naložiti</translation>
 <translation id="5631439013527180824">Neveljaven žeton za upravljanje naprave</translation>
+<translation id="5659593005791499971">E-pošta</translation>
 <translation id="5669703222995421982">Prilagojena vsebina</translation>
 <translation id="5675650730144413517">Ta stran ne deluje</translation>
 <translation id="5677928146339483299">Blokirano</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6042308850641462728">Več</translation>
 <translation id="6060685159320643512">Previdno, ti poskusi lahko škodujejo</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{nič}=1{1}one{#}two{#}few{#}other{#}}</translation>
 <translation id="6146055958333702838">Preverite kable in znova zaženite usmerjevalnike, modeme ali druge omrežne 
     naprave, ki jih uporabljate.</translation>
 <translation id="614940544461990577">Poskusite:</translation>
 <translation id="6151417162996330722">Potrdilo strežnika ima predolgo obdobje veljavnosti.</translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="6177128806592000436">Povezava s tem spletnim mestom ni zasebna</translation>
+<translation id="6184817833369986695">(kohorta: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Preverite internetno povezavo</translation>
 <translation id="6218753634732582820">Želite naslov odstraniti iz Chromiuma?</translation>
 <translation id="6251924700383757765">Pravilnik o zasebnosti</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">Osveži</translation>
 <translation id="7182878459783632708">Ni nastavljenih pravilnikov</translation>
 <translation id="7186367841673660872">Ta stran je bila prevedena iz jezika<ph name="ORIGINAL_LANGUAGE" />v jezik<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Sprosti <ph name="SIZE" />. Nekatera spletna mesta se bodo ob naslednjem obisku morda počasneje naložila.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423">Spletno mesto <ph name="HOST_NAME" /> ne upošteva varnostnih standardov.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Več o<ph name="END_LINK" /> tej težavi.</translation>

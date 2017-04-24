@@ -630,6 +630,7 @@
 <translation id="1882130480443819387">依標題排序</translation>
 <translation id="1886996562706621347">允許網站要求成為通訊協定的預設處理常式 (建議)</translation>
 <translation id="1887850431809612466">硬體版本</translation>
+<translation id="1889984860246851556">開啟 Proxy 設定</translation>
 <translation id="1891668193654680795">信任這個用於識別軟體製造商的憑證。</translation>
 <translation id="189210018541388520">開啟全螢幕</translation>
 <translation id="1893406696975231168">雲端帳戶管理作業執行失敗</translation>
@@ -807,7 +808,6 @@
 <translation id="216169395504480358">新增 WiFi...</translation>
 <translation id="2163470535490402084">請連線至網際網路，以登入您的 <ph name="DEVICE_TYPE" />。</translation>
 <translation id="2164862903024139959">越南文鍵盤 (TCVN)</translation>
-<translation id="21655110192559039">撥號裝置說明剖析器</translation>
 <translation id="2165722503303595908">維度</translation>
 <translation id="2166369534954157698">狐狗大戰</translation>
 <translation id="2168214441502403371">波斯文鍵盤</translation>
@@ -865,6 +865,7 @@
 <translation id="2241634353105152135">只有這一次</translation>
 <translation id="2242603986093373032">沒有任何裝置</translation>
 <translation id="2242687258748107519">檔案資訊</translation>
+<translation id="2245240762616536227">控制系統根據瀏覽紀錄提供個人化搜尋服務、廣告內容和其他 Google 服務的方式</translation>
 <translation id="2246340272688122454">正在下載還原映像檔...</translation>
 <translation id="2249499294612408921">受監管的使用者可以在您的規範下瀏覽網路。在 Chrome 中，您可以透過受監管使用者的管理員身分執行下列操作：
 
@@ -1391,6 +1392,7 @@
 <translation id="2966449113954629791">您可能已用盡行動數據配額。造訪 <ph name="NAME" /> 啟用入口網站即可購買更多數據量。</translation>
 <translation id="2966459079597787514">瑞典文鍵盤</translation>
 <translation id="2966598748518102999">停頓一下再說出「Ok Google」，然後將語音傳送給 Google，改善語音搜尋的服務品質。</translation>
+<translation id="2966937470348689686">管理 Android 偏好設定</translation>
 <translation id="2967544384642772068">刪除</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">調低亮度鍵</translation>
@@ -2070,7 +2072,6 @@
 <translation id="3936390757709632190">在新分頁中開啟音效(&amp;O)</translation>
 <translation id="3936768791051458634">變更版本...</translation>
 <translation id="3936925983113350642">日後需要還原這個憑證時會用到您選擇的密碼，請將密碼記錄在安全的位置。</translation>
-<translation id="3936999098172113189">正在等待透過「<ph name="PRINTER_NAME" />」列印 <ph name="PAGE_NUMBER" /> 頁</translation>
 <translation id="3937640725563832867">憑證發行者替代名稱</translation>
 <translation id="3940233957883229251">啟用自動重複</translation>
 <translation id="3941357410013254652">頻道 ID</translation>
@@ -2157,6 +2158,7 @@
 <translation id="4087089424473531098">已建立以下擴充功能：
 
 <ph name="EXTENSION_FILE" /></translation>
+<translation id="4087470595660267445">在 Chromebook 上安裝來自 Google Play 的應用程式和遊戲。&lt;a target="_blank" href="<ph name="URL" />"&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="4088095054444612037">接受群組邀請</translation>
 <translation id="4089521618207933045">具有子選單</translation>
 <translation id="4090103403438682346">啟用已驗證存取權</translation>
@@ -2960,6 +2962,7 @@
 <translation id="5329858601952122676">刪除(&amp;D)</translation>
 <translation id="5330145655348521461">這些檔案已在其他電腦上開啟。前往 <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) 查看。</translation>
 <translation id="5330512191124428349">取得資訊</translation>
+<translation id="5331069282670671859">你沒有這個類別的憑證</translation>
 <translation id="5331425616433531170">「<ph name="CHROME_EXTENSION_NAME" />」要求配對</translation>
 <translation id="5332624210073556029">時區：</translation>
 <translation id="5334142896108694079">指令碼快取</translation>
@@ -3009,6 +3012,7 @@
 <translation id="5399158067281117682">PIN 碼不符！</translation>
 <translation id="5400640815024374115">可信任平台模組 (TPM) 晶片已停用或遺失。</translation>
 <translation id="5402367795255837559">點字</translation>
+<translation id="5402815541704507626">使用行動數據下載更新</translation>
 <translation id="540296380408672091">一律封鎖 <ph name="HOST" /> 的 Cookie</translation>
 <translation id="5408750356094797285">縮放比例：<ph name="PERCENT" /></translation>
 <translation id="5409029099497331039">隨機桌布</translation>
@@ -3147,6 +3151,7 @@
 <translation id="558918721941304263">正在載入應用程式...</translation>
 <translation id="5592595402373377407">目前還沒有足夠的資料。</translation>
 <translation id="5595485650161345191">編輯地址</translation>
+<translation id="5600706100022181951">下載更新將使用 <ph name="UPDATE_SIZE_MB" /> MB 的行動數據。要繼續嗎？</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5604324414379907186">一律顯示書籤列</translation>
 <translation id="5605623530403479164">其他搜尋引擎</translation>
@@ -3253,6 +3258,7 @@
 <translation id="5778550464785688721">MIDI 裝置完整控制</translation>
 <translation id="5780066559993805332">(最佳)</translation>
 <translation id="5780973441651030252">處理優先順序</translation>
+<translation id="5781865261247219930">傳送指令給「<ph name="EXTENSION_NAME" />」</translation>
 <translation id="5783221160790377646">系統發生錯誤，因此並未建立受監管的使用者。請稍後再試。</translation>
 <translation id="5783602409389152506">正在掃描裝置...</translation>
 <translation id="57838592816432529">靜音</translation>
@@ -3295,6 +3301,7 @@
 <translation id="5838825566232597749">美式 Workman 國際</translation>
 <translation id="5842497610951477805">啟用藍牙</translation>
 <translation id="5846929185714966548">分頁 4</translation>
+<translation id="5848924408752252705">輕觸即可返回。</translation>
 <translation id="5848934677402291689">正在儲存為 PDF</translation>
 <translation id="5849570051105887917">家用提供者代碼</translation>
 <translation id="5849869942539715694">封裝擴充功能...</translation>
@@ -3312,6 +3319,7 @@
 <translation id="5859272821192576954">設定程序已完成，您可開始使用 Hangouts</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5860209693144823476">分頁 3</translation>
+<translation id="5860491529813859533">啟用</translation>
 <translation id="5860494867054883682">正在將你的裝置更新至<ph name="CHANNEL_NAME" />版 (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">在檔案櫃中顯示觸控筆工具</translation>
 <translation id="58625595078799656"><ph name="PRODUCT_NAME" /> 要求您使用自己的 Google 密碼或通關密語對資料進行加密。</translation>
@@ -3644,6 +3652,7 @@
 <translation id="6395423953133416962">傳送<ph name="BEGIN_LINK1" />系統資訊<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" /></translation>
 <translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6397592254427394018">在無痕式視窗中開啟所有書籤(&amp;I)</translation>
+<translation id="6398715114293939307">移除 Google Play 商店</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
 <translation id="6399774419735315745">女間諜</translation>
 <translation id="6401445054534215853">檔案櫃項目 1</translation>
@@ -4062,7 +4071,6 @@
 <translation id="7017480957358237747">允許/禁止特定網站；</translation>
 <translation id="7017587484910029005">輸入下方圖片中的字元。</translation>
 <translation id="7018275672629230621">讀取及變更您的瀏覽紀錄</translation>
-<translation id="7018568016607642429">投放錯誤</translation>
 <translation id="7019805045859631636">快</translation>
 <translation id="7022562585984256452">首頁已設定完成。</translation>
 <translation id="702373420751953740">PRL 版本：</translation>
@@ -4969,7 +4977,6 @@
 <translation id="8418445294933751433">顯示為分頁(&amp;S)</translation>
 <translation id="8419098111404128271">「<ph name="SEARCH_TEXT" />」的搜尋結果</translation>
 <translation id="8420060421540670057">顯示 Google 文件檔案</translation>
-<translation id="8423869809045821924">使用其他應用程式開啟 PDF</translation>
 <translation id="8424039430705546751">向下鍵</translation>
 <translation id="8425213833346101688">變更</translation>
 <translation id="8425492902634685834">固定至工作列</translation>
@@ -4986,7 +4993,6 @@
 <translation id="843760761634048214">儲存信用卡</translation>
 <translation id="8438601631816548197">關於語音搜尋</translation>
 <translation id="8439506636278576865">翻譯這個語言的網頁</translation>
-<translation id="8441209996841212096">正在投放影片…</translation>
 <translation id="8442145116400417142">內容遭到封鎖</translation>
 <translation id="8443621894987748190">選擇個人帳戶圖片</translation>
 <translation id="8446884382197647889">瞭解詳情</translation>
@@ -5329,6 +5335,7 @@
 <translation id="8960999352790021682">孟加拉文鍵盤 (拼音)</translation>
 <translation id="8962083179518285172">隱藏詳細資料</translation>
 <translation id="8962198349065195967">這個網路由管理員設定。</translation>
+<translation id="8963572037665351978">結束展示模式</translation>
 <translation id="8965037249707889821">輸入先前的密碼</translation>
 <translation id="8965697826696209160">空間不足。</translation>
 <translation id="8968527460726243404">Chrome 作業系統映像檔寫入工具</translation>
@@ -5483,6 +5490,7 @@
 <translation id="9188441292293901223">您必須將手機更新至較新的 Android 版本，才能為這台 <ph name="DEVICE_TYPE" /> 解鎖。</translation>
 <translation id="9189690067274055051">解除手機的鎖定狀態，並且讓您的手機與 <ph name="DEVICE_TYPE" /> 更靠近，即可進入解鎖模式。</translation>
 <translation id="9190063653747922532">L2TP/IPsec + 預先共用金鑰</translation>
+<translation id="920045321358709304">透過 <ph name="SEARCH_ENGINE" /> 搜尋</translation>
 <translation id="9201305942933582053">歡迎使用 Google 即時資訊 Chrome 版！</translation>
 <translation id="9203398526606335860">分析已啟用(&amp;P)</translation>
 <translation id="9203478404496196495">開啟分頁音訊</translation>
@@ -5515,6 +5523,7 @@
 <translation id="946810925362320585">套用建議設定</translation>
 <translation id="951981865514037445"><ph name="URL" /> 要求使用裝置的位置資訊。</translation>
 <translation id="952992212772159698">未啟用</translation>
+<translation id="958515377357646513">輕觸即可繼續。</translation>
 <translation id="960719561871045870">電信業者代碼</translation>
 <translation id="960987915827980018">剩下約 1 個小時</translation>
 <translation id="96421021576709873">Wi-Fi 網路</translation>

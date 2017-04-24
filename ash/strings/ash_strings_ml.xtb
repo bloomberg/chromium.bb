@@ -29,8 +29,6 @@
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="1823873187264960516">ഇതർനെറ്റ്: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi ഓഫുചെയ്‌തു.</translation>
-<translation id="1854357586517521894">CAPS LOCK ഓണാണ്.
-    റദ്ദാക്കാൻ 'തിരയൽ' അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="1864454756846565995">USB-C ഉപകരണം (പുറകിലെ പോർട്ട്)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
 <translation id="1919743966458266018">ടാസ്‌ക് മാനേജർ തുറക്കാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
@@ -70,11 +68,11 @@
 <translation id="3000461861112256445">മോണോ ഓഡിയോ</translation>
 <translation id="3009178788565917040">ഔട്ട്പുട്ട്</translation>
 <translation id="3019353588588144572">ബാറ്ററി പൂർണ്ണമായി ചാർജ്ജാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_REMAINING" /></translation>
+<translation id="3050422059534974565">CAPS LOCK ഓൺ ആണ്.
+റദ്ദാക്കുന്നതിന് തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">താഴെ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3109220592788908353">CAPS LOCK ഓണാണ്.
-    റദ്ദാക്കാൻ Alt+തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="3126069444801937830">അപ്‌ഡേറ്റുചെയ്യുന്നതിന് പുനരാരംഭിക്കുക</translation>
 <translation id="3147142846278915599">ലോഞ്ചർ (അപ്ലിക്കേഷൻ സമന്വയിപ്പിക്കുന്നു...)</translation>
 <translation id="315116470104423982">മൊബൈല്‍ ഡാറ്റ</translation>
@@ -205,10 +203,10 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
+<translation id="7209101170223508707">CAPS LOCK ഓണാണ്.
+റദ്ദാക്കുന്നതിന് Alt+തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="7246339268451149667">വിരലടയാളം ഉപയോഗിച്ചുള്ള അൺലോക്കുചെയ്യൽ പ്രവർത്തനക്ഷമമാക്കണോ?</translation>
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
-<translation id="7337799137043490957">വിരലടയാള സെൻസറിൽ ടാപ്പുചെയ്‌തുകൊണ്ട് ലോക്ക് സ്‌ക്രീൻ ഒഴിവാക്കുക. കോൺഫിഗർ ചെയ്യാൻ
-   ക്ലിക്കുചെയ്യുക.</translation>
 <translation id="7348093485538360975">ഓൺ-സ്‌ക്രീൻ കീബോർഡ്</translation>
 <translation id="735745346212279324">VPN വിച്ഛേദിച്ചു</translation>
 <translation id="742594950370306541">ക്യാമറ ഉപയോഗത്തിലാണ്.</translation>

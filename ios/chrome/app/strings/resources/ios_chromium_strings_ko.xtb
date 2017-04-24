@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">어느 기기에서나 내 북마크를 사용하려면 Chromium에 로그인하세요.</translation>
 <translation id="3473048256428424907">Chromium QR 스캐너 사용 설정</translation>
 <translation id="3805899903892079518">Chromium에서 사진 또는 동영상에 액세스할 수 없습니다. 'iOS 설정 &gt; 개인정보 보호 &gt; 사진'에서 액세스를 허용하세요.</translation>
-<translation id="40863189315891987">빠르게 액세스하려면 <ph name="BEGIN_LINK" />Chromium을 내 Dock에 추가하세요.<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">다른 기기에서 탭을 가져오려면 Chromium에 로그인하세요.</translation>
 <translation id="4241912885070669028"><ph name="SIGNOUT_MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃합니다. 이렇게 하면 내 Chromium 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="4555020257205549924">이 기능을 사용하면 Chromium에서 Google 번역을 사용하여 외국어로 작성된 페이지를 번역합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Chromium에서 로그아웃</translation>
 <translation id="6424492062988593837">한층 개선된 Chromium의 최신 버전이 출시되었습니다.</translation>
 <translation id="6604711459180487467">위치 정보를 기반으로 Chromium에서 더 나은 서비스를 이용할 수 있습니다.</translation>
-<translation id="6989306073720242915">Chromium이 마음에 드시면 <ph name="BEGIN_LINK" />Dock에 추가하세요.<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium에서는 분할 모드에서 카메라를 사용할 수 없습니다.</translation>
 <translation id="7144758435978427212">근처 사물에서 전송한 웹페이지를 탐색하세요. 블루투스를 사용 설정하면 Chromium은 근처 사물과 관련된 웹페이지를 수집한 후 익명으로 Google로 전달하여 사용자에게 가장 유용한 웹페이지를 찾습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium에서는 계정 로그인 정보가 자동으로 채워지기 때문에 시간을 절약할 수 있습니다. 설정에서 계정을 추가하거나 삭제할 수 있습니다.</translation>

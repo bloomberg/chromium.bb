@@ -27,6 +27,7 @@
 您必须开启蓝牙和位置信息功能才能使用实物网。</translation>
 <translation id="124678866338384709">关闭当前标签页</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1265597927250775944">清除历史记录和地址栏建议。</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1283039547216852943">点按即可展开</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
@@ -35,6 +36,7 @@
 <translation id="1303671224831497365">未找到任何蓝牙设备</translation>
 <translation id="1326317727527857210">要在您的其他设备上访问您的标签页，请登录 Chrome。</translation>
 <translation id="1332501820983677155">Google Chrome 功能快捷键</translation>
+<translation id="1339917386316755344">您会从大多数网站退出，但不会因此退出自己的 Google 帐号。</translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
 <translation id="1376578503827013741">正在计算…</translation>
@@ -63,7 +65,6 @@
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1571304935088121812">复制用户名</translation>
-<translation id="1594030484168838125">选择</translation>
 <translation id="1612196535745283361">Chrome 需要拥有位置信息使用权才能扫描设备。<ph name="BEGIN_LINK" />此设备的位置信息使用权已被停用<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
@@ -255,6 +256,7 @@
 <translation id="3859306556332390985">前进</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
+<translation id="3915590178385207649">清除所有已登录设备上的历史记录。您可以前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查看您 Google 帐号中的其他活动记录。</translation>
 <translation id="3917783807003067648">禁止访问位置信息</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">合并我的数据</translation>
@@ -265,6 +267,7 @@
 <translation id="395922942268463099">定期更新的页面</translation>
 <translation id="3967822245660637423">下载完毕</translation>
 <translation id="397583555483684758">同步功能已停止工作</translation>
+<translation id="3976396876660209797">移除并重新创建此快捷方式</translation>
 <translation id="3985215325736559418">要重新下载“<ph name="FILE_NAME" />”吗？</translation>
 <translation id="3987993985790029246">复制链接</translation>
 <translation id="3988213473815854515">允许访问位置信息</translation>
@@ -293,9 +296,8 @@
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
 <translation id="4262028915562328938">同步时出现错误，点按可了解详情。</translation>
 <translation id="4269820728363426813">复制链接地址</translation>
-<translation id="4271185234001491831">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">媒体</translation>
-<translation id="4278390842282768270">允许的 Cookie</translation>
+<translation id="4278390842282768270">允许</translation>
 <translation id="4300272766492248925">打开应用</translation>
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
@@ -333,7 +335,6 @@
 <translation id="473775607612524610">更新</translation>
 <translation id="4738836084190194332">上次同步时间：<ph name="WHEN" /></translation>
 <translation id="4749960740855309258">打开新标签页</translation>
-<translation id="4750394297954878236">建议</translation>
 <translation id="4759238208242260848">下载内容</translation>
 <translation id="4766369052440583386">流量节省程序已开启</translation>
 <translation id="4797039098279997504">触摸即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -424,6 +425,7 @@
 <translation id="5626134646977739690">名字：</translation>
 <translation id="5639724618331995626">允许访问所有网站</translation>
 <translation id="5646376287012673985">位置</translation>
+<translation id="5648166631817621825">过去 7 天</translation>
 <translation id="5655963694829536461">搜索您的下载内容</translation>
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5665379678064389456">在<ph name="APP_NAME" />中创建活动</translation>
@@ -559,6 +561,7 @@
 <translation id="6965382102122355670">确定</translation>
 <translation id="6973630695168034713">文件夹</translation>
 <translation id="6978479750597523876">重置翻译设置</translation>
+<translation id="6979737339423435258">时间不限</translation>
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="6985347914332179298">此处没有任何下载内容</translation>
 <translation id="6990079615885386641">从 Google Play 商店下载应用：<ph name="APP_ACTION" /></translation>
@@ -576,6 +579,7 @@
 <translation id="7128222689758636196">适用于当前的搜索引擎</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7144878232160441200">重试</translation>
+<translation id="7149893636342594995">过去 24 小时</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7189372733857464326">正在等待 Google Play 服务完成更新</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
@@ -594,6 +598,7 @@
 <translation id="7423098979219808738">先询问</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="7445411102860286510">允许网站自动播放静音的视频（推荐）</translation>
+<translation id="7449574997654022410">清除历史记录和地址栏建议。您可以前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查看您 Google 帐号中的其他活动记录。</translation>
 <translation id="7464701184726199289">这将清除所有设备上的已同步数据。已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7475192538862203634">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
@@ -611,6 +616,7 @@
 <translation id="7589445247086920869">不适用于当前的搜索引擎</translation>
 <translation id="7593557518625677601">打开 Android 设置，重新启用 Android 系统同步功能以开始 Chrome 同步</translation>
 <translation id="7596558890252710462">操作系统</translation>
+<translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">同步功能无法正常运行</translation>
 <translation id="7612619742409846846">已使用以下帐号登录 Google：</translation>
 <translation id="7619072057915878432">未能成功下载 <ph name="FILE_NAME" />，因为出现了网络故障。</translation>
@@ -635,6 +641,7 @@
 <translation id="7829298379596169484">正在存取音频输入</translation>
 <translation id="7837721118676387834">允许特定网站自动播放静音的视频。</translation>
 <translation id="7846076177841592234">取消选择</translation>
+<translation id="784934925303690534">时间范围</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7875915731392087153">创建电子邮件</translation>
 <translation id="7876243839304621966">全部删除</translation>
@@ -695,7 +702,6 @@
 <translation id="8489271220582375723">打开历史记录页</translation>
 <translation id="8493948351860045254">释放空间</translation>
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
-<translation id="8499147970084652325">使用 Google 服务器提供浏览建议。</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="8523928698583292556">删除存储的密码</translation>
@@ -715,6 +721,7 @@
 <translation id="8639651215196239211">所有下载内容</translation>
 <translation id="8641930654639604085">尽量屏蔽成人网站</translation>
 <translation id="8660471606262461360">来自 Google Payments</translation>
+<translation id="8662811608048051533">您会从大多数网站退出。</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
 <translation id="869891660844655955">截止日期</translation>
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
@@ -725,7 +732,6 @@
 <translation id="8788968922598763114">重新打开上次关闭的标签页</translation>
 <translation id="8812260976093120287">在某些网站上，您可以使用自己的设备通过上述支持的付款应用付款。</translation>
 <translation id="8812942424849541387">您可以转到<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />控制该功能的运行方式</translation>
-<translation id="8812949859341886735">启用此功能后，Chrome 会使用 Google 服务器提供浏览建议（例如：在您打开一个新标签页时提供浏览建议）。这些建议包括热门网站、热搜报道以及个性化建议。</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="883635517171802338">禁止网站显示弹出式窗口（推荐）</translation>
 <translation id="8847988622838149491">USB</translation>

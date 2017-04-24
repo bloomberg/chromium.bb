@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3345341804167540816">Usar Chrome en todas partes</translation>
 <translation id="3531621179462011934">Inicia sesión en Chrome para ver tu configuración en todos tus dispositivos.</translation>
-<translation id="3601960512121168237">¿Te gusta Chrome? <ph name="BEGIN_LINK" />Muévelo a tu Dock<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">¿Quieres que Chrome guarde tu contraseña para este sitio web?</translation>
 <translation id="384394811301901750">Google Chrome no puede usar la cámara en este momento</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome no puede acceder a tus fotos y vídeos (para permitirlo, ve a Ajustes de iOS &gt; Privacidad &gt; Fotos).</translation>
 <translation id="4099578267706723511">Ayudar a mejorar Chrome enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="415767770115540173">Disfruta de una mejor experiencia en Chrome compartiendo tu ubicación.</translation>
+<translation id="4248297594476034182">Inicia sesión en Chrome para ver tus pestañas en todos tus dispositivos.</translation>
 <translation id="424864128008805179">¿Cerrar sesión en Chrome?</translation>
 <translation id="4523886039239821078">Algunos complementos hacen que Chrome falle. Desinstálalos.</translation>
 <translation id="4615174829807303908">Estás cerrando sesión en una cuenta administrada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Se van a eliminar tus datos de Chrome de este dispositivo, pero van a permanecer en tu cuenta de Google.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Consejo: <ph name="BEGIN_LINK" />Mueve Chrome a tu Dock<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Accede a las pestañas que tengas abiertas en tu ordenador desde aquí. Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar Iniciar sesión en Chrome…</translation>
 <translation id="728488472449859922">Activar el escáner de QR de Google Chrome</translation>
-<translation id="7311395200710390977">Para acceder rápidamente, <ph name="BEGIN_LINK" />mueve Chrome a tu Dock<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Información de Google Chrome</translation>
 <translation id="7437998757836447326">Cerrar sesión en Chrome</translation>
 <translation id="756809126120519699">Datos de Chrome borrados</translation>

@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3345341804167540816">Използвайте Chrome навсякъде</translation>
 <translation id="3531621179462011934">Влезте в Chrome, за да получите настройките си на всичките си устройства.</translation>
-<translation id="3601960512121168237">Харесвате Chrome? <ph name="BEGIN_LINK" />Преместете го в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Искате ли Chrome да запази паролата ви за този сайт?</translation>
 <translation id="384394811301901750">В момента Google Chrome не може да използва камерата ви</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome няма достъп до снимките или видеоклиповете ви. Активирайте го от „Settings“ &gt; „Privacy“ &gt; „Photos“ в iOS.</translation>
 <translation id="4099578267706723511">Помогнете за подобряването на Chrome, като изпращате до Google статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="415767770115540173">Подобрете практическата си работа с Google в Chrome въз основа на местоположението ви.</translation>
+<translation id="4248297594476034182">Влезте в Chrome, за да получите разделите си на всичките си устройства.</translation>
 <translation id="424864128008805179">Искате ли да излезете от Chrome?</translation>
 <translation id="4523886039239821078">Някои добавки водят до срив на Chrome. Моля, деинсталирайте:</translation>
 <translation id="4615174829807303908">Излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />. Данните ви в Chrome ще се изтрият от това устройство, но ще останат в профила ви в Google.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Съвет: <ph name="BEGIN_LINK" />Преместете Chrome в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Осъществявайте оттук достъп до разделите, които сте отворили на компютъра си. Трябва само да стартирате Chrome на компютъра си и да изберете „Вход в Chrome…“ от менюто.</translation>
 <translation id="728488472449859922">Включване на скенера за QR кодове в Google Chrome</translation>
-<translation id="7311395200710390977">За по-бърз достъп <ph name="BEGIN_LINK" />преместете Chrome в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Всичко за Google Chrome</translation>
 <translation id="7437998757836447326">Изход от Chrome</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>

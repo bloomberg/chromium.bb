@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be a Chromiumba.</translation>
 <translation id="3473048256428424907">A Chromium QR-olvasójának bekapcsolása</translation>
 <translation id="3805899903892079518">A Chromium nem fér hozzá az Ön képeihez és videóihoz. Engedélyezés iOS-en: Beállítások &gt; Adatvédelem &gt; Fényképek.</translation>
-<translation id="40863189315891987">A gyorsabb hozzáférés érdekében <ph name="BEGIN_LINK" />helyezze át a Chromiumot a Dockra<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">Ha hozzá szeretne férni lapjaihoz a többi eszközéről, jelentkezzen be a Chromiumba.</translation>
 <translation id="4241912885070669028">Kijelentkezik egy <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chromium-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
 <translation id="4555020257205549924">Ha a funkció be van kapcsolva, a Chromium felajánlja a más nyelveken írt oldalak lefordítását a Google Fordító segítségével. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Kijelentkezik a Chromiumból?</translation>
 <translation id="6424492062988593837">A Chromium most még jobb lett! Új verzió áll rendelkezésre.</translation>
 <translation id="6604711459180487467">A helyadatokkal jobb felhasználói élményben lehet része a Chromium használatakor.</translation>
-<translation id="6989306073720242915">Tetszik Önnek a Chromium? <ph name="BEGIN_LINK" />Helyezze át a Dockra<ph name="END_LINK" />.</translation>
 <translation id="7099326575020694068">A Chromium Osztott nézet módban nem tudja használni a kamerát</translation>
 <translation id="7144758435978427212">Közeli objektumok által küldött weboldalak felfedezése. Ha a Bluetooth be van kapcsolva, a Chromium összegyűjtheti az Ön közelében található objektumokhoz társított weboldalakat, és névtelenül elküldheti őket a Google-nak, hogy megtalálja az Ön számára leghasznosabbakat. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="7208566199746267865">A Chromium időt takarít meg Önnek azzal, hogy fiókjait az internetre viszi. A beállításokban tud fiókokat hozzáadni vagy eltávolítani.</translation>

@@ -66,6 +66,7 @@
           &lt;p&gt;Muokkaa aikaa ja päivämäärää &lt;strong&gt;Asetukset&lt;/strong&gt;‑sovelluksen  &lt;strong&gt;Yleistä&lt;/strong&gt;‑osiossa.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Jokin meni vikaan tätä verkkosivua näytettäessä.</translation>
 <translation id="1592005682883173041">Tietojen paikallinen käyttö</translation>
+<translation id="1594030484168838125">Valitse</translation>
 <translation id="161042844686301425">Turkoosi</translation>
 <translation id="1629803312968146339">Haluatko, että Chrome tallentaa tämän kortin?</translation>
 <translation id="1639239467298939599">Ladataan</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Lähetä nyt</translation>
 <translation id="225207911366869382">Tämän käytännön arvo on vanhentunut.</translation>
 <translation id="2262243747453050782">HTTP-virhe</translation>
+<translation id="2270484714375784793">Puhelinnumero</translation>
 <translation id="2282872951544483773">Ei käytettävissä olevat kokeilut</translation>
 <translation id="2292556288342944218">Internetyhteytesi on estetty</translation>
 <translation id="230155334948463882">Uusi kortti?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">Verkossa havaittiin muutos.</translation>
 <translation id="2916038427272391327">Sulje muita ohjelmia.</translation>
 <translation id="2922350208395188000">Palvelimen varmennetta ei voi tarkistaa.</translation>
+<translation id="2928905813689894207">Laskutusosoite</translation>
 <translation id="2948083400971632585">Voit poistaa yhteydelle määritetyt välityspalvelimet käytöstä asetussivulla.</translation>
 <translation id="2955913368246107853">Sulje hakupalkki</translation>
 <translation id="2958431318199492670">Verkkoasetukset eivät noudata ONC-standardia. Kaikkia asetuksia ei välttämättä tuoda.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Näytä tallennettu kopio</translation>
 <translation id="3008447029300691911">Anna kortin <ph name="CREDIT_CARD" /> CVC. Vahvistamisen jälkeen korttisi tiedot jaetaan sivuston kanssa.</translation>
 <translation id="3010559122411665027">Luettelokohde "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Estetty automaattisesti</translation>
 <translation id="3024663005179499861">Väärä käytäntötyyppi</translation>
 <translation id="3032412215588512954">Haluatko päivittää tämän sivuston?</translation>
 <translation id="3037605927509011580">Voi räkä!</translation>
@@ -259,7 +263,6 @@
 <translation id="3345135638360864351">Tämän sivuston käyttöpyyntöä ei voitu lähettää henkilölle <ph name="NAME" />. Yritä uudelleen.</translation>
 <translation id="3355823806454867987">Muuta välityspalvelimen asetuksia...</translation>
 <translation id="3369192424181595722">Väärä kellonaika</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> muuta kohdetta…</translation>
 <translation id="337363190475750230">Poistettu käytöstä</translation>
 <translation id="3377188786107721145">Virhe jäsennettäessä käytäntöä</translation>
 <translation id="3380365263193509176">Tuntematon virhe</translation>
@@ -491,6 +494,7 @@
 <translation id="5622887735448669177">Haluatko poistua tältä sivustolta?</translation>
 <translation id="5629630648637658800">Käytännön asetuksien lataaminen epäonnistui</translation>
 <translation id="5631439013527180824">Laitteenhallintatunnus on virheellinen</translation>
+<translation id="5659593005791499971">Sähköposti</translation>
 <translation id="5669703222995421982">Hanki räätälöityä sisältöä</translation>
 <translation id="5675650730144413517">Sivu ei toimi</translation>
 <translation id="5677928146339483299">Estetty</translation>
@@ -524,13 +528,13 @@
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="6042308850641462728">Lisää</translation>
 <translation id="6060685159320643512">Varoitus, nämä kokeilut saattavat puraista</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{ei yhtään}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Tarkista kaikki kaapelit ja käynnistä uudelleen reitittimet, modeemit ja muut
     käytössä olevat verkkolaitteet.</translation>
 <translation id="614940544461990577">Kokeile seuraavia toimenpiteitä:</translation>
 <translation id="6151417162996330722">Palvelimen varmenteen voimassaoloaika on liian pitkä.</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="6177128806592000436">Sivustoon ei ole muodostettu turvallista yhteyttä.</translation>
+<translation id="6184817833369986695">(kohortti: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Tarkista internetyhteytesi</translation>
 <translation id="6218753634732582820">Poistetaanko osoite Chromiumista?</translation>
 <translation id="6251924700383757765">Tietosuojakäytäntö</translation>
@@ -628,6 +632,7 @@
 <translation id="7180611975245234373">Päivitä</translation>
 <translation id="7182878459783632708">Käytäntöjä ei ole asetettu</translation>
 <translation id="7186367841673660872">Tämä sivu on käännetty kielestä<ph name="ORIGINAL_LANGUAGE" />kielelle<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Vapauttaa <ph name="SIZE" />. Jotkin sivustot saattavat latautua hitaammin seuraavalla käynnillä.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ei noudata tietoturvastandardeja.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /> ongelmasta.</translation>

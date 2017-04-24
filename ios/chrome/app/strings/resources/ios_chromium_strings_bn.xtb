@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">সব ডিভাইসে আপনার বুকমার্কগুলি পেতে, Chromium এ প্রবেশ করুন।</translation>
 <translation id="3473048256428424907">Chromium QR স্ক্যানার চালু করুন</translation>
 <translation id="3805899903892079518">আপনার ফটো এবং ভিডিওগুলিতে Chromium এর অ্যাক্সেস নেই৷ iOS সেটিংস &gt; গোপনীয়তা &gt; ফটোগুলিতে অ্যাক্সেস সক্ষম করুন৷</translation>
-<translation id="40863189315891987">দ্রুততর অ্যাক্সেসের জন্য, <ph name="BEGIN_LINK" />Chromium কে আপনার ডকে সরান<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">আপনার অন্য ডিভাইসগুলি থেকে আপনার ট্যাবগুলি পেতে, Chromium এ প্রবেশ করুন।</translation>
 <translation id="4241912885070669028"><ph name="SIGNOUT_MANAGED_DOMAIN" /> পরিচালিত একটি অ্যাকাউন্ট থেকে আপনি সাইন আউট করছেন৷ এটি এই ডিভাইস থেকে আপনার Chromium ডেটা মুছে ফেলবে, কিন্তু আপনার Google অ্যাকাউন্টে ডেটা থেকে যাবে৷</translation>
 <translation id="4555020257205549924">যখন এই বৈশিষ্ট্যটি চালু করা হয় তখন Chromium, Google অনুবাদ ব্যবহার করে অন্যান্য ভাষায় লিখিত পৃষ্ঠাগুলি অনুবাদ করার অফার করবে৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Chromium থেকে প্রস্থান করবেন?</translation>
 <translation id="6424492062988593837">Chrome আরো ভাল হয়েছে! একটি নতুন সংস্করণ উপলব্ধ আছে৷</translation>
 <translation id="6604711459180487467">আপনার অবস্থানের উপর ভিত্তি করে Chromium এ আরো ভাল অভিজ্ঞতা লাভ করুন৷</translation>
-<translation id="6989306073720242915">Chromium পছন্দ করেন? <ph name="BEGIN_LINK" />তাহলে আপনার ডকে নিয়ে যান<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium আপনার ক্যামেরা বিভক্ত দৃশ্য মোডে ব্যবহার করতে পারবে না</translation>
 <translation id="7144758435978427212">আশেপাশের ডিভাইসগুলি দ্বারা পাঠানো ওয়েব পৃষ্ঠাগুলি খুঁজুন। Bluetooth চালু থাকলে, Chromium আপনার চারপাশের বস্তুর সঙ্গে যুক্ত ওয়েব পৃষ্ঠাগুলি জড়ো করে এবং সবচেয়ে দরকারী পৃষ্টাগুলি খুঁজে সেগুলি বেনামে Google কে পাঠায়। <ph name="BEGIN_LINK" /> আরো জানুন <ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium আপনার অ্যাকাউন্টগুলিকে ওয়েবে নিয়ে এসে আপনার সময় বাঁচায়। আপনি সেটিংস থেকে অ্যাকাউন্ট জুড়তে বা সরাতে পারবেন।</translation>

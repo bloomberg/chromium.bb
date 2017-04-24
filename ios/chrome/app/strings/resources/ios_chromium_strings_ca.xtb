@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Inicia la sessió a Chromium per accedir a les adreces d'interès des de tots els dispositius.</translation>
 <translation id="3473048256428424907">Activa l'escàner QR de Chromium</translation>
 <translation id="3805899903892079518">Chromium no té accés als vostres vídeos o fotos. Permeteu-li l'accés a iOS, a Configuració &gt; Privadesa &gt; Fotos.</translation>
-<translation id="40863189315891987"><ph name="BEGIN_LINK" />Mou Chromium al Dock<ph name="END_LINK" /> per accedir-hi més de pressa</translation>
 <translation id="418271229036116702">Inicia la sessió a Chromium per accedir a les teves pestanyes des dels altres dispositius que tinguis.</translation>
 <translation id="4241912885070669028">Estàs tancant la sessió d'un compte gestionat per <ph name="SIGNOUT_MANAGED_DOMAIN" />. Se suprimiran les teves dades de Chromium d'aquest dispositiu, però continuaran al teu compte de Google.</translation>
 <translation id="4555020257205549924">Quan aquesta funció està activada, Chromium ofereix la possibilitat de traduir pàgines escrites en altres idiomes mitjançant el Traductor de Google. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Voleu tancar la sessió de Chromium?</translation>
 <translation id="6424492062988593837">Chrome ara és millor. Hi ha una versió nova disponible.</translation>
 <translation id="6604711459180487467">Comparteix la teva ubicació per gaudir dels avantatges de Chromium.</translation>
-<translation id="6989306073720242915">T'agrada Chromium? <ph name="BEGIN_LINK" />Mou-lo al Dock<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium no pot utilitzar la càmera en mode de visualització dividida</translation>
 <translation id="7144758435978427212">Descobreix les pàgines web enviades pels objectes propers. Quan el Bluetooth està activat, Chromium pot recopilar les pàgines web associades als objectes que t'envolten i enviar-les de manera anònima a Google per trobar les més útils. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Per ajudar-te a estalviar temps, Chromium connecta els teus comptes al web. Pots afegir o suprimir comptes a Configuració.</translation>

@@ -27,6 +27,7 @@
 Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktiviert sein.</translation>
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1265597927250775944">Der Verlauf und die Vervollständigungen in der Adressleiste werden gelöscht.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Zum Maximieren tippen</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
@@ -35,6 +36,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1303671224831497365">Keine Bluetooth-Geräte gefunden</translation>
 <translation id="1326317727527857210">Melden Sie sich in Chrome an, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="1332501820983677155">Tastenkombinationen für Google Chrome-Funktionen</translation>
+<translation id="1339917386316755344">Sie werden von den meisten Websites, aber nicht aus Ihrem Google-Konto abgemeldet.</translation>
 <translation id="1369915414381695676">Website "<ph name="SITE_NAME" />" hinzugefügt</translation>
 <translation id="1373696734384179344">Der Speicher reicht nicht aus, um den ausgewählten Inhalt herunterzuladen.</translation>
 <translation id="1376578503827013741">Berechnung läuft...</translation>
@@ -63,7 +65,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1549000191223877751">Zu anderem Fenster wechseln</translation>
 <translation id="1553358976309200471">Chrome aktualisieren</translation>
 <translation id="1571304935088121812">Nutzernamen kopieren</translation>
-<translation id="1594030484168838125">Auswählen</translation>
 <translation id="1612196535745283361">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. Der Standortzugriff ist <ph name="BEGIN_LINK" />für dieses Gerät deaktiviert<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Keine weiteren Dialogfelder auf dieser Seite zulassen</translation>
@@ -255,6 +256,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
+<translation id="3915590178385207649">Der Verlauf auf allen angemeldeten Geräten wird gelöscht. Andere Aktivitäten Ihres Google-Kontos sehen Sie unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Standort blockiert</translation>
 <translation id="3927692899758076493">Serifenlose Schrift</translation>
 <translation id="3928666092801078803">Daten zusammenführen</translation>
@@ -265,6 +267,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="395922942268463099">Regelmäßig aktualisierte Seiten</translation>
 <translation id="3967822245660637423">Download abgeschlossen</translation>
 <translation id="397583555483684758">Die Synchronisierung funktioniert nicht mehr</translation>
+<translation id="3976396876660209797">Verknüpfung entfernen und neu erstellen</translation>
 <translation id="3985215325736559418">Soll <ph name="FILE_NAME" /> erneut heruntergeladen werden?</translation>
 <translation id="3987993985790029246">Link kopieren</translation>
 <translation id="3988213473815854515">Standort freigegeben</translation>
@@ -293,7 +296,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
 <translation id="4262028915562328938">Es ist ein Synchronisierungsfehler aufgetreten. Tippen Sie, um Details zu erhalten.</translation>
 <translation id="4269820728363426813">URL kopieren</translation>
-<translation id="4271185234001491831"><ph name="LANGUAGE" /> nie übersetzen</translation>
 <translation id="4275663329226226506">Medien</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
 <translation id="4300272766492248925">App öffnen</translation>
@@ -333,7 +335,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4738836084190194332">Letzte Synchronisierung: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Neuen Tab öffnen</translation>
-<translation id="4750394297954878236">Vorschläge</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4766369052440583386">Datensparmodus aktiviert</translation>
 <translation id="4797039098279997504">Tippen, um zu <ph name="URL_OF_THE_CURRENT_TAB" /> zurückzukehren</translation>
@@ -424,6 +425,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Alle Websites zulassen</translation>
 <translation id="5646376287012673985">Standort</translation>
+<translation id="5648166631817621825">Letzte 7 Tage</translation>
 <translation id="5655963694829536461">Downloads durchsuchen</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5665379678064389456">Termin in <ph name="APP_NAME" /> erstellen</translation>
@@ -559,6 +561,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Ordner</translation>
 <translation id="6978479750597523876">Übersetzungseinstellungen zurücksetzen</translation>
+<translation id="6979737339423435258">Gesamte Zeit</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6985347914332179298">Keine Downloads vorhanden</translation>
 <translation id="6990079615885386641">App aus dem Play Store abrufen: <ph name="APP_ACTION" /></translation>
@@ -576,6 +579,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7128222689758636196">Für aktuelle Suchmaschine zulassen</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
 <translation id="7144878232160441200">Wiederholen</translation>
+<translation id="7149893636342594995">Letzte 24 Stunden</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7189372733857464326">Warten auf Abschluss der Google Play-Dienste-Aktualisierung</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
@@ -594,6 +598,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="7445411102860286510">Automatische Wiedergabe stummgeschalteter Videos auf Websites zulassen (empfohlen)</translation>
+<translation id="7449574997654022410">Der Verlauf und die Vervollständigungen in der Adressleiste werden gelöscht. Andere Aktivitäten Ihres Google-Kontos sehen Sie unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Dadurch werden synchronisierte Daten von allen Geräten gelöscht. Gespeicherte Website-Einstellungen werden nicht gelöscht und können möglicherweise Ihre Surfgewohnheiten wiedergeben. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="7475192538862203634">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK" />Empfehlungen<ph name="END_LINK" /> an.</translation>
@@ -611,6 +616,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7589445247086920869">Für aktuelle Suchmaschine blockieren</translation>
 <translation id="7593557518625677601">Einstellungen öffnen und Systemsynchr. aktivieren, um Chrome-Synchr. zu starten</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE" /> nie übersetzen</translation>
 <translation id="7605594153474022051">Synchronisierung funktioniert nicht</translation>
 <translation id="7612619742409846846">Bei Google angemeldet als</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> konnte aufgrund von Netzwerkfehlern nicht heruntergeladen werden.</translation>
@@ -635,6 +641,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7829298379596169484">Zugriff auf Audio-Eingang</translation>
 <translation id="7837721118676387834">Automatische Wiedergabe stummgeschalteter Videos für eine bestimmte Website zulassen.</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
+<translation id="784934925303690534">Zeitraum</translation>
 <translation id="7851858861565204677">Andere Geräte</translation>
 <translation id="7875915731392087153">E-Mail erstellen</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>
@@ -695,7 +702,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8489271220582375723">Verlaufsseite öffnen</translation>
 <translation id="8493948351860045254">Speicherplatz freigeben</translation>
 <translation id="8497726226069778601">Noch keine Seiten</translation>
-<translation id="8499147970084652325">Die Server von Google werden zur Bereitstellung von Vorschlägen verwendet.</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="8514577642972634246">Inkognitomodus aktivieren</translation>
 <translation id="8523928698583292556">Gespeichertes Passwort löschen</translation>
@@ -715,6 +721,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8639651215196239211">Alle Downloads</translation>
 <translation id="8641930654639604085">Versuchen, nicht jugendfreie Websites zu blockieren</translation>
 <translation id="8660471606262461360">Aus Google Payments</translation>
+<translation id="8662811608048051533">Sie werden von den meisten Websites abgemeldet.</translation>
 <translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="869891660844655955">Ablaufdatum</translation>
 <translation id="8719023831149562936">Aktueller Tab kann nicht gebeamt werden.</translation>
@@ -725,7 +732,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8788968922598763114">Zuletzt geschlossenen Tab öffnen</translation>
 <translation id="8812260976093120287">Auf manchen Websites können Sie über Ihr Gerät mit den obigen unterstützten Zahlungs-Apps bezahlen.</translation>
 <translation id="8812942424849541387">Funktionsweise unter <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> verwalten</translation>
-<translation id="8812949859341886735">Wenn diese Funktion aktiviert ist, nutzt Chrome Google-Server, um Vorschläge bereitzustellen, z. B. dann, wenn Sie einen neuen Tab öffnen. Diese umfassen beliebte Websites, aktuelle Artikel und personalisierte Vorschläge.</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="883635517171802338">Anzeige von Pop-ups für Websites blockieren (empfohlen)</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -66,6 +66,7 @@
       &lt;p&gt;Canvieu la data i l'hora a la secció &lt;strong&gt;General&lt;/strong&gt; de l'aplicació &lt;strong&gt;Configuració&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">S'ha produït un error en mostrar aquesta pàgina web.</translation>
 <translation id="1592005682883173041">Accés a les dades locals</translation>
+<translation id="1594030484168838125">Tria</translation>
 <translation id="161042844686301425">Cian</translation>
 <translation id="1629803312968146339">Voleu que Chrome desi aquesta targeta?</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Envia ara</translation>
 <translation id="225207911366869382">El valor d'aquesta política és obsolet.</translation>
 <translation id="2262243747453050782">Error d'HTTP</translation>
+<translation id="2270484714375784793">Número de telèfon</translation>
 <translation id="2282872951544483773">Experiments no disponibles</translation>
 <translation id="2292556288342944218">El vostre accés a Internet està bloquejat</translation>
 <translation id="230155334948463882">És una targeta nova?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">S'ha detectat un canvi a la xarxa.</translation>
 <translation id="2916038427272391327">Tanca altres programes</translation>
 <translation id="2922350208395188000">No es pot comprovar el certificat del servidor.</translation>
+<translation id="2928905813689894207">Adreça de facturació</translation>
 <translation id="2948083400971632585">Podeu desactivar qualsevol servidor intermediari configurat per a una connexió des de la pàgina de configuració.</translation>
 <translation id="2955913368246107853">Tanca la barra de cerca</translation>
 <translation id="2958431318199492670">La configuració de la xarxa no compleix l'estàndard ONC. Pot ser que algunes opcions de configuració no s'hagin importat.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Mostra la còpia desada</translation>
 <translation id="3008447029300691911">Introdueix el CVC de la targeta <ph name="CREDIT_CARD" />. Un cop confirmada, els detalls de la targeta es compartiran amb aquest lloc.</translation>
 <translation id="3010559122411665027">Entrada de llista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Bloquejada automàticament</translation>
 <translation id="3024663005179499861">Tipus de política incorrecte</translation>
 <translation id="3032412215588512954">Voleu tornar a carregar aquest lloc?</translation>
 <translation id="3037605927509011580">Oh, no!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">La sol·licitud per accedir al lloc no s'ha pogut enviar a <ph name="NAME" />. Torneu-ho a provar.</translation>
 <translation id="3355823806454867987">Canvia la configuració del servidor intermediari...</translation>
 <translation id="3369192424181595722">Error de rellotge</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> elements més...</translation>
 <translation id="337363190475750230">No administrat</translation>
 <translation id="3377188786107721145">S'ha produït un error en analitzar la política</translation>
 <translation id="3380365263193509176">Error desconegut</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">Voleu sortir d'aquest lloc?</translation>
 <translation id="5629630648637658800">No s'ha pogut carregar la configuració de la política</translation>
 <translation id="5631439013527180824">Testimoni de gestió del dispositiu no vàlid</translation>
+<translation id="5659593005791499971">Correu electrònic</translation>
 <translation id="5669703222995421982">Obtén contingut personalitzat</translation>
 <translation id="5675650730144413517">Aquesta pàgina no funciona</translation>
 <translation id="5677928146339483299">Bloquejades</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6042308850641462728">Més</translation>
 <translation id="6060685159320643512">Compte! Aquests experiments mosseguen</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{cap}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Reviseu els cables i reinicieu els encaminadors, els mòdems o altres
         dispositius de xarxa que feu servir.</translation>
 <translation id="614940544461990577">Proveu aquestes solucions:</translation>
 <translation id="6151417162996330722">El període de validesa del certificat del servidor és massa gran.</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6177128806592000436">La teva connexió amb aquest lloc no és segura</translation>
+<translation id="6184817833369986695">(cohort: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Comprovació de la connexió a Internet</translation>
 <translation id="6218753634732582820">Voleu suprimir l'adreça de Chromium?</translation>
 <translation id="6251924700383757765">Política de privadesa</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">Actualitza</translation>
 <translation id="7182878459783632708">Cap política definida</translation>
 <translation id="7186367841673660872">Aquesta pàgina s'ha traduït de:<ph name="ORIGINAL_LANGUAGE" />a:<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Allibera <ph name="SIZE" />. És possible que alguns llocs es carreguin més a poc a poc la propera vegada que els visitis.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> no compleix la normativa de seguretat.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre aquest problema.</translation>

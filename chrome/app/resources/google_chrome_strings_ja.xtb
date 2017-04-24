@@ -208,7 +208,7 @@
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
-<translation id="7369650938475876456">Chrome で生成された安全なパスワードを使用</translation>
+<translation id="7369650938475876456">Chrome で生成された安全なパスワードの使用をおすすめします</translation>
 <translation id="7398801000654795464">Chrome に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="7400722733683201933">Google Chrome について</translation>
 <translation id="7408085963519505752">Chrome OS 利用規約</translation>

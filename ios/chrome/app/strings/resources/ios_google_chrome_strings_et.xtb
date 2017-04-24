@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Chrome'i sisselogimine</translation>
 <translation id="3345341804167540816">Chrome'i kasutamine kõikjal</translation>
 <translation id="3531621179462011934">Seadete hankimiseks kõikidesse oma seadmetesse logige Chrome'i sisse.</translation>
-<translation id="3601960512121168237">Kas teile meeldib Chrome? <ph name="BEGIN_LINK" />Lisage see dokki<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Kas soovite, et Chrome salvestaks selle saidi puhul teie parooli?</translation>
 <translation id="384394811301901750">Chrome ei saa praegu kaamerat kasutada</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome'il pole juurdepääsu fotodele ega videotele. Lubage iOS-is juurdep. valikutega Seaded &gt; Privaatsus &gt; Fotod.</translation>
 <translation id="4099578267706723511">Aidake muuta Chrome'i paremaks, saates Google'ile kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="415767770115540173">Asukohapõhised andmed tagavad teile parema Google Chrome'i kasutuskogemuse.</translation>
+<translation id="4248297594476034182">Vahelehtede hankimiseks kõikidesse oma seadmetesse logige Chrome'i sisse.</translation>
 <translation id="424864128008805179">Kas logida Chrome'ist välja?</translation>
 <translation id="4523886039239821078">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Desinstallige need:</translation>
 <translation id="4615174829807303908">Logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad Chrome'i andmed, kuid need jäävad alles teie Google'i kontole.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Nõuanne: <ph name="BEGIN_LINK" />lisage Chrome dokki<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Hankige juurdepääs arvutis avatud vahelehtedele siit. Lihtsalt avage arvutis Chrome, minge menüüsse ja valige käsk „Logi Chrome'i sisse ...”</translation>
 <translation id="728488472449859922">Google Chrome'i QR-skanneri sisselülitamine</translation>
-<translation id="7311395200710390977"><ph name="BEGIN_LINK" />Lisage Chrome dokki<ph name="END_LINK" />, et sellele kiiremini juurde pääseda</translation>
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>
 <translation id="7437998757836447326">Chrome'ist väljalogimine</translation>
 <translation id="756809126120519699">Chrome'i andmed kustutati</translation>

@@ -186,6 +186,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 <translation id="4750394297954878236">Forslag</translation>
 <translation id="4773461607542755386">Vil du åpne denne siden i <ph name="APP_NAME" />-appen?</translation>
 <translation id="481968316161811770">Informasjonskapsler og nettstedsdata</translation>
+<translation id="4860895144060829044">Ring</translation>
 <translation id="4875622588773761625">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet for dette nettstedet?</translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4904877109095351937">Merk som lest</translation>
@@ -356,7 +357,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8205564605687841303">Avbryt</translation>
 <translation id="8225985093977202398">Bufrede bilder og filer</translation>
 <translation id="8261506727792406068">Slett</translation>
-<translation id="8272194309885535896">Last ned bildet</translation>
 <translation id="8272426682713568063">Kredittkort</translation>
 <translation id="8281781826761538115">Standard – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Kontrollér hvordan Google bruker nettlesingsloggen din for å gi Søk, annonser og andre Google-tjenester et personlig preg</translation>

@@ -66,6 +66,7 @@
           &lt;p&gt;&lt;strong&gt;ക്രമീകരണ&lt;/strong&gt; ആപ്പിന്റെ &lt;strong&gt;പൊതുവായവ&lt;/strong&gt; വിഭാഗത്തിൽ നിന്ന് തീയതിയും സമയവും ക്രമീകരിക്കുക.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">ഈ വെബ്‌പേജ് പ്രദർശിപ്പിക്കുമ്പോൾ എന്തോ കുഴപ്പം സംഭവിച്ചു.</translation>
 <translation id="1592005682883173041">പ്രാദേശിക ഡാറ്റ ആക്‌സസ്സ്</translation>
+<translation id="1594030484168838125">തിരഞ്ഞെടുക്കുക</translation>
 <translation id="161042844686301425">സിയാൻ</translation>
 <translation id="1629803312968146339">Chrome ഈ കാർഡ് സംരക്ഷിക്കണോ?</translation>
 <translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">ഇപ്പോൾ അയയ്‌ക്കുക</translation>
 <translation id="225207911366869382">ഈ നയത്തിനായി ഈ മൂല്യത്തെ ഒഴിവാക്കി.</translation>
 <translation id="2262243747453050782">HTTP പിശക്</translation>
+<translation id="2270484714375784793">ഫോൺ നമ്പർ</translation>
 <translation id="2282872951544483773">ലഭ്യമല്ലാത്ത പരീക്ഷണങ്ങൾ</translation>
 <translation id="2292556288342944218">നിങ്ങളുടെ ഇന്റർനെറ്റ് ആക്‌സസ്സ് ബ്ലോക്കുചെയ്‌തു</translation>
 <translation id="230155334948463882">പുതിയ കാർഡാണോ?</translation>
@@ -257,7 +259,6 @@
 <translation id="3345135638360864351">ഈ സൈറ്റ് ആക്‌സസ്സ് ചെയ്യാനുള്ള നിങ്ങളുടെ അഭ്യർത്ഥന, <ph name="NAME" /> എന്നയാൾക്ക് അയയ്‌ക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3355823806454867987">പ്രോക്സി ക്രമീകരണങ്ങള്‍ മാറ്റുക...</translation>
 <translation id="3369192424181595722">ക്ലോക്കിലെ പിശക്</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> ഇനങ്ങൾ കൂടി...</translation>
 <translation id="337363190475750230">ഡിപ്രൊവിഷൻ ചെയ്‌തു</translation>
 <translation id="3377188786107721145">നയം പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="3380365263193509176">അജ്ഞാതമായ പിശക്</translation>
@@ -489,6 +490,7 @@
 <translation id="5622887735448669177">നിങ്ങൾക്ക് ഈ സൈറ്റ് വിടണോ?</translation>
 <translation id="5629630648637658800">നയ ക്രമീകരണങ്ങൾ ലോഡുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="5631439013527180824">ഉപകരണ മാനേജുമെന്റ് ടോക്കൺ അസാധുവാണ്</translation>
+<translation id="5659593005791499971">ഇമെയില്‍</translation>
 <translation id="5669703222995421982">വ്യക്തിപരമാക്കിയ ഉള്ളടക്കം സ്വന്തമാക്കുക</translation>
 <translation id="5675650730144413517">ഈ പേജ് പ്രവർത്തിക്കുന്നില്ല</translation>
 <translation id="5677928146339483299">തടഞ്ഞു</translation>
@@ -522,7 +524,6 @@
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="6042308850641462728">കൂടുതൽ</translation>
 <translation id="6060685159320643512">ശ്രദ്ധിക്കൂ, ഈ പരീക്ഷണങ്ങള്‍ പാളിയേക്കാം‍ </translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{ഒന്നുമില്ല}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">എല്ലാ കേബിളുകളും പരിശോധിക്കുക ഒപ്പം ഏതെങ്കിലും റൂട്ടറുകൾ, മോഡങ്ങൾ നിങ്ങൾ ഉപയോഗിക്കാനിടയുള്ള
         മറ്റ് നെറ്റ്‌വർക്ക് ഉപകരണങ്ങൾ എന്നിവ റീബൂട്ടുചെയ്യുക.</translation>
 <translation id="614940544461990577">പരീക്ഷിച്ചുനോക്കൂ:</translation>

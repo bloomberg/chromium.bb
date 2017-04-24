@@ -66,6 +66,7 @@
       &lt;p&gt;请在&lt;strong&gt;设置&lt;/strong&gt;应用的&lt;strong&gt;通用&lt;/strong&gt;部分调整日期和时间。&lt;/p&gt;</translation>
 <translation id="1583429793053364125">显示此网页时出了点问题。</translation>
 <translation id="1592005682883173041">本地数据访问权限</translation>
+<translation id="1594030484168838125">选择</translation>
 <translation id="161042844686301425">青色</translation>
 <translation id="1629803312968146339">您希望 Chrome 保存此信用卡吗？</translation>
 <translation id="1639239467298939599">正在加载</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">立即发送</translation>
 <translation id="225207911366869382">适用于该政策的此值已弃用。</translation>
 <translation id="2262243747453050782">HTTP 错误</translation>
+<translation id="2270484714375784793">电话号码</translation>
 <translation id="2282872951544483773">无法使用的实验功能</translation>
 <translation id="2292556288342944218">您被禁止访问互联网</translation>
 <translation id="230155334948463882">要使用新信用卡吗？</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">检测到了网络变化。</translation>
 <translation id="2916038427272391327">关闭其他程序</translation>
 <translation id="2922350208395188000">无法核实服务器证书。</translation>
+<translation id="2928905813689894207">帐单邮寄地址</translation>
 <translation id="2948083400971632585">您可以在设置页面中停用任何针对某个连接配置的代理。</translation>
 <translation id="2955913368246107853">关闭查找栏</translation>
 <translation id="2958431318199492670">网络配置不符合 ONC 标准。无法导入配置的某些部分。</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">显示已保存的版本</translation>
 <translation id="3008447029300691911">输入“<ph name="CREDIT_CARD" />”的银行卡验证码 (CVC)。在您确认后，您的信用卡详情将与此网站共享。</translation>
 <translation id="3010559122411665027">列表条目“<ph name="ENTRY_INDEX" />”：<ph name="ERROR" /></translation>
+<translation id="301521992641321250">已被自动禁止</translation>
 <translation id="3024663005179499861">策略类型有误</translation>
 <translation id="3032412215588512954">要重新加载该网站吗？</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
@@ -256,7 +260,6 @@
 <translation id="3345135638360864351">无法将您访问此网站的请求发送给<ph name="NAME" />，请重试。</translation>
 <translation id="3355823806454867987">更改代理服务器设置...</translation>
 <translation id="3369192424181595722">时钟错误</translation>
-<translation id="337311366426640088">另外还有 <ph name="ITEM_COUNT" /> 项…</translation>
 <translation id="337363190475750230">已取消配置</translation>
 <translation id="3377188786107721145">策略解析错误</translation>
 <translation id="3380365263193509176">未知错误</translation>
@@ -487,6 +490,7 @@
 <translation id="5622887735448669177">要离开此网站吗？</translation>
 <translation id="5629630648637658800">无法加载策略设置</translation>
 <translation id="5631439013527180824">设备管理令牌无效</translation>
+<translation id="5659593005791499971">电子邮件</translation>
 <translation id="5669703222995421982">获取个性化内容</translation>
 <translation id="5675650730144413517">该网页无法正常运作</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
@@ -520,12 +524,12 @@
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="6060685159320643512">请小心，这些实验性功能可能有风险</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{无}=1{1 个}other{# 个}}</translation>
 <translation id="6146055958333702838">请检查所有网线是否都已连好，然后重新启动您可能正在使用的任何路由器、调制解调器或其他网络设备。</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6151417162996330722">该服务器证书的有效期过长。</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6177128806592000436">您与此网站之间建立的连接不安全</translation>
+<translation id="6184817833369986695">（同类群组：<ph name="UPDATE_COHORT_NAME" />）</translation>
 <translation id="6203231073485539293">请检查您的互联网连接是否正常</translation>
 <translation id="6218753634732582820">要从 Chromium 中移除地址吗？</translation>
 <translation id="6251924700383757765">隐私权政策</translation>
@@ -623,6 +627,7 @@
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7182878459783632708">未设置任何政策</translation>
 <translation id="7186367841673660872">已将此网页从<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">释放了 <ph name="SIZE" />。当您下次访问时，某些网站的加载速度可能会更慢。</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> 不符合相关安全标准。</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>

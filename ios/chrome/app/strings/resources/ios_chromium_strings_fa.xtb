@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">‏برای اینکه نشانک‌ها را در همه دستگاه‌هایتان دریافت کنید، به سیستم Chromium وارد شوید.</translation>
 <translation id="3473048256428424907">‏اسکنر QR در Chromium را روشن کنید</translation>
 <translation id="3805899903892079518">‏Chromium به عکس‌ها یا ویدیوهای شما دسترسی ندارد. با رفتن به تنظیمات iOS &gt; حریم خصوصی &gt; عکس‌ها دسترسی را فعال کنید.</translation>
-<translation id="40863189315891987">‏برای دسترسی سریع‌تر، <ph name="BEGIN_LINK" />Chromium را به لنگرگاهتان انتقال دهید<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chromium وارد شوید.</translation>
 <translation id="4241912885070669028">‏هم‌اکنون درحال خارج شدن از حسابی هستید که توسط <ph name="SIGNOUT_MANAGED_DOMAIN" /> مدیریت می‌شود. با این کار، داده‌های Chromium شما از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌مانند.</translation>
 <translation id="4555020257205549924">‏وقتی این قابلیت روشن است، Chromium ترجمه صفحات نوشته‌شده به سایر زبان‌ها را با استفاده از مترجم Google پیشنهاد می‌دهد. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">‏از Chromium خارج می‌شوید؟</translation>
 <translation id="6424492062988593837">‏Chromium بهتر شده است! نسخه جدید آن در دسترس است.</translation>
 <translation id="6604711459180487467">‏تجربه بهتری از Chromium بر مبنای مکانتان کسب کنید.</translation>
-<translation id="6989306073720242915">‏Chromium را دوست دارید؟ <ph name="BEGIN_LINK" />آن را به لنگرگاهتان انتقال دهید<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">‏Chromium نمی‌تواند از دوربین درحالت Split View (نمای تقسیم) استفاده کند</translation>
 <translation id="7144758435978427212">‏صفحه‌های وبی را که توسط اشیای اطراف ارسال می‌شوند کشف کنید. وقتی بلوتوث روشن است، Chromium می‌تواند صفحه‌های وب مرتبط با اشیای اطراف شما را جمع‌آوری کند و برای پیدا کردن مفیدترینشان، آن صفحه‌ها را به‌صورت ناشناس به Google ارسال کند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">‏Chromium با آوردن حساب‌هایتان به وب، در وقت شما صرفه‌جویی می‌کند. در «تنظیمات» می‌توانید حساب‌ها را اضافه یا حذف کنید.</translation>

@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Chrome'da oturum aç</translation>
 <translation id="3345341804167540816">Chrome'u Her Yerde Kullanın</translation>
 <translation id="3531621179462011934">Ayarlarınızı tüm cihazlarınızda almak için Chrome'da oturum açın.</translation>
-<translation id="3601960512121168237">Chrome'u seviyor musunuz? <ph name="BEGIN_LINK" />Yuva bölümüne taşıyın<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Chrome'un bu site için şifrenizi kaydetmesini ister misiniz?</translation>
 <translation id="384394811301901750">Google Chrome şu anda kameranızı kullanamıyor</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome, fotoğraflarınıza veya videolarınıza erişemiyor. iOS Ayarlar &gt; Gizlilik &gt; Fotoğraflar'dan erişimi etkinleştirin.</translation>
 <translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
 <translation id="415767770115540173">Chrome'da, konumunuza dayalı olarak daha iyi bir Google deneyimi yaşayın.</translation>
+<translation id="4248297594476034182">Sekmelerinize tüm cihazlarınızda ulaşmak için Chrome'da oturum açın.</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
 <translation id="4523886039239821078">Bazı eklentiler Chrome'un kilitlenmesine neden oluyor. Lütfen şunların yüklemelerini kaldırın:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chrome verileriniz bu cihazdan silinir, ancak Google hesabınızda kalmaya devam eder.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">İpucu: <ph name="BEGIN_LINK" />Chrome'u yuva bölümüne taşıyın<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Bilgisayarınızda açtığınız sekmelere doğrudan buradan erişin. Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da oturum aç…" seçeneğini belirlemeniz yeterlidir.</translation>
 <translation id="728488472449859922">Google Chrome QR tarayıcısını açın</translation>
-<translation id="7311395200710390977">Daha hızlı erişim için <ph name="BEGIN_LINK" />Chrome'u yuva bölümüne taşıyın<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Google Chrome hakkında</translation>
 <translation id="7437998757836447326">Chrome oturumunu kapatma</translation>
 <translation id="756809126120519699">Chrome verileri temizlendi</translation>

@@ -66,6 +66,7 @@
       &lt;p&gt;Regola data e ora nella sezione &lt;strong&gt;Generali&lt;/strong&gt; dell'app &lt;strong&gt;Impostazioni&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Si è verificato un problema durante la visualizzazione della pagina web.</translation>
 <translation id="1592005682883173041">Accesso ai dati locali</translation>
+<translation id="1594030484168838125">Scegli</translation>
 <translation id="161042844686301425">Ciano</translation>
 <translation id="1629803312968146339">Vuoi che Chrome salvi questa carta?</translation>
 <translation id="1639239467298939599">Caricamento</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Invia ora</translation>
 <translation id="225207911366869382">Il valore specificato per la norma è obsoleto.</translation>
 <translation id="2262243747453050782">Errore HTTP</translation>
+<translation id="2270484714375784793">Numero di telefono</translation>
 <translation id="2282872951544483773">Esperimenti non disponibili</translation>
 <translation id="2292556288342944218">L'accesso a Internet è bloccato</translation>
 <translation id="230155334948463882">Nuova carta?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">È stato rilevato un cambio di rete.</translation>
 <translation id="2916038427272391327">Chiudi altri programmi</translation>
 <translation id="2922350208395188000">Il certificato del server non può essere verificato.</translation>
+<translation id="2928905813689894207">Indirizzo di fatturazione</translation>
 <translation id="2948083400971632585">Puoi disattivare tutti i proxy configurati per una connessione dalla pagina delle impostazioni.</translation>
 <translation id="2955913368246107853">Chiudi la barra di ricerca</translation>
 <translation id="2958431318199492670">La configurazione di rete non è conforme allo standard ONC. Parti della configurazione potrebbero non essere importate.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Mostra copia salvata</translation>
 <translation id="3008447029300691911">Inserisci il codice CVC della carta <ph name="CREDIT_CARD" />. Dopo essere stati confermati, i dettagli della carta saranno condivisi con questo sito.</translation>
 <translation id="3010559122411665027">Voce "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Bloccata automaticamente</translation>
 <translation id="3024663005179499861">Tipo di criterio errato</translation>
 <translation id="3032412215588512954">Vuoi ricaricare questo sito?</translation>
 <translation id="3037605927509011580">Uffa!</translation>
@@ -255,7 +259,6 @@
 <translation id="3345135638360864351">Impossibile inviare a <ph name="NAME" /> la richiesta di accesso a questo sito. Riprova.</translation>
 <translation id="3355823806454867987">Modifica impostazioni proxy...</translation>
 <translation id="3369192424181595722">Errore dell'orologio</translation>
-<translation id="337311366426640088">Altri <ph name="ITEM_COUNT" /> elementi...</translation>
 <translation id="337363190475750230">Deprovisioning effettuato</translation>
 <translation id="3377188786107721145">Errore di analisi del criterio</translation>
 <translation id="3380365263193509176">Errore sconosciuto</translation>
@@ -487,6 +490,7 @@
 <translation id="5622887735448669177">Vuoi uscire da questo sito?</translation>
 <translation id="5629630648637658800">Caricamento delle impostazioni criterio non riuscito</translation>
 <translation id="5631439013527180824">Token di gestione del dispositivo non valido</translation>
+<translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Ricevi contenuti suggeriti appositamente per te</translation>
 <translation id="5675650730144413517">La pagina non funziona</translation>
 <translation id="5677928146339483299">Bloccati</translation>
@@ -520,12 +524,12 @@
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6042308850641462728">Più</translation>
 <translation id="6060685159320643512">Attenzione, prova questi esperimenti a tuo rischio e pericolo</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{nessuna}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Controlla eventuali cavi e riavvia eventuali router, modem o altri dispositivi di rete in uso.</translation>
 <translation id="614940544461990577">Prova a:</translation>
 <translation id="6151417162996330722">Il certificato del server ha un periodo di validità troppo lungo.</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6177128806592000436">La tua connessione a questo sito non è protetta</translation>
+<translation id="6184817833369986695">(coorte: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Controlla la connessione a Internet</translation>
 <translation id="6218753634732582820">Rimuovere l'indirizzo da Chromium?</translation>
 <translation id="6251924700383757765">Norme sulla privacy</translation>
@@ -623,6 +627,7 @@
 <translation id="7180611975245234373">Aggiorna</translation>
 <translation id="7182878459783632708">Nessuna norma impostata</translation>
 <translation id="7186367841673660872">Questa pagina è stata tradotta da<ph name="ORIGINAL_LANGUAGE" />a<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Consente di liberare <ph name="SIZE" />. Alcuni siti potrebbero caricarsi più lentamente alla prossima visita.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> non è conforme agli standard di sicurezza.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /> su questo problema.</translation>

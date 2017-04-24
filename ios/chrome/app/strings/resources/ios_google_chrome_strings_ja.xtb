@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3345341804167540816">Chromeをどこでも使用</translation>
 <translation id="3531621179462011934">お使いのどの端末でも同じ設定を使用するには、Chrome にログインします。</translation>
-<translation id="3601960512121168237">Chrome を <ph name="BEGIN_LINK" />Dock に移動<ph name="END_LINK" />すると、アクセスしやすくなります</translation>
 <translation id="3678774398092457402">Chrome でこのサイトのパスワードを保存しますか？</translation>
 <translation id="384394811301901750">現在 Google Chrome ではカメラを使用できません</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome で写真または動画にアクセスできません。iOS の [設定] &gt; [プライバシー] &gt; [写真] でアクセスを有効にしてください。</translation>
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="415767770115540173">ユーザーの場所に基づいてChromeでGoogleを使いやすくします。</translation>
+<translation id="4248297594476034182">お使いのどの端末でも同じタブを使用するには、Chrome にログインします。</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4523886039239821078">アドオンが原因でChromeがクラッシュしました。次をアンインストールしてください:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> で管理されているアカウントからログアウトします。Chrome データはこのデバイスから削除されますが、Google アカウントで保持されます。</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">ヒント: <ph name="BEGIN_LINK" />Chrome を Dock に移動<ph name="END_LINK" />するとアクセスしやすくなります</translation>
 <translation id="7265369419224458312">パソコンで開いたタブにこちらからアクセスできます。パソコンでChromeを開き、メニューから[Chromeにログイン]を選択してください。</translation>
 <translation id="728488472449859922">Google Chrome の QR スキャナをオンにする</translation>
-<translation id="7311395200710390977">Chrome にすばやくアクセスするには、<ph name="BEGIN_LINK" />Chrome を Dock に移動<ph name="END_LINK" />します</translation>
 <translation id="7400722733683201933">Google Chrome について</translation>
 <translation id="7437998757836447326">Chromeからログアウト</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>

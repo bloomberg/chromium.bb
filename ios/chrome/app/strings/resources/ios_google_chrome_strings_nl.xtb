@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Inloggen bij Chrome</translation>
 <translation id="3345341804167540816">Chrome overal gebruiken</translation>
 <translation id="3531621179462011934">Log in bij Chrome om je instellingen op te halen op al je apparaten.</translation>
-<translation id="3601960512121168237">Gebruik je Chrome graag? <ph name="BEGIN_LINK" />Verplaats het naar je dock<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Wil je dat Chrome je wachtwoord voor deze site opslaat?</translation>
 <translation id="384394811301901750">Google Chrome kan je camera momenteel niet gebruiken</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome heeft geen toegang tot je foto's of video's. Schakel toegang in via iOS-instellingen &gt; Privacy &gt; Foto's.</translation>
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
 <translation id="415767770115540173">Gebruik Google beter in Chrome op basis van je locatie.</translation>
+<translation id="4248297594476034182">Log in bij Chrome om al je tabbladen op al je apparaten te bekijken.</translation>
 <translation id="424864128008805179">Uitloggen bij Chrome?</translation>
 <translation id="4523886039239821078">Sommige add-ons kunnen ervoor zorgen dat Chrome crasht. Verwijder de volgende add-ons:</translation>
 <translation id="4615174829807303908">Je logt uit van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />. Hierdoor worden je Chrome-gegevens verwijderd van dit apparaat. Je gegevens blijven echter opgeslagen in je Google-account.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Verplaats Chrome naar je dock<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Bekijk hier de tabbladen die je op je computer hebt geopend. Open Chrome op je computer, ga naar het menu en selecteer 'Inloggen bij Chrome'.</translation>
 <translation id="728488472449859922">QR-scanner van Google Chrome inschakelen</translation>
-<translation id="7311395200710390977">Voor snellere toegang <ph name="BEGIN_LINK" />verplaats je Chrome naar je dock<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Over Google Chrome</translation>
 <translation id="7437998757836447326">Uitloggen bij Chrome</translation>
 <translation id="756809126120519699">Chrome-gegevens gewist</translation>

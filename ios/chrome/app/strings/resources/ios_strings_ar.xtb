@@ -186,6 +186,7 @@
 <translation id="4750394297954878236">الاقتراحات</translation>
 <translation id="4773461607542755386">هل تريد فتح هذه الصفحة في تطبيق <ph name="APP_NAME" />؟</translation>
 <translation id="481968316161811770">ملفات تعريف الارتباط، وبيانات موقع الويب</translation>
+<translation id="4860895144060829044">اتصال</translation>
 <translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4904877109095351937">وضع علامة كمقروءة</translation>
@@ -356,7 +357,6 @@
 <translation id="8205564605687841303">إلغاء</translation>
 <translation id="8225985093977202398">الصور والملفات المُخزنة مؤقتًا</translation>
 <translation id="8261506727792406068">حذف</translation>
-<translation id="8272194309885535896">تنزيل الصورة</translation>
 <translation id="8272426682713568063">بطاقات ائتمان</translation>
 <translation id="8281781826761538115">الافتراضي - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">‏التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث، والإعلانات، وخدمات Google الأخرى</translation>

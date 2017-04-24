@@ -66,6 +66,7 @@
       &lt;p&gt;Popraw datę i godzinę w sekcji &lt;strong&gt;Ogólne&lt;/strong&gt; w aplikacji &lt;strong&gt;Ustawienia&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Podczas wyświetlania strony wystąpił błąd.</translation>
 <translation id="1592005682883173041">Lokalny dostęp do danych</translation>
+<translation id="1594030484168838125">Wybierz</translation>
 <translation id="161042844686301425">Cyjan</translation>
 <translation id="1629803312968146339">Czy Chrome ma zapisać tę kartę?</translation>
 <translation id="1639239467298939599">Wczytuję</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Wyślij teraz</translation>
 <translation id="225207911366869382">Ta wartość tej zasady została wycofana.</translation>
 <translation id="2262243747453050782">Błąd HTTP</translation>
+<translation id="2270484714375784793">Numer telefonu</translation>
 <translation id="2282872951544483773">Niedostępne eksperymenty</translation>
 <translation id="2292556288342944218">Masz zablokowany dostęp do internetu</translation>
 <translation id="230155334948463882">Nowa karta?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">Wykryto zmianę sieci.</translation>
 <translation id="2916038427272391327">Zamknij inne programy</translation>
 <translation id="2922350208395188000">Nie można sprawdzić certyfikatu serwera.</translation>
+<translation id="2928905813689894207">Adres rozliczeniowy</translation>
 <translation id="2948083400971632585">Możesz wyłączyć dowolne serwery proxy skonfigurowane dla połączenia na stronie ustawień.</translation>
 <translation id="2955913368246107853">Zamknij pasek wyszukiwania</translation>
 <translation id="2958431318199492670">Konfiguracja sieci jest niezgodna ze standardem ONC. Jej fragmenty mogły nie zostać zaimportowane.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Pokaż zapisaną kopię</translation>
 <translation id="3008447029300691911">Wpisz kod CVC karty <ph name="CREDIT_CARD" />. Po potwierdzeniu szczegółowe dane karty zostaną udostępnione tej stronie.</translation>
 <translation id="3010559122411665027">Pozycja listy „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Automatycznie zablokowane</translation>
 <translation id="3024663005179499861">Nieprawidłowy typ zasady</translation>
 <translation id="3032412215588512954">Chcesz ponownie załadować tę stronę?</translation>
 <translation id="3037605927509011580">Kurza twarz!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">Nie udało się wysłać żądania dostępu do strony do <ph name="NAME" />. Spróbuj ponownie.</translation>
 <translation id="3355823806454867987">Zmień ustawienia serwera proxy...</translation>
 <translation id="3369192424181595722">Błąd zegara</translation>
-<translation id="337311366426640088">I jeszcze <ph name="ITEM_COUNT" />…</translation>
 <translation id="337363190475750230">Anulowano obsługę</translation>
 <translation id="3377188786107721145">Podczas przetwarzania zasady wystąpił błąd</translation>
 <translation id="3380365263193509176">Nieznany błąd</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">Chcesz opuścić tę stronę?</translation>
 <translation id="5629630648637658800">Ładowanie ustawień zasady nie powiodło się</translation>
 <translation id="5631439013527180824">Nieprawidłowy token zarządzania urządzeniem</translation>
+<translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Otrzymywanie spersonalizowanych treści</translation>
 <translation id="5675650730144413517">Ta strona nie działa</translation>
 <translation id="5677928146339483299">Zablokowane</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="6042308850641462728">Więcej</translation>
 <translation id="6060685159320643512">Ostrożnie, na tych eksperymentach można się sparzyć</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{brak}=1{1}few{#}many{#}other{#}}</translation>
 <translation id="6146055958333702838">Sprawdź wszystkie kable i uruchom ponownie wszelkie używane routery, modemy
     i inne urządzenia sieciowe.</translation>
 <translation id="614940544461990577">Wypróbuj te rozwiązania:</translation>
 <translation id="6151417162996330722">Certyfikat serwera ma za długi okres ważności.</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6177128806592000436">Twoje połączenie z tą witryną nie jest bezpieczne</translation>
+<translation id="6184817833369986695">(kohorta: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Sprawdź połączenie z internetem</translation>
 <translation id="6218753634732582820">Usunąć ten adres z Chromium?</translation>
 <translation id="6251924700383757765">Polityka prywatności</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7182878459783632708">Brak ustawionych zasad</translation>
 <translation id="7186367841673660872">Ta strona została przetłumaczona z języka<ph name="ORIGINAL_LANGUAGE" />na język<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Zwolni się <ph name="SIZE" />. Podczas następnej wizyty niektóre strony mogą ładować się wolniej.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423">Serwer <ph name="HOST_NAME" /> nie spełnia norm bezpieczeństwa.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /> na temat tego problemu.</translation>

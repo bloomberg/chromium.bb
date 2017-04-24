@@ -66,6 +66,7 @@
           &lt;p&gt;لطفاً تاریخ و زمان را در بخش &lt;strong&gt;عمومی&lt;/strong&gt; برنامه &lt;strong&gt;تنظیمات&lt;/strong&gt; تنظیم کنید.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">هنگام نمایش این صفحه وب مشکلی پیش آمد.</translation>
 <translation id="1592005682883173041">دسترسی داده محلی</translation>
+<translation id="1594030484168838125">انتخاب</translation>
 <translation id="161042844686301425">فیروزه‌ای</translation>
 <translation id="1629803312968146339">‏می‌خواهید Chrome این کارت را ذخیره کند؟</translation>
 <translation id="1639239467298939599">بارگیری</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">اکنون ارسال شود</translation>
 <translation id="225207911366869382">این مقدار برای این خط‌مشی منسوخ شده است؟</translation>
 <translation id="2262243747453050782">‏خطای HTTP</translation>
+<translation id="2270484714375784793">شماره تلفن</translation>
 <translation id="2282872951544483773">آزمایش‌های غیرقابل دسترس</translation>
 <translation id="2292556288342944218">دسترسی شما به اینترنت مسدود است</translation>
 <translation id="230155334948463882">کارت جدید؟</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2916038427272391327">برنامه‌های دیگر را ببندید</translation>
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
+<translation id="2928905813689894207">نشانی صورت‌حساب</translation>
 <translation id="2948083400971632585">در صفحه تنظیمات می‌توانید همه پراکسی‌های پیکربندی شده برای هر اتصال را از کار بیاندازید.</translation>
 <translation id="2955913368246107853">بستن نوار یافتن</translation>
 <translation id="2958431318199492670">‏پیکربندی شبکه با استاندارد ONC تطابق ندارد. بخشی از پیکربندی ممکن است وارد نشود.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">نمایش کپی ذخیره شده</translation>
 <translation id="3008447029300691911">‏CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید، جزئیات کارت شما با این سایت به اشتراک گذاشته می‌شود.</translation>
 <translation id="3010559122411665027">ورودی فهرست "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="301521992641321250">مسدود‌شده به‌طور خودکار</translation>
 <translation id="3024663005179499861">نوع خط‌مشی اشتباه است</translation>
 <translation id="3032412215588512954">می‌خواهید این سایت را تازه‌سازی کنید؟</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">درخواست شما برای دسترسی به این سایت به <ph name="NAME" /> ارسال نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3355823806454867987">تغییر تنظیمات پروکسی...</translation>
 <translation id="3369192424181595722">خطای ساعت</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> مورد دیگر...</translation>
 <translation id="337363190475750230">لغو مجوز شد</translation>
 <translation id="3377188786107721145">خطای تجزیه خط‌مشی</translation>
 <translation id="3380365263193509176">خطای ناشناس</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">می‌خواهید از این سایت خارج شوید؟</translation>
 <translation id="5629630648637658800">تنظیمات خط‌مشی بارگیری نشد</translation>
 <translation id="5631439013527180824">نشانه مدیریت دستگاه نامعتبر است</translation>
+<translation id="5659593005791499971">رایانامه</translation>
 <translation id="5669703222995421982">دریافت محتوای شخصی‌سازی‌شده</translation>
 <translation id="5675650730144413517">این صفحه کار نمی‌کند</translation>
 <translation id="5677928146339483299">مسدود است</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="6060685159320643512">مراقب باشید، این آزمایشات ممکن است خطرناک باشند</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{هیچ‌}=1{۱}one{#}other{#}}</translation>
 <translation id="6146055958333702838">همه کابل‌ها را بررسی کنید و همه ره‌یاب‌ها، مودم‌ها، یا دیگر دستگاه‌های
    شبکه‌ای را که ممکن است درحال استفاده از آن‌ها باشید مجدداً راه‌اندازی کنید.</translation>
 <translation id="614940544461990577">این موارد را امتحان کنید:</translation>
 <translation id="6151417162996330722">دوره اعتبار گواهینامه سرور بسیار طولانی است.</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6177128806592000436">اتصال شما به این سایت امن نیست</translation>
+<translation id="6184817833369986695">(هم‌گروه: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">اتصال اینترنتتان را بررسی کنید</translation>
 <translation id="6218753634732582820">‏آدرس از Chromium پاک شود؟</translation>
 <translation id="6251924700383757765">خط‌مشی رازداری</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7182878459783632708">هیچ خط‌مشی‌ای تنظیم نشده است</translation>
 <translation id="7186367841673660872">این صفحه از <ph name="ORIGINAL_LANGUAGE" /> به <ph name="LANGUAGE_LANGUAGE" /> ترجمه شده است</translation>
+<translation id="7192203810768312527"><ph name="SIZE" /> از فضا را آزاد می‌کند. ممکن است برخی از سایت‌ها در بازدیدهای بعدی کندتر بارگیری شوند.</translation>
 <translation id="719464814642662924">ویزا</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> از استانداردهای امنیتی پیروی نمی‌کند.</translation>
 <translation id="721197778055552897">دربارهٔ این مشکل <ph name="BEGIN_LINK" />بیشتر بیاموزید<ph name="END_LINK" />.</translation>

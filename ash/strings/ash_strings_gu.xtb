@@ -29,8 +29,6 @@
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
 <translation id="1823873187264960516">ઇથરનેટ: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi બંધ છે.</translation>
-<translation id="1854357586517521894">CAPS LOCK ચાલુ છે.
-    રદ કરવા માટે Search અથવા Shift દબાવો.</translation>
 <translation id="1864454756846565995">USB-C ઉપકરણ (પાછળનું પોર્ટ)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> પર પ્રતિબિંબિત થઈ રહ્યું છે</translation>
 <translation id="1919743966458266018">ટાસ્ક સંચાલક ખોલવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="NEW_SHORTCUT" /> ની બદલે <ph name="OLD_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
@@ -70,11 +68,11 @@
 <translation id="3000461861112256445">મૉનો ઑડિઓ</translation>
 <translation id="3009178788565917040">આઉટપુટ</translation>
 <translation id="3019353588588144572">બેટરી સંપૂર્ણપણે ચાર્જ થવામાં બાકી સમય, <ph name="TIME_REMAINING" /></translation>
+<translation id="3050422059534974565">CAPS LOCK ચાલુ છે. 
+રદ કરવા માટે Search અથવા Shift દબાવો.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">તળિયું</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3109220592788908353">CAPS LOCK ચાલુ છે.
-    રદ કરવા માટે Alt+Search અથવા Shift દબાવો.</translation>
 <translation id="3126069444801937830">અપડેટ કરવા માટે પુનઃપ્રારંભ કરો</translation>
 <translation id="3147142846278915599">લોન્ચર (એપ્લિકેશન્સને સમન્વયિત કરી રહ્યું છે..)</translation>
 <translation id="315116470104423982">મોબાઇલ ડેટા</translation>
@@ -205,9 +203,10 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7209101170223508707">CAPS LOCK ચાલુ છે.
+રદ કરવા માટે Alt+Search અથવા Shift દબાવો.</translation>
 <translation id="7246339268451149667">ફિંગરપ્રિન્ટ અનલૉક સક્ષમ કરીએ?</translation>
 <translation id="7256634071279256947">પાછળનો માઇક્રોફોન</translation>
-<translation id="7337799137043490957">ફક્ત ફિંગરપ્રિન્ટ સેન્સર ટૅપ કરીને લૉક સ્ક્રીન છોડો. ગોઠવવા માટે ક્લિક કરો.</translation>
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
 <translation id="735745346212279324">VPN ડિસ્કનેક્ટ કર્યું છે</translation>
 <translation id="742594950370306541">કૅમેરો ઉપયોગમાં છે.</translation>

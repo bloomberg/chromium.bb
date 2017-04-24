@@ -66,6 +66,7 @@
       &lt;p&gt;請前往「設定」應用程式的「一般設定」專區調整日期和時間。&lt;strong&gt;&lt;/strong&gt;&lt;strong&gt;&lt;/strong&gt;&lt;/p&gt;</translation>
 <translation id="1583429793053364125">顯示這個網頁時發生錯誤。</translation>
 <translation id="1592005682883173041">本機資料存取權</translation>
+<translation id="1594030484168838125">選擇</translation>
 <translation id="161042844686301425">青色</translation>
 <translation id="1629803312968146339">您希望 Chrome 儲存這張信用卡嗎？</translation>
 <translation id="1639239467298939599">載入中</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">立即傳送</translation>
 <translation id="225207911366869382">這個政策值已遭汰換。</translation>
 <translation id="2262243747453050782">HTTP 錯誤</translation>
+<translation id="2270484714375784793">電話號碼</translation>
 <translation id="2282872951544483773">無法使用的實驗性功能</translation>
 <translation id="2292556288342944218">您的網際網路存取權遭到封鎖</translation>
 <translation id="230155334948463882">新信用卡？</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">系統偵測到網路變更。</translation>
 <translation id="2916038427272391327">關閉其他程式</translation>
 <translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
+<translation id="2928905813689894207">帳單地址</translation>
 <translation id="2948083400971632585">您可以在設定頁面停用任何為連線設置的 Proxy。</translation>
 <translation id="2955913368246107853">關閉搜尋列</translation>
 <translation id="2958431318199492670">網路設定未遵循 ONC 標準，系統可能無法匯入部分設定。</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">顯示儲存的複本</translation>
 <translation id="3008447029300691911">請輸入 <ph name="CREDIT_CARD" /> 的信用卡安全碼。完成驗證後，這個網站就會取得您的信用卡詳細資訊。</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX" />」：<ph name="ERROR" /></translation>
+<translation id="301521992641321250">已自動封鎖</translation>
 <translation id="3024663005179499861">政策類型有誤</translation>
 <translation id="3032412215588512954">您要重新載入這個網站嗎？</translation>
 <translation id="3037605927509011580">糟糕！</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">無法將您的網站存取要求傳送給<ph name="NAME" />，請再試一次。</translation>
 <translation id="3355823806454867987">變更 Proxy 設定...</translation>
 <translation id="3369192424181595722">時鐘錯誤</translation>
-<translation id="337311366426640088">還有 <ph name="ITEM_COUNT" /> 個項目...</translation>
 <translation id="337363190475750230">已取消佈建</translation>
 <translation id="3377188786107721145">政策解析錯誤</translation>
 <translation id="3380365263193509176">未知的錯誤</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">您要離開這個網站嗎？</translation>
 <translation id="5629630648637658800">無法載入政策設定</translation>
 <translation id="5631439013527180824">裝置管理符記無效</translation>
+<translation id="5659593005791499971">電子郵件</translation>
 <translation id="5669703222995421982">取得個人化內容</translation>
 <translation id="5675650730144413517">這個網頁無法正常運作</translation>
 <translation id="5677928146339483299">已封鎖</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="6060685159320643512">請注意，這些實驗性功能可能對電腦有害</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{無}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">檢查您的網路線是否穩固連接。重新啟動您可能正在使用的任何路由器、
     數據機或其他網路裝置。</translation>
 <translation id="614940544461990577">建議做法：</translation>
 <translation id="6151417162996330722">伺服器憑證的有效期限太長。</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6177128806592000436">你與這個網站的連線不安全</translation>
+<translation id="6184817833369986695">(發佈版本：<ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">檢查網際網路連線</translation>
 <translation id="6218753634732582820">要從 Chromium 中移除地址嗎？</translation>
 <translation id="6251924700383757765">隱私權政策</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="7182878459783632708">沒有設定任何政策</translation>
 <translation id="7186367841673660872">此網頁內容已由<ph name="ORIGINAL_LANGUAGE" />翻譯成<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">釋出 <ph name="SIZE" />。下次造訪部分網站時，載入速度可能會變慢。</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> 不符合安全性標準。</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />這個問題。</translation>

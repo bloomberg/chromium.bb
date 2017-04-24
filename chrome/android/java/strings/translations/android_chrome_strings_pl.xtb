@@ -27,6 +27,7 @@
 Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</translation>
 <translation id="124678866338384709">Zamknij bieżącą kartę</translation>
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1265597927250775944">Usuwa historię i podpowiedzi z paska adresu.</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="1283039547216852943">Kliknij, by rozwinąć</translation>
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
@@ -35,6 +36,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1303671224831497365">Nie znaleziono urządzeń Bluetooth</translation>
 <translation id="1326317727527857210">Aby korzystać z kart ze swoich innych urządzeń, zaloguj się w Chrome.</translation>
 <translation id="1332501820983677155">Skróty do funkcji Google Chrome</translation>
+<translation id="1339917386316755344">Wylogowuje z większości stron internetowych. Nie wyloguje Cię z konta Google.</translation>
 <translation id="1369915414381695676">Strona <ph name="SITE_NAME" /> została dodana</translation>
 <translation id="1373696734384179344">Za mało pamięci, by pobrać te treści.</translation>
 <translation id="1376578503827013741">Obliczam…</translation>
@@ -63,7 +65,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1549000191223877751">Przenieś do innego okna</translation>
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
 <translation id="1571304935088121812">Kopiuj nazwę użytkownika</translation>
-<translation id="1594030484168838125">Wybierz</translation>
 <translation id="1612196535745283361">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. Dostęp jest <ph name="BEGIN_LINK" />wyłączony na tym urządzeniu<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
@@ -255,6 +256,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3859306556332390985">Przewiń do przodu</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
 <translation id="3895926599014793903">Wymuś powiększenie</translation>
+<translation id="3915590178385207649">Usuwa historię ze wszystkich urządzeń, na których jesteś zalogowany. Pozostałą aktywność pochodzącą z Twojego konta Google możesz przeglądać na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Lokalizacja jest zablokowana</translation>
 <translation id="3927692899758076493">Bezszeryfowa</translation>
 <translation id="3928666092801078803">Połącz moje dane</translation>
@@ -265,6 +267,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="395922942268463099">Strony regularnie aktualizowane</translation>
 <translation id="3967822245660637423">Pobieranie zakończone</translation>
 <translation id="397583555483684758">Synchronizacja przestała działać</translation>
+<translation id="3976396876660209797">Usuń i utwórz ponownie ten skrót</translation>
 <translation id="3985215325736559418">Czy chcesz ponownie pobrać plik <ph name="FILE_NAME" />?</translation>
 <translation id="3987993985790029246">Kopiuj link</translation>
 <translation id="3988213473815854515">Lokalizacja jest dozwolona</translation>
@@ -293,7 +296,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Błąd synchronizacji. Kliknij, by zobaczyć szczegóły.</translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
-<translation id="4271185234001491831">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Dopuszczone</translation>
 <translation id="4300272766492248925">Otwórz aplikację</translation>
@@ -333,7 +335,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="4738836084190194332">Ostatnia synchronizacja: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Otwórz nową kartę</translation>
-<translation id="4750394297954878236">Sugestie</translation>
 <translation id="4759238208242260848">Pobrane pliki</translation>
 <translation id="4766369052440583386">Oszczędzanie danych jest włączone</translation>
 <translation id="4797039098279997504">Kliknij, by wrócić na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -424,6 +425,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5626134646977739690">Nazwa:</translation>
 <translation id="5639724618331995626">Pozwól na otwieranie wszystkich stron</translation>
 <translation id="5646376287012673985">Lokalizacja</translation>
+<translation id="5648166631817621825">Ostatnie 7 dni</translation>
 <translation id="5655963694829536461">Przeszukaj pobrane pliki</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Utwórz wydarzenie w aplikacji <ph name="APP_NAME" /></translation>
@@ -559,6 +561,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Foldery</translation>
 <translation id="6978479750597523876">Zresetuj ustawienia tłumaczenia</translation>
+<translation id="6979737339423435258">Od początku</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="6985347914332179298">Brak pobranych plików</translation>
 <translation id="6990079615885386641">Pobierz aplikację ze sklepu Google Play: <ph name="APP_ACTION" /></translation>
@@ -576,6 +579,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7128222689758636196">Zezwalaj na dostęp obecnej wyszukiwarce</translation>
 <translation id="7138678301420049075">Inne</translation>
 <translation id="7144878232160441200">Ponów próbę</translation>
+<translation id="7149893636342594995">Ostatnie 24 godziny</translation>
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7189372733857464326">Czekam na zakończenie aktualizacji Usług Google Play</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
@@ -594,6 +598,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7423098979219808738">Najpierw zapytaj</translation>
 <translation id="7437998757836447326">Wyloguj się z Chrome</translation>
 <translation id="7445411102860286510">Zezwalaj witrynom na automatyczne odtwarzanie wyciszonych filmów (zalecane)</translation>
+<translation id="7449574997654022410">Usuwa historię i podpowiedzi z paska adresu. Pozostałą aktywność pochodzącą z Twojego konta Google możesz przeglądać na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Spowoduje to usunięcie zsynchronizowanych danych ze wszystkich urządzeń. Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7475192538862203634">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
@@ -611,6 +616,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="7589445247086920869">Blokuj dostęp obecnej wyszukiwarce</translation>
 <translation id="7593557518625677601">Otwórz ustawienia Androida i ponownie włącz jego synchronizację, by uruchomić Synchronizację Chrome</translation>
 <translation id="7596558890252710462">System operacyjny</translation>
+<translation id="7600965453749440009">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Synchronizacja nie działa</translation>
 <translation id="7612619742409846846">Jesteś zalogowany w Google jako</translation>
 <translation id="7619072057915878432">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu problemów z siecią.</translation>
@@ -635,6 +641,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="7829298379596169484">Otwieram wejście audio</translation>
 <translation id="7837721118676387834">Zezwalaj określonej stronie na automatyczne odtwarzanie wyciszonych filmów.</translation>
 <translation id="7846076177841592234">Anuluj wybór</translation>
+<translation id="784934925303690534">Zakres czasu</translation>
 <translation id="7851858861565204677">Inne urządzenia</translation>
 <translation id="7875915731392087153">Utwórz e-maila</translation>
 <translation id="7876243839304621966">Usuń wszystkie</translation>
@@ -695,7 +702,6 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="8489271220582375723">Otwórz stronę historii</translation>
 <translation id="8493948351860045254">Zwolnij miejsce</translation>
 <translation id="8497726226069778601">Tu jeszcze niczego nie ma</translation>
-<translation id="8499147970084652325">Używaj serwerów Google, by wyświetlać sugestie podczas przeglądania.</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="8514577642972634246">Włącz tryb incognito</translation>
 <translation id="8523928698583292556">Usuń zapisane hasło</translation>
@@ -715,6 +721,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8639651215196239211">Wszystkie pobrane pliki</translation>
 <translation id="8641930654639604085">Próbuj blokować strony dla dorosłych</translation>
 <translation id="8660471606262461360">Z Google Payments</translation>
+<translation id="8662811608048051533">Wylogowuje z większości stron internetowych.</translation>
 <translation id="8676374126336081632">Wyczyść wpisany tekst</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="8719023831149562936">Nie można przesłać bieżącej karty</translation>
@@ -725,7 +732,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8788968922598763114">Ponownie otwórz ostatnio zamknięte karty</translation>
 <translation id="8812260976093120287">Używając swojego urządzenia, na niektórych stronach możesz płacić za pomocą powyższych obsługiwanych aplikacji do płatności.</translation>
 <translation id="8812942424849541387">Określ działanie w <ph name="BEGIN_LINK1" />Ustawieniach<ph name="END_LINK1" /></translation>
-<translation id="8812949859341886735">Gdy ta funkcja jest włączona, Chrome używa serwerów Google, by wyświetlać sugestie podczas przeglądania sieci, np. gdy otworzysz nową kartę. Mogą one dotyczyć popularnych stron internetowych lub artykułów zyskujących popularność. Możliwe są też spersonalizowane podpowiedzi.</translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="883635517171802338">Blokuj próby pokazywania wyskakujących okienek na stronach (zalecane)</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Chrome-ലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="3345341804167540816">എല്ലായിടത്തും Chrome ഉപയോഗിക്കുക</translation>
 <translation id="3531621179462011934">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ക്രമീകരണം ലഭിക്കാൻ, Chrome-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
-<translation id="3601960512121168237">Chrome ഇഷ്‌ടമായോ? <ph name="BEGIN_LINK" />ഇത് നിങ്ങളുടെ ഡോക്കിലേക്ക് നീക്കുക<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">ഈ സൈറ്റിന്റെ നിങ്ങളുടെ പാസ്‌വേഡ് Google Chrome സംരക്ഷിക്കണോ?</translation>
 <translation id="384394811301901750">Google Chrome-ന് ഇപ്പോൾ നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കാനാവില്ല</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome-ന് നിങ്ങളുടെ ഫോട്ടോകളിലേക്കോ വീഡിയോകളിലേക്കോ ആക്‌സസ്സ് ഇല്ല. iOS ക്രമീകരണം &gt; സ്വകാര്യത &gt; ഫോട്ടോകൾ എന്നതിൽ ആക്‌സസ്സ് പ്രവർത്തനക്ഷമമാക്കുക.</translation>
 <translation id="4099578267706723511">Google-ലേക്ക് ഉപയോഗസ്ഥിതിവിവരക്കണക്കുകളും ക്രാഷ് റിപ്പോർട്ടുകളും അയയ്‌ക്കുന്നതിലൂടെ Chrome-നെ മികച്ചതാക്കാൻ സഹായിക്കുക.</translation>
 <translation id="415767770115540173">Chrome-ൽ നിങ്ങളുടെ ലൊക്കേഷൻ അടിസ്ഥാനമാക്കിയുള്ള ഒരു മികച്ച Google അനുഭവം നേടുക.</translation>
+<translation id="4248297594476034182">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകൾ ലഭിക്കാൻ, Chrome-ലേക്ക് സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="424864128008805179">Chrome-ൽ നിന്ന് സൈൻ ഔട്ട് ചെയ്യണോ?</translation>
 <translation id="4523886039239821078">ചില ആഡ്-ഓണുകൾ Chrome ക്രാഷാകുന്നതിന് ഇടയാക്കുന്നു. ഇനിപ്പറയുന്നവ അൺഇൻസ്റ്റാളുചെയ്യുക:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> മാനേജുചെയ്യുന്ന ഒരു അക്കൗണ്ടിൽ നിന്നും നിങ്ങൾ സൈൻ ഔട്ട് ചെയ്യുകയാണ്. ഇത് ഈ ഉപകരണത്തിൽ നിന്ന് നിങ്ങളുടെ Chrome വിവരങ്ങൾ ഇല്ലാതാക്കുമെങ്കിലും, Google അക്കൗണ്ടിൽ തുടർന്നും അവ ഉണ്ടായിരിക്കുന്നതാണ്.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">നുറുങ്ങ്: <ph name="BEGIN_LINK" />Chrome-നെ നിങ്ങളുടെ ഡോക്കിലേക്ക് നീക്കുക<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">നിങ്ങൾ കമ്പ്യൂട്ടറിൽ തുറന്ന ടാബുകൾ ഇവിടെ നിന്നും ആക്‌സസ്സ് ചെയ്യുക. കമ്പ്യൂട്ടറിൽ Chrome തുറന്ന് മെനുവിലേക്ക് പോയി “Chrome-ൽ സൈൻ ഇൻ ചെയ്യുക” തിരഞ്ഞെടുക്കുക...</translation>
 <translation id="728488472449859922">Google Chrome QR സ്‌കാനർ ഓണാക്കുക</translation>
-<translation id="7311395200710390977">വേഗതയേറിയ ആക്‌സസിന്, <ph name="BEGIN_LINK" />Chrome-നെ നിങ്ങളുടെ ഡോക്കിലേക്ക് നീക്കുക<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Google Chrome നെ കുറിച്ച്</translation>
 <translation id="7437998757836447326">Chrome-ൽ നിന്നും സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="756809126120519699">Chrome ഡാറ്റ മായ്‌ച്ചു</translation>

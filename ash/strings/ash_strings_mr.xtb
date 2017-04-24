@@ -29,8 +29,6 @@
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
 <translation id="1823873187264960516">इथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi बंद आहे.</translation>
-<translation id="1854357586517521894">CAPS LOCK चालू आहे.
-    रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
 <translation id="1864454756846565995">USB-C डिव्‍हाइस (मागील बाजूचे पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> वर मिरर करत आहे</translation>
 <translation id="1919743966458266018">कार्य व्यवस्थापक उघडण्‍याचा शॉर्टकट बदलला आहे. कृपया <ph name="OLD_SHORTCUT" /> ऐवजी <ph name="NEW_SHORTCUT" /> वापरा.</translation>
@@ -70,11 +68,11 @@
 <translation id="3000461861112256445">मोनो ऑडिओ</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="3019353588588144572">बॅटरी पूर्णपणे चार्ज होईपर्यंत उर्वरित वेळ, <ph name="TIME_REMAINING" /></translation>
+<translation id="3050422059534974565">CAPS LOCK चालू आहे.
+रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">तळाकडील</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3109220592788908353">CAPS LOCK चालू आहे.
-    रद्द करण्यासाठी Alt+Search किंवा Shift दाबा.</translation>
 <translation id="3126069444801937830">अद्यतनासाठी पुनर्प्रारंभ करा</translation>
 <translation id="3147142846278915599">लाँचर (संकालन अॅप्स...)</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
@@ -205,9 +203,10 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> मध्ये जुन्या रिजोल्यूशनवर परत करत आहे</translation>
+<translation id="7209101170223508707">CAPS LOCK चालू आहे.
+रद्द करण्यासाठी Alt+Search किंवा Shift दाबा.</translation>
 <translation id="7246339268451149667">फिंगरप्रिंट अनलॉक सक्षम करायचे?</translation>
 <translation id="7256634071279256947">मागील मायक्रोफोन</translation>
-<translation id="7337799137043490957">फक्त फिंगरप्रिंट सेन्सर टॅप करून लॉक स्क्रीन वगळा. कॉन्फिगर करण्‍यासाठी क्लिक करा.</translation>
 <translation id="7348093485538360975">ऑन-स्क्रीन कीबोर्ड</translation>
 <translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
 <translation id="742594950370306541">कॅमेरा वापरात आहे.</translation>

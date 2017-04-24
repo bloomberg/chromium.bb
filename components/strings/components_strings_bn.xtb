@@ -66,6 +66,7 @@
 &lt;p&gt;দয়া করে &lt;strong&gt;সেটিংস&lt;/strong&gt; অ্যাপ্লিকেশানের &lt;strong&gt;সাধারণ&lt;/strong&gt; বিভাগ থেকে তারিখ এবং সময় সংশোধন করুন৷&lt;/p&gt;</translation>
 <translation id="1583429793053364125">এই ওয়েবপৃষ্ঠাটি দেখানোর সময় কোনো সমস্যা হয়েছে।</translation>
 <translation id="1592005682883173041">স্থানীয় ডেটা অ্যাক্সেস</translation>
+<translation id="1594030484168838125">বেছে নিন</translation>
 <translation id="161042844686301425">নীলাভ</translation>
 <translation id="1629803312968146339">আপনি কি চান যে Chrome এই কার্ড সংরক্ষণ করুক?</translation>
 <translation id="1639239467298939599">লোড হচ্ছে</translation>
@@ -137,6 +138,7 @@
 <translation id="2239100178324503013">এখনই পাঠান</translation>
 <translation id="225207911366869382">এই মান এই নীতির জন্য অসমর্থিত হয়েছে৷</translation>
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
+<translation id="2270484714375784793">ফোন নম্বর</translation>
 <translation id="2282872951544483773">অনুপলব্ধ পরীক্ষানিরীক্ষাগুলি</translation>
 <translation id="2292556288342944218">আপনার ইন্টারনেট অ্যাক্সেস অবরুদ্ধ করা হয়েছে</translation>
 <translation id="230155334948463882">নতুন কার্ড?</translation>
@@ -259,7 +261,6 @@
 <translation id="3345135638360864351">এই সাইটটি অ্যাক্সেস করার জন্য আপনার অনুরোধ <ph name="NAME" /> এ পাঠানো যায়নি৷ অনুগ্রহ করে আবার চেষ্টা করুন৷</translation>
 <translation id="3355823806454867987">প্রক্সি সেটিংস পরিবর্তন করুন...</translation>
 <translation id="3369192424181595722">ঘড়ির ত্রুটি</translation>
-<translation id="337311366426640088">আরো <ph name="ITEM_COUNT" />টি আইটেম...</translation>
 <translation id="337363190475750230">প্রদান করবে না</translation>
 <translation id="3377188786107721145">নীতি বিশ্লেষণ ত্রুটি</translation>
 <translation id="3380365263193509176">অজানা ত্রুটি</translation>
@@ -491,6 +492,7 @@
 <translation id="5622887735448669177">আপনি কি এই সাইটটি ছেড়ে যেতে চান?</translation>
 <translation id="5629630648637658800">নীতি সেটিংস লোড করতে ব্যর্থ হয়েছে</translation>
 <translation id="5631439013527180824">অবৈধ ডিভাইস পরিচালনা টোকেন</translation>
+<translation id="5659593005791499971">ইমেল</translation>
 <translation id="5669703222995421982">ব্যক্তিগতকৃত সামগ্রী পান</translation>
 <translation id="5675650730144413517">এই পৃষ্ঠাটি কাজ করছে না</translation>
 <translation id="5677928146339483299">অবরুদ্ধ</translation>
@@ -524,7 +526,6 @@
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6042308850641462728">আরো</translation>
 <translation id="6060685159320643512">সাবধান হন, এই পরীক্ষাগুলি সমস্যা সৃষ্টি করতে পারে</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{কিছুই নেই}=1{১}one{#}other{#}}</translation>
 <translation id="6146055958333702838">সব কেবল পরীক্ষা করুন এবং আপনি ব্যবহার করছেন এমন যেকোনো রাউটার, মডেম বা অন্যান্য নেটওয়ার্ক ডিভাইসগুলি আবার চালু করুন।</translation>
 <translation id="614940544461990577">এটি করে দেখুন:</translation>
 <translation id="6151417162996330722">সার্ভারের শংসাপত্রের বৈধতার সময়সীমা আছে যা খুবই দীর্ঘ।</translation>

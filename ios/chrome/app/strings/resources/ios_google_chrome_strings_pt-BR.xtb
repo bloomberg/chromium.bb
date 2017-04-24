@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3345341804167540816">Usar o Chrome em qualquer lugar</translation>
 <translation id="3531621179462011934">Para ter suas configurações em todos os seus dispositivos, faça login no Chrome.</translation>
-<translation id="3601960512121168237">Você adora o Chrome? <ph name="BEGIN_LINK" />Mova-o para sua dock<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Deseja que o Chrome salve sua senha para este site?</translation>
 <translation id="384394811301901750">O Google Chrome não pode usar a câmera agora</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">O Google Chrome não têm acesso às suas fotos ou vídeos. Permita o acesso em "Configurações do iOS" &gt; "Privacidade" &gt; "Fotos".</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatório de falha ao Google.</translation>
 <translation id="415767770115540173">Melhore sua experiência do Google no Chrome de acordo com seu local.</translation>
+<translation id="4248297594476034182">Para ver suas guias em todos os seus dispositivos, faça login no Chrome.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4523886039239821078">Alguns complementos causam a falha do Google Chrome. Desinstale-os.</translation>
 <translation id="4615174829807303908">Você está saindo de uma conta gerenciada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Os dados do Chrome serão excluídos desse dispositivo, mas permanecerão na sua Conta do Google.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Dica: <ph name="BEGIN_LINK" />mova o Chrome para sua dock<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Acesse as guias que você abriu no seu computador, bem aqui. Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login no Google Chrome…”</translation>
 <translation id="728488472449859922">Ativar o leitor de QR do Google Chrome</translation>
-<translation id="7311395200710390977">Para um acesso mais rápido, <ph name="BEGIN_LINK" />mova o Chrome para sua dock<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Sobre o Google Chrome</translation>
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
 <translation id="756809126120519699">Dados do Chrome apagados</translation>

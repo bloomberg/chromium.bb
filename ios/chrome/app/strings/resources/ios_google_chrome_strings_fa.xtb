@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
 <translation id="3345341804167540816">‏استفاده از Chrome در همه جا</translation>
 <translation id="3531621179462011934">‏برای اینکه تنظیم‌هایتان را در همه دستگاه‌هایتان دریافت کنید، به سیستم Chrome وارد شوید.</translation>
-<translation id="3601960512121168237">‏Chrome را دوست دارید؟ <ph name="BEGIN_LINK" />آن را به لنگرگاهتان انتقال دهید<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">‏می‌خواهید Chrome گذرواژه‌تان را برای این سایت ذخیره کند؟</translation>
 <translation id="384394811301901750">‏Google Chrome اکنون نمی‌تواند از دوربین استفاده کند</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">‏Google Chrome به عکس‌ها یا ویدیوهای شما دسترسی ندارد. با رفتن به تنظیمات iOS &gt; حریم خصوصی &gt; عکس‌ها دسترسی را فعال کنید.</translation>
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="415767770115540173">‏با Chrome تجربه بهتری از Google براساس موقعیت مکانی‌تان داشته باشید.</translation>
+<translation id="4248297594476034182">‏برای اینکه برگه‌هایتان را در همه دستگاه‌هایتان دریافت کنید، ورودتان را در Chrome ثبت کنید.</translation>
 <translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
 <translation id="4523886039239821078">‏برخی از افزونه‌ها باعث می‌شوند Chrome از کار بیفتد. لطفاً آنها را حذف نصب کنید:</translation>
 <translation id="4615174829807303908">‏هم‌اکنون از حسابی که توسط <ph name="SIGNOUT_MANAGED_DOMAIN" /> مدیریت می‌شود، خارج می‌شوید. با این کار داده‌های Chrome شما از این دستگاه حذف می‌شود اما همچنان در حساب Google شما باقی می‌ماند.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">‏نکته: <ph name="BEGIN_LINK" />Chrome را به داکتان انتقال دهید<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">‏از اینجا به برگه‌هایی که دررایانه‌تان باز کرده‌اید دسترسی داشته باشید. کافیست Chrome را در رایانه‌تان باز کنید، به منو بروید و «ورود به سیستم Chrome» را انتخاب کنید.</translation>
 <translation id="728488472449859922">‏اسکنر QR در Google Chrome را روشن کنید</translation>
-<translation id="7311395200710390977">‏برای دسترسی سریع‌تر، <ph name="BEGIN_LINK" />Chrome را به داکتان انتقال دهید<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">‏درباره Google Chrome</translation>
 <translation id="7437998757836447326">‏خروج از سیستم Chrome</translation>
 <translation id="756809126120519699">‏داده‌های Chrome پاک شد</translation>

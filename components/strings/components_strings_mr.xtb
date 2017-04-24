@@ -66,6 +66,7 @@
       &lt;p&gt;कृपया &lt;strong&gt;सेटिंग्ज&lt;/strong&gt; अॅपच्या &lt;strong&gt;सर्वसाधारण&lt;/strong&gt; विभागातील तारीख आणि वेळ समायोजित करा.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">हे वेबपृष्‍ठ प्रदर्शित करताना काहीतरी चूक झाली.</translation>
 <translation id="1592005682883173041">स्थानिक डेटा प्रवेश</translation>
+<translation id="1594030484168838125">निवडा</translation>
 <translation id="161042844686301425">निळसर</translation>
 <translation id="1629803312968146339">Chrome ने हे कार्ड जतन करावे असे आपण इच्छिता?</translation>
 <translation id="1639239467298939599">लोड करीत आहे</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">आता पाठवा</translation>
 <translation id="225207911366869382">हे मूल्य या धोरणासाठी नापसंत करण्‍यात आले आहे.</translation>
 <translation id="2262243747453050782">HTTP त्रुटी</translation>
+<translation id="2270484714375784793">फोन नंबर</translation>
 <translation id="2282872951544483773">अनुपलब्ध प्रयोग</translation>
 <translation id="2292556288342944218">आपला इंटरनेट प्रवेश अवरोधित केला आहे</translation>
 <translation id="230155334948463882">नवीन कार्ड?</translation>
@@ -258,7 +260,6 @@
 <translation id="3345135638360864351">या साइटवर प्रवेश करण्याची आपली विनंती <ph name="NAME" /> कडे पाठविली जाऊ शकली नाही. कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="3355823806454867987">प्रॉक्सी सेटिंग्ज बदला...</translation>
 <translation id="3369192424181595722">घड्याळ त्रुटी</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> अधिक आयटम...</translation>
 <translation id="337363190475750230">तरतूद रद्द केली</translation>
 <translation id="3377188786107721145">धोरण विश्लेषण त्रुटी</translation>
 <translation id="3380365263193509176">अज्ञात त्रुटी</translation>
@@ -490,6 +491,7 @@
 <translation id="5622887735448669177">आपण ही साइट सोडू इच्छिता?</translation>
 <translation id="5629630648637658800">धोरण सेटिंग्ज लोड करण्यात अयशस्वी</translation>
 <translation id="5631439013527180824">अवैध डिव्हाइस व्यवस्थापन टोकन</translation>
+<translation id="5659593005791499971">ईमेल</translation>
 <translation id="5669703222995421982">वैयक्तीकृत सामग्री मिळवा</translation>
 <translation id="5675650730144413517">हे पृष्ठ कार्य करीत नाही</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
@@ -523,7 +525,6 @@
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="6060685159320643512">सावधगिरी बाळगा, या प्रयोगांमुळे हानी होऊ शकते</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{काहीही नाही}=1{1}one{#}other{#}}</translation>
 <translation id="6146055958333702838">कोणत्याही केबल तपासा आणि कोणतेही राउटर, मोडेम किंवा आपण
 वापरत असलेले
         अन्य नेटवर्क डिव्हाइसेस रीबूट करा.</translation>

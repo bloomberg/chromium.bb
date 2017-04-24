@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Pierakstīties pārlūkā Chrome</translation>
 <translation id="3345341804167540816">Izmantojiet Chrome visur</translation>
 <translation id="3531621179462011934">Pierakstieties pārlūkā Chrome, lai jūsu iestatījumi būtu pieejami visās jūsu ierīcēs.</translation>
-<translation id="3601960512121168237">Vai jums patīk pārlūks Chrome? <ph name="BEGIN_LINK" />Pārvietojiet to uz savu doku<ph name="END_LINK" />!</translation>
 <translation id="3678774398092457402">Vai vēlaties, lai pārlūkā Chrome tiktu saglabāta parole šai vietnei?</translation>
 <translation id="384394811301901750">Google Chrome pašlaik nevar izmantot kameru.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome nevar piekļūt jūsu fotoattēliem vai videoklipiem. Iespējojiet piekļuvi: iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="415767770115540173">Uzlabojiet savu Google pakalpojumu izmantošanas pieredzi pārlūkā Chrome, sūtot informāciju par savu atrašanās vietu.</translation>
+<translation id="4248297594476034182">Pierakstieties pārlūkā Chrome, lai cilnes būtu pieejamas visās jūsu ierīcēs.</translation>
 <translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4523886039239821078">Daži papildinājumi var izraisīt pārlūka Chrome avarēšanu. Lūdzu, atinstalējiet šos papildinājumus:</translation>
 <translation id="4615174829807303908">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="SIGNOUT_MANAGED_DOMAIN" />. Izrakstoties Chrome dati tiks dzēsti no šīs ierīces, taču tie paliks jūsu Google kontā.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Padoms. <ph name="BEGIN_LINK" />Pārvietojiet pārlūku Chrome uz savu doku<ph name="END_LINK" />.</translation>
 <translation id="7265369419224458312">Šeit varat piekļūt cilnēm, kas ir atvērtas jūsu datorā. Vienkārši atveriet pārlūku Chrome savā datorā, pārejiet uz izvēlni un atlasiet “Pierakstīties pakalpojumā Chrome…”</translation>
 <translation id="728488472449859922">Google Chrome QR skenera ieslēgšana</translation>
-<translation id="7311395200710390977">Lai nodrošinātu ātrāku piekļuvi, <ph name="BEGIN_LINK" />pārvietojiet pārlūku Chrome uz savu doku<ph name="END_LINK" />.</translation>
 <translation id="7400722733683201933">Par Google Chrome</translation>
 <translation id="7437998757836447326">Izrakstīšanās no pārlūka Chrome</translation>
 <translation id="756809126120519699">Chrome dati tika notīrīti</translation>

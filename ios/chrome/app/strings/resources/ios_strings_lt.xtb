@@ -186,6 +186,7 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad pradėtumėte s
 <translation id="4750394297954878236">Pasiūlymai</translation>
 <translation id="4773461607542755386">Atidaryti šį puslapį naudojant „<ph name="APP_NAME" />“?</translation>
 <translation id="481968316161811770">Slapuk., svet. duom.</translation>
+<translation id="4860895144060829044">Skambinti</translation>
 <translation id="4875622588773761625">Ar norite, kad „<ph name="PASSWORD_MANAGER_BRAND" />“ atnaujintų šios svetainės slaptažodį?</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
 <translation id="4904877109095351937">Pažymėti kaip skaitytus</translation>
@@ -356,7 +357,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8205564605687841303">Atšaukti</translation>
 <translation id="8225985093977202398">Talp. vaiz. ir fail.</translation>
 <translation id="8261506727792406068">Panaikinti</translation>
-<translation id="8272194309885535896">Atsisiųsti vaizdą</translation>
 <translation id="8272426682713568063">Kredito kortelės</translation>
 <translation id="8281781826761538115">Numatytoji – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Valdykite, kaip „Google“ turėtų naudoti jūsų naršymo istoriją, kad suasmenintų Paiešką, skelbimus ir kitas „Google“ paslaugas</translation>

@@ -186,6 +186,7 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="4750394297954878236">Sugestões</translation>
 <translation id="4773461607542755386">Abrir esta página na aplicação <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Cookies, dados de sites</translation>
+<translation id="4860895144060829044">Telefonar</translation>
 <translation id="4875622588773761625">Pretende que o <ph name="PASSWORD_MANAGER_BRAND" /> atualize a sua palavra-passe para este site?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4904877109095351937">Marcar como lidas</translation>
@@ -356,7 +357,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8205564605687841303">Cancelar</translation>
 <translation id="8225985093977202398">Imagens e ficheiros em cache</translation>
 <translation id="8261506727792406068">Eliminar</translation>
-<translation id="8272194309885535896">Transferir imagem</translation>
 <translation id="8272426682713568063">Cartões de crédito</translation>
 <translation id="8281781826761538115">Predefinição – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Controlar a forma como a Google utiliza o seu histórico de navegação para personalizar a Pesquisa Google, os anúncios e outros serviços Google</translation>

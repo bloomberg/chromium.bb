@@ -66,6 +66,7 @@
       &lt;p&gt;Juster datoen og klokkeslettet under &lt;strong&gt;Generelt&lt;/strong&gt; i &lt;strong&gt;Innstillinger&lt;/strong&gt;-appen.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Noe gikk galt under åpningen av denne nettsiden.</translation>
 <translation id="1592005682883173041">Tilgang til lokale data</translation>
+<translation id="1594030484168838125">Velg</translation>
 <translation id="161042844686301425">Cyan</translation>
 <translation id="1629803312968146339">Vil du at Chrome skal lagre dette kortet?</translation>
 <translation id="1639239467298939599">Laster inn</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Send nå</translation>
 <translation id="225207911366869382">Denne verdien er foreldet for denne innstillingen.</translation>
 <translation id="2262243747453050782">HTTP-feil</translation>
+<translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2282872951544483773">Utilgjengelige eksperimenter</translation>
 <translation id="2292556288342944218">Internett-tilgangen din er blokkert</translation>
 <translation id="230155334948463882">Nytt kort?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">En nettverksendring ble oppdaget.</translation>
 <translation id="2916038427272391327">Lukk andre programmer</translation>
 <translation id="2922350208395188000">Tjenerens sertifikat kan ikke kontrolleres.</translation>
+<translation id="2928905813689894207">Faktureringsadresse</translation>
 <translation id="2948083400971632585">På innstillingssiden kan du deaktivere eventuelle mellomtjenere for tilkoblinger.</translation>
 <translation id="2955913368246107853">Lukk søkefelt</translation>
 <translation id="2958431318199492670">Nettverkskonfigurasjonen overholder ikke ONC-standarden. Deler av konfigurasjonen kan muligens ikke importeres.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Vis lagret kopi</translation>
 <translation id="3008447029300691911">Skriv inn verifiseringskoden for <ph name="CREDIT_CARD" />. Når du bekrefter, deles kortinformasjonen din med dette nettstedet.</translation>
 <translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX" />»: <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Automatisk blokkert</translation>
 <translation id="3024663005179499861">Feil type enhetsinnstillinger</translation>
 <translation id="3032412215588512954">Vil du laste inn dette nettstedet på nytt?</translation>
 <translation id="3037605927509011580">Æsj!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">Forespørselen om tilgang til dette nettstedet kunne ikke sendes til <ph name="NAME" />. Prøv igjen.</translation>
 <translation id="3355823806454867987">Endre innstillinger for mellomtjener</translation>
 <translation id="3369192424181595722">Klokkefeil</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> varer til …</translation>
 <translation id="337363190475750230">Godkjenningen er opphevet</translation>
 <translation id="3377188786107721145">Feil under analysen av enhetsinnstillinger</translation>
 <translation id="3380365263193509176">Ukjent feil</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">Vil du forlate dette nettstedet?</translation>
 <translation id="5629630648637658800">Kunne ikke laste in angivelsen for enhetsinnstillinger</translation>
 <translation id="5631439013527180824">Ugyldig token for enhetsadministrering</translation>
+<translation id="5659593005791499971">E-post</translation>
 <translation id="5669703222995421982">Få innhold med et personlig preg</translation>
 <translation id="5675650730144413517">Denne siden fungerer ikke</translation>
 <translation id="5677928146339483299">Blokkert</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="6060685159320643512">Vær forsiktig. Disse eksperimentene kan bite</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{ingen}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Sjekk alle kabler, og start rutere, modemer eller andre nettverksenheter
      du bruker, på nytt.</translation>
 <translation id="614940544461990577">Prøv dette:</translation>
 <translation id="6151417162996330722">Tjenersertifikatet har en gyldighetsperiode som er for lang.</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="6177128806592000436">Tilkoblingen til dette nettstedet er ikke sikker</translation>
+<translation id="6184817833369986695">(kohort: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Kontrollér Internett-tilkoblingen</translation>
 <translation id="6218753634732582820">Vil du fjerne adressen fra Chromium?</translation>
 <translation id="6251924700383757765">Personvern</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7182878459783632708">Ingen retningslinjer er angitt</translation>
 <translation id="7186367841673660872">Denne siden har blitt oversatt fra<ph name="ORIGINAL_LANGUAGE" />til<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Frigjør <ph name="SIZE" />. Det kan hende noen nettsteder lastes inn tregere neste gang du besøker dem.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> retter seg ikke etter sikkerhetsstandardene.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Mer informasjon<ph name="END_LINK" /> om dette problemet.</translation>

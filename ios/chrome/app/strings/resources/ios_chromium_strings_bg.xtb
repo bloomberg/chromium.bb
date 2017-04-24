@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Влезте в Chromium, за да получите отметките си на всичките си устройства.</translation>
 <translation id="3473048256428424907">Включване на скенера за QR кодове в Chromium</translation>
 <translation id="3805899903892079518">Chromium няма достъп до снимките или видеоклиповете ви. Активирайте го от „Settings“ &gt; „Privacy“ &gt; „Photos“ в iOS.</translation>
-<translation id="40863189315891987">За по-бърз достъп <ph name="BEGIN_LINK" />преместете Chromium в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">Влезте в Chromium, за да получите разделите си от другите си устройства.</translation>
 <translation id="4241912885070669028">Излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />. Данните ви в Chromium ще се изтрият от това устройство, но ще останат в профила ви в Google.</translation>
 <translation id="4555020257205549924">Когато тази функция е включена, Chromium ще предлага да преведе страниците, написани на други езици, посредством Google Преводач. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Искате ли да излезете от Chromium?</translation>
 <translation id="6424492062988593837">Chromium току-що се подобри! Налице е нова версия.</translation>
 <translation id="6604711459180487467">Подобрете работата си в Chromium въз основа на местоположението си.</translation>
-<translation id="6989306073720242915">Харесвате приложението Chromium? <ph name="BEGIN_LINK" />Преместете го в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium не може да използва камерата ви в режим на разделен изглед</translation>
 <translation id="7144758435978427212">Откривайте уеб страници, изпращани от обекти в близост. Когато функцията за Bluetooth е включена, Chromium може да събира съответните страници и да ги изпраща анонимно до Google, за да намира най-полезните. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">С Chromium спестявате време, като свързвате профилите си с мрежата. Можете да добавяте или премахвате профили от настройките.</translation>

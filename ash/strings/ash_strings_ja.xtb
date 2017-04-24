@@ -29,8 +29,6 @@
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
-<translation id="1854357586517521894">CapsLock がオンです。
-    オフにするには検索または Shift キーを押します。</translation>
 <translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
 <translation id="1919743966458266018">タスク マネージャを起動するショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
@@ -50,6 +48,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">エラーが発生しました</translation>
+<translation id="2501920221385095727">固定キー</translation>
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
 <translation id="2700058918926273959">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。終了するとログアウトします。</translation>
@@ -70,11 +69,11 @@
 <translation id="3000461861112256445">モノラル音声</translation>
 <translation id="3009178788565917040">出力</translation>
 <translation id="3019353588588144572">バッテリーがフル充電されるまであと: <ph name="TIME_REMAINING" /></translation>
+<translation id="3050422059534974565">CapsLock がオンになっています。
+検索/Shift キーを押すと解除されます。</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">下</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />（Bluetooth）</translation>
-<translation id="3109220592788908353">CapsLock がオンです。
-    オフにするには Alt キーと同時に検索または Shift キーを押します。</translation>
 <translation id="3126069444801937830">再起動して更新</translation>
 <translation id="3147142846278915599">ランチャー（アプリを同期中...）</translation>
 <translation id="315116470104423982">モバイル データ</translation>
@@ -88,7 +87,7 @@
 <translation id="3400357268283240774">その他の設定</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
-<translation id="3510164367642747937">マウスカーソルを強調表示する</translation>
+<translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
 <translation id="3547954654003013442">プロキシ設定</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
 <translation id="3595596368722241419">バッテリー残量: 満</translation>
@@ -127,7 +126,7 @@
 <translation id="4544944664594876241">画面をロックするショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
-<translation id="4849058404725798627">キーボードのフォーカスがある項目を強調表示する</translation>
+<translation id="4849058404725798627">キーボードのフォーカスがある項目をハイライト表示する</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="4895488851634969361">バッテリー残量: 満。</translation>
 <translation id="4918086044614829423">承諾</translation>
@@ -135,7 +134,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
-<translation id="5207949376430453814">テキスト カーソルを強調表示する</translation>
+<translation id="5207949376430453814">テキスト カーソルをハイライト表示する</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="523505283826916779">ユーザー補助の設定</translation>
 <translation id="5313326810920013265">Bluetooth 設定</translation>
@@ -148,6 +147,7 @@
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
 <translation id="5648021990716966815">マイク差込口</translation>
+<translation id="5744083938413354016">タップによるドラッグ</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
 <translation id="57838592816432529">ミュート</translation>
 <translation id="5895138241574237353">再起動</translation>
@@ -206,9 +206,10 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
+<translation id="7209101170223508707">CapsLock がオンになっています。
+Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="7246339268451149667">指紋によるロック解除を有効にしますか？</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
-<translation id="7337799137043490957">指紋認証センサーをタップしてロック画面をスキップできます。設定するにはクリックしてください。</translation>
 <translation id="7348093485538360975">画面キーボード</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="742594950370306541">カメラが使用中です。</translation>
@@ -239,7 +240,7 @@
 <translation id="8308637677604853869">前のメニュー</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433186206711564395">ネットワーク設定</translation>
-<translation id="8433977262951327081">シェルフに入力オプション メニューの吹き出しを表示するためのショートカットが変わりました。今後は <ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> を使用してください。</translation>
+<translation id="8433977262951327081">シェルフに入力オプション メニューのふきだしを表示するためのショートカットが変わりました。今後は <ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> を使用してください。</translation>
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: 再接続しています...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンでも充電できない可能性があります。</translation>

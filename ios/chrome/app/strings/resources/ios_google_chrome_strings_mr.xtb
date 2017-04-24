@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Chrome वर साइन इन करा</translation>
 <translation id="3345341804167540816">Chrome सर्वत्र वापरा</translation>
 <translation id="3531621179462011934">आपल्या सर्व डिव्हाइसेसवर आपल्या सेटिंग्ज प्राप्त करण्यासाठी, Chrome मध्ये साइन इन करा</translation>
-<translation id="3601960512121168237">Chrome आवडते? <ph name="BEGIN_LINK" />आपल्या डॉकमध्ये हलवा<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Chrome ने या साइटसाठी आपला संकेतशब्द जतन करावा असे आपण इच्छिता?</translation>
 <translation id="384394811301901750">Google Chrome आत्ता आपला कॅमेरा वापरू शकत नाही</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome ला आपल्या फोटो आणि व्हिडिओंमध्ये प्रवेश नाही. iOS सेटिंग्ज &gt; गोपनीयता &gt; फोटो मध्ये प्रवेश सक्षम करा.</translation>
 <translation id="4099578267706723511">वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chrome अधिक चांगले करण्यास मदत करा.</translation>
 <translation id="415767770115540173">आपल्या स्थानावर आधारित Chrome मध्ये उत्कृष्ट Google अनुभव मिळवा.</translation>
+<translation id="4248297594476034182">आपल्या सर्व डिव्हाइसेसवर आपले टॅब प्राप्त करण्यासाठी, Chrome मध्ये साइन इन करा.</translation>
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
 <translation id="4523886039239821078">Chrome क्रॅश होण्याचे कारण काही अॅड-ऑन आहेत. कृपया ती विस्थापित करा:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यामधून आपण साइन आउट करीत आहात. हे आपला Chrome डेटा या डिव्हाइस वरून हटवेल परंतु आपला डेटा आपल्या Google खात्यामध्ये असेल.</translation>
@@ -44,7 +44,6 @@
 <translation id="7265369419224458312">आपण आपल्‍या संगणकावर उघडलेल्‍या टॅबमध्‍ये, थेट येथून प्रवेश करा.
 आपल्‍या संगणकावर फक्त Chrome उघडा, मेनूवर जा आणि "Chrome वर साइन इन करा…" निवडा</translation>
 <translation id="728488472449859922">Google Chrome QR स्कॅनर चालू करा</translation>
-<translation id="7311395200710390977">अधिक जलद प्रवेशासाठी, <ph name="BEGIN_LINK" />Chrome आपल्या डॉकमध्ये हलवा<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Google Chrome बद्दल</translation>
 <translation id="7437998757836447326">Chrome मधून साइन आउट करा</translation>
 <translation id="756809126120519699">Chrome डेटा साफ केला</translation>

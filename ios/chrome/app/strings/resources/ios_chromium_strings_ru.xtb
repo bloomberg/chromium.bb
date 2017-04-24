@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Чтобы получить доступ к закладкам на всех ваших устройствах, войдите в Chromium.</translation>
 <translation id="3473048256428424907">Включите QR-сканер в Chromium</translation>
 <translation id="3805899903892079518">У Chromium нет доступа к вашим фото и видео. Чтобы предоставить его, нажмите "Настройки &gt; Конфиденциальность &gt; Фотографии".</translation>
-<translation id="40863189315891987">Для быстрого доступа <ph name="BEGIN_LINK" />добавьте Chromium в Dock<ph name="END_LINK" />.</translation>
 <translation id="418271229036116702">Чтобы получить доступ к вкладкам на всех ваших устройствах, войдите в Chromium.</translation>
 <translation id="4241912885070669028">Вы выходите из аккаунта, которым управляет администратор домена <ph name="SIGNOUT_MANAGED_DOMAIN" />. Обратите внимание, что данные Chromium будут удалены с устройства, но сохранятся в аккаунте Google.</translation>
 <translation id="4555020257205549924">Когда эта функция включена, Chrome предлагает перевести страницы с помощью Google Переводчика. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Выйти из Chromium?</translation>
 <translation id="6424492062988593837">Chromium становится лучше! Доступна новая версия.</translation>
 <translation id="6604711459180487467">Откройте доступ к геоданным, чтобы использовать дополнительные возможности Chromium.</translation>
-<translation id="6989306073720242915">Вам нравится Chromium? <ph name="BEGIN_LINK" />Добавьте его в Dock<ph name="END_LINK" />.</translation>
 <translation id="7099326575020694068">Chromium не может использовать камеру в режиме Split View.</translation>
 <translation id="7144758435978427212">Если на устройстве включен Bluetooth, Chromium находит и анонимно отправляет в Google веб-страницы, связанные с находящимися рядом объектами, а затем предлагает вам интересные и полезные ресурсы. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Чтобы сэкономить ваше время, Chromium будет использовать аккаунты, сохраненные на вашем устройстве. Добавить или удалить их можно в настройках.</translation>

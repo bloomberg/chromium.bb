@@ -66,6 +66,7 @@
 &lt;p&gt;Моля, коригирайте датата и часа от секцията &lt;strong&gt;General&lt;/strong&gt; на приложението &lt;strong&gt;Settings&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Възникна проблем при показването на тази уеб страница.</translation>
 <translation id="1592005682883173041">Достъп до локални данни</translation>
+<translation id="1594030484168838125">Избор</translation>
 <translation id="161042844686301425">синьозелено</translation>
 <translation id="1629803312968146339">Искате ли Chrome да запази тази карта?</translation>
 <translation id="1639239467298939599">Зарежда се</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Изпращане сега</translation>
 <translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
+<translation id="2270484714375784793">Телефонен номер</translation>
 <translation id="2282872951544483773">Експерименти, които не са налице</translation>
 <translation id="2292556288342944218">Достъпът ви до интернет е блокиран</translation>
 <translation id="230155334948463882">Нова карта?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">Установена бе промяна в мрежата.</translation>
 <translation id="2916038427272391327">Затворете другите програми.</translation>
 <translation id="2922350208395188000">Сертификатът на сървъра не може да бъде проверен.</translation>
+<translation id="2928905813689894207">Адрес за фактуриране</translation>
 <translation id="2948083400971632585">Можете да деактивирате всички конфигурирани за дадена връзка прокси сървъри от страницата „Настройки“.</translation>
 <translation id="2955913368246107853">Затваряне на лентата за търсене</translation>
 <translation id="2958431318199492670">Конфигурацията на мрежата не спазва стандарта на ONC. Възможно е части от нея да не са импортирани.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Показване на запазено копие</translation>
 <translation id="3008447029300691911">Въведете кода за проверка за <ph name="CREDIT_CARD" />. След като потвърдите картата си, данните за нея ще бъдат споделени с този сайт.</translation>
 <translation id="3010559122411665027">Списъчен запис „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Автоматично блокирано</translation>
 <translation id="3024663005179499861">Грешен тип на правилото</translation>
 <translation id="3032412215588512954">Искате ли да презаредите този сайт?</translation>
 <translation id="3037605927509011580">Ужас!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">Заявката ви за достъп до този сайт не можа да се изпрати до <ph name="NAME" />. Моля, опитайте отново.</translation>
 <translation id="3355823806454867987">Промяна на настройките на прокси сървъра...</translation>
 <translation id="3369192424181595722">Грешка в часовника</translation>
-<translation id="337311366426640088">Още <ph name="ITEM_COUNT" /> елемента...</translation>
 <translation id="337363190475750230">Обезпечаването е отменено</translation>
 <translation id="3377188786107721145">Грешка при синтактичния анализ на правилото</translation>
 <translation id="3380365263193509176">Неизвестна грешка</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">Искате ли да напуснете този сайт?</translation>
 <translation id="5629630648637658800">Зареждането на настройките за правилото не бе успешно</translation>
 <translation id="5631439013527180824">Невалидно означение за управление на устройството</translation>
+<translation id="5659593005791499971">Имейл</translation>
 <translation id="5669703222995421982">Получаване на персонализирано съдържание</translation>
 <translation id="5675650730144413517">Тази страница не работи</translation>
 <translation id="5677928146339483299">Блокирано</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6042308850641462728">Още</translation>
 <translation id="6060685159320643512">Внимавайте, тези експерименти може да са опасни</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{няма}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Проверете всички кабели и рестартирайте маршрутизаторите, модемите или другите мрежови
 устройства, които може да използвате.</translation>
 <translation id="614940544461990577">Изпробвайте следното:</translation>
 <translation id="6151417162996330722">Сертификатът на сървъра има твърде дълъг период на валидност.</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6177128806592000436">Връзката ви с този сайт не е защитена</translation>
+<translation id="6184817833369986695">(кохорта: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Проверете връзката си с интернет</translation>
 <translation id="6218753634732582820">Адресът да се премахне ли от Chromium?</translation>
 <translation id="6251924700383757765">Декларация за поверителност</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7182878459783632708">Няма зададени правила</translation>
 <translation id="7186367841673660872">Тази страница е преведена от<ph name="ORIGINAL_LANGUAGE" />на<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Ще освободите <ph name="SIZE" />. Някои сайтове може да се заредят по-бавно при следващото ви посещение.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> не се придържа към стандартите за сигурност.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> за този проблем.</translation>

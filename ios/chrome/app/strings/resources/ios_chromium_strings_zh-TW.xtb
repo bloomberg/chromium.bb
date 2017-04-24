@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">如要在所有裝置上存取你的書籤，請登入 Chromium。</translation>
 <translation id="3473048256428424907">開啟 Chromium QR 掃描器</translation>
 <translation id="3805899903892079518">Chromium 無法存取您的相片或影片，請前往「iOS 設定」中的 [隱私權] &gt; [相片] 啟用存取權。</translation>
-<translation id="40863189315891987">如要更快存取 Chromium，請<ph name="BEGIN_LINK" />將 Chromium 移至 Dock<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">如要存取你在其他裝置上開啟的分頁，請登入 Chromium。</translation>
 <translation id="4241912885070669028">你即將登出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 所管理的帳戶。系統會將你的 Chromium 資料從這個裝置上刪除，但繼續保留在你的 Google 帳戶中。</translation>
 <translation id="4555020257205549924">開啟這項功能後，Chromium 會使用 Google 翻譯來翻譯其他語言的網頁。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">要登出 Chromium 嗎？</translation>
 <translation id="6424492062988593837">Chromium 現在變得更進步了！歡迎您升級使用新版本。</translation>
 <translation id="6604711459180487467">Chromium 可根據你的位置資訊提供更優質的體驗。</translation>
-<translation id="6989306073720242915">喜歡 Chromium 嗎？建議你<ph name="BEGIN_LINK" />將 Chromium 移至 Dock<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium 無法在分割模式中使用你的相機</translation>
 <translation id="7144758435978427212">探索附近實體傳送的網頁。藍牙開啟時，Chromium 會收集與你附近實體相關聯的網頁，並以匿名方式將這些資訊傳送給 Google，藉此找出對你最實用的網頁。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium 會將你的所有帳戶同步到網路上，為你節省時間。你可以在「設定」中新增或移除帳戶。</translation>

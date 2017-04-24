@@ -66,6 +66,7 @@
       &lt;p&gt;Ajuste a data e a hora na secção &lt;strong&gt;Geral&lt;/strong&gt; da aplicação &lt;strong&gt;Definições&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Ocorreu um erro ao apresentar esta página Web.</translation>
 <translation id="1592005682883173041">Acesso aos dados locais</translation>
+<translation id="1594030484168838125">Escolher</translation>
 <translation id="161042844686301425">Turquesa</translation>
 <translation id="1629803312968146339">Pretende que o Chrome guarde este cartão?</translation>
 <translation id="1639239467298939599">A carregar</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Enviar agora</translation>
 <translation id="225207911366869382">Este valor está desatualizado para esta política.</translation>
 <translation id="2262243747453050782">Erro HTTP</translation>
+<translation id="2270484714375784793">Número de telefone</translation>
 <translation id="2282872951544483773">Experiências Indisponíveis</translation>
 <translation id="2292556288342944218">O acesso à Internet está bloqueado</translation>
 <translation id="230155334948463882">Tem um cartão novo?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">Foi detetada uma alteração de rede.</translation>
 <translation id="2916038427272391327">Fechar outros programas</translation>
 <translation id="2922350208395188000">Não é possível verificar o certificado do servidor.</translation>
+<translation id="2928905813689894207">Endereço de faturação</translation>
 <translation id="2948083400971632585">Pode desativar qualquer proxy configurado para uma ligação a partir da página de definições.</translation>
 <translation id="2955913368246107853">Fechar barra de localização</translation>
 <translation id="2958431318199492670">A configuração de rede não cumpre a norma ONC. Partes da configuração podem não ser importadas.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Mostrar cópia guardada</translation>
 <translation id="3008447029300691911">Introduza o Código de Segurança/CVC de <ph name="CREDIT_CARD" />. Ao confirmar, os detalhes do cartão são partilhados com este site.</translation>
 <translation id="3010559122411665027">Entrada da lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Bloqueada automaticamente</translation>
 <translation id="3024663005179499861">Tipo de política incorreto</translation>
 <translation id="3032412215588512954">Pretende atualizar este site?</translation>
 <translation id="3037605927509011580">Ah, bolas!!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">Não é possível enviar o seu pedido de acesso a este site a <ph name="NAME" />. Tente novamente.</translation>
 <translation id="3355823806454867987">Alterar definições de proxy...</translation>
 <translation id="3369192424181595722">Erro de relógio</translation>
-<translation id="337311366426640088">Mais <ph name="ITEM_COUNT" /> itens...</translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
 <translation id="3377188786107721145">Erro de análise da política</translation>
 <translation id="3380365263193509176">Erro desconhecido</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">Pretende sair deste site?</translation>
 <translation id="5629630648637658800">Falha ao carregar as definições da política</translation>
 <translation id="5631439013527180824">Token de gestão do dispositivo inválido</translation>
+<translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Obter conteúdo personalizado</translation>
 <translation id="5675650730144413517">Esta página não está a funcionar</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="6060685159320643512">Tenha cuidado, estas experiências podem morder</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{nenhuma}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Verifique os cabos e reinicie todos os routers, modems ou outros
     dispositivos de rede que possa estar a utilizar.</translation>
 <translation id="614940544461990577">Experimente:</translation>
 <translation id="6151417162996330722">O certificado do servidor tem um período de validade demasiado longo.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6177128806592000436">A sua ligação a este site não é segura</translation>
+<translation id="6184817833369986695">(grupo com caraterísticas em comum: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Verificar a ligação à Internet</translation>
 <translation id="6218753634732582820">Pretende remover o endereço do Chromium?</translation>
 <translation id="6251924700383757765">Política de privacidade</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7182878459783632708">Não estão definidas políticas</translation>
 <translation id="7186367841673660872">Esta página foi traduzida de<ph name="ORIGINAL_LANGUAGE" />para<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Liberta <ph name="SIZE" />. É possível que alguns sites sejam carregados mais lentamente na sua próxima visita.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> não respeita os padrões de segurança.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre este problema.</translation>

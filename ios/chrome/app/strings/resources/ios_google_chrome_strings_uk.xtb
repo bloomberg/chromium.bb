@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3345341804167540816">Використовуйте Chrome на всіх пристроях</translation>
 <translation id="3531621179462011934">Щоб мати доступ до налаштувань на всіх своїх пристроях, увійдіть в обліковий запис Chrome.</translation>
-<translation id="3601960512121168237">Подобається Chrome? <ph name="BEGIN_LINK" />Перемістіть його на панель Dock<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Зберегти пароль для цього сайту в Chrome?</translation>
 <translation id="384394811301901750">Зараз Google Chrome не може використовувати камеру</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome не має доступу до ваших фото чи відео. Надайте доступ у меню iOS "Параметри &gt; Конфіденційність &gt; Фото".</translation>
 <translation id="4099578267706723511">Допоможіть покращити Chrome, надсилаючи статистику та звіти про збої в Google.</translation>
 <translation id="415767770115540173">Знаючи ваше місцезнаходження, Google зможе створити для вас зручніші умови роботи в Chrome.</translation>
+<translation id="4248297594476034182">Щоб мати доступ до вкладок на всіх своїх пристроях, увійдіть в обліковий запис Chrome.</translation>
 <translation id="424864128008805179">Вийти з Chrome?</translation>
 <translation id="4523886039239821078">Деякі додатки спричиняють аварійне завершення роботи Chrome. Видаліть такі додатки:</translation>
 <translation id="4615174829807303908">Ви виходите з облікового запису, зареєстрованого в домені <ph name="SIGNOUT_MANAGED_DOMAIN" />. Дані Chrome буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Порада. <ph name="BEGIN_LINK" />Перемістіть Chrome на панель Dock<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Тут ви можете переглядати вкладки, відкриті на комп’ютері. Просто запустіть Chrome на комп’ютері, перейдіть у меню та виберіть "Увійти в Chrome…"</translation>
 <translation id="728488472449859922">Увімкнути сканер QR-кодів у Google Chrome</translation>
-<translation id="7311395200710390977">Щоб швидко відкривати Chrome, <ph name="BEGIN_LINK" />перемістіть його на панель Dock<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Про Google Chrome</translation>
 <translation id="7437998757836447326">Вихід із Chrome</translation>
 <translation id="756809126120519699">Дані Chrome видалено</translation>

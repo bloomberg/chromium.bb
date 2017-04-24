@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Chrome ውስጥ ይግቡ</translation>
 <translation id="3345341804167540816">Chromeን በየትኛውም ቦታ ይጠቀሙበት</translation>
 <translation id="3531621179462011934">የእርስዎን ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ Chrome ይግቡ።</translation>
-<translation id="3601960512121168237">Chromeን ይወዱታል? <ph name="BEGIN_LINK" />ወደ የእርስዎ መትከያ ይውሰዱት<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Chrome የዚህ ጣቢያ ይለፍ ቃልዎን እንዲያስቀምጥልዎት ይፈልጋሉ?</translation>
 <translation id="384394811301901750">Google Chrome አሁን ካሜራዎን መጠቀም አይችልም</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome የእርስዎ ፎቶዎች ወይም ቪዲዮዎች መዳረሻ የለውም። መዳረሻ በiOS ቅንብሮች &gt; ግላዊነት &gt; ፎቶዎች ውስጥ ያንቁ።</translation>
 <translation id="4099578267706723511">የአጠቃቀም ስታቲክሶችን እና የብልሽት ሪፖርቶችን ወደ Google በመላክ Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ።</translation>
 <translation id="415767770115540173">በአካባቢዎ ላይ በመመስረት የተሻለ የGoogle ተሞክሮ በChrome ውስጥ ያግኙ።</translation>
+<translation id="4248297594476034182">የእርስዎን ትሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ Chrome ይግቡ።</translation>
 <translation id="424864128008805179">ከChrome ተዘግቶ ይወጣ?</translation>
 <translation id="4523886039239821078">አንዳንድ ተጨማሪዎች Chrome እንዲበላሽ ያደርጋሉ። እባክዎ የሚከተለውን ያራግፉ፦</translation>
 <translation id="4615174829807303908">በ<ph name="SIGNOUT_MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ነው። ይሄ የChrome ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን ውሂብዎ አሁንም በእርስዎ የGoogle መለያ ውስጥ እንዳለ ይቆያል።</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">ጠቃሚ ምክር፦ <ph name="BEGIN_LINK" />Chromeን ወደ የእርስዎ መትከያ ይውሰዱት<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">በኮምፒውተርዎ ላይ የከፈቷቸውን ትሮች እዚሁ ይድረሱባቸው። በቀላሉ Chromeን በኮምፒውተርዎ ላይ ይክፈቱ፣ ወደ ምናሌ ይሂዱ፣ እና «ወደ Chrome ግባ...»ን ይምረጡ</translation>
 <translation id="728488472449859922">የGoogle Chrome QR መቃኛን ያብሩ</translation>
-<translation id="7311395200710390977">ይበልጥ ፈጣን ለሆነ መዳረሻ <ph name="BEGIN_LINK" />Chromeን ወደ የእርስዎ መትከያ ይውሰዱት<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">ስለ Google Chrome</translation>
 <translation id="7437998757836447326">ዘግተው ከChrome ይውጡ</translation>
 <translation id="756809126120519699">የChrome ውሂብ ጸድቷል</translation>

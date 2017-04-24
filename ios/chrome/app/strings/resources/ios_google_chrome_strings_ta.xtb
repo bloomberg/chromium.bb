@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Chrome இல் உள்நுழைக</translation>
 <translation id="3345341804167540816">எங்கும் Chromeஐப் பயன்படுத்தவும்</translation>
 <translation id="3531621179462011934">உங்கள் எல்லாச் சாதனங்களிலும் உங்கள் அமைப்புகளைப் பெற, Chrome இல் உள்நுழையவும்.</translation>
-<translation id="3601960512121168237">Chrome பிடித்திருக்கிறதா? <ph name="BEGIN_LINK" />உங்கள் டாக்கிற்கு நகர்த்துங்கள்<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">இந்தத் தளத்திற்கான உங்கள் கடவுச்சொல்லை Chrome சேமிக்க வேண்டுமா?</translation>
 <translation id="384394811301901750">Google Chrome ஆல் தற்போது உங்கள் கேமராவைப் பயன்படுத்த முடியாது</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chromeக்கு படங்கள் அல்லது வீடியோக்களுக்கான அணுகலில்லை. அணுகலை iOS அமைப்புகள் &gt; தனியுரிமை &gt; படங்கள் இல் இயக்கவும்.</translation>
 <translation id="4099578267706723511">பயன்பாட்டுப் புள்ளிவிவரங்களையும், சிதைவு அறிக்கைகளையும் Googleக்கு அனுப்புவதன் மூலம் Chromeஐ மேலும் சிறப்பானதாக்க உதவவும்.</translation>
 <translation id="415767770115540173">உங்கள் இருப்பிடத்தின் அடிப்படையில், Chrome இல் சிறந்த Google அனுபவத்தைப் பெறவும்.</translation>
+<translation id="4248297594476034182">உங்கள் எல்லா சாதனங்களிலும் உங்கள் தாவல்களைப் பெற, Chrome இல் உள்நுழையவும்.</translation>
 <translation id="424864128008805179">Chrome இலிருந்து வெளியேறவா?</translation>
 <translation id="4523886039239821078">சில செருகு நிரல்களினால் Chrome சிதைவுக்குட்படுகிறது. பின்வருபவற்றை நிறுவல் நீக்கம் செய்யவும்:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> நிர்வகிக்கும் கணக்கிலிருந்து வெளியேறுகிறீர்கள். இவ்வாறு செய்வதால், இந்தச் சாதனத்திலிருந்து Chrome தரவு நீக்கப்படும், எனினும் உங்கள் Google கணக்கில் தரவு தொடர்ந்து இருக்கும்.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">உதவிக் குறிப்பு: <ph name="BEGIN_LINK" />Chromeஐ உங்கள் டாக்கிற்கு நகர்த்துங்கள்<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">உங்கள் கணினியில் திறக்கப்பட்டிருக்கும் தாவல்களை இங்கிருந்து அணுகலாம். உங்கள் கணினியில் Chromeஐத் திறந்து, மெனுவிற்குச் சென்று, "Chrome இல் உள்நுழை..." என்பதைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="728488472449859922">Google Chrome QR ஸ்கேனரை இயக்கவும்</translation>
-<translation id="7311395200710390977">வேகமாக அணுக, <ph name="BEGIN_LINK" />Chromeஐ உங்கள் டாக்கிற்கு நகர்த்துங்கள்<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Google Chrome பற்றி</translation>
 <translation id="7437998757836447326">Chrome இலிருந்து வெளியேறுதல்</translation>
 <translation id="756809126120519699">Chrome தரவு அழிக்கப்பட்டது</translation>

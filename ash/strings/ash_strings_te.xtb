@@ -29,8 +29,6 @@
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
 <translation id="1823873187264960516">ఈథర్‌నెట్: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
-<translation id="1854357586517521894">CAPS LOCK ఆన్‌లో ఉంది.
-    రద్దు చేయడానికి Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="1864454756846565995">USB-C పరికరం (వెనుకవైపు పోర్ట్)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు దర్పణం చేస్తోంది</translation>
 <translation id="1919743966458266018">విధి నిర్వాహికిని తెరిచే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
@@ -70,11 +68,11 @@
 <translation id="3000461861112256445">మోనో ఆడియో</translation>
 <translation id="3009178788565917040">అవుట్‌పుట్</translation>
 <translation id="3019353588588144572">బ్యాటరీ నిండటానికి పట్టే సమయం, <ph name="TIME_REMAINING" /></translation>
+<translation id="3050422059534974565">CAPS LOCK ఆన్‌లో ఉంది.
+రద్దు చేయడానికి Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">దిగువ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (బ్లూటూత్)</translation>
-<translation id="3109220592788908353">CAPS LOCK ఆన్‌లో ఉంది.
-    రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="3126069444801937830">నవీకరించడానికి పునఃప్రారంభించండి</translation>
 <translation id="3147142846278915599">లాంచర్ (అనువర్తనాలను సమకాలీకరిస్తోంది...)</translation>
 <translation id="315116470104423982">మొబైల్ డేటా</translation>
@@ -206,10 +204,10 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
+<translation id="7209101170223508707">CAPS LOCK ఆన్‌లో ఉంది.
+రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="7246339268451149667">వేలిముద్ర అన్‌లాక్‌ని ప్రారంభించాలా?</translation>
 <translation id="7256634071279256947">వెనుకవైపు మైక్రోఫోన్</translation>
-<translation id="7337799137043490957">వేలిముద్ర సెన్సార్‌ను నొక్కడం ద్వారా లాక్ స్క్రీన్‌ను దాటవేయండి. కాన్ఫిగర్ చేయడానికి
-   క్లిక్ చేయండి.</translation>
 <translation id="7348093485538360975">ఆన్-స్క్రీన్ కీబోర్డ్</translation>
 <translation id="735745346212279324">VPN డిస్‌కనెక్ట్ చేయబడింది</translation>
 <translation id="742594950370306541">కెమెరా ఉపయోగంలో ఉంది.</translation>

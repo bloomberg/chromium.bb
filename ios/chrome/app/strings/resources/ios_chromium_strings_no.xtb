@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Logg på Chromium for å få bokmerkene dine på alle enhetene du bruker.</translation>
 <translation id="3473048256428424907">Slå på Chromium QR-skanneren</translation>
 <translation id="3805899903892079518">Chromium har ikke tilgang til bildene eller videoene dine. Slå på tilgangen i iOS-innstillingene &gt; Personvern &gt; Bilder.</translation>
-<translation id="40863189315891987"><ph name="BEGIN_LINK" />Flytt Chromium til dokken<ph name="END_LINK" /> for å få raskere tilgang</translation>
 <translation id="418271229036116702">Logg på Chromium for å få fanene dine fra de andre enhetene du bruker.</translation>
 <translation id="4241912885070669028">Du logger av en konto som administreres av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Dette fører til at Chromium-dataene dine slettes fra denne enheten, men de blir værende i Google-kontoen din.</translation>
 <translation id="4555020257205549924">Når denne funksjonen er slått på, tilbyr Chromium å oversette sider som er skrevet på andre språk, ved hjelp av Google Oversetter. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Vil du logge av Chromium?</translation>
 <translation id="6424492062988593837">Chromium har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
 <translation id="6604711459180487467">Få en bedre Chromium-opplevelse basert på hvor du er.</translation>
-<translation id="6989306073720242915">Liker du Chromium? <ph name="BEGIN_LINK" />Flytt den til dokken<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium kan ikke bruke kameraet i modus for delt visning</translation>
 <translation id="7144758435978427212">Oppdag nettsider som sendes av objekter i nærheten. Når Bluetooth er slått på, kan Chromium samle nettsider som er tilknyttet objekter rundt deg, og sende dem anonymt til Google for å finne de nyttigste. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Med Chromium kan du spare tid, siden du får tilgang til kontoene dine på nettet. Du kan legge til eller fjerne kontoer i Innstillinger.</translation>

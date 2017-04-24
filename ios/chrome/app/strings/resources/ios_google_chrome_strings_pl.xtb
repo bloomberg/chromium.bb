@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3345341804167540816">Korzystaj z Chrome w dowolnym miejscu</translation>
 <translation id="3531621179462011934">Aby korzystać ze swoich ustawień na wszystkich urządzeniach, zaloguj się w Chrome.</translation>
-<translation id="3601960512121168237">Podoba Ci się Chrome? <ph name="BEGIN_LINK" />Przenieś go do Docka<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Czy Chrome ma zapisać hasło do tej strony?</translation>
 <translation id="384394811301901750">Google Chrome nie może teraz użyć aparatu</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome nie ma dostępu do Twoich zdjęć ani filmów. Aby włączyć dostęp w iOS, wybierz Ustawienia &gt; Prywatność &gt; Zdjęcia.</translation>
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="415767770115540173">Włączenie udostępniania lokalizacji w Chrome pozwala w pełni korzystać z usług Google.</translation>
+<translation id="4248297594476034182">Aby korzystać ze swoich kart na wszystkich urządzeniach, zaloguj się w Chrome.</translation>
 <translation id="424864128008805179">Wylogować z Chrome?</translation>
 <translation id="4523886039239821078">Niektóre dodatki mogą powodować awarie Chrome. Odinstaluj je.</translation>
 <translation id="4615174829807303908">Wylogowujesz się z konta, którym zarządza <ph name="SIGNOUT_MANAGED_DOMAIN" />. Spowoduje to usunięcie danych Chrome z tego urządzenia, ale pozostaną one na koncie Google.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Wskazówka: <ph name="BEGIN_LINK" />przenieś Chrome do Docka<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Tutaj możesz korzystać z kart otwartych na komputerze. Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chrome”.</translation>
 <translation id="728488472449859922">Włączanie skanera QR w Google Chrome</translation>
-<translation id="7311395200710390977"><ph name="BEGIN_LINK" />Przenieś Chrome do Docka<ph name="END_LINK" />, by mieć go zawsze pod ręką</translation>
 <translation id="7400722733683201933">Google Chrome – informacje</translation>
 <translation id="7437998757836447326">Wyloguj się z Chrome</translation>
 <translation id="756809126120519699">Wyczyszczono dane Chrome</translation>

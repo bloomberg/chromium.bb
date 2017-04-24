@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Accedi a Chrome</translation>
 <translation id="3345341804167540816">Utilizza Chrome ovunque</translation>
 <translation id="3531621179462011934">Accedi a Chrome per trovare le tue impostazioni su tutti i dispositivi</translation>
-<translation id="3601960512121168237">Ti piace Chrome? <ph name="BEGIN_LINK" />Spostalo nel dock<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Vuoi che Chrome salvi la password per questo sito?</translation>
 <translation id="384394811301901750">Google Chrome non può utilizzare la videocamera al momento</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome non ha accesso alle tue foto o ai tuoi video. Attiva l'accesso in Impostazioni iOS &gt; Privacy &gt; Foto.</translation>
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="415767770115540173">Migliora la tua esperienza di Chrome tramite l'accesso alla tua posizione.</translation>
+<translation id="4248297594476034182">Accedi a Chrome per trovare le tue schede su tutti i dispositivi.</translation>
 <translation id="424864128008805179">Uscire da Chrome?</translation>
 <translation id="4523886039239821078">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Disinstallali.</translation>
 <translation id="4615174829807303908">Stai per uscire da un account gestito da <ph name="SIGNOUT_MANAGED_DOMAIN" />. I dati di Chrome verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo account Google.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Suggerimento. <ph name="BEGIN_LINK" />Sposta Chrome nel dock<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Accedi alle schede che hai aperto sul computer direttamente qui. Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…".</translation>
 <translation id="728488472449859922">Attiva lo scanner QR di Google Chrome</translation>
-<translation id="7311395200710390977">Per accedere più velocemente, <ph name="BEGIN_LINK" />sposta Chrome nel dock<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Informazioni su Google Chrome</translation>
 <translation id="7437998757836447326">Esci da Chrome</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>

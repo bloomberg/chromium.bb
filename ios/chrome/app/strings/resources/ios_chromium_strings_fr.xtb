@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">Connectez-vous à Chromium pour synchroniser vos favoris sur tous vos appareils.</translation>
 <translation id="3473048256428424907">Activer le lecteur de code QR Chromium</translation>
 <translation id="3805899903892079518">Chromium n'a pas accès à vos photos ni à vos vidéos. Activez l'accès dans iOS via Réglages &gt; Confidentialité &gt; Photos.</translation>
-<translation id="40863189315891987">Pour un accès plus rapide, <ph name="BEGIN_LINK" />placez Chromium dans le dock<ph name="END_LINK" /></translation>
 <translation id="418271229036116702">Connectez-vous à Chromium pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="4241912885070669028">Vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />. Cette opération entraînera la suppression de vos données Chromium de cet appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
 <translation id="4555020257205549924">Lorsque cette fonctionnalité est activée dans Chromium, un message s'affiche pour vous proposer que les pages de ce site rédigées dans d'autres langues soient traduites à l'aide de Google Traduction. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">Se déconnecter de Chromium ?</translation>
 <translation id="6424492062988593837">Chromium a été amélioré ! Une nouvelle version est désormais disponible.</translation>
 <translation id="6604711459180487467">Améliorez votre expérience dans Chromium grâce à votre position.</translation>
-<translation id="6989306073720242915">Vous aimez Chromium ? <ph name="BEGIN_LINK" />Placez-le dans le dock.<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">Chromium ne peut pas utiliser votre appareil photo en mode Vue fractionnée.</translation>
 <translation id="7144758435978427212">Découvrez des pages Web envoyées par des objets à proximité. Lorsque le Bluetooth est activé, Chromium peut réunir les pages Web associées aux objets qui vous entourent et les envoyer de manière anonyme à Google pour déterminer celles qui vous sont les plus utiles. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium vous permet de gagner du temps en connectant vos comptes au Web. Vous pouvez ajouter ou supprimer des comptes dans la section "Paramètres".</translation>

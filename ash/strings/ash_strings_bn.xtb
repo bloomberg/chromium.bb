@@ -29,8 +29,6 @@
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
 <translation id="1823873187264960516">ইথারনেট: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">ওয়াই-ফাই বন্ধ আছে৷</translation>
-<translation id="1854357586517521894">CAPS LOCK চালু আছে৷
-    বাতিল করতে Search অথবা Shift টিপুন৷</translation>
 <translation id="1864454756846565995">USB-C ডিভাইস (পিছনের পোর্ট)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> তে প্রতিবিম্বিত হচ্ছে</translation>
 <translation id="1919743966458266018">কার্য পরিচালক খোলার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
@@ -70,11 +68,11 @@
 <translation id="3000461861112256445">মোনো অডিও</translation>
 <translation id="3009178788565917040">আউটপুট</translation>
 <translation id="3019353588588144572">ব্যাটারি পরিপূর্ণ চার্জ হতে, <ph name="TIME_REMAINING" /> সময় বাকি আছে</translation>
+<translation id="3050422059534974565">CAPS LOCK চালু আছে৷
+Search অথবা বাতিল করতে Shift টিপুন৷</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">নিচে</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ব্লুটুথ)</translation>
-<translation id="3109220592788908353">CAPS LOCK চালু আছে৷
-    বাতিল করতে Alt+Search অথবা Shift টিপুন৷</translation>
 <translation id="3126069444801937830">আপডেট করার জন্য পুনরারম্ভ করুন</translation>
 <translation id="3147142846278915599">লঞ্চার (অ্যাপ সিঙ্ক করা হচ্ছে...)</translation>
 <translation id="315116470104423982">মোবাইল ডেটা</translation>
@@ -205,9 +203,10 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> এ পুরানো রেসুলিউশানে ফেরানো হচ্ছে</translation>
+<translation id="7209101170223508707">CAPS LOCK চালু আছে৷
+Alt+Search অথবা বাতিল করতে Shift টিপুন৷</translation>
 <translation id="7246339268451149667">আঙ্গুলের ছাপ দিয়ে আনলক সক্ষম করবেন?</translation>
 <translation id="7256634071279256947">পেছনের মাইক্রোফোন</translation>
-<translation id="7337799137043490957">শুধুমাত্র আঙ্গুলের ছাপ নেওয়ার সেন্সরে আলতো চাপ দিয়ে লক স্ক্রীন এড়িয়ে যান। কনফিগার করতে ক্লিক করুন।</translation>
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
 <translation id="735745346212279324">VPN সংযোগ বিচ্ছিন্ন করা হয়েছে</translation>
 <translation id="742594950370306541">ক্যামেরা ব্যবহার করা হচ্ছে।</translation>

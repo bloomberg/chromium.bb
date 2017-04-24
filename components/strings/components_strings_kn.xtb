@@ -66,6 +66,7 @@
       &lt;p&gt;ದಯವಿಟ್ಟು ಅಪ್ಲಿಕೇಶನ್‌ನ &lt;strong&gt;ಸೆಟ್ಟಿಂಗ್‌ಗಳು&lt;/strong&gt; ವಿಭಾಗದ &lt;strong&gt;ಸಾಮಾನ್ಯ&lt;/strong&gt; ದಿಂದ ದಿನಾಂಕ ಮತ್ತು ಸಮಯವನ್ನು ಹೊಂದಿಸಿ.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">ಈ ವೆಬ್‌ಪುಟವನ್ನು ಪ್ರದರ್ಶಿಸುವಾಗ ಯಾವುದೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ.</translation>
 <translation id="1592005682883173041">ಸ್ಥಳೀಯ ಡೇಟಾ ಪ್ರವೇಶ</translation>
+<translation id="1594030484168838125">ಆರಿಸಿ</translation>
 <translation id="161042844686301425">ಹಸಿರುನೀಲಿ</translation>
 <translation id="1629803312968146339">ಈ ಕಾರ್ಡ್ ಅನ್ನು Chrome ಉಳಿಸಬೇಕೆಂದು ನೀವು ಬಯಸುವಿರಾ?</translation>
 <translation id="1639239467298939599">ಲೋಡ್ ಆಗುತ್ತಿದೆ</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">ಈಗ ಕಳುಹಿಸಿ</translation>
 <translation id="225207911366869382">ಈ ನೀತಿಗಾಗಿ ಈ ಮೌಲ್ಯವನ್ನು ಅಸಮ್ಮತಿಸಲಾಗಿದೆ.</translation>
 <translation id="2262243747453050782">HTTP ದೋಷ</translation>
+<translation id="2270484714375784793">ಫೋನ್ ಸಂಖ್ಯೆ</translation>
 <translation id="2282872951544483773">ಲಭ್ಯವಿಲ್ಲದ ಪ್ರಯೋಗಗಳು</translation>
 <translation id="2292556288342944218">ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪ್ರವೇಶ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="230155334948463882">ಹೊಸ ಕಾರ್ಡ್?</translation>
@@ -256,7 +258,6 @@
 <translation id="3345135638360864351">ಈ ಸೈಟ್ ಅನ್ನು ಪ್ರವೇಶಿಸಲು ನೀವು ಸಲ್ಲಿಸಿದ ವಿನಂತಿಯನ್ನು <ph name="NAME" /> ಗೆ ಕಳುಹಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3355823806454867987">ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಿಸಿ...</translation>
 <translation id="3369192424181595722">ಗಡಿಯಾರ ದೋಷ</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> ಇನ್ನಷ್ಟು ಐಟಂಗಳು...</translation>
 <translation id="337363190475750230">ಅನುಮತಿ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="3377188786107721145">ನೀತಿಯ ಪಾರ್ಸ್ ದೋಷ</translation>
 <translation id="3380365263193509176">ಅಪರಿಚಿತ ದೋಷ</translation>
@@ -487,6 +488,7 @@
 <translation id="5622887735448669177">ನೀವು ಈ ಸೈಟ್ ತೊರೆಯಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="5629630648637658800">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="5631439013527180824">ಅಮಾನ್ಯವಾದ ಸಾಧನ ನಿರ್ವಹಣೆ ಟೋಕನ್</translation>
+<translation id="5659593005791499971">ಇಮೇಲ್</translation>
 <translation id="5669703222995421982">ವೈಯಕ್ತೀಕರಿಸಲಾದ ವಿಷಯವನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="5675650730144413517">ಈ ಪುಟ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿಲ್ಲ</translation>
 <translation id="5677928146339483299">ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
@@ -520,7 +522,6 @@
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="6042308850641462728">ಇನ್ನಷ್ಟು</translation>
 <translation id="6060685159320643512">ಜಾಗ್ರತೆ, ಈ ಪ್ರಯೋಗಗಳು ವಿಫಲವಾಗಬಹುದು</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{1}one{#}other{#}}</translation>
 <translation id="6146055958333702838">ಯಾವುದೇ ಕೇಬಲ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ. ನೀವು ಬಳಸುತ್ತಿರಬಹುದಾದ ಯಾವುದೇ ರೂಟರ್‌ಗಳು, ಮೋಡೆಮ್‌ಗಳು ಅಥವಾ ಇತರ ನೆಟ್‌ವರ್ಕ್ ಸಾಧನಗಳನ್ನು ರೀಬೂಟ್ ಮಾಡಿ.</translation>
 <translation id="614940544461990577">ಪ್ರಯತ್ನಿಸಿ:</translation>
 <translation id="6151417162996330722">ಸರ್ವರ್ ಪ್ರಮಾಣಪತ್ರವು ತುಂಬಾ ಉದ್ದವಾದ ವಾಯಿದೆ ಅವಧಿಯನ್ನು ಹೊಂದಿದೆ.</translation>

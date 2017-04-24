@@ -18,7 +18,6 @@
 <translation id="3413120535237193088">‏היכנס ל-Chromium כדי לקבל גישה אל הסימניות שלך בכל המכשירים.</translation>
 <translation id="3473048256428424907">‏הפעלת סורק ה-QR של Chromium</translation>
 <translation id="3805899903892079518">‏ל-Chromium אין גישה לתמונות או לסרטונים שלך. אפשר גישה ב'הגדרות iOS' &gt; 'פרטיות' &gt; 'תמונות'.</translation>
-<translation id="40863189315891987">‏<ph name="BEGIN_LINK" />העבר את Chromium לשורת המשימות<ph name="END_LINK" /> כדי לגשת אליו מהר יותר</translation>
 <translation id="418271229036116702">‏היכנס ל-Chromium כדי לגשת לכרטיסיות מכל המכשירים האחרים שלך.</translation>
 <translation id="4241912885070669028">‏אתה יוצא מחשבון המנוהל על-ידי <ph name="SIGNOUT_MANAGED_DOMAIN" />. פעולה זו תמחק את הנתונים שלך ב-Chromium מהמכשיר הזה, אבל הם יישארו בחשבון Google שלך.</translation>
 <translation id="4555020257205549924">‏כשהתכונה הזו פועלת, Chromium יציע לתרגם באמצעות Google Translate דפים שנכתבו בשפות אחרות‏. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
@@ -32,7 +31,6 @@
 <translation id="6268381023930128611">‏האם לצאת מ-Chromium?</translation>
 <translation id="6424492062988593837">‏‫Chromium ממשיך להשתפר! קיימת גירסה חדשה.</translation>
 <translation id="6604711459180487467">‏גישה אל המיקום שלך תאפשר לך ליהנות מחוויה משופרת ב-Chromium.</translation>
-<translation id="6989306073720242915">‏אוהב את Chromium? <ph name="BEGIN_LINK" />העבר אותו לשורת המשימות<ph name="END_LINK" /></translation>
 <translation id="7099326575020694068">‏Chromium לא יכול להשתמש במצלמה במצב תצוגה מפוצלת</translation>
 <translation id="7144758435978427212">‏גלה דפי אינטרנט שנשלחו על-ידי מכשירים הנמצאים בקרבת מקום. כאשר Bluetooth מופעל, Chromium יכול לאסוף דפי אינטרנט המשויכים למכשירים סביבך ולשלוח אותם באופן אנונימי ל-Google כדי למצוא את השימושיים ביותר. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">‏Chromium מאפשר גישה לחשבונות באינטרנט וכך חוסך לך זמן. ניתן להוסיף או להסיר חשבונות בקטע 'הגדרות'.</translation>

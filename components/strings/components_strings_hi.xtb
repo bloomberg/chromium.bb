@@ -66,6 +66,7 @@
       &lt;p&gt;कृपया दिनांक और समय को &lt;strong&gt;सेटिंग&lt;/strong&gt; ऐप के &lt;strong&gt;सामान्‍य&lt;/strong&gt; अनुभाग से एडजस्‍ट करें.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">यह वेबपेज प्रदर्शित करते समय कोई समस्या हुई.</translation>
 <translation id="1592005682883173041">स्थानीय डेटा एक्सेस</translation>
+<translation id="1594030484168838125">चुनें</translation>
 <translation id="161042844686301425">स्यान</translation>
 <translation id="1629803312968146339">क्या आप चाहते हैं कि Chrome इस कार्ड को सहेजे?</translation>
 <translation id="1639239467298939599">लोड हो रहा है</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">अभी भेजें</translation>
 <translation id="225207911366869382">यह मान इस नीति के लिए हटा दिया गया है.</translation>
 <translation id="2262243747453050782">HTTP गड़बड़ी</translation>
+<translation id="2270484714375784793">फ़ोन नंबर</translation>
 <translation id="2282872951544483773">अनुपलब्ध प्रयोग</translation>
 <translation id="2292556288342944218">आपका इंटरनेट कनेक्शन अवरुद्ध है</translation>
 <translation id="230155334948463882">नया कार्ड?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">नेटवर्क में बदलाव का पता चला.</translation>
 <translation id="2916038427272391327">दूसरे प्रोग्राम बंद करें</translation>
 <translation id="2922350208395188000">सर्वर प्रमाणपत्र की जांच नहीं की जा सकती.</translation>
+<translation id="2928905813689894207">बिलिंग पता</translation>
 <translation id="2948083400971632585">आप किसी कनेक्शन के लिए कॉन्फ़िगर की गई किसी भी प्रॉक्सी को सेटिंग पेज से अक्षम कर सकते हैं.</translation>
 <translation id="2955913368246107853">खोज बार बंद करें</translation>
 <translation id="2958431318199492670">नेटवर्क कॉन्फ़िगरेशन ONC मानक का पालन नहीं करता. कॉन्फ़िगरेशन के कुछ भाग आयात नहीं किए जा सकते हैं.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">सहेजी गई प्रतिलिपि दिखाएं</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> का CVC डालें. आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ साझा किए जाएंगे.</translation>
 <translation id="3010559122411665027">सूची प्रविष्ट‍ि "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="301521992641321250">ऑटोमैटिक रूप से ब्लॉक है</translation>
 <translation id="3024663005179499861">गलत नीति प्रकार</translation>
 <translation id="3032412215588512954">क्या आप इस साइट को फिर से लोड करना चाहते हैं?</translation>
 <translation id="3037605927509011580">हे भगवान!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">इस साइट को ऐक्‍सेस करने का आपका अनुरोध <ph name="NAME" /> को नहीं भेजा जा सका. कृपया पुन: प्रयास करें.</translation>
 <translation id="3355823806454867987">प्रॉक्सी सेटिंग बदलें...</translation>
 <translation id="3369192424181595722">घड़ी गड़बड़ी</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> और आइटम...</translation>
 <translation id="337363190475750230">प्रावधान रद्द</translation>
 <translation id="3377188786107721145">नीति पार्स गड़बड़ी</translation>
 <translation id="3380365263193509176">अज्ञात गड़बड़ी</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">क्या आप इस साइट को छोड़ना चाहते हैं?</translation>
 <translation id="5629630648637658800">नीति सेटिंग लोड करने में विफल</translation>
 <translation id="5631439013527180824">अमान्य डिवाइस प्रबंधन टोकन</translation>
+<translation id="5659593005791499971">ईमेल</translation>
 <translation id="5669703222995421982">खास आपके लिए बनी सामग्री पाएं</translation>
 <translation id="5675650730144413517">यह पेज काम नहीं कर रहा है</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="6060685159320643512">सावधान, ये प्रयोग नुकसान पहुंचा सकते हैं</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{कोई नहीं}=1{1}one{#}other{#}}</translation>
 <translation id="6146055958333702838">सभी केबल जांचें और आपके द्वारा उपयोग किए जा रहे सभी राउटर, मॉडेम या अन्य नेटवर्क
     डिवाइस को रीबूट करें.</translation>
 <translation id="614940544461990577">यह आज़माकर देखें:</translation>
 <translation id="6151417162996330722">सर्वर प्रमाणपत्र की मान्‍यता अवधि बहुत लंबी है.</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6177128806592000436">इस साइट से आपका कनेक्‍शन सुरक्षित नहीं है</translation>
+<translation id="6184817833369986695">(समानता रखने वाले लोग: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">अपना इंटरनेट कनेक्शन जांचें</translation>
 <translation id="6218753634732582820">क्रोमियम से पता निकालें?</translation>
 <translation id="6251924700383757765">निजता नीति</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="7182878459783632708">कोई नीति सेट नहीं की गई है</translation>
 <translation id="7186367841673660872">इस पेज का <ph name="ORIGINAL_LANGUAGE" />से<ph name="LANGUAGE_LANGUAGE" /> में अनुवाद कर दिया गया है</translation>
+<translation id="7192203810768312527"><ph name="SIZE" /> की जगह बनाता है. कुछ साइटें आपकी अगली विज़िट पर ज़्यादा धीमे लोड हो सकती हैं.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> सुरक्षा मानकों का पालन नहीं करता.</translation>
 <translation id="721197778055552897">इस समस्या के बारे में <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>

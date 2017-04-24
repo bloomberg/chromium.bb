@@ -631,6 +631,7 @@
 <translation id="1882130480443819387">Sort by title</translation>
 <translation id="1886996562706621347">Allow sites to ask to become default handlers for protocols (recommended)</translation>
 <translation id="1887850431809612466">Hardware revision</translation>
+<translation id="1889984860246851556">Open proxy settings</translation>
 <translation id="1891668193654680795">Trust this certificate for identifying software makers.</translation>
 <translation id="189210018541388520">Open full screen</translation>
 <translation id="1893406696975231168">Cloud provision flow failed</translation>
@@ -809,7 +810,6 @@
 <translation id="216169395504480358">Add Wi-Fi ...</translation>
 <translation id="2163470535490402084">Please connect to the Internet to sign in to your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2164862903024139959">Vietnamese keyboard (TCVN)</translation>
-<translation id="21655110192559039">Dial Device Description Parser</translation>
 <translation id="2165722503303595908">Dimension</translation>
 <translation id="2166369534954157698">The quick brown fox jumps over the lazy dog</translation>
 <translation id="2168214441502403371">Persian keyboard</translation>
@@ -867,6 +867,7 @@
 <translation id="2241634353105152135">Just once</translation>
 <translation id="2242603986093373032">No devices</translation>
 <translation id="2242687258748107519">File Info</translation>
+<translation id="2245240762616536227">Control how your browsing history personalises Search, ads and other Google services</translation>
 <translation id="2246340272688122454">Downloading recovery image...</translation>
 <translation id="2249499294612408921">A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:-
 
@@ -1392,6 +1393,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2966449113954629791">You may have used up your mobile data allowance. Visit the <ph name="NAME" /> activation portal to buy more data.</translation>
 <translation id="2966459079597787514">Swedish keyboard</translation>
 <translation id="2966598748518102999">Improve voice search by sending the sound of 'Ok Google', and a few seconds before, to Google.</translation>
+<translation id="2966937470348689686">Manage Android preferences</translation>
 <translation id="2967544384642772068">Kill</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">bright down</translation>
@@ -2071,7 +2073,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3936390757709632190">&amp;Open audio in new tab</translation>
 <translation id="3936768791051458634">Change channel...</translation>
 <translation id="3936925983113350642">The password you choose will be required to restore this certificate later. Please record it in a safe location.</translation>
-<translation id="3936999098172113189">Waiting to print <ph name="PAGE_NUMBER" /> pages to <ph name="PRINTER_NAME" /></translation>
 <translation id="3937640725563832867">Certificate Issuer Alternative Name</translation>
 <translation id="3940233957883229251">Enable auto-repeat</translation>
 <translation id="3941357410013254652">Channel ID</translation>
@@ -2159,6 +2160,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4087089424473531098">Created the extension:
 
 <ph name="EXTENSION_FILE" /></translation>
+<translation id="4087470595660267445">Install apps and games from Google Play on your Chromebook. &lt;a target='_blank' href='<ph name="URL" />'&gt;Learn more&lt;/a&gt;</translation>
 <translation id="4088095054444612037">Accept for group</translation>
 <translation id="4089521618207933045">Has sub-menu</translation>
 <translation id="4090103403438682346">Enable Verified Access</translation>
@@ -2966,6 +2968,7 @@ Press any key to continue exploring.</translation>
 <translation id="5329858601952122676">&amp;Delete</translation>
 <translation id="5330145655348521461">These files opened on a different desktop. Move to <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) to view it.</translation>
 <translation id="5330512191124428349">Get info</translation>
+<translation id="5331069282670671859">You have no certificates in this category</translation>
 <translation id="5331425616433531170">"<ph name="CHROME_EXTENSION_NAME" />" wants to pair</translation>
 <translation id="5332624210073556029">Time zone:</translation>
 <translation id="5334142896108694079">Script Cache</translation>
@@ -3015,6 +3018,7 @@ Press any key to continue exploring.</translation>
 <translation id="5399158067281117682">PINs don't match!</translation>
 <translation id="5400640815024374115">Trusted Platform Module (TPM) chip is disabled or absent.</translation>
 <translation id="5402367795255837559">Braille</translation>
+<translation id="5402815541704507626">Download update using mobile data</translation>
 <translation id="540296380408672091">Always block cookies on <ph name="HOST" /></translation>
 <translation id="5408750356094797285">Zoom: <ph name="PERCENT" /></translation>
 <translation id="5409029099497331039">Surprise Me</translation>
@@ -3153,6 +3157,7 @@ Press any key to continue exploring.</translation>
 <translation id="558918721941304263">Loading apps...</translation>
 <translation id="5592595402373377407">Not enough data available yet.</translation>
 <translation id="5595485650161345191">Edit address</translation>
+<translation id="5600706100022181951">Update will be downloaded using <ph name="UPDATE_SIZE_MB" /> MB of mobile data. Would you like to continue?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5604324414379907186">Always show the bookmarks bar</translation>
 <translation id="5605623530403479164">Other search engines</translation>
@@ -3259,6 +3264,7 @@ Press any key to continue exploring.</translation>
 <translation id="5778550464785688721">MIDI devices full control</translation>
 <translation id="5780066559993805332">(Best)</translation>
 <translation id="5780973441651030252">Process priority</translation>
+<translation id="5781865261247219930">Send commands to <ph name="EXTENSION_NAME" /></translation>
 <translation id="5783221160790377646">Due to an error, a supervised user was not created. Please try again later.</translation>
 <translation id="5783602409389152506">while scanning for devices...</translation>
 <translation id="57838592816432529">Mute</translation>
@@ -3301,6 +3307,7 @@ Press any key to continue exploring.</translation>
 <translation id="5838825566232597749">US Workman international</translation>
 <translation id="5842497610951477805">Bluetooth enable</translation>
 <translation id="5846929185714966548">Tab 4</translation>
+<translation id="5848924408752252705">Touch to go back.</translation>
 <translation id="5848934677402291689">Saving to PDF in progress</translation>
 <translation id="5849570051105887917">Home provider code</translation>
 <translation id="5849869942539715694">Pack extension...</translation>
@@ -3318,6 +3325,7 @@ Press any key to continue exploring.</translation>
 <translation id="5859272821192576954">You're all set to continue on to Hangouts</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5860209693144823476">Tab 3</translation>
+<translation id="5860491529813859533">Turn on</translation>
 <translation id="5860494867054883682">Updating your device to <ph name="CHANNEL_NAME" /> channel (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Show stylus tools in the shelf</translation>
 <translation id="58625595078799656"><ph name="PRODUCT_NAME" /> requires you to encrypt your data, using either your Google password or your own passphrase.</translation>
@@ -3650,6 +3658,7 @@ Press any key to continue exploring.</translation>
 <translation id="6395423953133416962">Send <ph name="BEGIN_LINK1" />system information<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6397592254427394018">Open all bookmarks in &amp;Incognito window</translation>
+<translation id="6398715114293939307">Remove Google Play Store</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
 <translation id="6399774419735315745">Spy</translation>
 <translation id="6401445054534215853">Shelf item 1</translation>
@@ -4069,7 +4078,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7017480957358237747">allow or prohibit certain websites,</translation>
 <translation id="7017587484910029005">Type the characters that you see in the picture below.</translation>
 <translation id="7018275672629230621">Read and change your browsing history</translation>
-<translation id="7018568016607642429">Cast Error</translation>
 <translation id="7019805045859631636">Fast</translation>
 <translation id="7022562585984256452">Your home page has been set.</translation>
 <translation id="702373420751953740">PRL version:</translation>
@@ -4981,7 +4989,6 @@ Calculating time until full</translation>
 <translation id="8418445294933751433">&amp;Show as tab</translation>
 <translation id="8419098111404128271">Search results for '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8420060421540670057">Show Google Docs files</translation>
-<translation id="8423869809045821924">Open PDFs using a different application</translation>
 <translation id="8424039430705546751">down</translation>
 <translation id="8425213833346101688">Change</translation>
 <translation id="8425492902634685834">Pin to task bar</translation>
@@ -4998,7 +5005,6 @@ Calculating time until full</translation>
 <translation id="843760761634048214">Save credit card</translation>
 <translation id="8438601631816548197">About Voice Search</translation>
 <translation id="8439506636278576865">Offer to translate pages in this language</translation>
-<translation id="8441209996841212096">Casting Video...</translation>
 <translation id="8442145116400417142">Content Blocked</translation>
 <translation id="8443621894987748190">Choose your account picture</translation>
 <translation id="8446884382197647889">Learn More</translation>
@@ -5341,6 +5347,7 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="8960999352790021682">Bengali keyboard (Phonetic)</translation>
 <translation id="8962083179518285172">Hide Details</translation>
 <translation id="8962198349065195967">This network is configured by your administrator.</translation>
+<translation id="8963572037665351978">Exit Presentation</translation>
 <translation id="8965037249707889821">Enter old password</translation>
 <translation id="8965697826696209160">There is not enough space.</translation>
 <translation id="8968527460726243404">ChromeOS System Image Writer</translation>
@@ -5496,6 +5503,7 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="9188441292293901223">Please update your phone to a newer version of Android to unlock this <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9189690067274055051">Unlock your phone and bring it closer to your <ph name="DEVICE_TYPE" /> to enter.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + Preshared key</translation>
+<translation id="920045321358709304">Search <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201305942933582053">Google Now for Chrome!</translation>
 <translation id="9203398526606335860">&amp;Profiling enabled</translation>
 <translation id="9203478404496196495">Unmute tab</translation>
@@ -5528,6 +5536,7 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="946810925362320585">Follow recommendation</translation>
 <translation id="951981865514037445"><ph name="URL" /> wants to use your device's location.</translation>
 <translation id="952992212772159698">Not activated</translation>
+<translation id="958515377357646513">Touch to go forward.</translation>
 <translation id="960719561871045870">Operator code</translation>
 <translation id="960987915827980018">About 1 hour left</translation>
 <translation id="96421021576709873">Wi-Fi network</translation>

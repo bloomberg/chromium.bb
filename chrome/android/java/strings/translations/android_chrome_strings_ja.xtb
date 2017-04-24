@@ -27,6 +27,7 @@
 フィジカル ウェブを使用するには、Bluetooth と現在地機能をオンにする必要があります。</translation>
 <translation id="124678866338384709">現在のタブを閉じる</translation>
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1265597927250775944">履歴とアドレスバーの候補を削除します。</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1283039547216852943">タップして展開</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
@@ -35,6 +36,7 @@
 <translation id="1303671224831497365">Bluetooth デバイスが見つかりませんでした</translation>
 <translation id="1326317727527857210">他の端末と同じタブを使用するには、Chrome にログインします。</translation>
 <translation id="1332501820983677155">Google Chrome 機能のショートカット</translation>
+<translation id="1339917386316755344">ほとんどのサイトからログアウトします。Google アカウントへのログイン状態は維持されます。</translation>
 <translation id="1369915414381695676">サイト <ph name="SITE_NAME" /> を追加しました</translation>
 <translation id="1373696734384179344">選択したコンテンツをダウンロードするにはメモリが不足しています。</translation>
 <translation id="1376578503827013741">計算中...</translation>
@@ -63,7 +65,6 @@
 <translation id="1549000191223877751">他のウィンドウに移動</translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
 <translation id="1571304935088121812">ユーザー名をコピー</translation>
-<translation id="1594030484168838125">選択</translation>
 <translation id="1612196535745283361">Chrome ではデバイスをスキャンするために現在地情報にアクセスする必要があります。現在地情報へのアクセスは<ph name="BEGIN_LINK" />この端末でオフになっています<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
@@ -255,6 +256,7 @@
 <translation id="3859306556332390985">前方にシーク再生</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
 <translation id="3895926599014793903">強制的にズームを有効にする</translation>
+<translation id="3915590178385207649">ログイン中のすべての端末から履歴を削除します。その他のアクティビティは Google アカウント（<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />）で確認できます。</translation>
 <translation id="3917783807003067648">位置情報はブロック</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">データを統合する</translation>
@@ -265,6 +267,7 @@
 <translation id="395922942268463099">ページは定期的に更新されます</translation>
 <translation id="3967822245660637423">ダウンロード完了</translation>
 <translation id="397583555483684758">同期は停止されました</translation>
+<translation id="3976396876660209797">このショートカットを削除して再度作成します</translation>
 <translation id="3985215325736559418"><ph name="FILE_NAME" /> をもう一度ダウンロードしますか？</translation>
 <translation id="3987993985790029246">リンクのコピー</translation>
 <translation id="3988213473815854515">位置情報は許可</translation>
@@ -293,7 +296,6 @@
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
 <translation id="4262028915562328938">同期エラーが発生しました。タップして詳細を確認できます。</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
-<translation id="4271185234001491831"><ph name="LANGUAGE" />を翻訳しない</translation>
 <translation id="4275663329226226506">メディア</translation>
 <translation id="4278390842282768270">許可</translation>
 <translation id="4300272766492248925">アプリを開く</translation>
@@ -333,7 +335,6 @@
 <translation id="473775607612524610">アップデート</translation>
 <translation id="4738836084190194332">最終同期: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">新しいタブを開く</translation>
-<translation id="4750394297954878236">候補</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4766369052440583386">データセーバー ON</translation>
 <translation id="4797039098279997504">タップすると <ph name="URL_OF_THE_CURRENT_TAB" /> に戻ります</translation>
@@ -398,7 +399,7 @@
 <translation id="5345083863238459644">現在地情報へのアクセスは<ph name="BEGIN_LINK" />この端末でもオフになっています<ph name="END_LINK" />。</translation>
 <translation id="5349103022427743704">「ホーム画面に追加（改訂版）」試験運用機能</translation>
 <translation id="5372829067651257087">URL をコピーしました。</translation>
-<translation id="5384883051496921101">このサイトがシークレット モードの外部のアプリと情報を共有しようとしています。</translation>
+<translation id="5384883051496921101">このサイトの情報がシークレット モードの外部のアプリに共有されようとしています。</translation>
 <translation id="5400569084694353794">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
 <translation id="5403644198645076998">特定のサイトのみを許可</translation>
 <translation id="5414836363063783498">確認しています…</translation>
@@ -424,6 +425,7 @@
 <translation id="5626134646977739690">名前:</translation>
 <translation id="5639724618331995626">すべてのサイトを許可</translation>
 <translation id="5646376287012673985">現在地</translation>
+<translation id="5648166631817621825">過去 7 日間</translation>
 <translation id="5655963694829536461">ダウンロードしたアイテムを検索</translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> で予定を作成</translation>
@@ -559,6 +561,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">フォルダ</translation>
 <translation id="6978479750597523876">翻訳設定をリセット</translation>
+<translation id="6979737339423435258">全期間</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="6985347914332179298">ここにダウンロードしたアイテムはありません</translation>
 <translation id="6990079615885386641">Google Play ストアからアプリを入手: <ph name="APP_ACTION" /></translation>
@@ -576,6 +579,7 @@
 <translation id="7128222689758636196">現在の検索エンジンを許可する</translation>
 <translation id="7138678301420049075">その他</translation>
 <translation id="7144878232160441200">再読み込み</translation>
+<translation id="7149893636342594995">過去 24 時間</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="7189372733857464326">Google Play 開発者サービスの更新完了を待機しています</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
@@ -594,6 +598,7 @@
 <translation id="7423098979219808738">最初に確認する</translation>
 <translation id="7437998757836447326">Chromeからログアウト</translation>
 <translation id="7445411102860286510">ミュートされた動画の自動再生をサイトに許可する（推奨）</translation>
+<translation id="7449574997654022410">履歴とアドレスバーの候補を削除します。その他のアクティビティは Google アカウント（<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />）で確認できます。</translation>
 <translation id="7464701184726199289">すべての端末から同期データを消去します。保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7475192538862203634">このメッセージが繰り返し表示される場合は、こちらの<ph name="BEGIN_LINK" />ヒント<ph name="END_LINK" />をお試しください。</translation>
@@ -611,6 +616,7 @@
 <translation id="7589445247086920869">現在の検索エンジンをブロックする</translation>
 <translation id="7593557518625677601">Chrome の同期を開始するには、Android の設定で Android システムの同期を再度有効にします</translation>
 <translation id="7596558890252710462">オペレーティング システム</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE" />を翻訳しない</translation>
 <translation id="7605594153474022051">同期が機能していません</translation>
 <translation id="7612619742409846846">次のユーザーとして Google にログインしています:</translation>
 <translation id="7619072057915878432">ネットワーク障害が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
@@ -635,6 +641,7 @@
 <translation id="7829298379596169484">音声入力にアクセスしています</translation>
 <translation id="7837721118676387834">特定のサイトに対し、ミュートされた動画の自動再生を許可します。</translation>
 <translation id="7846076177841592234">選択解除</translation>
+<translation id="784934925303690534">期間</translation>
 <translation id="7851858861565204677">その他のデバイス</translation>
 <translation id="7875915731392087153">メールを作成</translation>
 <translation id="7876243839304621966">すべて削除</translation>
@@ -695,7 +702,6 @@
 <translation id="8489271220582375723">履歴ページを開く</translation>
 <translation id="8493948351860045254">容量を空ける</translation>
 <translation id="8497726226069778601">表示するものがまだありません</translation>
-<translation id="8499147970084652325">Google のサーバーを使用して閲覧候補を表示します。</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
 <translation id="8514577642972634246">シークレット モードを開始</translation>
 <translation id="8523928698583292556">保存したパスワードを削除</translation>
@@ -715,6 +721,7 @@
 <translation id="8639651215196239211">すべてのダウンロード</translation>
 <translation id="8641930654639604085">成人向けのサイトを可能な限りブロックする</translation>
 <translation id="8660471606262461360">Google ペイメントから取得</translation>
+<translation id="8662811608048051533">ほとんどのサイトからログアウトします。</translation>
 <translation id="8676374126336081632">入力内容を消去</translation>
 <translation id="869891660844655955">有効期限</translation>
 <translation id="8719023831149562936">現在のタブはビームできません</translation>
@@ -725,7 +732,6 @@
 <translation id="8788968922598763114">最後に閉じたタブを開く</translation>
 <translation id="8812260976093120287">一部のウェブサイトでは、端末でサポートされている上記のお支払いアプリを使って支払いができます。</translation>
 <translation id="8812942424849541387">[<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] でこの動作を管理</translation>
-<translation id="8812949859341886735">Chrome でこの機能が有効になっている場合は、新しいタブを開いたときに Google のサーバーから閲覧候補が表示されます。閲覧候補には、人気のウェブサイト、急上昇している記事、ユーザー個人に合わせた候補が含まれます。</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
 <translation id="883635517171802338">サイトでのポップアップ表示をブロックする（推奨）</translation>
 <translation id="8847988622838149491">USB</translation>

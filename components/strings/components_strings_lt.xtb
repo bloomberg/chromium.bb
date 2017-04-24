@@ -66,6 +66,7 @@
       &lt;p&gt;Koreguokite datą ir laiką programos &lt;strong&gt;Settings&lt;/strong&gt; skiltyje &lt;strong&gt;General&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Rodant šį tinklalapį įvyko nenumatyta klaida.</translation>
 <translation id="1592005682883173041">Prieiga prie vietinių duomenų</translation>
+<translation id="1594030484168838125">Pasirinkti</translation>
 <translation id="161042844686301425">Žydra</translation>
 <translation id="1629803312968146339">Ar norite, kad „Chrome“ išsaugotų šią kortelę?</translation>
 <translation id="1639239467298939599">Įkeliama</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Siųsti dabar</translation>
 <translation id="225207911366869382">Pagal šią politiką ši vertė nepatvirtinta.</translation>
 <translation id="2262243747453050782">HTTP klaida</translation>
+<translation id="2270484714375784793">Telefono numeris</translation>
 <translation id="2282872951544483773">Nepasiekiami eksperimentai</translation>
 <translation id="2292556288342944218">Interneto prieiga užblokuota</translation>
 <translation id="230155334948463882">Nauja kortelė?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">Aptiktas tinklo pasikeitimas.</translation>
 <translation id="2916038427272391327">Uždarykite kitas programas</translation>
 <translation id="2922350208395188000">Neįmanoma patikrinti serverio sertifikato.</translation>
+<translation id="2928905813689894207">Atsiskaitymo adresas</translation>
 <translation id="2948083400971632585">Galite neleisti visų tarpinių serverių, jungimasis prie kurių sukonfigūruotas nustatymų puslapyje.</translation>
 <translation id="2955913368246107853">Uždaryti paieškos juostą</translation>
 <translation id="2958431318199492670">Tinklo konfigūracija neatitinka ONC standarto. Kai kurių konfigūracijos dalių neįmanoma importuoti.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Rodyti išsaugotą kopiją</translation>
 <translation id="3008447029300691911">Įveskite „<ph name="CREDIT_CARD" />“ kortelės saugos kodą (CVC). Kai patvirtinsite, išsami kortelės informacija bus bendrinama su šia svetaine.</translation>
 <translation id="3010559122411665027">Sąrašo įrašas „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Automatiškai užblokuota</translation>
 <translation id="3024663005179499861">Netinkamas politikos tipas</translation>
 <translation id="3032412215588512954">Ar norite iš naujo įkelti šią svetainę?</translation>
 <translation id="3037605927509011580">Oi!</translation>
@@ -259,7 +263,6 @@
 <translation id="3345135638360864351">Nepavyko <ph name="NAME" /> išsiųsti jūsų prieigos prie šios svetainės užklausos. Bandykite dar kartą.</translation>
 <translation id="3355823806454867987">Pakeisti įgaliotojo serverio nustatymus...</translation>
 <translation id="3369192424181595722">Laikrodžio klaida</translation>
-<translation id="337311366426640088">Dar elementų: <ph name="ITEM_COUNT" />...</translation>
 <translation id="337363190475750230">Teikimas nutrauktas</translation>
 <translation id="3377188786107721145">Politikos analizės klaida</translation>
 <translation id="3380365263193509176">Nežinoma klaida</translation>
@@ -491,6 +494,7 @@
 <translation id="5622887735448669177">Ar norite išeiti iš šios svetainės?</translation>
 <translation id="5629630648637658800">Įkeliant politikos nustatymus įvyko klaida</translation>
 <translation id="5631439013527180824">Netinkamas įrenginio tvarkymo prieigos raktas</translation>
+<translation id="5659593005791499971">El. paštas</translation>
 <translation id="5669703222995421982">Suasmeninto turinio gavimas</translation>
 <translation id="5675650730144413517">Šis puslapis neveikia</translation>
 <translation id="5677928146339483299">Užblokuota</translation>
@@ -524,13 +528,13 @@
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="6060685159320643512">Atsargiai, šie bandymai gali būti pavojingi</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{nėra}=1{1}one{#}few{#}many{#}other{#}}</translation>
 <translation id="6146055958333702838">Patikrinkite laidus ir iš naujo paleiskite maršruto parinktuvus, modemus ar kitus
         naudojamus tinklo įrenginius.</translation>
 <translation id="614940544461990577">Pabandykite atlikti toliau nurodytus veiksmus.</translation>
 <translation id="6151417162996330722">Serverio sertifikato galiojimo laikotarpis per ilgas.</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6177128806592000436">Ryšys su šia svetaine nėra saugus</translation>
+<translation id="6184817833369986695">(grupė: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Patikrinkite interneto ryšį</translation>
 <translation id="6218753634732582820">Pašalinti adresą iš „Chromium“?</translation>
 <translation id="6251924700383757765">Privatumo politika</translation>
@@ -628,6 +632,7 @@
 <translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7182878459783632708">Nenustatyta jokia politika</translation>
 <translation id="7186367841673660872">Šis puslapis išverstas iš<ph name="ORIGINAL_LANGUAGE" />į<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Atlaisvina <ph name="SIZE" />. Per kitą jūsų apsilankymą kai kurios svetainės gali būti įkeliamos lėčiau.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> nesilaikoma saugos standartų.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie šią problemą.</translation>

@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Mag-sign in sa Chrome</translation>
 <translation id="3345341804167540816">Gamitin ang Chrome sa Lahat ng Lugar</translation>
 <translation id="3531621179462011934">Upang mailagay ang iyong mga setting sa lahat ng device mo, mag-sign in sa Chrome.</translation>
-<translation id="3601960512121168237">Gusto mo ba ang Chrome? <ph name="BEGIN_LINK" />Ilipat ito sa iyong dock<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Gusto mo bang i-save ng Chrome ang password mo para sa site?</translation>
 <translation id="384394811301901750">Hindi magamit ng Google Chrome ang camera mo ngayon</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Walang access ang Google Chrome sa larawan o video. I-enable ang access sa Mga Setting ng iOS &gt; Privacy &gt; Mga Larawan.</translation>
 <translation id="4099578267706723511">Tulungang mapahusay ang Chrome sa pamamagitan ng pagpapadala sa Google ng mga istatistika ng paggamit at ulat ng pag-crash.</translation>
 <translation id="415767770115540173">Magkaroon ng mas mahusay na karanasan sa Google sa Chrome batay sa iyong lokasyon.</translation>
+<translation id="4248297594476034182">Upang mailagay ang iyong mga tab sa lahat ng iyong device, mag-sign in sa Chrome.</translation>
 <translation id="424864128008805179">Mag-sign out sa Chrome?</translation>
 <translation id="4523886039239821078">Nagiging dahilan ang ilang add-on ng pag-crash ng Chrome. Paki-uninstall.</translation>
 <translation id="4615174829807303908">Nagsa-sign out ka sa account na pinamamahalaan ng <ph name="SIGNOUT_MANAGED_DOMAIN" />. Ide-delete nito ang data mo sa Chrome sa device na ito, ngunit mananatili ang data mo sa iyong Google account.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Ilipat ang Chrome sa iyong dock<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">I-access ang mga tab na nakabukas sa iyong computer, dito mismo. Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-sign in sa Chrome..."</translation>
 <translation id="728488472449859922">I-on ang QR scanner ng Google Chrome</translation>
-<translation id="7311395200710390977">Para sa mas mabilis na pag-access, <ph name="BEGIN_LINK" />ilipat ang Chrome sa iyong dock<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">Tungkol sa Google Chrome</translation>
 <translation id="7437998757836447326">Mag-sign out sa Chrome</translation>
 <translation id="756809126120519699">Na-clear ang data ng Chrome</translation>

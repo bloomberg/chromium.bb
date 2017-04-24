@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="3345341804167540816">‏استخدم Chrome في كل مكان</translation>
 <translation id="3531621179462011934">‏لتطبيق إعداداتك على جميع أجهزتك، سجِّل الدخول إلى Chrome.</translation>
-<translation id="3601960512121168237">‏هل يحظى Chrome بإعجابك؟ <ph name="BEGIN_LINK" />انقله إلى شريط الإرساء<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">‏هل تريد من Chrome حفظ كلمة مرورك لهذا الموقع؟</translation>
 <translation id="384394811301901750">‏يتعذر على Google Chrome استخدام الكاميرا في الوقت الحالي</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">‏لا تتوفر لدي Google Chrome إمكانية الدخول إلى الصور أو مقاطع الفيديو. تستطيع تمكين الدخول في إعدادات iOS &gt; الخصوصية &gt; الصور.</translation>
 <translation id="4099578267706723511">‏ساعد في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
 <translation id="415767770115540173">‏احصل على تجربة أفضل لاستخدام Google في Chrome استنادًا إلى موقعك.</translation>
+<translation id="4248297594476034182">‏للحصول على علامات التبويب على جميع أجهزتك، سجِّل الدخول إلى Chrome.</translation>
 <translation id="424864128008805179">‏هل تريد الخروج من Chrome؟</translation>
 <translation id="4523886039239821078">‏تتسبب بعض الإضافات في تعطل Chrome. الرجاء إزالتها:</translation>
 <translation id="4615174829807303908">‏يتم تسجيل خروجك من حساب تتم إدارته من خلال <ph name="SIGNOUT_MANAGED_DOMAIN" />. سيؤدي ذلك إلى حذف بيانات Chrome من هذا الجهاز، ولكن ستظل البيانات في حسابك في Google.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">‏نصيحة: <ph name="BEGIN_LINK" />نقل Chrome إلى شريط الإرساء<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">‏يمكنك الدخول إلى علامات التبويب التي فتحتها على جهاز الكمبيوتر، مباشرةً من هنا. لن يلزمك سوى فتح Chrome على جهاز الكمبيوتر، والانتقال إلى القائمة وتحديد "تسجيل الدخول إلى Chrome…"</translation>
 <translation id="728488472449859922">‏تشغيل الماسح الضوئي للاستجابة السريعة في Google Chrome</translation>
-<translation id="7311395200710390977">‏للوصول بشكلٍ أسرع، <ph name="BEGIN_LINK" />انقل Chrome إلى شريط الإرساء<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">‏معلومات عن Google Chrome</translation>
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>

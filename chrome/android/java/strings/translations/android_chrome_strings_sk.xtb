@@ -27,6 +27,7 @@
 Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a sledovanie polohy.</translation>
 <translation id="124678866338384709">Zavretie aktuálnej karty</translation>
 <translation id="1258753120186372309">Sviatočné logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1265597927250775944">Vymaže históriu a návrhy v paneli s adresou.</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1283039547216852943">Klepnutím rozbaliť</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
@@ -35,6 +36,7 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1303671224831497365">Nenašli sa žiadne zariadenia Bluetooth</translation>
 <translation id="1326317727527857210">Ak chcete získať karty z ďalších svojich zariadení, prihláste sa do Chromu.</translation>
 <translation id="1332501820983677155">Skratky pre funkcie prehliadača Google Chrome</translation>
+<translation id="1339917386316755344">Odhlási vás z väčšiny webov, ale nie z vášho účtu Google.</translation>
 <translation id="1369915414381695676">Boli pridané stránky <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Vybraný obsah nie je možné stiahnuť z dôvodu nedostatku pamäte</translation>
 <translation id="1376578503827013741">Vypočítava sa…</translation>
@@ -63,7 +65,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1549000191223877751">Prejsť do druhého okna</translation>
 <translation id="1553358976309200471">Aktualizovať Chrome</translation>
 <translation id="1571304935088121812">Kopírovať používateľské meno</translation>
-<translation id="1594030484168838125">Zvoliť</translation>
 <translation id="1612196535745283361">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. Prístup k polohe je v tomto zariadení <ph name="BEGIN_LINK" />vypnutý<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zakázať tejto stránke otvárať ďalšie dialógové okná</translation>
@@ -255,6 +256,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3859306556332390985">Pretočiť dopredu</translation>
 <translation id="3894427358181296146">Pridanie priečinka</translation>
 <translation id="3895926599014793903">Vynútiť povolenie priblíženia</translation>
+<translation id="3915590178385207649">Vymaže históriu zo všetkých zariadení, na ktorých ste sa prihlásili. Ďalšiu aktivitu z účtu Google si môžete zobraziť na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Poloha je zablokovaná</translation>
 <translation id="3927692899758076493">Bezpätkové</translation>
 <translation id="3928666092801078803">Spojiť moje dáta</translation>
@@ -265,6 +267,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="395922942268463099">Pravidelne aktualizované stránky</translation>
 <translation id="3967822245660637423">Sťahovanie bolo dokončené</translation>
 <translation id="397583555483684758">Synchronizácia prestala fungovať</translation>
+<translation id="3976396876660209797">Odstráňte túto skratku a znova ju vytvorte</translation>
 <translation id="3985215325736559418">Chcete znova stiahnuť súbor <ph name="FILE_NAME" />?</translation>
 <translation id="3987993985790029246">Kopírovať odkaz</translation>
 <translation id="3988213473815854515">Poloha je povolená</translation>
@@ -293,7 +296,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4259722352634471385">Navigácia je zablokovaná: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Došlo k chybe synchronizácie. Podrobnosti získate klepnutím.</translation>
 <translation id="4269820728363426813">Kopírovať adresu odkazu</translation>
-<translation id="4271185234001491831">Nikdy neprekladať jazyk <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Médiá</translation>
 <translation id="4278390842282768270">Povolené</translation>
 <translation id="4300272766492248925">Otvoriť aplikáciu</translation>
@@ -333,7 +335,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4738836084190194332">Posledná synchronizácia: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Otvorenie novej karty</translation>
-<translation id="4750394297954878236">Návrhy</translation>
 <translation id="4759238208242260848">Stiahnuté</translation>
 <translation id="4766369052440583386">Šetrič dát je zapnutý</translation>
 <translation id="4797039098279997504">Klepnutím sa vrátite na kartu <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -424,6 +425,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5626134646977739690">Názov:</translation>
 <translation id="5639724618331995626">Povoliť všetky weby</translation>
 <translation id="5646376287012673985">Poloha</translation>
+<translation id="5648166631817621825">Posledných 7 dní</translation>
 <translation id="5655963694829536461">Hľadajte stiahnuté súbory</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Vytvorte udalosť v aplikácii <ph name="APP_NAME" /></translation>
@@ -532,7 +534,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Použite službu predpovedí na zobrazovanie súvisiacich dopytov a populárnych webových stránok počas zadávania textu do panela s adresou</translation>
 <translation id="666731172850799929">Otvoriť v aplikácii <ph name="APP_NAME" /></translation>
-<translation id="666981079809192359">Upozornenie o ochrane osobných údajov prehliadača Chrome</translation>
+<translation id="666981079809192359">Oznámenie o ochrane súkromia prehliadača Chrome</translation>
 <translation id="6698801883190606802">Spravovať synchronizované údaje</translation>
 <translation id="6701279291835318271">Prehľady zabezpečenia</translation>
 <translation id="6710213216561001401">Dozadu</translation>
@@ -559,6 +561,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Priečinky</translation>
 <translation id="6978479750597523876">Obnoviť nastavenia prekladov</translation>
+<translation id="6979737339423435258">Celé obdobie</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="6985347914332179298">Nie sú tu žiadne stiahnuté súbory</translation>
 <translation id="6990079615885386641">Získať aplikáciu z Obchodu Google Play: <ph name="APP_ACTION" /></translation>
@@ -576,6 +579,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7128222689758636196">Povoliť pre aktuálny vyhľadávač</translation>
 <translation id="7138678301420049075">Iné</translation>
 <translation id="7144878232160441200">Skúsiť znova</translation>
+<translation id="7149893636342594995">Posledných 24 hodín</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
 <translation id="7189372733857464326">Čaká sa na dokončenie aktualizácie služieb Google Play Services</translation>
 <translation id="7191430249889272776">Karta je otvorená na pozadí.</translation>
@@ -594,6 +598,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7423098979219808738">Najprv sa spýtať</translation>
 <translation id="7437998757836447326">Odhlásenie z prehliadača Chrome</translation>
 <translation id="7445411102860286510">Povoliť webom automaticky prehrávať stlmené videá (odporúča sa)</translation>
+<translation id="7449574997654022410">Vymaže históriu a návrhy v paneli s adresou. Ďalšiu aktivitu z účtu Google si môžete zobraziť na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Táto akcia vymaže synchronizované údaje zo všetkých zariadení. Uložené nastavenia webov sa neodstránia a môžu odrážať vaše návyky prehliadania. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7475192538862203634">Ak sa vám táto stránka zobrazuje často, skúste použiť tieto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
@@ -611,6 +616,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="7589445247086920869">Blokovať pre aktuálny vyhľadávač</translation>
 <translation id="7593557518625677601">V nastaveniach Androidu spustite Synchronizáciu Chrome opätovným povolením synchronizácie Androidu</translation>
 <translation id="7596558890252710462">Operačný systém</translation>
+<translation id="7600965453749440009">Nikdy neprekladať jazyk <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Synchronizácia nefunguje</translation>
 <translation id="7612619742409846846">Prihlásený/-á do Googlu ako</translation>
 <translation id="7619072057915878432">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu problémov so sieťou.</translation>
@@ -635,6 +641,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="7829298379596169484">Pristupovanie k zvukovému vstupu</translation>
 <translation id="7837721118676387834">Povoliť automatické prehrávanie stlmených videí pre konkrétny web.</translation>
 <translation id="7846076177841592234">Zrušiť výber</translation>
+<translation id="784934925303690534">Časové obdobie</translation>
 <translation id="7851858861565204677">Ďalšie zariadenia</translation>
 <translation id="7875915731392087153">Vytvorte správu</translation>
 <translation id="7876243839304621966">Odstrániť všetko</translation>
@@ -695,7 +702,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8489271220582375723">Otvorenie stránky História</translation>
 <translation id="8493948351860045254">Uvoľniť miesto</translation>
 <translation id="8497726226069778601">Zatiaľ tu nič nie je…</translation>
-<translation id="8499147970084652325">Na poskytovanie návrhov pri prehliadaní sa použijú servery Google.</translation>
 <translation id="8503813439785031346">Meno používateľa</translation>
 <translation id="8514577642972634246">Spustiť režim inkognito</translation>
 <translation id="8523928698583292556">Odstrániť uložené heslo</translation>
@@ -713,6 +719,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8639651215196239211">Všetky stiahnuté súbory</translation>
 <translation id="8641930654639604085">Pokúsiť sa blokovať weby pre dospelých</translation>
 <translation id="8660471606262461360">Zo služby Google Payments</translation>
+<translation id="8662811608048051533">Odhlási vás z väčšiny webov.</translation>
 <translation id="8676374126336081632">Vymazať vstup</translation>
 <translation id="869891660844655955">Koniec platnosti</translation>
 <translation id="8719023831149562936">Aktuálna karta sa nedá preniesť</translation>
@@ -723,7 +730,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8788968922598763114">Opätovné otvorenie poslednej zavretej karty</translation>
 <translation id="8812260976093120287">Na niektorých weboch môžete platiť pomocou podporovaných platobných aplikácií na zariadení.</translation>
 <translation id="8812942424849541387">Túto funkciu môžete ovládať v <ph name="BEGIN_LINK1" />Nastaveniach<ph name="END_LINK1" /></translation>
-<translation id="8812949859341886735">Keď je táto funkcia zapnutá, Chrome použije servery Google na poskytovanie návrhov pri prehliadaní (napr. keď otvoríte novú kartu). Navrhovaný obsah zahrnuje obľúbené weby, populárne články a prispôsobené návrhy.</translation>
 <translation id="8820817407110198400">Záložky</translation>
 <translation id="883635517171802338">Blokovať na weboch zobrazovanie kontextových okien (odporúčané)</translation>
 <translation id="8847988622838149491">USB</translation>

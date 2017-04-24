@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Пријављивање у Chrome</translation>
 <translation id="3345341804167540816">Користите Chrome свуда</translation>
 <translation id="3531621179462011934">Да би вам подешавања била доступна на свим уређајима, пријавите се у Chrome.</translation>
-<translation id="3601960512121168237">Допада вам се Chrome? <ph name="BEGIN_LINK" />Преместите га на док<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Да ли желите да Chrome сачува лозинку за овај сајт?</translation>
 <translation id="384394811301901750">Google Chrome тренутно не може да користи камеру</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome не може да приступа сликама или видео снимцима. Омогућите приступ у iOS Settings (Подешавања iOS-а) &gt; Privacy (Приватност) &gt; Photos (Слике).</translation>
 <translation id="4099578267706723511">Побољшајте Chrome слањем статистике коришћења и извештаја о отказивању Google-у.</translation>
 <translation id="415767770115540173">Побољшајте Google доживљај у Chrome-у на основу локације.</translation>
+<translation id="4248297594476034182">Да би вам картице биле доступне на свим уређајима, пријавите се у Chrome.</translation>
 <translation id="424864128008805179">Желите ли да се одјавите из Chrome-а?</translation>
 <translation id="4523886039239821078">Неки програмски додаци изазивају отказивање Chrome-а. Деинсталирајте:</translation>
 <translation id="4615174829807303908">Одјављујете се са налога којим управља <ph name="SIGNOUT_MANAGED_DOMAIN" />. То ће избрисати Chrome податке са овог уређаја, али ће подаци остати на Google налогу.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Савет: <ph name="BEGIN_LINK" />Преместите Chrome на док<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Овде приступајте картицама које сте отворили на рачунару. Само отворите Chrome на рачунару, идите на мени и изаберите „Пријави ме у Chrome...“</translation>
 <translation id="728488472449859922">Укључите Google Chrome QR скенер</translation>
-<translation id="7311395200710390977">За бржи приступ <ph name="BEGIN_LINK" />преместите Chrome на док<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">О програму Google Chrome</translation>
 <translation id="7437998757836447326">Одјављивање из Chrome-а</translation>
 <translation id="756809126120519699">Chrome подаци су обрисани</translation>

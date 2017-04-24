@@ -27,6 +27,7 @@
 Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</translation>
 <translation id="124678866338384709">Lukk den aktive fanen</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1265597927250775944">Tømmer loggen og fjerner forslagene i adressefeltet.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Trykk for å vise</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
@@ -35,6 +36,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1303671224831497365">Fant ingen Bluetooth-enheter</translation>
 <translation id="1326317727527857210">For å få fanene dine fra de andre enhetene du bruker, logg på Chrome.</translation>
 <translation id="1332501820983677155">Hurtigtaster for funksjoner i Google Chrome.</translation>
+<translation id="1339917386316755344">Logger deg av de fleste nettsteder. Du blir ikke logget ut av Google-kontoen din.</translation>
 <translation id="1369915414381695676">Nettstedet <ph name="SITE_NAME" /> er lagt til</translation>
 <translation id="1373696734384179344">Det er ikke nok ledig minne til å laste ned det valgte innholdet.</translation>
 <translation id="1376578503827013741">Beregner …</translation>
@@ -63,7 +65,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1549000191223877751">Flytt til det andre vinduet</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
 <translation id="1571304935088121812">Kopiér brukernavnet</translation>
-<translation id="1594030484168838125">Velg</translation>
 <translation id="1612196535745283361">Chrome trenger posisjonstilgang for å søke etter enheter. Posisjonstilgang er <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
@@ -255,6 +256,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3859306556332390985">Spol fremover</translation>
 <translation id="3894427358181296146">Legg til en mappe</translation>
 <translation id="3895926599014793903">Tving zoom på</translation>
+<translation id="3915590178385207649">Tømmer loggen på alle påloggede enheter. Se annen aktivitet fra Google-kontoen din på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Posisjonen er blokkert</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Kombiner dataene mine</translation>
@@ -265,6 +267,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="395922942268463099">Sidene oppdateres regelmessig</translation>
 <translation id="3967822245660637423">Nedlasting fullført</translation>
 <translation id="397583555483684758">Synkroniseringen har sluttet å fungere</translation>
+<translation id="3976396876660209797">Fjern denne snarveien, og opprett den på nytt</translation>
 <translation id="3985215325736559418">Vil du laste ned <ph name="FILE_NAME" /> igjen?</translation>
 <translation id="3987993985790029246">Kopiér link</translation>
 <translation id="3988213473815854515">Posisjon er tillatt</translation>
@@ -293,7 +296,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4259722352634471385">Nettadressen er blokkert: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Det har oppstått en synkroniseringsfeil. Trykk for å se detaljene.</translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
-<translation id="4271185234001491831">Oversett aldri <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Medier</translation>
 <translation id="4278390842282768270">Tillatt</translation>
 <translation id="4300272766492248925">Åpne appen</translation>
@@ -333,7 +335,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="4738836084190194332">Sist synkronisert: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Åpne en ny fane</translation>
-<translation id="4750394297954878236">Forslag</translation>
 <translation id="4759238208242260848">Nedlastinger</translation>
 <translation id="4766369052440583386">Datasparing er på</translation>
 <translation id="4797039098279997504">Trykk for å gå tilbake til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -424,6 +425,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5626134646977739690">Navn:</translation>
 <translation id="5639724618331995626">Tillat alle nettsteder</translation>
 <translation id="5646376287012673985">Posisjon</translation>
+<translation id="5648166631817621825">Siste 7 dager</translation>
 <translation id="5655963694829536461">Søk i nedlastingene dine</translation>
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5665379678064389456">Opprett en aktivitet i <ph name="APP_NAME" /></translation>
@@ -559,6 +561,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Mapper</translation>
 <translation id="6978479750597523876">Tilbakestill innstillingene for oversetting</translation>
+<translation id="6979737339423435258">Alle datoer</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="6985347914332179298">Det finnes ingen nedlastinger her</translation>
 <translation id="6990079615885386641">Last ned appen fra Google Play Butikk: <ph name="APP_ACTION" /></translation>
@@ -576,6 +579,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7128222689758636196">Tillat for den aktive søkemotoren</translation>
 <translation id="7138678301420049075">Annet</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
+<translation id="7149893636342594995">Siste døgn</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7189372733857464326">Venter på at Google Play Tjenester fullfører oppdateringen</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
@@ -594,6 +598,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7423098979219808738">Spør først.</translation>
 <translation id="7437998757836447326">Logg av Chrome</translation>
 <translation id="7445411102860286510">Gi nettsteder tillatelse til automatisk avspilling av videoer med kuttet lyd (anbefales)</translation>
+<translation id="7449574997654022410">Tømmer loggen og fjerner forslagene i adressefeltet. Se annen aktivitet fra Google-kontoen din på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Dette sletter synkroniserte data fra alle enheter. Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7475192538862203634">Hvis du ser dette ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
@@ -611,6 +616,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7589445247086920869">Blokkert for den aktive søkemotoren</translation>
 <translation id="7593557518625677601">Start Chrome-synkronisering ved å slå på synkronisering i Android-innstillingene</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
+<translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
 <translation id="7612619742409846846">Logget på Google som</translation>
 <translation id="7619072057915878432">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av nettverksproblemer.</translation>
@@ -635,6 +641,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7829298379596169484">Åpner lydinngang</translation>
 <translation id="7837721118676387834">Tillat automatisk avspilling av videoer med dempet lyd for et bestemt nettsted.</translation>
 <translation id="7846076177841592234">Opphev valget</translation>
+<translation id="784934925303690534">Tidsperiode</translation>
 <translation id="7851858861565204677">Andre enheter</translation>
 <translation id="7875915731392087153">Opprett e-post</translation>
 <translation id="7876243839304621966">Fjern alle</translation>
@@ -695,7 +702,6 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8489271220582375723">Åpne loggsiden</translation>
 <translation id="8493948351860045254">Frigjør plass</translation>
 <translation id="8497726226069778601">Det er ikke noe her foreløpig</translation>
-<translation id="8499147970084652325">Bruk Googles tjenere for surfeforslag</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
 <translation id="8514577642972634246">Slå på inkognitomodus</translation>
 <translation id="8523928698583292556">Slett lagrede passord</translation>
@@ -715,6 +721,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8639651215196239211">Alle nedlastinger</translation>
 <translation id="8641930654639604085">Prøv å blokkere nettsteder med voksent innhold</translation>
 <translation id="8660471606262461360">Fra Google Payments</translation>
+<translation id="8662811608048051533">Logger deg av de fleste nettsteder.</translation>
 <translation id="8676374126336081632">Slett teksten</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
 <translation id="8719023831149562936">Kan ikke beame gjeldende fane</translation>
@@ -725,7 +732,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8788968922598763114">Åpne den sist lukkede fanen på nytt</translation>
 <translation id="8812260976093120287">På noen nettsteder kan du betale med de støttede betalingsappene ovenfor på enheten din.</translation>
 <translation id="8812942424849541387">Kontrollér hvordan dette fungerer, i <ph name="BEGIN_LINK1" />innstillingene<ph name="END_LINK1" /></translation>
-<translation id="8812949859341886735">Når denne funksjonen er slått på, brukes Googles tjenere for surfeforslag, f.eks. når du åpner nye faner. Dette inkluderer populære nettsteder og artikler samt forslag med et personlig preg.</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="883635517171802338">Blokkér nettsteder fra å vise forgrunnsvinduer (anbefales)</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -29,9 +29,6 @@
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
-<translation id="1854357586517521894">Bloq Maj està activat.
-
-    Prem Cerca o Maj per cancel·lar.</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">La drecera per obrir el gestor de tasques ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
@@ -51,6 +48,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Abans d'acceptar, comproveu que aquesta clau d'accés es mostri al dispositiu: <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">S'ha produït un error</translation>
+<translation id="2501920221385095727">Tecles permanents</translation>
 <translation id="2509468283778169019">BLOQ MAJ està activat.</translation>
 <translation id="2532589005999780174">Mode d'alt contrast</translation>
 <translation id="2700058918926273959">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" /> i es tancarà.</translation>
@@ -71,11 +69,11 @@
 <translation id="3000461861112256445">Àudio mono</translation>
 <translation id="3009178788565917040">Sortida</translation>
 <translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING" /></translation>
+<translation id="3050422059534974565">Bloq Maj està activat.
+Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="3087734570205094154">Part inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3109220592788908353">Bloq Maj està activat.
-    Prem Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="3126069444801937830">Reinicia per actualitzar</translation>
 <translation id="3147142846278915599">Launcher (s'estan sincronitzant les aplicacions...)</translation>
 <translation id="315116470104423982">Dades mòbils</translation>
@@ -149,6 +147,7 @@
 <translation id="5571066253365925590">S'ha activat el Bluetooth</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5648021990716966815">Connector per al micròfon</translation>
+<translation id="5744083938413354016">Tocar i arrossegar</translation>
 <translation id="5777841717266010279">Voleu deixar de compartir la pantalla?</translation>
 <translation id="57838592816432529">Silencia</translation>
 <translation id="5895138241574237353">Reinicia</translation>
@@ -207,9 +206,10 @@ Premeu Ctrl + Alt + Z per desactivar-lo.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7209101170223508707">Bloq Maj està activat.
+Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="7246339268451149667">Vols activar el desbloqueig amb empremta digital?</translation>
 <translation id="7256634071279256947">Micròfon posterior</translation>
-<translation id="7337799137043490957">Omet la pantalla de bloqueig tocant el sensor d'empremtes digitals. Fes clic per configurar aquesta funció.</translation>
 <translation id="7348093485538360975">Teclat en pantalla</translation>
 <translation id="735745346212279324">VPN desconnectada</translation>
 <translation id="742594950370306541">La càmera s'està utilitzant.</translation>

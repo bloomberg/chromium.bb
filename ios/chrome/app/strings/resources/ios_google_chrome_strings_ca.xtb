@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Inicia la sessió a Chrome</translation>
 <translation id="3345341804167540816">Utilitzeu Chrome a tot arreu</translation>
 <translation id="3531621179462011934">Inicia la sessió a Chrome per accedir a la configuració des de tots els dispositius.</translation>
-<translation id="3601960512121168237">Us agrada Chrome? <ph name="BEGIN_LINK" />Moveu-lo al Dock<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Vols que Chrome desi la teva contrasenya per a aquest lloc?</translation>
 <translation id="384394811301901750">Google Chrome no pot utilitzar la càmera en aquest moment</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Google Chrome no té accés als vostres vídeos o fotos. Permeteu-li l'accés a iOS, a Configuració &gt; Privadesa &gt; Fotos.</translation>
 <translation id="4099578267706723511">Ajuda a millorar Chrome enviant estadístiques d'ús i d'informes d'error a Google.</translation>
 <translation id="415767770115540173">Si compartiu la ubicació, millorareu la vostra experiència a Chrome.</translation>
+<translation id="4248297594476034182">Inicieu la sessió a Chrome per accedir a les vostres pestanyes des de tots els dispositius.</translation>
 <translation id="424864128008805179">Voleu tancar la sessió de Chrome?</translation>
 <translation id="4523886039239821078">Alguns complements fan que Chrome es bloquegi. Desinstal·leu-los.</translation>
 <translation id="4615174829807303908">Esteu tancant la sessió d'un compte gestionat per <ph name="SIGNOUT_MANAGED_DOMAIN" />. Se suprimiran les vostres dades de Chrome d'aquest dispositiu, però continuaran al vostre compte de Google.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Consell: <ph name="BEGIN_LINK" />moveu Chrome al Dock<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Accediu a les pestanyes que teniu obertes a l'ordinador des d'aquí mateix. Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inici de sessió a Chrome.</translation>
 <translation id="728488472449859922">Activa l'escàner QR de Google Chrome</translation>
-<translation id="7311395200710390977"><ph name="BEGIN_LINK" />Moveu Chrome al Dock<ph name="END_LINK" /> per accedir-hi més de pressa</translation>
 <translation id="7400722733683201933">Quant a Google Chrome</translation>
 <translation id="7437998757836447326">Tancar la sessió de Chrome</translation>
 <translation id="756809126120519699">S'han esborrat les dades de Chrome</translation>

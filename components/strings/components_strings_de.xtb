@@ -66,6 +66,7 @@
           &lt;p&gt;Stellen Sie in der App &lt;strong&gt;Einstellungen&lt;/strong&gt; im Bereich &lt;strong&gt;Allgemein&lt;/strong&gt; Datum und Uhrzeit richtig ein.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Fehler beim Anzeigen dieser Webseite.</translation>
 <translation id="1592005682883173041">Zugriff auf lokale Daten</translation>
+<translation id="1594030484168838125">Auswählen</translation>
 <translation id="161042844686301425">Cyan</translation>
 <translation id="1629803312968146339">Möchten Sie, dass Chrome diese Karte speichert?</translation>
 <translation id="1639239467298939599">Wird geladen...</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Jetzt senden</translation>
 <translation id="225207911366869382">Dieser Wert für die Richtlinie ist veraltet.</translation>
 <translation id="2262243747453050782">HTTP-Fehler</translation>
+<translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2282872951544483773">Nicht verfügbare Experimente</translation>
 <translation id="2292556288342944218">Ihre Internetverbindung ist gesperrt</translation>
 <translation id="230155334948463882">Neue Karte?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
 <translation id="2916038427272391327">Andere Programme schließen</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
+<translation id="2928905813689894207">Rechnungsadresse</translation>
 <translation id="2948083400971632585">Sie können alle für eine Verbindung konfigurierten Proxys auf der Seite "Einstellungen" deaktivieren.</translation>
 <translation id="2955913368246107853">Suchleiste schließen</translation>
 <translation id="2958431318199492670">Die Netzwerkkonfiguration stimmt nicht mit dem ONC-Standard überein. Die Konfiguration wird unter Umständen nicht vollständig importiert.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Gespeicherte Kopie anzeigen</translation>
 <translation id="3008447029300691911">Geben Sie den CVC für <ph name="CREDIT_CARD" /> ein. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
 <translation id="3010559122411665027">Listeneintrag "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Automatisch blockiert</translation>
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
 <translation id="3032412215588512954">Möchten Sie diese Website neu laden?</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">Ihre Zugriffsanfrage für diese Website konnte nicht an <ph name="NAME" /> gesendet werden. Bitte versuchen Sie es erneut.</translation>
 <translation id="3355823806454867987">Proxy-Einstellungen ändern...</translation>
 <translation id="3369192424181595722">Fehler bei der Uhrzeit</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> weitere Elemente…</translation>
 <translation id="337363190475750230">Bereitstellung aufgehoben</translation>
 <translation id="3377188786107721145">Fehler beim Parsen der Richtlinie</translation>
 <translation id="3380365263193509176">Unbekannter Fehler</translation>
@@ -489,6 +492,7 @@
 <translation id="5622887735448669177">Möchten Sie diese Website verlassen?</translation>
 <translation id="5629630648637658800">Fehler beim Laden der Richtlinieneinstellungen</translation>
 <translation id="5631439013527180824">Ungültiges Management-Token für das Gerät</translation>
+<translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5669703222995421982">Personalisierte Inhalte erhalten</translation>
 <translation id="5675650730144413517">Diese Seite funktioniert nicht</translation>
 <translation id="5677928146339483299">Blockiert</translation>
@@ -522,13 +526,13 @@
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="6060685159320643512">Vorsichtig, diese Experimente können gefährlich sein!</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{keine}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Überprüfen Sie alle Kabel und starten Sie alle verwendeten Router, Modems und
     anderen Netzwerkgeräte neu.</translation>
 <translation id="614940544461990577">Versuchen Sie Folgendes:</translation>
 <translation id="6151417162996330722">Die Gültigkeitsdauer des Serverzertifikats ist zu lang.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6177128806592000436">Die Verbindung zu dieser Website ist nicht sicher</translation>
+<translation id="6184817833369986695">(Kohorte: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Bitte überprüfen Sie Ihre Internetverbindung.</translation>
 <translation id="6218753634732582820">Adresse aus Chromium entfernen?</translation>
 <translation id="6251924700383757765">Datenschutzerklärung</translation>
@@ -626,6 +630,7 @@
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7182878459783632708">Keine Richtlinien festgelegt</translation>
 <translation id="7186367841673660872">Diese Seite wurde von<ph name="ORIGINAL_LANGUAGE" />in<ph name="LANGUAGE_LANGUAGE" />übersetzt.</translation>
+<translation id="7192203810768312527">Freigabe von <ph name="SIZE" /> Speicherplatz. Manche Websites werden beim nächsten Öffnen eventuell langsamer geladen.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> erfüllt die Sicherheitsstandards nicht.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>

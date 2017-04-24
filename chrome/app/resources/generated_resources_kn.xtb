@@ -808,7 +808,6 @@
 <translation id="216169395504480358">ವೈ-ಫೈ ಸೇರಿಸಿ...</translation>
 <translation id="2163470535490402084">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಗೊಳಿಸಿ.</translation>
 <translation id="2164862903024139959">ವಿಯೆಟ್ನಾಮೀಸ್ ಕೀಬೋರ್ಡ್ (TCVN)</translation>
-<translation id="21655110192559039">ಸಾಧನ ವಿವರಣೆ ವಿಶ್ಲೇಷಕವನ್ನು ಡಯಲ್ ಮಾಡಿ</translation>
 <translation id="2165722503303595908">ಆಯಾಮ</translation>
 <translation id="2166369534954157698">The quick brown fox jumps over the lazy dog</translation>
 <translation id="2168214441502403371">ಪರ್ಷಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
@@ -2069,7 +2068,6 @@
 <translation id="3936390757709632190">&amp;ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಆಡಿಯೋ ತೆರೆಯಿರಿ</translation>
 <translation id="3936768791051458634">ಚಾನಲ್ ಬದಲಿಸಿ...</translation>
 <translation id="3936925983113350642">ನಂತರ ಈ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಮರುಸ್ಥಾಪಿಸಲು ನೀವು ಆಯ್ಕೆಮಾಡಿದ ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿರುತ್ತದೆ. ದಯವಿಟ್ಟು ಸುರಕ್ಷಿತ ಸ್ಥಳದಲ್ಲಿ ಅದನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ.</translation>
-<translation id="3936999098172113189"><ph name="PRINTER_NAME" /> ಗೆ <ph name="PAGE_NUMBER" /> ಪುಟಗಳನ್ನು ಮುದ್ರಿಸಲು ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3937640725563832867">ಪ್ರಮಾಣಪತ್ರ ನೀಡುವಿಕೆ ಪರ್ಯಾಯ ಹೆಸರು</translation>
 <translation id="3940233957883229251">ಸ್ವಯಂ-ಪುನರಾವರ್ತನೆ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3941357410013254652">ಚಾನಲ್ ID</translation>
@@ -4072,7 +4070,6 @@
 <translation id="7017480957358237747">ನಿರ್ದಿಷ್ಟ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ ಅಥವಾ ನಿಷೇಧಿಸಿ,</translation>
 <translation id="7017587484910029005">ಕೆಳಗೆ ಕಾಣುವ ಚಿತ್ರದಲ್ಲಿನ ಅಕ್ಷರಗಳನ್ನು ಬೆರಳಚ್ಚಿಸಿ.</translation>
 <translation id="7018275672629230621">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್‌ ಇತಿಹಾಸವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
-<translation id="7018568016607642429">ಬಿತ್ತರಿಸುವಿಕೆ ದೋಷ</translation>
 <translation id="7019805045859631636">ವೇಗ</translation>
 <translation id="7022562585984256452">ನಿಮ್ಮ ಮುಖಪಟವನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="702373420751953740">PRL ಆವೃತ್ತಿ:</translation>
@@ -4982,7 +4979,6 @@
 <translation id="8418445294933751433">ಟ್ಯಾಬ್‌ನಂತೆ &amp;ತೋರಿಸಿ</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' ಕುರಿತ ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳು</translation>
 <translation id="8420060421540670057">Google ಡಾಕ್ಸ್ ಫೈಲ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
-<translation id="8423869809045821924">ಬೇರೆ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸಿಕೊಂಡು PDF ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="8424039430705546751">ಕೆಳಗೆ</translation>
 <translation id="8425213833346101688">ಬದಲಿಸಿ</translation>
 <translation id="8425492902634685834">ಕಾರ್ಯಪಟ್ಟಿಗೆ ಪಿನ್‌ ಮಾಡು</translation>
@@ -4999,7 +4995,6 @@
 <translation id="843760761634048214">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಉಳಿಸಿ</translation>
 <translation id="8438601631816548197">ಧ್ವನಿ ಹುಡುಕಾಟ ಕುರಿತು</translation>
 <translation id="8439506636278576865">ಪುಟಗಳನ್ನು ಈ ಭಾಷೆಯಲ್ಲಿ ಅನುವಾದ ಮಾಡಲು ಅವಕಾಶ</translation>
-<translation id="8441209996841212096">ವೀಡಿಯೊ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8442145116400417142">ವಿಷಯ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="8443621894987748190">ನಿಮ್ಮ ಖಾತೆಯ ಚಿತ್ರವನ್ನು ಆರಿಸಿ</translation>
 <translation id="8446884382197647889">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>

@@ -17,7 +17,6 @@
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3345341804167540816">Upotrebljavajte Chrome svugdje</translation>
 <translation id="3531621179462011934">Da biste imali svoje postavke na svim svojim uređajima, prijavite se na Chrome.</translation>
-<translation id="3601960512121168237">Sviđa vam se Chrome? <ph name="BEGIN_LINK" />Premjestite ga na priključnu stanicu<ph name="END_LINK" /></translation>
 <translation id="3678774398092457402">Želite li da Chrome spremi vašu zaporku za ovu web-lokaciju?</translation>
 <translation id="384394811301901750">Google Chrome trenutačno ne može upotrebljavati vaš fotoaparat</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -25,6 +24,7 @@
 <translation id="3988789688219830639">Chrome nema pristup fotografijama ni videozapisima. Omogućite pristup u Postavkama iOS-a &gt; Privatnost &gt; Fotografije.</translation>
 <translation id="4099578267706723511">Poboljšajte Chrome šaljući Googleu statistike upotrebe i izvješća o rušenju.</translation>
 <translation id="415767770115540173">Doživite Google na bolji način u Chromeu na temelju svoje lokacije.</translation>
+<translation id="4248297594476034182">Da biste imali svoje kartice na svim svojim uređajima, prijavite se na Chrome.</translation>
 <translation id="424864128008805179">Želite li se odjaviti s Chromea?</translation>
 <translation id="4523886039239821078">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Deinstalirajte:</translation>
 <translation id="4615174829807303908">Odjavljujete se s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. Vaši podaci na Chromeu izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
@@ -43,7 +43,6 @@
 <translation id="7172660552945675509">Savjet: <ph name="BEGIN_LINK" />premjestite Chrome na priključnu stanicu<ph name="END_LINK" /></translation>
 <translation id="7265369419224458312">Karticama koje ste otvorili na računalu možete pristupiti i ovdje. Samo otvorite Chrome na računalu, idite na izbornik i odaberite "Prijava na Chrome…"</translation>
 <translation id="728488472449859922">Uključite QR skener Google Chromea</translation>
-<translation id="7311395200710390977">Za brži pristup <ph name="BEGIN_LINK" />premjestite Chrome na priključnu stanicu<ph name="END_LINK" /></translation>
 <translation id="7400722733683201933">O programu Google Chrome</translation>
 <translation id="7437998757836447326">Odjava s Chromea</translation>
 <translation id="756809126120519699">Chromeovi su podaci izbrisani</translation>

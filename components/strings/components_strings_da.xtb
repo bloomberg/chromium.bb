@@ -66,6 +66,7 @@
       &lt;p&gt;Juster datoen og tiden i sektionen &lt;strong&gt;Generelt&lt;/strong&gt; i appen &lt;strong&gt;Indstillinger&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Der opstod en fejl ved visningen af denne webside.</translation>
 <translation id="1592005682883173041">Lokal dataadgang</translation>
+<translation id="1594030484168838125">Vælg</translation>
 <translation id="161042844686301425">Cyan</translation>
 <translation id="1629803312968146339">Skal Chrome gemme dette kort?</translation>
 <translation id="1639239467298939599">Indlæser...</translation>
@@ -136,6 +137,7 @@
 <translation id="2239100178324503013">Send nu</translation>
 <translation id="225207911366869382">Denne værdi er forældet for denne politik.</translation>
 <translation id="2262243747453050782">HTTP-fejl</translation>
+<translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2282872951544483773">Utilgængelige eksperimenter</translation>
 <translation id="2292556288342944218">Din internetadgang er blokeret</translation>
 <translation id="230155334948463882">Har du fået nyt kort?</translation>
@@ -204,6 +206,7 @@
 <translation id="2909946352844186028">Der blev registreret en netværksændring.</translation>
 <translation id="2916038427272391327">Luk andre programmer</translation>
 <translation id="2922350208395188000">Serverens certifikat kan ikke kontrolleres.</translation>
+<translation id="2928905813689894207">Faktureringsadresse</translation>
 <translation id="2948083400971632585">Du kan deaktivere alle proxyer, der er konfigureret for en forbindelse, fra siden Indstillinger.</translation>
 <translation id="2955913368246107853">Luk søgefeltet</translation>
 <translation id="2958431318199492670">Netværkskonfigurationen overholder ikke ONC-standarden. Dele af konfiguration kan muligvis ikke importeres.</translation>
@@ -216,6 +219,7 @@
 <translation id="3005723025932146533">Vis gemt kopi</translation>
 <translation id="3008447029300691911">Indtast kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles dine kortoplysninger med dette website.</translation>
 <translation id="3010559122411665027">Angiv posten "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="301521992641321250">Automatisk blokering</translation>
 <translation id="3024663005179499861">Forkert politiktype</translation>
 <translation id="3032412215588512954">Vil du genindlæse denne side?</translation>
 <translation id="3037605927509011580">Øv, surt!</translation>
@@ -258,7 +262,6 @@
 <translation id="3345135638360864351">Din anmodning om at få adgang til dette website kunne ikke sendes til <ph name="NAME" />. Prøv igen.</translation>
 <translation id="3355823806454867987">Skift indstillinger for proxy...</translation>
 <translation id="3369192424181595722">Urfejl</translation>
-<translation id="337311366426640088"><ph name="ITEM_COUNT" /> elementer mere...</translation>
 <translation id="337363190475750230">Fjernet</translation>
 <translation id="3377188786107721145">Det opstod en fejl ved parsing af politik</translation>
 <translation id="3380365263193509176">Ukendt fejl</translation>
@@ -490,6 +493,7 @@
 <translation id="5622887735448669177">Vil du forlade denne side?</translation>
 <translation id="5629630648637658800">Der kunne ikke indlæses indstillinger for politik</translation>
 <translation id="5631439013527180824">Ugyldigt token for enhedsadministration</translation>
+<translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Få tilpasset indhold</translation>
 <translation id="5675650730144413517">Denne side virker ikke</translation>
 <translation id="5677928146339483299">Blokeret</translation>
@@ -523,13 +527,13 @@
 <translation id="6040143037577758943">Luk</translation>
 <translation id="6042308850641462728">Mere</translation>
 <translation id="6060685159320643512">Vær forsigtig. Disse eksperimenter kan være farlige</translation>
-<translation id="6108835911243775197">{COUNT,plural, =0{ingen}=1{1}one{#}other{#}}</translation>
 <translation id="6146055958333702838">Kontrollér eventuelle kabler, og genstart alle routere, modemmer eller andre
     netværksenheder, du bruger.</translation>
 <translation id="614940544461990577">Prøv at:</translation>
 <translation id="6151417162996330722">Servercertifikatet har en gyldighedsperiode, der er for lang.</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6177128806592000436">Din forbindelse til dette website er ikke sikker.</translation>
+<translation id="6184817833369986695">(kohorte: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Kontrollér din internetforbindelse</translation>
 <translation id="6218753634732582820">Vil du fjerne adressen fra Chromium?</translation>
 <translation id="6251924700383757765">Privatlivspolitik</translation>
@@ -627,6 +631,7 @@
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="7182878459783632708">Ingen politikker er indstillet</translation>
 <translation id="7186367841673660872">Denne side er oversat fra<ph name="ORIGINAL_LANGUAGE" />til<ph name="LANGUAGE_LANGUAGE" /></translation>
+<translation id="7192203810768312527">Frigør <ph name="SIZE" />. Nogle websites indlæses muligvis langsommere, næste gang du går til websitet.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> overholder ikke sikkerhedsstandarderne.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /> om dette problem.</translation>

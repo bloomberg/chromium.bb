@@ -27,6 +27,7 @@
 คุณต้องเปิดใช้บลูทูธและตำแหน่งเพื่อที่จะใช้ Physical Web</translation>
 <translation id="124678866338384709">ปิดแท็บปัจจุบัน</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1265597927250775944">ล้างประวัติการเข้าชมและคำแนะนำในแถบที่อยู่เว็บ</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1283039547216852943">แตะเพื่อขยาย</translation>
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
@@ -35,6 +36,7 @@
 <translation id="1303671224831497365">ไม่พบอุปกรณ์บลูทูธ</translation>
 <translation id="1326317727527857210">ลงชื่อเข้าใช้ Chrome เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="1332501820983677155">แป้นพิมพ์ลัดสำหรับคุณลักษณะของ Google Chrome</translation>
+<translation id="1339917386316755344">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="1369915414381695676">เพิ่มเว็บไซต์ <ph name="SITE_NAME" /> แล้ว</translation>
 <translation id="1373696734384179344">หน่วยความจำไม่เพียงพอที่จะดาวน์โหลดเนื้อหาที่เลือก</translation>
 <translation id="1376578503827013741">กำลังประมวลผล…</translation>
@@ -63,7 +65,6 @@
 <translation id="1549000191223877751">ย้ายไปยังหน้าต่างอื่น</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
 <translation id="1571304935088121812">คัดลอกชื่อผู้ใช้</translation>
-<translation id="1594030484168838125">เลือก</translation>
 <translation id="1612196535745283361">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ ตัวเลือกสิทธิ์เข้าถึงตำแหน่ง<ph name="BEGIN_LINK" />สำหรับอุปกรณ์เครื่องนี้ปิดอยู่<ph name="END_LINK" /></translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
@@ -77,7 +78,7 @@
 <translation id="1671236975893690980">การดาวน์โหลดรอดำเนินการ…</translation>
 <translation id="169033420419426091">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะไม่มีการ์ด SD</translation>
 <translation id="1709438864123551175">โปรแกรมประหยัดอินเทอร์เน็ต</translation>
-<translation id="1718835860248848330">ชั่วโมงสุดท้าย</translation>
+<translation id="1718835860248848330">ชั่วโมงล่าสุด</translation>
 <translation id="1729516292547892356">หากต้องการดูเนื้อหา Virtual Reality โปรดอัปเดตบริการ Google VR</translation>
 <translation id="1742134235943978220">แปลเป็นภาษา<ph name="TARGET_LANGUAGE" />แล้ว</translation>
 <translation id="1749561566933687563">ซิงค์บุ๊กมาร์กของคุณ</translation>
@@ -255,6 +256,7 @@
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
+<translation id="3915590178385207649">ล้างประวัติการเข้าชมจากอุปกรณ์ที่ลงชื่อเข้าใช้ทั้งหมด ดูกิจกรรมอื่นๆ จากบัญชี Google ของคุณที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="3917783807003067648">บล็อกตำแหน่งอยู่</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">รวมข้อมูลของฉัน</translation>
@@ -265,6 +267,7 @@
 <translation id="395922942268463099">หน้าที่อัปเดตเป็นประจำ</translation>
 <translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="397583555483684758">การซิงค์หยุดทำงานแล้ว</translation>
+<translation id="3976396876660209797">นำทางลัดนี้ออกแล้วสร้างใหม่</translation>
 <translation id="3985215325736559418">คุณต้องการดาวน์โหลด <ph name="FILE_NAME" /> อีกครั้งไหม</translation>
 <translation id="3987993985790029246">คัดลอกลิงก์</translation>
 <translation id="3988213473815854515">อนุญาตตำแหน่ง</translation>
@@ -293,7 +296,6 @@
 <translation id="4259722352634471385">มีการบล็อกการนำทาง: <ph name="URL" /></translation>
 <translation id="4262028915562328938">เกิดข้อผิดพลาดการซิงค์ แตะเพื่ออ่านรายละเอียด</translation>
 <translation id="4269820728363426813">คัดลอกที่อยู่ลิงก์</translation>
-<translation id="4271185234001491831">ไม่ต้องแปลภาษา<ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">สื่อ</translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
 <translation id="4300272766492248925">เปิดแอป</translation>
@@ -333,7 +335,6 @@
 <translation id="473775607612524610">การอัปเดต</translation>
 <translation id="4738836084190194332">ซิงค์ครั้งล่าสุด: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">เปิดแท็บใหม่</translation>
-<translation id="4750394297954878236">คำแนะนำ</translation>
 <translation id="4759238208242260848">ดาวน์โหลด</translation>
 <translation id="4766369052440583386">โปรแกรมประหยัดอินเทอร์เน็ตเปิดอยู่</translation>
 <translation id="4797039098279997504">แตะเพื่อกลับไปยัง <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -424,6 +425,7 @@
 <translation id="5626134646977739690">ชื่อ:</translation>
 <translation id="5639724618331995626">อนุญาตทุกไซต์</translation>
 <translation id="5646376287012673985">ตำแหน่ง</translation>
+<translation id="5648166631817621825">7 วันที่แล้ว</translation>
 <translation id="5655963694829536461">ค้นหาการดาวน์โหลด</translation>
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5665379678064389456">สร้างกิจกรรมใน <ph name="APP_NAME" /></translation>
@@ -559,6 +561,7 @@
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6973630695168034713">โฟลเดอร์</translation>
 <translation id="6978479750597523876">รีเซ็ตการตั้งค่าการแปล</translation>
+<translation id="6979737339423435258">ตั้งแต่ต้น</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="6985347914332179298">ไม่มีการดาวน์โหลดที่นี่</translation>
 <translation id="6990079615885386641">รับแอปจาก Google Play Store: <ph name="APP_ACTION" /></translation>
@@ -576,6 +579,7 @@
 <translation id="7128222689758636196">อนุญาตสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7138678301420049075">อื่นๆ</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
+<translation id="7149893636342594995">24 ชั่วโมงที่แล้ว</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="7189372733857464326">กำลังรอให้บริการ Google Play อัปเดตเสร็จสิ้น</translation>
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
@@ -594,6 +598,7 @@
 <translation id="7423098979219808738">ถามก่อน</translation>
 <translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="7445411102860286510">อนุญาตให้เว็บไซต์เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติ (แนะนำ)</translation>
+<translation id="7449574997654022410">ล้างประวัติการเข้าชมและคำแนะนำในแถบที่อยู่เว็บ ดูกิจกรรมอื่นๆ จากบัญชี Google ของคุณที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="7464701184726199289">การดำเนินการนี้จะล้างข้อมูลที่ซิงค์จากอุปกรณ์ทั้งหมด การตั้งค่าเว็บไซต์ที่บันทึกไว้จะไม่ถูกลบและอาจส่งผลกับลักษณะการท่องเว็บของคุณ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="7475192538862203634">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>
@@ -611,6 +616,7 @@
 <translation id="7589445247086920869">บล็อกสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7593557518625677601">เปิดการตั้งค่า Android และเปิดการซิงค์ Android ใหม่เพื่อเริ่มการซิงค์ของ Chrome</translation>
 <translation id="7596558890252710462">ระบบปฏิบัติการ</translation>
+<translation id="7600965453749440009">ไม่ต้องแปลภาษา<ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">การซิงค์ไม่ทำงาน</translation>
 <translation id="7612619742409846846">ลงชื่อเข้าใช้ Google ด้วย</translation>
 <translation id="7619072057915878432">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเครือข่ายขัดข้อง</translation>
@@ -635,6 +641,7 @@
 <translation id="7829298379596169484">กำลังเข้าถึงอินพุตเสียง</translation>
 <translation id="7837721118676387834">อนุญาตให้เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติสำหรับบางเว็บไซต์</translation>
 <translation id="7846076177841592234">ยกเลิกการเลือก</translation>
+<translation id="784934925303690534">ช่วงเวลา</translation>
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>
 <translation id="7875915731392087153">สร้างอีเมล</translation>
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
@@ -695,7 +702,6 @@
 <translation id="8489271220582375723">เปิดหน้าประวัติการเข้าชม</translation>
 <translation id="8493948351860045254">เพิ่มพื้นที่ว่าง</translation>
 <translation id="8497726226069778601">ที่นี่ยังไม่มีอะไรให้ดู… เลย</translation>
-<translation id="8499147970084652325">ใช้เซิร์ฟเวอร์ Google เพื่อให้คำแนะนำในการท่องเว็บ</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>
 <translation id="8514577642972634246">เข้าสู่โหมดไม่ระบุตัวตน</translation>
 <translation id="8523928698583292556">ลบรหัสผ่านที่เก็บไว้</translation>
@@ -715,6 +721,7 @@
 <translation id="8639651215196239211">การดาวน์โหลดทั้งหมด</translation>
 <translation id="8641930654639604085">พยายามบล็อกไซต์สำหรับผู้ใหญ่</translation>
 <translation id="8660471606262461360">จาก Google Payments</translation>
+<translation id="8662811608048051533">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
 <translation id="8719023831149562936">ไม่สามารถบีมแท็บปัจจุบัน</translation>
@@ -725,7 +732,6 @@
 <translation id="8788968922598763114">เปิดแท็บที่เพิ่งปิดอีกครั้ง</translation>
 <translation id="8812260976093120287">ในบางเว็บไซต์ คุณสามารถชำระเงินด้วยแอปชำระเงินที่รองรับด้านบนในอุปกรณ์ของคุณ</translation>
 <translation id="8812942424849541387">ควบคุมการทำงานใน<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" /></translation>
-<translation id="8812949859341886735">เมื่อเปิดคุณลักษณะนี้ Chrome จะใช้เซิร์ฟเวอร์ Google เพื่อให้คำแนะนำในการท่องเว็บ เช่น เมื่อคุณเปิดแท็บใหม่ คำแนะนำจะรวมถึงเว็บไซต์ยอดนิยม บทความมาแรง ตลอดจนคำแนะนำที่ปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
 <translation id="883635517171802338">บล็อกเว็บไซต์ไม่ให้แสดงป๊อปอัป (แนะนำ)</translation>
 <translation id="8847988622838149491">USB</translation>

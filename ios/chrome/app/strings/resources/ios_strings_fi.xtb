@@ -186,6 +186,7 @@ Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antama
 <translation id="4750394297954878236">Ehdotukset</translation>
 <translation id="4773461607542755386">Avataanko tämä sivu sovelluksessa <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Evästeet, sivuston tiedot</translation>
+<translation id="4860895144060829044">Soita</translation>
 <translation id="4875622588773761625">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tämän sivuston salasanasi?</translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4904877109095351937">Merkitse luetuksi</translation>
@@ -356,7 +357,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8205564605687841303">Peruuta</translation>
 <translation id="8225985093977202398">Välimuistissa olevat kuvat ja tiedostot</translation>
 <translation id="8261506727792406068">Poista</translation>
-<translation id="8272194309885535896">Lataa kuva</translation>
 <translation id="8272426682713568063">Luottokortit</translation>
 <translation id="8281781826761538115">Oletus – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Hallinnoi tapaa, jolla Google käyttää selaushistoriaasi haun, mainosten ja muiden Googlen palveluiden muokkaamiseen.</translation>

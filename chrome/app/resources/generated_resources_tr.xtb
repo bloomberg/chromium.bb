@@ -630,6 +630,7 @@
 <translation id="1882130480443819387">Başlığa göre sırala</translation>
 <translation id="1886996562706621347">Sitelerin, protokoller için varsayılan işleyiciler olmasını sormasına izin ver (önerilir)</translation>
 <translation id="1887850431809612466">Donanım düzeltmesi</translation>
+<translation id="1889984860246851556">Proxy ayarlarını aç</translation>
 <translation id="1891668193654680795">Yazılım üreticilerini tanımlamak için bu sertifikaya güvenin.</translation>
 <translation id="189210018541388520">Tam ekranı aç</translation>
 <translation id="1893406696975231168">Bulut temel hazırlığı akışı başarısız oldu</translation>
@@ -808,7 +809,6 @@ Dolması için gereken süre: <ph name="HOUR" />:<ph name="MINUTE" /></translati
 <translation id="216169395504480358">Kablosuz Ekle...</translation>
 <translation id="2163470535490402084"><ph name="DEVICE_TYPE" /> cihazınızda oturum açmak için lütfen İnternet'e bağlanın.</translation>
 <translation id="2164862903024139959">Vietnamca klavye (TCVN)</translation>
-<translation id="21655110192559039">Çevirme Aracı Açıklaması için Ayrıştırıcı</translation>
 <translation id="2165722503303595908">Boyut</translation>
 <translation id="2166369534954157698">Pijamalı hasta, yağız şoföre çabucak güvendi</translation>
 <translation id="2168214441502403371">Farsça klavye</translation>
@@ -866,6 +866,7 @@ Dolması için gereken süre: <ph name="HOUR" />:<ph name="MINUTE" /></translati
 <translation id="2241634353105152135">Sadece bir defa</translation>
 <translation id="2242603986093373032">Cihaz yok</translation>
 <translation id="2242687258748107519">Dosya Bilgileri</translation>
+<translation id="2245240762616536227">Göz atma geçmişinizin Arama, reklamlar ve diğer Google hizmetlerini nasıl kişiselleştirdiğini kontrol edin</translation>
 <translation id="2246340272688122454">Kurtarma görüntüsü indirilemiyor...</translation>
 <translation id="2249499294612408921">Denetlenen kullanıcı, web'i sizin rehberliğinizde keşfedebilir. Chrome'da bir denetlenen kullanıcının yöneticisi olarak şunları yapabilirsiniz:
 
@@ -1392,6 +1393,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2966449113954629791">Mobil veri kullanım hakkınızı doldurmuş olabilirsiniz. Daha fazla veri satın almak için <ph name="NAME" /> etkinleştirme portalını ziyaret edin.</translation>
 <translation id="2966459079597787514">İsveççe klavye</translation>
 <translation id="2966598748518102999">Öncesinde birkaç saniye boşlukla "Ok Google" sesini Google'a göndererek sesli arama özelliğini iyileştirin.</translation>
+<translation id="2966937470348689686">Android tercihlerini yönet</translation>
 <translation id="2967544384642772068">Sonlandır</translation>
 <translation id="2971033837577180453">&lt;span&gt;Kimlik:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">parlaklığı azalt</translation>
@@ -2071,7 +2073,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3936390757709632190">&amp;Sesi yeni sekmede aç</translation>
 <translation id="3936768791051458634">Kanal değiştir...</translation>
 <translation id="3936925983113350642">Seçtiğiniz şifre, daha sonra bu dosyayı geri yüklemek için gerekli olacaktır. Lütfen şifrenizi güvenli bir yere kaydedin.</translation>
-<translation id="3936999098172113189"><ph name="PRINTER_NAME" /> adlı yazıcıda <ph name="PAGE_NUMBER" /> sayfa yazdırılmayı bekliyor</translation>
 <translation id="3937640725563832867">Sertifikayı Verenin Alternatif Adı</translation>
 <translation id="3940233957883229251">Otomatik tekrarı etkinleştir</translation>
 <translation id="3941357410013254652">Kanal Kimliği</translation>
@@ -2159,6 +2160,7 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="4087089424473531098">Şu uzantı oluşturuldu:
 
 <ph name="EXTENSION_FILE" /></translation>
+<translation id="4087470595660267445">Chromebook'unuza Google Play'den uygulama ve oyunlar yükleyin. &lt;a target="_blank" href="<ph name="URL" />"&gt;Daha fazla bilgi&lt;/a&gt;</translation>
 <translation id="4088095054444612037">Grup için kabul et</translation>
 <translation id="4089521618207933045">Alt menüsü var</translation>
 <translation id="4090103403438682346">Doğrulanmış Erişimi Etkinleştir</translation>
@@ -2966,6 +2968,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5329858601952122676">&amp;Sil</translation>
 <translation id="5330145655348521461">Bu dosyalar farklı bir masaüstünde açıldı. Görüntülemek için <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) adlı kullanıcıya geçin.</translation>
 <translation id="5330512191124428349">Bilgi al</translation>
+<translation id="5331069282670671859">Bu kategoride hiç sertifikanız yok</translation>
 <translation id="5331425616433531170">"<ph name="CHROME_EXTENSION_NAME" />" eşlenmek istiyor</translation>
 <translation id="5332624210073556029">Saat dilimi:</translation>
 <translation id="5334142896108694079">Komut Dosyası Önbelleği</translation>
@@ -3015,6 +3018,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5399158067281117682">PIN'ler eşleşmiyor!</translation>
 <translation id="5400640815024374115">Güvenilir Platform Modülü (TPM) yongası devre dışı bırakıldı veya yok.</translation>
 <translation id="5402367795255837559">Braille</translation>
+<translation id="5402815541704507626">Mobil veri kullanarak güncelleme indirme</translation>
 <translation id="540296380408672091"><ph name="HOST" /> sitesinde çerezleri her zaman engelle</translation>
 <translation id="5408750356094797285">Yakınlaştır: <ph name="PERCENT" /></translation>
 <translation id="5409029099497331039">Beni şaşırt</translation>
@@ -3153,6 +3157,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="558918721941304263">Uygulamalar yükleniyor...</translation>
 <translation id="5592595402373377407">Henüz yeterli veri yok.</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
+<translation id="5600706100022181951">Güncellemeyi indirmek için <ph name="UPDATE_SIZE_MB" /> MB mobil veri kullanılacak. Devam etmek istiyor musunuz?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5604324414379907186">Yer işaretleri çubuğunu her zaman göster</translation>
 <translation id="5605623530403479164">Diğer arama motorları</translation>
@@ -3260,6 +3265,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5778550464785688721">MIDI cihazları tam denetimi</translation>
 <translation id="5780066559993805332">(En iyi)</translation>
 <translation id="5780973441651030252">Süreç önceliği</translation>
+<translation id="5781865261247219930">Komutları <ph name="EXTENSION_NAME" /> uygulamasına gönder</translation>
 <translation id="5783221160790377646">Bir hata nedeniyle, denetlenen kullanıcı oluşturulamadı. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="5783602409389152506">cihazlar taranırken…</translation>
 <translation id="57838592816432529">Sesi kapat</translation>
@@ -3302,6 +3308,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5838825566232597749">ABD Workman uluslararası</translation>
 <translation id="5842497610951477805">Bluetooth etkin</translation>
 <translation id="5846929185714966548">Sekme 4</translation>
+<translation id="5848924408752252705">Geri dönmek için dokunun.</translation>
 <translation id="5848934677402291689">PDF olarak kaydetme işlemi sürüyor</translation>
 <translation id="5849570051105887917">Ev sağlayıcı kodu</translation>
 <translation id="5849869942539715694">Uzantı paketle...</translation>
@@ -3319,6 +3326,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5859272821192576954">Artık Hangout'lara devam edebilirsiniz.</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="5860209693144823476">Sekme 3</translation>
+<translation id="5860491529813859533">Etkinleştir</translation>
 <translation id="5860494867054883682">Cihazınız <ph name="CHANNEL_NAME" /> kanalına güncelleniyor (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Ekran kalemi araçlarını rafta göster</translation>
 <translation id="58625595078799656"><ph name="PRODUCT_NAME" />, Google şifreniz veya kendi parolanızla verilerinizi şifrelemenizi gerektiriyor.</translation>
@@ -3651,6 +3659,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Sistem bilgileri<ph name="END_LINK1" /> ve <ph name="BEGIN_LINK2" />metrikleri<ph name="END_LINK2" /> gönder</translation>
 <translation id="6397363302884558537">Konuşmayı Durdur</translation>
 <translation id="6397592254427394018">&amp;Tüm yer işaretlerini gizli pencerede aç</translation>
+<translation id="6398715114293939307">Google Play Store'u kaldır</translation>
 <translation id="6398765197997659313">Tam ekrandan çık</translation>
 <translation id="6399774419735315745">Casus</translation>
 <translation id="6401445054534215853">Raf öğesi 1</translation>
@@ -4069,7 +4078,6 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="7017480957358237747">çeşitli web sitelerine izin verebilir veya bu siteleri yasaklayabilir,</translation>
 <translation id="7017587484910029005">Aşağıdaki resimde gördüğünüz karakterleri yazın.</translation>
 <translation id="7018275672629230621">Göz atma geçmişinizi okuma ve değiştirme</translation>
-<translation id="7018568016607642429">Yayınlama Hatası</translation>
 <translation id="7019805045859631636">Hızlı</translation>
 <translation id="7022562585984256452">Ana sayfanız ayarlandı.</translation>
 <translation id="702373420751953740">PRL sürümü:</translation>
@@ -4981,7 +4989,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8418445294933751433">&amp;Farklı göster sekmesi</translation>
 <translation id="8419098111404128271">"<ph name="SEARCH_TEXT" />" için arama sonuçları</translation>
 <translation id="8420060421540670057">Google Dokümanlar dosyalarını göster</translation>
-<translation id="8423869809045821924">Farklı bir uygulama kullanarak PDF'leri açma</translation>
 <translation id="8424039430705546751">aşağı</translation>
 <translation id="8425213833346101688">Değiştir</translation>
 <translation id="8425492902634685834">Görev Çubuğuna sabitle</translation>
@@ -4998,7 +5005,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="843760761634048214">Kredi kartını kaydedin</translation>
 <translation id="8438601631816548197">Sesli Arama Hakkında</translation>
 <translation id="8439506636278576865">Bu dildeki sayfaları çevirmeyi öner</translation>
-<translation id="8441209996841212096">Video Yayınlanıyor...</translation>
 <translation id="8442145116400417142">İçerik Engellendi</translation>
 <translation id="8443621894987748190">Hesap resminizi seçin</translation>
 <translation id="8446884382197647889">Daha Fazla Bilgi Edinin</translation>
@@ -5341,6 +5347,7 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="8960999352790021682">Bengalce klavye (Fonetik)</translation>
 <translation id="8962083179518285172">Ayrıntıları Gizle</translation>
 <translation id="8962198349065195967">Bu ağ, yöneticiniz tarafından yapılandırıldı.</translation>
+<translation id="8963572037665351978">Sunumdan Çık</translation>
 <translation id="8965037249707889821">Eski şifreyi girin</translation>
 <translation id="8965697826696209160">Yeterli alan yok.</translation>
 <translation id="8968527460726243404">ChromeOS Sistemi Görsel Yazıcı</translation>
@@ -5496,6 +5503,7 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="9188441292293901223">Bu <ph name="DEVICE_TYPE" /> cihazın kilidini açmak için lütfen telefonunuzu daha yeni bir Android sürümüne güncelleyin.</translation>
 <translation id="9189690067274055051">Giriş yapmak için telefonunuzun kilidini açın ve <ph name="DEVICE_TYPE" /> cihazınıza yaklaştırın.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + önceden paylaşılan anahtar</translation>
+<translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> üzerinde ara</translation>
 <translation id="9201305942933582053">Chrome için Google Now!</translation>
 <translation id="9203398526606335860">&amp;Profil oluşturma etkin</translation>
 <translation id="9203478404496196495">Sekmenin sesini aç</translation>
@@ -5528,6 +5536,7 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="946810925362320585">Öneriyi uygula</translation>
 <translation id="951981865514037445"><ph name="URL" />, cihazınızın konumunu kullanmak istiyor.</translation>
 <translation id="952992212772159698">Etkin değil</translation>
+<translation id="958515377357646513">İlerlemek için dokunun.</translation>
 <translation id="960719561871045870">Operatör kodu</translation>
 <translation id="960987915827980018">Yaklaşık 1 saat kaldı</translation>
 <translation id="96421021576709873">Kablosuz ağ</translation>

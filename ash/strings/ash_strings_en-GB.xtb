@@ -29,8 +29,6 @@
 <translation id="1747827819627189109">On-screen keyboard enabled</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi is turned off.</translation>
-<translation id="1854357586517521894">CAPS LOCK is on.
-    Press Search or Shift to cancel.</translation>
 <translation id="1864454756846565995">USB-C device (rear port)</translation>
 <translation id="1882897271359938046">Mirroring to <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">The shortcut to open the task manager has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
@@ -50,6 +48,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">An error occurred</translation>
+<translation id="2501920221385095727">Sticky keys</translation>
 <translation id="2509468283778169019">CAPS LOCK is on</translation>
 <translation id="2532589005999780174">High contrast mode</translation>
 <translation id="2700058918926273959">Session ends in <ph name="SESSION_TIME_REMAINING" />. You will be signed out.</translation>
@@ -70,11 +69,11 @@
 <translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Time remaining until battery is fully charged, <ph name="TIME_REMAINING" /></translation>
+<translation id="3050422059534974565">CAPS LOCK is on.
+Press Search or Shift to cancel.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bottom</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3109220592788908353">CAPS LOCK is on.
-    Press Alt+Search or Shift to cancel.</translation>
 <translation id="3126069444801937830">Restart to update</translation>
 <translation id="3147142846278915599">Launcher (syncing apps...)</translation>
 <translation id="315116470104423982">Mobile data</translation>
@@ -148,6 +147,7 @@
 <translation id="5571066253365925590">Bluetooth enabled</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5648021990716966815">Mic jack</translation>
+<translation id="5744083938413354016">Tap dragging</translation>
 <translation id="5777841717266010279">Stop screen sharing?</translation>
 <translation id="57838592816432529">Mute</translation>
 <translation id="5895138241574237353">Restart</translation>
@@ -206,9 +206,10 @@ Press Ctrl+Alt+Z to disable.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7209101170223508707">CAPS LOCK is on.
+Press Alt+Search or Shift to cancel.</translation>
 <translation id="7246339268451149667">Enable Fingerprint unlock?</translation>
 <translation id="7256634071279256947">Rear microphone</translation>
-<translation id="7337799137043490957">Skip the lock screen by just tapping the fingerprint sensor. Click to configure.</translation>
 <translation id="7348093485538360975">On-Screen Keyboard</translation>
 <translation id="735745346212279324">VPN disconnected</translation>
 <translation id="742594950370306541">Camera is in use.</translation>
