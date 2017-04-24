@@ -319,12 +319,6 @@ void ShowSettingsSubPageForProfile(Profile* profile,
                sub_page == chrome::kPowerSubPage) {
       sub_page_path += "-overlay";
     }
-  } else {
-    if (sub_page == chrome::kPowerSubPage) {
-      // TODO(stevenjbj/derat): Remove this once we have a 'power' subpage,
-      // crbug.com/633455.
-      sub_page_path = "device";
-    }
   }
 #endif
 
