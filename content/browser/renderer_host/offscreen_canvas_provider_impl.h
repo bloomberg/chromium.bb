@@ -24,7 +24,7 @@ class OffscreenCanvasProviderImpl
   void CreateOffscreenCanvasSurface(
       const cc::FrameSinkId& parent_frame_sink_id,
       const cc::FrameSinkId& frame_sink_id,
-      cc::mojom::FrameSinkManagerClientPtr client,
+      blink::mojom::OffscreenCanvasSurfaceClientPtr client,
       blink::mojom::OffscreenCanvasSurfaceRequest request) override;
   void CreateCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,

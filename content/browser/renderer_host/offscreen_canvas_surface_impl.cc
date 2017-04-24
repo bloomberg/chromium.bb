@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -18,7 +19,7 @@ namespace content {
 OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& frame_sink_id,
-    cc::mojom::FrameSinkManagerClientPtr client)
+    blink::mojom::OffscreenCanvasSurfaceClientPtr client)
     : client_(std::move(client)),
       frame_sink_id_(frame_sink_id),
       parent_frame_sink_id_(parent_frame_sink_id) {
@@ -39,7 +40,7 @@ OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
 void OffscreenCanvasSurfaceImpl::Create(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& frame_sink_id,
-    cc::mojom::FrameSinkManagerClientPtr client,
+    blink::mojom::OffscreenCanvasSurfaceClientPtr client,
     blink::mojom::OffscreenCanvasSurfaceRequest request) {
   std::unique_ptr<OffscreenCanvasSurfaceImpl> impl =
       base::MakeUnique<OffscreenCanvasSurfaceImpl>(

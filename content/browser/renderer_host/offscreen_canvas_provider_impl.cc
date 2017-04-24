@@ -24,7 +24,7 @@ void OffscreenCanvasProviderImpl::Add(
 void OffscreenCanvasProviderImpl::CreateOffscreenCanvasSurface(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& frame_sink_id,
-    cc::mojom::FrameSinkManagerClientPtr client,
+    blink::mojom::OffscreenCanvasSurfaceClientPtr client,
     blink::mojom::OffscreenCanvasSurfaceRequest request) {
   // TODO(kylechar): Kill the renderer too.
   if (parent_frame_sink_id.client_id() != renderer_client_id_) {

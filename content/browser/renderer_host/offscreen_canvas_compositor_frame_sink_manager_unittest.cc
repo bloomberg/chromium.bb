@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_manager.h"
+
 #include "base/message_loop/message_loop.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
-#include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_manager.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
 #include "content/public/test/test_browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/memory/ptr_util.h"
@@ -59,7 +61,7 @@ void OffscreenCanvasCompositorFrameSinkManagerTest::TearDown() {
 // process.
 TEST_F(OffscreenCanvasCompositorFrameSinkManagerTest,
        SingleHTMLCanvasElementTransferToOffscreen) {
-  cc::mojom::FrameSinkManagerClientPtr client;
+  blink::mojom::OffscreenCanvasSurfaceClientPtr client;
   cc::FrameSinkId frame_sink_id(3, 3);
   cc::LocalSurfaceIdAllocator local_surface_id_allocator;
   cc::LocalSurfaceId current_local_surface_id(
@@ -82,13 +84,13 @@ TEST_F(OffscreenCanvasCompositorFrameSinkManagerTest,
 
 TEST_F(OffscreenCanvasCompositorFrameSinkManagerTest,
        MultiHTMLCanvasElementTransferToOffscreen) {
-  cc::mojom::FrameSinkManagerClientPtr client_a;
+  blink::mojom::OffscreenCanvasSurfaceClientPtr client_a;
   cc::FrameSinkId dummy_parent_frame_sink_id(0, 0);
   cc::FrameSinkId frame_sink_id_a(3, 3);
   auto surface_impl_a = base::WrapUnique(new OffscreenCanvasSurfaceImpl(
       dummy_parent_frame_sink_id, frame_sink_id_a, std::move(client_a)));
 
-  cc::mojom::FrameSinkManagerClientPtr client_b;
+  blink::mojom::OffscreenCanvasSurfaceClientPtr client_b;
   cc::FrameSinkId frame_sink_id_b(4, 4);
 
   auto surface_impl_b = base::WrapUnique(new OffscreenCanvasSurfaceImpl(

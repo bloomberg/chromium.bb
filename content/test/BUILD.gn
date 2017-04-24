@@ -1496,6 +1496,7 @@ test("content_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:offscreen_canvas_mojo_bindings",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/re2",
