@@ -5923,11 +5923,6 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   const int unify_bsize = 0;
   const BLOCK_SIZE block_size = AOMMAX(bsize, BLOCK_8X8);
 #endif
-#if CONFIG_INTRABC
-  // TODO(aconverse@google.com): Remove this when the non-synthetic encoder
-  // side intrabc is added
-  assert(IMPLIES(is_intrabc_block(mbmi), mbmi->skip));
-#endif
 
 #if CONFIG_PVQ
   x->pvq_speed = 0;

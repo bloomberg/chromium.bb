@@ -9057,42 +9057,134 @@ static int64_t handle_inter_mode(
 }
 
 #if CONFIG_INTRABC
-// This is a dummy function that forces intrabc on for testing purposes
-// TODO(aconverse@google.com): Implement a real intrabc search
 static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                        RD_STATS *rd_cost, BLOCK_SIZE bsize,
                                        int64_t best_rd) {
+  const AV1_COMMON *const cm = &cpi->common;
+  if (bsize < BLOCK_8X8 || !cm->allow_screen_content_tools) return INT64_MAX;
+
   MACROBLOCKD *const xd = &x->e_mbd;
-  (void)best_rd;
-  if (bsize >= BLOCK_8X8 && cpi->common.allow_screen_content_tools) {
-    if (xd->mb_to_top_edge == -MAX_SB_SIZE * 8) {
-      MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-#if CONFIG_PALETTE
-      memset(&mbmi->palette_mode_info, 0, sizeof(mbmi->palette_mode_info));
-#endif
-      mbmi->use_intrabc = 1;
-      mbmi->mode = DC_PRED;
-      mbmi->uv_mode = DC_PRED;
-      mbmi->mv[0].as_mv.row = -MAX_SB_SIZE * 8;
-      mbmi->mv[0].as_mv.col = 0;
-#if CONFIG_DUAL_FILTER
-      for (int idx = 0; idx < 4; ++idx) mbmi->interp_filter[idx] = BILINEAR;
-#else
-      mbmi->interp_filter = BILINEAR;
-#endif
-      mbmi->skip = 1;
-      x->skip = 1;
-      const int mi_row = -xd->mb_to_top_edge / (8 * MI_SIZE);
-      const int mi_col = -xd->mb_to_left_edge / (8 * MI_SIZE);
-      av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
-      rd_cost->rate = 1;
-      rd_cost->dist = 0;
-      rd_cost->rdcost =
-          RDCOST(x->rdmult, x->rddiv, rd_cost->rate, rd_cost->dist);
-      return rd_cost->rdcost;
-    }
+  const TileInfo *tile = &xd->tile;
+  MODE_INFO *const mi = xd->mi[0];
+  const int mi_row = -xd->mb_to_top_edge / (8 * MI_SIZE);
+  const int mi_col = -xd->mb_to_left_edge / (8 * MI_SIZE);
+  const int w = block_size_wide[bsize];
+  const int h = block_size_high[bsize];
+  const int sb_row = mi_row / MAX_MIB_SIZE;
+
+  int_mv dv_ref;
+  av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+
+  const MvLimits tmp_mv_limits = x->mv_limits;
+
+  // TODO(aconverse@google.com): Handle same row DV.
+  x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
+  x->mv_limits.col_max = (tile->mi_col_end - mi_col) * MI_SIZE - w;
+  x->mv_limits.row_min = (tile->mi_row_start - mi_row) * MI_SIZE;
+  x->mv_limits.row_max = (sb_row * MAX_MIB_SIZE - mi_row) * MI_SIZE - h;
+  assert(x->mv_limits.col_min >= tmp_mv_limits.col_min);
+  assert(x->mv_limits.col_max <= tmp_mv_limits.col_max);
+  assert(x->mv_limits.row_min >= tmp_mv_limits.row_min);
+  assert(x->mv_limits.row_max <= tmp_mv_limits.row_max);
+  av1_set_mv_search_range(&x->mv_limits, &dv_ref.as_mv);
+
+  if (x->mv_limits.col_max < x->mv_limits.col_min ||
+      x->mv_limits.row_max < x->mv_limits.row_min) {
+    x->mv_limits = tmp_mv_limits;
+    return INT64_MAX;
   }
-  return INT64_MAX;
+
+  struct buf_2d yv12_mb[MAX_MB_PLANE];
+  av1_setup_pred_block(xd, yv12_mb, xd->cur_buf, mi_row, mi_col, NULL, NULL);
+  for (int i = 0; i < MAX_MB_PLANE; ++i) {
+    xd->plane[i].pre[0] = yv12_mb[i];
+  }
+
+  int step_param = cpi->mv_step_param;
+  MV mvp_full = dv_ref.as_mv;
+  mvp_full.col >>= 3;
+  mvp_full.row >>= 3;
+  int sadpb = x->sadperbit16;
+  int cost_list[5];
+  int bestsme = av1_full_pixel_search(cpi, x, bsize, &mvp_full, step_param,
+                                      sadpb, cond_cost_list(cpi, cost_list),
+                                      &dv_ref.as_mv, INT_MAX, 1);
+
+  x->mv_limits = tmp_mv_limits;
+  if (bestsme == INT_MAX) return INT64_MAX;
+  mvp_full = x->best_mv.as_mv;
+  MV dv = {.row = mvp_full.row * 8, .col = mvp_full.col * 8 };
+  if (mv_check_bounds(&x->mv_limits, &dv)) return INT64_MAX;
+  if (!is_dv_valid(dv, tile, mi_row, mi_col, bsize)) return INT64_MAX;
+  MB_MODE_INFO *mbmi = &mi->mbmi;
+  MB_MODE_INFO best_mbmi = *mbmi;
+  RD_STATS best_rdcost = *rd_cost;
+  int best_skip = x->skip;
+#if CONFIG_PALETTE
+  memset(&mbmi->palette_mode_info, 0, sizeof(mbmi->palette_mode_info));
+#endif
+  mbmi->use_intrabc = 1;
+  mbmi->mode = DC_PRED;
+  mbmi->uv_mode = DC_PRED;
+  mbmi->mv[0].as_mv = dv;
+#if CONFIG_DUAL_FILTER
+  for (int idx = 0; idx < 4; ++idx) mbmi->interp_filter[idx] = BILINEAR;
+#else
+  mbmi->interp_filter = BILINEAR;
+#endif
+  mbmi->skip = 0;
+  x->skip = 0;
+  av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
+
+  int rate_mv = av1_mv_bit_cost(&dv, &dv_ref.as_mv, x->nmvjointcost, x->mvcost,
+                                MV_COST_WEIGHT);
+  const PREDICTION_MODE A = av1_above_block_mode(mi, xd->above_mi, 0);
+  const PREDICTION_MODE L = av1_left_block_mode(mi, xd->left_mi, 0);
+  const int rate_mode =
+      cpi->y_mode_costs[A][L][DC_PRED] + av1_cost_bit(INTRABC_PROB, 1);
+
+  RD_STATS rd_stats, rd_stats_uv;
+  av1_subtract_plane(x, bsize, 0);
+  super_block_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
+  super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+  av1_merge_rd_stats(&rd_stats, &rd_stats_uv);
+#if CONFIG_RD_DEBUG
+  mbmi->rd_stats = rd_stats;
+#endif
+
+  const aom_prob skip_prob = av1_get_skip_prob(cm, xd);
+
+  RD_STATS rdc_noskip;
+  av1_init_rd_stats(&rdc_noskip);
+  rdc_noskip.rate =
+      rate_mode + rate_mv + rd_stats.rate + av1_cost_bit(skip_prob, 0);
+  rdc_noskip.dist = rd_stats.dist;
+  rdc_noskip.rdcost =
+      RDCOST(x->rdmult, x->rddiv, rdc_noskip.rate, rdc_noskip.dist);
+  if (rdc_noskip.rdcost < best_rd) {
+    best_rd = rdc_noskip.rdcost;
+    best_mbmi = *mbmi;
+    best_skip = x->skip;
+    best_rdcost = rdc_noskip;
+  }
+
+  x->skip = 1;
+  mbmi->skip = 1;
+  RD_STATS rdc_skip;
+  av1_init_rd_stats(&rdc_skip);
+  rdc_skip.rate = rate_mode + rate_mv + av1_cost_bit(skip_prob, 1);
+  rdc_skip.dist = rd_stats.sse;
+  rdc_skip.rdcost = RDCOST(x->rdmult, x->rddiv, rdc_skip.rate, rdc_skip.dist);
+  if (rdc_skip.rdcost < best_rd) {
+    best_rd = rdc_skip.rdcost;
+    best_mbmi = *mbmi;
+    best_skip = x->skip;
+    best_rdcost = rdc_skip;
+  }
+  *mbmi = best_mbmi;
+  *rd_cost = best_rdcost;
+  x->skip = best_skip;
+  return best_rd;
 }
 #endif  // CONFIG_INTRABC
 
