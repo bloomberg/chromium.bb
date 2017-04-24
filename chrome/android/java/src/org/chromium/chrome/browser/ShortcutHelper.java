@@ -33,7 +33,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.ChromeShortcutManager;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkInfo;
@@ -79,10 +78,6 @@ public class ShortcutHelper {
             "org.chromium.chrome.browser.webapp_shortcut_version";
     public static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
-
-    /** Used for the callback intent when using the new shortcut API. */
-    public static final String SHORTCUT_TOAST_CATEGORY =
-            "com.google.intent.category.SHORTCUT_TOAST";
 
     // When a new field is added to the intent, this version should be incremented so that it will
     // be correctly populated into the WebappRegistry/WebappDataStorage.
@@ -229,24 +224,6 @@ public class ShortcutHelper {
         Context applicationContext = ContextUtils.getApplicationContext();
         String toastText = applicationContext.getString(R.string.added_to_homescreen, title);
         showToast(toastText);
-    }
-
-    /**
-     * Show toast when getting the callback intent by the launcher after adding shortcut by using
-     * the new shortcut API.
-     */
-    public static void showAddedToHomescreenToastFromIntent(Intent intent) {
-        String title = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_SHORTCUT_NAME);
-        showAddedToHomescreenToast(title);
-    }
-
-    /**
-     * Determine if it is a callback intent (which requests for a show-toast), used in the new
-     * shortcut API.
-     */
-    public static boolean isShowToastIntent(Intent intent) {
-        if (intent == null || intent.getCategories() == null) return false;
-        return intent.getCategories().contains(SHORTCUT_TOAST_CATEGORY);
     }
 
     /**

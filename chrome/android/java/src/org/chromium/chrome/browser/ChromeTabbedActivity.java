@@ -581,9 +581,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS)) {
                 handleDebugIntent(intent);
             }
-            if (ShortcutHelper.isShowToastIntent(intent)) {
-                ShortcutHelper.showAddedToHomescreenToastFromIntent(intent);
-            }
         } finally {
             TraceEvent.end("ChromeTabbedActivity.onNewIntentWithNative");
         }
