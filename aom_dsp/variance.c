@@ -702,7 +702,7 @@ void masked_variance(const uint8_t *a, int a_stride, const uint8_t *b,
       const uint8_t *m, int m_stride, unsigned int *sse) {                   \
     int sum;                                                                 \
     masked_variance(a, a_stride, b, b_stride, m, m_stride, W, H, sse, &sum); \
-    return *sse - (((int64_t)sum * sum) / (W * H));                          \
+    return *sse - (unsigned int)(((int64_t)sum * sum) / (W * H));            \
   }
 
 #define MASK_SUBPIX_VAR(W, H)                                                 \
