@@ -101,7 +101,10 @@ _OS_SPECIFIC_FILTER['linux'] = [
     # Xvfb doesn't support maximization.
     'ChromeDriverTest.testWindowMaximize',
 ]
-_OS_SPECIFIC_FILTER['mac'] = []
+_OS_SPECIFIC_FILTER['mac'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1779
+    'ChromeDriverTest.testWindowMaximize',
+]
 
 _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
