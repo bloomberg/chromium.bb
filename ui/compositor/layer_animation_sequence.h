@@ -197,8 +197,6 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // Used to tag animation elements to obtain metrics of animation performance.
   AnimationMetricsReporter* animation_metrics_reporter_;
 
-  base::WeakPtrFactory<LayerAnimationSequence> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationSequence);
 };
 
