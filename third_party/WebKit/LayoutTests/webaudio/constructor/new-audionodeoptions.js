@@ -11,8 +11,8 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
   // Test that we can set channelCount and that errors are thrown for
   // invalid values
   let testChannelCount = 17;
-  if (expectedNodeOptions.ChannelCount) {
-    testChannelCount = expectedNodeOptions.ChannelCount.value;
+  if (expectedNodeOptions.channelCount) {
+    testChannelCount = expectedNodeOptions.channelCount.value;
   }
   should(
       () => {
@@ -25,12 +25,12 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
       .notThrow();
   should(node.channelCount, 'node.channelCount').beEqualTo(testChannelCount);
 
-  if (expectedNodeOptions.ChannelCount &&
-      expectedNodeOptions.ChannelCount.isFixed) {
+  if (expectedNodeOptions.channelCount &&
+      expectedNodeOptions.channelCount.isFixed) {
     // The channel count is fixed.  Verify that we throw an error if
     // we try to change it. Arbitrarily set the count to be one more
     // than the expected value.
-    testChannelCount = expectedNodeOptions.ChannelCount.value + 1;
+    testChannelCount = expectedNodeOptions.channelCount.value + 1;
     should(
         () => {
           node = new window[nodeName](
@@ -40,7 +40,7 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
                   {channelCount: testChannelCount}));
         },
         'new ' + nodeName + '(c, {channelCount: ' + testChannelCount + '}}')
-        .throw(expectedNodeOptions.ChannelCount.errorType || 'TypeError');
+        .throw(expectedNodeOptions.channelCount.errorType || 'TypeError');
   } else {
     // The channel count is not fixed.  Try to set the count to invalid
     // values and make sure an error is thrown.
@@ -63,8 +63,8 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
 
   // Test channelCountMode
   let testChannelCountMode = 'max';
-  if (expectedNodeOptions.ChannelCountMode) {
-    testChannelCountMode = expectedNodeOptions.ChannelCountMode.value;
+  if (expectedNodeOptions.channelCountMode) {
+    testChannelCountMode = expectedNodeOptions.channelCountMode.value;
   }
   should(
       () => {
@@ -77,15 +77,15 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
       .notThrow();
   should(node.channelCountMode, 'node.channelCountMode').beEqualTo(testChannelCountMode);
 
-  if (expectedNodeOptions.ChannelCountMode &&
-      expectedNodeOptions.ChannelCountMode.isFixed) {
+  if (expectedNodeOptions.channelCountMode &&
+      expectedNodeOptions.channelCountMode.isFixed) {
     // Channel count mode is fixed.  Test setting to something else throws.
     let testChannelCountModeMap = {
       'max': 'clamped-max',
       'clamped-max': 'explicit',
       'explicit': 'max'
     };
-    testChannelCountMode = testChannelCountModeMap[expectedNodeOptions.ChannelCountMode.value];
+    testChannelCountMode = testChannelCountModeMap[expectedNodeOptions.channelCountMode.value];
     should(
         () => {
           node = new window[nodeName](
@@ -95,7 +95,7 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
                   {channelCountMode: testChannelCountMode}));
         },
         'new ' + nodeName + '(c, {channelCountMode: "' + testChannelCountMode + '"}')
-        .throw(expectedNodeOptions.ChannelCountMode.errorType);
+        .throw(expectedNodeOptions.channelCountMode.errorType);
   } else {
     // Mode is not fixed. Verify that we can set the mode to all valid
     // values, and that we throw for invalid values.
