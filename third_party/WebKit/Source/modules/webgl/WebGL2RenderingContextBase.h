@@ -972,6 +972,9 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   MaybeShared<DOMArrayBufferView> pixels) override;
   void RestoreCurrentFramebuffer() override;
 
+  /* Helpers */
+  GLint GetMaxTransformFeedbackSeparateAttribs() const;
+
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
@@ -1106,6 +1109,9 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   TraceWrapperMember<WebGLFramebuffer> read_framebuffer_binding_;
   TraceWrapperMember<WebGLTransformFeedback> transform_feedback_binding_;
+  // This instance isn't exposed to JavaScript, which is why it's a
+  // Member rather than TraceWrapperMember.
+  Member<WebGLTransformFeedback> default_transform_feedback_;
 
   std::set<GLenum> supported_internal_formats_storage_;
   std::set<GLenum> compressed_texture_formats_etc2eac_;
@@ -1114,11 +1120,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   TraceWrapperMember<WebGLBuffer> bound_copy_write_buffer_;
   TraceWrapperMember<WebGLBuffer> bound_pixel_pack_buffer_;
   TraceWrapperMember<WebGLBuffer> bound_pixel_unpack_buffer_;
-  TraceWrapperMember<WebGLBuffer> bound_transform_feedback_buffer_;
   TraceWrapperMember<WebGLBuffer> bound_uniform_buffer_;
 
-  HeapVector<TraceWrapperMember<WebGLBuffer>>
-      bound_indexed_transform_feedback_buffers_;
   HeapVector<TraceWrapperMember<WebGLBuffer>> bound_indexed_uniform_buffers_;
   GLint max_transform_feedback_separate_attribs_;
   size_t max_bound_uniform_buffer_index_;

@@ -48,7 +48,6 @@ class WebGLSharedObject : public WebGLObject {
   virtual bool IsShader() const { return false; }
   virtual bool IsSync() const { return false; }
   virtual bool IsTexture() const { return false; }
-  virtual bool IsTransformFeedback() const { return false; }
 
   bool Validate(const WebGLContextGroup* context_group,
                 const WebGLRenderingContextBase*) const final;

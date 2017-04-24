@@ -154,7 +154,6 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
       bound_copy_write_buffer_(this, nullptr),
       bound_pixel_pack_buffer_(this, nullptr),
       bound_pixel_unpack_buffer_(this, nullptr),
-      bound_transform_feedback_buffer_(this, nullptr),
       bound_uniform_buffer_(this, nullptr),
       current_boolean_occlusion_query_(this, nullptr),
       current_transform_feedback_primitives_written_query_(this, nullptr),
@@ -179,7 +178,6 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
       bound_copy_write_buffer_(this, nullptr),
       bound_pixel_pack_buffer_(this, nullptr),
       bound_pixel_unpack_buffer_(this, nullptr),
-      bound_transform_feedback_buffer_(this, nullptr),
       bound_uniform_buffer_(this, nullptr),
       current_boolean_occlusion_query_(this, nullptr),
       current_transform_feedback_primitives_written_query_(this, nullptr),
@@ -209,7 +207,6 @@ void WebGL2RenderingContextBase::InitializeNewContext() {
   bound_copy_write_buffer_ = nullptr;
   bound_pixel_pack_buffer_ = nullptr;
   bound_pixel_unpack_buffer_ = nullptr;
-  bound_transform_feedback_buffer_ = nullptr;
   bound_uniform_buffer_ = nullptr;
 
   current_boolean_occlusion_query_ = nullptr;
@@ -223,11 +220,15 @@ void WebGL2RenderingContextBase::InitializeNewContext() {
   sampler_units_.Resize(num_combined_texture_image_units);
 
   max_transform_feedback_separate_attribs_ = 0;
+  // This must be queried before instantiating any transform feedback
+  // objects.
   ContextGL()->GetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS,
                            &max_transform_feedback_separate_attribs_);
-  bound_indexed_transform_feedback_buffers_.clear();
-  bound_indexed_transform_feedback_buffers_.Resize(
-      max_transform_feedback_separate_attribs_);
+  // Create a default transform feedback object so there is a place to
+  // hold any bound buffers.
+  default_transform_feedback_ = WebGLTransformFeedback::Create(
+      this, WebGLTransformFeedback::TFTypeDefault);
+  transform_feedback_binding_ = default_transform_feedback_;
 
   GLint max_uniform_buffer_bindings = 0;
   ContextGL()->GetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS,
@@ -4152,13 +4153,14 @@ ScriptValue WebGL2RenderingContextBase::getSyncParameter(
 WebGLTransformFeedback* WebGL2RenderingContextBase::createTransformFeedback() {
   if (isContextLost())
     return nullptr;
-  return WebGLTransformFeedback::Create(this);
+  return WebGLTransformFeedback::Create(this,
+                                        WebGLTransformFeedback::TFTypeUser);
 }
 
 void WebGL2RenderingContextBase::deleteTransformFeedback(
     WebGLTransformFeedback* feedback) {
   if (feedback == transform_feedback_binding_)
-    transform_feedback_binding_ = nullptr;
+    transform_feedback_binding_ = default_transform_feedback_;
 
   DeleteObject(feedback);
 }
@@ -4192,12 +4194,17 @@ void WebGL2RenderingContextBase::bindTransformFeedback(
     return;
   }
 
-  transform_feedback_binding_ = feedback;
-
-  ContextGL()->BindTransformFeedback(target, ObjectOrZero(feedback));
+  WebGLTransformFeedback* feedback_to_be_bound;
   if (feedback) {
-    feedback->SetTarget(target);
+    feedback_to_be_bound = feedback;
+    feedback_to_be_bound->SetTarget(target);
+  } else {
+    feedback_to_be_bound = default_transform_feedback_.Get();
   }
+
+  transform_feedback_binding_ = feedback_to_be_bound;
+  ContextGL()->BindTransformFeedback(target,
+                                     ObjectOrZero(feedback_to_be_bound));
 }
 
 void WebGL2RenderingContextBase::beginTransformFeedback(GLenum primitive_mode) {
@@ -4399,14 +4406,16 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(
     return ScriptValue::CreateNull(script_state);
 
   switch (target) {
-    case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
-      if (index >= bound_indexed_transform_feedback_buffers_.size()) {
+    case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING: {
+      WebGLBuffer* buffer = nullptr;
+      if (!transform_feedback_binding_->GetBoundIndexedTransformFeedbackBuffer(
+              index, &buffer)) {
         SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
                           "index out of range");
         return ScriptValue::CreateNull(script_state);
       }
-      return WebGLAny(script_state,
-                      bound_indexed_transform_feedback_buffers_[index].Get());
+      return WebGLAny(script_state, buffer);
+    }
     case GL_UNIFORM_BUFFER_BINDING:
       if (index >= bound_indexed_uniform_buffers_.size()) {
         SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
@@ -4889,9 +4898,14 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* script_state,
     case GL_TRANSFORM_FEEDBACK_ACTIVE:
       return GetBooleanParameter(script_state, pname);
     case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
-      return WebGLAny(script_state, bound_transform_feedback_buffer_.Get());
+      return WebGLAny(
+          script_state,
+          transform_feedback_binding_->GetBoundTransformFeedbackBuffer());
     case GL_TRANSFORM_FEEDBACK_BINDING:
-      return WebGLAny(script_state, transform_feedback_binding_.Get());
+      if (!transform_feedback_binding_->IsDefaultObject()) {
+        return WebGLAny(script_state, transform_feedback_binding_.Get());
+      }
+      return ScriptValue::CreateNull(script_state);
     case GL_TRANSFORM_FEEDBACK_PAUSED:
       return GetBooleanParameter(script_state, pname);
     case GL_UNIFORM_BUFFER_BINDING:
@@ -4952,17 +4966,7 @@ bool WebGL2RenderingContextBase::ValidateCapability(const char* function_name,
 bool WebGL2RenderingContextBase::IsBufferBoundToTransformFeedback(
     WebGLBuffer* buffer) {
   ASSERT(buffer);
-
-  if (bound_transform_feedback_buffer_ == buffer)
-    return true;
-
-  for (size_t i = 0; i < bound_indexed_transform_feedback_buffers_.size();
-       ++i) {
-    if (bound_indexed_transform_feedback_buffers_[i] == buffer)
-      return true;
-  }
-
-  return false;
+  return transform_feedback_binding_->IsBufferBoundToTransformFeedback(buffer);
 }
 
 bool WebGL2RenderingContextBase::IsBufferBoundToNonTransformFeedback(
@@ -5092,7 +5096,7 @@ bool WebGL2RenderingContextBase::ValidateAndUpdateBufferBindTarget(
       bound_pixel_unpack_buffer_ = buffer;
       break;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
-      bound_transform_feedback_buffer_ = buffer;
+      transform_feedback_binding_->SetBoundTransformFeedbackBuffer(buffer);
       break;
     case GL_UNIFORM_BUFFER:
       bound_uniform_buffer_ = buffer;
@@ -5134,14 +5138,12 @@ bool WebGL2RenderingContextBase::ValidateAndUpdateBufferBindBaseTarget(
 
   switch (target) {
     case GL_TRANSFORM_FEEDBACK_BUFFER:
-      if (index >= bound_indexed_transform_feedback_buffers_.size()) {
+      if (!transform_feedback_binding_->SetBoundIndexedTransformFeedbackBuffer(
+              index, buffer)) {
         SynthesizeGLError(GL_INVALID_VALUE, function_name,
                           "index out of range");
         return false;
       }
-      bound_indexed_transform_feedback_buffers_[index] =
-          TraceWrapperMember<WebGLBuffer>(this, buffer);
-      bound_transform_feedback_buffer_ = buffer;
       break;
     case GL_UNIFORM_BUFFER:
       if (index >= bound_indexed_uniform_buffers_.size()) {
@@ -5491,13 +5493,12 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
 DEFINE_TRACE(WebGL2RenderingContextBase) {
   visitor->Trace(read_framebuffer_binding_);
   visitor->Trace(transform_feedback_binding_);
+  visitor->Trace(default_transform_feedback_);
   visitor->Trace(bound_copy_read_buffer_);
   visitor->Trace(bound_copy_write_buffer_);
   visitor->Trace(bound_pixel_pack_buffer_);
   visitor->Trace(bound_pixel_unpack_buffer_);
-  visitor->Trace(bound_transform_feedback_buffer_);
   visitor->Trace(bound_uniform_buffer_);
-  visitor->Trace(bound_indexed_transform_feedback_buffers_);
   visitor->Trace(bound_indexed_uniform_buffers_);
   visitor->Trace(current_boolean_occlusion_query_);
   visitor->Trace(current_transform_feedback_primitives_written_query_);
@@ -5508,17 +5509,13 @@ DEFINE_TRACE(WebGL2RenderingContextBase) {
 }
 
 DEFINE_TRACE_WRAPPERS(WebGL2RenderingContextBase) {
-  visitor->TraceWrappers(transform_feedback_binding_);
   visitor->TraceWrappers(read_framebuffer_binding_);
+  visitor->TraceWrappers(transform_feedback_binding_);
   visitor->TraceWrappers(bound_copy_read_buffer_);
   visitor->TraceWrappers(bound_copy_write_buffer_);
   visitor->TraceWrappers(bound_pixel_pack_buffer_);
   visitor->TraceWrappers(bound_pixel_unpack_buffer_);
-  visitor->TraceWrappers(bound_transform_feedback_buffer_);
   visitor->TraceWrappers(bound_uniform_buffer_);
-  for (auto& buf : bound_indexed_transform_feedback_buffers_) {
-    visitor->TraceWrappers(buf);
-  }
   for (auto& buf : bound_indexed_uniform_buffers_) {
     visitor->TraceWrappers(buf);
   }
@@ -5626,7 +5623,7 @@ WebGLBuffer* WebGL2RenderingContextBase::ValidateBufferDataTarget(
       buffer = bound_pixel_unpack_buffer_.Get();
       break;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
-      buffer = bound_transform_feedback_buffer_.Get();
+      buffer = transform_feedback_binding_->GetBoundTransformFeedbackBuffer();
       break;
     case GL_UNIFORM_BUFFER:
       buffer = bound_uniform_buffer_.Get();
@@ -5725,10 +5722,11 @@ void WebGL2RenderingContextBase::RemoveBoundBuffer(WebGLBuffer* buffer) {
     bound_pixel_pack_buffer_ = nullptr;
   if (bound_pixel_unpack_buffer_ == buffer)
     bound_pixel_unpack_buffer_ = nullptr;
-  if (bound_transform_feedback_buffer_ == buffer)
-    bound_transform_feedback_buffer_ = nullptr;
   if (bound_uniform_buffer_ == buffer)
     bound_uniform_buffer_ = nullptr;
+
+  if (transform_feedback_binding_)
+    transform_feedback_binding_->UnbindBuffer(buffer);
 
   WebGLRenderingContextBase::RemoveBoundBuffer(buffer);
 }
@@ -5736,6 +5734,11 @@ void WebGL2RenderingContextBase::RemoveBoundBuffer(WebGLBuffer* buffer) {
 void WebGL2RenderingContextBase::RestoreCurrentFramebuffer() {
   bindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_binding_.Get());
   bindFramebuffer(GL_READ_FRAMEBUFFER, read_framebuffer_binding_.Get());
+}
+
+GLint WebGL2RenderingContextBase::GetMaxTransformFeedbackSeparateAttribs()
+    const {
+  return max_transform_feedback_separate_attribs_;
 }
 
 WebGLImageConversion::PixelStoreParams
