@@ -974,7 +974,11 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     if (mbmi->use_intrabc) {
       int_mv dv_ref;
       mbmi->mode = mbmi->uv_mode = DC_PRED;
+#if CONFIG_DUAL_FILTER
+      for (int idx = 0; idx < 4; ++idx) mbmi->interp_filter[idx] = BILINEAR;
+#else
       mbmi->interp_filter = BILINEAR;
+#endif
       av1_find_ref_dv(&dv_ref, mi_row, mi_col);
       xd->corrupted |=
           !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);

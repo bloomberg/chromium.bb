@@ -9151,7 +9151,11 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       mbmi->uv_mode = DC_PRED;
       mbmi->mv[0].as_mv.row = -MAX_SB_SIZE * 8;
       mbmi->mv[0].as_mv.col = 0;
+#if CONFIG_DUAL_FILTER
+      for (int idx = 0; idx < 4; ++idx) mbmi->interp_filter[idx] = BILINEAR;
+#else
       mbmi->interp_filter = BILINEAR;
+#endif
       mbmi->skip = 1;
       x->skip = 1;
       const int mi_row = -xd->mb_to_top_edge / (8 * MI_SIZE);
