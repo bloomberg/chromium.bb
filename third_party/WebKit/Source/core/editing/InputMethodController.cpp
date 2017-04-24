@@ -263,8 +263,25 @@ int CalculateAfterDeletionLengthsInCodePoints(
   return offset;
 }
 
-Element* RootEditableElementOfSelection(const FrameSelection& selection) {
-  return RootEditableElementOf(selection.GetSelectionInDOMTree().Base());
+Element* RootEditableElementOfSelection(const FrameSelection& frameSelection) {
+  const SelectionInDOMTree& selection = frameSelection.GetSelectionInDOMTree();
+  if (selection.IsNone())
+    return nullptr;
+  // To avoid update layout, we attempt to get root editable element from
+  // a position where script/user specified.
+  if (Element* editable = RootEditableElementOf(selection.Base()))
+    return editable;
+
+  // This is work around for applications assumes a position before editable
+  // element as editable[1]
+  // [1] http://crbug.com/712761
+
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  frameSelection.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  const VisibleSelection& visibleSeleciton =
+      frameSelection.ComputeVisibleSelectionInDOMTree();
+  return RootEditableElementOf(visibleSeleciton.Start());
 }
 
 }  // anonymous namespace

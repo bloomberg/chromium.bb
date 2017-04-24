@@ -1964,4 +1964,18 @@ TEST_F(InputMethodControllerTest, Marker_InsertBetweenMarkers) {
   EXPECT_EQ(25u, GetDocument().Markers().Markers()[2]->EndOffset());
 }
 
+// For http://crbug.com/712761
+TEST_F(InputMethodControllerTest, TextInputTypeAtBeforeEditable) {
+  GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+  GetDocument().body()->focus();
+
+  // Set selection before BODY(editable).
+  GetFrame().Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(GetDocument().documentElement(), 0))
+          .Build());
+
+  EXPECT_EQ(kWebTextInputTypeContentEditable, Controller().TextInputType());
+}
+
 }  // namespace blink
