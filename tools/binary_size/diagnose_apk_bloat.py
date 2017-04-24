@@ -15,6 +15,7 @@ import distutils.spawn
 import json
 import multiprocessing
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -23,6 +24,7 @@ import zipfile
 
 _COMMIT_COUNT_WARN_THRESHOLD = 15
 _ALLOWED_CONSECUTIVE_FAILURES = 2
+_DIFF_DETAILS_LINES_THRESHOLD = 100
 _BUILDER_URL = \
     'https://build.chromium.org/p/chromium.perf/builders/Android%20Builder'
 _CLOUD_OUT_DIR = os.path.join('out', 'Release')
@@ -54,8 +56,7 @@ class BaseDiff(object):
     _PrintAndWriteToFile(logfile, 'Summary:')
     _PrintAndWriteToFile(logfile, self.Summary())
     _PrintAndWriteToFile(logfile, '\nDetails:')
-    for l in self.DetailedResults():
-      _PrintAndWriteToFile(logfile, l)
+    _PrintAndWriteToFile(logfile, self.DetailedResults())
 
   def Summary(self):
     """A short description that summarizes the source of binary size bloat."""
@@ -70,9 +71,32 @@ class BaseDiff(object):
     raise NotImplementedError()
 
   def RunDiff(self, logfile, archive_dirs):
-    _Print('Creating {}', self.name)
     self.ProduceDiff(archive_dirs)
     self.AppendResults(logfile)
+
+
+class NativeDiff(BaseDiff):
+  _RE_SUMMARY = re.compile(
+      r'.*(Section Sizes .*? object files added, \d+ removed).*',
+      flags=re.DOTALL)
+
+  def __init__(self, size_name, supersize_path):
+    self._size_name = size_name
+    self._supersize_path = supersize_path
+    self._diff = []
+    super(NativeDiff, self).__init__('Native Diff')
+
+  def DetailedResults(self):
+    return self._diff.splitlines()
+
+  def Summary(self):
+    return NativeDiff._RE_SUMMARY.match(self._diff).group(1)
+
+  def ProduceDiff(self, archive_dirs):
+    size_files = [os.path.join(a, self._size_name)
+                  for a in reversed(archive_dirs)]
+    cmd = [self._supersize_path, 'diff'] + size_files
+    self._diff = _RunCmd(cmd)[0].replace('{', '{{').replace('}', '}}')
 
 
 _ResourceSizesDiffResult = collections.namedtuple(
@@ -90,8 +114,8 @@ class ResourceSizesDiff(BaseDiff):
     super(ResourceSizesDiff, self).__init__('Resource Sizes Diff')
 
   def DetailedResults(self):
-    for section, value, units in self._diff:
-      yield '{:>+10,} {} {}'.format(value, units, section)
+    return ['{:>+10,} {} {}'.format(value, units, section)
+            for section, value, units in self._diff]
 
   def Summary(self):
     for s in self._diff:
@@ -166,7 +190,7 @@ class _BuildHelper(object):
     return os.path.join('apks', self.apk_name)
 
   @property
-  def main_lib_name(self):
+  def main_lib_path(self):
     # TODO(estevenson): Get this from GN instead of hardcoding.
     if self.IsLinux():
       return 'chrome'
@@ -176,12 +200,16 @@ class _BuildHelper(object):
       return 'lib.unstripped/libchrome.so'
 
   @property
-  def main_lib_path(self):
-    return os.path.join(self.output_directory, self.main_lib_name)
+  def abs_main_lib_path(self):
+    return os.path.join(self.output_directory, self.main_lib_path)
 
   @property
-  def map_file_name(self):
-    return self.main_lib_name + '.map.gz'
+  def map_file_path(self):
+    return self.main_lib_path + '.map.gz'
+
+  @property
+  def size_name(self):
+    return os.path.splitext(os.path.basename(self.main_lib_path))[0] + '.size'
 
   def _SetDefaults(self):
     has_goma_dir = os.path.exists(os.path.join(os.path.expanduser('~'), 'goma'))
@@ -242,18 +270,16 @@ class _BuildArchive(object):
     self.rev = rev
     self.metadata = _GenerateMetadata([self], build, metadata_path, subrepo)
 
-  def ArchiveBuildResults(self, bs_dir):
+  def ArchiveBuildResults(self, supersize_path):
     """Save build artifacts necessary for diffing."""
     _Print('Saving build results to: {}', self.dir)
     _EnsureDirsExist(self.dir)
     build = self.build
-    self._ArchiveFile(build.main_lib_path)
-    lib_name_noext = os.path.splitext(os.path.basename(build.main_lib_path))[0]
-    size_path = os.path.join(self.dir, lib_name_noext + '.size')
-    supersize_path = os.path.join(bs_dir, 'supersize')
+    self._ArchiveFile(build.abs_main_lib_path)
     tool_prefix = _FindToolPrefix(build.output_directory)
+    size_path = os.path.join(self.dir, build.size_name)
     supersize_cmd = [supersize_path, 'archive', size_path, '--elf-file',
-                     build.main_lib_path, '--tool-prefix', tool_prefix,
+                     build.abs_main_lib_path, '--tool-prefix', tool_prefix,
                      '--output-directory', build.output_directory,
                      '--no-source-paths']
     if build.IsAndroid():
@@ -301,10 +327,13 @@ class _DiffArchiveManager(object):
       _Print('Skipping diff for {} and {}. Matching diff already exists: {}',
              archives[0].rev, archives[1].rev, diff_path)
     else:
+      if os.path.exists(diff_path):
+        os.remove(diff_path)
       archive_dirs = [archives[0].dir, archives[1].dir]
       with open(diff_path, 'a') as diff_file:
         for d in self.diffs:
           d.RunDiff(diff_file, archive_dirs)
+        _Print('See detailed diff results here: {}.', diff_path)
       _WriteMetadata(metadata)
 
   def _CanDiff(self, archives):
@@ -479,7 +508,7 @@ def _Die(s, *args, **kwargs):
   sys.exit(1)
 
 
-def _DownloadBuildArtifacts(archive, build, bs_dir, depot_tools_path):
+def _DownloadBuildArtifacts(archive, build, supersize_path, depot_tools_path):
   """Download artifacts from arm32 chromium perf builder."""
   if depot_tools_path:
     gsutil_path = os.path.join(depot_tools_path, 'gsutil.py')
@@ -492,12 +521,13 @@ def _DownloadBuildArtifacts(archive, build, bs_dir, depot_tools_path):
 
   download_dir = tempfile.mkdtemp(dir=_SRC_ROOT)
   try:
-    _DownloadAndArchive(gsutil_path, archive, download_dir, build, bs_dir)
+    _DownloadAndArchive(
+        gsutil_path, archive, download_dir, build, supersize_path)
   finally:
     shutil.rmtree(download_dir)
 
 
-def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, bs_dir):
+def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
   dl_file = 'full-build-linux_%s.zip' % archive.rev
   dl_url = 'gs://chrome-perf/Android Builder/%s' % dl_file
   dl_dst = os.path.join(dl_dir, dl_file)
@@ -513,7 +543,7 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, bs_dir):
            dl_url, _BUILDER_URL)
 
   # Files needed for supersize and resource_sizes. Paths relative to out dir.
-  to_extract = [build.main_lib_name, build.map_file_name, 'args.gn',
+  to_extract = [build.main_lib_path, build.map_file_path, 'args.gn',
                 'build_vars.txt', build.apk_path]
   extract_dir = os.path.join(os.path.splitext(dl_dst)[0], 'unzipped')
   # Storage bucket stores entire output directory including out/Release prefix.
@@ -522,7 +552,7 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, bs_dir):
     _ExtractFiles(to_extract, _CLOUD_OUT_DIR, extract_dir, z)
     dl_out = os.path.join(extract_dir, _CLOUD_OUT_DIR)
     build.output_directory, output_directory = dl_out, build.output_directory
-    archive.ArchiveBuildResults(bs_dir)
+    archive.ArchiveBuildResults(supersize_path)
     build.output_directory = output_directory
 
 
@@ -540,21 +570,28 @@ def _Print(s, *args, **kwargs):
 
 
 def _PrintAndWriteToFile(logfile, s):
-  """Print |s| to |logfile| and stdout."""
-  _Print(s)
-  logfile.write('%s\n' % s)
+  """Write and print |s| thottling output if |s| is a large list."""
+  if isinstance(s, basestring):
+    _Print(s)
+    logfile.write('%s\n' % s)
+  else:
+    for l in s[:_DIFF_DETAILS_LINES_THRESHOLD]:
+      _Print(l)
+    if len(s) > _DIFF_DETAILS_LINES_THRESHOLD:
+      _Print('\nOutput truncated, see {} for more.', logfile.name)
+    logfile.write('\n'.join(s))
 
 
 @contextmanager
-def _TmpBinarySizeDir():
-  """Recursively copy files to a temp dir and yield the tmp binary_size dir."""
+def _TmpCopyBinarySizeDir():
+  """Recursively copy files to a temp dir and yield supersize path."""
   # Needs to be at same level of nesting as the real //tools/binary_size
   # since supersize uses this to find d3 in //third_party.
   tmp_dir = tempfile.mkdtemp(dir=_SRC_ROOT)
   try:
     bs_dir = os.path.join(tmp_dir, 'binary_size')
     shutil.copytree(os.path.join(_SRC_ROOT, 'tools', 'binary_size'), bs_dir)
-    yield bs_dir
+    yield os.path.join(bs_dir, 'supersize')
   finally:
     shutil.rmtree(tmp_dir)
 
@@ -638,23 +675,24 @@ def main():
                           args.reference_rev or args.rev + '^',
                           args.all,
                           subrepo)
-  diffs = []
-  if build.IsAndroid():
-    diffs +=  [
-        ResourceSizesDiff(
-            build.apk_name, slow_options=args.include_slow_options)
-    ]
-  diff_mngr = _DiffArchiveManager(
-      revs, args.archive_directory, diffs, build, subrepo)
-  consecutive_failures = 0
-  with _TmpBinarySizeDir() as bs_dir:
+  with _TmpCopyBinarySizeDir() as supersize_path:
+    diffs = [NativeDiff(build.size_name, supersize_path)]
+    if build.IsAndroid():
+      diffs +=  [
+          ResourceSizesDiff(
+              build.apk_name, slow_options=args.include_slow_options)
+      ]
+    diff_mngr = _DiffArchiveManager(
+        revs, args.archive_directory, diffs, build, subrepo)
+    consecutive_failures = 0
     for i, archive in enumerate(diff_mngr.IterArchives()):
       if archive.Exists():
         _Print('Found matching metadata for {}, skipping build step.',
                archive.rev)
       else:
         if build.IsCloud():
-          _DownloadBuildArtifacts(archive, build, bs_dir, args.depot_tools_path)
+          _DownloadBuildArtifacts(
+              archive, build, supersize_path, args.depot_tools_path)
         else:
           build_success = _SyncAndBuild(archive, build, subrepo)
           if not build_success:
@@ -663,7 +701,7 @@ def main():
               _Die('{} builds failed in a row, last failure was {}.',
                    consecutive_failures, archive.rev)
           else:
-            archive.ArchiveBuildResults(bs_dir)
+            archive.ArchiveBuildResults(supersize_path)
             consecutive_failures = 0
 
       if i != 0:
