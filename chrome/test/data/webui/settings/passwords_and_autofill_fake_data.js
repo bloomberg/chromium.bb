@@ -24,10 +24,13 @@ FakeDataMaker.passwordEntry = function(url, username, passwordLength) {
 
   return {
     loginPair: {
-      originUrl: url,
+      urls: {
+        origin: 'http://' + url + '/login',
+        shown: url,
+        link: 'http://' + url + '/login',
+      },
       username: username,
     },
-    linkUrl: 'http://' + url + '/login',
     numCharactersInPassword: passwordLength,
   };
 };
@@ -35,13 +38,16 @@ FakeDataMaker.passwordEntry = function(url, username, passwordLength) {
 /**
  * Creates a single item for the list of password exceptions.
  * @param {string|undefined} url
- * @return {chrome.passwordsPrivate.ExceptionPair}
+ * @return {chrome.passwordsPrivate.ExceptionEntry}
  */
 FakeDataMaker.exceptionEntry = function(url) {
   url = url || FakeDataMaker.patternMaker_('www.xxxxxx.com', 16);
   return {
-    exceptionUrl: url,
-    linkUrl: 'http://' + url + '/login',
+    urls: {
+      origin: 'http://' + url + '/login',
+      shown: url,
+      link: 'http://' + url + '/login',
+    }
   };
 };
 

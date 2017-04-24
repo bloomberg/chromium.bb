@@ -60,9 +60,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       var node = Polymer.dom(listElement).children[1];
       assert(node);
       var passwordInfo = passwordList[0];
-      assertEquals(passwordInfo.loginPair.originUrl,
+      assertEquals(passwordInfo.loginPair.urls.shown,
           node.querySelector('#originUrl').textContent.trim());
-      assertEquals(passwordInfo.linkUrl,
+      assertEquals(passwordInfo.loginPair.urls.link,
           node.querySelector('#originUrl').href);
       assertEquals(passwordInfo.loginPair.username,
           node.querySelector('#username').textContent);
@@ -75,7 +75,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
    * Helper method that validates a that elements in the exception list match
    * the expected data.
    * @param {!Array<!Element>} nodes The nodes that will be checked.
-   * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} exceptionList The
+   * @param {!Array<!chrome.passwordsPrivate.ExceptionEntry>} exceptionList The
    *     expected data.
    * @private
    */
@@ -84,10 +84,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     for (var index = 0; index < exceptionList.length; ++index) {
       var node = nodes[index];
       var exception = exceptionList[index];
-      assertEquals(exception.exceptionUrl,
-                   node.querySelector('#exception').textContent);
-      assertEquals(exception.linkUrl,
-                   node.querySelector('#exception').href);
+      assertEquals(exception.urls.shown,
+          node.querySelector('#exception').textContent);
+      assertEquals(exception.urls.link, node.querySelector('#exception').href);
     }
   }
 
@@ -116,7 +115,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
    * Helper method used to create a password section for the given lists.
    * @param {!PasswordManager} passwordManager
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList
-   * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} exceptionList
+   * @param {!Array<!chrome.passwordsPrivate.ExceptionEntry>} exceptionList
    * @return {!Object}
    * @private
    */
@@ -154,7 +153,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
    */
   function listContainsUrl(passwordList, url) {
     for (var i = 0; i < passwordList.length; ++i) {
-      if (passwordList[i].loginPair.originUrl == url)
+      if (passwordList[i].loginPair.urls.origin == url)
         return true;
     }
     return false;
@@ -162,12 +161,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
   /**
    * Helper method used to test for a url in a list of passwords.
-   * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} exceptionList
+   * @param {!Array<!chrome.passwordsPrivate.ExceptionEntry>} exceptionList
    * @param {string} url The URL that is being searched for.
    */
   function exceptionsListContainsUrl(exceptionList, url) {
     for (var i = 0; i < exceptionList.length; ++i) {
-      if (exceptionList[i].exceptionUrl == url)
+      if (exceptionList[i].urls.orginUrl == url)
         return true;
     }
     return false;
@@ -274,7 +273,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       passwordManager.onRemoveSavedPassword = function(detail) {
         // Verify that the event matches the expected value.
-        assertEquals(firstPassword.loginPair.originUrl, detail.originUrl);
+        assertEquals(firstPassword.loginPair.urls.origin, detail.urls.origin);
         assertEquals(firstPassword.loginPair.username, detail.username);
 
         // Clean up after self.
@@ -429,7 +428,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       passwordManager.onRemoveException = function(detail) {
         // Verify that the event matches the expected value.
         assertTrue(index < exceptionList.length);
-        assertEquals(exceptionList[index].exceptionUrl, detail);
+        assertEquals(exceptionList[index].urls.origin, detail);
 
         if (++index < exceptionList.length) {
           clickRemoveButton();  // Click 'remove' on all passwords, one by one.
@@ -468,7 +467,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       var passwordDialog = createPasswordDialog(item);
 
       passwordDialog.addEventListener('show-password', function(event) {
-        assertEquals(item.loginPair.originUrl, event.detail.originUrl);
+        assertEquals(item.loginPair.urls.origin, event.detail.urls.origin);
         assertEquals(item.loginPair.username, event.detail.username);
         done();
       });

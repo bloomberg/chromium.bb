@@ -16,7 +16,11 @@ var availableTests = [
       if (numCalls == 1) {
         numSavedPasswords = savedPasswordsList.length;
         chrome.passwordsPrivate.removeSavedPassword({
-          originUrl: savedPasswordsList[0].loginPair.originUrl,
+          urls: {
+            origin: savedPasswordsList[0].loginPair.urls.origin,
+            shown: savedPasswordsList[0].loginPair.urls.shown,
+            link: savedPasswordsList[0].loginPair.urls.link,
+          },
           username: savedPasswordsList[0].loginPair.username
         });
       } else if (numCalls == 2) {
@@ -41,7 +45,7 @@ var availableTests = [
       if (numCalls == 1) {
         numPasswordExceptions = passwordExceptionsList.length;
         chrome.passwordsPrivate.removePasswordException(
-            passwordExceptionsList[0].exceptionUrl);
+            passwordExceptionsList[0].urls.origin);
       } else if (numCalls == 2) {
         chrome.test.assertEq(
             passwordExceptionsList.length, numPasswordExceptions - 1);
@@ -63,8 +67,14 @@ var availableTests = [
     };
 
     chrome.passwordsPrivate.onPlaintextPasswordRetrieved.addListener(callback);
-    chrome.passwordsPrivate.requestPlaintextPassword(
-        {originUrl: 'http://www.test.com', username: 'test@test.com'});
+    chrome.passwordsPrivate.requestPlaintextPassword({
+      urls: {
+        origin: 'http://www.test.com',
+        shown: 'www.test.com',
+        link: 'http://www.test.com',
+      },
+      username: 'test@test.com'
+    });
   },
 
   function getSavedPasswordList() {
@@ -75,8 +85,9 @@ var availableTests = [
       for (var i = 0; i < list.length; ++i) {
         var entry = list[i];
         chrome.test.assertTrue(!!entry.loginPair);
-        chrome.test.assertTrue(!!entry.loginPair.originUrl);
-        chrome.test.assertTrue(!!entry.linkUrl);
+        chrome.test.assertTrue(!!entry.loginPair.urls.origin);
+        chrome.test.assertTrue(!!entry.loginPair.urls.shown);
+        chrome.test.assertTrue(!!entry.loginPair.urls.link);
       }
 
       // Ensure that the callback is invoked.
@@ -93,8 +104,9 @@ var availableTests = [
 
       for (var i = 0; i < list.length; ++i) {
         var exception = list[i];
-        chrome.test.assertTrue(!!exception.exceptionUrl);
-        chrome.test.assertTrue(!!exception.linkUrl);
+        chrome.test.assertTrue(!!exception.urls.origin);
+        chrome.test.assertTrue(!!exception.urls.shown);
+        chrome.test.assertTrue(!!exception.urls.link);
       }
 
       // Ensure that the callback is invoked.

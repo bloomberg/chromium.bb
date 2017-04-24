@@ -100,7 +100,7 @@ class PasswordsPrivateGetPasswordExceptionListFunction
 
  private:
   void GetList();
-  void GotList(const PasswordsPrivateDelegate::ExceptionPairs& pairs);
+  void GotList(const PasswordsPrivateDelegate::ExceptionEntries& entries);
 
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateGetPasswordExceptionListFunction);
 };

@@ -44,10 +44,11 @@ class PasswordsPrivateDelegate : public KeyedService {
   virtual void SendPasswordExceptionsList() = 0;
 
   // Gets the password exceptions list.
-  using ExceptionPairs = std::vector<api::passwords_private::ExceptionPair>;
-  using ExceptionPairsCallback = base::Callback<void(const ExceptionPairs&)>;
+  using ExceptionEntries = std::vector<api::passwords_private::ExceptionEntry>;
+  using ExceptionEntriesCallback =
+      base::Callback<void(const ExceptionEntries&)>;
   virtual void GetPasswordExceptionsList(
-      const ExceptionPairsCallback& callback) = 0;
+      const ExceptionEntriesCallback& callback) = 0;
 
   // Removes the saved password entry corresponding to |origin_url| and
   // |username|.

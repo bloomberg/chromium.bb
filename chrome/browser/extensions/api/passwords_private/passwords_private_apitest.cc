@@ -33,25 +33,20 @@ static const char kPlaintextPassword[] = "plaintext";
 
 api::passwords_private::PasswordUiEntry CreateEntry(size_t num) {
   api::passwords_private::PasswordUiEntry entry;
-  std::stringstream ss;
-  ss << "http://test" << num << ".com";
-  entry.login_pair.origin_url = ss.str();
-  ss << "/login";
-  entry.link_url = ss.str();
-  ss.clear();
-  ss << "testName" << num;
-  entry.login_pair.username = ss.str();
+  entry.login_pair.urls.shown = "test" + std::to_string(num) + ".com";
+  entry.login_pair.urls.origin =
+      "http://" + entry.login_pair.urls.shown + "/login";
+  entry.login_pair.urls.link = entry.login_pair.urls.origin;
+  entry.login_pair.username = "testName" + std::to_string(num);
   entry.num_characters_in_password = kNumCharactersInPassword;
   return entry;
 }
 
-api::passwords_private::ExceptionPair CreateException(size_t num) {
-  api::passwords_private::ExceptionPair exception;
-  std::stringstream ss;
-  ss << "http://exception" << num << ".com";
-  exception.exception_url = ss.str();
-  ss << "/login";
-  exception.link_url = ss.str();
+api::passwords_private::ExceptionEntry CreateException(size_t num) {
+  api::passwords_private::ExceptionEntry exception;
+  exception.urls.shown = "exception" + std::to_string(num) + ".com";
+  exception.urls.origin = "http://" + exception.urls.shown + "/login";
+  exception.urls.link = exception.urls.origin;
   return exception;
 }
 
@@ -89,12 +84,12 @@ class TestDelegate : public PasswordsPrivateDelegate {
   }
 
   void GetPasswordExceptionsList(
-      const ExceptionPairsCallback& callback) override {
+      const ExceptionEntriesCallback& callback) override {
     callback.Run(current_exceptions_);
   }
 
-  void RemoveSavedPassword(
-      const std::string& origin_url, const std::string& username) override {
+  void RemoveSavedPassword(const std::string& origin,
+                           const std::string& username) override {
     if (current_entries_.empty())
       return;
 
@@ -114,7 +109,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
     SendPasswordExceptionsList();
   }
 
-  void RequestShowPassword(const std::string& origin_url,
+  void RequestShowPassword(const std::string& origin,
                            const std::string& username,
                            content::WebContents* web_contents) override {
     // Return a mocked password value.
@@ -122,8 +117,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
     PasswordsPrivateEventRouter* router =
         PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
     if (router) {
-      router->OnPlaintextPasswordFetched(origin_url, username,
-                                         plaintext_password);
+      router->OnPlaintextPasswordFetched(origin, username, plaintext_password);
     }
   }
 
@@ -134,7 +128,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
   // observers are added, this delegate can send the current lists without
   // having to request them from |password_manager_presenter_| again.
   std::vector<api::passwords_private::PasswordUiEntry> current_entries_;
-  std::vector<api::passwords_private::ExceptionPair> current_exceptions_;
+  std::vector<api::passwords_private::ExceptionEntry> current_exceptions_;
   Profile* profile_;
 };
 

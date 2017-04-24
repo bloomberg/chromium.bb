@@ -33,9 +33,8 @@ ExtensionFunction::ResponseAction
   PasswordsPrivateDelegate* delegate =
       PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
                                                             true /* create */);
-  delegate->RemoveSavedPassword(
-      parameters->login_pair.origin_url,
-      parameters->login_pair.username);
+  delegate->RemoveSavedPassword(parameters->login_pair.urls.origin,
+                                parameters->login_pair.username);
 
   return RespondNow(NoArguments());
 }
@@ -80,7 +79,7 @@ ExtensionFunction::ResponseAction
       PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
                                                             true /* create */);
 
-  delegate->RequestShowPassword(parameters->login_pair.origin_url,
+  delegate->RequestShowPassword(parameters->login_pair.urls.origin,
                                 parameters->login_pair.username,
                                 GetSenderWebContents());
 
@@ -146,9 +145,10 @@ void PasswordsPrivateGetPasswordExceptionListFunction::GetList() {
 }
 
 void PasswordsPrivateGetPasswordExceptionListFunction::GotList(
-    const PasswordsPrivateDelegate::ExceptionPairs& list) {
+    const PasswordsPrivateDelegate::ExceptionEntries& entries) {
   Respond(ArgumentList(
-      api::passwords_private::GetPasswordExceptionList::Results::Create(list)));
+      api::passwords_private::GetPasswordExceptionList::Results::Create(
+          entries)));
 }
 
 }  // namespace extensions

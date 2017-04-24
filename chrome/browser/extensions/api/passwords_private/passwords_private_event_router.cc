@@ -49,7 +49,7 @@ void PasswordsPrivateEventRouter::SendSavedPasswordListToListeners() {
 }
 
 void PasswordsPrivateEventRouter::OnPasswordExceptionsListChanged(
-    const std::vector<api::passwords_private::ExceptionPair>& exceptions) {
+    const std::vector<api::passwords_private::ExceptionEntry>& exceptions) {
   cached_password_exception_parameters_ =
       api::passwords_private::OnPasswordExceptionsListChanged::Create(
           exceptions);
@@ -73,7 +73,7 @@ void PasswordsPrivateEventRouter::OnPlaintextPasswordFetched(
         const std::string& username,
         const std::string& plaintext_password) {
   api::passwords_private::PlaintextPasswordEventParameters params;
-  params.login_pair.origin_url = origin_url;
+  params.login_pair.urls.origin = origin_url;
   params.login_pair.username = username;
   params.plaintext_password = plaintext_password;
 

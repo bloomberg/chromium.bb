@@ -63,7 +63,7 @@ TEST(PasswordsPrivateDelegateImplTest, GetSavedPasswordsList) {
 }
 
 TEST(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
-  CallbackTracker<PasswordsPrivateDelegate::ExceptionPairs> tracker;
+  CallbackTracker<PasswordsPrivateDelegate::ExceptionEntries> tracker;
 
   content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;

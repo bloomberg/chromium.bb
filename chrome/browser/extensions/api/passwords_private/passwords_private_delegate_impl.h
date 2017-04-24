@@ -43,7 +43,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void GetSavedPasswordsList(const UiEntriesCallback& callback) override;
   void SendPasswordExceptionsList() override;
   void GetPasswordExceptionsList(
-      const ExceptionPairsCallback& callback) override;
+      const ExceptionEntriesCallback& callback) override;
   void RemoveSavedPassword(
       const std::string& origin_url, const std::string& username) override;
   void RemovePasswordException(const std::string& exception_url) override;
@@ -98,7 +98,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // observers are added, this delegate can send the current lists without
   // having to request them from |password_manager_presenter_| again.
   UiEntries current_entries_;
-  ExceptionPairs current_exceptions_;
+  ExceptionEntries current_exceptions_;
 
   // Whether SetPasswordList and SetPasswordExceptionList have been called, and
   // whether this class has been initialized, meaning both have been called.
@@ -112,7 +112,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // callbacks are invoked.
   std::vector<base::Closure> pre_initialization_callbacks_;
   std::vector<UiEntriesCallback> get_saved_passwords_list_callbacks_;
-  std::vector<ExceptionPairsCallback> get_password_exception_list_callbacks_;
+  std::vector<ExceptionEntriesCallback> get_password_exception_list_callbacks_;
 
   // The WebContents used when invoking this API. Used to fetch the
   // NativeWindow for the window where the API was called.

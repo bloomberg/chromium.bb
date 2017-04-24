@@ -122,7 +122,7 @@ SettingsAutofillSectionBrowserTest.prototype = {
   /**
    * Creates the autofill section for the given lists.
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList
-   * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} exceptionList
+   * @param {!Array<!chrome.passwordsPrivate.ExceptionEntry>} exceptionList
    * @return {!Object}
    * @private
    */
