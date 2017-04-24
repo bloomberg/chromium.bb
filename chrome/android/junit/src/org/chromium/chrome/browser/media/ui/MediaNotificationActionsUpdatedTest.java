@@ -5,6 +5,10 @@
 package org.chromium.chrome.browser.media.ui;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doCallRealMethod;
+
+import android.content.Intent;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +18,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.HashSet;
@@ -30,8 +35,7 @@ import java.util.Set;
 public class MediaNotificationActionsUpdatedTest extends MediaNotificationManagerTestBase {
     private static final int TAB_ID_1 = 1;
     private static final int TAB_ID_2 = 2;
-    private static final int HIDE_NOTIFICATION_DELAY_MILLIS =
-            MediaSessionTabHelper.HIDE_NOTIFICATION_DELAY_MILLIS;
+    private static final int THROTTLE_MILLIS = MediaNotificationManager.Throttler.THROTTLE_MILLIS;
 
     private MediaNotificationTestTabHolder mTabHolder;
 
@@ -40,6 +44,9 @@ public class MediaNotificationActionsUpdatedTest extends MediaNotificationManage
     public void setUp() {
         super.setUp();
 
+        getManager().mThrottler.mManager = getManager();
+        doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
+        doCallRealMethod().when(mMockAppHooks).startForegroundService(any(Intent.class));
         mTabHolder = new MediaNotificationTestTabHolder(TAB_ID_1, "about:blank", "title1");
     }
 
@@ -53,6 +60,7 @@ public class MediaNotificationActionsUpdatedTest extends MediaNotificationManage
     public void testActionPropagateProperly() {
         mTabHolder.simulateMediaSessionActionsChanged(buildActions());
         mTabHolder.simulateMediaSessionStateChanged(true, false);
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals(buildActions(), getDisplayedActions());
     }
 
@@ -61,9 +69,11 @@ public class MediaNotificationActionsUpdatedTest extends MediaNotificationManage
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionActionsChanged(buildActions());
         mTabHolder.simulateMediaSessionStateChanged(true, false);
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals(buildActions(), getDisplayedActions());
 
         mTabHolder.simulateNavigation("https://example1.com/", false);
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals(new HashSet<Integer>(), getDisplayedActions());
     }
 
@@ -72,9 +82,11 @@ public class MediaNotificationActionsUpdatedTest extends MediaNotificationManage
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionActionsChanged(buildActions());
         mTabHolder.simulateMediaSessionStateChanged(true, false);
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals(buildActions(), getDisplayedActions());
 
         mTabHolder.simulateNavigation("https://example.com/foo.html", true);
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals(buildActions(), getDisplayedActions());
     }
 

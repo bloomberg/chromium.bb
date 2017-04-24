@@ -1659,6 +1659,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationManagerServiceActionsTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationManagerServiceLifecycleTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationManagerTestBase.java",
+  "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationManagerThrottlerTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationTestShadowNotificationManager.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationTestShadowResources.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationTestTabHolder.java",

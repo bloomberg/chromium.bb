@@ -331,7 +331,8 @@ void MediaSessionImpl::OnPlayerPaused(MediaSessionPlayerObserver* observer,
 }
 
 void MediaSessionImpl::Resume(SuspendType suspend_type) {
-  DCHECK(IsSuspended());
+  if (!IsSuspended())
+    return;
 
   if (suspend_type == SuspendType::UI) {
     MediaSessionUmaHelper::RecordMediaSessionUserAction(

@@ -23,6 +23,7 @@ import android.os.Build;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.view.KeyEvent;
 
+import org.junit.After;
 import org.junit.Before;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -133,6 +134,11 @@ public class MediaNotificationManagerTestBase {
 
         // Init the command line to avoid assertion failure in |SysUtils#isLowEndDevice()|.
         CommandLine.init(null);
+    }
+
+    @After
+    public void tearDown() {
+        MediaNotificationManager.clear(NOTIFICATION_ID);
     }
 
     MediaNotificationManager getManager() {

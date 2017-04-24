@@ -36,6 +36,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerTestBase {
     private static final int TAB_ID_1 = 1;
     private static final int TAB_ID_2 = 2;
+    private static final int THROTTLE_MILLIS = MediaNotificationManager.Throttler.THROTTLE_MILLIS;
     private static final int HIDE_NOTIFICATION_DELAY_MILLIS =
             MediaSessionTabHelper.HIDE_NOTIFICATION_DELAY_MILLIS;
 
@@ -46,6 +47,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     public void setUp() {
         super.setUp();
 
+        getManager().mThrottler.mManager = getManager();
         doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
         doCallRealMethod().when(mMockAppHooks).startForegroundService(any(Intent.class));
         mTabHolder = new MediaNotificationTestTabHolder(TAB_ID_1, "about:blank", "title1");
@@ -55,7 +57,9 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     public void testSessionStatePlaying() {
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         assertEquals("title1", getDisplayedTitle());
+
         mTabHolder.simulateTitleUpdated("title2");
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
     }
 
@@ -63,8 +67,11 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     public void testSessionStatePausedAfterPlaying() {
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionStateChanged(true, true);
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title1", getDisplayedTitle());
+
         mTabHolder.simulateTitleUpdated("title2");
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
     }
 
@@ -74,6 +81,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         assertNull(getManager().mNotificationBuilder);
 
         mTabHolder.simulateTitleUpdated("title2");
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertNull(getManager().mNotificationBuilder);
     }
 
@@ -83,8 +91,8 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         assertEquals("title1", getDisplayedTitle());
 
         mTabHolder.simulateMediaSessionStateChanged(false, false);
-        advanceTimeByMillis(HIDE_NOTIFICATION_DELAY_MILLIS);
         mTabHolder.simulateTitleUpdated("title2");
+        advanceTimeByMillis(HIDE_NOTIFICATION_DELAY_MILLIS);
         assertNull(getManager().mMediaNotificationInfo);
     }
 
@@ -92,6 +100,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     public void testMediaMetadataSetsTitle() {
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
     }
 
@@ -99,9 +108,11 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     public void testMediaMetadataOverridesTitle() {
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
 
         mTabHolder.simulateTitleUpdated("title2");
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
     }
 
@@ -126,6 +137,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         newTabHolder.simulateMediaSessionStateChanged(true, false);
         newTabHolder.simulateTitleUpdated("title3");
         mTabHolder.simulateTitleUpdated("title2");
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title3", getDisplayedTitle());
     }
 
@@ -151,6 +163,8 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
 
         mTabHolder.simulateMediaSessionStateChanged(false, false);
         mTabHolder.simulateTitleUpdated("title2");
+
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title3", getDisplayedTitle());
     }
 
@@ -159,9 +173,11 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
 
         mTabHolder.simulateNavigation("https://example1.com/", false);
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title1", getDisplayedTitle());
     }
 
@@ -170,9 +186,11 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
 
         mTabHolder.simulateNavigation("https://example.com/foo.html", false);
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title1", getDisplayedTitle());
     }
 
@@ -181,9 +199,11 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
 
         mTabHolder.simulateNavigation("https://example.com/#1", true);
+        advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
     }
 
