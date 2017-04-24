@@ -144,6 +144,9 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   const RemoteSuggestionsFetcher* suggestions_fetcher_for_debugging()
       const override;
 
+  GURL GetUrlWithFavicon(
+      const ContentSuggestion::ID& suggestion_id) const override;
+
   // ContentSuggestionsProvider implementation.
   CategoryStatus GetCategoryStatus(Category category) override;
   CategoryInfo GetCategoryInfo(Category category) override;

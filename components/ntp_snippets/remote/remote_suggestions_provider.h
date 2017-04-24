@@ -37,6 +37,10 @@ class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
   virtual const RemoteSuggestionsFetcher* suggestions_fetcher_for_debugging()
       const = 0;
 
+  // Get the url with favicon for the suggestion.
+  virtual GURL GetUrlWithFavicon(
+      const ContentSuggestion::ID& suggestion_id) const = 0;
+
  protected:
   RemoteSuggestionsProvider(Observer* observer);
 };

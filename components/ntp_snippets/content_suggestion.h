@@ -116,12 +116,14 @@ class ContentSuggestion {
   // Path is trimmed for the URL because the current favicon server backend
   // prefers it this way.
   GURL url_with_favicon() const {
-    return url_with_favicon_.is_valid() ? url_with_favicon_.GetWithEmptyPath()
-                                        : url_.GetWithEmptyPath();
+    return url_with_favicon_.is_valid() ? GetFaviconDomain(url_with_favicon_)
+                                        : GetFaviconDomain(url_);
   }
   void set_url_with_favicon(const GURL& url_with_favicon) {
     url_with_favicon_ = url_with_favicon;
   }
+
+  static GURL GetFaviconDomain(const GURL& favicon_url);
 
   // Title of the suggestion.
   const base::string16& title() const { return title_; }

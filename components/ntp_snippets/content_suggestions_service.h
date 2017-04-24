@@ -328,6 +328,8 @@ class ContentSuggestionsService : public KeyedService,
   void RestoreDismissedCategoriesFromPrefs();
   void StoreDismissedCategoriesToPrefs();
 
+  // Get the domain of the suggestion suitable for fetching the favicon.
+  GURL GetFaviconDomain(const ContentSuggestion::ID& suggestion_id);
   // Callbacks for fetching favicons.
   void OnGetFaviconFromCacheFinished(
       const GURL& publisher_url,

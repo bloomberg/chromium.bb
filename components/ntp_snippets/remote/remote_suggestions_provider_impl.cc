@@ -339,6 +339,20 @@ RemoteSuggestionsProviderImpl::suggestions_fetcher_for_debugging() const {
   return suggestions_fetcher_.get();
 }
 
+GURL RemoteSuggestionsProviderImpl::GetUrlWithFavicon(
+    const ContentSuggestion::ID& suggestion_id) const {
+  DCHECK(base::ContainsKey(category_contents_, suggestion_id.category()));
+
+  const CategoryContent& content =
+      category_contents_.at(suggestion_id.category());
+  const RemoteSuggestion* suggestion =
+      content.FindSuggestion(suggestion_id.id_within_category());
+  if (!suggestion) {
+    return GURL();
+  }
+  return ContentSuggestion::GetFaviconDomain(suggestion->url());
+}
+
 void RemoteSuggestionsProviderImpl::FetchSuggestions(
     bool interactive_request,
     const FetchStatusCallback& callback) {

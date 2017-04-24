@@ -21,6 +21,7 @@
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/gfx/image/image.h"
@@ -160,21 +161,13 @@ void ContentSuggestionsService::FetchSuggestionFavicon(
     int minimum_size_in_pixel,
     int desired_size_in_pixel,
     const ImageFetchedCallback& callback) {
-  std::vector<ContentSuggestion>* suggestions =
-      &suggestions_by_category_[suggestion_id.category()];
-  auto position =
-      std::find_if(suggestions->begin(), suggestions->end(),
-                   [&suggestion_id](const ContentSuggestion& suggestion) {
-                     return suggestion_id == suggestion.id();
-                   });
-  if (position == suggestions->end() || !large_icon_service_) {
+  const GURL& domain_with_favicon = GetFaviconDomain(suggestion_id);
+  if (!domain_with_favicon.is_valid() || !large_icon_service_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, gfx::Image()));
     RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
-
-  const GURL& domain_with_favicon = position->url_with_favicon();
 
   // TODO(jkrcal): Create a general wrapper function in LargeIconService that
   // does handle the get-from-cache-and-fallback-to-google-server functionality
@@ -186,6 +179,29 @@ void ContentSuggestionsService::FetchSuggestionFavicon(
                  minimum_size_in_pixel, desired_size_in_pixel, callback,
                  /*continue_to_google_server=*/true),
       &favicons_task_tracker_);
+}
+
+GURL ContentSuggestionsService::GetFaviconDomain(
+    const ContentSuggestion::ID& suggestion_id) {
+  const std::vector<ContentSuggestion>& suggestions =
+      suggestions_by_category_[suggestion_id.category()];
+  auto position =
+      std::find_if(suggestions.begin(), suggestions.end(),
+                   [&suggestion_id](const ContentSuggestion& suggestion) {
+                     return suggestion_id == suggestion.id();
+                   });
+  if (position != suggestions.end()) {
+    return position->url_with_favicon();
+  }
+
+  // Look up the URL in the archive of |remote_suggestions_provider_|.
+  // TODO(jkrcal): Fix how Fetch more works or find other ways to remove this
+  // hack. crbug.com/714031
+  if (providers_by_category_[suggestion_id.category()] ==
+      remote_suggestions_provider_) {
+    return remote_suggestions_provider_->GetUrlWithFavicon(suggestion_id);
+  }
+  return GURL();
 }
 
 void ContentSuggestionsService::OnGetFaviconFromCacheFinished(

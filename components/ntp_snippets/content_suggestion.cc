@@ -43,6 +43,11 @@ std::ostream& operator<<(std::ostream& os, const ContentSuggestion::ID& id) {
   return os;
 }
 
+// static
+GURL ContentSuggestion::GetFaviconDomain(const GURL& favicon_url) {
+  return favicon_url.GetWithEmptyPath();
+}
+
 void ContentSuggestion::set_download_suggestion_extra(
     std::unique_ptr<DownloadSuggestionExtra> download_suggestion_extra) {
   DCHECK(id_.category().IsKnownCategory(KnownCategories::DOWNLOADS));
