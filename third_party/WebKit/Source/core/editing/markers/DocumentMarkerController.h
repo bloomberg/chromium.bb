@@ -109,7 +109,7 @@ class CORE_EXPORT DocumentMarkerController final
                               unsigned new_length) final;
 
  private:
-  void AddMarker(Node*, const DocumentMarker&);
+  void AddMarker(Node*, DocumentMarker*);
 
   using MarkerList = HeapVector<Member<RenderedDocumentMarker>>;
   using MarkerLists =

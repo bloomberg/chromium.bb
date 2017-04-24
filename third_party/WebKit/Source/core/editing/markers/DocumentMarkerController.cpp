@@ -96,10 +96,10 @@ void DocumentMarkerController::AddMarker(const Position& start,
   // covers.
   for (TextIterator marked_text(start, end); !marked_text.AtEnd();
        marked_text.Advance()) {
-    AddMarker(
-        marked_text.CurrentContainer(),
-        DocumentMarker(type, marked_text.StartOffsetInCurrentContainer(),
-                       marked_text.EndOffsetInCurrentContainer(), description));
+    AddMarker(marked_text.CurrentContainer(),
+              new DocumentMarker(
+                  type, marked_text.StartOffsetInCurrentContainer(),
+                  marked_text.EndOffsetInCurrentContainer(), description));
   }
 }
 
@@ -113,9 +113,9 @@ void DocumentMarkerController::AddTextMatchMarker(
   for (TextIterator marked_text(range.StartPosition(), range.EndPosition());
        !marked_text.AtEnd(); marked_text.Advance()) {
     AddMarker(marked_text.CurrentContainer(),
-              DocumentMarker(marked_text.StartOffsetInCurrentContainer(),
-                             marked_text.EndOffsetInCurrentContainer(),
-                             match_status));
+              new DocumentMarker(marked_text.StartOffsetInCurrentContainer(),
+                                 marked_text.EndOffsetInCurrentContainer(),
+                                 match_status));
   }
   // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a
   // throttling algorithm. crbug.com/6819.
@@ -129,11 +129,12 @@ void DocumentMarkerController::AddCompositionMarker(const Position& start,
   DCHECK(!document_->NeedsLayoutTreeUpdate());
 
   for (TextIterator marked_text(start, end); !marked_text.AtEnd();
-       marked_text.Advance())
+       marked_text.Advance()) {
     AddMarker(marked_text.CurrentContainer(),
-              DocumentMarker(marked_text.StartOffsetInCurrentContainer(),
-                             marked_text.EndOffsetInCurrentContainer(),
-                             underline_color, thick, background_color));
+              new DocumentMarker(marked_text.StartOffsetInCurrentContainer(),
+                                 marked_text.EndOffsetInCurrentContainer(),
+                                 underline_color, thick, background_color));
+  }
 }
 
 void DocumentMarkerController::PrepareForDestruction() {
@@ -189,12 +190,12 @@ static void UpdateMarkerRenderedRect(const Node& node,
 // Markers of the same type do not overlap each other.
 
 void DocumentMarkerController::AddMarker(Node* node,
-                                         const DocumentMarker& new_marker) {
-  DCHECK_GE(new_marker.EndOffset(), new_marker.StartOffset());
-  if (new_marker.EndOffset() == new_marker.StartOffset())
+                                         DocumentMarker* new_marker) {
+  DCHECK_GE(new_marker->EndOffset(), new_marker->StartOffset());
+  if (new_marker->EndOffset() == new_marker->StartOffset())
     return;
 
-  possibly_existing_marker_types_.Add(new_marker.GetType());
+  possibly_existing_marker_types_.Add(new_marker->GetType());
 
   Member<MarkerLists>& markers =
       markers_.insert(node, nullptr).stored_value->value;
@@ -203,12 +204,12 @@ void DocumentMarkerController::AddMarker(Node* node,
     markers->Grow(DocumentMarker::kMarkerTypeIndexesCount);
   }
 
-  const DocumentMarker::MarkerType new_marker_type = new_marker.GetType();
+  const DocumentMarker::MarkerType new_marker_type = new_marker->GetType();
   if (!ListForType(markers, new_marker_type))
     ListForType(markers, new_marker_type) = new MarkerList;
 
   Member<MarkerList>& list = ListForType(markers, new_marker_type);
-  DocumentMarkerListEditor::AddMarker(list, &new_marker);
+  DocumentMarkerListEditor::AddMarker(list, new_marker);
 
   // repaint the affected node
   if (node->GetLayoutObject()) {
