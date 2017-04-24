@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/page_info/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -245,7 +246,8 @@ PermissionSelectorRow::PermissionSelectorRow(
                   views::GridLayout::CENTER);
   // Create the label that displays the permission type.
   label_ =
-      new views::Label(PageInfoUI::PermissionTypeToUIString(permission.type));
+      new views::Label(PageInfoUI::PermissionTypeToUIString(permission.type),
+                       CONTEXT_BODY_TEXT_LARGE);
   layout->AddView(label_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
   // Create the menu model.

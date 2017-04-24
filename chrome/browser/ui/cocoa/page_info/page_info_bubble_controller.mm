@@ -93,8 +93,10 @@ const CGFloat kPermissionDeleteImageSize = 16;
 // The spacing between individual permissions.
 const CGFloat kPermissionsVerticalSpacing = 16;
 
-// The spacing between permissions and their decision description labels.
-const CGFloat kPermissionsDecisionVerticalSpacing = 4;
+// Spacing to add after a permission label, either directly on top of
+// kPermissionsVerticalSpacing, or before additional text (e.g. "X in use" for
+// cookies).
+const CGFloat kPermissionLabelBottomPadding = 4;
 
 // Amount to lower each permission icon to align the icon baseline with the
 // label text.
@@ -904,16 +906,15 @@ bool IsInternalURL(const GURL& url) {
 
   // Update |point| to match the y of the bottomost UI element added (|button|).
   NSRect buttonFrame = [button frame];
-  point.y = NSMaxY(buttonFrame);
+  point.y = NSMaxY(labelFrame) + kPermissionLabelBottomPadding;
 
   // Show the reason for the permission decision in a new row if it did not come
   // from the user.
   base::string16 reason = PageInfoUI::PermissionDecisionReasonToUIString(
       [self profile], permissionInfo, url_);
   if (!reason.empty()) {
-    point.y += kPermissionsDecisionVerticalSpacing;
     label = [self addText:reason
-                 withSize:[NSFont systemFontSize]
+                 withSize:[NSFont smallSystemFontSize]
                      bold:NO
                    toView:view
                   atPoint:point];
@@ -1076,7 +1077,8 @@ bool IsInternalURL(const GURL& url) {
     // Align the icon with the text.
     [self alignPermissionIcon:imageView withTextField:cookiesLabel];
 
-    controlOrigin.y += NSHeight([cookiesLabel frame]);
+    controlOrigin.y +=
+        NSHeight([cookiesLabel frame]) + kPermissionLabelBottomPadding;
     controlOrigin.x -= NSWidth([cookiesButton frame]) - kLinkButtonXAdjustment;
     [cookiesButton setFrameOrigin:controlOrigin];
   } else {
@@ -1089,7 +1091,8 @@ bool IsInternalURL(const GURL& url) {
               atPoint:controlOrigin];
     [cookiesLabel sizeToFit];
 
-    controlOrigin.y += NSHeight([cookiesLabel frame]);
+    controlOrigin.y +=
+        NSHeight([cookiesLabel frame]) + kPermissionLabelBottomPadding;
     controlOrigin.x -= kLinkButtonXAdjustment;
     [cookiesButton setFrameOrigin:controlOrigin];
 
