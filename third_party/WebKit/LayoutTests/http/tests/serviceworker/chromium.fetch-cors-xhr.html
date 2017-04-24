@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!-- This test is prefixed with `chromium.` because the equivalent version
+  available in Web Platform Tests is known to cause timeout errors in the
+  Chromium automated build system. They should be maintained only to preserve
+  test converage until the corresponding versions in Web Platform Tests can be
+  made to pass consistently. See
+  https://codereview.chromium.org/2805313003/ -->
 <title>Service Worker: CORS XHR of fetch()</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
