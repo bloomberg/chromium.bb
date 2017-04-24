@@ -17,9 +17,12 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -45,6 +48,69 @@ std::unique_ptr<KeyedService> CreateTestPolicyCertService(
       user_manager::UserManager::Get());
 }
 
+// A user manager that does not set profiles as loaded and notifies observers
+// when users being added to a session.
+class TestChromeUserManager : public FakeChromeUserManager {
+ public:
+  TestChromeUserManager() = default;
+  ~TestChromeUserManager() override = default;
+
+  // user_manager::UserManager:
+  void UserLoggedIn(const AccountId& account_id,
+                    const std::string& user_id_hash,
+                    bool browser_restart) override {
+    FakeChromeUserManager::UserLoggedIn(account_id, user_id_hash,
+                                        browser_restart);
+    active_user_ = const_cast<user_manager::User*>(FindUser(account_id));
+    NotifyOnLogin();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestChromeUserManager);
+};
+
+// A session controller interface implementation that tracks sessions and users.
+class TestSessionController : public ash::mojom::SessionController {
+ public:
+  TestSessionController() : binding_(this) {}
+  ~TestSessionController() override {}
+
+  ash::mojom::SessionControllerPtr CreateInterfacePtrAndBind() {
+    return binding_.CreateInterfacePtrAndBind();
+  }
+
+  ash::mojom::SessionInfo* last_session_info() {
+    return last_session_info_.get();
+  }
+
+  ash::mojom::UserSession* last_user_session() {
+    return last_user_session_.get();
+  }
+
+  // ash::mojom::SessionController:
+  void SetClient(ash::mojom::SessionControllerClientPtr client) override {}
+  void SetSessionInfo(ash::mojom::SessionInfoPtr info) override {
+    last_session_info_ = info->Clone();
+  }
+  void UpdateUserSession(ash::mojom::UserSessionPtr user_session) override {
+    last_user_session_ = user_session->Clone();
+  }
+  void SetUserSessionOrder(
+      const std::vector<uint32_t>& user_session_order) override {}
+  void StartLock(const StartLockCallback& callback) override {}
+  void RunUnlockAnimation(const RunUnlockAnimationCallback& callback) override {
+  }
+  void NotifyChromeTerminating() override {}
+
+ private:
+  mojo::Binding<ash::mojom::SessionController> binding_;
+
+  ash::mojom::SessionInfoPtr last_session_info_;
+  ash::mojom::UserSessionPtr last_user_session_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSessionController);
+};
+
 }  // namespace
 
 class SessionControllerClientTest : public testing::Test {
@@ -53,17 +119,19 @@ class SessionControllerClientTest : public testing::Test {
   ~SessionControllerClientTest() override {}
 
   void SetUp() override {
-    // Initialize the UserManager singleton to a fresh FakeChromeUserManager
-    // instance.
-    user_manager_ = new FakeChromeUserManager;
+    testing::Test::SetUp();
+
+    // Initialize the UserManager singleton.
+    user_manager_ = new TestChromeUserManager;
     user_manager_enabler_.reset(
         new chromeos::ScopedUserManagerEnabler(user_manager_));
 
-    testing::Test::SetUp();
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
   }
 
   void TearDown() override {
-    testing::Test::TearDown();
     user_manager_enabler_.reset();
     user_manager_ = nullptr;
     // Clear our cached pointer to the PolicyCertVerifier.
@@ -77,6 +145,8 @@ class SessionControllerClientTest : public testing::Test {
     // PolicyCertService::OnTrustAnchorsChanged() which is called from
     // PolicyCertService::Shutdown()).
     base::RunLoop().RunUntilIdle();
+
+    testing::Test::TearDown();
   }
 
   // Add and log in a user to the session.
@@ -93,17 +163,20 @@ class SessionControllerClientTest : public testing::Test {
         .GetUserEmail();
   }
 
-  FakeChromeUserManager* user_manager() { return user_manager_; }
+  TestChromeUserManager* user_manager() { return user_manager_; }
 
+  // Adds a regular user with a profile.
   void InitForMultiProfile() {
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-    ASSERT_TRUE(profile_manager_->SetUp());
-
     const AccountId account_id(AccountId::FromUserEmail(kUser));
     const user_manager::User* user = user_manager()->AddUser(account_id);
 
     // Note that user profiles are created after user login in reality.
+    CreateTestingProfile(user);
+  }
+
+  // Calls private methods to create a testing profile.
+  void CreateTestingProfile(const user_manager::User* user) {
+    const AccountId& account_id = user->GetAccountId();
     user_profile_ =
         profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
     user_profile_->set_profile_name(account_id.GetUserEmail());
@@ -115,12 +188,13 @@ class SessionControllerClientTest : public testing::Test {
   std::unique_ptr<policy::PolicyCertVerifier> cert_verifier_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* user_profile_;
+  session_manager::SessionManager session_manager_;
 
  private:
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
   // Owned by |user_manager_enabler_|.
-  FakeChromeUserManager* user_manager_ = nullptr;
+  TestChromeUserManager* user_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SessionControllerClientTest);
 };
@@ -141,9 +215,11 @@ TEST_F(SessionControllerClientTest, CyclingThreeUsers) {
   UserAddedToSession("firstuser@test.com");
   UserAddedToSession("seconduser@test.com");
   UserAddedToSession("thirduser@test.com");
-  const ash::CycleUserDirection forward = ash::CycleUserDirection::NEXT;
+  user_manager()->SwitchActiveUser(
+      AccountId::FromUserEmail("firstuser@test.com"));
 
   // Cycle forward.
+  const ash::CycleUserDirection forward = ash::CycleUserDirection::NEXT;
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
   SessionControllerClient::DoCycleActiveUser(forward);
   EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
@@ -282,4 +358,65 @@ TEST_F(SessionControllerClientTest,
   user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
             SessionControllerClient::GetAddUserSessionPolicy());
+}
+
+TEST_F(SessionControllerClientTest, SupervisedUser) {
+  // Create an object to test and connect it to our test interface.
+  SessionControllerClient client;
+  TestSessionController session_controller;
+  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
+  client.Init();
+  SessionControllerClient::FlushForTesting();
+
+  // Simulate the login screen. No user session yet.
+  session_manager_.SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  EXPECT_FALSE(session_controller.last_user_session());
+
+  // Simulate a supervised user logging in.
+  const AccountId account_id(AccountId::FromUserEmail("child@test.com"));
+  const user_manager::User* user =
+      user_manager()->AddSupervisedUser(account_id);
+  ASSERT_TRUE(user);
+
+  // Start session. This logs in the user and sends an active user notification.
+  // The hash must match the one used by FakeChromeUserManager.
+  session_manager_.CreateSession(
+      account_id, chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+                      "child@test.com"));
+  SessionControllerClient::FlushForTesting();
+
+  // The session controller received session info and user session.
+  EXPECT_LT(0u, session_controller.last_user_session()->session_id);
+  EXPECT_EQ(user_manager::USER_TYPE_SUPERVISED,
+            session_controller.last_user_session()->type);
+
+  // Simulate profile creation after login.
+  CreateTestingProfile(user);
+  user_profile_->SetSupervisedUserId("child-id");
+
+  // Simulate supervised user custodians.
+  PrefService* prefs = user_profile_->GetPrefs();
+  prefs->SetString(prefs::kSupervisedUserCustodianEmail, "parent1@test.com");
+  prefs->SetString(prefs::kSupervisedUserSecondCustodianEmail,
+                   "parent2@test.com");
+
+  // Simulate the notification that the profile is ready.
+  client.OnLoginUserProfilePrepared(user_profile_);
+  base::RunLoop().RunUntilIdle();  // For PostTask and mojo interface.
+
+  // The custodians were sent over the mojo interface.
+  EXPECT_EQ("parent1@test.com",
+            session_controller.last_user_session()->custodian_email);
+  EXPECT_EQ("parent2@test.com",
+            session_controller.last_user_session()->second_custodian_email);
+
+  // Simulate an update to the custodian information.
+  prefs->SetString(prefs::kSupervisedUserCustodianEmail, "parent3@test.com");
+  client.OnCustodianInfoChanged();
+  SessionControllerClient::FlushForTesting();
+
+  // The updated custodian was sent over the mojo interface.
+  EXPECT_EQ("parent3@test.com",
+            session_controller.last_user_session()->custodian_email);
 }

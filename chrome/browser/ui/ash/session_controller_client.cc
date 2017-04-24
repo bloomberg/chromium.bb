@@ -12,12 +12,15 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/theme_resources.h"
@@ -72,6 +75,17 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
         IDR_PROFILE_PICTURE_LOADING);
   }
 
+  if (user.IsSupervised()) {
+    Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(&user);
+    if (profile) {
+      SupervisedUserService* service =
+          SupervisedUserServiceFactory::GetForProfile(profile);
+      session->custodian_email = service->GetCustodianEmailAddress();
+      session->second_custodian_email =
+          service->GetSecondCustodianEmailAddress();
+    }
+  }
+
   chromeos::UserFlow* const user_flow =
       chromeos::ChromeUserManager::Get()->GetUserFlow(user.GetAccountId());
   session->should_enable_settings = user_flow->ShouldEnableSettings();
@@ -87,18 +101,16 @@ void DoSwitchUser(const AccountId& account_id) {
 
 }  // namespace
 
-SessionControllerClient::SessionControllerClient() : binding_(this) {
+SessionControllerClient::SessionControllerClient()
+    : binding_(this), weak_ptr_factory_(this) {
   SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
   UserManager::Get()->AddObserver(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
-
-  ConnectToSessionControllerAndSetClient();
-  SendSessionInfoIfChanged();
-  // User sessions and their order will be sent via UserSessionStateObserver
-  // even for crash-n-restart.
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+                 content::NotificationService::AllSources());
 
   DCHECK(!g_instance);
   g_instance = this;
@@ -108,9 +120,22 @@ SessionControllerClient::~SessionControllerClient() {
   DCHECK_EQ(this, g_instance);
   g_instance = nullptr;
 
+  if (supervised_user_profile_) {
+    SupervisedUserServiceFactory::GetForProfile(supervised_user_profile_)
+        ->RemoveObserver(this);
+  }
+
   SessionManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveSessionStateObserver(this);
+}
+
+void SessionControllerClient::Init() {
+  ConnectToSessionController();
+  session_controller_->SetClient(binding_.CreateInterfacePtrAndBind());
+  SendSessionInfoIfChanged();
+  // User sessions and their order will be sent via UserSessionStateObserver
+  // even for crash-n-restart.
 }
 
 // static
@@ -273,21 +298,69 @@ void SessionControllerClient::OnSessionStateChanged() {
   SendSessionInfoIfChanged();
 }
 
+void SessionControllerClient::OnCustodianInfoChanged() {
+  DCHECK(supervised_user_profile_);
+  User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
+      supervised_user_profile_);
+  if (user)
+    SendUserSession(*user);
+}
+
 void SessionControllerClient::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
-  session_controller_->NotifyChromeTerminating();
+  switch (type) {
+    case chrome::NOTIFICATION_APP_TERMINATING:
+      session_controller_->NotifyChromeTerminating();
+      break;
+    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
+      Profile* profile = content::Details<Profile>(details).ptr();
+      OnLoginUserProfilePrepared(profile);
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected notification " << type;
+      break;
+  }
 }
 
-void SessionControllerClient::ConnectToSessionControllerAndSetClient() {
+void SessionControllerClient::OnLoginUserProfilePrepared(Profile* profile) {
+  const User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  DCHECK(user);
+
+  if (profile->IsSupervised()) {
+    // There can be only one supervised user per session.
+    DCHECK(!supervised_user_profile_);
+    supervised_user_profile_ = profile;
+
+    // Watch for changes to supervised user manager/custodians.
+    SupervisedUserServiceFactory::GetForProfile(supervised_user_profile_)
+        ->AddObserver(this);
+  }
+
+  // Needed because the user-to-profile mapping isn't available until later,
+  // which is needed in UserToUserSession().
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&SessionControllerClient::SendUserSessionForProfile,
+                            weak_ptr_factory_.GetWeakPtr(), profile));
+}
+
+void SessionControllerClient::SendUserSessionForProfile(Profile* profile) {
+  DCHECK(profile);
+  const User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  DCHECK(user);
+  SendUserSession(*user);
+}
+
+void SessionControllerClient::ConnectToSessionController() {
+  // Tests may bind to their own SessionController.
+  if (session_controller_)
+    return;
+
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &session_controller_);
-
-  // Set as |session_controller_|'s client.
-  session_controller_->SetClient(binding_.CreateInterfacePtrAndBind());
 }
 
 void SessionControllerClient::SendSessionInfoIfChanged() {
@@ -315,6 +388,9 @@ void SessionControllerClient::SendUserSession(const User& user) {
   if (!user_session)
     return;
 
+  // TODO(jamescook): Only send if it changed. This will require an Equals()
+  // method for gfx::ImageSkia to allow mojom::UserSession comparison.
+  // http://crbug.com/714689
   session_controller_->UpdateUserSession(std::move(user_session));
 }
 

@@ -21,8 +21,12 @@ class ViewClickListener;
 // is supported.
 class LabelTrayView : public views::View {
  public:
+  // If |click_listener| is null then no action is taken on click.
   LabelTrayView(ViewClickListener* click_listener, const gfx::VectorIcon& icon);
   ~LabelTrayView() override;
+
+  const base::string16& message() { return message_; }
+
   void SetMessage(const base::string16& message);
 
  private:

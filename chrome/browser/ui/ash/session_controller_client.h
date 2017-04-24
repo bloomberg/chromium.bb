@@ -7,12 +7,17 @@
 
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+class Profile;
 
 namespace ash {
 enum class AddUserSessionPolicy;
@@ -30,10 +35,13 @@ class SessionControllerClient
       public user_manager::UserManager::UserSessionStateObserver,
       public user_manager::UserManager::Observer,
       public session_manager::SessionManagerObserver,
+      public SupervisedUserServiceObserver,
       public content::NotificationObserver {
  public:
   SessionControllerClient();
   ~SessionControllerClient() override;
+
+  void Init();
 
   static SessionControllerClient* Get();
 
@@ -64,6 +72,9 @@ class SessionControllerClient
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
 
+  // SupervisedUserServiceObserver:
+  void OnCustodianInfoChanged() override;
+
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -81,9 +92,16 @@ class SessionControllerClient
   static void FlushForTesting();
 
  private:
-  // Connects or reconnects to the |session_controller_| interface and set
-  // this object as its client.
-  void ConnectToSessionControllerAndSetClient();
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, SupervisedUser);
+
+  // Called when the login profile is ready.
+  void OnLoginUserProfilePrepared(Profile* profile);
+
+  // Sends the user session info for a given profile.
+  void SendUserSessionForProfile(Profile* profile);
+
+  // Connects to the |session_controller_| interface.
+  void ConnectToSessionController();
 
   // Sends session info to ash.
   void SendSessionInfoIfChanged();
@@ -103,10 +121,15 @@ class SessionControllerClient
   // Whether the primary user session info is sent to ash.
   bool primary_user_session_sent_ = false;
 
-  // For observing NOTIFICATION_APP_TERMINATING.
+  // If the session is for a supervised user, the profile of that user.
+  // Chrome OS only supports a single supervised user in a session.
+  Profile* supervised_user_profile_ = nullptr;
+
   content::NotificationRegistrar registrar_;
 
   ash::mojom::SessionInfoPtr last_sent_session_info_;
+
+  base::WeakPtrFactory<SessionControllerClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionControllerClient);
 };

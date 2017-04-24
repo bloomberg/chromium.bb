@@ -368,8 +368,18 @@ Press Ctrl+Alt+Z to disable.
         Shut down
       </message>
 
+      <!-- Status tray supervised users. -->
       <message name="IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL" desc="Label shown instead of email for supervised users">
          Supervised user
+      </message>
+      <message name="IDS_ASH_USER_IS_SUPERVISED_BY_NOTICE" desc="Text for notifications showing that this user is supervised">
+        Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL">$1<ex>user@example.com</ex></ph>) on chrome.com.
+      </message>
+      <message name="IDS_ASH_CHILD_USER_IS_MANAGED_BY_ONE_PARENT_NOTICE" desc="Text for notifications showing that this child user is managed by parent's account.">
+        This is an account for kids managed by <ph name="MANAGER_EMAIL">$1<ex>user@example.com</ex></ph>
+      </message>
+      <message name="IDS_ASH_CHILD_USER_IS_MANAGED_BY_TWO_PARENTS_NOTICE" desc="Text for notifications showing that this child user is managed by two parents' accounts.">
+        This is an account for kids managed by <ph name="FIRST_PARENT_EMAIL">$1<ex>first@example.com</ex></ph> and <ph name="SECOND_PARENT_EMAIL">$2<ex>second@example.com</ex></ph>
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_PREVIOUS_MENU" desc="The accessible text for header entries for detailed versions of status tray items.">

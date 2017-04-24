@@ -25,7 +25,6 @@ namespace ash {
 struct IMEInfo;
 struct IMEPropertyInfo;
 
-class CustodianInfoTrayObserver;
 class SystemTray;
 class SystemTrayItem;
 
@@ -37,15 +36,10 @@ class NetworkingConfigDelegate;
 // SystemTrayDelegate is intended for delegating tasks in the System Tray to the
 // application (e.g. Chrome). These tasks should be limited to application
 // (browser) specific tasks. For non application specific tasks, where possible,
-// components/, chromeos/, device/, etc., code should be used directly. If more
-// than one related method is being added, consider adding an additional
-// specific delegate (e.g. CastConfigDelegate).
+// components/, chromeos/, device/, etc., code should be used directly.
 //
-// These methods should all have trivial default implementations for platforms
-// that do not implement the method (e.g. return false or nullptr). This
-// eliminates the need to propagate default implementations across the various
-// implementations of this class. Consumers of this delegate should handle the
-// default return value (e.g. nullptr).
+// DEPRECATED: This class is being replaced with SystemTrayController and
+// SessionController to support mash/mustash. Add new code to those classes.
 class ASH_EXPORT SystemTrayDelegate {
  public:
   SystemTrayDelegate();
@@ -66,19 +60,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns notification for enterprise enrolled devices.
   virtual base::string16 GetEnterpriseMessage() const;
-
-  // Returns the display email of the user that manages the current supervised
-  // user.
-  // TODO(jamescook): Migrate to SessionController. http://crbug.com/712799
-  virtual std::string GetSupervisedUserManager() const;
-
-  // Returns the name of the user that manages the current supervised user.
-  // TODO(jamescook): Migrate to SessionController. http://crbug.com/712799
-  virtual base::string16 GetSupervisedUserManagerName() const;
-
-  // Returns the notification for supervised users.
-  // TODO(jamescook): Migrate to SessionController. http://crbug.com/712799
-  virtual base::string16 GetSupervisedUserMessage() const;
 
   // Shows information about enterprise enrolled devices.
   virtual void ShowEnterpriseInfo();
@@ -120,13 +101,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns true when the Search key is configured to be treated as Caps Lock.
   virtual bool IsSearchKeyMappedToCapsLock();
-
-  // Adding observers that are notified when supervised info is being changed.
-  virtual void AddCustodianInfoTrayObserver(
-      CustodianInfoTrayObserver* observer);
-
-  virtual void RemoveCustodianInfoTrayObserver(
-      CustodianInfoTrayObserver* observer);
 
   // Creates a system tray item for display rotation lock.
   // TODO(jamescook): Remove this when mus has support for display management

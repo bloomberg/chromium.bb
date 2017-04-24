@@ -34,6 +34,7 @@ class HoverHighlightView : public ActionableView {
     UNCHECKED_CHECKBOX
   };
 
+  // If |listener| is null then no action is taken on click.
   explicit HoverHighlightView(ViewClickListener* listener);
   ~HoverHighlightView() override;
 

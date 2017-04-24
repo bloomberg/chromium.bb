@@ -103,6 +103,16 @@ user_manager::User* FakeChromeUserManager::AddArcKioskAppUser(
   return user;
 }
 
+user_manager::User* FakeChromeUserManager::AddSupervisedUser(
+    const AccountId& account_id) {
+  user_manager::User* user =
+      user_manager::User::CreateSupervisedUser(account_id);
+  user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
+      account_id.GetUserEmail()));
+  users_.push_back(user);
+  return user;
+}
+
 const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
     const AccountId& account_id) {
   user_manager::User* user =
@@ -126,6 +136,14 @@ void FakeChromeUserManager::LoginUser(const AccountId& account_id) {
   UserLoggedIn(account_id, ProfileHelper::GetUserIdHashByUserIdForTesting(
                                account_id.GetUserEmail()),
                false /* browser_restart */);
+
+  // NOTE: This does not match production. See function comment.
+  for (auto* user : users_) {
+    if (user->GetAccountId() == account_id) {
+      user->set_profile_is_created();
+      break;
+    }
+  }
 }
 
 BootstrapManager* FakeChromeUserManager::GetBootstrapManager() {
@@ -370,7 +388,6 @@ void FakeChromeUserManager::UserLoggedIn(const AccountId& account_id,
   for (auto* user : users_) {
     if (user->username_hash() == username_hash) {
       user->set_is_logged_in(true);
-      user->set_profile_is_created();
       logged_in_users_.push_back(user);
 
       if (!primary_user_)
@@ -378,6 +395,7 @@ void FakeChromeUserManager::UserLoggedIn(const AccountId& account_id,
       break;
     }
   }
+  // TODO(jamescook): This should set active_user_ and call NotifyOnLogin().
 }
 
 void FakeChromeUserManager::SwitchToLastActiveUser() {

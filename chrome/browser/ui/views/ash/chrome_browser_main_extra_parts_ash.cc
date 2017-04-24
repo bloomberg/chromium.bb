@@ -75,6 +75,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   }
 
   session_controller_client_ = base::MakeUnique<SessionControllerClient>();
+  session_controller_client_->Init();
 
   // Must be available at login screen, so initialize before profile.
   system_tray_client_ = base::MakeUnique<SystemTrayClient>();

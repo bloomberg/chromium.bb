@@ -28,6 +28,7 @@ class TrayAccessibility;
 class TrayAudio;
 class TrayCast;
 class TrayNetwork;
+class TraySupervisedUser;
 class TraySystemInfo;
 class TrayTiles;
 class TrayUpdate;
@@ -140,11 +141,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
     return tray_accessibility_;
   }
 
-  // Get the tray item view (or NULL) for a given |tray_item| in a unit test.
-  views::View* GetTrayItemViewForTest(SystemTrayItem* tray_item);
-
   TrayCast* GetTrayCastForTesting() const;
   TrayNetwork* GetTrayNetworkForTesting() const;
+  TraySupervisedUser* GetTraySupervisedUserForTesting() const;
   TraySystemInfo* GetTraySystemInfoForTesting() const;
   TrayTiles* GetTrayTilesForTesting() const;
 
@@ -210,9 +209,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Pointers to members of |items_|.
   SystemTrayItem* detailed_item_ = nullptr;
 
-  // Mappings of system tray item and it's view in the tray.
-  std::map<SystemTrayItem*, views::View*> tray_item_map_;
-
   // Bubble for default and detailed views.
   std::unique_ptr<SystemBubbleWrapper> system_bubble_;
 
@@ -231,6 +227,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayCast* tray_cast_ = nullptr;
   TrayNetwork* tray_network_ = nullptr;
   TrayTiles* tray_tiles_ = nullptr;
+  TraySupervisedUser* tray_supervised_user_ = nullptr;
   TraySystemInfo* tray_system_info_ = nullptr;
   TrayUpdate* tray_update_ = nullptr;
 

@@ -33,7 +33,6 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
 
   // SystemTrayDelegate:
   LoginStatus GetUserLoginStatus() const override;
-  std::string GetSupervisedUserManager() const override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   void GetCurrentIME(IMEInfo* info) override;

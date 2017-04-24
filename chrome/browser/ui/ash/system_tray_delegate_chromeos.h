@@ -12,14 +12,12 @@
 #include <vector>
 
 #include "ash/accessibility_types.h"
-#include "ash/system/supervised/custodian_info_tray_observer.h"
 #include "ash/system/tray/ime_info.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -44,7 +42,6 @@ class SystemTrayDelegateChromeOS
       public policy::CloudPolicyStore::Observer,
       public chrome::BrowserListObserver,
       public extensions::AppWindowRegistry::Observer,
-      public SupervisedUserServiceObserver,
       public input_method::InputMethodManager::ImeMenuObserver {
  public:
   SystemTrayDelegateChromeOS();
@@ -55,9 +52,6 @@ class SystemTrayDelegateChromeOS
   ash::LoginStatus GetUserLoginStatus() const override;
   std::string GetEnterpriseDomain() const override;
   base::string16 GetEnterpriseMessage() const override;
-  std::string GetSupervisedUserManager() const override;
-  base::string16 GetSupervisedUserManagerName() const override;
-  base::string16 GetSupervisedUserMessage() const override;
   void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
   void GetCurrentIME(ash::IMEInfo* info) override;
@@ -71,10 +65,6 @@ class SystemTrayDelegateChromeOS
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   void ActiveUserWasChanged() override;
   bool IsSearchKeyMappedToCapsLock() override;
-  void AddCustodianInfoTrayObserver(
-      ash::CustodianInfoTrayObserver* observer) override;
-  void RemoveCustodianInfoTrayObserver(
-      ash::CustodianInfoTrayObserver* observer) override;
   std::unique_ptr<ash::SystemTrayItem> CreateRotationLockTrayItem(
       ash::SystemTray* tray) override;
 
@@ -94,8 +84,6 @@ class SystemTrayDelegateChromeOS
   void UpdateSessionLengthLimit();
 
   void StopObservingAppWindowRegistry();
-
-  void StopObservingCustodianInfoChanges();
 
   // Notify observers if the current user has no more open browser or app
   // windows.
@@ -134,9 +122,6 @@ class SystemTrayDelegateChromeOS
   // Overridden from extensions::AppWindowRegistry::Observer:
   void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
 
-  // Overridden from SupervisedUserServiceObserver:
-  void OnCustodianInfoChanged() override;
-
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
 
@@ -147,10 +132,6 @@ class SystemTrayDelegateChromeOS
       const std::string& engine_id,
       const std::vector<input_method::InputMethodManager::MenuItem>& items)
       override;
-
-  // helper methods used by GetSupervisedUserMessage.
-  const base::string16 GetLegacySupervisedUserMessage() const;
-  const base::string16 GetChildUserMessage() const;
 
   std::unique_ptr<content::NotificationRegistrar> registrar_;
   std::unique_ptr<PrefChangeRegistrar> local_state_registrar_;
@@ -167,9 +148,6 @@ class SystemTrayDelegateChromeOS
 
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
-
-  base::ObserverList<ash::CustodianInfoTrayObserver>
-      custodian_info_changed_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateChromeOS);
 };

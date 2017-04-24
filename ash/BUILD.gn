@@ -475,7 +475,6 @@ component("ash") {
     "system/status_area_widget.h",
     "system/status_area_widget_delegate.cc",
     "system/status_area_widget_delegate.h",
-    "system/supervised/custodian_info_tray_observer.h",
     "system/supervised/tray_supervised_user.cc",
     "system/supervised/tray_supervised_user.h",
     "system/system_clock_observer.cc",

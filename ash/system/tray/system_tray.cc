@@ -256,7 +256,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 
   AddTrayItem(base::MakeUnique<TraySessionLengthLimit>(this));
   AddTrayItem(base::MakeUnique<TrayEnterprise>(this));
-  AddTrayItem(base::MakeUnique<TraySupervisedUser>(this));
+  tray_supervised_user_ = new TraySupervisedUser(this);
+  AddTrayItem(base::WrapUnique(tray_supervised_user_));
   AddTrayItem(base::MakeUnique<TrayIME>(this));
   AddTrayItem(base::WrapUnique(tray_accessibility_));
   AddTrayItem(base::MakeUnique<TrayTracing>(this));
@@ -304,7 +305,6 @@ void SystemTray::AddTrayItem(std::unique_ptr<SystemTrayItem> item) {
   if (tray_item) {
     tray_container()->AddChildViewAt(tray_item, 0);
     PreferredSizeChanged();
-    tray_item_map_[item_ptr] = tray_item;
   }
 }
 
@@ -612,18 +612,16 @@ void SystemTray::HideBubble(const TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
-views::View* SystemTray::GetTrayItemViewForTest(SystemTrayItem* item) {
-  std::map<SystemTrayItem*, views::View*>::iterator it =
-      tray_item_map_.find(item);
-  return it == tray_item_map_.end() ? NULL : it->second;
-}
-
 TrayCast* SystemTray::GetTrayCastForTesting() const {
   return tray_cast_;
 }
 
 TrayNetwork* SystemTray::GetTrayNetworkForTesting() const {
   return tray_network_;
+}
+
+TraySupervisedUser* SystemTray::GetTraySupervisedUserForTesting() const {
+  return tray_supervised_user_;
 }
 
 TraySystemInfo* SystemTray::GetTraySystemInfoForTesting() const {

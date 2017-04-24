@@ -6,60 +6,43 @@
 #define ASH_SYSTEM_SUPERVISED_TRAY_SUPERVISED_USER_H_
 
 #include "ash/ash_export.h"
-#include "ash/system/supervised/custodian_info_tray_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "ash/system/tray/view_click_listener.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
-namespace gfx {
-struct VectorIcon;
-}  // namespace gfx
-
 namespace ash {
-class LabelTrayView;
+
 class SystemTray;
 
+// System tray item that shows a message if the user is supervised or a child.
+// Also shows a notification on login if the user is supervised. Shows a new
+// notification if the user manager/custodian changes.
 class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
-                                      public ViewClickListener,
-                                      public CustodianInfoTrayObserver {
+                                      public SessionObserver {
  public:
   explicit TraySupervisedUser(SystemTray* system_tray);
   ~TraySupervisedUser() override;
 
-  // If message is not empty updates content of default view, otherwise hides
-  // tray items.
-  void UpdateMessage();
-
-  // Overridden from SystemTrayItem.
+  // SystemTrayItem:
   views::View* CreateDefaultView(LoginStatus status) override;
-  void DestroyDefaultView() override;
-  void UpdateAfterLoginStatusChange(LoginStatus status) override;
 
-  // Overridden from ViewClickListener.
-  void OnViewClicked(views::View* sender) override;
-
-  // Overridden from CustodianInfoTrayObserver:
-  void OnCustodianInfoChanged() override;
+  // SessionObserver:
+  void OnUserSessionUpdated(const AccountId& account_id) override;
 
  private:
   friend class TraySupervisedUserTest;
 
   static const char kNotificationId[];
 
-  void CreateOrUpdateNotification(const base::string16& new_message);
+  void CreateOrUpdateNotification();
 
-  void CreateOrUpdateSupervisedWarningNotification();
+  base::string16 GetSupervisedUserMessage() const;
 
-  const gfx::VectorIcon& GetSupervisedUserIcon() const;
+  std::string custodian_email_;
+  std::string second_custodian_email_;
 
-  LabelTrayView* tray_view_;
-
-  // Previous login status to avoid showing notification upon unlock.
-  LoginStatus status_;
-
-  // Previous user supervised state to avoid showing notification upon unlock.
-  bool is_user_supervised_;
+  ScopedSessionObserver scoped_session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySupervisedUser);
 };

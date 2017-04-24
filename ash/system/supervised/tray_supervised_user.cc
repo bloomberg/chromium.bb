@@ -6,128 +6,122 @@
 
 #include <utility>
 
-#include "ash/login_status.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/label_tray_view.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 
+using base::UTF8ToUTF16;
+using message_center::MessageCenter;
 using message_center::Notification;
 
 namespace ash {
+namespace {
+
+const gfx::VectorIcon& GetSupervisedUserIcon() {
+  SessionController* session_controller = Shell::Get()->session_controller();
+  DCHECK(session_controller->IsUserSupervised());
+
+  if (session_controller->IsUserChild())
+    return kSystemMenuChildUserIcon;
+
+  return kSystemMenuSupervisedUserIcon;
+}
+
+}  // namespace
 
 const char TraySupervisedUser::kNotificationId[] =
     "chrome://user/locally-managed";
 
 TraySupervisedUser::TraySupervisedUser(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_SUPERVISED_USER),
-      tray_view_(nullptr),
-      status_(LoginStatus::NOT_LOGGED_IN),
-      is_user_supervised_(false) {
-  Shell::Get()->system_tray_delegate()->AddCustodianInfoTrayObserver(this);
-}
+      scoped_session_observer_(this) {}
 
-TraySupervisedUser::~TraySupervisedUser() {
-  // We need the check as on shell destruction delegate is destroyed first.
-  SystemTrayDelegate* system_tray_delegate =
-      Shell::Get()->system_tray_delegate();
-  if (system_tray_delegate)
-    system_tray_delegate->RemoveCustodianInfoTrayObserver(this);
-}
-
-void TraySupervisedUser::UpdateMessage() {
-  base::string16 message =
-      Shell::Get()->system_tray_delegate()->GetSupervisedUserMessage();
-  if (tray_view_)
-    tray_view_->SetMessage(message);
-  if (message_center::MessageCenter::Get()->FindVisibleNotificationById(
-          kNotificationId))
-    CreateOrUpdateNotification(message);
-}
+TraySupervisedUser::~TraySupervisedUser() = default;
 
 views::View* TraySupervisedUser::CreateDefaultView(LoginStatus status) {
-  DCHECK(!tray_view_);
   if (!Shell::Get()->session_controller()->IsUserSupervised())
     return nullptr;
 
-  tray_view_ = new LabelTrayView(this, GetSupervisedUserIcon());
-  UpdateMessage();
-  return tray_view_;
+  LabelTrayView* tray_view =
+      new LabelTrayView(nullptr, GetSupervisedUserIcon());
+  // The message almost never changes during a session, so we compute it when
+  // the menu is shown. We don't update it while the menu is open.
+  tray_view->SetMessage(GetSupervisedUserMessage());
+  return tray_view;
 }
 
-void TraySupervisedUser::DestroyDefaultView() {
-  tray_view_ = nullptr;
-}
-
-void TraySupervisedUser::OnViewClicked(views::View* sender) {
-  // TODO(antrim): Find out what should we show in this case.
-}
-
-void TraySupervisedUser::UpdateAfterLoginStatusChange(LoginStatus status) {
-  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
-  SessionController* session = Shell::Get()->session_controller();
-
-  const bool is_user_supervised = session->IsUserSupervised();
-  if (status == status_ && is_user_supervised == is_user_supervised_)
+void TraySupervisedUser::OnUserSessionUpdated(const AccountId& account_id) {
+  // NOTE: This doesn't use OnUserSessionAdded() because the custodian info
+  // isn't available until after the session starts.
+  SessionController* session_controller = Shell::Get()->session_controller();
+  if (!session_controller->IsUserSupervised())
     return;
 
-  if (is_user_supervised && !session->IsUserChild() &&
-      status_ != LoginStatus::LOCKED &&
-      !delegate->GetSupervisedUserManager().empty()) {
-    CreateOrUpdateSupervisedWarningNotification();
-  }
+  // Get the active user session.
+  DCHECK(session_controller->IsActiveUserSessionStarted());
+  const mojom::UserSession* const user_session =
+      session_controller->GetUserSession(0);
+  DCHECK(user_session);
 
-  status_ = status;
-  is_user_supervised_ = is_user_supervised;
+  // Only respond to updates for the active user.
+  if (user_session->account_id != account_id)
+    return;
+
+  // Show notifications when custodian data first becomes available on login
+  // and if the custodian data changes.
+  if (custodian_email_ == user_session->custodian_email &&
+      second_custodian_email_ == user_session->second_custodian_email) {
+    return;
+  }
+  custodian_email_ = user_session->custodian_email;
+  second_custodian_email_ = user_session->second_custodian_email;
+
+  CreateOrUpdateNotification();
 }
 
-void TraySupervisedUser::CreateOrUpdateNotification(
-    const base::string16& new_message) {
+void TraySupervisedUser::CreateOrUpdateNotification() {
   std::unique_ptr<Notification> notification(
       message_center::Notification::CreateSystemNotification(
-          kNotificationId, base::string16() /* no title */, new_message,
+          kNotificationId, base::string16() /* no title */,
+          GetSupervisedUserMessage(),
           gfx::Image(
               gfx::CreateVectorIcon(GetSupervisedUserIcon(), kMenuIconColor)),
           system_notifier::kNotifierSupervisedUser,
           base::Closure() /* null callback */));
-  message_center::MessageCenter::Get()->AddNotification(
-      std::move(notification));
+  // AddNotification does an update if the notification already exists.
+  MessageCenter::Get()->AddNotification(std::move(notification));
 }
 
-void TraySupervisedUser::CreateOrUpdateSupervisedWarningNotification() {
-  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
-  CreateOrUpdateNotification(delegate->GetSupervisedUserMessage());
-}
+base::string16 TraySupervisedUser::GetSupervisedUserMessage() const {
+  base::string16 first_custodian = UTF8ToUTF16(custodian_email_);
+  base::string16 second_custodian = UTF8ToUTF16(second_custodian_email_);
 
-void TraySupervisedUser::OnCustodianInfoChanged() {
-  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
-  std::string manager_name = delegate->GetSupervisedUserManager();
-  if (!manager_name.empty()) {
-    if (!Shell::Get()->session_controller()->IsUserChild() &&
-        !message_center::MessageCenter::Get()->FindVisibleNotificationById(
-            kNotificationId)) {
-      CreateOrUpdateSupervisedWarningNotification();
-    }
-    UpdateMessage();
+  // Regular supervised user. The "manager" is the first custodian.
+  if (!Shell::Get()->session_controller()->IsUserChild()) {
+    return l10n_util::GetStringFUTF16(IDS_ASH_USER_IS_SUPERVISED_BY_NOTICE,
+                                      first_custodian);
   }
-}
 
-const gfx::VectorIcon& TraySupervisedUser::GetSupervisedUserIcon() const {
-  // Not intended to be used for non-supervised users.
-  DCHECK(Shell::Get()->session_controller()->IsUserSupervised());
-
-  if (Shell::Get()->session_controller()->IsUserChild())
-    return kSystemMenuChildUserIcon;
-  return kSystemMenuSupervisedUserIcon;
+  // Child supervised user.
+  if (second_custodian.empty()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_ASH_CHILD_USER_IS_MANAGED_BY_ONE_PARENT_NOTICE, first_custodian);
+  }
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_CHILD_USER_IS_MANAGED_BY_TWO_PARENTS_NOTICE, first_custodian,
+      second_custodian);
 }
 
 }  // namespace ash

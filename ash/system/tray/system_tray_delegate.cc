@@ -31,18 +31,6 @@ base::string16 SystemTrayDelegate::GetEnterpriseMessage() const {
   return base::string16();
 }
 
-std::string SystemTrayDelegate::GetSupervisedUserManager() const {
-  return std::string();
-}
-
-base::string16 SystemTrayDelegate::GetSupervisedUserManagerName() const {
-  return base::string16();
-}
-
-base::string16 SystemTrayDelegate::GetSupervisedUserMessage() const {
-  return base::string16();
-}
-
 void SystemTrayDelegate::ShowEnterpriseInfo() {}
 
 void SystemTrayDelegate::ShowUserLogin() {}
@@ -81,12 +69,6 @@ void SystemTrayDelegate::ActiveUserWasChanged() {}
 bool SystemTrayDelegate::IsSearchKeyMappedToCapsLock() {
   return false;
 }
-
-void SystemTrayDelegate::AddCustodianInfoTrayObserver(
-    CustodianInfoTrayObserver* observer) {}
-
-void SystemTrayDelegate::RemoveCustodianInfoTrayObserver(
-    CustodianInfoTrayObserver* observer) {}
 
 std::unique_ptr<SystemTrayItem> SystemTrayDelegate::CreateRotationLockTrayItem(
     SystemTray* tray) {

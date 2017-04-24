@@ -28,14 +28,16 @@ class FakeChromeUserManager : public ChromeUserManager {
   FakeChromeUserManager();
   ~FakeChromeUserManager() override;
 
-  // Create and add a kiosk app user.
+  // Create and add various types of users.
   user_manager::User* AddKioskAppUser(const AccountId& account_id);
   user_manager::User* AddArcKioskAppUser(const AccountId& account_id);
-
-  // Create and add a public account user.
+  user_manager::User* AddSupervisedUser(const AccountId& account_id);
   const user_manager::User* AddPublicAccountUser(const AccountId& account_id);
 
   // Calculates the user name hash and calls UserLoggedIn to login a user.
+  // Sets the user as having its profile created, but does not create a profile.
+  // NOTE: This does not match production, which first logs in the user, then
+  // creates the profile and updates the user later.
   void LoginUser(const AccountId& account_id);
 
   const user_manager::User* AddUser(const AccountId& account_id);

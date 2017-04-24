@@ -40,12 +40,6 @@ LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   return Shell::Get()->session_controller()->login_status();
 }
 
-std::string TestSystemTrayDelegate::GetSupervisedUserManager() const {
-  if (!Shell::Get()->session_controller()->IsUserSupervised())
-    return std::string();
-  return "manager@chrome.com";
-}
-
 bool TestSystemTrayDelegate::GetSessionStartTime(
     base::TimeTicks* session_start_time) {
   // Just returns TimeTicks::Now(), so the remaining time is always the
