@@ -4396,7 +4396,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 }
 
 #if CONFIG_EXT_TX
-#if !CONFIG_EC_ADAPT || !CONFIG_DAALA_EC
+#if !CONFIG_EC_ADAPT
 static void read_ext_tx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i, j, k;
   int s;
@@ -4422,7 +4422,7 @@ static void read_ext_tx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
     }
   }
 }
-#endif  // !CONFIG_EC_ADAPT || !CONFIG_DAALA_EC
+#endif  // !CONFIG_EC_ADAPT
 #else
 
 #endif  // CONFIG_EXT_TX
@@ -4721,7 +4721,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif
 #if !CONFIG_EC_ADAPT
     read_ext_tx_probs(fc, &r);
-#endif  // EC_ADAPT, DAALA_EC
+#endif  // EC_ADAPT
 #if CONFIG_SUPERTX
     if (!xd->lossless[0]) read_supertx_probs(fc, &r);
 #endif
