@@ -58,9 +58,11 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
 
   row->SetLayoutManager(layout);
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(1, 0);
+  // The first column has resize_percent = 1 so that it streches all the way
+  // across the row up to the amount label. This way the first label elides as
+  // required.
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                      0, views::GridLayout::USE_PREF, 0, 0);
 
