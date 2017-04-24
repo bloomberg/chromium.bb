@@ -588,24 +588,6 @@ public class MediaNotificationManager {
         sManagers.put(notificationId, manager);
     }
 
-    @VisibleForTesting
-    @Nullable
-    static ChromeNotificationBuilder getNotificationBuilderForTesting(int notificationId) {
-        MediaNotificationManager manager = getManager(notificationId);
-        if (manager == null) return null;
-
-        return manager.mNotificationBuilder;
-    }
-
-    @VisibleForTesting
-    @Nullable
-    static MediaNotificationInfo getMediaNotificationInfoForTesting(
-            int notificationId) {
-        MediaNotificationManager manager = getManager(notificationId);
-
-        return (manager == null) ? null : manager.mMediaNotificationInfo;
-    }
-
     private static boolean isRunningN() {
         return (sOverrideIsRunningNForTesting != null)
                 ? sOverrideIsRunningNForTesting

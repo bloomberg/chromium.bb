@@ -83,7 +83,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
     @Test
     public void testProcessIntentWhenManagerIsNull() {
         setUpService();
-        MediaNotificationManager.setManagerForTesting(NOTIFICATION_ID, null);
+        MediaNotificationManager.setManagerForTesting(getNotificationId(), null);
         assertFalse(mService.processIntent(new Intent()));
     }
 
@@ -227,7 +227,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         verify(mService).stopForeground(false);
         // One of the invocations comes from |setUpService()|.
         verify(MediaNotificationTestShadowNotificationManager.sMockObserver, times(2))
-                .notify(eq(NOTIFICATION_ID), any(Notification.class));
+                .notify(eq(getNotificationId()), any(Notification.class));
     }
 
     @Test
@@ -238,7 +238,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
         getManager().updateNotification();
 
-        verify(mService).startForeground(eq(NOTIFICATION_ID), any(Notification.class));
+        verify(mService).startForeground(eq(getNotificationId()), any(Notification.class));
     }
 
     @Test
@@ -249,6 +249,6 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
         getManager().updateNotification();
 
-        verify(mService).startForeground(eq(NOTIFICATION_ID), any(Notification.class));
+        verify(mService).startForeground(eq(getNotificationId()), any(Notification.class));
     }
 }

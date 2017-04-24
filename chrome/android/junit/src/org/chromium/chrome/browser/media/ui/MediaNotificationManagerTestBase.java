@@ -24,11 +24,11 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.view.KeyEvent;
 
 import org.junit.Before;
-
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowLog;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -37,11 +37,13 @@ import org.chromium.chrome.browser.AppHooksImpl;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
 import org.chromium.content_public.common.MediaMetadata;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Common test fixtures for MediaNotificationManager JUnit tests.
  */
 public class MediaNotificationManagerTestBase {
-    static final int NOTIFICATION_ID = 0;
+    private static final int NOTIFICATION_ID = 0;
     static final String NOTIFICATION_GROUP_NAME = "group-name";
     Context mMockContext;
     MockListenerService mService;
@@ -51,15 +53,15 @@ public class MediaNotificationManagerTestBase {
     MediaNotificationInfo.Builder mMediaNotificationInfoBuilder;
 
     static class MockMediaNotificationManager extends MediaNotificationManager {
-        public MockMediaNotificationManager() {
-            super(NOTIFICATION_ID);
+        public MockMediaNotificationManager(int notificationId) {
+            super(notificationId);
         }
     }
 
-    static class MockListenerService extends ListenerService {
+    class MockListenerService extends ListenerService {
         @Override
         protected MediaNotificationManager getManager() {
-            return MediaNotificationManager.getManager(NOTIFICATION_ID);
+            return MediaNotificationManager.getManager(getNotificationId());
         }
 
         @Override
@@ -87,19 +89,19 @@ public class MediaNotificationManagerTestBase {
 
         mListener = mock(MediaNotificationListener.class);
 
-        MediaNotificationManager.sMapNotificationIdToOptions.put(NOTIFICATION_ID,
+        MediaNotificationManager.sMapNotificationIdToOptions.put(getNotificationId(),
                 new MediaNotificationManager.NotificationOptions(MockListenerService.class,
                         MockMediaButtonReceiver.class, NOTIFICATION_GROUP_NAME));
 
         MediaNotificationManager.setManagerForTesting(
-                NOTIFICATION_ID, spy(new MockMediaNotificationManager()));
+                getNotificationId(), spy(new MockMediaNotificationManager(getNotificationId())));
 
         mMediaNotificationInfoBuilder =
                 new MediaNotificationInfo.Builder()
                         .setMetadata(new MediaMetadata("title", "artist", "album"))
                         .setOrigin("https://example.com")
                         .setListener(mListener)
-                        .setId(NOTIFICATION_ID);
+                        .setId(getNotificationId());
 
         doNothing().when(getManager()).onServiceStarted(any(ListenerService.class));
         // Robolectric does not have "ShadowMediaSession".
@@ -134,7 +136,7 @@ public class MediaNotificationManagerTestBase {
     }
 
     MediaNotificationManager getManager() {
-        return MediaNotificationManager.getManager(NOTIFICATION_ID);
+        return MediaNotificationManager.getManager(getNotificationId());
     }
 
     void ensureMediaNotificationInfo() {
@@ -189,5 +191,13 @@ public class MediaNotificationManagerTestBase {
         BitmapDrawable drawable = (BitmapDrawable) icon.loadDrawable(mMockContext);
         assert drawable != null;
         return drawable.getBitmap();
+    }
+
+    int getNotificationId() {
+        return NOTIFICATION_ID;
+    }
+
+    void advanceTimeByMillis(int timeMillis) {
+        ShadowLooper.idleMainLooper(timeMillis, TimeUnit.MILLISECONDS);
     }
 }

@@ -9,6 +9,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -35,5 +38,10 @@ public class MediaNotificationTestShadowResources extends ShadowResources {
     @Implementation
     public CharSequence getResourceName(int id) {
         return sResources.getResourceName(id);
+    }
+
+    @Implementation
+    public Drawable getDrawable(int id, Resources.Theme theme) {
+        return new ColorDrawable(Color.RED);
     }
 }
