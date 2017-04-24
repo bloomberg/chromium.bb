@@ -5,10 +5,12 @@
 package org.chromium.base;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
+import android.os.StrictMode;
 
 import org.chromium.base.annotations.CalledByNative;
 
@@ -26,32 +28,18 @@ public class BuildInfo {
     private BuildInfo() {}
 
     @CalledByNative
-    private static String[] getAll() {
-        try {
-            String packageName = ContextUtils.getApplicationContext().getPackageName();
-            PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
-            PackageInfo pi = pm.getPackageInfo(packageName, 0);
-            String versionCode = pi.versionCode <= 0 ? "" : Integer.toString(pi.versionCode);
-            String versionName = pi.versionName == null ? "" : pi.versionName;
+    public static String getDevice() {
+        return Build.DEVICE;
+    }
 
-            CharSequence label = pm.getApplicationLabel(pi.applicationInfo);
-            String packageLabel = label == null ? "" : label.toString();
+    @CalledByNative
+    public static String getBrand() {
+        return Build.BRAND;
+    }
 
-            // Use lastUpdateTime when developing locally, since versionCode does not normally
-            // change in this case.
-            long version = pi.versionCode > 10 ? pi.versionCode : pi.lastUpdateTime;
-            String extractedFileSuffix = String.format("@%s", Long.toHexString(version));
-
-            // Do not alter this list without updating callers of it.
-            return new String[] {
-                    Build.BRAND, Build.DEVICE, Build.ID, Build.MANUFACTURER, Build.MODEL,
-                    String.valueOf(Build.VERSION.SDK_INT), Build.TYPE, packageLabel, packageName,
-                    versionCode, versionName, getAndroidBuildFingerprint(), getGMSVersionCode(pm),
-                    extractedFileSuffix,
-            };
-        } catch (NameNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+    @CalledByNative
+    public static String getAndroidBuildId() {
+        return Build.ID;
     }
 
     /**
@@ -59,14 +47,28 @@ public class BuildInfo {
      * 128 characters as this is used for crash and UMA reporting, which should avoid huge
      * strings.
      */
-    private static String getAndroidBuildFingerprint() {
+    @CalledByNative
+    public static String getAndroidBuildFingerprint() {
         return Build.FINGERPRINT.substring(
                 0, Math.min(Build.FINGERPRINT.length(), MAX_FINGERPRINT_LENGTH));
     }
 
-    private static String getGMSVersionCode(PackageManager packageManager) {
+    @CalledByNative
+    public static String getDeviceManufacturer() {
+        return Build.MANUFACTURER;
+    }
+
+    @CalledByNative
+    public static String getDeviceModel() {
+        return Build.MODEL;
+    }
+
+    @CalledByNative
+    public static String getGMSVersionCode() {
         String msg = "gms versionCode not available.";
         try {
+            PackageManager packageManager =
+                    ContextUtils.getApplicationContext().getPackageManager();
             PackageInfo packageInfo = packageManager.getPackageInfo("com.google.android.gms", 0);
             msg = Integer.toString(packageInfo.versionCode);
         } catch (NameNotFoundException e) {
@@ -75,21 +77,83 @@ public class BuildInfo {
         return msg;
     }
 
+    @CalledByNative
+    public static String getPackageVersionCode() {
+        String msg = "versionCode not available.";
+        try {
+            PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
+            PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
+            msg = "";
+            if (pi.versionCode > 0) {
+                msg = Integer.toString(pi.versionCode);
+            }
+        } catch (NameNotFoundException e) {
+            Log.d(TAG, msg);
+        }
+        return msg;
+    }
+
+    @CalledByNative
     public static String getPackageVersionName() {
-        return getAll()[10];
+        String msg = "versionName not available";
+        try {
+            PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
+            PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
+            msg = "";
+            if (pi.versionName != null) {
+                msg = pi.versionName;
+            }
+        } catch (NameNotFoundException e) {
+            Log.d(TAG, msg);
+        }
+        return msg;
     }
 
     /** Returns a string that is different each time the apk changes. */
+    @CalledByNative
     public static String getExtractedFileSuffix() {
-        return getAll()[13];
+        PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
+        try {
+            PackageInfo pi =
+                    pm.getPackageInfo(ContextUtils.getApplicationContext().getPackageName(), 0);
+            // Use lastUpdateTime when developing locally, since versionCode does not normally
+            // change in this case.
+            long version = pi.versionCode > 10 ? pi.versionCode : pi.lastUpdateTime;
+            return "@" + Long.toHexString(version);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    @CalledByNative
     public static String getPackageLabel() {
-        return getAll()[7];
+        // Third-party code does disk read on the getApplicationInfo call. http://crbug.com/614343
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            PackageManager packageManager =
+                    ContextUtils.getApplicationContext().getPackageManager();
+            ApplicationInfo appInfo = packageManager.getApplicationInfo(
+                    getPackageName(), PackageManager.GET_META_DATA);
+            CharSequence label = packageManager.getApplicationLabel(appInfo);
+            return label != null ? label.toString() : "";
+        } catch (NameNotFoundException e) {
+            return "";
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
+    @CalledByNative
     public static String getPackageName() {
+        if (ContextUtils.getApplicationContext() == null) {
+            return "";
+        }
         return ContextUtils.getApplicationContext().getPackageName();
+    }
+
+    @CalledByNative
+    public static String getBuildType() {
+        return Build.TYPE;
     }
 
     /**
@@ -97,6 +161,11 @@ public class BuildInfo {
      */
     public static boolean isDebugAndroid() {
         return "eng".equals(Build.TYPE) || "userdebug".equals(Build.TYPE);
+    }
+
+    @CalledByNative
+    public static int getSdkInt() {
+        return Build.VERSION.SDK_INT;
     }
 
     /**
