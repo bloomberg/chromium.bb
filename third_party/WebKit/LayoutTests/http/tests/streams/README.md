@@ -1,5 +1,9 @@
 # Streams Tests in Blink
 
-These tests are drawn from those [in the reference implementation](https://github.com/whatwg/streams/tree/master/reference-implementation)'s web-platform-tests subdirectory. Eventually they will be upstreamed to web-platform-tests proper.
+Tests for ReadableStream and WritableStream can be found at
+LayoutTests/external/wpt/streams. Only things specific to Blink are in this
+directory.
 
-Slight modifications have been made in some cases, e.g. to remove references to `pipeTo` and `pipeThrough` since we have not implemented those yet.
+* chromium/ - Tests for functionality specific to Blink.
+* resources/ - Contains rs-utils.js, which is used by stream-related tests in
+  ../fetch.
