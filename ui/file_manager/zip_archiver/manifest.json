@@ -26,12 +26,12 @@
       "types":["application/zip"],
       "extensions": ["zip"],
       "verb": "open_with"
+    },
+    "pack": {
+      "types": ["*"],
+      "include_directories": true,
+      "verb": "pack_with"
     }
-    // "pack": {
-    //   "types": ["*"],
-    //   "include_directories": true,
-    //   "verb": "pack_with"
-    // }
   },
   "icons": {
     "16": "icons/icon16.png",
