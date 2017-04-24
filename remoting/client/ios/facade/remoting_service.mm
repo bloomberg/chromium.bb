@@ -19,6 +19,7 @@
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/client/ios/facade/host_info.h"
 #include "remoting/client/ios/facade/host_list_fetcher.h"
+#include "remoting/client/ios/facade/ios_client_runtime_delegate.h"
 
 const char kOauthRedirectUrl[] =
     "https://chromoting-oauth.talkgadget."
@@ -66,6 +67,7 @@ std::unique_ptr<remoting::OAuthTokenGetter> CreateOAuthTokenWithRefreshToken(
   id<RemotingAuthenticationDelegate> _authDelegate;
   id<RemotingHostListDelegate> _hostListDelegate;
   remoting::HostListFetcher* _hostListFetcher;
+  remoting::IosClientRuntimeDelegate* _clientRuntimeDelegate;
 }
 
 @end
@@ -96,6 +98,10 @@ std::unique_ptr<remoting::OAuthTokenGetter> CreateOAuthTokenWithRefreshToken(
     _hosts = nil;
     _hostListFetcher = new remoting::HostListFetcher(
         remoting::ChromotingClientRuntime::GetInstance()->url_requester());
+    // TODO(nicholss): This might need a pointer back to the service.
+    _clientRuntimeDelegate =
+        new remoting::IosClientRuntimeDelegate();
+    [self runtime]->SetDelegate(_clientRuntimeDelegate);
   }
   return self;
 }
@@ -250,6 +256,13 @@ std::unique_ptr<remoting::OAuthTokenGetter> CreateOAuthTokenWithRefreshToken(
 
 - (remoting::ChromotingClientRuntime*)runtime {
   return remoting::ChromotingClientRuntime::GetInstance();
+}
+
+- (void)callbackWithAccessToken:
+    (const remoting::OAuthTokenGetter::TokenCallback&)onAccessToken {
+  if (_tokenGetter) {
+    _tokenGetter->CallWithToken(onAccessToken);
+  }
 }
 
 @end

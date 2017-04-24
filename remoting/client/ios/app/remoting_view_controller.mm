@@ -8,6 +8,7 @@
 
 #import "remoting/client/ios/app/remoting_view_controller.h"
 
+#import "base/mac/bind_objc_block.h"
 #import "ios/third_party/material_components_ios/src/components/AnimationTiming/src/MaterialAnimationTiming.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
@@ -17,6 +18,11 @@
 #import "remoting/client/ios/app/pin_entry_view_controller.h"
 #import "remoting/client/ios/app/remoting_settings_view_controller.h"
 #import "remoting/client/ios/facade/remoting_service.h"
+#import "remoting/client/ios/session/remoting_client.h"
+
+#include "base/strings/sys_string_conversions.h"
+#include "remoting/base/oauth_token_getter.h"
+#include "remoting/client/connect_to_host_info.h"
 
 static CGFloat kHostInset = 5.f;
 
@@ -92,8 +98,8 @@ static CGFloat kHostInset = 5.f;
   if (!_isAuthenticated) {
     // TODO(nicholss): This is used as a demo of the app functionality for the
     // moment but the real app will force the login flow if unauthenticated.
-    //[self didSelectSettings];
-    [self didSelectRefresh];
+    [self didSelectSettings];
+    // [self didSelectRefresh];
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
     message.text = @"Please login.";
     [MDCSnackbarManager showMessage:message];
@@ -130,8 +136,47 @@ static CGFloat kHostInset = 5.f;
 
 - (void)didSelectCell:(HostCollectionViewCell*)cell
            completion:(void (^)())completionBlock {
-  HostViewController* hostVC = [HostViewController new];
-  [self presentViewController:hostVC animated:YES completion:nil];
+  RemotingClient* client = [[RemotingClient alloc] init];
+
+  [_remotingService
+      callbackWithAccessToken:base::BindBlockArc(^(
+                                  remoting::OAuthTokenGetter::Status status,
+                                  const std::string& user_email,
+                                  const std::string& access_token) {
+        // TODO(nicholss): Check status.
+        HostInfo* hostInfo = cell.hostInfo;
+        DCHECK(hostInfo);
+        DCHECK(hostInfo.jabberId);
+        DCHECK(hostInfo.hostId);
+        DCHECK(hostInfo.publicKey);
+
+        remoting::ConnectToHostInfo info;
+        info.username = user_email;
+        info.auth_token = access_token;
+        info.host_jid = base::SysNSStringToUTF8(hostInfo.jabberId);
+        info.host_id = base::SysNSStringToUTF8(hostInfo.hostId);
+        info.host_pubkey = base::SysNSStringToUTF8(hostInfo.publicKey);
+        // TODO(nicholss): If iOS supports pairing, pull the stored data and
+        // insert it here.
+        info.pairing_id = "";
+        info.pairing_secret = "";
+
+        // TODO(nicholss): I am not sure about the following fields yet.
+        // info.capabilities =
+        // info.flags =
+        // info.host_version =
+        // info.host_os =
+        // info.host_os_version =
+        [client connectToHost:info];
+      })];
+
+  HostViewController* hostViewController =
+      [[HostViewController alloc] initWithClient:client];
+
+  // TODO(nicholss): Add feedback on status of request.
+  [self presentViewController:hostViewController animated:YES completion:nil];
+
+  completionBlock();
 }
 
 - (NSInteger)getHostCount {

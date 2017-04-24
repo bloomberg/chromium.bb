@@ -10,6 +10,7 @@
 #import "remoting/client/ios/domain/user_info.h"
 
 #include "base/memory/weak_ptr.h"
+#include "remoting/base/oauth_token_getter.h"
 
 // |RemotingAuthenticationDelegate|s are interested in authentication related
 // notifications.
@@ -66,6 +67,10 @@
 
 // Returns the currently cached host list or nil if none exist.
 - (NSArray<HostInfo*>*)getHosts;
+
+// Fetches an OAuth Access Token and passes it back to the callback.
+- (void)callbackWithAccessToken:
+    (const remoting::OAuthTokenGetter::TokenCallback&)onAccessToken;
 
 @end
 

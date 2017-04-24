@@ -7,8 +7,11 @@
 
 #import <GLKit/GLKit.h>
 
-@interface HostViewController : GLKViewController {
-}
+@class RemotingClient;
+
+@interface HostViewController : GLKViewController
+
+- (id)initWithClient:(RemotingClient*)client;
 
 @end
 

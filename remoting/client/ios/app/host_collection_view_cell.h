@@ -9,10 +9,14 @@
 
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 
+@class HostInfo;
+
 @interface HostCollectionViewCell : MDCCollectionViewCell
 
-// Update a cell with a title and status. Typically called for cell reuse.
-- (void)populateContentWithTitle:(NSString*)title status:(NSString*)status;
+// Update a cell with host info. Typically called for cell reuse.
+- (void)populateContentWithHostInfo:(HostInfo*)hostInfo;
+
+@property(readonly, nonatomic) HostInfo* hostInfo;
 
 @end
 

@@ -13,6 +13,7 @@
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "remoting/client/ios/domain/host_info.h"
 
 static const CGFloat kLinePadding = 2.f;
 static const CGFloat kHostCardIconInset = 10.f;
@@ -20,8 +21,6 @@ static const CGFloat kHostCardPadding = 4.f;
 static const CGFloat kHostCardIconSize = 45.f;
 
 @interface HostCollectionViewCell () {
-  NSString* _status;
-  NSString* _title;
   UIImageView* _imageView;
   UILabel* _statusLabel;
   UILabel* _titleLabel;
@@ -35,6 +34,8 @@ static const CGFloat kHostCardIconSize = 45.f;
 // to and other managements actions for a host in this list.
 //
 @implementation HostCollectionViewCell
+
+@synthesize hostInfo = _hostInfo;
 
 + (Class)layerClass {
   return [MDCShadowLayer class];
@@ -97,18 +98,17 @@ static const CGFloat kHostCardIconSize = 45.f;
 
 #pragma mark - HostCollectionViewCell Public
 
-- (void)populateContentWithTitle:(NSString*)title status:(NSString*)status {
-  _title = title;
-  _titleLabel.text = title;
+- (void)populateContentWithHostInfo:(HostInfo*)hostInfo {
+  _hostInfo = hostInfo;
 
-  _status = status;
-  _statusLabel.text = status;
+  _titleLabel.text = _hostInfo.hostName;
+  _statusLabel.text = _hostInfo.status;
 
   _imageView.image = [UIImage imageNamed:@"ic_desktop"];
 
   // TODO(nicholss): These colors are incorrect for the final product.
   // Need to update to the values in the mocks.
-  if ([status isEqualToString:@"ONLINE"]) {
+  if ([_hostInfo.status isEqualToString:@"ONLINE"]) {
     _imageView.backgroundColor = UIColor.greenColor;
   } else {
     _imageView.backgroundColor = UIColor.lightGrayColor;
@@ -119,8 +119,7 @@ static const CGFloat kHostCardIconSize = 45.f;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  _title = nil;
-  _status = nil;
+  _hostInfo = nil;
   _statusLabel.text = nil;
   _titleLabel.text = nil;
 }

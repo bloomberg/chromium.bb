@@ -104,7 +104,7 @@ bool GlDemoScreen::Draw() {
       glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
   }
-  return true;
+  return false;
 }
 
 base::WeakPtr<Drawable> GlDemoScreen::GetWeakPtr() {

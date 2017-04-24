@@ -45,6 +45,7 @@ source_set("ios_core") {
   public_deps = [
     "//remoting/client/ios/domain",
     "//remoting/client/ios/facade",
+    "//remoting/client/ios/session",
     "//third_party/webrtc/base:rtc_base",
     "//third_party/webrtc/modules/desktop_capture:primitives",
   ]

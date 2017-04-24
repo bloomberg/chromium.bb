@@ -80,7 +80,7 @@ static UIColor* kBackgroundColor =
                                                 forIndexPath:indexPath];
   HostInfo* host = [_delegate getHostAtIndexPath:indexPath];
   if (host) {
-    [cell populateContentWithTitle:host.hostName status:host.status];
+    [cell populateContentWithHostInfo:host];
   }
   return cell;
 }

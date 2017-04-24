@@ -10,27 +10,29 @@
 
 #import "remoting/client/display/sys_opengl.h"
 
-#include "remoting/client/client_context.h"
-#include "remoting/protocol/cursor_shape_stub.h"
-#include "remoting/protocol/frame_consumer.h"
-#include "remoting/protocol/video_renderer.h"
+#include "base/memory/ptr_util.h"
 
 namespace remoting {
 
 class ChromotingClientRuntime;
 
+namespace protocol {
+
+class VideoRenderer;
+class CursorShapeStub;
+
+}  // namespace protocol
 }  // namespace remoting
 
 @interface GlDisplayHandler : NSObject {
 }
 
-- (id)initWithRuntime:(remoting::ChromotingClientRuntime*)runtime;
-
-- (void)created;
 - (void)stop;
 - (void)glkView:(GLKView*)view drawInRect:(CGRect)rect;
 - (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer;
 - (std::unique_ptr<remoting::protocol::CursorShapeStub>)CreateCursorShapeStub;
+
+- (EAGLContext*)GetEAGLContext;
 
 @end
 
