@@ -598,7 +598,7 @@ void GaiaScreenHandler::HandleCompleteAdAuthentication(
   set_populated_email(username);
   DCHECK(authpolicy_login_helper_);
   authpolicy_login_helper_->AuthenticateUser(
-      username, password,
+      username, std::string() /* object_guid */, password,
       base::BindOnce(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
                      username, Key(password)));
 }
@@ -612,7 +612,8 @@ void GaiaScreenHandler::HandleCompleteAdPasswordChange(
 
   DCHECK(authpolicy_login_helper_);
   authpolicy_login_helper_->AuthenticateUser(
-      username, old_password + "\n" + new_password + "\n" + new_password,
+      username, std::string() /* object_guid */,
+      old_password + "\n" + new_password + "\n" + new_password,
       base::Bind(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
                  username, Key(new_password)));
 }

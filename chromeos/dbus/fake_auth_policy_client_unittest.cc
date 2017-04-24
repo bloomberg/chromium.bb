@@ -15,12 +15,13 @@ namespace {
 
 const char kCorrectMachineName[] = "machine_name";
 const char kCorrectUserName[] = "user@realm.com";
+const char kObjectGUID[] = "user-object-guid";
 
 }  // namespace
 
 class FakeAuthPolicyClientTest : public ::testing::Test {
  public:
-  FakeAuthPolicyClientTest(){};
+  FakeAuthPolicyClientTest() {}
 
  protected:
   FakeAuthPolicyClient* authpolicy_client() { return &client_; }
@@ -101,6 +102,20 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseUPN) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Test AuthenticateUser.
+TEST_F(FakeAuthPolicyClientTest, AuthenticateUser_ByObjectGUID) {
+  authpolicy_client()->set_started(true);
+  // Check that objectGUID do not change.
+  authpolicy_client()->AuthenticateUser(
+      kCorrectUserName, kObjectGUID, /* password_fd */ -1,
+      base::Bind(
+          [](authpolicy::ErrorType error,
+             const authpolicy::ActiveDirectoryAccountData& account_data) {
+            EXPECT_EQ(authpolicy::ERROR_NONE, error);
+            EXPECT_EQ(kObjectGUID, account_data.account_id());
+          }));
+}
+
 // Tests calls to not started authpolicyd fails.
 TEST_F(FakeAuthPolicyClientTest, NotStartedAuthPolicyService) {
   authpolicy_client()->JoinAdDomain(
@@ -109,7 +124,7 @@ TEST_F(FakeAuthPolicyClientTest, NotStartedAuthPolicyService) {
         EXPECT_EQ(authpolicy::ERROR_DBUS_FAILURE, error);
       }));
   authpolicy_client()->AuthenticateUser(
-      kCorrectUserName, /* password_fd */ -1,
+      kCorrectUserName, std::string() /* object_guid */, /* password_fd */ -1,
       base::Bind([](authpolicy::ErrorType error,
                     const authpolicy::ActiveDirectoryAccountData&) {
         EXPECT_EQ(authpolicy::ERROR_DBUS_FAILURE, error);

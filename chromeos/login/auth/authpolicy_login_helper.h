@@ -35,8 +35,15 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
 
   // See AuthPolicyClient::AuthenticateUser.
   void AuthenticateUser(const std::string& username,
+                        const std::string& object_guid,
                         const std::string& password,
                         AuthCallback callback);
+
+  // Trying to get kerberos TGT. To get a result of this call one should use
+  // GetStatusCall afterwards. (see crbug.com/710452).
+  void TryAuthenticateUser(const std::string& username,
+                           const std::string& object_guid,
+                           const std::string& password);
 
   // Cancel pending requests and restarts AuthPolicy service.
   void CancelRequestsAndRestart();

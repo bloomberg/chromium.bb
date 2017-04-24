@@ -57,12 +57,14 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
   }
 
   void AuthenticateUser(const std::string& user_principal_name,
+                        const std::string& object_guid,
                         int password_fd,
                         AuthCallback callback) override {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
                                  authpolicy::kAuthPolicyAuthenticateUser);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(user_principal_name);
+    writer.AppendString(object_guid);
     writer.AppendFileDescriptor(password_fd);
     proxy_->CallMethod(
         &method_call, kSlowDbusTimeoutMilliseconds,

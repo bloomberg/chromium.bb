@@ -492,7 +492,9 @@ CryptohomeAuthenticator::CryptohomeAuthenticator(
 void CryptohomeAuthenticator::AuthenticateToLogin(
     content::BrowserContext* context,
     const UserContext& user_context) {
-  DCHECK_EQ(user_manager::USER_TYPE_REGULAR, user_context.GetUserType());
+  DCHECK(user_context.GetUserType() == user_manager::USER_TYPE_REGULAR ||
+         user_context.GetUserType() ==
+             user_manager::USER_TYPE_ACTIVE_DIRECTORY);
   authentication_context_ = context;
   current_state_.reset(new AuthAttemptState(user_context,
                                             false,  // unlock

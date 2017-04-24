@@ -105,6 +105,7 @@ void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
 
 void FakeAuthPolicyClient::AuthenticateUser(
     const std::string& user_principal_name,
+    const std::string& object_guid,
     int password_fd,
     AuthCallback callback) {
   authpolicy::ErrorType error = authpolicy::ERROR_NONE;
@@ -113,8 +114,12 @@ void FakeAuthPolicyClient::AuthenticateUser(
     LOG(ERROR) << "authpolicyd not started";
     error = authpolicy::ERROR_DBUS_FAILURE;
   } else {
-    if (auth_error_ == authpolicy::ERROR_NONE)
-      account_data.set_account_id(base::MD5String(user_principal_name));
+    if (auth_error_ == authpolicy::ERROR_NONE) {
+      if (object_guid.empty())
+        account_data.set_account_id(base::MD5String(user_principal_name));
+      else
+        account_data.set_account_id(object_guid);
+    }
     error = auth_error_;
   }
   PostDelayedClosure(base::BindOnce(std::move(callback), error, account_data));

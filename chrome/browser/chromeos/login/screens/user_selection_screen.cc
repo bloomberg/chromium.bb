@@ -334,6 +334,7 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
       user->GetType() == user_manager::USER_TYPE_SUPERVISED;
   const bool is_public_session =
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+  const bool has_gaia_account = user->HasGaiaAccount();
 
   if (is_supervised_user)
     return false;
@@ -341,13 +342,10 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
   if (is_public_session)
     return false;
 
-  if (user->GetType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
-    return true;
-  }
-
   // At this point the reason for invalid token should be already set. If not,
   // this might be a leftover from an old version.
-  if (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID)
+  if (has_gaia_account &&
+      token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID)
     RecordReauthReason(user->GetAccountId(), ReauthReason::OTHER);
 
   // We need to force an online signin if the user is marked as requiring it,
@@ -355,8 +353,9 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
   // check for policy/management state) or if there's an invalid OAUTH token
   // that needs to be refreshed.
   return user->force_online_signin() || !user->profile_ever_initialized() ||
-         (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) ||
-         (token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
+         (has_gaia_account &&
+          (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID ||
+           token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN));
 }
 
 void UserSelectionScreen::SetHandler(LoginDisplayWebUIHandler* handler) {
