@@ -1352,15 +1352,24 @@ class CanvasRenderingContext2DTestWithTestingPlatform
     : public CanvasRenderingContext2DTest {
  protected:
   void SetUp() override {
+    platform_ = WTF::MakeUnique<ScopedTestingPlatformSupport<
+        TestingPlatformSupportWithMockScheduler>>();
     override_settings_function_ = &OverrideScriptEnabled;
-    platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings.
+    (*platform_)
+        ->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings.
     CanvasRenderingContext2DTest::SetUp();
     GetDocument().View()->UpdateLayout();
   }
 
-  void RunUntilIdle() { platform_->RunUntilIdle(); }
+  void TearDown() override {
+    platform_.reset();
+    CanvasRenderingContext2DTest::TearDown();
+  }
 
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+  void RunUntilIdle() { (*platform_)->RunUntilIdle(); }
+
+  std::unique_ptr<
+      ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>>
       platform_;
 };
 
@@ -1406,6 +1415,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
                                               false);
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
             layer->NeedsCompositingInputsUpdate());
+  RunUntilIdle();  // Clear task queue.
 }
 
 }  // namespace blink
