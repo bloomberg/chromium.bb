@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Could not run all tests assert_unreached: A key failed to generate: NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV). Reached unreachable code
+Harness: the test ran to completion.
+
