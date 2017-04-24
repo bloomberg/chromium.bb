@@ -78,8 +78,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
                   kCanvasCaptureColorTestHtmlFile);
 }
 
+#if defined(OS_ANDROID)
+// Remote mojo renderer does not send audio/video frames back to the renderer
+// process and hence does not support capture: https://crbug.com/641559.
+#define MAYBE_VerifyCanvasWebGLCaptureColor \
+  DISABLED_VerifyCanvasWebGLCaptureColor
+#else
+#define MAYBE_VerifyCanvasWebGLCaptureColor VerifyCanvasWebGLCaptureColor
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       VerifyCanvasWebGLCaptureColor) {
+                       MAYBE_VerifyCanvasWebGLCaptureColor) {
 #if !defined(OS_MACOSX)
   // TODO(crbug.com/706009): Make this test pass on mac.  Behavior is not buggy
   // (verified manually) on mac, but for some reason this test fails on the mac
