@@ -471,6 +471,7 @@ class CORE_EXPORT FrameView final
 
   typedef HeapHashSet<Member<FrameViewBase>> ChildrenSet;
   typedef HeapHashSet<Member<PluginView>> PluginsSet;
+  typedef HeapHashSet<Member<Scrollbar>> ScrollbarsSet;
 
   // Functions for child manipulation and inspection.
   void SetParent(FrameViewBase*) override;
@@ -480,6 +481,9 @@ class CORE_EXPORT FrameView final
   void RemovePlugin(PluginView*);
   void AddPlugin(PluginView*);
   const PluginsSet* Plugins() const { return &plugins_; }
+  void RemoveScrollbar(Scrollbar*);
+  void AddScrollbar(Scrollbar*);
+  const ScrollbarsSet* Scrollbars() const { return &scrollbars_; }
 
   // If the scroll view does not use a native widget, then it will have
   // cross-platform Scrollbars. These functions can be used to obtain those
@@ -1002,10 +1006,6 @@ class CORE_EXPORT FrameView final
   void AdjustScrollOffsetFromUpdateScrollbars();
   bool VisualViewportSuppliesScrollbars();
 
-  bool IsFrameViewScrollbar(const FrameViewBase* child) const {
-    return HorizontalScrollbar() == child || VerticalScrollbar() == child;
-  }
-
   ScrollingCoordinator* GetScrollingCoordinator() const;
 
   void PrepareLayoutAnalyzer();
@@ -1125,6 +1125,7 @@ class CORE_EXPORT FrameView final
 
   ChildrenSet children_;
   PluginsSet plugins_;
+  ScrollbarsSet scrollbars_;
 
   ScrollOffset pending_scroll_delta_;
   ScrollOffset scroll_offset_;

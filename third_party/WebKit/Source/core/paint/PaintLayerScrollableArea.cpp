@@ -1991,7 +1991,7 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
         ScrollableArea(), orientation, scrollbar_size,
         &ScrollableArea()->Box().GetFrame()->GetPage()->GetChromeClient());
   }
-  ScrollableArea()->Box().GetDocument().View()->AddChild(scrollbar);
+  ScrollableArea()->Box().GetDocument().View()->AddScrollbar(scrollbar);
   return scrollbar;
 }
 
@@ -2013,7 +2013,7 @@ void PaintLayerScrollableArea::ScrollbarManager::DestroyScrollbar(
   if (!scrollbar->IsCustomScrollbar())
     ScrollableArea()->WillRemoveScrollbar(*scrollbar, orientation);
 
-  ToFrameView(scrollbar->Parent())->RemoveChild(scrollbar.Get());
+  ScrollableArea()->Box().GetDocument().View()->RemoveScrollbar(scrollbar);
   scrollbar->DisconnectFromScrollableArea();
   scrollbar = nullptr;
 }

@@ -241,6 +241,7 @@ DEFINE_TRACE(FrameView) {
   visitor->Trace(auto_size_info_);
   visitor->Trace(children_);
   visitor->Trace(plugins_);
+  visitor->Trace(scrollbars_);
   visitor->Trace(viewport_scrollable_area_);
   visitor->Trace(visibility_observer_);
   visitor->Trace(scroll_anchor_);
@@ -415,8 +416,8 @@ void FrameView::ScrollbarManager::SetHasHorizontalScrollbar(
 
   if (has_scrollbar) {
     h_bar_ = CreateScrollbar(kHorizontalScrollbar);
-    scrollable_area_->GetLayoutBox()->GetDocument().View()->AddChild(
-        h_bar_.Get());
+    scrollable_area_->GetLayoutBox()->GetDocument().View()->AddScrollbar(
+        h_bar_);
     h_bar_is_attached_ = 1;
     scrollable_area_->DidAddScrollbar(*h_bar_, kHorizontalScrollbar);
     h_bar_->StyleChanged();
@@ -434,8 +435,8 @@ void FrameView::ScrollbarManager::SetHasVerticalScrollbar(bool has_scrollbar) {
 
   if (has_scrollbar) {
     v_bar_ = CreateScrollbar(kVerticalScrollbar);
-    scrollable_area_->GetLayoutBox()->GetDocument().View()->AddChild(
-        v_bar_.Get());
+    scrollable_area_->GetLayoutBox()->GetDocument().View()->AddScrollbar(
+        v_bar_);
     v_bar_is_attached_ = 1;
     scrollable_area_->DidAddScrollbar(*v_bar_, kVerticalScrollbar);
     v_bar_->StyleChanged();
@@ -473,8 +474,8 @@ void FrameView::ScrollbarManager::DestroyScrollbar(
     return;
 
   scrollable_area_->WillRemoveScrollbar(*scrollbar, orientation);
-  scrollable_area_->GetLayoutBox()->GetDocument().View()->RemoveChild(
-      scrollbar.Get());
+  scrollable_area_->GetLayoutBox()->GetDocument().View()->RemoveScrollbar(
+      scrollbar);
   scrollbar->DisconnectFromScrollableArea();
   scrollbar = nullptr;
 }
@@ -506,12 +507,14 @@ void FrameView::InvalidateAllCustomScrollbarsOnActiveChanged() {
     if (frame_view_base->IsFrameView()) {
       ToFrameView(frame_view_base)
           ->InvalidateAllCustomScrollbarsOnActiveChanged();
-    } else if (uses_window_inactive_selector &&
-               frame_view_base->IsScrollbar() &&
-               ToScrollbar(frame_view_base)->IsCustomScrollbar()) {
-      ToScrollbar(frame_view_base)->StyleChanged();
     }
   }
+
+  for (const Member<Scrollbar>& scrollbar : *Scrollbars()) {
+    if (uses_window_inactive_selector && scrollbar->IsCustomScrollbar())
+      scrollbar->StyleChanged();
+  }
+
   if (uses_window_inactive_selector)
     RecalculateCustomScrollbarStyle();
 }
@@ -3625,9 +3628,6 @@ IntPoint FrameView::ConvertToLayoutItem(const LayoutItem& layout_item,
 
 IntPoint FrameView::ConvertSelfToChild(const FrameViewBase* child,
                                        const IntPoint& point) const {
-  // TODO(joelhockey): Remove this check once Scrollbar no longer inherits from
-  // FrameViewBase.
-  DCHECK(!IsFrameViewScrollbar(child));
   IntPoint new_point = point;
   new_point = FrameToContents(point);
   new_point.MoveBy(-child->Location());
@@ -3857,6 +3857,18 @@ void FrameView::AddPlugin(PluginView* plugin) {
   DCHECK(!plugins_.Contains(plugin));
   plugin->SetParent(this);
   plugins_.insert(plugin);
+}
+
+void FrameView::RemoveScrollbar(Scrollbar* scrollbar) {
+  DCHECK(scrollbars_.Contains(scrollbar));
+  scrollbar->SetParent(nullptr);
+  scrollbars_.erase(scrollbar);
+}
+
+void FrameView::AddScrollbar(Scrollbar* scrollbar) {
+  DCHECK(!scrollbars_.Contains(scrollbar));
+  scrollbar->SetParent(this);
+  scrollbars_.insert(scrollbar);
 }
 
 bool FrameView::VisualViewportSuppliesScrollbars() {

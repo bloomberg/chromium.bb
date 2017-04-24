@@ -63,18 +63,6 @@ IntPoint WebScrollbarThemeClientImpl::Location() const {
   return scrollbar_.Location();
 }
 
-FrameViewBase* WebScrollbarThemeClientImpl::Parent() const {
-  // Unused by Chromium scrollbar themes.
-  NOTREACHED();
-  return 0;
-}
-
-FrameViewBase* WebScrollbarThemeClientImpl::Root() const {
-  // Unused by Chromium scrollbar themes.
-  NOTREACHED();
-  return 0;
-}
-
 void WebScrollbarThemeClientImpl::SetFrameRect(const IntRect&) {
   // Unused by Chromium scrollbar themes.
   NOTREACHED();
