@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -24,7 +23,6 @@
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::GetApplicationContext;
 using base::android::JavaFloatArrayToFloatVector;
 using base::android::JavaParamRef;
 
@@ -60,8 +58,8 @@ void SpeechRecognizerImplAndroid::StartRecognitionOnUIThread(
     bool interim_results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
-  j_recognition_.Reset(Java_SpeechRecognition_createSpeechRecognition(env,
-      GetApplicationContext(), reinterpret_cast<intptr_t>(this)));
+  j_recognition_.Reset(Java_SpeechRecognition_createSpeechRecognition(
+      env, reinterpret_cast<intptr_t>(this)));
   Java_SpeechRecognition_startRecognition(
       env, j_recognition_, ConvertUTF8ToJavaString(env, language), continuous,
       interim_results);

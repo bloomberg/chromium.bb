@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.content.Context;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.Callback;
@@ -84,9 +83,8 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
             public void run() {
                 // Ensure we start in an offline state.
                 NetworkChangeNotifier.forceConnectivityState(false);
-                Context context = getActivity().getBaseContext();
                 if (!NetworkChangeNotifier.isInitialized()) {
-                    NetworkChangeNotifier.init(context);
+                    NetworkChangeNotifier.init();
                 }
             }
         });

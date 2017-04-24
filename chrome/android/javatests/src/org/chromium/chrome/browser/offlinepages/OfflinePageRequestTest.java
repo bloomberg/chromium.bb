@@ -45,7 +45,7 @@ public class OfflinePageRequestTest extends ChromeActivityTestCaseBase<ChromeAct
             @Override
             public void run() {
                 if (!NetworkChangeNotifier.isInitialized()) {
-                    NetworkChangeNotifier.init(getActivity().getBaseContext());
+                    NetworkChangeNotifier.init();
                 }
                 NetworkChangeNotifier.forceConnectivityState(true);
 

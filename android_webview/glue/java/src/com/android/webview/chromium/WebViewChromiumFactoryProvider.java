@@ -329,7 +329,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private void doNetworkInitializations(Context applicationContext) {
         if (applicationContext.checkPermission(Manifest.permission.ACCESS_NETWORK_STATE,
                 Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED) {
-            NetworkChangeNotifier.init(applicationContext);
+            NetworkChangeNotifier.init();
             NetworkChangeNotifier.setAutoDetectConnectivityState(
                     new AwNetworkChangeNotifierRegistrationPolicy());
         }
@@ -645,7 +645,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     }
 
     public TokenBindingService getTokenBindingService() {
-       synchronized (mLock) {
+        synchronized (mLock) {
             if (mTokenBindingManager == null) {
                 mTokenBindingManager = new TokenBindingManagerAdapter(this);
             }

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.content.Context;
 import android.support.test.filters.MediumTest;
 
 import org.chromium.base.Callback;
@@ -73,9 +72,8 @@ public class RecentTabsTest extends ChromeTabbedActivityTestBase {
             public void run() {
                 // Ensure we start in an offline state.
                 NetworkChangeNotifier.forceConnectivityState(false);
-                Context context = getActivity().getBaseContext();
                 if (!NetworkChangeNotifier.isInitialized()) {
-                    NetworkChangeNotifier.init(context);
+                    NetworkChangeNotifier.init();
                 }
             }
         });

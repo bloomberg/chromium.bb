@@ -49,21 +49,20 @@ class ChildProcessLauncherHelper {
     }
 
     @CalledByNative
-    private static ChildProcessLauncherHelper create(long nativePointer, Context context,
-            int paramId, final String[] commandLine, int childProcessId,
-            FileDescriptorInfo[] filesToBeMapped) {
+    private static ChildProcessLauncherHelper create(long nativePointer, int paramId,
+            final String[] commandLine, int childProcessId, FileDescriptorInfo[] filesToBeMapped) {
         assert LauncherThread.runningOnLauncherThread();
         return new ChildProcessLauncherHelper(
-                nativePointer, context, paramId, commandLine, childProcessId, filesToBeMapped);
+                nativePointer, paramId, commandLine, childProcessId, filesToBeMapped);
     }
 
-    private ChildProcessLauncherHelper(long nativePointer, Context context, int paramId,
-            final String[] commandLine, int childProcessId, FileDescriptorInfo[] filesToBeMapped) {
+    private ChildProcessLauncherHelper(long nativePointer, int paramId, final String[] commandLine,
+            int childProcessId, FileDescriptorInfo[] filesToBeMapped) {
         assert LauncherThread.runningOnLauncherThread();
         mNativeChildProcessLauncherHelper = nativePointer;
 
-        ChildProcessLauncher.start(context, paramId, commandLine, childProcessId, filesToBeMapped,
-                new ChildProcessLauncher.LaunchCallback() {
+        ChildProcessLauncher.start(ContextUtils.getApplicationContext(), paramId, commandLine,
+                childProcessId, filesToBeMapped, new ChildProcessLauncher.LaunchCallback() {
                     @Override
                     public void onChildProcessStarted(int pid) {
                         mPid = pid;

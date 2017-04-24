@@ -4,7 +4,6 @@
 
 #include "content/browser/android/composited_touch_handle_drawable.h"
 
-#include "base/android/context_utils.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"

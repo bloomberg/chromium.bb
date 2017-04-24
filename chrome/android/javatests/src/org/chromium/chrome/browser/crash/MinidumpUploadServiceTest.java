@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.crash;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
-
 import static org.chromium.chrome.browser.crash.MinidumpUploadService.BROWSER;
 import static org.chromium.chrome.browser.crash.MinidumpUploadService.GPU;
 import static org.chromium.chrome.browser.crash.MinidumpUploadService.OTHER;
@@ -207,7 +205,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
                         public void run() {
                             // Set up basically a fake.
                             if (!NetworkChangeNotifier.isInitialized()) {
-                                NetworkChangeNotifier.init(getApplicationContext());
+                                NetworkChangeNotifier.init();
                             }
                         }
                     });

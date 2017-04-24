@@ -4,7 +4,6 @@
 
 #include "content/browser/media/android/media_resource_getter_impl.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -123,12 +122,11 @@ static void GetMediaMetadata(
 
   ScopedJavaLocalRef<jstring> j_url_string = ConvertUTF8ToJavaString(env, url);
   ScopedJavaLocalRef<jstring> j_cookies = ConvertUTF8ToJavaString(env, cookies);
-  const JavaRef<jobject>& j_context = base::android::GetApplicationContext();
   ScopedJavaLocalRef<jstring> j_user_agent = ConvertUTF8ToJavaString(
       env, user_agent);
   ScopedJavaLocalRef<jobject> j_metadata =
-      Java_MediaResourceGetter_extractMediaMetadata(
-          env, j_context, j_url_string, j_cookies, j_user_agent);
+      Java_MediaResourceGetter_extractMediaMetadata(env, j_url_string,
+                                                    j_cookies, j_user_agent);
 
   PostMediaMetadataCallbackTask(callback, env, j_metadata);
 }

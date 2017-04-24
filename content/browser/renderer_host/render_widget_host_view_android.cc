@@ -10,7 +10,6 @@
 
 #include "base/android/application_status_listener.h"
 #include "base/android/build_info.h"
-#include "base/android/context_utils.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -1320,13 +1319,12 @@ RenderWidgetHostViewAndroid::CreateDrawable() {
   }
   base::android::ScopedJavaLocalRef<jobject> activityContext =
       content_view_core_->GetContext();
+  // If activityContext is null then Application context is used instead on
+  // the java side in CompositedTouchHandleDrawable.
   return std::unique_ptr<ui::TouchHandleDrawable>(
       new CompositedTouchHandleDrawable(
           content_view_core_->GetViewAndroid()->GetLayer(), view_.GetDipScale(),
-          // Use the activity context where possible (instead of the application
-          // context) to ensure proper handle theming.
-          activityContext.is_null() ? base::android::GetApplicationContext()
-                                    : activityContext));
+          activityContext));
 }
 
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(

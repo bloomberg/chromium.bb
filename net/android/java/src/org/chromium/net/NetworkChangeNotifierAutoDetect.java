@@ -30,6 +30,7 @@ import android.telephony.TelephonyManager;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -377,7 +378,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                     return "";
                 }
             }
-            return AndroidNetworkLibrary.getWifiSSID(mContext);
+            return AndroidNetworkLibrary.getWifiSSID();
         }
 
         // Fetches WifiInfo and records UMA for NullPointerExceptions.
@@ -599,7 +600,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
     private final NetworkConnectivityIntentFilter mIntentFilter;
     private final Observer mObserver;
-    private final Context mContext;
     private final RegistrationPolicy mRegistrationPolicy;
 
     // mConnectivityManagerDelegates and mWifiManagerDelegate are only non-final for testing.
@@ -679,15 +679,14 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      *     {@link RegistrationPolicyApplicationStatus}).
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public NetworkChangeNotifierAutoDetect(
-            Observer observer, Context context, RegistrationPolicy policy) {
+    public NetworkChangeNotifierAutoDetect(Observer observer, RegistrationPolicy policy) {
         // Since BroadcastReceiver is always called back on UI thread, ensure
         // running on UI thread so notification logic can be single-threaded.
         ThreadUtils.assertOnUiThread();
         mObserver = observer;
-        mContext = context.getApplicationContext();
-        mConnectivityManagerDelegate = new ConnectivityManagerDelegate(context);
-        mWifiManagerDelegate = new WifiManagerDelegate(context);
+        mConnectivityManagerDelegate =
+                new ConnectivityManagerDelegate(ContextUtils.getApplicationContext());
+        mWifiManagerDelegate = new WifiManagerDelegate(ContextUtils.getApplicationContext());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mNetworkCallback = new MyNetworkCallback();
             mNetworkRequest = new NetworkRequest.Builder()
@@ -760,7 +759,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         // returns non-null, it means the broadcast was previously issued and onReceive() will be
         // immediately called with this previous Intent. Since this initial callback doesn't
         // actually indicate a network change, we can ignore it by setting mIgnoreNextBroadcast.
-        mIgnoreNextBroadcast = mContext.registerReceiver(this, mIntentFilter) != null;
+        mIgnoreNextBroadcast =
+                ContextUtils.getApplicationContext().registerReceiver(this, mIntentFilter) != null;
         mRegistered = true;
 
         if (mNetworkCallback != null) {
@@ -789,7 +789,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      */
     public void unregister() {
         if (!mRegistered) return;
-        mContext.unregisterReceiver(this);
+        ContextUtils.getApplicationContext().unregisterReceiver(this);
         mRegistered = false;
         if (mNetworkCallback != null) {
             mConnectivityManagerDelegate.unregisterNetworkCallback(mNetworkCallback);

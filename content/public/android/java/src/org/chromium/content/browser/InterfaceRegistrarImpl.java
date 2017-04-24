@@ -27,12 +27,12 @@ class InterfaceRegistrarImpl {
     private static boolean sHasRegisteredRegistrars;
 
     @CalledByNative
-    static void createInterfaceRegistryForContext(int nativeHandle, Context applicationContext) {
+    static void createInterfaceRegistryForContext(int nativeHandle) {
         ensureContentRegistrarsAreRegistered();
 
         InterfaceRegistry registry = InterfaceRegistry.create(
                 CoreImpl.getInstance().acquireNativeHandle(nativeHandle).toMessagePipeHandle());
-        InterfaceRegistrar.Registry.applyContextRegistrars(registry, applicationContext);
+        InterfaceRegistrar.Registry.applyContextRegistrars(registry);
     }
 
     @CalledByNative

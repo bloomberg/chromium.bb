@@ -263,6 +263,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @VisibleForTesting
     protected DownloadManagerService(Context context, DownloadNotifier downloadNotifier,
             Handler handler, long updateDelayInMillis) {
+        // TODO(wnwen): Remove mContext since it is always the application context.
         mContext = context;
         mSharedPrefs = ContextUtils.getAppSharedPreferences();
         // Clean up unused shared prefs. TODO(qinmin): remove this after M61.
@@ -1478,8 +1479,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
      */
     private void addAutoResumableDownload(String guid) {
         if (mAutoResumableDownloadIds.isEmpty() && !sIsNetworkListenerDisabled) {
-            mNetworkChangeNotifier = new NetworkChangeNotifierAutoDetect(this, mContext,
-                    new RegistrationPolicyAlwaysRegister());
+            mNetworkChangeNotifier = new NetworkChangeNotifierAutoDetect(
+                    this, new RegistrationPolicyAlwaysRegister());
         }
         if (!mAutoResumableDownloadIds.contains(guid)) {
             mAutoResumableDownloadIds.add(guid);

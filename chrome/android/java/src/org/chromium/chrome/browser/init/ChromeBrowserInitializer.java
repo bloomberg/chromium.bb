@@ -385,7 +385,7 @@ public class ChromeBrowserInitializer {
         ThreadUtils.assertOnUiThread();
         TraceEvent.begin("NetworkChangeNotifier.init");
         // Enable auto-detection of network connectivity state changes.
-        NetworkChangeNotifier.init(context);
+        NetworkChangeNotifier.init();
         NetworkChangeNotifier.setAutoDetectConnectivityState(true);
         TraceEvent.end("NetworkChangeNotifier.init");
     }

@@ -5,16 +5,16 @@
 package org.chromium.android_webview.test;
 
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Proxy;
 import android.support.test.filters.SmallTest;
-import android.test.mock.MockContext;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
@@ -60,19 +60,15 @@ public class ContentViewMiscTest extends AwTestBase {
         // Set up mock contexts to use with the listener
         final AtomicReference<BroadcastReceiver> receiverRef =
                 new AtomicReference<BroadcastReceiver>();
-        final MockContext appContext = new MockContext() {
+        final AdvancedMockContext appContext = new AdvancedMockContext(
+                getInstrumentation().getTargetContext().getApplicationContext()) {
             @Override
             public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
                 receiverRef.set(receiver);
                 return null;
             }
         };
-        final MockContext context = new MockContext() {
-            @Override
-            public Context getApplicationContext() {
-                return appContext;
-            }
-        };
+        ContextUtils.initApplicationContextForTests(appContext);
 
         // Set up a delegate so we know when native code is about to get
         // informed of a proxy change.
@@ -87,7 +83,7 @@ public class ContentViewMiscTest extends AwTestBase {
         intent.setAction(Proxy.PROXY_CHANGE_ACTION);
 
         // Create the listener that's going to be used for the test
-        ProxyChangeListener listener = ProxyChangeListener.create(context);
+        ProxyChangeListener listener = ProxyChangeListener.create();
         listener.setDelegateForTesting(delegate);
         listener.start(0);
 
@@ -95,19 +91,19 @@ public class ContentViewMiscTest extends AwTestBase {
 
         // Make sure everything works by default
         proxyChanged.set(false);
-        receiverRef.get().onReceive(context, intent);
+        receiverRef.get().onReceive(appContext, intent);
         assertEquals(true, proxyChanged.get());
 
         // Now disable platform notifications and make sure we don't notify
         // native code.
         proxyChanged.set(false);
         ContentViewStatics.disablePlatformNotifications();
-        receiverRef.get().onReceive(context, intent);
+        receiverRef.get().onReceive(appContext, intent);
         assertEquals(false, proxyChanged.get());
 
         // Now re-enable notifications to make sure they work again.
         ContentViewStatics.enablePlatformNotifications();
-        receiverRef.get().onReceive(context, intent);
+        receiverRef.get().onReceive(appContext, intent);
         assertEquals(true, proxyChanged.get());
     }
 }

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/android/apk_assets.h"
-#include "base/android/context_utils.h"
 #include "base/android/jni_array.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
@@ -133,8 +132,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
 
   constexpr int param_key = 0;  // TODO(boliu): Use this.
   java_peer_.Reset(Java_ChildProcessLauncherHelper_create(
-      env, reinterpret_cast<intptr_t>(this),
-      base::android::GetApplicationContext(), param_key, j_argv,
+      env, reinterpret_cast<intptr_t>(this), param_key, j_argv,
       child_process_id(), j_file_infos));
   AddRef();  // Balanced by OnChildProcessStarted.
 
