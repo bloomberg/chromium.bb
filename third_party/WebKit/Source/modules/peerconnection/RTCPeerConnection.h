@@ -53,6 +53,7 @@ class RTCAnswerOptions;
 class RTCConfiguration;
 class RTCDTMFSender;
 class RTCDataChannel;
+class RTCDataChannelInit;
 class RTCIceCandidateInitOrRTCIceCandidate;
 class RTCOfferOptions;
 class RTCPeerConnectionErrorCallback;
@@ -153,7 +154,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
 
   RTCDataChannel* createDataChannel(ScriptState*,
                                     String label,
-                                    const Dictionary& data_channel_dict,
+                                    const RTCDataChannelInit&,
                                     ExceptionState&);
 
   RTCDTMFSender* createDTMFSender(MediaStreamTrack*, ExceptionState&);

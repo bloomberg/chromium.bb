@@ -64,6 +64,7 @@
 #include "modules/peerconnection/RTCDTMFSender.h"
 #include "modules/peerconnection/RTCDataChannel.h"
 #include "modules/peerconnection/RTCDataChannelEvent.h"
+#include "modules/peerconnection/RTCDataChannelInit.h"
 #include "modules/peerconnection/RTCIceServer.h"
 #include "modules/peerconnection/RTCOfferOptions.h"
 #include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
@@ -1214,34 +1215,29 @@ HeapVector<Member<RTCRtpReceiver>> RTCPeerConnection::getReceivers() {
 RTCDataChannel* RTCPeerConnection::createDataChannel(
     ScriptState* script_state,
     String label,
-    const Dictionary& options,
+    const RTCDataChannelInit& data_channel_dict,
     ExceptionState& exception_state) {
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
     return nullptr;
 
   WebRTCDataChannelInit init;
-  DictionaryHelper::Get(options, "ordered", init.ordered);
-  DictionaryHelper::Get(options, "negotiated", init.negotiated);
-
-  unsigned short value = 0;
+  init.ordered = data_channel_dict.ordered();
   ExecutionContext* context = ExecutionContext::From(script_state);
-  if (DictionaryHelper::Get(options, "id", value))
-    init.id = value;
-  if (DictionaryHelper::Get(options, "maxRetransmits", value)) {
-    UseCounter::Count(
-        context, UseCounter::kRTCPeerConnectionCreateDataChannelMaxRetransmits);
-    init.max_retransmits = value;
-  }
-  if (DictionaryHelper::Get(options, "maxRetransmitTime", value)) {
+  if (data_channel_dict.hasMaxRetransmitTime()) {
     UseCounter::Count(
         context,
         UseCounter::kRTCPeerConnectionCreateDataChannelMaxRetransmitTime);
-    init.max_retransmit_time = value;
+    init.max_retransmit_time = data_channel_dict.maxRetransmitTime();
   }
-
-  String protocol_string;
-  DictionaryHelper::Get(options, "protocol", protocol_string);
-  init.protocol = protocol_string;
+  if (data_channel_dict.hasMaxRetransmits()) {
+    UseCounter::Count(
+        context, UseCounter::kRTCPeerConnectionCreateDataChannelMaxRetransmits);
+    init.max_retransmits = data_channel_dict.maxRetransmits();
+  }
+  init.protocol = data_channel_dict.protocol();
+  init.negotiated = data_channel_dict.negotiated();
+  if (data_channel_dict.hasId())
+    init.id = data_channel_dict.id();
 
   RTCDataChannel* channel = RTCDataChannel::Create(
       GetExecutionContext(), peer_handler_.get(), label, init, exception_state);

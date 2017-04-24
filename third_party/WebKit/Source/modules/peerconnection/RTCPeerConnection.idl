@@ -116,9 +116,7 @@ enum RTCIceConnectionState {
     sequence<RTCRtpReceiver> getReceivers();
 
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
-    // TODO(guidou): The label argument should have [TreatNullAs=EmptyString]
-    // and be non-nullable.
-    [CallWith=ScriptState, RaisesException] RTCDataChannel createDataChannel(DOMString? label, optional Dictionary options);
+    [CallWith=ScriptState, RaisesException] RTCDataChannel createDataChannel(USVString label, optional RTCDataChannelInit dataChannelDict);
     attribute EventHandler ondatachannel;
 
     // Certificate management
