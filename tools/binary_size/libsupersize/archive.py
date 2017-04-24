@@ -11,7 +11,6 @@ import datetime
 import gzip
 import logging
 import os
-import multiprocessing
 import posixpath
 import re
 import subprocess
@@ -155,13 +154,9 @@ def _NormalizeSourcePath(path):
   return path
 
 
-def _ExtractSourcePaths(symbols, output_directory):
-  """Fills in the .source_path attribute of all symbols.
-
-  Returns True if source paths were found.
-  """
-  mapper = ninja_parser.SourceFileMapper(output_directory)
-  not_found_paths = set()
+def _ExtractSourcePaths(symbols, source_mapper):
+  """Fills in the .source_path attribute of all symbols."""
+  logging.debug('Parsed %d .ninja files.', source_mapper.parsed_file_count)
 
   for symbol in symbols:
     object_path = symbol.object_path
@@ -169,14 +164,9 @@ def _ExtractSourcePaths(symbols, output_directory):
       continue
     # We don't have source info for prebuilt .a files.
     if not os.path.isabs(object_path) and not object_path.startswith('..'):
-      source_path = mapper.FindSourceForPath(object_path)
+      source_path = source_mapper.FindSourceForPath(object_path)
       if source_path:
         symbol.source_path = _NormalizeSourcePath(source_path)
-      elif object_path not in not_found_paths:
-        not_found_paths.add(object_path)
-        logging.warning('Could not find source path for %s', object_path)
-  logging.debug('Parsed %d .ninja files.', mapper.GetParsedFileCount())
-  return len(not_found_paths) == 0
 
 
 def _CalculatePadding(symbols):
@@ -349,11 +339,13 @@ def _PostProcessSizeInfo(size_info):
 def CreateSizeInfo(map_path, lazy_paths=None, no_source_paths=False,
                    raw_only=False):
   """Creates a SizeInfo from the given map file."""
-  if not no_source_paths:
-    # output_directory needed for source file information.
-    lazy_paths.VerifyOutputDirectory()
   # tool_prefix needed for c++filt.
   lazy_paths.VerifyToolPrefix()
+
+  if not no_source_paths:
+    # Parse .ninja files at the same time as parsing the .map file.
+    source_mapper_result = helpers.ForkAndCall(
+        ninja_parser.Parse, lazy_paths.VerifyOutputDirectory())
 
   with _OpenMaybeGz(map_path) as map_file:
     section_sizes, raw_symbols = (
@@ -361,8 +353,9 @@ def CreateSizeInfo(map_path, lazy_paths=None, no_source_paths=False,
 
   if not no_source_paths:
     logging.info('Extracting source paths from .ninja files')
-    all_found = _ExtractSourcePaths(raw_symbols, lazy_paths.output_directory)
-    assert all_found, (
+    source_mapper = source_mapper_result.get()
+    _ExtractSourcePaths(raw_symbols, source_mapper)
+    assert source_mapper.unmatched_paths_count == 0, (
         'One or more source file paths could not be found. Likely caused by '
         '.ninja files being generated at a different time than the .map file.')
 
@@ -538,10 +531,8 @@ def Run(args, parser):
     if apk_path:
       metadata[models.METADATA_APK_FILENAME] = relative_to_out(apk_path)
       # Extraction takes around 1 second, so do it in parallel.
-      pool_of_one = multiprocessing.Pool(1)
-      apk_elf_result = pool_of_one.apply_async(
-          _ElfInfoFromApk, (apk_path, apk_so_path, lazy_paths.tool_prefix))
-      pool_of_one.close()
+      apk_elf_result = helpers.ForkAndCall(
+          _ElfInfoFromApk, apk_path, apk_so_path, lazy_paths.tool_prefix)
 
   size_info = CreateSizeInfo(
       map_path, lazy_paths, no_source_paths=args.no_source_paths, raw_only=True)
