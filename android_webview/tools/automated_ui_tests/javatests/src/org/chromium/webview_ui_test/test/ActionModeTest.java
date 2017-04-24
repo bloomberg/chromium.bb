@@ -293,6 +293,7 @@ public class ActionModeTest {
     private class ActionBarIdlingResource implements IdlingResource {
         private boolean mActionStarting;
         private ResourceCallback mResourceCallback;
+        private boolean mPreviousActionBarDisplayed;
 
         @Override
         public String getName() {
@@ -302,10 +303,17 @@ public class ActionModeTest {
         @Override
         public boolean isIdleNow() {
             if (!mActionStarting) return true;
-            if (mWebViewActivityRule.isActionBarDisplayed()) {
+            boolean currentActionBarDisplayed = mWebViewActivityRule.isActionBarDisplayed();
+            /* Only transition to idle when action bar is displayed fully for
+             * 2 consecutive checks.  This avoids false transitions
+             * in cases where the action bar was already displayed but is due
+             * to be updated immediately after a previous action
+             */
+            if (mPreviousActionBarDisplayed && currentActionBarDisplayed) {
                 mActionStarting = false;
                 if (mResourceCallback != null) mResourceCallback.onTransitionToIdle();
             }
+            mPreviousActionBarDisplayed = currentActionBarDisplayed;
             return !mActionStarting;
         }
 
@@ -316,6 +324,7 @@ public class ActionModeTest {
 
         public void start() {
             mActionStarting = true;
+            mPreviousActionBarDisplayed = false;
         }
     }
 }
