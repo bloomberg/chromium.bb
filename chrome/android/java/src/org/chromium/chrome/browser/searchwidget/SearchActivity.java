@@ -56,7 +56,7 @@ public class SearchActivity extends AsyncInitializationActivity
     @Override
     protected boolean isStartedUpCorrectly(Intent intent) {
         if (sIsDisabledForTest) return false;
-        return true;
+        return super.isStartedUpCorrectly(intent);
     }
 
     @Override

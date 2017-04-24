@@ -167,7 +167,11 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         mPostNativePageSequenceCreated = true;
     }
 
-    // AsyncInitializationActivity:
+    @Override
+    protected boolean requiresFirstRunToBeCompleted(Intent intent) {
+        // The user is already in First Run.
+        return false;
+    }
 
     @Override
     protected Bundle transformSavedInstanceStateForOnCreate(Bundle savedInstanceState) {
@@ -597,5 +601,11 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     @Override
     public void showInfoPage(int url) {
         CustomTabActivity.showInfoPage(this, getString(url));
+    }
+
+    /** Returns whether or not First Run is ready for interaction. */
+    @VisibleForTesting
+    public boolean isPostNativePageSequenceCreated() {
+        return mPostNativePageSequenceCreated;
     }
 }

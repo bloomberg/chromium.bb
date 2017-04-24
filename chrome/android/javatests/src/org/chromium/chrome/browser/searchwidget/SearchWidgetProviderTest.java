@@ -10,8 +10,8 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.test.InstrumentationTestCase;
 import android.util.Pair;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -19,16 +19,16 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,16 +36,30 @@ import java.util.List;
 /**
  * Tests for the SearchWidgetProvider.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-public class SearchWidgetProviderTest {
+@CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+public class SearchWidgetProviderTest extends InstrumentationTestCase {
     private static final class TestDelegate
             extends SearchWidgetProvider.SearchWidgetProviderDelegate {
         public static final int[] ALL_IDS = {11684, 20170525};
 
         public final List<Pair<Integer, RemoteViews>> mViews = new ArrayList<>();
+        private Context mContext;
+        private SharedPreferences mPreferences;
 
         private TestDelegate(Context context) {
             super(context);
+            mContext = context;
+            mPreferences = new InMemorySharedPreferences();
+        }
+
+        @Override
+        protected Context getContext() {
+            return mContext;
+        }
+
+        @Override
+        protected SharedPreferences getSharedPreferences() {
+            return mPreferences;
         }
 
         @Override
@@ -59,13 +73,9 @@ public class SearchWidgetProviderTest {
         }
     }
 
-    private static final class TestContext extends AdvancedMockContext {
+    private final class TestContext extends AdvancedMockContext {
         public TestContext() {
-            // Wrapping the application context allows the ContextUtils to avoid writing to the real
-            // SharedPreferences file.
-            super(InstrumentationRegistry.getInstrumentation()
-                            .getTargetContext()
-                            .getApplicationContext());
+            super(getInstrumentation().getTargetContext().getApplicationContext());
         }
     }
 
@@ -76,21 +86,20 @@ public class SearchWidgetProviderTest {
     private TestContext mContext;
     private TestDelegate mDelegate;
 
-    @Before
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
         SearchActivity.disableForTests();
 
         mContext = new TestContext();
-        ContextUtils.initApplicationContextForTests(mContext);
-
         mDelegate = new TestDelegate(mContext);
         SearchWidgetProvider.setDelegateForTest(mDelegate);
     }
 
-    @Test
     @SmallTest
     public void testUpdateAll() {
-        SearchWidgetProvider.handleAction(SearchWidgetProvider.ACTION_UPDATE_ALL_WIDGETS);
+        SearchWidgetProvider.handleAction(
+                new Intent(SearchWidgetProvider.ACTION_UPDATE_ALL_WIDGETS));
 
         // Without any idea of what the default search engine is, widgets should default to saying
         // just "Search".
@@ -142,30 +151,44 @@ public class SearchWidgetProviderTest {
         });
     }
 
-    @Test
     @SmallTest
     public void testMicrophoneClick() {
-        SearchWidgetProvider.handleAction(SearchWidgetProvider.ACTION_UPDATE_ALL_WIDGETS);
+        SearchWidgetProvider.handleAction(
+                new Intent(SearchWidgetProvider.ACTION_UPDATE_ALL_WIDGETS));
         for (int i = 0; i < mDelegate.mViews.size(); i++) {
             RemoteViews views = mDelegate.mViews.get(i).second;
-            clickOnWidget(views, R.id.microphone_icon);
+            clickOnWidget(views, R.id.microphone_icon, true);
         }
     }
 
-    @Test
     @SmallTest
     public void testTextClick() {
-        SearchWidgetProvider.handleAction(SearchWidgetProvider.ACTION_UPDATE_ALL_WIDGETS);
+        SearchWidgetProvider.handleAction(
+                new Intent(SearchWidgetProvider.ACTION_UPDATE_ALL_WIDGETS));
         for (int i = 0; i < mDelegate.mViews.size(); i++) {
             RemoteViews views = mDelegate.mViews.get(i).second;
-            clickOnWidget(views, R.id.text_container);
+            clickOnWidget(views, R.id.text_container, true);
         }
     }
 
-    private void clickOnWidget(final RemoteViews views, final int clickTarget) {
-        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        final ActivityMonitor monitor =
-                new ActivityMonitor(SearchActivity.class.getName(), null, false);
+    @SmallTest
+    @CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+    public void testOnboardingRequired() {
+        SearchWidgetProvider.handleAction(
+                new Intent(SearchWidgetProvider.ACTION_UPDATE_ALL_WIDGETS));
+        for (int i = 0; i < mDelegate.mViews.size(); i++) {
+            RemoteViews views = mDelegate.mViews.get(i).second;
+            clickOnWidget(views, R.id.text_container, false);
+        }
+    }
+
+    private void clickOnWidget(
+            final RemoteViews views, final int clickTarget, boolean isFirstRunComplete) {
+        String className = isFirstRunComplete ? SearchActivity.class.getName()
+                                              : FirstRunActivity.class.getName();
+        ActivityMonitor monitor = new ActivityMonitor(className, null, false);
+
+        Instrumentation instrumentation = getInstrumentation();
         instrumentation.addMonitor(monitor);
 
         // Click on the widget.
@@ -179,15 +202,18 @@ public class SearchWidgetProviderTest {
             }
         });
 
-        // Check that the Activity was launched in the right mode.
-        Activity activity = instrumentation.waitForMonitor(monitor);
-        Intent intent = activity.getIntent();
-        boolean microphoneState = IntentUtils.safeGetBooleanExtra(
-                intent, SearchWidgetProvider.EXTRA_START_VOICE_SEARCH, false);
-        Assert.assertEquals(clickTarget == R.id.microphone_icon, microphoneState);
+        Activity activity = instrumentation.waitForMonitorWithTimeout(
+                monitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        assertNotNull(activity);
+        if (isFirstRunComplete) {
+            // Check that the Activity was launched in the right mode.
+            Intent intent = activity.getIntent();
+            boolean microphoneState = IntentUtils.safeGetBooleanExtra(
+                    intent, SearchWidgetProvider.EXTRA_START_VOICE_SEARCH, false);
+            Assert.assertEquals(clickTarget == R.id.microphone_icon, microphoneState);
+        }
     }
 
-    @Test
     @SmallTest
     public void testCrashAbsorption() {
         Runnable crashingRunnable = new Runnable() {
@@ -197,7 +223,7 @@ public class SearchWidgetProviderTest {
             }
         };
 
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        SharedPreferences prefs = mDelegate.getSharedPreferences();
         Assert.assertEquals(0, SearchWidgetProvider.getNumConsecutiveCrashes(prefs));
 
         // The first few crashes should be silently absorbed.

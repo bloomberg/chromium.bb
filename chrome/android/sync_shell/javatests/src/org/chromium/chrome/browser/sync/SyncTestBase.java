@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -84,6 +85,13 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @Override
     protected void setUp() throws Exception {
+        // This must be called before doing anything with the SharedPreferences because
+        // super.setUp() normally wipes them clean between runs.  Setting a SharedPreference here
+        // via the SigninTestUtil.setUpAuthForTest() call below causes Android to cache them before
+        // the files get cleared, meaning that a data clear is useless and test runs influence each
+        // other.
+        ApplicationTestUtils.clearAppData(getInstrumentation().getTargetContext());
+
         // This must be called before super.setUp() in order for test authentication to work.
         SigninTestUtil.setUpAuthForTest(getInstrumentation());
 

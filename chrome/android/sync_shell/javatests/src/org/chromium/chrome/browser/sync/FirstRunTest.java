@@ -5,6 +5,11 @@
 package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
+import android.app.Activity;
+import android.app.Instrumentation;
+import android.app.Instrumentation.ActivityMonitor;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.filters.SmallTest;
 
@@ -15,6 +20,7 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
+import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
@@ -30,16 +36,62 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 @CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 @RetryOnFailure  // crbug.com/637448
 public class FirstRunTest extends SyncTestBase {
-    private static final String TAG = "FirstRunTest";
+    private static final String TEST_ACTION = "com.artificial.package.TEST_ACTION";
 
-    private enum ShowSettings {
+    private static enum ShowSettings {
         YES,
         NO;
     }
 
+    private FirstRunActivity mActivity;
+
     @Override
     public void startMainActivity() throws InterruptedException {
-        startMainActivityFromLauncher();
+        // Starts up and waits for the FirstRunActivity to be ready.
+        // This isn't exactly what startMainActivity is supposed to be doing, but short of a
+        // refactoring of SyncTestBase to use something other than ChromeTabbedActivity, it's the
+        // only way to reuse the rest of the setup and initialization code inside of it.
+        final Instrumentation instrumentation = getInstrumentation();
+        final Context context = instrumentation.getTargetContext();
+
+        // Create an Intent that causes Chrome to run.
+        final Intent intent = new Intent(TEST_ACTION);
+        intent.setPackage(context.getPackageName());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // Start the FRE.
+        final ActivityMonitor freMonitor =
+                new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
+        instrumentation.addMonitor(freMonitor);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunFlowSequencer.launch(context, intent, false);
+            }
+        });
+
+        // Wait for the FRE to be ready to use.
+        Activity activity =
+                freMonitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        instrumentation.removeMonitor(freMonitor);
+
+        assertTrue(activity instanceof FirstRunActivity);
+        mActivity = (FirstRunActivity) activity;
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivity.isPostNativePageSequenceCreated();
+            }
+        });
+
+        getInstrumentation().waitForIdleSync();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        if (mActivity != null) mActivity.finish();
+        super.tearDown();
     }
 
     // Test that signing in through FirstRun signs in and starts sync.
@@ -138,7 +190,7 @@ public class FirstRunTest extends SyncTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                FirstRunSignInProcessor.start(getActivity());
+                FirstRunSignInProcessor.start(mActivity);
             }
         });
     }

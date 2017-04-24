@@ -27,6 +27,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
@@ -168,7 +169,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
             @Override
             public void run() {
                 if (IntentHandler.isIntentChromeOrFirstParty(intent)) {
-                    handleAction(intent.getAction());
+                    handleAction(intent);
                 } else {
                     SearchWidgetProvider.super.onReceive(context, intent);
                 }
@@ -188,11 +189,12 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
     /** Handles the intent actions to the widget. */
     @VisibleForTesting
-    static void handleAction(String action) {
+    static void handleAction(Intent intent) {
+        String action = intent.getAction();
         if (ACTION_START_TEXT_QUERY.equals(action)) {
-            startSearchActivity(false);
+            startSearchActivity(intent, false);
         } else if (ACTION_START_VOICE_QUERY.equals(action)) {
-            startSearchActivity(true);
+            startSearchActivity(intent, true);
         } else if (ACTION_UPDATE_ALL_WIDGETS.equals(action)) {
             performUpdate(null);
         } else {
@@ -200,9 +202,12 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    private static void startSearchActivity(boolean startVoiceSearch) {
+    private static void startSearchActivity(Intent intent, boolean startVoiceSearch) {
         Log.d(TAG, "Launching SearchActivity: VOICE=" + startVoiceSearch);
         Context context = getDelegate().getContext();
+
+        // Abort if the user needs to go through First Run.
+        if (FirstRunFlowSequencer.launch(context, intent, true)) return;
 
         // Launch the SearchActivity.
         Intent searchIntent = new Intent();

@@ -35,6 +35,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.MemoryUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
@@ -247,8 +248,13 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         }
 
         if (!isStartedUpCorrectly(getIntent())) {
-            super.onCreate(null);
-            ApiCompatibilityUtils.finishAndRemoveTask(this);
+            abortLaunch();
+            return;
+        }
+
+        if (requiresFirstRunToBeCompleted(getIntent())
+                && FirstRunFlowSequencer.launch(this, getIntent(), false)) {
+            abortLaunch();
             return;
         }
 
@@ -269,6 +275,11 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         } else {
             ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
         }
+    }
+
+    private void abortLaunch() {
+        super.onCreate(null);
+        ApiCompatibilityUtils.finishAndRemoveTask(this);
     }
 
     /**
@@ -301,6 +312,14 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     protected Bundle transformSavedInstanceStateForOnCreate(Bundle savedInstanceState) {
         return savedInstanceState;
+    }
+
+    /**
+     * Overriding this function is almost always wrong.
+     * @return Whether or not the user needs to go through First Run before using this Activity.
+     */
+    protected boolean requiresFirstRunToBeCompleted(Intent intent) {
+        return true;
     }
 
     /**

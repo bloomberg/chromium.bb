@@ -276,6 +276,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     // Skips capturing screenshot for testing purpose.
     private boolean mScreenshotCaptureSkippedForTesting;
 
+    /** Whether or not a PolicyChangeListener was added. */
+    private boolean mDidAddPolicyChangeListener;
+
     /**
      * @param factory The {@link AppMenuHandlerFactory} for creating {@link mAppMenuHandler}
      */
@@ -345,6 +348,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         // Make the activity listen to policy change events
         CombinedPolicyProvider.get().addPolicyChangeListener(this);
+        mDidAddPolicyChangeListener = true;
 
         // Set up the animation placeholder to be the SurfaceView. This disables the
         // SurfaceView's 'hole' clipping during animations that are notified to the window.
@@ -1094,7 +1098,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (selector != null) selector.destroy();
         }
 
-        CombinedPolicyProvider.get().removePolicyChangeListener(this);
+        if (mDidAddPolicyChangeListener) {
+            CombinedPolicyProvider.get().removePolicyChangeListener(this);
+            mDidAddPolicyChangeListener = false;
+        }
 
         if (mTabContentManager != null) {
             mTabContentManager.destroy();

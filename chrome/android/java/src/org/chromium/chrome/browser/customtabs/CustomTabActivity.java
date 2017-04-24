@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -73,6 +74,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -1144,8 +1146,21 @@ public class CustomTabActivity extends ChromeActivity {
         intent.setPackage(context.getPackageName());
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_INFO_PAGE, true);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+        if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         IntentHandler.addTrustedIntentExtras(intent);
 
         context.startActivity(intent);
+    }
+
+    @Override
+    protected boolean requiresFirstRunToBeCompleted(Intent intent) {
+        // Custom Tabs can be used to open Chrome help pages before the ToS has been accepted.
+        if (IntentHandler.isIntentChromeOrFirstParty(intent)
+                && IntentUtils.safeGetBooleanExtra(
+                           intent, CustomTabIntentDataProvider.EXTRA_IS_INFO_PAGE, false)) {
+            return false;
+        }
+
+        return super.requiresFirstRunToBeCompleted(intent);
     }
 }
