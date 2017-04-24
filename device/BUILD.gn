@@ -105,7 +105,6 @@ test("device_unittests") {
     "//net",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:blink_headers",
     "//tools/usb_gadget",
     "//url",
