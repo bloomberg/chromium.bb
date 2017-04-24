@@ -6,6 +6,9 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "chrome/browser/ui/ash/ash_util.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 
@@ -20,9 +23,15 @@ LockWindow::LockWindow(views::View* initially_focused_view)
   params.delegate = this;
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                               ash::kShellWindowId_LockScreenContainer);
+  const int kLockContainer = ash::kShellWindowId_LockScreenContainer;
+  if (ash_util::IsRunningInMash()) {
+    using ui::mojom::WindowManager;
+    params.mus_properties[WindowManager::kContainerId_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(kLockContainer);
+  } else {
+    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                             kLockContainer);
+  }
   Init(params);
   SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
 }

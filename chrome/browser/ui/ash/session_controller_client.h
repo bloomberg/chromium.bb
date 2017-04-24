@@ -52,6 +52,9 @@ class SessionControllerClient
   using StartLockCallback = base::Callback<void(bool locked)>;
   void StartLock(StartLockCallback callback);
 
+  // Notifies SessionController that chrome lock animations are finished.
+  void NotifyChromeLockAnimationsComplete();
+
   // Calls ash SessionController to run unlock animation.
   // |animation_finished_callback| will be invoked when the animation finishes.
   void RunUnlockAnimation(base::Closure animation_finished_callback);

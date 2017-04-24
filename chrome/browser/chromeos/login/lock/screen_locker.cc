@@ -38,6 +38,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_source.h"
@@ -385,7 +386,7 @@ void ScreenLocker::OnStartLockCallback(bool locked) {
   if (!locked)
     return;
 
-  web_ui()->OnLockAnimationFinished();
+  web_ui()->OnAshLockAnimationFinished();
 
   AccessibilityManager::Get()->PlayEarcon(
       chromeos::SOUND_LOCK, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
@@ -473,15 +474,19 @@ void ScreenLocker::Show() {
     return;
   }
 
-  // If the active window is fullscreen, exit fullscreen to avoid the web page
-  // or app mimicking the lock screen. Do not exit fullscreen if the shelf is
-  // visible while in fullscreen because the shelf makes it harder for a web
-  // page or app to mimick the lock screen.
-  ash::wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
-  if (active_window_state && active_window_state->IsFullscreen() &&
-      active_window_state->hide_shelf_when_fullscreen()) {
-    const ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
-    active_window_state->OnWMEvent(&event);
+  // Manipulating active window state directly does not work in mash so skip it
+  // for mash. http://crbug.com/714677 tracks work to add the support for mash.
+  if (!ash_util::IsRunningInMash()) {
+    // If the active window is fullscreen, exit fullscreen to avoid the web page
+    // or app mimicking the lock screen. Do not exit fullscreen if the shelf is
+    // visible while in fullscreen because the shelf makes it harder for a web
+    // page or app to mimick the lock screen.
+    ash::wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
+    if (active_window_state && active_window_state->IsFullscreen() &&
+        active_window_state->hide_shelf_when_fullscreen()) {
+      const ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
+      active_window_state->OnWMEvent(&event);
+    }
   }
 
   if (!screen_locker_) {

@@ -95,7 +95,7 @@ class WebUIScreenLocker : public WebUILoginView,
   void OnHeaderBarVisible();
 
   // Called by ScreenLocker to notify that ash lock animation finishes.
-  void OnLockAnimationFinished();
+  void OnAshLockAnimationFinished();
 
   void SetFingerprintState(const AccountId& account_id, FingerprintState state);
 

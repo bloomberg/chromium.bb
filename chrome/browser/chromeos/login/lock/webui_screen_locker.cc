@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 
-#include "ash/shell.h"
-#include "ash/system/power/power_event_observer.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,6 +21,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_features.h"
@@ -256,12 +255,10 @@ void WebUIScreenLocker::OnLockBackgroundDisplayed() {
 }
 
 void WebUIScreenLocker::OnHeaderBarVisible() {
-  DCHECK(ash::Shell::HasInstance());
-
-  ash::Shell::Get()->power_event_observer()->OnLockAnimationsComplete();
+  SessionControllerClient::Get()->NotifyChromeLockAnimationsComplete();
 }
 
-void WebUIScreenLocker::OnLockAnimationFinished() {
+void WebUIScreenLocker::OnAshLockAnimationFinished() {
   // Release capture if any.
   aura::client::GetCaptureClient(GetNativeWindow()->GetRootWindow())
       ->SetCapture(nullptr);

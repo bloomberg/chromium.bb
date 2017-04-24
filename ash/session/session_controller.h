@@ -117,6 +117,7 @@ class ASH_EXPORT SessionController
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
   void StartLock(const StartLockCallback& callback) override;
+  void NotifyChromeLockAnimationsComplete() override;
   void RunUnlockAnimation(const RunUnlockAnimationCallback& callback) override;
   void NotifyChromeTerminating() override;
 
