@@ -414,6 +414,7 @@ libvpx_srcs_x86_sse2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_highbd_block_error_intrin_sse2.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_quantize_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/avg_intrin_sse2.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/avg_pred_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_loopfilter_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_quantize_intrin_sse2.c",
@@ -438,6 +439,7 @@ libvpx_srcs_x86_avx = [ "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_
 libvpx_srcs_x86_avx2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_intrin_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_convolve_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/loopfilter_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad4d_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad_avx2.c",
@@ -863,6 +865,7 @@ libvpx_srcs_x86_64_sse2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_highbd_block_error_intrin_sse2.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_quantize_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/avg_intrin_sse2.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/avg_pred_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_loopfilter_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_quantize_intrin_sse2.c",
@@ -887,6 +890,7 @@ libvpx_srcs_x86_64_avx = [ "//third_party/libvpx/source/libvpx/vp9/encoder/x86/v
 libvpx_srcs_x86_64_avx2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_intrin_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_convolve_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/loopfilter_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad4d_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad_avx2.c",
