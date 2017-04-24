@@ -1441,4 +1441,8 @@ void LayerTreeHost::SetNeedsDisplayOnAllLayers() {
     layer->SetNeedsDisplay();
 }
 
+void LayerTreeHost::SetHasCopyRequest(bool has_copy_request) {
+  has_copy_request_ = has_copy_request;
+}
+
 }  // namespace cc

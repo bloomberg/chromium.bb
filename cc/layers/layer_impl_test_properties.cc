@@ -18,6 +18,7 @@ LayerImplTestProperties::LayerImplTestProperties(LayerImpl* owning_layer)
       should_flatten_transform(true),
       hide_layer_and_subtree(false),
       opacity_can_animate(false),
+      subtree_has_copy_request(false),
       sorting_context_id(0),
       opacity(1.f),
       blend_mode(SkBlendMode::kSrcOver),

@@ -93,6 +93,7 @@ Layer::Layer()
       may_contain_video_(false),
       is_scroll_clip_layer_(false),
       needs_show_scrollbars_(false),
+      subtree_has_copy_request_(false),
       safe_opaque_background_color_(0),
       num_unclipped_descendants_(0) {}
 
@@ -362,6 +363,20 @@ void Layer::RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request) {
   SetSubtreePropertyChanged();
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
+  if (layer_tree_host_)
+    layer_tree_host_->SetHasCopyRequest(true);
+}
+
+void Layer::SetSubtreeHasCopyRequest(bool subtree_has_copy_request) {
+  subtree_has_copy_request_ = subtree_has_copy_request;
+}
+
+bool Layer::SubtreeHasCopyRequest() const {
+  DCHECK(layer_tree_host_);
+  // When the copy request is pushed to effect tree, we reset layer tree host's
+  // has_copy_request but do not clear subtree_has_copy_request on individual
+  // layers.
+  return layer_tree_host_->has_copy_request() && subtree_has_copy_request_;
 }
 
 void Layer::SetBackgroundColor(SkColor background_color) {
@@ -1438,10 +1453,10 @@ void Layer::SetMutableProperties(uint32_t properties) {
   SetNeedsCommit();
 }
 
-int Layer::num_copy_requests_in_target_subtree() {
+bool Layer::has_copy_requests_in_target_subtree() {
   return layer_tree_host_->property_trees()
       ->effect_tree.Node(effect_tree_index())
-      ->num_copy_requests_in_subtree;
+      ->subtree_has_copy_request;
 }
 
 gfx::Transform Layer::ScreenSpaceTransform() const {

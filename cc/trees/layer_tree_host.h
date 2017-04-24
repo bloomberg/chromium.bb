@@ -341,6 +341,9 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
                     bool* content_is_suitable_for_gpu);
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
+  void SetHasCopyRequest(bool has_copy_request);
+  bool has_copy_request() const { return has_copy_request_; }
+
   void AddLayerShouldPushProperties(Layer* layer);
   void RemoveLayerShouldPushProperties(Layer* layer);
   std::unordered_set<Layer*>& LayersThatShouldPushProperties();
@@ -610,6 +613,11 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   bool in_paint_layer_contents_ = false;
   bool in_update_property_trees_ = false;
+
+  // This is true if atleast one layer in the layer tree has a copy request. We
+  // use this bool to decide whether we need to compute subtree has copy request
+  // for every layer during property tree building.
+  bool has_copy_request_ = false;
 
   MutatorHost* mutator_host_;
 

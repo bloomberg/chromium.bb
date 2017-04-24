@@ -473,10 +473,8 @@ void LayerImpl::ResetChangeTracking() {
   damage_rect_.SetRect(0, 0, 0, 0);
 }
 
-int LayerImpl::num_copy_requests_in_target_subtree() {
-  return GetEffectTree()
-      .Node(effect_tree_index())
-      ->num_copy_requests_in_subtree;
+bool LayerImpl::has_copy_requests_in_target_subtree() {
+  return GetEffectTree().Node(effect_tree_index())->subtree_has_copy_request;
 }
 
 void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {

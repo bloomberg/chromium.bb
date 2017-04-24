@@ -37,6 +37,7 @@ struct CC_EXPORT LayerImplTestProperties {
   bool should_flatten_transform;
   bool hide_layer_and_subtree;
   bool opacity_can_animate;
+  bool subtree_has_copy_request;
   int sorting_context_id;
   float opacity;
   FilterOperations filters;

@@ -458,8 +458,7 @@ static inline bool LayerShouldBeSkippedInternal(
       transform_tree.Node(layer->transform_tree_index());
   const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
 
-  if (effect_node->has_render_surface &&
-      effect_node->num_copy_requests_in_subtree > 0)
+  if (effect_node->has_render_surface && effect_node->subtree_has_copy_request)
     return false;
   // If the layer transform is not invertible, it should be skipped.
   // TODO(ajuma): Correctly process subtrees with singular transform for the

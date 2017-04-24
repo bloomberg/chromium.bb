@@ -27,7 +27,7 @@ EffectNode::EffectNode()
       is_currently_animating_filter(false),
       is_currently_animating_opacity(false),
       effect_changed(false),
-      num_copy_requests_in_subtree(0),
+      subtree_has_copy_request(0),
       transform_id(0),
       clip_id(0),
       target_id(1),
@@ -58,7 +58,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          is_currently_animating_opacity ==
              other.is_currently_animating_opacity &&
          effect_changed == other.effect_changed &&
-         num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
+         subtree_has_copy_request == other.subtree_has_copy_request &&
          transform_id == other.transform_id && clip_id == other.clip_id &&
          target_id == other.target_id && mask_layer_id == other.mask_layer_id;
 }
@@ -77,8 +77,7 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_potential_opacity_animation",
                     has_potential_opacity_animation);
   value->SetBoolean("effect_changed", effect_changed);
-  value->SetInteger("num_copy_requests_in_subtree",
-                    num_copy_requests_in_subtree);
+  value->SetInteger("subtree_has_copy_request", subtree_has_copy_request);
   value->SetInteger("transform_id", transform_id);
   value->SetInteger("clip_id", clip_id);
   value->SetInteger("target_id", target_id);

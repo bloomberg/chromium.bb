@@ -97,6 +97,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request);
   bool HasCopyRequest() const { return !inputs_.copy_requests.empty(); }
 
+  void SetSubtreeHasCopyRequest(bool subtree_has_copy_request);
+  bool SubtreeHasCopyRequest() const;
+
   void TakeCopyRequests(
       std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
 
@@ -401,7 +404,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetMayContainVideo(bool yes);
 
-  int num_copy_requests_in_target_subtree();
+  bool has_copy_requests_in_target_subtree();
 
   // Stable identifier for clients. See comment in cc/trees/element_id.h.
   void SetElementId(ElementId id);
@@ -628,6 +631,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool may_contain_video_ : 1;
   bool is_scroll_clip_layer_ : 1;
   bool needs_show_scrollbars_ : 1;
+  // This value is valid only when LayerTreeHost::has_copy_request() is true
+  bool subtree_has_copy_request_ : 1;
   SkColor safe_opaque_background_color_;
   std::unique_ptr<std::set<Layer*>> scroll_children_;
 

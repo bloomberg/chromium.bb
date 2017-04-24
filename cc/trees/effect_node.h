@@ -58,7 +58,7 @@ struct CC_EXPORT EffectNode {
   // We need to track changes to effects on the compositor to compute damage
   // rect.
   bool effect_changed;
-  int num_copy_requests_in_subtree;
+  bool subtree_has_copy_request;
   int transform_id;
   int clip_id;
   // Effect node id of which this effect contributes to.

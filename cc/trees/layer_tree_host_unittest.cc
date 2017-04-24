@@ -6525,7 +6525,7 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
   void WillCommit() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
+        EXPECT_TRUE(root->has_copy_requests_in_target_subtree());
         break;
     }
   }
@@ -6548,7 +6548,7 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
         child->SetTransform(transform);
         break;
       case 3:
-        EXPECT_EQ(root->num_copy_requests_in_target_subtree(), 0);
+        EXPECT_FALSE(root->has_copy_requests_in_target_subtree());
         EndTest();
         break;
     }

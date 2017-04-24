@@ -986,7 +986,7 @@ bool EffectTree::HasCopyRequests() const {
 
 void EffectTree::ClearCopyRequests() {
   for (auto& node : nodes()) {
-    node.num_copy_requests_in_subtree = 0;
+    node.subtree_has_copy_request = false;
     node.has_copy_request = false;
   }
 

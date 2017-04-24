@@ -58,17 +58,6 @@ struct DataForRecursion {
   SkColor safe_opaque_background_color;
 };
 
-template <typename LayerType>
-struct DataForRecursionFromChild {
-  int num_copy_requests_in_subtree;
-
-  DataForRecursionFromChild() : num_copy_requests_in_subtree(0) {}
-
-  void Merge(const DataForRecursionFromChild& data) {
-    num_copy_requests_in_subtree += data.num_copy_requests_in_subtree;
-  }
-};
-
 static LayerPositionConstraint PositionConstraint(Layer* layer) {
   return layer->position_constraint();
 }
@@ -858,6 +847,38 @@ static void TakeCopyRequests(
   layer->test_properties()->copy_requests.clear();
 }
 
+static void SetSubtreeHasCopyRequest(Layer* layer,
+                                     bool subtree_has_copy_request) {
+  layer->SetSubtreeHasCopyRequest(subtree_has_copy_request);
+}
+
+static void SetSubtreeHasCopyRequest(LayerImpl* layer,
+                                     bool subtree_has_copy_request) {
+  layer->test_properties()->subtree_has_copy_request = subtree_has_copy_request;
+}
+
+static bool SubtreeHasCopyRequest(Layer* layer) {
+  return layer->SubtreeHasCopyRequest();
+}
+
+static bool SubtreeHasCopyRequest(LayerImpl* layer) {
+  return layer->test_properties()->subtree_has_copy_request;
+}
+
+template <typename LayerType>
+bool UpdateSubtreeHasCopyRequestRecursive(LayerType* layer) {
+  bool subtree_has_copy_request = false;
+  if (HasCopyRequest(layer))
+    subtree_has_copy_request = true;
+  for (size_t i = 0; i < Children(layer).size(); ++i) {
+    LayerType* current_child = ChildAt(layer, i);
+    subtree_has_copy_request |=
+        UpdateSubtreeHasCopyRequestRecursive(current_child);
+  }
+  SetSubtreeHasCopyRequest(layer, subtree_has_copy_request);
+  return subtree_has_copy_request;
+}
+
 template <typename LayerType>
 bool AddEffectNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
@@ -913,6 +934,7 @@ bool AddEffectNodeIfNeeded(
   node.is_currently_animating_opacity = OpacityIsAnimating(layer);
   node.is_currently_animating_filter = FilterIsAnimating(layer);
   node.effect_changed = PropertyChanged(layer);
+  node.subtree_has_copy_request = SubtreeHasCopyRequest(layer);
 
   EffectTree& effect_tree = data_for_children->property_trees->effect_tree;
   if (MaskLayer(layer)) {
@@ -1120,8 +1142,7 @@ static void SetLayerPropertyChangedForChild(LayerImpl* parent,
 template <typename LayerType>
 void BuildPropertyTreesInternal(
     LayerType* layer,
-    const DataForRecursion<LayerType>& data_from_parent,
-    DataForRecursionFromChild<LayerType>* data_to_parent) {
+    const DataForRecursion<LayerType>& data_from_parent) {
   layer->set_property_tree_sequence_number(
       data_from_parent.property_trees->sequence_number);
 
@@ -1147,10 +1168,7 @@ void BuildPropertyTreesInternal(
     LayerType* current_child = ChildAt(layer, i);
     SetLayerPropertyChangedForChild(layer, current_child);
     if (!ScrollParent(current_child)) {
-      DataForRecursionFromChild<LayerType> data_from_child;
-      BuildPropertyTreesInternal(current_child, data_for_children,
-                                 &data_from_child);
-      data_to_parent->Merge(data_from_child);
+      BuildPropertyTreesInternal(current_child, data_for_children);
     } else {
       // The child should be included in its scroll parent's list of scroll
       // children.
@@ -1161,15 +1179,12 @@ void BuildPropertyTreesInternal(
   if (ScrollChildren(layer)) {
     for (LayerType* scroll_child : *ScrollChildren(layer)) {
       DCHECK_EQ(ScrollParent(scroll_child), layer);
-      DataForRecursionFromChild<LayerType> data_from_child;
       DCHECK(Parent(scroll_child));
       data_for_children.effect_tree_parent =
           Parent(scroll_child)->effect_tree_index();
       data_for_children.render_target =
           Parent(scroll_child)->effect_tree_index();
-      BuildPropertyTreesInternal(scroll_child, data_for_children,
-                                 &data_from_child);
-      data_to_parent->Merge(data_from_child);
+      BuildPropertyTreesInternal(scroll_child, data_for_children);
     }
   }
 
@@ -1182,16 +1197,6 @@ void BuildPropertyTreesInternal(
     MaskLayer(layer)->SetClipTreeIndex(layer->clip_tree_index());
     MaskLayer(layer)->SetEffectTreeIndex(layer->effect_tree_index());
     MaskLayer(layer)->SetScrollTreeIndex(layer->scroll_tree_index());
-  }
-
-  EffectNode* effect_node = data_for_children.property_trees->effect_tree.Node(
-      data_for_children.effect_tree_parent);
-
-  if (effect_node->owning_layer_id == layer->id()) {
-    if (effect_node->has_copy_request)
-      data_to_parent->num_copy_requests_in_subtree++;
-    effect_node->num_copy_requests_in_subtree =
-        data_to_parent->num_copy_requests_in_subtree;
   }
 }
 
@@ -1282,8 +1287,7 @@ void BuildPropertyTreesTopLevelInternal(
       data_for_recursion.property_trees->clip_tree.Insert(
           root_clip, ClipTree::kRootNodeId);
 
-  DataForRecursionFromChild<LayerType> data_from_child;
-  BuildPropertyTreesInternal(root_layer, data_for_recursion, &data_from_child);
+  BuildPropertyTreesInternal(root_layer, data_for_recursion);
   property_trees->needs_rebuild = false;
 
   // The transform tree is kept up to date as it is built, but the
@@ -1333,6 +1337,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   SkColor color = root_layer->layer_tree_host()->background_color();
   if (SkColorGetA(color) != 255)
     color = SkColorSetA(color, 255);
+  if (root_layer->layer_tree_host()->has_copy_request())
+    UpdateSubtreeHasCopyRequestRecursive(root_layer);
   BuildPropertyTreesTopLevelInternal(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
@@ -1343,6 +1349,11 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     CheckScrollAndClipPointersForLayer(layer);
 #endif
   property_trees->ResetCachedData();
+  // During building property trees, all copy requests are moved from layers to
+  // effect tree, which are then pushed at commit to compositor thread and
+  // handled there. LayerTreeHost::has_copy_request is only required to
+  // decide if we want to create a effect node. So, it can be reset now.
+  root_layer->layer_tree_host()->SetHasCopyRequest(false);
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(
@@ -1365,6 +1376,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   SkColor color = root_layer->layer_tree_impl()->background_color();
   if (SkColorGetA(color) != 255)
     color = SkColorSetA(color, 255);
+  UpdateSubtreeHasCopyRequestRecursive(root_layer);
   BuildPropertyTreesTopLevelInternal(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,

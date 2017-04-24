@@ -5538,10 +5538,10 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-  EXPECT_GT(root_layer->num_copy_requests_in_target_subtree(), 0);
-  EXPECT_GT(copy_grand_parent_layer->num_copy_requests_in_target_subtree(), 0);
-  EXPECT_GT(copy_parent_layer->num_copy_requests_in_target_subtree(), 0);
-  EXPECT_GT(copy_layer->num_copy_requests_in_target_subtree(), 0);
+  EXPECT_TRUE(root_layer->has_copy_requests_in_target_subtree());
+  EXPECT_TRUE(copy_grand_parent_layer->has_copy_requests_in_target_subtree());
+  EXPECT_TRUE(copy_parent_layer->has_copy_requests_in_target_subtree());
+  EXPECT_TRUE(copy_layer->has_copy_requests_in_target_subtree());
 
   // We should have four render surfaces, one for the root, one for the grand
   // parent since it has opacity and two drawing descendants, one for the parent
@@ -9344,14 +9344,7 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
 
 static void CopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
 
-TEST_F(LayerTreeHostCommonTest, NumCopyRequestsInTargetSubtree) {
-  // If the layer has a node in effect_tree, the return value of
-  // num_copy_requests_in_target_subtree()  must be equal to the actual number
-  // of copy requests in the sub-layer_tree; Otherwise, the number is expected
-  // to be the value of its nearest ancestor that owns an effect node and
-  // greater than or equal to the actual number of copy requests in the
-  // sub-layer_tree.
-
+TEST_F(LayerTreeHostCommonTest, HasCopyRequestsInTargetSubtree) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> child1 = Layer::Create();
   scoped_refptr<Layer> child2 = Layer::Create();
@@ -9371,11 +9364,11 @@ TEST_F(LayerTreeHostCommonTest, NumCopyRequestsInTargetSubtree) {
   child2->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
-  EXPECT_EQ(root->num_copy_requests_in_target_subtree(), 2);
-  EXPECT_EQ(child1->num_copy_requests_in_target_subtree(), 2);
-  EXPECT_EQ(child2->num_copy_requests_in_target_subtree(), 0);
-  EXPECT_EQ(grandchild->num_copy_requests_in_target_subtree(), 2);
-  EXPECT_EQ(greatgrandchild->num_copy_requests_in_target_subtree(), 1);
+  EXPECT_TRUE(root->has_copy_requests_in_target_subtree());
+  EXPECT_TRUE(child1->has_copy_requests_in_target_subtree());
+  EXPECT_FALSE(child2->has_copy_requests_in_target_subtree());
+  EXPECT_TRUE(grandchild->has_copy_requests_in_target_subtree());
+  EXPECT_TRUE(greatgrandchild->has_copy_requests_in_target_subtree());
 }
 
 TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
@@ -9781,10 +9774,10 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
+  EXPECT_TRUE(root->has_copy_requests_in_target_subtree());
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
+  EXPECT_TRUE(root->has_copy_requests_in_target_subtree());
 }
 
 TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
