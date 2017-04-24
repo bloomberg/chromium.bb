@@ -277,6 +277,9 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   JSBindingUtilGetter js_binding_util_getter_;
 
+  // The set of modules that we've attempted to load.
+  std::set<std::string> loaded_modules_;
+
   base::WeakPtrFactory<ModuleSystem> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleSystem);

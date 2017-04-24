@@ -447,6 +447,16 @@ void ModuleSystem::LazyFieldGetterInner(
   }
   std::string name = *v8::String::Utf8Value(v8_module_name);
 
+  // As part of instantiating a module, we delete the getter and replace it with
+  // the property directly. If we're trying to load the same module a second
+  // time, it means something went wrong. Bail out early rather than going
+  // through the initialization process again (since bindings may not expect to
+  // run multiple times).
+  if (!module_system->loaded_modules_.insert(name).second) {
+    Warn(isolate, "Previous API instantiation failed.");
+    return;
+  }
+
   // Switch to our v8 context because we need functions created while running
   // the require()d module to belong to our context, not the current one.
   v8::Context::Scope context_scope(context);
@@ -495,7 +505,17 @@ void ModuleSystem::LazyFieldGetterInner(
   if (val->IsObject()) {
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(val);
     auto maybe = object->Delete(context, property);
-    CHECK(IsTrue(maybe));
+    if (!maybe.IsJust()) {
+      // In theory, deletion should never result in throwing an error. But
+      // crazier things have happened.
+      NOTREACHED();
+      return;
+    }
+    if (!maybe.FromJust()) {
+      // Deletion can *fail* in certain cases, such as when the script does
+      // Object.freeze(chrome).
+      return;
+    }
     SetProperty(context, object, property, new_field);
   } else {
     NOTREACHED();
@@ -524,6 +544,9 @@ void ModuleSystem::SetLazyField(v8::Local<v8::Object> object,
   v8::HandleScope handle_scope(GetIsolate());
   v8::Local<v8::Object> parameters = v8::Object::New(GetIsolate());
   v8::Local<v8::Context> context = context_->v8_context();
+  // Since we reset the accessor here, we remove the record of having loaded the
+  // module.
+  loaded_modules_.erase(module_name);
   SetPrivateProperty(context, parameters, kModuleName,
               ToV8StringUnsafe(GetIsolate(), module_name.c_str()));
   SetPrivateProperty(context, parameters, kModuleField,
