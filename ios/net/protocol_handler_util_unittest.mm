@@ -39,7 +39,6 @@
 namespace net {
 namespace {
 
-const int kResponseCode = 200;
 const char* kTextHtml = "text/html";
 const char* kTextPlain = "text/plain";
 const char* kAscii = "US-ASCII";
@@ -87,9 +86,6 @@ class HeadersURLRequestJob : public URLRequestJob {
     info->headers = new HttpResponseHeaders(header_string);
   }
 
-  int GetResponseCode() const override {
-    return kResponseCode;
-  }
  protected:
   ~HeadersURLRequestJob() override {}
 

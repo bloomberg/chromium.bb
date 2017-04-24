@@ -201,8 +201,6 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
     return buf_size;
   }
 
-  int GetResponseCode() const override { return 200; }
-
   void GetResponseInfo(net::HttpResponseInfo* info) override {
     const char kStatus[] = "HTTP/1.1 200 OK\0";
     const size_t kStatusLen = arraysize(kStatus);
