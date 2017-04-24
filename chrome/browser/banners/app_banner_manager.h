@@ -76,6 +76,10 @@ class AppBannerManager : public content::WebContentsObserver,
   // nothing if |request_id| does not match the current request.
   void SendBannerDismissed(int request_id);
 
+  // Returns a WeakPtr to this object. Exposed so subclasses/infobars may
+  // may bind callbacks without needing their own WeakPtrFactory.
+  base::WeakPtr<AppBannerManager> GetWeakPtr();
+
   // Overridden and passed through base::Bind on desktop platforms. Called when
   // the bookmark app install initiated by a banner has completed. Not used on
   // Android.
@@ -132,10 +136,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns the ideal and minimum primary icon size requirements.
   virtual int GetIdealPrimaryIconSizeInPx();
   virtual int GetMinimumPrimaryIconSizeInPx();
-
-  // Returns a WeakPtr to this object. Exposed so subclasses/infobars may
-  // may bind callbacks without needing their own WeakPtrFactory.
-  base::WeakPtr<AppBannerManager> GetWeakPtr();
 
   // Returns true if |is_debug_mode_| is true or the
   // kBypassAppBannerEngagementChecks flag is set.

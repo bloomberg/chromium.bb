@@ -352,13 +352,17 @@ bool AppBannerInfoBarDelegateAndroid::TriggeredFromBanner() const {
 }
 
 void AppBannerInfoBarDelegateAndroid::SendBannerAccepted() {
-  if (weak_manager_ && TriggeredFromBanner()) {
+  if (!weak_manager_)
+    return;
+
+  if (TriggeredFromBanner())
     weak_manager_->SendBannerAccepted(event_request_id_);
-    // TODO(mgiuca): Send the appinstalled event for WebAPKs (but just removing
-    // this check won't be sufficient).
-    if (!is_webapk_)
-      weak_manager_->OnInstall();
-  }
+
+  // Send the appinstalled event. Note that this is fired *before* the
+  // installation actually takes place (which can be a significant amount of
+  // time later, especially if using WebAPKs).
+  // TODO(mgiuca): Fire the event *after* the installation is completed.
+  weak_manager_->OnInstall();
 }
 
 void AppBannerInfoBarDelegateAndroid::OnWebApkInstallFinished(

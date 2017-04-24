@@ -139,6 +139,10 @@ void AppBannerManager::SendBannerDismissed(int request_id) {
   event_->BannerDismissed();
 }
 
+base::WeakPtr<AppBannerManager> AppBannerManager::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 AppBannerManager::AppBannerManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       SiteEngagementObserver(SiteEngagementService::Get(
@@ -186,10 +190,6 @@ int AppBannerManager::GetIdealPrimaryIconSizeInPx() {
 
 int AppBannerManager::GetMinimumPrimaryIconSizeInPx() {
   return InstallableManager::GetMinimumIconSizeInPx();
-}
-
-base::WeakPtr<AppBannerManager> AppBannerManager::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 bool AppBannerManager::IsDebugMode() const {
