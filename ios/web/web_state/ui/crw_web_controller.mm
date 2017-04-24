@@ -2926,6 +2926,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)wasHidden {
   if (_isHalted)
     return;
+  [self recordStateInHistory];
   if ([self.nativeController respondsToSelector:@selector(wasHidden)]) {
     [self.nativeController wasHidden];
   }

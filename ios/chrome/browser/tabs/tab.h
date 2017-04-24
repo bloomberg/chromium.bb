@@ -227,10 +227,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 - (void)goBack;
 - (void)goForward;
 
-// Records the state (scroll position, form values, whatever can be
-// harvested) from the current page into the current session entry.
-- (void)recordStateInHistory;
-
 // Returns the timestamp of the last time the tab is visited.
 - (double)lastVisitedTimestamp;
 

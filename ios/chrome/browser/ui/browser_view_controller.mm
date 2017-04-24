@@ -1978,7 +1978,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [_toolbarController dismissToolsMenuPopup];
   [self hidePageInfoPopupForView:nil];
   [_toolbarController dismissTabHistoryPopup];
-  [[_model currentTab] recordStateInHistory];
 }
 
 #pragma mark - Tap handling
@@ -3716,7 +3715,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         [newTab navigationManager]->CanPruneAllButLastCommittedItem();
 
     if (oldTab && newTab && canPruneItems) {
-      [oldTab recordStateInHistory];
       [newTab navigationManager]->CopyStateFromAndPrune(
           [oldTab navigationManager]);
       [[newTab nativeAppNavigationController]

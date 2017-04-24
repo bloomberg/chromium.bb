@@ -1224,14 +1224,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [parentTabModel_ notifyTabChanged:self];
 }
 
-// Records the state (scroll position, form values, whatever can be
-// harvested) from the current page into the current session entry.
-- (void)recordStateInHistory {
-  // Link-loading prerender tab may not have correct zoom value during the load.
-  if (!self.isLinkLoadingPrerenderTab)
-    [self.webController recordStateInHistory];
-}
-
 // Records metric for the interface's orientation.
 - (void)recordInterfaceOrientation {
   switch ([[UIApplication sharedApplication] statusBarOrientation]) {

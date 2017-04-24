@@ -650,6 +650,7 @@ WebStateImpl::GetSessionCertificatePolicyCache() {
 }
 
 CRWSessionStorage* WebStateImpl::BuildSessionStorage() {
+  [web_controller_ recordStateInHistory];
   SessionStorageBuilder session_storage_builder;
   return session_storage_builder.BuildStorage(this);
 }

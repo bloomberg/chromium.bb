@@ -32,13 +32,10 @@
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                  userAction:(BOOL)userAction {
-  Tab* oldTab = nil;
-  Tab* newTab = nil;
   if (oldWebState) {
     // Save state, such as scroll position, ... of the old selected Tab.
-    oldTab = LegacyTabHelper::GetTabForWebState(oldWebState);
-    if (userAction)
-      [oldTab recordStateInHistory];
+    Tab* oldTab = LegacyTabHelper::GetTabForWebState(oldWebState);
+    DCHECK(oldTab);
 
     // Avoid artificially extending the lifetime of oldTab until the global
     // autoreleasepool is purged.
@@ -51,7 +48,7 @@
   }
 
   if (newWebState) {
-    newTab = LegacyTabHelper::GetTabForWebState(newWebState);
+    Tab* newTab = LegacyTabHelper::GetTabForWebState(newWebState);
     [newTab updateLastVisitedTimestamp];
 
     // Persist the session state.

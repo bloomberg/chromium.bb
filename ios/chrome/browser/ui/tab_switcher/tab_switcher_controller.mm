@@ -340,10 +340,6 @@ enum class SnapshotViewOption {
 }
 
 - (void)showWithSelectedTabAnimation {
-  // Stores the current tab's scroll position. Helps determine whether the
-  // current tab snapshot should be updated or not.
-  [_onLoadActiveModel.currentTab recordStateInHistory];
-
   [self updateWindowBackgroundColor];
   [self performTabSwitcherTransition:TransitionType::TRANSITION_PRESENT
                            withModel:_onLoadActiveModel

@@ -692,10 +692,6 @@ void CleanCertificatePolicyCache(
 #pragma mark - Private methods
 
 - (SessionIOS*)sessionForSaving {
-  // Background tabs will already have their state preserved, but not the
-  // fg tab. Do it now.
-  [self.currentTab recordStateInHistory];
-
   // Build the array of sessions. Copy the session objects as the saving will
   // be done on a separate thread.
   // TODO(crbug.com/661986): This could get expensive especially since this
@@ -726,9 +722,6 @@ void CleanCertificatePolicyCache(
 
   int oldCount = _webStateList->count();
   DCHECK_GE(oldCount, 0);
-
-  if (persistState && self.currentTab)
-    [self.currentTab recordStateInHistory];
 
   web::WebState::CreateParams createParams(_browserState);
   DeserializeWebStateList(
