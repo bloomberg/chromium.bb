@@ -937,6 +937,41 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
   EXPECT_EQ(expected_title, entry->GetTitle());
 }
 
+// Class to detect incoming GestureScrollEnd acks for bubbling tests.
+class GestureScrollEndObserver
+    : public content::RenderWidgetHost::InputEventObserver {
+ public:
+  GestureScrollEndObserver()
+      : message_loop_runner_(new content::MessageLoopRunner),
+        gesture_scroll_end_ack_received_(false) {}
+  ~GestureScrollEndObserver() override {}
+
+  void OnInputEventAck(const blink::WebInputEvent& event) override {
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
+      gesture_scroll_end_ack_received_ = true;
+      if (message_loop_runner_->loop_running())
+        message_loop_runner_->Quit();
+    }
+  }
+
+  void Wait() {
+    if (!gesture_scroll_end_ack_received_) {
+      message_loop_runner_->Run();
+    }
+  }
+
+  void Reset() {
+    gesture_scroll_end_ack_received_ = false;
+    message_loop_runner_ = new content::MessageLoopRunner;
+  }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool gesture_scroll_end_ack_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(GestureScrollEndObserver);
+};
+
 // Class to sniff incoming IPCs for FrameHostMsg_FrameRectChanged messages.
 class FrameRectChangedMessageFilter : public content::BrowserMessageFilter {
  public:
@@ -1086,7 +1121,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that scrolling a nested out-of-process iframe bubbles unused scroll
 // delta to a parent frame.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
 #define MAYBE_ScrollBubblingFromOOPIFTest DISABLED_ScrollBubblingFromOOPIFTest
 #else
 #define MAYBE_ScrollBubblingFromOOPIFTest ScrollBubblingFromOOPIFTest
@@ -1113,6 +1148,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       new FrameRectChangedMessageFilter();
   parent_iframe_node->current_frame_host()->GetProcess()->AddFilter(
       filter.get());
+
+  std::unique_ptr<GestureScrollEndObserver> ack_observer =
+      base::MakeUnique<GestureScrollEndObserver>();
+  parent_iframe_node->current_frame_host()
+      ->GetRenderWidgetHost()
+      ->AddInputEventObserver(ack_observer.get());
 
   GURL site_url(embedded_test_server()->GetURL(
       "b.com", "/frame_tree/page_with_positioned_frame.html"));
@@ -1171,6 +1212,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   update_rect = filter->last_rect();
   EXPECT_LT(update_rect.y(), initial_y);
   filter->Reset();
+  ack_observer->Reset();
 
   // Now scroll the nested frame upward, which should bubble to the parent.
   // The upscroll exceeds the amount that the frame was initially scrolled
@@ -1195,6 +1237,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 
   filter->Reset();
+  // Once we've sent a wheel to the nested iframe that we expect to turn into
+  // a bubbling scroll, we need to delay to make sure the GestureScrollBegin
+  // from this new scroll doesn't hit the RenderWidgetHostImpl before the
+  // GestureScrollEnd bubbled from the child.
+  // This timing only seems to be needed for CrOS, but we'll enable it on
+  // all platforms just to lessen the possibility of tests being flakey
+  // on non-CrOS platforms.
+  ack_observer->Wait();
 
   // Scroll the parent down again in order to test scroll bubbling from
   // gestures.
