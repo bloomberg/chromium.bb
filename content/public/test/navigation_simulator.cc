@@ -155,9 +155,7 @@ void NavigationSimulator::Start() {
   if (GetLastThrottleCheckResult() == NavigationThrottle::PROCEED) {
     CHECK_EQ(1, num_will_start_request_called_);
   } else {
-    // TODO(clamy): Add error handling code based on the
-    // NavigationThrottleCheckResult here and in other methods.
-    state_ = FAILED;
+    FailFromThrottleCheck(GetLastThrottleCheckResult());
   }
 }
 
@@ -216,7 +214,7 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
     CHECK_EQ(previous_did_redirect_navigation_called + 1,
              num_did_redirect_navigation_called_);
   } else {
-    state_ = FAILED;
+    FailFromThrottleCheck(GetLastThrottleCheckResult());
   }
 }
 
@@ -260,7 +258,7 @@ void NavigationSimulator::Commit() {
   WaitForThrottleChecksComplete();
 
   if (GetLastThrottleCheckResult() != NavigationThrottle::PROCEED) {
-    state_ = FAILED;
+    FailFromThrottleCheck(GetLastThrottleCheckResult());
     return;
   }
 
@@ -569,6 +567,48 @@ void NavigationSimulator::PrepareCompleteCallbackOnHandle() {
 RenderFrameHost* NavigationSimulator::GetFinalRenderFrameHost() {
   CHECK_EQ(state_, FINISHED);
   return render_frame_host_;
+}
+
+void NavigationSimulator::FailFromThrottleCheck(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK_NE(result, NavigationThrottle::PROCEED);
+  state_ = FAILED;
+
+  // Special failure logic only needed for non-PlzNavigate case.
+  if (IsBrowserSideNavigationEnabled())
+    return;
+  int error_code = net::OK;
+  switch (result) {
+    case NavigationThrottle::PROCEED:
+    case NavigationThrottle::DEFER:
+      NOTREACHED();
+      break;
+    case NavigationThrottle::CANCEL:
+    case NavigationThrottle::CANCEL_AND_IGNORE:
+      error_code = net::ERR_ABORTED;
+      break;
+    case NavigationThrottle::BLOCK_REQUEST:
+      error_code = net::ERR_BLOCKED_BY_CLIENT;
+      break;
+    case NavigationThrottle::BLOCK_RESPONSE:
+      error_code = net::ERR_BLOCKED_BY_RESPONSE;
+      break;
+  };
+
+  FrameHostMsg_DidFailProvisionalLoadWithError_Params error_params;
+  error_params.error_code = error_code;
+  error_params.url = navigation_url_;
+  render_frame_host_->OnMessageReceived(
+      FrameHostMsg_DidFailProvisionalLoadWithError(
+          render_frame_host_->GetRoutingID(), error_params));
+  bool should_result_in_error_page = error_code != net::ERR_ABORTED;
+  if (!should_result_in_error_page) {
+    render_frame_host_->OnMessageReceived(
+        FrameHostMsg_DidStopLoading(render_frame_host_->GetRoutingID()));
+    CHECK_EQ(1, num_did_finish_navigation_called_);
+  } else {
+    CHECK_EQ(0, num_did_finish_navigation_called_);
+  }
 }
 
 }  // namespace content

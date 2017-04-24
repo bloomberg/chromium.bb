@@ -4,13 +4,22 @@
 
 #include "content/public/test/navigation_simulator.h"
 
+#include <string>
+#include <tuple>
+
+#include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/test/test_render_frame_host.h"
+#include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -45,6 +54,7 @@ std::string ResultSynchronyToString(ResultSynchrony sync) {
   return sync == SYNCHRONOUS ? "SYNCHRONOUS" : "ASYNCHRONOUS";
 }
 
+// TODO(csharrison): Expose this class in the content public API.
 class CancellingNavigationThrottle : public NavigationThrottle {
  public:
   CancellingNavigationThrottle(NavigationHandle* handle,
@@ -88,9 +98,12 @@ class CancellingNavigationThrottle : public NavigationThrottle {
       navigation_handle()->Resume();
   }
 
+ private:
   const CancelTime cancel_time_;
   const ResultSynchrony sync_;
   base::WeakPtrFactory<CancellingNavigationThrottle> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CancellingNavigationThrottle);
 };
 
 class NavigationSimulatorTest : public RenderViewHostImplTestHarness,
@@ -98,6 +111,9 @@ class NavigationSimulatorTest : public RenderViewHostImplTestHarness,
                                 public testing::WithParamInterface<
                                     std::tuple<CancelTime, ResultSynchrony>> {
  public:
+  NavigationSimulatorTest() {}
+  ~NavigationSimulatorTest() override {}
+
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
@@ -107,15 +123,28 @@ class NavigationSimulatorTest : public RenderViewHostImplTestHarness,
         GURL("https://example.test"), main_rfh());
   }
 
+  void TearDown() override {
+    EXPECT_TRUE(did_finish_navigation_);
+    RenderViewHostImplTestHarness::TearDown();
+  }
+
   void DidStartNavigation(content::NavigationHandle* handle) override {
     handle->RegisterThrottleForTesting(
         base::MakeUnique<CancellingNavigationThrottle>(handle, cancel_time_,
                                                        sync_));
   }
 
+  void DidFinishNavigation(content::NavigationHandle* handle) override {
+    did_finish_navigation_ = true;
+  }
+
   CancelTime cancel_time_;
   ResultSynchrony sync_;
   std::unique_ptr<NavigationSimulator> simulator_;
+  bool did_finish_navigation_ = false;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NavigationSimulatorTest);
 };
 
 // Stress test the navigation simulator by having a navigation throttle cancel

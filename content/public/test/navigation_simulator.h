@@ -167,6 +167,11 @@ class NavigationSimulator : public WebContentsObserver {
   // NavigationHandle.
   void PrepareCompleteCallbackOnHandle();
 
+  // Simulates the DidFailProvisionalLoad IPC following a NavigationThrottle
+  // cancelling the navigation.
+  // PlzNavigate: this is not needed.
+  void FailFromThrottleCheck(NavigationThrottle::ThrottleCheckResult result);
+
   enum State {
     INITIALIZATION,
     STARTED,
