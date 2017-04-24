@@ -56,6 +56,8 @@ source_set("renderer") {
     "chrome_setting.h",
     "console.cc",
     "console.h",
+    "content_setting.cc",
+    "content_setting.h",
     "content_watcher.cc",
     "content_watcher.h",
     "context_menus_custom_bindings.cc",
