@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import os
+import time
 
 from chromite.cbuildbot import tree_status
 from chromite.lib import builder_status_lib
@@ -30,6 +31,8 @@ class BaseChromeCommitterTest(cros_test_lib.MockTempDirTestCase):
         constants.BUILDER_STATUS_PASSED, None)
     self.fail_status = builder_status_lib.BuilderStatus(
         constants.BUILDER_STATUS_FAILED, None)
+    # No need to make tests sleep.
+    self.PatchObject(time, 'sleep')
 
 
 # pylint: disable=W0212
@@ -111,9 +114,30 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     """Tests that we can commit a new LKGM file."""
     osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
     self.committer._lkgm = '4.0.0'
+
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.committer.CommitNewLKGM()
 
     # Check the file was actually written out correctly.
     self.assertEqual(osutils.ReadFile(self.lkgm_file), self.committer._lkgm)
+    self.assertCommandContains(['git', 'commit'])
+
+  def testPushNewLKGM(self):
+    """Tests that we can rebase if landing fails due to missing revisions."""
+    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
+
+    self.committer.PushNewLKGM()
+
     self.assertCommandContains(['git', 'cl', 'land'])
+
+  def testPushNewLKGMWithRetry(self):
+    """Tests that we try to rebase if landing fails due to missing revisions."""
+    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
+
+    self.rc.AddCmdResult(partial_mock.In('land'), returncode=1)
+    self.assertRaises(cros_best_revision.LKGMNotCommitted,
+                      self.committer.PushNewLKGM)
+
+    self.assertCommandContains(['git', 'cl', 'land'])
+    self.assertCommandContains(['git', 'fetch', 'origin', 'master'])
+    self.assertCommandContains(['git', 'rebase'])

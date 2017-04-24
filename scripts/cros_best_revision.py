@@ -21,9 +21,11 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gclient
+from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import retry_util
 
 
 class LKGMNotFound(Exception):
@@ -37,8 +39,8 @@ class LKGMNotCommitted(Exception):
 class ChromeCommitter(object):
   """Committer object responsible for obtaining a new LKGM and committing it."""
 
-  _COMMIT_MSG = ('Automated Commit: Committing new LKGM version %(version)s '
-                 'for chromeos.')
+  _COMMIT_MSG_TEMPLATE = ('Automated Commit: Committing new LKGM version '
+                          '%(version)s for chromeos.')
   _CANDIDATES_TO_CONSIDER = 10
 
   _SLEEP_TIMEOUT = 30
@@ -48,6 +50,7 @@ class ChromeCommitter(object):
     self._checkout_dir = checkout_dir
     self._dryrun = dryrun
     self._lkgm = None
+    self._commit_msg = ''
     self._old_lkgm = None
     self.site_config = config_lib.GetConfig()
 
@@ -147,36 +150,57 @@ class ChromeCommitter(object):
     lv = distutils.version.LooseVersion
     if not self._lkgm and not lv(self._lkgm) < lv(self._old_lkgm):
       raise LKGMNotFound('No valid LKGM found. Did you run FindNewLKGM?')
-    commit_msg = self._COMMIT_MSG % dict(version=self._lkgm)
+    self._commit_msg = self._COMMIT_MSG_TEMPLATE % dict(version=self._lkgm)
 
     try:
       # Add the new versioned file.
-      osutils.WriteFile(
-          os.path.join(self._checkout_dir, constants.PATH_TO_CHROME_LKGM),
-          self._lkgm)
-      cros_build_lib.RunCommand(
-          ['git', 'add', constants.PATH_TO_CHROME_LKGM], cwd=self._checkout_dir)
+      file_path = os.path.join(
+          self._checkout_dir, constants.PATH_TO_CHROME_LKGM)
+      osutils.WriteFile(file_path, self._lkgm)
+      git.AddPath(file_path)
 
       # Commit it!
-      cros_build_lib.RunCommand(
-          ['git', 'commit', '-m', commit_msg],
-          cwd=self._checkout_dir)
+      git.RunGit(self._checkout_dir, ['commit', '-m', self._commit_msg])
     except cros_build_lib.RunCommandError as e:
       raise LKGMNotCommitted(
           'Could not create git commit with new LKGM: %r' % e)
 
+  def _TryPushNewLKGM(self):
+    """Fetches latest, rebases the CL, and lands the rebased CL."""
+    git.RunGit(self._checkout_dir, ['fetch', 'origin', 'master'])
+
+    try:
+      git.RunGit(self._checkout_dir, ['rebase'], retry=False)
+    except cros_build_lib.RunCommandError as e:
+      # A rebase failure was unexpected, so raise a custom LKGMNotCommitted
+      # error to avoid further retries.
+      git.RunGit(self._checkout_dir, ['rebase', '--abort'])
+      raise LKGMNotCommitted('Could not submit LKGM: rebase failed: %r' % e)
+
+    if self._dryrun:
+      return
+    else:
+      git.RunGit(
+          self._checkout_dir,
+          ['cl', 'land', '-f', '--bypass-hooks', '-m', self._commit_msg])
+
+  def PushNewLKGM(self, max_retry=10):
+    """Lands the change after fetching and rebasing."""
     if not tree_status.IsTreeOpen(status_url=gclient.STATUS_URL,
                                   period=self._SLEEP_TIMEOUT,
                                   timeout=self._TREE_TIMEOUT):
       raise LKGMNotCommitted('Chromium Tree is closed')
 
-    if not self._dryrun:
-      try:
-        cros_build_lib.RunCommand(
-            ['git', 'cl', 'land', '-f', '--bypass-hooks', '-m', commit_msg],
-            cwd=self._checkout_dir)
-      except cros_build_lib.RunCommandError as e:
-        raise LKGMNotCommitted('Could not submit LKGM: %r' % e)
+    # git cl land refuses to land a change that isn't relative to ToT, so any
+    # new commits since the last fetch will cause this to fail. Retries should
+    # make this edge case ultimately unlikely.
+    try:
+      retry_util.RetryCommand(self._TryPushNewLKGM,
+                              max_retry,
+                              sleep=self._SLEEP_TIMEOUT,
+                              log_all_retries=True)
+    except cros_build_lib.RunCommandError as e:
+      raise LKGMNotCommitted('Could not submit LKGM: %r' % e)
 
   def UpdateLatestFilesForBot(self, config, versions):
     """Update the LATEST files, for a given bot, in Google Storage.
@@ -237,4 +261,6 @@ def main(argv):
   committer.UpdateLatestFiles()
   committer.FindNewLKGM()
   committer.CommitNewLKGM()
+  committer.PushNewLKGM()
+
   return 0
