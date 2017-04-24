@@ -530,9 +530,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
 
-  // selected text on the renderer.
-  std::string selected_text_;
-
   // The window used for popup widgets.
   base::scoped_nsobject<NSWindow> popup_window_;
 
