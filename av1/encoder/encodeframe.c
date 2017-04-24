@@ -5051,8 +5051,10 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 #endif  // #if CONFIG_EC_ADAPT
 
 #if CONFIG_CFL
-  td->mb.e_mbd.cfl = &this_tile->cfl;
-  memset(&this_tile->cfl.y_pix, 0, sizeof(uint8_t) * MAX_SB_SQUARE);
+  MACROBLOCKD *const xd = &td->mb.e_mbd;
+  xd->cfl = &this_tile->cfl;
+  cfl_init(xd->cfl, cm, xd->plane[AOM_PLANE_U].subsampling_x,
+           xd->plane[AOM_PLANE_U].subsampling_y);
 #endif
 
 #if CONFIG_PVQ

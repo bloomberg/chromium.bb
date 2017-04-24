@@ -2308,7 +2308,7 @@ void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
       // is signaled.
       cfl_dc_pred(xd, get_plane_block_size(block_idx, pd), tx_size);
     }
-    cfl_predict_block(dst, pd->dst.stride, tx_size,
+    cfl_predict_block(xd->cfl, dst, pd->dst.stride, blk_row, blk_col, tx_size,
                       xd->cfl->dc_pred[plane - 1]);
   }
 #endif

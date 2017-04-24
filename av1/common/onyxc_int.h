@@ -35,6 +35,9 @@
 #if CONFIG_PVQ
 #include "av1/common/pvq.h"
 #endif
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -535,7 +538,8 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
 #if CONFIG_CFL
     xd->cfl = cfl;
-    memset(&cfl->y_pix, 0, sizeof(uint8_t) * MAX_SB_SQUARE);
+    cfl_init(cfl, cm, xd->plane[AOM_PLANE_U].subsampling_x,
+             xd->plane[AOM_PLANE_U].subsampling_y);
 #endif
     xd->above_context[i] = cm->above_context[i];
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
