@@ -74,15 +74,7 @@ views::View* ChooserDialogView::CreateFootnoteView() {
 views::ClientView* ChooserDialogView::CreateClientView(views::Widget* widget) {
   views::DialogClientView* client =
       new views::DialogClientView(widget, GetContentsView());
-
-  constexpr int kMinWidth = 402;
-  constexpr int kMinHeight = 320;
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  int min_width = provider->GetDialogPreferredWidth(DialogWidth::MEDIUM);
-  if (!min_width)
-    min_width = kMinWidth;
-  client->set_minimum_size(gfx::Size(min_width, kMinHeight));
-
   client->set_button_row_insets(gfx::Insets(
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL), 0, 0,
       0));
