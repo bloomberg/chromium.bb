@@ -43,6 +43,10 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
     : WindowTreeHostPlatform(std::move(init_params.window_port)),
       display_id_(init_params.display_id),
       delegate_(init_params.window_tree_client) {
+  gfx::Rect bounds_in_pixels;
+  display_init_params_ = std::move(init_params.display_init_params);
+  if (display_init_params_)
+    bounds_in_pixels = display_init_params_->viewport_metrics.bounds_in_pixels;
   window()->SetProperty(kWindowTreeHostMusKey, this);
   // TODO(sky): find a cleaner way to set this! Better solution is to likely
   // have constructor take aura::Window.
@@ -77,8 +81,8 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
 
   // Do not advertise accelerated widget; already set manually.
   const bool use_default_accelerated_widget = false;
-  SetPlatformWindow(
-      base::MakeUnique<ui::StubWindow>(this, use_default_accelerated_widget));
+  SetPlatformWindow(base::MakeUnique<ui::StubWindow>(
+      this, use_default_accelerated_widget, bounds_in_pixels));
 
   input_method_ = base::MakeUnique<InputMethodMus>(this, window());
   input_method_->Init(init_params.window_tree_client->connector());
@@ -162,6 +166,11 @@ display::Display WindowTreeHostMus::GetDisplay() const {
   display::Display display;
   display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_, &display);
   return display;
+}
+
+std::unique_ptr<DisplayInitParams>
+WindowTreeHostMus::ReleaseDisplayInitParams() {
+  return std::move(display_init_params_);
 }
 
 void WindowTreeHostMus::HideImpl() {

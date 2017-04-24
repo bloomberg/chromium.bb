@@ -39,6 +39,8 @@ namespace aura {
 class Window;
 class WindowTreeHostMus;
 
+struct WindowTreeHostMusInitParams;
+
 // See the mojom with the same name for details on the functions in this
 // interface.
 class AURA_EXPORT WindowManagerClient {
@@ -65,6 +67,12 @@ class AURA_EXPORT WindowManagerClient {
 
   // Blocks until the initial displays have been received.
   virtual bool WaitForInitialDisplays() = 0;
+
+  // Used by the window manager to create a new display. This is only useful if
+  // the WindowTreeClient was configured not to automatically create displays
+  // (see ConnectAsWindowManager()). The caller needs to configure
+  // DisplayInitParams on the returned object.
+  virtual WindowTreeHostMusInitParams CreateInitParamsForNewDisplay() = 0;
 
  protected:
   virtual ~WindowManagerClient() {}

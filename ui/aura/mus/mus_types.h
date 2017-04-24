@@ -40,8 +40,13 @@ enum class WindowMusType {
   // The window is a top level window in the window manager.
   TOP_LEVEL_IN_WM,
 
-  // The window is a display root for the window manager.
-  DISPLAY,
+  // The window is a display root for the window manager and was automatically
+  // created by mus.
+  DISPLAY_AUTOMATICALLY_CREATED,
+
+  // The window is a display root for the window manager and was manually
+  // created.
+  DISPLAY_MANUALLY_CREATED,
 
   // The window was created locally.
   LOCAL,

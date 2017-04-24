@@ -2094,6 +2094,25 @@ TEST_F(WindowTreeClientWmTest, NewWindowTreeHostIsConfiguredCorrectly) {
   EXPECT_EQ(display.id(), window_tree_host->display_id());
 }
 
+TEST_F(WindowTreeClientWmTest, ManuallyCreateDisplay) {
+  const gfx::Rect bounds(1, 2, 101, 102);
+  std::unique_ptr<DisplayInitParams> display_params =
+      base::MakeUnique<DisplayInitParams>();
+  display_params->display = base::MakeUnique<display::Display>(201);
+  display_params->display->set_bounds(bounds);
+  display_params->viewport_metrics.bounds_in_pixels = bounds;
+  display_params->viewport_metrics.device_scale_factor = 1.0f;
+  display_params->viewport_metrics.ui_scale_factor = 1.0f;
+  WindowTreeHostMusInitParams init_params =
+      WindowTreeClientPrivate(window_tree_client_impl())
+          .CallCreateInitParamsForNewDisplay();
+  init_params.display_init_params = std::move(display_params);
+  WindowTreeHostMus window_tree_host(std::move(init_params));
+  window_tree_host.InitHost();
+  EXPECT_EQ(bounds, window_tree_host.GetBoundsInPixels());
+  EXPECT_EQ(gfx::Rect(bounds.size()), window_tree_host.window()->bounds());
+}
+
 TEST_F(WindowTreeClientWmTestHighDPI, SetBounds) {
   const gfx::Rect original_bounds(root_window()->bounds());
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));

@@ -66,6 +66,10 @@
 namespace aura {
 namespace {
 
+// This serves to document the places that rely on bounds changes to the
+// root window being ignored.
+constexpr bool kRootWindowBoundsChangesAreIgnored = true;
+
 Id MakeTransportId(ClientSpecificId client_id, ClientSpecificId local_id) {
   return (client_id << 16) | local_id;
 }
@@ -577,6 +581,19 @@ void WindowTreeClient::OnEmbedImpl(
   delegate_->OnEmbed(std::move(window_tree_host));
 }
 
+void WindowTreeClient::OnSetDisplayRootDone(
+    Id window_id,
+    const base::Optional<cc::FrameSinkId>& frame_sink_id) {
+  // The only way SetDisplayRoot() should fail is if we've done something wrong.
+  CHECK(frame_sink_id);
+
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window)
+    return;  // Display was already deleted.
+
+  window->SetFrameSinkIdFromServer(*frame_sink_id);
+}
+
 WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
     const display::Display& display,
     ui::mojom::WindowDataPtr root_data,
@@ -589,9 +606,9 @@ WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
 
   window_manager_delegate_->OnWmWillCreateDisplay(display);
 
-  std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      CreateWindowTreeHost(WindowMusType::DISPLAY, *root_data, display.id(),
-                           frame_sink_id, local_surface_id);
+  std::unique_ptr<WindowTreeHostMus> window_tree_host = CreateWindowTreeHost(
+      WindowMusType::DISPLAY_AUTOMATICALLY_CREATED, *root_data, display.id(),
+      frame_sink_id, local_surface_id);
 
   WindowTreeHostMus* window_tree_host_ptr = window_tree_host.get();
   window_manager_delegate_->OnWmNewDisplay(std::move(window_tree_host),
@@ -693,6 +710,39 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
       base::MakeUnique<CrashInFlightChange>(window, ChangeType::NEW_WINDOW));
   tree_->NewWindow(change_id, window->server_id(),
                    std::move(transport_properties));
+  if (window->window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED) {
+    WindowTreeHostMus* window_tree_host = GetWindowTreeHostMus(window);
+    std::unique_ptr<DisplayInitParams> display_init_params =
+        window_tree_host->ReleaseDisplayInitParams();
+    DCHECK(display_init_params);
+    display::Display display;
+    if (display_init_params->display) {
+      display = *display_init_params->display;
+    } else {
+      const bool has_display =
+          display::Screen::GetScreen()->GetDisplayWithDisplayId(
+              window_tree_host->display_id(), &display);
+      DCHECK(has_display);
+    }
+    // As |window| is a root, changes to its bounds are ignored (it's assumed
+    // bounds changes are routed through OnWindowTreeHostBoundsWillChange()).
+    // But the display is created with an initial bounds, and we need to push
+    // that to the server.
+    DCHECK(kRootWindowBoundsChangesAreIgnored);
+    ScheduleInFlightBoundsChange(
+        window, gfx::Rect(),
+        gfx::Rect(
+            display_init_params->viewport_metrics.bounds_in_pixels.size()));
+
+    // Tests may not config |window_manager_internal_client_|.
+    if (window_manager_internal_client_) {
+      window_manager_internal_client_->SetDisplayRoot(
+          display, display_init_params->viewport_metrics.Clone(),
+          display_init_params->is_primary_display, window->server_id(),
+          base::Bind(&WindowTreeClient::OnSetDisplayRootDone,
+                     base::Unretained(this), window->server_id()));
+    }
+  }
 }
 
 void WindowTreeClient::OnWindowMusDestroyed(WindowMus* window, Origin origin) {
@@ -736,8 +786,10 @@ void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
   // Changes to bounds of root windows are routed through
   // OnWindowTreeHostBoundsWillChange(). Any bounds that happen here are a side
   // effect of those and can be ignored.
-  if (IsRoot(window))
+  if (IsRoot(window)) {
+    DCHECK(kRootWindowBoundsChangesAreIgnored);
     return;
+  }
 
   float device_scale_factor = ScaleFactorForDisplay(window->GetWindow());
   ScheduleInFlightBoundsChange(
@@ -1423,6 +1475,15 @@ bool WindowTreeClient::WaitForInitialDisplays() {
   while (!got_initial_displays_ && valid_wait)
     valid_wait = binding_.WaitForIncomingMethodCall();
   return valid_wait;
+}
+
+WindowTreeHostMusInitParams WindowTreeClient::CreateInitParamsForNewDisplay() {
+  WindowTreeHostMusInitParams init_params;
+  init_params.window_port = base::MakeUnique<WindowPortMus>(
+      this, WindowMusType::DISPLAY_MANUALLY_CREATED);
+  roots_.insert(init_params.window_port.get());
+  init_params.window_tree_client = this;
+  return init_params;
 }
 
 void WindowTreeClient::OnConnect(ClientSpecificId client_id) {

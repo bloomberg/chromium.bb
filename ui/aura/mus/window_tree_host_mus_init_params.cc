@@ -11,6 +11,10 @@
 
 namespace aura {
 
+DisplayInitParams::DisplayInitParams() = default;
+
+DisplayInitParams::~DisplayInitParams() = default;
+
 WindowTreeHostMusInitParams::WindowTreeHostMusInitParams() = default;
 
 WindowTreeHostMusInitParams::WindowTreeHostMusInitParams(

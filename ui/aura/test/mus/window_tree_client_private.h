@@ -31,6 +31,8 @@ class Window;
 class WindowTreeClient;
 class WindowTreeHostMus;
 
+struct WindowTreeHostMusInitParams;
+
 // Use to access implementation details of WindowTreeClient.
 class WindowTreeClientPrivate {
  public:
@@ -56,6 +58,8 @@ class WindowTreeClientPrivate {
   void CallOnCaptureChanged(Window* new_capture, Window* old_capture);
 
   void CallOnConnect();
+
+  WindowTreeHostMusInitParams CallCreateInitParamsForNewDisplay();
 
   // Sets the WindowTree and client id.
   void SetTreeAndClientId(ui::mojom::WindowTree* window_tree,

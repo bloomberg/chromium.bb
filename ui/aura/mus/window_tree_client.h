@@ -267,6 +267,11 @@ class AURA_EXPORT WindowTreeClient
                    const cc::FrameSinkId& frame_sink_id,
                    const base::Optional<cc::LocalSurfaceId>& local_surface_id);
 
+  // Called once mus acks the call to SetDisplayRoot().
+  void OnSetDisplayRootDone(
+      Id window_id,
+      const base::Optional<cc::FrameSinkId>& frame_sink_id);
+
   // Called by WmNewDisplayAdded().
   WindowTreeHostMus* WmNewDisplayAddedImpl(
       const display::Display& display,
@@ -324,7 +329,7 @@ class AURA_EXPORT WindowTreeClient
       int64_t display_id,
       Id focused_window_id,
       bool drawn,
-      const cc::FrameSinkId& frame_sink_Id,
+      const cc::FrameSinkId& frame_sink_id,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
   void OnUnembed(Id window_id) override;
@@ -471,6 +476,7 @@ class AURA_EXPORT WindowTreeClient
   void SetExtendedHitArea(Window* window, const gfx::Insets& hit_area) override;
   void RequestClose(Window* window) override;
   bool WaitForInitialDisplays() override;
+  WindowTreeHostMusInitParams CreateInitParamsForNewDisplay() override;
 
   // Overriden from WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,

@@ -6,6 +6,7 @@
 
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 
@@ -84,6 +85,11 @@ void WindowTreeClientPrivate::CallOnCaptureChanged(Window* new_capture,
 void WindowTreeClientPrivate::CallOnConnect() {
   const ClientSpecificId client_id = 1;
   tree_client_impl_->OnConnect(client_id);
+}
+
+WindowTreeHostMusInitParams
+WindowTreeClientPrivate::CallCreateInitParamsForNewDisplay() {
+  return tree_client_impl_->CreateInitParamsForNewDisplay();
 }
 
 void WindowTreeClientPrivate::SetTreeAndClientId(

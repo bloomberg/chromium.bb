@@ -26,6 +26,7 @@ class InputMethodMus;
 class WindowTreeClient;
 class WindowTreeHostMusDelegate;
 
+struct DisplayInitParams;
 struct WindowTreeHostMusInitParams;
 
 class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
@@ -79,6 +80,10 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   // PerformWindowMove().
   void CancelWindowMove();
 
+  // Used during initial setup. Returns the DisplayInitParams
+  // supplied to the constructor.
+  std::unique_ptr<DisplayInitParams> ReleaseDisplayInitParams();
+
   // Intended only for WindowTreeClient to call.
   void set_display_id(int64_t id) { display_id_ = id; }
   int64_t display_id() const { return display_id_; }
@@ -103,6 +108,8 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   bool in_set_bounds_from_server_ = false;
 
   std::unique_ptr<InputMethodMus> input_method_;
+
+  std::unique_ptr<DisplayInitParams> display_init_params_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);
 };
