@@ -63,6 +63,12 @@
         --checkbox-margin-start: 0;
       }
 
+      button[is='paper-icon-button-light'].icon-external {
+        /* The negative margin messes up the outline border. These are in an
+           indented list so this looks fine until moved: crbug.com/708286. */
+        -webkit-margin-end: 0;
+      }
+
       #uiLanguageItem:focus,
       #offerTranslations:focus {
         background-color: transparent;
@@ -174,10 +180,10 @@
                     $i18n{inputMethodEnabled}
                   </div>
                 </div>
-                <paper-icon-button icon="cr:settings_icon"
+                <button class="icon-external" is="paper-icon-button-light"
                     on-tap="onInputMethodOptionsTap_"
                     hidden="[[!item.hasOptionsPage]]">
-                </paper-icon-button>
+                </button>
               </div>
             </template>
             <div class="list-item" on-tap="onManageInputMethodsTap_" actionable>
