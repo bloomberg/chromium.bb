@@ -1296,29 +1296,27 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // padding-bottom
   static Length InitialPaddingBottom() { return Length(kFixed); }
-  const Length& PaddingBottom() const { return surround_->padding_.Bottom(); }
+  const Length& PaddingBottom() const { return surround_->padding_bottom_; }
   void SetPaddingBottom(const Length& v) {
-    SET_VAR(surround_, padding_.bottom_, v);
+    SET_VAR(surround_, padding_bottom_, v);
   }
 
   // padding-left
   static Length InitialPaddingLeft() { return Length(kFixed); }
-  const Length& PaddingLeft() const { return surround_->padding_.Left(); }
-  void SetPaddingLeft(const Length& v) {
-    SET_VAR(surround_, padding_.left_, v);
-  }
+  const Length& PaddingLeft() const { return surround_->padding_left_; }
+  void SetPaddingLeft(const Length& v) { SET_VAR(surround_, padding_left_, v); }
 
   // padding-right
   static Length InitialPaddingRight() { return Length(kFixed); }
-  const Length& PaddingRight() const { return surround_->padding_.Right(); }
+  const Length& PaddingRight() const { return surround_->padding_right_; }
   void SetPaddingRight(const Length& v) {
-    SET_VAR(surround_, padding_.right_, v);
+    SET_VAR(surround_, padding_right_, v);
   }
 
   // padding-top
   static Length InitialPaddingTop() { return Length(kFixed); }
-  const Length& PaddingTop() const { return surround_->padding_.Top(); }
-  void SetPaddingTop(const Length& v) { SET_VAR(surround_, padding_.top_, v); }
+  const Length& PaddingTop() const { return surround_->padding_top_; }
+  void SetPaddingTop(const Length& v) { SET_VAR(surround_, padding_top_, v); }
 
   // perspective (aka -webkit-perspective)
   static float InitialPerspective() { return 0; }
@@ -2873,26 +2871,54 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Padding utility functions.
-  const LengthBox& Padding() const { return surround_->padding_; }
   const Length& PaddingBefore() const {
-    return Padding().Before(GetWritingMode());
+    return LengthBox::Before(GetWritingMode(), PaddingTop(), PaddingLeft(),
+                             PaddingRight());
   }
   const Length& PaddingAfter() const {
-    return Padding().After(GetWritingMode());
+    return LengthBox::After(GetWritingMode(), PaddingBottom(), PaddingLeft(),
+                            PaddingRight());
   }
   const Length& PaddingStart() const {
-    return Padding().Start(GetWritingMode(), Direction());
+    return LengthBox::Start(GetWritingMode(), Direction(), PaddingTop(),
+                            PaddingLeft(), PaddingRight(), PaddingBottom());
   }
   const Length& PaddingEnd() const {
-    return Padding().end(GetWritingMode(), Direction());
+    return LengthBox::End(GetWritingMode(), Direction(), PaddingTop(),
+                          PaddingLeft(), PaddingRight(), PaddingBottom());
   }
-  const Length& PaddingOver() const { return Padding().Over(GetWritingMode()); }
+  const Length& PaddingOver() const {
+    return LengthBox::Over(GetWritingMode(), PaddingTop(), PaddingRight());
+  }
   const Length& PaddingUnder() const {
-    return Padding().Under(GetWritingMode());
+    return LengthBox::Under(GetWritingMode(), PaddingBottom(), PaddingLeft());
   }
-  bool HasPadding() const { return Padding().NonZero(); }
-  void ResetPadding() { SET_VAR(surround_, padding_, LengthBox(kFixed)); }
-  void SetPadding(const LengthBox& b) { SET_VAR(surround_, padding_, b); }
+  bool HasPadding() const {
+    return !PaddingLeft().IsZero() || !PaddingRight().IsZero() ||
+           !PaddingTop().IsZero() || !PaddingBottom().IsZero();
+  }
+  void ResetPadding() {
+    SET_VAR(surround_, padding_top_, kFixed);
+    SET_VAR(surround_, padding_bottom_, kFixed);
+    SET_VAR(surround_, padding_left_, kFixed);
+    SET_VAR(surround_, padding_right_, kFixed);
+  }
+  void SetPadding(const LengthBox& b) {
+    SET_VAR(surround_, padding_top_, b.top_);
+    SET_VAR(surround_, padding_bottom_, b.bottom_);
+    SET_VAR(surround_, padding_left_, b.left_);
+    SET_VAR(surround_, padding_right_, b.right_);
+  }
+  bool PaddingEqual(const ComputedStyle& other) const {
+    return PaddingTop() == other.PaddingTop() &&
+           PaddingLeft() == other.PaddingLeft() &&
+           PaddingRight() == other.PaddingRight() &&
+           PaddingBottom() == other.PaddingBottom();
+  }
+  bool PaddingEqual(const LengthBox& other) const {
+    return PaddingTop() == other.Top() && PaddingLeft() == other.Left() &&
+           PaddingRight() == other.Right() && PaddingBottom() == other.Bottom();
+  }
 
   // Border utility functions
   LayoutRectOutsets ImageOutsets(const NinePieceImage&) const;

@@ -467,7 +467,10 @@ LengthBox ThemeMac::ControlBorder(ControlPart part,
 
 LengthBox ThemeMac::ControlPadding(ControlPart part,
                                    const FontDescription& font_description,
-                                   const LengthBox& zoomed_box,
+                                   const Length& zoomed_box_top,
+                                   const Length& zoomed_box_right,
+                                   const Length& zoomed_box_bottom,
+                                   const Length& zoomed_box_left,
                                    float zoom_factor) const {
   switch (part) {
     case kPushButtonPart: {
@@ -481,8 +484,9 @@ LengthBox ThemeMac::ControlPadding(ControlPart part,
       return LengthBox(2, padding, 3, padding);
     }
     default:
-      return Theme::ControlPadding(part, font_description, zoomed_box,
-                                   zoom_factor);
+      return Theme::ControlPadding(part, font_description, zoomed_box_top,
+                                   zoomed_box_right, zoomed_box_bottom,
+                                   zoomed_box_left, zoom_factor);
   }
 }
 

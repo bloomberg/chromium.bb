@@ -160,9 +160,10 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
 
         // Padding
         LengthBox padding_box = platform_theme_->ControlPadding(
-            part, style.GetFont().GetFontDescription(), style.Padding(),
+            part, style.GetFont().GetFontDescription(), style.PaddingTop(),
+            style.PaddingRight(), style.PaddingBottom(), style.PaddingLeft(),
             style.EffectiveZoom());
-        if (padding_box != style.Padding())
+        if (!style.PaddingEqual(padding_box))
           style.SetPadding(padding_box);
 
         // Whitespace

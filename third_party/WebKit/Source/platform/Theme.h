@@ -115,7 +115,10 @@ class PLATFORM_EXPORT Theme {
   // Allows the theme to modify the existing padding/border.
   virtual LengthBox ControlPadding(ControlPart,
                                    const FontDescription&,
-                                   const LengthBox& zoomed_box,
+                                   const Length& zoomed_box_top,
+                                   const Length& zoomed_box_right,
+                                   const Length& zoomed_box_bottom,
+                                   const Length& zoomed_box_left,
                                    float zoom_factor) const;
   virtual LengthBox ControlBorder(ControlPart,
                                   const FontDescription&,

@@ -28,7 +28,10 @@ StyleSurroundData::StyleSurroundData()
       margin_right_(kFixed),
       margin_top_(kFixed),
       margin_bottom_(kFixed),
-      padding_(kFixed) {}
+      padding_left_(kFixed),
+      padding_right_(kFixed),
+      padding_top_(kFixed),
+      padding_bottom_(kFixed) {}
 
 StyleSurroundData::StyleSurroundData(const StyleSurroundData& o)
     : RefCounted<StyleSurroundData>(),
@@ -40,7 +43,10 @@ StyleSurroundData::StyleSurroundData(const StyleSurroundData& o)
       margin_right_(o.margin_right_),
       margin_top_(o.margin_top_),
       margin_bottom_(o.margin_bottom_),
-      padding_(o.padding_),
+      padding_left_(o.padding_left_),
+      padding_right_(o.padding_right_),
+      padding_top_(o.padding_top_),
+      padding_bottom_(o.padding_bottom_),
       border_(o.border_) {}
 
 bool StyleSurroundData::operator==(const StyleSurroundData& o) const {
@@ -48,7 +54,11 @@ bool StyleSurroundData::operator==(const StyleSurroundData& o) const {
           bottom_ == o.bottom_) &&
          (margin_left_ == o.margin_left_ && margin_right_ == o.margin_right_ &&
           margin_top_ == o.margin_top_ && margin_bottom_ == o.margin_bottom_) &&
-         padding_ == o.padding_ && border_ == o.border_;
+         (padding_left_ == o.padding_left_ &&
+          padding_right_ == o.padding_right_ &&
+          padding_top_ == o.padding_top_ &&
+          padding_bottom_ == o.padding_bottom_) &&
+         border_ == o.border_;
 }
 
 }  // namespace blink

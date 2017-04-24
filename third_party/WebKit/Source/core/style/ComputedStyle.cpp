@@ -589,8 +589,7 @@ bool ComputedStyle::ScrollAnchorDisablingPropertyChanged(
   }
 
   if (surround_.Get() != other.surround_.Get()) {
-    if (!MarginEqual(other) || !OffsetEqual(other) ||
-        Padding() != other.Padding())
+    if (!MarginEqual(other) || !OffsetEqual(other) || !PaddingEqual(other))
       return true;
   }
 
@@ -618,7 +617,7 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
         BorderRightWidth() != other.BorderRightWidth())
       return true;
 
-    if (Padding() != other.Padding())
+    if (!PaddingEqual(other))
       return true;
   }
 

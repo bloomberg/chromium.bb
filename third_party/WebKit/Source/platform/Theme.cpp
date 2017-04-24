@@ -45,7 +45,10 @@ LengthBox Theme::ControlBorder(ControlPart part,
 
 LengthBox Theme::ControlPadding(ControlPart part,
                                 const FontDescription&,
-                                const LengthBox& zoomed_box,
+                                const Length& zoomed_box_top,
+                                const Length& zoomed_box_right,
+                                const Length& zoomed_box_bottom,
+                                const Length& zoomed_box_left,
                                 float) const {
   switch (part) {
     case kMenulistPart:
@@ -54,7 +57,8 @@ LengthBox Theme::ControlPadding(ControlPart part,
     case kRadioPart:
       return LengthBox(0);
     default:
-      return zoomed_box;
+      return LengthBox(zoomed_box_top, zoomed_box_right, zoomed_box_bottom,
+                       zoomed_box_left);
   }
 }
 
