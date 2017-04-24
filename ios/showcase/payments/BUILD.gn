@@ -13,12 +13,12 @@ source_set("payments") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser/payments:payments_ui",
-    "//ios/chrome/browser/payments/cells",
     "//ios/chrome/browser/ui/autofill",
     "//ios/chrome/browser/ui/autofill:autofill_ui",
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/payments:payments_ui",
+    "//ios/chrome/browser/ui/payments/cells",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/showcase/common",
   ]
@@ -36,9 +36,9 @@ source_set("eg_tests") {
   deps = [
     "//base",
     "//components/strings",
-    "//ios/chrome/browser/payments:payments_ui",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/autofill:autofill_ui",
+    "//ios/chrome/browser/ui/payments:payments_ui",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/showcase/test",

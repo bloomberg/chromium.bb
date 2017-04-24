@@ -6,8 +6,8 @@
 
 #import "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/payments/payment_request_edit_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"

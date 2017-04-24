@@ -4,8 +4,8 @@
 
 #import "ios/showcase/payments/sc_payments_picker_coordinator.h"
 
-#import "ios/chrome/browser/payments/payment_request_picker_row.h"
-#import "ios/chrome/browser/payments/payment_request_picker_view_controller.h"
+#import "ios/chrome/browser/ui/payments/payment_request_picker_row.h"
+#import "ios/chrome/browser/ui/payments/payment_request_picker_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

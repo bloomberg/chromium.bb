@@ -6,13 +6,13 @@
 
 #import "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
-#import "ios/chrome/browser/payments/cells/payments_text_item.h"
-#import "ios/chrome/browser/payments/payment_request_edit_view_controller.h"
-#import "ios/chrome/browser/payments/payment_request_editor_field.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
+#import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

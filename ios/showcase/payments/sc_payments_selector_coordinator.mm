@@ -5,11 +5,11 @@
 #import "ios/showcase/payments/sc_payments_selector_coordinator.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/payments//cells/payments_text_item.h"
-#import "ios/chrome/browser/payments/cells/payments_has_accessory_type.h"
-#import "ios/chrome/browser/payments/payment_request_selector_view_controller.h"
-#import "ios/chrome/browser/payments/payment_request_selector_view_controller_data_source.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_has_accessory_type.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
+#import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
+#import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller_data_source.h"
 #import "ios/showcase/common/protocol_alerter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
