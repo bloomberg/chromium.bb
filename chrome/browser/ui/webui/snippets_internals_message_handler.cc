@@ -16,9 +16,11 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -35,6 +37,7 @@
 #include "components/ntp_snippets/switches.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_ui.h"
 
 using ntp_snippets::ContentSuggestion;
@@ -118,6 +121,31 @@ std::string GetCategoryStatusName(CategoryStatus status) {
       return "LOADING_ERROR";
   }
   return std::string();
+}
+
+std::set<variations::VariationID> SnippetsExperiments() {
+  std::set<variations::VariationID> result;
+  for (const base::Feature* const* feature = ntp_snippets::kAllFeatures;
+       *feature; ++feature) {
+    base::FieldTrial* trial = base::FeatureList::GetFieldTrial(**feature);
+    if (!trial) {
+      continue;
+    }
+    if (trial->GetGroupNameWithoutActivation().empty()) {
+      continue;
+    }
+    for (variations::IDCollectionKey key :
+         {variations::GOOGLE_WEB_PROPERTIES,
+          variations::GOOGLE_WEB_PROPERTIES_SIGNED_IN,
+          variations::GOOGLE_WEB_PROPERTIES_TRIGGER}) {
+      const variations::VariationID id = variations::GetGoogleVariationID(
+          key, trial->trial_name(), trial->group_name());
+      if (id != variations::EMPTY_ID) {
+        result.insert(id);
+      }
+    }
+  }
+  return result;
 }
 
 }  // namespace
@@ -357,6 +385,13 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
         "chrome.SnippetsInternals.receiveJson",
         base::Value(fetcher->last_json()));
   }
+
+  std::set<variations::VariationID> ids = SnippetsExperiments();
+  std::vector<std::string> string_ids;
+  for (auto id : ids) {
+    string_ids.push_back(base::IntToString(id));
+  }
+  SendString("experiment-ids", base::JoinString(string_ids, ", "));
 
   SendContentSuggestions();
 }
