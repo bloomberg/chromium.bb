@@ -232,7 +232,7 @@ void TextFinder::StopFindingAndClearSelection() {
   CancelPendingScopingEffort();
 
   // Remove all markers for matches found and turn off the highlighting.
-  OwnerFrame().GetFrame()->GetDocument()->Markers().RemoveMarkers(
+  OwnerFrame().GetFrame()->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::kTextMatch);
   OwnerFrame().GetFrame()->GetEditor().SetMarkedTextMatchesAreHighlighted(
       false);
@@ -709,8 +709,10 @@ bool TextFinder::SetMarkerActive(Range* range, bool active) {
 void TextFinder::UnmarkAllTextMatches() {
   LocalFrame* frame = OwnerFrame().GetFrame();
   if (frame && frame->GetPage() &&
-      frame->GetEditor().MarkedTextMatchesAreHighlighted())
-    frame->GetDocument()->Markers().RemoveMarkers(DocumentMarker::kTextMatch);
+      frame->GetEditor().MarkedTextMatchesAreHighlighted()) {
+    frame->GetDocument()->Markers().RemoveMarkersOfTypes(
+        DocumentMarker::kTextMatch);
+  }
 }
 
 bool TextFinder::ShouldScopeMatches(const String& search_text,

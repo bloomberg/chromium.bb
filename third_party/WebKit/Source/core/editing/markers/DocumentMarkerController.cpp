@@ -516,7 +516,7 @@ void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
   }
 }
 
-void DocumentMarkerController::RemoveMarkers(
+void DocumentMarkerController::RemoveMarkersOfTypes(
     DocumentMarker::MarkerTypes marker_types) {
   if (!PossiblyHasMarkers(marker_types))
     return;

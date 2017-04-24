@@ -68,8 +68,7 @@ class CORE_EXPORT DocumentMarkerController final
 
   void PrepareForDestruction();
   void RemoveMarkersInRange(const EphemeralRange&, DocumentMarker::MarkerTypes);
-  void RemoveMarkers(
-      DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+  void RemoveMarkersOfTypes(DocumentMarker::MarkerTypes);
   void RemoveMarkersForNode(
       Node*,
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());

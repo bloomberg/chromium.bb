@@ -87,7 +87,7 @@ void SpellCheckerClientImpl::ToggleSpellCheckingEnabled() {
            frame = frame->Tree().TraverseNext()) {
         if (!frame->IsLocalFrame())
           continue;
-        ToLocalFrame(frame)->GetDocument()->Markers().RemoveMarkers(
+        ToLocalFrame(frame)->GetDocument()->Markers().RemoveMarkersOfTypes(
             DocumentMarker::MisspellingMarkers());
       }
     }

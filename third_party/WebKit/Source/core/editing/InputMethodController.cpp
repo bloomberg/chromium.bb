@@ -302,7 +302,7 @@ void InputMethodController::Clear() {
     composition_range_->setStart(&GetDocument(), 0);
     composition_range_->collapse(true);
   }
-  GetDocument().Markers().RemoveMarkers(DocumentMarker::kComposition);
+  GetDocument().Markers().RemoveMarkersOfTypes(DocumentMarker::kComposition);
 }
 
 void InputMethodController::ContextDestroyed(Document*) {

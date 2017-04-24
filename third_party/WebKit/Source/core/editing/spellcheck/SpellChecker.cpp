@@ -879,9 +879,10 @@ void SpellChecker::RespondToChangedSelection(
   // When spell checking is off, existing markers disappear after the selection
   // changes.
   if (!IsSpellCheckingEnabled()) {
-    GetFrame().GetDocument()->Markers().RemoveMarkers(
+    GetFrame().GetDocument()->Markers().RemoveMarkersOfTypes(
         DocumentMarker::kSpelling);
-    GetFrame().GetDocument()->Markers().RemoveMarkers(DocumentMarker::kGrammar);
+    GetFrame().GetDocument()->Markers().RemoveMarkersOfTypes(
+        DocumentMarker::kGrammar);
     return;
   }
 
@@ -922,7 +923,7 @@ void SpellChecker::RespondToChangedContents() {
 }
 
 void SpellChecker::RemoveSpellingMarkers() {
-  GetFrame().GetDocument()->Markers().RemoveMarkers(
+  GetFrame().GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MisspellingMarkers());
 }
 
