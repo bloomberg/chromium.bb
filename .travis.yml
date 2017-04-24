@@ -25,6 +25,7 @@ before_install:
   - sudo apt-get update -qq
   - 'chmod +x ./.travis/before_install/*.sh'
   - 'chmod +x ./.travis/script/*.sh'
+  - 'chmod +x ./.travis/after_success/*.sh'
   - if [ "$BUILD_MINGW" == yes ]; then
         source .travis/before_install/mingw.sh;
     elif [ "$BUILD_JS" == yes ]; then
@@ -46,6 +47,11 @@ script:
 after_failure:
   - if [ -z "$BUILD_JS" ]; then
         cat tests/test-suite.log;
+    fi
+
+after_success:
+  - if [ "$BUILD_JS" == yes ]; then
+        source .travis/after_success/emscripten.sh;
     fi
 
 # tell the irc channel about the results of the build
