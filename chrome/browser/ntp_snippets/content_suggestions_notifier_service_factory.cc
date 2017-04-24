@@ -7,16 +7,16 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
-#include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/ntp_snippets/features.h"
 #include "components/variations/variations_associated_data.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/ntp/content_suggestions_notifier_service.h"
 #endif
 
-using params::ntp_snippets::kNotificationsFeature;
+using ntp_snippets::kNotificationsFeature;
 
 ContentSuggestionsNotifierServiceFactory*
 ContentSuggestionsNotifierServiceFactory::GetInstance() {

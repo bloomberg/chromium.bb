@@ -13,6 +13,20 @@
 
 namespace ntp_snippets {
 
+// Keep sorted, and keep nullptr at the end.
+const base::Feature*(kAllFeatures[]) = {&kArticleSuggestionsFeature,
+                                        &kBookmarkSuggestionsFeature,
+                                        &kCategoryOrder,
+                                        &kCategoryRanker,
+                                        &kForeignSessionsSuggestionsFeature,
+                                        &kIncreasedVisibility,
+                                        &kNotificationsFeature,
+                                        &kPhysicalWebPageSuggestionsFeature,
+                                        &kPreferAmpUrlsFeature,
+                                        &kPublisherFaviconsFromNewServerFeature,
+                                        &kRecentOfflineTabSuggestionsFeature,
+                                        nullptr};
+
 const base::Feature kArticleSuggestionsFeature{
     "NTPArticleSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -112,5 +126,19 @@ CategoryOrderChoice GetSelectedCategoryOrder() {
               << category_order_value << "'";
   return CategoryOrderChoice::GENERAL;
 }
+
+const base::Feature kNotificationsFeature = {"ContentSuggestionsNotifications",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const char kNotificationsPriorityParam[] = "priority";
+const char kNotificationsTextParam[] = "text";
+const char kNotificationsTextValuePublisher[] = "publisher";
+const char kNotificationsTextValueSnippet[] = "snippet";
+const char kNotificationsTextValueAndMore[] = "and_more";
+const char kNotificationsKeepWhenFrontmostParam[] =
+    "keep_notification_when_frontmost";
+const char kNotificationsOpenToNTPParam[] = "open_to_ntp";
+const char kNotificationsDailyLimit[] = "daily_limit";
+const char kNotificationsIgnoredLimitParam[] = "ignored_limit";
 
 }  // namespace ntp_snippets

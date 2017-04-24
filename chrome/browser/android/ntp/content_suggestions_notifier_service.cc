@@ -12,12 +12,12 @@
 #include "chrome/browser/android/ntp/content_suggestions_notification_helper.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_handler.h"
-#include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -33,16 +33,16 @@ using ntp_snippets::ContentSuggestion;
 using ntp_snippets::ContentSuggestionsNotificationHelper;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::KnownCategories;
-using params::ntp_snippets::kNotificationsDailyLimit;
-using params::ntp_snippets::kNotificationsDefaultDailyLimit;
-using params::ntp_snippets::kNotificationsDefaultPriority;
-using params::ntp_snippets::kNotificationsFeature;
-using params::ntp_snippets::kNotificationsKeepWhenFrontmostParam;
-using params::ntp_snippets::kNotificationsOpenToNTPParam;
-using params::ntp_snippets::kNotificationsPriorityParam;
-using params::ntp_snippets::kNotificationsTextParam;
-using params::ntp_snippets::kNotificationsTextValueAndMore;
-using params::ntp_snippets::kNotificationsTextValueSnippet;
+using ntp_snippets::kNotificationsDailyLimit;
+using ntp_snippets::kNotificationsDefaultDailyLimit;
+using ntp_snippets::kNotificationsDefaultPriority;
+using ntp_snippets::kNotificationsFeature;
+using ntp_snippets::kNotificationsKeepWhenFrontmostParam;
+using ntp_snippets::kNotificationsOpenToNTPParam;
+using ntp_snippets::kNotificationsPriorityParam;
+using ntp_snippets::kNotificationsTextParam;
+using ntp_snippets::kNotificationsTextValueAndMore;
+using ntp_snippets::kNotificationsTextValueSnippet;
 
 namespace {
 

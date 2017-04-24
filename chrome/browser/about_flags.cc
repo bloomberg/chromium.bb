@@ -28,7 +28,6 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/experiments/memory_ablation_experiment.h"
 #include "chrome/browser/flag_descriptions.h"
-#include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/channel_info.h"
@@ -2227,9 +2226,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNtpSuggestionsNotificationsDescription,
      kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
-         params::ntp_snippets::kNotificationsFeature,
+         ntp_snippets::kNotificationsFeature,
          kContentSuggestionsNotificationsFeatureVariations,
-         params::ntp_snippets::kNotificationsFeature.name)},
+         ntp_snippets::kNotificationsFeature.name)},
     {"ntp-condensed-layout", flag_descriptions::kNtpCondensedLayoutName,
      flag_descriptions::kNtpCondensedLayoutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPCondensedLayoutFeature)},

@@ -782,8 +782,6 @@ split_static_library("browser") {
     "ntp_snippets/content_suggestions_service_factory.h",
     "ntp_snippets/download_suggestions_provider.cc",
     "ntp_snippets/download_suggestions_provider.h",
-    "ntp_snippets/ntp_snippets_features.cc",
-    "ntp_snippets/ntp_snippets_features.h",
     "ntp_snippets/ntp_snippets_metrics.cc",
     "ntp_snippets/ntp_snippets_metrics.h",
     "ntp_tiles/chrome_most_visited_sites_factory.cc",
