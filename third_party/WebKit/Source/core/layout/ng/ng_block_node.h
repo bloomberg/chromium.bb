@@ -60,10 +60,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Save static position for legacy AbsPos layout.
   void SaveStaticOffsetForLegacy(const NGLogicalOffset&);
- private:
 
   bool CanUseNewLayout();
 
+ private:
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.
   void CopyFragmentDataToLayoutBox(const NGConstraintSpace&, NGLayoutResult*);

@@ -344,8 +344,11 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PrepareChildLayout(
       curr_margin_strut_.Append(curr_child_margins_.block_start);
   }
 
-  // Should collapse margins if inline.
-  if (child->IsInline()) {
+  bool is_legacy_block =
+      child->IsBlock() && !ToNGBlockNode(child)->CanUseNewLayout();
+
+  // Should collapse margins if inline or legacy block
+  if (child->IsInline() || is_legacy_block) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
     MaybeUpdateFragmentBfcOffset(ConstraintSpace(), curr_bfc_offset_,
                                  &container_builder_);

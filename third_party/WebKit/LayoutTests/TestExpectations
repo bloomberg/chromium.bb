@@ -276,8 +276,8 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip 
 # LayoutNG - is a new layout system for Blink.
 
 ### external/wpt/css/CSS2/floats-clear
-#### Passed: 49 25%
-#### Skipped: 142
+#### Passed: 50 26%
+#### Skipped: 141
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/adjacent-floats-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-float-007.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-float-008.xht [ Skip ]
@@ -396,7 +396,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-143
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-144.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-145.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-146.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-149.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-bfc-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-bfc-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-018.xht [ Skip ]
@@ -422,23 +421,17 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-015.xht [ Skip ]
 
 ### external/wpt/css/CSS2/floats
-#### Passed: 11 28%
-#### Skipped: 31
+#### Passed: 17 40%
+#### Skipped: 25
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001a.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001b.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001c.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-001-left-overflow.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-001-left-table.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-001-right-overflow.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-001-right-table.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-002-left-overflow.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-002-left-table.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-002-right-overflow.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-002-right-table.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-left-overflow.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-left-table.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-right-overflow.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-right-table.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-004.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-005.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-006.xht [ Skip ]
@@ -728,8 +721,8 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containin
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-009a.xht [ Skip ]
 
 #### external/wpt/css/CSS2/normal-flow
-#### Passed: 420 59%
-#### Skipped: 288
+#### Passed: 430 61%
+#### Skipped: 278
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-contexts-008.xht [ Skip ]
@@ -749,11 +742,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-r
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-replaced-height-005.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-replaced-width-007.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-height-001.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-height-002.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-height-004.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-height-005.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-height-006.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-height-007.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-width-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-width-006.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/blocks-013.xht [ Skip ]
@@ -843,11 +832,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-repl
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-015.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-002a.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-002b.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-height-001.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-height-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-valign-001.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-001.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-003.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-005.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-003.xht [ Skip ]
@@ -993,9 +978,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-width-a
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-width-percentage-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-003.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/root-box-001.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/table-in-inline-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-006.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-007.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-017.xht [ Skip ]
@@ -1020,8 +1003,8 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-perce
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-percentage-002.xht [ Skip ]
 
 #### fast/block/basic
-#### Passed: 5
-#### Skipped: 27
+#### Passed: 6
+#### Skipped: 26
 crbug.com/635619 virtual/layout_ng/fast/block/basic/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/003.html [ Skip ]
@@ -1043,7 +1026,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/basic/fieldset-stretch-to-legend.h
 crbug.com/635619 virtual/layout_ng/fast/block/basic/minheight.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-height.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-percent-height-grandchild.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-percent-height-table-cell.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/text-indent-rtl.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/truncation-rtl.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/white-space-pre-wraps.html [ Skip ]
@@ -1115,8 +1097,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 
 #### fast/block/float
 #### Total: 209
-#### Passed: 28
-#### Skipped: 177
+#### Passed: 29
+#### Skipped: 176
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]
@@ -1127,7 +1109,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/007.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/008.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/009.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/010.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/011.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/012.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/013.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/014.html [ Skip ]
@@ -1357,15 +1338,6 @@ crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-126
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-127.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-128.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-129.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-applies-to-001.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-applies-to-002.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-applies-to-003.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-applies-to-004.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-applies-to-005.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-applies-to-006.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-applies-to-007.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-applies-to-013.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-applies-to-015.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-bleed-001.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-bleed-002.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ Skip ]
