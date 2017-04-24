@@ -294,6 +294,18 @@
         "test": "midi_unittests"
       },
       {
+        "args": [
+          "--ozone-platform=headless",
+          "--override-use-software-gl-for-tests",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mus.browser_tests.filter"
+        ],
+        "hard_timeout": 60,
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mus_browser_tests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
