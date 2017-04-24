@@ -1413,29 +1413,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   if (frame_name != "_blank")
     params->frame_name = frame_name.Utf8(
         WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
-  params->opener_url = creator->GetDocument().Url();
 
-  // The browser process uses the top frame's URL for a content settings check
-  // to determine whether the popup is allowed.  If the top frame is remote,
-  // its URL is not available, so use its replicated origin instead.
-  //
-  // TODO(alexmos): This works fine for regular origins but may break path
-  // matching for file URLs with OOP subframes that open popups.  This should
-  // be fixed by either moving this lookup to the browser process or removing
-  // path-based matching for file URLs from content settings.  See
-  // https://crbug.com/466297.
-  if (creator->Top()->IsWebLocalFrame()) {
-    params->opener_top_level_frame_url = creator->Top()->GetDocument().Url();
-  } else {
-    params->opener_top_level_frame_url =
-        url::Origin(creator->Top()->GetSecurityOrigin()).GetURL();
-  }
-
-  GURL security_url(
-      url::Origin(creator->GetDocument().GetSecurityOrigin()).GetURL());
-  if (!security_url.is_valid())
-    security_url = GURL();
-  params->opener_security_origin = security_url;
   params->opener_suppressed = suppress_opener;
   params->disposition = NavigationPolicyToDisposition(policy);
   if (!request.IsNull()) {

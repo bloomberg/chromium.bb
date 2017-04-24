@@ -41,9 +41,6 @@ interface FrameFactory {
   CreateFrame(int32 frame_routing_id, Frame& frame, FrameHostInterfaceBroker host);
 };
 
-// TODO(csharrison): Clean up this struct. Some of the entries (like
-// opener_top_level_frame_url) are better suited to be computed in the browser
-// process. See http://crbug.com/674307.
 struct CreateNewWindowParams {
   // True if this open request came in the context of a user gesture.
   bool user_gesture;
@@ -57,15 +54,6 @@ struct CreateNewWindowParams {
   // The name of the resulting frame that should be created (empty if none
   // has been specified). UTF8 encoded string.
   string frame_name;
-
-  // The URL of the frame initiating the open.
-  url.mojom.Url opener_url;
-
-  // The URL of the top frame containing the opener.
-  url.mojom.Url opener_top_level_frame_url;
-
-  // The security origin of the frame initiating the open.
-  url.mojom.Url opener_security_origin;
 
   // Whether the opener will be suppressed in the new window, in which case
   // scripting the new window is not allowed.

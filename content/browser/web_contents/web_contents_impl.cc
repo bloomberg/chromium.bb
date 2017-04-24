@@ -2099,8 +2099,8 @@ void WebContentsImpl::CreateNewWindow(
       !delegate_->ShouldCreateWebContents(
           this, source_site_instance, render_view_route_id, main_frame_route_id,
           main_frame_widget_route_id, params.window_container_type,
-          params.opener_url, params.frame_name, params.target_url, partition_id,
-          session_storage_namespace)) {
+          opener->GetLastCommittedURL(), params.frame_name, params.target_url,
+          partition_id, session_storage_namespace)) {
     // Note: even though we're not creating a WebContents here, it could have
     // been created by the embedder so ensure that the RenderFrameHost is
     // properly initialized.

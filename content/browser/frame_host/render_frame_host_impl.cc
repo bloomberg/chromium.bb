@@ -2445,12 +2445,16 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   bool no_javascript_access = false;
 
+  // Filter out URLs that this process cannot request.
+  GetProcess()->FilterURL(false, &params->target_url);
+
   // Ignore creation when sent from a frame that's not current or created.
   bool can_create_window =
       frame_tree_node_->current_frame_host() == this && render_frame_created_ &&
       GetContentClient()->browser()->CanCreateWindow(
-          this, params->opener_url, params->opener_top_level_frame_url,
-          params->opener_security_origin, params->window_container_type,
+          this, last_committed_url(),
+          frame_tree_node_->frame_tree()->GetMainFrame()->last_committed_url(),
+          last_committed_origin_.GetURL(), params->window_container_type,
           params->target_url, params->referrer, params->frame_name,
           params->disposition, *params->features, params->user_gesture,
           params->opener_suppressed, &no_javascript_access);
@@ -2509,19 +2513,8 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   DCHECK(IsRenderFrameLive());
 
-  // Actually validate the params and create the window.
-  mojom::CreateNewWindowParamsPtr validated_params(params.Clone());
-  GetProcess()->FilterURL(false, &validated_params->target_url);
-
-  // TODO(nick): http://crbug.com/674307 |opener_url|, |opener_security_origin|,
-  // and |opener_top_level_frame_url| should not be parameters; we can just use
-  // last_committed_url(), etc. Of these, |opener_top_level_frame_url| is
-  // particularly egregious, since an oopif isn't expected to know its top URL.
-  GetProcess()->FilterURL(false, &validated_params->opener_url);
-  GetProcess()->FilterURL(true, &validated_params->opener_security_origin);
-
   delegate_->CreateNewWindow(this, render_view_route_id, main_frame_route_id,
-                             main_frame_widget_route_id, *validated_params,
+                             main_frame_widget_route_id, *params,
                              cloned_namespace.get());
 
   // If we did not create a WebContents to host the renderer-created
