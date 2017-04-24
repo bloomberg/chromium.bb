@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -45,7 +46,6 @@
 #include "components/proximity_auth/screenlock_state.h"
 #include "components/proximity_auth/switches.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -491,9 +491,12 @@ bool EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::RunAsync() {
       base::Bind(
           &EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekFailure,
           this),
-      content::BrowserThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+      base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
           .get());
   return true;
 }
