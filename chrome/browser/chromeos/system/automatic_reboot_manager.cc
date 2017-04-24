@@ -26,6 +26,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -235,8 +236,13 @@ void AutomaticRebootManager::UpdateStatusChanged(
     return;
   }
 
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&SaveUpdateRebootNeededUptime));
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      base::TaskTraits()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN)
+          .MayBlock(),
+      base::Bind(&SaveUpdateRebootNeededUptime));
 
   update_reboot_needed_time_ = clock_->NowTicks();
   have_update_reboot_needed_time_ = true;
