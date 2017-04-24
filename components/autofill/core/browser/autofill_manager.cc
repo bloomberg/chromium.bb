@@ -1440,6 +1440,8 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form,
 
   ServerFieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
+  if (submitted_form.is_signin_upload())
+    non_empty_types.insert(PASSWORD);
 
   download_manager_->StartUploadRequest(
       submitted_form, was_autofilled, non_empty_types,

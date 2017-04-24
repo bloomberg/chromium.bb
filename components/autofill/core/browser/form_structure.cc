@@ -295,6 +295,19 @@ bool IsCreditCardExpirationType(ServerFieldType type) {
          type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
 }
 
+// Returns true iff all form fields autofill types are in |contained_types|.
+bool AllTypesCaptured(const FormStructure& form,
+                      const ServerFieldTypeSet& contained_types) {
+  for (const auto& field : form) {
+    for (const auto& type : field->possible_types()) {
+      if (type != UNKNOWN_TYPE && type != EMPTY_TYPE &&
+          !contained_types.count(type))
+        return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
@@ -395,15 +408,7 @@ bool FormStructure::EncodeUploadRequest(
     bool observed_submission,
     AutofillUploadContents* upload) const {
   DCHECK(ShouldBeCrowdsourced());
-
-  // Verify that |available_field_types| agrees with the possible field types we
-  // are uploading.
-  for (const auto& field : *this) {
-    for (const auto& type : field->possible_types()) {
-      DCHECK(type == UNKNOWN_TYPE || type == EMPTY_TYPE ||
-             available_field_types.count(type));
-    }
-  }
+  DCHECK(AllTypesCaptured(*this, available_field_types));
 
   upload->set_submission(observed_submission);
   upload->set_client_version(kClientVersion);

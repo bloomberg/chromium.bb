@@ -334,6 +334,13 @@ class TestAutofillDownloadManager : public AutofillDownloadManager {
     }
   }
 
+  MOCK_METHOD5(StartUploadRequest,
+               bool(const FormStructure&,
+                    bool,
+                    const ServerFieldTypeSet&,
+                    const std::string&,
+                    bool));
+
  private:
   std::vector<FormStructure*> last_queried_forms_;
 
@@ -538,7 +545,8 @@ class TestAutofillManager : public AutofillManager {
         autofill_enabled_(true),
         credit_card_upload_enabled_(false),
         credit_card_was_uploaded_(false),
-        expected_observed_submission_(true) {
+        expected_observed_submission_(true),
+        call_parent_upload_form_data_(false) {
     set_payments_client(
         new TestPaymentsClient(driver->GetURLRequestContext(), this));
   }
@@ -567,6 +575,10 @@ class TestAutofillManager : public AutofillManager {
 
   void set_expected_observed_submission(bool expected) {
     expected_observed_submission_ = expected;
+  }
+
+  void set_call_parent_upload_form_data(bool value) {
+    call_parent_upload_form_data_ = value;
   }
 
   void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
@@ -615,6 +627,9 @@ class TestAutofillManager : public AutofillManager {
   void UploadFormData(const FormStructure& submitted_form,
                       bool observed_submission) override {
     submitted_form_signature_ = submitted_form.FormSignatureAsStr();
+
+    if (call_parent_upload_form_data_)
+      AutofillManager::UploadFormData(submitted_form, observed_submission);
   }
 
   const std::string GetSubmittedFormSignature() {
@@ -664,6 +679,7 @@ class TestAutofillManager : public AutofillManager {
   bool credit_card_upload_enabled_;
   bool credit_card_was_uploaded_;
   bool expected_observed_submission_;
+  bool call_parent_upload_form_data_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -6071,6 +6087,7 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
   // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
   autofill_manager_->set_expected_submitted_field_types(expected_types);
   autofill_manager_->set_expected_observed_submission(true);
+  autofill_manager_->set_call_parent_upload_form_data(true);
   autofill_manager_->ResetRunLoop();
 
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
@@ -6078,6 +6095,11 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
   form_structure->field(1)->set_possible_types({autofill::PASSWORD});
 
   std::string signature = form_structure->FormSignatureAsStr();
+
+  ServerFieldTypeSet uploaded_available_types;
+  EXPECT_CALL(*download_manager_,
+              StartUploadRequest(_, false, _, std::string(), true))
+      .WillOnce(DoAll(SaveArg<2>(&uploaded_available_types), Return(true)));
   autofill_manager_->StartUploadProcess(std::move(form_structure),
                                         base::TimeTicks::Now(), true);
 
@@ -6085,6 +6107,8 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
   autofill_manager_->WaitForAsyncUploadProcess();
 
   EXPECT_EQ(signature, autofill_manager_->GetSubmittedFormSignature());
+  EXPECT_NE(uploaded_available_types.end(),
+            uploaded_available_types.find(autofill::PASSWORD));
 }
 
 }  // namespace autofill
