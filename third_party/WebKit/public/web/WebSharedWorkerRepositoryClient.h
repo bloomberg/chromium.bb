@@ -38,7 +38,6 @@
 
 namespace blink {
 
-enum WebContentSecurityPolicyType;
 class WebMessagePortChannel;
 class WebSharedWorkerConnectListener;
 class WebString;

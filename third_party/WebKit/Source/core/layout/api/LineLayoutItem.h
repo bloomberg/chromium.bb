@@ -25,8 +25,6 @@ class LineLayoutBox;
 class LineLayoutBoxModel;
 class LineLayoutAPIShim;
 
-enum HitTestFilter;
-
 static LayoutObject* const kHashTableDeletedValue =
     reinterpret_cast<LayoutObject*>(-1);
 
