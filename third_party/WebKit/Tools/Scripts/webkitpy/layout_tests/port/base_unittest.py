@@ -483,6 +483,17 @@ class PortTest(unittest.TestCase):
         # If this call returns successfully, we found and loaded the LayoutTests/VirtualTestSuites.
         _ = port.virtual_test_suites()
 
+    def test_duplicate_virtual_test_suite_in_file(self):
+        port = self.make_port()
+        port.host.filesystem.write_text_file(
+            port.host.filesystem.join(port.layout_tests_dir(), 'VirtualTestSuites'),
+            '['
+            '{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]},'
+            '{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]}'
+            ']')
+
+        self.assertRaises(ValueError, port.virtual_test_suites)
+
     def test_virtual_test_suite_file_is_not_json(self):
         port = self.make_port()
         port.host.filesystem.write_text_file(

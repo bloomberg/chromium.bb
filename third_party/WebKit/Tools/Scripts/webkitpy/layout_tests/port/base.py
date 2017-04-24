@@ -1478,7 +1478,12 @@ class Port(object):
             assert self._filesystem.exists(path_to_virtual_test_suites), 'LayoutTests/VirtualTestSuites not found'
             try:
                 test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))
-                self._virtual_test_suites = [VirtualTestSuite(**d) for d in test_suite_json]
+                self._virtual_test_suites = []
+                for json_config in test_suite_json:
+                    vts = VirtualTestSuite(**json_config)
+                    if vts in self._virtual_test_suites:
+                        raise ValueError('LayoutTests/VirtualTestSuites contains duplicate definition: %r' % json_config)
+                    self._virtual_test_suites.append(vts)
             except ValueError as error:
                 raise ValueError('LayoutTests/VirtualTestSuites is not a valid JSON file: %s' % error)
         return self._virtual_test_suites
@@ -1613,6 +1618,13 @@ class VirtualTestSuite(object):
 
     def __repr__(self):
         return "VirtualTestSuite('%s', '%s', %s, %s)" % (self.name, self.base, self.args, self.reference_args)
+
+    def __eq__(self, other):
+        return (
+            self.name == other.name and
+            self.base == other.base and
+            self.args == other.args and
+            self.reference_args == other.reference_args)
 
 
 class PhysicalTestSuite(object):
