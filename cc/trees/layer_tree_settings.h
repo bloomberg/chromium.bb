@@ -50,10 +50,9 @@ class CC_EXPORT LayerTreeSettings {
     AURA_OVERLAY,
   };
   ScrollbarAnimator scrollbar_animator = NO_ANIMATOR;
-  base::TimeDelta scrollbar_show_delay;
-  base::TimeDelta scrollbar_fade_out_delay;
+  base::TimeDelta scrollbar_fade_delay;
   base::TimeDelta scrollbar_fade_out_resize_delay;
-  base::TimeDelta scrollbar_fade_out_duration;
+  base::TimeDelta scrollbar_fade_duration;
   base::TimeDelta scrollbar_thinning_duration;
   SkColor solid_color_scrollbar_color = SK_ColorWHITE;
   bool timeout_and_draw_when_animation_checkerboards = true;

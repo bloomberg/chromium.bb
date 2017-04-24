@@ -18,13 +18,9 @@ constexpr float kOverlayScrollbarThumbHoverAlpha = 0.7f;
 constexpr float kOverlayScrollbarStrokeNormalAlpha = 0.3f;
 constexpr float kOverlayScrollbarStrokeHoverAlpha = 0.5f;
 
-// kOverlayScrollbarShowDelay is only for the case where the mouse hovers near
-// the screen edge.
-constexpr base::TimeDelta kOverlayScrollbarShowDelay =
+constexpr base::TimeDelta kOverlayScrollbarFadeDelay =
     base::TimeDelta::FromMilliseconds(1000);
-constexpr base::TimeDelta kOverlayScrollbarFadeOutDelay =
-    base::TimeDelta::FromMilliseconds(1000);
-constexpr base::TimeDelta kOverlayScrollbarFadeOutDuration =
+constexpr base::TimeDelta kOverlayScrollbarFadeDuration =
     base::TimeDelta::FromMilliseconds(200);
 // TODO(bokan): This is still undetermined. crbug.com/652520.
 constexpr base::TimeDelta kOverlayScrollbarThinningDuration =

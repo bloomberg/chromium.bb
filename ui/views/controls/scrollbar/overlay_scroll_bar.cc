@@ -178,7 +178,7 @@ void OverlayScrollBar::Show() {
 
 void OverlayScrollBar::Hide() {
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
-  settings.SetTransitionDuration(ui::kOverlayScrollbarFadeOutDuration);
+  settings.SetTransitionDuration(ui::kOverlayScrollbarFadeDuration);
   layer()->SetOpacity(0.0f);
 }
 
@@ -186,7 +186,7 @@ void OverlayScrollBar::StartHideCountdown() {
   if (IsMouseHovered())
     return;
   hide_timer_.Start(
-      FROM_HERE, ui::kOverlayScrollbarFadeOutDelay,
+      FROM_HERE, ui::kOverlayScrollbarFadeDelay,
       base::Bind(&OverlayScrollBar::Hide, base::Unretained(this)));
 }
 

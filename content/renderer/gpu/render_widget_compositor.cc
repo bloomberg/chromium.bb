@@ -399,11 +399,10 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
   } else {
     settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
-    settings.scrollbar_fade_out_delay = base::TimeDelta::FromMilliseconds(300);
+    settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
     settings.scrollbar_fade_out_resize_delay =
         base::TimeDelta::FromMilliseconds(2000);
-    settings.scrollbar_fade_out_duration =
-        base::TimeDelta::FromMilliseconds(300);
+    settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }
   settings.renderer_settings.highp_threshold_min = 2048;
@@ -447,11 +446,9 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 #if !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::AURA_OVERLAY;
-    settings.scrollbar_show_delay = ui::kOverlayScrollbarShowDelay;
-    settings.scrollbar_fade_out_delay = ui::kOverlayScrollbarFadeOutDelay;
-    settings.scrollbar_fade_out_resize_delay =
-        ui::kOverlayScrollbarFadeOutDelay;
-    settings.scrollbar_fade_out_duration = ui::kOverlayScrollbarFadeOutDuration;
+    settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeDelay;
+    settings.scrollbar_fade_out_resize_delay = ui::kOverlayScrollbarFadeDelay;
+    settings.scrollbar_fade_duration = ui::kOverlayScrollbarFadeDuration;
     settings.scrollbar_thinning_duration =
         ui::kOverlayScrollbarThinningDuration;
   } else {
@@ -459,11 +456,10 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     // animations for non overlay scrollbars.
     settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
-    settings.scrollbar_fade_out_delay = base::TimeDelta::FromMilliseconds(500);
+    settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
     settings.scrollbar_fade_out_resize_delay =
         base::TimeDelta::FromMilliseconds(500);
-    settings.scrollbar_fade_out_duration =
-        base::TimeDelta::FromMilliseconds(300);
+    settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
   }
 #endif  // !defined(OS_MACOSX)
 

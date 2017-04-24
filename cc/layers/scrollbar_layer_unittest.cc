@@ -107,11 +107,9 @@ class ScrollbarLayerTest : public testing::Test {
     layer_tree_settings_.use_zero_copy = true;
     layer_tree_settings_.scrollbar_animator =
         LayerTreeSettings::ANDROID_OVERLAY;
-    layer_tree_settings_.scrollbar_show_delay =
+    layer_tree_settings_.scrollbar_fade_delay =
         base::TimeDelta::FromMilliseconds(20);
-    layer_tree_settings_.scrollbar_fade_out_delay =
-        base::TimeDelta::FromMilliseconds(20);
-    layer_tree_settings_.scrollbar_fade_out_duration =
+    layer_tree_settings_.scrollbar_fade_duration =
         base::TimeDelta::FromMilliseconds(20);
 
     scrollbar_layer_id_ = -1;

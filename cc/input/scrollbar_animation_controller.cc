@@ -15,44 +15,44 @@ std::unique_ptr<ScrollbarAnimationController>
 ScrollbarAnimationController::CreateScrollbarAnimationControllerAndroid(
     ElementId scroll_element_id,
     ScrollbarAnimationControllerClient* client,
-    base::TimeDelta fade_out_delay,
+    base::TimeDelta fade_delay,
     base::TimeDelta fade_out_resize_delay,
-    base::TimeDelta fade_out_duration) {
-  return base::WrapUnique(new ScrollbarAnimationController(
-      scroll_element_id, client, fade_out_delay, fade_out_resize_delay,
-      fade_out_duration));
+    base::TimeDelta fade_duration) {
+  return base::WrapUnique(
+      new ScrollbarAnimationController(scroll_element_id, client, fade_delay,
+                                       fade_out_resize_delay, fade_duration));
 }
 
 std::unique_ptr<ScrollbarAnimationController>
 ScrollbarAnimationController::CreateScrollbarAnimationControllerAuraOverlay(
     ElementId scroll_element_id,
     ScrollbarAnimationControllerClient* client,
-    base::TimeDelta show_delay,
-    base::TimeDelta fade_out_delay,
+    base::TimeDelta fade_delay,
     base::TimeDelta fade_out_resize_delay,
-    base::TimeDelta fade_out_duration,
+    base::TimeDelta fade_duration,
     base::TimeDelta thinning_duration) {
   return base::WrapUnique(new ScrollbarAnimationController(
-      scroll_element_id, client, show_delay, fade_out_delay,
-      fade_out_resize_delay, fade_out_duration, thinning_duration));
+      scroll_element_id, client, fade_delay, fade_out_resize_delay,
+      fade_duration, thinning_duration));
 }
 
 ScrollbarAnimationController::ScrollbarAnimationController(
     ElementId scroll_element_id,
     ScrollbarAnimationControllerClient* client,
-    base::TimeDelta fade_out_delay,
+    base::TimeDelta fade_delay,
     base::TimeDelta fade_out_resize_delay,
-    base::TimeDelta fade_out_duration)
+    base::TimeDelta fade_duration)
     : client_(client),
-      fade_out_delay_(fade_out_delay),
+      fade_delay_(fade_delay),
       fade_out_resize_delay_(fade_out_resize_delay),
+      fade_duration_(fade_duration),
       need_trigger_scrollbar_show_(false),
       is_animating_(false),
+      animation_change_(NONE),
       scroll_element_id_(scroll_element_id),
       currently_scrolling_(false),
       show_in_fast_scroll_(false),
       opacity_(0.0f),
-      fade_out_duration_(fade_out_duration),
       show_scrollbars_on_scroll_gesture_(false),
       need_thinning_animation_(false),
       weak_factory_(this) {
@@ -62,22 +62,21 @@ ScrollbarAnimationController::ScrollbarAnimationController(
 ScrollbarAnimationController::ScrollbarAnimationController(
     ElementId scroll_element_id,
     ScrollbarAnimationControllerClient* client,
-    base::TimeDelta show_delay,
-    base::TimeDelta fade_out_delay,
+    base::TimeDelta fade_delay,
     base::TimeDelta fade_out_resize_delay,
-    base::TimeDelta fade_out_duration,
+    base::TimeDelta fade_duration,
     base::TimeDelta thinning_duration)
     : client_(client),
-      show_delay_(show_delay),
-      fade_out_delay_(fade_out_delay),
+      fade_delay_(fade_delay),
       fade_out_resize_delay_(fade_out_resize_delay),
+      fade_duration_(fade_duration),
       need_trigger_scrollbar_show_(false),
       is_animating_(false),
+      animation_change_(NONE),
       scroll_element_id_(scroll_element_id),
       currently_scrolling_(false),
       show_in_fast_scroll_(false),
       opacity_(0.0f),
-      fade_out_duration_(fade_out_duration),
       show_scrollbars_on_scroll_gesture_(true),
       need_thinning_animation_(true),
       weak_factory_(this) {
@@ -107,43 +106,39 @@ ScrollbarAnimationController::GetScrollbarAnimationController(
 }
 
 void ScrollbarAnimationController::StartAnimation() {
-  delayed_scrollbar_show_.Cancel();
-  delayed_scrollbar_fade_out_.Cancel();
+  DCHECK(animation_change_ != NONE);
+  delayed_scrollbar_animation_.Cancel();
   is_animating_ = true;
   last_awaken_time_ = base::TimeTicks();
   client_->SetNeedsAnimateForScrollbarAnimation();
 }
 
 void ScrollbarAnimationController::StopAnimation() {
-  delayed_scrollbar_show_.Cancel();
-  delayed_scrollbar_fade_out_.Cancel();
+  delayed_scrollbar_animation_.Cancel();
   is_animating_ = false;
+  animation_change_ = NONE;
 }
 
-void ScrollbarAnimationController::PostDelayedShow() {
-  DCHECK(delayed_scrollbar_fade_out_.IsCancelled());
-  delayed_scrollbar_show_.Cancel();
-  delayed_scrollbar_show_.Reset(base::Bind(&ScrollbarAnimationController::Show,
-                                           weak_factory_.GetWeakPtr()));
-  client_->PostDelayedScrollbarAnimationTask(delayed_scrollbar_show_.callback(),
-                                             show_delay_);
-}
+void ScrollbarAnimationController::PostDelayedAnimation(
+    AnimationChange animation_change,
+    bool on_resize) {
+  animation_change_ = animation_change;
 
-void ScrollbarAnimationController::PostDelayedFadeOut(bool on_resize) {
-  DCHECK(delayed_scrollbar_show_.IsCancelled());
-  base::TimeDelta delay = on_resize ? fade_out_resize_delay_ : fade_out_delay_;
-  delayed_scrollbar_fade_out_.Cancel();
-  delayed_scrollbar_fade_out_.Reset(
+  base::TimeDelta delay = on_resize ? fade_out_resize_delay_ : fade_delay_;
+
+  delayed_scrollbar_animation_.Cancel();
+  delayed_scrollbar_animation_.Reset(
       base::Bind(&ScrollbarAnimationController::StartAnimation,
                  weak_factory_.GetWeakPtr()));
   client_->PostDelayedScrollbarAnimationTask(
-      delayed_scrollbar_fade_out_.callback(), delay);
+      delayed_scrollbar_animation_.callback(), delay);
 }
 
 bool ScrollbarAnimationController::Animate(base::TimeTicks now) {
   bool animated = false;
 
   if (is_animating_) {
+    DCHECK(animation_change_ != NONE);
     if (last_awaken_time_.is_null())
       last_awaken_time_ = now;
 
@@ -166,12 +161,21 @@ bool ScrollbarAnimationController::Animate(base::TimeTicks now) {
 float ScrollbarAnimationController::AnimationProgressAtTime(
     base::TimeTicks now) {
   base::TimeDelta delta = now - last_awaken_time_;
-  float progress = delta.InSecondsF() / fade_out_duration_.InSecondsF();
+  float progress = delta.InSecondsF() / fade_duration_.InSecondsF();
   return std::max(std::min(progress, 1.f), 0.f);
 }
 
 void ScrollbarAnimationController::RunAnimationFrame(float progress) {
-  ApplyOpacityToScrollbars(1.f - progress);
+  float opacity;
+
+  DCHECK(animation_change_ != NONE);
+  if (animation_change_ == FADE_IN) {
+    opacity = std::max(progress, opacity_);
+  } else {
+    opacity = std::min(1.f - progress, opacity_);
+  }
+
+  ApplyOpacityToScrollbars(opacity);
   if (progress == 1.f)
     StopAnimation();
 }
@@ -192,7 +196,7 @@ void ScrollbarAnimationController::DidScrollEnd() {
     return;
 
   if (has_scrolled)
-    PostDelayedFadeOut(false);
+    PostDelayedAnimation(FADE_OUT, false);
 }
 
 void ScrollbarAnimationController::DidScrollUpdate() {
@@ -201,18 +205,18 @@ void ScrollbarAnimationController::DidScrollUpdate() {
 
   StopAnimation();
 
+  Show();
+
   // As an optimization, we avoid spamming fade delay tasks during active fast
   // scrolls.  But if we're not within one, we need to post every scroll update.
   if (!currently_scrolling_) {
     // We don't fade out scrollbar if they need thinning animation and mouse is
     // near.
     if (!need_thinning_animation_ || !MouseIsNearAnyScrollbar())
-      PostDelayedFadeOut(false);
+      PostDelayedAnimation(FADE_OUT, false);
   } else {
     show_in_fast_scroll_ = true;
   }
-
-  Show();
 
   if (need_thinning_animation_) {
     vertical_controller_->UpdateThumbThicknessScale();
@@ -236,7 +240,7 @@ void ScrollbarAnimationController::DidResize() {
   // As an optimization, we avoid spamming fade delay tasks during active fast
   // scrolls.
   if (!currently_scrolling_) {
-    PostDelayedFadeOut(true);
+    PostDelayedAnimation(FADE_OUT, true);
   } else {
     show_in_fast_scroll_ = true;
   }
@@ -258,7 +262,7 @@ void ScrollbarAnimationController::DidMouseUp() {
   horizontal_controller_->DidMouseUp();
 
   if (!MouseIsNearAnyScrollbar())
-    PostDelayedFadeOut(false);
+    PostDelayedAnimation(FADE_OUT, false);
 }
 
 void ScrollbarAnimationController::DidMouseLeave() {
@@ -268,13 +272,13 @@ void ScrollbarAnimationController::DidMouseLeave() {
   vertical_controller_->DidMouseLeave();
   horizontal_controller_->DidMouseLeave();
 
-  delayed_scrollbar_show_.Cancel();
+  delayed_scrollbar_animation_.Cancel();
   need_trigger_scrollbar_show_ = false;
 
   if (ScrollbarsHidden() || Captured())
     return;
 
-  PostDelayedFadeOut(false);
+  PostDelayedAnimation(FADE_OUT, false);
 }
 
 void ScrollbarAnimationController::DidMouseMoveNear(
@@ -296,9 +300,9 @@ void ScrollbarAnimationController::DidMouseMoveNear(
   if (ScrollbarsHidden()) {
     if (need_trigger_scrollbar_show_before != need_trigger_scrollbar_show_) {
       if (need_trigger_scrollbar_show_) {
-        PostDelayedShow();
+        PostDelayedAnimation(FADE_IN, false);
       } else {
-        delayed_scrollbar_show_.Cancel();
+        delayed_scrollbar_animation_.Cancel();
       }
     }
   } else {
@@ -306,7 +310,7 @@ void ScrollbarAnimationController::DidMouseMoveNear(
       Show();
       StopAnimation();
     } else if (!is_animating_) {
-      PostDelayedFadeOut(false);
+      PostDelayedAnimation(FADE_OUT, false);
     }
   }
 }
@@ -324,7 +328,7 @@ bool ScrollbarAnimationController::CalcNeedTriggerScrollbarShow(
     if (scrollbar->orientation() != orientation)
       continue;
 
-    if (distance < kMouseMoveDistanceToTriggerShow)
+    if (distance < kMouseMoveDistanceToTriggerFadeIn)
       return true;
   }
 
@@ -359,7 +363,7 @@ bool ScrollbarAnimationController::Captured() const {
 }
 
 void ScrollbarAnimationController::Show() {
-  delayed_scrollbar_show_.Cancel();
+  delayed_scrollbar_animation_.Cancel();
   ApplyOpacityToScrollbars(1.0f);
 }
 

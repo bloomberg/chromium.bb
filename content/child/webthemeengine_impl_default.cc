@@ -245,10 +245,9 @@ void WebThemeEngineImpl::Paint(
 }
 
 void WebThemeEngineImpl::GetOverlayScrollbarStyle(ScrollbarStyle* style) {
-  style->fade_out_delay_seconds =
-      ui::kOverlayScrollbarFadeOutDelay.InSecondsF();
+  style->fade_out_delay_seconds = ui::kOverlayScrollbarFadeDelay.InSecondsF();
   style->fade_out_duration_seconds =
-      ui::kOverlayScrollbarFadeOutDuration.InSecondsF();
+      ui::kOverlayScrollbarFadeDuration.InSecondsF();
   // The other fields in this struct are used only on Android to draw solid
   // color scrollbars. On other platforms the scrollbars are painted in
   // NativeTheme so these fields are unused.
