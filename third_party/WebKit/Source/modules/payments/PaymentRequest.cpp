@@ -671,6 +671,15 @@ bool AllowedToUsePaymentRequest(const Frame* frame) {
   return false;
 }
 
+void WarnIgnoringQueryQuotaForCanMakePayment(
+    ExecutionContext& execution_context) {
+  execution_context.AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, kWarningMessageLevel,
+      "Quota reached for PaymentRequest.canMakePayment(). This would normally "
+      "reject the promise, but allowing continued usage on localhost and "
+      "file:// scheme origins."));
+}
+
 }  // namespace
 
 PaymentRequest* PaymentRequest::Create(
@@ -1066,9 +1075,15 @@ void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
   DCHECK(can_make_payment_resolver_);
 
   switch (result) {
+    case CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT:
+      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext());
+    // Intentionally fall through.
     case CanMakePaymentQueryResult::CAN_MAKE_PAYMENT:
       can_make_payment_resolver_->Resolve(true);
       break;
+    case CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT:
+      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext());
+    // Intentionally fall through.
     case CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT:
       can_make_payment_resolver_->Resolve(false);
       break;

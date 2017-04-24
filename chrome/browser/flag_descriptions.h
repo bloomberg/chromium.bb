@@ -2778,13 +2778,6 @@ extern const char kAndroidPaymentAppsName[];
 // Description for the flag to enable third party Android payment apps
 extern const char kAndroidPaymentAppsDescription[];
 
-// Title of the flag to enable filtering out third party Android payment apps
-extern const char kAndroidPaymentAppsFilterTitle[];
-
-// Description for the flag to enable filtering out third party Android payment
-// apps
-extern const char kAndroidPaymentAppsFilterDescription[];
-
 #endif  // defined(OS_ANDROID)
 
 // Name for the flag to enable feature policy.

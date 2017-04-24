@@ -17,6 +17,7 @@ import java.util.concurrent.TimeoutException;
 public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequestTestBase {
     public PaymentRequestPaymentAppCanMakePaymentQueryTest() {
         super("payment_request_can_make_payment_query_bobpay_test.html");
+        PaymentRequestImpl.setIsLocalCanMakePaymentQueryQuotaEnforcedForTest();
     }
 
     @Override

@@ -20,6 +20,9 @@ class OriginSecurityChecker {
   // HTTPS-SO, WSS.
   static bool IsSchemeCryptographic(const GURL& url);
 
+  // Returns true for a valid |url| with localhost or file:// scheme origin.
+  static bool IsOriginLocalhostOrFile(const GURL& url);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OriginSecurityChecker);
 };

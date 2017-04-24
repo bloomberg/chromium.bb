@@ -73,7 +73,7 @@ public class AndroidPaymentAppFinderTest {
         methodNames.add("https://"); // Invalid URI.
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
-        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames, false,
+        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames,
                 Mockito.mock(PaymentManifestDownloader.class),
                 Mockito.mock(PaymentManifestParser.class),
                 Mockito.mock(PackageManagerDelegate.class), callback);
@@ -93,7 +93,7 @@ public class AndroidPaymentAppFinderTest {
         methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
-        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames, false,
+        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames,
                 Mockito.mock(PaymentManifestDownloader.class),
                 Mockito.mock(PaymentManifestParser.class), packageManagerDelegate, callback);
 
@@ -122,7 +122,7 @@ public class AndroidPaymentAppFinderTest {
         methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
-        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames, false,
+        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames,
                 Mockito.mock(PaymentManifestDownloader.class),
                 Mockito.mock(PaymentManifestParser.class), packageManagerDelegate, callback);
 
@@ -156,7 +156,7 @@ public class AndroidPaymentAppFinderTest {
         methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
-        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames, false,
+        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames,
                 Mockito.mock(PaymentManifestDownloader.class),
                 Mockito.mock(PaymentManifestParser.class), packageManagerDelegate, callback);
 
@@ -226,7 +226,7 @@ public class AndroidPaymentAppFinderTest {
         methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
-        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames, false,
+        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames,
                 Mockito.mock(PaymentManifestDownloader.class),
                 Mockito.mock(PaymentManifestParser.class), packageManagerDelegate, callback);
 
@@ -338,8 +338,8 @@ public class AndroidPaymentAppFinderTest {
         methodNames.add("https://bobpay.com");
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
-        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames, false,
-                downloader, parser, packageManagerDelegate, callback);
+        AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames, downloader,
+                parser, packageManagerDelegate, callback);
 
         Mockito.verify(callback).onPaymentAppCreated(
                 ArgumentMatchers.argThat(Matches.paymentAppIdentifier("com.bobpay.app")));

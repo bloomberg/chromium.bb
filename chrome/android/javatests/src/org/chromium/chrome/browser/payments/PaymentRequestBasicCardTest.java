@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -20,10 +19,10 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for "basic-card" payment method.
  */
-@CommandLineFlags.Add("enable-blink-features=PaymentRequestBasicCard")
 public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
     public PaymentRequestBasicCardTest() {
         super("payment_request_basic_card_test.html");
+        PaymentRequestImpl.setIsLocalCanMakePaymentQueryQuotaEnforcedForTest();
     }
 
     @Override

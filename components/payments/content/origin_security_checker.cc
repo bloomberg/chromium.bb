@@ -5,6 +5,7 @@
 #include "components/payments/content/origin_security_checker.h"
 
 #include "content/public/common/origin_util.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace payments {
@@ -17,6 +18,12 @@ bool OriginSecurityChecker::IsOriginSecure(const GURL& url) {
 // static
 bool OriginSecurityChecker::IsSchemeCryptographic(const GURL& url) {
   return url.is_valid() && url.SchemeIsCryptographic();
+}
+
+// static
+bool OriginSecurityChecker::IsOriginLocalhostOrFile(const GURL& url) {
+  return url.is_valid() &&
+         (net::IsLocalhost(url.HostNoBrackets()) || url.SchemeIsFile());
 }
 
 }  // namespace payments

@@ -85,27 +85,12 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     private final Map<String, AndroidPaymentApp> mResult;
 
     /**
-     * Whether payment apps are required to have an intent filter with a single PAY action and no
-     * additional data, i.e., whether payments apps are required to show up in "Autofill and
-     * Payments" settings.
-     */
-    private final boolean mRequireShowInSettings;
-
-    /**
-     * The intent filter for a single PAY action and no additional data. Used to filter out payment
-     * apps that don't show up in "Autofill and Payments" settings.
-     */
-    private final Intent mSettingsLookup;
-
-    /**
      * Finds native Android payment apps.
      *
      * @param webContents            The web contents that invoked the web payments API.
      * @param methods                The list of payment methods requested by the merchant. For
      *                               example, "https://bobpay.com", "https://android.com/pay",
      *                               "basic-card".
-     * @param requireShowInSettings  Whether payment apps are required to show up in "autofill and
-     *                               Payments" settings.
      * @param downloader             The manifest downloader.
      * @param parser                 The manifest parser.
      * @param packageManagerDelegate The package information retriever.
@@ -113,18 +98,16 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
      *                               all Android payment apps have been found.
      */
     public static void find(WebContents webContents, Set<String> methods,
-            boolean requireShowInSettings, PaymentManifestDownloader downloader,
-            PaymentManifestParser parser, PackageManagerDelegate packageManagerDelegate,
-            PaymentAppCreatedCallback callback) {
-        new AndroidPaymentAppFinder(webContents, methods, requireShowInSettings, downloader, parser,
-                packageManagerDelegate, callback)
+            PaymentManifestDownloader downloader, PaymentManifestParser parser,
+            PackageManagerDelegate packageManagerDelegate, PaymentAppCreatedCallback callback) {
+        new AndroidPaymentAppFinder(
+                webContents, methods, downloader, parser, packageManagerDelegate, callback)
                 .findAndroidPaymentApps();
     }
 
     private AndroidPaymentAppFinder(WebContents webContents, Set<String> methods,
-            boolean requireShowInSettings, PaymentManifestDownloader downloader,
-            PaymentManifestParser parser, PackageManagerDelegate packageManagerDelegate,
-            PaymentAppCreatedCallback callback) {
+            PaymentManifestDownloader downloader, PaymentManifestParser parser,
+            PackageManagerDelegate packageManagerDelegate, PaymentAppCreatedCallback callback) {
         mWebContents = webContents;
         mQueryBasicCard = methods.contains(BASIC_CARD_PAYMENT_METHOD);
         mPaymentMethods = new HashSet<>();
@@ -157,8 +140,6 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel() != null
                 && activity.getCurrentTabModel().isIncognito();
-        mRequireShowInSettings = requireShowInSettings;
-        mSettingsLookup = new Intent(AndroidPaymentApp.ACTION_PAY);
     }
 
     private void findAndroidPaymentApps() {
@@ -276,10 +257,6 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         String packageName = resolveInfo.activityInfo.packageName;
         AndroidPaymentApp app = mResult.get(packageName);
         if (app == null) {
-            if (mRequireShowInSettings) {
-                mSettingsLookup.setPackage(packageName);
-                if (mPackageManagerDelegate.resolveActivity(mSettingsLookup) == null) return;
-            }
             CharSequence label = mPackageManagerDelegate.getAppLabel(resolveInfo);
             if (TextUtils.isEmpty(label)) {
                 Log.d(TAG,

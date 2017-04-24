@@ -10,7 +10,6 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
 import org.chromium.components.payments.PaymentManifestDownloader;
@@ -28,7 +27,6 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
     public void create(
             WebContents webContents, Set<String> methods, PaymentAppCreatedCallback callback) {
         AndroidPaymentAppFinder.find(webContents, methods,
-                ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_PAYMENT_APPS_FILTER),
                 new PaymentManifestDownloader(webContents), new PaymentManifestParser(),
                 new PackageManagerDelegate(), callback);
     }

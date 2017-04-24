@@ -220,6 +220,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private static final int CAN_MAKE_PAYMENT_QUERY_PERIOD_MS = 30 * 60 * 1000;
 
     private static PaymentRequestServiceObserverForTest sObserverForTest;
+    private static boolean sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
 
     /**
      * True if show() was called in any PaymentRequestImpl object. Used to prevent showing more than
@@ -318,7 +319,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private boolean mMerchantSupportsAutofillPaymentInstruments;
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
-    private boolean mQueriedCanMakePayment;
     private CurrencyFormatter mCurrencyFormatter;
     private TabModelSelector mObservedTabModelSelector;
     private TabModel mObservedTabModel;
@@ -1318,6 +1318,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         CanMakePaymentQuery query =
                 sCanMakePaymentQueries.get(mSchemelessIFrameOriginForPaymentApp);
         if (query == null) {
+            // If there has not been a canMakePayment() query in the last 30 minutes, take a note
+            // that one has happened just now. Remember the payment method names and the
+            // corresponding data for the next 30 minutes. Forget about it after the 30 minute
+            // period expires.
             query = new CanMakePaymentQuery(Collections.unmodifiableMap(mMethodData));
             sCanMakePaymentQueries.put(mSchemelessIFrameOriginForPaymentApp, query);
             mHandler.postDelayed(new Runnable() {
@@ -1326,7 +1330,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     sCanMakePaymentQueries.remove(mSchemelessIFrameOriginForPaymentApp);
                 }
             }, CAN_MAKE_PAYMENT_QUERY_PERIOD_MS);
-        } else if (!query.matchesPaymentMethods(Collections.unmodifiableMap(mMethodData))) {
+        } else if (shouldEnforceCanMakePaymentQueryQuota()
+                && !query.matchesPaymentMethods(Collections.unmodifiableMap(mMethodData))) {
+            // If there has been a canMakePayment() query in the last 30 minutes, but the previous
+            // payment method names and the corresponding data don't match, enforce the
+            // canMakePayment() query quota (unless the quota is turned off).
             mClient.onCanMakePayment(CanMakePaymentQueryResult.QUERY_QUOTA_EXCEEDED);
             if (sObserverForTest != null) {
                 sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
@@ -1340,13 +1348,45 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     private void respondCanMakePaymentQuery(boolean response) {
         if (mClient == null) return;
-        mClient.onCanMakePayment(response || mIsIncognito
-                        ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
-                        : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+
+        boolean isIgnoringQueryQuota = false;
+        if (!shouldEnforceCanMakePaymentQueryQuota()) {
+            CanMakePaymentQuery query =
+                    sCanMakePaymentQueries.get(mSchemelessIFrameOriginForPaymentApp);
+            // The cached query may have expired between instantiation of PaymentRequest and
+            // finishing the query of the payment apps.
+            if (query != null) {
+                isIgnoringQueryQuota =
+                        !query.matchesPaymentMethods(Collections.unmodifiableMap(mMethodData));
+            }
+        }
+
+        if (mIsIncognito) {
+            mClient.onCanMakePayment(CanMakePaymentQueryResult.CAN_MAKE_PAYMENT);
+        } else if (isIgnoringQueryQuota) {
+            mClient.onCanMakePayment(response
+                            ? CanMakePaymentQueryResult.WARNING_CAN_MAKE_PAYMENT
+                            : CanMakePaymentQueryResult.WARNING_CANNOT_MAKE_PAYMENT);
+        } else {
+            mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
+                                              : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+        }
+
         mJourneyLogger.setCanMakePaymentValue(response || mIsIncognito);
+
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
         }
+    }
+
+    /**
+     * @return Whether canMakePayment() query quota should be enforced. By default, the quota is
+     * enforced only on https:// scheme origins. However, the tests also enable the quota on
+     * localhost and file:// scheme origins to verify its behavior.
+     */
+    private boolean shouldEnforceCanMakePaymentQueryQuota() {
+        return !OriginSecurityChecker.isOriginLocalhostOrFile(mWebContents.getLastCommittedUrl())
+                || sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
     }
 
     /**
@@ -1690,6 +1730,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     @VisibleForTesting
     public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
         sObserverForTest = observerForTest;
+    }
+
+    @VisibleForTesting
+    public static void setIsLocalCanMakePaymentQueryQuotaEnforcedForTest() {
+        sIsLocalCanMakePaymentQueryQuotaEnforcedForTest = true;
     }
 
     /**

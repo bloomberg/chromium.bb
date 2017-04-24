@@ -2558,12 +2558,6 @@ const char kAndroidPaymentAppsName[] = "Android payment apps";
 const char kAndroidPaymentAppsDescription[] =
     "Enable third party Android apps to integrate as payment apps";
 
-const char kAndroidPaymentAppsFilterTitle[] = "Android payment apps filter";
-
-const char kAndroidPaymentAppsFilterDescription[] =
-    "Enable filtering out third party Android apps that can not be shown in "
-    "settings";
-
 #endif  // defined(OS_ANDROID)
 
 const char kFeaturePolicyName[] = "Feature Policy";

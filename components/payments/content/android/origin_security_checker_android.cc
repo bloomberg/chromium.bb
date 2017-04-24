@@ -34,6 +34,14 @@ jboolean IsSchemeCryptographic(JNIEnv* env,
       GURL(ConvertJavaStringToUTF8(env, jurl)));
 }
 
+// static
+jboolean IsOriginLocalhostOrFile(JNIEnv* env,
+                                 const JavaParamRef<jclass>& jcaller,
+                                 const JavaParamRef<jstring>& jurl) {
+  return OriginSecurityChecker::IsOriginLocalhostOrFile(
+      GURL(ConvertJavaStringToUTF8(env, jurl)));
+}
+
 bool RegisterOriginSecurityChecker(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
