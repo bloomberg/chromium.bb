@@ -346,10 +346,11 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 
   if (codec_context_->channels !=
       ChannelLayoutToChannelCount(config_.channel_layout())) {
-    DLOG(ERROR) << "Audio configuration specified "
-                << ChannelLayoutToChannelCount(config_.channel_layout())
-                << " channels, but FFmpeg thinks the file contains "
-                << codec_context_->channels << " channels";
+    MEDIA_LOG(ERROR, media_log_)
+        << "Audio configuration specified "
+        << ChannelLayoutToChannelCount(config_.channel_layout())
+        << " channels, but FFmpeg thinks the file contains "
+        << codec_context_->channels << " channels";
     ReleaseFFmpegResources();
     state_ = kUninitialized;
     return false;
