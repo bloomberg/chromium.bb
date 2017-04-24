@@ -27,10 +27,15 @@ class CastEglPlatform {
   // caller. desired_list contains list of desired EGL properties and values.
   virtual const int* GetEGLSurfaceProperties(const int* desired_list) = 0;
 
-  // Initialize/ShutdownHardware are called at most once each over the object's
-  // lifetime.  Initialize will be called before creating display type or
-  // window.  If Initialize fails, return false (Shutdown will still be called).
+  // InitializeHardware is called once (before creating display type or window)
+  // and must return false on failure.
   virtual bool InitializeHardware() = 0;
+
+  // DEPRECATED - ShutdownHardware may not be called in practice (helps speed
+  // up GPU process shutdown).  Implementations must handle cleanup/shutdown
+  // without an explicit cleanup API (this was already required anyway to handle
+  // GPU process crash scenarios correctly).
+  // TODO(halliwell): remove this API in next system update.
   virtual void ShutdownHardware() = 0;
 
   // These three are called once after hardware is successfully initialized.
@@ -41,17 +46,22 @@ class CastEglPlatform {
   virtual void* GetGles2Library() = 0;
   virtual GLGetProcAddressProc GetGLProcAddressProc() = 0;
 
-  // Creates/destroys an EGLNativeDisplayType.  These may be called multiple
-  // times over the object's lifetime, for example to release the display when
-  // switching to an external application.  There will be at most one display
-  // type at a time.
+  // Creates an EGLNativeDisplayType.  Called once when initializing display.
   virtual NativeDisplayType CreateDisplayType(const Size& size) = 0;
+
+  // DEPRECATED - destroys display type.  Currently not called, see notes on
+  // ShutdownHardware above.
+  // TODO(halliwell): remove if no longer needed.
   virtual void DestroyDisplayType(NativeDisplayType display_type) = 0;
 
-  // Creates/destroys an EGLNativeWindow.  There will be at most one window at a
-  // time, created within a valid display type.
+  // Creates an EGLNativeWindow using previously-created DisplayType.  Called
+  // once when initializing display.
   virtual NativeWindowType CreateWindow(NativeDisplayType display_type,
                                         const Size& size) = 0;
+
+  // DEPRECATED - destroys window.  Currently not called, see notes on
+  // ShutdownHardware above.
+  // TODO(halliwell): remove if no longer needed.
   virtual void DestroyWindow(NativeWindowType window) = 0;
 
   // Specifies if creating multiple surfaces on a window is broken on this
