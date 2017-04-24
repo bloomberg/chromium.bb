@@ -713,8 +713,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-r32f-red-float.html',
         ['linux', 'nvidia'], bug=713127)
+    # Explicitly specifying GT 610 to avoid conflict with Quadro P400 rule
     self.Flaky('deqp/functional/gles3/multisample.html',
-        ['linux', 'nvidia'], bug=714207)
+        ['linux', ('nvidia', 0x104a)], bug=714207)
 
     # This test is flaky both with and without ANGLE.
     self.Flaky('deqp/functional/gles3/texturespecification/' +
@@ -749,6 +750,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # This test causes a lost device and then the next test fails.
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['linux', ('nvidia', 0x1cb3)], bug=709320)
+    self.Fail('deqp/functional/gles3/multisample.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=702861)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
