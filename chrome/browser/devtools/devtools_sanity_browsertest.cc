@@ -21,8 +21,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -198,8 +198,12 @@ class PushTimesMockURLRequestJob : public net::URLRequestMockHTTPJob {
             request,
             network_delegate,
             file_path,
-            BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)) {}
+            base::CreateTaskRunnerWithTraits(
+                base::TaskTraits()
+                    .MayBlock()
+                    .WithPriority(base::TaskPriority::BACKGROUND)
+                    .WithShutdownBehavior(
+                        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))) {}
 
   void Start() override {
     load_timing_info_.socket_reused = true;
