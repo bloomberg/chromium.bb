@@ -70,7 +70,8 @@ class PointerEventFactoryTest : public ::testing::Test {
    public:
     WebMouseEventBuilder(WebPointerProperties::PointerType,
                          int,
-                         WebInputEvent::Modifiers);
+                         WebInputEvent::Modifiers,
+                         double);
   };
 };
 
@@ -92,11 +93,13 @@ PointerEventFactoryTest::WebTouchPointBuilder::WebTouchPointBuilder(
 PointerEventFactoryTest::WebMouseEventBuilder::WebMouseEventBuilder(
     WebPointerProperties::PointerType pointer_type_param,
     int id_param,
-    WebInputEvent::Modifiers modifiers_param) {
+    WebInputEvent::Modifiers modifiers_param,
+    double platform_time_stamp) {
   pointer_type = pointer_type_param;
   id = id_param;
   modifiers_ = modifiers_param;
   frame_scale_ = 1;
+  time_stamp_seconds_ = platform_time_stamp;
 }
 
 PointerEvent* PointerEventFactoryTest::CreateAndCheckTouchCancel(
@@ -104,12 +107,14 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckTouchCancel(
     int raw_id,
     int unique_id,
     bool is_primary) {
-  PointerEvent* pointer_event =
-      pointer_event_factory_.CreatePointerCancelEvent(unique_id, pointer_type);
+  TimeTicks now = TimeTicks::Now();
+  PointerEvent* pointer_event = pointer_event_factory_.CreatePointerCancelEvent(
+      unique_id, pointer_type, now);
   EXPECT_EQ(unique_id, pointer_event->pointerId());
   EXPECT_EQ(is_primary, pointer_event->isPrimary());
   EXPECT_EQ(PointerTypeNameForWebPointPointerType(pointer_type),
             pointer_event->pointerType());
+  EXPECT_EQ(now, pointer_event->PlatformTimeStamp());
   return pointer_event;
 }
 
@@ -132,17 +137,21 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckTouchEvent(
     bool is_primary,
     WebTouchPoint::State state,
     size_t coalesced_event_count) {
-  Vector<WebTouchPoint> coalesced_events;
+  Vector<std::pair<WebTouchPoint, TimeTicks>> coalesced_events;
+  TimeTicks now = TimeTicks::Now();
   for (size_t i = 0; i < coalesced_event_count; i++) {
-    coalesced_events.push_back(PointerEventFactoryTest::WebTouchPointBuilder(
-        pointer_type, raw_id, state));
+    coalesced_events.push_back(std::pair<WebTouchPoint, TimeTicks>(
+        PointerEventFactoryTest::WebTouchPointBuilder(pointer_type, raw_id,
+                                                      state),
+        now));
   }
   PointerEvent* pointer_event = pointer_event_factory_.Create(
       PointerEventFactoryTest::WebTouchPointBuilder(pointer_type, raw_id,
                                                     state),
-      coalesced_events, WebInputEvent::kNoModifiers, nullptr, nullptr);
+      coalesced_events, WebInputEvent::kNoModifiers, now, nullptr, nullptr);
   EXPECT_EQ(unique_id, pointer_event->pointerId());
   EXPECT_EQ(is_primary, pointer_event->isPrimary());
+  EXPECT_EQ(now, pointer_event->PlatformTimeStamp());
   const char* expected_pointer_type =
       PointerTypeNameForWebPointPointerType(pointer_type);
   EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
@@ -151,6 +160,7 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckTouchEvent(
     EXPECT_EQ(unique_id, pointer_event->getCoalescedEvents()[i]->pointerId());
     EXPECT_EQ(is_primary, pointer_event->getCoalescedEvents()[i]->isPrimary());
     EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
+    EXPECT_EQ(now, pointer_event->PlatformTimeStamp());
   }
   return pointer_event;
 }
@@ -165,16 +175,19 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckMouseEvent(
   Vector<WebMouseEvent> coalesced_events;
   for (size_t i = 0; i < coalesced_event_count; i++) {
     coalesced_events.push_back(PointerEventFactoryTest::WebMouseEventBuilder(
-        pointer_type, raw_id, modifiers));
+        pointer_type, raw_id, modifiers,
+        WebInputEvent::kTimeStampForTesting + i));
   }
   PointerEvent* pointer_event = pointer_event_factory_.Create(
       coalesced_event_count ? EventTypeNames::mousemove
                             : EventTypeNames::mousedown,
-      PointerEventFactoryTest::WebMouseEventBuilder(pointer_type, raw_id,
-                                                    modifiers),
+      PointerEventFactoryTest::WebMouseEventBuilder(
+          pointer_type, raw_id, modifiers, WebInputEvent::kTimeStampForTesting),
       coalesced_events, nullptr);
   EXPECT_EQ(unique_id, pointer_event->pointerId());
   EXPECT_EQ(is_primary, pointer_event->isPrimary());
+  EXPECT_EQ(TimeTicks::FromSeconds(WebInputEvent::kTimeStampForTesting),
+            pointer_event->PlatformTimeStamp());
   const char* expected_pointer_type =
       PointerTypeNameForWebPointPointerType(pointer_type);
   EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
@@ -183,6 +196,8 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckMouseEvent(
     EXPECT_EQ(unique_id, pointer_event->getCoalescedEvents()[i]->pointerId());
     EXPECT_EQ(is_primary, pointer_event->getCoalescedEvents()[i]->isPrimary());
     EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
+    EXPECT_EQ(TimeTicks::FromSeconds(WebInputEvent::kTimeStampForTesting + i),
+              pointer_event->getCoalescedEvents()[i]->PlatformTimeStamp());
   }
   return pointer_event;
 }

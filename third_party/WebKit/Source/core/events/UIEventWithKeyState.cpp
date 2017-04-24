@@ -42,8 +42,9 @@ UIEventWithKeyState::UIEventWithKeyState(
       modifiers_(modifiers) {}
 
 UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type,
-                                         const EventModifierInit& initializer)
-    : UIEvent(type, initializer), modifiers_(0) {
+                                         const EventModifierInit& initializer,
+                                         TimeTicks platform_time_stamp)
+    : UIEvent(type, initializer, platform_time_stamp), modifiers_(0) {
   if (initializer.ctrlKey())
     modifiers_ |= WebInputEvent::kControlKey;
   if (initializer.shiftKey())

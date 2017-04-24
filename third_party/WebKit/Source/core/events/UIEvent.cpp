@@ -45,8 +45,10 @@ UIEvent::UIEvent(const AtomicString& event_type,
       detail_(detail_arg),
       source_capabilities_(source_capabilities_arg) {}
 
-UIEvent::UIEvent(const AtomicString& event_type, const UIEventInit& initializer)
-    : Event(event_type, initializer),
+UIEvent::UIEvent(const AtomicString& event_type,
+                 const UIEventInit& initializer,
+                 TimeTicks platform_time_stamp)
+    : Event(event_type, initializer, platform_time_stamp),
       view_(initializer.view()),
       detail_(initializer.detail()),
       source_capabilities_(initializer.sourceCapabilities()) {}

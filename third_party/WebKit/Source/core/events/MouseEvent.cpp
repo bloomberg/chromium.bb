@@ -229,8 +229,9 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
 }
 
 MouseEvent::MouseEvent(const AtomicString& event_type,
-                       const MouseEventInit& initializer)
-    : UIEventWithKeyState(event_type, initializer),
+                       const MouseEventInit& initializer,
+                       TimeTicks platform_time_stamp)
+    : UIEventWithKeyState(event_type, initializer, platform_time_stamp),
       screen_location_(
           DoublePoint(initializer.screenX(), initializer.screenY())),
       movement_delta_(

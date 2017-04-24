@@ -286,8 +286,9 @@ PointerEvent* PointerEventFactory::Create(
       coalesced_event_init.setBubbles(false);
       UpdateMousePointerEventInit(coalesced_mouse_event, view,
                                   &coalesced_event_init);
-      PointerEvent* event =
-          PointerEvent::Create(pointer_event_name, coalesced_event_init);
+      PointerEvent* event = PointerEvent::Create(
+          pointer_event_name, coalesced_event_init,
+          TimeTicks::FromSeconds(coalesced_mouse_event.TimeStampSeconds()));
       // Set the trusted flag for the coalesced events at the creation time
       // as oppose to the normal events which is done at the dispatch time. This
       // is because we don't want to go over all the coalesced events at every
@@ -299,13 +300,16 @@ PointerEvent* PointerEventFactory::Create(
     pointer_event_init.setCoalescedEvents(coalesced_pointer_events);
   }
 
-  return PointerEvent::Create(pointer_event_name, pointer_event_init);
+  return PointerEvent::Create(
+      pointer_event_name, pointer_event_init,
+      TimeTicks::FromSeconds(mouse_event.TimeStampSeconds()));
 }
 
 PointerEvent* PointerEventFactory::Create(
     const WebTouchPoint& touch_point,
-    const Vector<WebTouchPoint>& coalesced_points,
+    const Vector<std::pair<WebTouchPoint, TimeTicks>>& coalesced_points,
     WebInputEvent::Modifiers modifiers,
+    TimeTicks event_platform_time_stamp,
     LocalFrame* target_frame,
     DOMWindow* view) {
   const WebTouchPoint::State point_state = touch_point.state;
@@ -338,15 +342,18 @@ PointerEvent* PointerEventFactory::Create(
   if (type == EventTypeNames::pointermove) {
     HeapVector<Member<PointerEvent>> coalesced_pointer_events;
     for (const auto& coalesced_touch_point : coalesced_points) {
-      DCHECK_EQ(touch_point.state, coalesced_touch_point.state);
-      DCHECK_EQ(touch_point.id, coalesced_touch_point.id);
-      DCHECK_EQ(touch_point.pointer_type, coalesced_touch_point.pointer_type);
+      const auto& coalesced_point = coalesced_touch_point.first;
+      const auto& coalesced_point_time_stamp = coalesced_touch_point.second;
+      DCHECK_EQ(touch_point.state, coalesced_point.state);
+      DCHECK_EQ(touch_point.id, coalesced_point.id);
+      DCHECK_EQ(touch_point.pointer_type, coalesced_point.pointer_type);
       PointerEventInit coalesced_event_init = pointer_event_init;
       coalesced_event_init.setCancelable(false);
       coalesced_event_init.setBubbles(false);
-      UpdateTouchPointerEventInit(coalesced_touch_point, target_frame,
+      UpdateTouchPointerEventInit(coalesced_point, target_frame,
                                   &coalesced_event_init);
-      PointerEvent* event = PointerEvent::Create(type, coalesced_event_init);
+      PointerEvent* event = PointerEvent::Create(type, coalesced_event_init,
+                                                 coalesced_point_time_stamp);
       // Set the trusted flag for the coalesced events at the creation time
       // as oppose to the normal events which is done at the dispatch time. This
       // is because we don't want to go over all the coalesced events at every
@@ -358,12 +365,14 @@ PointerEvent* PointerEventFactory::Create(
     pointer_event_init.setCoalescedEvents(coalesced_pointer_events);
   }
 
-  return PointerEvent::Create(type, pointer_event_init);
+  return PointerEvent::Create(type, pointer_event_init,
+                              event_platform_time_stamp);
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
     const int pointer_id,
-    const WebPointerProperties::PointerType pointer_type) {
+    const WebPointerProperties::PointerType pointer_type,
+    TimeTicks platfrom_time_stamp) {
   DCHECK(pointer_id_mapping_.Contains(pointer_id));
   pointer_id_mapping_.Set(
       pointer_id,
@@ -378,8 +387,8 @@ PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
 
   SetEventSpecificFields(pointer_event_init, EventTypeNames::pointercancel);
 
-  return PointerEvent::Create(EventTypeNames::pointercancel,
-                              pointer_event_init);
+  return PointerEvent::Create(EventTypeNames::pointercancel, pointer_event_init,
+                              platfrom_time_stamp);
 }
 
 PointerEvent* PointerEventFactory::CreatePointerEventFrom(
@@ -411,7 +420,8 @@ PointerEvent* PointerEventFactory::CreatePointerEventFrom(
   if (related_target)
     pointer_event_init.setRelatedTarget(related_target);
 
-  return PointerEvent::Create(type, pointer_event_init);
+  return PointerEvent::Create(type, pointer_event_init,
+                              pointer_event->PlatformTimeStamp());
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCaptureEvent(

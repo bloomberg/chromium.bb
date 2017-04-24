@@ -210,7 +210,11 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
              SyntheticEventType,
              const String& region);
 
-  MouseEvent(const AtomicString& type, const MouseEventInit&);
+  MouseEvent(const AtomicString& type,
+             const MouseEventInit&,
+             TimeTicks platform_time_stamp);
+  MouseEvent(const AtomicString& type, const MouseEventInit& init)
+      : MouseEvent(type, init, TimeTicks::Now()) {}
 
   MouseEvent();
 

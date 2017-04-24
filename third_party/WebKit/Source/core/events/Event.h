@@ -258,7 +258,11 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
         bool can_bubble,
         bool cancelable,
         ComposedMode = ComposedMode::kScoped);
-  Event(const AtomicString& type, const EventInit&);
+  Event(const AtomicString& type,
+        const EventInit&,
+        TimeTicks platform_time_stamp);
+  Event(const AtomicString& type, const EventInit& init)
+      : Event(type, init, TimeTicks::Now()) {}
 
   virtual void ReceivedTarget();
 

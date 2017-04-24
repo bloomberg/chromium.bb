@@ -10,8 +10,9 @@
 namespace blink {
 
 PointerEvent::PointerEvent(const AtomicString& type,
-                           const PointerEventInit& initializer)
-    : MouseEvent(type, initializer),
+                           const PointerEventInit& initializer,
+                           TimeTicks platform_time_stamp)
+    : MouseEvent(type, initializer, platform_time_stamp),
       pointer_id_(0),
       width_(0),
       height_(0),

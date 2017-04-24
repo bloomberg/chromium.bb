@@ -132,7 +132,7 @@ class CORE_EXPORT PointerEventManager
   // unblockTouchPointers(). Also sends pointercancels for existing touch-type
   // PointerEvents.  See:
   // www.w3.org/TR/pointerevents/#declaring-candidate-regions-for-default-touch-behaviors
-  void BlockTouchPointers();
+  void BlockTouchPointers(TimeTicks platform_time_stamp);
 
   // Enables firing of touch-type PointerEvents after they were inhibited by
   // blockTouchPointers().

@@ -15,8 +15,13 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
  public:
   static PointerEvent* Create(const AtomicString& type,
+                              const PointerEventInit& initializer,
+                              TimeTicks platform_time_stamp) {
+    return new PointerEvent(type, initializer, platform_time_stamp);
+  }
+  static PointerEvent* Create(const AtomicString& type,
                               const PointerEventInit& initializer) {
-    return new PointerEvent(type, initializer);
+    return PointerEvent::Create(type, initializer, TimeTicks::Now());
   }
 
   int pointerId() const { return pointer_id_; }
@@ -41,7 +46,9 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  PointerEvent(const AtomicString&, const PointerEventInit&);
+  PointerEvent(const AtomicString&,
+               const PointerEventInit&,
+               TimeTicks platform_time_stamp);
 
   int pointer_id_;
   double width_;

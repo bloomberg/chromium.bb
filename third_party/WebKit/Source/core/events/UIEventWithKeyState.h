@@ -75,7 +75,11 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
                       TimeTicks platform_time_stamp,
                       InputDeviceCapabilities* source_capabilities = nullptr);
   UIEventWithKeyState(const AtomicString& type,
-                      const EventModifierInit& initializer);
+                      const EventModifierInit& initializer,
+                      TimeTicks platform_time_stamp);
+  UIEventWithKeyState(const AtomicString& type,
+                      const EventModifierInit& initializer)
+      : UIEventWithKeyState(type, initializer, TimeTicks::Now()) {}
   void InitModifiers(bool ctrl_key,
                      bool alt_key,
                      bool shift_key,

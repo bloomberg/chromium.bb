@@ -97,13 +97,15 @@ Event::Event(const AtomicString& event_type,
       current_target_(nullptr),
       platform_time_stamp_(platform_time_stamp) {}
 
-Event::Event(const AtomicString& event_type, const EventInit& initializer)
+Event::Event(const AtomicString& event_type,
+             const EventInit& initializer,
+             TimeTicks platform_time_stamp)
     : Event(event_type,
             initializer.bubbles(),
             initializer.cancelable(),
             initializer.composed() ? ComposedMode::kComposed
                                    : ComposedMode::kScoped,
-            TimeTicks::Now()) {}
+            platform_time_stamp) {}
 
 Event::~Event() {}
 

@@ -84,7 +84,11 @@ class CORE_EXPORT UIEvent : public Event {
           AbstractView*,
           int detail,
           InputDeviceCapabilities* source_capabilities);
-  UIEvent(const AtomicString&, const UIEventInit&);
+  UIEvent(const AtomicString&,
+          const UIEventInit&,
+          TimeTicks platform_time_stamp);
+  UIEvent(const AtomicString& type, const UIEventInit& init)
+      : UIEvent(type, init, TimeTicks::Now()) {}
 
  private:
   Member<AbstractView> view_;
