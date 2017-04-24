@@ -16,6 +16,7 @@ import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
@@ -57,8 +58,6 @@ public class ProfileDataCache implements Observer {
     private Profile mProfile;
 
     public ProfileDataCache(Context context, Profile profile) {
-        ProfileDownloader.addObserver(this);
-
         mContext = context;
         mProfile = profile;
 
@@ -72,15 +71,8 @@ public class ProfileDataCache implements Observer {
                 R.drawable.fre_placeholder);
         mPlaceholderImage = getCroppedBitmap(placeHolder);
 
-        update();
-    }
+        ProfileDownloader.addObserver(this);
 
-    /**
-     * Sets the profile to use for the fetcher and triggers the update.
-     * @param profile A profile to use.
-     */
-    public void setProfile(Profile profile) {
-        mProfile = profile;
         update();
     }
 
@@ -89,15 +81,17 @@ public class ProfileDataCache implements Observer {
      * Fetched data will be sent to observers of ProfileDownloader.
      */
     public void update() {
-        if (mProfile == null) return;
-
-        Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
-        for (int i = 0; i < accounts.length; i++) {
-            if (mCacheEntries.get(accounts[i].name) == null) {
-                ProfileDownloader.startFetchingAccountInfoFor(
-                        mContext, mProfile, accounts[i].name, mImageSizePx, true);
+        AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
+            @Override
+            public void onResult(Account[] result) {
+                for (Account account : result) {
+                    if (mCacheEntries.get(account.name) == null) {
+                        ProfileDownloader.startFetchingAccountInfoFor(
+                                mContext, mProfile, account.name, mImageSizePx, true);
+                    }
+                }
             }
-        }
+        });
     }
 
     /**
@@ -143,8 +137,9 @@ public class ProfileDataCache implements Observer {
             Bitmap bitmap) {
         bitmap = getCroppedBitmap(bitmap);
         mCacheEntries.put(accountId, new CacheEntry(bitmap, fullName, givenName));
-        if (mObserver != null) mObserver.onProfileDownloaded(accountId, fullName, givenName,
-                bitmap);
+        if (mObserver != null) {
+            mObserver.onProfileDownloaded(accountId, fullName, givenName, bitmap);
+        }
     }
 
     private Bitmap getCroppedBitmap(Bitmap bitmap) {

@@ -363,8 +363,8 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     @Override
     public ProfileDataCache getProfileDataCache() {
         if (mProfileDataCache == null) {
-            mProfileDataCache = new ProfileDataCache(FirstRunActivity.this, null);
-            mProfileDataCache.setProfile(Profile.getLastUsedProfile());
+            mProfileDataCache =
+                    new ProfileDataCache(FirstRunActivity.this, Profile.getLastUsedProfile());
         }
         return mProfileDataCache;
     }
