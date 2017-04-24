@@ -5,8 +5,8 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
-    <script src="audionodeoptions.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="new-audionodeoptions.js"></script>
   </head>
 
   <body>
@@ -15,132 +15,91 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("initialize", function (taskDone) {
-        Should("context = new OfflineAudioContext(...)", function () {
-          context = new OfflineAudioContext(1, 1, 48000);
-        }).notThrow();
-
-        taskDone();
+      audit.define('initialize', (task, should) => {
+        context = initializeContext(should);
+        task.done();
       });
 
-      audit.defineTask("invalid constructor", function (taskDone) {
-        var node;
-        var success = true;
-
-        success = Should("new ChannelSplitterNode()", function () {
-          node = new ChannelSplitterNode();
-        }).throw("TypeError");
-        success = Should("new ChannelSplitterNode(1)", function () {
-          node = new ChannelSplitterNode(1) && success;
-        }).throw("TypeError");
-        success = Should("new ChannelSplitterNode(context, 42)", function () {
-          node = new ChannelSplitterNode(context, 42) && success;
-        }).throw("TypeError");
-
-        Should("Invalid constructors", success)
-            .summarize(
-                "correctly threw errors",
-                "did not throw errors in all cases");
-
-        taskDone();
+      audit.define('invalid constructor', (task, should) => {
+        testInvalidConstructor(should, 'ChannelSplitterNode', context);
+        task.done();
       });
 
-      audit.defineTask("default constructor", function (taskDone) {
-        var node;
-        var success = true;
+      audit.define('default constructor', (task, should) => {
+        testDefaultConstructor(should, 'ChannelSplitterNode', context, {
+          prefix: 'node0',
+          numberOfInputs: 1,
+          numberOfOutputs: 6,
+          channelCount: 6,
+          channelCountMode: 'explicit',
+          channelInterpretation: 'speakers'
+        });
 
-        success = Should("node0 = new ChannelSplitterNode(context)", function () {
-          node = new ChannelSplitterNode(context);
-        }).notThrow();
-        success = Should("node0 instanceof ChannelSplitterNode", node instanceof ChannelSplitterNode)
-          .beEqualTo(true) && success;
-
-        success = Should("node0.numberOfInputs", node.numberOfInputs)
-          .beEqualTo(1) && success;
-        success = Should("node0.numberOfOutputs", node.numberOfOutputs)
-          .beEqualTo(6) && success;
-        success = Should("node0.channelCount", node.channelCount)
-          .beEqualTo(node.numberOfOutputs) && success;
-        success = Should("node0.channelCountMode", node.channelCountMode)
-          .beEqualTo("explicit") && success;
-        success = Should("node0.channelInterpretation", node.channelInterpretation)
-          .beEqualTo("speakers") && success;
-
-        Should("new ChannelSplitterNode(context)", success)
-            .summarize(
-                "constructed node with correct attributes",
-                "did not construct correct node correctly")
-
-        taskDone();
+        task.done();
       });
 
-      audit.defineTask("test AudioNodeOptions", function (taskDone) {
-        testAudioNodeOptions(context, "ChannelSplitterNode", {
-          expectedChannelCount: {
-            value: 6,
+      audit.define('test AudioNodeOptions', (task, should) => {
+        testAudioNodeOptions(should, context, 'ChannelSplitterNode', {
+          channelCount:
+              {value: 6, isFixed: true, errorType: 'InvalidStateError'},
+          channelCountMode: {
+            value: 'explicit',
             isFixed: true,
-            errorType: "InvalidStateError"
-          },
-          expectedChannelCountMode: {
-            value: "explicit",
-            isFixed: true
           }
         });
-        taskDone();
+        task.done();
       });
 
-      audit.defineTask("constructor options", function (taskDone) {
+      audit.define('constructor options', (task, should) => {
         var node;
-        var success = true;
         var options = {
           numberOfInputs: 3,
           numberOfOutputs: 9,
-          channelInterpretation: "discrete"
+          channelInterpretation: 'discrete'
         };
 
-        success = Should("node1 = new ChannelSplitterNode(context, " + JSON.stringify(options) + ")", function () {
-          node = new ChannelSplitterNode(context, options);
-        }).notThrow();
-
-        success = Should("node1.numberOfInputs", node.numberOfInputs)
-          .beEqualTo(1) && success;
-        success = Should("node1.numberOfOutputs", node.numberOfOutputs)
-          .beEqualTo(options.numberOfOutputs) && success;
-        success = Should("node1.channelInterpretation", node.channelInterpretation)
-          .beEqualTo(options.channelInterpretation) && success;
-
-        options = { numberOfOutputs: 99 };
-        success = Should("new ChannelSplitterNode(c, " + JSON.stringify(options) + ")",
-            function () {
+        should(
+            () => {
               node = new ChannelSplitterNode(context, options);
-            })
-          .throw("IndexSizeError") && success;
+            },
+            'node1 = new ChannelSplitterNode(context, ' +
+                JSON.stringify(options) + ')')
+            .notThrow();
 
-        options = { channelCount: 3 };
-        success = Should("new ChannelSplitterNode(c, " + JSON.stringify(options) + ")",
-            function () {
+        should(node.numberOfInputs, 'node1.numberOfInputs').beEqualTo(1);
+        should(node.numberOfOutputs, 'node1.numberOfOutputs')
+            .beEqualTo(options.numberOfOutputs);
+        should(node.channelInterpretation, 'node1.channelInterpretation')
+            .beEqualTo(options.channelInterpretation);
+
+        options = {numberOfOutputs: 99};
+        should(
+            () => {
               node = new ChannelSplitterNode(context, options);
-            })
-          .throw("InvalidStateError") && success;
+            },
+            'new ChannelSplitterNode(c, ' + JSON.stringify(options) + ')')
+            .throw('IndexSizeError');
 
-        options = { channelCountMode:  "max"};
-        success = Should("new ChannelSplitterNode(c, " + JSON.stringify(options) + ")",
-            function () {
-              node = new ChannelSplitterNode(context, {
-                channelCountMode: "max"
-              });
-            })
-          .throw("InvalidStateError") && success;
+        options = {channelCount: 3};
+        should(
+            () => {
+              node = new ChannelSplitterNode(context, options);
+            },
+            'new ChannelSplitterNode(c, ' + JSON.stringify(options) + ')')
+            .throw('InvalidStateError');
 
-        Should("new ChannelSplitterNode() with options", success)
-            .summarize(
-                "constructed with correct attributes",
-                "was not constructed correctly");
+        options = {channelCountMode: 'max'};
+        should(
+            () => {
+              node = new ChannelSplitterNode(context, options);
+            },
+            'new ChannelSplitterNode(c, ' + JSON.stringify(options) + ')')
+            .throw('InvalidStateError');
 
-        taskDone();
+        task.done();
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
