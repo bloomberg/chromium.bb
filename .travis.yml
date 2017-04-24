@@ -55,8 +55,8 @@ after_success:
     fi
 
 # tell the irc channel about the results of the build
-# notifications:
-#    irc: "irc.oftc.net#liblouis"
+notifications:
+   irc: "irc.oftc.net#liblouis"
 
 # do not build on the following branches
 branches:
