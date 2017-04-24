@@ -4,8 +4,7 @@
 
 package org.chromium.base.test;
 
-import android.app.Application;
-import android.content.Context;
+import android.os.Bundle;
 import android.support.test.runner.AndroidJUnitRunner;
 
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
@@ -19,11 +18,8 @@ import org.chromium.base.multidex.ChromiumMultiDexInstaller;
  */
 public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     @Override
-    public Application newApplication(ClassLoader cl, String className, Context context)
-            throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        ChromiumMultiDexInstaller.install(new BaseChromiumRunnerCommon.MultiDexContextWrapper(
-                getContext(), getTargetContext()));
-        BaseChromiumRunnerCommon.reorderDexPathElements(cl, getContext(), getTargetContext());
-        return super.newApplication(cl, className, context);
+    public void onCreate(Bundle arguments) {
+        ChromiumMultiDexInstaller.install(getTargetContext());
+        super.onCreate(arguments);
     }
 }
