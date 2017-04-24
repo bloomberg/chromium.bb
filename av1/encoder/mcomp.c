@@ -53,9 +53,10 @@ void av1_set_mv_search_range(MvLimits *mv_limits, const MV *mv) {
   if (mv_limits->row_max > row_max) mv_limits->row_max = row_max;
 }
 
-void av1_set_subpel_mv_search_range(const MvLimits *mv_limits, int *col_min,
-                                    int *col_max, int *row_min, int *row_max,
-                                    const MV *ref_mv) {
+static void av1_set_subpel_mv_search_range(const MvLimits *mv_limits,
+                                           int *col_min, int *col_max,
+                                           int *row_min, int *row_max,
+                                           const MV *ref_mv) {
   const int max_mv = MAX_FULL_PEL_VAL * 8;
   const int minc = AOMMAX(mv_limits->col_min * 8, ref_mv->col - max_mv);
   const int maxc = AOMMIN(mv_limits->col_max * 8, ref_mv->col + max_mv);
