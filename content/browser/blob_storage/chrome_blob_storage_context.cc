@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/blob_handle.h"
@@ -100,9 +100,12 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     // If we're not incognito mode, schedule all of our file tasks to enable
     // disk on the storage context.
     if (!context->IsOffTheRecord() && io_thread_valid) {
-      file_task_runner =
-          BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+      file_task_runner = base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
       // Removes our old blob directories if they exist.
       BrowserThread::PostAfterStartupTask(
           FROM_HERE, file_task_runner,
