@@ -5,7 +5,8 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="new-audionodeoptions.js"></script>
   </head>
 
   <body>
@@ -14,62 +15,35 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("initialize", function (taskDone) {
-        Should("context = new OfflineAudioContext(...)", function () {
-          context = new OfflineAudioContext(1, 1, 48000);
-        }).notThrow();
-        taskDone();
+      audit.define('initialize', (task, should) => {
+        context = initializeContext(should);
+        task.done();
       });
 
-      audit.defineTask("invalid constructor", function (taskDone) {
-        var node;
-        var success = true;
-
-        succes = Should("new ConstantSourceNode()", function () {
-          node = new ConstantSourceNode();
-        }).throw("TypeError");
-        success = Should("new ConstantSourceNode(1)", function () {
-          node = new ConstantSourceNode(1);
-        }).throw("TypeError") && success;
-        success = Should("new ConstantSourceNode(context, 42)", function () {
-          node = new ConstantSourceNode(context, 42);
-        }).throw("TypeError") && success;
-
-        Should("*** Invalid constructors", success)
-          .summarize(
-            "correctly threw errors",
-            "did not throw errors in all cases");
-        taskDone();
+      audit.define('invalid constructor', (task, should) => {
+        testInvalidConstructor(should, 'ConstantSourceNode', context);
+        task.done();
       });
 
-      audit.defineTask("default constructor", function (taskDone) {
-        var node;
-        var success = true;
+      audit.define('default constructor', (task, should) => {
+        let prefix = 'node0';
+        let node =
+            testDefaultConstructor(should, 'ConstantSourceNode', context, {
+              prefix: prefix,
+              numberOfInputs: 0,
+              numberOfOutputs: 1,
+              channelCount: 2,
+              channelCountMode: 'max',
+              channelInterpretation: 'speakers'
+            });
 
-        success = Should("node = new ConstantSourceNode(context)", function () {
-          node = new ConstantSourceNode(context);
-        }).notThrow();
-        success = Should("node instanceOf ConstantSourceNode", node instanceof ConstantSourceNode)
-          .beEqualTo(true) && success;
-        success = Should("node.offset.value", node.offset.value)
-          .beEqualTo(1) && success;
+        testDefaultAttributes(
+            should, node, prefix, [{name: 'offset', value: 1}]);
 
-        success = Should("node.channelCount", node.channelCount)
-          .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
-          .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
-          .beEqualTo("speakers") && success;
-
-        success = Should("*** new AnalyserNode(context)", success)
-            .summarize(
-                "constructed node with correct attributes",
-                "did not construct correct node correctly")
-
-        taskDone();
+        task.done();
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
