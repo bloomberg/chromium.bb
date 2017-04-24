@@ -27,13 +27,11 @@ class RoundedImageView;
 class UserView;
 }
 
+// TrayUser shows user info for signed in users. There is only one instance for
+// all users --- non-active users are displayed in the dropdown in UserCard.
 class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionObserver {
  public:
-  // The given |index| is the user index in a multi profile scenario. Index #0
-  // is the active user, the other indices are other logged in users (if there
-  // are any). Depending on the multi user mode, there will be either one (index
-  // #0) or all users be visible in the system tray.
-  TrayUser(SystemTray* system_tray, UserIndex index);
+  explicit TrayUser(SystemTray* system_tray);
   ~TrayUser() override;
 
   // Allows unit tests to see if the item was created.
@@ -80,9 +78,6 @@ class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionObserver {
   void UpdateLayoutOfItem();
 
   ScopedSessionObserver scoped_session_observer_;
-
-  // The user index to use.
-  const UserIndex user_index_;
 
   tray::UserView* user_ = nullptr;
 

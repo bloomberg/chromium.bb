@@ -54,6 +54,8 @@ void Separator::OnPaint(gfx::Canvas* canvas) {
   float dsf = canvas->UndoDeviceScaleFactor();
   gfx::RectF contents = gfx::ScaleRect(gfx::RectF(GetContentsBounds()), dsf);
   canvas->FillRect(gfx::ToEnclosedRect(contents), color);
+
+  View::OnPaint(canvas);
 }
 
 const char* Separator::GetClassName() const {

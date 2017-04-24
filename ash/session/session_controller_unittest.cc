@@ -124,8 +124,6 @@ TEST_F(SessionControllerTest, SimpleSessionInfo) {
   SetSessionInfo(info);
   UpdateSession(1u, "user1@test.com");
 
-  EXPECT_EQ(session_manager::kMaxmiumNumberOfUserSessions,
-            controller()->GetMaximumNumberOfLoggedInUsers());
   EXPECT_TRUE(controller()->CanLockScreen());
   EXPECT_TRUE(controller()->ShouldLockScreenAutomatically());
 

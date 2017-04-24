@@ -61,21 +61,21 @@ class TrayUserTest : public test::AshTestBase {
   void ShowTrayMenu(ui::test::EventGenerator* generator);
 
   // Move the mouse over the user item.
-  void MoveOverUserItem(ui::test::EventGenerator* generator, int index);
+  void MoveOverUserItem(ui::test::EventGenerator* generator);
 
   // Click on the user item. Note that the tray menu needs to be shown.
-  void ClickUserItem(ui::test::EventGenerator* generator, int index);
+  void ClickUserItem(ui::test::EventGenerator* generator);
 
   // Accessors to various system components.
   SystemTray* tray() { return tray_; }
   SessionController* controller() { return Shell::Get()->session_controller(); }
-  TrayUser* tray_user(int index) { return tray_user_[index]; }
+  TrayUser* tray_user() { return tray_user_; }
 
  private:
   SystemTray* tray_ = nullptr;
 
   // Note that the ownership of these items is on the shelf.
-  std::vector<TrayUser*> tray_user_;
+  TrayUser* tray_user_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUserTest);
 };
@@ -103,10 +103,8 @@ void TrayUserTest::InitializeParameters(int users_logged_in,
 
   // Instead of using the existing tray panels we create new ones which makes
   // the access easier.
-  for (int i = 0; i < controller()->GetMaximumNumberOfLoggedInUsers(); i++) {
-    tray_user_.push_back(new TrayUser(tray_, i));
-    tray_->AddTrayItem(base::WrapUnique(tray_user_[i]));
-  }
+  tray_user_ = new TrayUser(tray_);
+  tray_->AddTrayItem(base::WrapUnique(tray_user_));
 }
 
 void TrayUserTest::ShowTrayMenu(ui::test::EventGenerator* generator) {
@@ -117,17 +115,15 @@ void TrayUserTest::ShowTrayMenu(ui::test::EventGenerator* generator) {
   generator->ClickLeftButton();
 }
 
-void TrayUserTest::MoveOverUserItem(ui::test::EventGenerator* generator,
-                                    int index) {
+void TrayUserTest::MoveOverUserItem(ui::test::EventGenerator* generator) {
   gfx::Point center =
-      tray_user(index)->GetUserPanelBoundsInScreenForTest().CenterPoint();
+      tray_user()->GetUserPanelBoundsInScreenForTest().CenterPoint();
 
   generator->MoveMouseTo(center.x(), center.y());
 }
 
-void TrayUserTest::ClickUserItem(ui::test::EventGenerator* generator,
-                                 int index) {
-  MoveOverUserItem(generator, index);
+void TrayUserTest::ClickUserItem(ui::test::EventGenerator* generator) {
+  MoveOverUserItem(generator);
   generator->ClickLeftButton();
 }
 
@@ -136,11 +132,11 @@ void TrayUserTest::ClickUserItem(ui::test::EventGenerator* generator,
 // Make sure that we show items for all users in the tray accordingly.
 TEST_F(TrayUserTest, CheckTrayItemSize) {
   InitializeParameters(1, false);
-  tray_user(0)->UpdateAfterLoginStatusChangeForTest(LoginStatus::GUEST);
-  gfx::Size size = tray_user(0)->GetLayoutSizeForTest();
+  tray_user()->UpdateAfterLoginStatusChangeForTest(LoginStatus::GUEST);
+  gfx::Size size = tray_user()->GetLayoutSizeForTest();
   EXPECT_EQ(kTrayItemSize, size.height());
-  tray_user(0)->UpdateAfterLoginStatusChangeForTest(LoginStatus::USER);
-  size = tray_user(0)->GetLayoutSizeForTest();
+  tray_user()->UpdateAfterLoginStatusChangeForTest(LoginStatus::USER);
+  size = tray_user()->GetLayoutSizeForTest();
   EXPECT_EQ(kTrayItemSize, size.height());
 }
 
@@ -153,17 +149,14 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
 
   EXPECT_FALSE(tray()->IsSystemBubbleVisible());
 
-  for (int i = 0; i < controller()->GetMaximumNumberOfLoggedInUsers(); i++)
-    EXPECT_EQ(TrayUser::HIDDEN, tray_user(i)->GetStateForTest());
+  EXPECT_EQ(TrayUser::HIDDEN, tray_user()->GetStateForTest());
 
   ShowTrayMenu(&generator);
 
   EXPECT_TRUE(tray()->HasSystemBubble());
   EXPECT_TRUE(tray()->IsSystemBubbleVisible());
 
-  for (int i = 0; i < controller()->GetMaximumNumberOfLoggedInUsers(); i++)
-    EXPECT_EQ(i == 0 ? TrayUser::SHOWN : TrayUser::HIDDEN,
-              tray_user(i)->GetStateForTest());
+  EXPECT_EQ(TrayUser::SHOWN, tray_user()->GetStateForTest());
   tray()->CloseSystemBubble();
 }
 
@@ -173,7 +166,7 @@ TEST_F(TrayUserTest, AccessibleLabelContainsSingleUserInfo) {
   ShowTrayMenu(&generator);
 
   views::View* view =
-      tray_user(0)->user_view_for_test()->user_card_view_for_test();
+      tray_user()->user_view_for_test()->user_card_view_for_test();
   ui::AXNodeData node_data;
   view->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(
@@ -188,7 +181,7 @@ TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
   ShowTrayMenu(&generator);
 
   views::View* view =
-      tray_user(0)->user_view_for_test()->user_card_view_for_test();
+      tray_user()->user_view_for_test()->user_card_view_for_test();
   ui::AXNodeData node_data;
   view->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(
@@ -208,52 +201,38 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_async(false);
 
-  int max_users = controller()->GetMaximumNumberOfLoggedInUsers();
-  // Checking now for each amount of users that the correct is done.
-  for (int j = 1; j < max_users; j++) {
-    // Set the number of logged in users.
-    GetSessionControllerClient()->CreatePredefinedUserSessions(j);
+  // Set the number of logged in users.
+  GetSessionControllerClient()->CreatePredefinedUserSessions(5);
 
-    // Verify that nothing is shown.
-    EXPECT_FALSE(tray()->IsSystemBubbleVisible());
-    for (int i = 0; i < max_users; i++)
-      EXPECT_FALSE(tray_user(i)->GetStateForTest());
-    // After clicking on the tray the menu should get shown and for each logged
-    // in user we should get a visible item.
-    ShowTrayMenu(&generator);
+  // Verify that nothing is shown.
+  EXPECT_FALSE(tray()->IsSystemBubbleVisible());
+  EXPECT_FALSE(tray_user()->GetStateForTest());
+  // After clicking on the tray the menu should get shown and for each logged
+  // in user we should get a visible item.
+  ShowTrayMenu(&generator);
 
-    EXPECT_TRUE(tray()->HasSystemBubble());
-    EXPECT_TRUE(tray()->IsSystemBubbleVisible());
-    for (int i = 0; i < max_users; i++) {
-      EXPECT_EQ(i < j ? TrayUser::SHOWN : TrayUser::HIDDEN,
-                tray_user(i)->GetStateForTest());
-    }
+  EXPECT_TRUE(tray()->HasSystemBubble());
+  EXPECT_TRUE(tray()->IsSystemBubbleVisible());
+  EXPECT_EQ(TrayUser::SHOWN, tray_user()->GetStateForTest());
 
-    // Move the mouse over the user item and it should hover.
-    MoveOverUserItem(&generator, 0);
-    EXPECT_EQ(TrayUser::HOVERED, tray_user(0)->GetStateForTest());
-    for (int i = 1; i < max_users; i++) {
-      EXPECT_EQ(i < j ? TrayUser::SHOWN : TrayUser::HIDDEN,
-                tray_user(i)->GetStateForTest());
-    }
+  // Move the mouse over the user item and it should hover.
+  MoveOverUserItem(&generator);
+  EXPECT_EQ(TrayUser::HOVERED, tray_user()->GetStateForTest());
 
-    // Check that clicking the button allows to add item if we have still room
-    // for one more user.
-    ClickUserItem(&generator, 0);
-    EXPECT_EQ(j == max_users ? TrayUser::ACTIVE_BUT_DISABLED : TrayUser::ACTIVE,
-              tray_user(0)->GetStateForTest());
+  // Check that clicking the button allows to add item if we have still room
+  // for one more user.
+  ClickUserItem(&generator);
+  EXPECT_EQ(TrayUser::ACTIVE, tray_user()->GetStateForTest());
 
-    // Click the button again to see that the menu goes away.
-    ClickUserItem(&generator, 0);
-    MoveOverUserItem(&generator, 0);
-    EXPECT_EQ(TrayUser::HOVERED, tray_user(0)->GetStateForTest());
+  // Click the button again to see that the menu goes away.
+  ClickUserItem(&generator);
+  MoveOverUserItem(&generator);
+  EXPECT_EQ(TrayUser::HOVERED, tray_user()->GetStateForTest());
 
-    // Close and check that everything is deleted.
-    tray()->CloseSystemBubble();
-    EXPECT_FALSE(tray()->IsSystemBubbleVisible());
-    for (int i = 0; i < controller()->GetMaximumNumberOfLoggedInUsers(); i++)
-      EXPECT_EQ(TrayUser::HIDDEN, tray_user(i)->GetStateForTest());
-  }
+  // Close and check that everything is deleted.
+  tray()->CloseSystemBubble();
+  EXPECT_FALSE(tray()->IsSystemBubbleVisible());
+  EXPECT_EQ(TrayUser::HIDDEN, tray_user()->GetStateForTest());
 }
 
 // Make sure that user changing gets properly executed.
@@ -267,7 +246,12 @@ TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
   const mojom::UserSession* second_user = controller()->GetUserSession(1);
 
   // Switch to a new user "Second@tray" - which has a capitalized name.
-  ClickUserItem(&generator, 1);
+  ClickUserItem(&generator);
+  gfx::Rect user_card_bounds = tray_user()->GetUserPanelBoundsInScreenForTest();
+  gfx::Point second_user_point = user_card_bounds.CenterPoint() +
+                                 gfx::Vector2d(0, user_card_bounds.height());
+  generator.MoveMouseTo(second_user_point);
+  generator.ClickLeftButton();
 
   // SwitchActiverUser is an async mojo call. Spin the loop to let it finish.
   RunAllPendingInMessageLoop();
@@ -285,7 +269,7 @@ TEST_F(TrayUserTest, AvatarChange) {
   InitializeParameters(1, false);
 
   // Expect empty avatar initially (that is how the test sets up).
-  EXPECT_TRUE(tray_user(0)->avatar_view_for_test()->image_for_test().isNull());
+  EXPECT_TRUE(tray_user()->avatar_view_for_test()->image_for_test().isNull());
 
   // Change user avatar via SessionController and verify.
   const gfx::ImageSkia red_icon =
@@ -295,7 +279,7 @@ TEST_F(TrayUserTest, AvatarChange) {
   controller()->UpdateUserSession(std::move(user));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(red_icon),
-      gfx::Image(tray_user(0)->avatar_view_for_test()->image_for_test())));
+      gfx::Image(tray_user()->avatar_view_for_test()->image_for_test())));
 }
 
 }  // namespace ash

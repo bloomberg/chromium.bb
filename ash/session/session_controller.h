@@ -37,9 +37,6 @@ class ASH_EXPORT SessionController
   // Binds the mojom::SessionControllerRequest to this object.
   void BindRequest(mojom::SessionControllerRequest request);
 
-  // Returns the maximum possible number of logged in users.
-  int GetMaximumNumberOfLoggedInUsers() const;
-
   // Returns the number of signed in users. If 0 is returned, there is either
   // no session in progress or no active user.
   int NumberOfLoggedInUsers() const;

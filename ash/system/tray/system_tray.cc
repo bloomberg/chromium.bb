@@ -241,11 +241,7 @@ void SystemTray::Shutdown() {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
-  // Create user items for each possible user.
-  const int maximum_user_profiles =
-      Shell::Get()->session_controller()->GetMaximumNumberOfLoggedInUsers();
-  for (int i = 0; i < maximum_user_profiles; i++)
-    AddTrayItem(base::MakeUnique<TrayUser>(this, i));
+  AddTrayItem(base::MakeUnique<TrayUser>(this));
 
   // Crucially, this trailing padding has to be inside the user item(s).
   // Otherwise it could be a main axis margin on the tray's box layout.

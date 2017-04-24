@@ -55,10 +55,6 @@ void SessionController::BindRequest(mojom::SessionControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-int SessionController::GetMaximumNumberOfLoggedInUsers() const {
-  return session_manager::kMaxmiumNumberOfUserSessions;
-}
-
 int SessionController::NumberOfLoggedInUsers() const {
   return static_cast<int>(user_sessions_.size());
 }

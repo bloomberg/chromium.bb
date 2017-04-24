@@ -35,10 +35,8 @@ const int kUserLabelToIconPadding = 5;
 
 namespace ash {
 
-TrayUser::TrayUser(SystemTray* system_tray, UserIndex index)
-    : SystemTrayItem(system_tray, UMA_USER),
-      scoped_session_observer_(this),
-      user_index_(index) {}
+TrayUser::TrayUser(SystemTray* system_tray)
+    : SystemTrayItem(system_tray, UMA_USER), scoped_session_observer_(this) {}
 
 TrayUser::~TrayUser() {}
 
@@ -53,7 +51,6 @@ gfx::Size TrayUser::GetLayoutSizeForTest() const {
 }
 
 gfx::Rect TrayUser::GetUserPanelBoundsInScreenForTest() const {
-  DCHECK(user_);
   return user_->GetBoundsInScreenOfUserButtonForTest();
 }
 
@@ -62,8 +59,7 @@ void TrayUser::UpdateAfterLoginStatusChangeForTest(LoginStatus status) {
 }
 
 views::View* TrayUser::CreateTrayView(LoginStatus status) {
-  CHECK(layout_view_ == nullptr);
-
+  DCHECK(!layout_view_);
   layout_view_ = new views::View;
   UpdateAfterLoginStatusChange(status);
   return layout_view_;
@@ -72,24 +68,9 @@ views::View* TrayUser::CreateTrayView(LoginStatus status) {
 views::View* TrayUser::CreateDefaultView(LoginStatus status) {
   if (status == LoginStatus::NOT_LOGGED_IN)
     return nullptr;
-  const SessionController* const session_controller =
-      Shell::Get()->session_controller();
 
-  // If the screen is locked or a system modal dialog box is shown, show only
-  // the currently active user.
-  if (user_index_ && (session_controller->IsUserSessionBlocked() ||
-                      ShellPort::Get()->IsSystemModalWindowOpen()))
-    return nullptr;
-
-  CHECK(user_ == nullptr);
-
-  int logged_in_users = session_controller->NumberOfLoggedInUsers();
-
-  // Do not show more UserView's then there are logged in users.
-  if (user_index_ >= logged_in_users)
-    return nullptr;
-
-  user_ = new tray::UserView(this, status, user_index_);
+  DCHECK(!user_);
+  user_ = new tray::UserView(this, status);
   return user_;
 }
 
@@ -104,11 +85,6 @@ void TrayUser::DestroyDefaultView() {
 }
 
 void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
-  // Only the active user is represented in the tray.
-  if (!layout_view_)
-    return;
-  if (user_index_ > 0)
-    return;
   bool need_label = false;
   bool need_avatar = false;
   SessionController* session = Shell::Get()->session_controller();
@@ -170,9 +146,6 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
 }
 
 void TrayUser::UpdateAfterShelfAlignmentChange() {
-  // Inactive users won't have a layout.
-  if (!layout_view_)
-    return;
   if (system_tray()->shelf()->IsHorizontalAlignment()) {
     if (avatar_) {
       avatar_->SetCornerRadii(0, kTrayRoundedBorderRadius,
@@ -214,12 +187,6 @@ void TrayUser::OnActiveUserSessionChanged(const AccountId& account_id) {
 }
 
 void TrayUser::OnUserSessionAdded(const AccountId& account_id) {
-  const SessionController* const session_controller =
-      Shell::Get()->session_controller();
-  // Only create views for user items which are logged in.
-  if (user_index_ >= session_controller->NumberOfLoggedInUsers())
-    return;
-
   // Enforce a layout change that newly added items become visible.
   UpdateLayoutOfItem();
 
@@ -232,14 +199,13 @@ void TrayUser::OnUserSessionUpdated(const AccountId& account_id) {
 }
 
 void TrayUser::UpdateAvatarImage(LoginStatus status) {
-  const SessionController* const session_controller =
+  const SessionController* session_controller =
       Shell::Get()->session_controller();
-  if (!avatar_ || user_index_ >= session_controller->NumberOfLoggedInUsers())
+  if (!avatar_ || session_controller->NumberOfLoggedInUsers() == 0)
     return;
 
   const mojom::UserSession* const user_session =
-      session_controller->GetUserSession(user_index_);
-  CHECK(user_session);
+      session_controller->GetUserSession(0);
   avatar_->SetImage(user_session->avatar,
                     gfx::Size(kTrayItemSize, kTrayItemSize));
 
