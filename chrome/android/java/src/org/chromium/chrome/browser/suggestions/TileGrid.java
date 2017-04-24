@@ -55,13 +55,13 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof ViewHolder;
-        ((ViewHolder) holder).onBindViewHolder(mTileGroup);
+        ((ViewHolder) holder).updateTiles(mTileGroup);
     }
 
     @Override
     public void onTileDataChanged() {
         setVisible(mTileGroup.getTiles().length != 0);
-        if (isVisible()) notifyItemChanged(0);
+        if (isVisible()) notifyItemChanged(0, new ViewHolder.UpdateTilesCallback(mTileGroup));
     }
 
     @Override
@@ -115,7 +115,7 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
             mLayout.setMaxColumns(MAX_TILE_COLUMNS);
         }
 
-        public void onBindViewHolder(TileGroup tileGroup) {
+        public void updateTiles(TileGroup tileGroup) {
             tileGroup.renderTileViews(mLayout, /* trackLoadTasks = */ false,
                     /* condensed = */ false);
         }
@@ -126,6 +126,23 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
 
         public void updateOfflineBadge(Tile tile) {
             mLayout.updateOfflineBadge(tile);
+        }
+
+        /**
+         * Callback to update all the tiles in the view holder.
+         */
+        public static class UpdateTilesCallback extends PartialBindCallback {
+            private final TileGroup mTileGroup;
+
+            public UpdateTilesCallback(TileGroup tileGroup) {
+                mTileGroup = tileGroup;
+            }
+
+            @Override
+            public void onResult(NewTabPageViewHolder holder) {
+                assert holder instanceof ViewHolder;
+                ((ViewHolder) holder).updateTiles(mTileGroup);
+            }
         }
 
         /**
