@@ -114,8 +114,12 @@ Polymer({
   lastSelectedImageType_: '',
 
   /** @override */
-  attached: function() {
+  ready: function() {
     this.browserProxy_ = settings.ChangePictureBrowserProxyImpl.getInstance();
+  },
+
+  /** @override */
+  attached: function() {
     this.addWebUIListener('default-images-changed',
                           this.receiveDefaultImages_.bind(this));
     this.addWebUIListener('selected-image-changed',
