@@ -50,12 +50,11 @@ struct ChromeTaskVMInfo {
   mach_vm_size_t compressed_lifetime;
   mach_vm_size_t phys_footprint;
 };
-mach_msg_type_number_t ChromeTaskVMInfoCount =
-    sizeof(ChromeTaskVMInfo) / sizeof(natural_t);
 #else
 using ChromeTaskVMInfo = task_vm_info;
-mach_msg_type_number_t ChromeTaskVMInfoCount = TASK_VM_INFO_REV1_COUNT;
 #endif  // MAC_OS_X_VERSION_10_11
+mach_msg_type_number_t ChromeTaskVMInfoCount =
+    sizeof(ChromeTaskVMInfo) / sizeof(natural_t);
 
 bool GetTaskInfo(mach_port_t task, task_basic_info_64* task_info_data) {
   if (task == MACH_PORT_NULL)
