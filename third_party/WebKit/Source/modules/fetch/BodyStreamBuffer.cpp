@@ -5,6 +5,7 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 
 #include <memory>
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ThrowException.h"

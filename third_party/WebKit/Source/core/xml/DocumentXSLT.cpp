@@ -7,7 +7,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/Node.h"

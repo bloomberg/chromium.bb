@@ -32,7 +32,7 @@
 
 #include <memory>
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "v8/include/v8.h"
 
 namespace blink {

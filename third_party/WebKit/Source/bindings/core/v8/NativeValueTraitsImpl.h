@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/text/WTFString.h"
 

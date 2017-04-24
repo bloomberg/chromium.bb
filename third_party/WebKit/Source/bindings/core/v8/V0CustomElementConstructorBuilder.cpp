@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/StringOrDictionary.h"
 #include "bindings/core/v8/V0CustomElementBinding.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8HTMLElement.h"
 #include "bindings/core/v8/V8PerContextData.h"

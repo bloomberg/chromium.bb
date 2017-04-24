@@ -7,7 +7,7 @@
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/StringOrDictionary.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"

@@ -33,7 +33,7 @@
 #include "bindings/core/v8/ScriptController.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/WindowProxy.h"

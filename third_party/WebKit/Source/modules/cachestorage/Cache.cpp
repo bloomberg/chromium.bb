@@ -12,7 +12,7 @@
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/DOMException.h"

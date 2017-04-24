@@ -35,7 +35,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"

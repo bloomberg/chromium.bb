@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Maplike.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 

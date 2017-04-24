@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 
 namespace blink {
 

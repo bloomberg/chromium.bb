@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <memory>
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
 #include "core/frame/ContentSettingsClient.h"

@@ -37,7 +37,7 @@
 #include "bindings/core/v8/RetainedDOMInfo.h"
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"

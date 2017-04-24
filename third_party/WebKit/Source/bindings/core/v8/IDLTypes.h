@@ -8,7 +8,7 @@
 #include <type_traits>
 #include "bindings/core/v8/IDLTypesBase.h"
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/TypeTraits.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/frame/UseCounter.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"

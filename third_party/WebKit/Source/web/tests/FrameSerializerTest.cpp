@@ -31,7 +31,7 @@
 #include "core/frame/FrameSerializer.h"
 
 #include <string>
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "platform/SerializedResource.h"
 #include "platform/testing/URLTestHelpers.h"

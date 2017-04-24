@@ -38,7 +38,7 @@
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
 #include "core/clipboard/DataTransfer.h"

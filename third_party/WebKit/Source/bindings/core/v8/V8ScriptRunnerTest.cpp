@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/V8ScriptRunner.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/heap/Handle.h"

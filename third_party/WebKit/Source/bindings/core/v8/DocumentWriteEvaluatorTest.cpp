@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/DocumentWriteEvaluator.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

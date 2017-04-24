@@ -28,7 +28,7 @@
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptStreamer.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"

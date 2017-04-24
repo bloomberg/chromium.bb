@@ -31,7 +31,7 @@
 #include "public/web/WebDOMActivityLogger.h"
 
 #include <memory>
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"

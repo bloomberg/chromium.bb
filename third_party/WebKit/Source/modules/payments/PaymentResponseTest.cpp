@@ -4,18 +4,18 @@
 
 #include "modules/payments/PaymentResponse.h"
 
+#include <memory>
+#include <utility>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentCompleter.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
-#include <utility>
 
 namespace blink {
 namespace {

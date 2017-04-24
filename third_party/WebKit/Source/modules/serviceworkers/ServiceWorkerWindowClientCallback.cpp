@@ -5,6 +5,7 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"

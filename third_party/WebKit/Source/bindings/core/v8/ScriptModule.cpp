@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/ScriptModule.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Modulator.h"
 #include "core/dom/ScriptModuleResolver.h"
 

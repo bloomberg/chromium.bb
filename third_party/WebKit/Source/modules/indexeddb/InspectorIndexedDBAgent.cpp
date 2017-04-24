@@ -33,7 +33,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"

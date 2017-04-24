@@ -33,7 +33,7 @@
 #include <memory>
 
 #include "bindings/core/v8/Microtask.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/animation/AnimationClock.h"

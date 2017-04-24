@@ -5,7 +5,7 @@
 #include "core/dom/StyleEngine.h"
 
 #include <memory>
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"

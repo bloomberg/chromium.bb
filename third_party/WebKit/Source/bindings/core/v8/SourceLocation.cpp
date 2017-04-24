@@ -5,7 +5,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 
 #include <memory>
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/Document.h"

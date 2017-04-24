@@ -27,7 +27,7 @@
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ClassicScript.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptElementBase.h"

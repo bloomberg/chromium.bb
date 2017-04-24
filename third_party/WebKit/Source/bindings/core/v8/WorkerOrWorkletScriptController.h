@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/RejectedPromises.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"

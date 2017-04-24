@@ -30,7 +30,7 @@
 
 #include "bindings/core/v8/ScriptString.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 
 namespace blink {
 

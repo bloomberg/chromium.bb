@@ -16,7 +16,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/wtf/Assertions.h"
 

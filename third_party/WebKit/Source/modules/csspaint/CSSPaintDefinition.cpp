@@ -5,7 +5,7 @@
 #include "modules/csspaint/CSSPaintDefinition.h"
 
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/css/CSSComputedStyleDeclaration.h"

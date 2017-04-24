@@ -36,7 +36,7 @@
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/UseCounterCallback.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8ErrorEvent.h"
 #include "bindings/core/v8/V8ErrorHandler.h"

@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8ImageData.h"

@@ -5,7 +5,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 
 #include <limits>
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 #include "platform/heap/Heap.h"

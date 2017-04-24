@@ -10,7 +10,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8PrivateProperty.h"

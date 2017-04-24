@@ -12,7 +12,7 @@
 #define GeneratedCodeHelper_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "v8/include/v8.h"

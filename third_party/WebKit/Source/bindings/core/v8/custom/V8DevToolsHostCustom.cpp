@@ -30,7 +30,7 @@
 
 #include "bindings/core/v8/V8DevToolsHost.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8HTMLDocument.h"
 #include "bindings/core/v8/V8MouseEvent.h"
 #include "bindings/core/v8/V8Window.h"

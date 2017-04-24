@@ -8,7 +8,7 @@
 #include "bindings/core/v8/TestInterfaceCallback.h"
 #include "bindings/core/v8/TestReceiverObjectCallback.h"
 #include "bindings/core/v8/TestSequenceCallback.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/html/HTMLDivElement.h"
 
 namespace blink {

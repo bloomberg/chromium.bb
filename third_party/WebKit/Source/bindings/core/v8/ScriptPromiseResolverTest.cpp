@@ -8,7 +8,7 @@
 
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"

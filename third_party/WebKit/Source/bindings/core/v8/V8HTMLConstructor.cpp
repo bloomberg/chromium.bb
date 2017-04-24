@@ -7,7 +7,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptCustomElementDefinition.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8HTMLElement.h"

@@ -17,7 +17,7 @@
 #include "bindings/core/v8/NodeOrNodeList.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "bindings/tests/idls/core/TestSpecialOperations.h"

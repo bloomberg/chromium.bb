@@ -10,6 +10,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebString.h"
 
 namespace blink {

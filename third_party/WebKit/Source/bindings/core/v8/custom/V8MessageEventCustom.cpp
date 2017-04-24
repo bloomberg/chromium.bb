@@ -35,7 +35,7 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8MessagePort.h"

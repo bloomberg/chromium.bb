@@ -6,7 +6,7 @@
 #define DocumentWriteEvaluator_h
 
 #include <memory>
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/frame/Navigator.h"
 #include "core/html/parser/CompactHTMLToken.h"

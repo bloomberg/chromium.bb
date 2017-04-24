@@ -5,7 +5,7 @@
 #include "core/workers/MainThreadWorklet.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"

@@ -5,7 +5,7 @@
 #include "core/page/FocusController.h"
 
 #include <memory>
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/shadow/ShadowRootInit.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"

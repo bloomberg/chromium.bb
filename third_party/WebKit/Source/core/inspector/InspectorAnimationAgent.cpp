@@ -5,7 +5,7 @@
 #include "core/inspector/InspectorAnimationAgent.h"
 
 #include <memory>
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/AnimationEffectTiming.h"

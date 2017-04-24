@@ -25,6 +25,7 @@
 #include "bindings/core/v8/V8ObjectConstructor.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {

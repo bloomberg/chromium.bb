@@ -14,7 +14,7 @@
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/tests/idls/core/TestDictionaryDerivedImplementedAs.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"

@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"

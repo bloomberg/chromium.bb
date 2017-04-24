@@ -30,7 +30,7 @@
 
 #include "bindings/core/v8/V8AbstractEventListener.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8EventListenerHelper.h"
 #include "bindings/core/v8/V8EventTarget.h"

@@ -5,7 +5,7 @@
 #include "core/css/resolver/SharedStyleFinder.h"
 
 #include <memory>
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
 #include "core/css/parser/CSSParser.h"

@@ -14,7 +14,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/modules/v8/V8Request.h"
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/Document.h"

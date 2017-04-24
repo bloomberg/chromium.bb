@@ -5,7 +5,7 @@
 #ifndef ToV8ForModules_h
 #define ToV8ForModules_h
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "modules/ModulesExport.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 

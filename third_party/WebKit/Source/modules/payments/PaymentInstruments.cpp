@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/DOMException.h"
 #include "modules/payments/PaymentInstrument.h"
 #include "modules/payments/PaymentManager.h"

@@ -4,7 +4,7 @@
 
 #include "core/css/ActiveStyleSheets.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheetContents.h"

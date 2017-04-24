@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
 #include "bindings/core/v8/V8Event.h"

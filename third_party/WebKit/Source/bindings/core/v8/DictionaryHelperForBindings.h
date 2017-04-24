@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/Nullable.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 
 namespace blink {
 

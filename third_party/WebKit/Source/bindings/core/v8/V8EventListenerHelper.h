@@ -31,7 +31,7 @@
 #ifndef V8EventListenerHelper_h
 #define V8EventListenerHelper_h
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/CoreExport.h"

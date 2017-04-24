@@ -32,7 +32,7 @@
 
 #include <utility>
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8GCForContextDispose.h"
 #include "core/frame/DOMWindow.h"

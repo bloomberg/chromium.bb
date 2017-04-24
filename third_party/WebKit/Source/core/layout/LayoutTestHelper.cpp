@@ -5,7 +5,7 @@
 #include "core/layout/LayoutTestHelper.h"
 
 #include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/FontFaceDescriptors.h"
 #include "core/css/FontFaceSet.h"
 #include "core/dom/DOMArrayBuffer.h"

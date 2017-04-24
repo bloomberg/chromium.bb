@@ -27,7 +27,7 @@
 
 #include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8OriginTrialsTest.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"

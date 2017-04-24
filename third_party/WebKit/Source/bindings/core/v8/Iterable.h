@@ -5,6 +5,7 @@
 #ifndef Iterable_h
 #define Iterable_h
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/ExecutionContext.h"

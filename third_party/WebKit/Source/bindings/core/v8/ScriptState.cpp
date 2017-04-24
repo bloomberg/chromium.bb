@@ -5,6 +5,7 @@
 #include "bindings/core/v8/ScriptState.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/ExecutionContext.h"
 
 namespace blink {
 

@@ -4,7 +4,7 @@
 
 #include "core/loader/modulescript/ModuleScriptLoader.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/dom/Modulator.h"
 #include "core/dom/ModuleScript.h"
