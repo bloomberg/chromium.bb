@@ -18,6 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -502,8 +503,9 @@ void ProfileImplIOData::InitializeInternal(
   scoped_refptr<QuotaPolicyChannelIDStore> channel_id_db =
       new QuotaPolicyChannelIDStore(
           lazy_params_->channel_id_path,
-          BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-              base::SequencedWorkerPool::GetSequenceToken()),
+          base::CreateSequencedTaskRunnerWithTraits(
+              base::TaskTraits().MayBlock().WithPriority(
+                  base::TaskPriority::BACKGROUND)),
           lazy_params_->special_storage_policy.get());
   main_context_storage->set_channel_id_service(
       base::MakeUnique<net::ChannelIDService>(
@@ -647,9 +649,9 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
     cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
     cookie_store = content::CreateCookieStore(cookie_config);
     channel_id_db = new net::SQLiteChannelIDStore(
-        channel_id_path,
-        BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-            base::SequencedWorkerPool::GetSequenceToken()));
+        channel_id_path, base::CreateSequencedTaskRunnerWithTraits(
+                             base::TaskTraits().MayBlock().WithPriority(
+                                 base::TaskPriority::BACKGROUND)));
   }
   std::unique_ptr<net::ChannelIDService> channel_id_service(
       new net::ChannelIDService(
