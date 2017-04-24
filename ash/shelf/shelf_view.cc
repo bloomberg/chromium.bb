@@ -317,7 +317,7 @@ void ShelfView::OnShelfAlignmentChanged() {
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(ShelfID id) {
   int index = model_->ItemIndexByID(id);
-  if (index == -1)
+  if (index < 0 || last_visible_index_ < 0)
     return gfx::Rect();
   // Map all items from overflow area to the overflow button. Note that the
   // section between last_index_hidden_ and model_->FirstPanelIndex() is the
