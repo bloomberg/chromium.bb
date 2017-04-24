@@ -301,7 +301,7 @@ void Resource::ResourceCallback::RunTask() {
   HeapVector<Member<Resource>> resources;
   for (const Member<Resource>& resource : resources_with_pending_clients_)
     resources.push_back(resource.Get());
-  resources_with_pending_clients_.Clear();
+  resources_with_pending_clients_.clear();
 
   for (const auto& resource : resources)
     resource->FinishPendingClients();

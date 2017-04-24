@@ -96,7 +96,7 @@ blink::WebMemoryAllocatorDump* WebProcessMemoryDump::GetMemoryAllocatorDump(
 
 void WebProcessMemoryDump::Clear() {
   // Clear all the WebMemoryAllocatorDump wrappers.
-  memory_allocator_dumps_.Clear();
+  memory_allocator_dumps_.clear();
 
   // Clear the actual MemoryAllocatorDump objects from the underlying PMD.
   process_memory_dump_->Clear();

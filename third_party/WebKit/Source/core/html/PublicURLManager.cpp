@@ -102,7 +102,7 @@ void PublicURLManager::ContextDestroyed(ExecutionContext*) {
       registry_url.key->UnregisterURL(KURL(kParsedURLString, url.key));
   }
 
-  registry_to_url_.Clear();
+  registry_to_url_.clear();
 }
 
 DEFINE_TRACE(PublicURLManager) {

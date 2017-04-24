@@ -104,7 +104,7 @@ void SVGResourcesCycleSolver::ResolveCycles() {
       resources_->ClearReferencesTo(local_resource);
   }
 
-  active_resources_.Clear();
+  active_resources_.clear();
 }
 
 }  // namespace blink

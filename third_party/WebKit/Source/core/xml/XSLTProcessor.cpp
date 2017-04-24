@@ -164,7 +164,7 @@ void XSLTProcessor::removeParameter(const String& /*namespaceURI*/,
 void XSLTProcessor::reset() {
   stylesheet_.Clear();
   stylesheet_root_node_.Clear();
-  parameters_.Clear();
+  parameters_.clear();
 }
 
 DEFINE_TRACE(XSLTProcessor) {

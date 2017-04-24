@@ -151,7 +151,7 @@ void NavigatorShare::OnConnectionError() {
   for (auto& client : clients_) {
     client->OnConnectionError();
   }
-  clients_.Clear();
+  clients_.clear();
   service_.reset();
 }
 

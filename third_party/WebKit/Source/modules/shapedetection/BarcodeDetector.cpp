@@ -78,7 +78,7 @@ void BarcodeDetector::OnBarcodeServiceConnectionError() {
     request->Reject(DOMException::Create(kNotSupportedError,
                                          "Barcode Detection not implemented."));
   }
-  barcode_service_requests_.Clear();
+  barcode_service_requests_.clear();
   barcode_service_.reset();
 }
 

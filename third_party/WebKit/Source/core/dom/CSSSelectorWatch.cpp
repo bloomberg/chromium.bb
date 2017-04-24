@@ -84,8 +84,8 @@ void CSSSelectorWatch::CallbackSelectorChangeTimerFired(TimerBase*) {
     GetSupplementable()->GetFrame()->Loader().Client()->SelectorMatchChanged(
         added_selectors, removed_selectors);
   }
-  added_selectors_.Clear();
-  removed_selectors_.Clear();
+  added_selectors_.clear();
+  removed_selectors_.clear();
   timer_expirations_ = 0;
 }
 

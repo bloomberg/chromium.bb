@@ -96,7 +96,7 @@ static void InsertPerformanceEntry(PerformanceEntryMap& performance_entry_map,
 static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
                                    const String& name) {
   if (name.IsNull()) {
-    performance_entry_map.Clear();
+    performance_entry_map.clear();
     return;
   }
 

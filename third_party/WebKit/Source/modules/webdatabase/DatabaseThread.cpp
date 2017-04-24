@@ -114,7 +114,7 @@ void DatabaseThread::CleanupDatabaseThread() {
          it != end; ++it)
       (*it)->Close();
   }
-  open_database_set_.Clear();
+  open_database_set_.clear();
 
   thread_->PostTask(BLINK_FROM_HERE,
                     WTF::Bind(&DatabaseThread::CleanupDatabaseThreadCompleted,

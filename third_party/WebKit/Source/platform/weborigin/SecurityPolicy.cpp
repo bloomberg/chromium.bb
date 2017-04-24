@@ -253,7 +253,7 @@ void SecurityPolicy::RemoveOriginAccessWhitelistEntry(
 
 void SecurityPolicy::ResetOriginAccessWhitelists() {
   ASSERT(IsMainThread());
-  GetOriginAccessMap().Clear();
+  GetOriginAccessMap().clear();
 }
 
 bool SecurityPolicy::ReferrerPolicyFromString(

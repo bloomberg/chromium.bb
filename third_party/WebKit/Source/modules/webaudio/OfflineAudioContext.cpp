@@ -441,7 +441,7 @@ void OfflineAudioContext::RejectPendingResolvers() {
         kInvalidStateError, "Audio context is going away"));
   }
 
-  scheduled_suspends_.Clear();
+  scheduled_suspends_.clear();
   DCHECK_EQ(resume_resolvers_.size(), 0u);
 
   RejectPendingDecodeAudioDataResolvers();

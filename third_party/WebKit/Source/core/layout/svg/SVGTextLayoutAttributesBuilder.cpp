@@ -33,7 +33,7 @@ void UpdateLayoutAttributes(LayoutSVGInlineText& text,
                             unsigned& value_list_position,
                             const SVGCharacterDataMap& all_characters_map) {
   SVGCharacterDataMap& character_data_map = text.CharacterDataMap();
-  character_data_map.Clear();
+  character_data_map.clear();
 
   LineLayoutSVGInlineText text_line_layout(&text);
   for (SVGInlineTextMetricsIterator iterator(text_line_layout);
@@ -58,7 +58,7 @@ SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder(
     : text_root_(text_root), character_count_(0) {}
 
 void SVGTextLayoutAttributesBuilder::BuildLayoutAttributes() {
-  character_data_map_.Clear();
+  character_data_map_.clear();
 
   if (text_positions_.IsEmpty()) {
     character_count_ = 0;

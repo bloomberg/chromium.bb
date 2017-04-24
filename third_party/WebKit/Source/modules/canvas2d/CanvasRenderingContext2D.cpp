@@ -532,7 +532,7 @@ void CanvasRenderingContext2D::PruneLocalFontCache(size_t target_size) {
   if (target_size == 0) {
     // Short cut: LRU does not matter when evicting everything
     font_lru_list_.clear();
-    fonts_resolved_using_current_style_.Clear();
+    fonts_resolved_using_current_style_.clear();
     return;
   }
   while (font_lru_list_.size() > target_size) {

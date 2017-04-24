@@ -116,7 +116,7 @@ bool ImageCapture::HasPendingActivity() const {
 
 void ImageCapture::ContextDestroyed(ExecutionContext*) {
   RemoveAllEventListeners();
-  service_requests_.Clear();
+  service_requests_.clear();
   DCHECK(!HasEventListeners());
 }
 
@@ -646,7 +646,7 @@ void ImageCapture::OnServiceConnectionError() {
   service_.reset();
   for (ScriptPromiseResolver* resolver : service_requests_)
     resolver->Reject(DOMException::Create(kNotFoundError, kNoServiceError));
-  service_requests_.Clear();
+  service_requests_.clear();
 }
 
 DEFINE_TRACE(ImageCapture) {

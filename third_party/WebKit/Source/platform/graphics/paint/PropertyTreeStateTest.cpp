@@ -227,7 +227,7 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithDifferingElementIds) {
   EXPECT_EQ(second_compositor_element_id,
             state.GetCompositorElementId(composited_element_ids));
 
-  composited_element_ids.Clear();
+  composited_element_ids.clear();
   composited_element_ids.insert(second_compositor_element_id);
   EXPECT_EQ(first_compositor_element_id,
             state.GetCompositorElementId(composited_element_ids));

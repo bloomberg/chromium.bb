@@ -344,7 +344,7 @@ void StyleEngine::UpdateActiveStyleSheets() {
 
   probe::activeStyleSheetsUpdated(document_);
 
-  dirty_tree_scopes_.Clear();
+  dirty_tree_scopes_.clear();
   document_scope_dirty_ = false;
   all_tree_scopes_dirty_ = false;
   tree_scopes_removed_ = false;
@@ -461,8 +461,8 @@ void StyleEngine::DidDetach() {
   ClearResolvers();
   global_rule_set_.Dispose();
   tree_boundary_crossing_scopes_.Clear();
-  dirty_tree_scopes_.Clear();
-  active_tree_scopes_.Clear();
+  dirty_tree_scopes_.clear();
+  active_tree_scopes_.clear();
   viewport_resolver_ = nullptr;
   media_query_evaluator_ = nullptr;
   if (font_selector_)

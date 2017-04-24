@@ -360,7 +360,7 @@ void LayoutFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   if (!relayout_children && SimplifiedLayout())
     return;
 
-  relaid_out_children_.Clear();
+  relaid_out_children_.clear();
   WTF::AutoReset<bool> reset1(&in_layout_, true);
   DCHECK_EQ(has_definite_height_, SizeDefiniteness::kUnknown);
 

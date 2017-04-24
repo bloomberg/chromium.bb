@@ -94,7 +94,7 @@ void PerformanceMonitor::UnsubscribeAll(Client* client) {
 void PerformanceMonitor::Shutdown() {
   if (!local_root_)
     return;
-  subscriptions_.Clear();
+  subscriptions_.clear();
   UpdateInstrumentation();
   Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
   local_root_->InstrumentingAgents()->removePerformanceMonitor(this);

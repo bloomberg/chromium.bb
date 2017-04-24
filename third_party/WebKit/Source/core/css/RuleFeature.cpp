@@ -283,10 +283,10 @@ RuleFeatureSet::~RuleFeatureSet() {
   CHECK(is_alive_);
 
   metadata_.Clear();
-  class_invalidation_sets_.Clear();
-  attribute_invalidation_sets_.Clear();
-  id_invalidation_sets_.Clear();
-  pseudo_invalidation_sets_.Clear();
+  class_invalidation_sets_.clear();
+  attribute_invalidation_sets_.clear();
+  id_invalidation_sets_.clear();
+  pseudo_invalidation_sets_.clear();
   universal_sibling_invalidation_set_.Clear();
   nth_invalidation_set_.Clear();
 
@@ -973,10 +973,10 @@ void RuleFeatureSet::Clear() {
   sibling_rules_.clear();
   uncommon_attribute_rules_.clear();
   metadata_.Clear();
-  class_invalidation_sets_.Clear();
-  attribute_invalidation_sets_.Clear();
-  id_invalidation_sets_.Clear();
-  pseudo_invalidation_sets_.Clear();
+  class_invalidation_sets_.clear();
+  attribute_invalidation_sets_.clear();
+  id_invalidation_sets_.clear();
+  pseudo_invalidation_sets_.clear();
   universal_sibling_invalidation_set_.Clear();
   nth_invalidation_set_.Clear();
   viewport_dependent_media_query_results_.clear();

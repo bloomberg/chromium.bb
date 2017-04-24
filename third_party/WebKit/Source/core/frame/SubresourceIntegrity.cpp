@@ -328,7 +328,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
   const UChar* end = characters.end();
   const UChar* current_integrity_end;
 
-  metadata_set.Clear();
+  metadata_set.clear();
   bool error = false;
 
   // The integrity attribute takes the form:

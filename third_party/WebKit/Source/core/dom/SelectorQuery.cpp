@@ -570,7 +570,7 @@ SelectorQuery* SelectorQueryCache::Add(const AtomicString& selectors,
 }
 
 void SelectorQueryCache::Invalidate() {
-  entries_.Clear();
+  entries_.clear();
 }
 
 }  // namespace blink

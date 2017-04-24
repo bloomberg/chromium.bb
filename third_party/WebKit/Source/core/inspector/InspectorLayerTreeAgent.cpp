@@ -198,7 +198,7 @@ Response InspectorLayerTreeAgent::enable() {
 
 Response InspectorLayerTreeAgent::disable() {
   instrumenting_agents_->removeInspectorLayerTreeAgent(this);
-  snapshot_by_id_.Clear();
+  snapshot_by_id_.clear();
   return Response::OK();
 }
 

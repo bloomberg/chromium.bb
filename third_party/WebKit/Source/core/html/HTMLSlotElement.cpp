@@ -142,7 +142,7 @@ void HTMLSlotElement::ClearDistribution() {
   // lazyReattachDistributedNodesIfNeeded()
   assigned_nodes_.clear();
   distributed_nodes_.clear();
-  distributed_indices_.Clear();
+  distributed_indices_.clear();
 }
 
 void HTMLSlotElement::SaveAndClearDistribution() {

@@ -103,8 +103,8 @@ TouchEventManager::TouchEventManager(LocalFrame& frame) : frame_(frame) {
 
 void TouchEventManager::Clear() {
   touch_sequence_document_.Clear();
-  target_for_touch_id_.Clear();
-  region_for_touch_id_.Clear();
+  target_for_touch_id_.clear();
+  region_for_touch_id_.clear();
   touch_pressed_ = false;
   suppressing_touchmoves_within_slop_ = false;
   current_touch_action_ = kTouchActionAuto;

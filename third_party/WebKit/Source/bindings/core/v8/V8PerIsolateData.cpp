@@ -125,10 +125,10 @@ void V8PerIsolateData::Destroy(v8::Isolate* isolate) {
   data->private_property_.reset();
   data->string_cache_->Dispose();
   data->string_cache_.reset();
-  data->interface_template_map_for_non_main_world_.Clear();
-  data->interface_template_map_for_main_world_.Clear();
-  data->operation_template_map_for_non_main_world_.Clear();
-  data->operation_template_map_for_main_world_.Clear();
+  data->interface_template_map_for_non_main_world_.clear();
+  data->interface_template_map_for_main_world_.clear();
+  data->operation_template_map_for_non_main_world_.clear();
+  data->operation_template_map_for_main_world_.clear();
   if (IsMainThread())
     g_main_thread_per_isolate_data = 0;
 

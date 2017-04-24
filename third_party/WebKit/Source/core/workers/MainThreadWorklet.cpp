@@ -73,7 +73,7 @@ void MainThreadWorklet::DidFetchAndInvokeScript(int32_t request_id,
 
 void MainThreadWorklet::ContextDestroyed(ExecutionContext* execution_context) {
   DCHECK(IsMainThread());
-  resolver_map_.Clear();
+  resolver_map_.clear();
   Worklet::ContextDestroyed(execution_context);
 }
 

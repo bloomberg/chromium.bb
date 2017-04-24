@@ -180,13 +180,13 @@ bool GenericFontFamilySettings::UpdatePictograph(const AtomicString& family,
 }
 
 void GenericFontFamilySettings::Reset() {
-  standard_font_family_map_.Clear();
-  serif_font_family_map_.Clear();
-  fixed_font_family_map_.Clear();
-  sans_serif_font_family_map_.Clear();
-  cursive_font_family_map_.Clear();
-  fantasy_font_family_map_.Clear();
-  pictograph_font_family_map_.Clear();
+  standard_font_family_map_.clear();
+  serif_font_family_map_.clear();
+  fixed_font_family_map_.clear();
+  sans_serif_font_family_map_.clear();
+  cursive_font_family_map_.clear();
+  fantasy_font_family_map_.clear();
+  pictograph_font_family_map_.clear();
 }
 
 }  // namespace blink

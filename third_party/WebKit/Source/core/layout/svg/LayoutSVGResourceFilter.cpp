@@ -47,7 +47,7 @@ LayoutSVGResourceFilter::~LayoutSVGResourceFilter() {}
 void LayoutSVGResourceFilter::DisposeFilterMap() {
   for (auto& filter : filter_)
     filter.value->Dispose();
-  filter_.Clear();
+  filter_.clear();
 }
 
 void LayoutSVGResourceFilter::WillBeDestroyed() {

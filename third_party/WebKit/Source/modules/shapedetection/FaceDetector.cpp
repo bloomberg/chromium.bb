@@ -77,7 +77,7 @@ void FaceDetector::OnFaceServiceConnectionError() {
     request->Reject(DOMException::Create(kNotSupportedError,
                                          "Face Detection not implemented."));
   }
-  face_service_requests_.Clear();
+  face_service_requests_.clear();
   face_service_.reset();
 }
 

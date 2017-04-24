@@ -146,7 +146,7 @@ void SQLTransactionCoordinator::Shutdown() {
   }
 
   // Clean up all pending transactions for all databases
-  coordination_info_map_.Clear();
+  coordination_info_map_.clear();
 }
 
 }  // namespace blink

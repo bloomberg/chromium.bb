@@ -529,7 +529,7 @@ void PaintController::CommitNewDisplayItems(
   // These data structures are used during painting only.
   DCHECK(!IsSkippingCache());
 #if DCHECK_IS_ON()
-  new_display_item_indices_by_client_.Clear();
+  new_display_item_indices_by_client_.clear();
 #endif
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
@@ -542,7 +542,7 @@ void PaintController::CommitNewDisplayItems(
       DisplayItemClient::CacheGenerationOrInvalidationReason::Next();
 
   new_cached_subsequences_.swap(current_cached_subsequences_);
-  new_cached_subsequences_.Clear();
+  new_cached_subsequences_.clear();
   last_cached_subsequence_end_ = 0;
   for (auto& item : current_cached_subsequences_) {
     item.key->SetDisplayItemsCached(current_cache_generation_);
@@ -596,8 +596,8 @@ void PaintController::CommitNewDisplayItems(
       std::move(new_display_item_list_), new_paint_chunks_.ReleasePaintChunks(),
       gpu_analyzer.suitableForGpuRasterization());
   ResetCurrentListIndices();
-  out_of_order_item_indices_.Clear();
-  out_of_order_chunk_indices_.Clear();
+  out_of_order_item_indices_.clear();
+  out_of_order_chunk_indices_.clear();
   items_moved_into_new_list_.clear();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {

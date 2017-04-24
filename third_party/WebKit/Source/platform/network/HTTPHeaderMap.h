@@ -63,7 +63,7 @@ class PLATFORM_EXPORT HTTPHeaderMap final {
   const_iterator begin() const { return headers_.begin(); }
   const_iterator end() const { return headers_.end(); }
   const_iterator Find(const AtomicString& k) const { return headers_.Find(k); }
-  void Clear() { headers_.Clear(); }
+  void Clear() { headers_.clear(); }
   bool Contains(const AtomicString& k) const { return headers_.Contains(k); }
   const AtomicString& Get(const AtomicString& k) const {
     return headers_.at(k);

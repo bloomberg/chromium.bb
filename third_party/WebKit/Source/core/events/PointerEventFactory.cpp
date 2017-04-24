@@ -450,8 +450,8 @@ void PointerEventFactory::Clear() {
     primary_id_[type] = PointerEventFactory::kInvalidId;
     id_count_[type] = 0;
   }
-  pointer_incoming_id_mapping_.Clear();
-  pointer_id_mapping_.Clear();
+  pointer_incoming_id_mapping_.clear();
+  pointer_id_mapping_.clear();
 
   // Always add mouse pointer in initialization and never remove it.
   // No need to add it to m_pointerIncomingIdMapping as it is not going to be

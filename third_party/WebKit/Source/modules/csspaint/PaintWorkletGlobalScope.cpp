@@ -58,7 +58,7 @@ void PaintWorkletGlobalScope::Dispose() {
       ScriptController()->GetScriptState());
   // Explicitly clear the paint defininitions to break a reference cycle
   // between them and this global scope.
-  paint_definitions_.Clear();
+  paint_definitions_.clear();
 
   WorkletGlobalScope::Dispose();
 }

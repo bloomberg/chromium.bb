@@ -119,7 +119,7 @@ void DeferredTaskHandler::HandleDirtyAudioSummingJunctions() {
 
   for (AudioSummingJunction* junction : dirty_summing_junctions_)
     junction->UpdateRenderingState();
-  dirty_summing_junctions_.Clear();
+  dirty_summing_junctions_.clear();
 }
 
 void DeferredTaskHandler::HandleDirtyAudioNodeOutputs() {
@@ -199,7 +199,7 @@ void DeferredTaskHandler::UpdateChangedChannelCountMode() {
 
   for (AudioHandler* node : deferred_count_mode_change_)
     node->UpdateChannelCountMode();
-  deferred_count_mode_change_.Clear();
+  deferred_count_mode_change_.clear();
 }
 
 void DeferredTaskHandler::UpdateChangedChannelInterpretation() {
@@ -207,7 +207,7 @@ void DeferredTaskHandler::UpdateChangedChannelInterpretation() {
 
   for (AudioHandler* node : deferred_channel_interpretation_change_)
     node->UpdateChannelInterpretation();
-  deferred_channel_interpretation_change_.Clear();
+  deferred_channel_interpretation_change_.clear();
 }
 
 DeferredTaskHandler::DeferredTaskHandler()

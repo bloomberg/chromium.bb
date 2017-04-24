@@ -498,7 +498,7 @@ FormControlState FormController::TakeStateForFormElement(
 void FormController::FormStatesFromStateVector(
     const Vector<String>& state_vector,
     SavedFormStateMap& map) {
-  map.Clear();
+  map.clear();
 
   size_t i = 0;
   if (state_vector.size() < 1 || state_vector[i++] != FormStateSignature())
@@ -515,7 +515,7 @@ void FormController::FormStatesFromStateVector(
     map.insert(form_key, std::move(state));
   }
   if (i != state_vector.size())
-    map.Clear();
+    map.clear();
 }
 
 void FormController::WillDeleteForm(HTMLFormElement* form) {

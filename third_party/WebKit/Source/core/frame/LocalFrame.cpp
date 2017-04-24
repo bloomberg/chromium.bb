@@ -463,7 +463,7 @@ void LocalFrame::Detach(FrameDetachType type) {
   probe::frameDetachedFromParent(this);
   Frame::Detach(type);
 
-  supplements_.Clear();
+  supplements_.clear();
   frame_scheduler_.reset();
   WeakIdentifierMap<LocalFrame>::NotifyObjectDestroyed(this);
   lifecycle_.AdvanceTo(FrameLifecycle::kDetached);

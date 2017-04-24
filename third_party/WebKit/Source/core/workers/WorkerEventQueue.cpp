@@ -82,7 +82,7 @@ void WorkerEventQueue::Close() {
   is_closed_ = true;
   for (const auto& event : pending_events_)
     probe::AsyncTaskCanceled(event->target()->GetExecutionContext(), event);
-  pending_events_.Clear();
+  pending_events_.clear();
 }
 
 bool WorkerEventQueue::RemoveEvent(Event* event) {

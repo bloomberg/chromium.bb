@@ -85,8 +85,8 @@ void HitRegionManager::RemoveHitRegionsInRect(const FloatRect& rect,
 
 void HitRegionManager::RemoveAllHitRegions() {
   hit_region_list_.clear();
-  hit_region_id_map_.Clear();
-  hit_region_control_map_.Clear();
+  hit_region_id_map_.clear();
+  hit_region_control_map_.clear();
 }
 
 HitRegion* HitRegionManager::GetHitRegionById(const String& id) const {

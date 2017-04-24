@@ -131,7 +131,7 @@ void ScopedStyleResolver::ResetAuthorStyle() {
   author_style_sheets_.clear();
   viewport_dependent_media_query_results_.clear();
   device_dependent_media_query_results_.clear();
-  keyframes_rule_map_.Clear();
+  keyframes_rule_map_.clear();
   tree_boundary_crossing_rule_set_ = nullptr;
   has_deep_or_shadow_selector_ = false;
   needs_append_all_sheets_ = false;

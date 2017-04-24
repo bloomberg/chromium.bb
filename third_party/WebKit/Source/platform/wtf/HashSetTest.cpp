@@ -122,7 +122,7 @@ TEST(HashSetTest, HashSetOwnPtr) {
   set.erase(ptr1);
   EXPECT_TRUE(deleted1);
 
-  set.Clear();
+  set.clear();
   EXPECT_TRUE(deleted2);
   EXPECT_TRUE(set.IsEmpty());
 
@@ -397,7 +397,7 @@ TEST(HashSetTest, MoveOnlyValue) {
   iter = set.Find(MoveOnly(13));
   EXPECT_TRUE(iter == set.end());
 
-  set.Clear();
+  set.clear();
 }
 
 TEST(HashSetTest, UniquePtr) {

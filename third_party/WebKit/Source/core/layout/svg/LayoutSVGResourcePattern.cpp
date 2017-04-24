@@ -53,7 +53,7 @@ LayoutSVGResourcePattern::LayoutSVGResourcePattern(SVGPatternElement* node)
 
 void LayoutSVGResourcePattern::RemoveAllClientsFromCache(
     bool mark_for_invalidation) {
-  pattern_map_.Clear();
+  pattern_map_.clear();
   should_collect_pattern_attributes_ = true;
   MarkAllClientsForInvalidation(
       mark_for_invalidation ? kPaintInvalidation : kParentOnlyInvalidation);

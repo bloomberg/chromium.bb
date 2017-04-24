@@ -559,7 +559,7 @@ using LayerFrameMap =
     HeapHashMap<const PaintLayer*, HeapVector<Member<const LocalFrame>>>;
 static void MakeLayerChildFrameMap(const LocalFrame* current_frame,
                                    LayerFrameMap* map) {
-  map->Clear();
+  map->clear();
   const FrameTree& tree = current_frame->Tree();
   for (const Frame* child = tree.FirstChild(); child;
        child = child->Tree().NextSibling()) {
@@ -732,9 +732,9 @@ void ScrollingCoordinator::Reset() {
   for (const auto& scrollbar : vertical_scrollbars_)
     GraphicsLayer::UnregisterContentsLayer(scrollbar.value->Layer());
 
-  horizontal_scrollbars_.Clear();
-  vertical_scrollbars_.Clear();
-  layers_with_touch_rects_.Clear();
+  horizontal_scrollbars_.clear();
+  vertical_scrollbars_.clear();
+  layers_with_touch_rects_.clear();
   was_frame_scrollable_ = false;
 
   last_main_thread_scrolling_reasons_ = 0;
@@ -770,7 +770,7 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
                                   Vector<LayoutRect>());
   }
 
-  layers_with_touch_rects_.Clear();
+  layers_with_touch_rects_.clear();
   for (const auto& layer_rect : layer_rects) {
     if (!layer_rect.value.IsEmpty()) {
       const PaintLayer* composited_layer =

@@ -164,7 +164,7 @@ void LayoutLocale::ClearForTesting() {
   system_ = nullptr;
   default_for_han_ = nullptr;
   default_for_han_computed_ = false;
-  GetLocaleMap().Clear();
+  GetLocaleMap().clear();
 }
 
 Hyphenation* LayoutLocale::GetHyphenation() const {

@@ -25,7 +25,7 @@ struct MapTraits<WTF::HashMap<K, V>> {
 
   static void SetToNull(WTF::HashMap<K, V>* output) {
     // WTF::HashMap<> doesn't support null state. Set it to empty instead.
-    output->Clear();
+    output->clear();
   }
 
   static size_t GetSize(const WTF::HashMap<K, V>& input) {
@@ -56,7 +56,7 @@ struct MapTraits<WTF::HashMap<K, V>> {
     return true;
   }
 
-  static void SetToEmpty(WTF::HashMap<K, V>* output) { output->Clear(); }
+  static void SetToEmpty(WTF::HashMap<K, V>* output) { output->clear(); }
 };
 
 }  // namespace mojo

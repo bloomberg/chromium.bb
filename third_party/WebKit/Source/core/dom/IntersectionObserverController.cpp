@@ -58,7 +58,7 @@ void IntersectionObserverController::Resume() {
 void IntersectionObserverController::DeliverIntersectionObservations() {
   ExecutionContext* context = GetExecutionContext();
   if (!context) {
-    pending_intersection_observers_.Clear();
+    pending_intersection_observers_.clear();
     return;
   }
   if (context->IsContextSuspended()) {

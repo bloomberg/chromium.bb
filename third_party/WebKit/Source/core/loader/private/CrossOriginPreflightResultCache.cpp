@@ -94,7 +94,7 @@ static bool ParseAccessControlAllowList(const String& string,
 bool CrossOriginPreflightResultCacheItem::Parse(
     const ResourceResponse& response,
     String& error_description) {
-  methods_.Clear();
+  methods_.clear();
   if (!ParseAccessControlAllowList(
           response.HttpHeaderField(HTTPNames::Access_Control_Allow_Methods),
           methods_)) {
@@ -104,7 +104,7 @@ bool CrossOriginPreflightResultCacheItem::Parse(
     return false;
   }
 
-  headers_.Clear();
+  headers_.clear();
   if (!ParseAccessControlAllowList(
           response.HttpHeaderField(HTTPNames::Access_Control_Allow_Headers),
           headers_)) {

@@ -97,7 +97,7 @@ void WorkerGlobalScope::Dispose() {
   while (!listeners.IsEmpty()) {
     for (const auto& listener : listeners)
       listener->ClearListenerObject();
-    listeners.Clear();
+    listeners.clear();
     // Pick up any additions made while iterating.
     listeners.swap(event_listeners_);
   }

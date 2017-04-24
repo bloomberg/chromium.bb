@@ -98,7 +98,7 @@ void ModuleMap::Entry::NotifyNewSingleModuleFinished(
   for (const auto& client : clients_) {
     DispatchFinishedNotificationAsync(client);
   }
-  clients_.Clear();
+  clients_.clear();
 }
 
 ModuleScript* ModuleMap::Entry::GetModuleScript() const {

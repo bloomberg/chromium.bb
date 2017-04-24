@@ -104,7 +104,7 @@ void MatchedPropertiesCache::Clear() {
   for (auto& cache_entry : cache_) {
     cache_entry.value->Clear();
   }
-  cache_.Clear();
+  cache_.clear();
 }
 
 void MatchedPropertiesCache::ClearViewportDependent() {

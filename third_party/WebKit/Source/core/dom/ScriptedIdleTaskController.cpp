@@ -194,7 +194,7 @@ void ScriptedIdleTaskController::RunCallback(
 }
 
 void ScriptedIdleTaskController::ContextDestroyed(ExecutionContext*) {
-  callbacks_.Clear();
+  callbacks_.clear();
 }
 
 void ScriptedIdleTaskController::Suspend() {

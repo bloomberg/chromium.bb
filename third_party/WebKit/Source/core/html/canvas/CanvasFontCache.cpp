@@ -144,9 +144,9 @@ bool CanvasFontCache::IsInCache(const String& font_string) {
 }
 
 void CanvasFontCache::PruneAll() {
-  fetched_fonts_.Clear();
+  fetched_fonts_.clear();
   font_lru_list_.clear();
-  fonts_resolved_using_default_style_.Clear();
+  fonts_resolved_using_default_style_.clear();
 }
 
 DEFINE_TRACE(CanvasFontCache) {

@@ -1561,7 +1561,7 @@ void PaintLayerScrollableArea::InvalidateAllStickyConstraints() {
           EPosition::kSticky)
         sticky_layer->SetNeedsCompositingInputsUpdate();
     }
-    d->sticky_constraints_map_.Clear();
+    d->sticky_constraints_map_.clear();
   }
 }
 

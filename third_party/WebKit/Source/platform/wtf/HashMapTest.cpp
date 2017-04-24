@@ -290,7 +290,7 @@ TEST(HashMapTest, ValueTypeDestructed) {
   InstanceCounter::counter_ = 0;
   HashMap<int, InstanceCounter> map;
   map.Set(1, InstanceCounter());
-  map.Clear();
+  map.clear();
   EXPECT_EQ(0, InstanceCounter::counter_);
 }
 
@@ -409,7 +409,7 @@ TEST(HashMapTest, MoveOnlyValueType) {
   iter = map.Find(13);
   EXPECT_TRUE(iter == map.end());
 
-  map.Clear();
+  map.clear();
 }
 
 TEST(HashMapTest, MoveOnlyKeyType) {
@@ -464,7 +464,7 @@ TEST(HashMapTest, MoveOnlyKeyType) {
   iter = map.Find(MoveOnly(13));
   EXPECT_TRUE(iter == map.end());
 
-  map.Clear();
+  map.clear();
 }
 
 class CountCopy final {
@@ -651,7 +651,7 @@ TEST(HashMapTest, MoveOnlyPairKeyType) {
   iter = map.Find(Pair(MoveOnly(13), -13));
   EXPECT_TRUE(iter == map.end());
 
-  map.Clear();
+  map.clear();
 }
 
 bool IsOneTwoThree(const HashMap<int, int>& map) {

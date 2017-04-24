@@ -137,7 +137,7 @@ DOMWrapperWorld::~DOMWrapperWorld() {
 }
 
 void DOMWrapperWorld::Dispose() {
-  dom_object_holders_.Clear();
+  dom_object_holders_.clear();
   dom_data_store_.reset();
   DCHECK(GetWorldMap().Contains(world_id_));
   GetWorldMap().erase(world_id_);

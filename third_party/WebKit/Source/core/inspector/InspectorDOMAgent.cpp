@@ -165,7 +165,7 @@ void InspectorRevalidateDOMTask::OnTimer(TimerBase*) {
   for (auto& attribute : style_attr_invalidated_elements_)
     elements.push_back(attribute.Get());
   dom_agent_->StyleAttributeInvalidated(elements);
-  style_attr_invalidated_elements_.Clear();
+  style_attr_invalidated_elements_.clear();
 }
 
 DEFINE_TRACE(InspectorRevalidateDOMTask) {
@@ -544,13 +544,13 @@ void InspectorDOMAgent::PushChildNodesToFrontend(int node_id,
 void InspectorDOMAgent::DiscardFrontendBindings() {
   if (history_)
     history_->Reset();
-  search_results_.Clear();
-  document_node_to_id_map_->Clear();
-  id_to_node_.Clear();
-  id_to_nodes_map_.Clear();
+  search_results_.clear();
+  document_node_to_id_map_->clear();
+  id_to_node_.clear();
+  id_to_nodes_map_.clear();
   ReleaseDanglingNodes();
-  children_requested_.Clear();
-  cached_child_count_.Clear();
+  children_requested_.clear();
+  cached_child_count_.clear();
   if (revalidate_task_)
     revalidate_task_->Reset();
 }

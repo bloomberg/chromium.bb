@@ -90,7 +90,7 @@ double ProgressTracker::EstimatedProgress() const {
 }
 
 void ProgressTracker::Reset() {
-  progress_items_.Clear();
+  progress_items_.clear();
   progress_value_ = 0;
   last_notified_progress_value_ = 0;
   last_notified_progress_time_ = 0;

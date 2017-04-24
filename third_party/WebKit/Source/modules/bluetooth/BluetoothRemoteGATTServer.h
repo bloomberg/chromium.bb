@@ -57,7 +57,7 @@ class BluetoothRemoteGATTServer
   // and returns true, false otherwise.
   bool RemoveFromActiveAlgorithms(ScriptPromiseResolver*);
   // Removes all ScriptPromiseResolvers from the set of Active Algorithms.
-  void ClearActiveAlgorithms() { active_algorithms_.Clear(); }
+  void ClearActiveAlgorithms() { active_algorithms_.clear(); }
 
   // If gatt is connected then sets gatt.connected to false and disconnects.
   // This function only performs the necessary steps to ensure a device

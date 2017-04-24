@@ -1538,7 +1538,7 @@ class PreFinalizerBackingShrinkForbidden
     // Check that map_ hasn't shrunk.
     EXPECT_LT(31ul, map_.Capacity());
     // Just releasing the backing is allowed.
-    map_.Clear();
+    map_.clear();
     EXPECT_EQ(0ul, map_.Capacity());
   }
 
@@ -2179,7 +2179,7 @@ TEST(HeapTest, HashMapOfMembers) {
 
     Persistent<HeapObjectIdentityMap> map = new HeapObjectIdentityMap();
 
-    map->Clear();
+    map->clear();
     size_t after_set_was_created = heap.ObjectPayloadSizeForTesting();
     EXPECT_TRUE(after_set_was_created > initial_object_payload_size);
 
@@ -2981,7 +2981,7 @@ TEST(HeapTest, PersistentSet) {
     EXPECT_TRUE(set.Contains(three));
     EXPECT_TRUE(set.Contains(four));
 
-    set.Clear();
+    set.clear();
     ConservativelyCollectGarbage();
     EXPECT_FALSE(set.Contains(one));
     EXPECT_FALSE(set.Contains(two));
@@ -3032,7 +3032,7 @@ TEST(HeapTest, CrossThreadPersistentSet) {
     EXPECT_TRUE(set.Contains(three));
     EXPECT_TRUE(set.Contains(four));
 
-    set.Clear();
+    set.clear();
     ConservativelyCollectGarbage();
     EXPECT_FALSE(set.Contains(one));
     EXPECT_FALSE(set.Contains(two));
@@ -3370,8 +3370,8 @@ static void HeapMapDestructorHelper(bool clear_maps) {
 
   luck.Clear();
   if (clear_maps) {
-    map->Clear();      // Clear map.
-    ref_map->Clear();  // Clear map.
+    map->clear();      // Clear map.
+    ref_map->clear();  // Clear map.
   } else {
     map.Clear();      // Clear Persistent handle, not map.
     ref_map.Clear();  // Clear Persistent handle, not map.
@@ -3615,13 +3615,13 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
         keep_numbers_alive[i] = nullptr;
 
       if (collection_number != kWeakStrongIndex)
-        weak_strong->Clear();
+        weak_strong->clear();
       if (collection_number != kStrongWeakIndex)
-        strong_weak->Clear();
+        strong_weak->clear();
       if (collection_number != kWeakWeakIndex)
-        weak_weak->Clear();
+        weak_weak->clear();
       if (collection_number != kWeakSetIndex)
-        weak_set->Clear();
+        weak_set->clear();
       if (collection_number != kWeakOrderedSetIndex)
         weak_ordered_set->clear();
 
@@ -4661,7 +4661,7 @@ TEST(HeapTest, DestructorsCalled) {
   SimpleClassWithDestructor* has_destructor = new SimpleClassWithDestructor();
   map.insert(IntWrapper::Create(1), WTF::WrapUnique(has_destructor));
   SimpleClassWithDestructor::was_destructed_ = false;
-  map.Clear();
+  map.clear();
   EXPECT_TRUE(SimpleClassWithDestructor::was_destructed_);
 }
 
@@ -5187,7 +5187,7 @@ TEST(HeapTest, EphemeronsInEphemerons) {
       } else {
         EXPECT_EQ(0u, outer->size());
       }
-      outer->Clear();
+      outer->clear();
       Persistent<IntWrapper> deep = IntWrapper::Create(42);
       Persistent<IntWrapper> home = IntWrapper::Create(103);
       Persistent<IntWrapper> composite = IntWrapper::Create(91);
@@ -6699,7 +6699,7 @@ TEST(HeapTest, HeapHashMapCallsDestructor) {
   }
 
   EXPECT_FALSE(string.Impl()->HasOneRef());
-  map.Clear();
+  map.clear();
 
   EXPECT_TRUE(string.Impl()->HasOneRef());
 }

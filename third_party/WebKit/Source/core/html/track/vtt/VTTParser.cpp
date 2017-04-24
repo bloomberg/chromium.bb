@@ -104,7 +104,7 @@ void VTTParser::Flush() {
   line_reader_.SetEndOfStream();
   Parse();
   FlushPendingCue();
-  region_map_.Clear();
+  region_map_.clear();
 }
 
 void VTTParser::Parse() {

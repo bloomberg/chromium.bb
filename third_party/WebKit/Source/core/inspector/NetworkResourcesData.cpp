@@ -394,7 +394,7 @@ void NetworkResourcesData::Clear(const String& preserved_loader_id) {
   }
   request_id_to_resource_data_map_.swap(preserved_map);
 
-  reused_xhr_replay_data_request_ids_.Clear();
+  reused_xhr_replay_data_request_ids_.clear();
 }
 
 void NetworkResourcesData::SetResourcesDataSizeLimits(

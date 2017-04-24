@@ -339,7 +339,7 @@ static RGBA32 MenuBackgroundColor() {
 }
 
 void LayoutThemeMac::PlatformColorsDidChange() {
-  system_color_cache_.Clear();
+  system_color_cache_.clear();
   LayoutTheme::PlatformColorsDidChange();
 }
 

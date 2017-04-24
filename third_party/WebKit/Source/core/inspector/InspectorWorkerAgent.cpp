@@ -152,7 +152,7 @@ void InspectorWorkerAgent::DisconnectFromAllProxies(bool report_to_frontend) {
     }
     id_proxy.value->DisconnectFromInspector(this);
   }
-  connected_proxies_.Clear();
+  connected_proxies_.clear();
 }
 
 void InspectorWorkerAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
@@ -167,7 +167,7 @@ void InspectorWorkerAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
     GetFrontend()->detachedFromTarget(id_proxy.key);
     id_proxy.value->DisconnectFromInspector(this);
   }
-  connected_proxies_.Clear();
+  connected_proxies_.clear();
 }
 
 protocol::DictionaryValue* InspectorWorkerAgent::AttachedWorkerIds() {

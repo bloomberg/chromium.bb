@@ -101,7 +101,7 @@ class CORE_EXPORT CSSValuePool
   ColorValueCache::AddResult GetColorCacheEntry(RGBA32 rgb_value) {
     // Just wipe out the cache and start rebuilding if it gets too big.
     if (color_value_cache_.size() > kMaximumColorCacheSize)
-      color_value_cache_.Clear();
+      color_value_cache_.clear();
     return color_value_cache_.insert(rgb_value, nullptr);
   }
   FontFamilyValueCache::AddResult GetFontFamilyCacheEntry(
@@ -112,7 +112,7 @@ class CORE_EXPORT CSSValuePool
       const AtomicString& string) {
     // Just wipe out the cache and start rebuilding if it gets too big.
     if (font_face_value_cache_.size() > kMaximumFontFaceCacheSize)
-      font_face_value_cache_.Clear();
+      font_face_value_cache_.clear();
     return font_face_value_cache_.insert(string, nullptr);
   }
 

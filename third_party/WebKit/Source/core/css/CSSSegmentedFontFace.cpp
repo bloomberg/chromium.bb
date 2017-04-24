@@ -50,7 +50,7 @@ void CSSSegmentedFontFace::PruneTable() {
   if (font_data_table_.IsEmpty())
     return;
 
-  font_data_table_.Clear();
+  font_data_table_.clear();
 }
 
 bool CSSSegmentedFontFace::IsValid() const {

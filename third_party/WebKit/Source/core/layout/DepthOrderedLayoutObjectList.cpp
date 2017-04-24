@@ -52,7 +52,7 @@ void DepthOrderedLayoutObjectList::Remove(LayoutObject& object) {
 }
 
 void DepthOrderedLayoutObjectList::Clear() {
-  data_->objects_.Clear();
+  data_->objects_.clear();
   data_->ordered_objects_.clear();
 }
 

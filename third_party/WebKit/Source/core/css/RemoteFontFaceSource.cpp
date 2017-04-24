@@ -104,7 +104,7 @@ void RemoteFontFaceSource::PruneTable() {
     if (font_data && font_data->GetCustomFontData())
       font_data->GetCustomFontData()->ClearFontFaceSource();
   }
-  font_data_table_.Clear();
+  font_data_table_.clear();
 }
 
 bool RemoteFontFaceSource::IsLoading() const {

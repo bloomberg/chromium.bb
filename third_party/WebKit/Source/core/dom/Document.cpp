@@ -2129,7 +2129,7 @@ void Document::UpdateStyle() {
 
   // Only retain the HashMap for the duration of StyleRecalc and
   // LayoutTreeConstruction.
-  non_attached_style_.Clear();
+  non_attached_style_.clear();
   ClearChildNeedsStyleRecalc();
   ClearChildNeedsReattachLayoutTree();
 

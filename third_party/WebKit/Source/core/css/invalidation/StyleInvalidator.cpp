@@ -40,7 +40,7 @@ void StyleInvalidator::Invalidate(Document& document) {
     Invalidate(*document_element, recursion_data, sibling_data);
   document.ClearChildNeedsStyleInvalidation();
   document.ClearNeedsStyleInvalidation();
-  pending_invalidation_map_.Clear();
+  pending_invalidation_map_.clear();
 }
 
 void StyleInvalidator::ScheduleInvalidationSetsForNode(

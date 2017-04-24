@@ -591,7 +591,7 @@ class PersistentHeapCollectionBase : public Collection {
     PersistentHeapCollectionBase<Collection>* collection =
         (reinterpret_cast<PersistentHeapCollectionBase<Collection>*>(self));
     collection->Uninitialize();
-    collection->Clear();
+    collection->clear();
   }
 
   NO_SANITIZE_ADDRESS

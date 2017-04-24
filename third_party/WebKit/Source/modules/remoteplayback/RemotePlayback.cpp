@@ -154,7 +154,7 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(
     return promise;
   }
 
-  availability_callbacks_.Clear();
+  availability_callbacks_.clear();
 
   resolver->Resolve();
   return promise;
@@ -301,7 +301,7 @@ void RemotePlayback::RemotePlaybackDisabled() {
     prompt_promise_resolver_ = nullptr;
   }
 
-  availability_callbacks_.Clear();
+  availability_callbacks_.clear();
 
   if (state_ != WebRemotePlaybackState::kDisconnected)
     media_element_->RequestRemotePlaybackStop();

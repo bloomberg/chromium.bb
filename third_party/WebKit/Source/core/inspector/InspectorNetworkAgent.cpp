@@ -1225,7 +1225,7 @@ Response InspectorNetworkAgent::disable() {
   state_->setString(NetworkAgentState::kUserAgentOverride, "");
   instrumenting_agents_->removeInspectorNetworkAgent(this);
   resources_data_->Clear();
-  known_request_id_map_.Clear();
+  known_request_id_map_.clear();
   return Response::OK();
 }
 
@@ -1528,7 +1528,7 @@ bool InspectorNetworkAgent::CacheDisabled() {
 }
 
 void InspectorNetworkAgent::RemoveFinishedReplayXHRFired(TimerBase*) {
-  replay_xhrs_to_be_deleted_.Clear();
+  replay_xhrs_to_be_deleted_.clear();
 }
 
 InspectorNetworkAgent::InspectorNetworkAgent(InspectedFrames* inspected_frames)

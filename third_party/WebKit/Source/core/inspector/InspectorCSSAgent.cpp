@@ -713,12 +713,12 @@ void InspectorCSSAgent::FlushPendingProtocolNotifications() {
 }
 
 void InspectorCSSAgent::Reset() {
-  id_to_inspector_style_sheet_.Clear();
-  id_to_inspector_style_sheet_for_inline_style_.Clear();
-  css_style_sheet_to_inspector_style_sheet_.Clear();
-  document_to_css_style_sheets_.Clear();
-  invalidated_documents_.Clear();
-  node_to_inspector_style_sheet_.Clear();
+  id_to_inspector_style_sheet_.clear();
+  id_to_inspector_style_sheet_for_inline_style_.clear();
+  css_style_sheet_to_inspector_style_sheet_.clear();
+  document_to_css_style_sheets_.clear();
+  invalidated_documents_.clear();
+  node_to_inspector_style_sheet_.clear();
   ResetNonPersistentData();
 }
 
@@ -2087,7 +2087,7 @@ void InspectorCSSAgent::ResetPseudoStates() {
       documents_to_change.insert(element->ownerDocument());
   }
 
-  node_id_to_forced_pseudo_state_.Clear();
+  node_id_to_forced_pseudo_state_.clear();
   for (auto& document : documents_to_change)
     document->SetNeedsStyleRecalc(
         kSubtreeStyleChange,

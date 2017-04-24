@@ -687,7 +687,7 @@ void BaseAudioContext::RemoveFinishedSourceNodesOnMainThread() {
     if (i != kNotFound)
       active_source_nodes_.erase(i);
   }
-  finished_source_nodes_.Clear();
+  finished_source_nodes_.clear();
 }
 
 bool BaseAudioContext::ReleaseFinishedSourceNodes() {
@@ -838,7 +838,7 @@ void BaseAudioContext::RejectPendingDecodeAudioDataResolvers() {
   for (auto& resolver : decode_audio_resolvers_)
     resolver->Reject(DOMException::Create(kInvalidStateError,
                                           "Audio context is going away"));
-  decode_audio_resolvers_.Clear();
+  decode_audio_resolvers_.clear();
 }
 
 void BaseAudioContext::MaybeUnlockUserGesture() {

@@ -250,7 +250,7 @@ void ElementShadowV0::WillAffectSelector() {
 }
 
 void ElementShadowV0::ClearDistribution() {
-  node_to_insertion_points_.Clear();
+  node_to_insertion_points_.clear();
 
   for (ShadowRoot* root = &element_shadow_->YoungestShadowRoot(); root;
        root = root->OlderShadowRoot())

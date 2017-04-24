@@ -292,7 +292,7 @@ void MutationObserver::DeliverMutations() {
 
   MutationObserverVector observers;
   CopyToVector(ActiveMutationObservers(), observers);
-  ActiveMutationObservers().Clear();
+  ActiveMutationObservers().clear();
 
   SlotChangeList slots;
   slots.Swap(ActiveSlotChangeList());

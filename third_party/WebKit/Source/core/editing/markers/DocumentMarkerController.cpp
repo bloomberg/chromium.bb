@@ -84,7 +84,7 @@ DocumentMarkerController::DocumentMarkerController(Document& document)
 }
 
 void DocumentMarkerController::Clear() {
-  markers_.Clear();
+  markers_.clear();
   possibly_existing_marker_types_ = 0;
 }
 

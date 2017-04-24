@@ -134,9 +134,9 @@ const AtomicString& USB::InterfaceName() const {
 
 void USB::ContextDestroyed(ExecutionContext*) {
   device_manager_.reset();
-  device_manager_requests_.Clear();
+  device_manager_requests_.clear();
   chooser_service_.reset();
-  chooser_service_requests_.Clear();
+  chooser_service_requests_.clear();
 }
 
 USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
@@ -206,14 +206,14 @@ void USB::OnDeviceManagerConnectionError() {
   client_binding_.Close();
   for (ScriptPromiseResolver* resolver : device_manager_requests_)
     resolver->Resolve(HeapVector<Member<USBDevice>>(0));
-  device_manager_requests_.Clear();
+  device_manager_requests_.clear();
 }
 
 void USB::OnChooserServiceConnectionError() {
   chooser_service_.reset();
   for (ScriptPromiseResolver* resolver : chooser_service_requests_)
     resolver->Reject(DOMException::Create(kNotFoundError, kNoDeviceSelected));
-  chooser_service_requests_.Clear();
+  chooser_service_requests_.clear();
 }
 
 void USB::AddedEventListener(const AtomicString& event_type,

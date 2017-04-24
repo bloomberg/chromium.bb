@@ -52,8 +52,8 @@ bool GeolocationWatchers::Contains(GeoNotifier* notifier) const {
 }
 
 void GeolocationWatchers::Clear() {
-  id_to_notifier_map_.Clear();
-  notifier_to_id_map_.Clear();
+  id_to_notifier_map_.clear();
+  notifier_to_id_map_.clear();
 }
 
 bool GeolocationWatchers::IsEmpty() const {

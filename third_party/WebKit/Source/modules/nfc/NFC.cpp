@@ -601,8 +601,8 @@ void NFC::Dispose() {
 
 void NFC::ContextDestroyed(ExecutionContext*) {
   nfc_.reset();
-  requests_.Clear();
-  callbacks_.Clear();
+  requests_.clear();
+  callbacks_.clear();
 }
 
 // https://w3c.github.io/web-nfc/#writing-or-pushing-content
@@ -712,7 +712,7 @@ ScriptPromise NFC::cancelWatch(ScriptState* script_state) {
   if (!promise.IsEmpty())
     return promise;
 
-  callbacks_.Clear();
+  callbacks_.clear();
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   requests_.insert(resolver);
   nfc_->CancelAllWatches(ConvertToBaseCallback(
@@ -748,7 +748,7 @@ void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver,
 
 void NFC::OnConnectionError() {
   nfc_.reset();
-  callbacks_.Clear();
+  callbacks_.clear();
 
   // If NFCService is not available or disappears when NFC hardware is
   // disabled, reject promise with NotSupportedError exception.
@@ -756,7 +756,7 @@ void NFC::OnConnectionError() {
     resolver->Reject(NFCError::Take(
         resolver, device::nfc::mojom::blink::NFCErrorType::NOT_SUPPORTED));
 
-  requests_.Clear();
+  requests_.clear();
 }
 
 void NFC::OnWatch(const WTF::Vector<uint32_t>& ids,

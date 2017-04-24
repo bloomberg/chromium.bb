@@ -433,7 +433,7 @@ void CSSAnimations::SnapshotCompositorKeyframes(
 }
 
 void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
-  previous_active_interpolations_for_animations_.Clear();
+  previous_active_interpolations_for_animations_.clear();
   if (pending_update_.IsEmpty())
     return;
 
@@ -931,7 +931,7 @@ void CSSAnimations::Cancel() {
   }
 
   running_animations_.clear();
-  transitions_.Clear();
+  transitions_.clear();
   ClearPendingUpdate();
 }
 

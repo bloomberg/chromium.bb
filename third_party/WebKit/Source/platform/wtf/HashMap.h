@@ -152,7 +152,7 @@ class HashMap {
 
   void erase(KeyPeekInType);
   void erase(iterator);
-  void Clear();
+  void clear();
   template <typename Collection>
   void RemoveAll(const Collection& to_be_removed) {
     WTF::RemoveAll(*this, to_be_removed);
@@ -624,7 +624,7 @@ template <typename T,
           typename W,
           typename X,
           typename Y>
-inline void HashMap<T, U, V, W, X, Y>::Clear() {
+inline void HashMap<T, U, V, W, X, Y>::clear() {
   impl_.clear();
 }
 

@@ -131,9 +131,9 @@ void Geolocation::ContextDestroyed(ExecutionContext*) {
   CancelAllRequests();
   StopUpdating();
   geolocation_permission_ = kPermissionDenied;
-  pending_for_permission_notifiers_.Clear();
+  pending_for_permission_notifiers_.clear();
   last_position_ = nullptr;
-  one_shots_.Clear();
+  one_shots_.clear();
   watchers_.Clear();
 }
 
@@ -327,7 +327,7 @@ void Geolocation::OnGeolocationPermissionUpdated(
           PositionError::kPermissionDenied, kPermissionDeniedErrorMessage));
     }
   }
-  pending_for_permission_notifiers_.Clear();
+  pending_for_permission_notifiers_.clear();
 }
 
 void Geolocation::SendError(GeoNotifierVector& notifiers,
@@ -413,7 +413,7 @@ void Geolocation::HandleError(PositionError* error) {
   // added by calls to Geolocation methods from the callbacks, and to prevent
   // further callbacks to these notifiers.
   GeoNotifierVector one_shots_with_cached_position;
-  one_shots_.Clear();
+  one_shots_.clear();
   if (error->IsFatal())
     watchers_.Clear();
   else {
@@ -474,7 +474,7 @@ void Geolocation::MakeSuccessCallbacks() {
   // Clear the lists before we make the callbacks, to avoid clearing notifiers
   // added by calls to Geolocation methods from the callbacks, and to prevent
   // further callbacks to these notifiers.
-  one_shots_.Clear();
+  one_shots_.clear();
 
   SendPosition(one_shots_copy, last_position_);
   SendPosition(watchers_copy, last_position_);

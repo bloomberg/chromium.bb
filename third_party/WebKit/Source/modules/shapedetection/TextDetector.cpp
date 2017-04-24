@@ -68,7 +68,7 @@ void TextDetector::OnTextServiceConnectionError() {
     request->Reject(DOMException::Create(kNotSupportedError,
                                          "Text Detection not implemented."));
   }
-  text_service_requests_.Clear();
+  text_service_requests_.clear();
   text_service_.reset();
 }
 

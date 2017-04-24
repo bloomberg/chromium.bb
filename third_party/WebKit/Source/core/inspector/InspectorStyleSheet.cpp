@@ -1786,8 +1786,8 @@ void InspectorStyleSheet::RemapSourceDataToCSSOMIfNecessary() {
 }
 
 void InspectorStyleSheet::MapSourceDataToCSSOM() {
-  rule_to_source_data_.Clear();
-  source_data_to_rule_.Clear();
+  rule_to_source_data_.clear();
+  source_data_to_rule_.clear();
 
   cssom_flat_rules_.clear();
   CSSRuleVector& cssom_rules = cssom_flat_rules_;

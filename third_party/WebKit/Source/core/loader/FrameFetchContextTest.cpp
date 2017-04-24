@@ -335,7 +335,7 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
   document->SetInsecureRequestPolicy(kUpgradeInsecureRequests);
 
   for (const auto& test : tests) {
-    document->InsecureNavigationsToUpgrade()->Clear();
+    document->InsecureNavigationsToUpgrade()->clear();
 
     // We always upgrade for FrameTypeNone and FrameTypeNested.
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,

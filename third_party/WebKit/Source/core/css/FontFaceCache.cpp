@@ -114,16 +114,16 @@ void FontFaceCache::RemoveFontFace(FontFace* font_face, bool css_connected) {
 void FontFaceCache::ClearCSSConnected() {
   for (const auto& item : style_rule_to_font_face_)
     RemoveFontFace(item.value.Get(), true);
-  style_rule_to_font_face_.Clear();
+  style_rule_to_font_face_.clear();
 }
 
 void FontFaceCache::ClearAll() {
   if (font_faces_.IsEmpty())
     return;
 
-  font_faces_.Clear();
-  fonts_.Clear();
-  style_rule_to_font_face_.Clear();
+  font_faces_.clear();
+  fonts_.clear();
+  style_rule_to_font_face_.clear();
   css_connected_font_faces_.clear();
   IncrementVersion();
 }

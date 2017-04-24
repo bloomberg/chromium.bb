@@ -156,8 +156,8 @@ class ShapeCache {
   }
 
   void Clear() {
-    single_char_map_.Clear();
-    short_string_map_.Clear();
+    single_char_map_.clear();
+    short_string_map_.clear();
   }
 
   unsigned size() const {
@@ -213,8 +213,8 @@ class ShapeCache {
       return value;
 
     // No need to be fancy: we're just trying to avoid pathological growth.
-    single_char_map_.Clear();
-    short_string_map_.Clear();
+    single_char_map_.clear();
+    short_string_map_.clear();
 
     return 0;
   }

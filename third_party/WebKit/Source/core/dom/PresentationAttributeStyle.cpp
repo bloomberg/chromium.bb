@@ -118,7 +118,7 @@ class PresentationAttributeCacheCleaner {
     hit_count_ = 0;
     if (hit_count > kMinimumPresentationAttributeCacheHitCountPerMinute)
       return;
-    GetPresentationAttributeCache().Clear();
+    GetPresentationAttributeCache().clear();
   }
 
   unsigned hit_count_;
@@ -222,7 +222,7 @@ StylePropertySet* ComputePresentationAttributeStyle(Element& element) {
       kPresentationAttributeCacheMaximumSize) {
     // FIXME: Discarding the entire cache when it gets too big is probably bad
     // since it creates a perf "cliff". Perhaps we should use an LRU?
-    GetPresentationAttributeCache().Clear();
+    GetPresentationAttributeCache().clear();
     GetPresentationAttributeCache().Set(cache_hash, new_entry);
   } else {
     cache_value->value = new_entry;

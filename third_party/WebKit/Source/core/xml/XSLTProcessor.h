@@ -74,7 +74,7 @@ class XSLTProcessor final : public GarbageCollectedFinalized<XSLTProcessor>,
   String getParameter(const String& namespace_uri,
                       const String& local_name) const;
   void removeParameter(const String& namespace_uri, const String& local_name);
-  void clearParameters() { parameters_.Clear(); }
+  void clearParameters() { parameters_.clear(); }
 
   void reset();
 

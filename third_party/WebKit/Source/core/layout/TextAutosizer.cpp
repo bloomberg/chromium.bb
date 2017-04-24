@@ -389,7 +389,7 @@ void TextAutosizer::EndLayout(LayoutBlock* block) {
     cluster_stack_.clear();
     styles_retained_during_layout_.clear();
 #if DCHECK_IS_ON()
-    blocks_that_have_begun_layout_.Clear();
+    blocks_that_have_begun_layout_.clear();
 #endif
     // Tables can create two layout scopes for the same block so the isEmpty
     // check below is needed to guard against endLayout being called twice.
@@ -1386,7 +1386,7 @@ void TextAutosizer::CheckSuperclusterConsistency() {
       supercluster->multiplier_ = old_multipiler;
     }
   }
-  potentially_inconsistent_superclusters.Clear();
+  potentially_inconsistent_superclusters.clear();
 }
 
 DEFINE_TRACE(TextAutosizer) {

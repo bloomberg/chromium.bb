@@ -121,14 +121,14 @@ class CSSAnimationUpdate final {
   void Clear() {
     new_animations_.clear();
     animations_with_updates_.clear();
-    new_transitions_.Clear();
-    active_interpolations_for_animations_.Clear();
-    active_interpolations_for_custom_transitions_.Clear();
-    active_interpolations_for_standard_transitions_.Clear();
+    new_transitions_.clear();
+    active_interpolations_for_animations_.clear();
+    active_interpolations_for_custom_transitions_.clear();
+    active_interpolations_for_standard_transitions_.clear();
     cancelled_animation_indices_.clear();
     animation_indices_with_pause_toggled_.clear();
-    cancelled_transitions_.Clear();
-    finished_transitions_.Clear();
+    cancelled_transitions_.clear();
+    finished_transitions_.clear();
     updated_compositor_keyframes_.clear();
   }
 

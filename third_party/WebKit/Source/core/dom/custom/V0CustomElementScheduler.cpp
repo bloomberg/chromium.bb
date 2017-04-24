@@ -159,12 +159,12 @@ void V0CustomElementScheduler::EnqueueMicrotaskStep(
 
 void V0CustomElementScheduler::CallbackDispatcherDidFinish() {
   if (V0CustomElementMicrotaskDispatcher::Instance().ElementQueueIsEmpty())
-    CallbackQueues().Clear();
+    CallbackQueues().clear();
 }
 
 void V0CustomElementScheduler::MicrotaskDispatcherDidFinish() {
   DCHECK(!V0CustomElementProcessingStack::InCallbackDeliveryScope());
-  CallbackQueues().Clear();
+  CallbackQueues().clear();
 }
 
 }  // namespace blink

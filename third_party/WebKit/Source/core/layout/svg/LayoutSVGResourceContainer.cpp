@@ -98,7 +98,7 @@ void LayoutSVGResourceContainer::DetachAllClients(const AtomicString& to_id) {
     SvgTreeScopeResourcesFromElement(client_element)
         .AddPendingResource(to_id, *client_element);
   }
-  clients_.Clear();
+  clients_.clear();
 }
 
 void LayoutSVGResourceContainer::IdChanged(const AtomicString& old_id,

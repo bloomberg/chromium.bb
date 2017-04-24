@@ -121,7 +121,7 @@ class HashSet {
 
   void erase(ValuePeekInType);
   void erase(iterator);
-  void Clear();
+  void clear();
   template <typename Collection>
   void RemoveAll(const Collection& to_be_removed) {
     WTF::RemoveAll(*this, to_be_removed);
@@ -282,7 +282,7 @@ inline void HashSet<T, U, V, W>::erase(ValuePeekInType value) {
 }
 
 template <typename T, typename U, typename V, typename W>
-inline void HashSet<T, U, V, W>::Clear() {
+inline void HashSet<T, U, V, W>::clear() {
   impl_.clear();
 }
 

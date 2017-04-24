@@ -236,8 +236,8 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
       SimplifiedLayout())
     return;
 
-  row_axis_alignment_context_.Clear();
-  col_axis_alignment_context_.Clear();
+  row_axis_alignment_context_.clear();
+  col_axis_alignment_context_.clear();
 
   SubtreeLayoutScope layout_scope(*this);
 

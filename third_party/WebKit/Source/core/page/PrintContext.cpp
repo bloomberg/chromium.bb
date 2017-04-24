@@ -187,7 +187,7 @@ void PrintContext::end() {
   ASSERT(is_printing_);
   is_printing_ = false;
   frame_->SetPrinting(false, FloatSize(), FloatSize(), 0);
-  linked_destinations_.Clear();
+  linked_destinations_.clear();
   linked_destinations_valid_ = false;
 }
 

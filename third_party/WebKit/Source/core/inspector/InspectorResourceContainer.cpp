@@ -21,8 +21,8 @@ DEFINE_TRACE(InspectorResourceContainer) {
 void InspectorResourceContainer::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   if (frame != inspected_frames_->Root())
     return;
-  style_sheet_contents_.Clear();
-  style_element_contents_.Clear();
+  style_sheet_contents_.clear();
+  style_element_contents_.clear();
 }
 
 void InspectorResourceContainer::StoreStyleSheetContent(const String& url,

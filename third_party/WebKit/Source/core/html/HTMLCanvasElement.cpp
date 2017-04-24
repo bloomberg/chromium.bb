@@ -531,7 +531,7 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
     return;
 
   if (!OriginClean()) {
-    listeners_.Clear();
+    listeners_.clear();
     return;
   }
 

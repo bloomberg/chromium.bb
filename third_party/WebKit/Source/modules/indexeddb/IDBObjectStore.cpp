@@ -958,7 +958,7 @@ void IDBObjectStore::MarkDeleted() {
       << "An object store got deleted outside a versionchange transaction.";
 
   deleted_ = true;
-  metadata_->indexes.Clear();
+  metadata_->indexes.clear();
 
   for (auto& it : index_map_) {
     IDBIndex* index = it.value;
@@ -977,7 +977,7 @@ void IDBObjectStore::ClearIndexCache() {
   clear_index_cache_called_ = true;
 #endif  // DCHECK_IS_ON()
 
-  index_map_.Clear();
+  index_map_.clear();
 }
 
 void IDBObjectStore::RevertMetadata(

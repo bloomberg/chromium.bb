@@ -330,7 +330,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
   }
 
   if (validated_urls_.size() >= kMaxValidatedURLsSize) {
-    validated_urls_.Clear();
+    validated_urls_.clear();
   }
   validated_urls_.insert(params.GetResourceRequest().Url());
 }

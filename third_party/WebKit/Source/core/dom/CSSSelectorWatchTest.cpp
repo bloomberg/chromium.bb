@@ -38,8 +38,8 @@ void CSSSelectorWatchTest::SetUp() {
 }
 
 void CSSSelectorWatchTest::ClearAddedRemoved(CSSSelectorWatch& watch) {
-  watch.added_selectors_.Clear();
-  watch.removed_selectors_.Clear();
+  watch.added_selectors_.clear();
+  watch.removed_selectors_.clear();
 }
 
 TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {

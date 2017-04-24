@@ -73,8 +73,8 @@ void WebURLLoaderMockFactoryImpl::UnregisterURL(const blink::WebURL& url) {
 }
 
 void WebURLLoaderMockFactoryImpl::UnregisterAllURLsAndClearMemoryCache() {
-  url_to_response_info_.Clear();
-  url_to_error_info_.Clear();
+  url_to_response_info_.clear();
+  url_to_error_info_.clear();
   GetMemoryCache()->EvictResources();
 }
 

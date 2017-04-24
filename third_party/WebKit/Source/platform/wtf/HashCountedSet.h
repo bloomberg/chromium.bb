@@ -101,7 +101,7 @@ class HashCountedSet {
   void RemoveAll(iterator);
 
   // Clears the whole set.
-  void clear() { impl_.Clear(); }
+  void clear() { impl_.clear(); }
 
   Vector<Value> AsVector() const;
 

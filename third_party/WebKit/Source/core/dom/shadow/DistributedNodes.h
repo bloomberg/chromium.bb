@@ -53,7 +53,7 @@ class DistributedNodes final {
   void Append(Node*);
   void Clear() {
     nodes_.clear();
-    indices_.Clear();
+    indices_.clear();
   }
   void ShrinkToFit() { nodes_.ShrinkToFit(); }
 

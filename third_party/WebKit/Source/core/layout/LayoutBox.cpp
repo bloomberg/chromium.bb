@@ -5865,7 +5865,7 @@ void LayoutBox::ClearSnapAreas() {
   if (SnapAreaSet* areas = SnapAreas()) {
     for (auto& snap_area : *areas)
       snap_area->rare_data_->snap_container_ = nullptr;
-    areas->Clear();
+    areas->clear();
   }
 }
 

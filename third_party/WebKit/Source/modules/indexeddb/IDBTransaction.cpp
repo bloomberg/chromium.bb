@@ -608,13 +608,13 @@ void IDBTransaction::Finished() {
       DCHECK(old_store_metadata_.Contains(object_store));
     }
   }
-  object_store_map_.Clear();
+  object_store_map_.clear();
 
   for (auto& it : old_store_metadata_) {
     IDBObjectStore* object_store = it.key;
     object_store->ClearIndexCache();
   }
-  old_store_metadata_.Clear();
+  old_store_metadata_.clear();
 
   deleted_indexes_.clear();
   deleted_object_stores_.clear();

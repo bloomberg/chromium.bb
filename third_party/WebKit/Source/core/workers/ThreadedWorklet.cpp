@@ -66,7 +66,7 @@ void ThreadedWorklet::ContextDestroyed(ExecutionContext* execution_context) {
   DCHECK(IsMainThread());
   for (const auto& script_loader : loader_to_resolver_map_.Keys())
     script_loader->Cancel();
-  loader_to_resolver_map_.Clear();
+  loader_to_resolver_map_.clear();
   Worklet::ContextDestroyed(execution_context);
 }
 

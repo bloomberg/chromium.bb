@@ -1288,7 +1288,7 @@ void LayoutTableSection::ComputeOverflowFromCells(unsigned total_rows,
                 total_cells_count;
 
   overflow_.reset();
-  overflowing_cells_.Clear();
+  overflowing_cells_.clear();
   force_slow_paint_path_with_overflowing_cell_ = false;
 #if DCHECK_IS_ON()
   bool has_overflowing_cell = false;
@@ -1313,7 +1313,7 @@ void LayoutTableSection::ComputeOverflowFromCells(unsigned total_rows,
           force_slow_paint_path_with_overflowing_cell_ = true;
           // The slow path does not make any use of the overflowing cells info,
           // don't hold on to the memory.
-          overflowing_cells_.Clear();
+          overflowing_cells_.clear();
         }
       }
     }

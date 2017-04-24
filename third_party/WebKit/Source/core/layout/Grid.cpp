@@ -140,8 +140,8 @@ void Grid::SetNeedsItemsPlacement(bool needs_items_placement) {
   }
 
   grid_.Resize(0);
-  grid_item_area_.Clear();
-  grid_items_indexes_map_.Clear();
+  grid_item_area_.clear();
+  grid_items_indexes_map_.clear();
   has_any_orthogonal_grid_item_ = false;
   smallest_row_start_ = 0;
   smallest_column_start_ = 0;

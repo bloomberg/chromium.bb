@@ -626,7 +626,7 @@ static inline void SetLogicalWidthForTextRun(
     if (last_end_offset != run->stop_) {
       // If we don't have enough cached data, we'll measure the run again.
       can_use_cached_word_measurements = false;
-      fallback_fonts.Clear();
+      fallback_fonts.clear();
     }
   }
 

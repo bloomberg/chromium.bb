@@ -482,7 +482,7 @@ Expression* Parser::ParseStatement(const String& statement,
   current_parser_ = old_parser;
 
   if (parse_error) {
-    strings_.Clear();
+    strings_.clear();
 
     top_expr_ = nullptr;
 

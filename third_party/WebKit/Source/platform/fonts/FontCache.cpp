@@ -394,7 +394,7 @@ static inline void PurgeFallbackListShaperCache() {
          iter != g_fallback_list_shaper_cache->end(); ++iter) {
       items += iter->value->size();
     }
-    g_fallback_list_shaper_cache->Clear();
+    g_fallback_list_shaper_cache->clear();
   }
   DEFINE_STATIC_LOCAL(CustomCountHistogram, shape_cache_histogram,
                       ("Blink.Fonts.ShapeCache", 1, 1000000, 50));
