@@ -60,9 +60,8 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
   ~HeadlessBrowserTest() override;
 
   // BrowserTestBase:
-  void RunTestOnMainThreadLoop() override;
-  void SetUpOnMainThread() override;
-  void TearDownOnMainThread() override;
+  void PreRunTestOnMainThread() override;
+  void PostRunTestOnMainThread() override;
 
   // Run an asynchronous test in a nested run loop. The caller should call
   // FinishAsynchronousTest() to notify that the test should finish.

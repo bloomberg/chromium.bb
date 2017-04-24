@@ -18,6 +18,7 @@
 #include "base/sys_info.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
@@ -145,7 +146,8 @@ BrowserTestBase::BrowserTestBase()
     : expected_exit_code_(0),
       enable_pixel_output_(false),
       use_software_compositing_(false),
-      set_up_called_(false) {
+      set_up_called_(false),
+      disable_io_checks_(false) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
 #endif
@@ -343,7 +345,16 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     // waiting.
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
-    RunTestOnMainThreadLoop();
+    PreRunTestOnMainThread();
+    SetUpOnMainThread();
+    bool old_io_allowed_value = false;
+    if (!disable_io_checks_)
+      base::ThreadRestrictions::SetIOAllowed(false);
+    RunTestOnMainThread();
+    if (!disable_io_checks_)
+      base::ThreadRestrictions::SetIOAllowed(old_io_allowed_value);
+    TearDownOnMainThread();
+    PostRunTestOnMainThread();
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

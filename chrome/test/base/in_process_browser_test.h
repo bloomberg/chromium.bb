@@ -170,7 +170,8 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   virtual bool SetUpUserDataDirectory() WARN_UNUSED_RESULT;
 
   // BrowserTestBase:
-  void RunTestOnMainThreadLoop() override;
+  void PreRunTestOnMainThread() override;
+  void PostRunTestOnMainThread() override;
 
   // Ensures that no devtools are open, and then opens the devtools.
   void OpenDevToolsWindow(content::WebContents* web_contents);

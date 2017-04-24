@@ -67,13 +67,20 @@ class BrowserTestBase : public testing::Test {
   // Override this for things you would normally override TearDown for.
   virtual void TearDownInProcessBrowserTestFixture() {}
 
+  // This is invoked from main after browser_init/browser_main have completed.
+  // This prepares for the test by creating a new browser and doing any other
+  // initialization.
+  // This is meant to be inherited only by the test harness.
+  virtual void PreRunTestOnMainThread() = 0;
+
   // Override this rather than TestBody.
+  // Note this is internally called by the browser test macros.
   virtual void RunTestOnMainThread() = 0;
 
-  // This is invoked from main after browser_init/browser_main have completed.
-  // This prepares for the test by creating a new browser, runs the test
-  // (RunTestOnMainThread), quits the browsers and returns.
-  virtual void RunTestOnMainThreadLoop() = 0;
+  // This is invoked from main after RunTestOnMainThread has run, to give the
+  // harness a chance for post-test cleanup.
+  // This is meant to be inherited only by the test harness.
+  virtual void PostRunTestOnMainThread() = 0;
 
   // Sets expected browser exit code, in case it's different than 0 (success).
   void set_expected_exit_code(int code) { expected_exit_code_ = code; }
@@ -124,6 +131,10 @@ class BrowserTestBase : public testing::Test {
   // Returns true if the test will be using GL acceleration via a software GL.
   bool UsingSoftwareGL() const;
 
+  // Temporary
+  // TODO(jam): remove this.
+  void disable_io_checks() { disable_io_checks_ = true; }
+
  private:
   void ProxyRunTestOnMainThreadLoop();
 
@@ -150,6 +161,11 @@ class BrowserTestBase : public testing::Test {
   // class to ensure that SetUp was called. If it's not called, the test will
   // not run and report a false positive result.
   bool set_up_called_;
+
+  // Tests should keep on the IO thread checks to test that production code
+  // paths don't make file access. Keep this for now since src/chrome didn't
+  // check this.
+  bool disable_io_checks_;
 
 #if defined(OS_POSIX)
   bool handle_sigterm_;

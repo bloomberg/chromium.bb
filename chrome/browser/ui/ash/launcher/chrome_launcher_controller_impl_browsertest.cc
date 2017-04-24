@@ -224,13 +224,13 @@ class LauncherPlatformAppBrowserTest
 
   ~LauncherPlatformAppBrowserTest() override {}
 
-  void RunTestOnMainThreadLoop() override {
+  void SetUpOnMainThread() override {
     // Ensure ash starts the session and creates the shelf and controller.
     SessionControllerClient::FlushForTesting();
 
     controller_ = GetChromeLauncherControllerImpl();
     ASSERT_TRUE(controller_);
-    return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
+    extensions::PlatformAppBrowserTest::SetUpOnMainThread();
   }
 
   ash::ShelfModel* shelf_model() { return ash::Shell::Get()->shelf_model(); }
@@ -281,7 +281,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
 
   ~ShelfAppBrowserTest() override {}
 
-  void RunTestOnMainThreadLoop() override {
+  void SetUpOnMainThread() override {
     // Ensure ash starts the session and creates the shelf and controller.
     SessionControllerClient::FlushForTesting();
 
@@ -290,7 +290,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     model_ = ash::Shell::Get()->shelf_model();
     controller_ = GetChromeLauncherControllerImpl();
     ASSERT_TRUE(controller_);
-    return ExtensionBrowserTest::RunTestOnMainThreadLoop();
+    ExtensionBrowserTest::SetUpOnMainThread();
   }
 
   size_t NumberOfDetectedLauncherBrowsers(bool show_all_tabs) {

@@ -29,6 +29,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/switches.h"
+#include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/test/shell_test.h"
@@ -175,11 +176,6 @@ void WebViewAPITest::RunTest(const std::string& test_name,
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
 
-void WebViewAPITest::RunTestOnMainThreadLoop() {
-  AppShellTest::RunTestOnMainThreadLoop();
-  GetGuestViewManager()->WaitForAllGuestsDeleted();
-}
-
 void WebViewAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   AppShellTest::SetUpCommandLine(command_line);
   command_line->AppendSwitchASCII(::switches::kJavaScriptFlags, "--expose-gc");
@@ -236,6 +232,8 @@ void WebViewAPITest::StopTestServer() {
 }
 
 void WebViewAPITest::TearDownOnMainThread() {
+  DesktopController::instance()->CloseAppWindows();
+  GetGuestViewManager()->WaitForAllGuestsDeleted();
   TestGetConfigFunction::set_test_config_state(nullptr);
 
   AppShellTest::TearDownOnMainThread();

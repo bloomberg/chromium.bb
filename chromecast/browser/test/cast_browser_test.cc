@@ -33,29 +33,21 @@ void CastBrowserTest::SetUp() {
   BrowserTestBase::SetUp();
 }
 
-void CastBrowserTest::TearDownOnMainThread() {
-  cast_web_view_.reset();
-
-  BrowserTestBase::TearDownOnMainThread();
-}
-
 void CastBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
-  BrowserTestBase::SetUpCommandLine(command_line);
-
   command_line->AppendSwitch(switches::kNoWifi);
   command_line->AppendSwitchASCII(switches::kTestType, "browser");
 }
 
-void CastBrowserTest::RunTestOnMainThreadLoop() {
+void CastBrowserTest::PreRunTestOnMainThread() {
   // Pump startup related events.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop().RunUntilIdle();
 
   metrics::CastMetricsHelper::GetInstance()->SetDummySessionIdForTesting();
+}
 
-  SetUpOnMainThread();
-  RunTestOnMainThread();
-  TearDownOnMainThread();
+void CastBrowserTest::PostRunTestOnMainThread() {
+  cast_web_view_.reset();
 }
 
 content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {

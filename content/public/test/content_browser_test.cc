@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_paths.h"
@@ -25,10 +24,6 @@
 
 #if defined(OS_ANDROID)
 #include "content/shell/app/shell_main_delegate.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
@@ -107,7 +102,7 @@ void ContentBrowserTest::TearDown() {
 #endif
 }
 
-void ContentBrowserTest::RunTestOnMainThreadLoop() {
+void ContentBrowserTest::PreRunTestOnMainThread() {
   if (!switches::IsRunLayoutTestSwitchPresent()) {
     CHECK_EQ(Shell::windows().size(), 1u);
     shell_ = Shell::windows()[0];
@@ -121,7 +116,7 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   // deallocation via an autorelease pool (such as browser window closure and
   // browser shutdown). To avoid this, the following pool is recycled after each
   // time code is directly executed.
-  base::mac::ScopedNSAutoreleasePool pool;
+  pool_ = new base::mac::ScopedNSAutoreleasePool;
 #endif
 
   // Pump startup related events.
@@ -129,18 +124,13 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   base::RunLoop().RunUntilIdle();
 
 #if defined(OS_MACOSX)
-  pool.Recycle();
+  pool_->Recycle();
 #endif
+}
 
-  SetUpOnMainThread();
-
-  bool old_io_allowed_value = base::ThreadRestrictions::SetIOAllowed(false);
-  RunTestOnMainThread();
-  base::ThreadRestrictions::SetIOAllowed(old_io_allowed_value);
-
-  TearDownOnMainThread();
+void ContentBrowserTest::PostRunTestOnMainThread() {
 #if defined(OS_MACOSX)
-  pool.Recycle();
+  pool_->Recycle();
 #endif
 
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());

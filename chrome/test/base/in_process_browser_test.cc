@@ -519,7 +519,7 @@ base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
 }
 #endif
 
-void InProcessBrowserTest::RunTestOnMainThreadLoop() {
+void InProcessBrowserTest::PreRunTestOnMainThread() {
   AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
 
   // Pump startup related events.
@@ -566,13 +566,15 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   if (browser_ && global_browser_set_up_function_)
     ASSERT_TRUE(global_browser_set_up_function_(browser_));
 
-  SetUpOnMainThread();
 #if defined(OS_MACOSX)
   autorelease_pool_->Recycle();
 #endif
 
-  if (!HasFatalFailure())
-    RunTestOnMainThread();
+  // TODO(jam): remove this.
+  disable_io_checks();
+}
+
+void InProcessBrowserTest::PostRunTestOnMainThread() {
 #if defined(OS_MACOSX)
   autorelease_pool_->Recycle();
 #endif
@@ -583,9 +585,6 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
     EXPECT_EQ("", error_message);
   }
 
-  // Invoke cleanup and quit even if there are failures. This is similar to
-  // gtest in that it invokes TearDown even if Setup fails.
-  TearDownOnMainThread();
 #if defined(OS_MACOSX)
   autorelease_pool_->Recycle();
 #endif

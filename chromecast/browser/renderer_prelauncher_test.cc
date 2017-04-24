@@ -30,7 +30,8 @@ class RendererPrelauncherTest : public content::BrowserTestBase {
  protected:
   // content::BrowserTestBase implementation:
   void SetUp() override;
-  void RunTestOnMainThreadLoop() override;
+  void PreRunTestOnMainThread() override;
+  void PostRunTestOnMainThread() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererPrelauncherTest);
@@ -44,15 +45,11 @@ void RendererPrelauncherTest::SetUp() {
   BrowserTestBase::SetUp();
 }
 
-void RendererPrelauncherTest::RunTestOnMainThreadLoop() {
+void RendererPrelauncherTest::PreRunTestOnMainThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop().RunUntilIdle();
 
   metrics::CastMetricsHelper::GetInstance()->SetDummySessionIdForTesting();
-
-  SetUpOnMainThread();
-  RunTestOnMainThread();
-  TearDownOnMainThread();
 }
 
 IN_PROC_BROWSER_TEST_F(RendererPrelauncherTest, ReusedRenderer) {

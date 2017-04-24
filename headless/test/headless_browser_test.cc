@@ -137,22 +137,15 @@ HeadlessBrowserTest::HeadlessBrowserTest() {
 
 HeadlessBrowserTest::~HeadlessBrowserTest() {}
 
-void HeadlessBrowserTest::SetUpOnMainThread() {}
-
-void HeadlessBrowserTest::TearDownOnMainThread() {
-  browser()->Shutdown();
-}
-
-void HeadlessBrowserTest::RunTestOnMainThreadLoop() {
+void HeadlessBrowserTest::PreRunTestOnMainThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Pump startup related events.
   base::RunLoop().RunUntilIdle();
+}
 
-  SetUpOnMainThread();
-  RunTestOnMainThread();
-  TearDownOnMainThread();
-
+void HeadlessBrowserTest::PostRunTestOnMainThread() {
+  browser()->Shutdown();
   for (content::RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {

@@ -31,9 +31,9 @@ class CastBrowserTest : public content::BrowserTestBase, CastWebView::Delegate {
 
   // content::BrowserTestBase implementation:
   void SetUp() final;
-  void TearDownOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  void RunTestOnMainThreadLoop() final;
+  void PreRunTestOnMainThread() override;
+  void PostRunTestOnMainThread() override;
 
   content::WebContents* NavigateToURL(const GURL& url);
 

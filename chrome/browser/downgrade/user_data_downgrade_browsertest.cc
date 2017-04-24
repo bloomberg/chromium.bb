@@ -83,13 +83,13 @@ class UserDataDowngradeBrowserCopyAndCleanTest
 
   // InProcessBrowserTest:
   // Verify the content of renamed user data directory.
-  void RunTestOnMainThreadLoop() override {
+  void SetUpOnMainThread() override {
     ASSERT_TRUE(base::DirectoryExists(moved_user_data_dir_));
     ASSERT_TRUE(
         base::PathExists(moved_user_data_dir_.Append(other_file_.BaseName())));
     EXPECT_EQ(GetNextChromeVersion(),
               GetLastVersion(moved_user_data_dir_).GetString());
-    InProcessBrowserTest::RunTestOnMainThreadLoop();
+    UserDataDowngradeBrowserTestBase::SetUpOnMainThread();
   }
 };
 

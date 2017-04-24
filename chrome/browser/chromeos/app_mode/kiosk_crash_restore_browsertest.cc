@@ -107,10 +107,9 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
     fake_cws_->SetUpdateCrx(test_app_id_, test_app_id_ + ".crx", "1.0.0");
   }
 
-  void RunTestOnMainThreadLoop() override {
+  void PreRunTestOnMainThread() override {
     termination_observer_.reset(new TerminationObserver());
-
-    InProcessBrowserTest::RunTestOnMainThreadLoop();
+    InProcessBrowserTest::PreRunTestOnMainThread();
   }
 
   void SetUpOnMainThread() override {

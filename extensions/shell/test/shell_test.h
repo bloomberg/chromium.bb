@@ -26,8 +26,8 @@ class AppShellTest : public content::BrowserTestBase {
 
   // content::BrowserTestBase implementation.
   void SetUp() override;
-  void SetUpOnMainThread() override;
-  void RunTestOnMainThreadLoop() override;
+  void PreRunTestOnMainThread() override;
+  void PostRunTestOnMainThread() override;
 
   content::BrowserContext* browser_context() { return browser_context_; }
 

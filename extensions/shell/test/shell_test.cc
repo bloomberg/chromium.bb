@@ -47,24 +47,20 @@ void AppShellTest::SetUp() {
   content::BrowserTestBase::SetUp();
 }
 
-void AppShellTest::SetUpOnMainThread() {
+void AppShellTest::PreRunTestOnMainThread() {
   browser_context_ = ShellContentBrowserClient::Get()->GetBrowserContext();
 
   extension_system_ = static_cast<ShellExtensionSystem*>(
       ExtensionSystem::Get(browser_context_));
   extension_system_->Init();
-}
-
-void AppShellTest::RunTestOnMainThreadLoop() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   base::RunLoop().RunUntilIdle();
 
-  SetUpOnMainThread();
+  // TODO(jam): remove this.
+  disable_io_checks();
+}
 
-  RunTestOnMainThread();
-
-  TearDownOnMainThread();
-
+void AppShellTest::PostRunTestOnMainThread() {
   // Clean up the app window.
   DesktopController::instance()->CloseAppWindows();
 }

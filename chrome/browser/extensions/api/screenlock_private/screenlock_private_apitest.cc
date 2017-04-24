@@ -58,19 +58,18 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
         GetProfileAttributesWithPath(profile()->GetPath(), &entry));
     entry->SetAuthInfo(
         kTestGaiaId, base::UTF8ToUTF16(test_account_id_.GetUserEmail()));
-    ExtensionApiTest::SetUpOnMainThread();
-  }
-
- protected:
-  // ExtensionApiTest override:
-  void RunTestOnMainThreadLoop() override {
     registrar_.Add(this,
                    extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
-    ExtensionApiTest::RunTestOnMainThreadLoop();
+    ExtensionApiTest::SetUpOnMainThread();
+  }
+
+  void TearDownOnMainThread() override {
+    ExtensionApiTest::TearDownOnMainThread();
     registrar_.RemoveAll();
   }
 
+ protected:
   // content::NotificationObserver override:
   void Observe(int type,
                const content::NotificationSource& source,

@@ -87,12 +87,8 @@ class TrayAccessibilityTest
   void SetUpOnMainThread() override {
     AccessibilityManager::Get()->SetProfileForTest(GetProfile());
     MagnificationManager::Get()->SetProfileForTest(GetProfile());
-  }
-
-  void RunTestOnMainThreadLoop() override {
     // Need to mark oobe completed to show detailed views.
     StartupUtils::MarkOobeCompleted();
-    InProcessBrowserTest::RunTestOnMainThreadLoop();
   }
 
   void TearDownOnMainThread() override {
