@@ -44,6 +44,14 @@ void ErrorCallbackFunction(const std::string& error_name,
   LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
 }
 
+bool DeviceDisabledScreenShown() {
+  WizardController* const wizard_controller =
+      WizardController::default_controller();
+  EXPECT_TRUE(wizard_controller);
+  return wizard_controller && wizard_controller->current_screen() ==
+         wizard_controller->GetScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
+}
+
 }  // namespace
 
 class DeviceDisablingTest
@@ -52,6 +60,9 @@ class DeviceDisablingTest
  public:
   DeviceDisablingTest();
 
+  // Sets up a device state blob that indicates the device is disabled.
+  void SetDeviceDisabledPolicy();
+
   // Sets up a device state blob that indicates the device is disabled, triggers
   // a policy plus device state fetch and waits for it to succeed.
   void MarkDisabledAndWaitForPolicyFetch();
@@ -59,9 +70,6 @@ class DeviceDisablingTest
   std::string GetCurrentScreenName(content::WebContents* web_contents);
 
  protected:
-  std::unique_ptr<base::RunLoop> network_state_change_wait_run_loop_;
-
- private:
   // OobeBaseTest:
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
@@ -69,6 +77,9 @@ class DeviceDisablingTest
   // NetworkStateInformer::NetworkStateInformerObserver:
   void UpdateState(NetworkError::ErrorReason reason) override;
 
+  std::unique_ptr<base::RunLoop> network_state_change_wait_run_loop_;
+
+ private:
   FakeSessionManagerClient* fake_session_manager_client_;
   policy::DevicePolicyCrosTestHelper test_helper_;
 
@@ -80,18 +91,22 @@ DeviceDisablingTest::DeviceDisablingTest()
     : fake_session_manager_client_(new FakeSessionManagerClient) {
 }
 
-void DeviceDisablingTest::MarkDisabledAndWaitForPolicyFetch() {
-  base::RunLoop run_loop;
-  // Set up an |observer| that will wait for the disabled setting to change.
-  std::unique_ptr<CrosSettings::ObserverSubscription> observer =
-      CrosSettings::Get()->AddSettingsObserver(kDeviceDisabled,
-                                               run_loop.QuitClosure());
+void DeviceDisablingTest::SetDeviceDisabledPolicy() {
   // Prepare a policy fetch response that indicates the device is disabled.
   test_helper_.device_policy()->policy_data().mutable_device_state()->
       set_device_mode(enterprise_management::DeviceState::DEVICE_MODE_DISABLED);
   test_helper_.device_policy()->Build();
   fake_session_manager_client_->set_device_policy(
       test_helper_.device_policy()->GetBlob());
+}
+
+void DeviceDisablingTest::MarkDisabledAndWaitForPolicyFetch() {
+  base::RunLoop run_loop;
+  // Set up an |observer| that will wait for the disabled setting to change.
+  std::unique_ptr<CrosSettings::ObserverSubscription> observer =
+      CrosSettings::Get()->AddSettingsObserver(kDeviceDisabled,
+                                               run_loop.QuitClosure());
+  SetDeviceDisabledPolicy();
   // Trigger a policy fetch.
   fake_session_manager_client_->OnPropertyChangeComplete(true);
   // Wait for the policy fetch to complete and the disabled setting to change.
@@ -135,15 +150,8 @@ void DeviceDisablingTest::UpdateState(NetworkError::ErrorReason reason) {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableDuringNormalOperation) {
-  // Mark the device as disabled and wait until cros settings update.
   MarkDisabledAndWaitForPolicyFetch();
-
-  // Verify that the device disabled screen is being shown.
-  WizardController* const wizard_controller =
-      WizardController::default_controller();
-  ASSERT_TRUE(wizard_controller);
-  EXPECT_EQ(wizard_controller->GetScreen(OobeScreen::SCREEN_DEVICE_DISABLED),
-            wizard_controller->current_screen());
+  EXPECT_TRUE(DeviceDisabledScreenShown());
 }
 
 // Verifies that device disabling works when the ephemeral users policy is
@@ -215,6 +223,31 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   // screen is still being shown instead.
   EXPECT_EQ(GetOobeScreenName(OobeScreen::SCREEN_DEVICE_DISABLED),
             GetCurrentScreenName(web_contents));
+}
+
+// Sets the device disabled policy before the browser is started.
+class PresetPolicyDeviceDisablingTest : public DeviceDisablingTest {
+ public:
+  PresetPolicyDeviceDisablingTest() {}
+
+ protected:
+  // DeviceDisablingTest:
+  void SetUpInProcessBrowserTestFixture() override {
+    DeviceDisablingTest::SetUpInProcessBrowserTestFixture();
+    SetDeviceDisabledPolicy();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PresetPolicyDeviceDisablingTest);
+};
+
+// Same test as the one in DeviceDisablingTest, except the policy is being set
+// before Chrome process is started. This test covers a crash (crbug.com/709518)
+// in DeviceDisabledScreen where it would try to access DeviceDisablingManager
+// even though it wasn't yet constructed fully.
+IN_PROC_BROWSER_TEST_F(PresetPolicyDeviceDisablingTest,
+                       DisableBeforeStartup) {
+  EXPECT_TRUE(DeviceDisabledScreenShown());
 }
 
 }  // namespace system
