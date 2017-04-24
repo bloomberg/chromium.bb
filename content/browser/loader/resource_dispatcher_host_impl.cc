@@ -1885,7 +1885,8 @@ ResourceDispatcherHostImpl::IncrementOutstandingRequestsCount(
         largest_outstanding_request_count_seen_);
   }
 
-  if (stats.num_requests > largest_outstanding_request_count_seen_) {
+  if (stats.num_requests >
+      largest_outstanding_request_per_process_count_seen_) {
     largest_outstanding_request_per_process_count_seen_ = stats.num_requests;
     UMA_HISTOGRAM_COUNTS_1M(
         "Net.ResourceDispatcherHost.OutstandingRequests.PerProcess",
