@@ -22,6 +22,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -220,9 +221,9 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
         browser_context->GetPath().Append(kChannelIDFilename);
     scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
     channel_id_db = new net::SQLiteChannelIDStore(
-        channel_id_path,
-        BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-            BrowserThread::GetBlockingPool()->GetSequenceToken()));
+        channel_id_path, base::CreateSequencedTaskRunnerWithTraits(
+                             base::TaskTraits().MayBlock().WithPriority(
+                                 base::TaskPriority::BACKGROUND)));
 
     channel_id_service.reset(new net::ChannelIDService(
         new net::DefaultChannelIDStore(channel_id_db.get())));
