@@ -116,6 +116,16 @@ class TestCompletionCallback {
   size_t transferred_;
 };
 
+void ExpectTimeoutAndClose(scoped_refptr<UsbDeviceHandle> handle,
+                           const base::Closure& quit_closure,
+                           UsbTransferStatus status,
+                           scoped_refptr<net::IOBuffer> buffer,
+                           size_t transferred) {
+  EXPECT_EQ(UsbTransferStatus::TIMEOUT, status);
+  handle->Close();
+  quit_closure.Run();
+}
+
 TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
   if (!UsbTestGadget::IsTestEnabled()) {
     return;
@@ -408,6 +418,35 @@ TEST_F(UsbDeviceHandleTest, Timeout) {
   ASSERT_EQ(UsbTransferStatus::TIMEOUT, completion.status());
 
   handle->Close();
+}
+
+TEST_F(UsbDeviceHandleTest, CloseReentrancy) {
+  if (!UsbTestGadget::IsTestEnabled())
+    return;
+
+  std::unique_ptr<UsbTestGadget> gadget =
+      UsbTestGadget::Claim(io_thread_->task_runner());
+  ASSERT_TRUE(gadget.get());
+  ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
+
+  TestOpenCallback open_device;
+  gadget->GetDevice()->Open(open_device.callback());
+  scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
+  ASSERT_TRUE(handle.get());
+
+  TestResultCallback claim_interface;
+  handle->ClaimInterface(1, claim_interface.callback());
+  ASSERT_TRUE(claim_interface.WaitForResult());
+
+  base::RunLoop run_loop;
+  auto buffer = base::MakeShared<net::IOBufferWithSize>(512);
+  handle->GenericTransfer(
+      UsbTransferDirection::INBOUND, 0x82, buffer.get(), buffer->size(),
+      10,  // 10 millisecond timeout
+      base::Bind(&ExpectTimeoutAndClose, handle, run_loop.QuitClosure()));
+  // Drop handle so that the completion callback holds the last reference.
+  handle = nullptr;
+  run_loop.Run();
 }
 
 }  // namespace

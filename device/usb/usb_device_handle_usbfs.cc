@@ -423,21 +423,26 @@ UsbDeviceHandleUsbfs::UsbDeviceHandleUsbfs(
 }
 
 scoped_refptr<UsbDevice> UsbDeviceHandleUsbfs::GetDevice() const {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return device_;
 }
 
 void UsbDeviceHandleUsbfs::Close() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_)
     return;  // Already closed.
+
+  // Cancelling transfers may run or destroy callbacks holding the last
+  // reference to this object so hold a reference for the rest of this method.
+  scoped_refptr<UsbDeviceHandleUsbfs> self(this);
+  for (const auto& transfer : transfers_)
+    CancelTransfer(transfer.get(), UsbTransferStatus::CANCELLED);
 
   // On the |task_runner_| thread check |device_| to see if the handle is
   // closed. On the |blocking_task_runner_| thread check |fd_.is_valid()| to
   // see if the handle is closed.
   device_->HandleClosed(this);
   device_ = nullptr;
-
-  for (const auto& transfer : transfers_)
-    CancelTransfer(transfer.get(), UsbTransferStatus::CANCELLED);
 
   // Releases |helper_|.
   blocking_task_runner_->PostTask(
@@ -446,6 +451,7 @@ void UsbDeviceHandleUsbfs::Close() {
 
 void UsbDeviceHandleUsbfs::SetConfiguration(int configuration_value,
                                             const ResultCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
     return;
@@ -463,6 +469,7 @@ void UsbDeviceHandleUsbfs::SetConfiguration(int configuration_value,
 
 void UsbDeviceHandleUsbfs::ClaimInterface(int interface_number,
                                           const ResultCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
     return;
@@ -487,6 +494,7 @@ void UsbDeviceHandleUsbfs::ClaimInterface(int interface_number,
 
 void UsbDeviceHandleUsbfs::ReleaseInterface(int interface_number,
                                             const ResultCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
     return;
@@ -505,6 +513,7 @@ void UsbDeviceHandleUsbfs::SetInterfaceAlternateSetting(
     int interface_number,
     int alternate_setting,
     const ResultCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
     return;
@@ -521,6 +530,7 @@ void UsbDeviceHandleUsbfs::SetInterfaceAlternateSetting(
 }
 
 void UsbDeviceHandleUsbfs::ResetDevice(const ResultCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
     return;
@@ -537,6 +547,7 @@ void UsbDeviceHandleUsbfs::ResetDevice(const ResultCallback& callback) {
 
 void UsbDeviceHandleUsbfs::ClearHalt(uint8_t endpoint_address,
                                      const ResultCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
     return;
@@ -562,6 +573,7 @@ void UsbDeviceHandleUsbfs::ControlTransfer(
     size_t length,
     unsigned int timeout,
     const TransferCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
     task_runner_->PostTask(
         FROM_HERE,
@@ -598,6 +610,7 @@ void UsbDeviceHandleUsbfs::IsochronousTransferIn(
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
     const IsochronousTransferCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   uint8_t endpoint_address = USB_DIR_IN | endpoint_number;
   size_t total_length =
       std::accumulate(packet_lengths.begin(), packet_lengths.end(), 0u);
@@ -612,6 +625,7 @@ void UsbDeviceHandleUsbfs::IsochronousTransferOut(
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
     const IsochronousTransferCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   uint8_t endpoint_address = USB_DIR_OUT | endpoint_number;
   size_t total_length =
       std::accumulate(packet_lengths.begin(), packet_lengths.end(), 0u);
@@ -639,6 +653,7 @@ void UsbDeviceHandleUsbfs::GenericTransfer(UsbTransferDirection direction,
 
 const UsbInterfaceDescriptor* UsbDeviceHandleUsbfs::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   auto it = endpoints_.find(endpoint_address);
   if (it != endpoints_.end())
     return it->second.interface;
@@ -664,6 +679,7 @@ void UsbDeviceHandleUsbfs::SetConfigurationComplete(
     int configuration_value,
     bool success,
     const ResultCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (success && device_) {
     device_->ActiveConfigurationChanged(configuration_value);
     // TODO(reillyg): If all interfaces are unclaimed before a new configuration
@@ -676,6 +692,7 @@ void UsbDeviceHandleUsbfs::SetConfigurationComplete(
 void UsbDeviceHandleUsbfs::ReleaseInterfaceComplete(
     int interface_number,
     const ResultCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   auto it = interfaces_.find(interface_number);
   DCHECK(it != interfaces_.end());
   interfaces_.erase(it);
@@ -690,6 +707,7 @@ void UsbDeviceHandleUsbfs::IsochronousTransferInternal(
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
     const IsochronousTransferCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
     ReportIsochronousError(packet_lengths, callback,
                            UsbTransferStatus::DISCONNECT);
@@ -737,6 +755,7 @@ void UsbDeviceHandleUsbfs::GenericTransferInternal(
     unsigned int timeout,
     const TransferCallback& callback,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
     callback_runner->PostTask(
         FROM_HERE,
@@ -779,6 +798,7 @@ void UsbDeviceHandleUsbfs::GenericTransferInternal(
 }
 
 void UsbDeviceHandleUsbfs::ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   for (auto* urb : urbs) {
     Transfer* transfer = static_cast<Transfer*>(urb->usercontext);
     DCHECK_EQ(urb, &transfer->urb);
@@ -795,6 +815,7 @@ void UsbDeviceHandleUsbfs::ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs) {
 
 void UsbDeviceHandleUsbfs::TransferComplete(
     std::unique_ptr<Transfer> transfer) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (transfer->cancelled)
     return;
 
@@ -829,6 +850,7 @@ void UsbDeviceHandleUsbfs::TransferComplete(
 }
 
 void UsbDeviceHandleUsbfs::RefreshEndpointInfo() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   endpoints_.clear();
 
   const UsbConfigDescriptor* config = device_->active_configuration();
@@ -858,6 +880,7 @@ void UsbDeviceHandleUsbfs::ReportIsochronousError(
     const std::vector<uint32_t>& packet_lengths,
     const UsbDeviceHandle::IsochronousTransferCallback& callback,
     UsbTransferStatus status) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   std::vector<UsbDeviceHandle::IsochronousPacket> packets(
       packet_lengths.size());
   for (size_t i = 0; i < packet_lengths.size(); ++i) {
@@ -870,18 +893,23 @@ void UsbDeviceHandleUsbfs::ReportIsochronousError(
 
 void UsbDeviceHandleUsbfs::SetUpTimeoutCallback(Transfer* transfer,
                                                 unsigned int timeout) {
-  if (timeout > 0) {
-    transfer->timeout_closure.Reset(
-        base::Bind(&UsbDeviceHandleUsbfs::CancelTransfer, this, transfer,
-                   UsbTransferStatus::TIMEOUT));
-    task_runner_->PostDelayedTask(FROM_HERE,
-                                  transfer->timeout_closure.callback(),
-                                  base::TimeDelta::FromMilliseconds(timeout));
-  }
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  if (timeout == 0)
+    return;
+
+  transfer->timeout_closure.Reset(
+      base::Bind(&UsbDeviceHandleUsbfs::OnTimeout, this, transfer));
+  task_runner_->PostDelayedTask(FROM_HERE, transfer->timeout_closure.callback(),
+                                base::TimeDelta::FromMilliseconds(timeout));
+}
+
+void UsbDeviceHandleUsbfs::OnTimeout(Transfer* transfer) {
+  CancelTransfer(transfer, UsbTransferStatus::TIMEOUT);
 }
 
 std::unique_ptr<UsbDeviceHandleUsbfs::Transfer>
 UsbDeviceHandleUsbfs::RemoveFromTransferList(Transfer* transfer_ptr) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   auto it = std::find_if(
       transfers_.begin(), transfers_.end(),
       [transfer_ptr](const std::unique_ptr<Transfer>& transfer) -> bool {
@@ -895,12 +923,22 @@ UsbDeviceHandleUsbfs::RemoveFromTransferList(Transfer* transfer_ptr) {
 
 void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
                                           UsbTransferStatus status) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(device_);
+
   if (transfer->cancelled)
     return;
 
   // |transfer| must stay in |transfers_| as it is still being processed by the
   // kernel and will be reaped later.
   transfer->cancelled = true;
+
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&UsbDeviceHandleUsbfs::FileThreadHelper::DiscardUrb,
+                            base::Unretained(helper_.get()), transfer));
+
+  // Cancelling |timeout_closure| and running completion callbacks may free
+  // |this| so these operations must be performed at the end of this function.
   transfer->timeout_closure.Cancel();
 
   if (transfer->urb.type == USBDEVFS_URB_TYPE_ISO) {
@@ -914,14 +952,10 @@ void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
   } else {
     transfer->RunCallback(status, 0);
   }
-
-  blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UsbDeviceHandleUsbfs::FileThreadHelper::DiscardUrb,
-                            base::Unretained(helper_.get()), transfer));
 }
 
-
 void UsbDeviceHandleUsbfs::UrbDiscarded(Transfer* transfer) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   transfer->discarded = true;
   if (transfer->reaped)
     RemoveFromTransferList(transfer);

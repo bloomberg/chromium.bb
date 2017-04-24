@@ -134,6 +134,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
       const UsbDeviceHandle::IsochronousTransferCallback& callback,
       UsbTransferStatus status);
   void SetUpTimeoutCallback(Transfer* transfer, unsigned int timeout);
+  void OnTimeout(Transfer* transfer);
   std::unique_ptr<Transfer> RemoveFromTransferList(Transfer* transfer);
   void CancelTransfer(Transfer* transfer, UsbTransferStatus status);
   void DiscardUrbBlocking(Transfer* transfer);
@@ -158,6 +159,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   std::unique_ptr<FileThreadHelper> helper_;
 
   std::list<std::unique_ptr<Transfer>> transfers_;
+  base::SequenceChecker sequence_checker_;
 };
 
 }  // namespace device
