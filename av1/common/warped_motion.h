@@ -89,8 +89,8 @@ void av1_warp_plane(WarpedMotionParams *wm,
                     int p_height, int p_stride, int subsampling_x,
                     int subsampling_y, int x_scale, int y_scale, int ref_frm);
 
-int find_projection(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
-                    int mvy, int mvx, WarpedMotionParams *wm_params, int mi_row,
+int find_projection(int np, int *pts1, int *pts2, BLOCK_SIZE bsize, int mvy,
+                    int mvx, WarpedMotionParams *wm_params, int mi_row,
                     int mi_col);
 
 int get_shear_params(WarpedMotionParams *wm);

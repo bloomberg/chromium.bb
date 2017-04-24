@@ -1013,11 +1013,11 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
 
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y);
 
-static INLINE int tx_size_to_depth(const TX_SIZE tx_size) {
+static INLINE int tx_size_to_depth(TX_SIZE tx_size) {
   return (int)(tx_size - TX_4X4);
 }
 
-static INLINE TX_SIZE depth_to_tx_size(const int depth) {
+static INLINE TX_SIZE depth_to_tx_size(int depth) {
   return (TX_SIZE)(depth + TX_4X4);
 }
 
@@ -1140,7 +1140,7 @@ static INLINE int is_interintra_allowed(const MB_MODE_INFO *mbmi) {
          is_interintra_allowed_ref(mbmi->ref_frame);
 }
 
-static INLINE int is_interintra_allowed_bsize_group(const int group) {
+static INLINE int is_interintra_allowed_bsize_group(int group) {
   int i;
   for (i = 0; i < BLOCK_SIZES; i++) {
     if (size_group_lookup[i] == group &&
@@ -1323,7 +1323,7 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
-static INLINE PLANE_TYPE get_plane_type(const int plane) {
+static INLINE PLANE_TYPE get_plane_type(int plane) {
   return (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
 }
 

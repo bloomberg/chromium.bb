@@ -652,13 +652,13 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/int aom_satd/, "const int16_t *coeff, int length";
   specialize qw/aom_satd sse2 neon/;
 
-  add_proto qw/void aom_int_pro_row/, "int16_t *hbuf, const uint8_t *ref, const int ref_stride, const int height";
+  add_proto qw/void aom_int_pro_row/, "int16_t *hbuf, const uint8_t *ref, int ref_stride, int height";
   specialize qw/aom_int_pro_row sse2 neon/;
 
-  add_proto qw/int16_t aom_int_pro_col/, "const uint8_t *ref, const int width";
+  add_proto qw/int16_t aom_int_pro_col/, "const uint8_t *ref, int width";
   specialize qw/aom_int_pro_col sse2 neon/;
 
-  add_proto qw/int aom_vector_var/, "const int16_t *ref, const int16_t *src, const int bwl";
+  add_proto qw/int aom_vector_var/, "const int16_t *ref, const int16_t *src, int bwl";
   specialize qw/aom_vector_var neon sse2/;
 }  # CONFIG_AV1_ENCODER
 
@@ -695,7 +695,7 @@ specialize qw/aom_sad64x64_avg   avx2 msa sse2/;
 specialize qw/aom_sad64x32_avg   avx2 msa sse2/;
 specialize qw/aom_sad32x64_avg   avx2 msa sse2/;
 specialize qw/aom_sad32x32_avg   avx2 msa sse2/;
-specialize qw/aom_sad32x16_avg   avx2 msa sse2/; 
+specialize qw/aom_sad32x16_avg   avx2 msa sse2/;
 specialize qw/aom_sad16x32_avg        msa sse2/;
 specialize qw/aom_sad16x16_avg        msa sse2/;
 specialize qw/aom_sad16x8_avg         msa sse2/;

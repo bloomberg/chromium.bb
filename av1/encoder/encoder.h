@@ -848,7 +848,7 @@ static INLINE void set_ref_ptrs(const AV1_COMMON *cm, MACROBLOCKD *xd,
       &cm->frame_refs[ref1 >= LAST_FRAME ? ref1 - LAST_FRAME : 0];
 }
 
-static INLINE int get_chessboard_index(const int frame_index) {
+static INLINE int get_chessboard_index(int frame_index) {
   return frame_index & 0x1;
 }
 

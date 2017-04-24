@@ -569,8 +569,7 @@ static void denormalize_translation_reorder(double *params, double *T1,
   params[6] = params[7] = 0;
 }
 
-static int find_translation(const int np, double *pts1, double *pts2,
-                            double *mat) {
+static int find_translation(int np, double *pts1, double *pts2, double *mat) {
   int i;
   double sx, sy, dx, dy;
   double sumx, sumy;
@@ -596,7 +595,7 @@ static int find_translation(const int np, double *pts1, double *pts2,
   return 0;
 }
 
-static int find_rotzoom(const int np, double *pts1, double *pts2, double *mat) {
+static int find_rotzoom(int np, double *pts1, double *pts2, double *mat) {
   const int np2 = np * 2;
   double *a = (double *)aom_malloc(sizeof(*a) * np2 * 9);
   double *b = a + np2 * 4;
@@ -636,7 +635,7 @@ static int find_rotzoom(const int np, double *pts1, double *pts2, double *mat) {
   return 0;
 }
 
-static int find_affine(const int np, double *pts1, double *pts2, double *mat) {
+static int find_affine(int np, double *pts1, double *pts2, double *mat) {
   const int np2 = np * 2;
   double *a = (double *)aom_malloc(sizeof(*a) * np2 * 13);
   double *b = a + np2 * 6;
@@ -680,8 +679,7 @@ static int find_affine(const int np, double *pts1, double *pts2, double *mat) {
   return 0;
 }
 
-static int find_vertrapezoid(const int np, double *pts1, double *pts2,
-                             double *mat) {
+static int find_vertrapezoid(int np, double *pts1, double *pts2, double *mat) {
   const int np3 = np * 3;
   double *a = (double *)aom_malloc(sizeof(*a) * np3 * 14);
   double *U = a + np3 * 7;
@@ -750,8 +748,7 @@ static int find_vertrapezoid(const int np, double *pts1, double *pts2,
   return 0;
 }
 
-static int find_hortrapezoid(const int np, double *pts1, double *pts2,
-                             double *mat) {
+static int find_hortrapezoid(int np, double *pts1, double *pts2, double *mat) {
   const int np3 = np * 3;
   double *a = (double *)aom_malloc(sizeof(*a) * np3 * 14);
   double *U = a + np3 * 7;
@@ -820,8 +817,7 @@ static int find_hortrapezoid(const int np, double *pts1, double *pts2,
   return 0;
 }
 
-static int find_homography(const int np, double *pts1, double *pts2,
-                           double *mat) {
+static int find_homography(int np, double *pts1, double *pts2, double *mat) {
   // Implemented from Peter Kovesi's normalized implementation
   const int np3 = np * 3;
   double *a = (double *)aom_malloc(sizeof(*a) * np3 * 18);

@@ -560,7 +560,7 @@ static void update_and_record_txb_context(int plane, int block, int blk_row,
 
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
                             RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
-                            const int mi_row, const int mi_col) {
+                            int mi_row, int mi_col) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;

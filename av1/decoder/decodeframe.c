@@ -1449,8 +1449,8 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   }
 }
 
-static void set_segment_id_supertx(const AV1_COMMON *const cm, const int mi_row,
-                                   const int mi_col, const BLOCK_SIZE bsize) {
+static void set_segment_id_supertx(const AV1_COMMON *const cm, int mi_row,
+                                   int mi_col, BLOCK_SIZE bsize) {
   const struct segmentation *seg = &cm->seg;
   const int miw = AOMMIN(mi_size_wide[bsize], cm->mi_cols - mi_col);
   const int mih = AOMMIN(mi_size_high[bsize], cm->mi_rows - mi_row);
@@ -3065,7 +3065,7 @@ static void read_tile_info(AV1Decoder *const pbi,
 #endif
 }
 
-static int mem_get_varsize(const uint8_t *src, const int sz) {
+static int mem_get_varsize(const uint8_t *src, int sz) {
   switch (sz) {
     case 1: return src[0];
     case 2: return mem_get_le16(src);
@@ -4859,9 +4859,8 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
 }
 
 #if CONFIG_EC_ADAPT
-static void make_update_tile_list_dec(AV1Decoder *pbi, const int tile_rows,
-                                      const int tile_cols,
-                                      FRAME_CONTEXT *ec_ctxs[]) {
+static void make_update_tile_list_dec(AV1Decoder *pbi, int tile_rows,
+                                      int tile_cols, FRAME_CONTEXT *ec_ctxs[]) {
   int i;
   for (i = 0; i < tile_rows * tile_cols; ++i)
     ec_ctxs[i] = &pbi->tile_data[i].tctx;

@@ -261,8 +261,7 @@ static INLINE void store_output(const __m128i *poutput, tran_low_t *dst_ptr) {
 
 static INLINE __m128i mult_round_shift(const __m128i *pin0, const __m128i *pin1,
                                        const __m128i *pmultiplier,
-                                       const __m128i *prounding,
-                                       const int shift) {
+                                       const __m128i *prounding, int shift) {
   const __m128i u0 = _mm_madd_epi16(*pin0, *pmultiplier);
   const __m128i u1 = _mm_madd_epi16(*pin1, *pmultiplier);
   const __m128i v0 = _mm_add_epi32(u0, *prounding);
@@ -275,8 +274,8 @@ static INLINE __m128i mult_round_shift(const __m128i *pin0, const __m128i *pin1,
 static INLINE void transpose_and_output8x8(
     const __m128i *pin00, const __m128i *pin01, const __m128i *pin02,
     const __m128i *pin03, const __m128i *pin04, const __m128i *pin05,
-    const __m128i *pin06, const __m128i *pin07, const int pass,
-    int16_t *out0_ptr, tran_low_t *out1_ptr) {
+    const __m128i *pin06, const __m128i *pin07, int pass, int16_t *out0_ptr,
+    tran_low_t *out1_ptr) {
   // 00 01 02 03 04 05 06 07
   // 10 11 12 13 14 15 16 17
   // 20 21 22 23 24 25 26 27

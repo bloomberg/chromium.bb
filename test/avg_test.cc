@@ -213,7 +213,7 @@ class SatdTest : public ::testing::Test,
     for (int i = 0; i < satd_size_; ++i) src_[i] = rnd_.Rand16();
   }
 
-  void Check(const int expected) {
+  void Check(int expected) {
     int total;
     ASM_REGISTER_STATE_CHECK(total = satd_func_(src_, satd_size_));
     EXPECT_EQ(expected, total);

@@ -26,7 +26,7 @@ typedef void (*QuantizeFpFunc)(
     const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
-    const int16_t *scan, const int16_t *iscan, const int log_scale);
+    const int16_t *scan, const int16_t *iscan, int log_scale);
 
 struct QuantizeFuncParams {
   QuantizeFuncParams(QuantizeFpFunc qF = NULL, QuantizeFpFunc qRefF = NULL,

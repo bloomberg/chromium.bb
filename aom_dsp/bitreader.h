@@ -143,8 +143,7 @@ static INLINE void aom_process_accounting(const aom_reader *r ACCT_STR_PARAM) {
   }
 }
 
-static INLINE void aom_update_symb_counts(const aom_reader *r,
-                                          const int is_binary) {
+static INLINE void aom_update_symb_counts(const aom_reader *r, int is_binary) {
   if (r->accounting != NULL) {
     r->accounting->syms.num_multi_syms += !is_binary;
     r->accounting->syms.num_binary_syms += !!is_binary;

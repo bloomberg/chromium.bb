@@ -43,8 +43,8 @@ typedef enum AV1_XFORM_QUANT {
   AV1_XFORM_QUANT_TYPES,
 } AV1_XFORM_QUANT;
 
-void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize,
-                   const int mi_row, const int mi_col);
+void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
+                   int mi_col);
 #if CONFIG_SUPERTX
 void av1_encode_sb_supertx(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
 #endif  // CONFIG_SUPERTX
@@ -69,8 +69,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
                                   BLOCK_SIZE bsize, int plane,
-                                  int enable_optimize_b, const int mi_row,
-                                  const int mi_col);
+                                  int enable_optimize_b, int mi_row,
+                                  int mi_col);
 
 #if CONFIG_PVQ
 PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,

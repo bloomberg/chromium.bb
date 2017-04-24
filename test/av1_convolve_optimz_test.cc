@@ -24,12 +24,12 @@ using libaom_test::ACMRandom;
 
 typedef void (*ConvInit)();
 typedef void (*conv_filter_t)(const uint8_t *, int, uint8_t *, int, int, int,
-                              const InterpFilterParams, const int, int,
+                              const InterpFilterParams, int, int,
                               ConvolveParams *);
 #if CONFIG_HIGHBITDEPTH
 typedef void (*hbd_conv_filter_t)(const uint16_t *, int, uint16_t *, int, int,
-                                  int, const InterpFilterParams, const int, int,
-                                  int, int);
+                                  int, const InterpFilterParams, int, int, int,
+                                  int);
 #endif
 
 // Test parameter list:

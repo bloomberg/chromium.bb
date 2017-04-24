@@ -25,7 +25,7 @@ DECLARE_ALIGNED(16, static int16_t, subpel_temporalfilter[15][6][8]);
 
 typedef int16_t (*HbdSubpelFilterCoeffs)[8];
 
-typedef void (*TransposeSave)(const int width, int pixelsNum, uint32_t *src,
+typedef void (*TransposeSave)(int width, int pixelsNum, uint32_t *src,
                               int src_stride, uint16_t *dst, int dst_stride,
                               int bd);
 
@@ -180,14 +180,14 @@ static void transClipPixel(uint32_t *src, int src_stride, __m128i *u, int bd) {
 
 // pixelsNum = 0     : all 4 rows of pixels will be saved.
 // pixelsNum = 1/2/3 : residual 1/2/4 rows of pixels will be saved.
-void trans_save_4x4(const int width, int pixelsNum, uint32_t *src,
-                    int src_stride, uint16_t *dst, int dst_stride, int bd) {
+void trans_save_4x4(int width, int pixelsNum, uint32_t *src, int src_stride,
+                    uint16_t *dst, int dst_stride, int bd) {
   __m128i u[4];
   transClipPixel(src, src_stride, u, bd);
   writePixel(u, width, pixelsNum, dst, dst_stride);
 }
 
-void trans_accum_save_4x4(const int width, int pixelsNum, uint32_t *src,
+void trans_accum_save_4x4(int width, int pixelsNum, uint32_t *src,
                           int src_stride, uint16_t *dst, int dst_stride,
                           int bd) {
   __m128i u[4], v[4];

@@ -1453,7 +1453,7 @@ void av1_warp_plane(WarpedMotionParams *wm,
   (((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP * 2) >> 2)
 
 #if LEAST_SQUARES_ORDER == 2
-static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
+static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
                            int mvy, int mvx, WarpedMotionParams *wm, int mi_row,
                            int mi_col) {
   int32_t A[2][2] = { { 0, 0 }, { 0, 0 } };
@@ -1586,7 +1586,7 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
 
 #else
 
-static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
+static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
                            int mvy, int mvx, WarpedMotionParams *wm, int mi_row,
                            int mi_col) {
   int32_t A[3][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
@@ -1742,8 +1742,8 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
 }
 #endif  // LEAST_SQUARES_ORDER == 2
 
-int find_projection(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
-                    int mvy, int mvx, WarpedMotionParams *wm_params, int mi_row,
+int find_projection(int np, int *pts1, int *pts2, BLOCK_SIZE bsize, int mvy,
+                    int mvx, WarpedMotionParams *wm_params, int mi_row,
                     int mi_col) {
   int result = 1;
   switch (wm_params->wmtype) {

@@ -120,11 +120,10 @@ void EncoderTest::SetMode(TestMode mode) {
     passes_ = 1;
 }
 
-static bool compare_plane(const uint8_t *const buf1, const int stride1,
-                          const uint8_t *const buf2, const int stride2,
-                          const int w, const int h, int *const mismatch_row,
-                          int *const mismatch_col, int *const mismatch_pix1,
-                          int *const mismatch_pix2) {
+static bool compare_plane(const uint8_t *const buf1, int stride1,
+                          const uint8_t *const buf2, int stride2, int w, int h,
+                          int *const mismatch_row, int *const mismatch_col,
+                          int *const mismatch_pix1, int *const mismatch_pix2) {
   int r, c;
 
   for (r = 0; r < h; ++r) {

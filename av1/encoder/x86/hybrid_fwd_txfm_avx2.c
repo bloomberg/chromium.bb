@@ -1535,7 +1535,7 @@ static INLINE void load_buffer_32x32(const int16_t *input, int stride,
   load_buffer_16x16(botR, stride, flipud, fliplr, in1 + 16);
 }
 
-static INLINE void right_shift_32x32_16col(const int bit, __m256i *in) {
+static INLINE void right_shift_32x32_16col(int bit, __m256i *in) {
   int i = 0;
   const __m256i rounding = _mm256_set1_epi16((1 << bit) >> 1);
   __m256i sign;

@@ -55,8 +55,7 @@ static INLINE int64_t hsum_epi32_si64(__m128i v_d) {
 #endif  // CONFIG_HIGHBITDEPTH
 
 static INLINE uint32_t calc_masked_variance(__m128i v_sum_d, __m128i v_sse_q,
-                                            uint32_t *sse, const int w,
-                                            const int h) {
+                                            uint32_t *sse, int w, int h) {
   int64_t sum64;
   uint64_t sse64;
 
@@ -1318,8 +1317,7 @@ MASK_SUBPIX_VAR_LARGE(128, 128)
 
 #if CONFIG_HIGHBITDEPTH
 typedef uint32_t (*highbd_calc_masked_var_t)(__m128i v_sum_d, __m128i v_sse_q,
-                                             uint32_t *sse, const int w,
-                                             const int h);
+                                             uint32_t *sse, int w, int h);
 typedef unsigned int (*highbd_variance_fn_t)(const uint8_t *a8, int a_stride,
                                              const uint8_t *b8, int b_stride,
                                              const uint8_t *m, int m_stride,
@@ -1397,8 +1395,10 @@ static void highbd_sum_and_sse(const __m128i v_a_w, const __m128i v_b_w,
   *v_sse_q = _mm_add_epi64(*v_sse_q, v_se_q);
 }
 
-static INLINE uint32_t highbd_10_calc_masked_variance(
-    __m128i v_sum_d, __m128i v_sse_q, uint32_t *sse, const int w, const int h) {
+static INLINE uint32_t highbd_10_calc_masked_variance(__m128i v_sum_d,
+                                                      __m128i v_sse_q,
+                                                      uint32_t *sse, int w,
+                                                      int h) {
   int64_t sum64;
   uint64_t sse64;
 
@@ -1421,8 +1421,10 @@ static INLINE uint32_t highbd_10_calc_masked_variance(
   // Compute the variance
   return *sse - (uint32_t)((sum64 * sum64) / (w * h));
 }
-static INLINE uint32_t highbd_12_calc_masked_variance(
-    __m128i v_sum_d, __m128i v_sse_q, uint32_t *sse, const int w, const int h) {
+static INLINE uint32_t highbd_12_calc_masked_variance(__m128i v_sum_d,
+                                                      __m128i v_sse_q,
+                                                      uint32_t *sse, int w,
+                                                      int h) {
   int64_t sum64;
   uint64_t sse64;
 

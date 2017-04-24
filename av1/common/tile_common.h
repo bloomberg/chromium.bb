@@ -41,7 +41,7 @@ void av1_tile_set_col(TileInfo *tile, const struct AV1Common *cm, int col);
 void av1_tile_set_tg_boundary(TileInfo *tile, const struct AV1Common *cm,
                               int row, int col);
 #endif
-void av1_get_tile_n_bits(const int mi_cols, int *min_log2_tile_cols,
+void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
                          int *max_log2_tile_cols);
 
 void av1_update_boundary_info(const struct AV1Common *cm,

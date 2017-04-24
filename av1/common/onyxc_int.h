@@ -736,10 +736,8 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
 }
 
 #if CONFIG_CB4X4
-static INLINE int is_chroma_reference(const int mi_row, const int mi_col,
-                                      const BLOCK_SIZE bsize,
-                                      const int subsampling_x,
-                                      const int subsampling_y) {
+static INLINE int is_chroma_reference(int mi_row, int mi_col, BLOCK_SIZE bsize,
+                                      int subsampling_x, int subsampling_y) {
 #if CONFIG_CHROMA_2X2
   return 1;
 #endif
@@ -751,9 +749,8 @@ static INLINE int is_chroma_reference(const int mi_row, const int mi_col,
   return ref_pos;
 }
 
-static INLINE BLOCK_SIZE scale_chroma_bsize(const BLOCK_SIZE bsize,
-                                            const int subsampling_x,
-                                            const int subsampling_y) {
+static INLINE BLOCK_SIZE scale_chroma_bsize(BLOCK_SIZE bsize, int subsampling_x,
+                                            int subsampling_y) {
   BLOCK_SIZE bs = bsize;
 
   if (bs < BLOCK_8X8) {
@@ -847,8 +844,8 @@ static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
 #endif
 }
 
-static INLINE int max_block_wide(const MACROBLOCKD *xd, const BLOCK_SIZE bsize,
-                                 const int plane) {
+static INLINE int max_block_wide(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
+                                 int plane) {
   int max_blocks_wide = block_size_wide[bsize];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 
@@ -859,8 +856,8 @@ static INLINE int max_block_wide(const MACROBLOCKD *xd, const BLOCK_SIZE bsize,
   return max_blocks_wide >> tx_size_wide_log2[0];
 }
 
-static INLINE int max_block_high(const MACROBLOCKD *xd, const BLOCK_SIZE bsize,
-                                 const int plane) {
+static INLINE int max_block_high(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
+                                 int plane) {
   int max_blocks_high = block_size_high[bsize];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 
@@ -900,7 +897,7 @@ static INLINE void av1_zero_left_context(MACROBLOCKD *const xd) {
 }
 
 #if CONFIG_VAR_TX
-static INLINE TX_SIZE get_min_tx_size(const TX_SIZE tx_size) {
+static INLINE TX_SIZE get_min_tx_size(TX_SIZE tx_size) {
   if (tx_size >= TX_SIZES_ALL) assert(0);
   return txsize_sqr_map[tx_size];
 }
@@ -910,8 +907,8 @@ static INLINE void set_txfm_ctx(TXFM_CONTEXT *txfm_ctx, uint8_t txs, int len) {
   for (i = 0; i < len; ++i) txfm_ctx[i] = txs;
 }
 
-static INLINE void set_txfm_ctxs(TX_SIZE tx_size, int n8_w, int n8_h,
-                                 const int skip, const MACROBLOCKD *xd) {
+static INLINE void set_txfm_ctxs(TX_SIZE tx_size, int n8_w, int n8_h, int skip,
+                                 const MACROBLOCKD *xd) {
   uint8_t bw = tx_size_wide[tx_size];
   uint8_t bh = tx_size_high[tx_size];
 
@@ -939,8 +936,7 @@ static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
 
 static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
                                          TXFM_CONTEXT *left_ctx,
-                                         const BLOCK_SIZE bsize,
-                                         const TX_SIZE tx_size) {
+                                         BLOCK_SIZE bsize, TX_SIZE tx_size) {
   const uint8_t txw = tx_size_wide[tx_size];
   const uint8_t txh = tx_size_high[tx_size];
   const int above = *above_ctx < txw;
@@ -972,8 +968,8 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
 #endif
 
 static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
-                                           const int mi_row, const int mi_col,
-                                           const BLOCK_SIZE bsize) {
+                                           int mi_row, int mi_col,
+                                           BLOCK_SIZE bsize) {
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) {
     return PARTITION_INVALID;
   } else {
@@ -1013,7 +1009,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
   }
 }
 
-static INLINE void set_sb_size(AV1_COMMON *const cm, const BLOCK_SIZE sb_size) {
+static INLINE void set_sb_size(AV1_COMMON *const cm, BLOCK_SIZE sb_size) {
   cm->sb_size = sb_size;
   cm->mib_size = mi_size_wide[cm->sb_size];
 #if CONFIG_CB4X4

@@ -362,7 +362,7 @@ static unsigned int setup_center_error(
   return besterr;
 }
 
-static INLINE int divide_and_round(const int n, const int d) {
+static INLINE int divide_and_round(int n, int d) {
   return ((n < 0) ^ (d < 0)) ? ((n - d / 2) / d) : ((n + d / 2) / d);
 }
 

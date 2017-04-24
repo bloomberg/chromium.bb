@@ -90,8 +90,8 @@ int aom_satd_neon(const int16_t *coeff, int length) {
   }
 }
 
-void aom_int_pro_row_neon(int16_t hbuf[16], uint8_t const *ref,
-                          const int ref_stride, const int height) {
+void aom_int_pro_row_neon(int16_t hbuf[16], uint8_t const *ref, int ref_stride,
+                          int height) {
   int i;
   uint16x8_t vec_sum_lo = vdupq_n_u16(0);
   uint16x8_t vec_sum_hi = vdupq_n_u16(0);
@@ -159,7 +159,7 @@ int16_t aom_int_pro_col_neon(uint8_t const *ref, const int width) {
 
 // ref, src = [0, 510] - max diff = 16-bits
 // bwl = {2, 3, 4}, width = {16, 32, 64}
-int aom_vector_var_neon(int16_t const *ref, int16_t const *src, const int bwl) {
+int aom_vector_var_neon(int16_t const *ref, int16_t const *src, int bwl) {
   int width = 4 << bwl;
   int32x4_t sse = vdupq_n_s32(0);
   int16x8_t total = vdupq_n_s16(0);
