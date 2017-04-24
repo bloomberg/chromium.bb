@@ -1255,7 +1255,6 @@ bool AutofillTable::GetServerCreditCards(
         CreditCard::MASKED_SERVER_CARD :
         CreditCard::FULL_SERVER_CARD;
     std::string server_id = s.ColumnString(index++);
-
     std::unique_ptr<CreditCard> card =
         base::MakeUnique<CreditCard>(record_type, server_id);
     card->SetRawInfo(
@@ -1284,21 +1283,12 @@ bool AutofillTable::GetServerCreditCards(
     card->set_billing_address_id(s.ColumnString(index++));
     credit_cards->push_back(std::move(card));
   }
-
   return s.Succeeded();
 }
 
-void AutofillTable::SetServerCreditCards(
+void AutofillTable::AddMaskedCreditCards(
     const std::vector<CreditCard>& credit_cards) {
-  sql::Transaction transaction(db_);
-  if (!transaction.Begin())
-    return;
-
-  // Delete all old values.
-  sql::Statement masked_delete(db_->GetUniqueStatement(
-      "DELETE FROM masked_credit_cards"));
-  masked_delete.Run();
-
+  DCHECK_GT(db_->transaction_nesting(), 0);
   sql::Statement masked_insert(
       db_->GetUniqueStatement("INSERT INTO masked_credit_cards("
                               "id,"            // 0
@@ -1311,7 +1301,6 @@ void AutofillTable::SetServerCreditCards(
                               "VALUES (?,?,?,?,?,?,?)"));
   for (const CreditCard& card : credit_cards) {
     DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
-
     masked_insert.BindString(0, card.server_id());
     masked_insert.BindString(1, card.type());
     masked_insert.BindString(2,
@@ -1328,6 +1317,20 @@ void AutofillTable::SetServerCreditCards(
     // Save the use count and use date of the card.
     UpdateServerCardMetadata(card);
   }
+}
+
+void AutofillTable::SetServerCreditCards(
+    const std::vector<CreditCard>& credit_cards) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return;
+
+  // Delete all old values.
+  sql::Statement masked_delete(
+      db_->GetUniqueStatement("DELETE FROM masked_credit_cards"));
+  masked_delete.Run();
+
+  AddMaskedCreditCards(credit_cards);
 
   // Delete all items in the unmasked table that aren't in the new set.
   sql::Statement unmasked_delete(db_->GetUniqueStatement(
@@ -1343,17 +1346,42 @@ void AutofillTable::SetServerCreditCards(
   transaction.Commit();
 }
 
-bool AutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
-                                           const base::string16& full_number) {
+bool AutofillTable::AddFullServerCreditCard(const CreditCard& credit_card) {
+  DCHECK_EQ(CreditCard::FULL_SERVER_CARD, credit_card.record_type());
+  DCHECK(!credit_card.number().empty());
+  DCHECK(!credit_card.server_id().empty());
+
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
+
   // Make sure there aren't duplicates for this card.
-  MaskServerCreditCard(masked.server_id());
+  DeleteFromUnmaskedCreditCards(credit_card.server_id());
+  DeleteFromMaskedCreditCards(credit_card.server_id());
+
+  CreditCard masked(credit_card);
+  masked.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  masked.SetNumber(credit_card.LastFourDigits());
+  masked.RecordAndLogUse();
+  DCHECK(!masked.type().empty());
+  AddMaskedCreditCards({masked});
+
+  AddUnmaskedCreditCard(credit_card.server_id(), credit_card.number());
+
+  transaction.Commit();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
+void AutofillTable::AddUnmaskedCreditCard(const std::string& id,
+                                          const base::string16& full_number) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO unmasked_credit_cards("
           "id,"
           "card_number_encrypted,"
           "unmask_date)"
       "VALUES (?,?,?)"));
-  s.BindString(0, masked.server_id());
+  s.BindString(0, id);
 
   std::string encrypted_data;
   autofill_table_encryptor_->EncryptString16(full_number, &encrypted_data);
@@ -1362,6 +1390,18 @@ bool AutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
   s.BindInt64(2, AutofillClock::Now().ToInternalValue());  // unmask_date
 
   s.Run();
+}
+
+bool AutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
+                                           const base::string16& full_number) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
+
+  // Make sure there aren't duplicates for this card.
+  DeleteFromUnmaskedCreditCards(masked.server_id());
+
+  AddUnmaskedCreditCard(masked.server_id(), full_number);
 
   CreditCard unmasked = masked;
   unmasked.set_record_type(CreditCard::FULL_SERVER_CARD);
@@ -1369,10 +1409,20 @@ bool AutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
   unmasked.RecordAndLogUse();
   UpdateServerCardMetadata(unmasked);
 
+  transaction.Commit();
+
   return db_->GetLastChangeCount() > 0;
 }
 
-bool AutofillTable::MaskServerCreditCard(const std::string& id) {
+bool AutofillTable::DeleteFromMaskedCreditCards(const std::string& id) {
+  sql::Statement s(
+      db_->GetUniqueStatement("DELETE FROM masked_credit_cards WHERE id = ?"));
+  s.BindString(0, id);
+  s.Run();
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::DeleteFromUnmaskedCreditCards(const std::string& id) {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM unmasked_credit_cards WHERE id = ?"));
   s.BindString(0, id);
@@ -1380,11 +1430,12 @@ bool AutofillTable::MaskServerCreditCard(const std::string& id) {
   return db_->GetLastChangeCount() > 0;
 }
 
+bool AutofillTable::MaskServerCreditCard(const std::string& id) {
+  return DeleteFromUnmaskedCreditCards(id);
+}
+
 bool AutofillTable::UpdateServerCardMetadata(const CreditCard& credit_card) {
   DCHECK_NE(CreditCard::LOCAL_CARD, credit_card.record_type());
-  sql::Transaction transaction(db_);
-  if (!transaction.Begin())
-    return false;
 
   sql::Statement remove(db_->GetUniqueStatement(
       "DELETE FROM server_card_metadata WHERE id = ?"));
@@ -1400,8 +1451,6 @@ bool AutofillTable::UpdateServerCardMetadata(const CreditCard& credit_card) {
   s.BindString(2, credit_card.billing_address_id());
   s.BindString(3, credit_card.server_id());
   s.Run();
-
-  transaction.Commit();
 
   return db_->GetLastChangeCount() > 0;
 }

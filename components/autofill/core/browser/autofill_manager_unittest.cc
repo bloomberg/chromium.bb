@@ -60,6 +60,7 @@
 #include "components/ukm/ukm_source.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/url_util.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,8 +122,10 @@ class TestPaymentsClient : public payments::PaymentsClient {
 
   void UploadCard(const payments::PaymentsClient::UploadRequestDetails&
                       request_details) override {
-    delegate_->OnDidUploadCard(AutofillClient::SUCCESS);
+    delegate_->OnDidUploadCard(AutofillClient::SUCCESS, server_id_);
   }
+
+  std::string server_id_;
 
  private:
   payments::PaymentsClientDelegate* const delegate_;
@@ -180,6 +183,13 @@ class TestPersonalDataManager : public PersonalDataManager {
     local_credit_cards_.push_back(std::move(local_credit_card));
   }
 
+  void AddFullServerCreditCard(const CreditCard& credit_card) override {
+    std::unique_ptr<CreditCard> server_credit_card =
+        base::MakeUnique<CreditCard>(credit_card);
+    server_credit_card->set_modification_date(base::Time::Now());
+    server_credit_cards_.push_back(std::move(server_credit_card));
+  }
+
   void RecordUseOf(const AutofillDataModel& data_model) override {
     CreditCard* credit_card = GetCreditCardWithGUID(data_model.guid().c_str());
     if (credit_card)
@@ -216,6 +226,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void ClearCreditCards() {
     local_credit_cards_.clear();
+    server_credit_cards_.clear();
   }
 
   // Create Elvis card with whitespace in the credit card number.
@@ -542,13 +553,13 @@ class TestAutofillManager : public AutofillManager {
                       TestPersonalDataManager* personal_data)
       : AutofillManager(driver, client, personal_data),
         personal_data_(personal_data),
+        context_getter_(driver->GetURLRequestContext()),
         autofill_enabled_(true),
         credit_card_upload_enabled_(false),
         credit_card_was_uploaded_(false),
         expected_observed_submission_(true),
         call_parent_upload_form_data_(false) {
-    set_payments_client(
-        new TestPaymentsClient(driver->GetURLRequestContext(), this));
+    set_payments_client(new TestPaymentsClient(context_getter_, this));
   }
   ~TestAutofillManager() override {}
 
@@ -644,6 +655,14 @@ class TestAutofillManager : public AutofillManager {
     return personal_data_->GetCreditCardWithGUID(guid);
   }
 
+  std::vector<CreditCard*> GetLocalCreditCards() const {
+    return personal_data_->GetLocalCreditCards();
+  }
+
+  const std::vector<CreditCard*>& GetCreditCards() const {
+    return personal_data_->GetCreditCards();
+  }
+
   void AddProfile(std::unique_ptr<AutofillProfile> profile) {
     personal_data_->AddProfile(std::move(profile));
   }
@@ -667,14 +686,22 @@ class TestAutofillManager : public AutofillManager {
     form_structures()->clear();
   }
 
+  void ResetPaymentsClientForCardUpload(const char* server_id) {
+    TestPaymentsClient* payments_client =
+        new TestPaymentsClient(context_getter_, this);
+    payments_client->server_id_ = server_id;
+    set_payments_client(payments_client);
+  }
+
  private:
-  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) override {
+  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
+                       const std::string& server_id) override {
     credit_card_was_uploaded_ = true;
+    AutofillManager::OnDidUploadCard(result, server_id);
   };
 
-  // Weak reference.
-  TestPersonalDataManager* personal_data_;
-
+  TestPersonalDataManager* personal_data_;        // Weak reference.
+  net::URLRequestContextGetter* context_getter_;  // Weak reference.
   bool autofill_enabled_;
   bool credit_card_upload_enabled_;
   bool credit_card_was_uploaded_;
@@ -735,8 +762,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
   // Wrappers around the above GetSuggestions call that take a hardcoded number
   // of expected results so callsites are cleaner.
-  void CheckSuggestions(int expected_page_id,
-                        const Suggestion& suggestion0) {
+  void CheckSuggestions(int expected_page_id, const Suggestion& suggestion0) {
     std::vector<Suggestion> suggestion_vector;
     suggestion_vector.push_back(suggestion0);
     CheckSuggestions(expected_page_id, 1, &suggestion_vector[0]);
@@ -775,9 +801,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
     ASSERT_EQ(expected_num_suggestions, suggestions_.size());
   }
 
-  bool on_query_seen() const {
-    return on_query_seen_;
-  }
+  bool on_query_seen() const { return on_query_seen_; }
 
   bool on_suggestions_returned_seen() const {
     return on_suggestions_returned_seen_;
@@ -859,6 +883,7 @@ class AutofillManagerTest : public testing::Test {
     // need to care about removing self as an observer in destruction.
     personal_data_.set_database(scoped_refptr<AutofillWebDataService>(NULL));
     personal_data_.SetPrefService(NULL);
+    personal_data_.ClearCreditCards();
 
     request_context_ = nullptr;
   }
@@ -886,7 +911,9 @@ class AutofillManagerTest : public testing::Test {
 
   void FormSubmitted(const FormData& form) {
     autofill_manager_->ResetRunLoop();
-    if (autofill_manager_->OnWillSubmitForm(form, base::TimeTicks::Now()))
+    if (autofill_manager_->OnWillSubmitForm(form, base::TimeTicks::Now()) &&
+        (!personal_data_.GetProfiles().empty() ||
+         !personal_data_.GetCreditCards().empty()))
       autofill_manager_->WaitForAsyncUploadProcess();
     autofill_manager_->OnFormSubmitted(form);
   }
@@ -1135,7 +1162,6 @@ class AutofillManagerTest : public testing::Test {
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestAutofillExternalDelegate> external_delegate_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  TestPaymentsClient* payments_client_;
   TestAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;
   base::FieldTrialList field_trial_list_;
@@ -1794,7 +1820,6 @@ TEST_F(AutofillManagerTest,
 // are no credit card suggestions and the promo is active. See the tests in
 // AutofillExternalDelegateTest that test whether the promo is added.
 TEST_F(AutofillManagerTest, GetCreditCardSuggestions_OnlySigninPromo) {
-  // Make sure there are no credit cards.
   personal_data_.ClearCreditCards();
 
   // Set up our form data.
@@ -2351,7 +2376,6 @@ TEST_F(AutofillManagerTest, FillCreditCardForm_YearNoMonth) {
 TEST_F(AutofillManagerTest, FillCreditCardForm_YearMonth) {
   // Same as the SetUp(), but generate 4 credit cards with year month
   // combination.
-  personal_data_.ClearCreditCards();
   personal_data_.CreateTestCreditCardsYearAndMonth("2999", "04");
   // Set up our form data.
   FormData form;
@@ -4599,6 +4623,7 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
   EnableUkmLogging();
+  personal_data_.ClearCreditCards();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4630,11 +4655,66 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
 
+  // Server did not send a server_id, expect copy of card is not stored.
+  EXPECT_TRUE(autofill_manager_->GetCreditCards().empty());
+
   // Verify that the correct histogram entry (and only that) was logged.
   histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionExpanded",
                                       AutofillMetrics::UPLOAD_OFFERED, 1);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
+}
+
+// TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_UploadCreditCardAndSaveCopy DISABLED_UploadCreditCardAndSaveCopy
+#else
+#define MAYBE_UploadCreditCardAndSaveCopy UploadCreditCardAndSaveCopy
+#endif
+TEST_F(AutofillManagerTest, MAYBE_UploadCreditCardAndSaveCopy) {
+  personal_data_.ClearCreditCards();
+  personal_data_.ClearAutofillProfiles();
+  autofill_manager_->set_credit_card_upload_enabled(true);
+
+  const char* const server_id = "InstrumentData:1234";
+  autofill_manager_->ResetPaymentsClientForCardUpload(server_id);
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  const char* const card_number = "4111111111111111";
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16(card_number);
+  credit_card_form.fields[2].value = ASCIIToUTF16("11");
+  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+
+  EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(autofill_manager_->GetLocalCreditCards().empty());
+  ASSERT_EQ(1U, autofill_manager_->GetCreditCards().size());
+  const CreditCard* const saved_card = autofill_manager_->GetCreditCards()[0];
+  EXPECT_EQ(CreditCard::OK, saved_card->GetServerStatus());
+  EXPECT_EQ(base::ASCIIToUTF16("1111"), saved_card->LastFourDigits());
+  EXPECT_EQ(kVisaCard, saved_card->type());
+  EXPECT_EQ(11, saved_card->expiration_month());
+  EXPECT_EQ(2017, saved_card->expiration_year());
+  EXPECT_EQ(server_id, saved_card->server_id());
+  EXPECT_EQ(CreditCard::FULL_SERVER_CARD, saved_card->record_type());
+  EXPECT_EQ(base::ASCIIToUTF16(card_number), saved_card->number());
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.

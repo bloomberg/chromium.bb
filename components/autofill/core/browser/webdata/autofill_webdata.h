@@ -94,6 +94,9 @@ class AutofillWebData {
   // |guid| is identifier of the credit card to remove.
   virtual void RemoveCreditCard(const std::string& guid) = 0;
 
+  // Schedules a task to add a full server credit card to the web database.
+  virtual void AddFullServerCreditCard(const CreditCard& credit_card) = 0;
+
   // Initiates the request for local/server credit cards.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
   // finished, with the credit cards included in the argument |result|.  The

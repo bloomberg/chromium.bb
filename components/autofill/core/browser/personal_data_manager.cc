@@ -611,6 +611,27 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   Refresh();
 }
 
+void PersonalDataManager::AddFullServerCreditCard(
+    const CreditCard& credit_card) {
+  DCHECK_EQ(CreditCard::FULL_SERVER_CARD, credit_card.record_type());
+  DCHECK(!credit_card.IsEmpty(app_locale_));
+  DCHECK(!credit_card.server_id().empty());
+
+  if (is_off_the_record_ || !database_.get())
+    return;
+
+  // Don't add a duplicate.
+  if (FindByGUID<CreditCard>(server_credit_cards_, credit_card.guid()) ||
+      FindByContents(server_credit_cards_, credit_card))
+    return;
+
+  // Add the new credit card to the web database.
+  database_->AddFullServerCreditCard(credit_card);
+
+  // Refresh our local cache and send notifications to observers.
+  Refresh();
+}
+
 void PersonalDataManager::UpdateServerCreditCard(
     const CreditCard& credit_card) {
   DCHECK_NE(CreditCard::LOCAL_CARD, credit_card.record_type());

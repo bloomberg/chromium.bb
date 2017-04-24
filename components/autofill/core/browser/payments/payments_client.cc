@@ -341,17 +341,19 @@ class UploadCardRequest : public PaymentsRequest {
   }
 
   void ParseResponse(std::unique_ptr<base::DictionaryValue> response) override {
+    response->GetString("credit_card_id", &server_id_);
   }
 
   bool IsResponseComplete() override { return true; }
 
   void RespondToDelegate(PaymentsClientDelegate* delegate,
                          AutofillClient::PaymentsRpcResult result) override {
-    delegate->OnDidUploadCard(result);
+    delegate->OnDidUploadCard(result, server_id_);
   }
 
  private:
   PaymentsClient::UploadRequestDetails request_details_;
+  std::string server_id_;
 };
 
 }  // namespace

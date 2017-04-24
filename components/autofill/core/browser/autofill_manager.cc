@@ -1081,10 +1081,19 @@ void AutofillManager::OnDidGetUploadDetails(
   pending_upload_request_url_ = GURL();
 }
 
-void AutofillManager::OnDidUploadCard(
-    AutofillClient::PaymentsRpcResult result) {
+void AutofillManager::OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
+                                      const std::string& server_id) {
   // We don't do anything user-visible if the upload attempt fails.
-  // TODO(jdonnelly): Log duration.
+  // If the upload succeeds, we will keep a copy of the card as a full server
+  // card on the device.
+  if (result == AutofillClient::SUCCESS && !server_id.empty()) {
+    upload_request_.card.set_record_type(CreditCard::FULL_SERVER_CARD);
+    upload_request_.card.SetServerStatus(CreditCard::OK);
+    upload_request_.card.set_server_id(server_id);
+    DCHECK(personal_data_);
+    if (personal_data_)
+      personal_data_->AddFullServerCreditCard(upload_request_.card);
+  }
 }
 
 void AutofillManager::OnFullCardRequestSucceeded(const CreditCard& card,

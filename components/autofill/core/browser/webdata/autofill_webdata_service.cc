@@ -174,6 +174,13 @@ void AutofillWebDataService::RemoveCreditCard(const std::string& guid) {
            autofill_backend_, guid));
 }
 
+void AutofillWebDataService::AddFullServerCreditCard(
+    const CreditCard& credit_card) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE, Bind(&AutofillWebDataBackendImpl::AddFullServerCreditCard,
+                      autofill_backend_, credit_card));
+}
+
 WebDataServiceBase::Handle AutofillWebDataService::GetCreditCards(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,

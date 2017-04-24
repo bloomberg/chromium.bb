@@ -58,8 +58,8 @@ class CvcUnmaskViewController
       autofill::AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
       std::unique_ptr<base::DictionaryValue> legal_message) override;
-  void OnDidUploadCard(
-      autofill::AutofillClient::PaymentsRpcResult result) override;
+  void OnDidUploadCard(autofill::AutofillClient::PaymentsRpcResult result,
+                       const std::string& server_id) override;
 
   // autofill::RiskDataLoader:
   void LoadRiskData(

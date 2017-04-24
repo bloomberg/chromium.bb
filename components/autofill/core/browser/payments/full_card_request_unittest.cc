@@ -102,7 +102,8 @@ class FullCardRequestTest : public testing::Test,
       std::unique_ptr<base::DictionaryValue> legal_message) override {
     ASSERT_TRUE(false) << "No upload details in this test";
   }
-  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) override {
+  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
+                       const std::string& server_id) override {
     ASSERT_TRUE(false) << "No card uploads in this test.";
   }
 

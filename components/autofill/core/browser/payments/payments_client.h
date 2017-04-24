@@ -47,7 +47,10 @@ class PaymentsClientDelegate {
       std::unique_ptr<base::DictionaryValue> legal_message) = 0;
 
   // Returns the result of an upload request.
-  virtual void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) = 0;
+  // If |result| == |AutofillClient::SUCCESS|, |server_id| may, optionally,
+  // contain the opaque identifier for the card on the server.
+  virtual void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
+                               const std::string& server_id) = 0;
 };
 
 // PaymentsClient issues Payments RPCs and manages responses and failure

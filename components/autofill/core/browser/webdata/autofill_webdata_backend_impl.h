@@ -140,6 +140,10 @@ class AutofillWebDataBackendImpl
   WebDatabase::State RemoveCreditCard(const std::string& guid,
                                       WebDatabase* db);
 
+  // Adds a full server credit card to the web database.
+  WebDatabase::State AddFullServerCreditCard(const CreditCard& credit_card,
+                                             WebDatabase* db);
+
   // Returns a vector of local/server credit cards from the web database.
   std::unique_ptr<WDTypedResult> GetCreditCards(WebDatabase* db);
   std::unique_ptr<WDTypedResult> GetServerCreditCards(WebDatabase* db);

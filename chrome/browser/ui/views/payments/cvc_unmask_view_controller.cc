@@ -90,7 +90,8 @@ void CvcUnmaskViewController::OnDidGetUploadDetails(
 }
 
 void CvcUnmaskViewController::OnDidUploadCard(
-    autofill::AutofillClient::PaymentsRpcResult result) {
+    autofill::AutofillClient::PaymentsRpcResult result,
+    const std::string& server_id) {
   NOTIMPLEMENTED();
 }
 

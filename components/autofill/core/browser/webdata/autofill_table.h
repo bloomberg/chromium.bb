@@ -150,7 +150,8 @@ struct FormFieldData;
 //                      This table contains "masked" credit card information
 //                      about credit cards stored on the server. It consists
 //                      of a short description and an ID, but not full payment
-//                      information. Writing to this table is only done by sync.
+//                      information. Writing to this table is done by sync and
+//                      on successful save of card to the server.
 //                      When a server card is unmasked, it will stay here and
 //                      will additionally be added in unmasked_credit_cards.
 //
@@ -168,7 +169,9 @@ struct FormFieldData;
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
-//                      full number is downloaded, it will be stored here.
+//                      full number is downloaded or when the full number is
+//                      available upon saving card to server, it will be stored
+//                      here.
 //
 //   id                 Server ID. This can be joined with the id in the
 //                      masked_credit_cards table to get the rest of the data.
@@ -358,6 +361,9 @@ class AutofillTable : public WebDatabaseTable,
   // credit card to remove.
   bool RemoveCreditCard(const std::string& guid);
 
+  // Adds to the masked_credit_cards and unmasked_credit_cards tables.
+  bool AddFullServerCreditCard(const CreditCard& credit_card);
+
   // Retrieves a credit card with guid |guid|.
   std::unique_ptr<CreditCard> GetCreditCard(const std::string& guid);
 
@@ -526,6 +532,18 @@ class AutofillTable : public WebDatabaseTable,
 
   // Checks if the guid is in the trash.
   bool IsAutofillGUIDInTrash(const std::string& guid);
+
+  // Adds to |masked_credit_cards| and updates |server_card_metadata|.
+  // Must already be in a transaction.
+  void AddMaskedCreditCards(const std::vector<CreditCard>& credit_cards);
+
+  // Adds to |unmasked_credit_cards|.
+  void AddUnmaskedCreditCard(const std::string& id,
+                             const base::string16& full_number);
+
+  // Deletes server credit cards by |id|. Returns true if a row was deleted.
+  bool DeleteFromMaskedCreditCards(const std::string& id);
+  bool DeleteFromUnmaskedCreditCards(const std::string& id);
 
   bool InitMainTable();
   bool InitCreditCardsTable();

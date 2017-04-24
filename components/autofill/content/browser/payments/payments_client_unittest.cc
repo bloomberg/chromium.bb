@@ -34,6 +34,7 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
         switches::kWalletServiceUseSandbox, "0");
 
     result_ = AutofillClient::NONE;
+    server_id_.clear();
     real_pan_.clear();
     legal_message_.reset();
 
@@ -66,8 +67,10 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
     legal_message_ = std::move(legal_message);
   }
 
-  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) override {
+  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
+                       const std::string& server_id) override {
     result_ = result;
+    server_id_ = server_id;
   }
 
  protected:
@@ -130,6 +133,7 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
   }
 
   AutofillClient::PaymentsRpcResult result_;
+  std::string server_id_;
   std::string real_pan_;
   std::unique_ptr<base::DictionaryValue> legal_message_;
 
@@ -227,11 +231,20 @@ TEST_F(PaymentsClientTest, GetDetailsRemovesNonLocationData) {
   EXPECT_TRUE(GetUploadData().find("0090") == std::string::npos);
 }
 
-TEST_F(PaymentsClientTest, UploadSuccess) {
+TEST_F(PaymentsClientTest, UploadSuccessWithoutServerId) {
   StartUploading();
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_TRUE(server_id_.empty());
+}
+
+TEST_F(PaymentsClientTest, UploadSuccessWithServerId) {
+  StartUploading();
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{ \"credit_card_id\": \"InstrumentData:1\" }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_EQ("InstrumentData:1", server_id_);
 }
 
 TEST_F(PaymentsClientTest, UploadIncludesNonLocationData) {

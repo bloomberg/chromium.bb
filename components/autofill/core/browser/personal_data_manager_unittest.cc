@@ -497,6 +497,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
 }
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
+  EnableWalletCardImport();
   CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card0,
       "John Dillinger", "423456789012" /* Visa */, "01", "2999");
@@ -549,6 +550,39 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   cards.push_back(&credit_card0);
   cards.push_back(&credit_card2);
   ExpectSameElements(cards, personal_data_->GetCreditCards());
+
+  // Add a full server card.
+  CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card3, "Jane Doe",
+                          "4111111111111111" /* Visa */, "04", "2999");
+  credit_card3.set_record_type(CreditCard::FULL_SERVER_CARD);
+  credit_card3.set_server_id("server_id");
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+
+  personal_data_->AddFullServerCreditCard(credit_card3);
+  base::RunLoop().Run();
+
+  cards.push_back(&credit_card3);
+  ExpectSameElements(cards, personal_data_->GetCreditCards());
+
+  // Must not add a duplicate server card with same GUID.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
+
+  personal_data_->AddFullServerCreditCard(credit_card3);
+
+  ExpectSameElements(cards, personal_data_->GetCreditCards());
+
+  // Must not add a duplicate card with same contents as another server card.
+  CreditCard duplicate_server_card(credit_card3);
+  duplicate_server_card.set_guid(base::GenerateGUID());
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
+
+  personal_data_->AddFullServerCreditCard(duplicate_server_card);
+
+  ExpectSameElements(cards, personal_data_->GetCreditCards());
 }
 
 // Test that a new credit card has its basic information set.
@@ -557,7 +591,7 @@ TEST_F(PersonalDataManagerTest, AddCreditCard_BasicInformation) {
   TestAutofillClock test_clock;
   test_clock.SetNow(kArbitraryTime);
 
-  // Add a credit to the database.
+  // Add a credit card to the database.
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card, "John Dillinger",
                           "423456789012" /* Visa */, "01", "2999");
@@ -676,6 +710,35 @@ TEST_F(PersonalDataManagerTest, RefuseToStoreFullCard) {
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD,
+            personal_data_->GetCreditCards()[0]->record_type());
+}
+
+// Makes sure that full cards are only added as masked card when full PAN
+// storage is disabled.
+TEST_F(PersonalDataManagerTest, AddFullCardAsMaskedCard) {
+// On Linux this should be disabled automatically. Elsewhere, only if the
+// flag is passed.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableOfferStoreUnmaskedWalletCards));
+#else
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableOfferStoreUnmaskedWalletCards);
+#endif
+
+  CreditCard server_card(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&server_card, "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2999");
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+
+  personal_data_->AddFullServerCreditCard(server_card);
+
   base::RunLoop().Run();
 
   ASSERT_EQ(1U, personal_data_->GetCreditCards().size());

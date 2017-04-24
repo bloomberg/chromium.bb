@@ -85,6 +85,7 @@ class AutofillWebDataService : public AutofillWebData,
   void AddCreditCard(const CreditCard& credit_card) override;
   void UpdateCreditCard(const CreditCard& credit_card) override;
   void RemoveCreditCard(const std::string& guid) override;
+  void AddFullServerCreditCard(const CreditCard& credit_card) override;
   WebDataServiceBase::Handle GetCreditCards(
       WebDataServiceConsumer* consumer) override;
 

@@ -329,6 +329,23 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveCreditCard(
   return WebDatabase::COMMIT_NEEDED;
 }
 
+WebDatabase::State AutofillWebDataBackendImpl::AddFullServerCreditCard(
+    const CreditCard& credit_card,
+    WebDatabase* db) {
+  DCHECK(db_thread_->BelongsToCurrentThread());
+  if (!AutofillTable::FromWebDatabase(db)->AddFullServerCreditCard(
+          credit_card)) {
+    NOTREACHED();
+    return WebDatabase::COMMIT_NOT_NEEDED;
+  }
+
+  for (auto& db_observer : db_observer_list_) {
+    db_observer.CreditCardChanged(CreditCardChange(
+        CreditCardChange::ADD, credit_card.guid(), &credit_card));
+  }
+  return WebDatabase::COMMIT_NEEDED;
+}
+
 std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetCreditCards(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());

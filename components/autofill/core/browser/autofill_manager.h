@@ -272,6 +272,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
     return form_interactions_ukm_logger_.get();
   }
 
+  // payments::PaymentsClientDelegate:
+  // Exposed for testing.
+  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
+                       const std::string& server_id) override;
+
   // Exposed for testing.
   AutofillExternalDelegate* external_delegate() {
     return external_delegate_;
@@ -301,7 +306,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
       std::unique_ptr<base::DictionaryValue> legal_message) override;
-  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) override;
 
   // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(const CreditCard& card,
