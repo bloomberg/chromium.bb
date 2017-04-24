@@ -261,8 +261,8 @@ class CLStatsEngine(object):
     """
     if self.builds:
       logging.info('%d total runs included, from build %d to %d.',
-                   len(self.builds), self.builds[-1]['build_number'],
-                   self.builds[0]['build_number'])
+                   len(self.builds), self.builds[0]['build_number'],
+                   self.builds[-1]['build_number'])
       total_passed = len([b for b in self.builds
                           if b['status'] == constants.BUILDER_STATUS_PASSED])
       logging.info('%d of %d runs passed.', total_passed, len(self.builds))
@@ -541,8 +541,8 @@ class CLStatsEngine(object):
     """
     if self.builds:
       logging.info('%d total runs included, from build %d to %d.',
-                   len(self.builds), self.builds[-1]['build_number'],
-                   self.builds[0]['build_number'])
+                   len(self.builds), self.builds[0]['build_number'],
+                   self.builds[-1]['build_number'])
       total_passed = len([b for b in self.builds
                           if b['status'] == constants.BUILDER_STATUS_PASSED])
       logging.info('%d of %d runs passed.', total_passed, len(self.builds))
