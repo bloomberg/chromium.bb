@@ -886,10 +886,7 @@ bool SimpleSynchronousEntry::OpenFiles(SimpleEntryStat* out_entry_stat) {
       continue;
     }
     out_entry_stat->set_last_used(file_info.last_accessed);
-    if (simple_util::GetMTime(path_, &file_last_modified))
-      out_entry_stat->set_last_modified(file_last_modified);
-    else
-      out_entry_stat->set_last_modified(file_info.last_modified);
+    out_entry_stat->set_last_modified(file_info.last_modified);
 
     base::TimeDelta stream_age =
         base::Time::Now() - out_entry_stat->last_modified();
