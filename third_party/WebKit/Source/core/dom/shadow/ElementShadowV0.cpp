@@ -63,7 +63,7 @@ inline void DistributionPool::Clear() {
 
 inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
   Clear();
-  for (Node* child = parent.FirstChild(); child; child = child->nextSibling()) {
+  for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
     if (isHTMLSlotElement(child)) {
       // TODO(hayato): Support re-distribution across v0 and v1 shadow trees
       continue;
@@ -101,7 +101,7 @@ void DistributionPool::DistributeTo(InsertionPoint* insertion_point,
   // Distributes fallback elements
   if (insertion_point->IsContentInsertionPoint() &&
       distributed_nodes.IsEmpty()) {
-    for (Node* fallback_node = insertion_point->FirstChild(); fallback_node;
+    for (Node* fallback_node = insertion_point->firstChild(); fallback_node;
          fallback_node = fallback_node->nextSibling()) {
       distributed_nodes.Append(fallback_node);
       element_shadow->DidDistributeNode(fallback_node, insertion_point);

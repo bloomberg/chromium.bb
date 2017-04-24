@@ -67,7 +67,7 @@ TEST_F(LocalFrameTest, nodeImageWithNestedElement) {
   const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
   EXPECT_EQ(
       Color(0, 255, 0),
-      sample->FirstChild()->GetLayoutObject()->ResolveColor(CSSPropertyColor))
+      sample->firstChild()->GetLayoutObject()->ResolveColor(CSSPropertyColor))
       << "Descendants node should have :-webkit-drag.";
 }
 

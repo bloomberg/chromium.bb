@@ -43,7 +43,7 @@ class TextPainterTest : public RenderingTest {
     RenderingTest::SetUp();
     SetBodyInnerHTML("Hello world");
     layout_text_ =
-        ToLayoutText(GetDocument().body()->FirstChild()->GetLayoutObject());
+        ToLayoutText(GetDocument().body()->firstChild()->GetLayoutObject());
     ASSERT_TRUE(layout_text_);
     ASSERT_EQ("Hello world", layout_text_->GetText());
   }

@@ -248,7 +248,7 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
       "<body contenteditable='true'><span class='line' id='line'>One Two "
       "Three</span></body>");
 
-  Node* line = GetDocument().GetElementById("line")->FirstChild();
+  Node* line = GetDocument().GetElementById("line")->firstChild();
 
   TapEventBuilder single_tap_event(IntPoint(0, 0), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
@@ -298,7 +298,7 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable) {
       "height: 30px; } </style>"
       "<span class='line' id='line'>One Two Three</span>");
 
-  Node* line = GetDocument().GetElementById("line")->FirstChild();
+  Node* line = GetDocument().GetElementById("line")->firstChild();
 
   TapEventBuilder single_tap_event(IntPoint(0, 0), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(

@@ -752,8 +752,8 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
     fragment->ParseXML(markup, 0, kAllowScriptingContent);
 
   Element* parsed_element =
-      fragment->FirstChild() && fragment->FirstChild()->IsElementNode()
-          ? ToElement(fragment->FirstChild())
+      fragment->firstChild() && fragment->firstChild()->IsElementNode()
+          ? ToElement(fragment->firstChild())
           : nullptr;
   if (!parsed_element)
     return Response::Error("Could not parse value as attributes");
@@ -830,8 +830,8 @@ Response InspectorDOMAgent::setNodeName(int node_id,
   new_elem->CloneAttributesFromElement(*old_element);
 
   // Copy over the original node's children.
-  for (Node* child = old_element->FirstChild(); child;
-       child = old_element->FirstChild()) {
+  for (Node* child = old_element->firstChild(); child;
+       child = old_element->firstChild()) {
     response = dom_editor_->InsertBefore(new_elem, child, 0);
     if (!response.isSuccess())
       return response;
@@ -940,7 +940,7 @@ static Node* NextNodeWithShadowDOMInMind(const Node& current,
         return shadow_root->OlderShadowRoot();
       Element& host = shadow_root->host();
       if (host.HasChildren())
-        return host.FirstChild();
+        return host.firstChild();
     }
     if (node->nextSibling())
       return node->nextSibling();

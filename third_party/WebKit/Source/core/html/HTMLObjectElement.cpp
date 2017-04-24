@@ -223,7 +223,7 @@ void HTMLObjectElement::ParametersForPlugin(Vector<String>& param_names,
 }
 
 bool HTMLObjectElement::HasFallbackContent() const {
-  for (Node* child = FirstChild(); child; child = child->nextSibling()) {
+  for (Node* child = firstChild(); child; child = child->nextSibling()) {
     // Ignore whitespace-only text, and <param> tags, any other content is
     // fallback content.
     if (child->IsTextNode()) {

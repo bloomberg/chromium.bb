@@ -530,8 +530,8 @@ DEFINE_TRACE(DateTimeEditElement) {
 }
 
 inline Element* DateTimeEditElement::FieldsWrapperElement() const {
-  DCHECK(FirstChild());
-  return ToElementOrDie(FirstChild());
+  DCHECK(firstChild());
+  return ToElementOrDie(firstChild());
 }
 
 void DateTimeEditElement::AddField(DateTimeFieldElement* field) {
@@ -570,7 +570,7 @@ PassRefPtr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
   RefPtr<ComputedStyle> original_style = OriginalStyleForLayoutObject();
   RefPtr<ComputedStyle> style = ComputedStyle::Clone(*original_style);
   float width = 0;
-  for (Node* child = FieldsWrapperElement()->FirstChild(); child;
+  for (Node* child = FieldsWrapperElement()->firstChild(); child;
        child = child->nextSibling()) {
     if (!child->IsElementNode())
       continue;
@@ -735,9 +735,9 @@ void DateTimeEditElement::GetLayout(const LayoutParameters& layout_parameters,
       focused_field ? focused_field->ShadowPseudoId() : g_null_atom;
 
   DateTimeEditBuilder builder(*this, layout_parameters, date_value);
-  Node* last_child_to_be_removed = fields_wrapper->LastChild();
+  Node* last_child_to_be_removed = fields_wrapper->lastChild();
   if (!builder.Build(layout_parameters.date_time_format) || fields_.IsEmpty()) {
-    last_child_to_be_removed = fields_wrapper->LastChild();
+    last_child_to_be_removed = fields_wrapper->lastChild();
     builder.Build(layout_parameters.fallback_date_time_format);
   }
 
@@ -754,8 +754,8 @@ void DateTimeEditElement::GetLayout(const LayoutParameters& layout_parameters,
   }
 
   if (last_child_to_be_removed) {
-    for (Node* child_node = fields_wrapper->FirstChild(); child_node;
-         child_node = fields_wrapper->FirstChild()) {
+    for (Node* child_node = fields_wrapper->firstChild(); child_node;
+         child_node = fields_wrapper->firstChild()) {
       fields_wrapper->RemoveChild(child_node);
       if (child_node == last_child_to_be_removed)
         break;

@@ -30,7 +30,7 @@ class ImageQualityControllerTest : public RenderingTest {
 
 TEST_F(ImageQualityControllerTest, RegularImage) {
   SetBodyInnerHTML("<img src='myimage'></img>");
-  LayoutObject* obj = GetDocument().body()->FirstChild()->GetLayoutObject();
+  LayoutObject* obj = GetDocument().body()->firstChild()->GetLayoutObject();
 
   EXPECT_EQ(kInterpolationDefault, Controller()->ChooseInterpolationQuality(
                                        *obj, nullptr, nullptr, LayoutSize()));
@@ -39,7 +39,7 @@ TEST_F(ImageQualityControllerTest, RegularImage) {
 TEST_F(ImageQualityControllerTest, ImageRenderingPixelated) {
   SetBodyInnerHTML(
       "<img src='myimage' style='image-rendering: pixelated'></img>");
-  LayoutObject* obj = GetDocument().body()->FirstChild()->GetLayoutObject();
+  LayoutObject* obj = GetDocument().body()->firstChild()->GetLayoutObject();
 
   EXPECT_EQ(kInterpolationNone, Controller()->ChooseInterpolationQuality(
                                     *obj, nullptr, nullptr, LayoutSize()));
@@ -68,7 +68,7 @@ class TestImageAnimated : public Image {
 TEST_F(ImageQualityControllerTest, ImageMaybeAnimated) {
   SetBodyInnerHTML("<img src='myimage'></img>");
   LayoutImage* img =
-      ToLayoutImage(GetDocument().body()->FirstChild()->GetLayoutObject());
+      ToLayoutImage(GetDocument().body()->firstChild()->GetLayoutObject());
 
   RefPtr<TestImageAnimated> test_image = AdoptRef(new TestImageAnimated);
   EXPECT_EQ(kInterpolationMedium,
@@ -101,7 +101,7 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForContrast) {
       "<img src='myimage' style='image-rendering: "
       "-webkit-optimize-contrast'></img>");
   LayoutImage* img =
-      ToLayoutImage(GetDocument().body()->FirstChild()->GetLayoutObject());
+      ToLayoutImage(GetDocument().body()->firstChild()->GetLayoutObject());
 
   RefPtr<TestImageWithContrast> test_image =
       AdoptRef(new TestImageWithContrast);
@@ -133,7 +133,7 @@ class TestImageLowQuality : public Image {
 TEST_F(ImageQualityControllerTest, MediumQualityFilterForUnscaledImage) {
   SetBodyInnerHTML("<img src='myimage'></img>");
   LayoutImage* img =
-      ToLayoutImage(GetDocument().body()->FirstChild()->GetLayoutObject());
+      ToLayoutImage(GetDocument().body()->firstChild()->GetLayoutObject());
 
   RefPtr<TestImageLowQuality> test_image = AdoptRef(new TestImageLowQuality);
   EXPECT_EQ(kInterpolationMedium,
@@ -180,7 +180,7 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage) {
   Controller()->SetTimer(WTF::WrapUnique(mock_timer));
   SetBodyInnerHTML("<img src='myimage'></img>");
   LayoutImage* img =
-      ToLayoutImage(GetDocument().body()->FirstChild()->GetLayoutObject());
+      ToLayoutImage(GetDocument().body()->firstChild()->GetLayoutObject());
 
   RefPtr<TestImageLowQuality> test_image = AdoptRef(new TestImageLowQuality);
   std::unique_ptr<PaintController> paint_controller = PaintController::Create();
@@ -272,7 +272,7 @@ TEST_F(ImageQualityControllerTest,
   Controller()->SetTimer(WTF::WrapUnique(mock_timer));
   SetBodyInnerHTML("<img src='myimage'></img>");
   LayoutImage* img =
-      ToLayoutImage(GetDocument().body()->FirstChild()->GetLayoutObject());
+      ToLayoutImage(GetDocument().body()->firstChild()->GetLayoutObject());
 
   RefPtr<TestImageLowQuality> test_image = AdoptRef(new TestImageLowQuality);
 
@@ -312,7 +312,7 @@ TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced) {
   Controller()->SetTimer(WTF::WrapUnique(mock_timer));
   SetBodyInnerHTML("<img src='myimage'></img>");
   LayoutImage* img =
-      ToLayoutImage(GetDocument().body()->FirstChild()->GetLayoutObject());
+      ToLayoutImage(GetDocument().body()->firstChild()->GetLayoutObject());
 
   RefPtr<TestImageLowQuality> test_image = AdoptRef(new TestImageLowQuality);
 

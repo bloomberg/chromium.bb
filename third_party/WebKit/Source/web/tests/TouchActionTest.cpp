@@ -248,9 +248,9 @@ void TouchActionTest::RunTestOnTree(
     std::string failure_context("Test case: ");
     if (element->HasID()) {
       failure_context.append(element->GetIdAttribute().Ascii().data());
-    } else if (element->FirstChild()) {
+    } else if (element->firstChild()) {
       failure_context.append("\"");
-      failure_context.append(element->FirstChild()
+      failure_context.append(element->firstChild()
                                  ->textContent(false)
                                  .StripWhiteSpace()
                                  .Ascii()

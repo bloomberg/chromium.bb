@@ -348,8 +348,8 @@ NodeList* Node::childNodes() {
 Node* Node::PseudoAwarePreviousSibling() const {
   if (parentElement() && !previousSibling()) {
     Element* parent = parentElement();
-    if (IsAfterPseudoElement() && parent->LastChild())
-      return parent->LastChild();
+    if (IsAfterPseudoElement() && parent->lastChild())
+      return parent->lastChild();
     if (!IsBeforePseudoElement())
       return parent->GetPseudoElement(kPseudoIdBefore);
   }
@@ -360,7 +360,7 @@ Node* Node::PseudoAwareNextSibling() const {
   if (parentElement() && !nextSibling()) {
     Element* parent = parentElement();
     if (IsBeforePseudoElement() && parent->HasChildren())
-      return parent->FirstChild();
+      return parent->firstChild();
     if (!IsAfterPseudoElement())
       return parent->GetPseudoElement(kPseudoIdAfter);
   }
@@ -373,7 +373,7 @@ Node* Node::PseudoAwareFirstChild() const {
     Node* first = current_element->GetPseudoElement(kPseudoIdBefore);
     if (first)
       return first;
-    first = current_element->FirstChild();
+    first = current_element->firstChild();
     if (!first)
       first = current_element->GetPseudoElement(kPseudoIdAfter);
     return first;
@@ -388,7 +388,7 @@ Node* Node::PseudoAwareLastChild() const {
     Node* last = current_element->GetPseudoElement(kPseudoIdAfter);
     if (last)
       return last;
-    last = current_element->LastChild();
+    last = current_element->lastChild();
     if (!last)
       last = current_element->GetPseudoElement(kPseudoIdBefore);
     return last;
@@ -1357,7 +1357,7 @@ void Node::setTextContent(const String& text) {
       // See crbug.com/352836 also.
       // No need to do anything if the text is identical.
       if (container->HasOneTextChild() &&
-          ToText(container->FirstChild())->data() == text && !text.IsEmpty())
+          ToText(container->firstChild())->data() == text && !text.IsEmpty())
         return;
 
       ChildListMutationScope mutation(*this);

@@ -31,9 +31,9 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
       "<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
-  Element& div = *ToElement(GetDocument().body()->FirstChild());
+  Element& div = *ToElement(GetDocument().body()->firstChild());
   InlineTextBox& text_inline_box =
-      *ToLayoutText(div.FirstChild()->GetLayoutObject())->FirstTextBox();
+      *ToLayoutText(div.firstChild()->GetLayoutObject())->FirstTextBox();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
@@ -77,9 +77,9 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
   SetBodyInnerHTML(
       "<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA "
       "BBBBBBBBBB</div>");
-  Element& div = *ToElement(GetDocument().body()->FirstChild());
+  Element& div = *ToElement(GetDocument().body()->firstChild());
   LayoutBlock& div_block =
-      *ToLayoutBlock(GetDocument().body()->FirstChild()->GetLayoutObject());
+      *ToLayoutBlock(GetDocument().body()->firstChild()->GetLayoutObject());
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
   InlineTextBox& first_text_box = *text.FirstTextBox();
 

@@ -47,8 +47,8 @@ Node* FlatTreeTraversal::TraverseChild(const Node& node,
   if (shadow) {
     ShadowRoot& shadow_root = shadow->YoungestShadowRoot();
     return ResolveDistributionStartingAt(direction == kTraversalDirectionForward
-                                             ? shadow_root.FirstChild()
-                                             : shadow_root.LastChild(),
+                                             ? shadow_root.firstChild()
+                                             : shadow_root.lastChild(),
                                          direction);
   }
   return ResolveDistributionStartingAt(direction == kTraversalDirectionForward

@@ -137,7 +137,7 @@ class LinkSelectionTest : public LinkSelectionTestBase {
 
     auto* document = main_frame_->GetFrame()->GetDocument();
     ASSERT_NE(nullptr, document);
-    auto* link_to_select = document->GetElementById("link")->FirstChild();
+    auto* link_to_select = document->GetElementById("link")->firstChild();
     ASSERT_NE(nullptr, link_to_select);
     // We get larger range that we actually want to select, because we need a
     // slightly larger rect to include the last character to the selection.
@@ -226,7 +226,7 @@ TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownload) {
 
 TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected) {
   auto* document = main_frame_->GetFrame()->GetDocument();
-  auto* text_to_select = document->GetElementById("page_text")->FirstChild();
+  auto* text_to_select = document->GetElementById("page_text")->firstChild();
   ASSERT_NE(nullptr, text_to_select);
 
   // Select some page text outside the link element.

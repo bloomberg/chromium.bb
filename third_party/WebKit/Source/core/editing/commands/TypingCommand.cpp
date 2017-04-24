@@ -665,8 +665,8 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
   if (!root || !root->HasChildren())
     return false;
 
-  if (root->FirstChild() == root->LastChild()) {
-    if (isHTMLBRElement(root->FirstChild())) {
+  if (root->firstChild() == root->lastChild()) {
+    if (isHTMLBRElement(root->firstChild())) {
       // If there is a single child and it could be a placeholder, leave it
       // alone.
       if (root->GetLayoutObject() &&
@@ -675,7 +675,7 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
     }
   }
 
-  while (Node* child = root->FirstChild()) {
+  while (Node* child = root->firstChild()) {
     RemoveNode(child, editing_state);
     if (editing_state->IsAborted())
       return false;

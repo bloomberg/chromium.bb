@@ -80,7 +80,7 @@ TEST_F(LayoutTableCellTest, ResetColspanIfTooBig) {
 
   LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
                                                 .body()
-                                                ->FirstChild()
+                                                ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()
@@ -93,7 +93,7 @@ TEST_F(LayoutTableCellTest, DoNotResetColspanJustBelowBoundary) {
 
   LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
                                                 .body()
-                                                ->FirstChild()
+                                                ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()
@@ -106,7 +106,7 @@ TEST_F(LayoutTableCellTest, ResetRowspanIfTooBig) {
 
   LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
                                                 .body()
-                                                ->FirstChild()
+                                                ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()
@@ -119,7 +119,7 @@ TEST_F(LayoutTableCellTest, DoNotResetRowspanJustBelowBoundary) {
 
   LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
                                                 .body()
-                                                ->FirstChild()
+                                                ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()
@@ -136,7 +136,7 @@ TEST_F(LayoutTableCellTest,
 
   LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
                                                 .body()
-                                                ->FirstChild()
+                                                ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()
                                                 ->firstChild()

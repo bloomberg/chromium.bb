@@ -218,7 +218,7 @@ void ColorInputType::UpdateView() {
 
 HTMLElement* ColorInputType::ShadowColorSwatch() const {
   ShadowRoot* shadow = GetElement().UserAgentShadowRoot();
-  return shadow ? ToHTMLElementOrDie(shadow->FirstChild()->firstChild())
+  return shadow ? ToHTMLElementOrDie(shadow->firstChild()->firstChild())
                 : nullptr;
 }
 

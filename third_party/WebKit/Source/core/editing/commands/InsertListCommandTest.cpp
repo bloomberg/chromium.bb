@@ -32,7 +32,7 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
   SetBodyContent("\nd\n<ol>");
   Text* empty_text = GetDocument().createTextNode("");
   GetDocument().body()->InsertBefore(empty_text,
-                                     GetDocument().body()->FirstChild());
+                                     GetDocument().body()->firstChild());
   UpdateAllLifecyclePhases();
   GetDocument().GetFrame()->Selection().SetSelection(
       SelectionInDOMTree::Builder()

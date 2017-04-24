@@ -3549,8 +3549,8 @@ void HTMLMediaElement::AssertShadowRootChildren(ShadowRoot& shadow_root) {
   // child.
   unsigned number_of_children = shadow_root.CountChildren();
   DCHECK_LE(number_of_children, 3u);
-  Node* first_child = shadow_root.FirstChild();
-  Node* last_child = shadow_root.LastChild();
+  Node* first_child = shadow_root.firstChild();
+  Node* last_child = shadow_root.lastChild();
   if (number_of_children == 1) {
     DCHECK(first_child->IsTextTrackContainer() ||
            first_child->IsMediaControls() ||
@@ -3574,7 +3574,7 @@ TextTrackContainer& HTMLMediaElement::EnsureTextTrackContainer() {
   ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
   AssertShadowRootChildren(shadow_root);
 
-  Node* first_child = shadow_root.FirstChild();
+  Node* first_child = shadow_root.firstChild();
   if (first_child && first_child->IsTextTrackContainer())
     return ToTextTrackContainer(*first_child);
   Node* to_be_inserted = first_child;

@@ -724,7 +724,7 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
   GetDocument().UpdateStyleAndLayout();
   const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()
-          .Collapse(Position(sample->FirstChild(), 2))
+          .Collapse(Position(sample->firstChild(), 2))
           .SetIsDirectional(true)
           .SetIsHandleVisible(true)
           .Build();
@@ -756,7 +756,7 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
   GetDocument().UpdateStyleAndLayout();
   const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()
-          .Collapse(Position(sample->FirstChild(), 2))
+          .Collapse(Position(sample->firstChild(), 2))
           .SetIsDirectional(true)
           .SetIsHandleVisible(true)
           .Build();

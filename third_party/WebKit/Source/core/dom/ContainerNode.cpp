@@ -81,7 +81,7 @@ static inline void CollectChildrenAndRemoveFromOldParent(
 }
 
 void ContainerNode::ParserTakeAllChildrenFrom(ContainerNode& old_parent) {
-  while (Node* child = old_parent.FirstChild()) {
+  while (Node* child = old_parent.firstChild()) {
     // Explicitly remove since appending can fail, but this loop shouldn't be
     // infinite.
     old_parent.ParserRemoveChild(*child);
@@ -98,7 +98,7 @@ bool ContainerNode::IsChildTypeAllowed(const Node& child) const {
   if (!child.IsDocumentFragment())
     return ChildTypeAllowed(child.getNodeType());
 
-  for (Node* node = ToDocumentFragment(child).FirstChild(); node;
+  for (Node* node = ToDocumentFragment(child).firstChild(); node;
        node = node->nextSibling()) {
     if (!ChildTypeAllowed(node->getNodeType()))
       return false;
@@ -327,11 +327,11 @@ void ContainerNode::InsertBeforeCommon(Node& next_child, Node& new_child) {
   DCHECK_NE(last_child_, prev);
   next_child.SetPreviousSibling(&new_child);
   if (prev) {
-    DCHECK_NE(FirstChild(), next_child);
+    DCHECK_NE(firstChild(), next_child);
     DCHECK_EQ(prev->nextSibling(), next_child);
     prev->SetNextSibling(&new_child);
   } else {
-    DCHECK(FirstChild() == next_child);
+    DCHECK(firstChild() == next_child);
     SetFirstChild(&new_child);
   }
   new_child.SetParentOrShadowHostNode(this);
@@ -777,7 +777,7 @@ void ContainerNode::AttachLayoutTree(const AttachContext& context) {
   AttachContext children_context(context);
   children_context.resolved_style = nullptr;
 
-  for (Node* child = FirstChild(); child; child = child->nextSibling()) {
+  for (Node* child = firstChild(); child; child = child->nextSibling()) {
 #if DCHECK_IS_ON()
     DCHECK(child->NeedsAttach() ||
            ChildAttachedAllowedWhenAttachingChildren(this));
@@ -796,7 +796,7 @@ void ContainerNode::DetachLayoutTree(const AttachContext& context) {
   children_context.resolved_style = nullptr;
   children_context.clear_invalidation = true;
 
-  for (Node* child = FirstChild(); child; child = child->nextSibling())
+  for (Node* child = firstChild(); child; child = child->nextSibling())
     child->DetachLayoutTree(children_context);
 
   SetChildNeedsStyleRecalc();
@@ -817,7 +817,7 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
 
 void ContainerNode::CloneChildNodes(ContainerNode* clone) {
   DummyExceptionStateForTesting exception_state;
-  for (Node* n = FirstChild(); n && !exception_state.HadException();
+  for (Node* n = firstChild(); n && !exception_state.HadException();
        n = n->nextSibling())
     clone->AppendChild(n->cloneNode(true), exception_state);
 }
@@ -1201,7 +1201,7 @@ HTMLCollection* ContainerNode::Children() {
 
 unsigned ContainerNode::CountChildren() const {
   unsigned count = 0;
-  for (Node* node = FirstChild(); node; node = node->nextSibling())
+  for (Node* node = firstChild(); node; node = node->nextSibling())
     count++;
   return count;
 }
@@ -1302,7 +1302,7 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
   DCHECK(!NeedsStyleRecalc());
 
   StyleResolver& style_resolver = GetDocument().EnsureStyleResolver();
-  for (Node* child = LastChild(); child; child = child->previousSibling()) {
+  for (Node* child = lastChild(); child; child = child->previousSibling()) {
     if (child->IsTextNode()) {
       ToText(child)->RecalcTextStyle(change);
     } else if (child->IsElementNode()) {
@@ -1323,7 +1323,7 @@ void ContainerNode::RebuildChildrenLayoutTrees(Text*& next_text_sibling) {
   // point while building the layout tree.  Having us start from the last child
   // and work our way back means in the common case, we'll find the insertion
   // point in O(1) time.  See crbug.com/288225
-  for (Node* child = LastChild(); child; child = child->previousSibling()) {
+  for (Node* child = lastChild(); child; child = child->previousSibling()) {
     bool rebuild_child = child->NeedsReattachLayoutTree() ||
                          child->ChildNeedsReattachLayoutTree();
     if (child->IsTextNode()) {

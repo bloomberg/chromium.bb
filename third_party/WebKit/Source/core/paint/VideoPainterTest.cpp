@@ -105,7 +105,7 @@ TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree) {
   // Fetch the layer associated with the <video>, and check that it was
   // correctly configured in the layer tree.
   HTMLMediaElement* element =
-      ToHTMLMediaElement(GetDocument().body()->FirstChild());
+      ToHTMLMediaElement(GetDocument().body()->firstChild());
   StubWebMediaPlayer* player =
       static_cast<StubWebMediaPlayer*>(element->GetWebMediaPlayer());
   const WebLayer* layer = player->GetWebLayer();

@@ -114,10 +114,10 @@ Element* HTMLDetailsElement::FindMainSummary() const {
     return summary;
 
   HTMLContentElement* content =
-      toHTMLContentElementOrDie(UserAgentShadowRoot()->FirstChild());
-  DCHECK(content->FirstChild());
-  CHECK(isHTMLSummaryElement(*content->FirstChild()));
-  return ToElement(content->FirstChild());
+      toHTMLContentElementOrDie(UserAgentShadowRoot()->firstChild());
+  DCHECK(content->firstChild());
+  CHECK(isHTMLSummaryElement(*content->firstChild()));
+  return ToElement(content->firstChild());
 }
 
 void HTMLDetailsElement::ParseAttribute(

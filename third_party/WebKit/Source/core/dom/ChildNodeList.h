@@ -55,8 +55,8 @@ class ChildNodeList final : public NodeList {
 
   // CollectionIndexCache API.
   bool CanTraverseBackward() const { return true; }
-  Node* TraverseToFirst() const { return RootNode().FirstChild(); }
-  Node* TraverseToLast() const { return RootNode().LastChild(); }
+  Node* TraverseToFirst() const { return RootNode().firstChild(); }
+  Node* TraverseToLast() const { return RootNode().lastChild(); }
   Node* TraverseForwardToOffset(unsigned offset,
                                 Node& current_node,
                                 unsigned& current_offset) const;

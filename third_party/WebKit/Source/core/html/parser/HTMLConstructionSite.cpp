@@ -132,7 +132,7 @@ static inline void ExecuteInsertTextTask(HTMLConstructionSiteTask& task) {
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#insert-a-character
   Text* new_text = ToText(task.child.Get());
   Node* previous_child = task.next_child ? task.next_child->previousSibling()
-                                         : task.parent->LastChild();
+                                         : task.parent->lastChild();
   if (previous_child && previous_child->IsTextNode()) {
     Text* previous_text = ToText(previous_child);
     unsigned length_limit = TextLengthLimitForContainer(*task.parent);

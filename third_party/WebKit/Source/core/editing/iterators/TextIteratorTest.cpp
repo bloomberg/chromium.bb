@@ -327,7 +327,7 @@ TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot) {
   ShadowRoot* shadow_root = CreateShadowRootForElementWithIDAndSetInnerHTML(
       GetDocument(), "host", shadow_content);
   Node* outer_div = GetDocument().GetElementById("outer");
-  Node* span_in_shadow = shadow_root->FirstChild();
+  Node* span_in_shadow = shadow_root->firstChild();
   Position start(span_in_shadow, PositionAnchorType::kBeforeChildren);
   Position end(outer_div, PositionAnchorType::kAfterChildren);
   EXPECT_EQ(
@@ -352,7 +352,7 @@ TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot) {
   ShadowRoot* shadow_root = CreateShadowRootForElementWithIDAndSetInnerHTML(
       GetDocument(), "host", shadow_content);
   Node* outer_div = GetDocument().GetElementById("outer");
-  Node* span_in_shadow = shadow_root->FirstChild();
+  Node* span_in_shadow = shadow_root->firstChild();
   Position start(outer_div, PositionAnchorType::kBeforeChildren);
   Position end(span_in_shadow, PositionAnchorType::kAfterChildren);
   EXPECT_EQ(
@@ -652,8 +652,8 @@ TEST_F(TextIteratorTest, EndingConditionWithDisplayNoneInShadowTree) {
 TEST_F(TextIteratorTest, PreserveLeadingSpace) {
   SetBodyContent("<div style='width: 2em;'><b><i>foo</i></b> bar</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Position start(div->FirstChild()->firstChild()->firstChild(), 0);
-  Position end(div->LastChild(), 4);
+  Position start(div->firstChild()->firstChild()->firstChild(), 0);
+  Position end(div->lastChild(), 4);
   EXPECT_EQ("foo bar",
             PlainText(EphemeralRange(start, end), EmitsImageAltTextBehavior()));
 }
@@ -663,8 +663,8 @@ TEST_F(TextIteratorTest, PreserveLeadingSpace) {
 TEST_F(TextIteratorTest, PreserveLeadingSpaceWithoutEmittingAltText) {
   SetBodyContent("<div style='width: 2em;'><b><i>foo</i></b> bar</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Position start(div->FirstChild()->firstChild()->firstChild(), 0);
-  Position end(div->LastChild(), 4);
+  Position start(div->firstChild()->firstChild()->firstChild(), 0);
+  Position end(div->lastChild(), 4);
   EXPECT_EQ("foo bar", PlainText(EphemeralRange(start, end)));
 }
 
@@ -672,8 +672,8 @@ TEST_F(TextIteratorTest, PreserveOnlyLeadingSpace) {
   SetBodyContent(
       "<div style='width: 2em;'><b><i id='foo'>foo </i></b> bar</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Position start(GetDocument().GetElementById("foo")->FirstChild(), 0);
-  Position end(div->LastChild(), 4);
+  Position start(GetDocument().GetElementById("foo")->firstChild(), 0);
+  Position end(div->lastChild(), 4);
   EXPECT_EQ("foo bar",
             PlainText(EphemeralRange(start, end), EmitsImageAltTextBehavior()));
 }
@@ -682,7 +682,7 @@ TEST_F(TextIteratorTest, StartAtFirstLetter) {
   SetBodyContent("<style>div:first-letter {color:red;}</style><div>Axyz</div>");
 
   Element* div = GetDocument().QuerySelector("div");
-  Node* text = div->FirstChild();
+  Node* text = div->firstChild();
   Position start(text, 0);
   Position end(text, 4);
   TextIterator iter(start, end);
@@ -714,7 +714,7 @@ TEST_F(TextIteratorTest, StartInMultiCharFirstLetterWithCollapsedSpace) {
       "<style>div:first-letter {color:red;}</style><div>  (A)  xyz</div>");
 
   Element* div = GetDocument().QuerySelector("div");
-  Node* text = div->FirstChild();
+  Node* text = div->firstChild();
   Position start(text, 3);
   Position end(text, 10);
   TextIterator iter(start, end);
@@ -753,7 +753,7 @@ TEST_F(TextIteratorTest, StartAtRemainingText) {
   SetBodyContent("<style>div:first-letter {color:red;}</style><div>Axyz</div>");
 
   Element* div = GetDocument().QuerySelector("div");
-  Node* text = div->FirstChild();
+  Node* text = div->firstChild();
   Position start(text, 1);
   Position end(text, 4);
   TextIterator iter(start, end);

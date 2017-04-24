@@ -59,7 +59,7 @@ TEST_F(CharacterIteratorTest, CollapsedSubrange) {
   SetBodyContent(body_content);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Node* text_node = GetDocument().GetElementById("div")->LastChild();
+  Node* text_node = GetDocument().GetElementById("div")->lastChild();
   Range* entire_range =
       Range::Create(GetDocument(), text_node, 1, text_node, 4);
   EXPECT_EQ(1u, entire_range->startOffset());

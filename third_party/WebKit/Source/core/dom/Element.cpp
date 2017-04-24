@@ -2430,7 +2430,7 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
 void Element::FinishParsingChildren() {
   SetIsFinishedParsingChildren(true);
   CheckForEmptyStyleChange();
-  CheckForSiblingStyleChanges(kFinishedParsingChildren, nullptr, LastChild(),
+  CheckForSiblingStyleChanges(kFinishedParsingChildren, nullptr, lastChild(),
                               nullptr);
 }
 
@@ -2954,7 +2954,7 @@ Node* Element::InsertAdjacent(const String& where,
   }
 
   if (DeprecatedEqualIgnoringCase(where, "afterBegin")) {
-    InsertBefore(new_child, FirstChild(), exception_state);
+    InsertBefore(new_child, firstChild(), exception_state);
     return exception_state.HadException() ? nullptr : new_child;
   }
 
@@ -3127,7 +3127,7 @@ String Element::TextFromChildren() {
   bool found_multiple_text_nodes = false;
   unsigned total_length = 0;
 
-  for (Node* child = FirstChild(); child; child = child->nextSibling()) {
+  for (Node* child = firstChild(); child; child = child->nextSibling()) {
     if (!child->IsTextNode())
       continue;
     Text* text = ToText(child);
@@ -3622,7 +3622,7 @@ void Element::SetContainsPersistentVideo(bool value) {
   // In some rare situations, when the persistent video has been removed from
   // the tree, part of the tree might still carry the flag.
   if (!value && Fullscreen::IsCurrentFullScreenElement(*this)) {
-    for (Node* node = FirstChild(); node;) {
+    for (Node* node = firstChild(); node;) {
       if (!node->IsElementNode() ||
           !ToElement(node)->ContainsPersistentVideo()) {
         node = node->nextSibling();

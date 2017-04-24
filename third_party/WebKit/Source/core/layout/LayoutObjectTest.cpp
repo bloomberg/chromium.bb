@@ -31,13 +31,13 @@ TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject) {
 // Some display checks.
 TEST_F(LayoutObjectTest, DisplayNoneCreateObject) {
   SetBodyInnerHTML("<div style='display:none'></div>");
-  EXPECT_EQ(nullptr, GetDocument().body()->FirstChild()->GetLayoutObject());
+  EXPECT_EQ(nullptr, GetDocument().body()->firstChild()->GetLayoutObject());
 }
 
 TEST_F(LayoutObjectTest, DisplayBlockCreateObject) {
   SetBodyInnerHTML("<foo style='display:block'></foo>");
   LayoutObject* layout_object =
-      GetDocument().body()->FirstChild()->GetLayoutObject();
+      GetDocument().body()->firstChild()->GetLayoutObject();
   EXPECT_NE(nullptr, layout_object);
   EXPECT_TRUE(layout_object->IsLayoutBlockFlow());
   EXPECT_FALSE(layout_object->IsInline());
@@ -46,7 +46,7 @@ TEST_F(LayoutObjectTest, DisplayBlockCreateObject) {
 TEST_F(LayoutObjectTest, DisplayInlineBlockCreateObject) {
   SetBodyInnerHTML("<foo style='display:inline-block'></foo>");
   LayoutObject* layout_object =
-      GetDocument().body()->FirstChild()->GetLayoutObject();
+      GetDocument().body()->firstChild()->GetLayoutObject();
   EXPECT_NE(nullptr, layout_object);
   EXPECT_TRUE(layout_object->IsLayoutBlockFlow());
   EXPECT_TRUE(layout_object->IsInline());

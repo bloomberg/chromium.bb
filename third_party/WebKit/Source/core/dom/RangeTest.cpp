@@ -70,7 +70,7 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
   V8TestingScope scope;
 
   GetDocument().body()->setInnerHTML("1234");
-  Text* old_text = ToText(GetDocument().body()->FirstChild());
+  Text* old_text = ToText(GetDocument().body()->firstChild());
 
   Range* range04 = Range::Create(GetDocument(), old_text, 0, old_text, 4);
   Range* range02 = Range::Create(GetDocument(), old_text, 0, old_text, 2);
@@ -246,8 +246,8 @@ TEST_F(RangeTest, ExpandNotCrash) {
 
 TEST_F(RangeTest, MultipleTextQuads) {
   SetBodyContent("<div><p id='one'>one</p><p id='two'>two</p></div>");
-  Position start(GetDocument().GetElementById("one")->FirstChild(), 0);
-  Position end(GetDocument().GetElementById("two")->FirstChild(), 3);
+  Position start(GetDocument().GetElementById("one")->firstChild(), 0);
+  Position end(GetDocument().GetElementById("two")->firstChild(), 3);
   Range* range = Range::Create(GetDocument(), start, end);
   Vector<FloatQuad> quads;
   range->TextQuads(quads);

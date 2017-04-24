@@ -889,7 +889,7 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
       !new_node->IsShadowRoot()) {
     // check each child node, not the DocumentFragment itself
     num_new_children = 0;
-    for (Node* c = ToDocumentFragment(new_node)->FirstChild(); c;
+    for (Node* c = ToDocumentFragment(new_node)->firstChild(); c;
          c = c->nextSibling()) {
       if (!check_against->ChildTypeAllowed(c->getNodeType())) {
         exception_state.ThrowDOMException(
@@ -972,13 +972,13 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
     }
   } else {
     Node* last_child = (new_node_type == Node::kDocumentFragmentNode)
-                           ? ToDocumentFragment(new_node)->LastChild()
+                           ? ToDocumentFragment(new_node)->lastChild()
                            : new_node;
     if (last_child && last_child == start_.ChildBefore()) {
       // The insertion will do nothing, but we need to extend the range to
       // include the inserted nodes.
       Node* first_child = (new_node_type == Node::kDocumentFragmentNode)
-                              ? ToDocumentFragment(new_node)->FirstChild()
+                              ? ToDocumentFragment(new_node)->firstChild()
                               : new_node;
       DCHECK(first_child);
       start_.SetToBeforeChild(*first_child);
@@ -1511,7 +1511,7 @@ bool AreRangesEqual(const Range* a, const Range* b) {
 static inline void BoundaryNodeChildrenWillBeRemoved(
     RangeBoundaryPoint& boundary,
     ContainerNode& container) {
-  for (Node* node_to_be_removed = container.FirstChild(); node_to_be_removed;
+  for (Node* node_to_be_removed = container.firstChild(); node_to_be_removed;
        node_to_be_removed = node_to_be_removed->nextSibling()) {
     if (boundary.ChildBefore() == node_to_be_removed) {
       boundary.SetToStartOfNode(container);

@@ -65,7 +65,7 @@ void HTMLTitleElement::ChildrenChanged(const ChildrenChange& change) {
 String HTMLTitleElement::text() const {
   StringBuilder result;
 
-  for (Node* n = FirstChild(); n; n = n->nextSibling()) {
+  for (Node* n = firstChild(); n; n = n->nextSibling()) {
     if (n->IsTextNode())
       result.Append(ToText(n)->data());
   }

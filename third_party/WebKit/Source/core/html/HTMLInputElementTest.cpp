@@ -103,7 +103,7 @@ TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
   html->AppendChild(HTMLBodyElement::Create(*document_without_frame));
 
   // Create an input element with type "range" inside a document without frame.
-  toHTMLBodyElement(html->FirstChild())->setInnerHTML("<input type='range' />");
+  toHTMLBodyElement(html->firstChild())->setInnerHTML("<input type='range' />");
   document_without_frame->AppendChild(html);
 
   std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
@@ -111,13 +111,13 @@ TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
   EXPECT_NE(nullptr, document.GetPage());
 
   // Put the input element inside a document with frame.
-  document.body()->AppendChild(document_without_frame->body()->FirstChild());
+  document.body()->AppendChild(document_without_frame->body()->firstChild());
 
   // Remove the input element and all refs to it so it gets deleted before the
   // document.
   // The assert in |EventHandlerRegistry::updateEventHandlerTargets()| should
   // not be triggered.
-  document.body()->RemoveChild(document.body()->FirstChild());
+  document.body()->RemoveChild(document.body()->firstChild());
 }
 
 TEST_F(HTMLInputElementTest, DefaultToolTip) {
@@ -155,7 +155,7 @@ TEST_F(HTMLInputElementTest, RadioKeyDownDCHECKFailure) {
   GetDocument().body()->setInnerHTML(
       "<input type=radio name=g><input type=radio name=g>");
   HTMLInputElement& radio1 =
-      toHTMLInputElement(*GetDocument().body()->FirstChild());
+      toHTMLInputElement(*GetDocument().body()->firstChild());
   HTMLInputElement& radio2 = toHTMLInputElement(*radio1.nextSibling());
   radio1.focus();
   // Make layout-dirty.
@@ -172,7 +172,7 @@ TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {
       "<input type='date' style='width:200px;height:50px' />");
   GetDocument().View()->UpdateAllLifecyclePhases();
   HTMLInputElement* input =
-      toHTMLInputElement(GetDocument().body()->FirstChild());
+      toHTMLInputElement(GetDocument().body()->firstChild());
 
   DateTimeChooserParameters params;
   bool success = input->SetupDateTimeChooserParameters(params);

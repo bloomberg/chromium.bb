@@ -1995,7 +1995,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NoRenderingContextByDefault) {
   SetBodyInnerHTML("<div style='transform: translateZ(0)'></div>");
 
   const ObjectPaintProperties* properties =
-      GetDocument().body()->FirstChild()->GetLayoutObject()->PaintProperties();
+      GetDocument().body()->firstChild()->GetLayoutObject()->PaintProperties();
   ASSERT_TRUE(properties->Transform());
   EXPECT_FALSE(properties->Transform()->HasRenderingContext());
 }

@@ -31,7 +31,7 @@ TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter) {
   SetBodyContent("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>");
 
   Element* pre = GetDocument().QuerySelector("pre");
-  Text* text = ToText(pre->FirstChild());
+  Text* text = ToText(pre->firstChild());
 
   Range* range = Range::Create(GetDocument(), text, 0, text, 2);
   range->deleteContents(ASSERT_NO_EXCEPTION);

@@ -77,7 +77,7 @@ TEST_F(OptionListTest, Optgroup) {
   ++iter;
   EXPECT_EQ(list.end(), iter);
 
-  ToHTMLElement(Select().FirstChild())
+  ToHTMLElement(Select().firstChild())
       ->setInnerHTML(
           "<optgroup><option id=gg11></option></optgroup>"
           "<option id=g11></option>");

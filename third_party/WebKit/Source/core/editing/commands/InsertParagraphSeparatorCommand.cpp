@@ -361,7 +361,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       // startBlock should always have children, otherwise isLastInBlock would
       // be true and it's handled above.
       DCHECK(start_block->HasChildren());
-      ref_node = start_block->FirstChild();
+      ref_node = start_block->firstChild();
     } else if (insertion_position.AnchorNode() == start_block &&
                nest_new_block) {
       ref_node = NodeTraversal::ChildAt(
@@ -545,7 +545,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
 
       GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-      for (n = start_block->FirstChild(); n; n = n->nextSibling()) {
+      for (n = start_block->firstChild(); n; n = n->nextSibling()) {
         VisiblePosition before_node_position = VisiblePosition::BeforeNode(n);
         if (!before_node_position.IsNull() &&
             ComparePositions(CreateVisiblePosition(insertion_position),

@@ -46,7 +46,7 @@ HTMLDocument& StaticRangeTest::GetDocument() const {
 TEST_F(StaticRangeTest, SplitTextNodeRangeWithinText) {
   V8TestingScope scope;
   GetDocument().body()->setInnerHTML("1234");
-  Text* old_text = ToText(GetDocument().body()->FirstChild());
+  Text* old_text = ToText(GetDocument().body()->firstChild());
 
   StaticRange* static_range04 =
       StaticRange::Create(GetDocument(), old_text, 0u, old_text, 4u);
@@ -232,7 +232,7 @@ TEST_F(StaticRangeTest, SplitTextNodeRangeOutsideText) {
 TEST_F(StaticRangeTest, InvalidToRange) {
   V8TestingScope scope;
   GetDocument().body()->setInnerHTML("1234");
-  Text* old_text = ToText(GetDocument().body()->FirstChild());
+  Text* old_text = ToText(GetDocument().body()->firstChild());
 
   StaticRange* static_range04 =
       StaticRange::Create(GetDocument(), old_text, 0u, old_text, 4u);

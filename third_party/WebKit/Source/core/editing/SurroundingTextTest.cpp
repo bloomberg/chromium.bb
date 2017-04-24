@@ -42,8 +42,8 @@ VisibleSelection SurroundingTextTest::Select(int start, int end) {
   Element* element = GetDocument().GetElementById("selection");
   return CreateVisibleSelection(
       SelectionInDOMTree::Builder()
-          .Collapse(Position(ToText(element->FirstChild()), start))
-          .Extend(Position(ToText(element->FirstChild()), end))
+          .Collapse(Position(ToText(element->firstChild()), start))
+          .Extend(Position(ToText(element->firstChild()), end))
           .Build());
 }
 

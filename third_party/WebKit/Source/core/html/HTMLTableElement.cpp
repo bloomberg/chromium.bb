@@ -76,7 +76,7 @@ HTMLTableCaptionElement* HTMLTableElement::caption() const {
 void HTMLTableElement::setCaption(HTMLTableCaptionElement* new_caption,
                                   ExceptionState& exception_state) {
   deleteCaption();
-  InsertBefore(new_caption, FirstChild(), exception_state);
+  InsertBefore(new_caption, firstChild(), exception_state);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const {

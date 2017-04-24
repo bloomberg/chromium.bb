@@ -335,9 +335,9 @@ static const char kFragmentMarkerTag[] = "webkit-fragment-marker";
 static bool FindNodesSurroundingContext(DocumentFragment* fragment,
                                         Comment*& node_before_context,
                                         Comment*& node_after_context) {
-  if (!fragment->FirstChild())
+  if (!fragment->firstChild())
     return false;
-  for (Node& node : NodeTraversal::StartsAt(*fragment->FirstChild())) {
+  for (Node& node : NodeTraversal::StartsAt(*fragment->firstChild())) {
     if (node.getNodeType() == Node::kCommentNode &&
         ToComment(node).data() == kFragmentMarkerTag) {
       if (!node_before_context) {
@@ -355,7 +355,7 @@ static void TrimFragment(DocumentFragment* fragment,
                          Comment* node_before_context,
                          Comment* node_after_context) {
   Node* next = nullptr;
-  for (Node* node = fragment->FirstChild(); node; node = next) {
+  for (Node* node = fragment->firstChild(); node; node = next) {
     if (node_before_context->IsDescendantOf(node)) {
       next = NodeTraversal::Next(*node);
       continue;
@@ -496,12 +496,12 @@ bool IsPlainTextMarkup(Node* node) {
     return false;
 
   if (element.HasOneChild())
-    return element.FirstChild()->IsTextNode() ||
-           element.FirstChild()->hasChildren();
+    return element.firstChild()->IsTextNode() ||
+           element.firstChild()->hasChildren();
 
   return element.HasChildCount(2) &&
-         IsTabHTMLSpanElementTextNode(element.FirstChild()->firstChild()) &&
-         element.LastChild()->IsTextNode();
+         IsTabHTMLSpanElementTextNode(element.firstChild()->firstChild()) &&
+         element.lastChild()->IsTextNode();
 }
 
 static bool ShouldPreserveNewline(const EphemeralRange& range) {
@@ -643,7 +643,7 @@ DocumentFragment* CreateFragmentForTransformToFragment(
 static inline void RemoveElementPreservingChildren(DocumentFragment* fragment,
                                                    HTMLElement* element) {
   Node* next_child = nullptr;
-  for (Node* child = element->FirstChild(); child; child = next_child) {
+  for (Node* child = element->firstChild(); child; child = next_child) {
     next_child = child->nextSibling();
     element->RemoveChild(child);
     fragment->InsertBefore(child, element);
@@ -669,12 +669,12 @@ DocumentFragment* CreateContextualFragment(
   // child of an element.
 
   Node* next_node = nullptr;
-  for (Node* node = fragment->FirstChild(); node; node = next_node) {
+  for (Node* node = fragment->firstChild(); node; node = next_node) {
     next_node = node->nextSibling();
     if (isHTMLHtmlElement(*node) || isHTMLHeadElement(*node) ||
         isHTMLBodyElement(*node)) {
       HTMLElement* element = ToHTMLElement(node);
-      if (Node* first_child = element->FirstChild())
+      if (Node* first_child = element->firstChild())
         next_node = first_child;
       RemoveElementPreservingChildren(fragment, element);
     }
@@ -690,7 +690,7 @@ void ReplaceChildrenWithFragment(ContainerNode* container,
 
   ChildListMutationScope mutation(*container_node);
 
-  if (!fragment->FirstChild()) {
+  if (!fragment->firstChild()) {
     container_node->RemoveChildren();
     return;
   }
@@ -698,7 +698,7 @@ void ReplaceChildrenWithFragment(ContainerNode* container,
   // FIXME: No need to replace the child it is a text node and its contents are
   // already == text.
   if (container_node->HasOneChild()) {
-    container_node->ReplaceChild(fragment, container_node->FirstChild(),
+    container_node->ReplaceChild(fragment, container_node->firstChild(),
                                  exception_state);
     return;
   }
@@ -727,7 +727,7 @@ void ReplaceChildrenWithText(ContainerNode* container,
   // I believe this is an intentional benchmark cheat from years ago.
   // We should re-visit if we actually want this still.
   if (container_node->HasOneTextChild()) {
-    ToText(container_node->FirstChild())->setData(text);
+    ToText(container_node->firstChild())->setData(text);
     return;
   }
 
@@ -738,7 +738,7 @@ void ReplaceChildrenWithText(ContainerNode* container,
   // FIXME: No need to replace the child it is a text node and its contents are
   // already == text.
   if (container_node->HasOneChild()) {
-    container_node->ReplaceChild(text_node, container_node->FirstChild(),
+    container_node->ReplaceChild(text_node, container_node->firstChild(),
                                  exception_state);
     return;
   }

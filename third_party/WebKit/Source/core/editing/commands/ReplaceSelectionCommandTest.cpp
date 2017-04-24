@@ -61,7 +61,7 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
   LocalFrame* frame = GetDocument().GetFrame();
   frame->Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .Collapse(Position(b_element->FirstChild(), 1))
+          .Collapse(Position(b_element->firstChild(), 1))
           .Build());
 
   DocumentFragment* fragment = GetDocument().createDocumentFragment();

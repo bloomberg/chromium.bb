@@ -1516,7 +1516,7 @@ void Document::setTitle(const String& title) {
       if (!isSVGSVGElement(element))
         return;
       title_element_ = SVGTitleElement::Create(*this);
-      element->InsertBefore(title_element_.Get(), element->FirstChild());
+      element->InsertBefore(title_element_.Get(), element->firstChild());
     }
   } else {
     if (!IsHTMLDocument() && !IsXHTMLDocument() && !IsSVGDocument())

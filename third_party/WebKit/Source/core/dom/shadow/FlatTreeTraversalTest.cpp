@@ -339,20 +339,20 @@ TEST_F(FlatTreeTraversalTest, lastWithin) {
   Element* s11 = shadow_root->QuerySelector("#s11");
   Element* s12 = shadow_root->QuerySelector("#s12");
 
-  EXPECT_EQ(m0->FirstChild(), FlatTreeTraversal::LastWithin(*m0));
-  EXPECT_EQ(*m0->FirstChild(), FlatTreeTraversal::LastWithinOrSelf(*m0));
+  EXPECT_EQ(m0->firstChild(), FlatTreeTraversal::LastWithin(*m0));
+  EXPECT_EQ(*m0->firstChild(), FlatTreeTraversal::LastWithinOrSelf(*m0));
 
-  EXPECT_EQ(m10->FirstChild(), FlatTreeTraversal::LastWithin(*m1));
-  EXPECT_EQ(*m10->FirstChild(), FlatTreeTraversal::LastWithinOrSelf(*m1));
+  EXPECT_EQ(m10->firstChild(), FlatTreeTraversal::LastWithin(*m1));
+  EXPECT_EQ(*m10->firstChild(), FlatTreeTraversal::LastWithinOrSelf(*m1));
 
   EXPECT_EQ(nullptr, FlatTreeTraversal::LastWithin(*m2));
   EXPECT_EQ(*m2, FlatTreeTraversal::LastWithinOrSelf(*m2));
 
-  EXPECT_EQ(s11->FirstChild(), FlatTreeTraversal::LastWithin(*s11));
-  EXPECT_EQ(*s11->FirstChild(), FlatTreeTraversal::LastWithinOrSelf(*s11));
+  EXPECT_EQ(s11->firstChild(), FlatTreeTraversal::LastWithin(*s11));
+  EXPECT_EQ(*s11->firstChild(), FlatTreeTraversal::LastWithinOrSelf(*s11));
 
-  EXPECT_EQ(m10->FirstChild(), FlatTreeTraversal::LastWithin(*s12));
-  EXPECT_EQ(*m10->FirstChild(), FlatTreeTraversal::LastWithinOrSelf(*s12));
+  EXPECT_EQ(m10->firstChild(), FlatTreeTraversal::LastWithin(*s12));
+  EXPECT_EQ(*m10->firstChild(), FlatTreeTraversal::LastWithinOrSelf(*s12));
 }
 
 TEST_F(FlatTreeTraversalTest, previousPostOrder) {
@@ -385,24 +385,24 @@ TEST_F(FlatTreeTraversalTest, previousPostOrder) {
   Element* s12 = shadow_root->QuerySelector("#s12");
   Element* s120 = shadow_root->QuerySelector("#s120");
 
-  EXPECT_EQ(*m0->FirstChild(), FlatTreeTraversal::PreviousPostOrder(*m0));
+  EXPECT_EQ(*m0->firstChild(), FlatTreeTraversal::PreviousPostOrder(*m0));
   EXPECT_EQ(*s12, FlatTreeTraversal::PreviousPostOrder(*m1));
-  EXPECT_EQ(*m10->FirstChild(), FlatTreeTraversal::PreviousPostOrder(*m10));
-  EXPECT_EQ(*s120, FlatTreeTraversal::PreviousPostOrder(*m10->FirstChild()));
+  EXPECT_EQ(*m10->firstChild(), FlatTreeTraversal::PreviousPostOrder(*m10));
+  EXPECT_EQ(*s120, FlatTreeTraversal::PreviousPostOrder(*m10->firstChild()));
   EXPECT_EQ(*s120,
-            FlatTreeTraversal::PreviousPostOrder(*m10->FirstChild(), s12));
-  EXPECT_EQ(*m11->FirstChild(), FlatTreeTraversal::PreviousPostOrder(*m11));
-  EXPECT_EQ(*m0, FlatTreeTraversal::PreviousPostOrder(*m11->FirstChild()));
+            FlatTreeTraversal::PreviousPostOrder(*m10->firstChild(), s12));
+  EXPECT_EQ(*m11->firstChild(), FlatTreeTraversal::PreviousPostOrder(*m11));
+  EXPECT_EQ(*m0, FlatTreeTraversal::PreviousPostOrder(*m11->firstChild()));
   EXPECT_EQ(nullptr,
-            FlatTreeTraversal::PreviousPostOrder(*m11->FirstChild(), m11));
-  EXPECT_EQ(*m2->FirstChild(), FlatTreeTraversal::PreviousPostOrder(*m2));
+            FlatTreeTraversal::PreviousPostOrder(*m11->firstChild(), m11));
+  EXPECT_EQ(*m2->firstChild(), FlatTreeTraversal::PreviousPostOrder(*m2));
 
-  EXPECT_EQ(*s11->FirstChild(), FlatTreeTraversal::PreviousPostOrder(*s11));
+  EXPECT_EQ(*s11->firstChild(), FlatTreeTraversal::PreviousPostOrder(*s11));
   EXPECT_EQ(*m10, FlatTreeTraversal::PreviousPostOrder(*s12));
-  EXPECT_EQ(*s120->FirstChild(), FlatTreeTraversal::PreviousPostOrder(*s120));
-  EXPECT_EQ(*s11, FlatTreeTraversal::PreviousPostOrder(*s120->FirstChild()));
+  EXPECT_EQ(*s120->firstChild(), FlatTreeTraversal::PreviousPostOrder(*s120));
+  EXPECT_EQ(*s11, FlatTreeTraversal::PreviousPostOrder(*s120->firstChild()));
   EXPECT_EQ(nullptr,
-            FlatTreeTraversal::PreviousPostOrder(*s120->FirstChild(), s12));
+            FlatTreeTraversal::PreviousPostOrder(*s120->firstChild(), s12));
 }
 
 TEST_F(FlatTreeTraversalTest, nextSiblingNotInDocumentFlatTree) {

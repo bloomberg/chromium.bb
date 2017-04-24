@@ -109,7 +109,7 @@ Position AdjustPositionForEnd(const Position& current_position,
     return Position::BeforeNode(ancestor);
   }
 
-  if (Node* last_child = tree_scope.RootNode().LastChild())
+  if (Node* last_child = tree_scope.RootNode().lastChild())
     return Position::AfterNode(last_child);
 
   return Position();
@@ -145,7 +145,7 @@ Position AdjustPositionForStart(const Position& current_position,
     return Position::AfterNode(ancestor);
   }
 
-  if (Node* first_child = tree_scope.RootNode().FirstChild())
+  if (Node* first_child = tree_scope.RootNode().firstChild())
     return Position::BeforeNode(first_child);
 
   return Position();

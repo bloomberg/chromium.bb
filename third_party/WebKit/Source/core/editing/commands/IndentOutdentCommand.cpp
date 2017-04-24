@@ -102,14 +102,14 @@ bool IndentOutdentCommand::TryIndentingAsListItem(const Position& start,
   // require proper deletion in that case.
   const bool should_keep_selected_list =
       end.AnchorNode() == selected_list_item ||
-      end.AnchorNode()->IsDescendantOf(selected_list_item->LastChild());
+      end.AnchorNode()->IsDescendantOf(selected_list_item->lastChild());
 
   const VisiblePosition& start_of_paragraph_to_move =
       CreateVisiblePosition(start);
   const VisiblePosition& end_of_paragraph_to_move =
       should_keep_selected_list
           ? CreateVisiblePosition(end)
-          : VisiblePosition::AfterNode(selected_list_item->LastChild());
+          : VisiblePosition::AfterNode(selected_list_item->lastChild());
 
   // The insertion of |newList| may change the computed style of other
   // elements, resulting in failure in visible canonicalization.

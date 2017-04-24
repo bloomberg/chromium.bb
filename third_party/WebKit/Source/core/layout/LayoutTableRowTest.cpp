@@ -82,7 +82,7 @@ TEST_F(LayoutTableRowTest,
 
   LayoutTableRow* row = ToLayoutTableRow(GetDocument()
                                              .body()
-                                             ->FirstChild()
+                                             ->firstChild()
                                              ->firstChild()
                                              ->firstChild()
                                              ->GetLayoutObject());
@@ -97,7 +97,7 @@ TEST_F(LayoutTableRowTest, BackgroundIsKnownToBeOpaqueWithBorderSpacing) {
 
   LayoutTableRow* row = ToLayoutTableRow(GetDocument()
                                              .body()
-                                             ->FirstChild()
+                                             ->firstChild()
                                              ->firstChild()
                                              ->firstChild()
                                              ->GetLayoutObject());
@@ -113,7 +113,7 @@ TEST_F(LayoutTableRowTest, BackgroundIsKnownToBeOpaqueWithEmptyCell) {
 
   LayoutTableRow* row = ToLayoutTableRow(GetDocument()
                                              .body()
-                                             ->FirstChild()
+                                             ->firstChild()
                                              ->firstChild()
                                              ->firstChild()
                                              ->GetLayoutObject());

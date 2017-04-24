@@ -41,7 +41,7 @@ TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(
               Position(GetDocument().documentElement(), 1),
-              Position(GetDocument().GetElementById("va")->FirstChild(), 2))
+              Position(GetDocument().GetElementById("va")->firstChild(), 2))
           .Build());
 
   FormatBlockCommand* command =

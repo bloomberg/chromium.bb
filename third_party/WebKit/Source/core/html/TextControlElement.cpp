@@ -361,7 +361,7 @@ unsigned TextControlElement::IndexForPosition(HTMLElement* inner_editor,
   if (!start_node)
     start_node = passed_position.ComputeContainerNode();
   if (start_node == inner_editor && passed_position.IsAfterAnchor())
-    start_node = inner_editor->LastChild();
+    start_node = inner_editor->lastChild();
   DCHECK(start_node);
   DCHECK(inner_editor->contains(start_node));
 
@@ -772,7 +772,7 @@ void TextControlElement::AddPlaceholderBreakElementIfNecessary() {
   if (inner_editor->GetLayoutObject() &&
       !inner_editor->GetLayoutObject()->Style()->PreserveNewline())
     return;
-  Node* last_child = inner_editor->LastChild();
+  Node* last_child = inner_editor->lastChild();
   if (!last_child || !last_child->IsTextNode())
     return;
   if (ToText(last_child)->data().EndsWith('\n') ||
@@ -792,8 +792,8 @@ void TextControlElement::SetInnerEditorValue(const String& value) {
 
   // If the last child is a trailing <br> that's appended below, remove it
   // first so as to enable setInnerText() fast path of updating a text node.
-  if (isHTMLBRElement(inner_editor->LastChild()))
-    inner_editor->RemoveChild(inner_editor->LastChild(), ASSERT_NO_EXCEPTION);
+  if (isHTMLBRElement(inner_editor->lastChild()))
+    inner_editor->RemoveChild(inner_editor->lastChild(), ASSERT_NO_EXCEPTION);
 
   // We don't use setTextContent.  It triggers unnecessary paint.
   if (value.IsEmpty())
@@ -820,7 +820,7 @@ String TextControlElement::InnerEditorValue() const {
   // Typically, innerEditor has 0 or one Text node followed by 0 or one <br>.
   if (!inner_editor->HasChildren())
     return g_empty_string;
-  Node& first_child = *inner_editor->FirstChild();
+  Node& first_child = *inner_editor->firstChild();
   if (first_child.IsTextNode()) {
     Node* second_child = first_child.nextSibling();
     if (!second_child)
@@ -834,8 +834,8 @@ String TextControlElement::InnerEditorValue() const {
   StringBuilder result;
   for (Node& node : NodeTraversal::InclusiveDescendantsOf(*inner_editor)) {
     if (isHTMLBRElement(node)) {
-      DCHECK_EQ(&node, inner_editor->LastChild());
-      if (&node != inner_editor->LastChild())
+      DCHECK_EQ(&node, inner_editor->lastChild());
+      if (&node != inner_editor->lastChild())
         result.Append(kNewlineCharacter);
     } else if (node.IsTextNode()) {
       result.Append(ToText(node).data());
@@ -886,8 +886,8 @@ String TextControlElement::ValueWithHardLineBreaks() const {
   StringBuilder result;
   for (Node& node : NodeTraversal::DescendantsOf(*inner_text)) {
     if (isHTMLBRElement(node)) {
-      DCHECK_EQ(&node, inner_text->LastChild());
-      if (&node != inner_text->LastChild())
+      DCHECK_EQ(&node, inner_text->lastChild());
+      if (&node != inner_text->lastChild())
         result.Append(kNewlineCharacter);
     } else if (node.IsTextNode()) {
       String data = ToText(node).data();

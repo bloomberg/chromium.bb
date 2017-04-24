@@ -184,7 +184,7 @@ void ShadowRoot::SkipRebuildLayoutTree(Text*& next_text_sibling) const {
   DCHECK(!NeedsReattachLayoutTree());
   DCHECK(!ChildNeedsReattachLayoutTree());
 
-  for (Node* sibling = FirstChild(); sibling;
+  for (Node* sibling = firstChild(); sibling;
        sibling = sibling->nextSibling()) {
     if (sibling->IsTextNode()) {
       next_text_sibling = ToText(sibling);

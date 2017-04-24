@@ -497,7 +497,7 @@ void HTMLVideoElement::MediaRemotingStarted() {
   if (!remoting_interstitial_) {
     remoting_interstitial_ = new MediaRemotingInterstitial(*this);
     ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
-    shadow_root.InsertBefore(remoting_interstitial_, shadow_root.FirstChild());
+    shadow_root.InsertBefore(remoting_interstitial_, shadow_root.firstChild());
     HTMLMediaElement::AssertShadowRootChildren(shadow_root);
   }
   remoting_interstitial_->Show();

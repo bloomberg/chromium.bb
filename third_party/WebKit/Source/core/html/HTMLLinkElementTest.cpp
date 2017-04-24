@@ -34,7 +34,7 @@ TEST_F(HTMLLinkElementTest, EmptyHrefAttribute) {
       "<link rel=\"icon\" type=\"image/ico\" href=\"\" />"
       "</head>");
   HTMLLinkElement* link_element =
-      ToElement<HTMLLinkElement>(GetDocument().head()->FirstChild());
+      ToElement<HTMLLinkElement>(GetDocument().head()->firstChild());
   EXPECT_EQ(KURL(), link_element->Href());
 }
 

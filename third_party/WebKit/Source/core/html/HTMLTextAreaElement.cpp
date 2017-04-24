@@ -284,7 +284,7 @@ void HTMLTextAreaElement::SubtreeHasChanged() {
     if (node.IsTextNode())
       continue;
     DCHECK(isHTMLBRElement(node));
-    DCHECK_EQ(&node, inner_editor->LastChild());
+    DCHECK_EQ(&node, inner_editor->lastChild());
   }
 #endif
   AddPlaceholderBreakElementIfNecessary();
@@ -445,7 +445,7 @@ String HTMLTextAreaElement::defaultValue() const {
   StringBuilder value;
 
   // Since there may be comments, ignore nodes other than text nodes.
-  for (Node* n = FirstChild(); n; n = n->nextSibling()) {
+  for (Node* n = firstChild(); n; n = n->nextSibling()) {
     if (n->IsTextNode())
       value.Append(ToText(n)->data());
   }
@@ -457,7 +457,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& default_value) {
   // To preserve comments, remove only the text nodes, then add a single text
   // node.
   HeapVector<Member<Node>> text_nodes;
-  for (Node* n = FirstChild(); n; n = n->nextSibling()) {
+  for (Node* n = firstChild(); n; n = n->nextSibling()) {
     if (n->IsTextNode())
       text_nodes.push_back(n);
   }
@@ -469,7 +469,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& default_value) {
   value.Replace("\r\n", "\n");
   value.Replace('\r', '\n');
 
-  InsertBefore(GetDocument().createTextNode(value), FirstChild(),
+  InsertBefore(GetDocument().createTextNode(value), firstChild(),
                IGNORE_EXCEPTION_FOR_TESTING);
 
   if (!is_dirty_)

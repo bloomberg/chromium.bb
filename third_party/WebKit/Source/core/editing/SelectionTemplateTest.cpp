@@ -28,7 +28,7 @@ TEST_F(SelectionTest, caret) {
   SetBodyContent("<div id='sample'>abcdef</div>");
 
   Element* sample = GetDocument().GetElementById("sample");
-  Position position(Position(sample->FirstChild(), 2));
+  Position position(Position(sample->firstChild(), 2));
   SelectionInDOMTree::Builder builder;
   builder.Collapse(position);
   const SelectionInDOMTree& selection = builder.Build();
@@ -47,8 +47,8 @@ TEST_F(SelectionTest, range) {
   SetBodyContent("<div id='sample'>abcdef</div>");
 
   Element* sample = GetDocument().GetElementById("sample");
-  Position base(Position(sample->FirstChild(), 2));
-  Position extent(Position(sample->FirstChild(), 4));
+  Position base(Position(sample->firstChild(), 2));
+  Position extent(Position(sample->firstChild(), 4));
   SelectionInDOMTree::Builder builder;
   builder.Collapse(base);
   builder.Extend(extent);

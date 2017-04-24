@@ -1538,9 +1538,9 @@ TEST_F(InputMethodControllerTest,
 
   // Check that the marker is still attached to "text" and doesn't include
   // either space around it
-  EXPECT_EQ(1u, GetDocument().Markers().MarkersFor(div->FirstChild()).size());
+  EXPECT_EQ(1u, GetDocument().Markers().MarkersFor(div->firstChild()).size());
   EXPECT_STREQ("text",
-               GetMarkedText(GetDocument().Markers(), div->FirstChild(), 0)
+               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
                    .Utf8()
                    .data());
 }
@@ -1675,7 +1675,7 @@ TEST_F(InputMethodControllerTest, Marker_ReplaceTextContainsStartOfMarker) {
   // Verify marker is under " text"
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
   EXPECT_STREQ(" text",
-               GetMarkedText(GetDocument().Markers(), div->FirstChild(), 0)
+               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
                    .Utf8()
                    .data());
 }
@@ -1724,7 +1724,7 @@ TEST_F(InputMethodControllerTest, Marker_ReplaceTextContainsEndOfMarker) {
   // Verify marker is under "some "
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
   EXPECT_STREQ("some ",
-               GetMarkedText(GetDocument().Markers(), div->FirstChild(), 0)
+               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
                    .Utf8()
                    .data());
 }

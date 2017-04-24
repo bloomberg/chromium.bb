@@ -343,7 +343,7 @@ static HTMLImageElement* ImageElementFromImageDocument(Document* document) {
   if (!body)
     return 0;
 
-  Node* node = body->FirstChild();
+  Node* node = body->firstChild();
   if (!isHTMLImageElement(node))
     return 0;
   return toHTMLImageElement(node);

@@ -28,22 +28,22 @@ TEST_F(VisiblePositionTest, ShadowV0DistributedNodes) {
   Element* four = shadow_root->QuerySelector("#s4");
   Element* five = shadow_root->QuerySelector("#s5");
 
-  EXPECT_EQ(Position(one->FirstChild(), 0),
+  EXPECT_EQ(Position(one->firstChild(), 0),
             CanonicalPositionOf(Position(one, 0)));
-  EXPECT_EQ(Position(one->FirstChild(), 0),
+  EXPECT_EQ(Position(one->firstChild(), 0),
             CreateVisiblePosition(Position(one, 0)).DeepEquivalent());
-  EXPECT_EQ(Position(one->FirstChild(), 2),
+  EXPECT_EQ(Position(one->firstChild(), 2),
             CanonicalPositionOf(Position(two, 0)));
-  EXPECT_EQ(Position(one->FirstChild(), 2),
+  EXPECT_EQ(Position(one->firstChild(), 2),
             CreateVisiblePosition(Position(two, 0)).DeepEquivalent());
 
-  EXPECT_EQ(PositionInFlatTree(five->FirstChild(), 2),
+  EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2),
             CanonicalPositionOf(PositionInFlatTree(one, 0)));
-  EXPECT_EQ(PositionInFlatTree(five->FirstChild(), 2),
+  EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2),
             CreateVisiblePosition(PositionInFlatTree(one, 0)).DeepEquivalent());
-  EXPECT_EQ(PositionInFlatTree(four->FirstChild(), 2),
+  EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2),
             CanonicalPositionOf(PositionInFlatTree(two, 0)));
-  EXPECT_EQ(PositionInFlatTree(four->FirstChild(), 2),
+  EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2),
             CreateVisiblePosition(PositionInFlatTree(two, 0)).DeepEquivalent());
 }
 
@@ -57,7 +57,7 @@ TEST_F(VisiblePositionTest, NonNullIsValidBeforeMutation) {
   SetBodyContent("<p>one</p>");
 
   Element* paragraph = GetDocument().QuerySelector("p");
-  Position position(paragraph->FirstChild(), 1);
+  Position position(paragraph->firstChild(), 1);
   EXPECT_TRUE(CreateVisiblePosition(position).IsValid());
 }
 
@@ -65,7 +65,7 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterDOMChange) {
   SetBodyContent("<p>one</p>");
 
   Element* paragraph = GetDocument().QuerySelector("p");
-  Position position(paragraph->FirstChild(), 1);
+  Position position(paragraph->firstChild(), 1);
   VisiblePosition null_visible_position;
   VisiblePosition non_null_visible_position = CreateVisiblePosition(position);
 
@@ -86,7 +86,7 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterStyleChange) {
 
   Element* paragraph = GetDocument().QuerySelector("p");
   Element* div = GetDocument().QuerySelector("div");
-  Position position(paragraph->FirstChild(), 1);
+  Position position(paragraph->firstChild(), 1);
 
   VisiblePosition visible_position1 = CreateVisiblePosition(position);
   div->style()->setProperty("color", "red", "important", ASSERT_NO_EXCEPTION);

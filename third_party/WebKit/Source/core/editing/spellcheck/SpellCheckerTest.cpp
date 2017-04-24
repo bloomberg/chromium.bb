@@ -68,7 +68,7 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
           ->Selection()
           .ComputeVisibleSelectionInDOMTreeDeprecated();
 
-  Position new_position(input->InnerEditorElement()->FirstChild(), 3);
+  Position new_position(input->InnerEditorElement()->firstChild(), 3);
   GetDocument().GetFrame()->Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(new_position).Build());
   ASSERT_EQ(3u, input->selectionStart());

@@ -46,7 +46,7 @@ void MergeIdenticalElementsCommand::DoApply(EditingState*) {
       !HasEditableStyle(*element2_))
     return;
 
-  at_child_ = element2_->FirstChild();
+  at_child_ = element2_->firstChild();
 
   NodeVector children;
   GetChildNodes(*element1_, children);
@@ -76,7 +76,7 @@ void MergeIdenticalElementsCommand::DoUnapply() {
     return;
 
   HeapVector<Member<Node>> children;
-  for (Node* child = element2_->FirstChild(); child && child != at_child;
+  for (Node* child = element2_->firstChild(); child && child != at_child;
        child = child->nextSibling())
     children.push_back(child);
 

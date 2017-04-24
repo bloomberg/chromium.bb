@@ -386,7 +386,7 @@ static inline void RemoveDisallowedElementsFromSubtree(SVGElement& subtree) {
 
 static void MoveChildrenToReplacementElement(ContainerNode& source_root,
                                              ContainerNode& destination_root) {
-  for (Node* child = source_root.FirstChild(); child;) {
+  for (Node* child = source_root.firstChild(); child;) {
     Node* next_child = child->nextSibling();
     destination_root.AppendChild(child);
     child = next_child;
@@ -465,7 +465,7 @@ void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
 
   // If the instance root was a <use>, it could have been replaced now, so
   // reset |m_targetElementInstance|.
-  target_element_instance_ = ToSVGElementOrDie(shadow_root.FirstChild());
+  target_element_instance_ = ToSVGElementOrDie(shadow_root.firstChild());
   DCHECK_EQ(target_element_instance_->parentNode(), shadow_root);
 
   CloneNonMarkupEventListeners();
@@ -505,7 +505,7 @@ void SVGUseElement::ToClipPath(Path& path) const {
 
 SVGGraphicsElement* SVGUseElement::VisibleTargetGraphicsElementForClipping()
     const {
-  Node* n = UseShadowRoot().FirstChild();
+  Node* n = UseShadowRoot().firstChild();
   if (!n || !n->IsSVGElement())
     return nullptr;
 

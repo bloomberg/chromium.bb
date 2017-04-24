@@ -179,7 +179,7 @@ void XMLErrors::InsertErrorMessageBlock() {
     report_element->ParserAppendChild(paragraph);
   }
 
-  Node* first_child = document_element->FirstChild();
+  Node* first_child = document_element->firstChild();
   if (first_child)
     document_element->ParserInsertBefore(report_element, *first_child);
   else

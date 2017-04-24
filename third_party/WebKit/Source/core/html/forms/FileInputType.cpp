@@ -275,7 +275,7 @@ void FileInputType::CreateShadowSubtree() {
 void FileInputType::DisabledAttributeChanged() {
   DCHECK(GetElement().Shadow());
   if (Element* button =
-          ToElementOrDie(GetElement().UserAgentShadowRoot()->FirstChild()))
+          ToElementOrDie(GetElement().UserAgentShadowRoot()->firstChild()))
     button->SetBooleanAttribute(disabledAttr,
                                 GetElement().IsDisabledFormControl());
 }
@@ -283,7 +283,7 @@ void FileInputType::DisabledAttributeChanged() {
 void FileInputType::MultipleAttributeChanged() {
   DCHECK(GetElement().Shadow());
   if (Element* button =
-          ToElementOrDie(GetElement().UserAgentShadowRoot()->FirstChild()))
+          ToElementOrDie(GetElement().UserAgentShadowRoot()->firstChild()))
     button->setAttribute(
         valueAttr,
         AtomicString(GetLocale().QueryString(

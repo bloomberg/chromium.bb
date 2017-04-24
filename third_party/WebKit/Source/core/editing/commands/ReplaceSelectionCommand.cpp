@@ -192,7 +192,7 @@ ReplacementFragment::ReplacementFragment(Document* document,
   if (!HasRichlyEditableStyle(*editable_root)) {
     bool is_plain_text = true;
     for (Node& node : NodeTraversal::ChildrenOf(*fragment_)) {
-      if (IsInterchangeHTMLBRElement(&node) && &node == fragment_->LastChild())
+      if (IsInterchangeHTMLBRElement(&node) && &node == fragment_->lastChild())
         continue;
       if (!node.IsTextNode()) {
         is_plain_text = false;
@@ -264,18 +264,18 @@ bool ReplacementFragment::IsEmpty() const {
 }
 
 Node* ReplacementFragment::FirstChild() const {
-  return fragment_ ? fragment_->FirstChild() : 0;
+  return fragment_ ? fragment_->firstChild() : 0;
 }
 
 Node* ReplacementFragment::LastChild() const {
-  return fragment_ ? fragment_->LastChild() : 0;
+  return fragment_ ? fragment_->lastChild() : 0;
 }
 
 void ReplacementFragment::RemoveNodePreservingChildren(ContainerNode* node) {
   if (!node)
     return;
 
-  while (Node* n = node->FirstChild()) {
+  while (Node* n = node->firstChild()) {
     RemoveNode(n);
     InsertNodeBefore(n, node);
   }
@@ -324,7 +324,7 @@ void ReplacementFragment::RestoreAndRemoveTestRenderingNodesToFragment(
   if (!holder)
     return;
 
-  while (Node* node = holder->FirstChild()) {
+  while (Node* node = holder->firstChild()) {
     holder->RemoveChild(node);
     fragment_->AppendChild(node);
   }
@@ -350,7 +350,7 @@ void ReplacementFragment::RemoveInterchangeNodes(ContainerNode* container) {
 
   // Interchange newlines at the "start" of the incoming fragment must be
   // either the first node in the fragment or the first leaf in the fragment.
-  Node* node = container->FirstChild();
+  Node* node = container->firstChild();
   while (node) {
     if (IsInterchangeHTMLBRElement(node)) {
       has_interchange_newline_at_start_ = true;
@@ -363,7 +363,7 @@ void ReplacementFragment::RemoveInterchangeNodes(ContainerNode* container) {
     return;
   // Interchange newlines at the "end" of the incoming fragment must be
   // either the last node in the fragment or the last leaf in the fragment.
-  node = container->LastChild();
+  node = container->lastChild();
   while (node) {
     if (IsInterchangeHTMLBRElement(node)) {
       has_interchange_newline_at_end_ = true;
@@ -1882,8 +1882,8 @@ Node* ReplaceSelectionCommand::InsertAsListItems(HTMLElement* list_element,
                                                  InsertedNodes& inserted_nodes,
                                                  EditingState* editing_state) {
   while (list_element->HasOneChild() &&
-         IsHTMLListElement(list_element->FirstChild()))
-    list_element = ToHTMLElement(list_element->FirstChild());
+         IsHTMLListElement(list_element->firstChild()))
+    list_element = ToHTMLElement(list_element->firstChild());
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   bool is_start = IsStartOfParagraph(CreateVisiblePosition(insert_pos));
@@ -1900,7 +1900,7 @@ Node* ReplaceSelectionCommand::InsertAsListItems(HTMLElement* list_element,
     SplitTreeToNode(insert_pos.AnchorNode(), last_node, true);
   }
 
-  while (Node* list_item = list_element->FirstChild()) {
+  while (Node* list_item = list_element->firstChild()) {
     list_element->RemoveChild(list_item, ASSERT_NO_EXCEPTION);
     if (is_start || is_middle) {
       InsertNodeBefore(list_item, last_node, editing_state);

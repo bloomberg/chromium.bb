@@ -20,8 +20,8 @@ class EditorTest : public EditingTestBase {
 };
 
 void EditorTest::MakeDocumentEmpty() {
-  while (GetDocument().FirstChild())
-    GetDocument().RemoveChild(GetDocument().FirstChild());
+  while (GetDocument().firstChild())
+    GetDocument().RemoveChild(GetDocument().firstChild());
 }
 
 TEST_F(EditorTest, tidyUpHTMLStructureFromBody) {

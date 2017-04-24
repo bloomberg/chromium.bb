@@ -77,7 +77,7 @@ void SimplifyMarkupCommand::DoApply(EditingState* editing_state) {
               ->AlwaysCreateLineBoxes())
         continue;
 
-      if (current_node->FirstChild() != current_node->LastChild()) {
+      if (current_node->firstChild() != current_node->lastChild()) {
         top_node_with_starting_style = 0;
         break;
       }
@@ -124,8 +124,8 @@ int SimplifyMarkupCommand::PruneSubsequentAncestorsToRemove(
     if (nodes_to_remove[past_last_node_to_remove - 1]->parentNode() !=
         nodes_to_remove[past_last_node_to_remove])
       break;
-    DCHECK_EQ(nodes_to_remove[past_last_node_to_remove]->FirstChild(),
-              nodes_to_remove[past_last_node_to_remove]->LastChild());
+    DCHECK_EQ(nodes_to_remove[past_last_node_to_remove]->firstChild(),
+              nodes_to_remove[past_last_node_to_remove]->lastChild());
   }
 
   ContainerNode* highest_ancestor_to_remove =

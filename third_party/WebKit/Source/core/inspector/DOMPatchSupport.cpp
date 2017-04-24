@@ -132,17 +132,17 @@ Node* DOMPatchSupport::PatchNode(Node* node,
   // Compose the old list.
   ContainerNode* parent_node = node->parentNode();
   HeapVector<Member<Digest>> old_list;
-  for (Node* child = parent_node->FirstChild(); child;
+  for (Node* child = parent_node->firstChild(); child;
        child = child->nextSibling())
     old_list.push_back(CreateDigest(child, 0));
 
   // Compose the new list.
   String markup_copy = markup.DeprecatedLower();
   HeapVector<Member<Digest>> new_list;
-  for (Node* child = parent_node->FirstChild(); child != node;
+  for (Node* child = parent_node->firstChild(); child != node;
        child = child->nextSibling())
     new_list.push_back(CreateDigest(child, 0));
-  for (Node* child = fragment->FirstChild(); child;
+  for (Node* child = fragment->firstChild(); child;
        child = child->nextSibling()) {
     if (isHTMLHeadElement(*child) && !child->hasChildren() &&
         markup_copy.Find("</head>") == kNotFound) {
@@ -166,7 +166,7 @@ Node* DOMPatchSupport::PatchNode(Node* node,
       return nullptr;
   }
   return previous_sibling ? previous_sibling->nextSibling()
-                          : parent_node->FirstChild();
+                          : parent_node->firstChild();
 }
 
 bool DOMPatchSupport::InnerPatchNode(Digest* old_digest,
@@ -463,7 +463,7 @@ DOMPatchSupport::Digest* DOMPatchSupport::CreateDigest(
 
   if (node->IsElementNode()) {
     Element& element = ToElement(*node);
-    Node* child = element.FirstChild();
+    Node* child = element.firstChild();
     while (child) {
       Digest* child_info = CreateDigest(child, unused_nodes_map);
       AddStringToDigestor(digestor.get(), child_info->sha1_);

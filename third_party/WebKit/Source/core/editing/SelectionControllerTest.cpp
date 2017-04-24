@@ -56,8 +56,8 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* top = GetDocument().GetElementById("top")->FirstChild();
-  Node* bottom = shadow_root->GetElementById("bottom")->FirstChild();
+  Node* top = GetDocument().GetElementById("top")->firstChild();
+  Node* bottom = shadow_root->GetElementById("bottom")->firstChild();
   Node* host = GetDocument().GetElementById("host");
 
   // top to bottom

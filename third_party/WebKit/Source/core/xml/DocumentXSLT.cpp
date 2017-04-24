@@ -113,7 +113,7 @@ void DocumentXSLT::ApplyXSLTransform(Document& document,
 }
 
 ProcessingInstruction* DocumentXSLT::FindXSLStyleSheet(Document& document) {
-  for (Node* node = document.FirstChild(); node; node = node->nextSibling()) {
+  for (Node* node = document.firstChild(); node; node = node->nextSibling()) {
     if (node->getNodeType() != Node::kProcessingInstructionNode)
       continue;
 

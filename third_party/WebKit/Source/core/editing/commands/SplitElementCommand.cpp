@@ -47,7 +47,7 @@ void SplitElementCommand::ExecuteApply() {
     return;
 
   HeapVector<Member<Node>> children;
-  for (Node* node = element2_->FirstChild(); node != at_child_;
+  for (Node* node = element2_->firstChild(); node != at_child_;
        node = node->nextSibling())
     children.push_back(node);
 
@@ -82,7 +82,7 @@ void SplitElementCommand::DoUnapply() {
   NodeVector children;
   GetChildNodes(*element1_, children);
 
-  Node* ref_child = element2_->FirstChild();
+  Node* ref_child = element2_->firstChild();
 
   for (const auto& child : children)
     element2_->InsertBefore(child, ref_child, IGNORE_EXCEPTION_FOR_TESTING);

@@ -99,7 +99,7 @@ Node* NodeTraversal::NextAncestorSibling(const Node& current,
 }
 
 Node* NodeTraversal::LastWithin(const ContainerNode& current) {
-  Node* descendant = current.LastChild();
+  Node* descendant = current.lastChild();
   for (Node* child = descendant; child; child = child->lastChild())
     descendant = child;
   return descendant;

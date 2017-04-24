@@ -59,7 +59,7 @@ Text* FrameSelectionTest::AppendTextNode(const String& data) {
 TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
   SetBodyContent("<div id=sample>0123456789</div>abc");
   Element* const sample = GetDocument().GetElementById("sample");
-  Node* const text = sample->FirstChild();
+  Node* const text = sample->firstChild();
   Selection().SetSelectedRange(
       EphemeralRange(Position(text, 3), Position(text, 6)), VP_DEFAULT_AFFINITY,
       SelectionDirectionalMode::kNonDirectional, 0);
@@ -150,7 +150,7 @@ TEST_F(FrameSelectionTest, SelectWordAroundPosition2) {
       "<p style='width:70px; font-size:14px'>foo bar<em>+</em> baz</p>");
   // "foo bar
   //  b|az"
-  Node* const baz = GetDocument().body()->FirstChild()->lastChild();
+  Node* const baz = GetDocument().body()->firstChild()->lastChild();
   EXPECT_TRUE(Selection().SelectWordAroundPosition(
       CreateVisiblePosition(Position(baz, 2))));
   EXPECT_EQ_SELECTED_TEXT("baz");
@@ -180,7 +180,7 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
 TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
   SetBodyContent("<div id=sample>abc</div>");
   Element* sample = GetDocument().GetElementById("sample");
-  const Position end_of_text(sample->FirstChild(), 3);
+  const Position end_of_text(sample->firstChild(), 3);
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(end_of_text).Build());
 
@@ -240,7 +240,7 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest) {
 TEST_F(FrameSelectionTest, SelectAllWithInputElement) {
   SetBodyContent("<input>123");
   Element* const input = GetDocument().QuerySelector("input");
-  Node* const last_child = GetDocument().body()->LastChild();
+  Node* const last_child = GetDocument().body()->lastChild();
   Selection().SelectAll();
   const SelectionInDOMTree& result_in_dom_tree =
       Selection().ComputeVisibleSelectionInDOMTree().AsSelection();
@@ -271,7 +271,7 @@ TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
 TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
   SetBodyContent("<div id=sample>abc</div>");
   Element* sample = GetDocument().GetElementById("sample");
-  const Position end_of_text(sample->FirstChild(), 3);
+  const Position end_of_text(sample->firstChild(), 3);
   Selection().SetSelection(SelectionInDOMTree::Builder()
                                .Collapse(end_of_text)
                                .SetIsHandleVisible(false)
