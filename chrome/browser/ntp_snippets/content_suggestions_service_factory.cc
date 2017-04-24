@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -203,10 +203,12 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
   base::FilePath database_dir(
       profile->GetPath().Append(ntp_snippets::kDatabaseFolder));
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      BrowserThread::GetBlockingPool()
-          ->GetSequencedTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::GetSequenceToken(),
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+      base::CreateSequencedTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
   std::string api_key;
   // The API is private. If we don't have the official API key, don't even try.
   if (google_apis::IsGoogleChromeAPIKeyUsed()) {
