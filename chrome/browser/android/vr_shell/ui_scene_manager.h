@@ -28,10 +28,11 @@ class UiSceneManager {
  private:
   void ConfigureSecurityWarnings();
   void OnSecurityWarningTimer();
+  void OnGLInitialized();
 
   UiScene* scene_;
 
-  // UI elemenet pointers (not owned by the scene manager).
+  // UI element pointers (not owned by the scene manager).
   UiElement* permanent_security_warning_ = nullptr;
   UiElement* transient_security_warning_ = nullptr;
   UiElement* main_content_ = nullptr;

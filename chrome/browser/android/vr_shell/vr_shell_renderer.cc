@@ -71,10 +71,11 @@ static const unsigned char kLaserData[] =
 
 const char* GetShaderSource(vr_shell::ShaderID shader) {
   switch (shader) {
-    case vr_shell::ShaderID::TEXTURE_QUAD_VERTEX_SHADER:
+    case vr_shell::ShaderID::EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER:
     case vr_shell::ShaderID::RETICLE_VERTEX_SHADER:
     case vr_shell::ShaderID::LASER_VERTEX_SHADER:
     case vr_shell::ShaderID::CONTROLLER_VERTEX_SHADER:
+    case vr_shell::ShaderID::TEXTURED_QUAD_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
           precision mediump float;
@@ -103,11 +104,29 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_Position = u_ModelViewProjMatrix * a_Position;
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::TEXTURE_QUAD_FRAGMENT_SHADER:
+    case vr_shell::ShaderID::EXTERNAL_TEXTURED_QUAD_FRAGMENT_SHADER:
       return OEIE_SHADER(
           /* clang-format off */
           precision highp float;
           uniform samplerExternalOES u_Texture;
+          uniform vec4 u_CopyRect;  // rectangle
+          varying vec2 v_TexCoordinate;
+          uniform lowp vec4 color;
+          uniform mediump float opacity;
+
+          void main() {
+            vec2 scaledTex =
+                vec2(u_CopyRect[0] + v_TexCoordinate.x * u_CopyRect[2],
+                     u_CopyRect[1] + v_TexCoordinate.y * u_CopyRect[3]);
+            lowp vec4 color = texture2D(u_Texture, scaledTex);
+            gl_FragColor = vec4(color.xyz, color.w * opacity);
+          }
+          /* clang-format on */);
+    case vr_shell::ShaderID::TEXTURED_QUAD_FRAGMENT_SHADER:
+      return SHADER(
+          /* clang-format off */
+          precision highp float;
+          uniform sampler2D u_Texture;
           uniform vec4 u_CopyRect;  // rectangle
           varying vec2 v_TexCoordinate;
           uniform lowp vec4 color;
@@ -304,9 +323,47 @@ void BaseQuadRenderer::SetVertexBuffer() {
                GL_STATIC_DRAW);
 }
 
+ExternalTexturedQuadRenderer::ExternalTexturedQuadRenderer()
+    : BaseQuadRenderer(EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER,
+                       EXTERNAL_TEXTURED_QUAD_FRAGMENT_SHADER) {
+  model_view_proj_matrix_handle_ =
+      glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
+  tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
+  copy_rect_uniform_handle_ =
+      glGetUniformLocation(program_handle_, "u_CopyRect");
+  opacity_handle_ = glGetUniformLocation(program_handle_, "opacity");
+}
+
+void ExternalTexturedQuadRenderer::Draw(int texture_data_handle,
+                                        const vr::Mat4f& view_proj_matrix,
+                                        const gfx::RectF& copy_rect,
+                                        float opacity) {
+  PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
+
+  // Link texture data with texture unit.
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_data_handle);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  glUniform1i(tex_uniform_handle_, 0);
+  glUniform4fv(copy_rect_uniform_handle_, 1,
+               reinterpret_cast<const float*>(&copy_rect));
+  glUniform1f(opacity_handle_, opacity);
+
+  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+
+  glDisableVertexAttribArray(position_handle_);
+  glDisableVertexAttribArray(tex_coord_handle_);
+}
+
+ExternalTexturedQuadRenderer::~ExternalTexturedQuadRenderer() = default;
+
 TexturedQuadRenderer::TexturedQuadRenderer()
-    : BaseQuadRenderer(TEXTURE_QUAD_VERTEX_SHADER,
-                       TEXTURE_QUAD_FRAGMENT_SHADER) {
+    : BaseQuadRenderer(TEXTURED_QUAD_VERTEX_SHADER,
+                       TEXTURED_QUAD_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
@@ -319,7 +376,7 @@ void TexturedQuadRenderer::AddQuad(int texture_data_handle,
                                    const vr::Mat4f& view_proj_matrix,
                                    const gfx::RectF& copy_rect,
                                    float opacity) {
-  TexturedQuad quad;
+  SkiaQuad quad;
   quad.texture_data_handle = texture_data_handle;
   quad.view_proj_matrix = view_proj_matrix;
   quad.copy_rect = {copy_rect.x(), copy_rect.y(), copy_rect.width(),
@@ -363,20 +420,12 @@ void TexturedQuadRenderer::Flush() {
   // the entire queue can be processed in one draw call. For now this still
   // significantly reduces the amount of state changes made per draw.
   while (!quad_queue_.empty()) {
-    const TexturedQuad& quad = quad_queue_.front();
+    const SkiaQuad& quad = quad_queue_.front();
 
     // Only change texture ID or opacity when they differ between quads.
     if (last_texture != quad.texture_data_handle) {
       last_texture = quad.texture_data_handle;
-      glBindTexture(GL_TEXTURE_EXTERNAL_OES, last_texture);
-      glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S,
-                      GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T,
-                      GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER,
-                      GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER,
-                      GL_NEAREST);
+      glBindTexture(GL_TEXTURE_2D, last_texture);
     }
 
     if (last_opacity != quad.opacity) {
@@ -734,7 +783,9 @@ void GradientGridRenderer::MakeGridLines(int gridline_count) {
 }
 
 VrShellRenderer::VrShellRenderer()
-    : textured_quad_renderer_(base::MakeUnique<TexturedQuadRenderer>()),
+    : external_textured_quad_renderer_(
+          base::MakeUnique<ExternalTexturedQuadRenderer>()),
+      textured_quad_renderer_(base::MakeUnique<TexturedQuadRenderer>()),
       webvr_renderer_(base::MakeUnique<WebVrRenderer>()),
       reticle_renderer_(base::MakeUnique<ReticleRenderer>()),
       laser_renderer_(base::MakeUnique<LaserRenderer>()),
@@ -745,5 +796,49 @@ VrShellRenderer::VrShellRenderer()
 }
 
 VrShellRenderer::~VrShellRenderer() = default;
+
+ExternalTexturedQuadRenderer*
+VrShellRenderer::GetExternalTexturedQuadRenderer() {
+  Flush();
+  return external_textured_quad_renderer_.get();
+}
+
+TexturedQuadRenderer* VrShellRenderer::GetTexturedQuadRenderer() {
+  return textured_quad_renderer_.get();
+}
+
+WebVrRenderer* VrShellRenderer::GetWebVrRenderer() {
+  Flush();
+  return webvr_renderer_.get();
+}
+
+ReticleRenderer* VrShellRenderer::GetReticleRenderer() {
+  Flush();
+  return reticle_renderer_.get();
+}
+
+LaserRenderer* VrShellRenderer::GetLaserRenderer() {
+  Flush();
+  return laser_renderer_.get();
+}
+
+ControllerRenderer* VrShellRenderer::GetControllerRenderer() {
+  Flush();
+  return controller_renderer_.get();
+}
+
+GradientQuadRenderer* VrShellRenderer::GetGradientQuadRenderer() {
+  Flush();
+  return gradient_quad_renderer_.get();
+}
+
+GradientGridRenderer* VrShellRenderer::GetGradientGridRenderer() {
+  Flush();
+  return gradient_grid_renderer_.get();
+}
+
+void VrShellRenderer::Flush() {
+  textured_quad_renderer_->Flush();
+}
 
 }  // namespace vr_shell

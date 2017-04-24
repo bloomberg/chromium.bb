@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr_shell/ui_element.h"
+#include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 
 #include <limits>
 
@@ -104,6 +104,13 @@ bool WorldRectangle::GetRayDistance(const gfx::Point3F& ray_origin,
 UiElement::UiElement() = default;
 
 UiElement::~UiElement() = default;
+
+void UiElement::Render(VrShellRenderer* renderer,
+                       vr::Mat4f view_proj_matrix) const {
+  NOTREACHED();
+}
+
+void UiElement::Initialize() {}
 
 void UiElement::Animate(const base::TimeTicks& time) {
   for (auto& it : animations) {

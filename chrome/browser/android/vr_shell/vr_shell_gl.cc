@@ -15,7 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/vr_shell/fps_meter.h"
 #include "chrome/browser/android/vr_shell/mailbox_to_surface_bridge.h"
-#include "chrome/browser/android/vr_shell/ui_element.h"
+#include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/ui_scene_manager.h"
@@ -293,6 +293,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
       content_tex_physical_size_.width(), content_tex_physical_size_.height());
 
   InitializeRenderer();
+
+  scene_->OnGLInitialized();
 
   gfx::Size webvr_size =
       device::GvrDelegate::GetRecommendedWebVrSize(gvr_api_.get());
@@ -994,18 +996,13 @@ void VrShellGl::DrawElements(const vr::Mat4f& view_proj_matrix,
     vr::MatrixMul(view_proj_matrix, rect->TransformMatrix(), &transform);
 
     switch (rect->fill) {
-      case Fill::SKIA: {
-        break;
-      }
       case Fill::OPAQUE_GRADIENT: {
-        vr_shell_renderer_->GetTexturedQuadRenderer()->Flush();
         vr_shell_renderer_->GetGradientQuadRenderer()->Draw(
             transform, rect->edge_color, rect->center_color,
             rect->computed_opacity);
         break;
       }
       case Fill::GRID_GRADIENT: {
-        vr_shell_renderer_->GetTexturedQuadRenderer()->Flush();
         vr_shell_renderer_->GetGradientGridRenderer()->Draw(
             transform, rect->edge_color, rect->center_color,
             rect->gridline_count, rect->computed_opacity);
@@ -1013,16 +1010,19 @@ void VrShellGl::DrawElements(const vr::Mat4f& view_proj_matrix,
       }
       case Fill::CONTENT: {
         gfx::RectF copy_rect(0, 0, 1, 1);
-        vr_shell_renderer_->GetTexturedQuadRenderer()->AddQuad(
+        vr_shell_renderer_->GetExternalTexturedQuadRenderer()->Draw(
             content_texture_id_, transform, copy_rect, rect->computed_opacity);
+        break;
+      }
+      case Fill::SELF: {
+        rect->Render(vr_shell_renderer_.get(), transform);
         break;
       }
       default:
         break;
     }
   }
-
-  vr_shell_renderer_->GetTexturedQuadRenderer()->Flush();
+  vr_shell_renderer_->Flush();
 }
 
 std::vector<const UiElement*> VrShellGl::GetElementsInDrawOrder(

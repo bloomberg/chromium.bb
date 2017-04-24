@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/strings/string16.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
+
+class SkCanvas;
 
 namespace gfx {
 class Canvas;
@@ -18,25 +20,20 @@ class FontList;
 
 namespace vr_shell {
 
-class UITexture {
+class UiTexture {
  public:
-  UITexture(int texture_handle, int texture_size);
-  virtual ~UITexture();
+  UiTexture();
+  virtual ~UiTexture();
 
-  void DrawAndLayout();
-  void Flush();
-  gfx::Size size() const { return size_; }
+  void DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size);
+  virtual gfx::Size GetPreferredTextureSize(int maximum_width) const = 0;
+  virtual gfx::SizeF GetDrawnSize() const = 0;
 
  protected:
-  virtual void Draw(gfx::Canvas* canvas) = 0;
-  virtual void SetSize() = 0;
+  virtual void Draw(gfx::Canvas* canvas, const gfx::Size& texture_size) = 0;
+
   static bool IsRTL();
   static gfx::FontList GetFontList(int size, base::string16 text);
-
-  int texture_handle_;
-  int texture_size_;
-  gfx::Size size_;
-  sk_sp<SkSurface> surface_;
 };
 
 }  // namespace vr_shell

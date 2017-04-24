@@ -5,7 +5,11 @@
 #include "chrome/browser/android/vr_shell/ui_scene_manager.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/android/vr_shell/ui_element.h"
+#include "chrome/browser/android/vr_shell/textures/ui_texture.h"
+#include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
+#include "chrome/browser/android/vr_shell/ui_elements/textured_element.h"
+#include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
+#include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 
 namespace vr_shell {
@@ -26,13 +30,11 @@ UiSceneManager::UiSceneManager(UiScene* scene)
   int id = 1000;
 
   // Permanent WebVR security warning.
-  element = base::MakeUnique<UiElement>();
+  // TODO(mthiesse): Programatically compute the proper texture size for these
+  // textured UI elements.
+  element = base::MakeUnique<PermanentSecurityWarning>(512);
   element->id = id++;
   element->name = "Permanent security warning";
-  // TODO(cjgrant): Map to Skia-generated texture with correct size.
-  // element->fill = vr_shell::Fill::OPAQUE_GRADIENT;
-  // element->edge_color = {128, 128, 128, 0.5};
-  // element->center_color = {128, 128, 128, 0.5};
   element->fill = vr_shell::Fill::NONE;
   element->size = {0.226f, 0.078f, 1};
   element->scale = {kWarningDistance, kWarningDistance, 1};
@@ -46,13 +48,9 @@ UiSceneManager::UiSceneManager(UiScene* scene)
   scene_->AddUiElement(std::move(element));
 
   // Transient WebVR security warning.
-  element = base::MakeUnique<UiElement>();
+  element = base::MakeUnique<TransientSecurityWarning>(1024);
   element->id = id++;
   element->name = "Transient security warning";
-  // TODO(cjgrant): Map to Skia-generated texture with correct size.
-  // element->fill = vr_shell::Fill::OPAQUE_GRADIENT;
-  // element->edge_color = {128, 128, 128, 0.5};
-  // element->center_color = {128, 128, 128, 0.5};
   element->fill = vr_shell::Fill::NONE;
   element->size = {0.512f, 0.160f, 1};
   element->scale = {kWarningDistance, kWarningDistance, 1};

@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
-#include "chrome/browser/android/vr_shell/ui_element.h"
+#include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "device/vr/vr_math.h"
 
 namespace vr_shell {
@@ -62,6 +62,8 @@ void UiScene::AddUiElement(std::unique_ptr<UiElement> element) {
     CHECK_EQ(element->x_anchoring, XAnchoring::XNONE);
     CHECK_EQ(element->y_anchoring, YAnchoring::YNONE);
   }
+  if (gl_initialized_)
+    element->Initialize();
   ui_elements_.push_back(std::move(element));
 }
 
@@ -81,8 +83,8 @@ void UiScene::AddAnimation(int element_id,
                            std::unique_ptr<Animation> animation) {
   UiElement* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
-  for (auto& existing_animation : element->animations) {
-    CHECK_NE(existing_animation->id, animation->id);
+  for (const std::unique_ptr<Animation>& existing : element->animations) {
+    CHECK_NE(existing->id, animation->id);
   }
   element->animations.emplace_back(std::move(animation));
 }
@@ -101,7 +103,7 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
 }
 
 void UiScene::UpdateTransforms(const base::TimeTicks& time) {
-  for (auto& element : ui_elements_) {
+  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
     // Process all animations before calculating object transforms.
     element->Animate(time);
     element->dirty = true;
@@ -112,7 +114,7 @@ void UiScene::UpdateTransforms(const base::TimeTicks& time) {
 }
 
 UiElement* UiScene::GetUiElementById(int element_id) {
-  for (auto& element : ui_elements_) {
+  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
     if (element->id == element_id) {
       return element.get();
     }
@@ -122,7 +124,7 @@ UiElement* UiScene::GetUiElementById(int element_id) {
 
 std::vector<const UiElement*> UiScene::GetWorldElements() const {
   std::vector<const UiElement*> elements;
-  for (const auto& element : ui_elements_) {
+  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
     if (element->IsVisible() && !element->lock_to_fov) {
       elements.push_back(element.get());
     }
@@ -132,7 +134,7 @@ std::vector<const UiElement*> UiScene::GetWorldElements() const {
 
 std::vector<const UiElement*> UiScene::GetHeadLockedElements() const {
   std::vector<const UiElement*> elements;
-  for (const auto& element : ui_elements_) {
+  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
     if (element->IsVisible() && element->lock_to_fov) {
       elements.push_back(element.get());
     }
@@ -201,6 +203,14 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
   vr::MatrixMul(inheritable->to_world, transform->to_world,
                 &transform->to_world);
   element->dirty = false;
+}
+
+// TODO(mthiesse): Move this to UiSceneManager.
+void UiScene::OnGLInitialized() {
+  gl_initialized_ = true;
+  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
+    element->Initialize();
+  }
 }
 
 }  // namespace vr_shell

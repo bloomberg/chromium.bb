@@ -29,58 +29,65 @@ constexpr float kTextWidthFactor = 4.0 - 3 * kBorderFactor - kIconSizeFactor;
 
 }  // namespace
 
-InsecureContentPermanentTexture::InsecureContentPermanentTexture(
-    int texture_handle,
-    int texture_size)
-    : UITexture(texture_handle, texture_size) {
-  // Ensuring height is a quarter of the width.
-  DCHECK(texture_size_ % 4 == 0);
-  height_ = texture_size_ / 4;
-}
+InsecureContentPermanentTexture::InsecureContentPermanentTexture() = default;
 
 InsecureContentPermanentTexture::~InsecureContentPermanentTexture() = default;
 
-void InsecureContentPermanentTexture::Draw(gfx::Canvas* canvas) {
+void InsecureContentPermanentTexture::Draw(gfx::Canvas* canvas,
+                                           const gfx::Size& texture_size) {
+  DCHECK(texture_size.height() * 4 == texture_size.width());
+  size_.set_height(texture_size.height());
+  int max_width = texture_size.width();
   cc::PaintFlags flags;
   flags.setColor(kBackgroundColor);
 
   int text_flags = gfx::Canvas::TEXT_ALIGN_CENTER | gfx::Canvas::NO_ELLIPSIS;
   auto text =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_PERMANENT);
-  auto fonts = GetFontList(height_ * kFontSizeFactor, text);
-  int text_height = kTextHeightFactor * height_;
-  int text_width = kTextWidthFactor * height_;
+  auto fonts = GetFontList(size_.height() * kFontSizeFactor, text);
+  int text_height = kTextHeightFactor * size_.height();
+  int text_width = kTextWidthFactor * size_.height();
   gfx::Canvas::SizeStringInt(text, fonts, &text_width, &text_height, 0,
                              text_flags);
   // Giving some extra width without reaching the texture limit.
-  text_width = static_cast<int>(std::min(
-      text_width + 2 * kBorderFactor * height_, kTextWidthFactor * height_));
-  width_ = static_cast<int>(
-      ceil((3 * kBorderFactor + kIconSizeFactor) * height_ + text_width));
-
-  canvas->DrawRoundRect(gfx::Rect(width_, height_), height_ * kBorderFactor,
-                        flags);
+  text_width =
+      static_cast<int>(std::min(text_width + 2 * kBorderFactor * size_.height(),
+                                kTextWidthFactor * size_.height()));
+  size_.set_width((3 * kBorderFactor + kIconSizeFactor) * size_.height() +
+                  text_width);
+  DCHECK_LE(size_.width(), max_width);
+  canvas->DrawRoundRect(gfx::Rect(size_.width(), size_.height()),
+                        size_.height() * kBorderFactor, flags);
 
   canvas->Save();
-  canvas->Translate({IsRTL() ? 2 * kBorderFactor * height_ + text_width
-                             : height_ * kBorderFactor,
-                     height_ * (1.0 - kIconSizeFactor) / 2.0});
-  PaintVectorIcon(canvas, ui::kInfoOutlineIcon, height_ * kIconSizeFactor,
-                  kForegroundColor);
+  canvas->Translate(
+      gfx::Vector2d(IsRTL() ? 2 * kBorderFactor * size_.height() + text_width
+                            : size_.height() * kBorderFactor,
+                    size_.height() * (1.0 - kIconSizeFactor) / 2.0));
+  PaintVectorIcon(canvas, ui::kInfoOutlineIcon,
+                  size_.height() * kIconSizeFactor, kForegroundColor);
   canvas->Restore();
 
   canvas->Save();
-  canvas->Translate({height_ * (IsRTL() ? kBorderFactor
-                                        : 2 * kBorderFactor + kIconSizeFactor),
-                     height_ * kBorderFactor});
+  canvas->Translate(gfx::Vector2d(
+      size_.height() *
+          (IsRTL() ? kBorderFactor : 2 * kBorderFactor + kIconSizeFactor),
+      size_.height() * kBorderFactor));
   canvas->DrawStringRectWithFlags(
       text, fonts, kForegroundColor,
-      gfx::Rect(text_width, kTextHeightFactor * height_), text_flags);
+      gfx::Rect(text_width, kTextHeightFactor * size_.height()), text_flags);
   canvas->Restore();
 }
 
-void InsecureContentPermanentTexture::SetSize() {
-  size_.SetSize(width_, height_);
+gfx::Size InsecureContentPermanentTexture::GetPreferredTextureSize(
+    int maximum_width) const {
+  // Ensuring height is a quarter of the width.
+  int height = maximum_width / 4;
+  return gfx::Size(height * 4, height);
+}
+
+gfx::SizeF InsecureContentPermanentTexture::GetDrawnSize() const {
+  return size_;
 }
 
 }  // namespace vr_shell

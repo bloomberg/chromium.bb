@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr_shell/ui_element.h"
+#include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 
 #include <utility>
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENT_H_
-#define CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENT_H_
+#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_UI_ELEMENT_H_
+#define CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_UI_ELEMENT_H_
 
 #include <memory>
 #include <string>
@@ -19,6 +19,7 @@ class TimeTicks;
 namespace vr_shell {
 
 class Animation;
+class VrShellRenderer;
 
 enum XAnchoring {
   XNONE = 0,
@@ -34,16 +35,17 @@ enum YAnchoring {
 
 enum Fill {
   NONE = 0,
-  SKIA = 1,
+  // The element is filled with the content web site. Only one content element
+  // may be added to the
+  // scene.
+  CONTENT = 1,
   // The element is filled with a radial gradient as specified by the edge and
   // center color.
   OPAQUE_GRADIENT = 2,
   // Same as OPAQUE_GRADIENT but the element is drawn as a grid.
   GRID_GRADIENT = 3,
-  // The element is filled with the content web site. Only one content element
-  // may be added to the
-  // scene.
-  CONTENT = 4,
+  // The element draws itself.
+  SELF = 4,
 };
 
 struct Transform {
@@ -84,9 +86,10 @@ class WorldRectangle {
   Transform transform_;
 };
 
+// TODO(mthiesse): Make this a class - we derive classes from this struct.
 struct UiElement : public WorldRectangle {
   UiElement();
-  ~UiElement();
+  virtual ~UiElement();
 
   void Animate(const base::TimeTicks& time);
 
@@ -95,6 +98,11 @@ struct UiElement : public WorldRectangle {
 
   // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
+
+  virtual void Render(VrShellRenderer* renderer,
+                      vr::Mat4f view_proj_matrix) const;
+
+  virtual void Initialize();
 
   // Valid IDs are non-negative.
   int id = -1;
@@ -168,4 +176,4 @@ struct UiElement : public WorldRectangle {
 
 }  // namespace vr_shell
 
-#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENT_H_
+#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_UI_ELEMENT_H_

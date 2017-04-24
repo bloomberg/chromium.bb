@@ -9,17 +9,17 @@
 
 namespace vr_shell {
 
-class InsecureContentPermanentTexture : public UITexture {
+class InsecureContentPermanentTexture : public UiTexture {
  public:
-  InsecureContentPermanentTexture(int texture_handle, int texture_size);
+  InsecureContentPermanentTexture();
   ~InsecureContentPermanentTexture() override;
+  gfx::Size GetPreferredTextureSize(int width) const override;
+  gfx::SizeF GetDrawnSize() const override;
 
  private:
-  void Draw(gfx::Canvas* canvas) override;
-  void SetSize() override;
+  void Draw(gfx::Canvas* canvas, const gfx::Size& texture_size) override;
 
-  int height_;
-  int width_;
+  gfx::SizeF size_;
 };
 
 }  // namespace vr_shell

@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
-#include "chrome/browser/android/vr_shell/ui_element.h"
+#include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "device/vr/vr_math.h"
 #include "device/vr/vr_types.h"
 #include "testing/gtest/include/gtest/gtest.h"

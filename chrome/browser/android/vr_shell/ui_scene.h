@@ -66,6 +66,8 @@ class UiScene {
   float GetBackgroundDistance() const;
   bool GetWebVrRenderingEnabled() const;
 
+  void OnGLInitialized();
+
  private:
   void ApplyRecursiveTransforms(UiElement* element);
 
@@ -74,6 +76,7 @@ class UiScene {
   vr::Colorf background_color_ = {0.1f, 0.1f, 0.1f, 1.0f};
   float background_distance_ = 10.0f;
   bool webvr_rendering_enabled_ = true;
+  bool gl_initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

@@ -19,12 +19,10 @@ namespace vr_shell {
 // TODO(tiborg): set background color through JS API.
 constexpr float kFogBrightness = 0.57f;
 
-typedef unsigned int GLuint;
-
 enum ShaderID {
   SHADER_UNRECOGNIZED = 0,
-  TEXTURE_QUAD_VERTEX_SHADER,
-  TEXTURE_QUAD_FRAGMENT_SHADER,
+  EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER,
+  EXTERNAL_TEXTURED_QUAD_FRAGMENT_SHADER,
   WEBVR_VERTEX_SHADER,
   WEBVR_FRAGMENT_SHADER,
   RETICLE_VERTEX_SHADER,
@@ -37,6 +35,8 @@ enum ShaderID {
   GRADIENT_GRID_FRAGMENT_SHADER,
   CONTROLLER_VERTEX_SHADER,
   CONTROLLER_FRAGMENT_SHADER,
+  TEXTURED_QUAD_VERTEX_SHADER,
+  TEXTURED_QUAD_FRAGMENT_SHADER,
   SHADER_ID_MAX
 };
 
@@ -58,7 +58,7 @@ struct Line3d {
   Vertex3d end;
 };
 
-struct TexturedQuad {
+struct SkiaQuad {
   int texture_data_handle;
   vr::Mat4f view_proj_matrix;
   RectF copy_rect;
@@ -95,6 +95,26 @@ class BaseQuadRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(BaseQuadRenderer);
 };
 
+class ExternalTexturedQuadRenderer : public BaseQuadRenderer {
+ public:
+  ExternalTexturedQuadRenderer();
+  ~ExternalTexturedQuadRenderer() override;
+
+  // Draw the content rect in the texture quad.
+  void Draw(int texture_data_handle,
+            const vr::Mat4f& view_proj_matrix,
+            const gfx::RectF& copy_rect,
+            float opacity);
+
+ private:
+  GLuint model_view_proj_matrix_handle_;
+  GLuint copy_rect_uniform_handle_;
+  GLuint tex_uniform_handle_;
+  GLuint opacity_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExternalTexturedQuadRenderer);
+};
+
 class TexturedQuadRenderer : public BaseQuadRenderer {
  public:
   TexturedQuadRenderer();
@@ -114,7 +134,7 @@ class TexturedQuadRenderer : public BaseQuadRenderer {
   GLuint tex_uniform_handle_;
   GLuint opacity_handle_;
 
-  std::queue<TexturedQuad> quad_queue_;
+  std::queue<SkiaQuad> quad_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadRenderer);
 };
@@ -253,29 +273,19 @@ class VrShellRenderer {
   VrShellRenderer();
   ~VrShellRenderer();
 
-  TexturedQuadRenderer* GetTexturedQuadRenderer() {
-    return textured_quad_renderer_.get();
-  }
-
-  WebVrRenderer* GetWebVrRenderer() { return webvr_renderer_.get(); }
-
-  ReticleRenderer* GetReticleRenderer() { return reticle_renderer_.get(); }
-
-  LaserRenderer* GetLaserRenderer() { return laser_renderer_.get(); }
-
-  ControllerRenderer* GetControllerRenderer() {
-    return controller_renderer_.get();
-  }
-
-  GradientQuadRenderer* GetGradientQuadRenderer() {
-    return gradient_quad_renderer_.get();
-  }
-
-  GradientGridRenderer* GetGradientGridRenderer() {
-    return gradient_grid_renderer_.get();
-  }
+  ExternalTexturedQuadRenderer* GetExternalTexturedQuadRenderer();
+  TexturedQuadRenderer* GetTexturedQuadRenderer();
+  WebVrRenderer* GetWebVrRenderer();
+  ReticleRenderer* GetReticleRenderer();
+  LaserRenderer* GetLaserRenderer();
+  ControllerRenderer* GetControllerRenderer();
+  GradientQuadRenderer* GetGradientQuadRenderer();
+  GradientGridRenderer* GetGradientGridRenderer();
+  void Flush();
 
  private:
+  std::unique_ptr<ExternalTexturedQuadRenderer>
+      external_textured_quad_renderer_;
   std::unique_ptr<TexturedQuadRenderer> textured_quad_renderer_;
   std::unique_ptr<WebVrRenderer> webvr_renderer_;
   std::unique_ptr<ReticleRenderer> reticle_renderer_;
