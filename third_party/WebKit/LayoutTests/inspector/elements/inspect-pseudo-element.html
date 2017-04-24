@@ -16,7 +16,7 @@ function clickPseudo()
 
 function test()
 {
-    InspectorTest.domModel.setInspectMode(Protocol.DOM.InspectMode.SearchForNode, inspectModeEnabled);
+    InspectorTest.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(inspectModeEnabled);
 
     function inspectModeEnabled()
     {

@@ -51,7 +51,7 @@
                 "domain": "Log"
             },
             {
-                "domain": "Rendering"
+                "domain": "Overlay"
             },
             {
                 "domain": "Input",

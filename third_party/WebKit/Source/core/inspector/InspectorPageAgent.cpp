@@ -81,8 +81,6 @@ static const char kPageAgentScriptsToEvaluateOnLoad[] =
     "pageAgentScriptsToEvaluateOnLoad";
 static const char kScreencastEnabled[] = "screencastEnabled";
 static const char kAutoAttachToCreatedPages[] = "autoAttachToCreatedPages";
-static const char kOverlaySuspended[] = "overlaySuspended";
-static const char kOverlayMessage[] = "overlayMessage";
 }
 
 namespace {
@@ -376,13 +374,6 @@ InspectorPageAgent::InspectorPageAgent(
 void InspectorPageAgent::Restore() {
   if (state_->booleanProperty(PageAgentState::kPageAgentEnabled, false))
     enable();
-  if (client_) {
-    String overlay_message;
-    state_->getString(PageAgentState::kOverlayMessage, &overlay_message);
-    client_->ConfigureOverlay(
-        state_->booleanProperty(PageAgentState::kOverlaySuspended, false),
-        overlay_message);
-  }
 }
 
 Response InspectorPageAgent::enable() {
@@ -403,7 +394,6 @@ Response InspectorPageAgent::disable() {
       resource_content_loader_client_id_);
 
   stopScreencast();
-  configureOverlay(false, String());
 
   FinishReload();
   return Response::OK();
@@ -861,18 +851,6 @@ Response InspectorPageAgent::startScreencast(Maybe<String> format,
 
 Response InspectorPageAgent::stopScreencast() {
   state_->setBoolean(PageAgentState::kScreencastEnabled, false);
-  return Response::OK();
-}
-
-Response InspectorPageAgent::configureOverlay(Maybe<bool> suspended,
-                                              Maybe<String> message) {
-  state_->setBoolean(PageAgentState::kOverlaySuspended,
-                     suspended.fromMaybe(false));
-  state_->setString(PageAgentState::kOverlaySuspended,
-                    message.fromMaybe(String()));
-  if (client_)
-    client_->ConfigureOverlay(suspended.fromMaybe(false),
-                              message.fromMaybe(String()));
   return Response::OK();
 }
 

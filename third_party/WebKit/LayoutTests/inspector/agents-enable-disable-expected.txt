@@ -11,6 +11,7 @@ IndexedDB.disable finished successfully
 LayerTree.disable finished successfully
 Log.disable finished successfully
 Network.disable finished successfully
+Overlay.disable finished successfully
 Page.disable finished successfully
 Profiler.disable finished successfully
 Runtime.disable finished successfully
@@ -47,6 +48,9 @@ Log.disable finished successfully
 
 Network.enable finished successfully
 Network.disable finished successfully
+
+Overlay.enable finished with error DOM should be enabled first
+Overlay.disable finished successfully
 
 Page.enable finished successfully
 Page.disable finished successfully

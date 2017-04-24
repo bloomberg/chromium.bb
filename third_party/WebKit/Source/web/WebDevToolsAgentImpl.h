@@ -48,7 +48,7 @@ namespace blink {
 
 class GraphicsLayer;
 class InspectedFrames;
-class InspectorOverlay;
+class InspectorOverlayAgent;
 class InspectorResourceContainer;
 class InspectorResourceContentLoader;
 class InspectorTraceEvents;
@@ -74,7 +74,7 @@ class WebDevToolsAgentImpl final
 
   void WillBeDestroyed();
   WebDevToolsAgentClient* Client() { return client_; }
-  InspectorOverlay* Overlay() const { return overlay_.Get(); }
+  InspectorOverlayAgent* OverlayAgent() const { return overlay_agent_.Get(); }
   void FlushProtocolNotifications();
 
   // Instrumentation from web/ layer.
@@ -105,7 +105,6 @@ class WebDevToolsAgentImpl final
  private:
   WebDevToolsAgentImpl(WebLocalFrameImpl*,
                        WebDevToolsAgentClient*,
-                       InspectorOverlay*,
                        bool include_view_agents);
 
   // InspectorTracingAgent::Client implementation.
@@ -119,7 +118,6 @@ class WebDevToolsAgentImpl final
 
   // InspectorPageAgent::Client implementation.
   void PageLayoutInvalidated(bool resized) override;
-  void ConfigureOverlay(bool suspended, const String& message) override;
   void WaitForCreateWindow(LocalFrame*) override;
 
   // InspectorSession::Client implementation.
@@ -150,16 +148,15 @@ class WebDevToolsAgentImpl final
 
   Member<CoreProbeSink> instrumenting_agents_;
   Member<InspectorResourceContentLoader> resource_content_loader_;
-  Member<InspectorOverlay> overlay_;
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorResourceContainer> resource_container_;
 
-  Member<InspectorDOMAgent> dom_agent_;
   Member<InspectorPageAgent> page_agent_;
   Member<InspectorNetworkAgent> network_agent_;
   Member<InspectorLayerTreeAgent> layer_tree_agent_;
   Member<InspectorTracingAgent> tracing_agent_;
   Member<InspectorTraceEvents> trace_events_agent_;
+  Member<InspectorOverlayAgent> overlay_agent_;
 
   Member<InspectorSession> session_;
   bool include_view_agents_;

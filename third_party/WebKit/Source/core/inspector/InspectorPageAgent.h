@@ -66,7 +66,6 @@ class CORE_EXPORT InspectorPageAgent final
    public:
     virtual ~Client() {}
     virtual void PageLayoutInvalidated(bool resized) {}
-    virtual void ConfigureOverlay(bool suspended, const String& message) {}
     virtual void WaitForCreateWindow(LocalFrame*) {}
   };
 
@@ -139,8 +138,6 @@ class CORE_EXPORT InspectorPageAgent final
                                      Maybe<int> max_height,
                                      Maybe<int> every_nth_frame) override;
   protocol::Response stopScreencast() override;
-  protocol::Response configureOverlay(Maybe<bool> suspended,
-                                      Maybe<String> message) override;
   protocol::Response getLayoutMetrics(
       std::unique_ptr<protocol::Page::LayoutViewport>*,
       std::unique_ptr<protocol::Page::VisualViewport>*,

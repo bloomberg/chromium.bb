@@ -77,6 +77,7 @@
 #include "core/page/Page.h"
 #include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathResult.h"
+#include "platform/graphics/Color.h"
 #include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
@@ -96,38 +97,6 @@ namespace {
 
 const size_t kMaxTextSize = 10000;
 const UChar kEllipsisUChar[] = {0x2026, 0};
-
-Color ParseColor(protocol::DOM::RGBA* rgba) {
-  if (!rgba)
-    return Color::kTransparent;
-
-  int r = rgba->getR();
-  int g = rgba->getG();
-  int b = rgba->getB();
-  if (!rgba->hasA())
-    return Color(r, g, b);
-
-  double a = rgba->getA(1);
-  // Clamp alpha to the [0..1] range.
-  if (a < 0)
-    a = 0;
-  else if (a > 1)
-    a = 1;
-
-  return Color(r, g, b, static_cast<int>(a * 255));
-}
-
-bool ParseQuad(std::unique_ptr<protocol::Array<double>> quad_array,
-               FloatQuad* quad) {
-  const size_t kCoordinatesInQuad = 8;
-  if (!quad_array || quad_array->length() != kCoordinatesInQuad)
-    return false;
-  quad->SetP1(FloatPoint(quad_array->get(0), quad_array->get(1)));
-  quad->SetP2(FloatPoint(quad_array->get(2), quad_array->get(3)));
-  quad->SetP3(FloatPoint(quad_array->get(4), quad_array->get(5)));
-  quad->SetP4(FloatPoint(quad_array->get(6), quad_array->get(7)));
-  return true;
-}
 
 }  // namespace
 
@@ -234,20 +203,38 @@ bool InspectorDOMAgent::GetPseudoElementType(PseudoId pseudo_id,
   }
 }
 
+// static
+Color InspectorDOMAgent::ParseColor(protocol::DOM::RGBA* rgba) {
+  if (!rgba)
+    return Color::kTransparent;
+
+  int r = rgba->getR();
+  int g = rgba->getG();
+  int b = rgba->getB();
+  if (!rgba->hasA())
+    return Color(r, g, b);
+
+  double a = rgba->getA(1);
+  // Clamp alpha to the [0..1] range.
+  if (a < 0)
+    a = 0;
+  else if (a > 1)
+    a = 1;
+
+  return Color(r, g, b, static_cast<int>(a * 255));
+}
+
 InspectorDOMAgent::InspectorDOMAgent(
     v8::Isolate* isolate,
     InspectedFrames* inspected_frames,
-    v8_inspector::V8InspectorSession* v8_session,
-    Client* client)
+    v8_inspector::V8InspectorSession* v8_session)
     : isolate_(isolate),
       inspected_frames_(inspected_frames),
       v8_session_(v8_session),
-      client_(client),
       dom_listener_(nullptr),
       document_node_to_id_map_(new NodeToIdMap()),
       last_node_id_(1),
-      suppress_attribute_modified_event_(false),
-      backend_node_id_to_inspect_(0) {}
+      suppress_attribute_modified_event_(false) {}
 
 InspectorDOMAgent::~InspectorDOMAgent() {}
 
@@ -438,9 +425,6 @@ void InspectorDOMAgent::InnerEnable() {
   dom_editor_ = new DOMEditor(history_.Get());
   document_ = inspected_frames_->Root()->GetDocument();
   instrumenting_agents_->addInspectorDOMAgent(this);
-  if (backend_node_id_to_inspect_)
-    GetFrontend()->inspectNodeRequested(backend_node_id_to_inspect_);
-  backend_node_id_to_inspect_ = 0;
 }
 
 Response InspectorDOMAgent::enable() {
@@ -457,7 +441,6 @@ Response InspectorDOMAgent::disable() {
   if (!Enabled())
     return Response::Error("DOM agent hasn't been enabled");
   state_->setBoolean(DOMAgentState::kDomAgentEnabled, false);
-  SetSearchingForNode(kNotSearching, Maybe<protocol::DOM::HighlightConfig>());
   instrumenting_agents_->removeInspectorDOMAgent(this);
   history_.Clear();
   dom_editor_.Clear();
@@ -1124,155 +1107,8 @@ Response InspectorDOMAgent::discardSearchResults(const String& search_id) {
   return Response::OK();
 }
 
-void InspectorDOMAgent::Inspect(Node* inspected_node) {
-  if (!inspected_node)
-    return;
-
-  Node* node = inspected_node;
-  while (node && !node->IsElementNode() && !node->IsDocumentNode() &&
-         !node->IsDocumentFragment())
-    node = node->ParentOrShadowHostNode();
-  if (!node)
-    return;
-
-  int backend_node_id = DOMNodeIds::IdForNode(node);
-  if (!GetFrontend() || !Enabled()) {
-    backend_node_id_to_inspect_ = backend_node_id;
-    return;
-  }
-
-  GetFrontend()->inspectNodeRequested(backend_node_id);
-}
-
-void InspectorDOMAgent::NodeHighlightedInOverlay(Node* node) {
-  if (!GetFrontend() || !Enabled())
-    return;
-
-  while (node && !node->IsElementNode() && !node->IsDocumentNode() &&
-         !node->IsDocumentFragment())
-    node = node->ParentOrShadowHostNode();
-
-  if (!node)
-    return;
-
-  int node_id = PushNodePathToFrontend(node);
-  GetFrontend()->nodeHighlightRequested(node_id);
-}
-
-Response InspectorDOMAgent::SetSearchingForNode(
-    SearchMode search_mode,
-    Maybe<protocol::DOM::HighlightConfig> highlight_inspector_object) {
-  if (!client_)
-    return Response::OK();
-  if (search_mode == kNotSearching) {
-    client_->SetInspectMode(kNotSearching, nullptr);
-    return Response::OK();
-  }
-  std::unique_ptr<InspectorHighlightConfig> config;
-  Response response = HighlightConfigFromInspectorObject(
-      std::move(highlight_inspector_object), &config);
-  if (!response.isSuccess())
-    return response;
-  client_->SetInspectMode(search_mode, std::move(config));
-  return Response::OK();
-}
-
-Response InspectorDOMAgent::HighlightConfigFromInspectorObject(
-    Maybe<protocol::DOM::HighlightConfig> highlight_inspector_object,
-    std::unique_ptr<InspectorHighlightConfig>* out_config) {
-  if (!highlight_inspector_object.isJust()) {
-    return Response::Error(
-        "Internal error: highlight configuration parameter is missing");
-  }
-
-  protocol::DOM::HighlightConfig* config =
-      highlight_inspector_object.fromJust();
-  std::unique_ptr<InspectorHighlightConfig> highlight_config =
-      WTF::MakeUnique<InspectorHighlightConfig>();
-  highlight_config->show_info = config->getShowInfo(false);
-  highlight_config->show_rulers = config->getShowRulers(false);
-  highlight_config->show_extension_lines = config->getShowExtensionLines(false);
-  highlight_config->display_as_material = config->getDisplayAsMaterial(false);
-  highlight_config->content = ParseColor(config->getContentColor(nullptr));
-  highlight_config->padding = ParseColor(config->getPaddingColor(nullptr));
-  highlight_config->border = ParseColor(config->getBorderColor(nullptr));
-  highlight_config->margin = ParseColor(config->getMarginColor(nullptr));
-  highlight_config->event_target =
-      ParseColor(config->getEventTargetColor(nullptr));
-  highlight_config->shape = ParseColor(config->getShapeColor(nullptr));
-  highlight_config->shape_margin =
-      ParseColor(config->getShapeMarginColor(nullptr));
-  highlight_config->selector_list = config->getSelectorList("");
-
-  *out_config = std::move(highlight_config);
-  return Response::OK();
-}
-
-Response InspectorDOMAgent::setInspectMode(
-    const String& mode,
-    Maybe<protocol::DOM::HighlightConfig> highlight_config) {
-  SearchMode search_mode;
-  if (mode == protocol::DOM::InspectModeEnum::SearchForNode) {
-    search_mode = kSearchingForNormal;
-  } else if (mode == protocol::DOM::InspectModeEnum::SearchForUAShadowDOM) {
-    search_mode = kSearchingForUAShadow;
-  } else if (mode == protocol::DOM::InspectModeEnum::None) {
-    search_mode = kNotSearching;
-  } else {
-    return Response::Error(
-        String("Unknown mode \"" + mode + "\" was provided."));
-  }
-
-  if (search_mode != kNotSearching) {
-    Response response = PushDocumentUponHandlelessOperation();
-    if (!response.isSuccess())
-      return response;
-  }
-
-  return SetSearchingForNode(search_mode, std::move(highlight_config));
-}
-
-Response InspectorDOMAgent::highlightRect(
-    int x,
-    int y,
-    int width,
-    int height,
-    Maybe<protocol::DOM::RGBA> color,
-    Maybe<protocol::DOM::RGBA> outline_color) {
-  std::unique_ptr<FloatQuad> quad =
-      WTF::WrapUnique(new FloatQuad(FloatRect(x, y, width, height)));
-  InnerHighlightQuad(std::move(quad), std::move(color),
-                     std::move(outline_color));
-  return Response::OK();
-}
-
-Response InspectorDOMAgent::highlightQuad(
-    std::unique_ptr<protocol::Array<double>> quad_array,
-    Maybe<protocol::DOM::RGBA> color,
-    Maybe<protocol::DOM::RGBA> outline_color) {
-  std::unique_ptr<FloatQuad> quad = WTF::MakeUnique<FloatQuad>();
-  if (!ParseQuad(std::move(quad_array), quad.get()))
-    return Response::Error("Invalid Quad format");
-  InnerHighlightQuad(std::move(quad), std::move(color),
-                     std::move(outline_color));
-  return Response::OK();
-}
-
-void InspectorDOMAgent::InnerHighlightQuad(
-    std::unique_ptr<FloatQuad> quad,
-    Maybe<protocol::DOM::RGBA> color,
-    Maybe<protocol::DOM::RGBA> outline_color) {
-  std::unique_ptr<InspectorHighlightConfig> highlight_config =
-      WTF::MakeUnique<InspectorHighlightConfig>();
-  highlight_config->content = ParseColor(color.fromMaybe(nullptr));
-  highlight_config->content_outline =
-      ParseColor(outline_color.fromMaybe(nullptr));
-  if (client_)
-    client_->HighlightQuad(std::move(quad), *highlight_config);
-}
-
-Response InspectorDOMAgent::NodeForRemoteId(const String& object_id,
-                                            Node*& node) {
+Response InspectorDOMAgent::NodeForRemoteObjectId(const String& object_id,
+                                                  Node*& node) {
   v8::HandleScope handles(isolate_);
   v8::Local<v8::Value> value;
   v8::Local<v8::Context> context;
@@ -1287,66 +1123,6 @@ Response InspectorDOMAgent::NodeForRemoteId(const String& object_id,
     return Response::Error(
         "Couldn't convert object with given objectId to Node");
   }
-  return Response::OK();
-}
-
-Response InspectorDOMAgent::highlightNode(
-    std::unique_ptr<protocol::DOM::HighlightConfig> highlight_inspector_object,
-    Maybe<int> node_id,
-    Maybe<int> backend_node_id,
-    Maybe<String> object_id) {
-  Node* node = nullptr;
-  Response response;
-  if (node_id.isJust()) {
-    response = AssertNode(node_id.fromJust(), node);
-  } else if (backend_node_id.isJust()) {
-    node = DOMNodeIds::NodeForId(backend_node_id.fromJust());
-    response = !node ? Response::Error("No node found for given backend id")
-                     : Response::OK();
-  } else if (object_id.isJust()) {
-    response = NodeForRemoteId(object_id.fromJust(), node);
-  } else {
-    response = Response::Error("Either nodeId or objectId must be specified");
-  }
-
-  if (!response.isSuccess())
-    return response;
-
-  std::unique_ptr<InspectorHighlightConfig> highlight_config;
-  response = HighlightConfigFromInspectorObject(
-      std::move(highlight_inspector_object), &highlight_config);
-  if (!response.isSuccess())
-    return response;
-
-  if (client_)
-    client_->HighlightNode(node, *highlight_config, false);
-  return Response::OK();
-}
-
-Response InspectorDOMAgent::highlightFrame(
-    const String& frame_id,
-    Maybe<protocol::DOM::RGBA> color,
-    Maybe<protocol::DOM::RGBA> outline_color) {
-  LocalFrame* frame =
-      IdentifiersFactory::FrameById(inspected_frames_, frame_id);
-  // FIXME: Inspector doesn't currently work cross process.
-  if (frame && frame->DeprecatedLocalOwner()) {
-    std::unique_ptr<InspectorHighlightConfig> highlight_config =
-        WTF::MakeUnique<InspectorHighlightConfig>();
-    highlight_config->show_info = true;  // Always show tooltips for frames.
-    highlight_config->content = ParseColor(color.fromMaybe(nullptr));
-    highlight_config->content_outline =
-        ParseColor(outline_color.fromMaybe(nullptr));
-    if (client_)
-      client_->HighlightNode(frame->DeprecatedLocalOwner(), *highlight_config,
-                             false);
-  }
-  return Response::OK();
-}
-
-Response InspectorDOMAgent::hideHighlight() {
-  if (client_)
-    client_->HideHighlight();
   return Response::OK();
 }
 
@@ -1540,7 +1316,7 @@ Response InspectorDOMAgent::getAttributes(
 
 Response InspectorDOMAgent::requestNode(const String& object_id, int* node_id) {
   Node* node = nullptr;
-  Response response = NodeForRemoteId(object_id, node);
+  Response response = NodeForRemoteObjectId(object_id, node);
   if (!response.isSuccess())
     return response;
   *node_id = PushNodePathToFrontend(node);
@@ -2351,18 +2127,6 @@ Response InspectorDOMAgent::getRelayoutBoundary(
   Node* result_node =
       layout_object ? layout_object->GeneratingNode() : node->ownerDocument();
   *relayout_boundary_node_id = PushNodePathToFrontend(result_node);
-  return Response::OK();
-}
-
-Response InspectorDOMAgent::getHighlightObjectForTest(
-    int node_id,
-    std::unique_ptr<protocol::DictionaryValue>* result) {
-  Node* node = nullptr;
-  Response response = AssertNode(node_id, node);
-  if (!response.isSuccess())
-    return response;
-  InspectorHighlight highlight(node, InspectorHighlight::DefaultConfig(), true);
-  *result = highlight.AsProtocolValue();
   return Response::OK();
 }
 
