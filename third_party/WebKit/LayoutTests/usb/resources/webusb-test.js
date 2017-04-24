@@ -1,71 +1,7 @@
 'use strict';
 
-// This polyfil library implements the following WebIDL:
-//
-// partial interface USB {
-//   [SameObject] readonly attribute USBTest test;
-// }
-//
-// interface USBTest {
-//   attribute EventHandler ondeviceclose;
-//   attribute FakeUSBDevice? chosenDevice;
-//   attribute FrozenArray<USBDeviceFilter>? lastFilters;
-//
-//   Promise<void> initialize();
-//   Promise<void> attachToWindow(Window window);
-//   FakeUSBDevice addFakeDevice(FakeUSBDeviceInit deviceInit);
-//   void reset();
-// };
-//
-// interface FakeUSBDevice {
-//   void disconnect();
-// };
-//
-// dictionary FakeUSBDeviceInit {
-//   octet usbVersionMajor;
-//   octet usbVersionMinor;
-//   octet usbVersionSubminor;
-//   octet deviceClass;
-//   octet deviceSubclass;
-//   octet deviceProtocol;
-//   unsigned short vendorId;
-//   unsigned short productId;
-//   octet deviceVersionMajor;
-//   octet deviceVersionMinor;
-//   octet deviceVersionSubminor;
-//   DOMString? manufacturerName;
-//   DOMString? productName;
-//   DOMString? serialNumber;
-//   octet activeConfigurationValue = 0;
-//   sequence<FakeUSBConfigurationInit> configurations;
-// };
-//
-// dictionary FakeUSBConfigurationInit {
-//   octet configurationValue;
-//   DOMString? configurationName;
-//   sequence<FakeUSBInterfaceInit> interfaces;
-// };
-//
-// dictionary FakeUSBInterfaceInit {
-//   octet interfaceNumber;
-//   sequence<FakeUSBAlternateInterfaceInit> alternates;
-// };
-//
-// dictionary FakeUSBAlternateInterfaceInit {
-//   octet alternateSetting;
-//   octet interfaceClass;
-//   octet interfaceSubclass;
-//   octet interfaceProtocol;
-//   DOMString? interfaceName;
-//   sequence<FakeUSBEndpointInit> endpoints;
-// };
-//
-// dictionary FakeUSBEndpointInit {
-//   octet endpointNumber;
-//   USBDirection direction;
-//   USBEndpointType type;
-//   unsigned long packetSize;
-// };
+// This polyfill library implements the WebUSB Test API as specified here:
+// https://wicg.github.io/webusb/test/
 
 (() => {
 
