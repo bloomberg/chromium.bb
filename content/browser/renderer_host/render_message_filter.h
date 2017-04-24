@@ -112,8 +112,6 @@ class CONTENT_EXPORT RenderMessageFilter
 
   // mojom::RenderMessageFilter:
   void GenerateRoutingID(const GenerateRoutingIDCallback& routing_id) override;
-  void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
-                       const CreateNewWindowCallback& callback) override;
   void CreateNewWidget(int32_t opener_id,
                        blink::WebPopupType popup_type,
                        const CreateNewWidgetCallback& callback) override;

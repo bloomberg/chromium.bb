@@ -501,10 +501,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if the given page is allowed to open a window of the given
   // type. If true is returned, |no_javascript_access| will indicate whether
   // the window that is created should be scriptable/in the same process.
-  // This is called on the IO thread.
+  // This is called on the UI thread.
   virtual bool CanCreateWindow(
-      int opener_render_process_id,
-      int opener_render_frame_id,
+      RenderFrameHost* opener,
       const GURL& opener_url,
       const GURL& opener_top_level_frame_url,
       const GURL& source_origin,
@@ -516,7 +515,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       const blink::mojom::WindowFeatures& features,
       bool user_gesture,
       bool opener_suppressed,
-      ResourceContext* context,
       bool* no_javascript_access);
 
   // Notifies the embedder that the ResourceDispatcherHost has been created.

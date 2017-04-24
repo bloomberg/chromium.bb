@@ -246,11 +246,14 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // The page is trying to open a new page (e.g. a popup window). The window
   // should be created associated with the given |main_frame_widget_route_id| in
-  // the process of |source_site_instance|, but it should not be shown yet. That
-  // should happen in response to ShowCreatedWindow.
-  // |params.window_container_type| describes the type of RenderViewHost
-  // container that is requested -- in particular, the window.open call may have
-  // specified 'background' and 'persistent' in the feature string.
+  // the process of |opener|, but it should not be shown yet. That should happen
+  // in response to ShowCreatedWindow. |params.window_container_type| describes
+  // the type of RenderViewHost container that is requested -- in particular,
+  // the window.open call may have specified 'background' and 'persistent' in
+  // the feature string.
+  //
+  // The passed |opener| is the RenderFrameHost initiating the window creation.
+  // It will never be null, even if the opener is suppressed via |params|.
   //
   // The passed |params.frame_name| parameter is the name parameter that was
   // passed to window.open(), and will be empty if none was passed.
@@ -260,10 +263,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   //
   // The caller is expected to handle cleanup if this operation fails or is
   // suppressed, by looking for the existence of a RenderFrameHost in
-  // source_site_instance's process with |main_frame_route_id| after this method
-  // returns.
+  // |opener|'s process with |main_frame_route_id| after this method returns.
   virtual void CreateNewWindow(
-      SiteInstance* source_site_instance,
+      RenderFrameHost* opener,
       int32_t render_view_route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,

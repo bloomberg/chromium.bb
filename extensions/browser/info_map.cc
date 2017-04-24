@@ -139,28 +139,6 @@ void InfoMap::UnregisterAllExtensionsInProcess(int process_id) {
   process_map_.RemoveAllFromProcess(process_id);
 }
 
-bool InfoMap::SecurityOriginHasAPIPermission(
-    const GURL& origin,
-    int process_id,
-    APIPermission::ID permission) const {
-  CheckOnValidThread();
-  if (origin.SchemeIs(kExtensionScheme)) {
-    const std::string& id = origin.host();
-    const Extension* extension = extensions_.GetByID(id);
-    return extension &&
-           extension->permissions_data()->HasAPIPermission(permission) &&
-           process_map_.Contains(id, process_id);
-  }
-  for (const auto& extension : extensions_) {
-    if (extension->web_extent().MatchesSecurityOrigin(origin) &&
-        extension->permissions_data()->HasAPIPermission(permission) &&
-        process_map_.Contains(extension->id(), process_id)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // This function is security sensitive. Bugs could cause problems that break
 // restrictions on local file access or NaCl's validation caching. If you modify
 // this function, please get a security review from a NaCl person.

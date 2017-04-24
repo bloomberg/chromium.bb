@@ -83,6 +83,7 @@ class Range;
 
 namespace content {
 class AssociatedInterfaceProviderImpl;
+class AssociatedInterfaceRegistryImpl;
 class FeaturePolicy;
 class FrameTree;
 class FrameTreeNode;
@@ -107,14 +108,11 @@ struct FrameOwnerProperties;
 struct FileChooserParams;
 struct ResourceResponse;
 
-namespace mojom {
-class CreateNewWindowParams;
-}
-
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       public base::SupportsUserData,
       NON_EXPORTED_BASE(public mojom::FrameHost),
+      NON_EXPORTED_BASE(public mojom::FrameHostInterfaceBroker),
       public BrowserAccessibilityDelegate,
       public SiteInstanceImpl::Observer,
       public NON_EXPORTED_BASE(
@@ -191,7 +189,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
   bool IsFeatureEnabled(blink::WebFeaturePolicyFeature feature) override;
 
-  // mojom::FrameHost
+  // mojom::FrameHostInterfaceBroker
   void GetInterfaceProvider(
       service_manager::mojom::InterfaceProviderRequest interfaces) override;
 
@@ -251,16 +249,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                           blink::WebSandboxFlags sandbox_flags,
                           const ParsedFeaturePolicyHeader& container_policy,
                           const FrameOwnerProperties& frame_owner_properties);
-
-  // Called when this frame tries to open a new WebContents, e.g. via a script
-  // call to window.open(). The renderer has already been told to create the
-  // RenderView and RenderFrame with the specified route ids, which were
-  // assigned on the IO thread.
-  void OnCreateNewWindow(int32_t render_view_route_id,
-                         int32_t main_frame_route_id,
-                         int32_t main_frame_widget_route_id,
-                         const mojom::CreateNewWindowParams& params,
-                         SessionStorageNamespace* session_storage_namespace);
 
   // Update this frame's last committed origin.
   void SetLastCommittedOrigin(const url::Origin& origin);
@@ -678,6 +666,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            LoadEventForwardingWhilePendingDeletion);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            ContextMenuAfterCrossProcessNavigation);
+  FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
+                           AttemptDuplicateRenderViewHost);
 
   // IPC Message handlers.
   void OnDidAddMessageToConsole(int32_t level,
@@ -796,6 +786,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            WindowOpenDisposition disposition,
                            const gfx::Rect& initial_rect,
                            bool user_gesture);
+
+  // mojom::FrameHost
+  void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
+                       const CreateNewWindowCallback& callback) override;
+
+  void RunCreateWindowCompleteCallback(const CreateNewWindowCallback& callback,
+                                       mojom::CreateNewWindowReplyPtr reply,
+                                       int render_view_route_id,
+                                       int main_frame_route_id,
+                                       int main_frame_widget_route_id,
+                                       int cloned_session_storage_namespace_id);
 
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();
@@ -1044,6 +1045,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SiteInstance.  May be null in tests.
   std::unique_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
 
+  std::unique_ptr<AssociatedInterfaceRegistryImpl> associated_registry_;
+
   std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
 
@@ -1130,7 +1133,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // same Previews status as the top-level frame.
   PreviewsState last_navigation_previews_state_;
 
-  mojo::Binding<mojom::FrameHost> frame_host_binding_;
+  mojo::Binding<mojom::FrameHostInterfaceBroker>
+      frame_host_interface_broker_binding_;
+  mojo::AssociatedBinding<mojom::FrameHost> frame_host_associated_binding_;
   mojom::FramePtr frame_;
   mojom::FrameBindingsControlAssociatedPtr frame_bindings_control_;
 

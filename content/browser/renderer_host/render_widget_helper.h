@@ -22,8 +22,8 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
+
 class ResourceDispatcherHostImpl;
-class SessionStorageNamespace;
 
 // Instantiated per RenderProcessHost to provide various optimizations on
 // behalf of a RenderWidgetHost.  This class bridges between the IO thread
@@ -56,13 +56,6 @@ class RenderWidgetHelper
   void ResumeDeferredNavigation(const GlobalRequestID& request_id);
 
   // IO THREAD ONLY -----------------------------------------------------------
-
-  void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
-                       bool no_javascript_access,
-                       int32_t* render_view_route_id,
-                       int32_t* main_frame_route_id,
-                       int32_t* main_frame_widget_route_id,
-                       SessionStorageNamespace* session_storage_namespace);
   void CreateNewWidget(int opener_id,
                        blink::WebPopupType popup_type,
                        int* route_id);
@@ -74,14 +67,6 @@ class RenderWidgetHelper
   friend class base::DeleteHelper<RenderWidgetHelper>;
 
   ~RenderWidgetHelper();
-
-  // Called on the UI thread to finish creating a window.
-  void OnCreateNewWindowOnUI(
-      mojom::CreateNewWindowParamsPtr params,
-      int32_t render_view_route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
-      SessionStorageNamespace* session_storage_namespace);
 
   // Called on the UI thread to finish creating a widget.
   void OnCreateWidgetOnUI(int32_t opener_id,

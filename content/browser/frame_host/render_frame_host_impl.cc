@@ -23,6 +23,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -59,6 +60,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interface_provider_impl.h"
+#include "content/common/associated_interface_registry_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/frame_messages.h"
@@ -392,7 +394,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       should_reuse_web_ui_(false),
       has_selection_(false),
       last_navigation_previews_state_(PREVIEWS_UNSPECIFIED),
-      frame_host_binding_(this),
+      frame_host_interface_broker_binding_(this),
+      frame_host_associated_binding_(this),
       waiting_for_init_(renderer_initiated_creation),
       has_focused_editable_element_(false),
       weak_ptr_factory_(this) {
@@ -828,8 +831,12 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
 void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  delegate_->OnAssociatedInterfaceRequest(
-      this, interface_name, std::move(handle));
+  if (associated_registry_->CanBindRequest(interface_name)) {
+    associated_registry_->BindRequest(interface_name, std::move(handle));
+  } else {
+    delegate_->OnAssociatedInterfaceRequest(this, interface_name,
+                                            std::move(handle));
+  }
 }
 
 void RenderFrameHostImpl::AccessibilityPerformAction(
@@ -1113,33 +1120,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
                         scope, frame_name, frame_unique_name, sandbox_flags,
                         container_policy, frame_owner_properties);
-}
-
-void RenderFrameHostImpl::OnCreateNewWindow(
-    int32_t render_view_route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    const mojom::CreateNewWindowParams& params,
-    SessionStorageNamespace* session_storage_namespace) {
-  mojom::CreateNewWindowParamsPtr validated_params(params.Clone());
-  GetProcess()->FilterURL(false, &validated_params->target_url);
-
-  // TODO(nick): http://crbug.com/674307 |opener_url|, |opener_security_origin|,
-  // and |opener_top_level_frame_url| should not be parameters; we can just use
-  // last_committed_url(), etc. Of these, |opener_top_level_frame_url| is
-  // particularly egregious, since an oopif isn't expected to know its top URL.
-  GetProcess()->FilterURL(false, &validated_params->opener_url);
-  GetProcess()->FilterURL(true, &validated_params->opener_security_origin);
-
-  // Ignore creation when sent from a frame that's not current.
-  if (frame_tree_node_->current_frame_host() == this) {
-    delegate_->CreateNewWindow(GetSiteInstance(), render_view_route_id,
-                               main_frame_route_id, main_frame_widget_route_id,
-                               *validated_params, session_storage_namespace);
-  }
-
-  // Our caller (RenderWidgetHelper::OnCreateNewWindowOnUI) will send
-  // ViewMsg_Close if the above step did not adopt |main_frame_route_id|.
 }
 
 void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {
@@ -2458,6 +2438,131 @@ void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
                                disposition, initial_rect, user_gesture);
 }
 
+void RenderFrameHostImpl::CreateNewWindow(
+    mojom::CreateNewWindowParamsPtr params,
+    const CreateNewWindowCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  bool no_javascript_access = false;
+
+  // Ignore creation when sent from a frame that's not current or created.
+  bool can_create_window =
+      frame_tree_node_->current_frame_host() == this && render_frame_created_ &&
+      GetContentClient()->browser()->CanCreateWindow(
+          this, params->opener_url, params->opener_top_level_frame_url,
+          params->opener_security_origin, params->window_container_type,
+          params->target_url, params->referrer, params->frame_name,
+          params->disposition, *params->features, params->user_gesture,
+          params->opener_suppressed, &no_javascript_access);
+
+  mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New();
+  if (!can_create_window) {
+    RunCreateWindowCompleteCallback(callback, std::move(reply),
+                                    MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                                    MSG_ROUTING_NONE, 0);
+    return;
+  }
+
+  // This will clone the sessionStorage for namespace_id_to_clone.
+
+  StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
+      GetSiteInstance()->GetBrowserContext(), GetSiteInstance());
+  DOMStorageContextWrapper* dom_storage_context =
+      static_cast<DOMStorageContextWrapper*>(
+          storage_partition->GetDOMStorageContext());
+  auto cloned_namespace = base::MakeShared<SessionStorageNamespaceImpl>(
+      dom_storage_context, params->session_storage_namespace_id);
+  reply->cloned_session_storage_namespace_id = cloned_namespace->id();
+
+  // If the opener is suppressed or script access is disallowed, we should
+  // open the window in a new BrowsingInstance, and thus a new process. That
+  // means the current renderer process will not be able to route messages to
+  // it. Because of this, we will immediately show and navigate the window
+  // in OnCreateNewWindowOnUI, using the params provided here.
+  int render_view_route_id = MSG_ROUTING_NONE;
+  int main_frame_route_id = MSG_ROUTING_NONE;
+  int main_frame_widget_route_id = MSG_ROUTING_NONE;
+  int render_process_id = GetProcess()->GetID();
+  if (!params->opener_suppressed && !no_javascript_access) {
+    render_view_route_id = GetProcess()->GetNextRoutingID();
+    main_frame_route_id = GetProcess()->GetNextRoutingID();
+    // TODO(avi): When RenderViewHostImpl has-a RenderWidgetHostImpl, this
+    // should be updated to give the widget a distinct routing ID.
+    // https://crbug.com/545684
+    main_frame_widget_route_id = render_view_route_id;
+    // Block resource requests until the frame is created, since the HWND might
+    // be needed if a response ends up creating a plugin. We'll only have a
+    // single frame at this point. These requests will be resumed either in
+    // WebContentsImpl::CreateNewWindow or RenderFrameHost::Init.
+    // TODO(crbug.com/581037): Now that NPAPI is deprecated we should be able to
+    // remove this, but more investigation is needed.
+    auto block_requests_for_route = base::Bind(
+        [](const GlobalFrameRoutingId& id) {
+          auto* rdh = ResourceDispatcherHostImpl::Get();
+          if (rdh)
+            rdh->BlockRequestsForRoute(id);
+        },
+        GlobalFrameRoutingId(render_process_id, main_frame_route_id));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            block_requests_for_route);
+  }
+
+  DCHECK(IsRenderFrameLive());
+
+  // Actually validate the params and create the window.
+  mojom::CreateNewWindowParamsPtr validated_params(params.Clone());
+  GetProcess()->FilterURL(false, &validated_params->target_url);
+
+  // TODO(nick): http://crbug.com/674307 |opener_url|, |opener_security_origin|,
+  // and |opener_top_level_frame_url| should not be parameters; we can just use
+  // last_committed_url(), etc. Of these, |opener_top_level_frame_url| is
+  // particularly egregious, since an oopif isn't expected to know its top URL.
+  GetProcess()->FilterURL(false, &validated_params->opener_url);
+  GetProcess()->FilterURL(true, &validated_params->opener_security_origin);
+
+  delegate_->CreateNewWindow(this, render_view_route_id, main_frame_route_id,
+                             main_frame_widget_route_id, *validated_params,
+                             cloned_namespace.get());
+
+  // If we did not create a WebContents to host the renderer-created
+  // RenderFrame/RenderView/RenderWidget objects, make sure to send invalid
+  // routing ids back to the renderer.
+  if (main_frame_route_id != MSG_ROUTING_NONE) {
+    bool succeeded =
+        RenderWidgetHost::FromID(render_process_id,
+                                 main_frame_widget_route_id) != nullptr;
+    if (!succeeded) {
+      DCHECK(!RenderFrameHost::FromID(render_process_id, main_frame_route_id));
+      DCHECK(!RenderViewHost::FromID(render_process_id, render_view_route_id));
+      RunCreateWindowCompleteCallback(callback, std::move(reply),
+                                      MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                                      MSG_ROUTING_NONE, 0);
+      return;
+    }
+    DCHECK(RenderFrameHost::FromID(render_process_id, main_frame_route_id));
+    DCHECK(RenderViewHost::FromID(render_process_id, render_view_route_id));
+  }
+
+  RunCreateWindowCompleteCallback(
+      callback, std::move(reply), render_view_route_id, main_frame_route_id,
+      main_frame_widget_route_id, cloned_namespace->id());
+}
+
+void RenderFrameHostImpl::RunCreateWindowCompleteCallback(
+    const CreateNewWindowCallback& callback,
+    mojom::CreateNewWindowReplyPtr reply,
+    int render_view_route_id,
+    int main_frame_route_id,
+    int main_frame_widget_route_id,
+    int cloned_session_storage_namespace_id) {
+  reply->route_id = render_view_route_id;
+  reply->main_frame_route_id = main_frame_route_id;
+  reply->main_frame_widget_route_id = main_frame_widget_route_id;
+  reply->cloned_session_storage_namespace_id =
+      cloned_session_storage_namespace_id;
+  callback.Run(std::move(reply));
+}
+
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
   device::GeolocationServiceContext* geolocation_service_context =
       delegate_ ? delegate_->GetGeolocationServiceContext() : NULL;
@@ -2905,8 +3010,16 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   if (interface_registry_.get())
     return;
 
+  associated_registry_ = base::MakeUnique<AssociatedInterfaceRegistryImpl>();
   interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
       mojom::kNavigation_FrameSpec);
+
+  auto make_binding = [](RenderFrameHostImpl* impl,
+                         mojom::FrameHostAssociatedRequest request) {
+    impl->frame_host_associated_binding_.Bind(std::move(request));
+  };
+  static_cast<AssociatedInterfaceRegistry*>(associated_registry_.get())
+      ->AddInterface(base::Bind(make_binding, base::Unretained(this)));
 
   ServiceManagerConnection* service_manager_connection =
       BrowserContext::GetServiceManagerConnectionFor(
@@ -2922,8 +3035,9 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;
   BindInterface(GetProcess(), &frame_factory);
-  frame_factory->CreateFrame(routing_id_, MakeRequest(&frame_),
-                             frame_host_binding_.CreateInterfacePtrAndBind());
+  frame_factory->CreateFrame(
+      routing_id_, MakeRequest(&frame_),
+      frame_host_interface_broker_binding_.CreateInterfacePtrAndBind());
 
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   service_manager::mojom::InterfaceProviderRequest remote_interfaces_request(
@@ -2946,7 +3060,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   }
 
   frame_.reset();
-  frame_host_binding_.Close();
+  frame_host_interface_broker_binding_.Close();
   frame_bindings_control_.reset();
 
   // Disconnect with ImageDownloader Mojo service in RenderFrame.

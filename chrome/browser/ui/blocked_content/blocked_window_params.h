@@ -23,9 +23,7 @@ class BlockedWindowParams {
                       WindowOpenDisposition disposition,
                       const blink::mojom::WindowFeatures& features,
                       bool user_gesture,
-                      bool opener_suppressed,
-                      int render_process_id,
-                      int opener_render_frame_id);
+                      bool opener_suppressed);
   BlockedWindowParams(const BlockedWindowParams& other);
   ~BlockedWindowParams();
 
@@ -33,18 +31,6 @@ class BlockedWindowParams {
       content::WebContents* web_contents) const;
 
   blink::mojom::WindowFeatures features() const { return features_; }
-
-  int opener_render_frame_id() const {
-    return opener_render_frame_id_;
-  }
-
-  int render_process_id() const {
-    return render_process_id_;
-  }
-
-  const GURL& target_url() const {
-    return target_url_;
-  }
 
  private:
   GURL target_url_;
@@ -54,8 +40,6 @@ class BlockedWindowParams {
   blink::mojom::WindowFeatures features_;
   bool user_gesture_;
   bool opener_suppressed_;
-  int render_process_id_;
-  int opener_render_frame_id_;
 };
 
 #endif  // CHROME_BROWSER_UI_BLOCKED_CONTENT_BLOCKED_WINDOW_PARAMS_H_

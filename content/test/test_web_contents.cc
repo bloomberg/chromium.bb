@@ -371,7 +371,7 @@ void TestWebContents::SetNavigationData(
 }
 
 void TestWebContents::CreateNewWindow(
-    SiteInstance* source_site_instance,
+    RenderFrameHost* opener,
     int32_t route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,

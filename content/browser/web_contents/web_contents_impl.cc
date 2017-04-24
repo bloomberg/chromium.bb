@@ -2044,7 +2044,7 @@ void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(bool visible) {
 }
 
 void WebContentsImpl::CreateNewWindow(
-    SiteInstance* source_site_instance,
+    RenderFrameHost* opener,
     int32_t render_view_route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
@@ -2055,10 +2055,13 @@ void WebContentsImpl::CreateNewWindow(
             (main_frame_route_id == MSG_ROUTING_NONE));
   DCHECK_EQ((render_view_route_id == MSG_ROUTING_NONE),
             (main_frame_widget_route_id == MSG_ROUTING_NONE));
+  DCHECK(opener);
 
-  int render_process_id = source_site_instance->GetProcess()->GetID();
-  // The route IDs passed into this function can be trusted not to already be in
-  // use; they were allocated by the RenderWidgetHelper on the IO thread.
+  int render_process_id = opener->GetProcess()->GetID();
+  SiteInstance* source_site_instance = opener->GetSiteInstance();
+
+  // The route IDs passed into this function can be trusted not to already
+  // be in use; they were allocated by the RenderWidgetHelper by the caller.
   DCHECK(!RenderFrameHostImpl::FromID(render_process_id, main_frame_route_id));
 
   // We usually create the new window in the same BrowsingInstance (group of
@@ -2120,7 +2123,7 @@ void WebContentsImpl::CreateNewWindow(
   create_params.main_frame_widget_routing_id = main_frame_widget_route_id;
   create_params.main_frame_name = params.frame_name;
   create_params.opener_render_process_id = render_process_id;
-  create_params.opener_render_frame_id = params.opener_render_frame_id;
+  create_params.opener_render_frame_id = opener->GetRoutingID();
   create_params.opener_suppressed = params.opener_suppressed;
   if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
     create_params.initially_hidden = true;
@@ -2167,19 +2170,16 @@ void WebContentsImpl::CreateNewWindow(
   }
 
   if (delegate_) {
-    delegate_->WebContentsCreated(
-        this, render_process_id, params.opener_render_frame_id,
-        params.frame_name, params.target_url, new_contents);
+    delegate_->WebContentsCreated(this, render_process_id,
+                                  opener->GetRoutingID(), params.frame_name,
+                                  params.target_url, new_contents);
   }
 
-  RenderFrameHost* source_render_frame_host =
-      RenderFrameHost::FromID(render_process_id, params.opener_render_frame_id);
-
-  if (source_render_frame_host) {
+  if (opener) {
     for (auto& observer : observers_) {
-      observer.DidOpenRequestedURL(new_contents, source_render_frame_host,
-                                   params.target_url, params.referrer,
-                                   params.disposition, ui::PAGE_TRANSITION_LINK,
+      observer.DidOpenRequestedURL(new_contents, opener, params.target_url,
+                                   params.referrer, params.disposition,
+                                   ui::PAGE_TRANSITION_LINK,
                                    false,  // started_from_context_menu
                                    true);  // renderer_initiated
     }

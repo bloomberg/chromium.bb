@@ -1197,6 +1197,12 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 }
 
+mojom::FrameHostAssociatedPtr RenderFrameImpl::GetFrameHost() {
+  mojom::FrameHostAssociatedPtr frame_host_ptr;
+  GetRemoteAssociatedInterfaces()->GetInterface(&frame_host_ptr);
+  return frame_host_ptr;
+}
+
 RenderFrameImpl::~RenderFrameImpl() {
   // If file chooser is still waiting for answer, dispatch empty answer.
   while (!file_chooser_completions_.empty()) {
@@ -1665,11 +1671,12 @@ void RenderFrameImpl::BindEngagement(
   engagement_binding_.Bind(std::move(request));
 }
 
-void RenderFrameImpl::BindFrame(mojom::FrameRequest request,
-                                mojom::FrameHostPtr host) {
+void RenderFrameImpl::BindFrame(
+    mojom::FrameRequest request,
+    mojom::FrameHostInterfaceBrokerPtr frame_host_interface_broker) {
   frame_binding_.Bind(std::move(request));
-  frame_host_ = std::move(host);
-  frame_host_->GetInterfaceProvider(
+  frame_host_interface_broker_ = std::move(frame_host_interface_broker);
+  frame_host_interface_broker_->GetInterfaceProvider(
       std::move(pending_remote_interface_provider_request_));
 }
 

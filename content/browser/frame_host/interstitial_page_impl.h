@@ -119,7 +119,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   void Paste() override;
   void SelectAll() override;
   void CreateNewWindow(
-      SiteInstance* source_site_instance,
+      RenderFrameHost* opener,
       int32_t render_view_route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,

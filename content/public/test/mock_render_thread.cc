@@ -41,22 +41,6 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
     callback.Run(MSG_ROUTING_NONE);
   }
 
-  void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
-                       const CreateNewWindowCallback& callback) override {
-    // NOTE: This implementation of mojom::RenderMessageFilter is used client-
-    // side only. Because sync mojom methods have a different interface for
-    // bindings- and client-side, we only implement the client-side interface
-    // on this object.
-    NOTREACHED();
-  }
-
-  bool CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
-                       mojom::CreateNewWindowReplyPtr* reply) override {
-    *reply = mojom::CreateNewWindowReply::New();
-    thread_->OnCreateWindow(*params, reply->get());
-    return true;
-  }
-
   void CreateNewWidget(int32_t opener_id,
                       blink::WebPopupType popup_type,
                       const CreateNewWidgetCallback& callback) override {

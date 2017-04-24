@@ -503,7 +503,7 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHostImpl* frame,
       const gfx::Rect& bounds_in_root_view) override;
   void CreateNewWindow(
-      SiteInstance* source_site_instance,
+      RenderFrameHost* opener,
       int32_t render_view_route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,

@@ -18,18 +18,14 @@ BlockedWindowParams::BlockedWindowParams(
     WindowOpenDisposition disposition,
     const blink::mojom::WindowFeatures& features,
     bool user_gesture,
-    bool opener_suppressed,
-    int render_process_id,
-    int opener_render_frame_id)
+    bool opener_suppressed)
     : target_url_(target_url),
       referrer_(referrer),
       frame_name_(frame_name),
       disposition_(disposition),
       features_(features),
       user_gesture_(user_gesture),
-      opener_suppressed_(opener_suppressed),
-      render_process_id_(render_process_id),
-      opener_render_frame_id_(opener_render_frame_id) {}
+      opener_suppressed_(opener_suppressed) {}
 
 BlockedWindowParams::BlockedWindowParams(const BlockedWindowParams& other) =
     default;

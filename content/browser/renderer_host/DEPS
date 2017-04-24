@@ -39,10 +39,6 @@ specific_include_rules = {
   "render_view_host_impl\.(cc|h)": [
     "+content/browser/frame_host/frame_tree.h",
   ],
-  "render_widget_helper\.cc": [
-    # RenderWidgetHelper is involved in RenderFrameHost creation.
-    "+content/browser/frame_host/render_frame_host_impl.h",
-  ],
   "render_widget_host_view_aura\.cc": [
     "+content/browser/frame_host",
   ],

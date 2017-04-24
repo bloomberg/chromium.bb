@@ -4,13 +4,41 @@
 
 #include "content/test/test_render_frame.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_request_body_impl.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/test/mock_render_thread.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
+
+class MockFrameHost : public mojom::FrameHost {
+ public:
+  MockFrameHost() : binding_(this) {}
+  ~MockFrameHost() override = default;
+
+  void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
+                       const CreateNewWindowCallback& callback) override {
+    mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New();
+    MockRenderThread* mock_render_thread =
+        static_cast<MockRenderThread*>(RenderThread::Get());
+    mock_render_thread->OnCreateWindow(*params, reply.get());
+    callback.Run(std::move(reply));
+  }
+
+  void Bind(mojo::ScopedInterfaceEndpointHandle handle) {
+    binding_.Bind(
+        mojo::MakeAssociatedRequest<mojom::FrameHost>(std::move(handle)));
+  }
+
+ private:
+  mojo::AssociatedBinding<mojom::FrameHost> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockFrameHost);
+};
 
 // static
 RenderFrameImpl* TestRenderFrame::CreateTestRenderFrame(
@@ -19,7 +47,12 @@ RenderFrameImpl* TestRenderFrame::CreateTestRenderFrame(
 }
 
 TestRenderFrame::TestRenderFrame(const RenderFrameImpl::CreateParams& params)
-    : RenderFrameImpl(params) {
+    : RenderFrameImpl(params),
+      mock_frame_host_(base::MakeUnique<MockFrameHost>()) {
+  GetRemoteAssociatedInterfaces()->OverrideBinderForTesting(
+      mojom::FrameHost::Name_,
+      base::Bind(&MockFrameHost::Bind,
+                 base::Unretained(mock_frame_host_.get())));
 }
 
 TestRenderFrame::~TestRenderFrame() {
@@ -87,6 +120,14 @@ blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
     info.url_request.SetCheckForBrowserSideNavigation(false);
   }
   return RenderFrameImpl::DecidePolicyForNavigation(info);
+}
+
+mojom::FrameHostAssociatedPtr TestRenderFrame::GetFrameHost() {
+  mojom::FrameHostAssociatedPtr ptr = RenderFrameImpl::GetFrameHost();
+
+  // Needed to ensure no deadlocks when waiting for sync IPC.
+  ptr.FlushForTesting();
+  return ptr;
 }
 
 }  // namespace content

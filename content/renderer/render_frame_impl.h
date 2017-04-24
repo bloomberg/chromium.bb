@@ -685,7 +685,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void BindEngagement(blink::mojom::EngagementClientAssociatedRequest request);
 
   // Binds to the FrameHost in the browser.
-  void BindFrame(mojom::FrameRequest request, mojom::FrameHostPtr frame_host);
+  void BindFrame(mojom::FrameRequest request,
+                 mojom::FrameHostInterfaceBrokerPtr frame_host);
+
+  // Virtual so the test render frame can flush the interface.
+  virtual mojom::FrameHostAssociatedPtr GetFrameHost();
 
   void BindFrameBindingsControl(
       mojom::FrameBindingsControlAssociatedRequest request);
@@ -1380,7 +1384,7 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
   mojo::AssociatedBinding<mojom::FrameBindingsControl>
       frame_bindings_control_binding_;
-  mojom::FrameHostPtr frame_host_;
+  mojom::FrameHostInterfaceBrokerPtr frame_host_interface_broker_;
 
   // Indicates whether |didAccessInitialDocument| was called.
   bool has_accessed_initial_document_;
