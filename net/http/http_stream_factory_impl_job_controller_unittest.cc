@@ -25,7 +25,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/chromium/quic_stream_factory_peer.h"
 #include "net/socket/socket_test_util.h"
-#include "net/spdy/spdy_test_util_common.h"
+#include "net/spdy/chromium/spdy_test_util_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"

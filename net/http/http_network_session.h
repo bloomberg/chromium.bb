@@ -28,8 +28,8 @@
 #include "net/http/http_stream_factory.h"
 #include "net/quic/chromium/quic_stream_factory.h"
 #include "net/socket/next_proto.h"
-#include "net/spdy/spdy_protocol.h"
-#include "net/spdy/spdy_session_pool.h"
+#include "net/spdy/chromium/spdy_session_pool.h"
+#include "net/spdy/core/spdy_protocol.h"
 #include "net/ssl/ssl_client_auth_cache.h"
 
 namespace base {

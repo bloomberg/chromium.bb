@@ -38,8 +38,8 @@
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_time.h"
 #include "net/socket/socket_performance_watcher.h"
-#include "net/spdy/multiplexed_session.h"
-#include "net/spdy/server_push_delegate.h"
+#include "net/spdy/chromium/multiplexed_session.h"
+#include "net/spdy/chromium/server_push_delegate.h"
 
 namespace net {
 

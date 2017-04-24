@@ -23,9 +23,9 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_string_piece.h"
-#include "net/spdy/spdy_frame_builder.h"
-#include "net/spdy/spdy_framer.h"
-#include "net/spdy/spdy_http_utils.h"
+#include "net/spdy/chromium/spdy_http_utils.h"
+#include "net/spdy/core/spdy_frame_builder.h"
+#include "net/spdy/core/spdy_framer.h"
 #include "net/ssl/ssl_info.h"
 
 namespace net {

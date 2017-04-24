@@ -39,7 +39,7 @@
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/spdy/spdy_session_pool.h"
+#include "net/spdy/chromium/spdy_session_pool.h"
 
 namespace net {
 

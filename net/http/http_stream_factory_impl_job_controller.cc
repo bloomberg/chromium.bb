@@ -24,7 +24,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy/proxy_server.h"
-#include "net/spdy/spdy_session.h"
+#include "net/spdy/chromium/spdy_session.h"
 #include "url/url_constants.h"
 
 namespace net {

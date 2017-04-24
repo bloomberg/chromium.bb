@@ -66,7 +66,7 @@
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/tcp_client_socket.h"
-#include "net/spdy/spdy_session.h"
+#include "net/spdy/chromium/spdy_session.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/data_protocol_handler.h"

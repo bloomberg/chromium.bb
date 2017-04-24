@@ -24,7 +24,7 @@
 #include "net/quic/chromium/quic_chromium_client_stream.h"
 #include "net/quic/core/quic_client_push_promise_index.h"
 #include "net/quic/core/quic_packets.h"
-#include "net/spdy/multiplexed_http_stream.h"
+#include "net/spdy/chromium/multiplexed_http_stream.h"
 
 namespace net {
 

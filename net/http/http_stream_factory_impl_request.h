@@ -15,7 +15,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/spdy/spdy_session_key.h"
+#include "net/spdy/chromium/spdy_session_key.h"
 #include "url/gurl.h"
 
 namespace net {

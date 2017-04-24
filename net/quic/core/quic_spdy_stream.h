@@ -24,7 +24,7 @@
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_socket_address.h"
-#include "net/spdy/spdy_framer.h"
+#include "net/spdy/core/spdy_framer.h"
 
 namespace net {
 

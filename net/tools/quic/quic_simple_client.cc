@@ -25,8 +25,8 @@
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/socket/udp_client_socket.h"
-#include "net/spdy/spdy_header_block.h"
-#include "net/spdy/spdy_http_utils.h"
+#include "net/spdy/chromium/spdy_http_utils.h"
+#include "net/spdy/core/spdy_header_block.h"
 
 using std::string;
 

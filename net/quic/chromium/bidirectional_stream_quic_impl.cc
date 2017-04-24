@@ -15,8 +15,8 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/socket/next_proto.h"
-#include "net/spdy/spdy_header_block.h"
-#include "net/spdy/spdy_http_utils.h"
+#include "net/spdy/chromium/spdy_http_utils.h"
+#include "net/spdy/core/spdy_header_block.h"
 
 namespace net {
 

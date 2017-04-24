@@ -13,7 +13,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_stream_factory.h"
 #include "net/quic/core/quic_packets.h"
-#include "net/spdy/spdy_protocol.h"
+#include "net/spdy/core/spdy_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace test {
