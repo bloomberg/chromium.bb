@@ -17,6 +17,7 @@ extern const char kAsyncNamespace[];
 extern const char kCCTNamespace[];
 extern const char kDownloadNamespace[];
 extern const char kNTPSuggestionsNamespace[];
+extern const char kSuggestedArticlesNamespace[];
 
 // Currently used for fallbacks like tests.
 extern const char kDefaultNamespace[];

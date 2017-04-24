@@ -69,6 +69,7 @@
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
+#include "components/offline_pages/content/suggested_articles_observer.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -375,6 +376,9 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
         show_asset_downloads ? download_manager : nullptr, download_history,
         service, pref_service);
   }
+
+  offline_pages::SuggestedArticlesObserver::ObserveContentSuggestionsService(
+      profile, service);
 #endif  // OS_ANDROID
 
   // |bookmark_model| can be null in tests.

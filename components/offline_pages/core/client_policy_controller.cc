@@ -54,6 +54,14 @@ ClientPolicyController::ClientPolicyController() {
                                      kUnlimitedPages)
           .SetIsSupportedByDownload(true)
           .Build()));
+  policies_.insert(std::make_pair(
+      kSuggestedArticlesNamespace,
+      OfflinePageClientPolicyBuilder(kSuggestedArticlesNamespace,
+                                     LifetimeType::TEMPORARY, kUnlimitedPages,
+                                     kUnlimitedPages)
+          .SetIsRemovedOnCacheReset(true)
+          .SetExpirePeriod(base::TimeDelta::FromDays(30))
+          .Build()));
 
   // Fallback policy.
   policies_.insert(std::make_pair(
