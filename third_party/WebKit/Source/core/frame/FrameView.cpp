@@ -128,6 +128,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "platform/scroll/ScrollerSizeMetrics.h"
 #include "platform/text/TextStream.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
@@ -2185,6 +2186,25 @@ void FrameView::HandleLoadCompleted() {
   // finishes.
   if (!NeedsLayout())
     ClearFragmentAnchor();
+
+  if (!scrollable_areas_)
+    return;
+  for (const auto& scrollable_area : *scrollable_areas_) {
+    if (!scrollable_area->IsPaintLayerScrollableArea())
+      continue;
+    PaintLayerScrollableArea* paint_layer_scrollable_area =
+        ToPaintLayerScrollableArea(scrollable_area);
+    if (paint_layer_scrollable_area->ScrollsOverflow() &&
+        !paint_layer_scrollable_area->Layer()->IsRootLayer()) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, scrollable_area_size_histogram,
+          ("Event.Scroll.ScrollerSize.OnLoad", 1, kScrollerSizeLargestBucket,
+           kScrollerSizeBucketCount));
+      scrollable_area_size_histogram.Count(
+          paint_layer_scrollable_area->VisibleContentRect().Width() *
+          paint_layer_scrollable_area->VisibleContentRect().Height());
+    }
+  }
 }
 
 void FrameView::ClearLayoutSubtreeRoot(const LayoutObject& root) {

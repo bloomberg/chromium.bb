@@ -353,6 +353,7 @@ test("webkit_unit_tests") {
     "tests/RootScrollerTest.cpp",
     "tests/RunAllTests.cpp",
     "tests/ScreenWakeLockTest.cpp",
+    "tests/ScrollMetricsTest.cpp",
     "tests/ScrollbarsTest.cpp",
     "tests/ScrollingCoordinatorTest.cpp",
     "tests/ShadowDOMV0Test.cpp",
