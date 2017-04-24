@@ -1715,9 +1715,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "PrerenderDisabled",
                     "params": {
-                        "mode": "no_state_prefetch"
+                        "instant_mode": "simple_load",
+                        "mode": "simple_load",
+                        "omnibox_mode": "simple_load"
                     },
                     "enable_features": [
                         "NoStatePrefetch"

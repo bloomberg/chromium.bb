@@ -40,7 +40,7 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
-    prerender::PrerenderManager::SetMode(
+    prerender::PrerenderManager::SetOmniboxMode(
         prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
   }
 

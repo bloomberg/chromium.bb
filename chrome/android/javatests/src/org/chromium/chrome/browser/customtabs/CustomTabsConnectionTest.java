@@ -155,6 +155,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testPrerenderDestroysSpareRenderer() {
+        CustomTabsConnection.getInstance((Application) mAppContext).setForcePrerender(true);
         final CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -304,6 +305,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testStillHighConfidenceMayLaunchUrlWithSeveralUrls() {
+        CustomTabsConnection.getInstance((Application) mAppContext).setForcePrerender(true);
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
@@ -350,6 +352,7 @@ public class CustomTabsConnectionTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     public void testCanCancelPrerender() {
+        CustomTabsConnection.getInstance((Application) mAppContext).setForcePrerender(true);
         final CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
