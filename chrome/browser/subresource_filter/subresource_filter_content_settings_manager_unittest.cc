@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager_factory.h"
+#include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -17,14 +18,12 @@ namespace {
 
 const char kActionsHistogram[] = "SubresourceFilter.Actions";
 
-class SubresourceFilterContentSettingsManagerFactoryTest
-    : public testing::Test {
+class SubresourceFilterContentSettingsManagerTest : public testing::Test {
  public:
-  SubresourceFilterContentSettingsManagerFactoryTest() {}
+  SubresourceFilterContentSettingsManagerTest() {}
 
   void SetUp() override {
-    SubresourceFilterContentSettingsManagerFactory::EnsureForProfile(
-        &testing_profile_);
+    SubresourceFilterProfileContextFactory::EnsureForProfile(&testing_profile_);
     histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
   }
 
@@ -39,16 +38,16 @@ class SubresourceFilterContentSettingsManagerFactoryTest
   TestingProfile testing_profile_;
   base::HistogramTester histogram_tester_;
 
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterContentSettingsManagerFactoryTest);
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterContentSettingsManagerTest);
 };
 
-TEST_F(SubresourceFilterContentSettingsManagerFactoryTest, IrrelevantSetting) {
+TEST_F(SubresourceFilterContentSettingsManagerTest, IrrelevantSetting) {
   GetSettingsMap()->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,
                                              CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
 }
 
-TEST_F(SubresourceFilterContentSettingsManagerFactoryTest, DefaultSetting) {
+TEST_F(SubresourceFilterContentSettingsManagerTest, DefaultSetting) {
   GetSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
@@ -61,7 +60,7 @@ TEST_F(SubresourceFilterContentSettingsManagerFactoryTest, DefaultSetting) {
                                        kActionContentSettingsBlockedGlobal, 1);
 }
 
-TEST_F(SubresourceFilterContentSettingsManagerFactoryTest, UrlSetting) {
+TEST_F(SubresourceFilterContentSettingsManagerTest, UrlSetting) {
   GURL url("https://www.example.test/");
 
   GetSettingsMap()->SetContentSettingDefaultScope(
@@ -78,7 +77,7 @@ TEST_F(SubresourceFilterContentSettingsManagerFactoryTest, UrlSetting) {
                                        kActionContentSettingsAllowed, 1);
 }
 
-TEST_F(SubresourceFilterContentSettingsManagerFactoryTest, WildcardUpdate) {
+TEST_F(SubresourceFilterContentSettingsManagerTest, WildcardUpdate) {
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromString("[*.]example.test");
   ContentSettingsPattern secondary_pattern = ContentSettingsPattern::Wildcard();

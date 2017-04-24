@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/keyed_service/core/keyed_service.h"
 
 class ContentSettingsPattern;
 class HostContentSettingsMap;
@@ -19,16 +18,12 @@ class Profile;
 // This class observes subresource filter content settings changes for metrics
 // collection.
 class SubresourceFilterContentSettingsManager
-    : public KeyedService,
-      public content_settings::Observer {
+    : public content_settings::Observer {
  public:
   explicit SubresourceFilterContentSettingsManager(Profile* profile);
   ~SubresourceFilterContentSettingsManager() override;
 
  private:
-  // KeyedService:
-  void Shutdown() override;
-
   // content_settings::Observer:
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,

@@ -12,7 +12,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager_factory.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -23,8 +23,7 @@ ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
     : web_contents_(web_contents), did_show_ui_for_navigation_(false) {
   DCHECK(web_contents);
-  // Ensure the content settings manager is initialized.
-  SubresourceFilterContentSettingsManagerFactory::EnsureForProfile(
+  SubresourceFilterProfileContextFactory::EnsureForProfile(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
 }
 

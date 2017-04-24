@@ -23,11 +23,8 @@ SubresourceFilterContentSettingsManager::
 }
 
 SubresourceFilterContentSettingsManager::
-    ~SubresourceFilterContentSettingsManager() {}
-
-void SubresourceFilterContentSettingsManager::Shutdown() {
+    ~SubresourceFilterContentSettingsManager() {
   settings_map_->RemoveObserver(this);
-  settings_map_ = nullptr;
 }
 
 void SubresourceFilterContentSettingsManager::OnContentSettingChanged(

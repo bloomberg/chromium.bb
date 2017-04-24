@@ -3365,7 +3365,7 @@ test("unit_tests") {
     "../browser/status_icons/status_icon_unittest.cc",
     "../browser/status_icons/status_tray_unittest.cc",
     "../browser/storage/durable_storage_permission_context_unittest.cc",
-    "../browser/subresource_filter/subresource_filter_content_settings_manager_factory_unittest.cc",
+    "../browser/subresource_filter/subresource_filter_content_settings_manager_unittest.cc",
     "../browser/subresource_filter/subresource_filter_unittest.cc",
     "../browser/subresource_filter/test_ruleset_publisher.cc",
     "../browser/subresource_filter/test_ruleset_publisher.h",
