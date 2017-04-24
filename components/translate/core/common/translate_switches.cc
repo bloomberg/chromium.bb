@@ -7,11 +7,6 @@
 namespace translate {
 namespace switches {
 
-// Allows disabling of translate from the command line to assist with automated
-// browser testing (e.g. Selenium/WebDriver). Normal browser users should
-// disable translate with the preference.
-const char kDisableTranslate[] = "disable-translate";
-
 // Overrides the default server used for Google Translate.
 const char kTranslateScriptURL[] = "translate-script-url";
 

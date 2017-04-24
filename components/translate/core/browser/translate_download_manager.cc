@@ -4,7 +4,6 @@
 
 #include "components/translate/core/browser/translate_download_manager.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "components/prefs/pref_service.h"
@@ -31,27 +30,18 @@ void TranslateDownloadManager::Shutdown() {
 }
 
 // static
-void TranslateDownloadManager::RequestLanguageList() {
+void TranslateDownloadManager::RequestLanguageList(PrefService* prefs) {
+  // We don't want to do this when translate is disabled.
+  DCHECK(prefs != NULL);
+  if (!prefs->GetBoolean(prefs::kEnableTranslate))
+    return;
+
   TranslateLanguageList* language_list = GetInstance()->language_list();
   if (!language_list) {
     NOTREACHED();
     return;
   }
-
   language_list->RequestLanguageList();
-}
-
-// static
-void TranslateDownloadManager::RequestLanguageList(PrefService* prefs) {
-  // We don't want to do this when translate is disabled.
-  DCHECK(prefs != NULL);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          translate::switches::kDisableTranslate) ||
-      !prefs->GetBoolean(prefs::kEnableTranslate)) {
-    return;
-  }
-
-  RequestLanguageList();
 }
 
 // static

@@ -188,15 +188,6 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
-  // Allow disabling of translate from the command line to assist with
-  // automated browser testing.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          translate::switches::kDisableTranslate)) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_SWITCH);
-    return;
-  }
-
   // MHTML pages currently cannot be translated.
   // See bug: 217945.
   if (translate_driver_->GetContentsMimeType() == "multipart/related") {

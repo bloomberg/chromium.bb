@@ -51,12 +51,9 @@ class TranslateDownloadManager {
   TranslateScript* script() { return script_.get(); }
 
   // Let the caller decide if and when we should fetch the language list from
-  // the translate server. This is a NOOP if switches::kDisableTranslate is set
-  // or if prefs::kEnableTranslate is set to false.
+  // the translate server. This is a NOOP if prefs::kEnableTranslate is set to
+  // false.
   static void RequestLanguageList(PrefService* prefs);
-
-  // Fetches the language list from the translate server.
-  static void RequestLanguageList();
 
   // Fills |languages| with the list of languages that the translate server can
   // translate to and from.
