@@ -1509,7 +1509,7 @@ crbug.com/389648 crbug.com/517123 crbug.com/410145 fast/text-autosizing/table-in
 crbug.com/636207 [ Win Debug ] fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Failure Pass ]
 crbug.com/636207 [ Win Debug ] virtual/sharedarraybuffer/fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Failure Pass ]
 
-crbug.com/v8/6206 fast/js/string-prototype-properties.html [ NeedsManualRebaseline ]
+crbug.com/v8/6206 fast/js/string-prototype-properties.html [ NeedsRebaseline ]
 
 crbug.com/569139 fast/js/string-replace-2.html [ Failure ]
 crbug.com/569139 fast/js/regexp-caching.html [ Failure ]
