@@ -61,13 +61,11 @@
       }
 
       .primary-button,
-      .tertiary-button,
       a[href] {
         color: var(--google-blue-700);
       }
 
-      .primary-button,
-      .tertiary-button {
+      .primary-button {
         --paper-button-flat-keyboard-focus: {
           background: rgba(51, 103, 214, .12);  /* --google-blue-700 */
         };
@@ -77,8 +75,8 @@
         text-decoration: none;
       }
 
-      /* There are three main button styles, .primary-button, .secondary-button,
-       * and .tertiary-button. The primary is the action button (e.g. "edit",
+      /* There are three main button styles, .primary-button and
+       * .secondary-button. The primary is the action button (e.g. "edit",
        * "delete") while the secondary is often a "Cancel" button. A tertiary
        * button may be used to get more information or similar, that we expect
        * most users will not need. */
@@ -108,14 +106,6 @@
         };
         --paper-button-flat-keyboard-focus: {
           background: rgba(0, 0, 0, .12);
-        };
-      }
-
-      /* See notes in .primary-button. */
-      .tertiary-button {
-        --paper-button: {
-          font-weight: 400;
-          text-decoration: none;
         };
       }
 
