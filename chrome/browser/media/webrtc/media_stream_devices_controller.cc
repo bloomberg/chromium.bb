@@ -430,14 +430,16 @@ void MediaStreamDevicesController::RequestPermissionsWithDelegate(
       new MediaStreamDevicesController(web_contents, request, callback));
 
   // Show a prompt if needed.
-  if (controller->IsAskingForAudio() || controller->IsAskingForVideo()) {
+  bool is_asking_for_audio = controller->IsAskingForAudio();
+  bool is_asking_for_video = controller->IsAskingForVideo();
+  if (is_asking_for_audio || is_asking_for_video) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     delegate->ShowPrompt(
         request.user_gesture, web_contents,
         base::MakeUnique<Request>(
-            profile, controller->IsAskingForAudio(),
-            controller->IsAskingForVideo(), request.security_origin,
+            profile, is_asking_for_audio, is_asking_for_video,
+            request.security_origin,
             base::Bind(&MediaStreamDevicesController::PromptAnswered,
                        base::Passed(&controller))));
     return;
