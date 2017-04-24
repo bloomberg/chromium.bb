@@ -76,8 +76,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patch_root=None, no_shallow=False,
                       with_branch_heads=False, with_tags=False, refs=None,
                       patch_oauth2=False, oauth2_json=False,
-                      use_site_config_creds=True,
-                      output_manifest=True, clobber=False,
+                      use_site_config_creds=True, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
                       patchset=None, gerrit_no_reset=False,
                       gerrit_no_rebase_patch_ref=False, **kwargs):
@@ -232,8 +231,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--clobber')
     if no_shallow:
       cmd.append('--no_shallow')
-    if output_manifest:
-      cmd.append('--output_manifest')
     if with_branch_heads or cfg.with_branch_heads:
       cmd.append('--with_branch_heads')
     if with_tags:
@@ -247,7 +244,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     first_sln = cfg.solutions[0].name
     step_test_data = lambda: self.test_api.output_json(
         root, first_sln, reverse_rev_map, self._fail_patch,
-        output_manifest=output_manifest, fixed_revisions=fixed_revisions)
+        fixed_revisions=fixed_revisions)
 
     # Add suffixes to the step name, if specified.
     name = 'bot_update'
