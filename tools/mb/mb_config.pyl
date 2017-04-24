@@ -595,6 +595,7 @@
       'ios-simulator-xcode-clang': 'ios',
       'mac_chromium_10.10_rel_ng': 'gpu_tests_release_trybot',
       'mac_chromium_10.10_macviews': 'mac_views_browser_release_trybot',
+      'mac_chromium_10.12_rel_ng': 'gpu_tests_release_trybot',
       'mac_chromium_archive_rel_ng': 'release_bot_mac_strip',
       'mac_chromium_asan_rel_ng': 'asan_dcheck_disable_nacl_release_bot',
       'mac_chromium_compile_dbg_ng': 'debug_trybot',
