@@ -123,8 +123,7 @@ class TransparentButton : public CustomButton {
     set_notify_action(PlatformStyle::kMenuNotifyActivationAction);
 
     if (UseMd()) {
-      SetInkDropMode(PlatformStyle::kUseRipples ? InkDropMode::ON
-                                                : InkDropMode::OFF);
+      SetInkDropMode(InkDropMode::ON);
       set_has_ink_drop_action_on_click(true);
     }
   }

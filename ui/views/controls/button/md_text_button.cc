@@ -188,8 +188,7 @@ void MdTextButton::SetFontList(const gfx::FontList& font_list) {
 MdTextButton::MdTextButton(ButtonListener* listener)
     : LabelButton(listener, base::string16()),
       is_prominent_(false) {
-  SetInkDropMode(PlatformStyle::kUseRipples ? InkDropMode::ON
-                                            : InkDropMode::OFF);
+  SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();

@@ -37,8 +37,7 @@ Checkbox::Checkbox(const base::string16& label)
 
   if (UseMd()) {
     set_request_focus_on_press(false);
-    SetInkDropMode(PlatformStyle::kUseRipples ? InkDropMode::ON
-                                              : InkDropMode::OFF);
+    SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
   } else {
     std::unique_ptr<LabelButtonBorder> button_border(new LabelButtonBorder());

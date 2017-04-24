@@ -15,6 +15,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
+#include "ui/views/style/platform_style.h"
 
 namespace views {
 namespace {
@@ -271,7 +272,7 @@ std::unique_ptr<views::InkDropMask> InkDropHostView::CreateInkDropMask() const {
 
 InkDrop* InkDropHostView::GetInkDrop() {
   if (!ink_drop_) {
-    if (ink_drop_mode_ == InkDropMode::OFF)
+    if (ink_drop_mode_ == InkDropMode::OFF || !PlatformStyle::kUseRipples)
       ink_drop_ = base::MakeUnique<InkDropStub>();
     else
       ink_drop_ = CreateInkDrop();
