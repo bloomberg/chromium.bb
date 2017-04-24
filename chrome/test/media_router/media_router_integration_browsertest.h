@@ -37,7 +37,7 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   void ChooseSink(content::WebContents* web_contents,
                   const std::string& sink_name);
 
-  // Checks that the request initiated from |web_contents| to start session
+  // Checks that the request initiated from |web_contents| to start presentation
   // failed with expected |error_name| and |error_message_substring|.
   void CheckStartFailed(content::WebContents* web_contents,
                         const std::string& error_name,
@@ -74,23 +74,24 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   void CheckDialogRemainsOpen(content::WebContents* web_contents);
 
-  // Opens "basic_test.html," and starts a session.
+  // Opens "basic_test.html," and starts a presentation.
   content::WebContents* StartSessionWithTestPageNow();
   // Opens "basic_test.html," waits for sinks to be available, and starts a
-  // session.
+  // presentation.
   content::WebContents* StartSessionWithTestPageAndSink();
 
-  // Opens "basic_test.html," waits for sinks to be available, starts a session,
-  // and chooses a sink with the name |kTestSinkName|. Also checks that the
-  // session has successfully started if |should_succeed| is true.
+  // Opens "basic_test.html," waits for sinks to be available, starts a
+  // presentation, and chooses a sink with the name |kTestSinkName|. Also checks
+  // that the presentation has successfully started if |should_succeed| is true.
   content::WebContents* StartSessionWithTestPageAndChooseSink();
 
   void OpenTestPage(base::FilePath::StringPieceType file);
   void OpenTestPageInNewTab(base::FilePath::StringPieceType file);
+  virtual GURL GetTestPageUrl(const base::FilePath& full_path);
 
   void SetTestData(base::FilePath::StringPieceType test_data_file);
 
-  // Start session and wait until the pop dialog shows up.
+  // Start presentation and wait until the pop dialog shows up.
   // |web_contents|: The web contents of the test page which invokes the popup
   //                 dialog.
   void StartSession(content::WebContents* web_contents);
@@ -136,8 +137,8 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // Wait until media router dialog is fully loaded.
   void WaitUntilDialogFullyLoaded(content::WebContents* dialog_contents);
 
-  // Checks that the session started for |web_contents| has connected and is the
-  // default session.
+  // Checks that the presentation started for |web_contents| has connected and
+  // is the default presentation.
   void CheckSessionValidity(content::WebContents* web_contents);
 
   // Checks that a Media Router dialog is shown for |web_contents|, and returns
@@ -148,13 +149,23 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // Returns the active WebContents for the current window.
   content::WebContents* GetActiveWebContents();
 
-  // Runs a basic test in which a session is created through the MediaRouter
-  // dialog, then terminated.
+  // Runs a basic test in which a presentation is created through the
+  // MediaRouter dialog, then terminated.
   void RunBasicTest();
 
-  // Runs a test in which we start a session and reconnect to it from another
-  // tab.
+  // Runs a test in which we start a presentation and send a message.
+  void RunSendMessageTest(const std::string& message);
+
+  // Runs a test in which we start a presentation, close it and send a message.
+  void RunFailToSendMessageTest();
+
+  // Runs a test in which we start a presentation and reconnect to it from
+  // another tab.
   void RunReconnectSessionTest();
+
+  // Runs a test in which we start a presentation and reconnect to it from the
+  // same tab.
+  void RunReconnectSessionSameTabTest();
 
   std::string receiver() const { return receiver_; }
 

@@ -11,13 +11,21 @@ var startSessionPromise = null;
 var startedConnection = null;
 var reconnectedSession = null;
 var presentationUrl = null;
-if (window.location.href.indexOf('__is_android__=true') >= 0) {
+let params = (new URL(window.location.href)).searchParams;
+
+if (params.get('__is_android__') == 'true') {
   // For android, "google.com/cast" is required in presentation URL.
   // TODO(zqzhang): this requirement may be removed in the future.
   presentationUrl = "https://google.com/cast#__castAppId__=CCCCCCCC/";
+} else if (params.get('__oneUA__') == 'true') {
+  presentationUrl =
+      "presentation_receiver.html#__testprovider__=true&__oneUA__=true";
+} else if (params.get('__oneUANoReceiver__') == 'true') {
+  presentationUrl = "https://www.google.com#__testprovider__=true&__oneUA__=true";
 } else {
   presentationUrl = "http://www.google.com/#__testprovider__=true";
 }
+
 var startSessionRequest = new PresentationRequest([presentationUrl]);
 var defaultRequestSessionId = null;
 var lastExecutionResult = null;
@@ -223,6 +231,26 @@ function sendMessageAndExpectResponse(message) {
     sendResult(true, '');
   };
   startedConnection.send(message);
+}
+
+/**
+ * Sends 'close' to receiver page, and expects receiver page closing
+ * the connection.
+ */
+function initiateCloseFromReceiverPage() {
+  if (!startedConnection) {
+    sendResult(false, 'startedConnection does not exist.');
+    return;
+  }
+  startedConnection.onclose = (event) => {
+    const reason = event.reason;
+    if (reason != 'closed') {
+      sendResult(false, 'Unexpected close reason: ' + reason);
+      return;
+    }
+    sendResult(true, '');
+  };
+  startedConnection.send('close');
 }
 
 /**

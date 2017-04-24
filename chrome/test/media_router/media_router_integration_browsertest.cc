@@ -184,23 +184,28 @@ WebContents*
 MediaRouterIntegrationBrowserTest::StartSessionWithTestPageAndChooseSink() {
   WebContents* web_contents = StartSessionWithTestPageAndSink();
   WaitUntilSinkDiscoveredOnUI();
-  ChooseSink(web_contents, kTestSinkName);
+  ChooseSink(web_contents, receiver_);
   return web_contents;
 }
 
 void MediaRouterIntegrationBrowserTest::OpenTestPage(
     base::FilePath::StringPieceType file_name) {
   base::FilePath full_path = GetResourceFile(file_name);
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(full_path));
+  ui_test_utils::NavigateToURL(browser(), GetTestPageUrl(full_path));
 }
 
 void MediaRouterIntegrationBrowserTest::OpenTestPageInNewTab(
     base::FilePath::StringPieceType file_name) {
   base::FilePath full_path = GetResourceFile(file_name);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), net::FilePathToFileURL(full_path),
+      browser(), GetTestPageUrl(full_path),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+}
+
+GURL MediaRouterIntegrationBrowserTest::GetTestPageUrl(
+    const base::FilePath& full_path) {
+  return net::FilePathToFileURL(full_path);
 }
 
 void MediaRouterIntegrationBrowserTest::StartSession(
@@ -487,6 +492,25 @@ void MediaRouterIntegrationBrowserTest::RunBasicTest() {
   ExecuteJavaScriptAPI(web_contents, kTerminateSessionScript);
 }
 
+void MediaRouterIntegrationBrowserTest::RunSendMessageTest(
+    const std::string& message) {
+  WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
+  CheckSessionValidity(web_contents);
+  ExecuteJavaScriptAPI(
+      web_contents,
+      base::StringPrintf(kSendMessageAndExpectResponseScript, message.c_str()));
+}
+
+void MediaRouterIntegrationBrowserTest::RunFailToSendMessageTest() {
+  WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
+  CheckSessionValidity(web_contents);
+  ExecuteJavaScriptAPI(web_contents, kCloseSessionScript);
+
+  ExecuteJavaScriptAPI(
+      web_contents,
+      base::StringPrintf(kCheckSendMessageFailedScript, "closed"));
+}
+
 void MediaRouterIntegrationBrowserTest::RunReconnectSessionTest() {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
@@ -511,17 +535,29 @@ void MediaRouterIntegrationBrowserTest::RunReconnectSessionTest() {
   ASSERT_EQ(session_id, reconnected_session_id);
 }
 
+void MediaRouterIntegrationBrowserTest::RunReconnectSessionSameTabTest() {
+  WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
+  CheckSessionValidity(web_contents);
+  std::string session_id(GetStartedConnectionId(web_contents));
+  ExecuteJavaScriptAPI(web_contents, kCloseSessionScript);
+
+  ExecuteJavaScriptAPI(web_contents, base::StringPrintf(kReconnectSessionScript,
+                                                        session_id.c_str()));
+  std::string reconnected_session_id;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send(reconnectedSession.id)",
+      &reconnected_session_id));
+  ASSERT_EQ(session_id, reconnected_session_id);
+}
+
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   RunBasicTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MANUAL_SendAndOnMessage) {
-  WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
-  CheckSessionValidity(web_contents);
-  ExecuteJavaScriptAPI(
-      web_contents,
-      base::StringPrintf(kSendMessageAndExpectResponseScript, "foo"));
+  RunSendMessageTest("foo");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_CloseOnError) {
@@ -534,15 +570,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_CloseOnError) {
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MANUAL_Fail_SendMessage) {
-  WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
-  CheckSessionValidity(web_contents);
-  ExecuteJavaScriptAPI(web_contents, kCloseSessionScript);
-
-  // Wait a few seconds for MediaRouter to receive status updates.
-  Wait(base::TimeDelta::FromSeconds(3));
-  ExecuteJavaScriptAPI(
-      web_contents,
-      base::StringPrintf(kCheckSendMessageFailedScript, "closed"));
+  RunFailToSendMessageTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
