@@ -2579,11 +2579,6 @@ crbug.com/711529 http/tests/permissions/test-query.html [ Timeout ]
 crbug.com/713587 external/wpt/css/css-ui-3/caret-color-006.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-grid-1/alignment/grid-content-distribution-with-collapsed-tracks-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-grid-1/alignment/grid-content-distribution-with-collapsed-tracks-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-grid-1/alignment/grid-content-distribution-with-collapsed-tracks-003.html [ Failure ]
-crbug.com/626703 [ Android Linux Mac10.11 Mac10.12 Retina Win ] external/wpt/media-source/mediasource-avtracks.html [ Crash ]
-crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Timeout ]
 crbug.com/626703 external/wpt/compat/webkit-text-fill-color-property-005.html [ Failure ]
 crbug.com/626703 external/wpt/console/console-count-logging-manual.html [ Skip ]
 crbug.com/626703 external/wpt/notifications/body-basic-manual.html [ Skip ]
