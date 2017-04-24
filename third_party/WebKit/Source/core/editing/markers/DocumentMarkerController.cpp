@@ -495,22 +495,11 @@ void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
       continue;
     MarkerLists* markers = node_markers.value;
     for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
-      Member<MarkerList>& list = ListForType(markers, type);
+      MarkerList* list = ListForType(markers, type);
       if (!list)
         continue;
-      bool removed_markers = false;
-      for (size_t j = list->size(); j > 0; --j) {
-        const DocumentMarker& marker = *list->at(j - 1);
-
-        const unsigned start = marker.StartOffset();
-        const unsigned length = marker.EndOffset() - marker.StartOffset();
-
-        const String marker_text = ToText(node).data().Substring(start, length);
-        if (words.Contains(marker_text)) {
-          list->erase(j - 1);
-          removed_markers = true;
-        }
-      }
+      bool removed_markers = DocumentMarkerListEditor::RemoveMarkersUnderWords(
+          list, ToText(node).data(), words);
       if (removed_markers && type == DocumentMarker::kTextMatch)
         InvalidatePaintForTickmarks(node);
     }

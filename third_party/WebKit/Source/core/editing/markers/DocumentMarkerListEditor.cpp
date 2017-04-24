@@ -88,6 +88,25 @@ bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
   return doc_dirty;
 }
 
+bool DocumentMarkerListEditor::RemoveMarkersUnderWords(
+    MarkerList* list,
+    const String& node_text,
+    const Vector<String>& words) {
+  bool removed_markers = false;
+  for (size_t j = list->size(); j > 0; --j) {
+    const DocumentMarker& marker = *(*list)[j - 1];
+    const unsigned start = marker.StartOffset();
+    const unsigned length = marker.EndOffset() - marker.StartOffset();
+    const String& marker_text = node_text.Substring(start, length);
+    if (words.Contains(marker_text)) {
+      list->erase(j - 1);
+      removed_markers = true;
+    }
+  }
+
+  return removed_markers;
+}
+
 bool DocumentMarkerListEditor::ShiftMarkers(MarkerList* list,
                                             unsigned offset,
                                             unsigned old_length,

@@ -26,6 +26,11 @@ class DocumentMarkerListEditor {
   // Returns true if a marker was removed, false otherwise.
   static bool RemoveMarkers(MarkerList*, unsigned start_offset, int length);
 
+  // Returns true if a marker was removed, false otherwise.
+  static bool RemoveMarkersUnderWords(MarkerList*,
+                                      const String& node_text,
+                                      const Vector<String>& words);
+
   // Returns true if a marker was shifted or removed, false otherwise.
   static bool ShiftMarkers(MarkerList*,
                            unsigned offset,
