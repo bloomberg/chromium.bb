@@ -14,7 +14,6 @@
 
 namespace sandbox {
 class BrokerServices;
-enum ResultCode;
 }
 
 // Header file for the MainUIWindow, a simple window with a menu bar that
