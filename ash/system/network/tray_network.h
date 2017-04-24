@@ -53,7 +53,6 @@ class TrayNetwork : public SystemTrayItem,
   tray::NetworkTrayView* tray_;
   tray::NetworkDefaultView* default_;
   tray::NetworkDetailedView* detailed_;
-  bool request_wifi_view_;
   std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);
