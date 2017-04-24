@@ -40,12 +40,12 @@ class CTObjectsExtractorTest : public ::testing::Test {
   void ExtractEmbeddedSCT(scoped_refptr<X509Certificate> cert,
                           scoped_refptr<SignedCertificateTimestamp>* sct) {
     std::string sct_list;
-    EXPECT_TRUE(ExtractEmbeddedSCTList(cert->os_cert_handle(), &sct_list));
+    ASSERT_TRUE(ExtractEmbeddedSCTList(cert->os_cert_handle(), &sct_list));
 
     std::vector<base::StringPiece> parsed_scts;
-    base::StringPiece sct_list_sp(sct_list);
     // Make sure the SCT list can be decoded properly
-    EXPECT_TRUE(DecodeSCTList(sct_list_sp, &parsed_scts));
+    ASSERT_TRUE(DecodeSCTList(sct_list, &parsed_scts));
+    ASSERT_EQ(1u, parsed_scts.size());
     EXPECT_TRUE(DecodeSignedCertificateTimestamp(&parsed_scts[0], sct));
   }
 
