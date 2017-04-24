@@ -34,7 +34,8 @@
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
-#if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
+#if DCHECK_IS_ON() && !defined(__native_client__) && \
+    !defined(GLES2_CONFORMANCE_TESTS)
   #if defined(GLES2_INLINE_OPTIMIZATION)
     // TODO(gman): Replace with macros that work with inline optmization.
     #define GPU_CLIENT_SINGLE_THREAD_CHECK()
