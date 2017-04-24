@@ -1495,7 +1495,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event* event) {
     // Convert to coords relative to the list box if needed.
     MouseEvent* mouse_event = ToMouseEvent(event);
     if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
-      if (!IsDisabledFormControl()) {
+      if (!option->IsDisabledFormControl()) {
 #if OS(MACOSX)
         UpdateSelectedState(option, mouse_event->metaKey(),
                             mouse_event->shiftKey());

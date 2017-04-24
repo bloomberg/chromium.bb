@@ -440,10 +440,20 @@ DispatchEventResult MouseEventDispatchMediator::DispatchEvent(
   mouse_event.GetEventPath().AdjustForRelatedTarget(
       dispatcher.GetNode(), mouse_event.relatedTarget());
 
+  bool is_click = mouse_event.type() == EventTypeNames::click;
+  bool send_to_disabled_form_controls =
+      RuntimeEnabledFeatures::sendMouseEventsDisabledFormControlsEnabled();
+
+  if (send_to_disabled_form_controls && is_click &&
+      mouse_event.GetEventPath().DisabledFormControlExistsInPath()) {
+    return DispatchEventResult::kCanceledBeforeDispatch;
+  }
+
   if (!mouse_event.isTrusted())
     return dispatcher.Dispatch();
 
-  if (IsDisabledFormControl(&dispatcher.GetNode()))
+  if (!send_to_disabled_form_controls &&
+      IsDisabledFormControl(&dispatcher.GetNode()))
     return DispatchEventResult::kCanceledBeforeDispatch;
 
   if (mouse_event.type().IsEmpty())
@@ -456,7 +466,7 @@ DispatchEventResult MouseEventDispatchMediator::DispatchEvent(
 
   DispatchEventResult dispatch_result = dispatcher.Dispatch();
 
-  if (mouse_event.type() != EventTypeNames::click || mouse_event.detail() != 2)
+  if (!is_click || mouse_event.detail() != 2)
     return dispatch_result;
 
   // Special case: If it's a double click event, we also send the dblclick

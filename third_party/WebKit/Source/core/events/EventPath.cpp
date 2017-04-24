@@ -376,6 +376,15 @@ void EventPath::AdjustTouchList(
   }
 }
 
+bool EventPath::DisabledFormControlExistsInPath() const {
+  for (const auto& context : node_event_contexts_) {
+    const Node* target_node = context.GetNode();
+    if (target_node && IsDisabledFormControl(target_node))
+      return true;
+  }
+  return false;
+}
+
 NodeEventContext& EventPath::TopNodeEventContext() {
   DCHECK(!IsEmpty());
   return Last();

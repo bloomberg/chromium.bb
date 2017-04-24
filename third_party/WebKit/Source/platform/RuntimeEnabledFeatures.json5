@@ -854,6 +854,10 @@
       status: "experimental",
     },
     {
+      name: "SendMouseEventsDisabledFormControls",
+      status: "experimental",
+    },
+    {
       name: "Sensor",
       status: "experimental",
     },

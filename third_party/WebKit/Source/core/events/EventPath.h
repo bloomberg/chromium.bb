@@ -79,6 +79,8 @@ class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
   void AdjustForRelatedTarget(Node&, EventTarget* related_target);
   void AdjustForTouchEvent(TouchEvent&);
 
+  bool DisabledFormControlExistsInPath() const;
+
   NodeEventContext& TopNodeEventContext();
 
   static EventTarget* EventTargetRespectingTargetRules(Node&);
