@@ -224,8 +224,6 @@ class WebRTCCertificateObserver : public WebRTCCertificateCallback {
 };
 
 WebRTCIceTransportPolicy IceTransportPolicyFromString(const String& policy) {
-  if (policy == "none")
-    return WebRTCIceTransportPolicy::kNone;
   if (policy == "relay")
     return WebRTCIceTransportPolicy::kRelay;
   DCHECK_EQ(policy, "all");
@@ -243,17 +241,10 @@ WebRTCConfiguration ParseConfiguration(ExecutionContext* context,
     UseCounter::Count(context, UseCounter::kRTCConfigurationIceTransportPolicy);
     ice_transport_policy =
         IceTransportPolicyFromString(configuration.iceTransportPolicy());
-    if (ice_transport_policy == WebRTCIceTransportPolicy::kNone) {
-      UseCounter::Count(context,
-                        UseCounter::kRTCConfigurationIceTransportPolicyNone);
-    }
   } else if (configuration.hasIceTransports()) {
     UseCounter::Count(context, UseCounter::kRTCConfigurationIceTransports);
     ice_transport_policy =
         IceTransportPolicyFromString(configuration.iceTransports());
-    if (ice_transport_policy == WebRTCIceTransportPolicy::kNone)
-      UseCounter::Count(context,
-                        UseCounter::kRTCConfigurationIceTransportsNone);
   }
 
   WebRTCBundlePolicy bundle_policy = WebRTCBundlePolicy::kBalanced;

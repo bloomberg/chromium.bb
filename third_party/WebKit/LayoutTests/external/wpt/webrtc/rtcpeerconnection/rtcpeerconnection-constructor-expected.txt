@@ -43,11 +43,9 @@ PASS new RTCPeerConnection({ iceTransportPolicy: undefined })
 PASS new RTCPeerConnection({ iceTransportPolicy: "relay" }) 
 PASS new RTCPeerConnection({ iceTransportPolicy: "all" }) 
 PASS new RTCPeerConnection({ iceTransportPolicy: "invalid" }) 
-FAIL new RTCPeerConnection({ iceTransportPolicy: "none" }) assert_throws: function "function () {
-        eval(expr);
-      }" did not throw
+PASS new RTCPeerConnection({ iceTransportPolicy: "none" }) 
 FAIL new RTCPeerConnection({ iceTransports: "invalid" }) Failed to construct 'RTCPeerConnection': The provided value 'invalid' is not a valid enum value of type RTCIceTransportPolicy.
-PASS new RTCPeerConnection({ iceTransports: "none" }) 
+FAIL new RTCPeerConnection({ iceTransports: "none" }) Failed to construct 'RTCPeerConnection': The provided value 'none' is not a valid enum value of type RTCIceTransportPolicy.
 PASS new RTCPeerConnection({ bundlePolicy: null }) 
 PASS new RTCPeerConnection({ bundlePolicy: undefined }) 
 PASS new RTCPeerConnection({ bundlePolicy: "balanced" }) 

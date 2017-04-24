@@ -48,7 +48,7 @@ struct WebRTCIceServer {
   WebString credential;
 };
 
-enum class WebRTCIceTransportPolicy { kNone, kRelay, kAll };
+enum class WebRTCIceTransportPolicy { kRelay, kAll };
 
 enum class WebRTCBundlePolicy { kBalanced, kMaxCompat, kMaxBundle };
 

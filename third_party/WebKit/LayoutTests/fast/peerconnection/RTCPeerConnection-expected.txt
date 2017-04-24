@@ -27,9 +27,13 @@ PASS new RTCPeerConnection({iceServers:[{}]}); threw exception TypeError: Failed
 PASS new RTCPeerConnection({iceServers:[{url:'foo'}]}); threw exception SyntaxError: Failed to construct 'RTCPeerConnection': 'foo' is not a valid URL..
 PASS new RTCPeerConnection({iceServers:[{urls:'unsupported:scheme'}]}); threw exception SyntaxError: Failed to construct 'RTCPeerConnection': 'unsupported' is not one of the supported URL schemes 'stun', 'turn' or 'turns'..
 PASS new RTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]}); threw exception SyntaxError: Failed to construct 'RTCPeerConnection': '1' is not a valid URL..
-PASS new RTCPeerConnection({iceServers:[], iceTransports:'none'}); did not throw exception.
+PASS new RTCPeerConnection({iceServers:[], iceTransportPolicy:'relay'}); did not throw exception.
+PASS new RTCPeerConnection({iceServers:[], iceTransportPolicy:'all'}); did not throw exception.
+PASS new RTCPeerConnection({iceServers:[], iceTransportPolicy:'none'}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The provided value 'none' is not a valid enum value of type RTCIceTransportPolicy..
+PASS new RTCPeerConnection({iceServers:[], iceTransportPolicy:'foo'}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The provided value 'foo' is not a valid enum value of type RTCIceTransportPolicy..
 PASS new RTCPeerConnection({iceServers:[], iceTransports:'relay'}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[], iceTransports:'all'}); did not throw exception.
+PASS new RTCPeerConnection({iceServers:[], iceTransports:'none'}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The provided value 'none' is not a valid enum value of type RTCIceTransportPolicy..
 PASS new RTCPeerConnection({iceServers:[], iceTransports:'foo'}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The provided value 'foo' is not a valid enum value of type RTCIceTransportPolicy..
 PASS new RTCPeerConnection({iceServers:[], bundlePolicy:'balanced'}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[], bundlePolicy:'max-bundle'}); did not throw exception.
