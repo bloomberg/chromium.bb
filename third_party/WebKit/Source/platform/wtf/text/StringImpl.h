@@ -488,9 +488,9 @@ class WTF_EXPORT StringImpl {
  private:
   template <typename CharType>
   static size_t AllocationSize(unsigned length) {
-    RELEASE_ASSERT(
-        length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) /
-                   sizeof(CharType)));
+    CHECK_LE(length,
+             ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) /
+              sizeof(CharType)));
     return sizeof(StringImpl) + length * sizeof(CharType);
   }
 
@@ -758,7 +758,7 @@ inline unsigned LengthOfNullTerminatedString(const UChar* string) {
   size_t length = 0;
   while (string[length] != UChar(0))
     ++length;
-  RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
+  CHECK_LE(length, std::numeric_limits<unsigned>::max());
   return static_cast<unsigned>(length);
 }
 

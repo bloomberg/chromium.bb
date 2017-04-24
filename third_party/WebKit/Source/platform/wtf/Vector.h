@@ -1000,11 +1000,11 @@ class Vector
   // instead of:
   //     (*pointerToVector)[1];
   T& at(size_t i) {
-    RELEASE_ASSERT(i < size());
+    CHECK_LT(i, size());
     return Base::Buffer()[i];
   }
   const T& at(size_t i) const {
-    RELEASE_ASSERT(i < size());
+    CHECK_LT(i, size());
     return Base::Buffer()[i];
   }
 
@@ -1503,7 +1503,7 @@ void Vector<T, inlineCapacity, Allocator>::ExpandCapacity(
   if (INLINE_CAPACITY) {
     expanded_capacity *= 2;
     // Check for integer overflow, which could happen in the 32-bit build.
-    RELEASE_ASSERT(expanded_capacity > old_capacity);
+    CHECK_GT(expanded_capacity, old_capacity);
   } else {
     // This cannot integer overflow.
     // On 64-bit, the "expanded" integer is 32-bit, and any encroachment
@@ -1702,7 +1702,7 @@ void Vector<T, inlineCapacity, Allocator>::Append(const U* data,
     data = ExpandCapacity(new_size, data);
     DCHECK(begin());
   }
-  RELEASE_ASSERT(new_size >= size_);
+  CHECK_GE(new_size, size_);
   T* dest = end();
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, new_size);
   VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T>::UninitializedCopy(
@@ -1762,7 +1762,7 @@ template <typename U>
 inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
                                                          U&& val) {
   DCHECK(Allocator::IsAllocationAllowed());
-  RELEASE_ASSERT(position <= size());
+  CHECK_LE(position, size());
   typename std::remove_reference<U>::type* data = &val;
   if (size() == capacity()) {
     data = ExpandCapacity(size() + 1, data);
@@ -1781,13 +1781,13 @@ void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
                                                   const U* data,
                                                   size_t data_size) {
   DCHECK(Allocator::IsAllocationAllowed());
-  RELEASE_ASSERT(position <= size());
+  CHECK_LE(position, size());
   size_t new_size = size_ + data_size;
   if (new_size > capacity()) {
     data = ExpandCapacity(new_size, data);
     DCHECK(begin());
   }
-  RELEASE_ASSERT(new_size >= size_);
+  CHECK_GE(new_size, size_);
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, new_size);
   T* spot = begin() + position;
   TypeOperations::MoveOverlapping(spot, end(), spot + data_size);
@@ -1826,7 +1826,7 @@ inline void Vector<T, inlineCapacity, Allocator>::PrependVector(
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline void Vector<T, inlineCapacity, Allocator>::erase(size_t position) {
-  RELEASE_ASSERT(position < size());
+  CHECK_LT(position, size());
   T* spot = begin() + position;
   spot->~T();
   TypeOperations::MoveOverlapping(spot + 1, end(), spot);
@@ -1841,7 +1841,7 @@ inline void Vector<T, inlineCapacity, Allocator>::erase(size_t position,
   SECURITY_DCHECK(position <= size());
   if (!length)
     return;
-  RELEASE_ASSERT(position + length <= size());
+  CHECK_LE(position + length, size());
   T* begin_spot = begin() + position;
   T* end_spot = begin_spot + length;
   TypeOperations::Destruct(begin_spot, end_spot);

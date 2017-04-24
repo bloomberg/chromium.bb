@@ -148,7 +148,7 @@ class WTF_EXPORT StringTypeAdapter<const UChar*> {
   unsigned length() const { return length_; }
   bool Is8Bit() const { return false; }
 
-  void WriteTo(LChar*) const { RELEASE_ASSERT(false); }
+  void WriteTo(LChar*) const { CHECK(false); }
   void WriteTo(UChar* destination) const;
 
  private:

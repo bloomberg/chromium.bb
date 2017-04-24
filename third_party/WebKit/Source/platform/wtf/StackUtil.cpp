@@ -45,7 +45,7 @@ size_t GetUnderestimatedStackSize() {
     void* base;
     size_t size;
     error = pthread_attr_getstack(&attr, &base, &size);
-    RELEASE_ASSERT(!error);
+    CHECK(!error);
     pthread_attr_destroy(&attr);
     return size;
   }
@@ -108,7 +108,7 @@ void* GetStackStart() {
     void* base;
     size_t size;
     error = pthread_attr_getstack(&attr, &base, &size);
-    RELEASE_ASSERT(!error);
+    CHECK(!error);
     pthread_attr_destroy(&attr);
     return reinterpret_cast<uint8_t*>(base) + size;
   }
@@ -173,7 +173,8 @@ size_t ThreadStackSize() {
   uint8_t* stack_end = reinterpret_cast<uint8_t*>(stack_info.AllocationBase);
 
   uint8_t* stack_start = reinterpret_cast<uint8_t*>(WTF::GetStackStart());
-  RELEASE_ASSERT(stack_start && stack_start > stack_end);
+  CHECK(stack_start);
+  CHECK_GT(stack_start, stack_end);
   size_t thread_stack_size = static_cast<size_t>(stack_start - stack_end);
   // When the third last page of the reserved stack is accessed as a
   // guard page, the second last page will be committed (along with removing
@@ -186,7 +187,7 @@ size_t ThreadStackSize() {
   //
   // http://blogs.msdn.com/b/satyem/archive/2012/08/13/thread-s-stack-memory-management.aspx
   // explains the details.
-  RELEASE_ASSERT(thread_stack_size > 4 * 0x1000);
+  CHECK_GT(thread_stack_size, 4u * 0x1000);
   thread_stack_size -= 4 * 0x1000;
   return thread_stack_size;
 }

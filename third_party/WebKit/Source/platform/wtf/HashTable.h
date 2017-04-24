@@ -991,7 +991,7 @@ void HashTable<Key,
     new_capacity = KeyTraits::kMinimumTableSize;
 
   if (new_capacity > Capacity()) {
-    RELEASE_ASSERT(!static_cast<int>(
+    CHECK(!static_cast<int>(
         new_capacity >>
         31));  // HashTable capacity should not overflow 32bit int.
     Rehash(new_capacity, 0);
@@ -1624,7 +1624,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     new_size = table_size_;
   } else {
     new_size = table_size_ * 2;
-    RELEASE_ASSERT(new_size > table_size_);
+    CHECK_GT(new_size, table_size_);
   }
 
   return Rehash(new_size, entry);

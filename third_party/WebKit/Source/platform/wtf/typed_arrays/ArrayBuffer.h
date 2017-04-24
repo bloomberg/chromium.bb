@@ -145,7 +145,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::Create(const void* source,
 }
 
 PassRefPtr<ArrayBuffer> ArrayBuffer::Create(ArrayBufferContents& contents) {
-  RELEASE_ASSERT(contents.DataMaybeShared());
+  CHECK(contents.DataMaybeShared());
   return AdoptRef(new ArrayBuffer(contents));
 }
 
@@ -168,7 +168,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::Create(
     ArrayBufferContents::InitializationPolicy policy) {
   ArrayBufferContents contents(num_elements, element_byte_size,
                                ArrayBufferContents::kNotShared, policy);
-  RELEASE_ASSERT(contents.Data());
+  CHECK(contents.Data());
   return AdoptRef(new ArrayBuffer(contents));
 }
 
@@ -193,7 +193,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::CreateShared(const void* source,
                                                   unsigned byte_length) {
   ArrayBufferContents contents(byte_length, 1, ArrayBufferContents::kShared,
                                ArrayBufferContents::kDontInitialize);
-  RELEASE_ASSERT(contents.DataShared());
+  CHECK(contents.DataShared());
   RefPtr<ArrayBuffer> buffer = AdoptRef(new ArrayBuffer(contents));
   memcpy(buffer->DataShared(), source, byte_length);
   return buffer.Release();
@@ -205,7 +205,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::CreateShared(
     ArrayBufferContents::InitializationPolicy policy) {
   ArrayBufferContents contents(num_elements, element_byte_size,
                                ArrayBufferContents::kShared, policy);
-  RELEASE_ASSERT(contents.DataShared());
+  CHECK(contents.DataShared());
   return AdoptRef(new ArrayBuffer(contents));
 }
 

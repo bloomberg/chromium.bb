@@ -41,7 +41,7 @@ class TerminatedArrayBuilder {
   }
 
   void Append(const T& item) {
-    RELEASE_ASSERT(count_ < capacity_);
+    CHECK_LT(count_, capacity_);
     DCHECK(!item.IsLastInArray());
     array_->at(count_++) = item;
     if (count_ == capacity_)
@@ -49,7 +49,7 @@ class TerminatedArrayBuilder {
   }
 
   typename ArrayType<T>::Allocator::PassPtr Release() {
-    RELEASE_ASSERT(count_ == capacity_);
+    CHECK_EQ(count_, capacity_);
     AssertValid();
     return ArrayType<T>::Allocator::Release(array_);
   }

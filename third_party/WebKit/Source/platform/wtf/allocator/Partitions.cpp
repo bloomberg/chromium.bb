@@ -65,7 +65,7 @@ void Partitions::Initialize(
 }
 
 void Partitions::DecommitFreeableMemory() {
-  RELEASE_ASSERT(IsMainThread());
+  CHECK(IsMainThread());
   if (!initialized_)
     return;
 

@@ -189,7 +189,7 @@ CString TextCodecUTF16::Encode(const LChar* characters,
                                size_t length,
                                UnencodableHandling) {
   // In the LChar case, we do actually need to perform this check in release. :)
-  RELEASE_ASSERT(length <= numeric_limits<size_t>::max() / 2);
+  CHECK_LE(length, numeric_limits<size_t>::max() / 2);
 
   char* bytes;
   CString result = CString::CreateUninitialized(length * 2, bytes);

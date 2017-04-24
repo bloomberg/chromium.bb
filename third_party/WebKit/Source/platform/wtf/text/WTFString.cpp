@@ -103,8 +103,8 @@ void String::Append(const StringView& string) {
 
   if (impl_->Is8Bit() && string.Is8Bit()) {
     LChar* data;
-    RELEASE_ASSERT(string.length() <=
-                   std::numeric_limits<unsigned>::max() - impl_->length());
+    CHECK_LE(string.length(),
+             std::numeric_limits<unsigned>::max() - impl_->length());
     RefPtr<StringImpl> new_impl = StringImpl::CreateUninitialized(
         impl_->length() + string.length(), data);
     memcpy(data, impl_->Characters8(), impl_->length() * sizeof(LChar));
@@ -115,8 +115,8 @@ void String::Append(const StringView& string) {
   }
 
   UChar* data;
-  RELEASE_ASSERT(string.length() <=
-                 std::numeric_limits<unsigned>::max() - impl_->length());
+  CHECK_LE(string.length(),
+           std::numeric_limits<unsigned>::max() - impl_->length());
   RefPtr<StringImpl> new_impl =
       StringImpl::CreateUninitialized(impl_->length() + string.length(), data);
 
@@ -148,7 +148,7 @@ inline void String::AppendInternal(CharacterType c) {
 
   // FIXME: We should be able to create an 8 bit string via this code path.
   UChar* data;
-  RELEASE_ASSERT(impl_->length() < std::numeric_limits<unsigned>::max());
+  CHECK_LT(impl_->length(), std::numeric_limits<unsigned>::max());
   RefPtr<StringImpl> new_impl =
       StringImpl::CreateUninitialized(impl_->length() + 1, data);
   if (impl_->Is8Bit())
@@ -186,8 +186,8 @@ PassRefPtr<StringImpl> InsertInternal(PassRefPtr<StringImpl> impl,
 
   DCHECK(characters_to_insert);
   UChar* data;  // FIXME: We should be able to create an 8 bit string here.
-  RELEASE_ASSERT(length_to_insert <=
-                 std::numeric_limits<unsigned>::max() - impl->length());
+  CHECK_LE(length_to_insert,
+           std::numeric_limits<unsigned>::max() - impl->length());
   RefPtr<StringImpl> new_impl =
       StringImpl::CreateUninitialized(impl->length() + length_to_insert, data);
 
@@ -739,7 +739,7 @@ String String::Make16BitFrom8BitSource(const LChar* source, size_t length) {
 }
 
 String String::FromUTF8(const LChar* string_start, size_t length) {
-  RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
+  CHECK_LE(length, std::numeric_limits<unsigned>::max());
 
   if (!string_start)
     return String();

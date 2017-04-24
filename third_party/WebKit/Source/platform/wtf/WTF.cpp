@@ -64,7 +64,7 @@ void Initialize(void (*call_on_main_thread_function)(MainThreadFunction,
                                                      void*)) {
   // WTF, and Blink in general, cannot handle being re-initialized.
   // Make that explicit here.
-  RELEASE_ASSERT(!g_initialized);
+  CHECK(!g_initialized);
   g_initialized = true;
   InitializeCurrentThread();
   g_main_thread_identifier = CurrentThread();

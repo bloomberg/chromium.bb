@@ -104,7 +104,8 @@ unsigned StringAppend<StringType1, StringType2>::length() const {
   StringTypeAdapter<StringType2> adapter2(string2_);
   unsigned total = adapter1.length() + adapter2.length();
   // Guard against overflow.
-  RELEASE_ASSERT(total >= adapter1.length() && total >= adapter2.length());
+  CHECK_GE(total, adapter1.length());
+  CHECK_GE(total, adapter2.length());
   return total;
 }
 

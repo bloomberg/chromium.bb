@@ -433,9 +433,9 @@ StringImpl* StringImpl::CreateStatic(const char* string,
   // Allocate a single buffer large enough to contain the StringImpl
   // struct as well as the data which it contains. This removes one
   // heap allocation from this call.
-  RELEASE_ASSERT(length <=
-                 ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) /
-                  sizeof(LChar)));
+  CHECK_LE(length,
+           ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) /
+            sizeof(LChar)));
   size_t size = sizeof(StringImpl) + length * sizeof(LChar);
 
   WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE;
@@ -510,7 +510,7 @@ PassRefPtr<StringImpl> StringImpl::Create(const LChar* string) {
   if (!string)
     return empty_;
   size_t length = strlen(reinterpret_cast<const char*>(string));
-  RELEASE_ASSERT(length <= numeric_limits<unsigned>::max());
+  CHECK_LE(length, numeric_limits<unsigned>::max());
   return Create(string, length);
 }
 
@@ -619,8 +619,7 @@ PassRefPtr<StringImpl> StringImpl::LowerASCII() {
   if (no_upper && !(ored & ~0x7F))
     return this;
 
-  RELEASE_ASSERT(length_ <=
-                 static_cast<unsigned>(numeric_limits<unsigned>::max()));
+  CHECK_LE(length_, static_cast<unsigned>(numeric_limits<unsigned>::max()));
   unsigned length = length_;
 
   UChar* data16;
@@ -678,8 +677,7 @@ PassRefPtr<StringImpl> StringImpl::LowerUnicode() {
   if (no_upper && !(ored & ~0x7F))
     return this;
 
-  RELEASE_ASSERT(length_ <=
-                 static_cast<unsigned>(numeric_limits<int32_t>::max()));
+  CHECK_LE(length_, static_cast<unsigned>(numeric_limits<int32_t>::max()));
   int32_t length = length_;
 
   if (!(ored & ~0x7F)) {
@@ -715,8 +713,7 @@ PassRefPtr<StringImpl> StringImpl::UpperUnicode() {
   // but in empirical testing, few actual calls to UpperUnicode() are no-ops, so
   // it wouldn't be worth the extra time for pre-scanning.
 
-  RELEASE_ASSERT(length_ <=
-                 static_cast<unsigned>(numeric_limits<int32_t>::max()));
+  CHECK_LE(length_, static_cast<unsigned>(numeric_limits<int32_t>::max()));
   int32_t length = length_;
 
   if (Is8Bit()) {
@@ -830,7 +827,8 @@ PassRefPtr<StringImpl> StringImpl::UpperASCII() {
 
 static inline bool LocaleIdMatchesLang(const AtomicString& locale_id,
                                        const StringView& lang) {
-  RELEASE_ASSERT(lang.length() >= 2 && lang.length() <= 3);
+  CHECK_GE(lang.length(), 2u);
+  CHECK_LE(lang.length(), 3u);
   if (!locale_id.Impl() || !locale_id.Impl()->StartsWithIgnoringCase(lang))
     return false;
   if (locale_id.Impl()->length() == lang.length())
@@ -941,8 +939,7 @@ PassRefPtr<StringImpl> StringImpl::Fill(UChar character) {
 }
 
 PassRefPtr<StringImpl> StringImpl::FoldCase() {
-  RELEASE_ASSERT(length_ <=
-                 static_cast<unsigned>(numeric_limits<int32_t>::max()));
+  CHECK_LE(length_, static_cast<unsigned>(numeric_limits<int32_t>::max()));
   int32_t length = length_;
 
   if (Is8Bit()) {
@@ -1761,8 +1758,8 @@ PassRefPtr<StringImpl> StringImpl::Replace(unsigned position,
   if (!length_to_replace && !length_to_insert)
     return this;
 
-  RELEASE_ASSERT((length() - length_to_replace) <
-                 (numeric_limits<unsigned>::max() - length_to_insert));
+  CHECK_LT((length() - length_to_replace),
+           (numeric_limits<unsigned>::max() - length_to_insert));
 
   if (Is8Bit() && (string.IsNull() || string.Is8Bit())) {
     LChar* data;
@@ -1832,13 +1829,12 @@ PassRefPtr<StringImpl> StringImpl::Replace(UChar pattern,
   if (!match_count)
     return this;
 
-  RELEASE_ASSERT(!rep_str_length ||
-                 match_count <=
-                     numeric_limits<unsigned>::max() / rep_str_length);
+  CHECK(!rep_str_length ||
+        match_count <= numeric_limits<unsigned>::max() / rep_str_length);
 
   unsigned replace_size = match_count * rep_str_length;
   unsigned new_size = length_ - match_count;
-  RELEASE_ASSERT(new_size < (numeric_limits<unsigned>::max() - replace_size));
+  CHECK_LT(new_size, (numeric_limits<unsigned>::max() - replace_size));
 
   new_size += replace_size;
 
@@ -1914,13 +1910,12 @@ PassRefPtr<StringImpl> StringImpl::Replace(UChar pattern,
   if (!match_count)
     return this;
 
-  RELEASE_ASSERT(!rep_str_length ||
-                 match_count <=
-                     numeric_limits<unsigned>::max() / rep_str_length);
+  CHECK(!rep_str_length ||
+        match_count <= numeric_limits<unsigned>::max() / rep_str_length);
 
   unsigned replace_size = match_count * rep_str_length;
   unsigned new_size = length_ - match_count;
-  RELEASE_ASSERT(new_size < (numeric_limits<unsigned>::max() - replace_size));
+  CHECK_LT(new_size, (numeric_limits<unsigned>::max() - replace_size));
 
   new_size += replace_size;
 
@@ -2003,12 +1998,11 @@ PassRefPtr<StringImpl> StringImpl::Replace(const StringView& pattern,
     return this;
 
   unsigned new_size = length_ - match_count * pattern_length;
-  RELEASE_ASSERT(!rep_str_length ||
-                 match_count <=
-                     numeric_limits<unsigned>::max() / rep_str_length);
+  CHECK(!rep_str_length ||
+        match_count <= numeric_limits<unsigned>::max() / rep_str_length);
 
-  RELEASE_ASSERT(new_size <= (numeric_limits<unsigned>::max() -
-                              match_count * rep_str_length));
+  CHECK_LE(new_size,
+           (numeric_limits<unsigned>::max() - match_count * rep_str_length));
 
   new_size += match_count * rep_str_length;
 
