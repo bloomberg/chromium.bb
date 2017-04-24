@@ -104,7 +104,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void EnableIsPreloadedForTest();
   bool IsPreloadedForTest(const KURL&) const;
 
-  int CountPreloads() const { return preloads_ ? preloads_->size() : 0; }
+  int CountPreloads() const { return preloads_.size(); }
   void ClearPreloads(ClearPreloadsPolicy = kClearAllPreloads);
   void PreloadStarted(Resource*);
   void LogPreloadStats(ClearPreloadsPolicy);
@@ -143,7 +143,7 @@ class PLATFORM_EXPORT ResourceFetcher
   ResourceTimingInfo* GetNavigationTimingInfo();
 
   bool ContainsAsPreloadForTesting(Resource* resource) const {
-    return preloads_ && preloads_->Contains(resource);
+    return preloads_.Contains(resource);
   }
 
   // Workaround for https://crbug.com/666214.
@@ -229,7 +229,7 @@ class PLATFORM_EXPORT ResourceFetcher
   HashSet<String> validated_urls_;
   mutable DocumentResourceMap document_resources_;
 
-  Member<HeapListHashSet<Member<Resource>>> preloads_;
+  HeapListHashSet<Member<Resource>> preloads_;
   Member<MHTMLArchive> archive_;
 
   TaskRunnerTimer<ResourceFetcher> resource_timing_report_timer_;

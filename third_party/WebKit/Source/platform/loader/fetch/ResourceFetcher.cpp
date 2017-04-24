@@ -482,8 +482,7 @@ void ResourceFetcher::UpdateMemoryCacheStats(Resource* resource,
   // dead if MemoryCache holds weak references to Resource). Currently we check
   // references to Resource from ResourceClient and |m_preloads| only, because
   // they are major sources of references.
-  if (resource && !resource->IsAlive() &&
-      (!preloads_ || !preloads_->Contains(resource))) {
+  if (resource && !resource->IsAlive() && !preloads_.Contains(resource)) {
     DEFINE_RESOURCE_HISTOGRAM("Dead.");
   }
 }
@@ -1087,13 +1086,11 @@ int ResourceFetcher::NonblockingRequestCount() const {
 }
 
 void ResourceFetcher::PreloadStarted(Resource* resource) {
-  if (preloads_ && preloads_->Contains(resource))
+  if (preloads_.Contains(resource))
     return;
   resource->IncreasePreloadCount();
 
-  if (!preloads_)
-    preloads_ = new HeapListHashSet<Member<Resource>>;
-  preloads_->insert(resource);
+  preloads_.insert(resource);
 
   if (preloaded_urls_for_test_)
     preloaded_urls_for_test_->insert(resource->Url().GetString());
@@ -1104,10 +1101,8 @@ void ResourceFetcher::EnableIsPreloadedForTest() {
     return;
   preloaded_urls_for_test_ = WTF::WrapUnique(new HashSet<String>);
 
-  if (preloads_) {
-    for (const auto& resource : *preloads_)
-      preloaded_urls_for_test_->insert(resource->Url().GetString());
-  }
+  for (const auto& resource : preloads_)
+    preloaded_urls_for_test_->insert(resource->Url().GetString());
 }
 
 bool ResourceFetcher::IsPreloadedForTest(const KURL& url) const {
@@ -1116,27 +1111,20 @@ bool ResourceFetcher::IsPreloadedForTest(const KURL& url) const {
 }
 
 void ResourceFetcher::ClearPreloads(ClearPreloadsPolicy policy) {
-  if (!preloads_)
-    return;
-
   LogPreloadStats(policy);
 
-  for (const auto& resource : *preloads_) {
+  for (const auto& resource : preloads_) {
     if (policy == kClearAllPreloads || !resource->IsLinkPreload()) {
       resource->DecreasePreloadCount();
       if (resource->GetPreloadResult() == Resource::kPreloadNotReferenced)
         GetMemoryCache()->Remove(resource.Get());
-      preloads_->erase(resource);
+      preloads_.erase(resource);
     }
   }
-  if (!preloads_->size())
-    preloads_.Clear();
 }
 
 void ResourceFetcher::WarnUnusedPreloads() {
-  if (!preloads_)
-    return;
-  for (const auto& resource : *preloads_) {
+  for (const auto& resource : preloads_) {
     if (resource && resource->IsLinkPreload() &&
         resource->GetPreloadResult() == Resource::kPreloadNotReferenced) {
       Context().AddConsoleMessage(
@@ -1370,8 +1358,6 @@ void ResourceFetcher::ReloadLoFiImages() {
 }
 
 void ResourceFetcher::LogPreloadStats(ClearPreloadsPolicy policy) {
-  if (!preloads_)
-    return;
   unsigned scripts = 0;
   unsigned script_misses = 0;
   unsigned stylesheets = 0;
@@ -1388,7 +1374,7 @@ void ResourceFetcher::LogPreloadStats(ClearPreloadsPolicy policy) {
   unsigned import_misses = 0;
   unsigned raws = 0;
   unsigned raw_misses = 0;
-  for (const auto& resource : *preloads_) {
+  for (const auto& resource : preloads_) {
     // Do not double count link rel preloads. These do not get cleared if the
     // ClearPreloadsPolicy is only clearing speculative markup preloads.
     if (resource->IsLinkPreload() &&
