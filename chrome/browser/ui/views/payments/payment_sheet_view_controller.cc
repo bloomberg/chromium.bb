@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/i18n/message_formatter.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -36,6 +37,8 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -60,6 +63,56 @@ enum class PaymentSheetViewControllerTags {
   SHOW_CONTACT_INFO_BUTTON,
   SHOW_SHIPPING_OPTION_BUTTON,
   PAY_BUTTON
+};
+
+// A class that ensures proper elision of labels in the form
+// "[preview] and N more" where preview might be elided to allow "and N more" to
+// be always visible.
+class PreviewEliderLabel : public views::Label {
+ public:
+  // Creates a PreviewEliderLabel where |preview_text| might be elided,
+  // |format_string| is the string with format argument numbers in ICU syntax
+  // and |n| is the "N more" item count.
+  PreviewEliderLabel(const base::string16& preview_text,
+                     const base::string16& format_string,
+                     int n)
+      : views::Label(base::ASCIIToUTF16("")),
+        preview_text_(preview_text),
+        format_string_(format_string),
+        n_(n) {}
+
+ private:
+  // Formats |preview_text_|, |format_string_|, and |n_| into a string that fits
+  // inside of |pixel_width|, eliding |preview_text_| as required.
+  base::string16 CreateElidedString(int pixel_width) {
+    for (int preview_length = preview_text_.size(); preview_length > 0;
+         --preview_length) {
+      base::string16 elided_preview;
+      gfx::ElideRectangleString(preview_text_, 1, preview_length,
+                                /*strict=*/false, &elided_preview);
+      base::string16 elided_string =
+          base::i18n::MessageFormatter::FormatWithNumberedArgs(
+              format_string_, "", elided_preview, n_);
+      if (gfx::GetStringWidth(elided_string, font_list()) <= width())
+        return elided_string;
+    }
+
+    // TODO(crbug.com/714776): Display something meaningful if the preview can't
+    // be elided enough for the string to fit.
+    return base::ASCIIToUTF16("");
+  }
+
+  // views::View:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    SetText(CreateElidedString(width()));
+    views::Label::OnBoundsChanged(previous_bounds);
+  }
+
+  base::string16 preview_text_;
+  base::string16 format_string_;
+  int n_;
+
+  DISALLOW_COPY_AND_ASSIGN(PreviewEliderLabel);
 };
 
 int ComputeWidestNameColumnViewWidth() {
@@ -156,6 +209,29 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
 
 // Creates a row with a button in place of the chevron.
 // +------------------------------------------+
+// | Name | content_view      | button_string |
+// +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+std::unique_ptr<views::Button> CreatePaymentSheetRowWithButton(
+    views::ButtonListener* listener,
+    const base::string16& section_name,
+    std::unique_ptr<views::View> content_view,
+    const base::string16& button_string,
+    int button_tag,
+    int button_id,
+    int name_column_width) {
+  std::unique_ptr<views::Button> button(
+      views::MdTextButton::CreateSecondaryUiBlueButton(listener,
+                                                       button_string));
+  button->set_tag(button_tag);
+  button->set_id(button_id);
+  return CreatePaymentSheetRow(listener, section_name, std::move(content_view),
+                               nullptr, std::move(button),
+                               /*clickable=*/false, name_column_width);
+}
+
+// Creates a row with a button in place of the chevron and |truncated_content|
+// between |section_name| and the button.
+// +------------------------------------------+
 // | Name | truncated_content | button_string |
 // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
 std::unique_ptr<views::Button> CreatePaymentSheetRowWithButton(
@@ -166,16 +242,37 @@ std::unique_ptr<views::Button> CreatePaymentSheetRowWithButton(
     int button_tag,
     int button_id,
     int name_column_width) {
-  std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(listener,
-                                                       button_string));
-  button->set_tag(button_tag);
-  button->set_id(button_id);
   std::unique_ptr<views::Label> content_view =
       base::MakeUnique<views::Label>(truncated_content);
-  return CreatePaymentSheetRow(listener, section_name, std::move(content_view),
-                               nullptr, std::move(button),
-                               /*clickable=*/false, name_column_width);
+  content_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  return CreatePaymentSheetRowWithButton(
+      listener, section_name, std::move(content_view), button_string,
+      button_tag, button_id, name_column_width);
+}
+
+// Creates a row with a button in place of the chevron with the string between
+// |section_name| and the button built as "|preview|... and |n| more".
+// |format_string| is used to assemble the truncated preview and the rest of the
+// content string.
+// +----------------------------------------------+
+// | Name | preview... and N more | button_string |
+// +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+std::unique_ptr<views::Button> CreatePaymentSheetRowWithButton(
+    views::ButtonListener* listener,
+    const base::string16& section_name,
+    const base::string16& preview_text,
+    const base::string16& format_string,
+    int n,
+    const base::string16& button_string,
+    int button_tag,
+    int button_id,
+    int name_column_width) {
+  std::unique_ptr<PreviewEliderLabel> content_view =
+      base::MakeUnique<PreviewEliderLabel>(preview_text, format_string, n);
+  content_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  return CreatePaymentSheetRowWithButton(
+      listener, section_name, std::move(content_view), button_string,
+      button_tag, button_id, name_column_width);
 }
 
 // Creates a clickable row to be displayed in the Payment Sheet. It contains
@@ -515,13 +612,53 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
                                        ? l10n_util::GetStringUTF16(IDS_CHOOSE)
                                        : l10n_util::GetStringUTF16(IDS_ADD);
 
-    section = CreatePaymentSheetRowWithButton(
-        this, GetShippingAddressSectionString(spec()->shipping_type()),
-        base::ASCIIToUTF16(""), button_string,
-        static_cast<int>(PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON),
-        static_cast<int>(
-            DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON),
-        widest_name_column_view_width_);
+    if (state()->shipping_profiles().empty()) {
+      section = CreatePaymentSheetRowWithButton(
+          this, GetShippingAddressSectionString(spec()->shipping_type()),
+          base::ASCIIToUTF16(""), button_string,
+          static_cast<int>(
+              PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON),
+          static_cast<int>(
+              DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON),
+          widest_name_column_view_width_);
+    } else if (state()->shipping_profiles().size() == 1) {
+      base::string16 truncated_content =
+          state()->shipping_profiles()[0]->ConstructInferredLabel(
+              {
+                  autofill::ADDRESS_HOME_LINE1, autofill::ADDRESS_HOME_LINE2,
+                  autofill::ADDRESS_HOME_CITY, autofill::ADDRESS_HOME_STATE,
+                  autofill::ADDRESS_HOME_COUNTRY,
+              },
+              6, state()->GetApplicationLocale());
+      section = CreatePaymentSheetRowWithButton(
+          this, GetShippingAddressSectionString(spec()->shipping_type()),
+          truncated_content, button_string,
+          static_cast<int>(
+              PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON),
+          static_cast<int>(
+              DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON),
+          widest_name_column_view_width_);
+    } else {
+      base::string16 format = l10n_util::GetPluralStringFUTF16(
+          IDS_PAYMENT_REQUEST_SHIPPING_ADDRESSES_PREVIEW,
+          state()->shipping_profiles().size() - 1);
+      base::string16 label =
+          state()->shipping_profiles()[0]->ConstructInferredLabel(
+              {
+                  autofill::ADDRESS_HOME_LINE1, autofill::ADDRESS_HOME_LINE2,
+                  autofill::ADDRESS_HOME_CITY, autofill::ADDRESS_HOME_STATE,
+                  autofill::ADDRESS_HOME_COUNTRY,
+              },
+              6, state()->GetApplicationLocale());
+      section = CreatePaymentSheetRowWithButton(
+          this, GetShippingAddressSectionString(spec()->shipping_type()), label,
+          format, state()->shipping_profiles().size() - 1, button_string,
+          static_cast<int>(
+              PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON),
+          static_cast<int>(
+              DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON),
+          widest_name_column_view_width_);
+    }
   }
 
   return section;
@@ -575,16 +712,44 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
                                        ? l10n_util::GetStringUTF16(IDS_CHOOSE)
                                        : l10n_util::GetStringUTF16(IDS_ADD);
 
-    section = CreatePaymentSheetRowWithButton(
-        this,
-        l10n_util::GetStringUTF16(
-            IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME),
-        base::ASCIIToUTF16(""), button_string,
-        static_cast<int>(
-            PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON),
-        static_cast<int>(
-            DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON),
-        widest_name_column_view_width_);
+    if (state()->available_instruments().empty()) {
+      section = CreatePaymentSheetRowWithButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME),
+          base::ASCIIToUTF16(""), button_string,
+          static_cast<int>(
+              PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON),
+          static_cast<int>(
+              DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON),
+          widest_name_column_view_width_);
+    } else if (state()->available_instruments().size() == 1) {
+      section = CreatePaymentSheetRowWithButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME),
+          state()->available_instruments()[0]->label(), button_string,
+          static_cast<int>(
+              PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON),
+          static_cast<int>(
+              DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON),
+          widest_name_column_view_width_);
+    } else {
+      base::string16 format = l10n_util::GetPluralStringFUTF16(
+          IDS_PAYMENT_REQUEST_PAYMENT_METHODS_PREVIEW,
+          state()->available_instruments().size() - 1);
+      section = CreatePaymentSheetRowWithButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME),
+          state()->available_instruments()[0]->label(), format,
+          state()->available_instruments().size() - 1, button_string,
+          static_cast<int>(
+              PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON),
+          static_cast<int>(
+              DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON),
+          widest_name_column_view_width_);
+    }
   }
 
   return section;
@@ -624,16 +789,60 @@ PaymentSheetViewController::CreateContactInfoRow() {
                                        ? l10n_util::GetStringUTF16(IDS_CHOOSE)
                                        : l10n_util::GetStringUTF16(IDS_ADD);
 
-    section = CreatePaymentSheetRowWithButton(
-        this,
-        l10n_util::GetStringUTF16(
-            IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME),
-        base::ASCIIToUTF16(""), button_string,
-        static_cast<int>(
-            PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON),
-        static_cast<int>(
-            DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON),
-        widest_name_column_view_width_);
+    if (state()->contact_profiles().empty()) {
+      section = CreatePaymentSheetRowWithButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME),
+          base::ASCIIToUTF16(""), button_string,
+          static_cast<int>(
+              PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON),
+          static_cast<int>(
+              DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON),
+          widest_name_column_view_width_);
+    } else if (state()->contact_profiles().size() == 1) {
+      base::string16 truncated_content =
+          state()->contact_profiles()[0]->ConstructInferredLabel(
+              {
+                  autofill::ADDRESS_HOME_LINE1, autofill::ADDRESS_HOME_LINE2,
+                  autofill::ADDRESS_HOME_CITY, autofill::ADDRESS_HOME_STATE,
+                  autofill::ADDRESS_HOME_COUNTRY,
+              },
+              6, state()->GetApplicationLocale());
+      section = CreatePaymentSheetRowWithButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME),
+          truncated_content, button_string,
+          static_cast<int>(
+              PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON),
+          static_cast<int>(
+              DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON),
+          widest_name_column_view_width_);
+    } else {
+      base::string16 preview =
+          state()->contact_profiles()[0]->ConstructInferredLabel(
+              {
+                  autofill::ADDRESS_HOME_LINE1, autofill::ADDRESS_HOME_LINE2,
+                  autofill::ADDRESS_HOME_CITY, autofill::ADDRESS_HOME_STATE,
+                  autofill::ADDRESS_HOME_COUNTRY,
+              },
+              6, state()->GetApplicationLocale());
+      base::string16 format = l10n_util::GetPluralStringFUTF16(
+          IDS_PAYMENT_REQUEST_CONTACTS_PREVIEW,
+          state()->contact_profiles().size() - 1);
+      section = CreatePaymentSheetRowWithButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME),
+          preview, format, state()->contact_profiles().size() - 1,
+          button_string,
+          static_cast<int>(
+              PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON),
+          static_cast<int>(
+              DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON),
+          widest_name_column_view_width_);
+    }
   }
 
   return section;
