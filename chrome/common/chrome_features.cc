@@ -220,9 +220,14 @@ const base::Feature kModuleDatabase{"ModuleDatabase",
 // Enables the use of native notification centers instead of using the Message
 // Center for displaying the toasts.
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+#if defined(OS_MACOSX)
+const base::Feature kNativeNotifications{"NativeNotifications",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kNativeNotifications{"NativeNotifications",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+#endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 
 // If enabled, the list of content suggestions on the New Tab page will contain
 // pages that the user downloaded for later use.

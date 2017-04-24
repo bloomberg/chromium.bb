@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/notifications/stub_notification_platform_bridge.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -167,6 +169,16 @@ class PlatformNotificationServiceTest : public testing::Test {
     return static_cast<StubNotificationPlatformBridge*>(
                g_browser_process->notification_platform_bridge())
         ->GetNotificationAt(profile_->GetPath().BaseName().value(), 0);
+#elif BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+    if (base::FeatureList::IsEnabled(features::kNativeNotifications)) {
+      return static_cast<StubNotificationPlatformBridge*>(
+                 g_browser_process->notification_platform_bridge())
+          ->GetNotificationAt(profile_->GetPath().BaseName().value(), 0);
+    } else {
+      return static_cast<StubNotificationUIManager*>(
+                 g_browser_process->notification_ui_manager())
+          ->GetNotificationAt(0);
+    }
 #else
     return static_cast<StubNotificationUIManager*>(
                g_browser_process->notification_ui_manager())

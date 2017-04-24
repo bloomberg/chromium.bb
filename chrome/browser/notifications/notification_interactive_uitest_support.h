@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_INTERACTIVE_UITEST_SUPPORT_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_INTERACTIVE_UITEST_SUPPORT_H_
 
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -29,6 +30,9 @@ class NotificationsTest : public InProcessBrowserTest {
   NotificationsTest() {}
 
  protected:
+  // InProcessBrowserTest overrides.
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override;
+
   int GetNotificationCount();
   int GetNotificationPopupCount();
 

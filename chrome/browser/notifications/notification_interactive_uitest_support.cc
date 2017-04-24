@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
@@ -115,6 +116,17 @@ bool MessageCenterChangeObserver::Wait() {
 }
 
 // -----------------------------------------------------------------------------
+
+void NotificationsTest::SetUpDefaultCommandLine(
+    base::CommandLine* command_line) {
+  InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
+// Temporary change while the whole support class is changed to deal
+// with native notifications. crbug.com/714679
+#if defined(OS_MACOSX)
+  command_line->AppendSwitchASCII(switches::kDisableFeatures,
+                                  features::kNativeNotifications.name);
+#endif
+}
 
 int NotificationsTest::GetNotificationCount() {
   return message_center::MessageCenter::Get()->NotificationCount();
