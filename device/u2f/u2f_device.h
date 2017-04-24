@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "u2f_apdu_response.h"
-#include "u2f_return_code.h"
 
 namespace device {
 
@@ -24,9 +23,15 @@ class U2fDevice {
     U2F_V2,
     UNKNOWN,
   };
+  enum class ReturnCode : uint8_t {
+    SUCCESS,
+    FAILURE,
+    INVALID_PARAMS,
+    CONDITIONS_NOT_SATISFIED,
+  };
 
   using MessageCallback =
-      base::Callback<void(U2fReturnCode, std::vector<uint8_t>)>;
+      base::Callback<void(ReturnCode, std::vector<uint8_t>)>;
   using VersionCallback =
       base::Callback<void(bool success, ProtocolVersion version)>;
   using DeviceCallback =
