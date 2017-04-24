@@ -19,109 +19,13 @@
 
 #define mmin(a, b) ((a) < (b) ? (a) : (b))
 
-#if CONFIG_HIGHBITDEPTH
-// TODO(urvang): Refactor the highbd and lowbd version.
-void aom_find_mismatch_high(const aom_image_t *const img1,
-                            const aom_image_t *const img2, int yloc[4],
-                            int uloc[4], int vloc[4]) {
-  uint16_t *plane1, *plane2;
-  uint32_t stride1, stride2;
-  const uint32_t bsize = 64;
-  const uint32_t bsizey = bsize >> img1->y_chroma_shift;
-  const uint32_t bsizex = bsize >> img1->x_chroma_shift;
-  const uint32_t c_w =
-      (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;
-  const uint32_t c_h =
-      (img1->d_h + img1->y_chroma_shift) >> img1->y_chroma_shift;
-  int match = 1;
-  uint32_t i, j;
-  yloc[0] = yloc[1] = yloc[2] = yloc[3] = -1;
-  plane1 = (uint16_t *)img1->planes[AOM_PLANE_Y];
-  plane2 = (uint16_t *)img2->planes[AOM_PLANE_Y];
-  stride1 = img1->stride[AOM_PLANE_Y] / 2;
-  stride2 = img2->stride[AOM_PLANE_Y] / 2;
-  for (i = 0, match = 1; match && i < img1->d_h; i += bsize) {
-    for (j = 0; match && j < img1->d_w; j += bsize) {
-      int k, l;
-      const int si = mmin(i + bsize, img1->d_h) - i;
-      const int sj = mmin(j + bsize, img1->d_w) - j;
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(plane1 + (i + k) * stride1 + j + l) !=
-              *(plane2 + (i + k) * stride2 + j + l)) {
-            yloc[0] = i + k;
-            yloc[1] = j + l;
-            yloc[2] = *(plane1 + (i + k) * stride1 + j + l);
-            yloc[3] = *(plane2 + (i + k) * stride2 + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  uloc[0] = uloc[1] = uloc[2] = uloc[3] = -1;
-  plane1 = (uint16_t *)img1->planes[AOM_PLANE_U];
-  plane2 = (uint16_t *)img2->planes[AOM_PLANE_U];
-  stride1 = img1->stride[AOM_PLANE_U] / 2;
-  stride2 = img2->stride[AOM_PLANE_U] / 2;
-  for (i = 0, match = 1; match && i < c_h; i += bsizey) {
-    for (j = 0; match && j < c_w; j += bsizex) {
-      int k, l;
-      const int si = mmin(i + bsizey, c_h - i);
-      const int sj = mmin(j + bsizex, c_w - j);
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(plane1 + (i + k) * stride1 + j + l) !=
-              *(plane2 + (i + k) * stride2 + j + l)) {
-            uloc[0] = i + k;
-            uloc[1] = j + l;
-            uloc[2] = *(plane1 + (i + k) * stride1 + j + l);
-            uloc[3] = *(plane2 + (i + k) * stride2 + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  vloc[0] = vloc[1] = vloc[2] = vloc[3] = -1;
-  plane1 = (uint16_t *)img1->planes[AOM_PLANE_V];
-  plane2 = (uint16_t *)img2->planes[AOM_PLANE_V];
-  stride1 = img1->stride[AOM_PLANE_V] / 2;
-  stride2 = img2->stride[AOM_PLANE_V] / 2;
-  for (i = 0, match = 1; match && i < c_h; i += bsizey) {
-    for (j = 0; match && j < c_w; j += bsizex) {
-      int k, l;
-      const int si = mmin(i + bsizey, c_h - i);
-      const int sj = mmin(j + bsizex, c_w - j);
-      for (k = 0; match && k < si; ++k) {
-        for (l = 0; match && l < sj; ++l) {
-          if (*(plane1 + (i + k) * stride1 + j + l) !=
-              *(plane2 + (i + k) * stride2 + j + l)) {
-            vloc[0] = i + k;
-            vloc[1] = j + l;
-            vloc[2] = *(plane1 + (i + k) * stride1 + j + l);
-            vloc[3] = *(plane2 + (i + k) * stride2 + j + l);
-            match = 0;
-            break;
-          }
-        }
-      }
-    }
-  }
-}
-#endif
-
 static void find_mismatch_plane(const aom_image_t *const img1,
                                 const aom_image_t *const img2, int plane,
-                                int loc[4]) {
+                                int use_highbitdepth, int loc[4]) {
   const unsigned char *const p1 = img1->planes[plane];
-  const int p1_stride = img1->stride[plane];
+  const int p1_stride = img1->stride[plane] >> use_highbitdepth;
   const unsigned char *const p2 = img2->planes[plane];
-  const int p2_stride = img2->stride[plane];
+  const int p2_stride = img2->stride[plane] >> use_highbitdepth;
   const uint32_t bsize = 64;
   const int is_y_plane = (plane == AOM_PLANE_Y);
   const uint32_t bsizex = is_y_plane ? bsize : bsize >> img1->x_chroma_shift;
@@ -151,8 +55,12 @@ static void find_mismatch_plane(const aom_image_t *const img1,
           const int col = j + l;
           const int offset1 = row * p1_stride + col;
           const int offset2 = row * p2_stride + col;
-          const int val1 = p1[offset1];
-          const int val2 = p2[offset2];
+          const int val1 = use_highbitdepth
+                               ? p1[2 * offset1] | (p1[2 * offset1 + 1] << 8)
+                               : p1[offset1];
+          const int val2 = use_highbitdepth
+                               ? p2[2 * offset2] | (p2[2 * offset2 + 1] << 8)
+                               : p2[offset2];
           if (val1 != val2) {
             loc[0] = row;
             loc[1] = col;
@@ -167,12 +75,30 @@ static void find_mismatch_plane(const aom_image_t *const img1,
   }
 }
 
+static void find_mismatch_helper(const aom_image_t *const img1,
+                                 const aom_image_t *const img2,
+                                 int use_highbitdepth, int yloc[4], int uloc[4],
+                                 int vloc[4]) {
+#if !CONFIG_HIGHBITDEPTH
+  assert(!use_highbitdepth);
+#endif  // !CONFIG_HIGHBITDEPTH
+  find_mismatch_plane(img1, img2, AOM_PLANE_Y, use_highbitdepth, yloc);
+  find_mismatch_plane(img1, img2, AOM_PLANE_U, use_highbitdepth, uloc);
+  find_mismatch_plane(img1, img2, AOM_PLANE_V, use_highbitdepth, vloc);
+}
+
+#if CONFIG_HIGHBITDEPTH
+void aom_find_mismatch_high(const aom_image_t *const img1,
+                            const aom_image_t *const img2, int yloc[4],
+                            int uloc[4], int vloc[4]) {
+  find_mismatch_helper(img1, img2, 1, yloc, uloc, vloc);
+}
+#endif
+
 void aom_find_mismatch(const aom_image_t *const img1,
                        const aom_image_t *const img2, int yloc[4], int uloc[4],
                        int vloc[4]) {
-  find_mismatch_plane(img1, img2, AOM_PLANE_Y, yloc);
-  find_mismatch_plane(img1, img2, AOM_PLANE_U, uloc);
-  find_mismatch_plane(img1, img2, AOM_PLANE_V, vloc);
+  find_mismatch_helper(img1, img2, 0, yloc, uloc, vloc);
 }
 
 int aom_compare_img(const aom_image_t *const img1,
