@@ -10,6 +10,8 @@ static_library("cryptauth") {
   sources = [
     "authenticator.cc",
     "authenticator.h",
+    "background_eid_generator.cc",
+    "background_eid_generator.h",
     "bluetooth_throttler.h",
     "bluetooth_throttler_impl.cc",
     "bluetooth_throttler_impl.h",
@@ -141,6 +143,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "background_eid_generator_unittest.cc",
     "bluetooth_throttler_impl_unittest.cc",
     "connection_unittest.cc",
     "cryptauth_access_token_fetcher_impl_unittest.cc",
