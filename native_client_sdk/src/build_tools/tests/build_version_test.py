@@ -24,12 +24,7 @@ ProcInfo = collections.namedtuple('ProcInfo', ['returncode', 'output'])
 
 class TestCase(unittest.TestCase):
   def setUp(self):
-    self.fetch_svn = mock.patch('lastchange.FetchSVNRevision').start()
-    self.fetch_git_svn = mock.patch('lastchange.FetchGitSVNRevision').start()
     self.run_git = mock.patch('lastchange.RunGitCommand').start()
-
-    self.fetch_svn.return_value = None
-    self.fetch_git_svn.return_value = None
 
   def tearDown(self):
     mock.patch.stopall()

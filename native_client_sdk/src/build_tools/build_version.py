@@ -28,11 +28,10 @@ def ChromeVersion():
   Returns:
     Chrome version string or trunk + svn rev.
   '''
-  info = FetchGitCommitPosition()
-  if info.url == 'git':
-    _, ref, revision = ParseCommitPosition(info.revision)
-    if ref == 'refs/heads/master':
-      return 'trunk.%s' % revision
+  info = FetchCommitPosition()
+  _, ref, revision = ParseCommitPosition(info.revision)
+  if ref == 'refs/heads/master':
+    return 'trunk.%s' % revision
   return ChromeVersionNoTrunk()
 
 
@@ -67,7 +66,7 @@ def ChromeRevision():
   Returns:
     The Chrome revision as a string. e.g. "12345"
   '''
-  version = FetchGitCommitPosition()
+  version = FetchCommitPosition()
   return ParseCommitPosition(version.revision)[2]
 
 
@@ -78,7 +77,7 @@ def ChromeCommitPosition():
     A value like:
     0178d4831bd36b5fb9ff477f03dc43b11626a6dc-refs/heads/master@{#292238}
   '''
-  return FetchGitCommitPosition().revision
+  return FetchCommitPosition().revision
 
 
 def NaClRevision():
@@ -88,10 +87,10 @@ def NaClRevision():
     The NaCl revision as a string. e.g. "12345"
   '''
   nacl_dir = os.path.join(SRC_DIR, 'native_client')
-  return lastchange.FetchVersionInfo(None, nacl_dir, 'native_client').revision
+  return lastchange.FetchVersionInfo(nacl_dir).revision
 
 
-def FetchGitCommitPosition(directory=None):
+def FetchCommitPosition(directory=None):
   '''Return the "commit-position" of the Chromium git repo. This should be
   equivalent to the SVN revision if one exists.
   '''
@@ -116,7 +115,7 @@ def FetchGitCommitPosition(directory=None):
     for line in reversed(lines):
       if line.startswith('Cr-Commit-Position:'):
         pos = line.rsplit()[-1].strip()
-        return lastchange.VersionInfo('git', '%s-%s' % (hsh, pos))
+        return lastchange.VersionInfo('%s-%s' % (hsh, pos))
 
   raise Exception('Unable to fetch a Git Commit Position.')
 
