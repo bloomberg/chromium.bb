@@ -797,14 +797,6 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
   if (!filesystem_url.is_valid())
     return false;
 
-  // If |filesystem_url.origin()| is not committable in this process, then this
-  // page should not be able to place content in that origin via the filesystem
-  // API either.
-  if (!CanCommitURL(child_id, filesystem_url.origin())) {
-    UMA_HISTOGRAM_BOOLEAN("FileSystem.OriginFailedCanCommitURL", true);
-    return false;
-  }
-
   if (filesystem_url.path().ReferencesParent())
     return false;
 
@@ -820,6 +812,14 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
     // permissions).
     return HasPermissionsForFileSystem(
         child_id, filesystem_url.mount_filesystem_id(), permissions);
+  }
+
+  // If |filesystem_url.origin()| is not committable in this process, then this
+  // page should not be able to place content in that origin via the filesystem
+  // API either.
+  if (!CanCommitURL(child_id, filesystem_url.origin())) {
+    UMA_HISTOGRAM_BOOLEAN("FileSystem.OriginFailedCanCommitURL", true);
+    return false;
   }
 
   FileSystemPermissionPolicyMap::iterator found =
