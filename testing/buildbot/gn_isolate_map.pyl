@@ -895,7 +895,9 @@
     "type": "additional_compile_target",
   },
   "tab_capture_end2end_tests": {
-    "label": "//chrome/test:browser_tests",
+    # TODO(dpranke), TODO(crbug.com/714336): What is the right label to
+    # have here (and/or the right way to run this?).
+    "label": "//chrome/test:tab_capture_end2end_tests",
     "type": "gpu_browser_test",
     "gtest_filter": "CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
   },
