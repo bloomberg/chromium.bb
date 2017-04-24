@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
@@ -1829,6 +1830,10 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // the message accordingly.
   if (ShouldShowEolNotification(profile))
     CheckEolStatus(profile);
+
+  // Show the one-time notification and update the relevant pref about the
+  // completion of the file system migration necessary for ARC, when needed.
+  arc::ShowArcMigrationSuccessNotificationIfNeeded(profile);
 }
 
 void UserSessionManager::RespectLocalePreferenceWrapper(
