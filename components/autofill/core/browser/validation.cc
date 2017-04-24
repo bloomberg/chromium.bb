@@ -15,11 +15,11 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/libphonenumber/phonenumber_api.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
@@ -177,8 +177,16 @@ bool IsValidState(const base::string16& text) {
 
 bool IsValidPhoneNumber(const base::string16& text,
                         const std::string& country_code) {
-  i18n::PhoneObject phone_number(text, country_code);
-  return phone_number.IsValidNumber();
+  ::i18n::phonenumbers::PhoneNumber parsed_number;
+  ::i18n::phonenumbers::PhoneNumberUtil* phone_number_util =
+      ::i18n::phonenumbers::PhoneNumberUtil::GetInstance();
+  if (phone_number_util->Parse(base::UTF16ToUTF8(text), country_code,
+                               &parsed_number) !=
+      ::i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
+    return false;
+  }
+
+  return phone_number_util->IsValidNumber(parsed_number);
 }
 
 bool IsValidZip(const base::string16& text) {

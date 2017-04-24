@@ -7,6 +7,12 @@
   <message name="IDS_PAYMENTS_NAME_FIELD_IN_CONTACT_DETAILS" desc="The label for text input field containing the full name of a person. [CHAR-LIMIT=32]" formatter_data="android_java">
     Name
   </message>
+  <message name="IDS_PAYMENTS_PHONE_FIELD_IN_CONTACT_DETAILS" desc="The label for text input field containing a phone number. [CHAR-LIMIT=32]">
+    Phone number
+  </message>
+  <message name="IDS_PAYMENTS_EMAIL_FIELD_IN_CONTACT_DETAILS" desc="The label for text input field containing an email address. [CHAR-LIMIT=32]">
+    Email
+  </message>
   <message name="IDS_PAYMENTS_SAVE_CARD_TO_DEVICE_CHECKBOX" desc="The label for the checkbox that enables the user to save a credit card to their device, for example, on their phone." formatter_data="android_java">
     Save this card to this device
   </message>

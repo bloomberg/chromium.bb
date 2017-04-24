@@ -86,6 +86,7 @@ class PaymentRequestBrowserTestBase
   void OnShippingOptionSectionOpened() override;
   void OnCreditCardEditorOpened() override;
   void OnShippingAddressEditorOpened() override;
+  void OnContactInfoEditorOpened() override;
   void OnBackNavigation() override;
   void OnBackToPaymentSheetNavigation() override;
   void OnContactInfoOpened() override;
@@ -112,8 +113,10 @@ class PaymentRequestBrowserTestBase
   void OpenPaymentMethodScreen();
   void OpenShippingAddressSectionScreen();
   void OpenShippingOptionSectionScreen();
+  void OpenContactInfoScreen();
   void OpenCreditCardEditorScreen();
   void OpenShippingAddressEditorScreen();
+  void OpenContactInfoEditorScreen();
   void ClickOnBackArrow();
 
   content::WebContents* GetActiveWebContents();
@@ -200,6 +203,7 @@ class PaymentRequestBrowserTestBase
     SHIPPING_OPTION_SECTION_OPENED,
     CREDIT_CARD_EDITOR_OPENED,
     SHIPPING_ADDRESS_EDITOR_OPENED,
+    CONTACT_INFO_EDITOR_OPENED,
     BACK_NAVIGATION,
     BACK_TO_PAYMENT_SHEET_NAVIGATION,
     CONTACT_INFO_OPENED,

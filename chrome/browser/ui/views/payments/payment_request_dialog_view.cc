@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/views/payments/contact_info_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/cvc_unmask_view_controller.h"
 #include "chrome/browser/ui/views/payments/error_message_view_controller.h"
@@ -253,6 +254,17 @@ void PaymentRequestDialogView::ShowShippingAddressEditor(
                     /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnShippingAddressEditorOpened();
+}
+
+void PaymentRequestDialogView::ShowContactInfoEditor(
+    autofill::AutofillProfile* profile) {
+  view_stack_->Push(CreateViewAndInstallController(
+                        base::MakeUnique<ContactInfoEditorViewController>(
+                            request_->spec(), request_->state(), this, profile),
+                        &controller_map_),
+                    /* animate = */ true);
+  if (observer_for_testing_)
+    observer_for_testing_->OnContactInfoEditorOpened();
 }
 
 void PaymentRequestDialogView::EditorViewUpdated() {

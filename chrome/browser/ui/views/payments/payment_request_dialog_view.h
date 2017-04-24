@@ -57,6 +57,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
     virtual void OnShippingAddressEditorOpened() = 0;
 
+    virtual void OnContactInfoEditorOpened() = 0;
+
     virtual void OnBackNavigation() = 0;
 
     virtual void OnBackToPaymentSheetNavigation() = 0;
@@ -111,6 +113,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
       autofill::CreditCard* credit_card = nullptr);
   // |profile| is the address to be edited, or nullptr for adding an address.
   void ShowShippingAddressEditor(autofill::AutofillProfile* profile = nullptr);
+  // |profile| is the profile to be edited, or nullptr for adding a profile.
+  void ShowContactInfoEditor(autofill::AutofillProfile* profile = nullptr);
   void EditorViewUpdated();
 
   void ShowCvcUnmaskPrompt(

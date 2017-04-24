@@ -59,6 +59,10 @@ class ProfileListViewController : public PaymentRequestSheetController {
 
   virtual void SelectProfile(autofill::AutofillProfile* profile) = 0;
 
+  // Shows an editor for modifying |profile|, or for creating a new profile
+  // if |profile| is null.
+  virtual void ShowEditor(autofill::AutofillProfile* profile) = 0;
+
   virtual autofill::AutofillProfile* GetSelectedProfile() = 0;
 
  protected:
@@ -82,7 +86,6 @@ class ProfileListViewController : public PaymentRequestSheetController {
   virtual int GetSecondaryButtonTextId() = 0;
   virtual int GetSecondaryButtonTag() = 0;
   virtual int GetSecondaryButtonViewId() = 0;
-  virtual void OnSecondaryButtonPressed() = 0;
 
  private:
   std::unique_ptr<views::Button> CreateRow(autofill::AutofillProfile* profile);
