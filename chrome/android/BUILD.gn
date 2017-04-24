@@ -882,6 +882,11 @@ instrumentation_test_apk("chrome_public_test_apk") {
     "//net/android:net_test_support_apk",
   ]
   proguard_enabled = !is_java_debug
+
+  # The test APK contains code from both the APK under test and the
+  # test APK when proguard is enabled. That causes this APK to exceed
+  # the dex limit.
+  enable_multidex = proguard_enabled
 }
 
 if (enable_vr) {
