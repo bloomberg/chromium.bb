@@ -141,11 +141,10 @@ IPC_SYNC_MESSAGE_ROUTED1_2(SyncCompositorMsg_SetSharedMemory,
 
 IPC_MESSAGE_ROUTED0(SyncCompositorMsg_ZeroSharedMemory);
 
-IPC_SYNC_MESSAGE_ROUTED1_3(SyncCompositorMsg_DemandDrawSw,
+IPC_SYNC_MESSAGE_ROUTED1_2(SyncCompositorMsg_DemandDrawSw,
                            content::SyncCompositorDemandDrawSwParams,
-                           bool /* result */,
                            content::SyncCompositorCommonRendererParams,
-                           cc::CompositorFrame)
+                           base::Optional<cc::CompositorFrameMetadata>)
 
 IPC_SYNC_MESSAGE_ROUTED2_1(SyncCompositorMsg_ZoomBy,
                            float /* delta */,

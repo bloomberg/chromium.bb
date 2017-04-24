@@ -2631,12 +2631,6 @@ void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
 void RenderWidgetHostImpl::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
-  // The renderer should not send empty frames.
-  if (frame.render_pass_list.empty()) {
-    DLOG(ERROR) << "Renderer sent an empty frame.";
-    return;
-  }
-
   // The renderer must allocate a new LocalSurfaceId if frame size or device
   // scale factor changes.
   float device_scale_factor = frame.metadata.device_scale_factor;

@@ -176,22 +176,20 @@ class ScopedSetSkCanvas {
 
 bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
   SyncCompositorCommonRendererParams common_renderer_params;
-  bool success = false;
-  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  base::Optional<cc::CompositorFrameMetadata> metadata;
   ScopedSetSkCanvas set_sk_canvas(canvas);
   SyncCompositorDemandDrawSwParams params;  // Unused.
   {
     base::ThreadRestrictions::ScopedAllowWait wait;
     if (!sender_->Send(new SyncCompositorMsg_DemandDrawSw(
-            routing_id_, params, &success, &common_renderer_params,
-            frame.get()))) {
+            routing_id_, params, &common_renderer_params, &metadata))) {
       return false;
     }
   }
-  if (!success)
+  if (!metadata)
     return false;
   ProcessCommonParams(common_renderer_params);
-  UpdateFrameMetaData(std::move(frame->metadata));
+  UpdateFrameMetaData(std::move(*metadata));
   return true;
 }
 
@@ -243,23 +241,21 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   if (!software_draw_shm_)
     return false;
 
-  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  base::Optional<cc::CompositorFrameMetadata> metadata;
   SyncCompositorCommonRendererParams common_renderer_params;
-  bool success = false;
   {
     base::ThreadRestrictions::ScopedAllowWait wait;
     if (!sender_->Send(new SyncCompositorMsg_DemandDrawSw(
-            routing_id_, params, &success, &common_renderer_params,
-            frame.get()))) {
+            routing_id_, params, &common_renderer_params, &metadata))) {
       return false;
     }
   }
   ScopedSendZeroMemory send_zero_memory(this);
-  if (!success)
+  if (!metadata)
     return false;
 
   ProcessCommonParams(common_renderer_params);
-  UpdateFrameMetaData(std::move(frame->metadata));
+  UpdateFrameMetaData(std::move(*metadata));
 
   SkBitmap bitmap;
   if (!bitmap.installPixels(info, software_draw_shm_->shm.memory(), stride))

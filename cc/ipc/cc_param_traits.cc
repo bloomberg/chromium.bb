@@ -795,7 +795,7 @@ bool ParamTraits<cc::CompositorFrame>::Read(const base::Pickle* m,
 
   uint32_t num_render_passes;
   if (!ReadParam(m, iter, &p->resource_list) ||
-      !ReadParam(m, iter, &num_render_passes) ||
+      !ReadParam(m, iter, &num_render_passes) || num_render_passes == 0 ||
       num_render_passes > kMaxRenderPasses)
     return false;
   for (uint32_t i = 0; i < num_render_passes; ++i) {

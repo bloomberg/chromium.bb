@@ -292,7 +292,7 @@ void SynchronousCompositorProxy::DemandDrawSw(
   }
   if (inside_receive_) {
     // Did not swap.
-    SendDemandDrawSwReply(false, cc::CompositorFrame(), reply_message);
+    SendDemandDrawSwReply(base::nullopt, reply_message);
     inside_receive_ = false;
   }
 }
@@ -323,18 +323,17 @@ void SynchronousCompositorProxy::SubmitCompositorFrameSw(
     cc::CompositorFrame frame) {
   DCHECK(inside_receive_);
   DCHECK(software_draw_reply_);
-  SendDemandDrawSwReply(true, std::move(frame), software_draw_reply_);
+  SendDemandDrawSwReply(std::move(frame.metadata), software_draw_reply_);
   inside_receive_ = false;
 }
 
 void SynchronousCompositorProxy::SendDemandDrawSwReply(
-    bool success,
-    cc::CompositorFrame frame,
+    base::Optional<cc::CompositorFrameMetadata> metadata,
     IPC::Message* reply_message) {
   SyncCompositorCommonRendererParams common_renderer_params;
   PopulateCommonParams(&common_renderer_params);
   SyncCompositorMsg_DemandDrawSw::WriteReplyParams(
-      reply_message, success, common_renderer_params, frame);
+      reply_message, common_renderer_params, metadata);
   Send(reply_message);
 }
 

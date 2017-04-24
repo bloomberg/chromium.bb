@@ -95,9 +95,9 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
                                   uint32_t compositor_frame_sink_id);
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
   void SubmitCompositorFrameSw(cc::CompositorFrame frame);
-  void SendDemandDrawSwReply(bool success,
-                             cc::CompositorFrame frame,
-                             IPC::Message* reply_message);
+  void SendDemandDrawSwReply(
+      base::Optional<cc::CompositorFrameMetadata> metadata,
+      IPC::Message* reply_message);
   void SendAsyncRendererStateIfNeeded();
   void DoDemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
                       IPC::Message* reply_message);
