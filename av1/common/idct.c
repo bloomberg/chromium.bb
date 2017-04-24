@@ -2502,18 +2502,17 @@ void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      av1_inv_txfm2d_add_4x4(input, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
-                             bd);
-      break;
 #if CONFIG_EXT_TX
     case FLIPADST_DCT:
     case DCT_FLIPADST:
     case FLIPADST_FLIPADST:
     case ADST_FLIPADST:
     case FLIPADST_ADST:
+#endif  // CONFIG_EXT_TX
       av1_inv_txfm2d_add_4x4(input, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
                              bd);
       break;
+#if CONFIG_EXT_TX
     case V_DCT:
     case H_DCT:
     case V_ADST:
@@ -2608,18 +2607,17 @@ static void highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      av1_inv_txfm2d_add_8x8(input, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
-                             bd);
-      break;
 #if CONFIG_EXT_TX
     case FLIPADST_DCT:
     case DCT_FLIPADST:
     case FLIPADST_FLIPADST:
     case ADST_FLIPADST:
     case FLIPADST_ADST:
+#endif  // CONFIG_EXT_TX
       av1_inv_txfm2d_add_8x8(input, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
                              bd);
       break;
+#if CONFIG_EXT_TX
     case V_DCT:
     case H_DCT:
     case V_ADST:
@@ -2646,18 +2644,17 @@ static void highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      av1_inv_txfm2d_add_16x16(input, CONVERT_TO_SHORTPTR(dest), stride,
-                               tx_type, bd);
-      break;
 #if CONFIG_EXT_TX
     case FLIPADST_DCT:
     case DCT_FLIPADST:
     case FLIPADST_FLIPADST:
     case ADST_FLIPADST:
     case FLIPADST_ADST:
+#endif  // CONFIG_EXT_TX
       av1_inv_txfm2d_add_16x16(input, CONVERT_TO_SHORTPTR(dest), stride,
                                tx_type, bd);
       break;
+#if CONFIG_EXT_TX
     case V_DCT:
     case H_DCT:
     case V_ADST:
