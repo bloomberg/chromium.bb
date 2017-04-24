@@ -391,12 +391,16 @@ void AppBannerManager::DidFinishLoad(
 
   load_finished_ = true;
   validated_url_ = validated_url;
-  // Start the pipeline immediately if:
-  //  1. we have sufficient engagement, or
-  //  2. 0 engagement is required, or
-  //  3. the feature to start the installability check in load is enabled
+
+  // If the bypass flag is on, or if we require no engagement to trigger the
+  // banner, the rest of the banner pipeline should operate as if the engagement
+  // threshold has been met.
+  if (AppBannerSettingsHelper::HasSufficientEngagement(0))
+    has_sufficient_engagement_ = true;
+
+  // Start the pipeline immediately if we pass (or bypass) the engagement check,
+  // or if the feature to run the installability check on page load is enabled.
   if (has_sufficient_engagement_ ||
-      AppBannerSettingsHelper::HasSufficientEngagement(0) ||
       base::FeatureList::IsEnabled(
           features::kCheckInstallabilityForBannerOnLoad)) {
     RequestAppBanner(validated_url, false /* is_debug_mode */);
