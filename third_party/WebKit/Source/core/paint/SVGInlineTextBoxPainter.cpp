@@ -167,11 +167,7 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
     has_visible_stroke = false;
   }
 
-  unsigned text_fragments_size = svg_inline_text_box_.TextFragments().size();
-  for (unsigned i = 0; i < text_fragments_size; ++i) {
-    const SVGTextFragment& fragment =
-        svg_inline_text_box_.TextFragments().at(i);
-
+  for (const SVGTextFragment& fragment : svg_inline_text_box_.TextFragments()) {
     GraphicsContextStateSaver state_saver(paint_info.context, false);
     if (fragment.IsTransformed()) {
       state_saver.Save();
@@ -587,9 +583,7 @@ Vector<SVGTextFragmentWithRange>
 SVGInlineTextBoxPainter::CollectFragmentsInRange(int start_position,
                                                  int end_position) const {
   Vector<SVGTextFragmentWithRange> fragment_info_list;
-  const Vector<SVGTextFragment>& fragments =
-      svg_inline_text_box_.TextFragments();
-  for (const SVGTextFragment& fragment : fragments) {
+  for (const SVGTextFragment& fragment : svg_inline_text_box_.TextFragments()) {
     // TODO(ramya.v): If these can't be negative we should use unsigned.
     int fragment_start_position = start_position;
     int fragment_end_position = end_position;
