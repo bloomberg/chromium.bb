@@ -164,6 +164,10 @@ const char kHistogramPageTimingForegroundDurationAfterPaint[] =
     "PageLoad.PageTiming.ForegroundDuration.AfterPaint";
 const char kHistogramPageTimingForegroundDurationNoCommit[] =
     "PageLoad.PageTiming.ForegroundDuration.NoCommit";
+const char kHistogramPageTimingForegroundDurationWithPaint[] =
+    "PageLoad.PageTiming.ForegroundDuration.WithPaint";
+const char kHistogramPageTimingForegroundDurationWithoutPaint[] =
+    "PageLoad.PageTiming.ForegroundDuration.WithoutPaint";
 
 const char kHistogramLoadTypeParseStartReload[] =
     "PageLoad.ParseTiming.NavigationToParseStart.LoadType.Reload";
@@ -741,6 +745,13 @@ void CorePageLoadMetricsObserver::RecordForegroundDurationHistograms(
           internal::kHistogramPageTimingForegroundDurationAfterPaint,
           foreground_duration.value() -
               timing.paint_timing.first_paint.value());
+      PAGE_LOAD_LONG_HISTOGRAM(
+          internal::kHistogramPageTimingForegroundDurationWithPaint,
+          foreground_duration.value());
+    } else {
+      PAGE_LOAD_LONG_HISTOGRAM(
+          internal::kHistogramPageTimingForegroundDurationWithoutPaint,
+          foreground_duration.value());
     }
   } else {
     PAGE_LOAD_LONG_HISTOGRAM(

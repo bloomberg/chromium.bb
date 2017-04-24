@@ -101,6 +101,12 @@ const char kHistogramFromGWSForegroundDuration[] =
 const char kHistogramFromGWSForegroundDurationAfterPaint[] =
     "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration."
     "AfterPaint";
+const char kHistogramFromGWSForegroundDurationWithPaint[] =
+    "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration."
+    "WithPaint";
+const char kHistogramFromGWSForegroundDurationWithoutPaint[] =
+    "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration."
+    "WithoutPaint";
 const char kHistogramFromGWSForegroundDurationNoCommit[] =
     "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration.NoCommit";
 
@@ -239,6 +245,13 @@ void LogForegroundDurations(const page_load_metrics::PageLoadTiming& timing,
           internal::kHistogramFromGWSForegroundDurationAfterPaint,
           foreground_duration.value() -
               timing.paint_timing.first_paint.value());
+      PAGE_LOAD_LONG_HISTOGRAM(
+          internal::kHistogramFromGWSForegroundDurationWithPaint,
+          foreground_duration.value());
+    } else {
+      PAGE_LOAD_LONG_HISTOGRAM(
+          internal::kHistogramFromGWSForegroundDurationWithoutPaint,
+          foreground_duration.value());
     }
   } else {
     PAGE_LOAD_LONG_HISTOGRAM(
