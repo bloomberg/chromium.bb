@@ -673,7 +673,7 @@ void NavigatorImpl::DidNavigate(
 
   // After setting the last committed origin, reset the feature policy in the
   // RenderFrameHost to a blank policy based on the parent frame.
-  if (did_navigate && !is_navigation_within_page)
+  if (!is_navigation_within_page)
     render_frame_host->ResetFeaturePolicy();
 
   // Send notification about committed provisional loads. This notification is

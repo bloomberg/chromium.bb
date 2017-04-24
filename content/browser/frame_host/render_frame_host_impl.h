@@ -585,7 +585,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ResetLoadingState();
 
   // Returns the feature policy which should be enforced on this RenderFrame.
-  FeaturePolicy* get_feature_policy() { return feature_policy_.get(); }
+  FeaturePolicy* feature_policy() { return feature_policy_.get(); }
 
   // Clears any existing policy and constructs a new policy for this frame,
   // based on its parent frame.

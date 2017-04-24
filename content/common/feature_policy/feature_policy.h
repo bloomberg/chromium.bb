@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
@@ -177,6 +178,8 @@ class CONTENT_EXPORT FeaturePolicy : public blink::WebFeaturePolicy {
 
  private:
   friend class FeaturePolicyTest;
+  FRIEND_TEST_ALL_PREFIXES(NavigatorTestWithBrowserSideNavigation,
+                           FeaturePolicyNewChild);
 
   explicit FeaturePolicy(url::Origin origin);
   FeaturePolicy(url::Origin origin, const FeatureList& feature_list);

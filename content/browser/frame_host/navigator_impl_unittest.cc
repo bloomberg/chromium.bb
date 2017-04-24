@@ -1251,15 +1251,14 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   contents()->NavigateAndCommit(kUrl1);
 
   // Check the feature policy before navigation.
-  FeaturePolicy* original_feature_policy =
-      main_test_rfh()->get_feature_policy();
+  FeaturePolicy* original_feature_policy = main_test_rfh()->feature_policy();
   ASSERT_TRUE(original_feature_policy);
 
   // Navigate to the new URL.
   contents()->NavigateAndCommit(kUrl2);
 
   // Check the feature policy after navigation.
-  FeaturePolicy* final_feature_policy = main_test_rfh()->get_feature_policy();
+  FeaturePolicy* final_feature_policy = main_test_rfh()->feature_policy();
   ASSERT_TRUE(final_feature_policy);
   ASSERT_NE(original_feature_policy, final_feature_policy);
 }
@@ -1274,16 +1273,36 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   contents()->NavigateAndCommit(kUrl1);
 
   // Check the feature policy before navigation.
-  FeaturePolicy* original_feature_policy =
-      main_test_rfh()->get_feature_policy();
+  FeaturePolicy* original_feature_policy = main_test_rfh()->feature_policy();
   ASSERT_TRUE(original_feature_policy);
 
   // Navigate to the new URL.
   contents()->NavigateAndCommit(kUrl2);
 
   // Check the feature policy after navigation.
-  FeaturePolicy* final_feature_policy = main_test_rfh()->get_feature_policy();
+  FeaturePolicy* final_feature_policy = main_test_rfh()->feature_policy();
   ASSERT_EQ(original_feature_policy, final_feature_policy);
+}
+
+// Feature Policy: Test that the feature policy is set correctly when inserting
+// a new child frame.
+TEST_F(NavigatorTestWithBrowserSideNavigation, FeaturePolicyNewChild) {
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.chromium.org/Home");
+
+  contents()->NavigateAndCommit(kUrl1);
+
+  TestRenderFrameHost* subframe_rfh =
+      contents()->GetMainFrame()->AppendChild("child");
+  // Simulate the navigation triggered by inserting a child frame into a page.
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  InitNavigateParams(&params, 1, false, kUrl2,
+                     ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  subframe_rfh->SendNavigateWithParams(&params);
+
+  FeaturePolicy* subframe_feature_policy = subframe_rfh->feature_policy();
+  ASSERT_TRUE(subframe_feature_policy);
+  ASSERT_FALSE(subframe_feature_policy->origin_.unique());
 }
 
 }  // namespace content

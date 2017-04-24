@@ -41,6 +41,7 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
                         ui::PageTransition transition) {
   params->nav_entry_id = nav_entry_id;
   params->url = url;
+  params->origin = url::Origin(url);
   params->referrer = Referrer();
   params->transition = transition;
   params->redirects = std::vector<GURL>();
