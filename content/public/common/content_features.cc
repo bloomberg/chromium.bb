@@ -242,7 +242,7 @@ const base::Feature kTouchpadAndWheelScrollLatching{
 
 // Controls whether vibrate requires user gesture.
 const base::Feature kVibrateRequiresUserGesture{
-    "VibrateRequiresUserGesture", base::FEATURE_DISABLED_BY_DEFAULT};
+    "VibrateRequiresUserGesture", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables VR UI.
 const base::Feature kVrShell{"VrShell", base::FEATURE_DISABLED_BY_DEFAULT};

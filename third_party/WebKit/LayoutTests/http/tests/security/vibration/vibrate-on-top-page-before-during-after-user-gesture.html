@@ -8,9 +8,9 @@
         function startTest()
         {
             test(function() {
-              assert_true(
+              assert_false(
                   navigator.vibrate(200),
-                  "1. Vibrate w/o user gesture is deprecated and will be blocked in M60.");
+                  "1. Vibrate w/o user gesture is blocked.");
             });
 
             // A manual click should enable vibrate.

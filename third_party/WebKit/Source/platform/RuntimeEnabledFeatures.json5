@@ -958,7 +958,7 @@
     },
     {
       name: "VibrateRequiresUserGesture",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "VideoFullscreenDetection",
