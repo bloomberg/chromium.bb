@@ -32,6 +32,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/extensions/extension_tab_util_delegate_chromeos.h"
 #include "chrome/browser/chromeos/extensions/permissions_updater_delegate_chromeos.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
@@ -52,6 +53,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
@@ -842,6 +844,12 @@ void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
   // logout), ie. it's not freed and it leaks but that is fine.
   extensions::PermissionsUpdater::SetPlatformDelegate(
       new extensions::PermissionsUpdaterDelegateChromeOS);
+
+  // In Public Sessions set the PS delegate on ExtensionTabUtil (used to scrub
+  // URL down to origin for security reasons). See comment above about
+  // PermissionsUpdaterDelegateChromeOS for more info.
+  extensions::ExtensionTabUtil::SetPlatformDelegate(
+      new extensions::ExtensionTabUtilDelegateChromeOS);
 }
 
 void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {

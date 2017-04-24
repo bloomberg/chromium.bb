@@ -53,6 +53,16 @@ class ExtensionTabUtil {
     std::unique_ptr<int> index;
   };
 
+  // Platform specific delegate.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    // Platform specific scrubbing of tab info for |extension|.
+    virtual void ScrubTabForExtension(const Extension* extension,
+                                      content::WebContents* contents,
+                                      api::tabs::Tab* tab) = 0;
+  };
+
   // Opens a new tab given an extension function |function| and creation
   // parameters |params|. Returns a Tab object if successful, or NULL and
   // optionally sets |error| if an error occurs.
@@ -113,6 +123,11 @@ class ExtensionTabUtil {
   // with information about the mute state of a browser tab.
   static std::unique_ptr<api::tabs::MutedInfo> CreateMutedInfo(
       content::WebContents* contents);
+
+  // Platform specific logic moved to delegate. This should be set during
+  // startup.
+  // |delegate| is a singleton instance and is leaked.
+  static void SetPlatformDelegate(Delegate* delegate);
 
   // Removes any privacy-sensitive fields from a Tab object if appropriate,
   // given the permissions of the extension and the tab in question.  The
