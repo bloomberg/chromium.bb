@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/test/sequenced_worker_pool_owner.h"
+#include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -80,9 +81,17 @@ WmTestHelper::~WmTestHelper() {
   base::RunLoop().RunUntilIdle();
 
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
+
+  input_device_client_.reset();
 }
 
 void WmTestHelper::Init() {
+  const Config config = base::CommandLine::ForCurrentProcess()->HasSwitch("mus")
+                            ? Config::MUS
+                            : Config::MASH;
+  if (config == Config::MUS)
+    input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
+
   // MaterialDesignController may have already been initialized. To cover that
   // case explicitly uninitialize before initializing.
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
@@ -100,7 +109,7 @@ void WmTestHelper::Init() {
       kMaxNumberThreads, kThreadNamePrefix);
 
   window_manager_app_->window_manager_ =
-      base::MakeUnique<WindowManager>(nullptr, Config::MASH);
+      base::MakeUnique<WindowManager>(nullptr, config);
   window_manager_app_->window_manager()->shell_delegate_ =
       base::MakeUnique<test::TestShellDelegate>();
 

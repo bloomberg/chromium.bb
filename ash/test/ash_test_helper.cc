@@ -32,6 +32,7 @@
 #include "chromeos/network/network_handler.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -82,6 +83,9 @@ AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
 AshTestHelper::~AshTestHelper() {}
 
 void AshTestHelper::SetUp(bool start_session) {
+  if (config_ == Config::MUS)
+    input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
+
   display::ResetDisplayIdForTest();
   if (config_ != Config::CLASSIC)
     aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
@@ -219,6 +223,8 @@ void AshTestHelper::TearDown() {
 
   test_views_delegate_.reset();
   wm_state_.reset();
+
+  input_device_client_.reset();
 
   // WindowManager owns the CaptureController for mus/mash.
   CHECK(config_ != Config::CLASSIC || !::wm::CaptureController::Get());

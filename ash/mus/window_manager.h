@@ -32,6 +32,10 @@ namespace service_manager {
 class Connector;
 }
 
+namespace ui {
+class InputDeviceClient;
+}
+
 namespace views {
 class PointerWatcherEventRouter;
 }
@@ -224,6 +228,8 @@ class WindowManager : public aura::WindowManagerDelegate,
   // State that is only valid during a drag.
   struct DragState;
   std::unique_ptr<DragState> drag_state_;
+
+  std::unique_ptr<ui::InputDeviceClient> input_device_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

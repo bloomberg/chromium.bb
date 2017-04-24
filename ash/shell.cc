@@ -958,9 +958,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   toplevel_window_event_handler_ =
       base::MakeUnique<ToplevelWindowEventHandler>();
 
-  // TODO: get working in Config::MUS. This uses InputDeviceManager, which is
-  // not created in mus. http://crbug.com/712290.
-  if (config == Config::CLASSIC) {
+  if (config != Config::MASH) {
     system_gesture_filter_.reset(new SystemGestureEventFilter);
     AddPreTargetHandler(system_gesture_filter_.get());
   }
@@ -1052,9 +1050,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   // Needs to be created after InitDisplays() since it may cause the virtual
   // keyboard to be deployed.
-  // TODO: get working in Config::MUS. This uses InputDeviceManager, which is
-  // not created in mus. http://crbug.com/712290.
-  if (config == Config::CLASSIC)
+  if (config != Config::MASH)
     virtual_keyboard_controller_.reset(new VirtualKeyboardController);
 
   audio_a11y_controller_.reset(new chromeos::AudioA11yController);

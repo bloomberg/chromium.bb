@@ -20,6 +20,10 @@ class MessageLoop;
 class SequencedWorkerPoolOwner;
 }
 
+namespace ui {
+class InputDeviceClient;
+}
+
 namespace views {
 class ViewsDelegate;
 }
@@ -78,6 +82,8 @@ class WmTestHelper {
   int64_t next_display_id_ = 1;
 
   std::unique_ptr<base::SequencedWorkerPoolOwner> blocking_pool_owner_;
+
+  std::unique_ptr<ui::InputDeviceClient> input_device_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WmTestHelper);
 };

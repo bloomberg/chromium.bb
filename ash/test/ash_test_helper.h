@@ -19,7 +19,7 @@
 namespace aura {
 class Window;
 class WindowTreeClientPrivate;
-}  // namespace aura
+}
 
 namespace display {
 class Display;
@@ -33,7 +33,8 @@ class MashTestSuite;
 
 namespace ui {
 class ScopedAnimationDurationScaleMode;
-}  // namespace ui
+class InputDeviceClient;
+}
 
 namespace wm {
 class WMState;
@@ -164,6 +165,8 @@ class AshTestHelper {
   int64_t next_display_id_ = 1;
 
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
+
+  std::unique_ptr<ui::InputDeviceClient> input_device_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

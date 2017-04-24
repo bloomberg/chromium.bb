@@ -39,6 +39,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/types.h"
+#include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -109,6 +110,11 @@ void WindowManager::Init(
     std::unique_ptr<aura::WindowTreeClient> window_tree_client,
     const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
     std::unique_ptr<ShellDelegate> shell_delegate) {
+  // Only create InputDeviceClient in MASH mode. For MUS mode WindowManager is
+  // created by chrome, which creates InputDeviceClient.
+  if (config_ == Config::MASH)
+    input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
+
   blocking_pool_ = blocking_pool;
   DCHECK(window_manager_client_);
   DCHECK(!window_tree_client_);
