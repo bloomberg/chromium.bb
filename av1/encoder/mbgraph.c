@@ -30,10 +30,7 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
   const MV_SPEED_FEATURES *const mv_sf = &cpi->sf.mv;
   const aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[BLOCK_16X16];
 
-  const int tmp_col_min = x->mv_col_min;
-  const int tmp_col_max = x->mv_col_max;
-  const int tmp_row_min = x->mv_row_min;
-  const int tmp_row_max = x->mv_row_max;
+  const MvLimits tmp_mv_limits = x->mv_limits;
   MV ref_full;
   int cost_list[5];
 
@@ -41,7 +38,7 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
   int step_param = mv_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
-  av1_set_mv_search_range(x, ref_mv);
+  av1_set_mv_search_range(&x->mv_limits, ref_mv);
 
   ref_full.col = ref_mv->col >> 3;
   ref_full.row = ref_mv->row >> 3;
@@ -77,10 +74,7 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
   av1_build_inter_predictors_sby(xd, mb_row, mb_col, NULL, BLOCK_16X16);
 
   /* restore UMV window */
-  x->mv_col_min = tmp_col_min;
-  x->mv_col_max = tmp_col_max;
-  x->mv_row_min = tmp_row_min;
-  x->mv_row_max = tmp_row_max;
+  x->mv_limits = tmp_mv_limits;
 
   return aom_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
                       xd->plane[0].dst.buf, xd->plane[0].dst.stride);
@@ -237,8 +231,8 @@ static void update_mbgraph_frame_stats(AV1_COMP *cpi,
   av1_zero(mi_local);
   // Set up limit values for motion vectors to prevent them extending outside
   // the UMV borders.
-  x->mv_row_min = -BORDER_MV_PIXELS_B16;
-  x->mv_row_max = (cm->mb_rows - 1) * 8 + BORDER_MV_PIXELS_B16;
+  x->mv_limits.row_min = -BORDER_MV_PIXELS_B16;
+  x->mv_limits.row_max = (cm->mb_rows - 1) * 8 + BORDER_MV_PIXELS_B16;
   xd->up_available = 0;
   xd->plane[0].dst.stride = buf->y_stride;
   xd->plane[0].pre[0].stride = buf->y_stride;
@@ -256,8 +250,8 @@ static void update_mbgraph_frame_stats(AV1_COMP *cpi,
 
     // Set up limit values for motion vectors to prevent them extending outside
     // the UMV borders.
-    x->mv_col_min = -BORDER_MV_PIXELS_B16;
-    x->mv_col_max = (cm->mb_cols - 1) * 8 + BORDER_MV_PIXELS_B16;
+    x->mv_limits.col_min = -BORDER_MV_PIXELS_B16;
+    x->mv_limits.col_max = (cm->mb_cols - 1) * 8 + BORDER_MV_PIXELS_B16;
     xd->left_available = 0;
 
     for (mb_col = 0; mb_col < cm->mb_cols; mb_col++) {
@@ -273,15 +267,15 @@ static void update_mbgraph_frame_stats(AV1_COMP *cpi,
       mb_y_in_offset += 16;
       gld_y_in_offset += 16;
       arf_y_in_offset += 16;
-      x->mv_col_min -= 16;
-      x->mv_col_max -= 16;
+      x->mv_limits.col_min -= 16;
+      x->mv_limits.col_max -= 16;
     }
     xd->up_available = 1;
     mb_y_offset += buf->y_stride * 16;
     gld_y_offset += golden_ref->y_stride * 16;
     if (alt_ref) arf_y_offset += alt_ref->y_stride * 16;
-    x->mv_row_min -= 16;
-    x->mv_row_max -= 16;
+    x->mv_limits.row_min -= 16;
+    x->mv_limits.row_max -= 16;
     offset += cm->mb_cols;
   }
 }

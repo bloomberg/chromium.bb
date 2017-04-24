@@ -46,8 +46,8 @@ typedef struct search_site_config {
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride);
 void av1_init3smotion_compensation(search_site_config *cfg, int stride);
 
-void av1_set_mv_search_range(MACROBLOCK *x, const MV *mv);
-void av1_set_subpel_mv_search_range(const MACROBLOCK *x, int *col_min,
+void av1_set_mv_search_range(MvLimits *mv_limits, const MV *mv);
+void av1_set_subpel_mv_search_range(const MvLimits *mv_limits, int *col_min,
                                     int *col_max, int *row_min, int *row_max,
                                     const MV *ref_mv);
 

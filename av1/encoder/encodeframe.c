@@ -289,10 +289,11 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
 
   // Set up limit values for MV components.
   // Mv beyond the range do not produce new/different prediction block.
-  x->mv_row_min = -(((mi_row + mi_height) * MI_SIZE) + AOM_INTERP_EXTEND);
-  x->mv_col_min = -(((mi_col + mi_width) * MI_SIZE) + AOM_INTERP_EXTEND);
-  x->mv_row_max = (cm->mi_rows - mi_row) * MI_SIZE + AOM_INTERP_EXTEND;
-  x->mv_col_max = (cm->mi_cols - mi_col) * MI_SIZE + AOM_INTERP_EXTEND;
+  x->mv_limits.row_min =
+      -(((mi_row + mi_height) * MI_SIZE) + AOM_INTERP_EXTEND);
+  x->mv_limits.col_min = -(((mi_col + mi_width) * MI_SIZE) + AOM_INTERP_EXTEND);
+  x->mv_limits.row_max = (cm->mi_rows - mi_row) * MI_SIZE + AOM_INTERP_EXTEND;
+  x->mv_limits.col_max = (cm->mi_cols - mi_col) * MI_SIZE + AOM_INTERP_EXTEND;
 
   set_plane_n4(xd, mi_width, mi_height);
 
@@ -389,10 +390,14 @@ static void set_offsets_extend(const AV1_COMP *const cpi, ThreadData *td,
 
   // Set up limit values for MV components.
   // Mv beyond the range do not produce new/different prediction block.
-  x->mv_row_min = -(((mi_row_pred + mi_height) * MI_SIZE) + AOM_INTERP_EXTEND);
-  x->mv_col_min = -(((mi_col_pred + mi_width) * MI_SIZE) + AOM_INTERP_EXTEND);
-  x->mv_row_max = (cm->mi_rows - mi_row_pred) * MI_SIZE + AOM_INTERP_EXTEND;
-  x->mv_col_max = (cm->mi_cols - mi_col_pred) * MI_SIZE + AOM_INTERP_EXTEND;
+  x->mv_limits.row_min =
+      -(((mi_row_pred + mi_height) * MI_SIZE) + AOM_INTERP_EXTEND);
+  x->mv_limits.col_min =
+      -(((mi_col_pred + mi_width) * MI_SIZE) + AOM_INTERP_EXTEND);
+  x->mv_limits.row_max =
+      (cm->mi_rows - mi_row_pred) * MI_SIZE + AOM_INTERP_EXTEND;
+  x->mv_limits.col_max =
+      (cm->mi_cols - mi_col_pred) * MI_SIZE + AOM_INTERP_EXTEND;
 
 // Set up distance of MB to edge of frame in 1/8th pel units.
 #if !CONFIG_CB4X4

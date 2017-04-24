@@ -615,8 +615,9 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
     // Set up limit values for motion vectors to prevent them extending
     // outside the UMV borders.
-    x->mv_row_min = -((mb_row * 16) + BORDER_MV_PIXELS_B16);
-    x->mv_row_max = ((cm->mb_rows - 1 - mb_row) * 16) + BORDER_MV_PIXELS_B16;
+    x->mv_limits.row_min = -((mb_row * 16) + BORDER_MV_PIXELS_B16);
+    x->mv_limits.row_max =
+        ((cm->mb_rows - 1 - mb_row) * 16) + BORDER_MV_PIXELS_B16;
 
     for (mb_col = 0; mb_col < cm->mb_cols; ++mb_col) {
       int this_error;
@@ -728,8 +729,9 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
       // Set up limit values for motion vectors to prevent them extending
       // outside the UMV borders.
-      x->mv_col_min = -((mb_col * 16) + BORDER_MV_PIXELS_B16);
-      x->mv_col_max = ((cm->mb_cols - 1 - mb_col) * 16) + BORDER_MV_PIXELS_B16;
+      x->mv_limits.col_min = -((mb_col * 16) + BORDER_MV_PIXELS_B16);
+      x->mv_limits.col_max =
+          ((cm->mb_cols - 1 - mb_col) * 16) + BORDER_MV_PIXELS_B16;
 
       if (!frame_is_intra_only(cm)) {  // Do a motion search
         int tmp_err, motion_error, raw_motion_error;

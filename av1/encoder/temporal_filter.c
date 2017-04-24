@@ -258,10 +258,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   int distortion;
   unsigned int sse;
   int cost_list[5];
-  int tmp_col_min = x->mv_col_min;
-  int tmp_col_max = x->mv_col_max;
-  int tmp_row_min = x->mv_row_min;
-  int tmp_row_max = x->mv_row_max;
+  MvLimits tmp_mv_limits = x->mv_limits;
 
   MV best_ref_mv1 = { 0, 0 };
   MV best_ref_mv1_full; /* full-pixel value of best_ref_mv1 */
@@ -282,7 +279,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   step_param = mv_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
-  av1_set_mv_search_range(x, &best_ref_mv1);
+  av1_set_mv_search_range(&x->mv_limits, &best_ref_mv1);
 
 #if CONFIG_REF_MV
   x->mvcost = x->mv_cost_stack[0];
@@ -296,10 +293,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
                  cond_cost_list(cpi, cost_list), &cpi->fn_ptr[BLOCK_16X16], 0,
                  &best_ref_mv1);
 
-  x->mv_col_min = tmp_col_min;
-  x->mv_col_max = tmp_col_max;
-  x->mv_row_min = tmp_row_min;
-  x->mv_row_max = tmp_row_max;
+  x->mv_limits = tmp_mv_limits;
 
   // Ignore mv costing by sending NULL pointer instead of cost array
   bestsme = cpi->find_fractional_mv_step(
@@ -370,8 +364,9 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
     //  8 - AOM_INTERP_EXTEND.
     // To keep the mv in play for both Y and UV planes the max that it
     //  can be on a border is therefore 16 - (2*AOM_INTERP_EXTEND+1).
-    cpi->td.mb.mv_row_min = -((mb_row * 16) + (17 - 2 * AOM_INTERP_EXTEND));
-    cpi->td.mb.mv_row_max =
+    cpi->td.mb.mv_limits.row_min =
+        -((mb_row * 16) + (17 - 2 * AOM_INTERP_EXTEND));
+    cpi->td.mb.mv_limits.row_max =
         ((mb_rows - 1 - mb_row) * 16) + (17 - 2 * AOM_INTERP_EXTEND);
 
     for (mb_col = 0; mb_col < mb_cols; mb_col++) {
@@ -381,8 +376,9 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
       memset(accumulator, 0, 16 * 16 * 3 * sizeof(accumulator[0]));
       memset(count, 0, 16 * 16 * 3 * sizeof(count[0]));
 
-      cpi->td.mb.mv_col_min = -((mb_col * 16) + (17 - 2 * AOM_INTERP_EXTEND));
-      cpi->td.mb.mv_col_max =
+      cpi->td.mb.mv_limits.col_min =
+          -((mb_col * 16) + (17 - 2 * AOM_INTERP_EXTEND));
+      cpi->td.mb.mv_limits.col_max =
           ((mb_cols - 1 - mb_col) * 16) + (17 - 2 * AOM_INTERP_EXTEND);
 
       for (frame = 0; frame < frame_count; frame++) {

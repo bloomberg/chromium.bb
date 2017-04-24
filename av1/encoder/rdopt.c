@@ -5326,9 +5326,11 @@ typedef struct {
   int mvthresh;
 } BEST_SEG_INFO;
 
-static INLINE int mv_check_bounds(const MACROBLOCK *x, const MV *mv) {
-  return (mv->row >> 3) < x->mv_row_min || (mv->row >> 3) > x->mv_row_max ||
-         (mv->col >> 3) < x->mv_col_min || (mv->col >> 3) > x->mv_col_max;
+static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
+  return (mv->row >> 3) < mv_limits->row_min ||
+         (mv->row >> 3) > mv_limits->row_max ||
+         (mv->col >> 3) < mv_limits->col_min ||
+         (mv->col >> 3) > mv_limits->col_max;
 }
 
 static INLINE void mi_buf_shift(MACROBLOCK *x, int i) {
@@ -5575,10 +5577,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     MV *const best_mv = &x->best_mv.as_mv;
     int search_range = 3;
 
-    int tmp_col_min = x->mv_col_min;
-    int tmp_col_max = x->mv_col_max;
-    int tmp_row_min = x->mv_row_min;
-    int tmp_row_max = x->mv_row_max;
+    MvLimits tmp_mv_limits = x->mv_limits;
     int id = ite % 2;  // Even iterations search in the first reference frame,
                        // odd iterations search in the second. The predictor
                        // found for the 'other' reference frame is factored in.
@@ -5639,7 +5638,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
     // Do compound motion search on the current reference frame.
     if (id) xd->plane[plane].pre[0] = ref_yv12[id];
-    av1_set_mv_search_range(x, &ref_mv[id].as_mv);
+    av1_set_mv_search_range(&x->mv_limits, &ref_mv[id].as_mv);
 
     // Use the mv result from the single mode as mv predictor.
     *best_mv = frame_mv[refs[id]].as_mv;
@@ -5659,10 +5658,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       bestsme = av1_get_mvpred_av_var(x, best_mv, &ref_mv[id].as_mv,
                                       second_pred, &cpi->fn_ptr[bsize], 1);
 
-    x->mv_col_min = tmp_col_min;
-    x->mv_col_max = tmp_col_max;
-    x->mv_row_min = tmp_row_min;
-    x->mv_row_max = tmp_row_max;
+    x->mv_limits = tmp_mv_limits;
 
     if (bestsme < INT_MAX) {
       int dis; /* TODO: use dis in distortion calculation later. */
@@ -6048,10 +6044,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
           MV mvp_full;
           int max_mv;
           int cost_list[5];
-          int tmp_col_min = x->mv_col_min;
-          int tmp_col_max = x->mv_col_max;
-          int tmp_row_min = x->mv_row_min;
-          int tmp_row_max = x->mv_row_max;
+          MvLimits tmp_mv_limits = x->mv_limits;
 
           /* Is the best so far sufficiently good that we cant justify doing
            * and new motion search. */
@@ -6101,7 +6094,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
           // adjust src pointer for this block
           mi_buf_shift(x, index);
 
-          av1_set_mv_search_range(x, &bsi->ref_mv[0]->as_mv);
+          av1_set_mv_search_range(&x->mv_limits, &bsi->ref_mv[0]->as_mv);
 
           x->best_mv.as_int = x->second_best_mv.as_int = INVALID_MV;
 
@@ -6113,10 +6106,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
               cpi->sf.mv.subpel_search_method != SUBPEL_TREE ? cost_list : NULL,
               &bsi->ref_mv[0]->as_mv, INT_MAX, 1);
 
-          x->mv_col_min = tmp_col_min;
-          x->mv_col_max = tmp_col_max;
-          x->mv_row_min = tmp_row_min;
-          x->mv_row_max = tmp_row_max;
+          x->mv_limits = tmp_mv_limits;
 
           if (bestsme < INT_MAX) {
             int distortion;
@@ -6158,10 +6148,14 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
                 int this_var;
                 MV best_mv = x->best_mv.as_mv;
                 const MV ref_mv = bsi->ref_mv[0]->as_mv;
-                const int minc = AOMMAX(x->mv_col_min * 8, ref_mv.col - MV_MAX);
-                const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv.col + MV_MAX);
-                const int minr = AOMMAX(x->mv_row_min * 8, ref_mv.row - MV_MAX);
-                const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv.row + MV_MAX);
+                const int minc =
+                    AOMMAX(x->mv_limits.col_min * 8, ref_mv.col - MV_MAX);
+                const int maxc =
+                    AOMMIN(x->mv_limits.col_max * 8, ref_mv.col + MV_MAX);
+                const int minr =
+                    AOMMAX(x->mv_limits.row_min * 8, ref_mv.row - MV_MAX);
+                const int maxr =
+                    AOMMIN(x->mv_limits.row_max * 8, ref_mv.row + MV_MAX);
 
                 x->best_mv = x->second_best_mv;
                 if (x->best_mv.as_mv.row * 8 <= maxr &&
@@ -6307,8 +6301,9 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
         }
 
         // Trap vectors that reach beyond the UMV borders
-        if (mv_check_bounds(x, &mode_mv[this_mode][0].as_mv) ||
-            (has_second_rf && mv_check_bounds(x, &mode_mv[this_mode][1].as_mv)))
+        if (mv_check_bounds(&x->mv_limits, &mode_mv[this_mode][0].as_mv) ||
+            (has_second_rf &&
+             mv_check_bounds(&x->mv_limits, &mode_mv[this_mode][1].as_mv)))
           continue;
 
         if (filter_idx > 0) {
@@ -6919,10 +6914,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTER
   MV ref_mv = x->mbmi_ext->ref_mvs[ref][0].as_mv;
 
-  int tmp_col_min = x->mv_col_min;
-  int tmp_col_max = x->mv_col_max;
-  int tmp_row_min = x->mv_row_min;
-  int tmp_row_max = x->mv_row_max;
+  MvLimits tmp_mv_limits = x->mv_limits;
   int cost_list[5];
 
   const YV12_BUFFER_CONFIG *scaled_ref_frame =
@@ -6944,7 +6936,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     av1_setup_pre_planes(xd, ref_idx, scaled_ref_frame, mi_row, mi_col, NULL);
   }
 
-  av1_set_mv_search_range(x, &ref_mv);
+  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
 
 #if CONFIG_REF_MV
   av1_set_mvcost(x, ref, ref_idx, mbmi->ref_mv_idx);
@@ -6997,7 +6989,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
-  av1_set_mv_search_range(x, &ref_mv);
+  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
 
 #if CONFIG_MOTION_VAR
   if (mbmi->motion_mode != SIMPLE_TRANSLATION)
@@ -7030,10 +7022,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_MOTION_VAR
 
-  x->mv_col_min = tmp_col_min;
-  x->mv_col_max = tmp_col_max;
-  x->mv_row_min = tmp_row_min;
-  x->mv_row_max = tmp_row_max;
+  x->mv_limits = tmp_mv_limits;
 
   if (bestsme < INT_MAX) {
     int dis; /* TODO: use dis in distortion calculation later. */
@@ -7067,10 +7056,14 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
               1);
 
           if (try_second) {
-            const int minc = AOMMAX(x->mv_col_min * 8, ref_mv.col - MV_MAX);
-            const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv.col + MV_MAX);
-            const int minr = AOMMAX(x->mv_row_min * 8, ref_mv.row - MV_MAX);
-            const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv.row + MV_MAX);
+            const int minc =
+                AOMMAX(x->mv_limits.col_min * 8, ref_mv.col - MV_MAX);
+            const int maxc =
+                AOMMIN(x->mv_limits.col_max * 8, ref_mv.col + MV_MAX);
+            const int minr =
+                AOMMAX(x->mv_limits.row_min * 8, ref_mv.row - MV_MAX);
+            const int maxr =
+                AOMMIN(x->mv_limits.row_max * 8, ref_mv.row + MV_MAX);
             int this_var;
             MV best_mv = x->best_mv.as_mv;
 
@@ -7155,10 +7148,7 @@ static void do_masked_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   int ref = mbmi->ref_frame[ref_idx];
   MV ref_mv = x->mbmi_ext->ref_mvs[ref][0].as_mv;
 
-  int tmp_col_min = x->mv_col_min;
-  int tmp_col_max = x->mv_col_max;
-  int tmp_row_min = x->mv_row_min;
-  int tmp_row_max = x->mv_row_max;
+  MvLimits tmp_mv_limits = x->mv_limits;
 
   const YV12_BUFFER_CONFIG *scaled_ref_frame =
       av1_get_scaled_ref_frame(cpi, ref);
@@ -7183,7 +7173,7 @@ static void do_masked_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     av1_setup_pre_planes(xd, ref_idx, scaled_ref_frame, mi_row, mi_col, NULL);
   }
 
-  av1_set_mv_search_range(x, &ref_mv);
+  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
 
   // Work out the size of the first step in the mv step search.
   // 0 here is maximum length first step. 1 is MAX >> 1 etc.
@@ -7242,10 +7232,7 @@ static void do_masked_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
       MAX_MVSEARCH_STEPS - 1 - step_param, 1, &cpi->fn_ptr[bsize], &ref_mv,
       &tmp_mv->as_mv, ref_idx);
 
-  x->mv_col_min = tmp_col_min;
-  x->mv_col_max = tmp_col_max;
-  x->mv_row_min = tmp_row_min;
-  x->mv_row_max = tmp_row_max;
+  x->mv_limits = tmp_mv_limits;
 
   if (bestsme < INT_MAX) {
     int dis; /* TODO: use dis in distortion calculation later. */
@@ -8648,7 +8635,7 @@ static int64_t handle_inter_mode(
     cur_mv[i] = frame_mv[refs[i]];
     // Clip "next_nearest" so that it does not extend to far out of image
     if (this_mode != NEWMV) clamp_mv2(&cur_mv[i].as_mv, xd);
-    if (mv_check_bounds(x, &cur_mv[i].as_mv)) return INT64_MAX;
+    if (mv_check_bounds(&x->mv_limits, &cur_mv[i].as_mv)) return INT64_MAX;
     mbmi->mv[i].as_int = cur_mv[i].as_int;
   }
 
@@ -8668,7 +8655,7 @@ static int64_t handle_inter_mode(
 
       for (i = 0; i < 2; ++i) {
         clamp_mv2(&cur_mv[i].as_mv, xd);
-        if (mv_check_bounds(x, &cur_mv[i].as_mv)) return INT64_MAX;
+        if (mv_check_bounds(&x->mv_limits, &cur_mv[i].as_mv)) return INT64_MAX;
         mbmi->mv[i].as_int = cur_mv[i].as_int;
       }
     }
@@ -8681,7 +8668,7 @@ static int64_t handle_inter_mode(
 
       lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv);
       clamp_mv2(&cur_mv[0].as_mv, xd);
-      if (mv_check_bounds(x, &cur_mv[0].as_mv)) return INT64_MAX;
+      if (mv_check_bounds(&x->mv_limits, &cur_mv[0].as_mv)) return INT64_MAX;
       mbmi->mv[0].as_int = cur_mv[0].as_int;
     }
 
@@ -8690,7 +8677,7 @@ static int64_t handle_inter_mode(
 
       lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv);
       clamp_mv2(&cur_mv[1].as_mv, xd);
-      if (mv_check_bounds(x, &cur_mv[1].as_mv)) return INT64_MAX;
+      if (mv_check_bounds(&x->mv_limits, &cur_mv[1].as_mv)) return INT64_MAX;
       mbmi->mv[1].as_int = cur_mv[1].as_int;
     }
   }
@@ -8703,7 +8690,7 @@ static int64_t handle_inter_mode(
 
       lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv);
       clamp_mv2(&cur_mv[0].as_mv, xd);
-      if (mv_check_bounds(x, &cur_mv[0].as_mv)) return INT64_MAX;
+      if (mv_check_bounds(&x->mv_limits, &cur_mv[0].as_mv)) return INT64_MAX;
       mbmi->mv[0].as_int = cur_mv[0].as_int;
     }
 
@@ -8713,7 +8700,7 @@ static int64_t handle_inter_mode(
 
       lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv);
       clamp_mv2(&cur_mv[1].as_mv, xd);
-      if (mv_check_bounds(x, &cur_mv[1].as_mv)) return INT64_MAX;
+      if (mv_check_bounds(&x->mv_limits, &cur_mv[1].as_mv)) return INT64_MAX;
       mbmi->mv[1].as_int = cur_mv[1].as_int;
     }
   }
@@ -8727,7 +8714,7 @@ static int64_t handle_inter_mode(
 
       for (i = 0; i < 2; ++i) {
         clamp_mv2(&cur_mv[i].as_mv, xd);
-        if (mv_check_bounds(x, &cur_mv[i].as_mv)) return INT64_MAX;
+        if (mv_check_bounds(&x->mv_limits, &cur_mv[i].as_mv)) return INT64_MAX;
         mbmi->mv[i].as_int = cur_mv[i].as_int;
       }
     }
@@ -10546,7 +10533,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                   .this_mv;
           clamp_mv2(&cur_mv.as_mv, xd);
 
-          if (!mv_check_bounds(x, &cur_mv.as_mv)) {
+          if (!mv_check_bounds(&x->mv_limits, &cur_mv.as_mv)) {
             int_mv dummy_single_newmv[TOTAL_REFS_PER_FRAME] = { { 0 } };
 #if CONFIG_EXT_INTER
             int dummy_single_newmv_rate[TOTAL_REFS_PER_FRAME] = { 0 };

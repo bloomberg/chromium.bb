@@ -88,6 +88,13 @@ typedef struct {
 #endif
 } MB_MODE_INFO_EXT;
 
+typedef struct {
+  int col_min;
+  int col_max;
+  int row_min;
+  int row_max;
+} MvLimits;
+
 #if CONFIG_PALETTE
 typedef struct {
   uint8_t best_palette_color_map[MAX_SB_SQUARE];
@@ -163,10 +170,7 @@ struct macroblock {
 
   // These define limits to motion vector components to prevent them
   // from extending outside the UMV borders
-  int mv_col_min;
-  int mv_col_max;
-  int mv_row_min;
-  int mv_row_max;
+  MvLimits mv_limits;
 
 #if CONFIG_VAR_TX
   uint8_t blk_skip[MAX_MB_PLANE][MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
