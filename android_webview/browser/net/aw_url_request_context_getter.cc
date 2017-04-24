@@ -112,9 +112,12 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
   bool set_protocol = aw_job_factory->SetProtocolHandler(
       url::kFileScheme,
       base::MakeUnique<net::FileProtocolHandler>(
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+          base::CreateTaskRunnerWithTraits(
+              base::TaskTraits()
+                  .MayBlock()
+                  .WithPriority(base::TaskPriority::BACKGROUND)
+                  .WithShutdownBehavior(
+                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
       url::kDataScheme, base::MakeUnique<net::DataProtocolHandler>());
