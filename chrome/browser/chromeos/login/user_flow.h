@@ -39,6 +39,7 @@ class UserFlow {
   virtual bool ShouldLaunchBrowser() = 0;
   virtual bool ShouldSkipPostLoginScreens() = 0;
   virtual bool SupportsEarlyRestartToApplyFlags() = 0;
+  virtual bool AllowsNotificationBalloons() = 0;
   virtual bool HandleLoginFailure(const AuthFailure& failure) = 0;
   virtual void HandleLoginSuccess(const UserContext& context) = 0;
   virtual bool HandlePasswordChangeDetected() = 0;
@@ -69,6 +70,7 @@ class DefaultUserFlow : public UserFlow {
   bool ShouldLaunchBrowser() override;
   bool ShouldSkipPostLoginScreens() override;
   bool SupportsEarlyRestartToApplyFlags() override;
+  bool AllowsNotificationBalloons() override;
   bool HandleLoginFailure(const AuthFailure& failure) override;
   void HandleLoginSuccess(const UserContext& context) override;
   bool HandlePasswordChangeDetected() override;
@@ -87,6 +89,7 @@ class ExtendedUserFlow : public UserFlow {
   void AppendAdditionalCommandLineSwitches() override;
   bool ShouldEnableSettings() override;
   bool ShouldShowNotificationTray() override;
+  bool AllowsNotificationBalloons() override;
   void HandleOAuthTokenStatusChange(
       user_manager::User::OAuthTokenStatus status) override;
 

@@ -54,6 +54,10 @@ bool DefaultUserFlow::SupportsEarlyRestartToApplyFlags() {
   return true;
 }
 
+bool DefaultUserFlow::AllowsNotificationBalloons() {
+  return true;
+}
+
 bool DefaultUserFlow::HandleLoginFailure(const AuthFailure& failure) {
   return false;
 }
@@ -85,6 +89,10 @@ bool ExtendedUserFlow::ShouldEnableSettings() {
 }
 
 bool ExtendedUserFlow::ShouldShowNotificationTray() {
+  return true;
+}
+
+bool ExtendedUserFlow::AllowsNotificationBalloons() {
   return true;
 }
 

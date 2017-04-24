@@ -54,6 +54,10 @@ bool SupervisedUserCreationFlow::ShouldShowNotificationTray() {
   return false;
 }
 
+bool SupervisedUserCreationFlow::AllowsNotificationBalloons() {
+  return false;
+}
+
 bool SupervisedUserCreationFlow::ShouldLaunchBrowser() {
   return false;
 }
