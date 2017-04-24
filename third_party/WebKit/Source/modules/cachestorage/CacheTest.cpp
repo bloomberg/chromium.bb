@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -611,14 +613,13 @@ TEST_F(CacheStorageTest, KeysResponseTest) {
   ScriptPromise result = cache->keys(GetScriptState(), exception_state);
   ScriptValue script_value = GetResolveValue(result);
 
-  Vector<v8::Local<v8::Value>> requests =
-      ToImplArray<Vector<v8::Local<v8::Value>>>(script_value.V8Value(), 0,
-                                                GetIsolate(), exception_state);
+  HeapVector<Member<Request>> requests =
+      NativeValueTraits<IDLSequence<Request>>::NativeValue(
+          GetIsolate(), script_value.V8Value(), exception_state);
   EXPECT_EQ(expected_urls.size(), requests.size());
   for (int i = 0, minsize = std::min(expected_urls.size(), requests.size());
        i < minsize; ++i) {
-    Request* request =
-        V8Request::toImplWithTypeCheck(GetIsolate(), requests[i]);
+    Request* request = requests[i];
     EXPECT_TRUE(request);
     if (request)
       EXPECT_EQ(expected_urls[i], request->url());
@@ -674,14 +675,13 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
                       options, exception_state);
   ScriptValue script_value = GetResolveValue(result);
 
-  Vector<v8::Local<v8::Value>> responses =
-      ToImplArray<Vector<v8::Local<v8::Value>>>(script_value.V8Value(), 0,
-                                                GetIsolate(), exception_state);
+  HeapVector<Member<Response>> responses =
+      NativeValueTraits<IDLSequence<Response>>::NativeValue(
+          GetIsolate(), script_value.V8Value(), exception_state);
   EXPECT_EQ(expected_urls.size(), responses.size());
   for (int i = 0, minsize = std::min(expected_urls.size(), responses.size());
        i < minsize; ++i) {
-    Response* response =
-        V8Response::toImplWithTypeCheck(GetIsolate(), responses[i]);
+    Response* response = responses[i];
     EXPECT_TRUE(response);
     if (response)
       EXPECT_EQ(expected_urls[i], response->url());

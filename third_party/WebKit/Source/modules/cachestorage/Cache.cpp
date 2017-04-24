@@ -4,8 +4,12 @@
 
 #include "modules/cachestorage/Cache.h"
 
+#include <memory>
+#include <utility>
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -22,8 +26,6 @@
 #include "platform/HTTPNames.h"
 #include "platform/Histogram.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
-#include <memory>
-#include <utility>
 
 namespace blink {
 
@@ -233,9 +235,9 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
 
   ScriptValue Call(ScriptValue value) override {
     NonThrowableExceptionState exception_state;
-    HeapVector<Member<Response>> responses = ToMemberNativeArray<Response>(
-        value.V8Value(), requests_.size(), GetScriptState()->GetIsolate(),
-        exception_state);
+    HeapVector<Member<Response>> responses =
+        NativeValueTraits<IDLSequence<Response>>::NativeValue(
+            GetScriptState()->GetIsolate(), value.V8Value(), exception_state);
 
     for (const auto& response : responses) {
       if (!response->ok()) {

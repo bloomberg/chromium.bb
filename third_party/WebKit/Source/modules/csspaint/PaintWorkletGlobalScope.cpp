@@ -4,6 +4,8 @@
 
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
 
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/CSSPropertyNames.h"
@@ -92,8 +94,9 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   Vector<AtomicString> custom_invalidation_properties;
 
   if (!IsUndefinedOrNull(input_properties_value)) {
-    Vector<String> properties = ToImplArray<Vector<String>>(
-        input_properties_value, 0, isolate, exception_state);
+    Vector<String> properties =
+        NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
+            isolate, input_properties_value, exception_state);
 
     if (exception_state.HadException())
       return;
@@ -118,8 +121,9 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       return;
 
     if (!IsUndefinedOrNull(input_argument_type_values)) {
-      Vector<String> argument_types = ToImplArray<Vector<String>>(
-          input_argument_type_values, 0, isolate, exception_state);
+      Vector<String> argument_types =
+          NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
+              isolate, input_argument_type_values, exception_state);
 
       if (exception_state.HadException())
         return;

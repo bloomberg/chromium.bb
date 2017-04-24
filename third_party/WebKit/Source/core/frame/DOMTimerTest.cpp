@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -60,8 +62,8 @@ class DOMTimerTest : public RenderingTest {
   Vector<double> ToDoubleArray(v8::Local<v8::Value> value,
                                v8::HandleScope& scope) {
     NonThrowableExceptionState exception_state;
-    return ToImplArray<Vector<double>>(value, 0, scope.GetIsolate(),
-                                       exception_state);
+    return NativeValueTraits<IDLSequence<IDLDouble>>::NativeValue(
+        scope.GetIsolate(), value, exception_state);
   }
 
   double ToDoubleValue(v8::Local<v8::Value> value, v8::HandleScope& scope) {
