@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.locale;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -19,6 +20,8 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 
 /**
@@ -29,6 +32,17 @@ public class LocaleManager {
     public static final String PREF_PROMO_SHOWN = "LocaleManager_PREF_PROMO_SHOWN";
     public static final String PREF_WAS_IN_SPECIAL_LOCALE = "LocaleManager_WAS_IN_SPECIAL_LOCALE";
     public static final String SPECIAL_LOCALE_ID = "US";
+
+    /** The different types of search engine promo dialogs. */
+    @IntDef({SEARCH_ENGINE_PROMO_DONT_SHOW, SEARCH_ENGINE_PROMO_SHOW_SOGOU,
+            SEARCH_ENGINE_PROMO_SHOW_EXISTING, SEARCH_ENGINE_PROMO_SHOW_NEW})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SearchEnginePromoType {}
+
+    public static final int SEARCH_ENGINE_PROMO_DONT_SHOW = -1;
+    public static final int SEARCH_ENGINE_PROMO_SHOW_SOGOU = 0;
+    public static final int SEARCH_ENGINE_PROMO_SHOW_EXISTING = 1;
+    public static final int SEARCH_ENGINE_PROMO_SHOW_NEW = 2;
 
     private static final int SNACKBAR_DURATION_MS = 6000;
 
@@ -159,20 +173,19 @@ public class LocaleManager {
     }
 
     /**
-     * Shows a promotion dialog saying the default search engine will be set to Sogou. No-op if
-     * device is not in special locale.
+     * Shows a promotion dialog about search engines depending on Locale and other conditions.
+     * See {@link LocaleManager#getSearchEnginePromoShowType()} for possible types and logic.
      *
      * @return Whether such dialog is needed.
      */
     public boolean showSearchEnginePromoIfNeeded(Context context) {
-        if (!isSpecialLocaleEnabled()) return false;
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        if (preferences.getBoolean(PREF_PROMO_SHOWN, false)) {
-            return false;
-        }
+        int shouldShow = getSearchEnginePromoShowType();
 
-        new SogouPromoDialog(context, this).show();
-        return true;
+        if (shouldShow == SEARCH_ENGINE_PROMO_SHOW_SOGOU) {
+            new SogouPromoDialog(context, this).show();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -216,6 +229,19 @@ public class LocaleManager {
      */
     protected boolean isReallyInSpecialLocale(boolean inSpecialLocale) {
         return inSpecialLocale;
+    }
+
+    /**
+     * @return Whether and which search engine promo should be shown.
+     */
+    @SearchEnginePromoType
+    protected int getSearchEnginePromoShowType() {
+        if (!isSpecialLocaleEnabled()) return SEARCH_ENGINE_PROMO_DONT_SHOW;
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        if (preferences.getBoolean(PREF_PROMO_SHOWN, false)) {
+            return SEARCH_ENGINE_PROMO_DONT_SHOW;
+        }
+        return SEARCH_ENGINE_PROMO_SHOW_SOGOU;
     }
 
     private SpecialLocaleHandler getSpecialLocaleHandler() {
