@@ -62,9 +62,11 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
       : wlan_api_(new MockWlanApi), polling_policy_(new MockPollingPolicy) {}
 
   // WifiDataProviderCommon
-  WlanApiInterface* NewWlanApi() override { return wlan_api_.release(); }
-  WifiPollingPolicy* NewPollingPolicy() override {
-    return polling_policy_.release();
+  std::unique_ptr<WlanApiInterface> CreateWlanApi() override {
+    return std::move(wlan_api_);
+  }
+  std::unique_ptr<WifiPollingPolicy> CreatePollingPolicy() override {
+    return std::move(polling_policy_);
   }
 
   std::unique_ptr<MockWlanApi> wlan_api_;

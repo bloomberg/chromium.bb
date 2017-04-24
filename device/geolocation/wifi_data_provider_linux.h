@@ -26,12 +26,11 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderLinux
 
   ~WifiDataProviderLinux() override;
 
-  // WifiDataProviderCommon
-  WlanApiInterface* NewWlanApi() override;
-  WifiPollingPolicy* NewPollingPolicy() override;
+  // WifiDataProviderCommon implementation
+  std::unique_ptr<WlanApiInterface> CreateWlanApi() override;
+  std::unique_ptr<WifiPollingPolicy> CreatePollingPolicy() override;
 
-  // For testing.
-  WlanApiInterface* NewWlanApiForTesting(dbus::Bus* bus);
+  std::unique_ptr<WlanApiInterface> CreateWlanApiForTesting(dbus::Bus* bus);
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderLinux);
 };

@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "device/geolocation/wifi_data_provider_common.h"
@@ -122,14 +123,15 @@ WifiDataProviderMac::WifiDataProviderMac() {}
 
 WifiDataProviderMac::~WifiDataProviderMac() {}
 
-WifiDataProviderMac::WlanApiInterface* WifiDataProviderMac::NewWlanApi() {
-  return new CoreWlanApi();
+std::unique_ptr<WifiDataProviderMac::WlanApiInterface>
+WifiDataProviderMac::CreateWlanApi() {
+  return base::MakeUnique<CoreWlanApi>();
 }
 
-WifiPollingPolicy* WifiDataProviderMac::NewPollingPolicy() {
-  return new GenericWifiPollingPolicy<
+std::unique_ptr<WifiPollingPolicy> WifiDataProviderMac::CreatePollingPolicy() {
+  return base::MakeUnique<GenericWifiPollingPolicy<
       kDefaultPollingInterval, kNoChangePollingInterval,
-      kTwoNoChangePollingInterval, kNoWifiPollingIntervalMilliseconds>;
+      kTwoNoChangePollingInterval, kNoWifiPollingIntervalMilliseconds>>();
 }
 
 }  // namespace device

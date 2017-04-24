@@ -28,6 +28,7 @@
 #include <wlanapi.h>
 
 #include "base/memory/free_deleter.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -86,17 +87,17 @@ typedef DWORD(WINAPI* WlanCloseHandleFunction)(HANDLE hClientHandle,
 // Local classes and functions
 class WindowsWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
-  ~WindowsWlanApi() override;
   // Factory function. Will return NULL if this API is unavailable.
-  static WindowsWlanApi* Create();
+  static std::unique_ptr<WindowsWlanApi> Create();
+
+  // Takes ownership of the library handle.
+  explicit WindowsWlanApi(HINSTANCE library);
+  ~WindowsWlanApi() override;
 
   // WlanApiInterface
   bool GetAccessPointData(WifiData::AccessPointDataSet* data) override;
 
  private:
-  // Takes ownership of the library handle.
-  explicit WindowsWlanApi(HINSTANCE library);
-
   // Loads the required functions from the DLL.
   void GetWLANFunctions(HINSTANCE wlan_library);
   int GetInterfaceDataWLAN(HANDLE wlan_handle,
@@ -119,8 +120,11 @@ class WindowsWlanApi : public WifiDataProviderCommon::WlanApiInterface {
 
 class WindowsNdisApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
+  static std::unique_ptr<WindowsNdisApi> Create();
+
+  // Swaps in content of the vector passed
+  explicit WindowsNdisApi(std::vector<base::string16>* interface_service_names);
   ~WindowsNdisApi() override;
-  static WindowsNdisApi* Create();
 
   // WlanApiInterface
   bool GetAccessPointData(WifiData::AccessPointDataSet* data) override;
@@ -128,10 +132,6 @@ class WindowsNdisApi : public WifiDataProviderCommon::WlanApiInterface {
  private:
   static bool GetInterfacesNDIS(
       std::vector<base::string16>* interface_service_names_out);
-
-  // Swaps in content of the vector passed
-  explicit WindowsNdisApi(std::vector<base::string16>* interface_service_names);
-
   bool GetInterfaceDataNDIS(HANDLE adapter_handle,
                             WifiData::AccessPointDataSet* data);
   // NDIS variables.
@@ -157,7 +157,7 @@ bool ResizeBuffer(int requested_size,
 // Gets the system directory and appends a trailing slash if not already
 // present.
 bool GetSystemDirectory(base::string16* path);
-}  // namespace
+}  // anonymous namespace
 
 WifiDataProvider* WifiDataProviderManager::DefaultFactoryFunction() {
   return new WifiDataProviderWin();
@@ -167,20 +167,20 @@ WifiDataProviderWin::WifiDataProviderWin() {}
 
 WifiDataProviderWin::~WifiDataProviderWin() {}
 
-WifiDataProviderCommon::WlanApiInterface* WifiDataProviderWin::NewWlanApi() {
+std::unique_ptr<WifiDataProviderCommon::WlanApiInterface>
+WifiDataProviderWin::CreateWlanApi() {
   // Use the WLAN interface if we're on Vista and if it's available. Otherwise,
   // use NDIS.
-  WlanApiInterface* api = WindowsWlanApi::Create();
-  if (api) {
+  std::unique_ptr<WlanApiInterface> api = WindowsWlanApi::Create();
+  if (api)
     return api;
-  }
   return WindowsNdisApi::Create();
 }
 
-WifiPollingPolicy* WifiDataProviderWin::NewPollingPolicy() {
-  return new GenericWifiPollingPolicy<
+std::unique_ptr<WifiPollingPolicy> WifiDataProviderWin::CreatePollingPolicy() {
+  return base::MakeUnique<GenericWifiPollingPolicy<
       kDefaultPollingInterval, kNoChangePollingInterval,
-      kTwoNoChangePollingInterval, kNoWifiPollingIntervalMilliseconds>;
+      kTwoNoChangePollingInterval, kNoWifiPollingIntervalMilliseconds>>();
 }
 
 // Local classes and functions
@@ -195,22 +195,20 @@ WindowsWlanApi::~WindowsWlanApi() {
   FreeLibrary(library_);
 }
 
-WindowsWlanApi* WindowsWlanApi::Create() {
+std::unique_ptr<WindowsWlanApi> WindowsWlanApi::Create() {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return NULL;
+    return nullptr;
   // We use an absolute path to load the DLL to avoid DLL preloading attacks.
   base::string16 system_directory;
-  if (!GetSystemDirectory(&system_directory)) {
-    return NULL;
-  }
+  if (!GetSystemDirectory(&system_directory))
+    return nullptr;
   DCHECK(!system_directory.empty());
   base::string16 dll_path = system_directory + L"wlanapi.dll";
   HINSTANCE library =
       LoadLibraryEx(dll_path.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
-  if (!library) {
-    return NULL;
-  }
-  return new WindowsWlanApi(library);
+  if (!library)
+    return nullptr;
+  return base::MakeUnique<WindowsWlanApi>(library);
 }
 
 void WindowsWlanApi::GetWLANFunctions(HINSTANCE wlan_library) {
@@ -347,12 +345,11 @@ WindowsNdisApi::WindowsNdisApi(
 
 WindowsNdisApi::~WindowsNdisApi() {}
 
-WindowsNdisApi* WindowsNdisApi::Create() {
+std::unique_ptr<WindowsNdisApi> WindowsNdisApi::Create() {
   std::vector<base::string16> interface_service_names;
-  if (GetInterfacesNDIS(&interface_service_names)) {
-    return new WindowsNdisApi(&interface_service_names);
-  }
-  return NULL;
+  if (GetInterfacesNDIS(&interface_service_names))
+    return base::MakeUnique<WindowsNdisApi>(&interface_service_names);
+  return nullptr;
 }
 
 bool WindowsNdisApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
@@ -362,23 +359,20 @@ bool WindowsNdisApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
 
   for (int i = 0; i < static_cast<int>(interface_service_names_.size()); ++i) {
     // First, check that we have a DOS device for this adapter.
-    if (!DefineDosDeviceIfNotExists(interface_service_names_[i])) {
+    if (!DefineDosDeviceIfNotExists(interface_service_names_[i]))
       continue;
-    }
 
     // Get the handle to the device. This will fail if the named device is not
     // valid.
     HANDLE adapter_handle = GetFileHandle(interface_service_names_[i]);
-    if (adapter_handle == INVALID_HANDLE_VALUE) {
+    if (adapter_handle == INVALID_HANDLE_VALUE)
       continue;
-    }
 
     // Get the data.
-    if (GetInterfaceDataNDIS(adapter_handle, data)) {
+    if (GetInterfaceDataNDIS(adapter_handle, data))
       ++interfaces_succeeded;
-    } else {
+    else
       ++interfaces_failed;
-    }
 
     // Clean up.
     CloseHandle(adapter_handle);
@@ -437,9 +431,8 @@ bool WindowsNdisApi::GetInterfaceDataNDIS(HANDLE adapter_handle,
 
   std::unique_ptr<BYTE, base::FreeDeleter> buffer(
       static_cast<BYTE*>(malloc(oid_buffer_size_)));
-  if (buffer == NULL) {
+  if (!buffer)
     return false;
-  }
 
   DWORD bytes_out;
   int result;
@@ -454,11 +447,11 @@ bool WindowsNdisApi::GetInterfaceDataNDIS(HANDLE adapter_handle,
         result == NDIS_STATUS_BUFFER_TOO_SHORT) {
       // The buffer we supplied is too small, so increase it. bytes_out should
       // provide the required buffer size, but this is not always the case.
-      if (bytes_out > static_cast<DWORD>(oid_buffer_size_)) {
+      if (bytes_out > static_cast<DWORD>(oid_buffer_size_))
         oid_buffer_size_ = bytes_out;
-      } else {
+      else
         oid_buffer_size_ *= 2;
-      }
+
       if (!ResizeBuffer(oid_buffer_size_, &buffer)) {
         oid_buffer_size_ = kInitialBufferSize;  // Reset for next time.
         return false;
@@ -515,9 +508,8 @@ bool DefineDosDeviceIfNotExists(const base::string16& device_name) {
     return true;
   }
 
-  if (GetLastError() != ERROR_FILE_NOT_FOUND) {
+  if (GetLastError() != ERROR_FILE_NOT_FOUND)
     return false;
-  }
 
   if (!DefineDosDevice(DDD_RAW_TARGET_PATH, device_name.c_str(),
                        target_path.c_str())) {
@@ -572,23 +564,20 @@ bool GetSystemDirectory(base::string16* path) {
   DCHECK(path);
   // Return value includes terminating NULL.
   int buffer_size = ::GetSystemDirectory(NULL, 0);
-  if (buffer_size == 0) {
+  if (buffer_size == 0)
     return false;
-  }
   std::unique_ptr<base::char16[]> buffer(new base::char16[buffer_size]);
 
   // Return value excludes terminating NULL.
   int characters_written = ::GetSystemDirectory(buffer.get(), buffer_size);
-  if (characters_written == 0) {
+  if (characters_written == 0)
     return false;
-  }
   DCHECK_EQ(buffer_size - 1, characters_written);
 
   path->assign(buffer.get(), characters_written);
 
-  if (*path->rbegin() != L'\\') {
+  if (*path->rbegin() != L'\\')
     path->append(L"\\");
-  }
   DCHECK_EQ(L'\\', *path->rbegin());
   return true;
 }

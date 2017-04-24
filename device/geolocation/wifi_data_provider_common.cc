@@ -28,7 +28,7 @@ WifiDataProviderCommon::~WifiDataProviderCommon() {}
 
 void WifiDataProviderCommon::StartDataProvider() {
   DCHECK(!wlan_api_);
-  wlan_api_.reset(NewWlanApi());
+  wlan_api_ = CreateWlanApi();
   if (!wlan_api_) {
     // Error! Can't do scans, so don't try and schedule one.
     is_first_scan_complete_ = true;
@@ -36,7 +36,7 @@ void WifiDataProviderCommon::StartDataProvider() {
   }
 
   DCHECK(!polling_policy_);
-  polling_policy_.reset(NewPollingPolicy());
+  polling_policy_ = CreatePollingPolicy();
   DCHECK(polling_policy_);
 
   // Perform first scan ASAP regardless of the polling policy. If this scan

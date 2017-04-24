@@ -20,9 +20,9 @@ class WifiDataProviderMac : public WifiDataProviderCommon {
  private:
   ~WifiDataProviderMac() override;
 
-  // WifiDataProviderCommon
-  WlanApiInterface* NewWlanApi() override;
-  WifiPollingPolicy* NewPollingPolicy() override;
+  // WifiDataProviderCommon implementation
+  std::unique_ptr<WlanApiInterface> CreateWlanApi() override;
+  std::unique_ptr<WifiPollingPolicy> CreatePollingPolicy() override;
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderMac);
 };

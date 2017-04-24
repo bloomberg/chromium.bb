@@ -53,9 +53,9 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderCommon
   // TODO(mcasas): change return types and possibly names of these two methods,
   // see https://crbug.com/714348.
   // Returns ownership.
-  virtual WlanApiInterface* NewWlanApi() = 0;
+  virtual std::unique_ptr<WlanApiInterface> CreateWlanApi() = 0;
   // Returns ownership.
-  virtual WifiPollingPolicy* NewPollingPolicy() = 0;
+  virtual std::unique_ptr<WifiPollingPolicy> CreatePollingPolicy() = 0;
 
  private:
   // Runs a scan. Calls the callbacks if new data is found.

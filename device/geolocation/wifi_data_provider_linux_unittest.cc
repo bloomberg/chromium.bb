@@ -92,9 +92,8 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
 
     // Create the wlan API with the mock bus object injected.
     wifi_provider_linux_ = new WifiDataProviderLinux;
-    wlan_api_.reset(
-        wifi_provider_linux_->NewWlanApiForTesting(mock_bus_.get()));
-    ASSERT_TRUE(wlan_api_.get());
+    wlan_api_ = wifi_provider_linux_->CreateWlanApiForTesting(mock_bus_.get());
+    ASSERT_TRUE(wlan_api_);
   }
 
  protected:
