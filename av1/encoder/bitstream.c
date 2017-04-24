@@ -2318,6 +2318,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     const uint8_t palette_size_plane =
         mbmi->palette_mode_info.palette_size[plane];
     if (palette_size_plane > 0) {
+#if CONFIG_INTRABC
+      assert(mbmi->use_intrabc == 0);
+#endif
       int rows, cols;
       assert(mbmi->sb_type >= BLOCK_8X8);
       av1_get_block_dimensions(mbmi->sb_type, plane, xd, NULL, NULL, &rows,

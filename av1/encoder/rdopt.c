@@ -9138,6 +9138,9 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   if (bsize >= BLOCK_8X8 && cpi->common.allow_screen_content_tools) {
     if (xd->mb_to_top_edge == -MAX_SB_SIZE * 8) {
       MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+#if CONFIG_PALETTE
+      memset(&mbmi->palette_mode_info, 0, sizeof(mbmi->palette_mode_info));
+#endif
       mbmi->use_intrabc = 1;
       mbmi->mode = DC_PRED;
       mbmi->uv_mode = DC_PRED;
