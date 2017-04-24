@@ -6,6 +6,7 @@
 #define WebAssociatedURLLoaderImpl_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
@@ -16,15 +17,15 @@ namespace blink {
 
 class DocumentThreadableLoader;
 class WebAssociatedURLLoaderClient;
-class WebLocalFrameImpl;
+class Document;
 
 // This class is used to implement WebFrame::createAssociatedURLLoader.
-class WebAssociatedURLLoaderImpl final : public WebAssociatedURLLoader {
+class CORE_EXPORT WebAssociatedURLLoaderImpl final
+    : public WebAssociatedURLLoader {
   WTF_MAKE_NONCOPYABLE(WebAssociatedURLLoaderImpl);
 
  public:
-  WebAssociatedURLLoaderImpl(WebLocalFrameImpl*,
-                             const WebAssociatedURLLoaderOptions&);
+  WebAssociatedURLLoaderImpl(Document*, const WebAssociatedURLLoaderOptions&);
   ~WebAssociatedURLLoaderImpl();
 
   void LoadAsynchronously(const WebURLRequest&,

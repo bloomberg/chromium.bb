@@ -120,6 +120,7 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
+#include "core/exported/WebAssociatedURLLoaderImpl.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/PageScaleConstraintsSet.h"
@@ -225,7 +226,6 @@
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/TextCheckerClientImpl.h"
 #include "web/TextFinder.h"
-#include "web/WebAssociatedURLLoaderImpl.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebFrameWidgetImpl.h"
@@ -965,7 +965,7 @@ void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
 
 WebAssociatedURLLoader* WebLocalFrameImpl::CreateAssociatedURLLoader(
     const WebAssociatedURLLoaderOptions& options) {
-  return new WebAssociatedURLLoaderImpl(this, options);
+  return new WebAssociatedURLLoaderImpl(GetFrame()->GetDocument(), options);
 }
 
 unsigned WebLocalFrameImpl::UnloadListenerCount() const {

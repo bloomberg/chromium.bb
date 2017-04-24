@@ -33,6 +33,8 @@
 
 #include "public/web/WebAssociatedURLLoaderOptions.h"
 
+#include "public/platform/WebCommon.h"
+
 namespace blink {
 
 class WebAssociatedURLLoaderClient;
@@ -40,7 +42,7 @@ class WebTaskRunner;
 class WebURLRequest;
 
 // This class is used to implement WebFrame::createAssociatedURLLoader.
-class WebAssociatedURLLoader {
+class BLINK_EXPORT WebAssociatedURLLoader {
  public:
   virtual ~WebAssociatedURLLoader() {}
 

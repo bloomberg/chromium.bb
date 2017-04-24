@@ -28,11 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebAssociatedURLLoaderImpl.h"
+#include "core/exported/WebAssociatedURLLoaderImpl.h"
 
 #include <limits.h>
 #include <memory>
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
@@ -53,7 +54,6 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebAssociatedURLLoaderClient.h"
 #include "public/web/WebDataSource.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -337,11 +337,11 @@ class WebAssociatedURLLoaderImpl::Observer final
 };
 
 WebAssociatedURLLoaderImpl::WebAssociatedURLLoaderImpl(
-    WebLocalFrameImpl* frame_impl,
+    Document* document,
     const WebAssociatedURLLoaderOptions& options)
     : client_(nullptr),
       options_(options),
-      observer_(new Observer(this, frame_impl->GetFrame()->GetDocument())) {}
+      observer_(new Observer(this, document)) {}
 
 WebAssociatedURLLoaderImpl::~WebAssociatedURLLoaderImpl() {
   Cancel();

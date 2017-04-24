@@ -133,8 +133,6 @@ component("web") {
     "WebArrayBuffer.cpp",
     "WebArrayBufferConverter.cpp",
     "WebArrayBufferView.cpp",
-    "WebAssociatedURLLoaderImpl.cpp",
-    "WebAssociatedURLLoaderImpl.h",
     "WebCSSParser.cpp",
     "WebColorSuggestion.cpp",
     "WebCryptoNormalize.cpp",
