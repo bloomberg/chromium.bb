@@ -36,6 +36,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.AppHooksImpl;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.content_public.common.MediaMetadata;
 
 import java.util.concurrent.TimeUnit;
@@ -50,12 +51,13 @@ public class MediaNotificationManagerTestBase {
     MockListenerService mService;
     MediaNotificationListener mListener;
     AppHooksImpl mMockAppHooks;
+    NotificationUmaTracker mMockUmaTracker;
 
     MediaNotificationInfo.Builder mMediaNotificationInfoBuilder;
 
     static class MockMediaNotificationManager extends MediaNotificationManager {
-        public MockMediaNotificationManager(int notificationId) {
-            super(notificationId);
+        public MockMediaNotificationManager(NotificationUmaTracker umaTracker, int notificationId) {
+            super(umaTracker, notificationId);
         }
     }
 
@@ -94,8 +96,9 @@ public class MediaNotificationManagerTestBase {
                 new MediaNotificationManager.NotificationOptions(MockListenerService.class,
                         MockMediaButtonReceiver.class, NOTIFICATION_GROUP_NAME));
 
-        MediaNotificationManager.setManagerForTesting(
-                getNotificationId(), spy(new MockMediaNotificationManager(getNotificationId())));
+        mMockUmaTracker = mock(NotificationUmaTracker.class);
+        MediaNotificationManager.setManagerForTesting(getNotificationId(),
+                spy(new MockMediaNotificationManager(mMockUmaTracker, getNotificationId())));
 
         mMediaNotificationInfoBuilder =
                 new MediaNotificationInfo.Builder()
@@ -154,6 +157,7 @@ public class MediaNotificationManagerTestBase {
         clearInvocations(getManager());
         clearInvocations(mService);
         clearInvocations(mMockContext);
+        clearInvocations(mMockUmaTracker);
     }
 
     void setUpService() {

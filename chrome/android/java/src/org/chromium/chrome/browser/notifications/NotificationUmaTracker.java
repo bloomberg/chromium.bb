@@ -27,10 +27,9 @@ import java.lang.reflect.Method;
  */
 public class NotificationUmaTracker {
     private static final String TAG = "NotifsUMATracker";
-
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({DOWNLOAD_FILES, DOWNLOAD_PAGES, CLOSE_INCOGNITO, CONTENT_SUGGESTION,
-            SYSTEM_NOTIFICATION_TYPE_BOUNDARY})
+    @IntDef({DOWNLOAD_FILES, DOWNLOAD_PAGES, CLOSE_INCOGNITO, CONTENT_SUGGESTION, MEDIA_CAPTURE,
+            PHYSICAL_WEB, MEDIA, SITES, SYNC, SYSTEM_NOTIFICATION_TYPE_BOUNDARY})
     public @interface SystemNotificationType {}
 
     /*
@@ -41,11 +40,19 @@ public class NotificationUmaTracker {
      * A SystemNotificationType value can also be saved in shared preferences.
      */
     public static final int DOWNLOAD_FILES = 0;
-    public static final int DOWNLOAD_PAGES = 1;
-    public static final int CLOSE_INCOGNITO = 2;
-    public static final int CONTENT_SUGGESTION = 3;
 
-    private static final int SYSTEM_NOTIFICATION_TYPE_BOUNDARY = 4;
+    public static final int DOWNLOAD_PAGES = 1;
+
+    public static final int CLOSE_INCOGNITO = 2;
+
+    public static final int CONTENT_SUGGESTION = 3;
+    public static final int MEDIA_CAPTURE = 4;
+    public static final int PHYSICAL_WEB = 5;
+    public static final int MEDIA = 6;
+    public static final int SITES = 7;
+    public static final int SYNC = 8;
+
+    private static final int SYSTEM_NOTIFICATION_TYPE_BOUNDARY = 9;
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =
             "NotificationUmaTracker.LastShownNotificationType";

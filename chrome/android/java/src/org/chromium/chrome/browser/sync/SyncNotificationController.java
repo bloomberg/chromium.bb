@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -118,6 +119,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         Notification notification = builder.buildWithBigTextStyle(text);
 
         mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_SYNC, notification);
+        NotificationUmaTracker.getInstance().onNotificationShown(
+                NotificationUmaTracker.SYNC, ChannelDefinitions.CHANNEL_ID_BROWSER);
     }
 
     private boolean shouldSyncAuthErrorBeShown() {

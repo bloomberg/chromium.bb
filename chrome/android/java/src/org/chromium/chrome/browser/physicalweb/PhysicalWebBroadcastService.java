@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
@@ -161,6 +162,8 @@ public class PhysicalWebBroadcastService extends Service {
                                 getString(R.string.physical_web_stop_broadcast), stopPendingIntent);
         notificationManager.notify(
                 NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB, notificationBuilder.build());
+        NotificationUmaTracker.getInstance().onNotificationShown(
+                NotificationUmaTracker.PHYSICAL_WEB, ChannelDefinitions.CHANNEL_ID_BROWSER);
     }
 
     /** Turns off URL broadcasting. */

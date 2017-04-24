@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
@@ -31,6 +32,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
+import org.chromium.chrome.browser.notifications.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.content_public.common.MediaMetadata;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -107,6 +110,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         verifyNoMoreInteractions(getManager());
         verify(mMockAppHooks, never()).startForegroundService(any(Intent.class));
         verify(mMockContext, never()).startService(any(Intent.class));
+        verify(mMockUmaTracker, never()).onNotificationShown(anyInt(), anyString());
     }
 
     @Test
@@ -124,6 +128,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         verifyNoMoreInteractions(getManager());
         verify(mMockAppHooks, never()).startForegroundService(any(Intent.class));
         verify(mMockContext, never()).startService(any(Intent.class));
+        verify(mMockUmaTracker, never()).onNotificationShown(anyInt(), anyString());
     }
 
     @Test
@@ -152,10 +157,11 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         verify(mMockAppHooks, never()).startForegroundService(any(Intent.class));
         verify(mMockContext, never()).startService(any(Intent.class));
         verify(getManager()).updateNotification();
+        verify(mMockUmaTracker, never()).onNotificationShown(anyInt(), anyString());
     }
 
     @Test
-    public void testShowNotificationBeforeServiceCreatedUpdatesNotificationInfo() {
+    public void testShowNotificationBeforeServiceCreatedUpdatesNotificationInfoAndLogsUma() {
         doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
         doNothing().when(getManager()).updateNotification();
 
@@ -189,6 +195,9 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         mMockContext.startService(getManager().createIntent());
         order.verify(getManager(), times(1)).onServiceStarted(mService);
         order.verify(getManager(), times(1)).updateNotification();
+        verify(mMockUmaTracker)
+                .onNotificationShown(
+                        NotificationUmaTracker.MEDIA, ChannelDefinitions.CHANNEL_ID_MEDIA);
     }
 
     @Test

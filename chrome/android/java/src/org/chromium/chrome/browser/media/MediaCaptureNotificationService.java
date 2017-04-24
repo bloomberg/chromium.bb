@@ -20,6 +20,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 
@@ -200,6 +201,8 @@ public class MediaCaptureNotificationService extends Service {
         mNotificationManager.notify(NOTIFICATION_NAMESPACE, notificationId, notification);
         mNotifications.put(notificationId, mediaType);
         updateSharedPreferencesEntry(notificationId, false);
+        NotificationUmaTracker.getInstance().onNotificationShown(
+                NotificationUmaTracker.MEDIA_CAPTURE, ChannelDefinitions.CHANNEL_ID_MEDIA);
     }
 
     /**
