@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<link href="resources/grid.css" rel="stylesheet">
+<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
+<style>
+.flex {
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+}
+
+input {
+    margin: 10px;
+    font: 10px/1 Ahem;
+}
+</style>
+
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
+
+<body onload="runTest()">
+<p>This test checks that preferred widths computations triggered after layout for flex items do not cause grid containers to shrink.</p>
+<h3>Grid as flex item.</h3>
+<div class="flex">
+    <div class="grid" data-expected-width="500">
+        <input data-expected-width="480">
+    </div>
+</div>
+
+<h3>Grid as flex item with intrinsic width.</h3>
+<div class="flex">
+    <div class="grid min-content" data-expected-width="224">
+        <input data-expected-width="204">
+    </div>
+</div>
+
+<h3>Grid with intrinsic width.</h3>
+<div class="grid min-content" data-expected-width="224">
+    <input data-expected-width="204">
+</div>
+
+<h3>Grid as a child of a flex item.</h3>
+<div class="flex">
+    <div>
+        <div class="grid" data-expected-width="500">
+            <input data-expected-width="480">
+        </div>
+    </div>
+</div>
+<div id="log"></div>
+</body>
+
+<script>
+function runTest() {
+    var inputs = document.getElementsByTagName("input");
+    for (i = 0; i < inputs.length; ++i) {
+        inputs[i].focus();
+        document.execCommand('InsertText', false, 'X');
+    }
+    checkLayout('.grid');
+}
+</script>
