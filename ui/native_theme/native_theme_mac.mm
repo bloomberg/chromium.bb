@@ -8,18 +8,11 @@
 #include <stddef.h>
 
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #import "skia/ext/skia_utils_mac.h"
-#include "third_party/skia/include/core/SkDrawLooper.h"
-#include "third_party/skia/include/core/SkRRect.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/shadow_value.h"
-#include "ui/gfx/skia_paint_util.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 
@@ -284,151 +277,6 @@ void NativeThemeMac::PaintMenuItemBackground(
       NOTREACHED();
       break;
   }
-}
-
-// static
-sk_sp<SkShader> NativeThemeMac::GetButtonBackgroundShader(
-    ButtonBackgroundType type,
-    int height) {
-  using ColorByState = EnumArray<ButtonBackgroundType, SkColor>;
-  SkPoint gradient_points[2];
-  gradient_points[0].iset(0, 0);
-  gradient_points[1].iset(0, height);
-
-  SkScalar gradient_positions[] = { 0.0, 1.0 };
-
-  // These hex values are directly from the detailed specs in
-  // https://crbug.com/543683.
-  const SkColor kGrey = SkColorSetRGB(0xf6, 0xf6, 0xf6);
-  const SkColor kBlueStart = SkColorSetRGB(0x6b, 0xb3, 0xfa);
-  const SkColor kBlueEnd = SkColorSetRGB(0x07, 0x7d, 0xff);
-  const SkColor kPressedBlueStart = SkColorSetRGB(0x3e, 0x8b, 0xf6);
-  const SkColor kPressedBlueEnd = SkColorSetRGB(0x03, 0x51, 0xff);
-
-  ColorByState start_colors;
-  start_colors[ButtonBackgroundType::DISABLED] = kGrey;
-  start_colors[ButtonBackgroundType::HIGHLIGHTED] = kBlueStart;
-  start_colors[ButtonBackgroundType::NORMAL] = SK_ColorWHITE;
-  start_colors[ButtonBackgroundType::PRESSED] = kPressedBlueStart;
-
-  ColorByState end_colors;
-  end_colors[ButtonBackgroundType::DISABLED] = kGrey;
-  end_colors[ButtonBackgroundType::HIGHLIGHTED] = kBlueEnd;
-  end_colors[ButtonBackgroundType::NORMAL] = SK_ColorWHITE;
-  end_colors[ButtonBackgroundType::PRESSED] = kPressedBlueEnd;
-
-  SkColor gradient_colors[] = {start_colors[type], end_colors[type]};
-
-  for (size_t i = 0; i < arraysize(gradient_colors); ++i)
-    gradient_colors[i] = ApplySystemControlTint(gradient_colors[i]);
-
-  return SkGradientShader::MakeLinear(
-      gradient_points, gradient_colors, gradient_positions,
-      arraysize(gradient_positions),
-      SkShader::kClamp_TileMode);
-}
-
-// static
-sk_sp<SkShader> NativeThemeMac::GetButtonBorderShader(ButtonBackgroundType type,
-                                                      int height) {
-  using ColorByState = EnumArray<ButtonBackgroundType, SkColor>;
-  SkPoint gradient_points[2];
-  gradient_points[0].iset(0, 0);
-  gradient_points[1].iset(0, height);
-
-  // Two positions works well for pressed and highlighted, but the side edges of
-  // disabled and normal are more heavily weighted at the top and bottom.
-  // TODO(tapted): Use more positions for normal and disabled.
-  SkScalar gradient_positions[] = {0.0, 1.0};
-
-  ColorByState top_edge;
-  top_edge[ButtonBackgroundType::DISABLED] = SkColorSetRGB(0xd2, 0xc2, 0xc2);
-  top_edge[ButtonBackgroundType::HIGHLIGHTED] = SkColorSetRGB(0x6a, 0x9f, 0xff);
-  top_edge[ButtonBackgroundType::NORMAL] = SkColorSetRGB(0xcc, 0xcc, 0xcc);
-  top_edge[ButtonBackgroundType::PRESSED] = SkColorSetRGB(0x4f, 0x72, 0xfb);
-  ColorByState bottom_edge;
-  bottom_edge[ButtonBackgroundType::DISABLED] = SkColorSetRGB(0xbe, 0xbe, 0xbe);
-  bottom_edge[ButtonBackgroundType::HIGHLIGHTED] =
-      SkColorSetRGB(0x43, 0x52, 0xff);
-  bottom_edge[ButtonBackgroundType::NORMAL] = SkColorSetRGB(0x9d, 0x9d, 0x9d);
-  bottom_edge[ButtonBackgroundType::PRESSED] = SkColorSetRGB(0x3e, 0x12, 0xff);
-
-  SkColor gradient_colors[] = {top_edge[type], bottom_edge[type]};
-
-  for (size_t i = 0; i < arraysize(gradient_colors); ++i)
-    gradient_colors[i] = ApplySystemControlTint(gradient_colors[i]);
-
-  return SkGradientShader::MakeLinear(
-      gradient_points, gradient_colors, gradient_positions,
-      arraysize(gradient_positions), SkShader::kClamp_TileMode);
-}
-
-// static
-void NativeThemeMac::PaintStyledGradientButton(cc::PaintCanvas* canvas,
-                                               const gfx::Rect& integer_bounds,
-                                               ButtonBackgroundType type,
-                                               bool round_left,
-                                               bool round_right,
-                                               bool focus) {
-  const SkScalar kBorderThickness = 1;
-  const SkScalar kFocusRingThickness = 4;
-  const SkColor kFocusRingColor = ApplySystemControlTint(
-      SkColorSetARGB(0x94, 0x79, 0xa7, 0xe9));
-
-  const SkVector kNoCurve = {0, 0};
-  const SkVector kCurve = {kButtonCornerRadius, kButtonCornerRadius};
-  const SkVector kLeftCurves[4] = {kCurve, kNoCurve, kNoCurve, kCurve};
-  const SkVector kRightCurves[4] = {kNoCurve, kCurve, kCurve, kNoCurve};
-
-  const SkScalar kShadowOffsetY = 1;
-  const SkColor kShadowColor = SkColorSetA(SK_ColorBLACK, 0x05);
-  const double kShadowBlur = 0.0;
-  const std::vector<gfx::ShadowValue> shadows(
-      1, gfx::ShadowValue(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
-                          kShadowColor));
-
-  SkRect bounds = gfx::RectToSkRect(integer_bounds);
-
-  // Inset to account for the focus ring. Note it draws over the border stroke.
-  bounds.inset(kFocusRingThickness - kBorderThickness,
-               kFocusRingThickness - kBorderThickness);
-
-  SkRRect shape;
-  if (round_left && round_right)
-    shape.setRectXY(bounds, kButtonCornerRadius, kButtonCornerRadius);
-  else if (round_left)
-    shape.setRectRadii(bounds, kLeftCurves);
-  else if (round_right)
-    shape.setRectRadii(bounds, kRightCurves);
-  else
-    shape.setRect(bounds);
-
-  cc::PaintFlags flags;
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setAntiAlias(true);
-
-  // First draw the darker "outer" border, with its gradient and shadow. Inside
-  // a tab strip, this will draw over the outer border and inner separator.
-  flags.setLooper(gfx::CreateShadowDrawLooper(shadows));
-  flags.setShader(
-      cc::WrapSkShader(GetButtonBorderShader(type, shape.height())));
-  canvas->drawRRect(shape, flags);
-
-  // Then, inset the rounded rect and draw over that with the inner gradient.
-  shape.inset(kBorderThickness, kBorderThickness);
-  flags.setLooper(nullptr);
-  flags.setShader(
-      cc::WrapSkShader(GetButtonBackgroundShader(type, shape.height())));
-  canvas->drawRRect(shape, flags);
-
-  if (!focus)
-    return;
-
-  SkRRect outer_shape;
-  shape.outset(kFocusRingThickness, kFocusRingThickness, &outer_shape);
-  flags.setShader(nullptr);
-  flags.setColor(kFocusRingColor);
-  canvas->drawDRRect(outer_shape, shape, flags);
 }
 
 NativeThemeMac::NativeThemeMac() {

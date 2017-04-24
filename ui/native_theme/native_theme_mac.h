@@ -46,15 +46,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       const gfx::Rect& rect,
       const MenuItemExtraParams& menu_item) const override;
 
-  // Creates a shader appropriate for painting the background of a button.
-  static sk_sp<SkShader> GetButtonBackgroundShader(ButtonBackgroundType type,
-                                                   int height);
-
-  // Creates a shader for the button border. This should be painted over with
-  // the background after insetting the rounded rect.
-  static sk_sp<SkShader> GetButtonBorderShader(ButtonBackgroundType type,
-                                               int height);
-
   // Paints the styled button shape used for default controls on Mac. The basic
   // style is used for dialog buttons, comboboxes, and tabbed pane tabs.
   // Depending on the control part being drawn, the left or the right side can
