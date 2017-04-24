@@ -860,19 +860,19 @@ SIMD_INLINE c_v64 c_v64_shr_s32(c_v64 a, unsigned int n) {
   return t;
 }
 
-SIMD_INLINE c_v64 c_v64_shr_n_byte(c_v64 x, const unsigned int i) {
+SIMD_INLINE c_v64 c_v64_shr_n_byte(c_v64 x, unsigned int i) {
   c_v64 t;
   t.u64 = x.u64 >> i * 8;
   return t;
 }
 
-SIMD_INLINE c_v64 c_v64_shl_n_byte(c_v64 x, const unsigned int i) {
+SIMD_INLINE c_v64 c_v64_shl_n_byte(c_v64 x, unsigned int i) {
   c_v64 t;
   t.u64 = x.u64 << i * 8;
   return t;
 }
 
-SIMD_INLINE c_v64 c_v64_align(c_v64 a, c_v64 b, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_align(c_v64 a, c_v64 b, unsigned int c) {
   if (SIMD_CHECK && c > 7) {
     fprintf(stderr, "Error: undefined alignment %d\n", c);
     abort();
@@ -880,39 +880,39 @@ SIMD_INLINE c_v64 c_v64_align(c_v64 a, c_v64 b, const unsigned int c) {
   return c ? c_v64_or(c_v64_shr_n_byte(b, c), c_v64_shl_n_byte(a, 8 - c)) : b;
 }
 
-SIMD_INLINE c_v64 c_v64_shl_n_8(c_v64 a, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_shl_n_8(c_v64 a, unsigned int c) {
   return c_v64_shl_8(a, c);
 }
 
-SIMD_INLINE c_v64 c_v64_shr_n_u8(c_v64 a, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_shr_n_u8(c_v64 a, unsigned int c) {
   return c_v64_shr_u8(a, c);
 }
 
-SIMD_INLINE c_v64 c_v64_shr_n_s8(c_v64 a, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_shr_n_s8(c_v64 a, unsigned int c) {
   return c_v64_shr_s8(a, c);
 }
 
-SIMD_INLINE c_v64 c_v64_shl_n_16(c_v64 a, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_shl_n_16(c_v64 a, unsigned int c) {
   return c_v64_shl_16(a, c);
 }
 
-SIMD_INLINE c_v64 c_v64_shr_n_u16(c_v64 a, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_shr_n_u16(c_v64 a, unsigned int c) {
   return c_v64_shr_u16(a, c);
 }
 
-SIMD_INLINE c_v64 c_v64_shr_n_s16(c_v64 a, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_shr_n_s16(c_v64 a, unsigned int c) {
   return c_v64_shr_s16(a, c);
 }
 
-SIMD_INLINE c_v64 c_v64_shl_n_32(c_v64 a, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_shl_n_32(c_v64 a, unsigned int c) {
   return c_v64_shl_32(a, c);
 }
 
-SIMD_INLINE c_v64 c_v64_shr_n_u32(c_v64 a, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_shr_n_u32(c_v64 a, unsigned int c) {
   return c_v64_shr_u32(a, c);
 }
 
-SIMD_INLINE c_v64 c_v64_shr_n_s32(c_v64 a, const unsigned int c) {
+SIMD_INLINE c_v64 c_v64_shr_n_s32(c_v64 a, unsigned int c) {
   return c_v64_shr_s32(a, c);
 }
 

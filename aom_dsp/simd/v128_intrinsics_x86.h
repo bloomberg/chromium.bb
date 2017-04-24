@@ -62,7 +62,7 @@ SIMD_INLINE void v128_store_unaligned(void *p, v128 a) {
 // Some compilers will check this during optimisation, others wont.
 #if defined(__OPTIMIZE__) && __OPTIMIZE__ && !defined(__clang__)
 #if defined(__SSSE3__)
-SIMD_INLINE v128 v128_align(v128 a, v128 b, const unsigned int c) {
+SIMD_INLINE v128 v128_align(v128 a, v128 b, unsigned int c) {
   return c ? _mm_alignr_epi8(a, b, c) : b;
 }
 #else

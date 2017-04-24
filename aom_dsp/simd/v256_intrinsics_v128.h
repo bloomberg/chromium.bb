@@ -468,39 +468,39 @@ SIMD_INLINE v256 v256_cmpeq_16(v256 a, v256 b) {
   return v256_from_v128(v128_cmpeq_16(a.hi, b.hi), v128_cmpeq_16(a.lo, b.lo));
 }
 
-SIMD_INLINE v256 v256_shl_8(v256 a, const unsigned int c) {
+SIMD_INLINE v256 v256_shl_8(v256 a, unsigned int c) {
   return v256_from_v128(v128_shl_8(a.hi, c), v128_shl_8(a.lo, c));
 }
 
-SIMD_INLINE v256 v256_shr_u8(v256 a, const unsigned int c) {
+SIMD_INLINE v256 v256_shr_u8(v256 a, unsigned int c) {
   return v256_from_v128(v128_shr_u8(a.hi, c), v128_shr_u8(a.lo, c));
 }
 
-SIMD_INLINE v256 v256_shr_s8(v256 a, const unsigned int c) {
+SIMD_INLINE v256 v256_shr_s8(v256 a, unsigned int c) {
   return v256_from_v128(v128_shr_s8(a.hi, c), v128_shr_s8(a.lo, c));
 }
 
-SIMD_INLINE v256 v256_shl_16(v256 a, const unsigned int c) {
+SIMD_INLINE v256 v256_shl_16(v256 a, unsigned int c) {
   return v256_from_v128(v128_shl_16(a.hi, c), v128_shl_16(a.lo, c));
 }
 
-SIMD_INLINE v256 v256_shr_u16(v256 a, const unsigned int c) {
+SIMD_INLINE v256 v256_shr_u16(v256 a, unsigned int c) {
   return v256_from_v128(v128_shr_u16(a.hi, c), v128_shr_u16(a.lo, c));
 }
 
-SIMD_INLINE v256 v256_shr_s16(v256 a, const unsigned int c) {
+SIMD_INLINE v256 v256_shr_s16(v256 a, unsigned int c) {
   return v256_from_v128(v128_shr_s16(a.hi, c), v128_shr_s16(a.lo, c));
 }
 
-SIMD_INLINE v256 v256_shl_32(v256 a, const unsigned int c) {
+SIMD_INLINE v256 v256_shl_32(v256 a, unsigned int c) {
   return v256_from_v128(v128_shl_32(a.hi, c), v128_shl_32(a.lo, c));
 }
 
-SIMD_INLINE v256 v256_shr_u32(v256 a, const unsigned int c) {
+SIMD_INLINE v256 v256_shr_u32(v256 a, unsigned int c) {
   return v256_from_v128(v128_shr_u32(a.hi, c), v128_shr_u32(a.lo, c));
 }
 
-SIMD_INLINE v256 v256_shr_s32(v256 a, const unsigned int c) {
+SIMD_INLINE v256 v256_shr_s32(v256 a, unsigned int c) {
   return v256_from_v128(v128_shr_s32(a.hi, c), v128_shr_s32(a.lo, c));
 }
 

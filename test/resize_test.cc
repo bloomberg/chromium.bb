@@ -24,12 +24,12 @@
 namespace {
 
 #if WRITE_COMPRESSED_STREAM
-static void mem_put_le16(char *const mem, const unsigned int val) {
+static void mem_put_le16(char *const mem, unsigned int val) {
   mem[0] = val;
   mem[1] = val >> 8;
 }
 
-static void mem_put_le32(char *const mem, const unsigned int val) {
+static void mem_put_le32(char *const mem, unsigned int val) {
   mem[0] = val;
   mem[1] = val >> 8;
   mem[2] = val >> 16;

@@ -49,7 +49,7 @@ SIMD_INLINE void v128_store_aligned(void *p, v128 a) {
   c_v128_store_aligned(p, a);
 }
 
-SIMD_INLINE v128 v128_align(v128 a, v128 b, const unsigned int c) {
+SIMD_INLINE v128 v128_align(v128 a, v128 b, unsigned int c) {
   return c_v128_align(a, b, c);
 }
 
@@ -231,37 +231,37 @@ SIMD_INLINE v128 v128_shr_s32(v128 a, unsigned int c) {
   return c_v128_shr_s32(a, c);
 }
 
-SIMD_INLINE v128 v128_shr_n_byte(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shr_n_byte(v128 a, unsigned int n) {
   return c_v128_shr_n_byte(a, n);
 }
-SIMD_INLINE v128 v128_shl_n_byte(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shl_n_byte(v128 a, unsigned int n) {
   return c_v128_shl_n_byte(a, n);
 }
-SIMD_INLINE v128 v128_shl_n_8(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shl_n_8(v128 a, unsigned int n) {
   return c_v128_shl_n_8(a, n);
 }
-SIMD_INLINE v128 v128_shl_n_16(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shl_n_16(v128 a, unsigned int n) {
   return c_v128_shl_n_16(a, n);
 }
-SIMD_INLINE v128 v128_shl_n_32(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shl_n_32(v128 a, unsigned int n) {
   return c_v128_shl_n_32(a, n);
 }
-SIMD_INLINE v128 v128_shr_n_u8(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shr_n_u8(v128 a, unsigned int n) {
   return c_v128_shr_n_u8(a, n);
 }
-SIMD_INLINE v128 v128_shr_n_u16(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shr_n_u16(v128 a, unsigned int n) {
   return c_v128_shr_n_u16(a, n);
 }
-SIMD_INLINE v128 v128_shr_n_u32(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shr_n_u32(v128 a, unsigned int n) {
   return c_v128_shr_n_u32(a, n);
 }
-SIMD_INLINE v128 v128_shr_n_s8(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shr_n_s8(v128 a, unsigned int n) {
   return c_v128_shr_n_s8(a, n);
 }
-SIMD_INLINE v128 v128_shr_n_s16(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shr_n_s16(v128 a, unsigned int n) {
   return c_v128_shr_n_s16(a, n);
 }
-SIMD_INLINE v128 v128_shr_n_s32(v128 a, const unsigned int n) {
+SIMD_INLINE v128 v128_shr_n_s32(v128 a, unsigned int n) {
   return c_v128_shr_n_s32(a, n);
 }
 

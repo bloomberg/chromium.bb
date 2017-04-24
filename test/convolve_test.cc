@@ -93,7 +93,7 @@ typedef std::tr1::tuple<int, int, const ConvolveFunctions *> ConvolveParam;
 #define AV1_FILTER_SHIFT 7
 uint8_t clip_pixel(int x) { return x < 0 ? 0 : x > 255 ? 255 : x; }
 
-void filter_block2d_8_c(const uint8_t *src_ptr, const unsigned int src_stride,
+void filter_block2d_8_c(const uint8_t *src_ptr, unsigned int src_stride,
                         const int16_t *HFilter, const int16_t *VFilter,
                         uint8_t *dst_ptr, unsigned int dst_stride,
                         unsigned int output_width, unsigned int output_height) {
@@ -278,10 +278,9 @@ void highbd_block2d_average_c(uint16_t *src, unsigned int src_stride,
 }
 
 void highbd_filter_average_block2d_8_c(
-    const uint16_t *src_ptr, const unsigned int src_stride,
-    const int16_t *HFilter, const int16_t *VFilter, uint16_t *dst_ptr,
-    unsigned int dst_stride, unsigned int output_width,
-    unsigned int output_height, int bd) {
+    const uint16_t *src_ptr, unsigned int src_stride, const int16_t *HFilter,
+    const int16_t *VFilter, uint16_t *dst_ptr, unsigned int dst_stride,
+    unsigned int output_width, unsigned int output_height, int bd) {
   uint16_t tmp[kMaxDimension * kMaxDimension];
 
   assert(output_width <= kMaxDimension);
@@ -474,10 +473,9 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
   }
 
   void wrapper_filter_average_block2d_8_c(
-      const uint8_t *src_ptr, const unsigned int src_stride,
-      const int16_t *HFilter, const int16_t *VFilter, uint8_t *dst_ptr,
-      unsigned int dst_stride, unsigned int output_width,
-      unsigned int output_height) {
+      const uint8_t *src_ptr, unsigned int src_stride, const int16_t *HFilter,
+      const int16_t *VFilter, uint8_t *dst_ptr, unsigned int dst_stride,
+      unsigned int output_width, unsigned int output_height) {
 #if CONFIG_HIGHBITDEPTH
     if (UUT_->use_highbd_ == 0) {
       filter_average_block2d_8_c(src_ptr, src_stride, HFilter, VFilter, dst_ptr,
@@ -494,13 +492,10 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
 #endif
   }
 
-  void wrapper_filter_block2d_8_c(const uint8_t *src_ptr,
-                                  const unsigned int src_stride,
-                                  const int16_t *HFilter,
-                                  const int16_t *VFilter, uint8_t *dst_ptr,
-                                  unsigned int dst_stride,
-                                  unsigned int output_width,
-                                  unsigned int output_height) {
+  void wrapper_filter_block2d_8_c(
+      const uint8_t *src_ptr, unsigned int src_stride, const int16_t *HFilter,
+      const int16_t *VFilter, uint8_t *dst_ptr, unsigned int dst_stride,
+      unsigned int output_width, unsigned int output_height) {
 #if CONFIG_HIGHBITDEPTH
     if (UUT_->use_highbd_ == 0) {
       filter_block2d_8_c(src_ptr, src_stride, HFilter, VFilter, dst_ptr,
