@@ -631,9 +631,9 @@ const FeatureEntry::FeatureVariation
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
     {"via content suggestion server (backed by ChromeReader)", nullptr, 0,
-     nullptr},
+     "3313421"},
     {"via content suggestion server (backed by Google Now)", nullptr, 0,
-     "3313279"}};
+     "3313422"}};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
