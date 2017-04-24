@@ -49,6 +49,15 @@
 
 namespace media {
 
+namespace {
+
+void SetAVStreamDiscard(AVStream* stream, AVDiscard discard) {
+  DCHECK(stream);
+  stream->discard = discard;
+}
+
+}  // namespace
+
 static base::Time ExtractTimelineOffset(AVFormatContext* format_context) {
   if (strstr(format_context->iformat->name, "webm") ||
       strstr(format_context->iformat->name, "matroska")) {
@@ -736,11 +745,15 @@ bool FFmpegDemuxerStream::IsEnabled() const {
 
 void FFmpegDemuxerStream::SetEnabled(bool enabled, base::TimeDelta timestamp) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(demuxer_);
+  DCHECK(demuxer_->ffmpeg_task_runner());
   if (enabled == is_enabled_)
     return;
 
   is_enabled_ = enabled;
-  av_stream()->discard = enabled ? AVDISCARD_DEFAULT : AVDISCARD_ALL;
+  demuxer_->ffmpeg_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&SetAVStreamDiscard, av_stream(),
+                            enabled ? AVDISCARD_DEFAULT : AVDISCARD_ALL));
   if (is_enabled_) {
     waiting_for_keyframe_ = true;
   }

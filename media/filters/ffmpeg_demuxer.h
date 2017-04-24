@@ -253,6 +253,11 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // timeline.
   base::TimeDelta start_time() const { return start_time_; }
 
+  // Task runner used to execute blocking FFmpeg operations.
+  scoped_refptr<base::SequencedTaskRunner> ffmpeg_task_runner() {
+    return blocking_task_runner_;
+  }
+
  private:
   // To allow tests access to privates.
   friend class FFmpegDemuxerTest;
