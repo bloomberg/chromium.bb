@@ -626,6 +626,9 @@ static void update_delta_q_probs(AV1_COMMON *cm, aom_writer *w,
 #else
   const int probwt = 1;
 #endif
+#if CONFIG_EXT_DELTA_Q
+  if (!cm->delta_q_present_flag) return;
+#endif  // CONFIG_EXT_DELTA_Q
   for (k = 0; k < DELTA_Q_PROBS; ++k) {
     av1_cond_prob_diff_update(w, &cm->fc->delta_q_prob[k], counts->delta_q[k],
                               probwt);

@@ -557,7 +557,17 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   int shortcut = 0;
   int next_shortcut = 0;
 
+#if CONFIG_EXT_DELTA_Q
+  const int qindex = cm->seg.enabled
+                         ? av1_get_qindex(&cm->seg, xd->mi[0]->mbmi.segment_id,
+                                          cm->base_qindex)
+                         : cm->base_qindex;
+  if (qindex == 0) {
+    assert((qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
+  }
+#else
   assert((mb->qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
+#endif
 
   token_costs += band;
 

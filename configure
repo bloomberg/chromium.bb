@@ -296,6 +296,7 @@ EXPERIMENT_LIST="
     chroma_2x2
     frame_size
     delta_q
+    ext_delta_q
     adapt_scan
     filter_7bit
     parallel_deblocking
@@ -510,6 +511,7 @@ post_process_cmdline() {
     enabled ec_multisymbol && ! enabled ans && soft_enable daala_ec
     enabled ec_multisymbol && ! enabled daala_ec && soft_enable ans
     enabled palette_throughput && soft_enable palette
+    enabled ext_delta_q && soft_enable delta_q
     enabled txk_sel && soft_enable lv_map
     enabled compound_round && soft_enable convolve_round
     if enabled rawbits && ! enabled daala_ec; then

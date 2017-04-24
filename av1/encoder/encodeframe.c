@@ -1195,7 +1195,7 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
         xd->mi[x_idx + y * mis] = mi_addr;
       }
 
-#if CONFIG_DELTA_Q
+#if CONFIG_DELTA_Q && !CONFIG_EXT_DELTA_Q
   if (cpi->oxcf.aq_mode > NO_AQ && cpi->oxcf.aq_mode < DELTA_AQ)
     av1_init_plane_quantizers(cpi, x, xd->mi[0]->mbmi.segment_id);
 #else
@@ -4698,10 +4698,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       xd->delta_qindex = current_qindex - cm->base_qindex;
       set_offsets(cpi, tile_info, x, mi_row, mi_col, BLOCK_64X64);
       xd->mi[0]->mbmi.current_q_index = current_qindex;
+#if !CONFIG_EXT_DELTA_Q
       xd->mi[0]->mbmi.segment_id = 0;
+#endif  // CONFIG_EXT_DELTA_Q
       av1_init_plane_quantizers(cpi, x, xd->mi[0]->mbmi.segment_id);
     }
-#endif
+#endif  // CONFIG_DELTA_Q
 
     x->source_variance = UINT_MAX;
     if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
@@ -5294,9 +5296,13 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #if CONFIG_DELTA_Q
   // Fix delta q resolution for the moment
   cm->delta_q_res = DEFAULT_DELTA_Q_RES;
-  // Set delta_q_present_flag before it is used for the first time
+// Set delta_q_present_flag before it is used for the first time
+#if CONFIG_EXT_DELTA_Q
+  cm->delta_q_present_flag &= cm->base_qindex > 0;
+#else
   cm->delta_q_present_flag =
       cpi->oxcf.aq_mode == DELTA_AQ && cm->base_qindex > 0;
+#endif  // CONFIG_EXT_DELTA_Q
 #endif
 
   av1_frame_init_quantizer(cpi);

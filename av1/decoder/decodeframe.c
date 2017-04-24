@@ -1546,6 +1546,25 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   if (cm->delta_q_present_flag) {
     int i;
     for (i = 0; i < MAX_SEGMENTS; i++) {
+#if CONFIG_EXT_DELTA_Q
+      xd->plane[0].seg_dequant[i][0] =
+          av1_dc_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
+                       cm->y_dc_delta_q, cm->bit_depth);
+      xd->plane[0].seg_dequant[i][1] = av1_ac_quant(
+          av1_get_qindex(&cm->seg, i, xd->current_qindex), 0, cm->bit_depth);
+      xd->plane[1].seg_dequant[i][0] =
+          av1_dc_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
+                       cm->uv_dc_delta_q, cm->bit_depth);
+      xd->plane[1].seg_dequant[i][1] =
+          av1_ac_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
+                       cm->uv_ac_delta_q, cm->bit_depth);
+      xd->plane[2].seg_dequant[i][0] =
+          av1_dc_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
+                       cm->uv_dc_delta_q, cm->bit_depth);
+      xd->plane[2].seg_dequant[i][1] =
+          av1_ac_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
+                       cm->uv_ac_delta_q, cm->bit_depth);
+#else
       xd->plane[0].seg_dequant[i][0] =
           av1_dc_quant(xd->current_qindex, cm->y_dc_delta_q, cm->bit_depth);
       xd->plane[0].seg_dequant[i][1] =
@@ -1558,6 +1577,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
           av1_dc_quant(xd->current_qindex, cm->uv_dc_delta_q, cm->bit_depth);
       xd->plane[2].seg_dequant[i][1] =
           av1_ac_quant(xd->current_qindex, cm->uv_ac_delta_q, cm->bit_depth);
+#endif
     }
   }
 #endif
@@ -4574,8 +4594,10 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     av1_diff_update_prob(&r, &fc->skip_probs[k], ACCT_STR);
 
 #if CONFIG_DELTA_Q && !CONFIG_EC_ADAPT
-  for (k = 0; k < DELTA_Q_PROBS; ++k)
-    av1_diff_update_prob(&r, &fc->delta_q_prob[k], ACCT_STR);
+  if (cm->delta_q_present_flag) {
+    for (k = 0; k < DELTA_Q_PROBS; ++k)
+      av1_diff_update_prob(&r, &fc->delta_q_prob[k], ACCT_STR);
+  }
 #endif
 
 #if !CONFIG_EC_ADAPT

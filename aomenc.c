@@ -412,7 +412,7 @@ static const arg_def_t frame_parallel_decoding =
     ARG_DEF(NULL, "frame-parallel", 1,
             "Enable frame parallel decodability features "
             "(0: false (default), 1: true)");
-#if CONFIG_DELTA_Q
+#if CONFIG_DELTA_Q && !CONFIG_EXT_DELTA_Q
 static const arg_def_t aq_mode = ARG_DEF(
     NULL, "aq-mode", 1,
     "Adaptive quantization mode (0: off (default), 1: variance 2: complexity, "
@@ -422,6 +422,11 @@ static const arg_def_t aq_mode = ARG_DEF(
     NULL, "aq-mode", 1,
     "Adaptive quantization mode (0: off (default), 1: variance 2: complexity, "
     "3: cyclic refresh)");
+#endif
+#if CONFIG_EXT_DELTA_Q
+static const arg_def_t deltaq_mode = ARG_DEF(
+    NULL, "deltaq-mode", 1,
+    "Delta qindex mode (0: off (default), 1: deltaq 2: deltaq + deltalf)");
 #endif
 static const arg_def_t frame_periodic_boost =
     ARG_DEF(NULL, "frame-boost", 1,
@@ -505,6 +510,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #endif
                                        &frame_parallel_decoding,
                                        &aq_mode,
+#if CONFIG_EXT_DELTA_Q
+                                       &deltaq_mode,
+#endif
                                        &frame_periodic_boost,
                                        &noise_sens,
                                        &tune_content,
@@ -556,6 +564,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #endif
                                         AV1E_SET_FRAME_PARALLEL_DECODING,
                                         AV1E_SET_AQ_MODE,
+#if CONFIG_EXT_DELTA_Q
+                                        AV1E_SET_DELTAQ_MODE,
+#endif
                                         AV1E_SET_FRAME_PERIODIC_BOOST,
                                         AV1E_SET_NOISE_SENSITIVITY,
                                         AV1E_SET_TUNE_CONTENT,

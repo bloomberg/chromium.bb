@@ -4897,6 +4897,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
 #endif
 
+#if CONFIG_EXT_DELTA_Q
+  cm->delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
+#endif
+
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
     encode_without_recode_loop(cpi);
   } else {
