@@ -22,6 +22,8 @@
 
 namespace remoting {
 
+class DefaultAudioDeviceChangeDetector;
+
 class AudioCapturerWin : public AudioCapturer {
  public:
   AudioCapturerWin();
@@ -31,11 +33,6 @@ class AudioCapturerWin : public AudioCapturer {
   bool Start(const PacketCapturedCallback& callback) override;
 
  private:
-  // An IMMNotificationClient implementation to detect the event of default
-  // audio device recently changed. If it indicates a changed happend recently,
-  // we need to recreate all audio components.
-  class MMNotificationClient;
-
   // Executes Deinitialize() and Initialize(). If Initialize() function call
   // returns false, Deinitialize() will be called again to ensure we will
   // initialize COM components again.
@@ -79,13 +76,12 @@ class AudioCapturerWin : public AudioCapturer {
   AudioSilenceDetector silence_detector_;
 
   base::win::ScopedCoMem<WAVEFORMATEX> wave_format_ex_;
-  base::win::ScopedComPtr<IMMDeviceEnumerator> mm_device_enumerator_;
   base::win::ScopedComPtr<IAudioCaptureClient> audio_capture_client_;
   base::win::ScopedComPtr<IAudioClient> audio_client_;
   base::win::ScopedComPtr<IMMDevice> mm_device_;
   base::win::ScopedComPtr<IAudioEndpointVolume> audio_volume_;
 
-  const std::unique_ptr<MMNotificationClient> mm_notification_client_;
+  std::unique_ptr<DefaultAudioDeviceChangeDetector> default_device_detector_;
 
   HRESULT last_capture_error_;
 
