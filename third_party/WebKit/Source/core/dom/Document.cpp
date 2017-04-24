@@ -2727,7 +2727,15 @@ void Document::open(Document* entered_document,
       return;
     }
     SetSecurityOrigin(entered_document->GetSecurityOrigin());
-    SetURL(entered_document->Url());
+
+    if (this != entered_document) {
+      // Clear the hash fragment from the inherited URL to prevent a
+      // scroll-into-view for any document.open()'d frame.
+      KURL new_url = entered_document->Url();
+      new_url.SetFragmentIdentifier(String());
+      SetURL(new_url);
+    }
+
     cookie_url_ = entered_document->CookieURL();
   }
 
