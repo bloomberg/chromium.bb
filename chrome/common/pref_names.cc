@@ -972,6 +972,9 @@ const char kPinUnlockWeakPinsAllowed[] = "pin_unlock_weak_pins_allowed";
 // Boolean pref indicating whether fingerprint unlock is enabled.
 const char kEnableQuickUnlockFingerprint[] =
     "settings.enable_quick_unlock_fingerprint";
+
+// Boolean pref indicating whether a user is allowed to use Tether.
+const char kInstantTetheringAllowed[] = "tether.allowed";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

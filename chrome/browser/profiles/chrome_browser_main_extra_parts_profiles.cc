@@ -119,6 +119,7 @@
 #include "chrome/browser/chromeos/printer_detector/printer_detector_factory.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 #endif
 
@@ -229,6 +230,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   chromeos::PrinterDetectorFactory::GetInstance();
   chromeos::CupsPrintJobManagerFactory::GetInstance();
   chromeos::PrintersManagerFactory::GetInstance();
+  TetherServiceFactory::GetInstance();
   extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();

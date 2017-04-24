@@ -57,13 +57,12 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/net/tether_notification_presenter.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
-#include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -74,7 +73,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
@@ -86,15 +84,12 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/components/tether/initializer.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/stub_authenticator.h"
-#include "chromeos/network/network_connect.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -1232,18 +1227,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableTether)) {
-      auto notification_presenter =
-          base::MakeUnique<tether::TetherNotificationPresenter>(
-              message_center::MessageCenter::Get(), NetworkConnect::Get());
-      chromeos::tether::Initializer::Init(
-          ChromeCryptAuthServiceFactory::GetForBrowserContext(profile),
-          std::move(notification_presenter), profile->GetPrefs(),
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-          NetworkHandler::Get()->network_state_handler(),
-          NetworkConnect::Get());
-    }
+    TetherService::Get(profile)->StartTether();
   }
 
   UpdateEasyUnlockKeys(user_context_);
@@ -1930,11 +1914,6 @@ bool UserSessionManager::TokenHandlesEnabled() {
 }
 
 void UserSessionManager::Shutdown() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableTether)) {
-    chromeos::tether::Initializer::Shutdown();
-  }
-
   token_handle_fetcher_.reset();
   token_handle_util_.reset();
   first_run::GoodiesDisplayer::Delete();

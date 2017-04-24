@@ -326,6 +326,7 @@ extern const char kPinUnlockMinimumLength[];
 extern const char kPinUnlockMaximumLength[];
 extern const char kPinUnlockWeakPinsAllowed[];
 extern const char kEnableQuickUnlockFingerprint[];
+extern const char kInstantTetheringAllowed[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

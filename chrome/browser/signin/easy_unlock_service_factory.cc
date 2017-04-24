@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -106,6 +107,13 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
   service->Initialize(EasyUnlockAppManager::Create(
       extensions::ExtensionSystem::Get(context), manifest_id, app_path));
   return service;
+}
+
+void EasyUnlockServiceFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  EasyUnlockService::RegisterProfilePrefs(registry);
+#endif
 }
 
 content::BrowserContext* EasyUnlockServiceFactory::GetBrowserContextToUse(

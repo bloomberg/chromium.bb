@@ -1,0 +1,17 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("tether") {
+  sources = [
+    "tether_service.cc",
+    "tether_service.h",
+    "tether_service_factory.cc",
+    "tether_service_factory.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/prefs",
+  ]
+}
