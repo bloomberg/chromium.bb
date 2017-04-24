@@ -229,12 +229,21 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
       observed_browser_(this) {
   SetLayoutManager(new views::FillLayout);
   const autofill::PasswordForm& form = parent_->model()->pending_password();
-  CredentialsItemView* credential = new CredentialsItemView(
-      this, base::string16(),
-      l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE,
-                                 form.username_value),
-      kButtonHoverColor, &form,
-      parent_->model()->GetProfile()->GetRequestContext());
+  CredentialsItemView* credential;
+  if (ChromeLayoutProvider::Get()->IsHarmonyMode()) {
+    credential = new CredentialsItemView(
+        this,
+        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE_MD),
+        form.username_value, kButtonHoverColor, &form,
+        parent_->model()->GetProfile()->GetRequestContext());
+  } else {
+    credential = new CredentialsItemView(
+        this, base::string16(),
+        l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE,
+                                   form.username_value),
+        kButtonHoverColor, &form,
+        parent_->model()->GetProfile()->GetRequestContext());
+  }
   credential->SetEnabled(false);
   AddChildView(credential);
 

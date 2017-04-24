@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "ui/base/ui_base_switches.h"
@@ -24,6 +25,16 @@ class ManagePasswordsBubbleDialogViewTest
     } else if (name == "ManagePasswordBubble") {
       SetupManagingPasswords();
       ExecuteManagePasswordsCommand();
+    } else if (name == "AutoSignin") {
+      test_form()->origin = GURL("https://example.com");
+      test_form()->display_name = base::ASCIIToUTF16("Peter");
+      test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+      local_credentials.push_back(
+          base::MakeUnique<autofill::PasswordForm>(*test_form()));
+
+      ManagePasswordsBubbleView::set_auto_signin_toast_timeout(10);
+      SetupAutoSignin(std::move(local_credentials));
     } else {
       ADD_FAILURE() << "Unknown dialog type";
       return;
@@ -53,5 +64,10 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleDialogViewTest,
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleDialogViewTest,
                        InvokeDialog_ManagePasswordBubble) {
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleDialogViewTest,
+                       InvokeDialog_AutoSignin) {
   RunDialog();
 }

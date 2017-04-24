@@ -470,25 +470,38 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
 // DialogBrowserTest methods for interactive dialog invocation.
 void PasswordDialogViewTest::ShowDialog(const std::string& name) {
   GURL origin("https://example.com");
-  EXPECT_EQ("PopupAutoSigninPrompt", name);
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
   form.origin = origin;
   form.display_name = base::ASCIIToUTF16("Peter");
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
-  form.icon_url = GURL("broken url");
-  local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
-  GURL icon_url("https://google.com/icon.png");
-  form.icon_url = icon_url;
-  form.display_name = base::ASCIIToUTF16("Peter Pan");
-  form.federation_origin = url::Origin(GURL("https://google.com/federation"));
-  local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
-  SetupChooseCredentials(std::move(local_credentials), origin);
-  ASSERT_TRUE(controller()->current_account_chooser());
+  if (name == "PopupAutoSigninPrompt") {
+    form.icon_url = GURL("broken url");
+    local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
+    GURL icon_url("https://google.com/icon.png");
+    form.icon_url = icon_url;
+    form.display_name = base::ASCIIToUTF16("Peter Pan");
+    form.federation_origin = url::Origin(GURL("https://google.com/federation"));
+    local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
+    SetupChooseCredentials(std::move(local_credentials), origin);
+    ASSERT_TRUE(controller()->current_account_chooser());
+  } else if (name == "PopupAccountChooserWithSingleCredentialClickSignIn") {
+    local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
+    SetupChooseCredentials(std::move(local_credentials), origin);
+  } else {
+    ADD_FAILURE() << "Unknown dialog type";
+    return;
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
                        InvokeDialog_PopupAutoSigninPrompt) {
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PasswordDialogViewTest,
+    InvokeDialog_PopupAccountChooserWithSingleCredentialClickSignIn) {
   RunDialog();
 }
 
