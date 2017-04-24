@@ -7,4 +7,7 @@ a @ evalURL.js:10
 evalSource @ evalURL.js:13
 (anonymous) @ evalURL.js:14
 (anonymous) @ console-trace-in-eval.html:26
+setTimeout (async)
+doEvalSource @ console-trace-in-eval.html:25
+(anonymous) @ VM:1
 

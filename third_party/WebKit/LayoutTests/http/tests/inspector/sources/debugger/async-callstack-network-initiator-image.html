@@ -14,7 +14,6 @@ function testFunction()
 
 function test()
 {
-    Common.settingForTest("enableAsyncStackTraces").set(true);
     InspectorTest.evaluateInPage("testFunction()");
     InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, requestFinished);
 
@@ -26,7 +25,6 @@ function test()
         var initiatorInfo = NetworkLog.networkLog.initiatorInfoForRequest(event.data);
         var element = new Components.Linkifier().linkifyScriptLocation(InspectorTest.mainTarget, initiatorInfo.scriptId, initiatorInfo.url, initiatorInfo.lineNumber - 1, initiatorInfo.columnNumber - 1);
         InspectorTest.addResult(element.textContent);
-        Common.settingForTest("enableAsyncStackTraces").set(false);
         InspectorTest.completeTest();
     }
 }

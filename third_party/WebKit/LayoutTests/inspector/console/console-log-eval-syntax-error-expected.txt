@@ -5,7 +5,11 @@ Tests that syntax errors in eval are logged into console, contains correct link 
 VM:1 Uncaught SyntaxError: Unexpected token }
     at foo (console-log-eval-syntax-error.html:8)
 foo @ console-log-eval-syntax-error.html:8
+setTimeout (async)
+(anonymous) @ VM:1
 boo.js:2 Uncaught SyntaxError: Unexpected token }
     at boo (console-log-eval-syntax-error.html:12)
 boo @ console-log-eval-syntax-error.html:12
+setTimeout (async)
+(anonymous) @ VM:1
 

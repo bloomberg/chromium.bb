@@ -3,4 +3,6 @@ Tests that console.trace dumps arguments alongside the stack trace.
 
 console-trace-arguments.html:9 1 2 3
 a @ console-trace-arguments.html:9
+setTimeout (async)
+(anonymous) @ VM:1
 

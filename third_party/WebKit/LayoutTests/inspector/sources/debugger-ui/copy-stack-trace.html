@@ -30,7 +30,7 @@ var test = function()
 
     function step2()
     {
-        InspectorFrontendHost.copyText = InspectorTest.addResult.bind(InspectorTest);
+        InspectorFrontendHost.copyText = text => InspectorTest.addResult(InspectorTest.clearSpecificInfoFromStackFrames(text));
         self.runtime.sharedInstance(Sources.CallStackSidebarPane)._copyStackTrace();
         InspectorTest.completeDebuggerTest();
     }

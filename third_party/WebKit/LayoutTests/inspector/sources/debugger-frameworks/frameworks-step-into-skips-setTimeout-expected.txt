@@ -6,20 +6,51 @@ Call stack:
     0) stop (frameworks-step-into-skips-setTimeout.html:25)
     1) callback (frameworks-step-into-skips-setTimeout.html:19)
   * 2) Framework_scheduleUntilDone (framework.js:142)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework.scheduleUntilDone (framework.js:138)
+    2) testFunction (frameworks-step-into-skips-setTimeout.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Executing StepOut...
 Call stack:
     0) callback (frameworks-step-into-skips-setTimeout.html:20)
   * 1) Framework_scheduleUntilDone (framework.js:142)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework.scheduleUntilDone (framework.js:138)
+    2) testFunction (frameworks-step-into-skips-setTimeout.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Executing StepInto...
 Call stack:
     0) callback (frameworks-step-into-skips-setTimeout.html:21)
   * 1) Framework_scheduleUntilDone (framework.js:142)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework.scheduleUntilDone (framework.js:138)
+    2) testFunction (frameworks-step-into-skips-setTimeout.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Executing StepInto...
 Call stack:
     0) callback (frameworks-step-into-skips-setTimeout.html:17)
   * 1) Framework_scheduleUntilDone (framework.js:142)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_scheduleUntilDone (framework.js:144)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework.scheduleUntilDone (framework.js:138)
+    2) testFunction (frameworks-step-into-skips-setTimeout.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

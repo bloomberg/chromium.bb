@@ -3,6 +3,9 @@ Tests framework blackboxing feature with sourcemaps.
 Set timer for test function.
 Call stack:
     0) testFunction (frameworks-sourcemap.html:10)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Executing StepInto...
 Executing StepInto...
@@ -10,9 +13,15 @@ Call stack:
     0) callback (frameworks-sourcemap.html:16)
   * 1) foo (framework.js:4)
     2) testFunction (frameworks-sourcemap.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Executing StepOut...
 Call stack:
     0) testFunction (frameworks-sourcemap.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

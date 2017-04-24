@@ -14,7 +14,7 @@ frontend: {"id":<number>,"method":"Page.configureOverlay","params":{"suspended":
 frontend: {"id":<number>,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":true}}
 frontend: {"id":<number>,"method":"Debugger.enable"}
 frontend: {"id":<number>,"method":"Debugger.setPauseOnExceptions","params":{"state":"none"}}
-frontend: {"id":<number>,"method":"Debugger.setAsyncCallStackDepth","params":{"maxDepth":8}}
+frontend: {"id":<number>,"method":"Debugger.setAsyncCallStackDepth","params":{"maxDepth":32}}
 frontend: {"id":<number>,"method":"DOM.enable"}
 frontend: {"id":<number>,"method":"CSS.enable"}
 

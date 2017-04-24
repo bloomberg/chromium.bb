@@ -13,6 +13,9 @@ func @ VM:6
 injectedFunction @ VM:9
 (anonymous) @ VM:1
 testFunction @ test.js:18
+setTimeout (async)
+scheduleTestFunction @ debugger-test.js:3
+(anonymous) @ VM:1
 localObj.func()
 test.js:15 Uncaught Error: localObj.func
     at Object.func (test.js:15)
@@ -21,6 +24,9 @@ test.js:15 Uncaught Error: localObj.func
 func @ test.js:15
 (anonymous) @ VM:1
 testFunction @ test.js:18
+setTimeout (async)
+scheduleTestFunction @ debugger-test.js:3
+(anonymous) @ VM:1
 globalObj.func()
 test.js:6 Uncaught Error: globalObj.func
     at Object.func (test.js:6)
@@ -29,4 +35,7 @@ test.js:6 Uncaught Error: globalObj.func
 func @ test.js:6
 (anonymous) @ VM:1
 testFunction @ test.js:18
+setTimeout (async)
+scheduleTestFunction @ debugger-test.js:3
+(anonymous) @ VM:1
 

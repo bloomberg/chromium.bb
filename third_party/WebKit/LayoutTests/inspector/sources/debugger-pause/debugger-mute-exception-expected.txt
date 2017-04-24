@@ -5,6 +5,8 @@ Script execution paused.
 Call stack:
     0) throwAnException (debugger-mute-exception.html:18)
     1) handleClick (debugger-mute-exception.html:25)
+    [setTimeout]
+    0)  (:1)
 Paused on exceptionTypeError: Cannot set property 'bar' of undefined
 Script execution resumed.
 

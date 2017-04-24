@@ -6,4 +6,6 @@ foo.js:4 foo
 boo.js:1 Uncaught SyntaxError: Unexpected token }
     at addInlineWithSyntaxError (foo.js:12)
 addInlineWithSyntaxError @ foo.js:12
+setTimeout (async)
+(anonymous) @ VM:1
 
