@@ -3870,12 +3870,10 @@ void RenderFrameImpl::RunScriptsAtDocumentElementAvailable(
   // Do not use |this| or |frame|! ContentClient might have deleted them by now!
 }
 
-void RenderFrameImpl::DidReceiveTitle(blink::WebLocalFrame* frame,
-                                      const blink::WebString& title,
+void RenderFrameImpl::DidReceiveTitle(const blink::WebString& title,
                                       blink::WebTextDirection direction) {
-  DCHECK_EQ(frame_, frame);
   // Ignore all but top level navigations.
-  if (!frame->Parent()) {
+  if (!frame_->Parent()) {
     base::trace_event::TraceLog::GetInstance()->UpdateProcessLabel(
         routing_id_, title.Utf8());
 
@@ -3886,7 +3884,7 @@ void RenderFrameImpl::DidReceiveTitle(blink::WebLocalFrame* frame,
   }
 
   // Also check whether we have new encoding name.
-  UpdateEncoding(frame, frame->View()->PageEncoding().Utf8());
+  UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
 }
 
 void RenderFrameImpl::DidChangeIcon(blink::WebIconURL::Type icon_type) {

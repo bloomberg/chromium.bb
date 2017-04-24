@@ -8809,13 +8809,11 @@ class SwapMainFrameWhenTitleChangesWebFrameClient
       remote_frame_->Close();
   }
 
-  void DidReceiveTitle(WebLocalFrame* frame,
-                       const WebString&,
-                       WebTextDirection) override {
-    if (!frame->Parent()) {
+  void DidReceiveTitle(const WebString&, WebTextDirection) override {
+    if (!Frame()->Parent()) {
       remote_frame_ =
           WebRemoteFrame::Create(WebTreeScopeType::kDocument, nullptr);
-      frame->Swap(remote_frame_);
+      Frame()->Swap(remote_frame_);
     }
   }
 

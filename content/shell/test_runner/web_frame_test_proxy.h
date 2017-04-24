@@ -125,11 +125,10 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::DidCommitProvisionalLoad(item, commit_type);
   }
 
-  void DidReceiveTitle(blink::WebLocalFrame* frame,
-                       const blink::WebString& title,
+  void DidReceiveTitle(const blink::WebString& title,
                        blink::WebTextDirection direction) override {
-    test_client()->DidReceiveTitle(frame, title, direction);
-    Base::DidReceiveTitle(frame, title, direction);
+    test_client()->DidReceiveTitle(title, direction);
+    Base::DidReceiveTitle(title, direction);
   }
 
   void DidChangeIcon(blink::WebIconURL::Type icon_type) override {

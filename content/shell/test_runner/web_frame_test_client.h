@@ -69,8 +69,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void DidCommitProvisionalLoad(
       const blink::WebHistoryItem& history_item,
       blink::WebHistoryCommitType history_type) override;
-  void DidReceiveTitle(blink::WebLocalFrame* frame,
-                       const blink::WebString& title,
+  void DidReceiveTitle(const blink::WebString& title,
                        blink::WebTextDirection direction) override;
   void DidChangeIcon(blink::WebIconURL::Type icon_type) override;
   void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
