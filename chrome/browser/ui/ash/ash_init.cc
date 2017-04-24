@@ -19,6 +19,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -123,10 +124,12 @@ AshInit::AshInit() {
   }
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
   chromeos::AccelerometerReader::GetInstance()->Initialize(
-      content::BrowserThread::GetBlockingPool()
-          ->GetSequencedTaskRunnerWithShutdownBehavior(
-              content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+      base::CreateSequencedTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
   shell->accelerator_controller()->SetImeControlDelegate(
       std::unique_ptr<ash::ImeControlDelegate>(new ImeController));
   shell->high_contrast_controller()->SetEnabled(
