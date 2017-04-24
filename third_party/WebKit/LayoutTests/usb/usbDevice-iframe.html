@@ -11,7 +11,6 @@ function runIframeDisconnectTest(onDeviceConnected) {
   return navigator.usb.test.initialize().then(() => {
     return new Promise((resolve, reject) => {
       let opened = false;
-      let fakeDevice = null;
 
       let iframe = document.createElement('iframe');
       iframe.src = 'resources/open-in-iframe.html';
@@ -23,19 +22,17 @@ function runIframeDisconnectTest(onDeviceConnected) {
 
       window.onmessage = messageEvent => {
         if (messageEvent.data == 'Ready') {
-          fakeDevice = navigator.usb.test.addFakeDevice(fakeDeviceInit);
+          let fakeDevice = navigator.usb.test.addFakeDevice(fakeDeviceInit);
+          fakeDevice.onclose = () => {
+            assert_true(opened);
+            resolve();
+          };
         } else if (messageEvent.data == 'Success') {
           opened = true;
           onDeviceConnected(iframe);
         } else {
           reject(messageEvent.data);
         }
-      };
-
-      navigator.usb.test.ondeviceclose = closedFakeDevice => {
-        assert_equals(closedFakeDevice, fakeDevice);
-        assert_true(opened);
-        resolve();
       };
 
       document.body.appendChild(iframe);

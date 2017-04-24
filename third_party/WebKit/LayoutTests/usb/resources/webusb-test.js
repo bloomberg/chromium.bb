@@ -14,8 +14,6 @@ let mojo = null;
 let g_initializePromise = null;
 let g_chooserService = null;
 let g_deviceManager = null;
-let g_closeListener = null;
-let g_nextGuid = 0;
 
 function fakeDeviceInitToDeviceInfo(guid, init) {
   let deviceInfo = {
@@ -349,8 +347,8 @@ class FakeDeviceManager {
       let binding = new mojo.bindings.Binding(
           mojo.device.UsbDevice, new FakeDevice(device.info), request);
       binding.setConnectionErrorHandler(() => {
-        if (g_closeListener)
-          g_closeListener(device.fakeDevice);
+        if (device.fakeDevice.onclose)
+          device.fakeDevice.onclose();
       });
       device.bindingArray.push(binding);
     } else {
@@ -394,6 +392,10 @@ class FakeChooserService {
 
 // Unlike FakeDevice this class is exported to callers of USBTest.addFakeDevice.
 class FakeUSBDevice {
+  constructor() {
+    this.onclose = null;
+  }
+
   disconnect() {
     setTimeout(() => g_deviceManager.removeDevice(this), 0);
   }
@@ -485,10 +487,6 @@ class USBTest {
     return fakeDevice;
   }
 
-  set ondeviceclose(func) {
-    g_closeListener = func;
-  }
-
   set chosenDevice(fakeDevice) {
     if (!g_chooserService)
       throw new Error('Call initialize() before setting chosenDevice.');
@@ -509,7 +507,6 @@ class USBTest {
 
     g_deviceManager.removeAllDevices();
     g_chooserService.setChosenDevice(null);
-    g_closeListener = null;
   }
 }
 
