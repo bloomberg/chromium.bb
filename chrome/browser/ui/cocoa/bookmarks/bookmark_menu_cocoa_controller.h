@@ -41,9 +41,6 @@ class BookmarkNode;
 // Called by any Bookmark menu item.
 // The menu item's tag is the bookmark ID.
 - (IBAction)openBookmarkMenuItem:(id)sender;
-- (IBAction)openAllBookmarks:(id)sender;
-- (IBAction)openAllBookmarksNewWindow:(id)sender;
-- (IBAction)openAllBookmarksIncognitoWindow:(id)sender;
 
 @end  // BookmarkMenuCocoaController
 

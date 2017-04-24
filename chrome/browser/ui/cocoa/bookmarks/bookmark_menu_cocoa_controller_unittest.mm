@@ -20,9 +20,6 @@ using bookmarks::BookmarkNode;
  @public
   const BookmarkNode* nodes_[2];
   BOOL opened_[2];
-  BOOL opened_new_foreground_tab;
-  BOOL opened_new_window;
-  BOOL opened_off_the_record;
 }
 - (id)initWithProfile:(Profile*)profile;
 @end
@@ -54,17 +51,6 @@ using bookmarks::BookmarkNode;
     opened_[1] = YES;
 }
 
-- (void)openAll:(NSInteger)tag
-    withDisposition:(WindowOpenDisposition)disposition {
-  if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
-    opened_new_foreground_tab = YES;
-  } else if (disposition == WindowOpenDisposition::NEW_WINDOW) {
-    opened_new_window = YES;
-  } else if (disposition == WindowOpenDisposition::OFF_THE_RECORD) {
-    opened_off_the_record = YES;
-  }
-}
-
 @end  // FakeBookmarkMenuController
 
 class BookmarkMenuCocoaControllerTest : public CocoaProfileTest {
@@ -92,19 +78,4 @@ TEST_F(BookmarkMenuCocoaControllerTest, TestOpenItem) {
     [c openBookmarkMenuItem:item];
     ASSERT_NE(c->opened_[i], NO);
   }
-
-  // Test three versions of 'Open All Bookmarks' item. tag id means nothing.
-  // I just reset the tag id to zero.
-  [item setTag:0];
-  EXPECT_EQ(c->opened_new_foreground_tab, NO);
-  [c openAllBookmarks:item];
-  EXPECT_NE(c->opened_new_foreground_tab, NO);
-
-  EXPECT_EQ(c->opened_new_window, NO);
-  [c openAllBookmarksNewWindow:item];
-  EXPECT_NE(c->opened_new_window, NO);
-
-  EXPECT_EQ(c->opened_off_the_record, NO);
-  [c openAllBookmarksIncognitoWindow:item];
-  EXPECT_NE(c->opened_off_the_record, NO);
 }
