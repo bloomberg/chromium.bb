@@ -7,8 +7,11 @@
 
 namespace metrics {
 
-// The default metrics server's URL.
-extern const char kDefaultMetricsServerUrl[];
+// The new metrics server's URL.
+extern const char kNewMetricsServerUrl[];
+
+// The old metrics server's URL.
+extern const char kOldMetricsServerUrl[];
 
 // The default MIME type for the uploaded metrics data.
 extern const char kDefaultMetricsMimeType[];

@@ -238,14 +238,12 @@ void CastMetricsServiceClient::CollectFinalMetricsForLog(
 }
 
 std::string CastMetricsServiceClient::GetMetricsServerUrl() {
-  std::string uma_server_url(::metrics::kDefaultMetricsServerUrl);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kOverrideMetricsUploadUrl)) {
-    uma_server_url.assign(
-        command_line->GetSwitchValueASCII(switches::kOverrideMetricsUploadUrl));
+    return command_line->GetSwitchValueASCII(
+        switches::kOverrideMetricsUploadUrl);
   }
-  DCHECK(!uma_server_url.empty());
-  return uma_server_url;
+  return ::metrics::MetricsServiceClient::GetMetricsServerUrl();
 }
 
 std::unique_ptr<::metrics::MetricsLogUploader>
