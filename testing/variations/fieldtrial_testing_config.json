@@ -263,7 +263,6 @@
     "BackgroundVideoOptimizations": [
         {
             "platforms": [
-                "android",
                 "chromeos",
                 "linux",
                 "mac",
@@ -271,9 +270,30 @@
             ],
             "experiments": [
                 {
-                    "name": "BackgroundOptimizationEnabled5sOrLess",
+                    "name": "BackgroundOptimizationEnabled1sOrLessMediaSource",
                     "params": {
-                        "max_keyframe_distance_ms": "5000"
+                        "max_keyframe_distance_media_source_ms": "1000",
+                        "max_keyframe_distance_ms": "0"
+                    },
+                    "enable_features": [
+                        "BackgroundVideoTrackOptimization"
+                    ]
+                },
+                {
+                    "name": "BackgroundOptimizationEnabled3sOrLessMediaSource",
+                    "params": {
+                        "max_keyframe_distance_media_source_ms": "3000",
+                        "max_keyframe_distance_ms": "0"
+                    },
+                    "enable_features": [
+                        "BackgroundVideoTrackOptimization"
+                    ]
+                },
+                {
+                    "name": "BackgroundOptimizationEnabled5sOrLessMediaSource",
+                    "params": {
+                        "max_keyframe_distance_media_source_ms": "5000",
+                        "max_keyframe_distance_ms": "0"
                     },
                     "enable_features": [
                         "BackgroundVideoTrackOptimization"
@@ -287,30 +307,30 @@
             ],
             "experiments": [
                 {
-                    "name": "BackgroundOptimizationEnabled",
+                    "name": "BackgroundOptimizationEnabled1sOrLessMediaSource",
                     "params": {
-                        "max_keyframe_distance_media_source_ms": "10000",
+                        "max_keyframe_distance_media_source_ms": "1000",
                         "max_keyframe_distance_ms": "1000"
                     },
                     "enable_features": [
                         "BackgroundVideoTrackOptimization"
                     ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
+                },
                 {
-                    "name": "BackgroundOptimizationEnabled",
+                    "name": "BackgroundOptimizationEnabled3sOrLessMediaSource",
                     "params": {
-                        "max_keyframe_distance_media_source_ms": "10000",
-                        "max_keyframe_distance_ms": "0"
+                        "max_keyframe_distance_media_source_ms": "3000",
+                        "max_keyframe_distance_ms": "1000"
+                    },
+                    "enable_features": [
+                        "BackgroundVideoTrackOptimization"
+                    ]
+                },
+                {
+                    "name": "BackgroundOptimizationEnabled5sOrLessMediaSource",
+                    "params": {
+                        "max_keyframe_distance_media_source_ms": "5000",
+                        "max_keyframe_distance_ms": "1000"
                     },
                     "enable_features": [
                         "BackgroundVideoTrackOptimization"
