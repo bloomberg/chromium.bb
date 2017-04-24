@@ -356,22 +356,22 @@ void ContentSecurityPolicy::AddAndReportPolicyFromHeaderValue(
     ContentSecurityPolicyHeaderSource source) {
   size_t previous_policy_count = policies_.size();
   AddPolicyFromHeaderValue(header, type, source);
+  // Notify about the new header, so that it can be reported back to the
+  // browser process.  This is needed in order to:
+  // 1) replicate CSP directives (i.e. frame-src) to OOPIFs (only for now /
+  // short-term).
+  // 2) enforce CSP in the browser process (long-term - see
+  // https://crbug.com/376522).
+  // TODO(arthursonzogni): policies are actually replicated (1) and some of
+  // them are enforced on the browser process (2). Stop doing (1) when (2) is
+  // finished.
+  WebVector<WebContentSecurityPolicy> policies(policies_.size() -
+                                               previous_policy_count);
+  for (size_t i = previous_policy_count; i < policies_.size(); ++i) {
+    policies[i - previous_policy_count] =
+        policies_[i]->ExposeForNavigationalChecks();
+  }
   if (GetDocument() && GetDocument()->GetFrame()) {
-    // Notify about the new header, so that it can be reported back to the
-    // browser process.  This is needed in order to:
-    // 1) replicate CSP directives (i.e. frame-src) to OOPIFs (only for now /
-    // short-term).
-    // 2) enforce CSP in the browser process (long-term - see
-    // https://crbug.com/376522).
-    // TODO(arthursonzogni): policies are actually replicated (1) and some of
-    // them are enforced on the browser process (2). Stop doing (1) when (2) is
-    // finished.
-    WebVector<WebContentSecurityPolicy> policies(policies_.size() -
-                                                 previous_policy_count);
-    for (size_t i = previous_policy_count; i < policies_.size(); ++i) {
-      policies[i - previous_policy_count] =
-          policies_[i]->ExposeForNavigationalChecks();
-    }
     GetDocument()->GetFrame()->Client()->DidAddContentSecurityPolicies(
         policies);
   }
@@ -1213,12 +1213,6 @@ void ContentSecurityPolicy::PostViolationReport(
     const SecurityPolicyViolationEventInit& violation_data,
     LocalFrame* context_frame,
     const Vector<String>& report_endpoints) {
-  // TODO(mkwst): Support POSTing violation reports from a Worker.
-  Document* document =
-      context_frame ? context_frame->GetDocument() : this->GetDocument();
-  if (!document)
-    return;
-
   // We need to be careful here when deciding what information to send to the
   // report-uri. Currently, we send only the current document's URL and the
   // directive that was violated. The document's URL is safe to send because
@@ -1263,12 +1257,18 @@ void ContentSecurityPolicy::PostViolationReport(
   if (ShouldSendViolationReport(stringified_report)) {
     DidSendViolationReport(stringified_report);
 
-    RefPtr<EncodedFormData> report =
-        EncodedFormData::Create(stringified_report.Utf8());
+    // TODO(mkwst): Support POSTing violation reports from a Worker.
+    Document* document =
+        context_frame ? context_frame->GetDocument() : this->GetDocument();
+    if (!document)
+      return;
 
     LocalFrame* frame = document->GetFrame();
     if (!frame)
       return;
+
+    RefPtr<EncodedFormData> report =
+        EncodedFormData::Create(stringified_report.Utf8());
 
     for (const String& endpoint : report_endpoints) {
       // If we have a context frame we're dealing with 'frame-ancestors' and we

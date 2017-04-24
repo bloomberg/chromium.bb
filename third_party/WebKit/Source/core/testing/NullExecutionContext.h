@@ -52,6 +52,8 @@ class NullExecutionContext final
       String& error_message,
       const SecureContextCheck = kStandardSecureContextCheck) const override;
 
+  void SetUpSecurityContext();
+
   DEFINE_INLINE_TRACE() {
     visitor->Trace(queue_);
     SecurityContext::Trace(visitor);

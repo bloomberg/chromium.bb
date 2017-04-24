@@ -37,11 +37,47 @@
 
 namespace blink {
 
+class MockBaseFetchContext final : public BaseFetchContext {
+ public:
+  explicit MockBaseFetchContext(ExecutionContext* execution_context)
+      : BaseFetchContext(execution_context) {}
+  ~MockBaseFetchContext() override {}
+
+  // BaseFetchContext overrides:
+  ContentSettingsClient* GetContentSettingsClient() const override {
+    return nullptr;
+  }
+  Settings* GetSettings() const override { return nullptr; }
+  SubresourceFilter* GetSubresourceFilter() const override { return nullptr; }
+  SecurityContext* GetMainResourceSecurityContext() const override {
+    return nullptr;
+  }
+  bool ShouldBlockRequestByInspector(const ResourceRequest&) const override {
+    return false;
+  }
+  void DispatchDidBlockRequest(const ResourceRequest&,
+                               const FetchInitiatorInfo&,
+                               ResourceRequestBlockedReason) const override {}
+  void ReportLocalLoadFailed(const KURL&) const override {}
+  bool ShouldBypassMainWorldCSP() const override { return false; }
+  bool IsSVGImageChromeClient() const override { return false; }
+  void CountUsage(UseCounter::Feature) const override {}
+  void CountDeprecation(UseCounter::Feature) const override {}
+  bool ShouldBlockFetchByMixedContentCheck(
+      const ResourceRequest&,
+      const KURL&,
+      SecurityViolationReportingPolicy) const override {
+    return false;
+  }
+};
+
 class BaseFetchContextTest : public ::testing::Test {
  protected:
   void SetUp() override {
     execution_context_ = new NullExecutionContext();
-    fetch_context_ = new BaseFetchContext(execution_context_);
+    static_cast<NullExecutionContext*>(execution_context_.Get())
+        ->SetUpSecurityContext();
+    fetch_context_ = new MockBaseFetchContext(execution_context_);
   }
 
   Persistent<ExecutionContext> execution_context_;
@@ -181,6 +217,48 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForLocalContext) {
     fetch_context_->AddAdditionalRequestHeaders(sub_request, kFetchSubresource);
     EXPECT_EQ(test.is_external_expectation, sub_request.IsExternalRequest());
   }
+}
+
+// Tests that CanFollowRedirect() checks both report-only and enforced CSP
+// headers.
+TEST_F(BaseFetchContextTest, RedirectChecksReportedAndEnforcedCSP) {
+  ContentSecurityPolicy* policy =
+      execution_context_->GetContentSecurityPolicy();
+  policy->DidReceiveHeader("script-src https://foo.test",
+                           kContentSecurityPolicyHeaderTypeEnforce,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+  policy->DidReceiveHeader("script-src https://bar.test",
+                           kContentSecurityPolicyHeaderTypeReport,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+  KURL url(KURL(), "http://baz.test");
+  ResourceRequest resource_request(url);
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  EXPECT_EQ(
+      ResourceRequestBlockedReason::CSP,
+      fetch_context_->CanFollowRedirect(
+          Resource::kScript, resource_request, url, ResourceLoaderOptions(),
+          SecurityViolationReportingPolicy::kReport,
+          FetchParameters::kUseDefaultOriginRestrictionForType));
+  EXPECT_EQ(2u, policy->violation_reports_sent_.size());
+}
+
+// Tests that AllowResponse() checks both report-only and enforced CSP headers.
+TEST_F(BaseFetchContextTest, AllowResponseChecksReportedAndEnforcedCSP) {
+  ContentSecurityPolicy* policy =
+      execution_context_->GetContentSecurityPolicy();
+  policy->DidReceiveHeader("script-src https://foo.test",
+                           kContentSecurityPolicyHeaderTypeEnforce,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+  policy->DidReceiveHeader("script-src https://bar.test",
+                           kContentSecurityPolicyHeaderTypeReport,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+  KURL url(KURL(), "http://baz.test");
+  ResourceRequest resource_request(url);
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  EXPECT_EQ(ResourceRequestBlockedReason::CSP,
+            fetch_context_->AllowResponse(Resource::kScript, resource_request,
+                                          url, ResourceLoaderOptions()));
+  EXPECT_EQ(2u, policy->violation_reports_sent_.size());
 }
 
 }  // namespace blink

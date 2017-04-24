@@ -5,7 +5,6 @@
 #include "core/loader/SubresourceFilter.h"
 
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/loader/DocumentLoader.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebTraceLocation.h"

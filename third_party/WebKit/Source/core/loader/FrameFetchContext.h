@@ -118,26 +118,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   void AddResourceTiming(const ResourceTimingInfo&) override;
   bool AllowImage(bool images_enabled, const KURL&) const override;
-  ResourceRequestBlockedReason CanRequest(
-      Resource::Type,
-      const ResourceRequest&,
-      const KURL&,
-      const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
-      FetchParameters::OriginRestriction) const override;
-  ResourceRequestBlockedReason CanFollowRedirect(
-      Resource::Type,
-      const ResourceRequest&,
-      const KURL&,
-      const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
-      FetchParameters::OriginRestriction) const override;
-  ResourceRequestBlockedReason AllowResponse(
-      Resource::Type,
-      const ResourceRequest&,
-      const KURL&,
-      const ResourceLoaderOptions&) const override;
-
   bool IsControlledByServiceWorker() const override;
   int64_t ServiceWorkerID() const override;
 
@@ -186,27 +166,26 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   Document* GetDocument() const;
   LocalFrame* GetFrame() const;
   LocalFrameClient* GetLocalFrameClient() const;
-
-  ContentSettingsClient* GetContentSettingsClient() const;
-
   LocalFrame* FrameOfImportsController() const;
 
-  ResourceRequestBlockedReason CanRequestInternal(
-      Resource::Type,
+  // BaseFetchContext overrides:
+  ContentSettingsClient* GetContentSettingsClient() const override;
+  Settings* GetSettings() const override;
+  SubresourceFilter* GetSubresourceFilter() const override;
+  SecurityContext* GetMainResourceSecurityContext() const override;
+  bool ShouldBlockRequestByInspector(const ResourceRequest&) const override;
+  void DispatchDidBlockRequest(const ResourceRequest&,
+                               const FetchInitiatorInfo&,
+                               ResourceRequestBlockedReason) const override;
+  void ReportLocalLoadFailed(const KURL&) const override;
+  bool ShouldBypassMainWorldCSP() const override;
+  bool IsSVGImageChromeClient() const override;
+  void CountUsage(UseCounter::Feature) const override;
+  void CountDeprecation(UseCounter::Feature) const override;
+  bool ShouldBlockFetchByMixedContentCheck(
       const ResourceRequest&,
       const KURL&,
-      const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
-      FetchParameters::OriginRestriction,
-      ResourceRequest::RedirectStatus) const;
-
-  ResourceRequestBlockedReason CheckCSPForRequest(
-      const ResourceRequest&,
-      const KURL&,
-      const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
-      ResourceRequest::RedirectStatus,
-      ContentSecurityPolicy::CheckHeaderType) const;
+      SecurityViolationReportingPolicy) const override;
 
   Member<DocumentLoader> document_loader_;
 };
