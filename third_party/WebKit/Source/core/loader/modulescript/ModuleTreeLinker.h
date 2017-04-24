@@ -51,7 +51,7 @@ class CORE_EXPORT ModuleTreeLinker final
     kFetchingSelf,
     // Running fetch of descendants of the target node.
     kFetchingDependencies,
-    // Instantiating m_moduleScript and the node descendants.
+    // Instantiating module_script_ and the node descendants.
     kInstantiating,
     kFinished,
   };

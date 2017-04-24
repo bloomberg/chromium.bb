@@ -225,7 +225,7 @@ void ModuleTreeLinkerTest::SetUp() {
   modulator_ = new ModuleTreeLinkerTestModulator(script_state);
 }
 
-TEST_F(ModuleTreeLinkerTest, fetchTreeNoDeps) {
+TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url(kParsedURLString, "http://example.com/root.js");
@@ -247,7 +247,7 @@ TEST_F(ModuleTreeLinkerTest, fetchTreeNoDeps) {
             ModuleInstantiationState::kInstantiated);
 }
 
-TEST_F(ModuleTreeLinkerTest, fetchTreeInstantiationFailure) {
+TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
   GetModulator()->SetInstantiateShouldFail(true);
 
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
@@ -271,7 +271,7 @@ TEST_F(ModuleTreeLinkerTest, fetchTreeInstantiationFailure) {
             ModuleInstantiationState::kErrored);
 }
 
-TEST_F(ModuleTreeLinkerTest, fetchTreeWithSingleDependency) {
+TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url(kParsedURLString, "http://example.com/root.js");
@@ -304,7 +304,7 @@ TEST_F(ModuleTreeLinkerTest, fetchTreeWithSingleDependency) {
             ModuleInstantiationState::kInstantiated);
 }
 
-TEST_F(ModuleTreeLinkerTest, fetchTreeWith3Deps) {
+TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url(kParsedURLString, "http://example.com/root.js");
@@ -354,7 +354,7 @@ TEST_F(ModuleTreeLinkerTest, fetchTreeWith3Deps) {
             ModuleInstantiationState::kInstantiated);
 }
 
-TEST_F(ModuleTreeLinkerTest, fetchTreeWith3Deps1Fail) {
+TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url(kParsedURLString, "http://example.com/root.js");
@@ -413,7 +413,7 @@ TEST_F(ModuleTreeLinkerTest, fetchTreeWith3Deps1Fail) {
   EXPECT_TRUE(url_deps.IsEmpty());
 }
 
-TEST_F(ModuleTreeLinkerTest, fetchDependencyTree) {
+TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url(kParsedURLString, "http://example.com/depth1.js");
