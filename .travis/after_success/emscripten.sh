@@ -28,7 +28,7 @@ cd ../js-build &&
 git add --all &&
 git commit -m "Automatic build of version ${BUILD_VERSION}" &&
 git tag -a ${BUILD_VERSION} -m "automatic build for version ${BUILD_VERSION}" &&
-git push git@github.com:liblouis/js-build.git master
+git push git@github.com:liblouis/js-build.git master &&
 git push git@github.com:liblouis/js-build.git $BUILD_VERSION
 
 # --- push in npm registry and move the `next` tag pointing
