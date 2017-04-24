@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -129,6 +130,11 @@ class GpuChildThread : public ChildThreadImpl,
   AssociatedInterfaceRegistryImpl associated_interfaces_;
   std::unique_ptr<ui::GpuService> gpu_service_;
   mojo::AssociatedBinding<ui::mojom::GpuMain> gpu_main_binding_;
+
+  // Holds a closure that releases pending interface requests on the IO thread.
+  base::Closure release_pending_requests_closure_;
+
+  base::WeakPtrFactory<GpuChildThread> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

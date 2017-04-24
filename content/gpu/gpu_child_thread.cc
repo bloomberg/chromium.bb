@@ -9,10 +9,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/field_trial_recorder.mojom.h"
 #include "content/gpu/gpu_service_factory.h"
+#include "content/public/common/connection_filter.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -22,8 +25,8 @@
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 
 #if defined(USE_OZONE)
@@ -47,10 +50,84 @@ ChildThreadImpl::Options GetOptions() {
     builder.AddStartupFilter(message_filter);
 #endif
 
+  builder.AutoStartServiceManagerConnection(false);
   builder.ConnectToBrowser(true);
 
   return builder.Build();
 }
+
+// This ConnectionFilter queues all incoming bind interface requests until
+// Release() is called.
+class QueueingConnectionFilter : public ConnectionFilter {
+ public:
+  QueueingConnectionFilter(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      std::unique_ptr<service_manager::BinderRegistry> registry)
+      : io_task_runner_(io_task_runner),
+        registry_(std::move(registry)),
+        weak_factory_(this) {
+    // This will be reattached by any of the IO thread functions on first call.
+    io_thread_checker_.DetachFromThread();
+  }
+  ~QueueingConnectionFilter() override {
+    DCHECK(io_thread_checker_.CalledOnValidThread());
+  }
+
+  base::Closure GetReleaseCallback() {
+    return base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
+                      io_task_runner_, FROM_HERE,
+                      base::Bind(&QueueingConnectionFilter::Release,
+                                 weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  struct PendingRequest {
+    service_manager::Identity source_identity;
+    std::string interface_name;
+    mojo::ScopedMessagePipeHandle interface_pipe;
+  };
+
+  // ConnectionFilter:
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle* interface_pipe,
+                       service_manager::Connector* connector) override {
+    DCHECK(io_thread_checker_.CalledOnValidThread());
+    if (registry_->CanBindInterface(interface_name)) {
+      if (released_) {
+        registry_->BindInterface(source_info.identity, interface_name,
+                                 std::move(*interface_pipe));
+      } else {
+        std::unique_ptr<PendingRequest> request =
+            base::MakeUnique<PendingRequest>();
+        request->source_identity = source_info.identity;
+        request->interface_name = interface_name;
+        request->interface_pipe = std::move(*interface_pipe);
+        pending_requests_.push_back(std::move(request));
+      }
+    }
+  }
+
+  void Release() {
+    DCHECK(io_thread_checker_.CalledOnValidThread());
+    released_ = true;
+    for (auto& request : pending_requests_) {
+      registry_->BindInterface(request->source_identity,
+                               request->interface_name,
+                               std::move(request->interface_pipe));
+    }
+  }
+
+  base::ThreadChecker io_thread_checker_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+  bool released_ = false;
+  std::vector<std::unique_ptr<PendingRequest>> pending_requests_;
+  std::unique_ptr<service_manager::BinderRegistry> registry_;
+
+  base::WeakPtrFactory<QueueingConnectionFilter> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(QueueingConnectionFilter);
+};
 
 }  // namespace
 
@@ -74,6 +151,7 @@ GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params,
                                const gpu::GpuFeatureInfo& gpu_feature_info)
     : GpuChildThread(ChildThreadImpl::Options::Builder()
                          .InBrowserProcess(params)
+                         .AutoStartServiceManagerConnection(false)
                          .ConnectToBrowser(true)
                          .Build(),
                      nullptr /* watchdog_thread */,
@@ -96,7 +174,8 @@ GpuChildThread::GpuChildThread(
                                       std::move(gpu_watchdog_thread),
                                       ChildProcess::current()->io_task_runner(),
                                       gpu_feature_info)),
-      gpu_main_binding_(this) {
+      gpu_main_binding_(this),
+      weak_factory_(this) {
   if (in_browser_process_) {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
                switches::kSingleProcess) ||
@@ -119,15 +198,24 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
     media::SetMediaDrmBridgeClient(
         GetContentClient()->GetMediaDrmBridgeClient());
 #endif
-  // We don't want to process any incoming interface requests until
-  // OnInitialize() is invoked.
-  GetInterfaceRegistry()->PauseBinding();
-
-  if (GetContentClient()->gpu())  // NULL in tests.
-    GetContentClient()->gpu()->Initialize(this);
-  AssociatedInterfaceRegistry* registry = &associated_interfaces_;
-  registry->AddInterface(base::Bind(
+  AssociatedInterfaceRegistry* associated_registry = &associated_interfaces_;
+  associated_registry->AddInterface(base::Bind(
       &GpuChildThread::CreateGpuMainService, base::Unretained(this)));
+
+  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  registry->AddInterface(base::Bind(&GpuChildThread::BindServiceFactoryRequest,
+                                    weak_factory_.GetWeakPtr()),
+                         base::ThreadTaskRunnerHandle::Get());
+  if (GetContentClient()->gpu())  // NULL in tests.
+    GetContentClient()->gpu()->Initialize(this, registry.get());
+
+  std::unique_ptr<QueueingConnectionFilter> filter =
+      base::MakeUnique<QueueingConnectionFilter>(GetIOTaskRunner(),
+                                                 std::move(registry));
+  release_pending_requests_closure_ = filter->GetReleaseCallback();
+  GetServiceManagerConnection()->AddConnectionFilter(std::move(filter));
+
+  StartServiceManagerConnection();
 }
 
 void GpuChildThread::OnFieldTrialGroupFinalized(const std::string& trial_name,
@@ -196,16 +284,10 @@ void GpuChildThread::CreateGpuService(
   service_factory_.reset(new GpuServiceFactory(
       gpu_service_->media_gpu_channel_manager()->AsWeakPtr()));
 
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &GpuChildThread::BindServiceFactoryRequest, base::Unretained(this)));
+  if (GetContentClient()->gpu())  // NULL in tests.
+    GetContentClient()->gpu()->GpuServiceInitialized(gpu_preferences);
 
-  if (GetContentClient()->gpu()) {  // NULL in tests.
-    GetContentClient()->gpu()->ExposeInterfacesToBrowser(GetInterfaceRegistry(),
-                                                         gpu_preferences);
-    GetContentClient()->gpu()->ConsumeInterfacesFromBrowser(GetConnector());
-  }
-
-  GetInterfaceRegistry()->ResumeBinding();
+  release_pending_requests_closure_.Run();
 }
 
 void GpuChildThread::CreateFrameSinkManager(
