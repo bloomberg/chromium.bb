@@ -12,12 +12,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
+class Profile;
+
 namespace app_list {
 class AppListModel;
-}
-
-namespace content {
-class BrowserContext;
 }
 
 namespace views {
@@ -31,7 +29,7 @@ namespace app_list {
 class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
                                         public content::WebContentsObserver {
  public:
-  SearchAnswerWebContentsDelegate(content::BrowserContext* browser_context,
+  SearchAnswerWebContentsDelegate(Profile* profile,
                                   app_list::AppListModel* model);
 
   ~SearchAnswerWebContentsDelegate() override;
@@ -48,6 +46,9 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   // content::WebContentsDelegate overrides:
   void UpdatePreferredSize(content::WebContents* web_contents,
                            const gfx::Size& pref_size) override;
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override;
 
   // content::WebContentsObserver overrides:
   void DidFinishNavigation(
@@ -55,6 +56,9 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   void DidStopLoading() override;
 
  private:
+  // Unowned pointer to the associated profile.
+  Profile* const profile_;
+
   // Unowned pointer to app list model.
   app_list::AppListModel* const model_;
 

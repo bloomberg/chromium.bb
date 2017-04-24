@@ -6,10 +6,14 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/renderer_preferences.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "ui/app_list/app_list_model.h"
@@ -20,15 +24,21 @@
 namespace app_list {
 
 SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
-    content::BrowserContext* browser_context,
+    Profile* profile,
     app_list::AppListModel* model)
-    : model_(model),
-      web_view_(base::MakeUnique<views::WebView>(browser_context)),
+    : profile_(profile),
+      model_(model),
+      web_view_(base::MakeUnique<views::WebView>(profile)),
       web_contents_(
           content::WebContents::Create(content::WebContents::CreateParams(
-              browser_context,
-              content::SiteInstance::Create(browser_context)))),
+              profile,
+              content::SiteInstance::Create(profile)))),
       answer_server_url_(switches::AnswerServerUrl()) {
+  // We need the OpenURLFromTab() to get called.
+  web_contents_->GetMutableRendererPrefs()
+      ->browser_handles_all_top_level_requests = true;
+  web_contents_->GetRenderViewHost()->SyncRendererPrefs();
+
   Observe(web_contents_.get());
   web_contents_->SetDelegate(this);
   web_view_->set_owned_by_client();
@@ -77,6 +87,24 @@ void SearchAnswerWebContentsDelegate::UpdatePreferredSize(
     content::WebContents* web_contents,
     const gfx::Size& pref_size) {
   web_view_->SetPreferredSize(pref_size);
+}
+
+content::WebContents* SearchAnswerWebContentsDelegate::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  if (!params.user_gesture)
+    return WebContentsDelegate::OpenURLFromTab(source, params);
+
+  // Open the user-clicked link in a new browser tab. This will automatically
+  // close the app list.
+  chrome::NavigateParams new_tab_params(profile_, params.url,
+                                        params.transition);
+  new_tab_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+
+  chrome::Navigate(&new_tab_params);
+
+  return new_tab_params.target_contents;
 }
 
 void SearchAnswerWebContentsDelegate::DidFinishNavigation(
