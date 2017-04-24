@@ -114,6 +114,9 @@ enum class ExecutionMode {
   // to the user and logs will only be uploaded if the user opted into Extended
   // Safe Browsing Reporting v2.
   kPostRebootValidation = 3,
+
+  // Auxiliary enumerator for range checking.
+  kNumValues,
 };
 
 }  // namespace chrome_cleaner
