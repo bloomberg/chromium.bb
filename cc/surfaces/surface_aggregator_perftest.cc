@@ -25,8 +25,15 @@ constexpr bool kIsChildRoot = false;
 constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 
-static const base::UnguessableToken kArbitraryToken =
-    base::UnguessableToken::Create();
+const base::UnguessableToken kArbitraryToken = base::UnguessableToken::Create();
+
+CompositorFrame MakeCompositorFrame() {
+  CompositorFrame frame;
+  frame.metadata.begin_frame_ack.source_id = BeginFrameArgs::kManualSourceId;
+  frame.metadata.begin_frame_ack.sequence_number =
+      BeginFrameArgs::kStartingFrameNumber;
+  return frame;
+}
 
 class SurfaceAggregatorPerfTest : public testing::Test {
  public:
@@ -57,7 +64,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     for (int i = 0; i < num_surfaces; i++) {
       LocalSurfaceId local_surface_id(i + 1, kArbitraryToken);
       std::unique_ptr<RenderPass> pass(RenderPass::Create());
-      CompositorFrame frame;
+      CompositorFrame frame = MakeCompositorFrame();
 
       SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
       for (int j = 0; j < num_textures; j++) {
@@ -109,7 +116,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     timer_.Reset();
     do {
       std::unique_ptr<RenderPass> pass(RenderPass::Create());
-      CompositorFrame frame;
+      CompositorFrame frame = MakeCompositorFrame();
 
       SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
       SurfaceDrawQuad* surface_quad =
