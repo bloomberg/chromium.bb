@@ -80,21 +80,23 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   friend class base::RefCountedThreadSafe<ContentVerifier>;
   ~ContentVerifier() override;
 
-  void OnFetchComplete(const std::string& extension_id,
-                       bool success,
-                       bool was_force_check,
-                       const std::set<base::FilePath>& hash_mismatch_paths);
+  void OnFetchComplete(
+      const std::string& extension_id,
+      bool success,
+      bool was_force_check,
+      const std::set<base::FilePath>& hash_mismatch_unix_paths);
 
   void OnFetchCompleteHelper(const std::string& extension_id,
                              bool should_verify_any_paths_result);
 
-  // Returns true if any of the paths in |relative_paths| *should* have their
-  // contents verified. (Some files get transcoded during the install process,
-  // so we don't want to verify their contents because they are expected not
-  // to match).
-  bool ShouldVerifyAnyPaths(const std::string& extension_id,
-                            const base::FilePath& extension_root,
-                            const std::set<base::FilePath>& relative_paths);
+  // Returns true if any of the paths in |relative_unix_paths| *should* have
+  // their contents verified. (Some files get transcoded during the install
+  // process, so we don't want to verify their contents because they are
+  // expected not to match).
+  bool ShouldVerifyAnyPaths(
+      const std::string& extension_id,
+      const base::FilePath& extension_root,
+      const std::set<base::FilePath>& relative_unix_paths);
 
   // Set to true once we've begun shutting down.
   bool shutdown_;

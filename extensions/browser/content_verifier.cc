@@ -113,18 +113,18 @@ ContentVerifyJob* ContentVerifier::CreateJobFor(
   if (!data)
     return NULL;
 
-  base::FilePath normalized_path = NormalizeRelativePath(relative_path);
+  base::FilePath normalized_unix_path = NormalizeRelativePath(relative_path);
 
-  std::set<base::FilePath> paths;
-  paths.insert(normalized_path);
-  if (!ShouldVerifyAnyPaths(extension_id, extension_root, paths))
+  std::set<base::FilePath> unix_paths;
+  unix_paths.insert(normalized_unix_path);
+  if (!ShouldVerifyAnyPaths(extension_id, extension_root, unix_paths))
     return NULL;
 
   // TODO(asargent) - we can probably get some good performance wins by having
   // a cache of ContentHashReader's that we hold onto past the end of each job.
   return new ContentVerifyJob(
       new ContentHashReader(extension_id, data->version, extension_root,
-                            normalized_path, delegate_->GetPublicKey()),
+                            normalized_unix_path, delegate_->GetPublicKey()),
       base::BindOnce(&ContentVerifier::VerifyFailed, this, extension_id));
 }
 
@@ -218,7 +218,7 @@ void ContentVerifier::OnFetchComplete(
     const std::string& extension_id,
     bool success,
     bool was_force_check,
-    const std::set<base::FilePath>& hash_mismatch_paths) {
+    const std::set<base::FilePath>& hash_mismatch_unix_paths) {
   if (g_test_observer)
     g_test_observer->OnFetchComplete(extension_id, success);
 
@@ -241,22 +241,18 @@ void ContentVerifier::OnFetchComplete(
     delegate_->VerifyFailed(extension_id, ContentVerifyJob::MISSING_ALL_HASHES);
   } else {
     content::BrowserThread::PostTaskAndReplyWithResult(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&ContentVerifier::ShouldVerifyAnyPaths,
-                   this,
-                   extension_id,
-                   extension->path(),
-                   hash_mismatch_paths),
-        base::Bind(
-            &ContentVerifier::OnFetchCompleteHelper, this, extension_id));
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&ContentVerifier::ShouldVerifyAnyPaths, this, extension_id,
+                   extension->path(), hash_mismatch_unix_paths),
+        base::Bind(&ContentVerifier::OnFetchCompleteHelper, this,
+                   extension_id));
   }
 }
 
 bool ContentVerifier::ShouldVerifyAnyPaths(
     const std::string& extension_id,
     const base::FilePath& extension_root,
-    const std::set<base::FilePath>& relative_paths) {
+    const std::set<base::FilePath>& relative_unix_paths) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   const ContentVerifierIOData::ExtensionData* data =
       io_data_->GetData(extension_id);
@@ -268,18 +264,17 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
   base::FilePath locales_dir = extension_root.Append(kLocaleFolder);
   std::unique_ptr<std::set<std::string>> all_locales;
 
-  for (std::set<base::FilePath>::const_iterator i = relative_paths.begin();
-       i != relative_paths.end();
-       ++i) {
-    const base::FilePath& relative_path = *i;
-
-    if (relative_path == base::FilePath(kManifestFilename))
+  const base::FilePath manifest_file(kManifestFilename);
+  const base::FilePath messages_file(kMessagesFilename);
+  for (const base::FilePath& relative_unix_path : relative_unix_paths) {
+    if (relative_unix_path == manifest_file)
       continue;
 
-    if (base::ContainsKey(browser_images, relative_path))
+    if (base::ContainsKey(browser_images, relative_unix_path))
       continue;
 
-    base::FilePath full_path = extension_root.Append(relative_path);
+    base::FilePath full_path =
+        extension_root.Append(relative_unix_path.NormalizePathSeparators());
     if (locales_dir.IsParent(full_path)) {
       if (!all_locales) {
         // TODO(asargent) - see if we can cache this list longer to avoid
@@ -291,11 +286,14 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
       }
 
       // Since message catalogs get transcoded during installation, we want
-      // to skip those paths.
-      if (full_path.DirName().DirName() == locales_dir &&
-          !extension_l10n_util::ShouldSkipValidation(
-              locales_dir, full_path.DirName(), *all_locales))
+      // to skip those paths. See if this path looks like
+      // _locales/<some locale>/messages.json - if so then skip it.
+      if (full_path.BaseName() == messages_file &&
+          full_path.DirName().DirName() == locales_dir &&
+          base::ContainsKey(*all_locales,
+                            full_path.DirName().BaseName().MaybeAsASCII())) {
         continue;
+      }
     }
     return true;
   }

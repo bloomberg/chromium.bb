@@ -74,16 +74,17 @@ class ContentHashFetcherJob
   // Returns whether this job was successful (we have both verified contents
   // and computed hashes). Even if the job was a success, there might have been
   // files that were found to have contents not matching expectations; these
-  // are available by calling hash_mismatch_paths().
+  // are available by calling hash_mismatch_unix_paths().
   bool success() { return success_; }
 
   bool force() { return force_; }
 
   const std::string& extension_id() { return extension_id_; }
 
-  // Returns the set of paths that had a hash mismatch.
-  const std::set<base::FilePath>& hash_mismatch_paths() {
-    return hash_mismatch_paths_;
+  // Returns the set of paths (with unix style '/' separators) that had a hash
+  // mismatch.
+  const std::set<base::FilePath>& hash_mismatch_unix_paths() {
+    return hash_mismatch_unix_paths_;
   }
 
  private:
@@ -155,7 +156,7 @@ class ContentHashFetcherJob
   bool success_;
 
   // Paths that were found to have a mismatching hash.
-  std::set<base::FilePath> hash_mismatch_paths_;
+  std::set<base::FilePath> hash_mismatch_unix_paths_;
 
   // The block size to use for hashing.
   int block_size_;
@@ -417,11 +418,11 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     if (IsCancelled())
       return false;
     const base::FilePath& full_path = *i;
-    base::FilePath relative_path;
-    extension_path_.AppendRelativePath(full_path, &relative_path);
-    relative_path = relative_path.NormalizePathSeparatorsTo('/');
+    base::FilePath relative_unix_path;
+    extension_path_.AppendRelativePath(full_path, &relative_unix_path);
+    relative_unix_path = relative_unix_path.NormalizePathSeparatorsTo('/');
 
-    if (!verified_contents_->HasTreeHashRoot(relative_path))
+    if (!verified_contents_->HasTreeHashRoot(relative_unix_path))
       continue;
 
     std::string contents;
@@ -436,13 +437,13 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     ComputedHashes::ComputeHashesForContent(contents, block_size_, &hashes);
     std::string root =
         ComputeTreeHashRoot(hashes, block_size_ / crypto::kSHA256Length);
-    if (!verified_contents_->TreeHashRootEquals(relative_path, root)) {
-      VLOG(1) << "content mismatch for " << relative_path.AsUTF8Unsafe();
-      hash_mismatch_paths_.insert(relative_path);
+    if (!verified_contents_->TreeHashRootEquals(relative_unix_path, root)) {
+      VLOG(1) << "content mismatch for " << relative_unix_path.AsUTF8Unsafe();
+      hash_mismatch_unix_paths_.insert(relative_unix_path);
       continue;
     }
 
-    writer.AddHashes(relative_path, block_size_, hashes);
+    writer.AddHashes(relative_unix_path, block_size_, hashes);
   }
   bool result = writer.WriteToFile(hashes_file);
   UMA_HISTOGRAM_TIMES("ExtensionContentHashFetcher.CreateHashesTime",
@@ -531,10 +532,8 @@ void ContentHashFetcher::JobFinished(scoped_refptr<ContentHashFetcherJob> job) {
     // TODO(lazyboy): Add a unit test to cover the case where Run can result in
     // ContentHashFetcher::ExtensionUnloaded, once https://crbug.com/702300 is
     // fixed.
-    fetch_callback_.Run(job->extension_id(),
-                        job->success(),
-                        job->force(),
-                        job->hash_mismatch_paths());
+    fetch_callback_.Run(job->extension_id(), job->success(), job->force(),
+                        job->hash_mismatch_unix_paths());
   }
 
   for (JobMap::iterator i = jobs_.begin(); i != jobs_.end(); ++i) {
