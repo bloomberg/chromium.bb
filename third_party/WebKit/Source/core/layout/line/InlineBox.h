@@ -63,13 +63,13 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
             InlineBox* next,
             InlineBox* prev,
             InlineFlowBox* parent)
-      : bitfields_(first_line, constructed, dirty, extracted, is_horizontal),
-        next_(next),
+      : next_(next),
         prev_(prev),
         parent_(parent),
         line_layout_item_(item),
         location_(top_left),
-        logical_width_(logical_width) {}
+        logical_width_(logical_width),
+        bitfields_(first_line, constructed, dirty, extracted, is_horizontal) {}
 
   virtual ~InlineBox();
 
@@ -472,8 +472,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
  private:
   void SetLineLayoutItemShouldDoFullPaintInvalidationIfNeeded();
 
-  InlineBoxBitfields bitfields_;
-
   InlineBox* next_;  // The next element on the same line as us.
   InlineBox* prev_;  // The previous element on the same line as us.
 
@@ -520,6 +518,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   LayoutUnit logical_width_;
 
  private:
+  InlineBoxBitfields bitfields_;
+
 #if DCHECK_IS_ON()
   bool has_bad_parent_ = false;
 #endif

@@ -39,10 +39,10 @@ class LayoutObject;
 
 struct SameSizeAsInlineBox : DisplayItemClient {
   virtual ~SameSizeAsInlineBox() {}
-  uint32_t bitfields;
   void* a[4];
   LayoutPoint b;
   LayoutUnit c;
+  uint32_t bitfields;
 #if DCHECK_IS_ON()
   bool f;
 #endif
