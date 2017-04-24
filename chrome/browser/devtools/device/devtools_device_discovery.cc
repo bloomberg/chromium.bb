@@ -512,9 +512,9 @@ DevToolsDeviceDiscovery::RemotePage::CreateTarget() {
                                              dict_.get());
   std::string target_path = GetTargetPath(dict_.get());
   std::string type = GetStringProperty(dict_.get(), "type");
-
-  return AgentHostDelegate::GetOrCreateAgentHost(
+  agent_host_ = AgentHostDelegate::GetOrCreateAgentHost(
       device_, browser_id_, local_id, target_path, type, dict_.get());
+  return agent_host_;
 }
 
 // DevToolsDeviceDiscovery::RemoteBrowser -------------------------------------

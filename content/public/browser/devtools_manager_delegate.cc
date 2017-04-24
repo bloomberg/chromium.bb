@@ -23,9 +23,8 @@ std::string DevToolsManagerDelegate::GetTargetDescription(
   return std::string();
 }
 
-bool DevToolsManagerDelegate::DiscoverTargets(
-    const DevToolsAgentHost::DiscoveryCallback& callback) {
-  return false;
+DevToolsAgentHost::List DevToolsManagerDelegate::RemoteDebuggingTargets() {
+  return DevToolsAgentHost::GetOrCreateAll();
 }
 
 scoped_refptr<DevToolsAgentHost> DevToolsManagerDelegate::CreateNewTarget(

@@ -105,11 +105,6 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns all DevToolsAgentHosts content is aware of.
   static List GetOrCreateAll();
 
-  using DiscoveryCallback = base::Callback<void(List)>;
-
-  // Returns all possible DevToolsAgentHosts embedder is aware of.
-  static void DiscoverAllHosts(const DiscoveryCallback& callback);
-
   // Starts remote debugging.
   // Takes ownership over |socket_factory|.
   // If |frontend_url| is empty, assumes it's bundled.

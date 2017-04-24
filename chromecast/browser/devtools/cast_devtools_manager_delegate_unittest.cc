@@ -60,24 +60,16 @@ TEST_F(CastDevToolsManagerDelegateTest, TestSingletonGetter) {
             CastDevToolsManagerDelegate::GetInstance());
 }
 
-TEST_F(CastDevToolsManagerDelegateTest, NoWebContents) {
-  EXPECT_TRUE(devtools_manager_delegate_->DiscoverTargets(
-      base::Bind(&CastDevToolsManagerDelegateTest::TestDiscoveredTargets,
-                 base::Unretained(this), WebContentsSet())));
-}
-
 TEST_F(CastDevToolsManagerDelegateTest, DisabledWebContents) {
-  EXPECT_TRUE(devtools_manager_delegate_->DiscoverTargets(
-      base::Bind(&CastDevToolsManagerDelegateTest::TestDiscoveredTargets,
-                 base::Unretained(this), WebContentsSet())));
+  TestDiscoveredTargets(WebContentsSet(),
+                        devtools_manager_delegate_->RemoteDebuggingTargets());
 }
 
 TEST_F(CastDevToolsManagerDelegateTest, EnabledWebContents) {
   devtools_manager_delegate_->EnableWebContentsForDebugging(web_contents());
   WebContentsSet enabled_web_contents({web_contents()});
-  EXPECT_TRUE(devtools_manager_delegate_->DiscoverTargets(
-      base::Bind(&CastDevToolsManagerDelegateTest::TestDiscoveredTargets,
-                 base::Unretained(this), enabled_web_contents)));
+  TestDiscoveredTargets(enabled_web_contents,
+                        devtools_manager_delegate_->RemoteDebuggingTargets());
 }
 
 }  // namespace shell

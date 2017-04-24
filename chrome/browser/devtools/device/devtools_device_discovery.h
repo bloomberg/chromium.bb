@@ -39,6 +39,7 @@ class DevToolsDeviceDiscovery {
     std::string browser_id_;
     std::string frontend_url_;
     std::unique_ptr<base::DictionaryValue> dict_;
+    scoped_refptr<content::DevToolsAgentHost> agent_host_;
 
     DISALLOW_COPY_AND_ASSIGN(RemotePage);
   };

@@ -31,8 +31,7 @@ class CastDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   void DisableWebContentsForDebugging(content::WebContents* web_contents);
 
   // content::DevToolsManagerDelegate implementation.
-  bool DiscoverTargets(
-      const content::DevToolsAgentHost::DiscoveryCallback& callback) override;
+  content::DevToolsAgentHost::List RemoteDebuggingTargets() override;
   std::string GetDiscoveryPageHTML() override;
 
  private:

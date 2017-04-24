@@ -41,6 +41,7 @@ class TabContentManager;
 }
 
 namespace content {
+class DevToolsAgentHost;
 class WebContents;
 }
 
@@ -252,6 +253,10 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   bool ShouldEnableEmbeddedMediaExperience() const;
 
+  scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
+
+  void SetDevToolsAgentHost(scoped_refptr<content::DevToolsAgentHost> host);
+
   // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);
 
@@ -274,7 +279,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<android::TabWebContentsDelegateAndroid>
       web_contents_delegate_;
-
+  scoped_refptr<content::DevToolsAgentHost> devtools_host_;
   std::unique_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
 
   std::string webapp_manifest_scope_;

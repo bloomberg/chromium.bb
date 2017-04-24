@@ -65,6 +65,7 @@
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -795,6 +796,15 @@ void TabAndroid::AttachToTabContentManager(
   tab_content_manager_ = tab_content_manager;
   if (tab_content_manager_)
     tab_content_manager_->AttachLiveLayer(GetAndroidId(), GetContentLayer());
+}
+
+scoped_refptr<content::DevToolsAgentHost> TabAndroid::GetDevToolsAgentHost() {
+  return devtools_host_;
+}
+
+void TabAndroid::SetDevToolsAgentHost(
+    scoped_refptr<content::DevToolsAgentHost> host) {
+  devtools_host_ = std::move(host);
 }
 
 static void Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

@@ -82,13 +82,6 @@ DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   return result;
 }
 
-// static
-void DevToolsAgentHost::DiscoverAllHosts(const DiscoveryCallback& callback) {
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (!manager->delegate() || !manager->delegate()->DiscoverTargets(callback))
-    callback.Run(DevToolsAgentHost::GetOrCreateAll());
-}
-
 // Called on the UI thread.
 // static
 scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(

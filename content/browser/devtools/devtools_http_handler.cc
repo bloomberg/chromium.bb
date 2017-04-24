@@ -535,10 +535,11 @@ void DevToolsHttpHandler::OnJsonRequest(
   }
 
   if (command == "list") {
-    DevToolsAgentHost::DiscoverAllHosts(
-        base::Bind(&DevToolsHttpHandler::RespondToJsonList,
-                   weak_factory_.GetWeakPtr(), connection_id,
-                   info.headers["host"]));
+    DevToolsManager* manager = DevToolsManager::GetInstance();
+    DevToolsAgentHost::List list =
+        manager->delegate() ? manager->delegate()->RemoteDebuggingTargets()
+                            : DevToolsAgentHost::GetOrCreateAll();
+    RespondToJsonList(connection_id, info.headers["host"], std::move(list));
     return;
   }
 
@@ -561,13 +562,12 @@ void DevToolsHttpHandler::OnJsonRequest(
     std::unique_ptr<base::DictionaryValue> dictionary(
         SerializeDescriptor(agent_host, host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), std::string());
-    const std::string target_id = agent_host->GetId();
-    agent_host_map_[target_id] = agent_host;
     return;
   }
 
   if (command == "activate" || command == "close") {
-    scoped_refptr<DevToolsAgentHost> agent_host = GetAgentHost(target_id);
+    scoped_refptr<DevToolsAgentHost> agent_host =
+        DevToolsAgentHost::GetForId(target_id);
     if (!agent_host) {
       SendJson(connection_id,
                net::HTTP_NOT_FOUND,
@@ -613,19 +613,10 @@ void DevToolsHttpHandler::RespondToJsonList(
     DevToolsAgentHost::List hosts) {
   DevToolsAgentHost::List agent_hosts = std::move(hosts);
   std::sort(agent_hosts.begin(), agent_hosts.end(), TimeComparator);
-  agent_host_map_.clear();
   base::ListValue list_value;
-  for (auto& agent_host : agent_hosts) {
-    agent_host_map_[agent_host->GetId()] = agent_host;
+  for (auto& agent_host : agent_hosts)
     list_value.Append(SerializeDescriptor(agent_host, host));
-  }
   SendJson(connection_id, net::HTTP_OK, &list_value, std::string());
-}
-
-scoped_refptr<DevToolsAgentHost> DevToolsHttpHandler::GetAgentHost(
-    const std::string& target_id) {
-  DescriptorMap::const_iterator it = agent_host_map_.find(target_id);
-  return it != agent_host_map_.end() ? it->second : nullptr;
 }
 
 void DevToolsHttpHandler::OnDiscoveryPageRequest(int connection_id) {
@@ -668,7 +659,8 @@ void DevToolsHttpHandler::OnWebSocketRequest(
   }
 
   std::string target_id = request.path.substr(strlen(kPageUrlPrefix));
-  scoped_refptr<DevToolsAgentHost> agent = GetAgentHost(target_id);
+  scoped_refptr<DevToolsAgentHost> agent =
+      DevToolsAgentHost::GetForId(target_id);
   if (!agent) {
     Send500(connection_id, "No such target id: " + target_id);
     return;
