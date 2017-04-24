@@ -101,7 +101,6 @@ class CONTENT_EXPORT MainThreadEventQueue
   void QueueEvent(std::unique_ptr<MainThreadEventQueueTask> event);
   void PostTaskToMainThread();
   void DispatchEvents();
-  void DispatchInFlightEvent();
   void PossiblyScheduleMainFrame();
   void SetNeedsMainFrame();
   InputEventAckState HandleEventOnMainThread(
@@ -124,7 +123,6 @@ class CONTENT_EXPORT MainThreadEventQueue
   friend class MainThreadEventQueueTest;
   friend class MainThreadEventQueueInitializationTest;
   MainThreadEventQueueClient* client_;
-  std::unique_ptr<MainThreadEventQueueTask> in_flight_event_;
   bool last_touch_start_forced_nonblocking_due_to_fling_;
   bool enable_fling_passive_listener_flag_;
   bool enable_non_blocking_due_to_main_thread_responsiveness_flag_;
