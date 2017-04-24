@@ -26,6 +26,7 @@ class PageNavigationThrottle : public content::NavigationThrottle {
   // content::NavigationThrottle implementation:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override;
+  const char* GetNameForLogging() override;
 
   int navigation_id() const { return navigation_id_; }
 

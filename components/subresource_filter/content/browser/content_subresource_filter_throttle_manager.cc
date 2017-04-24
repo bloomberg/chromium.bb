@@ -39,6 +39,9 @@ class ForwardingNavigationThrottle : public content::NavigationThrottle {
     delegate_->WillProcessResponse(navigation_handle());
     return content::NavigationThrottle::PROCEED;
   }
+  const char* GetNameForLogging() override {
+    return "ForwardingNavigationThrottle";
+  }
 
  private:
   ContentSubresourceFilterThrottleManager::Delegate* delegate_;

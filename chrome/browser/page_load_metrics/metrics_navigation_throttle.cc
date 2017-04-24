@@ -38,6 +38,10 @@ MetricsNavigationThrottle::WillProcessResponse() {
   return content::NavigationThrottle::PROCEED;
 }
 
+const char* MetricsNavigationThrottle::GetNameForLogging() {
+  return "MetricsNavigationThrottle";
+}
+
 MetricsNavigationThrottle::MetricsNavigationThrottle(
     content::NavigationHandle* handle)
     : content::NavigationThrottle(handle) {}

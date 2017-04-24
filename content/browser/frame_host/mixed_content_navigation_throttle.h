@@ -46,6 +46,7 @@ class MixedContentNavigationThrottle : public NavigationThrottle {
   ThrottleCheckResult WillStartRequest() override;
   ThrottleCheckResult WillRedirectRequest() override;
   ThrottleCheckResult WillProcessResponse() override;
+  const char* GetNameForLogging() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentNavigationThrottleTest, IsMixedContent);

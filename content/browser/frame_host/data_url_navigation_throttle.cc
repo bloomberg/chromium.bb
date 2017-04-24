@@ -44,6 +44,10 @@ DataUrlNavigationThrottle::WillProcessResponse() {
   return CANCEL;
 }
 
+const char* DataUrlNavigationThrottle::GetNameForLogging() {
+  return "DataUrlNavigationThrottle";
+}
+
 // static
 std::unique_ptr<NavigationThrottle>
 DataUrlNavigationThrottle::CreateThrottleForNavigation(

@@ -119,6 +119,10 @@ DelayNavigationThrottle::WillStartRequest() {
   return content::NavigationThrottle::DEFER;
 }
 
+const char* DelayNavigationThrottle::GetNameForLogging() {
+  return "DelayNavigationThrottle";
+}
+
 void DelayNavigationThrottle::OnDelayComplete() {
   base::TimeDelta actual_delay = base::TimeTicks::Now() - delay_start_time_;
   base::TimeDelta delay_delta = actual_delay - navigation_delay_;

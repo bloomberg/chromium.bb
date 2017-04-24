@@ -43,6 +43,8 @@ class TestNavigationThrottle : public NavigationThrottle {
     return result_;
   }
 
+  const char* GetNameForLogging() override { return "TestNavigationThrottle"; }
+
   int will_start_calls() const { return will_start_calls_; }
   int will_redirect_calls() const { return will_redirect_calls_; }
   int will_process_response_calls() const {

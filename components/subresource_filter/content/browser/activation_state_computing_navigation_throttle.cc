@@ -97,6 +97,10 @@ ActivationStateComputingNavigationThrottle::WillProcessResponse() {
   return content::NavigationThrottle::ThrottleCheckResult::DEFER;
 }
 
+const char* ActivationStateComputingNavigationThrottle::GetNameForLogging() {
+  return "ActivationStateComputingNavigationThrottle";
+}
+
 void ActivationStateComputingNavigationThrottle::OnActivationStateComputed(
     ActivationState state) {
   navigation_handle()->Resume();

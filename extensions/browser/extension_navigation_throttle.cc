@@ -160,4 +160,8 @@ ExtensionNavigationThrottle::WillStartRequest() {
   return content::NavigationThrottle::BLOCK_REQUEST;
 }
 
+const char* ExtensionNavigationThrottle::GetNameForLogging() {
+  return "ExtensionNavigationThrottle";
+}
+
 }  // namespace extensions

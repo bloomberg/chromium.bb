@@ -29,6 +29,7 @@ class SupervisedUserGoogleAuthNavigationThrottle
 
   ThrottleCheckResult WillStartRequest() override;
   ThrottleCheckResult WillRedirectRequest() override;
+  const char* GetNameForLogging() override;
 
  private:
   SupervisedUserGoogleAuthNavigationThrottle(

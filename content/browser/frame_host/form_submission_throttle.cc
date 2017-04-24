@@ -44,6 +44,10 @@ FormSubmissionThrottle::WillRedirectRequest() {
   return CheckContentSecurityPolicyFormAction(true /* is_redirect */);
 }
 
+const char* FormSubmissionThrottle::GetNameForLogging() {
+  return "FormSubmissionThrottle";
+}
+
 NavigationThrottle::ThrottleCheckResult
 FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(bool is_redirect) {
   NavigationHandleImpl* handle =

@@ -139,6 +139,8 @@ class TestNavigationThrottle : public NavigationThrottle {
         did_call_will_process_(did_call_will_process) {}
   ~TestNavigationThrottle() override {}
 
+  const char* GetNameForLogging() override { return "TestNavigationThrottle"; }
+
   void Resume() { navigation_handle()->Resume(); }
 
   RequestContextType request_context_type() { return request_context_type_; }

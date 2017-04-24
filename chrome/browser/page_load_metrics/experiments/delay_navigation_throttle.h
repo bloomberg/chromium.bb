@@ -53,6 +53,7 @@ class DelayNavigationThrottle : public content::NavigationThrottle {
 
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
+  const char* GetNameForLogging() override;
 
  private:
   void OnDelayComplete();

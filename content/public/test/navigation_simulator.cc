@@ -49,6 +49,10 @@ class NavigationThrottleCallbackRunner : public NavigationThrottle {
     return NavigationThrottle::PROCEED;
   }
 
+  const char* GetNameForLogging() override {
+    return "NavigationThrottleCallbackRunner";
+  }
+
  private:
   base::Closure on_will_start_request_;
   base::Closure on_will_redirect_request_;

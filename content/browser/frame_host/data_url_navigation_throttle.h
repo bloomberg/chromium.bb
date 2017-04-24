@@ -19,6 +19,7 @@ class DataUrlNavigationThrottle : public NavigationThrottle {
 
   // NavigationThrottle method:
   ThrottleCheckResult WillProcessResponse() override;
+  const char* GetNameForLogging() override;
 
   static std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);

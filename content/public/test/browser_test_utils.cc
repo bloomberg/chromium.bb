@@ -347,6 +347,10 @@ class TestNavigationManagerThrottle : public NavigationThrottle {
         on_will_process_response_closure_(on_will_process_response_closure) {}
   ~TestNavigationManagerThrottle() override {}
 
+  const char* GetNameForLogging() override {
+    return "TestNavigationManagerThrottle";
+  }
+
  private:
   // NavigationThrottle:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {

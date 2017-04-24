@@ -200,6 +200,10 @@ SupervisedUserNavigationThrottle::WillRedirectRequest() {
   return CheckURL();
 }
 
+const char* SupervisedUserNavigationThrottle::GetNameForLogging() {
+  return "SupervisedUserNavigationThrottle";
+}
+
 void SupervisedUserNavigationThrottle::OnCheckDone(
     const GURL& url,
     SupervisedUserURLFilter::FilteringBehavior behavior,

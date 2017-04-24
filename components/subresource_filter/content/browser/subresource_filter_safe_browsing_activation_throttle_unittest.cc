@@ -89,6 +89,9 @@ class TestForwardingNavigationThrottle : public content::NavigationThrottle {
     factory->WillProcessResponse(navigation_handle());
     return content::NavigationThrottle::PROCEED;
   }
+  const char* GetNameForLogging() override {
+    return "TestForwardingNavigationThrottle";
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestForwardingNavigationThrottle);

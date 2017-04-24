@@ -120,6 +120,10 @@ NavigationHandleImpl::NavigationHandleImpl(
       should_check_main_world_csp_(should_check_main_world_csp),
       is_form_submission_(is_form_submission),
       weak_factory_(this) {
+  TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
+                           "frame_tree_node",
+                           frame_tree_node_->frame_tree_node_id(), "url",
+                           url_.possibly_invalid_spec());
   DCHECK(!navigation_start.is_null());
   if (redirect_chain_.empty())
     redirect_chain_.push_back(url);
@@ -154,6 +158,11 @@ NavigationHandleImpl::NavigationHandleImpl(
         "navigation", "Navigation StartToCommit", this,
         navigation_start, "Initial URL", url_.spec());
   }
+
+  if (is_same_page_) {
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                                 "Same document");
+  }
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
@@ -179,6 +188,7 @@ NavigationHandleImpl::~NavigationHandleImpl() {
                            "URL", url_.spec(), "Net Error Code",
                            net_error_code_);
   }
+  TRACE_EVENT_ASYNC_END0("navigation", "NavigationHandle", this);
 }
 
 NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
@@ -327,6 +337,8 @@ void NavigationHandleImpl::Resume() {
       state_ != DEFERRING_RESPONSE) {
     return;
   }
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                               "Resume");
 
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   if (state_ == DEFERRING_START) {
@@ -346,8 +358,11 @@ void NavigationHandleImpl::Resume() {
       return;
   }
 
-  if (result != NavigationThrottle::DEFER)
+  if (result != NavigationThrottle::DEFER) {
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                                 "Resuming");
     RunCompleteCallback(result);
+  }
 }
 
 void NavigationHandleImpl::CancelDeferredNavigation(
@@ -357,6 +372,8 @@ void NavigationHandleImpl::CancelDeferredNavigation(
          state_ == DEFERRING_RESPONSE);
   DCHECK(result == NavigationThrottle::CANCEL_AND_IGNORE ||
          result == NavigationThrottle::CANCEL);
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                               "CancelDeferredNavigation");
   state_ = CANCELING;
   RunCompleteCallback(result);
 }
@@ -511,6 +528,8 @@ void NavigationHandleImpl::WillStartRequest(
     RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
     const ThrottleChecksFinishedCallback& callback) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                               "WillStartRequest");
   if (method != "POST")
     DCHECK(!resource_request_body);
 
@@ -550,8 +569,11 @@ void NavigationHandleImpl::WillStartRequest(
   NavigationThrottle::ThrottleCheckResult result = CheckWillStartRequest();
 
   // If the navigation is not deferred, run the callback.
-  if (result != NavigationThrottle::DEFER)
+  if (result != NavigationThrottle::DEFER) {
+    TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
+                                 "StartRequest", "result", result);
     RunCompleteCallback(result);
+  }
 }
 
 void NavigationHandleImpl::WillRedirectRequest(
@@ -562,6 +584,10 @@ void NavigationHandleImpl::WillRedirectRequest(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
     const ThrottleChecksFinishedCallback& callback) {
+  TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
+                               "WillRedirectRequest", "url",
+                               new_url.possibly_invalid_spec());
+
   // Update the navigation parameters.
   url_ = new_url;
   method_ = new_method;
@@ -593,8 +619,11 @@ void NavigationHandleImpl::WillRedirectRequest(
   NavigationThrottle::ThrottleCheckResult result = CheckWillRedirectRequest();
 
   // If the navigation is not deferred, run the callback.
-  if (result != NavigationThrottle::DEFER)
+  if (result != NavigationThrottle::DEFER) {
+    TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
+                                 "RedirectRequest", "result", result);
     RunCompleteCallback(result);
+  }
 }
 
 void NavigationHandleImpl::WillProcessResponse(
@@ -608,6 +637,9 @@ void NavigationHandleImpl::WillProcessResponse(
     bool is_stream,
     const base::Closure& transfer_callback,
     const ThrottleChecksFinishedCallback& callback) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                               "WillProcessResponse");
+
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   render_frame_host_ = render_frame_host;
   response_headers_ = response_headers;
@@ -633,12 +665,18 @@ void NavigationHandleImpl::WillProcessResponse(
     return;
 
   // If the navigation is not deferred, run the callback.
-  if (result != NavigationThrottle::DEFER)
+  if (result != NavigationThrottle::DEFER) {
+    TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
+                                 "ProcessResponse", "result", result);
     RunCompleteCallback(result);
+  }
 }
 
 void NavigationHandleImpl::ReadyToCommitNavigation(
     RenderFrameHostImpl* render_frame_host) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                               "ReadyToCommitNavigation");
+
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;
@@ -678,8 +716,12 @@ void NavigationHandleImpl::DidCommitNavigation(
   // count it as an error page.
   if (params.base_url.spec() == kUnreachableWebDataURL ||
       net_error_code_ != net::OK) {
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                                 "DidCommitNavigation: error page");
     state_ = DID_COMMIT_ERROR_PAGE;
   } else {
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                                 "DidCommitNavigation");
     state_ = DID_COMMIT;
   }
 }
@@ -705,6 +747,10 @@ NavigationHandleImpl::CheckWillStartRequest() {
   for (size_t i = next_index_; i < throttles_.size(); ++i) {
     NavigationThrottle::ThrottleCheckResult result =
         throttles_[i]->WillStartRequest();
+    TRACE_EVENT_ASYNC_STEP_INTO0(
+        "navigation", "NavigationHandle", this,
+        base::StringPrintf("CheckWillStartRequest: %s: %d",
+                           throttles_[i]->GetNameForLogging(), result));
     switch (result) {
       case NavigationThrottle::PROCEED:
         continue;
@@ -726,6 +772,7 @@ NavigationHandleImpl::CheckWillStartRequest() {
   }
   next_index_ = 0;
   state_ = WILL_SEND_REQUEST;
+
   return NavigationThrottle::PROCEED;
 }
 
@@ -734,9 +781,14 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
   DCHECK(state_ == WILL_REDIRECT_REQUEST || state_ == DEFERRING_REDIRECT);
   DCHECK(state_ != WILL_REDIRECT_REQUEST || next_index_ == 0);
   DCHECK(state_ != DEFERRING_REDIRECT || next_index_ != 0);
+
   for (size_t i = next_index_; i < throttles_.size(); ++i) {
     NavigationThrottle::ThrottleCheckResult result =
         throttles_[i]->WillRedirectRequest();
+    TRACE_EVENT_ASYNC_STEP_INTO0(
+        "navigation", "NavigationHandle", this,
+        base::StringPrintf("CheckWillRedirectRequest: %s: %d",
+                           throttles_[i]->GetNameForLogging(), result));
     switch (result) {
       case NavigationThrottle::PROCEED:
         continue;
@@ -773,9 +825,14 @@ NavigationHandleImpl::CheckWillProcessResponse() {
   DCHECK(state_ == WILL_PROCESS_RESPONSE || state_ == DEFERRING_RESPONSE);
   DCHECK(state_ != WILL_PROCESS_RESPONSE || next_index_ == 0);
   DCHECK(state_ != DEFERRING_RESPONSE || next_index_ != 0);
+
   for (size_t i = next_index_; i < throttles_.size(); ++i) {
     NavigationThrottle::ThrottleCheckResult result =
         throttles_[i]->WillProcessResponse();
+    TRACE_EVENT_ASYNC_STEP_INTO0(
+        "navigation", "NavigationHandle", this,
+        base::StringPrintf("CheckWillProcessResponse: %s: %d",
+                           throttles_[i]->GetNameForLogging(), result));
     switch (result) {
       case NavigationThrottle::PROCEED:
         continue;
@@ -797,6 +854,7 @@ NavigationHandleImpl::CheckWillProcessResponse() {
   }
   next_index_ = 0;
   state_ = WILL_PROCESS_RESPONSE;
+
   return NavigationThrottle::PROCEED;
 }
 

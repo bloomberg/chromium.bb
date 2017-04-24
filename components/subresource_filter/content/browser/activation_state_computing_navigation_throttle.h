@@ -55,6 +55,7 @@ class ActivationStateComputingNavigationThrottle
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
       override;
+  const char* GetNameForLogging() override;
 
   // After the navigation is finished, the client may optionally choose to
   // continue using the DocumentSubresourceFilter that was used to compute the

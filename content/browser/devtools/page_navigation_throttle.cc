@@ -44,6 +44,10 @@ PageNavigationThrottle::WillRedirectRequest() {
   return ThrottleCheckResult::DEFER;
 }
 
+const char* PageNavigationThrottle::GetNameForLogging() {
+  return "PageNavigationThrottle";
+}
+
 void PageNavigationThrottle::AlwaysProceed() {
   // Makes WillStartRequest and WillRedirectRequest always return
   // ThrottleCheckResult::PROCEED.

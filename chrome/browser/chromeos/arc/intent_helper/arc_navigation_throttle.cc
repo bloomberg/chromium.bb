@@ -97,6 +97,10 @@ ArcNavigationThrottle::ArcNavigationThrottle(
 
 ArcNavigationThrottle::~ArcNavigationThrottle() = default;
 
+const char* ArcNavigationThrottle::GetNameForLogging() {
+  return "ArcNavigationThrottle";
+}
+
 content::NavigationThrottle::ThrottleCheckResult
 ArcNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

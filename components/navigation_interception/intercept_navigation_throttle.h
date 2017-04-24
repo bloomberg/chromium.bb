@@ -37,6 +37,7 @@ class InterceptNavigationThrottle : public content::NavigationThrottle {
   // content::NavigationThrottle implementation:
   ThrottleCheckResult WillStartRequest() override;
   ThrottleCheckResult WillRedirectRequest() override;
+  const char* GetNameForLogging() override;
 
  private:
   ThrottleCheckResult CheckIfShouldIgnoreNavigation(bool is_redirect);

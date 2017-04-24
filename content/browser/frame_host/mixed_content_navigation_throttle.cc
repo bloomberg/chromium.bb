@@ -149,6 +149,10 @@ ThrottleCheckResult MixedContentNavigationThrottle::WillProcessResponse() {
   return ThrottleCheckResult::PROCEED;
 }
 
+const char* MixedContentNavigationThrottle::GetNameForLogging() {
+  return "MixedContentNavigationThrottle";
+}
+
 // Based off of MixedContentChecker::shouldBlockFetch.
 bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
   NavigationHandleImpl* handle_impl =

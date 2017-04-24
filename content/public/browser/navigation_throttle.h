@@ -77,6 +77,10 @@ class CONTENT_EXPORT NavigationThrottle {
   // asynchronously.
   virtual ThrottleCheckResult WillProcessResponse();
 
+  // Returns the name of the throttle for logging purposes. It must not return
+  // nullptr.
+  virtual const char* GetNameForLogging() = 0;
+
   // The NavigationHandle that is tracking the information related to this
   // navigation.
   NavigationHandle* navigation_handle() const { return navigation_handle_; }

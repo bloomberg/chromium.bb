@@ -103,6 +103,9 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   static size_t FindPreferredAppForTesting(
       const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
 
+  // content::Navigation implementation:
+  const char* GetNameForLogging() override;
+
  private:
   // content::Navigation implementation:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override;

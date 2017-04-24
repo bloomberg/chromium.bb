@@ -32,6 +32,7 @@ class SubresourceFilterSafeBrowsingActivationThrottle
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
       override;
+  const char* GetNameForLogging() override;
 
   void OnCheckUrlResultOnUI(const GURL& url,
                             safe_browsing::SBThreatType threat_type,

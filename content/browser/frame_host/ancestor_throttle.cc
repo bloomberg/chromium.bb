@@ -167,6 +167,10 @@ AncestorThrottle::WillProcessResponse() {
   return NavigationThrottle::BLOCK_RESPONSE;
 }
 
+const char* AncestorThrottle::GetNameForLogging() {
+  return "AncestorThrottle";
+}
+
 NavigationThrottle::ThrottleCheckResult
 AncestorThrottle::CheckContentSecurityPolicyFrameSrc(bool is_redirect) {
   // If PlzNavigate is enabled, "frame-src" is enforced on the browser side,

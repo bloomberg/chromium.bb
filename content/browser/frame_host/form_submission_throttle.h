@@ -27,6 +27,7 @@ class CONTENT_EXPORT FormSubmissionThrottle : public NavigationThrottle {
 
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override;
+  const char* GetNameForLogging() override;
 
  private:
   explicit FormSubmissionThrottle(NavigationHandle* handle);

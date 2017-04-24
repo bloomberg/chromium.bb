@@ -62,6 +62,10 @@ InterceptNavigationThrottle::WillRedirectRequest() {
   return CheckIfShouldIgnoreNavigation(true);
 }
 
+const char* InterceptNavigationThrottle::GetNameForLogging() {
+  return "InterceptNavigationThrottle";
+}
+
 content::NavigationThrottle::ThrottleCheckResult
 InterceptNavigationThrottle::CheckIfShouldIgnoreNavigation(bool is_redirect) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

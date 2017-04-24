@@ -32,6 +32,10 @@ SubframeNavigationFilteringThrottle::WillRedirectRequest() {
   return DeferToCalculateLoadPolicy();
 }
 
+const char* SubframeNavigationFilteringThrottle::GetNameForLogging() {
+  return "SubframeNavigationFilteringThrottle";
+}
+
 content::NavigationThrottle::ThrottleCheckResult
 SubframeNavigationFilteringThrottle::DeferToCalculateLoadPolicy() {
   parent_frame_filter_->GetLoadPolicyForSubdocument(

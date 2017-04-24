@@ -119,6 +119,10 @@ ClearSiteDataThrottle::WillProcessResponse() {
   return clearing_in_progress_ ? DEFER : PROCEED;
 }
 
+const char* ClearSiteDataThrottle::GetNameForLogging() {
+  return "ClearSiteDataThrottle";
+}
+
 void ClearSiteDataThrottle::HandleHeader() {
   NavigationHandleImpl* handle =
       static_cast<NavigationHandleImpl*>(navigation_handle());

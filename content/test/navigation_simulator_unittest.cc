@@ -79,6 +79,10 @@ class CancellingNavigationThrottle : public NavigationThrottle {
     return ProcessState(cancel_time_ == WILL_PROCESS_RESPONSE);
   }
 
+  const char* GetNameForLogging() override {
+    return "CancellingNavigationThrottle";
+  }
+
   NavigationThrottle::ThrottleCheckResult ProcessState(bool should_cancel) {
     if (sync_ == ASYNCHRONOUS) {
       BrowserThread::PostTask(

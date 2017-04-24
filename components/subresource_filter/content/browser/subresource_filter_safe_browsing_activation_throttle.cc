@@ -122,6 +122,11 @@ SubresourceFilterSafeBrowsingActivationThrottle::WillProcessResponse() {
   return content::NavigationThrottle::ThrottleCheckResult::DEFER;
 }
 
+const char*
+SubresourceFilterSafeBrowsingActivationThrottle::GetNameForLogging() {
+  return "SubresourceFilterSafeBrowsingActivationThrottle";
+}
+
 void SubresourceFilterSafeBrowsingActivationThrottle::OnCheckUrlResultOnUI(
     const GURL& url,
     safe_browsing::SBThreatType threat_type,

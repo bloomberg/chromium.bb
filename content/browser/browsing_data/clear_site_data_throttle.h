@@ -42,6 +42,7 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public NavigationThrottle {
   ThrottleCheckResult WillStartRequest() override;
   ThrottleCheckResult WillRedirectRequest() override;
   ThrottleCheckResult WillProcessResponse() override;
+  const char* GetNameForLogging() override;
 
  private:
   friend class ClearSiteDataFuzzerTest;

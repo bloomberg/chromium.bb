@@ -73,6 +73,9 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
       override {
     return MaybeNotifyActivation(WILL_PROCESS_RESPONSE);
   }
+  const char* GetNameForLogging() override {
+    return "MockPageStateActivationThrottle";
+  }
 
  private:
   content::NavigationThrottle::ThrottleCheckResult MaybeNotifyActivation(
