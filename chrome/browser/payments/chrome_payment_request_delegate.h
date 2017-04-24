@@ -38,11 +38,8 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
       const autofill::CreditCard& credit_card,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate) override;
-  std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource()
-      override;
-  std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
-      override;
   AddressNormalizer* GetAddressNormalizer() override;
+  autofill::RegionDataLoader* GetRegionDataLoader() override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This

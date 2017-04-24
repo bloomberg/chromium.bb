@@ -33,27 +33,15 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
       bool is_incognito,
       bool is_valid_ssl);
 
-  // This class allows tests to provide their own AddressInput data.
-  class AddressInputProvider {
-   public:
-    virtual std::unique_ptr<::i18n::addressinput::Source>
-    GetAddressInputSource() = 0;
-    virtual std::unique_ptr<::i18n::addressinput::Storage>
-    GetAddressInputStorage() = 0;
-  };
-
-  void SetAddressInputOverride(AddressInputProvider* address_input_provider) {
-    address_input_provider_ = address_input_provider;
+  void SetRegionDataLoader(autofill::RegionDataLoader* region_data_loader) {
+    region_data_loader_ = region_data_loader;
   }
 
   // ChromePaymentRequestDelegate.
   void ShowDialog(PaymentRequest* request) override;
   bool IsIncognito() const override;
   bool IsSslCertificateValid() override;
-  std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource()
-      override;
-  std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
-      override;
+  autofill::RegionDataLoader* GetRegionDataLoader() override;
 
   PaymentRequestDialogView* dialog_view() {
     return static_cast<PaymentRequestDialogView*>(dialog_);
@@ -61,7 +49,7 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
 
  private:
   // Not owned so must outlive the PaymentRequest object;
-  AddressInputProvider* address_input_provider_;
+  autofill::RegionDataLoader* region_data_loader_;
 
   PaymentRequestDialogView::ObserverForTest* observer_;
   views::WidgetObserver* widget_observer_;

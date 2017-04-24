@@ -19,7 +19,7 @@ TestChromePaymentRequestDelegate::TestChromePaymentRequestDelegate(
     bool is_incognito,
     bool is_valid_ssl)
     : ChromePaymentRequestDelegate(web_contents),
-      address_input_provider_(nullptr),
+      region_data_loader_(nullptr),
       observer_(observer),
       widget_observer_(widget_observer),
       is_incognito_(is_incognito),
@@ -45,18 +45,10 @@ bool TestChromePaymentRequestDelegate::IsSslCertificateValid() {
   return is_valid_ssl_;
 }
 
-std::unique_ptr<::i18n::addressinput::Source>
-TestChromePaymentRequestDelegate::GetAddressInputSource() {
-  if (address_input_provider_)
-    return address_input_provider_->GetAddressInputSource();
-  return ChromePaymentRequestDelegate::GetAddressInputSource();
+autofill::RegionDataLoader*
+TestChromePaymentRequestDelegate::GetRegionDataLoader() {
+  if (region_data_loader_)
+    return region_data_loader_;
+  return ChromePaymentRequestDelegate::GetRegionDataLoader();
 }
-
-std::unique_ptr<::i18n::addressinput::Storage>
-TestChromePaymentRequestDelegate::GetAddressInputStorage() {
-  if (address_input_provider_)
-    return address_input_provider_->GetAddressInputStorage();
-  return ChromePaymentRequestDelegate::GetAddressInputStorage();
-}
-
 }  // namespace payments

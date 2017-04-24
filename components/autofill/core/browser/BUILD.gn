@@ -252,6 +252,8 @@ static_library("test_support") {
     "test_autofill_external_delegate.h",
     "test_personal_data_manager.cc",
     "test_personal_data_manager.h",
+    "test_region_data_loader.cc",
+    "test_region_data_loader.h",
   ]
 
   if (!is_android) {
@@ -283,6 +285,7 @@ static_library("test_support") {
     "//google_apis:test_support",
     "//skia",
     "//testing/gtest",
+    "//third_party/libaddressinput:util",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]

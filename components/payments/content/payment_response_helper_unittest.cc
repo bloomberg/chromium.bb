@@ -81,19 +81,11 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
                                                 base::ASCIIToUTF16("123"));
   }
 
-  std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource()
-      override {
-    return nullptr;
-  }
-
-  std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
-      override {
-    return nullptr;
-  }
-
   AddressNormalizer* GetAddressNormalizer() override {
     return &address_normalizer_;
   }
+
+  autofill::RegionDataLoader* GetRegionDataLoader() override { return nullptr; }
 
  private:
   autofill::PersonalDataManager* personal_data_manager_;

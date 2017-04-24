@@ -187,10 +187,8 @@ class PaymentRequestBrowserTestBase
 
   PaymentRequestDialogView* dialog_view() { return delegate_->dialog_view(); }
 
-  void SetAddressInputOverride(
-      TestChromePaymentRequestDelegate::AddressInputProvider*
-          address_input_provider) {
-    delegate_->SetAddressInputOverride(address_input_provider);
+  void SetRegionDataLoader(autofill::RegionDataLoader* region_data_loader) {
+    delegate_->SetRegionDataLoader(region_data_loader);
   }
 
   // Various events that can be waited on by the DialogEventObserver.

@@ -144,14 +144,8 @@ autofill::PersonalDataManager* PaymentRequestState::GetPersonalDataManager() {
   return personal_data_manager_;
 }
 
-std::unique_ptr<const ::i18n::addressinput::Source>
-PaymentRequestState::GetAddressInputSource() {
-  return payment_request_delegate_->GetAddressInputSource();
-}
-
-std::unique_ptr<::i18n::addressinput::Storage>
-PaymentRequestState::GetAddressInputStorage() {
-  return payment_request_delegate_->GetAddressInputStorage();
+autofill::RegionDataLoader* PaymentRequestState::GetRegionDataLoader() {
+  return payment_request_delegate_->GetRegionDataLoader();
 }
 
 void PaymentRequestState::PopulateProfileCache() {

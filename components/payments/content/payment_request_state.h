@@ -14,17 +14,11 @@
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/mojom/payment_request.mojom.h"
 
-namespace i18n {
-namespace addressinput {
-class Storage;
-class Source;
-}  // namespace addressinput
-}  // namespace i18n
-
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
 class PersonalDataManager;
+class RegionDataLoader;
 }  // namespace autofill
 
 namespace payments {
@@ -141,8 +135,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate {
 
   const std::string& GetApplicationLocale();
   autofill::PersonalDataManager* GetPersonalDataManager();
-  std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource();
-  std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage();
+  autofill::RegionDataLoader* GetRegionDataLoader();
 
   Delegate* delegate() { return delegate_; }
 

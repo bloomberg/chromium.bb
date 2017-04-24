@@ -10,21 +10,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 class GURL;
-
-namespace i18n {
-namespace addressinput {
-class Storage;
-class Source;
-}  // namespace addressinput
-}  // namespace i18n
 
 namespace autofill {
 class CreditCard;
 class PersonalDataManager;
+class RegionDataLoader;
 }  // namespace autofill
 
 namespace payments {
@@ -69,15 +61,12 @@ class PaymentRequestDelegate {
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate) = 0;
 
-  // Returns the source and storage for country/region data loads.
-  virtual std::unique_ptr<::i18n::addressinput::Source>
-  GetAddressInputSource() = 0;
-  virtual std::unique_ptr<::i18n::addressinput::Storage>
-  GetAddressInputStorage() = 0;
-
   // Returns a pointer to the address normalizer to use for the duration of this
   // Payment Request.
   virtual AddressNormalizer* GetAddressNormalizer() = 0;
+
+  // Creates a new region data loader that will self delete, or a test mock.
+  virtual autofill::RegionDataLoader* GetRegionDataLoader() = 0;
 };
 
 }  // namespace payments

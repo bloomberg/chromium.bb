@@ -6,32 +6,37 @@
 
 #include <utility>
 
-#include "base/callback.h"
-#include "base/logging.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/region_data.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/region_data_builder.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model_observer.h"
 
 namespace autofill {
 
-RegionComboboxModel::RegionComboboxModel(
-    std::unique_ptr<const ::i18n::addressinput::Source> source,
-    std::unique_ptr<::i18n::addressinput::Storage> storage,
-    const std::string& app_locale,
-    const std::string& country_code)
-    : failed_to_load_data_(false),
-      pending_region_data_load_(false),
-      app_locale_(app_locale),
-      region_data_supplier_(source.release(), storage.release()) {
-  region_data_supplier_callback_.reset(::i18n::addressinput::BuildCallback(
-      this, &RegionComboboxModel::RegionDataLoaded));
-  LoadRegionData(country_code);
+RegionComboboxModel::RegionComboboxModel()
+    : failed_to_load_data_(false), region_data_loader_(nullptr) {}
+
+RegionComboboxModel::~RegionComboboxModel() {
+  if (region_data_loader_)
+    region_data_loader_->ClearCallback();
 }
 
-RegionComboboxModel::~RegionComboboxModel() {}
+void RegionComboboxModel::LoadRegionData(const std::string& country_code,
+                                         RegionDataLoader* region_data_loader,
+                                         int64_t timeout_ms) {
+  DCHECK(region_data_loader);
+  DCHECK(!region_data_loader_);
+  region_data_loader_ = region_data_loader;
+  region_data_loader_->LoadRegionData(
+      country_code,
+      base::Bind(&RegionComboboxModel::OnRegionDataLoaded,
+                 base::Unretained(this)),
+      timeout_ms);
+}
+
 
 int RegionComboboxModel::GetItemCount() const {
   // The combobox view needs to always have at least one item. If the regions
@@ -71,37 +76,18 @@ void RegionComboboxModel::RemoveObserver(ui::ComboboxModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void RegionComboboxModel::SetFailureModeForTests(bool failed_to_load_data) {
-  failed_to_load_data_ = failed_to_load_data;
-  for (auto& observer : observers_) {
-    observer.OnComboboxModelChanged(this);
-  }
-}
+void RegionComboboxModel::OnRegionDataLoaded(
+    const std::vector<const ::i18n::addressinput::RegionData*>& regions) {
+  // The RegionDataLoader will eventually self destruct after this call.
+  DCHECK(region_data_loader_);
+  region_data_loader_ = nullptr;
+  regions_.clear();
 
-void RegionComboboxModel::LoadRegionData(const std::string& country_code) {
-  pending_region_data_load_ = true;
-  region_data_supplier_.LoadRules(country_code,
-                                  *region_data_supplier_callback_.get());
-}
-
-void RegionComboboxModel::RegionDataLoaded(bool success,
-                                           const std::string& country_code,
-                                           int rule_count) {
-  pending_region_data_load_ = false;
-  if (success) {
-    std::string best_region_tree_language_tag;
-    ::i18n::addressinput::RegionDataBuilder builder(&region_data_supplier_);
-    const std::vector<const ::i18n::addressinput::RegionData*>& regions =
-        builder.Build(country_code, app_locale_, &best_region_tree_language_tag)
-            .sub_regions();
-    // Some countries expose a state field but have not region names available.
-    if (regions.size() > 0) {
-      failed_to_load_data_ = false;
-      for (auto* const region : regions) {
-        regions_.push_back(std::make_pair(region->key(), region->name()));
-      }
-    } else {
-      failed_to_load_data_ = true;
+  // Some countries expose a state field but have no region names available.
+  if (regions.size() > 0) {
+    failed_to_load_data_ = false;
+    for (auto* const region : regions) {
+      regions_.push_back(std::make_pair(region->key(), region->name()));
     }
   } else {
     // TODO(mad): Maybe use a static list as is done for countries in

@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/country_combobox_model.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_combobox_model.h"
+#include "components/autofill/core/browser/test_region_data_loader.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,29 +29,16 @@ const char kNameFull[] = "Bob Jones";
 const char kHomeAddress[] = "42 Answers-All Avenue";
 const char kHomeCity[] = "Question-City";
 const char kHomeZip[] = "ziiiiiip";
+const char kAnyState[] = "any state";
 
 }  // namespace
 
 class PaymentRequestShippingAddressEditorTest
-    : public PaymentRequestBrowserTestBase,
-      public TestChromePaymentRequestDelegate::AddressInputProvider {
+    : public PaymentRequestBrowserTestBase {
  protected:
   PaymentRequestShippingAddressEditorTest()
       : PaymentRequestBrowserTestBase(
             "/payment_request_dynamic_shipping_test.html") {}
-
-  void EnableAddressInputOverride() { SetAddressInputOverride(this); }
-
-  // TestChromePaymentRequestDelegate::AddressInputProvider.
-  std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource()
-      override {
-    return base::MakeUnique<TestSource>(address_input_override_data_);
-  }
-
-  std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
-      override {
-    return base::MakeUnique<::i18n::addressinput::NullStorage>();
-  }
 
   void SetFieldTestValue(autofill::ServerFieldType type) {
     base::string16 textfield_text;
@@ -65,6 +53,10 @@ class PaymentRequestShippingAddressEditorTest
       }
       case (autofill::ADDRESS_HOME_CITY): {
         textfield_text = base::ASCIIToUTF16(kHomeCity);
+        break;
+      }
+      case (autofill::ADDRESS_HOME_STATE): {
+        textfield_text = base::ASCIIToUTF16(kAnyState);
         break;
       }
       case (autofill::ADDRESS_HOME_ZIP): {
@@ -133,91 +125,67 @@ class PaymentRequestShippingAddressEditorTest
             static_cast<int>(autofill::ADDRESS_HOME_COUNTRY)));
     DCHECK(country_combobox);
     int selected_country_row = country_combobox->GetSelectedRow();
-    autofill::CountryComboboxModel* model =
+    autofill::CountryComboboxModel* country_model =
         static_cast<autofill::CountryComboboxModel*>(country_combobox->model());
 
-    return model->countries()[selected_country_row]->country_code();
-  }
-
-  void SetDefaultCountryData() {
-    AddCountryData(GetDataManager()->GetDefaultCountryCodeForNewAddress());
-  }
-
-  void AddCountryData(const std::string country_code) {
-    std::string country_key("data/");
-    country_key += country_code;
-    std::string json("{\"");
-    json += country_key + "\":{";
-    json += "\"id\":\"";
-    json += country_key + "\",";
-    json += "\"key\":\"";
-    json += country_code + "\",";
-    json += "\"sub_keys\":\"QC~ON\"},";
-
-    json += "\"";
-    json += country_key + "/ON\":{";
-    json += "\"id\":\"";
-    json += country_key + "/ON\",";
-    json += "\"key\":\"ON\",";
-    json += "\"name\":\"Ontario\"},";
-
-    json += "\"";
-    json += country_key + "/QC\":{";
-    json += "\"id\":\"";
-    json += country_key + "/QC\",";
-    json += "\"key\":\"QC\",";
-    json += "\"name\":\"Quebec\"}}";
-    address_input_override_data_[country_key] = json;
-  }
-
-  void AddCountryDataWithNoRegion(const std::string country_code) {
-    std::string country_key("data/");
-    country_key += country_code;
-    std::string json("{\"");
-    json += country_key + "\":{";
-    json += "\"id\":\"";
-    json += country_key + "\",";
-    json += "\"key\":\"";
-    json += country_code + "\"}}";
-    address_input_override_data_[country_key] = json;
+    return country_model->countries()[selected_country_row]->country_code();
   }
 
   PersonalDataLoadedObserverMock personal_data_observer_;
-  std::map<std::string, std::string> address_input_override_data_;
+  autofill::TestRegionDataLoader test_region_data_loader_;
 
  private:
-  class TestSource : public ::i18n::addressinput::Source {
-   public:
-    explicit TestSource(const std::map<std::string, std::string>& data)
-        : data_(data) {}
-    ~TestSource() override {}
-
-    void Get(const std::string& key,
-             const ::i18n::addressinput::Source::Callback& data_ready)
-        const override {
-      if (data_.find(key) == data_.end())
-        data_ready(false, key, nullptr);
-      else
-        data_ready(true, key, new std::string(data_.at(key)));
-    }
-
-   private:
-    const std::map<std::string, std::string> data_;
-  };
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestShippingAddressEditorTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
-                       EnteringValidDataWithDefaultCountry) {
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
   InvokePaymentRequestUI();
-
-  SetDefaultCountryData();
-
-  EnableAddressInputOverride();
-
+  SetRegionDataLoader(&test_region_data_loader_);
   OpenShippingAddressSectionScreen();
 
+  test_region_data_loader_.set_synchronous_callback(true);
   OpenShippingAddressEditorScreen();
+
+  std::string country_code(GetSelectedCountryCode());
+
+  SetCommonFields();
+  // We also need to set the state when no region data is provided.
+  SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
+
+  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+
+  // Verifying the data is in the DB.
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  data_loop.Run();
+
+  ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
+  autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
+  DCHECK(profile);
+  EXPECT_EQ(base::ASCIIToUTF16(country_code),
+            profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
+            profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
+  ExpectExistingRequiredFields(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
+  InvokePaymentRequestUI();
+  SetRegionDataLoader(&test_region_data_loader_);
+  OpenShippingAddressSectionScreen();
+
+  test_region_data_loader_.set_synchronous_callback(false);
+  OpenShippingAddressEditorScreen();
+  // Complete the async fetch of region data.
+  std::vector<std::pair<std::string, std::string>> regions;
+  regions.push_back(std::make_pair("code", kAnyState));
+  test_region_data_loader_.SendAsynchronousData(regions);
 
   std::string country_code(GetSelectedCountryCode());
 
@@ -241,20 +209,22 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   DCHECK(profile);
   EXPECT_EQ(base::ASCIIToUTF16(country_code),
             profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
+            profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
   ExpectExistingRequiredFields(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        SwitchingCountryUpdatesViewAndKeepsValues) {
   InvokePaymentRequestUI();
-
-  SetDefaultCountryData();
-
-  EnableAddressInputOverride();
-
+  SetRegionDataLoader(&test_region_data_loader_);
   OpenShippingAddressSectionScreen();
 
+  test_region_data_loader_.set_synchronous_callback(false);
   OpenShippingAddressEditorScreen();
+  std::vector<std::pair<std::string, std::string>> regions1;
+  regions1.push_back(std::make_pair("1a", "region1a"));
+  test_region_data_loader_.SendAsynchronousData(regions1);
 
   SetCommonFields();
 
@@ -263,31 +233,48 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
           static_cast<int>(autofill::ADDRESS_HOME_COUNTRY)));
   ASSERT_NE(nullptr, country_combobox);
   ASSERT_EQ(0, country_combobox->GetSelectedRow());
-  autofill::CountryComboboxModel* model =
+  autofill::CountryComboboxModel* country_model =
       static_cast<autofill::CountryComboboxModel*>(country_combobox->model());
-  size_t num_countries = model->countries().size();
+  size_t num_countries = country_model->countries().size();
   ASSERT_GT(num_countries, 10UL);
-  bool without_region_data = true;
+
+  bool use_regions1 = true;
+  std::vector<std::pair<std::string, std::string>> regions2;
+  regions2.push_back(std::make_pair("2a", "region2a"));
+  regions2.push_back(std::make_pair("2b", "region2b"));
   std::set<autofill::ServerFieldType> unset_types;
   for (size_t country_index = 10; country_index < num_countries;
        country_index += num_countries / 10) {
     // The editor updates asynchronously when the country changes.
     ResetEventObserver(DialogEvent::EDITOR_VIEW_UPDATED);
+
+    views::Combobox* region_combobox =
+        static_cast<views::Combobox*>(dialog_view()->GetViewByID(
+            static_cast<int>(autofill::ADDRESS_HOME_STATE)));
+    autofill::RegionComboboxModel* region_model = nullptr;
+    // Some countries don't have a state combo box.
+    if (region_combobox) {
+      autofill::RegionComboboxModel* region_model =
+          static_cast<autofill::RegionComboboxModel*>(region_combobox->model());
+      if (use_regions1) {
+        ASSERT_EQ(1, region_model->GetItemCount());
+        EXPECT_EQ(base::ASCIIToUTF16("region1a"), region_model->GetItemAt(0));
+      } else {
+        ASSERT_EQ(2, region_model->GetItemCount());
+        EXPECT_EQ(base::ASCIIToUTF16("region2a"), region_model->GetItemAt(0));
+        EXPECT_EQ(base::ASCIIToUTF16("region2b"), region_model->GetItemAt(1));
+      }
+      use_regions1 = !use_regions1;
+    }
+
     country_combobox->SetSelectedRow(country_index);
     country_combobox->OnBlur();
-    // Some entries don't have country data, e.g., separators.
-    if (model->countries()[country_index]) {
-      std::string code(model->countries()[country_index]->country_code());
-      if (without_region_data)
-        AddCountryDataWithNoRegion(code);
-      else
-        AddCountryData(code);
-      without_region_data = !without_region_data;
-    }
 
     // The view update will invalidate the country_combobox / model pointers.
     country_combobox = nullptr;
-    model = nullptr;
+    country_model = nullptr;
+    region_combobox = nullptr;
+    region_model = nullptr;
     WaitForObservedEvent();
 
     // Some types could have been lost in previous countries and may now
@@ -297,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
       ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
           dialog_view()->GetViewByID(static_cast<int>(type)));
       if (textfield) {
-        EXPECT_TRUE(textfield->text().empty());
+        EXPECT_TRUE(textfield->text().empty()) << type;
         SetFieldTestValue(type);
         set_types.insert(type);
       }
@@ -312,13 +299,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
     DCHECK(country_combobox);
     EXPECT_EQ(country_index,
               static_cast<size_t>(country_combobox->GetSelectedRow()));
-
-    // And that the number of countries is still the same.
-    model =
+    country_model =
         static_cast<autofill::CountryComboboxModel*>(country_combobox->model());
-    ASSERT_EQ(num_countries, model->countries().size());
+    ASSERT_EQ(num_countries, country_model->countries().size());
 
-    // And that the fields common between previous and new country have been
+    // Update regions.
+    test_region_data_loader_.SendAsynchronousData(use_regions1 ? regions1
+                                                               : regions2);
+    // Make sure the fields common between previous and new country have been
     // properly restored.
     ExpectExistingRequiredFields(&unset_types);
   }
@@ -327,33 +315,17 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        FailToLoadRegionData) {
   InvokePaymentRequestUI();
-
-  SetDefaultCountryData();
-
-  EnableAddressInputOverride();
-
+  SetRegionDataLoader(&test_region_data_loader_);
   OpenShippingAddressSectionScreen();
 
+  // The synchronous callback is made with no data, which causes a failure.
+  test_region_data_loader_.set_synchronous_callback(true);
   OpenShippingAddressEditorScreen();
-
-  // The editor updates asynchronously when the regions fail to load.
-  ResetEventObserver(DialogEvent::EDITOR_VIEW_UPDATED);
-  views::Combobox* country_combobox =
-      static_cast<views::Combobox*>(dialog_view()->GetViewByID(
-          static_cast<int>(autofill::ADDRESS_HOME_STATE)));
-  ASSERT_NE(nullptr, country_combobox);
-  autofill::RegionComboboxModel* model =
-      static_cast<autofill::RegionComboboxModel*>(country_combobox->model());
-  model->SetFailureModeForTests(true);
-
-  // The view update will invalidate the country_combobox / model pointers.
-  country_combobox = nullptr;
-  model = nullptr;
-  WaitForObservedEvent();
-
-  // Now any textual value can be set as the state.
-  SetEditorTextfieldValue(base::ASCIIToUTF16("any state"),
-                          autofill::ADDRESS_HOME_STATE);
+  // Even though the editor updates asynchronously when the regions fail to
+  // load, the update is always completed before the runloop.quit() takes effect
+  // when the OpenShippingAddressEditorScreen completes. So now any textual
+  // value can be set as the state.
+  SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
   SetCommonFields();
   ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
@@ -371,8 +343,50 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
-  EXPECT_EQ(base::ASCIIToUTF16("any state"),
+
+  EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
+  ExpectExistingRequiredFields(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       TimingOutRegionData) {
+  InvokePaymentRequestUI();
+  SetRegionDataLoader(&test_region_data_loader_);
+  OpenShippingAddressSectionScreen();
+
+  test_region_data_loader_.set_synchronous_callback(false);
+  OpenShippingAddressEditorScreen();
+
+  // The editor updates asynchronously when the regions data load times out.
+  ResetEventObserver(DialogEvent::EDITOR_VIEW_UPDATED);
+  test_region_data_loader_.SendAsynchronousData(
+      std::vector<std::pair<std::string, std::string>>());
+  WaitForObservedEvent();
+
+  // Now any textual value can be set for the ADDRESS_HOME_STATE.
+  SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
+  SetCommonFields();
+  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+
+  // Verifying the data is in the DB.
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  data_loop.Run();
+
+  ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
+  autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
+  DCHECK(profile);
+
+  EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
+            profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
+  ExpectExistingRequiredFields(nullptr);
 }
 
 }  // namespace payments
