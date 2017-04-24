@@ -58,53 +58,47 @@ TEST(ActivityTypeUtilTest, TypeToMessageTest) {
 
 TEST(ActivityTypeUtilTest, IsPasswordAppExtensionTest) {
   // Verifies that known Bundle ID for 1Password requires exact match.
-  EXPECT_TRUE(activity_type_util::IsPasswordAppExActivity(
-      @"com.agilebits.onepassword-ios.extension"));
-  EXPECT_FALSE(activity_type_util::IsPasswordAppExActivity(
-      @"com.agilebits.onepassword-ios.extension.otherstuff"));
-  // Verifies that known Bundle ID for LastPass requires exact match.
-  EXPECT_TRUE(activity_type_util::IsPasswordAppExActivity(
-      @"com.lastpass.ilastpass.LastPassExt"));
-  EXPECT_FALSE(activity_type_util::IsPasswordAppExActivity(
-      @"com.lastpass.ilastpass.LastPassExt.otherstuff"));
-  // Verifies that both variants of Dashlane Bundle IDs are recognized.
-  EXPECT_TRUE(activity_type_util::IsPasswordAppExActivity(
-      @"com.dashlane.dashlanephonefinal.SafariExtension"));
-  EXPECT_TRUE(activity_type_util::IsPasswordAppExActivity(
-      @"com.dashlane.dashlanephonefinal.appextension"));
-  // Verifies that any Bundle ID with @"find-login-action" is recognized.
-  EXPECT_TRUE(activity_type_util::IsPasswordAppExActivity(
-      @"com.some-company.find-login-action.an-extension"));
-  EXPECT_TRUE(activity_type_util::IsPasswordAppExActivity(
-      @"com.some-company.compatible-find-login-action-an-extension"));
-  EXPECT_TRUE(activity_type_util::IsPasswordAppExActivity(
-      @"com.some-company.find-login-action-as-prefix"));
-  EXPECT_TRUE(activity_type_util::IsPasswordAppExActivity(
-      @"com.some-company.with-suffix-of-find-login-action"));
-  EXPECT_TRUE(activity_type_util::IsPasswordAppExActivity(
-      @"com.google.find-login-action.extension"));
-  // Verifies non-matching Bundle IDs.
-  EXPECT_FALSE(
-      activity_type_util::IsPasswordAppExActivity(@"com.google.chrome.ios"));
-  EXPECT_FALSE(activity_type_util::IsPasswordAppExActivity(
-      @"com.apple.UIKit.activity.PostToFacebook"));
-}
-
-TEST(ActivityTypeUtilTest, PasswordAppExtensionVersionTest) {
-  EXPECT_EQ(activity_services::kPasswordAppExVersionNumber,
-            activity_type_util::PasswordAppExActivityVersion(
+  EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
                 @"com.agilebits.onepassword-ios.extension"));
-  EXPECT_EQ(activity_services::kPasswordAppExVersionNumber,
-            activity_type_util::PasswordAppExActivityVersion(
+  EXPECT_NE(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
+                @"com.agilebits.onepassword-ios.extension.otherstuff"));
+  // Verifies that known Bundle ID for LastPass requires exact match.
+  EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
                 @"com.lastpass.ilastpass.LastPassExt"));
-  EXPECT_EQ(activity_services::kPasswordAppExVersionNumber,
-            activity_type_util::PasswordAppExActivityVersion(
+  EXPECT_NE(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
+                @"com.lastpass.ilastpass.LastPassExt.otherstuff"));
+  // Verifies that both variants of Dashlane Bundle IDs are recognized.
+  EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
                 @"com.dashlane.dashlanephonefinal.SafariExtension"));
-  EXPECT_EQ(activity_services::kPasswordAppExVersionNumber,
-            activity_type_util::PasswordAppExActivityVersion(
+  EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
+                @"com.dashlane.dashlanephonefinal.appextension"));
+  // Verifies that any Bundle ID with @"find-login-action" is recognized.
+  EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
                 @"com.some-company.find-login-action.an-extension"));
-  EXPECT_NE(activity_services::kPasswordAppExVersionNumber,
-            activity_type_util::PasswordAppExActivityVersion(
+  EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
+                @"com.some-company.compatible-find-login-action-an-extension"));
+  EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
+                @"com.some-company.find-login-action-as-prefix"));
+  EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
+                @"com.some-company.with-suffix-of-find-login-action"));
+  EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
+                @"com.google.find-login-action.extension"));
+  // Verifies non-matching Bundle IDs.
+  EXPECT_NE(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(@"com.google.chrome.ios"));
+  EXPECT_NE(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
+            activity_type_util::TypeFromString(
                 @"com.apple.UIKit.activity.PostToFacebook"));
 }
 

@@ -150,14 +150,14 @@
 
 - (id)activityViewController:(UIActivityViewController*)activityViewController
          itemForActivityType:(NSString*)activityType {
-  NSNumber* versionNumber =
-      activity_type_util::PasswordAppExActivityVersion(activityType);
-  if (!versionNumber)
+  if (activity_type_util::TypeFromString(activityType) !=
+      activity_type_util::APPEX_PASSWORD_MANAGEMENT)
     return _url;
 
   // Constructs an NSExtensionItem object from the URL being "shared".
   NSDictionary* appExItems = @{
-    activity_services::kPasswordAppExVersionNumberKey : versionNumber,
+    activity_services::kPasswordAppExVersionNumberKey :
+        activity_services::kPasswordAppExVersionNumber,
     activity_services::kPasswordAppExURLStringKey : [_url absoluteString]
   };
   NSItemProvider* itemProvider = [[NSItemProvider alloc]
@@ -188,10 +188,9 @@
   // after user made a choice of which AppEx to run, this method may be called
   // with |activityType| equals to the bundle ID of the AppEx selected.
   // Default action is to return @"public.url" UTType.
-  if (!activityType ||
-      activity_type_util::PasswordAppExActivityVersion(activityType)) {
+  if (!activityType || activity_type_util::TypeFromString(activityType) ==
+                           activity_type_util::APPEX_PASSWORD_MANAGEMENT)
     return findLoginType;
-  }
   return (NSString*)kUTTypeURL;
 }
 

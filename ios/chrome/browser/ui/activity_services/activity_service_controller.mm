@@ -159,7 +159,8 @@
     ShareTo::ShareResult shareResult = completed
                                            ? ShareTo::ShareResult::SHARE_SUCCESS
                                            : ShareTo::ShareResult::SHARE_CANCEL;
-    if (activity_type_util::IsPasswordAppExActivity(activityType)) {
+    if (activity_type_util::TypeFromString(activityType) ==
+        activity_type_util::APPEX_PASSWORD_MANAGEMENT) {
       // A compatible Password Management App Extension was invoked.
       shouldResetUI = [self processItemsReturnedFromActivity:activityType
                                                       status:shareResult

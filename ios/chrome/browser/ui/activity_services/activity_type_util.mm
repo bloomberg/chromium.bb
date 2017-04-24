@@ -117,23 +117,9 @@ ActivityType TypeFromString(NSString* activityString) {
         return assocation.type_;
     }
   }
-  if (IsPasswordManagerActivity(activityString)) {
+  if (IsPasswordManagerActivity(activityString))
     return APPEX_PASSWORD_MANAGEMENT;
-  }
   return UNKNOWN;
-}
-
-NSNumber* PasswordAppExActivityVersion(NSString* activityString) {
-  switch (TypeFromString(activityString)) {
-    case APPEX_PASSWORD_MANAGEMENT:
-      return activity_services::kPasswordAppExVersionNumber;
-    default:
-      return nil;
-  }
-}
-
-bool IsPasswordAppExActivity(NSString* activityString) {
-  return PasswordAppExActivityVersion(activityString) != nil;
 }
 
 NSString* CompletionMessageForActivity(ActivityType type) {

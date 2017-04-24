@@ -41,19 +41,10 @@ enum ActivityType {
   UNKNOWN,
 };
 
-// Returns the ActivityType associated with |activityString|.
+// Returns the ActivityType enum associated with |activityString|, which is the
+// bundle ID of a iOS App Extension. Returns UNKNOWN if |activityString| does
+// match any known App Extensions. |activityString| must not be nil.
 ActivityType TypeFromString(NSString* activityString);
-
-// Returns the version number to use for Password Management App Extensions
-// for the activity indicated by |activityString|. This string is the
-// identification for the App Extension. Returned value is an autoreleased
-// object or nil if |activityString| does not belong to a Password
-// Management App Extension.
-NSNumber* PasswordAppExActivityVersion(NSString* activityString);
-
-// Whether activity indicated in |activityString| is an iOS Password Management
-// App Extension.
-bool IsPasswordAppExActivity(NSString* activityString);
 
 // Returns the message to present when the activity |type| has completed
 // successfully. Returns nil if no message should be presented.
