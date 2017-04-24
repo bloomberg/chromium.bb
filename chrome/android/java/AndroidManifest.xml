@@ -672,7 +672,6 @@ by a child template that "extends" this file.
         <receiver android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"
             android:exported="false" />
 
-        {% if channel in ['canary', 'default'] %}
         <!-- Search widget -->
         <receiver
                 android:name="org.chromium.chrome.browser.searchwidget.SearchWidgetProvider"
@@ -706,7 +705,6 @@ by a child template that "extends" this file.
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:hardwareAccelerated="false" />
-        {% endif %}
 
         <!-- Receiver for GCM messages. -->
         <receiver android:name="com.google.android.gms.gcm.GcmReceiver"
