@@ -1440,18 +1440,6 @@ Node* Range::PastLastNode() const {
   return EndPosition().NodeAsRangePastLastNode();
 }
 
-// TODO(hs1217.lee):: we should move this implement to VisibleUnits and then
-// this function will remove.
-static Vector<IntRect> computeTextRects(const EphemeralRange&);
-
-IntRect Range::BoundingBox() const {
-  IntRect result;
-  const Vector<IntRect>& rects = computeTextRects(EphemeralRange(this));
-  for (const IntRect& rect : rects)
-    result.Unite(rect);
-  return result;
-}
-
 static Vector<IntRect> computeTextRects(const EphemeralRange& range) {
   const Position& start_position = range.StartPosition();
   const Position& end_position = range.EndPosition();
@@ -1474,6 +1462,14 @@ static Vector<IntRect> computeTextRects(const EphemeralRange& range) {
     layout_text->AbsoluteRectsForRange(rects, start_offset, end_offset);
   }
   return rects;
+}
+
+IntRect Range::BoundingBox() const {
+  IntRect result;
+  const Vector<IntRect>& rects = computeTextRects(EphemeralRange(this));
+  for (const IntRect& rect : rects)
+    result.Unite(rect);
+  return result;
 }
 
 void Range::TextQuads(Vector<FloatQuad>& quads,
