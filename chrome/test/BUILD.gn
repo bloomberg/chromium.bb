@@ -1135,6 +1135,15 @@ if (!is_android) {
       "//testing/scripts/run_telemetry_as_googletest.py",
     ]
   }
+
+  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
+  # This target exist only for compatibility w/ GYP.
+  group("tab_capture_end2end_tests") {
+    testonly = true
+    deps = [
+      ":browser_tests",
+    ]
+  }
 }
 
 static_library("browser_tests_runner") {
