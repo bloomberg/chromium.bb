@@ -5,8 +5,8 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
-    <script src="audionodeoptions.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="new-audionodeoptions.js"></script>
   </head>
 
   <body>
@@ -15,100 +15,61 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("initialize", function (taskDone) {
-        Should("context = new OfflineAudioContext(...)", function () {
-          context = new OfflineAudioContext(1, 1, 48000);
-        }).notThrow();
-        taskDone();
+      audit.define('initialize', (task, should) => {
+        context = initializeContext(should);
+        task.done();
       });
 
-      audit.defineTask("invalid constructor", function (taskDone) {
+      audit.define('invalid constructor', (task, should) => {
+        testInvalidConstructor(should, 'DelayNode', context);
+        task.done();
+      });
+
+      audit.define('default constructor', (task, should) => {
+        let prefix = 'node0';
+        let node = testDefaultConstructor(should, 'DelayNode', context, {
+          prefix: prefix,
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          channelCount: 2,
+          channelCountMode: 'max',
+          channelInterpretation: 'speakers'
+        });
+
+        testDefaultAttributes(
+            should, node, prefix, [{name: 'delayTime', value: 0}]);
+
+        task.done();
+      });
+
+      audit.define('test AudioNodeOptions', (task, should) => {
+        testAudioNodeOptions(should, context, 'DelayNode');
+        task.done();
+      });
+
+      audit.define('constructor options', (task, should) => {
         var node;
-        var success = true;
-
-        success = Should("new DelayNode()", function () {
-          node = new DelayNode();
-        }).throw("TypeError") && success;
-        success = Should("new DelayNode(1)", function () {
-          node = new DelayNode(1);
-        }).throw("TypeError") && success;
-        success = Should("new DelayNode(context, 42)", function () {
-          node = new DelayNode(context, 42);
-        }).throw("TypeError") && success;
-
-        Should("Invalid constructors", success)
-            .summarize(
-                "correctly threw errors",
-                "did not throw errors in all cases");
-        taskDone();
-      });
-
-      audit.defineTask("default constructor", function (taskDone) {
-        var node;
-        var success = true;
-
-        success = Should("node0 = new DelayNode(context)", function () {
-          node = new DelayNode(context);
-        }).notThrow();
-        success = Should("node0 instanceof DelayNode", node instanceof DelayNode)
-          .beEqualTo(true) && success;
-
-        success = Should("node0.delayTime.value", node.delayTime.value)
-          .beEqualTo(0) && success;
-
-        success = Should("node0.channelCount", node.channelCount)
-          .beEqualTo(2) && success;
-        success = Should("node0.channelCountMode", node.channelCountMode)
-          .beEqualTo("max") && success;
-        success = Should("node0.channelInterpretation", node.channelInterpretation)
-          .beEqualTo("speakers") && success;
-
-        success = Should("DelayNode(context) constructed with correct values", success)
-          .beEqualTo(true);
-
-        Should("new DelayNode(context)", success)
-            .summarize(
-                "constructed node with correct attributes",
-                "did not construct correct node correctly")
-
-        taskDone();
-      });
-
-      audit.defineTask("test AudioNodeOptions", function (taskDone) {
-        testAudioNodeOptions(context, "DelayNode");
-        taskDone();
-      });
-
-      audit.defineTask("constructor options", function (taskDone) {
-        var node;
-        var success = true;
         var options = {
           delayTime: 0.5,
           maxDelayTime: 1.5,
         };
 
-        success = Should("node1 = new DelayNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new DelayNode(context, options);
-          }).notThrow();
+        should(
+            () => {
+              node = new DelayNode(context, options);
+            },
+            'node1 = new DelayNode(c, ' + JSON.stringify(options) + ')')
+            .notThrow();
 
-        success = Should("node1.delayTime.value", node.delayTime.value)
-          .beEqualTo(options.delayTime) && success;
-        success = Should("node1.delayTime.maxValue", node.delayTime.maxValue)
-          .beEqualTo(options.maxDelayTime) && success;
+        should(node.delayTime.value, 'node1.delayTime.value')
+            .beEqualTo(options.delayTime);
+        should(node.delayTime.maxValue, 'node1.delayTime.maxValue')
+            .beEqualTo(options.maxDelayTime);
 
-        success = Should("DelayNode(context, options) correctly handled", success)
-          .beEqualTo(true);
-
-        Should("new DelayNode() with options", success)
-          .summarize(
-            "constructed with correct attributes",
-            "was not constructed correctly");
-
-        taskDone();
+        task.done();
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
