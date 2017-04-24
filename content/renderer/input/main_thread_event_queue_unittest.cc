@@ -116,8 +116,8 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
   }
 
   void SetUp() override {
-    queue_ =
-        new MainThreadEventQueue(this, main_task_runner_, &renderer_scheduler_);
+    queue_ = new MainThreadEventQueue(this, main_task_runner_,
+                                      &renderer_scheduler_, true);
   }
 
   bool HandleEvent(WebInputEvent& event, InputEventAckState ack_result) {
@@ -915,8 +915,8 @@ TEST_F(MainThreadEventQueueInitializationTest,
 
   base::FieldTrialList::CreateFieldTrial(
       "MainThreadResponsivenessScrollIntervention", "Enabled123");
-  queue_ =
-      new MainThreadEventQueue(this, main_task_runner_, &renderer_scheduler_);
+  queue_ = new MainThreadEventQueue(this, main_task_runner_,
+                                    &renderer_scheduler_, true);
   EXPECT_TRUE(enable_non_blocking_due_to_main_thread_responsiveness_flag());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(123),
             main_thread_responsiveness_threshold());
@@ -926,8 +926,8 @@ TEST_F(MainThreadEventQueueInitializationTest,
        MainThreadResponsivenessThresholdDisabled) {
   base::FieldTrialList::CreateFieldTrial(
       "MainThreadResponsivenessScrollIntervention", "Control");
-  queue_ =
-      new MainThreadEventQueue(this, main_task_runner_, &renderer_scheduler_);
+  queue_ = new MainThreadEventQueue(this, main_task_runner_,
+                                    &renderer_scheduler_, true);
   EXPECT_FALSE(enable_non_blocking_due_to_main_thread_responsiveness_flag());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(0),
             main_thread_responsiveness_threshold());

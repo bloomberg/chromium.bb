@@ -259,8 +259,8 @@ class InputEventFilterTest : public testing::Test,
   }
 
   void RegisterRoute() {
-    input_event_queue_ =
-        new MainThreadEventQueue(this, main_task_runner_, &renderer_scheduler_);
+    input_event_queue_ = new MainThreadEventQueue(this, main_task_runner_,
+                                                  &renderer_scheduler_, true);
     filter_->RegisterRoutingID(kTestRoutingID, input_event_queue_);
   }
 

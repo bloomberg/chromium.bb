@@ -201,7 +201,8 @@ MainThreadEventQueue::SharedState::~SharedState() {}
 MainThreadEventQueue::MainThreadEventQueue(
     MainThreadEventQueueClient* client,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-    blink::scheduler::RendererScheduler* renderer_scheduler)
+    blink::scheduler::RendererScheduler* renderer_scheduler,
+    bool allow_raf_aligned_input)
     : client_(client),
       last_touch_start_forced_nonblocking_due_to_fling_(false),
       enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
@@ -210,8 +211,10 @@ MainThreadEventQueue::MainThreadEventQueue(
           base::FeatureList::IsEnabled(
               features::kMainThreadBusyScrollIntervention)),
       handle_raf_aligned_touch_input_(
+          allow_raf_aligned_input &&
           base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents)),
       handle_raf_aligned_mouse_input_(
+          allow_raf_aligned_input &&
           base::FeatureList::IsEnabled(features::kRafAlignedMouseInputEvents)),
       main_task_runner_(main_task_runner),
       renderer_scheduler_(renderer_scheduler) {

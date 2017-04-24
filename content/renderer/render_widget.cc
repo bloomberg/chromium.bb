@@ -1312,7 +1312,9 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
 #endif
   // For background pages and certain tests, we don't want to trigger
   // CompositorFrameSink creation.
-  if (compositor_never_visible_ || !RenderThreadImpl::current())
+  bool should_generate_frame_sink =
+      !compositor_never_visible_ && RenderThreadImpl::current();
+  if (!should_generate_frame_sink)
     compositor_->SetNeverVisible();
 
   StartCompositor();
@@ -1327,7 +1329,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   if (input_handler_manager) {
     input_event_queue_ = new MainThreadEventQueue(
         this, render_thread->GetRendererScheduler()->CompositorTaskRunner(),
-        render_thread->GetRendererScheduler());
+        render_thread->GetRendererScheduler(), should_generate_frame_sink);
     input_handler_manager->AddInputHandler(
         routing_id_, compositor()->GetInputHandler(), input_event_queue_,
         weak_ptr_factory_.GetWeakPtr(),

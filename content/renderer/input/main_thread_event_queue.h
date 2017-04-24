@@ -81,7 +81,8 @@ class CONTENT_EXPORT MainThreadEventQueue
   MainThreadEventQueue(
       MainThreadEventQueueClient* client,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-      blink::scheduler::RendererScheduler* renderer_scheduler);
+      blink::scheduler::RendererScheduler* renderer_scheduler,
+      bool allow_raf_aligned_input);
 
   // Called once the compositor has handled |event| and indicated that it is
   // a non-blocking event to be queued to the main thread.
