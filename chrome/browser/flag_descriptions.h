@@ -199,6 +199,15 @@ extern const char kMarkHttpAsDescription[];
 
 extern const char kMarkHttpAsDangerous[];
 
+//  Material Design of the Incognito NTP.
+
+// Name for the flag to enable the material redesign of the Incognito NTP.
+extern const char kMaterialDesignIncognitoNTPName[];
+
+// Description for the flag to enable the material redesign
+// of the Incognito NTP.
+extern const char kMaterialDesignIncognitoNTPDescription[];
+
 // Name of the 'Save Page as MHTML' lab.
 extern const char kSavePageAsMhtmlName[];
 

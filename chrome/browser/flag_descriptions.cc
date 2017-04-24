@@ -192,6 +192,15 @@ const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 
 const char kMarkHttpAsDangerous[] = "Always mark HTTP as actively dangerous";
 
+//  Material design of the Incognito NTP.
+
+extern const char kMaterialDesignIncognitoNTPName[] =
+    "Material Design Incognito NTP.";
+
+extern const char kMaterialDesignIncognitoNTPDescription[] =
+    "If enabled, the Incognito New Tab page uses the new material design "
+    "with a better readable text.";
+
 const char kSavePageAsMhtmlName[] = "Save Page as MHTML";
 
 const char kSavePageAsMhtmlDescription[] =
