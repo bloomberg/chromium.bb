@@ -568,7 +568,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type) override;
   void DidCreateNewDocument(blink::WebLocalFrame* frame) override;
-  void DidClearWindowObject(blink::WebLocalFrame* frame) override;
+  void DidClearWindowObject() override;
   void DidCreateDocumentElement(blink::WebLocalFrame* frame) override;
   void RunScriptsAtDocumentElementAvailable(
       blink::WebLocalFrame* frame) override;

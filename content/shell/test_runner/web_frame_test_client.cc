@@ -722,8 +722,8 @@ void WebFrameTestClient::CheckIfAudioSinkExistsAndIsAuthorized(
     callback->OnError(blink::WebSetSinkIdError::kNotFound);
 }
 
-void WebFrameTestClient::DidClearWindowObject(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame, web_frame_test_proxy_base_->web_frame());
+void WebFrameTestClient::DidClearWindowObject() {
+  blink::WebLocalFrame* frame = web_frame_test_proxy_base_->web_frame();
   web_view_test_proxy_base_->test_interfaces()->BindTo(frame);
   web_view_test_proxy_base_->BindTo(frame);
   delegate_->GetWebWidgetTestProxyBase(frame)->BindTo(frame);

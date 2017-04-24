@@ -147,7 +147,7 @@ void LocalFrameClientImpl::DidCreateNewDocument() {
 
 void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld() {
   if (web_frame_->Client()) {
-    web_frame_->Client()->DidClearWindowObject(web_frame_);
+    web_frame_->Client()->DidClearWindowObject();
     Document* document = web_frame_->GetFrame()->GetDocument();
     if (document) {
       DeviceMotionController::From(*document);

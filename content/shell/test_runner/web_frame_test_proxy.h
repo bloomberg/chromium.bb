@@ -281,9 +281,9 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
         sink_id, security_origin, web_callbacks);
   }
 
-  void DidClearWindowObject(blink::WebLocalFrame* frame) override {
-    test_client()->DidClearWindowObject(frame);
-    Base::DidClearWindowObject(frame);
+  void DidClearWindowObject() override {
+    test_client()->DidClearWindowObject();
+    Base::DidClearWindowObject();
   }
   bool RunFileChooser(const blink::WebFileChooserParams& params,
                       blink::WebFileChooserCompletion* completion) override {

@@ -3803,29 +3803,27 @@ void RenderFrameImpl::DidCreateNewDocument(blink::WebLocalFrame* frame) {
     observer.DidCreateNewDocument(frame);
 }
 
-void RenderFrameImpl::DidClearWindowObject(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
-
+void RenderFrameImpl::DidClearWindowObject() {
   if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
-    WebUIExtension::Install(frame);
+    WebUIExtension::Install(frame_);
 
   if (enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION)
-    DomAutomationController::Install(this, frame);
+    DomAutomationController::Install(this, frame_);
 
   if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION)
-    StatsCollectionController::Install(frame);
+    StatsCollectionController::Install(frame_);
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
-    GpuBenchmarking::Install(frame);
+    GpuBenchmarking::Install(frame_);
 
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
-    SkiaBenchmarking::Install(frame);
+    SkiaBenchmarking::Install(frame_);
 
   for (auto& observer : render_view_->observers())
-    observer.DidClearWindowObject(frame);
+    observer.DidClearWindowObject(frame_);
   for (auto& observer : observers_)
     observer.DidClearWindowObject();
 }

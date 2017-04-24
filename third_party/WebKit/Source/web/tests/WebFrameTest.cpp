@@ -690,12 +690,12 @@ class EvaluateOnLoadWebFrameClient
  public:
   EvaluateOnLoadWebFrameClient() : executing_(false), was_executed_(false) {}
 
-  void DidClearWindowObject(WebLocalFrame* frame) override {
+  void DidClearWindowObject() override {
     EXPECT_FALSE(executing_);
     was_executed_ = true;
     executing_ = true;
     v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-    frame->ExecuteScriptAndReturnValue(
+    Frame()->ExecuteScriptAndReturnValue(
         WebScriptSource(WebString("window.someProperty = 42;")));
     executing_ = false;
   }

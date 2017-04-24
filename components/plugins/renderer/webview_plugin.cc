@@ -328,14 +328,14 @@ void WebViewPlugin::WebViewHelper::ScheduleAnimation() {
   }
 }
 
-void WebViewPlugin::WebViewHelper::DidClearWindowObject(WebLocalFrame* frame) {
-  DCHECK_EQ(frame, web_view_->MainFrame());
+void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
   if (!plugin_->delegate_)
     return;
 
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
+  v8::Local<v8::Context> context =
+      web_view_->MainFrame()->MainWorldScriptContext();
   DCHECK(!context.IsEmpty());
 
   v8::Context::Scope context_scope(context);

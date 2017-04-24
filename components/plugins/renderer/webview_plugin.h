@@ -170,7 +170,7 @@ class WebViewPlugin : public blink::WebPlugin,
     void ScheduleAnimation() override;
 
     // WebFrameClient methods:
-    void DidClearWindowObject(blink::WebLocalFrame* frame) override;
+    void DidClearWindowObject() override;
 
    private:
     WebViewPlugin* plugin_;

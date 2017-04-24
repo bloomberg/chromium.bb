@@ -384,7 +384,7 @@ class BLINK_EXPORT WebFrameClient {
   // The window object for the frame has been cleared of any extra
   // properties that may have been set by script from the previously
   // loaded document.
-  virtual void DidClearWindowObject(WebLocalFrame* frame) {}
+  virtual void DidClearWindowObject() {}
 
   // The document element has been created.
   // This method may not invalidate the frame, nor execute JavaScript code.

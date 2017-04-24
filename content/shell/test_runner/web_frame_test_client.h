@@ -94,7 +94,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
-  void DidClearWindowObject(blink::WebLocalFrame* frame) override;
+  void DidClearWindowObject() override;
   bool RunFileChooser(const blink::WebFileChooserParams& params,
                       blink::WebFileChooserCompletion* completion) override;
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
