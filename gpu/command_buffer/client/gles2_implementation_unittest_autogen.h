@@ -2781,17 +2781,6 @@ TEST_F(GLES2ImplementationTest, BindTexImage2DCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, BindTexImage2DWithInternalformatCHROMIUM) {
-  struct Cmds {
-    cmds::BindTexImage2DWithInternalformatCHROMIUM cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(GL_TEXTURE_2D, 2, 3);
-
-  gl_->BindTexImage2DWithInternalformatCHROMIUM(GL_TEXTURE_2D, 2, 3);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(GLES2ImplementationTest, ReleaseTexImage2DCHROMIUM) {
   struct Cmds {
     cmds::ReleaseTexImage2DCHROMIUM cmd;

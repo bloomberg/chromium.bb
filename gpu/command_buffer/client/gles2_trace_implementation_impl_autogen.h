@@ -2054,16 +2054,6 @@ void GLES2TraceImplementation::BindTexImage2DCHROMIUM(GLenum target,
   gl_->BindTexImage2DCHROMIUM(target, imageId);
 }
 
-void GLES2TraceImplementation::BindTexImage2DWithInternalformatCHROMIUM(
-    GLenum target,
-    GLenum internalformat,
-    GLint imageId) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "GLES2Trace::BindTexImage2DWithInternalformatCHROMIUM");
-  gl_->BindTexImage2DWithInternalformatCHROMIUM(target, internalformat,
-                                                imageId);
-}
-
 void GLES2TraceImplementation::ReleaseTexImage2DCHROMIUM(GLenum target,
                                                          GLint imageId) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ReleaseTexImage2DCHROMIUM");

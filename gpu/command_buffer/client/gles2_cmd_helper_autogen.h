@@ -2651,16 +2651,6 @@ void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
   }
 }
 
-void BindTexImage2DWithInternalformatCHROMIUM(GLenum target,
-                                              GLenum internalformat,
-                                              GLint imageId) {
-  gles2::cmds::BindTexImage2DWithInternalformatCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::BindTexImage2DWithInternalformatCHROMIUM>();
-  if (c) {
-    c->Init(target, internalformat, imageId);
-  }
-}
-
 void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
   gles2::cmds::ReleaseTexImage2DCHROMIUM* c =
       GetCmdSpace<gles2::cmds::ReleaseTexImage2DCHROMIUM>();

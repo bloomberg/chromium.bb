@@ -232,19 +232,6 @@ class PLATFORM_EXPORT DrawingBuffer
     new_mailbox_callback_ = std::move(closure);
   }
 
-  // This class helps implement correct semantics for BlitFramebuffer
-  // when the DrawingBuffer is using a CHROMIUM image for its backing
-  // store and RGB emulation is in use (basically, macOS only).
-  class PLATFORM_EXPORT ScopedRGBEmulationForBlitFramebuffer {
-   public:
-    ScopedRGBEmulationForBlitFramebuffer(DrawingBuffer*);
-    ~ScopedRGBEmulationForBlitFramebuffer();
-
-   private:
-    RefPtr<DrawingBuffer> drawing_buffer_;
-    bool doing_work_ = false;
-  };
-
  protected:  // For unittests
   DrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>,
                 std::unique_ptr<Extensions3DUtil>,
@@ -270,7 +257,6 @@ class PLATFORM_EXPORT DrawingBuffer
   Vector<RecycledBitmap> recycled_bitmaps_;
 
  private:
-  friend class ScopedRGBEmulationForBlitFramebuffer;
   friend class ScopedStateRestorer;
   friend class ColorBuffer;
 
@@ -330,16 +316,6 @@ class PLATFORM_EXPORT DrawingBuffer
     const GLuint texture_id = 0;
     const GLuint image_id = 0;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
-
-    // If we're emulating an RGB back buffer using an RGBA Chromium
-    // image (essentially macOS only), then when performing
-    // BlitFramebuffer calls, we have to swap in an RGB texture in
-    // place of the RGBA texture bound to the image. The reason is
-    // that BlitFramebuffer requires the internal formats of the
-    // source and destination to match (e.g. RGB8 on both sides).
-    // There are bugs in the semantics of RGB8 textures in this
-    // situation (the alpha channel is zeroed), requiring more fixups.
-    GLuint rgb_workaround_texture_id = 0;
 
     // The mailbox used to send this buffer to the compositor.
     gpu::Mailbox mailbox;
@@ -452,11 +428,6 @@ class PLATFORM_EXPORT DrawingBuffer
   // The format to use when creating a multisampled renderbuffer.
   GLenum GetMultisampledRenderbufferFormat();
 
-  // Helpers to ensure correct behavior of BlitFramebuffer when using
-  // an emulated RGB CHROMIUM_image back buffer.
-  bool SetupRGBEmulationForBlitFramebuffer();
-  void CleanupRGBEmulationForBlitFramebuffer();
-
   // Weak, reset by beginDestruction.
   Client* client_ = nullptr;
 
@@ -477,9 +448,9 @@ class PLATFORM_EXPORT DrawingBuffer
 
   std::unique_ptr<WTF::Closure> new_mailbox_callback_;
 
-  // The current state restorer, which is used to track state dirtying. It is an
+  // The current state restorer, which is used to track state dirtying. It is in
   // error to dirty state shared with WebGL while there is no existing state
-  // restorer.
+  // restorer. It is also in error to instantiate two state restorers at once.
   ScopedStateRestorer* state_restorer_ = nullptr;
 
   // This is used when the user requests either a depth or stencil buffer.

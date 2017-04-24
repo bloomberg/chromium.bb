@@ -1041,14 +1041,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoBindTexImage2DCHROMIUM(
       GLenum target,
       GLint image_id);
-  void DoBindTexImage2DWithInternalformatCHROMIUM(GLenum target,
-                                                  GLenum internalformat,
-                                                  GLint image_id);
-  // Common implementation of DoBindTexImage2DCHROMIUM entry points.
-  void BindTexImage2DCHROMIUMImpl(const char* function_name,
-                                  GLenum target,
-                                  GLenum internalformat,
-                                  GLint image_id);
   void DoReleaseTexImage2DCHROMIUM(
       GLenum target,
       GLint image_id);
@@ -17771,26 +17763,10 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
     GLenum target, GLint image_id) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM");
 
-  BindTexImage2DCHROMIUMImpl("glBindTexImage2DCHROMIUM", target, 0, image_id);
-}
-
-void GLES2DecoderImpl::DoBindTexImage2DWithInternalformatCHROMIUM(
-    GLenum target,
-    GLenum internalformat,
-    GLint image_id) {
-  TRACE_EVENT0("gpu",
-               "GLES2DecoderImpl::DoBindTexImage2DWithInternalformatCHROMIUM");
-
-  BindTexImage2DCHROMIUMImpl("glBindTexImage2DWithInternalformatCHROMIUM",
-                             target, internalformat, image_id);
-}
-
-void GLES2DecoderImpl::BindTexImage2DCHROMIUMImpl(const char* function_name,
-                                                  GLenum target,
-                                                  GLenum internalformat,
-                                                  GLint image_id) {
   if (target == GL_TEXTURE_CUBE_MAP) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, function_name, "invalid target");
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_ENUM,
+        "glBindTexImage2DCHROMIUM", "invalid target");
     return;
   }
 
@@ -17799,14 +17775,17 @@ void GLES2DecoderImpl::BindTexImage2DCHROMIUMImpl(const char* function_name,
   TextureRef* texture_ref =
       texture_manager()->GetTextureInfoForTargetUnlessDefault(&state_, target);
   if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, "no texture bound");
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glBindTexImage2DCHROMIUM", "no texture bound");
     return;
   }
 
   gl::GLImage* image = image_manager()->LookupImage(image_id);
   if (!image) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                       "no image found with the given ID");
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glBindTexImage2DCHROMIUM", "no image found with the given ID");
     return;
   }
 
@@ -17818,22 +17797,15 @@ void GLES2DecoderImpl::BindTexImage2DCHROMIUMImpl(const char* function_name,
 
     // Note: We fallback to using CopyTexImage() before the texture is used
     // when BindTexImage() fails.
-    if (internalformat) {
-      if (image->BindTexImageWithInternalformat(target, internalformat))
-        image_state = Texture::BOUND;
-    } else {
-      if (image->BindTexImage(target))
-        image_state = Texture::BOUND;
-    }
+    if (image->BindTexImage(target))
+      image_state = Texture::BOUND;
   }
 
   gfx::Size size = image->GetSize();
-  GLenum texture_internalformat =
-      internalformat ? internalformat : image->GetInternalFormat();
-  texture_manager()->SetLevelInfo(texture_ref, target, 0,
-                                  texture_internalformat, size.width(),
-                                  size.height(), 1, 0, texture_internalformat,
-                                  GL_UNSIGNED_BYTE, gfx::Rect(size));
+  GLenum internalformat = image->GetInternalFormat();
+  texture_manager()->SetLevelInfo(
+      texture_ref, target, 0, internalformat, size.width(), size.height(), 1, 0,
+      internalformat, GL_UNSIGNED_BYTE, gfx::Rect(size));
   texture_manager()->SetLevelImage(texture_ref, target, 0, image, image_state);
 }
 

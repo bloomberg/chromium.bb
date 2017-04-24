@@ -885,34 +885,6 @@ void GLES2DecoderPassthroughImpl::UpdateTextureBinding(GLenum target,
   }
 }
 
-error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
-    GLenum target,
-    GLenum internalformat,
-    GLint imageId) {
-  if (target != GL_TEXTURE_2D) {
-    InsertError(GL_INVALID_ENUM, "Invalid target");
-    return error::kNoError;
-  }
-
-  gl::GLImage* image = image_manager_->LookupImage(imageId);
-  if (image == nullptr) {
-    InsertError(GL_INVALID_OPERATION, "No image found with the given ID");
-    return error::kNoError;
-  }
-
-  if (internalformat) {
-    if (!image->BindTexImageWithInternalformat(target, internalformat)) {
-      image->CopyTexImage(target);
-    }
-  } else {
-    if (!image->BindTexImage(target)) {
-      image->CopyTexImage(target);
-    }
-  }
-
-  return error::kNoError;
-}
-
 #define GLES2_CMD_OP(name)                                               \
   {                                                                      \
       &GLES2DecoderPassthroughImpl::Handle##name, cmds::name::kArgFlags, \

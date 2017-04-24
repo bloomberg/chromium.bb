@@ -996,10 +996,6 @@ void BindUniformLocationCHROMIUM(GLuint program,
 
 void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
 
-void BindTexImage2DWithInternalformatCHROMIUM(GLenum target,
-                                              GLenum internalformat,
-                                              GLint imageId) override;
-
 void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
 
 void TraceBeginCHROMIUM(const char* category_name,
