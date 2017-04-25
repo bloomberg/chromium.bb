@@ -17,7 +17,6 @@
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 
 struct FrameHostMsg_CreateChildFrame_Params;
@@ -89,7 +88,6 @@ class MockRenderThread : public RenderThread {
   void ReleaseCachedFonts() override;
 #endif
   ServiceManagerConnection* GetServiceManagerConnection() override;
-  service_manager::InterfaceRegistry* GetInterfaceRegistry() override;
   service_manager::Connector* GetConnector() override;
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
@@ -167,7 +165,6 @@ class MockRenderThread : public RenderThread {
   base::ObserverList<RenderThreadObserver> observers_;
 
   cc::TestSharedBitmapManager shared_bitmap_manager_;
-  std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
   std::unique_ptr<service_manager::Connector> connector_;
   service_manager::mojom::ConnectorRequest pending_connector_request_;
 

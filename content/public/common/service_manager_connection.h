@@ -15,10 +15,7 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace service_manager {
-class Connection;
 class Connector;
-class InterfaceProvider;
-class InterfaceRegistry;
 }
 
 namespace content {
@@ -91,22 +88,6 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // connection may already have been closed, in which case |closure| will be
   // run immediately before returning from this function.
   virtual void SetConnectionLostClosure(const base::Closure& closure) = 0;
-
-  // Provides an InterfaceRegistry to forward incoming interface requests to
-  // on the ServiceManagerConnection's own thread if they aren't bound by the
-  // connection's internal InterfaceRegistry on the IO thread.
-  //
-  // Also configures |interface_provider| to forward all of its outgoing
-  // interface requests to the connection's internal remote interface provider.
-  //
-  // Note that neither |interface_registry| or |interface_provider| is owned
-  // and both MUST outlive the ServiceManagerConnection.
-  //
-  // TODO(rockot): Remove this. It's a temporary solution to avoid porting all
-  // relevant code to ConnectionFilters at once.
-  virtual void SetupInterfaceRequestProxies(
-      service_manager::InterfaceRegistry* registry,
-      service_manager::InterfaceProvider* provider) = 0;
 
   static const int kInvalidConnectionFilterId = 0;
 

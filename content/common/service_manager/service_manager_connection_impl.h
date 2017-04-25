@@ -40,9 +40,6 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
   const service_manager::ServiceInfo& GetLocalInfo() const override;
   const service_manager::ServiceInfo& GetBrowserInfo() const override;
   void SetConnectionLostClosure(const base::Closure& closure) override;
-  void SetupInterfaceRequestProxies(
-      service_manager::InterfaceRegistry* registry,
-      service_manager::InterfaceProvider* provider) override;
   int AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) override;
   void RemoveConnectionFilter(int filter_id) override;
   void AddEmbeddedService(const std::string& name,
