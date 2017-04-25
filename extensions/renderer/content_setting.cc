@@ -35,7 +35,7 @@ bool IsDeprecated(base::StringPiece type) {
 
 v8::Local<v8::Object> ContentSetting::Create(
     const binding::RunJSFunction& run_js,
-    v8::Local<v8::Context> context,
+    v8::Isolate* isolate,
     const std::string& property_name,
     const base::ListValue* property_values,
     APIRequestHandler* request_handler,
@@ -46,10 +46,9 @@ v8::Local<v8::Object> ContentSetting::Create(
   const base::DictionaryValue* value_spec = nullptr;
   CHECK(property_values->GetDictionary(1u, &value_spec));
 
-  gin::Handle<ContentSetting> handle =
-      gin::CreateHandle(context->GetIsolate(),
-                        new ContentSetting(run_js, request_handler, type_refs,
-                                           pref_name, *value_spec));
+  gin::Handle<ContentSetting> handle = gin::CreateHandle(
+      isolate, new ContentSetting(run_js, request_handler, type_refs, pref_name,
+                                  *value_spec));
   return handle.ToV8().As<v8::Object>();
 }
 

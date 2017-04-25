@@ -35,7 +35,7 @@ class StorageArea {
 
   // Creates a StorageArea object for the given context and property name.
   static v8::Local<v8::Object> CreateStorageArea(
-      v8::Local<v8::Context> context,
+      v8::Isolate* isolate,
       const std::string& property_name,
       const base::ListValue* property_values,
       APIRequestHandler* request_handler,

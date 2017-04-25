@@ -34,7 +34,7 @@ class APIBindingsSystem {
   using GetAPISchemaMethod =
       base::Callback<const base::DictionaryValue&(const std::string&)>;
   using CustomTypeHandler = base::Callback<v8::Local<v8::Object>(
-      v8::Local<v8::Context> context,
+      v8::Isolate* isolate,
       const std::string& property_name,
       const base::ListValue* property_values,
       APIRequestHandler* request_handler,
@@ -102,7 +102,7 @@ class APIBindingsSystem {
 
   // Handles creating the type for the specified property.
   v8::Local<v8::Object> CreateCustomType(
-      v8::Local<v8::Context> context,
+      v8::Isolate* isolate,
       const std::string& type_name,
       const std::string& property_name,
       const base::ListValue* property_values);

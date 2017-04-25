@@ -18,7 +18,7 @@
 namespace extensions {
 
 v8::Local<v8::Object> ChromeSetting::Create(
-    v8::Local<v8::Context> context,
+    v8::Isolate* isolate,
     const std::string& property_name,
     const base::ListValue* property_values,
     APIRequestHandler* request_handler,
@@ -29,10 +29,9 @@ v8::Local<v8::Object> ChromeSetting::Create(
   const base::DictionaryValue* value_spec = nullptr;
   CHECK(property_values->GetDictionary(1u, &value_spec));
 
-  gin::Handle<ChromeSetting> handle =
-      gin::CreateHandle(context->GetIsolate(),
-                        new ChromeSetting(request_handler, event_handler,
-                                          type_refs, pref_name, *value_spec));
+  gin::Handle<ChromeSetting> handle = gin::CreateHandle(
+      isolate, new ChromeSetting(request_handler, event_handler, type_refs,
+                                 pref_name, *value_spec));
   return handle.ToV8().As<v8::Object>();
 }
 

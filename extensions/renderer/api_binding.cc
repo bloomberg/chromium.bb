@@ -474,12 +474,13 @@ void APIBinding::GetCustomPropertyObject(
   if (!IsContextValid(context))
     return;
 
+  v8::Context::Scope context_scope(context);
   CHECK(info.Data()->IsExternal());
   auto* property_data =
       static_cast<CustomPropertyData*>(info.Data().As<v8::External>()->Value());
 
   v8::Local<v8::Object> property = property_data->create_custom_type.Run(
-      context, property_data->type_name, property_data->property_name,
+      isolate, property_data->type_name, property_data->property_name,
       property_data->property_values);
   if (property.IsEmpty())
     return;

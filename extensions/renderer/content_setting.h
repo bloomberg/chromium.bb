@@ -34,7 +34,7 @@ class ContentSetting final : public gin::Wrappable<ContentSetting> {
 
   // Creates a ContentSetting object for the given property.
   static v8::Local<v8::Object> Create(const binding::RunJSFunction& run_js,
-                                      v8::Local<v8::Context> context,
+                                      v8::Isolate* isolate,
                                       const std::string& property_name,
                                       const base::ListValue* property_values,
                                       APIRequestHandler* request_handler,

@@ -631,11 +631,11 @@ TEST_F(APIBindingUnittest, TestRefProperties) {
       "    'value': ['b']"
       "  }"
       "}");
-  auto create_custom_type = [](v8::Local<v8::Context> context,
+  auto create_custom_type = [](v8::Isolate* isolate,
                                const std::string& type_name,
                                const std::string& property_name,
                                const base::ListValue* property_values) {
-    v8::Isolate* isolate = context->GetIsolate();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Local<v8::Object> result = v8::Object::New(isolate);
     if (type_name == "AlphaRef") {
       EXPECT_EQ("alpha", property_name);
