@@ -15,18 +15,23 @@ from telemetry import benchmark
 class MultiTabStory(system_health_story.SystemHealthStory):
   ABSTRACT_STORY = True
 
+  def __init__(self, story_set, take_memory_measurement, tabset_repeat=1):
+    super(MultiTabStory, self).__init__(story_set, take_memory_measurement)
+    self._tabset_repeat = tabset_repeat
+
   def RunNavigateSteps(self, action_runner):
     tabs = action_runner.tab.browser.tabs
 
     # No need to create the first tab as there is already one
     # when the browser is ready,
-    if self.URL_LIST:
-      action_runner.Navigate(self.URL_LIST[0])
-    for url in self.URL_LIST[1:]:
+    url_list = self.URL_LIST * self._tabset_repeat
+    if url_list:
+      action_runner.Navigate(url_list[0])
+    for url in url_list[1:]:
       new_tab = tabs.New()
       new_tab.action_runner.Navigate(url)
 
-    for i, url in enumerate(self.URL_LIST):
+    for i, url in enumerate(url_list):
       try:
         tabs[i].action_runner.WaitForNetworkQuiescence()
       except py_utils.TimeoutException:

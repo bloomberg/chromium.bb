@@ -2,11 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 from core import perf_benchmark
 
 from measurements import tab_switching
-import page_sets
+from page_sets.system_health import multi_tab_stories
 from telemetry import benchmark
+from telemetry import story
 
 
 @benchmark.Owner(emails=['vovoy@chromium.org'],
@@ -24,9 +27,19 @@ class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   """
   test = tab_switching.TabSwitching
 
+  @classmethod
+  def AddBenchmarkCommandLineArgs(cls, parser):
+    parser.add_option('--tabset-repeat', type='int', default=1,
+                      help='repeat tab page set')
+
   def CreateStorySet(self, options):
-    return page_sets.SystemHealthStorySet(platform='desktop',
-                                          case='multitab:misc')
+    story_set = story.StorySet(
+        archive_data_file='../page_sets/data/system_health_desktop.json',
+        base_dir=os.path.dirname(os.path.abspath(__file__)),
+        cloud_storage_bucket=story.PARTNER_BUCKET)
+    story_set.AddStory(multi_tab_stories.MultiTabTypical24Story(
+        story_set, False, options.tabset_repeat))
+    return story_set
 
   @classmethod
   def Name(cls):
