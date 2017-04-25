@@ -49,6 +49,10 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
     return instantiation_state_;
   }
 
+  v8::Local<v8::Value> CreateInstantiationError(v8::Isolate* isolate) const {
+    return instantiation_error_.NewLocal(isolate);
+  }
+
   // Implements Step 7.1 of:
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
   void SetInstantiationErrorAndClearRecord(ScriptValue error);
