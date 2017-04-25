@@ -1307,10 +1307,10 @@ def main(argv):
           slave_timeout = cidb_handle.GetTimeToDeadline(options.master_build_id)
 
       if slave_timeout is not None:
-        # Cut me some slack. We artificially add a a small time here to the
-        # slave_timeout because '0' is handled specially, and because we don't
-        # want to timeout while trying to set things up.
-        slave_timeout = slave_timeout + 20
+        # We artificially set a minimum slave_timeout because '0' is handled
+        # specially, and because we don't want to timeout while trying to set
+        # things up.
+        slave_timeout = max(slave_timeout, 20)
         if options.timeout == 0 or slave_timeout < options.timeout:
           logging.info('Updating slave build timeout to %d seconds enforced '
                        'by the master', slave_timeout)
