@@ -34,8 +34,8 @@ class TabRestorePageLoadMetricsObserver
       content::NavigationHandle* navigation_handle,
       const GURL& currently_committed_url,
       bool started_in_foreground) override;
-  void OnLoadedResource(
-      const page_load_metrics::ExtraRequestInfo& extra_request_info) override;
+  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
+                            extra_request_complete_info) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy
   FlushMetricsOnAppEnterBackground(
       const page_load_metrics::PageLoadTiming& timing,

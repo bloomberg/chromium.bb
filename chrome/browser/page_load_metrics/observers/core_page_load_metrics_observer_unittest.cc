@@ -415,15 +415,17 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
   NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_RELOAD);
   SimulateTimingUpdate(timing);
 
-  page_load_metrics::ExtraRequestInfo resources[] = {
+  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
        0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
   };
 
   int64_t network_bytes = 0;
@@ -501,15 +503,17 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
                                      ui::PAGE_TRANSITION_FORWARD_BACK));
   SimulateTimingUpdate(timing);
 
-  page_load_metrics::ExtraRequestInfo resources[] = {
+  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
        0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
   };
 
   int64_t network_bytes = 0;
@@ -581,15 +585,17 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
   NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_LINK);
   SimulateTimingUpdate(timing);
 
-  page_load_metrics::ExtraRequestInfo resources[] = {
+  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
        0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
   };
 
   int64_t network_bytes = 0;

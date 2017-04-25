@@ -252,6 +252,24 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
   return nullptr;
 }
 
+void MetricsWebContentsObserver::OnRequestStarted(
+    const content::GlobalRequestID& request_id,
+    content::ResourceType resource_type,
+    base::TimeTicks creation_time) {
+  // Note for the main HTML page, the tracker may not exist yet, so
+  // OnStartedResource will not be called for the main page.  While the main
+  // page is not being tracked today, if we do decide to track it, we will need
+  // to first make sure that GlobalRequestID is set in an earlier callback.
+  // TODO(bmcquade): Evaluate whether moving tracker creation to
+  // DidStartNavigation would address this.
+  PageLoadTracker* tracker =
+      GetTrackerOrNullForRequest(request_id, resource_type, creation_time);
+  if (tracker) {
+    ExtraRequestStartInfo extra_request_start_info(resource_type);
+    tracker->OnStartedResource(extra_request_start_info);
+  }
+}
+
 void MetricsWebContentsObserver::OnRequestComplete(
     const content::GlobalRequestID& request_id,
     content::ResourceType resource_type,
@@ -264,10 +282,10 @@ void MetricsWebContentsObserver::OnRequestComplete(
   PageLoadTracker* tracker =
       GetTrackerOrNullForRequest(request_id, resource_type, creation_time);
   if (tracker) {
-    ExtraRequestInfo extra_request_info(
+    ExtraRequestCompleteInfo extra_request_complete_info(
         was_cached, raw_body_bytes, was_cached ? 0 : original_content_length,
-        std::move(data_reduction_proxy_data));
-    tracker->OnLoadedResource(extra_request_info);
+        std::move(data_reduction_proxy_data), resource_type);
+    tracker->OnLoadedResource(extra_request_complete_info);
   }
 }
 

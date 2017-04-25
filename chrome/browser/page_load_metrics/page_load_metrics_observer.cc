@@ -56,18 +56,28 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
       page_load_metrics::PageLoadMetadata());
 }
 
-ExtraRequestInfo::ExtraRequestInfo(
+ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     bool was_cached,
     int64_t raw_body_bytes,
     int64_t original_network_content_length,
     std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
-        data_reduction_proxy_data)
+        data_reduction_proxy_data,
+    content::ResourceType detected_resource_type)
     : was_cached(was_cached),
       raw_body_bytes(raw_body_bytes),
       original_network_content_length(original_network_content_length),
-      data_reduction_proxy_data(std::move(data_reduction_proxy_data)) {}
+      data_reduction_proxy_data(std::move(data_reduction_proxy_data)),
+      resource_type(detected_resource_type) {}
 
-ExtraRequestInfo::~ExtraRequestInfo() {}
+ExtraRequestCompleteInfo::~ExtraRequestCompleteInfo() {}
+
+ExtraRequestStartInfo::ExtraRequestStartInfo(content::ResourceType found_type)
+    : resource_type(found_type) {}
+
+ExtraRequestStartInfo::ExtraRequestStartInfo(
+    const ExtraRequestStartInfo& other) = default;
+
+ExtraRequestStartInfo::~ExtraRequestStartInfo() {}
 
 FailedProvisionalLoadInfo::FailedProvisionalLoadInfo(base::TimeDelta interval,
                                                      net::Error error)

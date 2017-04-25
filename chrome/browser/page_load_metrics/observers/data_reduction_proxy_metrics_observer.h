@@ -104,8 +104,8 @@ class DataReductionProxyMetricsObserver
                     const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnParseStop(const page_load_metrics::PageLoadTiming& timing,
                    const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLoadedResource(
-      const page_load_metrics::ExtraRequestInfo& extra_request_info) override;
+  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
+                            extra_request_compelte_info) override;
 
  private:
   // Sends the page load information to the pingback client.

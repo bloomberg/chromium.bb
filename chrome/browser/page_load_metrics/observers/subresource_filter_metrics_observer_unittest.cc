@@ -156,7 +156,8 @@ TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
   SimulateLoadedResource({false /* was_cached */,
                           1024 * 40 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
-                          nullptr /* data_reduction_proxy_data */});
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -168,11 +169,13 @@ TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
   SimulateLoadedResource({false /* was_cached */,
                           1024 * 20 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
-                          nullptr /* data_reduction_proxy_data */});
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
   SimulateLoadedResource({true /* was_cached */, 1024 * 10 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
-                          nullptr /* data_reduction_proxy_data */});
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramSubresourceFilterCount, 1);
@@ -251,7 +254,8 @@ TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
   SimulateLoadedResource({false /* was_cached */,
                           1024 * 40 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
-                          nullptr /* data_reduction_proxy_data */});
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -263,11 +267,13 @@ TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
   SimulateLoadedResource({false /* was_cached */,
                           1024 * 20 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
-                          nullptr /* data_reduction_proxy_data */});
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
   SimulateLoadedResource({true /* was_cached */, 1024 * 10 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
-                          nullptr /* data_reduction_proxy_data */});
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramSubresourceFilterCount, 1);

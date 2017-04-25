@@ -619,10 +619,17 @@ void PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
   }
 }
 
-void PageLoadTracker::OnLoadedResource(
-    const ExtraRequestInfo& extra_request_info) {
+void PageLoadTracker::OnStartedResource(
+    const ExtraRequestStartInfo& extra_request_start_info) {
   for (const auto& observer : observers_) {
-    observer->OnLoadedResource(extra_request_info);
+    observer->OnStartedResource(extra_request_start_info);
+  }
+}
+
+void PageLoadTracker::OnLoadedResource(
+    const ExtraRequestCompleteInfo& extra_request_complete_info) {
+  for (const auto& observer : observers_) {
+    observer->OnLoadedResource(extra_request_complete_info);
   }
 }
 

@@ -197,15 +197,18 @@ struct PageLoadExtraInfo {
   const PageLoadMetadata child_frame_metadata;
 };
 
-// Container for various information about a request within a page load.
-struct ExtraRequestInfo {
-  ExtraRequestInfo(bool was_cached,
-                   int64_t raw_body_bytes,
-                   int64_t original_network_content_length,
-                   std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
-                       data_reduction_proxy_data);
+// Container for various information about a completed request within a page
+// load.
+struct ExtraRequestCompleteInfo {
+  ExtraRequestCompleteInfo(
+      bool was_cached,
+      int64_t raw_body_bytes,
+      int64_t original_network_content_length,
+      std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
+          data_reduction_proxy_data,
+      content::ResourceType detected_resource_type);
 
-  ~ExtraRequestInfo();
+  ~ExtraRequestCompleteInfo();
 
   // True if the resource was loaded from cache.
   const bool was_cached;
@@ -220,6 +223,27 @@ struct ExtraRequestInfo {
   // Data related to data saver.
   const std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
       data_reduction_proxy_data;
+
+  // The type of the request as gleaned from the mime type.  This may
+  // be more accurate than the type in the ExtraRequestStartInfo since we can
+  // examine the type headers that arrived with the request.  During XHRs, we
+  // sometimes see resources come back as a different type than we expected.
+  const content::ResourceType resource_type;
+};
+
+// Container for various information about a started request within a page load.
+struct ExtraRequestStartInfo {
+  explicit ExtraRequestStartInfo(content::ResourceType type);
+
+  ExtraRequestStartInfo(const ExtraRequestStartInfo& other);
+
+  ~ExtraRequestStartInfo();
+
+  // The type of the request as gleaned from the DOM or the file extension. This
+  // may be less accurate than the type at request completion time, which has
+  // access to mime-type headers.  During XHRs, we sometimes see resources come
+  // back as a different type than we expected.
+  const content::ResourceType resource_type;
 };
 
 // Interface for PageLoadMetrics observers. All instances of this class are
@@ -377,8 +401,13 @@ class PageLoadMetricsObserver {
       const FailedProvisionalLoadInfo& failed_provisional_load_info,
       const PageLoadExtraInfo& extra_info) {}
 
+  // Called whenever a request load begins.
+  virtual void OnStartedResource(
+      const ExtraRequestStartInfo& extra_request_start_info) {}
+
   // Called whenever a request is loaded for this page load.
-  virtual void OnLoadedResource(const ExtraRequestInfo& extra_request_info) {}
+  virtual void OnLoadedResource(
+      const ExtraRequestCompleteInfo& extra_request_complete_info) {}
 };
 
 }  // namespace page_load_metrics

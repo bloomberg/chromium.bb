@@ -133,8 +133,8 @@ class CorePageLoadMetricsObserver
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnUserInput(const blink::WebInputEvent& event) override;
-  void OnLoadedResource(
-      const page_load_metrics::ExtraRequestInfo& extra_request_info) override;
+  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
+                            extra_request_complete_info) override;
 
  private:
   void RecordTimingHistograms(const page_load_metrics::PageLoadTiming& timing,

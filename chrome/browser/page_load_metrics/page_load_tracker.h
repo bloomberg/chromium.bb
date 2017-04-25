@@ -225,7 +225,11 @@ class PageLoadTracker {
   // UpdateTiming.
   void UpdateChildFrameMetadata(const PageLoadMetadata& child_metadata);
 
-  void OnLoadedResource(const ExtraRequestInfo& extra_request_info);
+  void OnStartedResource(
+      const ExtraRequestStartInfo& extra_request_started_info);
+
+  void OnLoadedResource(
+      const ExtraRequestCompleteInfo& extra_request_complete_info);
 
   // Signals that we should stop tracking metrics for the associated page load.
   // We may stop tracking a page load if it doesn't meet the criteria for

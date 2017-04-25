@@ -419,23 +419,25 @@ void DataReductionProxyMetricsObserver::OnParseStop(
 }
 
 void DataReductionProxyMetricsObserver::OnLoadedResource(
-    const page_load_metrics::ExtraRequestInfo& extra_request_info) {
-  if (extra_request_info.data_reduction_proxy_data &&
-      extra_request_info.data_reduction_proxy_data->lofi_received()) {
+    const page_load_metrics::ExtraRequestCompleteInfo&
+        extra_request_complete_info) {
+  if (extra_request_complete_info.data_reduction_proxy_data &&
+      extra_request_complete_info.data_reduction_proxy_data->lofi_received()) {
     data_->set_lofi_received(true);
   }
-  if (extra_request_info.was_cached)
+  if (extra_request_complete_info.was_cached)
     return;
-  original_network_bytes_ += extra_request_info.original_network_content_length;
-  network_bytes_ += extra_request_info.raw_body_bytes;
+  original_network_bytes_ +=
+      extra_request_complete_info.original_network_content_length;
+  network_bytes_ += extra_request_complete_info.raw_body_bytes;
   num_network_resources_++;
-  if (!extra_request_info.data_reduction_proxy_data ||
-      !extra_request_info.data_reduction_proxy_data
+  if (!extra_request_complete_info.data_reduction_proxy_data ||
+      !extra_request_complete_info.data_reduction_proxy_data
            ->used_data_reduction_proxy()) {
     return;
   }
   num_data_reduction_proxy_resources_++;
-  network_bytes_proxied_ += extra_request_info.raw_body_bytes;
+  network_bytes_proxied_ += extra_request_complete_info.raw_body_bytes;
 }
 
 DataReductionProxyPingbackClient*

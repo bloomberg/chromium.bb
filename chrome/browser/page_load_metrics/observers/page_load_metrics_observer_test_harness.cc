@@ -149,8 +149,14 @@ void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
                                web_contents()->GetMainFrame());
 }
 
+void PageLoadMetricsObserverTestHarness::SimulateStartedResource(
+    const ExtraRequestStartInfo& info) {
+  observer_->OnRequestStarted(content::GlobalRequestID(), info.resource_type,
+                              base::TimeTicks::Now());
+}
+
 void PageLoadMetricsObserverTestHarness::SimulateLoadedResource(
-    const ExtraRequestInfo& info) {
+    const ExtraRequestCompleteInfo& info) {
   observer_->OnRequestComplete(content::GlobalRequestID(),
                                content::RESOURCE_TYPE_SCRIPT, info.was_cached,
                                info.data_reduction_proxy_data

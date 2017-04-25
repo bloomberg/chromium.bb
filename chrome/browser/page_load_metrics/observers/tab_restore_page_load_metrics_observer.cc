@@ -40,11 +40,12 @@ TabRestorePageLoadMetricsObserver::OnStart(
 }
 
 void TabRestorePageLoadMetricsObserver::OnLoadedResource(
-    const page_load_metrics::ExtraRequestInfo& extra_request_info) {
-  if (extra_request_info.was_cached) {
-    cache_bytes_ += extra_request_info.raw_body_bytes;
+    const page_load_metrics::ExtraRequestCompleteInfo&
+        extra_request_complete_info) {
+  if (extra_request_complete_info.was_cached) {
+    cache_bytes_ += extra_request_complete_info.raw_body_bytes;
   } else {
-    network_bytes_ += extra_request_info.raw_body_bytes;
+    network_bytes_ += extra_request_complete_info.raw_body_bytes;
   }
 }
 

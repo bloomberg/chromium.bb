@@ -673,13 +673,14 @@ void CorePageLoadMetricsObserver::OnUserInput(
 }
 
 void CorePageLoadMetricsObserver::OnLoadedResource(
-    const page_load_metrics::ExtraRequestInfo& extra_request_info) {
-  if (extra_request_info.was_cached) {
+    const page_load_metrics::ExtraRequestCompleteInfo&
+        extra_request_complete_info) {
+  if (extra_request_complete_info.was_cached) {
     ++num_cache_resources_;
-    cache_bytes_ += extra_request_info.raw_body_bytes;
+    cache_bytes_ += extra_request_complete_info.raw_body_bytes;
   } else {
     ++num_network_resources_;
-    network_bytes_ += extra_request_info.raw_body_bytes;
+    network_bytes_ += extra_request_complete_info.raw_body_bytes;
   }
 }
 

@@ -57,7 +57,10 @@ class PageLoadMetricsObserverTestHarness
                                        const PageLoadMetadata& metadata);
 
   // Simulates a loaded resource.
-  void SimulateLoadedResource(const ExtraRequestInfo& info);
+  void SimulateStartedResource(const ExtraRequestStartInfo& info);
+
+  // Simulates a loaded resource.
+  void SimulateLoadedResource(const ExtraRequestCompleteInfo& info);
 
   // Simulates a user input.
   void SimulateInputEvent(const blink::WebInputEvent& event);

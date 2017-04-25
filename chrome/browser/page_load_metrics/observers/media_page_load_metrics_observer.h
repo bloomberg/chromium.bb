@@ -31,8 +31,8 @@ class MediaPageLoadMetricsObserver
   FlushMetricsOnAppEnterBackground(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLoadedResource(
-      const page_load_metrics::ExtraRequestInfo& extra_request_info) override;
+  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
+                            extra_request_complete_info) override;
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       bool is_in_main_frame) override;

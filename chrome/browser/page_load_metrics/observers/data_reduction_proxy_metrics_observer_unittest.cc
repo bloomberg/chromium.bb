@@ -418,9 +418,10 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   data->set_lofi_received(true);
 
   // Verify LoFi is tracked when a LoFi response is received.
-  page_load_metrics::ExtraRequestInfo resource = {
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
       true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-      0 /* original_network_content_length */, std::move(data)};
+      0 /* original_network_content_length */, std::move(data),
+      content::ResourceType::RESOURCE_TYPE_MAIN_FRAME};
 
   RunTest(true, false);
   SimulateLoadedResource(resource);
@@ -453,21 +454,25 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   data->set_used_data_reduction_proxy(true);
 
   // Prepare 4 resources of varying size and configurations.
-  page_load_metrics::ExtraRequestInfo resources[] = {
+  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached proxied request with .1 compression ratio.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       1024 * 40 * 10 /* original_network_content_length */, data->DeepCopy()},
+       1024 * 40 * 10 /* original_network_content_length */, data->DeepCopy(),
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached proxied request with .5 compression ratio.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       1024 * 40 * 5 /* original_network_content_length */, std::move(data)},
+       1024 * 40 * 5 /* original_network_content_length */, std::move(data),
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
   };
 
   int network_resources = 0;
@@ -505,21 +510,25 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   data->set_used_data_reduction_proxy(true);
 
   // Prepare 4 resources of varying size and configurations.
-  page_load_metrics::ExtraRequestInfo resources[] = {
+  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
       {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached non-proxied request.
       {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */},
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached proxied request with .1 compression ratio.
       {false /*was_cached*/, 1024 * 40 * 10 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */, data->DeepCopy()},
+       1024 * 40 /* original_network_content_length */, data->DeepCopy(),
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached proxied request with .5 compression ratio.
       {false /*was_cached*/, 1024 * 40 * 5 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */, std::move(data)},
+       1024 * 40 /* original_network_content_length */, std::move(data),
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
   };
 
   int network_resources = 0;

@@ -69,23 +69,27 @@ class TabRestorePageLoadMetricsObserverTest
     SimulateTimingUpdate(timing_);
 
     // Prepare 4 resources of varying size and configurations.
-    page_load_metrics::ExtraRequestInfo resources[] = {
+    page_load_metrics::ExtraRequestCompleteInfo resources[] = {
         // Cached request.
         {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
          0 /* original_network_content_length */,
-         nullptr /* data_reduction_proxy_data */},
+         nullptr /* data_reduction_proxy_data */,
+         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
         // Uncached non-proxied request.
         {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
          1024 * 40 /* original_network_content_length */,
-         nullptr /* data_reduction_proxy_data */},
+         nullptr /* data_reduction_proxy_data */,
+         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
         // Uncached proxied request with .1 compression ratio.
         {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
          1024 * 40 /* original_network_content_length */,
-         nullptr /* data_reduction_proxy_data */},
+         nullptr /* data_reduction_proxy_data */,
+         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
         // Uncached proxied request with .5 compression ratio.
         {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
          1024 * 40 /* original_network_content_length */,
-         nullptr /* data_reduction_proxy_data */},
+         nullptr /* data_reduction_proxy_data */,
+         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
     };
 
     for (const auto& request : resources) {
