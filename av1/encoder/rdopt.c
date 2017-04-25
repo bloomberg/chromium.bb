@@ -1977,6 +1977,7 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   int s1 = av1_cost_bit(skip_prob, 1);
   const int is_inter = is_inter_block(mbmi);
   int prune = 0;
+  const int plane = 0;
 #if CONFIG_EXT_TX
   int ext_tx_set;
 #endif  // CONFIG_EXT_TX
@@ -2036,22 +2037,7 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
       od_encode_rollback(&x->daala_enc, &pre_buf);
 #endif  // CONFIG_PVQ
       if (this_rd_stats.rate == INT_MAX) continue;
-      if (get_ext_tx_types(mbmi->tx_size, bs, is_inter,
-                           cm->reduced_tx_set_used) > 1) {
-        if (is_inter) {
-          if (ext_tx_set > 0)
-            this_rd_stats.rate +=
-                cpi->inter_tx_type_costs[ext_tx_set]
-                                        [txsize_sqr_map[mbmi->tx_size]]
-                                        [mbmi->tx_type];
-        } else {
-          if (ext_tx_set > 0 && ALLOW_INTRA_EXT_TX)
-            this_rd_stats.rate +=
-                cpi->intra_tx_type_costs[ext_tx_set]
-                                        [txsize_sqr_map[mbmi->tx_size]]
-                                        [mbmi->mode][mbmi->tx_type];
-        }
-      }
+      av1_tx_type_cost(cpi, xd, bs, plane, mbmi->tx_size, tx_type);
 
       if (this_rd_stats.skip)
         this_rd = RDCOST(x->rdmult, x->rddiv, s1, this_rd_stats.sse);
@@ -2094,17 +2080,12 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
       txfm_rd_in_plane(x, cpi, &this_rd_stats, ref_best_rd, 0, bs,
                        mbmi->tx_size, cpi->sf.use_fast_coef_costing);
       if (this_rd_stats.rate == INT_MAX) continue;
+
+      av1_tx_type_cost(cpi, xd, bs, plane, mbmi->tx_size, tx_type);
       if (is_inter) {
-        this_rd_stats.rate +=
-            cpi->inter_tx_type_costs[mbmi->tx_size][mbmi->tx_type];
         if (cpi->sf.tx_type_search.prune_mode > NO_PRUNE &&
             !do_tx_type_search(tx_type, prune))
           continue;
-      } else {
-        this_rd_stats.rate +=
-            cpi->intra_tx_type_costs[mbmi->tx_size]
-                                    [intra_mode_to_tx_type_context[mbmi->mode]]
-                                    [mbmi->tx_type];
       }
       if (this_rd_stats.skip)
         this_rd = RDCOST(x->rdmult, x->rddiv, s1, this_rd_stats.sse);
