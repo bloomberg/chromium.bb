@@ -4,9 +4,8 @@
 
 source_set("decoder") {
   sources = [
+    "cast_audio_decoder.cc",
     "cast_audio_decoder.h",
-    "cast_audio_decoder_android.cc",
-    "cast_audio_decoder_linux.cc",
   ]
 
   deps = [
