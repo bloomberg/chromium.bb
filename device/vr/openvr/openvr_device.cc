@@ -76,17 +76,12 @@ std::vector<float> HmdMatrix34ToWebVRTransformMatrix(
 
 namespace device {
 
-OpenVRDevice::OpenVRDevice() {}
+OpenVRDevice::OpenVRDevice(vr::IVRSystem* vr) : vr_system_(vr) {}
 OpenVRDevice::~OpenVRDevice() {}
 
 void OpenVRDevice::CreateVRDisplayInfo(
     const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) {
-  vr::EVRInitError init_error;
-  auto vr_system =
-      vr::VR_Init(&init_error, vr::EVRApplicationType::VRApplication_Scene);
-
-  if (init_error != vr::VRInitError_None) {
-    LOG(ERROR) << vr::VR_GetVRInitErrorAsEnglishDescription(init_error);
+  if (!vr_system_) {
     on_created.Run(nullptr);
     return;
   }
@@ -94,8 +89,8 @@ void OpenVRDevice::CreateVRDisplayInfo(
   mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
   device->index = id();
   device->displayName =
-      GetOpenVRString(vr_system, vr::Prop_ManufacturerName_String) + " " +
-      GetOpenVRString(vr_system, vr::Prop_ModelNumber_String);
+      GetOpenVRString(vr_system_, vr::Prop_ManufacturerName_String) + " " +
+      GetOpenVRString(vr_system_, vr::Prop_ModelNumber_String);
   device->capabilities = mojom::VRDisplayCapabilities::New();
   device->capabilities->hasPosition = true;
   device->capabilities->hasExternalDisplay = true;
@@ -106,11 +101,11 @@ void OpenVRDevice::CreateVRDisplayInfo(
   mojom::VREyeParametersPtr& left_eye = device->leftEye;
   mojom::VREyeParametersPtr& right_eye = device->rightEye;
 
-  left_eye->fieldOfView = openVRFovToWebVRFov(vr_system, vr::Eye_Left);
-  right_eye->fieldOfView = openVRFovToWebVRFov(vr_system, vr::Eye_Left);
+  left_eye->fieldOfView = openVRFovToWebVRFov(vr_system_, vr::Eye_Left);
+  right_eye->fieldOfView = openVRFovToWebVRFov(vr_system_, vr::Eye_Left);
 
   vr::TrackedPropertyError error = vr::TrackedProp_Success;
-  float ipd = vr_system->GetFloatTrackedDeviceProperty(
+  float ipd = vr_system_->GetFloatTrackedDeviceProperty(
       vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_UserIpdMeters_Float, &error);
 
   if (error != vr::TrackedProp_Success)
@@ -126,7 +121,7 @@ void OpenVRDevice::CreateVRDisplayInfo(
   right_eye->offset[2] = 0.0;
 
   uint32_t width, height;
-  vr_system->GetRecommendedRenderTargetSize(&width, &height);
+  vr_system_->GetRecommendedRenderTargetSize(&width, &height);
   left_eye->renderWidth = width;
   left_eye->renderHeight = height;
   right_eye->renderWidth = left_eye->renderWidth;
@@ -134,7 +129,7 @@ void OpenVRDevice::CreateVRDisplayInfo(
 
   device->stageParameters = mojom::VRStageParameters::New();
   vr::HmdMatrix34_t mat =
-      vr_system->GetSeatedZeroPoseToStandingAbsoluteTrackingPose();
+      vr_system_->GetSeatedZeroPoseToStandingAbsoluteTrackingPose();
   device->stageParameters->standingTransform =
       HmdMatrix34ToWebVRTransformMatrix(mat);
 
@@ -147,7 +142,7 @@ void OpenVRDevice::CreateVRDisplayInfo(
     device->stageParameters->sizeZ = 0.0f;
   }
 
-  render_loop_ = std::make_unique<OpenVRRenderLoop>(vr_system);
+  render_loop_ = std::make_unique<OpenVRRenderLoop>(vr_system_);
 
   on_created.Run(std::move(device));
 }

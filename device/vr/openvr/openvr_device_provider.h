@@ -12,6 +12,10 @@
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_export.h"
 
+namespace vr {
+class IVRSystem;
+}  // namespace vr
+
 namespace device {
 
 class OpenVRDeviceProvider : public VRDeviceProvider {
@@ -25,6 +29,9 @@ class OpenVRDeviceProvider : public VRDeviceProvider {
   void SetListeningForActivate(bool listening) override;
 
  private:
+  bool initialized_;
+  vr::IVRSystem* vr_system_;
+
   DISALLOW_COPY_AND_ASSIGN(OpenVRDeviceProvider);
 };
 

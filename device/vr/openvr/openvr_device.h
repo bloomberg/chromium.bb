@@ -18,7 +18,7 @@ namespace device {
 
 class OpenVRDevice : public VRDevice {
  public:
-  OpenVRDevice();
+  OpenVRDevice(vr::IVRSystem* vr);
   ~OpenVRDevice() override;
 
   // VRDevice
@@ -67,6 +67,8 @@ class OpenVRDevice : public VRDevice {
                      // binding.
 
   mojom::VRSubmitFrameClientPtr submit_client_;
+
+  vr::IVRSystem* vr_system_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenVRDevice);
 };

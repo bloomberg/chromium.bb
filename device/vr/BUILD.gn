@@ -88,12 +88,17 @@ component("vr") {
     }
 
     if (enable_openvr) {
-      deps += [ "//third_party/openvr:openvr" ]
+      deps += [
+        "//device/gamepad",
+        "//third_party/openvr:openvr",
+      ]
       sources += [
         "openvr/openvr_device.cc",
         "openvr/openvr_device.h",
         "openvr/openvr_device_provider.cc",
         "openvr/openvr_device_provider.h",
+        "openvr/openvr_gamepad_data_fetcher.cc",
+        "openvr/openvr_gamepad_data_fetcher.h",
       ]
     }
   }
