@@ -18,13 +18,28 @@ class ContentMainRunner;
 
 class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
  public:
-  ContentServiceManagerMainDelegate(const ContentMainParams& params);
+  explicit ContentServiceManagerMainDelegate(const ContentMainParams& params);
   ~ContentServiceManagerMainDelegate() override;
 
   // service_manager::MainDelegate:
   int Initialize(const InitializeParams& params) override;
-  int Run() override;
-  void ShutDown() override;
+  int RunEmbedderProcess() override;
+  void ShutDownEmbedderProcess() override;
+  service_manager::ProcessType OverrideProcessType() override;
+  std::unique_ptr<base::Value> CreateServiceCatalog() override;
+  bool ShouldLaunchAsServiceProcess(
+      const service_manager::Identity& identity) override;
+  void AdjustServiceProcessCommandLine(
+      const service_manager::Identity& identity,
+      base::CommandLine* command_line) override;
+  bool ShouldTerminateServiceManagerOnInstanceQuit(
+      const service_manager::Identity& identity,
+      int* exit_code) override;
+  void OnServiceManagerInitialized(
+      const base::Closure& quit_closure,
+      service_manager::BackgroundServiceManager* service_manager) override;
+  std::unique_ptr<service_manager::Service> CreateEmbeddedService(
+      const std::string& service_name) override;
 
  private:
   ContentMainParams content_main_params_;

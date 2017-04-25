@@ -1169,7 +1169,7 @@ static_library("browser_tests_runner") {
     ]
 
     deps += [
-      "//mash/package",
+      "//chrome/app/mash:embedded_services",
       "//mash/session/public/interfaces:constants",
       "//services/service_manager/background:lib",
     ]
@@ -5158,36 +5158,19 @@ if (is_chromeos && enable_package_mash_services) {
     testonly = true
     data_deps = [
       ":browser_tests",
-      "//chrome/app/mash:mash_service_overrides",
     ]
   }
 
   service_manifest("mash_browser_tests_manifest") {
     name = "mash_browser_tests"
-
     source = "base/mash_browser_tests_manifest.json"
-    packaged_services = [
-      "//ash/autoclick/mus:manifest",
-      "//ash/mus:manifest",
-      "//ash/touch_hud/mus:manifest",
-      "//mash/catalog_viewer:manifest",
-      "//mash/quick_launch:manifest",
-      "//mash/session:manifest",
-      "//mash/task_viewer:manifest",
-      "//services/ui:manifest",
-      "//services/ui/ime/test_ime_driver:manifest",
-    ]
-
-    if (is_linux && !is_android) {
-      packaged_services += [ "//components/font_service:manifest" ]
-    }
   }
 
   catalog("mash_browser_tests_catalog") {
     testonly = true
     embedded_services = [ ":mash_browser_tests_manifest" ]
     standalone_services = [ "//services/tracing:manifest" ]
-    catalog_deps = [ "//chrome/app:catalog_for_mash" ]
+    catalog_deps = [ "//chrome/app/mash:catalog" ]
   }
 
   copy("mash_browser_tests_catalog_copy") {
@@ -5212,22 +5195,19 @@ if (is_chromeos && enable_package_mash_services) {
     testonly = true
     data_deps = [
       ":browser_tests",
-      "//chrome/app/mash:mash_service_overrides",
     ]
   }
 
   service_manifest("mus_browser_tests_manifest") {
     name = "mus_browser_tests"
-
     source = "base/mus_browser_tests_manifest.json"
-    packaged_services = [ "//services/ui:manifest" ]
   }
 
   catalog("mus_browser_tests_catalog") {
     testonly = true
     embedded_services = [ ":mus_browser_tests_manifest" ]
     standalone_services = [ "//services/tracing:manifest" ]
-    catalog_deps = [ "//chrome/app:catalog" ]
+    catalog_deps = [ "//chrome/app/mash:catalog_mus" ]
   }
 
   copy("mus_browser_tests_catalog_copy") {

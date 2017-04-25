@@ -21,6 +21,7 @@
 #include "base/process/process_handle.h"
 #include "base/process/process_info.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
@@ -51,10 +52,12 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "extensions/common/constants.h"
 #include "pdf/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
+#include "services/service_manager/embedder/switches.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -86,7 +89,9 @@
 #if defined(OS_POSIX)
 #include <locale.h>
 #include <signal.h>
+
 #include "chrome/app/chrome_crash_reporter_client.h"
+#include "chrome/app/shutdown_signal_handlers_posix.h"
 #endif
 
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)
@@ -101,6 +106,19 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/hugepage_text/hugepage_text.h"
 #endif
+
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#include "chrome/app/mash/chrome_mash_catalog.h"
+#include "chrome/app/mash/embedded_services.h"
+#include "mash/common/config.h"                                   // nogncheck
+#include "mash/quick_launch/public/interfaces/constants.mojom.h"  // nogncheck
+#include "services/ui/public/interfaces/constants.mojom.h"        // nogncheck
+
+#if defined(OS_CHROMEOS)
+#include "chrome/app/mash/chrome_mus_catalog.h"
+#endif
+
+#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 
 #if defined(OS_ANDROID)
 #include "base/android/java_exception_reporter.h"
@@ -250,7 +268,8 @@ void AdjustLinuxOOMScore(const std::string& process_type) {
     score = kPluginScore + kScoreBump;
   } else if (process_type == switches::kUtilityProcess ||
              process_type == switches::kGpuProcess ||
-             process_type == switches::kCloudPrintServiceProcess) {
+             process_type == switches::kCloudPrintServiceProcess ||
+             process_type == service_manager::switches::kProcessTypeService) {
     score = kMiscScore;
 #ifndef DISABLE_NACL
   } else if (process_type == switches::kNaClLoaderProcess ||
@@ -258,6 +277,8 @@ void AdjustLinuxOOMScore(const std::string& process_type) {
     score = kPluginScore;
 #endif
   } else if (process_type == switches::kZygoteProcess ||
+             process_type ==
+                 service_manager::switches::kProcessTypeServiceManager ||
              process_type.empty()) {
     // For zygotes and unlabeled process types, we want to still make
     // them killable by the OOM killer.
@@ -1090,4 +1111,114 @@ bool ChromeMainDelegate::ShouldEnableProfilerRecording() {
       // Don't enable instrumentation.
       return false;
   }
+}
+
+service_manager::ProcessType ChromeMainDelegate::OverrideProcessType() {
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+  if (command_line.GetSwitchValueASCII(switches::kProcessType) ==
+      service_manager::switches::kProcessTypeService) {
+    // Don't mess with embedded service command lines.
+    return service_manager::ProcessType::kDefault;
+  }
+
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  if (command_line.HasSwitch(switches::kMus) ||
+      command_line.HasSwitch(switches::kMash)) {
+    return service_manager::ProcessType::kServiceManager;
+  }
+#endif
+
+  return service_manager::ProcessType::kDefault;
+}
+
+std::unique_ptr<base::Value> ChromeMainDelegate::CreateServiceCatalog() {
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+#if defined(OS_CHROMEOS)
+  if (command_line.HasSwitch(switches::kMus))
+    return CreateChromeMusCatalog();
+#endif  // defined(OS_CHROMEOS)
+  if (command_line.HasSwitch(switches::kMash))
+    return CreateChromeMashCatalog();
+#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  return nullptr;
+}
+
+void ChromeMainDelegate::AdjustServiceProcessCommandLine(
+    const service_manager::Identity& identity,
+    base::CommandLine* command_line) {
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  // Add kMusConfig so that launched processes know what config they are
+  // running in.
+  const bool is_mash = command_line->HasSwitch(switches::kMash);
+  command_line->AppendSwitchASCII(switches::kMusConfig,
+                                  is_mash ? switches::kMash : switches::kMus);
+
+  if (identity.name() == content::mojom::kPackagedServicesServiceName) {
+    // Ensure the browser process doesn't inherit mash or mus flags, since these
+    // flags would cause the process to run as a Service Manager instead.
+    base::CommandLine::SwitchMap switches = command_line->GetSwitches();
+    switches.erase(switches::kMash);
+    switches.erase(switches::kMus);
+    *command_line = base::CommandLine(command_line->GetProgram());
+    for (const auto& sw : switches)
+      command_line->AppendSwitchNative(sw.first, sw.second);
+  }
+#endif
+}
+
+bool ChromeMainDelegate::ShouldTerminateServiceManagerOnInstanceQuit(
+    const service_manager::Identity& identity,
+    int* exit_code) {
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  if (identity.name() == mash::common::GetWindowManagerServiceName() ||
+      identity.name() == ui::mojom::kServiceName ||
+      identity.name() == content::mojom::kPackagedServicesServiceName) {
+    // Quit the main process if an important child (e.g. window manager) dies.
+    // On Chrome OS the OS-level session_manager will restart the main process.
+    *exit_code = 1;
+    LOG(ERROR) << "Main process exiting because service " << identity.name()
+               << " quit unexpectedly.";
+    return true;
+  }
+#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+
+  return false;
+}
+
+void ChromeMainDelegate::OnServiceManagerInitialized(
+    const base::Closure& quit_closure,
+    service_manager::BackgroundServiceManager* service_manager) {
+#if defined(OS_POSIX)
+  // Quit the main process in response to shutdown signals (like SIGTERM).
+  // These signals are used by Linux distributions to request clean shutdown.
+  // On Chrome OS the SIGTERM signal is sent by session_manager.
+  InstallShutdownSignalHandlers(quit_closure,
+                                base::ThreadTaskRunnerHandle::Get());
+#endif
+
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  // Start services that we know we want to launch on startup (UI service,
+  // window manager, quick launch app).
+  service_manager->StartService(
+      service_manager::Identity(ui::mojom::kServiceName));
+  service_manager->StartService(
+      service_manager::Identity(content::mojom::kPackagedServicesServiceName));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMash)) {
+    service_manager->StartService(
+        service_manager::Identity(mash::common::GetWindowManagerServiceName()));
+    service_manager->StartService(
+        service_manager::Identity(mash::quick_launch::mojom::kServiceName));
+  }
+#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+}
+
+std::unique_ptr<service_manager::Service>
+ChromeMainDelegate::CreateEmbeddedService(const std::string& service_name) {
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  auto mash_service = CreateEmbeddedMashService(service_name);
+  if (mash_service)
+    return mash_service;
+#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  return nullptr;
 }

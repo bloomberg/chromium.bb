@@ -653,7 +653,6 @@
     "executable": "browser_tests",
     "args": [
       "--run-in-mash",
-      "--service-overrides=../../chrome/app/mash/mash_service_overrides.json",
     ],
   },
   "media_unittests": {

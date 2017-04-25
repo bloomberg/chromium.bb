@@ -50,8 +50,8 @@ class CONTENT_EXPORT ChildConnection {
   }
 
   // A token which must be passed to the child process via
-  // |switches::kPrimordialPipeToken| in order for the child to initialize its
-  // end of the Service Manager connection pipe.
+  // |service_manager::switches::kServicePipeToken| in order for the child to
+  // initialize its end of the Service Manager connection pipe.
   std::string service_token() const { return service_token_; }
 
   // Sets the child connection's process handle. This should be called as soon

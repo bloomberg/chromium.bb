@@ -233,33 +233,6 @@ base::LazyInstance<ContentUtilityClient>::DestructorAtExit
     g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
 
-void CommonSubprocessInit() {
-#if defined(OS_WIN)
-  // HACK: Let Windows know that we have started.  This is needed to suppress
-  // the IDC_APPSTARTING cursor from being displayed for a prolonged period
-  // while a subprocess is starting.
-  PostThreadMessage(GetCurrentThreadId(), WM_NULL, 0, 0);
-  MSG msg;
-  PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
-#endif
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  // Various things break when you're using a locale where the decimal
-  // separator isn't a period.  See e.g. bugs 22782 and 39964.  For
-  // all processes except the browser process (where we call system
-  // APIs that may rely on the correct locale for formatting numbers
-  // when presenting them to the user), reset the locale for numeric
-  // formatting.
-  // Note that this is not correct for plugin processes -- they can
-  // surface UI -- but it's likely they get this wrong too so why not.
-  setlocale(LC_NUMERIC, "C");
-#endif
-
-#if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
-  base::RouteStdioToConsole(false);
-  LoadLibraryA("dbghelp.dll");
-#endif
-}
-
 class ContentClientInitializer {
  public:
   static void Set(const std::string& process_type,
@@ -560,12 +533,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       SetContentClient(&empty_content_client_);
     ContentClientInitializer::Set(process_type, delegate_);
 
-#if defined(OS_WIN)
-    // Route stdio to parent console (if any) or create one.
-    if (command_line.HasSwitch(switches::kEnableLogging))
-      base::RouteStdioToConsole(true);
-#endif
-
 #if !defined(OS_ANDROID)
     // Enable startup tracing asap to avoid early TRACE_EVENT calls being
     // ignored. For Android, startup tracing is enabled in an even earlier place
@@ -676,9 +643,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     if (delegate_)
       delegate_->PreSandboxStartup();
-
-    if (!process_type.empty())
-      CommonSubprocessInit();
 
 #if defined(OS_WIN)
     CHECK(InitializeSandbox(params.sandbox_info));

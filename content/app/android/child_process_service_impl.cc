@@ -148,7 +148,7 @@ void RegisterFileDescriptors(JNIEnv* env,
   std::map<int, std::string> ids_to_keys;
   std::string file_switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kSharedFiles);
+          service_manager::switches::kSharedFiles);
   if (!file_switch_value.empty()) {
     base::Optional<std::map<int, std::string>> ids_to_keys_from_command_line =
         service_manager::ParseSharedFileSwitchValue(file_switch_value);

@@ -120,7 +120,7 @@ std::unique_ptr<FileDescriptorInfo> CreateDefaultPosixFilesToMap(
       key++;
       DCHECK(key < kContentDynamicDescriptorMax);
     }
-    command_line->AppendSwitchASCII(switches::kSharedFiles,
+    command_line->AppendSwitchASCII(service_manager::switches::kSharedFiles,
                                     file_switch_value_builder.switch_value());
   }
 

@@ -9,7 +9,10 @@
 
 namespace service_manager {
 
-Identity::Identity() : Identity("", mojom::kInheritUserID, "") {}
+Identity::Identity() : Identity("") {}
+
+Identity::Identity(const std::string& name)
+    : Identity(name, mojom::kInheritUserID) {}
 
 Identity::Identity(const std::string& name, const std::string& user_id)
     : Identity(name, user_id, "") {}
@@ -19,8 +22,8 @@ Identity::Identity(const std::string& name, const std::string& user_id,
     : name_(name),
       user_id_(user_id),
       instance_(instance) {
-  CHECK(!user_id.empty());
-  CHECK(base::IsValidGUID(user_id));
+  DCHECK(!user_id.empty());
+  DCHECK(base::IsValidGUID(user_id));
 }
 
 Identity::Identity(const Identity& other) = default;

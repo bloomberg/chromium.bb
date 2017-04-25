@@ -2823,6 +2823,15 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   }
 #endif  // OS_ANDROID
 
+#if defined(OS_CHROMEOS)
+  // Don't expose --mash outside of Canary or developer builds.
+  if (!strcmp("mash", entry.internal_name) &&
+      channel != version_info::Channel::DEV &&
+      channel != version_info::Channel::UNKNOWN) {
+    return true;
+  }
+#endif  // defined(OS_CHROMEOS)
+
   // data-reduction-proxy-lo-fi and enable-data-reduction-proxy-lite-page
   // are only available for Chromium builds and the Canary/Dev/Beta channels.
   if ((!strcmp("data-reduction-proxy-lo-fi", entry.internal_name) ||

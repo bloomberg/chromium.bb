@@ -50,8 +50,8 @@ mojom::ConnectResult LaunchAndConnectToProcess(
   // Forward the wait-for-debugger flag but nothing else - we don't want to
   // stamp on the platform-channel flag.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWaitForDebugger)) {
-    child_command_line.AppendSwitch(switches::kWaitForDebugger);
+          ::switches::kWaitForDebugger)) {
+    child_command_line.AppendSwitch(::switches::kWaitForDebugger);
   }
 
   // Create the channel to be shared with the target process. Pass one end
@@ -65,7 +65,7 @@ mojom::ConnectResult LaunchAndConnectToProcess(
   std::string token;
   mojo::ScopedMessagePipeHandle pipe =
       pending_process.CreateMessagePipe(&token);
-  child_command_line.AppendSwitchASCII(switches::kPrimordialPipeToken, token);
+  child_command_line.AppendSwitchASCII(switches::kServicePipeToken, token);
 
   service_manager::mojom::ServicePtr client;
   client.Bind(mojo::InterfacePtrInfo<service_manager::mojom::Service>(

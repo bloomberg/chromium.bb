@@ -16,9 +16,6 @@
 #include "ui/gfx/switches.h"
 
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-#include "chrome/app/mash/mash_runner.h"
-#include "chrome/common/channel_info.h"
-#include "components/version_info/version_info.h"
 #include "services/service_manager/runner/common/client_util.h"
 #endif
 
@@ -107,17 +104,8 @@ int ChromeMain(int argc, const char** argv) {
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-  version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::UNKNOWN) {
-    if (command_line->HasSwitch(switches::kMash) ||
-        command_line->HasSwitch(switches::kMus)) {
-      return MashMain();
-    }
-    WaitForMashDebuggerIfNecessary();
-    if (service_manager::ServiceManagerIsRemote())
-      params.env_mode = aura::Env::Mode::MUS;
-  }
+  if (service_manager::ServiceManagerIsRemote())
+    params.env_mode = aura::Env::Mode::MUS;
 #endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 
   int rv = content::ContentMain(params);

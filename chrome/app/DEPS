@@ -30,9 +30,12 @@ include_rules = [
   "+content/public/browser/browser_main_runner.h",
   "+extensions/common/constants.h",
   "+headless/public",  # For headless mode.
+  "+mash/common",
+  "+mash/quick_launch/public",
   "+native_client/src/trusted/service_runtime/osx",
   "+remoting/client/plugin",
   "+sandbox",
-  "+services/service_manager/runner/common/client_util.h",
+  "+services/service_manager",
+  "+services/ui/public",
   "+third_party/crashpad/crashpad",
 ]

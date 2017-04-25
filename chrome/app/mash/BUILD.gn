@@ -9,20 +9,27 @@ import("//services/service_manager/public/service_manifest.gni")
 
 assert(enable_package_mash_services)
 
-source_set("mash") {
+source_set("embedded_services") {
   sources = [
-    "mash_runner.cc",
-    "mash_runner.h",
+    "embedded_services.cc",
+    "embedded_services.h",
   ]
+
   deps = [
     ":chrome_mash_catalog",
     "//base:i18n",
     "//chrome/common:constants",
     "//components/tracing:startup_tracing",
     "//content/public/common",
+    "//mash/catalog_viewer:lib",
+    "//mash/catalog_viewer/public/interfaces:constants",
     "//mash/common",
-    "//mash/package",
+    "//mash/quick_launch:lib",
     "//mash/quick_launch/public/interfaces:constants",
+    "//mash/session:lib",
+    "//mash/session/public/interfaces:constants",
+    "//mash/task_viewer:lib",
+    "//mash/task_viewer/public/interfaces:constants",
     "//services/catalog/public/interfaces",
     "//services/service_manager",
     "//services/service_manager/background:lib",
@@ -33,6 +40,8 @@ source_set("mash") {
     "//services/service_manager/runner/common",
     "//services/service_manager/runner/host:lib",
     "//services/service_manager/standalone",
+    "//services/ui:lib",
+    "//services/ui/ime/test_ime_driver:lib",
     "//services/ui/public/interfaces:constants",
     "//url",
   ]
@@ -40,7 +49,10 @@ source_set("mash") {
   if (is_chromeos) {
     deps += [
       ":chrome_mus_catalog",
+      "//ash/autoclick/mus:lib",
+      "//ash/mus:lib",
       "//ash/resources",
+      "//ash/touch_hud/mus:lib",
     ]
   }
 
@@ -53,42 +65,30 @@ source_set("mash") {
   }
 }
 
-service_manifest("mash_manifest") {
-  name = "chrome_mash"
-  source = "chrome_mash_manifest.json"
-  packaged_services = [
+catalog("catalog") {
+  embedded_services = [
     "//ash/autoclick/mus:manifest",
     "//ash/touch_hud/mus:manifest",
     "//mash/catalog_viewer:manifest",
     "//mash/quick_launch:manifest",
+    "//mash/session:manifest",
     "//mash/task_viewer:manifest",
     "//services/ui:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
   ]
-
-  if (is_chromeos) {
-    packaged_services += [ "//ash/mus:manifest" ]
-  }
-
-  if (is_linux && !is_android) {
-    packaged_services += [ "//components/font_service:manifest" ]
-  }
-
-  if (enable_nacl) {
-    packaged_services += [ "//components/nacl/loader:nacl_loader_manifest" ]
-    if (is_win && target_cpu == "x86") {
-      packaged_services += [ "//components/nacl/broker:nacl_broker_manifest" ]
-    }
-  }
-}
-
-catalog("catalog") {
-  embedded_services = [ ":mash_manifest" ]
   catalog_deps = [ "//chrome/app:catalog_for_mash" ]
   standalone_services = [
     "//mash/example/views_examples:manifest",
     "//mash/simple_wm:manifest",
   ]
+
+  if (is_chromeos) {
+    embedded_services += [ "//ash/mus:manifest" ]
+  }
+
+  if (is_linux && !is_android) {
+    embedded_services += [ "//components/font_service:manifest" ]
+  }
 }
 
 catalog_cpp_source("chrome_mash_catalog") {
@@ -96,32 +96,15 @@ catalog_cpp_source("chrome_mash_catalog") {
   generated_function_name = "CreateChromeMashCatalog"
 }
 
-source_set("mash_service_overrides") {
-  testonly = true
-  data = [
-    "mash_service_overrides.json",
-  ]
-}
-
 if (is_chromeos) {
-  service_manifest("mus_manifest") {
-    name = "chrome_mus"
-    source = "chrome_mus_manifest.json"
-    packaged_services = [
+  catalog("catalog_mus") {
+    catalog_deps = [ "//chrome/app:catalog" ]
+    embedded_services = [
       "//services/ui:manifest",
 
       # TODO(sky): verify if we need this.
       "//services/ui/ime/test_ime_driver:manifest",
     ]
-
-    if (enable_nacl) {
-      packaged_services += [ "//components/nacl/loader:nacl_loader_manifest" ]
-    }
-  }
-
-  catalog("catalog_mus") {
-    embedded_services = [ ":mus_manifest" ]
-    catalog_deps = [ "//chrome/app:catalog" ]
   }
 
   catalog_cpp_source("chrome_mus_catalog") {

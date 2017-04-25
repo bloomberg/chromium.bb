@@ -240,7 +240,7 @@ class ServiceManager::Instance
   }
 
  private:
-   enum class State {
+  enum class State {
     // The service was not started yet.
     IDLE,
 
@@ -253,67 +253,67 @@ class ServiceManager::Instance
   };
 
   // mojom::Connector implementation:
-   void BindInterface(const service_manager::Identity& in_target,
-                      const std::string& interface_name,
-                      mojo::ScopedMessagePipeHandle interface_pipe,
-                      const BindInterfaceCallback& callback) override {
-     Identity target = in_target;
-     mojom::ConnectResult result =
-         ValidateConnectParams(&target, nullptr, nullptr);
-     if (!Succeeded(result)) {
-       callback.Run(result, Identity());
-       return;
-     }
+  void BindInterface(const service_manager::Identity& in_target,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe,
+                     const BindInterfaceCallback& callback) override {
+    Identity target = in_target;
+    mojom::ConnectResult result =
+        ValidateConnectParams(&target, nullptr, nullptr);
+    if (!Succeeded(result)) {
+      callback.Run(result, Identity());
+      return;
+    }
 
-     std::unique_ptr<ConnectParams> params(new ConnectParams);
-     params->set_source(identity_);
-     params->set_target(target);
-     params->set_interface_request_info(interface_name,
-                                        std::move(interface_pipe));
-     params->set_start_service_callback(callback);
-     service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
-   }
+    std::unique_ptr<ConnectParams> params(new ConnectParams);
+    params->set_source(identity_);
+    params->set_target(target);
+    params->set_interface_request_info(interface_name,
+                                       std::move(interface_pipe));
+    params->set_start_service_callback(callback);
+    service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
+  }
 
-   void StartService(const Identity& in_target,
-                     const StartServiceCallback& callback) override {
-     Identity target = in_target;
-     mojom::ConnectResult result =
-         ValidateConnectParams(&target, nullptr, nullptr);
-     if (!Succeeded(result)) {
-       callback.Run(result, Identity());
-       return;
-     }
+  void StartService(const Identity& in_target,
+                    const StartServiceCallback& callback) override {
+    Identity target = in_target;
+    mojom::ConnectResult result =
+        ValidateConnectParams(&target, nullptr, nullptr);
+    if (!Succeeded(result)) {
+      callback.Run(result, Identity());
+      return;
+    }
 
-     std::unique_ptr<ConnectParams> params(new ConnectParams);
-     params->set_source(identity_);
-     params->set_target(target);
-     params->set_start_service_callback(callback);
-     service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
-   }
+    std::unique_ptr<ConnectParams> params(new ConnectParams);
+    params->set_source(identity_);
+    params->set_target(target);
+    params->set_start_service_callback(callback);
+    service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
+  }
 
-   void StartServiceWithProcess(
-       const Identity& in_target,
-       mojo::ScopedMessagePipeHandle service_handle,
-       mojom::PIDReceiverRequest pid_receiver_request,
-       const StartServiceWithProcessCallback& callback) override {
-     Identity target = in_target;
-     mojom::ConnectResult result =
-         ValidateConnectParams(&target, nullptr, nullptr);
-     if (!Succeeded(result)) {
-       callback.Run(result, Identity());
-       return;
-     }
+  void StartServiceWithProcess(
+      const Identity& in_target,
+      mojo::ScopedMessagePipeHandle service_handle,
+      mojom::PIDReceiverRequest pid_receiver_request,
+      const StartServiceWithProcessCallback& callback) override {
+    Identity target = in_target;
+    mojom::ConnectResult result =
+        ValidateConnectParams(&target, nullptr, nullptr);
+    if (!Succeeded(result)) {
+      callback.Run(result, Identity());
+      return;
+    }
 
-     std::unique_ptr<ConnectParams> params(new ConnectParams);
-     params->set_source(identity_);
-     params->set_target(target);
+    std::unique_ptr<ConnectParams> params(new ConnectParams);
+    params->set_source(identity_);
+    params->set_target(target);
 
-     mojom::ServicePtr service;
-     service.Bind(mojom::ServicePtrInfo(std::move(service_handle), 0));
-     params->set_client_process_info(std::move(service),
-                                     std::move(pid_receiver_request));
-     params->set_start_service_callback(callback);
-     service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
+    mojom::ServicePtr service;
+    service.Bind(mojom::ServicePtrInfo(std::move(service_handle), 0));
+    params->set_client_process_info(std::move(service),
+                                    std::move(pid_receiver_request));
+    params->set_start_service_callback(callback);
+    service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
   }
 
   void Clone(mojom::ConnectorRequest request) override {
@@ -621,6 +621,18 @@ void ServiceManager::SetInstanceQuitCallback(
 }
 
 void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
+  Connect(std::move(params), nullptr);
+}
+
+void ServiceManager::StartService(const Identity& identity) {
+  auto params = base::MakeUnique<ConnectParams>();
+  params->set_source(CreateServiceManagerIdentity());
+
+  Identity target_identity = identity;
+  if (target_identity.user_id() == mojom::kInheritUserID)
+    target_identity.set_user_id(mojom::kRootUserID);
+  params->set_target(target_identity);
+
   Connect(std::move(params), nullptr);
 }
 

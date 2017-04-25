@@ -75,15 +75,13 @@ mojom::ServicePtr ServiceProcessLauncher::Start(
       new base::CommandLine(service_path_));
 
   child_command_line->AppendArguments(parent_command_line, false);
-
-  child_command_line->AppendSwitchASCII(::switches::kProcessServiceName,
-                                        target.name());
+  child_command_line->AppendSwitchASCII(switches::kServiceName, target.name());
 #ifndef NDEBUG
   child_command_line->AppendSwitchASCII("u", target.user_id());
 #endif
 
   if (start_sandboxed_)
-    child_command_line->AppendSwitch(::switches::kEnableSandbox);
+    child_command_line->AppendSwitch(switches::kEnableSandbox);
 
   mojo_ipc_channel_.reset(new mojo::edk::PlatformChannelPair);
   mojo_ipc_channel_->PrepareToPassClientHandleToChildProcess(
@@ -91,6 +89,7 @@ mojom::ServicePtr ServiceProcessLauncher::Start(
 
   mojom::ServicePtr client = PassServiceRequestOnCommandLine(
       &process_connection_, child_command_line.get());
+
   launch_process_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&ServiceProcessLauncher::DoLaunch, base::Unretained(this),
