@@ -93,6 +93,10 @@ class ContentSubresourceFilterThrottleManager
       content::NavigationHandle* navigation_handle,
       std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles);
 
+  // Returns whether or not the current WebContents is allowed to create a new
+  // window.
+  bool ShouldDisallowNewWindow();
+
   VerifiedRuleset::Handle* ruleset_handle_for_testing() {
     return ruleset_handle_.get();
   }
@@ -124,8 +128,6 @@ class ContentSubresourceFilterThrottleManager
 
   // Calls OnFirstSubresourceLoadDisallowed on the Delegate at most once per
   // committed, non-same-page navigation in the main frame.
-  // TODO(csharrison): Ensure IPCs from the renderer go through this path when
-  // they disallow subresource loads.
   void MaybeCallFirstDisallowedLoad();
 
   VerifiedRuleset::Handle* EnsureRulesetHandle();

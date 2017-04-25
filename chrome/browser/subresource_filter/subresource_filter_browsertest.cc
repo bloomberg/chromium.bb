@@ -20,6 +20,7 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/page_load_metrics/observers/subresource_filter_metrics_observer.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -876,6 +877,44 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ui_test_utils::NavigateToURL(browser(), a_url);
   ExpectParsedScriptElementLoadedStatusInFrames(
       std::vector<const char*>{"b", "d"}, {false, true});
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, BlockCreatingNewWindows) {
+  base::HistogramTester tester;
+  const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
+  GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
+  GURL b_url(embedded_test_server()->GetURL("b.com", kWindowOpenPath));
+  // Only configure |a_url| as a phishing URL.
+  ConfigureAsPhishingURL(a_url);
+
+  // Only necessary so we have a valid ruleset.
+  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
+
+  // Navigate to a_url, should trigger the popup blocker.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  bool opened_window = false;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
+                                                   &opened_window));
+  EXPECT_FALSE(opened_window);
+  // Do not force the UI if the popup was the only thing disallowed. The popup
+  // UI is good enough.
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
+                           0);
+  // Make sure the popup UI was shown.
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
+                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+
+  // Navigate to |b_url|, which should successfully open the popup.
+  ui_test_utils::NavigateToURL(browser(), b_url);
+  opened_window = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
+                                                   &opened_window));
+  EXPECT_TRUE(opened_window);
+  // Popup UI should not be shown.
+  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
+                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,

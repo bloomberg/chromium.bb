@@ -2528,7 +2528,13 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 #endif
 
-  if (!user_gesture &&
+  auto* driver_factory = subresource_filter::
+      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
+  const bool popup_block_candidate =
+      !user_gesture ||
+      (driver_factory &&
+       driver_factory->throttle_manager()->ShouldDisallowNewWindow());
+  if (popup_block_candidate &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePopupBlocking)) {
     if (content_settings->GetContentSetting(
