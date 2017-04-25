@@ -119,7 +119,7 @@ OrderSummaryViewController::CreatePrimaryButton() {
 }
 
 base::string16 OrderSummaryViewController::GetSheetTitle() {
-  return l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_ORDER_SUMMARY_TITLE);
+  return l10n_util::GetStringUTF16(IDS_PAYMENTS_ORDER_SUMMARY_LABEL);
 }
 
 void OrderSummaryViewController::FillContentView(views::View* content_view) {

@@ -103,6 +103,8 @@ ContactInfoEditorViewController::GetComboboxModelForType(
 }
 
 base::string16 ContactInfoEditorViewController::GetSheetTitle() {
+  // TODO(crbug.com/712074): Title should reflect the missing information, if
+  // applicable.
   return profile_to_edit_ ? l10n_util::GetStringUTF16(
                                 IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL)
                           : l10n_util::GetStringUTF16(

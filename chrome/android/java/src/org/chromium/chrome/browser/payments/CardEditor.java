@@ -653,8 +653,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                     new DropdownKeyValue(mProfilesForBillingAddress.get(i).getGUID(), builder));
         }
 
-        billingAddresses.add(new DropdownKeyValue(BILLING_ADDRESS_ADD_NEW,
-                mContext.getString(R.string.autofill_create_profile)));
+        billingAddresses.add(new DropdownKeyValue(
+                BILLING_ADDRESS_ADD_NEW, mContext.getString(R.string.payments_add_address)));
 
         // Don't cache the billing address dropdown, because the user may have added or removed
         // profiles. Also pass the "Select" dropdown item as a hint to the dropdown constructor.

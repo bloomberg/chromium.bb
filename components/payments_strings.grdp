@@ -97,6 +97,9 @@
   <message name="IDS_PAYMENTS_ADD_ADDRESS" desc="Text on a button that lets a user add new address." formatter_data="android_java">
     Add address
   </message>
+  <message name="IDS_PAYMENTS_EDIT_ADDRESS" desc="Text on a button that lets a user edit an existing address." formatter_data="android_java">
+    Edit address
+  </message>
   <message name="IDS_PAYMENTS_CHECKING_OPTION" desc="Text explaining that the option the user selected is being checked and verified." formatter_data="android_java">
     Checking
   </message>

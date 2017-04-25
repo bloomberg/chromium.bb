@@ -415,7 +415,7 @@ bool PaymentSheetViewController::ShouldShowHeaderBackArrow() {
 }
 
 base::string16 PaymentSheetViewController::GetSheetTitle() {
-  return l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_PAYMENT_SHEET_TITLE);
+  return l10n_util::GetStringUTF16(IDS_PAYMENTS_TITLE);
 }
 
 void PaymentSheetViewController::FillContentView(views::View* content_view) {

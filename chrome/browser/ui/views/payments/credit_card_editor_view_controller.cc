@@ -273,8 +273,15 @@ CreditCardEditorViewController::GetComboboxModelForType(
 }
 
 base::string16 CreditCardEditorViewController::GetSheetTitle() {
-  return l10n_util::GetStringUTF16(
-      IDS_PAYMENT_REQUEST_CREDIT_CARD_EDITOR_ADD_TITLE);
+  if (!credit_card_to_edit_)
+    return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD);
+
+  // Gets the completion message, or empty if nothing is missing from the card.
+  base::string16 title = autofill::GetCompletionMessageForCard(
+      autofill::GetCompletionStatusForCard(*credit_card_to_edit_,
+                                           state()->GetApplicationLocale()));
+  return title.empty() ? l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT_CARD)
+                       : title;
 }
 
 CreditCardEditorViewController::CreditCardValidationDelegate::

@@ -80,9 +80,8 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
         // The title of the editor depends on whether we're adding a new address or editing an
         // existing address.
         final EditorModel editor =
-                new EditorModel(isNewAddress
-                        ? mContext.getString(R.string.autofill_create_profile)
-                        : toEdit.getEditTitle());
+                new EditorModel(isNewAddress ? mContext.getString(R.string.payments_add_address)
+                                             : toEdit.getEditTitle());
 
         // The country dropdown is always present on the editor.
         if (mCountryField == null) {

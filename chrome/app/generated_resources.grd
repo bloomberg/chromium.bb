@@ -12250,23 +12250,6 @@ read aloud to screenreader users to announce that a completion is available.">
       </message>
     </if>
 
-    <!-- Payment Request -->
-    <message name="IDS_PAYMENT_REQUEST_PAYMENT_SHEET_TITLE" desc=" The title on top of the desktop Payment Request Payment Sheet screen">
-      Your payment
-    </message>
-
-    <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_TITLE" desc="The title on top of the desktop Payment Request Order Summary screen">
-      Order summary
-    </message>
-
-    <message name="IDS_PAYMENT_REQUEST_CREDIT_CARD_EDITOR_ADD_TITLE" desc="The title on the top of the dialog for adding a new credit card.">
-      Add a card
-    </message>
-
-    <message name="IDS_PAYMENT_REQUEST_ADDRESS_EDITOR_ADD_TITLE" desc="The title on the top of the dialog for adding a new address.">
-      Add address
-    </message>
-
     <!-- Safe Browsing Subresource Filter UI strings. -->
     <if expr="use_titlecase">
       <message name="IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD" desc="In Title Case: Button which reloads the page in order to also show content that was previously blocked.">
