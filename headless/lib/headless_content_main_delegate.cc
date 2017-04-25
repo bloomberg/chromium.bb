@@ -186,10 +186,8 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
 #else
   if (command_line.HasSwitch(switches::kEnableLogging))
     InitLogging(command_line);
-#endif
-#if !defined(OS_MACOSX)
-  InitCrashReporter(command_line);
 #endif  // defined(OS_WIN)
+  InitCrashReporter(command_line);
   InitializeResourceBundle();
 }
 
