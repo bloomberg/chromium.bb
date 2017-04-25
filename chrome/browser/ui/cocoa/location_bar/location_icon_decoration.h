@@ -31,6 +31,7 @@ class LocationIconDecoration : public ImageDecoration {
   bool AcceptsMousePress() override;
   bool HasHoverAndPressEffect() override;
   NSString* GetToolTip() override;
+  NSString* GetAccessibilityLabel() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;
   NSRect GetBackgroundFrame(NSRect frame) override;
 

@@ -102,7 +102,8 @@ NSRect LocationIconDecoration::GetBackgroundFrame(NSRect frame) {
 }
 
 bool LocationIconDecoration::AcceptsMousePress() {
-  return true;
+  // The search icon does not accept mouse presses.
+  return !owner_->GetOmniboxView()->IsEditingOrEmpty();
 }
 
 bool LocationIconDecoration::HasHoverAndPressEffect() {
@@ -130,4 +131,10 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
 NSString* LocationIconDecoration::GetToolTip() {
   return owner_->GetOmniboxView()->IsEditingOrEmpty() ?
       nil : l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
+}
+
+NSString* LocationIconDecoration::GetAccessibilityLabel() {
+  // This button should always be labelled even when the omnibox is being
+  // edited.
+  return l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
 }

@@ -334,7 +334,7 @@ void LocationBarViewMac::OnDecorationsChanged() {
   // change, here.
   std::vector<LocationBarDecoration*> decorations = GetDecorations();
   for (auto* decoration : decorations)
-    UpdateAccessibilityViewPosition(decoration);
+    UpdateAccessibilityView(decoration);
   [field_ updateMouseTracking];
   [field_ resetFieldEditorFrameIfNeeded];
   [field_ setNeedsDisplay:YES];
@@ -738,7 +738,7 @@ bool LocationBarViewMac::IsSecureConnection(
          level == security_state::EV_SECURE;
 }
 
-void LocationBarViewMac::UpdateAccessibilityViewPosition(
+void LocationBarViewMac::UpdateAccessibilityView(
     LocationBarDecoration* decoration) {
   if (!decoration->IsVisible())
     return;
@@ -746,6 +746,7 @@ void LocationBarViewMac::UpdateAccessibilityViewPosition(
       [[field_ cell] frameForDecoration:decoration inFrame:[field_ frame]];
   [decoration->GetAccessibilityView() setFrame:r];
   [decoration->GetAccessibilityView() setNeedsDisplayInRect:r];
+  decoration->UpdateAccessibilityView();
 }
 
 std::vector<LocationBarDecoration*> LocationBarViewMac::GetDecorations() {

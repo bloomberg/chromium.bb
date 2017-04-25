@@ -238,8 +238,9 @@ class LocationBarViewMac : public LocationBar,
   std::vector<LocationBarDecoration*> GetDecorations();
 
   // Updates |decoration|'s accessibility view's position to match the computed
-  // position the decoration will be drawn at.
-  void UpdateAccessibilityViewPosition(LocationBarDecoration* decoration);
+  // position the decoration will be drawn at, and update its enabled state
+  // based on whether |decoration| is accepting presses currently.
+  void UpdateAccessibilityView(LocationBarDecoration* decoration);
 
   std::unique_ptr<OmniboxViewMac> omnibox_view_;
 

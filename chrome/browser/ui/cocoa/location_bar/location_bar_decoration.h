@@ -63,6 +63,10 @@ class LocationBarDecoration {
   // Returns the tooltip for this decoration, return |nil| for no tooltip.
   virtual NSString* GetToolTip();
 
+  // Returns the accessibility label for this decoration, return |nil| to use
+  // the result of |GetTooltip()| as a fallback.
+  virtual NSString* GetAccessibilityLabel();
+
   // Methods to set up and remove the tracking area from the |control_view|.
   CrTrackingArea* SetupTrackingArea(NSRect frame, NSView* control_view);
   void RemoveTrackingArea();
@@ -143,6 +147,10 @@ class LocationBarDecoration {
   // to the private DecorationAccessibilityView helper class.
   void OnAccessibilityViewAction();
 
+  // Called when the omnibox decoration changes state to update the
+  // accessibility view's attributes to match.
+  void UpdateAccessibilityView();
+
   DecorationMouseState state() const { return state_; }
 
   bool active() const { return active_; }
@@ -177,7 +185,7 @@ class LocationBarDecoration {
   // True if the decoration is active.
   bool active_ = false;
 
-  base::scoped_nsobject<NSView> accessibility_view_;
+  base::scoped_nsobject<NSControl> accessibility_view_;
 
   // The decoration's tracking area. Only set if the decoration accepts a mouse
   // press.
