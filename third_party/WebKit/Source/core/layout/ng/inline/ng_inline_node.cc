@@ -13,8 +13,8 @@
 #include "core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_item.h"
+#include "core/layout/ng/inline/ng_inline_items_builder.h"
 #include "core/layout/ng/inline/ng_inline_layout_algorithm.h"
-#include "core/layout/ng/inline/ng_layout_inline_items_builder.h"
 #include "core/layout/ng/inline/ng_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -69,7 +69,7 @@ void NGInlineNode::PrepareLayout() {
 void NGInlineNode::CollectInlines(LayoutObject* start, LayoutBlockFlow* block) {
   DCHECK(text_content_.IsNull());
   DCHECK(items_.IsEmpty());
-  NGLayoutInlineItemsBuilder builder(&items_);
+  NGInlineItemsBuilder builder(&items_);
   builder.EnterBlock(block->Style());
   LayoutObject* next_sibling = CollectInlines(start, block, &builder);
   builder.ExitBlock();
@@ -81,10 +81,9 @@ void NGInlineNode::CollectInlines(LayoutObject* start, LayoutBlockFlow* block) {
                      !(text_content_.Is8Bit() && !builder.HasBidiControls());
 }
 
-LayoutObject* NGInlineNode::CollectInlines(
-    LayoutObject* start,
-    LayoutBlockFlow* block,
-    NGLayoutInlineItemsBuilder* builder) {
+LayoutObject* NGInlineNode::CollectInlines(LayoutObject* start,
+                                           LayoutBlockFlow* block,
+                                           NGInlineItemsBuilder* builder) {
   LayoutObject* node = start;
   while (node) {
     if (node->IsText()) {

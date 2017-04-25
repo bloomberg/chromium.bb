@@ -53,8 +53,8 @@ three separate steps or stages that are executed in order:
     all non-atomic inlines and `TextNodes`s. Atomic inlines are represented as a
     unicode object replacement character but are otherwise skipped.
     Each non-atomic inline and `TextNodes` is fed to a
-    [NGLayoutInlineItemsBuilder](ng_layout_inline_items_builder.h) instance
-    which collects the text content for all non-atomic inlines in the container.
+    [NGInlineItemsBuilder](ng_inline_items_builder.h) instance which collects
+    the text content for all non-atomic inlines in the container.
 
     During this process white-space is collapsed and normalized according to CSS
     white-space processing rules.

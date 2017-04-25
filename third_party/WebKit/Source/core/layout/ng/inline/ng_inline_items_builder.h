@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGLayoutInlineItemsBuilder_h
-#define NGLayoutInlineItemsBuilder_h
+#ifndef NGInlineItemsBuilder_h
+#define NGInlineItemsBuilder_h
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
@@ -18,8 +18,7 @@ class ComputedStyle;
 class LayoutObject;
 class NGInlineItem;
 
-// NGLayoutInlineItemsBuilder builds a string and a list of NGInlineItem from
-// inlines.
+// NGInlineItemsBuilder builds a string and a list of NGInlineItem from inlines.
 //
 // When appending, spaces are collapsed according to CSS Text, The white space
 // processing rules
@@ -28,13 +27,12 @@ class NGInlineItem;
 // By calling EnterInline/ExitInline, it inserts bidirectional control
 // characters as defined in:
 // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
-class CORE_EXPORT NGLayoutInlineItemsBuilder {
+class CORE_EXPORT NGInlineItemsBuilder {
   STACK_ALLOCATED();
 
  public:
-  explicit NGLayoutInlineItemsBuilder(Vector<NGInlineItem>* items)
-      : items_(items) {}
-  ~NGLayoutInlineItemsBuilder();
+  explicit NGInlineItemsBuilder(Vector<NGInlineItem>* items) : items_(items) {}
+  ~NGInlineItemsBuilder();
 
   String ToString();
 
@@ -115,4 +113,4 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
 
 }  // namespace blink
 
-#endif  // NGLayoutInlineItemsBuilder_h
+#endif  // NGInlineItemsBuilder_h

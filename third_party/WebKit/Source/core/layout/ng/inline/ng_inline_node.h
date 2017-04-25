@@ -21,7 +21,7 @@ struct MinMaxContentSize;
 class NGConstraintSpace;
 class NGInlineItem;
 class NGInlineItemRange;
-class NGLayoutInlineItemsBuilder;
+class NGInlineItemsBuilder;
 class NGLayoutResult;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
@@ -78,7 +78,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void CollectInlines(LayoutObject* start, LayoutBlockFlow*);
   LayoutObject* CollectInlines(LayoutObject* start,
                                LayoutBlockFlow*,
-                               NGLayoutInlineItemsBuilder*);
+                               NGInlineItemsBuilder*);
   void SegmentText();
   void ShapeText();
 

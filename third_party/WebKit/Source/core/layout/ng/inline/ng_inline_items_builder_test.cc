@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_layout_inline_items_builder.h"
+#include "core/layout/ng/inline/ng_inline_items_builder.h"
 
 #include "core/layout/LayoutInline.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
@@ -19,7 +19,7 @@ static PassRefPtr<ComputedStyle> CreateWhitespaceStyle(EWhiteSpace whitespace) {
   return style.Release();
 }
 
-class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
+class NGInlineItemsBuilderTest : public ::testing::Test {
  protected:
   void SetUp() override { style_ = ComputedStyle::Create(); }
 
@@ -29,7 +29,7 @@ class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
 
   const String& TestAppend(const String inputs[], int size) {
     items_.clear();
-    NGLayoutInlineItemsBuilder builder(&items_);
+    NGInlineItemsBuilder builder(&items_);
     for (int i = 0; i < size; i++)
       builder.Append(inputs[i], style_.Get());
     text_ = builder.ToString();
@@ -74,7 +74,7 @@ class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
   SetWhiteSpace(whitespace);                             \
   EXPECT_EQ(expected, TestAppend(input)) << "white-space: " #whitespace;
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseSpaces) {
+TEST_F(NGInlineItemsBuilderTest, CollapseSpaces) {
   String input("text text  text   text");
   String collapsed("text text text text");
   TestWhitespaceValue(collapsed, input, EWhiteSpace::kNormal);
@@ -85,7 +85,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseSpaces) {
   TestWhitespaceValue(input, input, EWhiteSpace::kPreWrap);
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseTabs) {
+TEST_F(NGInlineItemsBuilderTest, CollapseTabs) {
   String input("text\ttext\t text \t text");
   String collapsed("text text text text");
   TestWhitespaceValue(collapsed, input, EWhiteSpace::kNormal);
@@ -96,7 +96,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseTabs) {
   TestWhitespaceValue(input, input, EWhiteSpace::kPreWrap);
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewLines) {
+TEST_F(NGInlineItemsBuilderTest, CollapseNewLines) {
   String input("text\ntext \n text\n\ntext");
   String collapsed("text text text text");
   TestWhitespaceValue(collapsed, input, EWhiteSpace::kNormal);
@@ -106,38 +106,38 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewLines) {
   TestWhitespaceValue(input, input, EWhiteSpace::kPreWrap);
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewlinesAsSpaces) {
+TEST_F(NGInlineItemsBuilderTest, CollapseNewlinesAsSpaces) {
   EXPECT_EQ("text text", TestAppend("text\ntext"));
   EXPECT_EQ("text text", TestAppend("text\n\ntext"));
   EXPECT_EQ("text text", TestAppend("text \n\n text"));
   EXPECT_EQ("text text", TestAppend("text \n \n text"));
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAcrossElements) {
+TEST_F(NGInlineItemsBuilderTest, CollapseAcrossElements) {
   EXPECT_EQ("text text", TestAppend("text ", " text"))
       << "Spaces are collapsed even when across elements.";
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseLeadingSpaces) {
+TEST_F(NGInlineItemsBuilderTest, CollapseLeadingSpaces) {
   EXPECT_EQ("text", TestAppend("  text"));
   EXPECT_EQ("text", TestAppend(" ", "text"));
   EXPECT_EQ("text", TestAppend(" ", " text"));
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseTrailingSpaces) {
+TEST_F(NGInlineItemsBuilderTest, CollapseTrailingSpaces) {
   EXPECT_EQ("text", TestAppend("text  "));
   EXPECT_EQ("text", TestAppend("text", " "));
   EXPECT_EQ("text", TestAppend("text ", " "));
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAllSpaces) {
+TEST_F(NGInlineItemsBuilderTest, CollapseAllSpaces) {
   EXPECT_EQ("", TestAppend("  "));
   EXPECT_EQ("", TestAppend("  ", "  "));
   EXPECT_EQ("", TestAppend("  ", "\n"));
   EXPECT_EQ("", TestAppend("\n", "  "));
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseLeadingNewlines) {
+TEST_F(NGInlineItemsBuilderTest, CollapseLeadingNewlines) {
   EXPECT_EQ("text", TestAppend("\ntext"));
   EXPECT_EQ("text", TestAppend("\n\ntext"));
   EXPECT_EQ("text", TestAppend("\n", "text"));
@@ -151,7 +151,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseLeadingNewlines) {
   EXPECT_EQ("text", TestAppend(" \n", "\ntext"));
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseTrailingNewlines) {
+TEST_F(NGInlineItemsBuilderTest, CollapseTrailingNewlines) {
   EXPECT_EQ("text", TestAppend("text\n"));
   EXPECT_EQ("text", TestAppend("text", "\n"));
   EXPECT_EQ("text", TestAppend("text\n", "\n"));
@@ -159,20 +159,20 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseTrailingNewlines) {
   EXPECT_EQ("text", TestAppend("text ", "\n"));
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseBeforeNewlineAcrossElements) {
+TEST_F(NGInlineItemsBuilderTest, CollapseBeforeNewlineAcrossElements) {
   EXPECT_EQ("text text", TestAppend("text ", "\ntext"));
   EXPECT_EQ("text text", TestAppend("text", " ", "\ntext"));
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseBeforeAndAfterNewline) {
+TEST_F(NGInlineItemsBuilderTest, CollapseBeforeAndAfterNewline) {
   SetWhiteSpace(EWhiteSpace::kPreLine);
   EXPECT_EQ("text\ntext", TestAppend("text  \n  text"))
       << "Spaces before and after newline are removed.";
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest,
+TEST_F(NGInlineItemsBuilderTest,
        CollapsibleSpaceAfterNonCollapsibleSpaceAcrossElements) {
-  NGLayoutInlineItemsBuilder builder(&items_);
+  NGInlineItemsBuilder builder(&items_);
   RefPtr<ComputedStyle> pre_wrap(CreateWhitespaceStyle(EWhiteSpace::kPreWrap));
   builder.Append("text ", pre_wrap.Get());
   builder.Append(" text", style_.Get());
@@ -181,7 +181,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest,
          "pre-wrap\">text <span><span> text</span>' does not collapse.";
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseZeroWidthSpaces) {
+TEST_F(NGInlineItemsBuilderTest, CollapseZeroWidthSpaces) {
   EXPECT_EQ(String(u"text\u200Btext"), TestAppend(u"text\u200B\ntext"))
       << "Newline is removed if the character before is ZWS.";
   EXPECT_EQ(String(u"text\u200Btext"), TestAppend(u"text\n\u200Btext"))
@@ -204,7 +204,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseZeroWidthSpaces) {
          "newline was removed.";
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseEastAsianWidth) {
+TEST_F(NGInlineItemsBuilderTest, CollapseEastAsianWidth) {
   EXPECT_EQ(String(u"\u4E00\u4E00"), TestAppend(u"\u4E00\n\u4E00"))
       << "Newline is removed when both sides are Wide.";
 
@@ -220,16 +220,16 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseEastAsianWidth) {
          "when both sides are Wide.";
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAroundReplacedElement) {
-  NGLayoutInlineItemsBuilder builder(&items_);
+TEST_F(NGInlineItemsBuilderTest, CollapseAroundReplacedElement) {
+  NGInlineItemsBuilder builder(&items_);
   builder.Append("Hello ", style_.Get());
   builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
   builder.Append(" World", style_.Get());
   EXPECT_EQ(String(u"Hello \uFFFC World"), builder.ToString());
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewlineAfterObject) {
-  NGLayoutInlineItemsBuilder builder(&items_);
+TEST_F(NGInlineItemsBuilderTest, CollapseNewlineAfterObject) {
+  NGInlineItemsBuilder builder(&items_);
   builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
   builder.Append("\n", style_.Get());
   builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
@@ -240,14 +240,14 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewlineAfterObject) {
   EXPECT_EQ(nullptr, items_[2].Style());
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, AppendEmptyString) {
+TEST_F(NGInlineItemsBuilderTest, AppendEmptyString) {
   EXPECT_EQ("", TestAppend(""));
   EXPECT_EQ(0u, items_.size());
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, Empty) {
+TEST_F(NGInlineItemsBuilderTest, Empty) {
   Vector<NGInlineItem> items;
-  NGLayoutInlineItemsBuilder builder(&items);
+  NGInlineItemsBuilder builder(&items);
   RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
   builder.EnterBlock(block_style.Get());
   builder.ExitBlock();
@@ -255,9 +255,9 @@ TEST_F(NGLayoutInlineItemsBuilderTest, Empty) {
   EXPECT_EQ("", builder.ToString());
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, BidiBlockOverride) {
+TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
   Vector<NGInlineItem> items;
-  NGLayoutInlineItemsBuilder builder(&items);
+  NGInlineItemsBuilder builder(&items);
   RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
   block_style->SetUnicodeBidi(UnicodeBidi::kBidiOverride);
   block_style->SetDirection(TextDirection::kRtl);
@@ -282,9 +282,9 @@ static std::unique_ptr<LayoutInline> CreateLayoutInline(
   return node;
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolate) {
+TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
   Vector<NGInlineItem> items;
-  NGLayoutInlineItemsBuilder builder(&items);
+  NGInlineItemsBuilder builder(&items);
   builder.Append("Hello ", style_.Get());
   std::unique_ptr<LayoutInline> isolate_rtl(
       CreateLayoutInline([](ComputedStyle* style) {
@@ -306,9 +306,9 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolate) {
             builder.ToString());
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolateOverride) {
+TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
   Vector<NGInlineItem> items;
-  NGLayoutInlineItemsBuilder builder(&items);
+  NGInlineItemsBuilder builder(&items);
   builder.Append("Hello ", style_.Get());
   std::unique_ptr<LayoutInline> isolate_override_rtl(
       CreateLayoutInline([](ComputedStyle* style) {

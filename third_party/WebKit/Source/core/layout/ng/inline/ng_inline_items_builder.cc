@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_layout_inline_items_builder.h"
+#include "core/layout/ng/inline/ng_inline_items_builder.h"
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
@@ -10,12 +10,12 @@
 
 namespace blink {
 
-NGLayoutInlineItemsBuilder::~NGLayoutInlineItemsBuilder() {
+NGInlineItemsBuilder::~NGInlineItemsBuilder() {
   DCHECK_EQ(0u, exits_.size());
   DCHECK_EQ(text_.length(), items_->IsEmpty() ? 0 : items_->back().EndOffset());
 }
 
-String NGLayoutInlineItemsBuilder::ToString() {
+String NGInlineItemsBuilder::ToString() {
   // Segment Break Transformation Rules[1] defines to keep trailing new lines,
   // but it will be removed in Phase II[2]. We prefer not to add trailing new
   // lines and collapsible spaces in Phase I.
@@ -118,9 +118,9 @@ static inline bool IsCollapsibleSpace(UChar c, bool preserve_newline) {
          (!preserve_newline && c == kNewlineCharacter);
 }
 
-void NGLayoutInlineItemsBuilder::Append(const String& string,
-                                        const ComputedStyle* style,
-                                        LayoutObject* layout_object) {
+void NGInlineItemsBuilder::Append(const String& string,
+                                  const ComputedStyle* style,
+                                  LayoutObject* layout_object) {
   if (string.IsEmpty())
     return;
 
@@ -184,10 +184,10 @@ void NGLayoutInlineItemsBuilder::Append(const String& string,
   }
 }
 
-void NGLayoutInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
-                                        UChar character,
-                                        const ComputedStyle* style,
-                                        LayoutObject* layout_object) {
+void NGInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
+                                  UChar character,
+                                  const ComputedStyle* style,
+                                  LayoutObject* layout_object) {
   DCHECK_NE(character, kSpaceCharacter);
   DCHECK_NE(character, kTabulationCharacter);
   DCHECK_NE(character, kNewlineCharacter);
@@ -199,14 +199,14 @@ void NGLayoutInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
   last_collapsible_space_ = CollapsibleSpace::kNone;
 }
 
-void NGLayoutInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
-                                        const ComputedStyle* style,
-                                        LayoutObject* layout_object) {
+void NGInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
+                                  const ComputedStyle* style,
+                                  LayoutObject* layout_object) {
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset, end_offset, style, layout_object);
 }
 
-void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleNewlineIfNeeded(
+void NGInlineItemsBuilder::RemoveTrailingCollapsibleNewlineIfNeeded(
     unsigned* next_start_offset,
     const String& after,
     unsigned after_index,
@@ -227,14 +227,14 @@ void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleNewlineIfNeeded(
     RemoveTrailingCollapsibleSpace(next_start_offset);
 }
 
-void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleSpaceIfExists(
+void NGInlineItemsBuilder::RemoveTrailingCollapsibleSpaceIfExists(
     unsigned* next_start_offset) {
   if (last_collapsible_space_ != CollapsibleSpace::kNone && !text_.IsEmpty() &&
       text_[text_.length() - 1] == kSpaceCharacter)
     RemoveTrailingCollapsibleSpace(next_start_offset);
 }
 
-void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleSpace(
+void NGInlineItemsBuilder::RemoveTrailingCollapsibleSpace(
     unsigned* next_start_offset) {
   DCHECK_NE(last_collapsible_space_, CollapsibleSpace::kNone);
   DCHECK(!text_.IsEmpty());
@@ -270,14 +270,14 @@ void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleSpace(
   }
 }
 
-void NGLayoutInlineItemsBuilder::AppendBidiControl(const ComputedStyle* style,
-                                                   UChar ltr,
-                                                   UChar rtl) {
+void NGInlineItemsBuilder::AppendBidiControl(const ComputedStyle* style,
+                                             UChar ltr,
+                                             UChar rtl) {
   Append(NGInlineItem::kBidiControl,
          style->Direction() == TextDirection::kRtl ? rtl : ltr);
 }
 
-void NGLayoutInlineItemsBuilder::EnterBlock(const ComputedStyle* style) {
+void NGInlineItemsBuilder::EnterBlock(const ComputedStyle* style) {
   // Handle bidi-override on the block itself.
   switch (style->GetUnicodeBidi()) {
     case UnicodeBidi::kNormal:
@@ -304,7 +304,7 @@ void NGLayoutInlineItemsBuilder::EnterBlock(const ComputedStyle* style) {
   }
 }
 
-void NGLayoutInlineItemsBuilder::EnterInline(LayoutObject* node) {
+void NGInlineItemsBuilder::EnterInline(LayoutObject* node) {
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
   const ComputedStyle* style = node->Style();
   switch (style->GetUnicodeBidi()) {
@@ -341,17 +341,16 @@ void NGLayoutInlineItemsBuilder::EnterInline(LayoutObject* node) {
   Append(NGInlineItem::kOpenTag, style, node);
 }
 
-void NGLayoutInlineItemsBuilder::Enter(LayoutObject* node,
-                                       UChar character_to_exit) {
+void NGInlineItemsBuilder::Enter(LayoutObject* node, UChar character_to_exit) {
   exits_.push_back(OnExitNode{node, character_to_exit});
   has_bidi_controls_ = true;
 }
 
-void NGLayoutInlineItemsBuilder::ExitBlock() {
+void NGInlineItemsBuilder::ExitBlock() {
   Exit(nullptr);
 }
 
-void NGLayoutInlineItemsBuilder::ExitInline(LayoutObject* node) {
+void NGInlineItemsBuilder::ExitInline(LayoutObject* node) {
   DCHECK(node);
 
   Append(NGInlineItem::kCloseTag, node->Style(), node);
@@ -359,7 +358,7 @@ void NGLayoutInlineItemsBuilder::ExitInline(LayoutObject* node) {
   Exit(node);
 }
 
-void NGLayoutInlineItemsBuilder::Exit(LayoutObject* node) {
+void NGInlineItemsBuilder::Exit(LayoutObject* node) {
   while (!exits_.IsEmpty() && exits_.back().node == node) {
     Append(NGInlineItem::kBidiControl, exits_.back().character);
     exits_.pop_back();
