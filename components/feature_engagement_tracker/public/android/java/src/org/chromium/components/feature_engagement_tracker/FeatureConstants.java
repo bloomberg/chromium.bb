@@ -10,6 +10,7 @@ package org.chromium.components.feature_engagement_tracker;
  */
 public final class FeatureConstants {
     public static final String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
+    public static final String DOWNLOAD_HOME_FEATURE = "IPH_DownloadHome";
 
     /**
      * Do not instantiate.

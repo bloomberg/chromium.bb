@@ -233,8 +233,8 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     @VisibleForTesting
     void onSuccessNotificationShown(
             final PendingNotificationInfo notificationInfo, final int notificationId) {
-        if (notificationInfo.downloadInfo != null
-                && !notificationInfo.downloadInfo.getIsOpenable()) {
+        if (notificationInfo.downloadInfo == null
+                || !notificationInfo.downloadInfo.getIsOpenable()) {
             return;
         }
         DownloadManagerService.getDownloadManagerService().onSuccessNotificationShown(

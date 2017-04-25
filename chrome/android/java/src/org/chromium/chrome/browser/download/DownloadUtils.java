@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -152,6 +153,11 @@ public class DownloadUtils {
                 activity.startActivity(intent);
             }
         }
+
+        Profile profile = (tab == null ? Profile.getLastUsedProfile() : tab.getProfile());
+        FeatureEngagementTracker tracker =
+                FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(profile);
+        tracker.notifyEvent(EventConstants.DOWNLOAD_HOME_OPENED);
 
         return true;
     }

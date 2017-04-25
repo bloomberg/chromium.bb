@@ -11,7 +11,8 @@ namespace feature_engagement_tracker {
 
 namespace {
 
-const base::Feature* kAllFeatures[] = {&kIPHDownloadPageFeature};
+const base::Feature* kAllFeatures[] = {&kIPHDownloadPageFeature,
+                                       &kIPHDownloadHomeFeature};
 
 }  // namespace
 

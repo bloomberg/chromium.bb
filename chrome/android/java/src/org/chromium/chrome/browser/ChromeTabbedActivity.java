@@ -31,10 +31,12 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -63,6 +65,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.feature_engagement_tracker.FeatureEngagementTrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -116,6 +119,9 @@ import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
+import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
+import org.chromium.components.feature_engagement_tracker.FeatureConstants;
+import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
@@ -688,11 +694,48 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
 
             mLayoutManager.hideOverview(false);
+            FeatureEngagementTracker tracker =
+                    FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
+                            Profile.getLastUsedProfile());
+            tracker.addOnInitializedCallback(new Callback<Boolean>() {
+                @Override
+                public void onResult(Boolean result) {
+                    showFeatureEngagementTextBubbleForDownloadHome();
+                }
+            });
 
             mUIInitialized = true;
         } finally {
             TraceEvent.end("ChromeTabbedActivity.initializeUI");
         }
+    }
+
+    private void showFeatureEngagementTextBubbleForDownloadHome() {
+        final FeatureEngagementTracker tracker =
+                FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
+                        Profile.getLastUsedProfile());
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_HOME_FEATURE)) return;
+
+        ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(
+                this, getToolbarManager().getMenuAnchor(), R.string.iph_download_home_text);
+        textBubble.setDismissOnTouchInteraction(true);
+        textBubble.addOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        tracker.dismissed();
+                        getAppMenuHandler().setMenuHighlight(null);
+                    }
+                });
+            }
+        });
+        getAppMenuHandler().setMenuHighlight(R.id.downloads_menu_id);
+        int yInsetPx =
+                getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
+        textBubble.setInsetPx(0, yInsetPx, 0, 0);
+        textBubble.show();
     }
 
     private boolean isMainIntent(Intent intent) {

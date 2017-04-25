@@ -19,6 +19,16 @@ public final class EventConstants {
     public static final String DOWNLOAD_PAGE_STARTED = "download_page_started";
 
     /**
+     * The download has completed successfully.
+     */
+    public static final String DOWNLOAD_COMPLETED = "download_completed";
+
+    /**
+     * The download home was opened by the user (from toolbar menu or notifications).
+     */
+    public static final String DOWNLOAD_HOME_OPENED = "download_home_opened";
+
+    /**
      * Do not instantiate.
      */
     private EventConstants() {}

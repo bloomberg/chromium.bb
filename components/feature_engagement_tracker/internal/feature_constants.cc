@@ -13,5 +13,7 @@ const base::Feature kIPHDemoMode{"IPH_DemoMode",
 
 const base::Feature kIPHDownloadPageFeature{"IPH_DownloadPage",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHDownloadHomeFeature{"IPH_DownloadHome",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace feature_engagement_tracker
