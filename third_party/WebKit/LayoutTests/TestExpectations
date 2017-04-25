@@ -3448,6 +3448,9 @@ crbug.com/707689 shapedetection/detection-HTMLCanvasElement.html [ Skip ]
 # Sheriff failures 2017-04-19
 crbug.com/713094 [ Win ] virtual/sharedarraybuffer/fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
+# Sheriff failures 2017-04-24
+crbug.com/714862 [ Android ] tables/mozilla/collapsing_borders/bug41262-3.html [ Failure ]
+
 # Tests to be run only under virtual/experimental-canvas-features/
 crbug.com/682753 fast/canvas-experimental [ Skip ]
 
