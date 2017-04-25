@@ -274,7 +274,13 @@ typedef enum {
 typedef enum { PLANE_TYPE_Y = 0, PLANE_TYPE_UV = 1, PLANE_TYPES } PLANE_TYPE;
 
 #if CONFIG_CFL
+// TODO(ltrudeau) this should change based on QP size
+#define CB_ALPHABET_SIZE 4
+#define CR_ALPHABET_SIZE 4
+#define CFL_ALPHABET_SIZE (CB_ALPHABET_SIZE * CR_ALPHABET_SIZE)
+
 typedef enum { CFL_PRED_U = 0, CFL_PRED_V = 1, CFL_PRED_PLANES } CFL_PRED_TYPE;
+typedef enum { CFL_SIGN_NEG = 0, CFL_SIGN_POS = 1, CFL_SIGNS } CFL_SIGN_TYPE;
 #endif
 
 #if CONFIG_PALETTE

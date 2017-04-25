@@ -336,7 +336,7 @@ typedef struct {
 #endif  // CONFIG_EXT_INTER
 
 // This structure now relates to 8x8 block regions.
-typedef struct {
+typedef struct MB_MODE_INFO {
   // Common for both INTER and INTRA blocks
   BLOCK_SIZE sb_type;
   PREDICTION_MODE mode;
@@ -436,6 +436,13 @@ typedef struct {
   int num_proj_ref[2];
   WarpedMotionParams wm_params[2];
 #endif  // CONFIG_WARPED_MOTION
+
+#if CONFIG_CFL
+  // Index of the alpha Cb and alpha Cr combination
+  int cfl_alpha_ind;
+  // Signs of alpha Cb and alpha Cr
+  CFL_SIGN_TYPE cfl_alpha_signs[CFL_PRED_PLANES];
+#endif
 
   BOUNDARY_TYPE boundary_info;
 } MB_MODE_INFO;

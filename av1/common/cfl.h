@@ -22,6 +22,10 @@ typedef struct AV1Common AV1_COMMON;
 // dependency by importing av1/common/blockd.h
 typedef struct macroblockd MACROBLOCKD;
 
+// Forward declaration of MB_MODE_INFO, in order to avoid creating a cyclic
+// dependency by importing av1/common/blockd.h
+typedef struct MB_MODE_INFO MB_MODE_INFO;
+
 typedef struct {
   // Pixel buffer containing the luma pixels used as prediction for chroma
   uint8_t y_pix[MAX_SB_SQUARE];
@@ -34,15 +38,31 @@ typedef struct {
 
   // CfL Performs its own block level DC_PRED for each chromatic plane
   int dc_pred[CFL_PRED_PLANES];
+
+  // Count the number of TX blocks in a predicted block to know when you are at
+  // the last one, so you can check for skips.
+  // TODO(any) Is there a better way to do this?
+  int num_tx_blk[CFL_PRED_PLANES];
 } CFL_CTX;
+
+static const double cfl_alpha_codes[CFL_ALPHABET_SIZE][CFL_PRED_PLANES] = {
+  // barrbrain's simple 1D quant ordered by subset 3 likelihood
+  { 0., 0. },    { 0.125, 0.125 }, { 0.25, 0. },   { 0.25, 0.125 },
+  { 0.125, 0. }, { 0.25, 0.25 },   { 0., 0.125 },  { 0.5, 0.5 },
+  { 0.5, 0.25 }, { 0.125, 0.25 },  { 0.5, 0. },    { 0.25, 0.5 },
+  { 0., 0.25 },  { 0.5, 0.125 },   { 0.125, 0.5 }, { 0., 0.5 }
+};
 
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm, int subsampling_x,
               int subsampling_y);
 
 void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size);
 
+double cfl_ind_to_alpha(const MB_MODE_INFO *mbmi, CFL_PRED_TYPE pred_type);
+
 void cfl_predict_block(const CFL_CTX *cfl, uint8_t *dst, int dst_stride,
-                       int row, int col, TX_SIZE tx_size, int dc_pred);
+                       int row, int col, TX_SIZE tx_size, int dc_pred,
+                       double alpha);
 
 void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
                int col, TX_SIZE tx_size);

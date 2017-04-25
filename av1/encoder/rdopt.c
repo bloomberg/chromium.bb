@@ -1533,7 +1533,12 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   if (args->exit_early) return;
 
   if (!is_inter_block(mbmi)) {
+#if CONFIG_CFL
+    av1_predict_intra_block_encoder_facade(xd, plane, block, blk_col, blk_row,
+                                           tx_size);
+#else
     av1_predict_intra_block_facade(xd, plane, block, blk_col, blk_row, tx_size);
+#endif
     av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
   }
 
@@ -2343,7 +2348,11 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   int block = 0;
   for (row = 0; row < max_blocks_high; row += stepr) {
     for (col = 0; col < max_blocks_wide; col += stepc) {
+#if CONFIG_CFL
+      av1_predict_intra_block_encoder_facade(xd, 0, block, col, row, tx_size);
+#else
       av1_predict_intra_block_facade(xd, 0, block, col, row, tx_size);
+#endif
       block += step;
     }
   }

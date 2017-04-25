@@ -303,6 +303,9 @@ typedef struct frame_contexts {
   // such as coef_cdfs[], coef_tail_cdfs[], and coef_heaf_cdfs[] can be removed.
   od_adapt_ctx pvq_context;
 #endif  // CONFIG_PVQ
+#if CONFIG_CFL
+  aom_cdf_prob cfl_alpha_cdf[CFL_ALPHABET_SIZE];
+#endif
 } FRAME_CONTEXT;
 
 typedef struct FRAME_COUNTS {

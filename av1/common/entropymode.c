@@ -2544,6 +2544,16 @@ static const aom_cdf_prob
     };
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 
+#if CONFIG_CFL
+static const aom_cdf_prob default_cfl_alpha_cdf[CFL_ALPHABET_SIZE] = {
+  // decreasing likelihood, after 6 iterations of alpha RDO on subset 3
+  AOM_ICDF(23928), AOM_ICDF(26267), AOM_ICDF(27319), AOM_ICDF(28330),
+  AOM_ICDF(29341), AOM_ICDF(30160), AOM_ICDF(30581), AOM_ICDF(30983),
+  AOM_ICDF(31353), AOM_ICDF(31634), AOM_ICDF(31907), AOM_ICDF(32171),
+  AOM_ICDF(32407), AOM_ICDF(32558), AOM_ICDF(32669), AOM_ICDF(32768)
+};
+#endif
+
 // CDF version of 'av1_kf_y_mode_prob'.
 const aom_cdf_prob
     av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)] = {
@@ -3332,6 +3342,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_EC_MULTISYMBOL
 #endif
 #endif  // CONFIG_DELTA_Q
+#if CONFIG_CFL
+  av1_copy(fc->cfl_alpha_cdf, default_cfl_alpha_cdf);
+#endif
 }
 
 #if CONFIG_EC_MULTISYMBOL
