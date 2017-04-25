@@ -97,15 +97,16 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
 
   static WrapperVisitor* CurrentVisitor(v8::Isolate*);
 
-  static void WriteBarrier(const void*,
+  static void WriteBarrier(v8::Isolate*,
+                           const void*,
                            const TraceWrapperV8Reference<v8::Value>*);
 
   // TODO(mlippautz): Remove once ScriptWrappable is converted to
   // TraceWrapperV8Reference.
-  static void WriteBarrier(const v8::Persistent<v8::Object>*);
+  static void WriteBarrier(v8::Isolate*, const v8::Persistent<v8::Object>*);
 
   template <typename T>
-  static void WriteBarrier(const void* object, const Member<T> value) {
+  static void WriteBarrier(const void* object, const Member<T>& value) {
     WriteBarrier(object, value.Get());
   }
 

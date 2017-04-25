@@ -224,6 +224,7 @@ void ScriptWrappableVisitor::MarkWrappersInAllWorlds(
 }
 
 void ScriptWrappableVisitor::WriteBarrier(
+    v8::Isolate* isolate,
     const void* src_object,
     const TraceWrapperV8Reference<v8::Value>* dst_object) {
   if (!src_object || !dst_object || dst_object->IsEmpty()) {
@@ -235,18 +236,17 @@ void ScriptWrappableVisitor::WriteBarrier(
   if (!HeapObjectHeader::FromPayload(src_object)->IsWrapperHeaderMarked()) {
     return;
   }
-  CurrentVisitor(ThreadState::Current()->GetIsolate())
-      ->MarkWrapper(&(
-          const_cast<TraceWrapperV8Reference<v8::Value>*>(dst_object)->Get()));
+  CurrentVisitor(isolate)->MarkWrapper(
+      &(const_cast<TraceWrapperV8Reference<v8::Value>*>(dst_object)->Get()));
 }
 
 void ScriptWrappableVisitor::WriteBarrier(
+    v8::Isolate* isolate,
     const v8::Persistent<v8::Object>* dst_object) {
   if (!dst_object || dst_object->IsEmpty()) {
     return;
   }
-  CurrentVisitor(ThreadState::Current()->GetIsolate())
-      ->MarkWrapper(&(dst_object->As<v8::Value>()));
+  CurrentVisitor(isolate)->MarkWrapper(&(dst_object->As<v8::Value>()));
 }
 
 void ScriptWrappableVisitor::TraceWrappers(
