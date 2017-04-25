@@ -528,7 +528,8 @@ class BuildImageStage(BuildPackagesStage):
       commands.BuildVMImageForTesting(
           self._build_root,
           self._current_board,
-          extra_env=self._portage_extra_env)
+          extra_env=self._portage_extra_env,
+          disk_layout=self._run.config.disk_layout)
 
   def _GenerateAuZip(self, image_dir):
     """Create au-generator.zip."""
