@@ -252,6 +252,7 @@ WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     : adapter_(adapter),
       has_close_been_called_(false),
       is_closed_(false),
+      is_persistent_session_(false),
       weak_ptr_factory_(this) {}
 
 WebContentDecryptionModuleSessionImpl::
@@ -357,8 +358,11 @@ void WebContentDecryptionModuleSessionImpl::InitializeNewSession(
   // 10.8 Let cdm be the CDM instance represented by this object's cdm
   //      instance value.
   // 10.9 Use the cdm to execute the following steps:
+  CdmSessionType cdm_session_type = convertSessionType(session_type);
+  is_persistent_session_ =
+      cdm_session_type != CdmSessionType::TEMPORARY_SESSION;
   adapter_->InitializeNewSession(
-      eme_init_data_type, sanitized_init_data, convertSessionType(session_type),
+      eme_init_data_type, sanitized_init_data, cdm_session_type,
       std::unique_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix(), kGenerateRequestUMAName,
           base::Bind(
@@ -391,6 +395,7 @@ void WebContentDecryptionModuleSessionImpl::Load(
   // TODO(jrummell): Now that there are 2 types of persistent sessions, the
   // session type should be passed from blink. Type should also be passed in the
   // constructor (and removed from initializeNewSession()).
+  is_persistent_session_ = true;
   adapter_->LoadSession(
       CdmSessionType::PERSISTENT_LICENSE_SESSION, sanitized_session_id,
       std::unique_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
@@ -459,6 +464,16 @@ void WebContentDecryptionModuleSessionImpl::Remove(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!session_id_.empty());
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(http://crbug.com/616166). Once all supported CDMs allow remove() on
+  // temporary sessions, remove this code.
+  if (!is_persistent_session_ && !IsClearKey(adapter_->GetKeySystem())) {
+    result.CompleteWithError(
+        blink::kWebContentDecryptionModuleExceptionTypeError, 0,
+        "remove() on temporary sessions is not supported by this key system.");
+    return;
+  }
+
   adapter_->RemoveSession(
       session_id_,
       std::unique_ptr<SimpleCdmPromise>(new CdmResultPromise<>(

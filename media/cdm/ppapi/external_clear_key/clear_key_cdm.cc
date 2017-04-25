@@ -330,7 +330,8 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host,
           origin,
           base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionClosed, base::Unretained(this)),
-          base::Bind(&ClearKeyCdm::OnSessionKeysChange,
+          base::Bind(&ClearKeyCdm::OnSessionKeysChange, base::Unretained(this)),
+          base::Bind(&ClearKeyCdm::OnSessionExpirationUpdate,
                      base::Unretained(this)))),
       host_(host),
       key_system_(key_system),
@@ -489,19 +490,8 @@ void ClearKeyCdm::RemoveSession(uint32_t promise_id,
   std::string web_session_str(session_id, session_id_length);
 
   // RemoveSession only allowed for the loadable session.
-  if (web_session_str == std::string(kLoadableSessionId)) {
+  if (web_session_str == std::string(kLoadableSessionId))
     web_session_str = session_id_for_emulated_loadsession_;
-  } else {
-    // TODO(jrummell): This should be a DCHECK once blink does the proper
-    // checks.
-    std::string message("Not supported for non-persistent sessions.");
-    host_->OnRejectPromise(promise_id,
-                           cdm::kInvalidAccessError,
-                           0,
-                           message.data(),
-                           message.length());
-    return;
-  }
 
   std::unique_ptr<media::SimpleCdmPromise> promise(
       new media::CdmCallbackPromise<>(
@@ -890,6 +880,15 @@ void ClearKeyCdm::OnSessionClosed(const std::string& session_id) {
   if (new_session_id == session_id_for_emulated_loadsession_)
     new_session_id = std::string(kLoadableSessionId);
   host_->OnSessionClosed(new_session_id.data(), new_session_id.length());
+}
+
+void ClearKeyCdm::OnSessionExpirationUpdate(const std::string& session_id,
+                                            base::Time new_expiry_time) {
+  std::string new_session_id = session_id;
+  if (new_session_id == session_id_for_emulated_loadsession_)
+    new_session_id = std::string(kLoadableSessionId);
+  host_->OnExpirationChange(new_session_id.data(), new_session_id.length(),
+                            new_expiry_time.ToDoubleT());
 }
 
 void ClearKeyCdm::OnSessionCreated(uint32_t promise_id,

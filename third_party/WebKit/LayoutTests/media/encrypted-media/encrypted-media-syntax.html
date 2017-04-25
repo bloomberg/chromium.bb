@@ -814,15 +814,6 @@
                     assert_unreached('remove() should not succeed if session uninitialized');
                 }, function(error) {
                     assert_equals(error.name, 'InvalidStateError');
-
-                    // remove() on a temporary session should fail.
-                    return mediaKeySession.generateRequest(type, initData);
-                }).then(function(result) {
-                    return mediaKeySession.remove();
-                }).then(function(result) {
-                    assert_unreached('remove() should not succeed for temporary sessions');
-                }, function(error) {
-                    assert_equals(error.name, 'TypeError');
                 });
             }
 
@@ -861,17 +852,26 @@
 
             function create_remove_test(mediaKeys, type, initData)
             {
-                // Clear Key may not support persistent-license sessions.
-                var mediaKeySession;
-                try {
-                    mediaKeySession = mediaKeys.createSession('persistent-license');
-                } catch (error) {
-                    // Not supported, so return a resolved promise.
-                    assert_equals(error.name, 'NotSupportedError');
-                    return Promise.resolve();
-                }
-                return mediaKeySession.generateRequest(type, initData).then(function(result) {
+                var mediaKeySession = mediaKeys.createSession();
+                var promise = mediaKeySession.generateRequest(type, initData).then(function(result) {
                     return mediaKeySession.remove();
+                }).then(function() {
+                    // remove() doesn't close the session, so must call close().
+                    return mediaKeySession.close();
+                }).then(function() {
+                    try {
+                        // Clear Key may not support persistent-license sessions.
+                        mediaKeySession = mediaKeys.createSession('persistent-license');
+                        return mediaKeySession.generateRequest(type, initData).then(function(result) {
+                            return mediaKeySession.remove();
+                        }).then(function() {
+                            return mediaKeySession.close();
+                        });
+                    } catch (error) {
+                        // Not supported, so return a resolved promise.
+                        assert_equals(error.name, 'NotSupportedError');
+                        return Promise.resolve();
+                    }
                 });
             }
 

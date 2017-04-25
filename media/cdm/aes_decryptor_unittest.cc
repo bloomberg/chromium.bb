@@ -252,6 +252,8 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
                            base::Bind(&MockCdmClient::OnSessionClosed,
                                       base::Unretained(&cdm_client_)),
                            base::Bind(&MockCdmClient::OnSessionKeysChange,
+                                      base::Unretained(&cdm_client_)),
+                           base::Bind(&MockCdmClient::OnSessionExpirationUpdate,
                                       base::Unretained(&cdm_client_))),
           std::string());
     } else if (GetParam() == "CdmAdapter") {
@@ -348,10 +350,12 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
     cdm_->CloseSession(session_id, CreatePromise(RESOLVED));
   }
 
-  // Only persistent sessions can be removed.
+  // Removes the session specified by |session_id|.
   void RemoveSession(const std::string& session_id) {
-    // TODO(ddorwin): This should be RESOLVED after https://crbug.com/616166.
-    cdm_->RemoveSession(session_id, CreatePromise(REJECTED));
+    EXPECT_CALL(cdm_client_, OnSessionKeysChangeCalled(session_id, false));
+    EXPECT_CALL(cdm_client_,
+                OnSessionExpirationUpdate(session_id, IsNullTime()));
+    cdm_->RemoveSession(session_id, CreatePromise(RESOLVED));
   }
 
   // Updates the session specified by |session_id| with |key|. |result|
@@ -380,10 +384,14 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
                         CreatePromise(expected_result));
   }
 
-  bool KeysInfoContains(const std::vector<uint8_t>& expected) {
+  bool KeysInfoContains(const std::vector<uint8_t>& expected_key_id,
+                        CdmKeyInformation::KeyStatus expected_status =
+                            CdmKeyInformation::USABLE) {
     for (auto* key_id : cdm_client_.keys_info()) {
-      if (key_id->key_id == expected)
+      if (key_id->key_id == expected_key_id &&
+          key_id->status == expected_status) {
         return true;
+      }
     }
     return false;
   }
@@ -781,6 +789,26 @@ TEST_P(AesDecryptorTest, RemoveSession) {
       DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS));
 
   RemoveSession(session_id);
+  ASSERT_NO_FATAL_FAILURE(
+      DecryptAndExpect(encrypted_buffer, original_data_, NO_KEY));
+}
+
+TEST_P(AesDecryptorTest, RemoveThenCloseSession) {
+  std::string session_id = CreateSession(key_id_);
+  scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
+      encrypted_data_, key_id_, iv_, no_subsample_entries_);
+
+  UpdateSessionAndExpect(session_id, kKeyAsJWK, RESOLVED, true);
+  EXPECT_TRUE(KeysInfoContains(key_id_, CdmKeyInformation::USABLE));
+  ASSERT_NO_FATAL_FAILURE(
+      DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS));
+
+  RemoveSession(session_id);
+  EXPECT_TRUE(KeysInfoContains(key_id_, CdmKeyInformation::RELEASED));
+  ASSERT_NO_FATAL_FAILURE(
+      DecryptAndExpect(encrypted_buffer, original_data_, NO_KEY));
+
+  CloseSession(session_id);
 }
 
 TEST_P(AesDecryptorTest, NoKeyAfterCloseSession) {

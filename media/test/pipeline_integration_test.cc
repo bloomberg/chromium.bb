@@ -269,6 +269,11 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
+  void OnSessionExpirationUpdate(const std::string& session_id,
+                                 base::Time new_expiry_time) override {
+    EXPECT_EQ(current_session_id_, session_id);
+  }
+
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8_t>& init_data,
                                 AesDecryptor* decryptor) override {
@@ -351,6 +356,9 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
     EXPECT_FALSE(session_id.empty());
     EXPECT_EQ(has_additional_usable_key, true);
   }
+
+  void OnSessionExpirationUpdate(const std::string& session_id,
+                                 base::Time new_expiry_time) override {}
 
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8_t>& init_data,

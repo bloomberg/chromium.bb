@@ -84,6 +84,9 @@ class WebContentDecryptionModuleSessionImpl
   bool has_close_been_called_;
   bool is_closed_;
 
+  // Keep track of whether this is a persistent session or not.
+  bool is_persistent_session_;
+
   base::ThreadChecker thread_checker_;
   // Since promises will live until they are fired, use a weak reference when
   // creating a promise in case this class disappears before the promise

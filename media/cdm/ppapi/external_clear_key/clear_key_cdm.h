@@ -100,6 +100,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info);
   void OnSessionClosed(const std::string& session_id);
+  void OnSessionExpirationUpdate(const std::string& session_id,
+                                 base::Time new_expiry_time);
 
   // Handle the success/failure of a promise. These methods are responsible for
   // calling |host_| to resolve or reject the promise.

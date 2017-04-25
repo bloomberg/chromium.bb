@@ -15,7 +15,6 @@
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -231,13 +230,16 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   return output;
 }
 
-AesDecryptor::AesDecryptor(const GURL& /* security_origin */,
-                           const SessionMessageCB& session_message_cb,
-                           const SessionClosedCB& session_closed_cb,
-                           const SessionKeysChangeCB& session_keys_change_cb)
+AesDecryptor::AesDecryptor(
+    const GURL& /* security_origin */,
+    const SessionMessageCB& session_message_cb,
+    const SessionClosedCB& session_closed_cb,
+    const SessionKeysChangeCB& session_keys_change_cb,
+    const SessionExpirationUpdateCB& session_expiration_update_cb)
     : session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
-      session_keys_change_cb_(session_keys_change_cb) {
+      session_keys_change_cb_(session_keys_change_cb),
+      session_expiration_update_cb_(session_expiration_update_cb) {
   // AesDecryptor doesn't keep any persistent data, so no need to do anything
   // with |security_origin|.
   DCHECK(!session_message_cb_.is_null());
@@ -391,19 +393,9 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
 
   promise->resolve();
 
-  // Create the list of all available keys for this session.
-  CdmKeysInfo keys_info;
-  {
-    base::AutoLock auto_lock(key_map_lock_);
-    for (const auto& item : key_map_) {
-      if (item.second->Contains(session_id)) {
-        keys_info.push_back(
-            new CdmKeyInformation(item.first, CdmKeyInformation::USABLE, 0));
-      }
-    }
-  }
-
-  session_keys_change_cb_.Run(session_id, key_added, std::move(keys_info));
+  session_keys_change_cb_.Run(
+      session_id, key_added,
+      GenerateKeysInfoList(session_id, CdmKeyInformation::USABLE));
 }
 
 // Runs the parallel steps from https://w3c.github.io/encrypted-media/#close.
@@ -437,11 +429,57 @@ void AesDecryptor::CloseSession(const std::string& session_id,
   promise->resolve();
 }
 
+// Runs the parallel steps from https://w3c.github.io/encrypted-media/#remove.
 void AesDecryptor::RemoveSession(const std::string& session_id,
                                  std::unique_ptr<SimpleCdmPromise> promise) {
-  NOTIMPLEMENTED() << "Need to address https://crbug.com/616166.";
-  promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
-                  "Session does not exist.");
+  std::set<std::string>::iterator it = open_sessions_.find(session_id);
+  if (it == open_sessions_.end()) {
+    // Session doesn't exist. Since this should only be called if the session
+    // existed at one time, this must mean the session has been closed.
+    promise->reject(CdmPromise::INVALID_STATE_ERROR, 0,
+                    "The session is already closed.");
+    return;
+  }
+
+  // Create the list of all existing keys for this session. They will be
+  // removed, so set the status to "released".
+  CdmKeysInfo keys_info =
+      GenerateKeysInfoList(session_id, CdmKeyInformation::RELEASED);
+
+  // 4.1. Let cdm be the CDM instance represented by session's cdm instance
+  //      value.
+  // 4.2 Let message be null.
+  // 4.3 Let message type be null.
+  // 4.4 Use the cdm to execute the following steps:
+  // 4.4.1.1 Destroy the license(s) and/or key(s) associated with the session.
+  DeleteKeysForSession(session_id);
+
+  // 4.4.1.2 Follow the steps for the value of this object's session type
+  //         from the following list:
+  //           "temporary"
+  //              Continue with the following steps.
+  //           "persistent-license"
+  //              (Not supported, so no need to do anything.)
+
+  // 4.5. Queue a task to run the following steps:
+  // 4.5.1 Run the Update Key Statuses algorithm on the session, providing
+  //       all key ID(s) in the session along with the "released"
+  //       MediaKeyStatus value for each.
+  session_keys_change_cb_.Run(session_id, false, std::move(keys_info));
+
+  // 4.5.2 Run the Update Expiration algorithm on the session, providing NaN.
+  session_expiration_update_cb_.Run(session_id, base::Time());
+
+  // 4.5.3 If any of the preceding steps failed, reject promise with a new
+  //       DOMException whose name is the appropriate error name.
+  // 4.5.4 Let message type be "license-release".
+  // 4.5.5 If message is not null, run the Queue a "message" Event algorithm
+  //       on the session, providing message type and message.
+  // (Not needed as message is only set for persistent licenses, and they're
+  //  not supported here.)
+
+  // 4.5.6. Resolve promise.
+  promise->resolve();
 }
 
 CdmContext* AesDecryptor::GetCdmContext() {
@@ -606,6 +644,22 @@ void AesDecryptor::DeleteKeysForSession(const std::string& session_id) {
       ++it;
     }
   }
+}
+
+CdmKeysInfo AesDecryptor::GenerateKeysInfoList(
+    const std::string& session_id,
+    CdmKeyInformation::KeyStatus status) {
+  // Create the list of all available keys for this session.
+  CdmKeysInfo keys_info;
+  {
+    base::AutoLock auto_lock(key_map_lock_);
+    for (const auto& item : key_map_) {
+      if (item.second->Contains(session_id)) {
+        keys_info.push_back(new CdmKeyInformation(item.first, status, 0));
+      }
+    }
+  }
+  return keys_info;
 }
 
 AesDecryptor::DecryptionKey::DecryptionKey(const std::string& secret)

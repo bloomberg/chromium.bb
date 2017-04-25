@@ -33,6 +33,9 @@ class FakeEncryptedMedia {
                                      bool has_additional_usable_key,
                                      CdmKeysInfo keys_info) = 0;
 
+    virtual void OnSessionExpirationUpdate(const std::string& session_id,
+                                           base::Time new_expiry_time) = 0;
+
     virtual void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                           const std::vector<uint8_t>& init_data,
                                           AesDecryptor* decryptor) = 0;
@@ -49,6 +52,8 @@ class FakeEncryptedMedia {
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info);
+  void OnSessionExpirationUpdate(const std::string& session_id,
+                                 base::Time new_expiry_time);
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8_t>& init_data);
 

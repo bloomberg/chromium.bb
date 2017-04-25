@@ -22,14 +22,16 @@ int FakeEncryptedMedia::TestCdmContext::GetCdmId() const {
 }
 
 FakeEncryptedMedia::FakeEncryptedMedia(AppBase* app)
-    : decryptor_(
-          new AesDecryptor(GURL::EmptyGURL(),
-                           base::Bind(&FakeEncryptedMedia::OnSessionMessage,
-                                      base::Unretained(this)),
-                           base::Bind(&FakeEncryptedMedia::OnSessionClosed,
-                                      base::Unretained(this)),
-                           base::Bind(&FakeEncryptedMedia::OnSessionKeysChange,
-                                      base::Unretained(this)))),
+    : decryptor_(new AesDecryptor(
+          GURL::EmptyGURL(),
+          base::Bind(&FakeEncryptedMedia::OnSessionMessage,
+                     base::Unretained(this)),
+          base::Bind(&FakeEncryptedMedia::OnSessionClosed,
+                     base::Unretained(this)),
+          base::Bind(&FakeEncryptedMedia::OnSessionKeysChange,
+                     base::Unretained(this)),
+          base::Bind(&FakeEncryptedMedia::OnSessionExpirationUpdate,
+                     base::Unretained(this)))),
       cdm_context_(decryptor_.get()),
       app_(app) {}
 
@@ -56,6 +58,12 @@ void FakeEncryptedMedia::OnSessionKeysChange(const std::string& session_id,
                                              CdmKeysInfo keys_info) {
   app_->OnSessionKeysChange(session_id, has_additional_usable_key,
                             std::move(keys_info));
+}
+
+void FakeEncryptedMedia::OnSessionExpirationUpdate(
+    const std::string& session_id,
+    base::Time new_expiry_time) {
+  app_->OnSessionExpirationUpdate(session_id, new_expiry_time);
 }
 
 void FakeEncryptedMedia::OnEncryptedMediaInitData(

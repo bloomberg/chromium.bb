@@ -49,7 +49,7 @@ void AndroidCdmFactory::Create(
       IsExternalClearKey(key_system)) {
     scoped_refptr<ContentDecryptionModule> cdm(
         new AesDecryptor(security_origin, session_message_cb, session_closed_cb,
-                         session_keys_change_cb));
+                         session_keys_change_cb, session_expiration_update_cb));
     bound_cdm_created_cb.Run(cdm, "");
     return;
   }
