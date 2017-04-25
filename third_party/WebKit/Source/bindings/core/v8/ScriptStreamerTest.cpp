@@ -417,6 +417,23 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM) {
   EXPECT_FALSE(try_catch.HasCaught());
 }
 
+// A test for crbug.com/711703. Should not crash.
+TEST_F(ScriptStreamingTest, GarbageCollectDuringStreaming) {
+  V8TestingScope scope;
+  ScriptStreamer::StartStreaming(
+      GetPendingScript(), ScriptStreamer::kParsingBlocking, settings_.get(),
+      scope.GetScriptState(), loading_task_runner_);
+
+  TestPendingScriptClient* client = new TestPendingScriptClient;
+  GetPendingScript()->WatchForLoad(client);
+  EXPECT_FALSE(client->Finished());
+
+  pending_script_ = nullptr;
+  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                         BlinkGC::kGCWithSweep,
+                                         BlinkGC::kForcedGC);
+}
+
 }  // namespace
 
 }  // namespace blink
