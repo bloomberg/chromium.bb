@@ -41,6 +41,7 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
+#include "content/browser/android/selection_popup_controller.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -765,7 +766,7 @@ void RenderWidgetHostViewAndroid::OnTextSelectionChanged(
   if (is_in_vr_)
     return;
 
-  if (!content_view_core_)
+  if (!selection_popup_controller_)
     return;
 
   RenderWidgetHostImpl* focused_widget = GetFocusedWidget();
@@ -775,7 +776,7 @@ void RenderWidgetHostViewAndroid::OnTextSelectionChanged(
   const TextInputManager::TextSelection& selection =
       *text_input_manager_->GetTextSelection(focused_widget->GetView());
 
-  content_view_core_->OnSelectionChanged(
+  selection_popup_controller_->OnSelectionChanged(
       base::UTF16ToUTF8(selection.selected_text()));
 }
 
@@ -1294,7 +1295,7 @@ void RenderWidgetHostViewAndroid::SelectBetweenCoordinates(
 
 void RenderWidgetHostViewAndroid::OnSelectionEvent(
     ui::SelectionEventType event) {
-  DCHECK(content_view_core_);
+  DCHECK(selection_popup_controller_);
   DCHECK(touch_selection_controller_);
   // If a selection drag has started, it has taken over the active touch
   // sequence. Immediately cancel gesture detection and any downstream touch
@@ -1303,7 +1304,7 @@ void RenderWidgetHostViewAndroid::OnSelectionEvent(
       gesture_provider_.GetCurrentDownEvent()) {
     ResetGestureDetection();
   }
-  content_view_core_->OnSelectionEvent(
+  selection_popup_controller_->OnSelectionEvent(
       event, touch_selection_controller_->GetStartPosition(),
       GetSelectionRect(*touch_selection_controller_));
 }

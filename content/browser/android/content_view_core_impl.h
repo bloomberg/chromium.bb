@@ -268,10 +268,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void OnGestureEventAck(const blink::WebGestureEvent& event,
                          InputEventAckState ack_result);
   bool FilterInputEvent(const blink::WebInputEvent& event);
-  void OnSelectionChanged(const std::string& text);
-  void OnSelectionEvent(ui::SelectionEventType event,
-                        const gfx::PointF& selection_anchor,
-                        const gfx::RectF& selection_rect);
 
   // Shows the disambiguation popup
   // |rect_pixels|   --> window coordinates which |zoomed_bitmap| represents

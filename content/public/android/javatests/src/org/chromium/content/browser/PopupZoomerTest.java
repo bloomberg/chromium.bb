@@ -25,6 +25,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 /**
@@ -94,13 +95,13 @@ public class PopupZoomerTest {
             @Override
             public void run() {
                 Context context = mActivityTestRule.getActivity();
+                WebContents webContents = mActivityTestRule.getContentViewCore().getWebContents();
                 mContentViewCore = new ContentViewCore(context, "");
                 mContentViewCore.setSelectionPopupControllerForTesting(new SelectionPopupController(
-                        context, null, null, null, mContentViewCore.getRenderCoordinates()));
-                mContentViewCore.setImeAdapterForTest(
-                        new ImeAdapter(mActivityTestRule.getContentViewCore().getWebContents(),
-                                mActivityTestRule.getContentViewCore().getContainerView(),
-                                new TestInputMethodManagerWrapper(mContentViewCore)));
+                        context, null, webContents, null, mContentViewCore.getRenderCoordinates()));
+                mContentViewCore.setImeAdapterForTest(new ImeAdapter(webContents,
+                        mActivityTestRule.getContentViewCore().getContainerView(),
+                        new TestInputMethodManagerWrapper(mContentViewCore)));
                 mPopupZoomer = createPopupZoomerForTest(InstrumentationRegistry.getTargetContext());
                 mContentViewCore.setPopupZoomerForTest(mPopupZoomer);
             }

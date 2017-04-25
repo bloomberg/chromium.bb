@@ -28,6 +28,8 @@ import android.view.WindowManager;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
 import org.chromium.content.browser.input.FloatingPastePopupMenu;
@@ -52,6 +54,7 @@ import java.util.List;
  * to create {@link ActionMode.Callback} instance and configure the selection action
  * mode tasks to their requirements.
  */
+@JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.M)
 public class SelectionPopupController extends ActionModeCallbackHelper {
     private static final String TAG = "SelectionPopupCtlr"; // 20 char limit
@@ -131,6 +134,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     // arrives or till the selection is adjusted based on the classification result.
     private boolean mPendingShowActionMode;
 
+    // Whether a scroll is in progress.
+    private boolean mScrollInProgress;
+
     /**
      * Create {@link SelectionPopupController} instance.
      * @param context Context for action mode.
@@ -169,6 +175,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             mAssistMenuItemId =
                     mContext.getResources().getIdentifier("textAssist", "id", "android");
         }
+
+        nativeInit(webContents);
     }
 
     /**
@@ -360,12 +368,17 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         }
     }
 
+    void setScrollInProgress(boolean inProgress) {
+        mScrollInProgress = inProgress;
+        hideActionMode(inProgress);
+    }
+
     /**
      * Hide or reveal the ActionMode. Note that this only has visible
      * side-effects if the underlying ActionMode supports hiding.
      * @param hide whether to hide or show the ActionMode.
      */
-    void hideActionMode(boolean hide) {
+    private void hideActionMode(boolean hide) {
         if (!canHideActionMode()) return;
         if (mHidden == hide) return;
         mHidden = hide;
@@ -832,9 +845,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     // All coordinates are in DIP.
-    void onSelectionEvent(int eventType, int xAnchor, int yAnchor,
-            int left, int top, int right, int bottom, boolean isScrollInProgress,
-            boolean touchScrollInProgress) {
+    @CalledByNative
+    private void onSelectionEvent(
+            int eventType, int xAnchor, int yAnchor, int left, int top, int right, int bottom) {
         // Ensure the provided selection coordinates form a non-empty rect, as required by
         // the selection action mode.
         if (left == right) ++right;
@@ -896,7 +909,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             case SelectionEventType.INSERTION_HANDLE_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
-                if (!isScrollInProgress && isPastePopupShowing()) {
+                if (!mScrollInProgress && isPastePopupShowing()) {
                     showPastePopup(xAnchor, yAnchor);
                 } else {
                     destroyPastePopup();
@@ -952,7 +965,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mClassificationResult = null;
     }
 
-    void onSelectionChanged(String text) {
+    @CalledByNative
+    private void onSelectionChanged(String text) {
         mLastSelectedText = text;
         if (mSelectionClient != null) {
             mSelectionClient.onSelectionChanged(text);
@@ -1050,4 +1064,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             showActionModeOrClearOnFailure();
         }
     };
+
+    private native void nativeInit(WebContents webContents);
 }

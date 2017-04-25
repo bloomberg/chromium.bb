@@ -824,9 +824,8 @@ public class ContentViewCore
     }
 
     private void setTouchScrollInProgress(boolean inProgress) {
-        if (mTouchScrollInProgress == inProgress) return;
         mTouchScrollInProgress = inProgress;
-        mSelectionPopupController.hideActionMode(inProgress);
+        mSelectionPopupController.setScrollInProgress(isScrollInProgress());
     }
 
     @SuppressWarnings("unused")
@@ -1584,13 +1583,6 @@ public class ContentViewCore
         mPreserveSelectionOnNextLossOfFocus = true;
     }
 
-    @CalledByNative
-    private void onSelectionEvent(
-            int eventType, int xAnchor, int yAnchor, int left, int top, int right, int bottom) {
-        mSelectionPopupController.onSelectionEvent(eventType, xAnchor, yAnchor,
-                left, top, right, bottom, isScrollInProgress(), mTouchScrollInProgress);
-    }
-
     private void setTextHandlesTemporarilyHidden(boolean hide) {
         if (mNativeContentViewCore == 0) return;
         nativeSetTextHandlesTemporarilyHidden(mNativeContentViewCore, hide);
@@ -1768,12 +1760,6 @@ public class ContentViewCore
     @CalledByNative
     private MotionEventSynthesizer createMotionEventSynthesizer() {
         return new MotionEventSynthesizer(getContainerView(), this);
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onSelectionChanged(String text) {
-        mSelectionPopupController.onSelectionChanged(text);
     }
 
     @SuppressWarnings("unused")
@@ -2351,20 +2337,21 @@ public class ContentViewCore
         final boolean touchScrollInProgress = mTouchScrollInProgress;
         final int potentiallyActiveFlingCount = mPotentiallyActiveFlingCount;
 
-        setTouchScrollInProgress(false);
         mPotentiallyActiveFlingCount = 0;
+        setTouchScrollInProgress(false);
         if (touchScrollInProgress) updateGestureStateListener(GestureEventType.SCROLL_END);
         if (potentiallyActiveFlingCount > 0) updateGestureStateListener(GestureEventType.FLING_END);
     }
 
     @CalledByNative
     private void onNativeFlingStopped() {
+        if (mPotentiallyActiveFlingCount > 0) {
+            mPotentiallyActiveFlingCount--;
+            updateGestureStateListener(GestureEventType.FLING_END);
+        }
         // Note that mTouchScrollInProgress should normally be false at this
         // point, but we reset it anyway as another failsafe.
         setTouchScrollInProgress(false);
-        if (mPotentiallyActiveFlingCount <= 0) return;
-        mPotentiallyActiveFlingCount--;
-        updateGestureStateListener(GestureEventType.FLING_END);
     }
 
     // DisplayAndroidObserver method.

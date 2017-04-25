@@ -52,6 +52,7 @@ class ImeAdapterAndroid;
 class OverscrollControllerAndroid;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
+class SelectionPopupController;
 class SynchronousCompositorHost;
 class SynchronousCompositorClient;
 struct NativeWebKeyboardEvent;
@@ -244,6 +245,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void set_ime_adapter(ImeAdapterAndroid* ime_adapter) {
     ime_adapter_android_ = ime_adapter;
   }
+  void set_selection_popup_controller(SelectionPopupController* controller) {
+    selection_popup_controller_ = controller;
+  }
 
   base::WeakPtr<RenderWidgetHostViewAndroid> GetWeakPtrAndroid();
 
@@ -363,6 +367,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   ContentViewCoreImpl* content_view_core_;
 
   ImeAdapterAndroid* ime_adapter_android_;
+  SelectionPopupController* selection_popup_controller_;
 
   // The background color of the widget.
   SkColor background_color_;

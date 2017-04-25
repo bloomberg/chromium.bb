@@ -596,29 +596,6 @@ void ContentViewCoreImpl::RequestDisallowInterceptTouchEvent() {
     Java_ContentViewCore_requestDisallowInterceptTouchEvent(env, obj);
 }
 
-void ContentViewCoreImpl::OnSelectionChanged(const std::string& text) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  ScopedJavaLocalRef<jstring> jtext = ConvertUTF8ToJavaString(env, text);
-  Java_ContentViewCore_onSelectionChanged(env, obj, jtext);
-}
-
-void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
-                                           const gfx::PointF& selection_anchor,
-                                           const gfx::RectF& selection_rect) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return;
-
-  Java_ContentViewCore_onSelectionEvent(
-      env, j_obj, event, selection_anchor.x(), selection_anchor.y(),
-      selection_rect.x(), selection_rect.y(), selection_rect.right(),
-      selection_rect.bottom());
-}
-
 bool ContentViewCoreImpl::ShowPastePopup(const ContextMenuParams& params) {
   // Display paste pop-up only when selection is empty and editable.
   if (!(params.is_editable && params.selection_text.empty()))

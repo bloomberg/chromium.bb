@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
@@ -87,8 +88,9 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
             super(activity, windowAndroid, null);
             setSelectionController(new MockCSSelectionController(activity, this));
             ContentViewCore contentView = getSelectionController().getBaseContentView();
+            WebContents webContents = WebContentsFactory.createWebContents(false, false);
             contentView.setSelectionPopupControllerForTesting(new SelectionPopupController(
-                    activity, null, null, null, contentView.getRenderCoordinates()));
+                    activity, null, webContents, null, contentView.getRenderCoordinates()));
             contentView.setSelectionClient(this);
             MockContextualSearchPolicy policy = new MockContextualSearchPolicy();
             setContextualSearchPolicy(policy);
