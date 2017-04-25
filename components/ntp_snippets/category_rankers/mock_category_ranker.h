@@ -20,6 +20,10 @@ class MockCategoryRanker : public CategoryRanker {
   MOCK_CONST_METHOD2(Compare, bool(Category left, Category right));
   MOCK_METHOD2(ClearHistory, void(base::Time begin, base::Time end));
   MOCK_METHOD1(AppendCategoryIfNecessary, void(Category category));
+  MOCK_METHOD2(InsertCategoryBeforeIfNecessary,
+               void(Category category_to_insert, Category anchor));
+  MOCK_METHOD2(InsertCategoryAfterIfNecessary,
+               void(Category category_to_insert, Category anchor));
   MOCK_METHOD1(OnSuggestionOpened, void(Category category));
   MOCK_METHOD1(OnCategoryDismissed, void(Category Category));
 };

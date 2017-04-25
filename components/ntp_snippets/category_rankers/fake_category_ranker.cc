@@ -30,6 +30,18 @@ void FakeCategoryRanker::AppendCategoryIfNecessary(Category category) {
   // Ignored.
 }
 
+void FakeCategoryRanker::InsertCategoryBeforeIfNecessary(
+    Category category_to_insert,
+    Category anchor) {
+  // Ignored.
+}
+
+void FakeCategoryRanker::InsertCategoryAfterIfNecessary(
+    Category category_to_insert,
+    Category anchor) {
+  // Ignored.
+}
+
 void FakeCategoryRanker::OnSuggestionOpened(Category category) {
   // Ignored.
 }

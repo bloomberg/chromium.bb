@@ -24,8 +24,8 @@ namespace ntp_snippets {
 // to the top. The new remote categories must be registered using
 // AppendCategoryIfNecessary. All other categories must be hardcoded in the
 // initial order. The order and category usage data are persisted in prefs and
-// reloaded on startup. TODO(crbug.com/675929): Remove unused categories from
-// prefs.
+// reloaded on startup.
+// TODO(crbug.com/675929): Remove unused categories from prefs.
 class ClickBasedCategoryRanker : public CategoryRanker {
  public:
   explicit ClickBasedCategoryRanker(PrefService* pref_service,
@@ -36,6 +36,10 @@ class ClickBasedCategoryRanker : public CategoryRanker {
   bool Compare(Category left, Category right) const override;
   void ClearHistory(base::Time begin, base::Time end) override;
   void AppendCategoryIfNecessary(Category category) override;
+  void InsertCategoryBeforeIfNecessary(Category category_to_insert,
+                                       Category anchor) override;
+  void InsertCategoryAfterIfNecessary(Category category_to_insert,
+                                      Category anchor) override;
   void OnSuggestionOpened(Category category) override;
   void OnCategoryDismissed(Category category) override;
 
@@ -76,6 +80,9 @@ class ClickBasedCategoryRanker : public CategoryRanker {
   void StoreOrderToPrefs(const std::vector<RankedCategory>& ordered_categories);
   std::vector<RankedCategory>::iterator FindCategory(Category category);
   bool ContainsCategory(Category category) const;
+  void InsertCategoryRelativeToIfNecessary(Category category_to_insert,
+                                           Category anchor,
+                                           bool after);
 
   base::Time ReadLastDecayTimeFromPrefs() const;
   void StoreLastDecayTimeToPrefs(base::Time last_decay_time);

@@ -571,6 +571,20 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetOrderNewRemoteCategoriesBasedOnArticlesCategoryParam(bool value) {
+    // params_manager supports only one
+    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
+    // previous settings first and then set everything we need.
+    params_manager_.ClearAllVariationParams();
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        kArticleSuggestionsFeature.name,
+        {{"order_new_remote_categories_based_on_articles_category",
+          value ? "true" : "false"},
+         {"content_suggestions_backend",
+          kTestContentSuggestionsServerEndpoint}},
+        {kArticleSuggestionsFeature.name});
+  }
+
  private:
   variations::testing::VariationParamsManager params_manager_;
   test::RemoteSuggestionsTestUtils utils_;
@@ -744,6 +758,58 @@ TEST_F(RemoteSuggestionsProviderImplTest, AddRemoteCategoriesToCategoryRanker) {
     EXPECT_CALL(*raw_mock_ranker,
                 AppendCategoryIfNecessary(Category::FromRemoteCategory(12)));
   }
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
+  LoadFromJSONString(service.get(), json_str);
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       AddRemoteCategoriesToCategoryRankerRelativeToArticles) {
+  SetOrderNewRemoteCategoriesBasedOnArticlesCategoryParam(true);
+  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
+  SetCategoryRanker(std::move(mock_ranker));
+  std::string json_str =
+      MultiCategoryJsonBuilder()
+          .AddCategory({GetSuggestionN(0)}, /*remote_category_id=*/14)
+          .AddCategory({GetSuggestionN(1)}, /*remote_category_id=*/13)
+          .AddCategory({GetSuggestionN(2)}, /*remote_category_id=*/1)
+          .AddCategory({GetSuggestionN(3)}, /*remote_category_id=*/12)
+          .AddCategory({GetSuggestionN(4)}, /*remote_category_id=*/11)
+          .Build();
+  {
+    InSequence s;
+    EXPECT_CALL(*raw_mock_ranker,
+                InsertCategoryBeforeIfNecessary(
+                    Category::FromRemoteCategory(14), articles_category()));
+    EXPECT_CALL(*raw_mock_ranker,
+                InsertCategoryBeforeIfNecessary(
+                    Category::FromRemoteCategory(13), articles_category()));
+    EXPECT_CALL(*raw_mock_ranker,
+                InsertCategoryAfterIfNecessary(Category::FromRemoteCategory(11),
+                                               articles_category()));
+    EXPECT_CALL(*raw_mock_ranker,
+                InsertCategoryAfterIfNecessary(Category::FromRemoteCategory(12),
+                                               articles_category()));
+  }
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
+  LoadFromJSONString(service.get(), json_str);
+}
+
+TEST_F(
+    RemoteSuggestionsProviderImplTest,
+    AddRemoteCategoriesToCategoryRankerRelativeToArticlesWithArticlesAbsent) {
+  SetOrderNewRemoteCategoriesBasedOnArticlesCategoryParam(true);
+  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
+  SetCategoryRanker(std::move(mock_ranker));
+  std::string json_str =
+      MultiCategoryJsonBuilder()
+          .AddCategory({GetSuggestionN(0)}, /*remote_category_id=*/11)
+          .Build();
+
+  EXPECT_CALL(*raw_mock_ranker, InsertCategoryBeforeIfNecessary(_, _)).Times(0);
+  EXPECT_CALL(*raw_mock_ranker,
+              AppendCategoryIfNecessary(Category::FromRemoteCategory(11)));
   auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
   LoadFromJSONString(service.get(), json_str);
 }

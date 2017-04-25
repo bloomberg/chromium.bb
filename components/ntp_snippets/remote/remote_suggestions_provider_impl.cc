@@ -24,6 +24,7 @@
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
@@ -31,6 +32,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/variations/variations_associated_data.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 
@@ -50,6 +52,47 @@ const char kCategoryContentId[] = "id";
 const char kCategoryContentTitle[] = "title";
 const char kCategoryContentProvidedByServer[] = "provided_by_server";
 const char kCategoryContentAllowFetchingMore[] = "allow_fetching_more";
+
+// Variation parameter for ordering new remote categories based on their
+// position in the response relative to "Article for you" category.
+const char kOrderNewRemoteCategoriesBasedOnArticlesCategory[] =
+    "order_new_remote_categories_based_on_articles_category";
+
+bool IsOrderingNewRemoteCategoriesBasedOnArticlesCategoryEnabled() {
+  return variations::GetVariationParamByFeatureAsBool(
+      ntp_snippets::kArticleSuggestionsFeature,
+      kOrderNewRemoteCategoriesBasedOnArticlesCategory,
+      /*default_value=*/false);
+}
+
+void AddFetchedCategoriesToRankerBasedOnArticlesCategory(
+    CategoryRanker* ranker,
+    const RemoteSuggestionsFetcher::FetchedCategoriesVector& fetched_categories,
+    Category articles_category) {
+  DCHECK(IsOrderingNewRemoteCategoriesBasedOnArticlesCategoryEnabled());
+  // Insert categories which precede "Articles" in the response.
+  for (const RemoteSuggestionsFetcher::FetchedCategory& fetched_category :
+       fetched_categories) {
+    if (fetched_category.category == articles_category) {
+      break;
+    }
+    ranker->InsertCategoryBeforeIfNecessary(fetched_category.category,
+                                            articles_category);
+  }
+  // Insert categories which follow "Articles" in the response. Note that we
+  // insert them in reversed order, because they are inserted right after
+  // "Articles", which reverses the order.
+  for (auto fetched_category_it = fetched_categories.rbegin();
+       fetched_category_it != fetched_categories.rend();
+       ++fetched_category_it) {
+    if (fetched_category_it->category == articles_category) {
+      return;
+    }
+    ranker->InsertCategoryAfterIfNecessary(fetched_category_it->category,
+                                           articles_category);
+  }
+  NOTREACHED() << "Articles category was not found.";
+}
 
 template <typename SuggestionPtrContainer>
 std::unique_ptr<std::vector<std::string>> GetSuggestionIDVector(
@@ -710,6 +753,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
   if (fetched_categories) {
     // TODO(treib): Reorder |category_contents_| to match the order we received
     // from the server. crbug.com/653816
+    bool response_includes_article_category = false;
     for (RemoteSuggestionsFetcher::FetchedCategory& fetched_category :
          *fetched_categories) {
       // TODO(tschumann): Remove this histogram once we only talk to the content
@@ -719,14 +763,27 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
             "NewTabPage.Snippets.NumArticlesFetched",
             std::min(fetched_category.suggestions.size(),
                      static_cast<size_t>(kMaxSuggestionCount + 1)));
+        response_includes_article_category = true;
       }
-      category_ranker_->AppendCategoryIfNecessary(fetched_category.category);
+
       CategoryContent* content =
           UpdateCategoryInfo(fetched_category.category, fetched_category.info);
       content->included_in_last_server_response = true;
       SanitizeReceivedSuggestions(content->dismissed,
                                   &fetched_category.suggestions);
       IntegrateSuggestions(content, std::move(fetched_category.suggestions));
+    }
+
+    // Add new remote categories to the ranker.
+    if (IsOrderingNewRemoteCategoriesBasedOnArticlesCategoryEnabled() &&
+        response_includes_article_category) {
+      AddFetchedCategoriesToRankerBasedOnArticlesCategory(
+          category_ranker_, *fetched_categories, articles_category_);
+    } else {
+      for (const RemoteSuggestionsFetcher::FetchedCategory& fetched_category :
+           *fetched_categories) {
+        category_ranker_->AppendCategoryIfNecessary(fetched_category.category);
+      }
     }
   }
 

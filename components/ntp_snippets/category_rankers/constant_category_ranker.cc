@@ -57,6 +57,24 @@ void ConstantCategoryRanker::AppendCategoryIfNecessary(Category category) {
   }
 }
 
+void ConstantCategoryRanker::InsertCategoryBeforeIfNecessary(
+    Category category_to_insert,
+    Category anchor) {
+  // TODO(vitaliii): Implement.
+  LOG(DFATAL) << "Not implemented, use ClickBasedCategoryRanker instead for "
+                 "inserting categories relative to other categories.";
+  AppendCategoryIfNecessary(category_to_insert);
+}
+
+void ConstantCategoryRanker::InsertCategoryAfterIfNecessary(
+    Category category_to_insert,
+    Category anchor) {
+  // TODO(vitaliii): Implement.
+  LOG(DFATAL) << "Not implemented, use ClickBasedCategoryRanker instead for "
+                 "inserting categories relative to other categories.";
+  AppendCategoryIfNecessary(category_to_insert);
+}
+
 void ConstantCategoryRanker::OnSuggestionOpened(Category category) {
   // Ignored. The order is constant.
 }

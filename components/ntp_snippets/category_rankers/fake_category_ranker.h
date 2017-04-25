@@ -27,6 +27,10 @@ class FakeCategoryRanker : public CategoryRanker {
   bool Compare(Category left, Category right) const override;
   void ClearHistory(base::Time begin, base::Time end) override;
   void AppendCategoryIfNecessary(Category category) override;
+  void InsertCategoryBeforeIfNecessary(Category category_to_insert,
+                                       Category anchor) override;
+  void InsertCategoryAfterIfNecessary(Category category_to_insert,
+                                      Category anchor) override;
   void OnSuggestionOpened(Category category) override;
   void OnCategoryDismissed(Category category) override;
 
