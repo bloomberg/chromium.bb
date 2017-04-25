@@ -995,7 +995,7 @@ public class PageInfoPopup implements OnClickListener {
 
         String offlinePageCreationDate = null;
 
-        OfflinePageItem offlinePage = tab.getOfflinePage();
+        OfflinePageItem offlinePage = OfflinePageUtils.getOfflinePage(tab);
         if (offlinePage != null) {
             // Get formatted creation date of the offline page.
             Date creationDate = new Date(offlinePage.getCreationTimeMs());

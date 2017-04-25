@@ -62,6 +62,7 @@ public class OfflinePageTabObserverTest {
         doReturn(false).when(observer).isShowingOfflinePreview(any(Tab.class));
         // TODO(fgorski): This call has to be mocked out until we update OfflinePageUtils.
         doNothing().when(observer).showReloadSnackbar(any(Tab.class));
+        doReturn(true).when(observer).isOfflinePage(any(Tab.class));
         // Assert tab model observer was created.
         assertTrue(observer.getTabModelObserver() != null);
         return observer;
@@ -76,7 +77,6 @@ public class OfflinePageTabObserverTest {
         doReturn(TAB_ID).when(mTab).getId();
         doReturn(false).when(mTab).isFrozen();
         doReturn(false).when(mTab).isHidden();
-        doReturn(true).when(mTab).isOfflinePage();
         doReturn(mActivity).when(mTab).getActivity();
 
         // Setting up mock snackbar manager.
@@ -130,14 +130,14 @@ public class OfflinePageTabObserverTest {
     public void testStartObservingTab() {
         OfflinePageTabObserver observer = createObserver();
 
-        doReturn(false).when(mTab).isOfflinePage();
+        doReturn(false).when(observer).isOfflinePage(any(Tab.class));
         observer.startObservingTab(mTab);
 
         assertFalse(observer.isObservingNetworkChanges());
         assertFalse(observer.isObservingTab(mTab));
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
 
-        doReturn(true).when(mTab).isOfflinePage();
+        doReturn(true).when(observer).isOfflinePage(any(Tab.class));
         observer.startObservingTab(mTab);
 
         assertTrue(observer.isObservingNetworkChanges());
@@ -400,7 +400,7 @@ public class OfflinePageTabObserverTest {
         verify(mSnackbarManager, times(1)).dismissSnackbars(eq(mSnackbarController));
 
         // URL updated and tab no longer shows offline page.
-        doReturn(false).when(mTab).isOfflinePage();
+        doReturn(false).when(observer).isOfflinePage(any(Tab.class));
         observer.onUrlUpdated(mTab);
 
         assertFalse(observer.isObservingTab(mTab));
@@ -432,7 +432,7 @@ public class OfflinePageTabObserverTest {
         observer.onPageLoadFinished(mTab);
 
         // URL updated and tab no longer shows offline page.
-        doReturn(false).when(mTab).isOfflinePage();
+        doReturn(false).when(observer).isOfflinePage(any(Tab.class));
         observer.onUrlUpdated(mTab);
 
         assertFalse(observer.isObservingTab(mTab));

@@ -631,6 +631,30 @@ void OfflinePageBridge::ScheduleDownload(
       static_cast<OfflinePageUtils::DownloadUIActionFlags>(ui_action));
 }
 
+jboolean OfflinePageBridge::IsOfflinePage(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  return offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
+             web_contents) != nullptr;
+}
+
+ScopedJavaLocalRef<jobject> OfflinePageBridge::GetOfflinePage(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  const offline_pages::OfflinePageItem* offline_page =
+      offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
+          content::WebContents::FromJavaWebContents(j_web_contents));
+  if (!offline_page)
+    return ScopedJavaLocalRef<jobject>();
+
+  return offline_pages::android::OfflinePageBridge::ConvertToJavaOfflinePage(
+      env, *offline_page);
+}
+
 void OfflinePageBridge::NotifyIfDoneLoading() const {
   if (!offline_page_model_->is_loaded())
     return;

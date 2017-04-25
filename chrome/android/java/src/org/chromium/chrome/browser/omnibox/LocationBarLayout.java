@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
@@ -895,7 +896,8 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @LocationBarButtonType private int getLocationBarButtonToShow() {
-        boolean isOffline = getCurrentTab() != null && getCurrentTab().isOfflinePage();
+        boolean isOffline =
+                getCurrentTab() != null && OfflinePageUtils.isOfflinePage(getCurrentTab());
         boolean isTablet = DeviceFormFactor.isTablet(getContext());
 
         // The navigation icon type is only applicable on tablets.  While smaller form factors do
@@ -1342,7 +1344,8 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void updateSecurityIcon(int securityLevel) {
         boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
-        boolean isOfflinePage = getCurrentTab() != null && getCurrentTab().isOfflinePage();
+        boolean isOfflinePage =
+                getCurrentTab() != null && OfflinePageUtils.isOfflinePage(getCurrentTab());
         int id = getSecurityIconResource(securityLevel, isSmallDevice, isOfflinePage);
         if (id == 0) {
             mSecurityButton.setImageDrawable(null);
@@ -1432,7 +1435,7 @@ public class LocationBarLayout extends FrameLayout
         // Because is offline page is cleared a bit slower, we also ensure that connection security
         // level is NONE or HTTP_SHOW_WARNING (http://crbug.com/671453).
         boolean verboseStatusVisible = !mUrlHasFocus && getCurrentTab() != null
-                && getCurrentTab().isOfflinePage()
+                && OfflinePageUtils.isOfflinePage(getCurrentTab())
                 && (getSecurityLevel() == ConnectionSecurityLevel.NONE
                            || getSecurityLevel() == ConnectionSecurityLevel.HTTP_SHOW_WARNING);
 

@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * Access gate to C++ side offline pages functionalities.
  */
@@ -468,6 +470,25 @@ public class OfflinePageBridge {
         nativeScheduleDownload(mNativeOfflinePageBridge, webContents, nameSpace, url, uiAction);
     }
 
+    /**
+     * Checks if an offline page is shown for the webContents.
+     * @param webContents Web contents used to find the offline page.
+     * @return True if the offline page is opened.
+     */
+    public boolean isOfflinePage(WebContents webContents) {
+        return nativeIsOfflinePage(mNativeOfflinePageBridge, webContents);
+    }
+
+    /**
+     * Retrieves the offline page that is shown for the tab.
+     * @param webContents Web contents used to find the offline page.
+     * @return The offline page if tab currently displays it, null otherwise.
+     */
+    @Nullable
+    public OfflinePageItem getOfflinePage(WebContents webContents) {
+        return nativeGetOfflinePage(mNativeOfflinePageBridge, webContents);
+    }
+
     @VisibleForTesting
     static void setOfflineBookmarksEnabledForTesting(boolean enabled) {
         sOfflineBookmarksEnabled = enabled;
@@ -573,4 +594,8 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, WebContents webContents);
     private native void nativeScheduleDownload(long nativeOfflinePageBridge,
             WebContents webContents, String nameSpace, String url, int uiAction);
+    private native boolean nativeIsOfflinePage(
+            long nativeOfflinePageBridge, WebContents webContents);
+    private native OfflinePageItem nativeGetOfflinePage(
+            long nativeOfflinePageBridge, WebContents webContents);
 }

@@ -15,9 +15,6 @@
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
-#include "chrome/browser/android/offline_pages/offline_page_bridge.h"
-#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -57,9 +54,6 @@
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/navigation_interception/navigation_params.h"
-#include "components/offline_pages/core/offline_page_feature.h"
-#include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/offline_page_model.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/url_formatter/url_fixer.h"
@@ -693,30 +687,6 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
   }
 
   return -1;
-}
-
-void TabAndroid::ShowOfflinePages() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_showOfflinePages(env, weak_java_tab_.get(env));
-}
-
-jboolean TabAndroid::IsOfflinePage(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj) {
-  return offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
-      web_contents()) != nullptr;
-}
-
-ScopedJavaLocalRef<jobject> TabAndroid::GetOfflinePage(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  const offline_pages::OfflinePageItem* offline_page =
-      offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
-          web_contents());
-  if (!offline_page)
-    return ScopedJavaLocalRef<jobject>();
-
-  return offline_pages::android::OfflinePageBridge::ConvertToJavaOfflinePage(
-      env, *offline_page);
 }
 
 bool TabAndroid::HasPrerenderedUrl(JNIEnv* env,

@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
@@ -467,7 +468,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mSecurityIconType = securityLevel;
 
         boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
-        boolean isOfflinePage = getCurrentTab() != null && getCurrentTab().isOfflinePage();
+        boolean isOfflinePage =
+                getCurrentTab() != null && OfflinePageUtils.isOfflinePage(getCurrentTab());
 
         int id = LocationBarLayout.getSecurityIconResource(
                 securityLevel, isSmallDevice, isOfflinePage);

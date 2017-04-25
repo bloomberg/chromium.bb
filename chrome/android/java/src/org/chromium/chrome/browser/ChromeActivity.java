@@ -1253,7 +1253,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         WebContents webContents = currentTab.getWebContents();
 
         RecordHistogram.recordBooleanHistogram(
-                "OfflinePages.SharedPageWasOffline", currentTab.isOfflinePage());
+                "OfflinePages.SharedPageWasOffline", OfflinePageUtils.isOfflinePage(currentTab));
         boolean canShareOfflinePage = OfflinePageBridge.isPageSharingEnabled();
 
         // Share an empty blockingUri in place of screenshot file. The file ready notification is

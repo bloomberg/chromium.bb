@@ -66,7 +66,6 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
-import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
@@ -836,7 +835,7 @@ public class Tab
      */
     public void reload() {
         // TODO(dtrainor): Should we try to rebuild the ContentView if it's frozen?
-        if (isOfflinePage()) {
+        if (OfflinePageUtils.isOfflinePage(this)) {
             // If current page is an offline page, reload it with custom behavior defined in extra
             // header respected.
             OfflinePageUtils.reload(this);
@@ -2661,30 +2660,6 @@ public class Tab
     }
 
     /**
-     * @return True if the offline page is opened.
-     */
-    public boolean isOfflinePage() {
-        return isFrozen() ? false : nativeIsOfflinePage(mNativeTabAndroid);
-    }
-
-    /**
-     * @return The offline page if tab currently displays it, null otherwise.
-     */
-    public OfflinePageItem getOfflinePage() {
-        return isFrozen() ? null : nativeGetOfflinePage(mNativeTabAndroid);
-    }
-
-    /**
-     * Shows the list of offline pages. This should only be hit when offline pages feature is
-     * enabled.
-     */
-    @CalledByNative
-    public void showOfflinePages() {
-        // TODO(jianli): This is not currently used. Figure out what to do here.
-        // http://crbug.com/636574
-    }
-
-    /**
      * @return Original url of the tab, which is the original url from DOMDistiller.
      */
     public String getOriginalUrl() {
@@ -3094,8 +3069,6 @@ public class Tab
             long nativeTabAndroid, int constraints, int current, boolean animate);
     private native void nativeLoadOriginalImage(long nativeTabAndroid);
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
-    private native boolean nativeIsOfflinePage(long nativeTabAndroid);
-    private native OfflinePageItem nativeGetOfflinePage(long nativeTabAndroid);
     private native void nativeSetInterceptNavigationDelegate(long nativeTabAndroid,
             InterceptNavigationDelegate delegate);
     private native void nativeAttachToTabContentManager(long nativeTabAndroid,

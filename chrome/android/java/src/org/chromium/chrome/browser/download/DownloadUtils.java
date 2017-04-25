@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.feature_engagement_tracker.FeatureEngagementTrackerFactory;
 import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -251,7 +252,7 @@ public class DownloadUtils {
         if (tab.isShowingInterstitialPage()) return false;
 
         // Don't allow re-downloading the currently displayed offline page.
-        if (tab.isOfflinePage()) return false;
+        if (OfflinePageUtils.isOfflinePage(tab)) return false;
 
         return true;
     }

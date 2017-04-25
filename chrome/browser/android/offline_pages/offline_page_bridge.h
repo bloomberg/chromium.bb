@@ -144,6 +144,16 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref() { return java_ref_; }
 
+  jboolean IsOfflinePage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents);
+
+  base::android::ScopedJavaLocalRef<jobject> GetOfflinePage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents);
+
  private:
   void NotifyIfDoneLoading() const;
 
