@@ -28,11 +28,15 @@ if ([environment]::Is64BitOperatingSystem)  {
 $url = "$cipdClientSrv/client?platform=$plat-$arch&version=$cipdClientVer"
 $client = Join-Path $myPath -ChildPath ".cipd_client.exe"
 
-$depot_tools_version = &git -C $myPath rev-parse HEAD 2>&1
-if ($LastExitCode -eq 0) {
-  $user_agent = "depot_tools/$depot_tools_version"
-} else {
-  $user_agent = "depot_tools/???"
+try {
+  $depot_tools_version = &git -C $myPath rev-parse HEAD 2>&1
+  if ($LastExitCode -eq 0) {
+    $user_agent = "depot_tools/$depot_tools_version"
+  } else {
+    $user_agent = "depot_tools/???"
+  }
+} catch [System.Management.Automation.CommandNotFoundException] {
+  $user_agent = "depot_tools/no_git/???"
 }
 
 $Env:CIPD_HTTP_USER_AGENT_PREFIX = $user_agent
