@@ -338,9 +338,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString("offlineForWeek",
                              IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK);
   source->AddLocalizedString("offline", IDS_PRINT_PREVIEW_OFFLINE);
-  source->AddLocalizedString("fedexTos", IDS_PRINT_PREVIEW_FEDEX_TOS);
-  source->AddLocalizedString("tosCheckboxLabel",
-                             IDS_PRINT_PREVIEW_TOS_CHECKBOX_LABEL);
   source->AddLocalizedString("noDestsPromoTitle",
                              IDS_PRINT_PREVIEW_NO_DESTS_PROMO_TITLE);
   source->AddLocalizedString("noDestsPromoBody",
@@ -398,8 +395,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                           IDR_PRINT_PREVIEW_IMAGES_ENTERPRISE_PRINTER);
   source->AddResourcePath("images/third_party.png",
                           IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY);
-  source->AddResourcePath("images/third_party_fedex.png",
-                          IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY_FEDEX);
   source->AddResourcePath("images/google_doc.png",
                           IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC);
   source->AddResourcePath("images/pdf.png", IDR_PRINT_PREVIEW_IMAGES_PDF);

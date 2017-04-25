@@ -19,7 +19,6 @@ cr.define('cloudprint', function() {
     DESCRIPTION: 'description',
     DISPLAY_NAME: 'displayName',
     ID: 'id',
-    IS_TOS_ACCEPTED: 'isTosAccepted',
     LAST_ACCESS: 'accessTime',
     TAGS: 'tags',
     TYPE: 'type'
@@ -80,8 +79,6 @@ cr.define('cloudprint', function() {
       isOwned: arrayContains(tags, CloudDestinationParser.OWNED_TAG_),
       lastAccessTime: parseInt(
           json[CloudDestinationParser.Field_.LAST_ACCESS], 10) || Date.now(),
-      isTosAccepted: (id == print_preview.Destination.GooglePromotedId.FEDEX) ?
-          json[CloudDestinationParser.Field_.IS_TOS_ACCEPTED] : null,
       cloudID: id,
       description: json[CloudDestinationParser.Field_.DESCRIPTION]
     };

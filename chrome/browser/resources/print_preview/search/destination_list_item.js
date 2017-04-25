@@ -38,14 +38,6 @@ cr.define('print_preview', function() {
      * @private
      */
     this.query_ = query;
-
-    /**
-     * FedEx terms-of-service widget or {@code null} if this list item does not
-     * render the FedEx Office print destination.
-     * @type {print_preview.FedexTos}
-     * @private
-     */
-    this.fedexTos_ = null;
   };
 
   /**
@@ -284,20 +276,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationActivated_: function() {
-      if (this.destination_.id ==
-              print_preview.Destination.GooglePromotedId.FEDEX &&
-          !this.destination_.isTosAccepted) {
-        if (!this.fedexTos_) {
-          this.fedexTos_ = new print_preview.FedexTos();
-          this.fedexTos_.render(this.getElement());
-          this.tracker.add(
-              this.fedexTos_,
-              print_preview.FedexTos.EventType.AGREE,
-              this.onTosAgree_.bind(this));
-        }
-        this.fedexTos_.setIsVisible(true);
-      } else if (this.destination_.connectionStatus !=
-                     print_preview.Destination.ConnectionStatus.UNREGISTERED) {
+      if (this.destination_.connectionStatus !=
+              print_preview.Destination.ConnectionStatus.UNREGISTERED) {
         var selectEvt = new Event(DestinationListItem.EventType.SELECT);
         selectEvt.destination = this.destination_;
         this.eventTarget_.dispatchEvent(selectEvt);
@@ -322,17 +302,6 @@ cr.define('print_preview', function() {
           }
         }
       }
-    },
-
-    /**
-     * Called when the user agrees to the print destination's terms-of-service.
-     * Selects the print destination that was agreed to.
-     * @private
-     */
-    onTosAgree_: function() {
-      var selectEvt = new Event(DestinationListItem.EventType.SELECT);
-      selectEvt.destination = this.destination_;
-      this.eventTarget_.dispatchEvent(selectEvt);
     },
 
     /**

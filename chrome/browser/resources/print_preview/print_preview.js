@@ -716,11 +716,6 @@ cr.define('print_preview', function() {
           this.cloudPrintInterface_,
           cloudprint.CloudPrintInterface.EventType.PRINTER_FAILED,
           this.onCloudPrintError_.bind(this));
-      this.tracker.add(
-          this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.
-              UPDATE_PRINTER_TOS_ACCEPTANCE_FAILED,
-          this.onCloudPrintError_.bind(this));
 
       this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
       this.invitationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
@@ -783,12 +778,6 @@ cr.define('print_preview', function() {
       assert(this.uiState_ == PrintPreview.UiState_.PRINTING,
              'Submited job to Google Cloud Print but not in printing state ' +
                  this.uiState_);
-      if (this.destinationStore_.selectedDestination.id ==
-              print_preview.Destination.GooglePromotedId.FEDEX) {
-        this.nativeLayer_.startForceOpenNewTab(
-            'https://www.google.com/cloudprint/fedexcode.html?jobid=' +
-            event.jobId);
-      }
       this.close_();
     },
 
@@ -799,12 +788,13 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintError_: function(event) {
+      if (event.status == 0) {
+        return; // Ignore, the system does not have internet connectivity.
+      }
       if (event.status == 403) {
         if (!this.isInAppKioskMode_) {
           this.destinationSearch_.showCloudPrintPromo();
         }
-      } else if (event.status == 0) {
-        return; // Ignore, the system does not have internet connectivity.
       } else {
         this.printHeader_.setErrorMessage(event.message);
       }
@@ -1364,7 +1354,6 @@ cr.define('print_preview', function() {
 // <include src="search/recent_destination_list.js">
 // <include src="search/destination_list_item.js">
 // <include src="search/destination_search.js">
-// <include src="search/fedex_tos.js">
 // <include src="search/provisional_destination_resolver.js">
 
 window.addEventListener('DOMContentLoaded', function() {

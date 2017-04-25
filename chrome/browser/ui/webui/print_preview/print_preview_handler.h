@@ -209,7 +209,7 @@ class PrintPreviewHandler
   // Forces the opening of a new tab. |args| should consist of one element: the
   // URL to set the new tab to.
   //
-  // NOTE: This is needed to open FedEx confirmation window as a new tab.
+  // NOTE: This is needed to open register promo for Cloud Print as a new tab.
   // Javascript's "window.open" opens a new window popup (since initiated from
   // async HTTP request) and worse yet, on Windows and Chrome OS, the opened
   // window opens behind the initiator window.

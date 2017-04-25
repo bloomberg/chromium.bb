@@ -66,8 +66,7 @@ cr.define('print_preview.ticket_items', function() {
           this.destinationStore_.selectedDestination : null;
       if (!destination)
         return null;
-      if (destination.id == print_preview.Destination.GooglePromotedId.FEDEX ||
-          destination.type == print_preview.Destination.Type.MOBILE) {
+      if (destination.type == print_preview.Destination.Type.MOBILE) {
         return null;
       }
       return (destination.capabilities &&

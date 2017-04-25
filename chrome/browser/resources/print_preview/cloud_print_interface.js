@@ -105,8 +105,6 @@ cr.define('cloudprint', function() {
     SEARCH_FAILED: 'cloudprint.CloudPrintInterface.SEARCH_FAILED',
     SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE',
     SUBMIT_FAILED: 'cloudprint.CloudPrintInterface.SUBMIT_FAILED',
-    UPDATE_PRINTER_TOS_ACCEPTANCE_FAILED:
-        'cloudprint.CloudPrintInterface.UPDATE_PRINTER_TOS_ACCEPTANCE_FAILED'
   };
 
   /**
@@ -336,27 +334,6 @@ cr.define('cloudprint', function() {
           origin,
           account,
           this.onPrinterDone_.bind(this, printerId)));
-    },
-
-    /**
-     * Sends a Google Cloud Print update API request to accept (or reject) the
-     * terms-of-service of the given printer.
-     * @param {!print_preview.Destination} destination Destination to accept ToS
-     *     for.
-     * @param {boolean} isAccepted Whether the user accepted ToS or not.
-     */
-    updatePrinterTosAcceptance: function(destination, isAccepted) {
-      var params = [
-        new HttpParam('printerid', destination.id),
-        new HttpParam('is_tos_accepted', isAccepted)
-      ];
-      this.sendOrQueueRequest_(this.buildRequest_(
-          'POST',
-          'update',
-          params,
-          destination.origin,
-          destination.account,
-          this.onUpdatePrinterTosAcceptanceDone_.bind(this)));
     },
 
     /**
@@ -759,21 +736,6 @@ cr.define('cloudprint', function() {
         this.dispatchEvent(errorEvent);
       }
     },
-
-    /**
-     * Called when the update printer TOS acceptance request completes.
-     * @param {!CloudPrintRequest} request Request that has been completed.
-     * @private
-     */
-    onUpdatePrinterTosAcceptanceDone_: function(request) {
-      if (request.xhr.status == 200 && request.result['success']) {
-        // Do nothing.
-      } else {
-        var errorEvent = this.createErrorEvent_(
-            CloudPrintInterface.EventType.SUBMIT_FAILED, request);
-        this.dispatchEvent(errorEvent);
-      }
-    }
   };
 
   /**

@@ -105,7 +105,6 @@ cr.define('print_preview.ticket_items', function() {
       var dest = this.getSelectedDestInternal();
       if (dest) {
         if (dest.id == print_preview.Destination.GooglePromotedId.DOCS ||
-            dest.id == print_preview.Destination.GooglePromotedId.FEDEX ||
             dest.type == print_preview.Destination.Type.MOBILE) {
           return true;
         }
