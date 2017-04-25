@@ -1437,176 +1437,197 @@ static void highbd_filter_selectively_vert(
 }
 #endif  // CONFIG_HIGHBITDEPTH
 
-void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
-                                       struct macroblockd_plane *plane,
-                                       MODE_INFO **mib, int mi_row,
-                                       int mi_col) {
+typedef struct {
+  unsigned int m16x16;
+  unsigned int m8x8;
+  unsigned int m4x4;
+} FilterMasks;
+
+// Get filter level and masks for the given row index 'idx_r'. (Only used for
+// the non420 case).
+// Note: 'row_masks_ptr' and/or 'col_masks_ptr' can be passed NULL.
+static void get_filter_level_and_masks_non420(
+    AV1_COMMON *const cm, const struct macroblockd_plane *const plane,
+    MODE_INFO **mib, int mi_row, int mi_col, int idx_r, uint8_t *const lfl_r,
+    unsigned int *const mask_4x4_int_r, FilterMasks *const row_masks_ptr,
+    FilterMasks *const col_masks_ptr) {
   const int ss_x = plane->subsampling_x;
   const int ss_y = plane->subsampling_y;
-  const int row_step = mi_size_high[BLOCK_8X8] << ss_y;
   const int col_step = mi_size_wide[BLOCK_8X8] << ss_x;
-  const int row_step_stride = cm->mi_stride * row_step;
-  struct buf_2d *const dst = &plane->dst;
-  uint8_t *const dst0 = dst->buf;
-  unsigned int mask_16x16[MAX_MIB_SIZE] = { 0 };
-  unsigned int mask_8x8[MAX_MIB_SIZE] = { 0 };
-  unsigned int mask_4x4[MAX_MIB_SIZE] = { 0 };
-  unsigned int mask_4x4_int[MAX_MIB_SIZE] = { 0 };
-  uint8_t lfl[MAX_MIB_SIZE][MAX_MIB_SIZE] = { { 0 } };
-  int idx_r, idx_c;
-  MODE_INFO **tmp_mi = mib;
+  FilterMasks row_masks, col_masks;
+  memset(&row_masks, 0, sizeof(row_masks));
+  memset(&col_masks, 0, sizeof(col_masks));
+  *mask_4x4_int_r = 0;
+  const int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
 
-  for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
-       idx_r += row_step) {
-    unsigned int mask_16x16_c = 0;
-    unsigned int mask_8x8_c = 0;
-    unsigned int mask_4x4_c = 0;
-    unsigned int border_mask;
-    int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
+  // Determine the vertical edges that need filtering
+  int idx_c;
+  for (idx_c = 0; idx_c < cm->mib_size && mi_col + idx_c < cm->mi_cols;
+       idx_c += col_step) {
+    const MODE_INFO *mi = mib[idx_r * cm->mi_stride + idx_c];
+    const MB_MODE_INFO *mbmi = &mi[0].mbmi;
+    const BLOCK_SIZE sb_type = mbmi->sb_type;
+    const int skip_this = mbmi->skip && is_inter_block(mbmi);
+    // Map index to 8x8 unit
+    const int c = idx_c >> mi_width_log2_lookup[BLOCK_8X8];
 
-    // Determine the vertical edges that need filtering
-    for (idx_c = 0; idx_c < cm->mib_size && mi_col + idx_c < cm->mi_cols;
-         idx_c += col_step) {
-      const MODE_INFO *mi = tmp_mi[idx_c];
-      const MB_MODE_INFO *mbmi = &mi[0].mbmi;
-      const BLOCK_SIZE sb_type = mbmi->sb_type;
-      const int skip_this = mbmi->skip && is_inter_block(mbmi);
-      // Map index to 8x8 unit
-      int c = idx_c >> mi_width_log2_lookup[BLOCK_8X8];
+    const int blk_row = r & (num_8x8_blocks_high_lookup[sb_type] - 1);
+    const int blk_col = c & (num_8x8_blocks_wide_lookup[sb_type] - 1);
 
-      const int blk_row = r & (num_8x8_blocks_high_lookup[sb_type] - 1);
-      const int blk_col = c & (num_8x8_blocks_wide_lookup[sb_type] - 1);
-
-      // left edge of current unit is block/partition edge -> no skip
-      const int block_edge_left =
-          (num_4x4_blocks_wide_lookup[sb_type] > 1) ? !blk_col : 1;
-      const int skip_this_c = skip_this && !block_edge_left;
-      // top edge of current unit is block/partition edge -> no skip
-      const int block_edge_above =
-          (num_4x4_blocks_high_lookup[sb_type] > 1) ? !blk_row : 1;
-      const int skip_this_r = skip_this && !block_edge_above;
+    // left edge of current unit is block/partition edge -> no skip
+    const int block_edge_left =
+        (num_4x4_blocks_wide_lookup[sb_type] > 1) ? !blk_col : 1;
+    const int skip_this_c = skip_this && !block_edge_left;
+    // top edge of current unit is block/partition edge -> no skip
+    const int block_edge_above =
+        (num_4x4_blocks_high_lookup[sb_type] > 1) ? !blk_row : 1;
+    const int skip_this_r = skip_this && !block_edge_above;
 
 #if CONFIG_VAR_TX
-      const TX_SIZE mb_tx_size = mbmi->inter_tx_size[blk_row][blk_col];
+    const TX_SIZE mb_tx_size = mbmi->inter_tx_size[blk_row][blk_col];
 #endif
 
-      TX_SIZE tx_size = (plane->plane_type == PLANE_TYPE_UV)
-                            ? get_uv_tx_size(mbmi, plane)
-                            : mbmi->tx_size;
+    TX_SIZE tx_size = (plane->plane_type == PLANE_TYPE_UV)
+                          ? get_uv_tx_size(mbmi, plane)
+                          : mbmi->tx_size;
 
-      const int skip_border_4x4_c =
-          ss_x && mi_col + idx_c >= cm->mi_cols - mi_size_wide[BLOCK_8X8];
-      const int skip_border_4x4_r =
-          ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_high[BLOCK_8X8];
+    const int skip_border_4x4_c =
+        ss_x && mi_col + idx_c >= cm->mi_cols - mi_size_wide[BLOCK_8X8];
+    const int skip_border_4x4_r =
+        ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_high[BLOCK_8X8];
 
-      TX_SIZE tx_size_c = txsize_horz_map[tx_size];
-      TX_SIZE tx_size_r = txsize_vert_map[tx_size];
+    TX_SIZE tx_size_c = txsize_horz_map[tx_size];
+    TX_SIZE tx_size_r = txsize_vert_map[tx_size];
 
-      int tx_size_mask = 0;
-      const int c_step = (c >> ss_x);
-      const int r_step = (r >> ss_y);
-      const int col_mask = 1 << c_step;
+    int tx_size_mask = 0;
+    const int c_step = (c >> ss_x);
+    const int r_step = (r >> ss_y);
+    const int col_mask = 1 << c_step;
 
 #if CONFIG_VAR_TX
-      if (is_inter_block(mbmi) && !mbmi->skip)
-        tx_size = (plane->plane_type == PLANE_TYPE_UV)
-                      ? uv_txsize_lookup[sb_type][mb_tx_size][ss_x][ss_y]
-                      : mb_tx_size;
+    if (is_inter_block(mbmi) && !mbmi->skip) {
+      tx_size = (plane->plane_type == PLANE_TYPE_UV)
+                    ? uv_txsize_lookup[sb_type][mb_tx_size][ss_x][ss_y]
+                    : mb_tx_size;
+    }
 #endif
 
 // Filter level can vary per MI
 #if CONFIG_EXT_DELTA_Q
-      if (!(lfl[r][c_step] = get_filter_level(cm, &cm->lf_info, mbmi)))
-        continue;
+    if (!(lfl_r[c_step] = get_filter_level(cm, &cm->lf_info, mbmi))) continue;
 #else
-      if (!(lfl[r][c_step] = get_filter_level(&cm->lf_info, mbmi))) continue;
+    if (!(lfl_r[c_step] = get_filter_level(&cm->lf_info, mbmi))) continue;
 #endif
 
 #if CONFIG_VAR_TX
-      tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
-      tx_size_c =
-          AOMMIN(tx_size, cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK]);
+    tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
+    tx_size_c =
+        AOMMIN(tx_size, cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK]);
 
-      cm->above_txfm_context[mi_col + c] = tx_size;
-      cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] = tx_size;
+    cm->above_txfm_context[mi_col + c] = tx_size;
+    cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] = tx_size;
 #endif  // CONFIG_VAR_TX
 
-      if (tx_size_c == TX_32X32)
-        tx_size_mask = 3;
-      else if (tx_size_c == TX_16X16)
-        tx_size_mask = 1;
-      else
-        tx_size_mask = 0;
+    if (tx_size_c == TX_32X32)
+      tx_size_mask = 3;
+    else if (tx_size_c == TX_16X16)
+      tx_size_mask = 1;
+    else
+      tx_size_mask = 0;
 
-      // Build masks based on the transform size of each block
-      // handle vertical mask
-      if (tx_size_c == TX_32X32) {
-        if (!skip_this_c && (c_step & tx_size_mask) == 0) {
-          if (!skip_border_4x4_c)
-            mask_16x16_c |= col_mask;
-          else
-            mask_8x8_c |= col_mask;
-        }
-      } else if (tx_size_c == TX_16X16) {
-        if (!skip_this_c && (c_step & tx_size_mask) == 0) {
-          if (!skip_border_4x4_c)
-            mask_16x16_c |= col_mask;
-          else
-            mask_8x8_c |= col_mask;
-        }
-      } else {
-        // force 8x8 filtering on 32x32 boundaries
-        if (!skip_this_c && (c_step & tx_size_mask) == 0) {
-          if (tx_size_c == TX_8X8 || ((c >> ss_x) & 3) == 0)
-            mask_8x8_c |= col_mask;
-          else
-            mask_4x4_c |= col_mask;
-        }
-
-        if (!skip_this && tx_size_c < TX_8X8 && !skip_border_4x4_c &&
-            (c_step & tx_size_mask) == 0)
-          mask_4x4_int[r] |= col_mask;
+    // Build masks based on the transform size of each block
+    // handle vertical mask
+    if (tx_size_c == TX_32X32) {
+      if (!skip_this_c && (c_step & tx_size_mask) == 0) {
+        if (!skip_border_4x4_c)
+          col_masks.m16x16 |= col_mask;
+        else
+          col_masks.m8x8 |= col_mask;
+      }
+    } else if (tx_size_c == TX_16X16) {
+      if (!skip_this_c && (c_step & tx_size_mask) == 0) {
+        if (!skip_border_4x4_c)
+          col_masks.m16x16 |= col_mask;
+        else
+          col_masks.m8x8 |= col_mask;
+      }
+    } else {
+      // force 8x8 filtering on 32x32 boundaries
+      if (!skip_this_c && (c_step & tx_size_mask) == 0) {
+        if (tx_size_c == TX_8X8 || ((c >> ss_x) & 3) == 0)
+          col_masks.m8x8 |= col_mask;
+        else
+          col_masks.m4x4 |= col_mask;
       }
 
-      if (tx_size_r == TX_32X32)
-        tx_size_mask = 3;
-      else if (tx_size_r == TX_16X16)
-        tx_size_mask = 1;
-      else
-        tx_size_mask = 0;
-
-      // set horizontal mask
-      if (tx_size_r == TX_32X32) {
-        if (!skip_this_r && (r_step & tx_size_mask) == 0) {
-          if (!skip_border_4x4_r)
-            mask_16x16[r] |= col_mask;
-          else
-            mask_8x8[r] |= col_mask;
-        }
-      } else if (tx_size_r == TX_16X16) {
-        if (!skip_this_r && (r_step & tx_size_mask) == 0) {
-          if (!skip_border_4x4_r)
-            mask_16x16[r] |= col_mask;
-          else
-            mask_8x8[r] |= col_mask;
-        }
-      } else {
-        // force 8x8 filtering on 32x32 boundaries
-        if (!skip_this_r && (r_step & tx_size_mask) == 0) {
-          if (tx_size_r == TX_8X8 || (r_step & 3) == 0)
-            mask_8x8[r] |= col_mask;
-          else
-            mask_4x4[r] |= col_mask;
-        }
-
-        if (!skip_this && tx_size_r < TX_8X8 && !skip_border_4x4_c &&
-            ((r >> ss_y) & tx_size_mask) == 0)
-          mask_4x4_int[r] |= col_mask;
-      }
+      if (!skip_this && tx_size_c < TX_8X8 && !skip_border_4x4_c &&
+          (c_step & tx_size_mask) == 0)
+        *mask_4x4_int_r |= col_mask;
     }
 
+    if (tx_size_r == TX_32X32)
+      tx_size_mask = 3;
+    else if (tx_size_r == TX_16X16)
+      tx_size_mask = 1;
+    else
+      tx_size_mask = 0;
+
+    // set horizontal mask
+    if (tx_size_r == TX_32X32) {
+      if (!skip_this_r && (r_step & tx_size_mask) == 0) {
+        if (!skip_border_4x4_r)
+          row_masks.m16x16 |= col_mask;
+        else
+          row_masks.m8x8 |= col_mask;
+      }
+    } else if (tx_size_r == TX_16X16) {
+      if (!skip_this_r && (r_step & tx_size_mask) == 0) {
+        if (!skip_border_4x4_r)
+          row_masks.m16x16 |= col_mask;
+        else
+          row_masks.m8x8 |= col_mask;
+      }
+    } else {
+      // force 8x8 filtering on 32x32 boundaries
+      if (!skip_this_r && (r_step & tx_size_mask) == 0) {
+        if (tx_size_r == TX_8X8 || (r_step & 3) == 0)
+          row_masks.m8x8 |= col_mask;
+        else
+          row_masks.m4x4 |= col_mask;
+      }
+
+      if (!skip_this && tx_size_r < TX_8X8 && !skip_border_4x4_c &&
+          ((r >> ss_y) & tx_size_mask) == 0)
+        *mask_4x4_int_r |= col_mask;
+    }
+  }
+
+  if (row_masks_ptr) *row_masks_ptr = row_masks;
+  if (col_masks_ptr) *col_masks_ptr = col_masks;
+}
+
+void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
+                                       struct macroblockd_plane *plane,
+                                       MODE_INFO **mib, int mi_row,
+                                       int mi_col) {
+  const int ss_y = plane->subsampling_y;
+  const int row_step = mi_size_high[BLOCK_8X8] << ss_y;
+  struct buf_2d *const dst = &plane->dst;
+  uint8_t *const dst0 = dst->buf;
+  uint8_t lfl[MAX_MIB_SIZE][MAX_MIB_SIZE] = { { 0 } };
+
+  int idx_r;
+  for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
+       idx_r += row_step) {
+    unsigned int mask_4x4_int;
+    FilterMasks col_masks;
+    const int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
+    get_filter_level_and_masks_non420(cm, plane, mib, mi_row, mi_col, idx_r,
+                                      &lfl[r][0], &mask_4x4_int, NULL,
+                                      &col_masks);
+
     // Disable filtering on the leftmost column or tile boundary
-    border_mask = ~(mi_col == 0);
+    unsigned int border_mask = ~(mi_col == 0);
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
     if (av1_disable_loopfilter_on_tile_boundary(cm) &&
         ((mib[0]->mbmi.boundary_info & TILE_LEFT_BOUNDARY) != 0)) {
@@ -1615,195 +1636,43 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
 #if CONFIG_HIGHBITDEPTH
-    if (cm->use_highbitdepth) {
+    if (cm->use_highbitdepth)
       highbd_filter_selectively_vert(
           CONVERT_TO_SHORTPTR(dst->buf), dst->stride,
-          mask_16x16_c & border_mask, mask_8x8_c & border_mask,
-          mask_4x4_c & border_mask, mask_4x4_int[r], &cm->lf_info, &lfl[r][0],
+          col_masks.m16x16 & border_mask, col_masks.m8x8 & border_mask,
+          col_masks.m4x4 & border_mask, mask_4x4_int, &cm->lf_info, &lfl[r][0],
           (int)cm->bit_depth);
-    } else {
-      filter_selectively_vert(dst->buf, dst->stride, mask_16x16_c & border_mask,
-                              mask_8x8_c & border_mask,
-                              mask_4x4_c & border_mask, mask_4x4_int[r],
-                              &cm->lf_info, &lfl[r][0]);
-    }
-#else
-    filter_selectively_vert(dst->buf, dst->stride, mask_16x16_c & border_mask,
-                            mask_8x8_c & border_mask, mask_4x4_c & border_mask,
-                            mask_4x4_int[r], &cm->lf_info, &lfl[r][0]);
+    else
 #endif  // CONFIG_HIGHBITDEPTH
+      filter_selectively_vert(
+          dst->buf, dst->stride, col_masks.m16x16 & border_mask,
+          col_masks.m8x8 & border_mask, col_masks.m4x4 & border_mask,
+          mask_4x4_int, &cm->lf_info, &lfl[r][0]);
     dst->buf += 8 * dst->stride;
-    tmp_mi += row_step_stride;
   }
 
   // Now do horizontal pass
   dst->buf = dst0;
 }
 
-void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
+void av1_filter_block_plane_non420_hor(AV1_COMMON *const cm,
                                        struct macroblockd_plane *plane,
                                        MODE_INFO **mib, int mi_row,
                                        int mi_col) {
-  const int ss_x = plane->subsampling_x;
   const int ss_y = plane->subsampling_y;
   const int row_step = mi_size_high[BLOCK_8X8] << ss_y;
-  const int col_step = mi_size_wide[BLOCK_8X8] << ss_x;
-  const int row_step_stride = cm->mi_stride * row_step;
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
-  unsigned int mask_16x16[MAX_MIB_SIZE] = { 0 };
-  unsigned int mask_8x8[MAX_MIB_SIZE] = { 0 };
-  unsigned int mask_4x4[MAX_MIB_SIZE] = { 0 };
+  FilterMasks row_masks_array[MAX_MIB_SIZE];
   unsigned int mask_4x4_int[MAX_MIB_SIZE] = { 0 };
-  uint8_t lfl[MAX_MIB_SIZE][MAX_MIB_SIZE];
-  int idx_r, idx_c;
-  MODE_INFO **tmp_mi = mib;
+  uint8_t lfl[MAX_MIB_SIZE][MAX_MIB_SIZE] = { { 0 } };
+  int idx_r;
   for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
        idx_r += row_step) {
-    unsigned int mask_16x16_c = 0;
-    unsigned int mask_8x8_c = 0;
-    unsigned int mask_4x4_c = 0;
     const int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
-
-    // Determine the vertical edges that need filtering
-    for (idx_c = 0; idx_c < cm->mib_size && mi_col + idx_c < cm->mi_cols;
-         idx_c += col_step) {
-      const MODE_INFO *mi = tmp_mi[idx_c];
-      const MB_MODE_INFO *mbmi = &mi[0].mbmi;
-      const BLOCK_SIZE sb_type = mbmi->sb_type;
-      const int skip_this = mbmi->skip && is_inter_block(mbmi);
-      const int c = idx_c >> mi_width_log2_lookup[BLOCK_8X8];
-
-      const int blk_row = r & (num_8x8_blocks_high_lookup[sb_type] - 1);
-      const int blk_col = c & (num_8x8_blocks_wide_lookup[sb_type] - 1);
-
-      // left edge of current unit is block/partition edge -> no skip
-      const int block_edge_left =
-          (num_4x4_blocks_wide_lookup[sb_type] > 1) ? !blk_col : 1;
-      const int skip_this_c = skip_this && !block_edge_left;
-      // top edge of current unit is block/partition edge -> no skip
-      const int block_edge_above =
-          (num_4x4_blocks_high_lookup[sb_type] > 1) ? !blk_row : 1;
-      const int skip_this_r = skip_this && !block_edge_above;
-
-      TX_SIZE tx_size = (plane->plane_type == PLANE_TYPE_UV)
-                            ? get_uv_tx_size(mbmi, plane)
-                            : mbmi->tx_size;
-#if CONFIG_VAR_TX
-      TX_SIZE mb_tx_size = mbmi->inter_tx_size[blk_row][blk_col];
-#endif
-      const int skip_border_4x4_c =
-          ss_x && mi_col + idx_c >= cm->mi_cols - mi_size_wide[BLOCK_8X8];
-      const int skip_border_4x4_r =
-          ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_high[BLOCK_8X8];
-
-      TX_SIZE tx_size_c = txsize_horz_map[tx_size];
-      TX_SIZE tx_size_r = txsize_vert_map[tx_size];
-
-      int tx_size_mask = 0;
-      const int c_step = (c >> ss_x);
-      const int r_step = (r >> ss_y);
-      const int col_mask = 1 << c_step;
-
-#if CONFIG_VAR_TX
-      if (is_inter_block(mbmi) && !mbmi->skip) {
-        tx_size = (plane->plane_type == PLANE_TYPE_UV)
-                      ? uv_txsize_lookup[sb_type][mb_tx_size][ss_x][ss_y]
-                      : mb_tx_size;
-      }
-#endif
-
-// Filter level can vary per MI
-#if CONFIG_EXT_DELTA_Q
-      if (!(lfl[r][c_step] = get_filter_level(cm, &cm->lf_info, mbmi)))
-        continue;
-#else
-      if (!(lfl[r][c_step] = get_filter_level(&cm->lf_info, mbmi))) continue;
-#endif
-
-#if CONFIG_VAR_TX
-      tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
-      tx_size_c =
-          AOMMIN(tx_size, cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK]);
-
-      cm->above_txfm_context[mi_col + c] = tx_size;
-      cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] = tx_size;
-#endif
-
-      if (tx_size_c == TX_32X32)
-        tx_size_mask = 3;
-      else if (tx_size_c == TX_16X16)
-        tx_size_mask = 1;
-      else
-        tx_size_mask = 0;
-
-      // Build masks based on the transform size of each block
-      // handle vertical mask
-      if (tx_size_c == TX_32X32) {
-        if (!skip_this_c && (c_step & tx_size_mask) == 0) {
-          if (!skip_border_4x4_c)
-            mask_16x16_c |= col_mask;
-          else
-            mask_8x8_c |= col_mask;
-        }
-      } else if (tx_size_c == TX_16X16) {
-        if (!skip_this_c && (c_step & tx_size_mask) == 0) {
-          if (!skip_border_4x4_c)
-            mask_16x16_c |= col_mask;
-          else
-            mask_8x8_c |= col_mask;
-        }
-      } else {
-        // force 8x8 filtering on 32x32 boundaries
-        if (!skip_this_c && (c_step & tx_size_mask) == 0) {
-          if (tx_size_c == TX_8X8 || ((c >> ss_x) & 3) == 0)
-            mask_8x8_c |= col_mask;
-          else
-            mask_4x4_c |= col_mask;
-        }
-
-        if (!skip_this && tx_size_c < TX_8X8 && !skip_border_4x4_c &&
-            (c_step & tx_size_mask) == 0)
-          mask_4x4_int[r] |= col_mask;
-      }
-
-      if (tx_size_r == TX_32X32)
-        tx_size_mask = 3;
-      else if (tx_size_r == TX_16X16)
-        tx_size_mask = 1;
-      else
-        tx_size_mask = 0;
-
-      // set horizontal mask
-      if (tx_size_r == TX_32X32) {
-        if (!skip_this_r && (r_step & tx_size_mask) == 0) {
-          if (!skip_border_4x4_r)
-            mask_16x16[r] |= col_mask;
-          else
-            mask_8x8[r] |= col_mask;
-        }
-      } else if (tx_size_r == TX_16X16) {
-        if (!skip_this_r && (r_step & tx_size_mask) == 0) {
-          if (!skip_border_4x4_r)
-            mask_16x16[r] |= col_mask;
-          else
-            mask_8x8[r] |= col_mask;
-        }
-      } else {
-        // force 8x8 filtering on 32x32 boundaries
-        if (!skip_this_r && (r_step & tx_size_mask) == 0) {
-          if (tx_size_r == TX_8X8 || (r_step & 3) == 0)
-            mask_8x8[r] |= col_mask;
-          else
-            mask_4x4[r] |= col_mask;
-        }
-
-        if (!skip_this && tx_size_r < TX_8X8 && !skip_border_4x4_c &&
-            ((r >> ss_y) & tx_size_mask) == 0)
-          mask_4x4_int[r] |= col_mask;
-      }
-    }
-    tmp_mi += row_step_stride;
+    get_filter_level_and_masks_non420(cm, plane, mib, mi_row, mi_col, idx_r,
+                                      &lfl[r][0], mask_4x4_int + r,
+                                      row_masks_array + r, NULL);
   }
   for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
        idx_r += row_step) {
@@ -1811,10 +1680,7 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
         ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_wide[BLOCK_8X8];
     const int r = idx_r >> mi_width_log2_lookup[BLOCK_8X8];
     const unsigned int mask_4x4_int_r = skip_border_4x4_r ? 0 : mask_4x4_int[r];
-
-    unsigned int mask_16x16_r;
-    unsigned int mask_8x8_r;
-    unsigned int mask_4x4_r;
+    FilterMasks row_masks;
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
     // Disable filtering on the abovemost row or tile boundary
@@ -1822,36 +1688,25 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
     if ((av1_disable_loopfilter_on_tile_boundary(cm) &&
          (mi->mbmi.boundary_info & TILE_ABOVE_BOUNDARY)) ||
         (mi_row + idx_r == 0)) {
-      mask_16x16_r = 0;
-      mask_8x8_r = 0;
-      mask_4x4_r = 0;
+      memset(&row_masks, 0, sizeof(row_masks));
 #else
     if (mi_row + idx_r == 0) {
-      mask_16x16_r = 0;
-      mask_8x8_r = 0;
-      mask_4x4_r = 0;
+      memset(&row_masks, 0, sizeof(row_masks));
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
     } else {
-      mask_16x16_r = mask_16x16[r];
-      mask_8x8_r = mask_8x8[r];
-      mask_4x4_r = mask_4x4[r];
+      memcpy(&row_masks, row_masks_array + r, sizeof(row_masks));
     }
 #if CONFIG_HIGHBITDEPTH
-    if (cm->use_highbitdepth) {
-      highbd_filter_selectively_horiz(CONVERT_TO_SHORTPTR(dst->buf),
-                                      dst->stride, mask_16x16_r, mask_8x8_r,
-                                      mask_4x4_r, mask_4x4_int_r, &cm->lf_info,
-                                      &lfl[r][0], (int)cm->bit_depth);
-    } else {
-      filter_selectively_horiz(dst->buf, dst->stride, mask_16x16_r, mask_8x8_r,
-                               mask_4x4_r, mask_4x4_int_r, &cm->lf_info,
-                               &lfl[r][0]);
-    }
-#else
-    filter_selectively_horiz(dst->buf, dst->stride, mask_16x16_r, mask_8x8_r,
-                             mask_4x4_r, mask_4x4_int_r, &cm->lf_info,
-                             &lfl[r][0]);
+    if (cm->use_highbitdepth)
+      highbd_filter_selectively_horiz(
+          CONVERT_TO_SHORTPTR(dst->buf), dst->stride, row_masks.m16x16,
+          row_masks.m8x8, row_masks.m4x4, mask_4x4_int_r, &cm->lf_info,
+          &lfl[r][0], (int)cm->bit_depth);
+    else
 #endif  // CONFIG_HIGHBITDEPTH
+      filter_selectively_horiz(dst->buf, dst->stride, row_masks.m16x16,
+                               row_masks.m8x8, row_masks.m4x4, mask_4x4_int_r,
+                               &cm->lf_info, &lfl[r][0]);
     dst->buf += 8 * dst->stride;
   }
   dst->buf = dst0;
