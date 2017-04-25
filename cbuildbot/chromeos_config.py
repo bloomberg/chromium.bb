@@ -2243,8 +2243,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_speedy',
       'winky',
       'wolf',
-      'x86-alex',
-      'x86-zgb',
   ])
 
 
@@ -2531,7 +2529,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Shard the bvt-inline and bvt-cq hw tests between similar builders.
   # The first builder gets bvt-inline, and the second builder gets bvt-cq.
   # bvt-cq takes longer, so it usually makes sense to give it the faster board.
-  ShardHWTestsBetweenBuilders('x86-zgb-paladin', 'x86-alex-paladin')
   ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
   ShardHWTestsBetweenBuilders('peach_pit-paladin', None)
   ShardHWTestsBetweenBuilders('veyron_mighty-paladin', 'veyron_speedy-paladin')
