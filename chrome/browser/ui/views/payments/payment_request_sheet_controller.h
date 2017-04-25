@@ -119,6 +119,10 @@ class PaymentRequestSheetController : public views::ButtonListener {
   views::View* pane_;
   views::View* content_view_;
 
+  // Hold on to the ScrollView because it must be explicitly laid out in some
+  // cases.
+  std::unique_ptr<views::ScrollView> scroll_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSheetController);
 };
 
