@@ -18,7 +18,7 @@
 // Compaction-specific debug switches:
 
 // Set to 0 to prevent compaction GCs, disabling the heap compaction feature.
-#define ENABLE_HEAP_COMPACTION 1
+#define ENABLE_HEAP_COMPACTION 0
 
 // Emit debug info during compaction.
 #define DEBUG_HEAP_COMPACTION 0

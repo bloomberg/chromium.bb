@@ -26,6 +26,7 @@ using IntMap = blink::HeapHashMap<blink::Member<blink::IntWrapper>, int>;
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(IntMap);
 
 namespace blink {
+#if ENABLE_HEAP_COMPACTION
 
 static const size_t kChunkRange = SparseHeapBitmap::kBitmapChunkRange;
 static const size_t kUnitPointer = 0x1u
@@ -458,5 +459,5 @@ TEST(HeapCompactTest, CompactLinkedHashSetNested) {
     expected++;
   }
 }
-
+#endif
 }  // namespace blink
