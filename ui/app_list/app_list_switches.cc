@@ -26,6 +26,9 @@ const char kDisableAppListDismissOnBlur[] = "disable-app-list-dismiss-on-blur";
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[] = "enable-app-list";
 
+// Enables the fullscreen app list.
+extern const char kEnableFullscreenAppList[] = "enable-fullscreen-app-list";
+
 // Enable/disable syncing of the app list independent of extensions.
 const char kEnableSyncAppList[] = "enable-sync-app-list";
 const char kDisableSyncAppList[] = "disable-sync-app-list";
@@ -85,6 +88,11 @@ std::string AnswerServerUrl() {
 
 bool IsAnswerCardEnabled() {
   return !AnswerServerUrl().empty();
+}
+
+bool IsFullscreenAppListEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableFullscreenAppList);
 }
 
 }  // namespace switches

@@ -175,7 +175,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // LayoutManager may adjust the bounds.
   void SetBounds(const gfx::Rect& new_bounds);
 
-  // Changes the bounds of the window in the screen coordintates.
+  // Changes the bounds of the window in the screen coordinates.
   // If present, the window's parent's LayoutManager may adjust the bounds.
   void SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen_coords,
                          const display::Display& dst_display);
