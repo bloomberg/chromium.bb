@@ -1559,7 +1559,7 @@ void LayoutText::SetSelectionState(SelectionState state) {
     if (state == SelectionStart || state == SelectionEnd ||
         state == SelectionBoth) {
       int start_pos, end_pos;
-      SelectionStartEnd(start_pos, end_pos);
+      std::tie(start_pos, end_pos) = SelectionStartEnd();
       if (GetSelectionState() == SelectionStart) {
         end_pos = TextLength();
 
@@ -2025,7 +2025,7 @@ LayoutRect LayoutText::LocalSelectionRect() const {
     start_pos = 0;
     end_pos = TextLength();
   } else {
-    SelectionStartEnd(start_pos, end_pos);
+    std::tie(start_pos, end_pos) = SelectionStartEnd();
     if (GetSelectionState() == SelectionStart)
       end_pos = TextLength();
     else if (GetSelectionState() == SelectionEnd)

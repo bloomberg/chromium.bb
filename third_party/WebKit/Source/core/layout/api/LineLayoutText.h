@@ -109,8 +109,8 @@ class LineLayoutText : public LineLayoutItem {
     return ToText()->HyphenWidth(font, text_direction);
   }
 
-  void SelectionStartEnd(int& spos, int& epos) const {
-    return ToText()->SelectionStartEnd(spos, epos);
+  std::pair<int, int> SelectionStartEnd() const {
+    return ToText()->SelectionStartEnd();
   }
 
   unsigned TextStartOffset() const { return ToText()->TextStartOffset(); }

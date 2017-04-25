@@ -212,15 +212,15 @@ static inline void AppendContextSubtargetsForNode(
         end_pos = text_layout_object->TextLength();
         break;
       case SelectionStart:
-        text_layout_object->SelectionStartEnd(start_pos, end_pos);
+        std::tie(start_pos, end_pos) = text_layout_object->SelectionStartEnd();
         end_pos = text_layout_object->TextLength();
         break;
       case SelectionEnd:
-        text_layout_object->SelectionStartEnd(start_pos, end_pos);
+        std::tie(start_pos, end_pos) = text_layout_object->SelectionStartEnd();
         start_pos = 0;
         break;
       case SelectionBoth:
-        text_layout_object->SelectionStartEnd(start_pos, end_pos);
+        std::tie(start_pos, end_pos) = text_layout_object->SelectionStartEnd();
         break;
       default:
         ASSERT_NOT_REACHED();

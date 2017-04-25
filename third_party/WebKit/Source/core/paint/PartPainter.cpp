@@ -27,7 +27,7 @@ bool PartPainter::IsSelected() const {
     return true;
 
   int selection_start, selection_end;
-  layout_part_.SelectionStartEnd(selection_start, selection_end);
+  std::tie(selection_start, selection_end) = layout_part_.SelectionStartEnd();
   if (s == SelectionStart)
     return selection_start == 0;
 

@@ -138,7 +138,7 @@ SelectionState InlineTextBox::GetSelectionState() const {
   if (state == SelectionStart || state == SelectionEnd ||
       state == SelectionBoth) {
     int start_pos, end_pos;
-    GetLineLayoutItem().SelectionStartEnd(start_pos, end_pos);
+    std::tie(start_pos, end_pos) = GetLineLayoutItem().SelectionStartEnd();
     // The position after a hard line break is considered to be past its end.
     // See the corresponding code in InlineTextBox::isSelected.
     int last_selectable = Start() + Len() - (IsLineBreak() ? 1 : 0);
@@ -502,7 +502,7 @@ void InlineTextBox::SelectionStartEnd(int& s_pos, int& e_pos) const {
     start_pos = 0;
     end_pos = GetLineLayoutItem().TextLength();
   } else {
-    GetLineLayoutItem().SelectionStartEnd(start_pos, end_pos);
+    std::tie(start_pos, end_pos) = GetLineLayoutItem().SelectionStartEnd();
     if (GetLineLayoutItem().GetSelectionState() == SelectionStart)
       end_pos = GetLineLayoutItem().TextLength();
     else if (GetLineLayoutItem().GetSelectionState() == SelectionEnd)

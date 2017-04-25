@@ -306,10 +306,9 @@ void LayoutSelection::SetSelection(
     i->key->SetShouldInvalidateSelection();
 }
 
-void LayoutSelection::SelectionStartEnd(int& start_pos, int& end_pos) {
+std::pair<int, int> LayoutSelection::SelectionStartEnd() {
   Commit();
-  start_pos = selection_start_pos_;
-  end_pos = selection_end_pos_;
+  return std::make_pair(selection_start_pos_, selection_end_pos_);
 }
 
 void LayoutSelection::ClearSelection() {

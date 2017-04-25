@@ -55,7 +55,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
       int end_pos,
       SelectionPaintInvalidationMode = kPaintInvalidationNewXOROld);
   void ClearSelection();
-  void SelectionStartEnd(int& start_pos, int& end_pos);
+  std::pair<int, int> SelectionStartEnd();
   void OnDocumentShutdown();
 
   DECLARE_TRACE();
