@@ -77,8 +77,12 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       mi->sb_type = mbmi->sb_type;
       // Skip Flag
       mi->skip = mbmi->skip;
-      // Filters
+#if CONFIG_DUAL_FILTER
+      mi->filter[0] = mbmi->interp_filter[0];
+      mi->filter[1] = mbmi->interp_filter[1];
+#else
       mi->filter = mbmi->interp_filter;
+#endif
       // Transform
       mi->tx_type = mbmi->tx_type;
       mi->tx_size = mbmi->tx_size;
