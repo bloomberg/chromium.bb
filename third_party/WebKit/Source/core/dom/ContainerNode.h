@@ -144,6 +144,7 @@ class CORE_EXPORT ContainerNode : public Node {
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
   LayoutRect BoundingBox() const final;
   void SetFocused(bool, WebFocusType) override;
+  void SetHasFocusWithinUpToAncestor(bool, Node* ancestor);
   void FocusStateChanged();
   void FocusWithinStateChanged();
   void SetActive(bool = true) override;

@@ -1069,13 +1069,6 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
 
   FocusStateChanged();
 
-  UpdateDistribution();
-  for (ContainerNode* node = this; node;
-       node = FlatTreeTraversal::Parent(*node)) {
-    node->SetHasFocusWithin(received);
-    node->FocusWithinStateChanged();
-  }
-
   if (GetLayoutObject() || received)
     return;
 
@@ -1097,6 +1090,14 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
                         StyleChangeReasonForTracing::CreateWithExtraData(
                             StyleChangeReason::kPseudoClass,
                             StyleChangeExtraData::g_focus_within));
+  }
+}
+
+void ContainerNode::SetHasFocusWithinUpToAncestor(bool flag, Node* ancestor) {
+  for (ContainerNode* node = this; node && node != ancestor;
+       node = FlatTreeTraversal::Parent(*node)) {
+    node->SetHasFocusWithin(flag);
+    node->FocusWithinStateChanged();
   }
 }
 

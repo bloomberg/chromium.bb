@@ -4066,9 +4066,17 @@ bool Document::SetFocusedElement(Element* new_focused_element,
   Element* old_focused_element = focused_element_;
   focused_element_ = nullptr;
 
+  UpdateDistribution();
+  Node* ancestor = (old_focused_element && old_focused_element->isConnected() &&
+                    new_focused_element)
+                       ? FlatTreeTraversal::CommonAncestor(*old_focused_element,
+                                                           *new_focused_element)
+                       : nullptr;
+
   // Remove focus from the existing focus node (if any)
   if (old_focused_element) {
     old_focused_element->SetFocused(false, params.type);
+    old_focused_element->SetHasFocusWithinUpToAncestor(false, ancestor);
 
     // Dispatch the blur event and let the node do any other blur related
     // activities (important for text fields)
@@ -4116,6 +4124,8 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     SetSequentialFocusNavigationStartingPoint(focused_element_.Get());
 
     focused_element_->SetFocused(true, params.type);
+    focused_element_->SetHasFocusWithinUpToAncestor(true, ancestor);
+
     // Element::setFocused for frames can dispatch events.
     if (focused_element_ != new_focused_element) {
       focus_change_blocked = true;

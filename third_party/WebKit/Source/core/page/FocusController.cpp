@@ -372,6 +372,7 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
     Element* focused_element = document->FocusedElement();
     // Use focus_type kWebFocusTypePage, same as used in DispatchBlurEvent.
     focused_element->SetFocused(false, kWebFocusTypePage);
+    focused_element->SetHasFocusWithinUpToAncestor(false, nullptr);
     DispatchBlurEvent(*document, *focused_element);
   }
 
@@ -382,6 +383,7 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
     Element* focused_element(document->FocusedElement());
     // Use focus_type kWebFocusTypePage, same as used in DispatchFocusEvent.
     focused_element->SetFocused(true, kWebFocusTypePage);
+    focused_element->SetHasFocusWithinUpToAncestor(true, nullptr);
     DispatchFocusEvent(*document, *focused_element);
   }
 }

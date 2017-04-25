@@ -312,4 +312,42 @@ TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate) {
   ASSERT_EQ(1U, element_count);
 }
 
+TEST_F(AffectedByFocusTest, FocusWithinCommonAncestor) {
+  // Check that when changing the focus between 2 elements we don't need a style
+  // recalc for all the ancestors affected by ":focus-within".
+
+  SetHtmlInnerHTML(
+      "<style>div:focus-within { background-color: lime; }</style>"
+      "<div>"
+      "  <div>"
+      "    <div id=focusme1 tabIndex=1></div>"
+      "    <div id=focusme2 tabIndex=2></div>"
+      "  <div>"
+      "</div>");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
+
+  GetDocument().GetElementById("focusme1")->focus();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  unsigned element_count =
+      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
+
+  EXPECT_EQ(3U, element_count);
+
+  start_count += element_count;
+
+  GetDocument().GetElementById("focusme2")->focus();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  element_count =
+      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
+
+  // Only "focusme1" & "focusme2" elements need a recalc thanks to the common
+  // ancestor strategy.
+  EXPECT_EQ(2U, element_count);
+}
+
 }  // namespace blink
