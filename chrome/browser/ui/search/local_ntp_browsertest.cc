@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -18,8 +20,13 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_data.h"
+#include "components/search_engines/template_url_service.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -29,6 +36,25 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 
+namespace {
+
+// Switches the browser language to French, and returns true iff successful.
+bool SwitchToFrench() {
+  // Make sure the default language is not French.
+  std::string default_locale = g_browser_process->GetApplicationLocale();
+  EXPECT_NE("fr", default_locale);
+
+  // Switch browser language to French.
+  std::string loaded_locale =
+      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("fr");
+
+  return loaded_locale == "fr";
+}
+
+}  // namespace
+
+// A test class that sets up local_ntp_browsertest.html (which is mostly a copy
+// of the real local_ntp.html) as the NTP URL.
 class LocalNTPTest : public InProcessBrowserTest,
                      public InstantTestBase {
  public:
@@ -282,11 +308,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   std::string loaded_locale =
       ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("fr");
 
-  // The platform cannot load the French locale (GetApplicationLocale() is
+  // If the platform cannot load the French locale (GetApplicationLocale() is
   // platform specific, and has been observed to fail on a small number of
-  // platforms). Abort the test.
-  if (loaded_locale != "fr")
+  // platforms), abort the test.
+  if (!SwitchToFrench()) {
+    LOG(ERROR) << "Failed switching to French language, aborting test.";
     return;
+  }
 
   g_browser_process->SetApplicationLocale(loaded_locale);
   PrefService* prefs = g_browser_process->local_state();
@@ -307,4 +335,110 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(base::ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
+}
+
+// In contrast to LocalNTPTest, this one doesn't set up any special NTP
+// wrangling. It just turns on the local NTP.
+class LocalNTPSmokeTest : public InProcessBrowserTest {
+ public:
+  LocalNTPSmokeTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* cmdline) override {
+    cmdline->AppendSwitchASCII(switches::kEnableFeatures, "UseGoogleLocalNtp");
+  }
+
+  void SetUserSelectedDefaultSearchProvider(const std::string& base_url) {
+    TemplateURLData data;
+    data.SetShortName(base::UTF8ToUTF16(base_url));
+    data.SetKeyword(base::UTF8ToUTF16(base_url));
+    data.SetURL(base_url + "url?bar={searchTerms}");
+
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(browser()->profile());
+    TemplateURL* template_url =
+        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
+    template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPSmokeTest, GoogleNTPLoadsWithoutError) {
+  // Open a new blank tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_FALSE(search::IsInstantNTP(active_tab));
+
+  // Attach a console observer, listening for any message ("*" pattern).
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+
+  // Navigate to the NTP.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+            active_tab->GetController().GetVisibleEntry()->GetURL());
+
+  // We shouldn't have gotten any console error messages.
+  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPSmokeTest, NonGoogleNTPLoadsWithoutError) {
+  SetUserSelectedDefaultSearchProvider("https://www.example.com");
+
+  // Open a new blank tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_FALSE(search::IsInstantNTP(active_tab));
+
+  // Attach a console observer, listening for any message ("*" pattern).
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+
+  // Navigate to the NTP.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+            active_tab->GetController().GetVisibleEntry()->GetURL());
+
+  // We shouldn't have gotten any console error messages.
+  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPSmokeTest, FrenchGoogleNTPLoadsWithoutError) {
+  if (!SwitchToFrench()) {
+    LOG(ERROR) << "Failed switching to French language, aborting test.";
+    return;
+  }
+
+  // Open a new blank tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_FALSE(search::IsInstantNTP(active_tab));
+
+  // Attach a console observer, listening for any message ("*" pattern).
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+
+  // Navigate to the NTP.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+            active_tab->GetController().GetVisibleEntry()->GetURL());
+  // Make sure it's actually in French.
+  ASSERT_EQ(base::ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
+
+  // We shouldn't have gotten any console error messages.
+  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
 }

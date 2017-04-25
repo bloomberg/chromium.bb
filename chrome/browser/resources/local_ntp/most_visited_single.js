@@ -72,7 +72,8 @@ var NUM_TITLE_LINES = 1;
 
 
 /**
- * The origin of this request.
+ * The origin of this request, i.e. 'https://www.google.TLD' for the remote NTP,
+ * or 'chrome-search://local-ntp' for the local NTP.
  * @const {string}
  */
 var DOMAIN_ORIGIN = '{{ORIGIN}}';

@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 
+// NOTE: If you modify this file, you also have to change its hash in
+// local_ntp.html and in LocalNtpSource::GetContentSecurityPolicyScriptSrc.
+
+
 /**
  * @fileoverview The local InstantExtended NTP.
  */

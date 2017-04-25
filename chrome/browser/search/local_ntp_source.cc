@@ -6,14 +6,12 @@
 
 #include <stddef.h>
 
-#include <memory>
-
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -30,7 +28,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service_observer.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_thread.h"
+#include "crypto/secure_hash.h"
+#include "net/base/hash_value.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,13 +48,14 @@ const int kLocalResource = -1;
 
 const char kConfigDataFilename[] = "config.js";
 const char kThemeCSSFilename[] = "theme.css";
+const char kMainHtmlFilename[] = "local-ntp.html";
 
 const struct Resource{
   const char* filename;
   int identifier;
   const char* mime_type;
 } kResources[] = {
-    {"local-ntp.html", IDR_LOCAL_NTP_HTML, "text/html"},
+    {kMainHtmlFilename, kLocalResource, "text/html"},
     {"local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript"},
     {kConfigDataFilename, kLocalResource, "application/javascript"},
     {kThemeCSSFilename, kLocalResource, "text/css"},
@@ -65,23 +68,6 @@ const struct Resource{
 // Strips any query parameters from the specified path.
 std::string StripParameters(const std::string& path) {
   return path.substr(0, path.find("?"));
-}
-
-bool DefaultSearchProviderIsGoogle(Profile* profile) {
-  if (!profile)
-    return false;
-
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  if (!template_url_service)
-    return false;
-
-  const TemplateURL* default_provider =
-      template_url_service->GetDefaultSearchProvider();
-  return default_provider &&
-      (default_provider->GetEngineType(
-          template_url_service->search_terms_data()) ==
-       SEARCH_ENGINE_GOOGLE);
 }
 
 // Adds a localized string keyed by resource id to the dictionary.
@@ -116,9 +102,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
 }
 
 // Returns a JS dictionary of configuration data for the local NTP.
-std::string GetConfigData(Profile* profile) {
+std::string GetConfigData(bool is_google) {
   base::DictionaryValue config_data;
-  bool is_google = DefaultSearchProviderIsGoogle(profile);
   config_data.Set("translatedStrings", GetTranslatedStrings(is_google));
   config_data.SetBoolean("isGooglePage", is_google);
 
@@ -132,6 +117,22 @@ std::string GetConfigData(Profile* profile) {
   config_data_js.append(js_text);
   config_data_js.append(";");
   return config_data_js;
+}
+
+std::string GetIntegritySha256Value(const std::string& data) {
+  // Compute the sha256 hash.
+  net::SHA256HashValue hash_value;
+  std::unique_ptr<crypto::SecureHash> hash(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+  hash->Update(data.data(), data.size());
+  hash->Finish(&hash_value, sizeof(hash_value));
+
+  // Base64-encode it.
+  base::StringPiece hash_value_str(
+      reinterpret_cast<const char*>(hash_value.data), sizeof(hash_value));
+  std::string result;
+  base::Base64Encode(hash_value_str, &result);
+  return result;
 }
 
 std::string GetThemeCSS(Profile* profile) {
@@ -150,9 +151,76 @@ std::string GetLocalNtpPath() {
          std::string(chrome::kChromeSearchLocalNtpHost) + "/";
 }
 
+bool DefaultSearchProviderIsGoogleImpl(
+    const TemplateURLService* template_url_service) {
+  const TemplateURL* default_provider =
+      template_url_service->GetDefaultSearchProvider();
+  return default_provider && (default_provider->GetEngineType(
+                                  template_url_service->search_terms_data()) ==
+                              SEARCH_ENGINE_GOOGLE);
+}
+
 }  // namespace
 
-LocalNtpSource::LocalNtpSource(Profile* profile) : profile_(profile) {}
+class LocalNtpSource::GoogleSearchProviderTracker
+    : public TemplateURLServiceObserver {
+ public:
+  using SearchProviderIsGoogleChangedCallback =
+      base::Callback<void(bool is_google)>;
+
+  GoogleSearchProviderTracker(
+      TemplateURLService* service,
+      const SearchProviderIsGoogleChangedCallback& callback)
+      : service_(service), callback_(callback), is_google_(false) {
+    DCHECK(service_);
+    service_->AddObserver(this);
+    is_google_ = DefaultSearchProviderIsGoogleImpl(service_);
+  }
+
+  ~GoogleSearchProviderTracker() override {
+    if (service_)
+      service_->RemoveObserver(this);
+  }
+
+  bool DefaultSearchProviderIsGoogle() const { return is_google_; }
+
+ private:
+  void OnTemplateURLServiceChanged() override {
+    bool old_is_google = is_google_;
+    is_google_ = DefaultSearchProviderIsGoogleImpl(service_);
+    if (is_google_ != old_is_google)
+      callback_.Run(is_google_);
+  }
+
+  void OnTemplateURLServiceShuttingDown() override {
+    service_->RemoveObserver(this);
+    service_ = nullptr;
+  }
+
+  TemplateURLService* service_;
+  SearchProviderIsGoogleChangedCallback callback_;
+
+  bool is_google_;
+};
+
+LocalNtpSource::LocalNtpSource(Profile* profile)
+    : profile_(profile),
+      default_search_provider_is_google_(false),
+      default_search_provider_is_google_io_thread_(false),
+      weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (template_url_service) {
+    google_tracker_ = base::MakeUnique<GoogleSearchProviderTracker>(
+        template_url_service,
+        base::Bind(&LocalNtpSource::DefaultSearchProviderIsGoogleChanged,
+                   base::Unretained(this)));
+    DefaultSearchProviderIsGoogleChanged(
+        google_tracker_->DefaultSearchProviderIsGoogle());
+  }
+}
 
 LocalNtpSource::~LocalNtpSource() = default;
 
@@ -164,9 +232,12 @@ void LocalNtpSource::StartDataRequest(
     const std::string& path,
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   std::string stripped_path = StripParameters(path);
   if (stripped_path == kConfigDataFilename) {
-    std::string config_data_js = GetConfigData(profile_);
+    std::string config_data_js =
+        GetConfigData(default_search_provider_is_google_);
     callback.Run(base::RefCountedString::TakeString(&config_data_js));
     return;
   }
@@ -188,6 +259,19 @@ void LocalNtpSource::StartDataRequest(
   }
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
+  if (stripped_path == kMainHtmlFilename) {
+    std::string html = ResourceBundle::GetSharedInstance()
+                           .GetRawDataResource(IDR_LOCAL_NTP_HTML)
+                           .as_string();
+    std::string config_sha256 =
+        "sha256-" + GetIntegritySha256Value(
+                        GetConfigData(default_search_provider_is_google_));
+    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{CONFIG_INTEGRITY}}",
+                                           config_sha256);
+    callback.Run(base::RefCountedString::TakeString(&html));
+    return;
+  }
+
   float scale = 1.0f;
   std::string filename;
   webui::ParsePathAndScale(
@@ -203,7 +287,7 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
   }
-  callback.Run(NULL);
+  callback.Run(nullptr);
 }
 
 std::string LocalNtpSource::GetMimeType(
@@ -226,13 +310,15 @@ bool LocalNtpSource::AllowCaching() const {
 
 bool LocalNtpSource::ShouldServiceRequest(
     const net::URLRequest* request) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
   DCHECK(request->url().host_piece() == chrome::kChromeSearchLocalNtpHost);
   if (!InstantIOContext::ShouldServiceRequest(request))
     return false;
 
   if (request->url().SchemeIs(chrome::kChromeSearchScheme)) {
     std::string filename;
-    webui::ParsePathAndScale(request->url(), &filename, NULL);
+    webui::ParsePathAndScale(request->url(), &filename, nullptr);
     for (size_t i = 0; i < arraysize(kResources); ++i) {
       if (filename == kResources[i].filename)
         return true;
@@ -241,8 +327,46 @@ bool LocalNtpSource::ShouldServiceRequest(
   return false;
 }
 
+std::string LocalNtpSource::GetContentSecurityPolicyScriptSrc() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+#if !defined(GOOGLE_CHROME_BUILD)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
+    // While live-editing the local NTP files, turn off CSP.
+    return "script-src *;";
+  }
+#endif  // !defined(GOOGLE_CHROME_BUILD)
+
+  return "script-src 'strict-dynamic' "
+         "'sha256-" +
+         GetIntegritySha256Value(
+             GetConfigData(default_search_provider_is_google_io_thread_)) +
+         "' "
+         "'sha256-g38WaUaxnOIWY7E2LtLZ5ff9r5sn1dBj80jevt/kmx0=';";
+}
+
 std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
   // Allow embedding of most visited iframes.
   return base::StringPrintf("child-src %s;",
                             chrome::kChromeSearchMostVisitedUrl);
+}
+
+void LocalNtpSource::DefaultSearchProviderIsGoogleChanged(bool is_google) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  default_search_provider_is_google_ = is_google;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&LocalNtpSource::SetDefaultSearchProviderIsGoogleOnIOThread,
+                 weak_ptr_factory_.GetWeakPtr(), is_google));
+}
+
+void LocalNtpSource::SetDefaultSearchProviderIsGoogleOnIOThread(
+    bool is_google) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  default_search_provider_is_google_io_thread_ = is_google;
 }
