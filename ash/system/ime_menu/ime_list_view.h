@@ -44,6 +44,9 @@ class ImeListView : public TrayDetailsView {
   // Closes the view.
   void CloseImeListView();
 
+  // Scrolls contents such that |item_view| is visible.
+  void ScrollItemToVisible(views::View* item_view);
+
   void set_last_item_selected_with_keyboard(
       bool last_item_selected_with_keyboard) {
     last_item_selected_with_keyboard_ = last_item_selected_with_keyboard;

@@ -54,13 +54,18 @@ class TrayPopupUtils {
   // Creates a container view to be used by system menu sub-section header rows.
   // The caller takes over ownership of the created view.
   //
-  // The returned view consists of 2 regions: CENTER, and END having the same
-  // properties as when using |CreateMultiTargetRowView|. The START container is
-  // hidden.
-  // The END container has a fixed minimum width but can grow into the CENTER
-  // container if space is required and available. The CENTER container has a
-  // flexible width.
-  static TriView* CreateSubHeaderRowView();
+  // The returned view contains at least CENTER and END regions having the same
+  // properties as when using |CreateMultiTargetRowView|. |start_visible|
+  // determines whether the START region should be visible or not. If START is
+  // not visible, extra padding is added to the left of the contents.
+  //
+  // The START (if visible) and END containers have a fixed minimum width but
+  // can grow into the CENTER container if space is required and available. The
+  // CENTER container has a flexible width.
+  //
+  // TODO(mohsen): Merge this into TrayDetailsView::AddScrollListSubHeader()
+  // once network and VPN alse use TrayDetailsView::AddScrollListSubHeader().
+  static TriView* CreateSubHeaderRowView(bool start_visible);
 
   // Creates a view containing only a label (corresponding to |message_id|),
   // which is to be inserted as a non-targetable row within a system menu

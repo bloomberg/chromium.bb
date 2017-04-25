@@ -315,7 +315,6 @@ class CastDetailedView : public TrayDetailsView {
   void CreateItems();
 
   void UpdateReceiverListFromCachedData();
-  views::View* AddToReceiverList(const mojom::SinkAndRoutePtr& sink_route);
 
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
@@ -388,24 +387,13 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   // Add a view for each receiver.
   for (auto& it : sinks_and_routes_) {
     const ash::mojom::SinkAndRoutePtr& sink_route = it.second;
-    views::View* container = AddToReceiverList(sink_route);
+    const base::string16 name = base::UTF8ToUTF16(sink_route->sink->name);
+    views::View* container = AddScrollListItem(kSystemMenuCastDeviceIcon, name);
     view_to_sink_map_[container] = sink_route->sink.Clone();
   }
 
   scroll_content()->SizeToPreferredSize();
   scroller()->Layout();
-}
-
-views::View* CastDetailedView::AddToReceiverList(
-    const ash::mojom::SinkAndRoutePtr& sink_route) {
-  const gfx::ImageSkia image =
-      gfx::CreateVectorIcon(kSystemMenuCastDeviceIcon, kMenuIconColor);
-
-  HoverHighlightView* container = new HoverHighlightView(this);
-  container->AddIconAndLabel(image, base::UTF8ToUTF16(sink_route->sink->name));
-
-  scroll_content()->AddChildView(container);
-  return container;
 }
 
 void CastDetailedView::HandleViewClicked(views::View* view) {

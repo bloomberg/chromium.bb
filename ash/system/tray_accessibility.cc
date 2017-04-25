@@ -215,58 +215,64 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
   CreateScrollableList();
 
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
+
   spoken_feedback_enabled_ = delegate->IsSpokenFeedbackEnabled();
-  spoken_feedback_view_ = AddScrollListItem(
+  spoken_feedback_view_ = AddScrollListCheckableItem(
+      kSystemMenuAccessibilityChromevoxIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK),
-      spoken_feedback_enabled_, kSystemMenuAccessibilityChromevoxIcon);
+      spoken_feedback_enabled_);
 
   high_contrast_enabled_ = delegate->IsHighContrastEnabled();
-  high_contrast_view_ = AddScrollListItem(
+  high_contrast_view_ = AddScrollListCheckableItem(
+      kSystemMenuAccessibilityContrastIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE),
-      high_contrast_enabled_, kSystemMenuAccessibilityContrastIcon);
+      high_contrast_enabled_);
+
   screen_magnifier_enabled_ = delegate->IsMagnifierEnabled();
-  screen_magnifier_view_ = AddScrollListItem(
+  screen_magnifier_view_ = AddScrollListCheckableItem(
+      kSystemMenuAccessibilityScreenMagnifierIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER),
-      screen_magnifier_enabled_, kSystemMenuAccessibilityScreenMagnifierIcon);
+      screen_magnifier_enabled_);
 
   autoclick_enabled_ = delegate->IsAutoclickEnabled();
-  autoclick_view_ = AddScrollListItem(
+  autoclick_view_ = AddScrollListCheckableItem(
+      kSystemMenuAccessibilityAutoClickIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
-      autoclick_enabled_, kSystemMenuAccessibilityAutoClickIcon);
+      autoclick_enabled_);
 
   virtual_keyboard_enabled_ = delegate->IsVirtualKeyboardEnabled();
-  virtual_keyboard_view_ =
-      AddScrollListItem(l10n_util::GetStringUTF16(
-                            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD),
-                        virtual_keyboard_enabled_, kSystemMenuKeyboardIcon);
+  virtual_keyboard_view_ = AddScrollListCheckableItem(
+      kSystemMenuKeyboardIcon,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD),
+      virtual_keyboard_enabled_);
 
   scroll_content()->AddChildView(
       TrayPopupUtils::CreateListSubHeaderSeparator());
 
-  AddSubHeader(l10n_util::GetStringUTF16(
-      IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS));
+  AddScrollListSubHeader(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS);
 
   large_cursor_enabled_ = delegate->IsLargeCursorEnabled();
-  large_cursor_view_ = AddScrollListItemWithoutIcon(
+  large_cursor_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
       large_cursor_enabled_);
 
   mono_audio_enabled_ = delegate->IsMonoAudioEnabled();
-  mono_audio_view_ = AddScrollListItemWithoutIcon(
+  mono_audio_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO),
       mono_audio_enabled_);
 
   caret_highlight_enabled_ = delegate->IsCaretHighlightEnabled();
-  caret_highlight_view_ = AddScrollListItemWithoutIcon(
+  caret_highlight_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_CARET_HIGHLIGHT),
       caret_highlight_enabled_);
 
   highlight_mouse_cursor_enabled_ = delegate->IsCursorHighlightEnabled();
-  highlight_mouse_cursor_view_ = AddScrollListItemWithoutIcon(
+  highlight_mouse_cursor_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_MOUSE_CURSOR),
       highlight_mouse_cursor_enabled_);
@@ -275,57 +281,21 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
   // ChromeVox does its own focus highlighting.
   if (!spoken_feedback_enabled_) {
     highlight_keyboard_focus_enabled_ = delegate->IsFocusHighlightEnabled();
-    highlight_keyboard_focus_view_ = AddScrollListItemWithoutIcon(
+    highlight_keyboard_focus_view_ = AddScrollListCheckableItem(
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_KEYBOARD_FOCUS),
         highlight_keyboard_focus_enabled_);
   }
 
   sticky_keys_enabled_ = delegate->IsStickyKeysEnabled();
-  sticky_keys_view_ = AddScrollListItemWithoutIcon(
+  sticky_keys_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_STICKY_KEYS),
       sticky_keys_enabled_);
 
   tap_dragging_enabled_ = delegate->IsTapDraggingEnabled();
-  tap_dragging_view_ = AddScrollListItemWithoutIcon(
+  tap_dragging_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TAP_DRAGGING),
       tap_dragging_enabled_);
-}
-
-HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
-    const base::string16& text,
-    bool checked,
-    const gfx::VectorIcon& icon) {
-  HoverHighlightView* container = new HoverHighlightView(this);
-  gfx::ImageSkia image = CreateVectorIcon(icon, kMenuIconColor);
-  container->AddIconAndLabel(image, text);
-  TrayPopupUtils::InitializeAsCheckableRow(container, checked);
-  scroll_content()->AddChildView(container);
-  return container;
-}
-
-HoverHighlightView* AccessibilityDetailedView::AddScrollListItemWithoutIcon(
-    const base::string16& text,
-    bool checked) {
-  HoverHighlightView* container = new HoverHighlightView(this);
-  container->AddLabelRow(text);
-  TrayPopupUtils::InitializeAsCheckableRow(container, checked);
-  scroll_content()->AddChildView(container);
-  return container;
-}
-
-void AccessibilityDetailedView::AddSubHeader(
-    const base::string16& header_text) {
-  TriView* header = TrayPopupUtils::CreateSubHeaderRowView();
-  TrayPopupUtils::ConfigureAsStickyHeader(header);
-
-  views::Label* label = TrayPopupUtils::CreateDefaultLabel();
-  label->SetText(header_text);
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
-  style.SetupLabel(label);
-  header->AddView(TriView::Container::CENTER, label);
-
-  scroll_content()->AddChildView(header);
 }
 
 void AccessibilityDetailedView::HandleViewClicked(views::View* view) {

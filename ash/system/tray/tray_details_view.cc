@@ -6,6 +6,7 @@
 
 #include "ash/ash_view_ids.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
@@ -16,13 +17,18 @@
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/scroll_view.h"
@@ -301,6 +307,60 @@ void TrayDetailsView::CreateScrollableList() {
 
   AddChildView(scroller_);
   box_layout_->SetFlexForView(scroller_, 1);
+}
+
+HoverHighlightView* TrayDetailsView::AddScrollListItem(
+    const gfx::VectorIcon& icon,
+    const base::string16& text) {
+  HoverHighlightView* item = new HoverHighlightView(this);
+  if (icon.is_empty())
+    item->AddLabelRow(text);
+  else
+    item->AddIconAndLabel(gfx::CreateVectorIcon(icon, kMenuIconColor), text);
+  scroll_content_->AddChildView(item);
+  return item;
+}
+
+HoverHighlightView* TrayDetailsView::AddScrollListCheckableItem(
+    const gfx::VectorIcon& icon,
+    const base::string16& text,
+    bool checked) {
+  HoverHighlightView* item = AddScrollListItem(icon, text);
+  TrayPopupUtils::InitializeAsCheckableRow(item, checked);
+  return item;
+}
+
+HoverHighlightView* TrayDetailsView::AddScrollListCheckableItem(
+    const base::string16& text,
+    bool checked) {
+  return AddScrollListCheckableItem(gfx::kNoneIcon, text, checked);
+}
+
+TriView* TrayDetailsView::AddScrollListSubHeader(const gfx::VectorIcon& icon,
+                                                 int text_id) {
+  TriView* header = TrayPopupUtils::CreateSubHeaderRowView(!icon.is_empty());
+  TrayPopupUtils::ConfigureAsStickyHeader(header);
+
+  views::Label* label = TrayPopupUtils::CreateDefaultLabel();
+  label->SetText(l10n_util::GetStringUTF16(text_id));
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
+  style.SetupLabel(label);
+  header->AddView(TriView::Container::CENTER, label);
+
+  if (!icon.is_empty()) {
+    views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
+    image_view->SetImage(gfx::CreateVectorIcon(
+        icon, GetNativeTheme()->GetSystemColor(
+                  ui::NativeTheme::kColorId_ProminentButtonColor)));
+    header->AddView(TriView::Container::START, image_view);
+  }
+
+  scroll_content_->AddChildView(header);
+  return header;
+}
+
+TriView* TrayDetailsView::AddScrollListSubHeader(int text_id) {
+  return AddScrollListSubHeader(gfx::kNoneIcon, text_id);
 }
 
 void TrayDetailsView::Reset() {

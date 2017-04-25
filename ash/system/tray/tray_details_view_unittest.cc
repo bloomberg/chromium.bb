@@ -43,6 +43,10 @@ class TestDetailsView : public TrayDetailsView {
 
   void CreateScrollerViews() { CreateScrollableList(); }
 
+  views::View* scroll_content() const {
+    return TrayDetailsView::scroll_content();
+  }
+
  private:
   TrayPopupHeaderButton* tray_popup_header_button_;
 

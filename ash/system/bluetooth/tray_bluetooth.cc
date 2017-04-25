@@ -24,10 +24,10 @@
 #include "ash/system/tray/tri_view.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -119,11 +119,10 @@ class BluetoothDefaultView : public TrayItemMore {
   void Update() {
     TrayBluetoothHelper* helper = Shell::Get()->tray_bluetooth_helper();
     if (helper->GetBluetoothAvailable()) {
-      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      const base::string16 label =
-          rb.GetLocalizedString(helper->GetBluetoothEnabled()
-                                    ? IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED
-                                    : IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED);
+      const base::string16 label = l10n_util::GetStringUTF16(
+          helper->GetBluetoothEnabled()
+              ? IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED
+              : IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED);
       SetLabel(label);
       SetAccessibleName(label);
       SetVisible(true);
@@ -163,8 +162,8 @@ class BluetoothDefaultView : public TrayItemMore {
 
     bool has_connected_device = false;
     BluetoothDeviceList list = helper->GetAvailableBluetoothDevices();
-    for (size_t i = 0; i < list.size(); ++i) {
-      if (list[i].connected) {
+    for (const auto& device : list) {
+      if (device.connected) {
         has_connected_device = true;
         break;
       }
@@ -235,21 +234,20 @@ class BluetoothDetailedView : public TrayDetailsView {
 
     BluetoothDeviceList list =
         Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices();
-    for (size_t i = 0; i < list.size(); ++i) {
-      if (list[i].connecting) {
-        new_connecting_devices.insert(list[i].address);
-        UpdateBluetoothDeviceListHelper(&connecting_devices_, list[i]);
-      } else if (list[i].connected && list[i].paired) {
-        new_connected_devices.insert(list[i].address);
-        UpdateBluetoothDeviceListHelper(&connected_devices_, list[i]);
-      } else if (list[i].paired) {
-        new_paired_not_connected_devices.insert(list[i].address);
-        UpdateBluetoothDeviceListHelper(&paired_not_connected_devices_,
-                                        list[i]);
+    for (const auto& device : list) {
+      if (device.connecting) {
+        new_connecting_devices.insert(device.address);
+        UpdateBluetoothDeviceListHelper(&connecting_devices_, device);
+      } else if (device.connected && device.paired) {
+        new_connected_devices.insert(device.address);
+        UpdateBluetoothDeviceListHelper(&connected_devices_, device);
+      } else if (device.paired) {
+        new_paired_not_connected_devices.insert(device.address);
+        UpdateBluetoothDeviceListHelper(&paired_not_connected_devices_, device);
       } else {
-        new_discovered_not_paired_devices.insert(list[i].address);
+        new_discovered_not_paired_devices.insert(device.address);
         UpdateBluetoothDeviceListHelper(&discovered_not_paired_devices_,
-                                        list[i]);
+                                        device);
       }
     }
     RemoveObsoleteBluetoothDevicesFromList(&connecting_devices_,
@@ -293,7 +291,7 @@ class BluetoothDetailedView : public TrayDetailsView {
                                 connecting_devices_.size() +
                                 paired_not_connected_devices_.size();
     if (num_paired_devices > 0) {
-      AddSubHeader(IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED_DEVICES);
+      AddScrollListSubHeader(IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED_DEVICES);
       AppendSameTypeDevicesToScrollList(connected_devices_, true, true,
                                         bluetooth_enabled);
       AppendSameTypeDevicesToScrollList(connecting_devices_, true, false,
@@ -306,7 +304,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     // present, also add a section header above the unpaired devices.
     if (discovered_not_paired_devices_.size() > 0) {
       if (num_paired_devices > 0)
-        AddSubHeader(IDS_ASH_STATUS_TRAY_BLUETOOTH_UNPAIRED_DEVICES);
+        AddScrollListSubHeader(IDS_ASH_STATUS_TRAY_BLUETOOTH_UNPAIRED_DEVICES);
       AppendSameTypeDevicesToScrollList(discovered_not_paired_devices_, false,
                                         false, bluetooth_enabled);
     }
@@ -328,83 +326,41 @@ class BluetoothDetailedView : public TrayDetailsView {
                                          bool highlight,
                                          bool checked,
                                          bool enabled) {
-    for (size_t i = 0; i < list.size(); ++i) {
-      HoverHighlightView* container = nullptr;
-      gfx::ImageSkia icon_image = CreateVectorIcon(
-          GetBluetoothDeviceIcon(list[i].device_type, list[i].connected),
-          kMenuIconColor);
-      container = AddScrollListItem(list[i].display_name, icon_image,
-                                    list[i].connected, list[i].connecting);
-      device_map_[container] = list[i].address;
+    for (const auto& device : list) {
+      const gfx::VectorIcon& icon =
+          GetBluetoothDeviceIcon(device.device_type, device.connected);
+      HoverHighlightView* container =
+          AddScrollListItem(icon, device.display_name);
+      if (device.connected)
+        SetupConnectedItem(container);
+      else if (device.connecting)
+        SetupConnectingItem(container);
+      device_map_[container] = device.address;
     }
   }
 
-  HoverHighlightView* AddScrollListItem(const base::string16& text,
-                                        const gfx::ImageSkia& image,
-                                        bool connected,
-                                        bool connecting) {
-    HoverHighlightView* container = new HoverHighlightView(this);
-    if (connected) {
-      SetupConnectedItem(container, text, image);
-    } else if (connecting) {
-      SetupConnectingItem(container, text, image);
-    } else {
-      container->AddIconAndLabel(image, text);
-    }
-    scroll_content()->AddChildView(container);
-    return container;
-  }
-
-  void AddSubHeader(int message_id) {
-    TriView* header = TrayPopupUtils::CreateSubHeaderRowView();
-    TrayPopupUtils::ConfigureAsStickyHeader(header);
-
-    views::Label* label = TrayPopupUtils::CreateDefaultLabel();
-    label->SetText(l10n_util::GetStringUTF16(message_id));
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
-    style.SetupLabel(label);
-    header->AddView(TriView::Container::CENTER, label);
-
-    scroll_content()->AddChildView(header);
-  }
-
-  void SetupConnectedItem(HoverHighlightView* container,
-                          const base::string16& text,
-                          const gfx::ImageSkia& image) {
-    container->AddIconAndLabels(
-        image, text, l10n_util::GetStringUTF16(
-                         IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+  void SetupConnectedItem(HoverHighlightView* container) {
+    container->SetSubText(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
     style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
     style.SetupLabel(container->sub_text_label());
   }
 
-  void SetupConnectingItem(HoverHighlightView* container,
-                           const base::string16& text,
-                           const gfx::ImageSkia& image) {
-    container->AddIconAndLabels(
-        image, text, l10n_util::GetStringUTF16(
-                         IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
+  void SetupConnectingItem(HoverHighlightView* container) {
+    container->SetSubText(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
     ThrobberView* throbber = new ThrobberView;
     throbber->Start();
     container->AddRightView(throbber);
   }
 
-  // Returns true if the device with |device_id| is found in |device_list|,
-  // and the display_name of the device will be returned in |display_name| if
-  // it's not NULL.
+  // Returns true if the device with |device_id| is found in |device_list|.
   bool FoundDevice(const std::string& device_id,
-                   const BluetoothDeviceList& device_list,
-                   base::string16* display_name,
-                   device::BluetoothDeviceType* device_type) {
-    for (size_t i = 0; i < device_list.size(); ++i) {
-      if (device_list[i].address == device_id) {
-        if (display_name)
-          *display_name = device_list[i].display_name;
-        if (device_type)
-          *device_type = device_list[i].device_type;
+                   const BluetoothDeviceList& device_list) {
+    for (const auto& device : device_list) {
+      if (device.address == device_id)
         return true;
-      }
     }
     return false;
   }
@@ -413,18 +369,10 @@ class BluetoothDetailedView : public TrayDetailsView {
   // or disconnected if such an operation is going to be performed underway.
   void UpdateClickedDevice(const std::string& device_id,
                            views::View* item_container) {
-    base::string16 display_name;
-    device::BluetoothDeviceType device_type;
-    if (FoundDevice(device_id, paired_not_connected_devices_, &display_name,
-                    &device_type)) {
-      item_container->RemoveAllChildViews(true);
+    if (FoundDevice(device_id, paired_not_connected_devices_)) {
       HoverHighlightView* container =
           static_cast<HoverHighlightView*>(item_container);
-      TrayPopupItemStyle style(
-          TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
-      gfx::ImageSkia icon_image = CreateVectorIcon(
-          GetBluetoothDeviceIcon(device_type, false), style.GetIconColor());
-      SetupConnectingItem(container, display_name, icon_image);
+      SetupConnectingItem(container);
       scroll_content()->SizeToPreferredSize();
       scroller()->Layout();
     }
@@ -442,7 +390,7 @@ class BluetoothDetailedView : public TrayDetailsView {
       return;
 
     const std::string device_id = find->second;
-    if (FoundDevice(device_id, connecting_devices_, nullptr, nullptr))
+    if (FoundDevice(device_id, connecting_devices_))
       return;
 
     UpdateClickedDevice(device_id, view);
@@ -536,8 +484,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     container->AddChildView(image_view);
 
     views::Label* label = new views::Label(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED));
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED));
     style.SetupLabel(label);
     label->SetBorder(views::CreateEmptyBorder(
         kDisabledPanelLabelBaselineY - label->GetBaseline(), 0, 0, 0));

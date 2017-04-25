@@ -48,8 +48,8 @@ namespace {
 // stretched horizontally and centered vertically.
 std::unique_ptr<views::LayoutManager> CreateDefaultCenterLayoutManager() {
   // TODO(bruthig): Use constants instead of magic numbers.
-  auto box_layout =
-      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 4, 8, 0);
+  auto box_layout = base::MakeUnique<views::BoxLayout>(
+      views::BoxLayout::kVertical, kTrayPopupLabelHorizontalPadding, 8, 0);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
@@ -174,13 +174,14 @@ TriView* TrayPopupUtils::CreateDefaultRowView() {
   return tri_view;
 }
 
-TriView* TrayPopupUtils::CreateSubHeaderRowView() {
-  TriView* tri_view = CreateMultiTargetRowView();
-  tri_view->SetInsets(gfx::Insets(0, kTrayPopupPaddingHorizontal, 0, 0));
-  tri_view->SetContainerVisible(TriView::Container::START, false);
-  tri_view->SetContainerLayout(
-      TriView::Container::END,
-      CreateDefaultLayoutManager(TriView::Container::END));
+TriView* TrayPopupUtils::CreateSubHeaderRowView(bool start_visible) {
+  TriView* tri_view = CreateDefaultRowView();
+  if (!start_visible) {
+    tri_view->SetInsets(gfx::Insets(
+        0, kTrayPopupPaddingHorizontal - kTrayPopupLabelHorizontalPadding, 0,
+        0));
+    tri_view->SetContainerVisible(TriView::Container::START, false);
+  }
   return tri_view;
 }
 

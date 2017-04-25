@@ -15,6 +15,10 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
+
 namespace views {
 class BoxLayout;
 class CustomButton;
@@ -27,6 +31,7 @@ namespace test {
 class TrayDetailsViewTest;
 }  // namespace test
 
+class HoverHighlightView;
 class ScrollBorder;
 class SystemTrayItem;
 class TriView;
@@ -47,8 +52,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) final;
 
   SystemTrayItem* owner() { return owner_; }
-  views::ScrollView* scroller() { return scroller_; }
-  views::View* scroll_content() { return scroll_content_; }
 
  protected:
   // views::View:
@@ -67,6 +70,29 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // any other view between the list and the footer row at the bottom.
   void CreateScrollableList();
 
+  // Adds a targetable row to |scroll_content_| containing |icon| and |text|.
+  HoverHighlightView* AddScrollListItem(const gfx::VectorIcon& icon,
+                                        const base::string16& text);
+
+  // Adds a targetable row to |scroll_content_| containing |icon|, |text|, and a
+  // checkbox. |checked| determines whether the checkbox is checked or not.
+  HoverHighlightView* AddScrollListCheckableItem(const gfx::VectorIcon& icon,
+                                                 const base::string16& text,
+                                                 bool checked);
+
+  // Adds a targetable row to |scroll_content_| containing |text| and a
+  // checkbox. |checked| determines whether the checkbox is checked or not.
+  HoverHighlightView* AddScrollListCheckableItem(const base::string16& text,
+                                                 bool checked);
+
+  // Adds a sticky sub header to |scroll_content_| containing |icon| and a text
+  // represented by |text_id| resource id.
+  TriView* AddScrollListSubHeader(const gfx::VectorIcon& icon, int text_id);
+
+  // Adds a sticky sub header to |scroll_content_| containing a text represented
+  // by |text_id| resource id.
+  TriView* AddScrollListSubHeader(int text_id);
+
   // Removes (and destroys) all child views.
   void Reset();
 
@@ -82,6 +108,8 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   views::CustomButton* CreateHelpButton();
 
   TriView* tri_view() { return tri_view_; }
+  views::ScrollView* scroller() const { return scroller_; }
+  views::View* scroll_content() const { return scroll_content_; }
 
  private:
   friend class test::TrayDetailsViewTest;

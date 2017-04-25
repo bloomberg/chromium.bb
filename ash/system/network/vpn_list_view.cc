@@ -88,7 +88,7 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
       : parent_(parent) {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(new views::FillLayout);
-    TriView* tri_view = TrayPopupUtils::CreateSubHeaderRowView();
+    TriView* tri_view = TrayPopupUtils::CreateSubHeaderRowView(false);
     AddChildView(tri_view);
 
     views::Label* label = TrayPopupUtils::CreateDefaultLabel();

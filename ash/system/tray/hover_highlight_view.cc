@@ -55,6 +55,19 @@ void HoverHighlightView::SetRightViewVisible(bool visible) {
   Layout();
 }
 
+void HoverHighlightView::SetSubText(const base::string16& sub_text) {
+  DCHECK(text_label_);
+
+  if (!sub_text_label_) {
+    sub_text_label_ = TrayPopupUtils::CreateDefaultLabel();
+    tri_view_->AddView(TriView::Container::CENTER, sub_text_label_);
+  }
+  TrayPopupItemStyle sub_style(TrayPopupItemStyle::FontStyle::CAPTION);
+  sub_style.set_color_style(TrayPopupItemStyle::ColorStyle::INACTIVE);
+  sub_style.SetupLabel(sub_text_label_);
+  sub_text_label_->SetText(sub_text);
+}
+
 void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                                          const base::string16& text) {
   DoAddIconAndLabel(image, text,
@@ -102,16 +115,9 @@ void HoverHighlightView::DoAddIconAndLabels(
   text_label_->SetEnabled(enabled());
   TrayPopupItemStyle style(font_style);
   style.SetupLabel(text_label_);
-
   tri_view_->AddView(TriView::Container::CENTER, text_label_);
-  if (!sub_text.empty()) {
-    sub_text_label_ = TrayPopupUtils::CreateDefaultLabel();
-    sub_text_label_->SetText(sub_text);
-    TrayPopupItemStyle sub_style(TrayPopupItemStyle::FontStyle::CAPTION);
-    sub_style.set_color_style(TrayPopupItemStyle::ColorStyle::INACTIVE);
-    sub_style.SetupLabel(sub_text_label_);
-    tri_view_->AddView(TriView::Container::CENTER, sub_text_label_);
-  }
+
+  SetSubText(sub_text);
 
   tri_view_->SetContainerVisible(TriView::Container::END, false);
 
