@@ -39,7 +39,7 @@ TaskScheduler::InitParams::~InitParams() = default;
 
 #if !defined(OS_NACL)
 // static
-void TaskScheduler::CreateAndSetSimpleTaskScheduler(StringPiece name) {
+void TaskScheduler::CreateAndStartWithDefaultParams(StringPiece name) {
   using StandbyThreadPolicy = SchedulerWorkerPoolParams::StandbyThreadPolicy;
 
   // Values were chosen so that:
@@ -54,22 +54,32 @@ void TaskScheduler::CreateAndSetSimpleTaskScheduler(StringPiece name) {
 
   constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
 
-  CreateAndSetDefaultTaskScheduler(
-      name, {{StandbyThreadPolicy::LAZY, kBackgroundMaxThreads,
-              kSuggestedReclaimTime},
-             {StandbyThreadPolicy::LAZY, kBackgroundBlockingMaxThreads,
-              kSuggestedReclaimTime},
-             {StandbyThreadPolicy::LAZY, kForegroundMaxThreads,
-              kSuggestedReclaimTime},
-             {StandbyThreadPolicy::LAZY, kForegroundBlockingMaxThreads,
-              kSuggestedReclaimTime}});
+  Create(name);
+  GetInstance()->Start(
+      {{StandbyThreadPolicy::LAZY, kBackgroundMaxThreads,
+        kSuggestedReclaimTime},
+       {StandbyThreadPolicy::LAZY, kBackgroundBlockingMaxThreads,
+        kSuggestedReclaimTime},
+       {StandbyThreadPolicy::LAZY, kForegroundMaxThreads,
+        kSuggestedReclaimTime},
+       {StandbyThreadPolicy::LAZY, kForegroundBlockingMaxThreads,
+        kSuggestedReclaimTime}});
+}
+
+// static
+void TaskScheduler::CreateAndSetSimpleTaskScheduler(StringPiece name) {
+  CreateAndStartWithDefaultParams(name);
 }
 #endif  // !defined(OS_NACL)
+
+void TaskScheduler::Create(StringPiece name) {
+  SetInstance(MakeUnique<internal::TaskSchedulerImpl>(name));
+}
 
 void TaskScheduler::CreateAndSetDefaultTaskScheduler(
     StringPiece name,
     const InitParams& init_params) {
-  SetInstance(MakeUnique<internal::TaskSchedulerImpl>(name));
+  Create(name);
   GetInstance()->Start(init_params);
 }
 

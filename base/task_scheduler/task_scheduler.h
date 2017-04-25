@@ -134,28 +134,45 @@ class BASE_EXPORT TaskScheduler {
   // after this call.
   virtual void JoinForTesting() = 0;
 
-  // CreateAndSetSimpleTaskScheduler(), CreateAndSetDefaultTaskScheduler(), and
-  // SetInstance() register a TaskScheduler to handle tasks posted through the
-  // post_task.h API for this process. The registered TaskScheduler will only be
-  // deleted when a new TaskScheduler is registered and is leaked on shutdown.
-  // The methods must not be called when TaskRunners created by the previous
-  // TaskScheduler are still alive. The methods are not thread-safe; proper
-  // synchronization is required to use the post_task.h API after registering a
-  // new TaskScheduler.
+// CreateAndStartWithDefaultParams(), Create(), and SetInstance() register a
+// TaskScheduler to handle tasks posted through the post_task.h API for this
+// process.
+//
+// Processes that need to initialize TaskScheduler with custom params or that
+// need to allow tasks to be posted before the TaskScheduler creates its
+// threads should use Create() followed by Start(). Other processes can use
+// CreateAndStartWithDefaultParams().
+//
+// A registered TaskScheduler is only deleted when a new TaskScheduler is
+// registered. The last registered TaskScheduler is leaked on shutdown. The
+// methods below must not be called when TaskRunners created by a previous
+// TaskScheduler are still alive. The methods are not thread-safe; proper
+// synchronization is required to use the post_task.h API after registering a
+// new TaskScheduler.
 
 #if !defined(OS_NACL)
-  // Creates and sets a task scheduler using default params. |name| is used to
+  // Creates and starts a task scheduler using default params. |name| is used to
   // label threads and histograms. It should identify the component that calls
-  // this. CHECKs on failure. For tests, prefer base::test::ScopedTaskScheduler
-  // (ensures isolation).
+  // this. Start() is called by this method; it is invalid to call it again
+  // afterwards. CHECKs on failure. For tests, prefer
+  // base::test::ScopedTaskEnvironment (ensures isolation).
+  static void CreateAndStartWithDefaultParams(StringPiece name);
+
+  // Deprecated. Use CreateAndStartWithDefaultParams() instead.
+  // TODO(fdoray): Redirect callers to CreateAndStartWithDefaultParams().
   static void CreateAndSetSimpleTaskScheduler(StringPiece name);
 #endif  // !defined(OS_NACL)
 
-  // Creates and sets a task scheduler using custom params. |name| is used to
-  // label threads and histograms. It should identify the component that creates
-  // the TaskScheduler. |init_params| is used to initialize the worker pools.
-  // CHECKs on failure. For tests, prefer base::test::ScopedTaskScheduler
+  // Creates a ready to start task scheduler. |name| is used to label threads
+  // and histograms. It should identify the component that creates the
+  // TaskScheduler. The task scheduler doesn't create threads until Start() is
+  // called. Tasks can be posted at any time but will not run until after
+  // Start() is called. For tests, prefer base::test::ScopedTaskEnvironment
   // (ensures isolation).
+  static void Create(StringPiece name);
+
+  // Deprecated. Use Create() and Start() instead.
+  // TODO(fdoray): Redirect callers to Create() and Start().
   static void CreateAndSetDefaultTaskScheduler(StringPiece name,
                                                const InitParams& init_params);
 
