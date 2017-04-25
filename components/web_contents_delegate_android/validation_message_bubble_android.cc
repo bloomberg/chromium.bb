@@ -42,7 +42,7 @@ ValidationMessageBubbleAndroid::ValidationMessageBubbleAndroid(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   java_validation_message_bubble_.Reset(
-      Java_ValidationMessageBubble_createAndShow(
+      Java_ValidationMessageBubble_createAndShowIfApplicable(
           env, java_content_view_core, anchor_in_root_view.x(),
           anchor_in_root_view.y(), anchor_in_root_view.width(),
           anchor_in_root_view.height(),
@@ -51,16 +51,20 @@ ValidationMessageBubbleAndroid::ValidationMessageBubbleAndroid(
 }
 
 ValidationMessageBubbleAndroid::~ValidationMessageBubbleAndroid() {
-  Java_ValidationMessageBubble_close(base::android::AttachCurrentThread(),
-                                     java_validation_message_bubble_);
+  if (!java_validation_message_bubble_.is_null()) {
+    Java_ValidationMessageBubble_close(base::android::AttachCurrentThread(),
+                                       java_validation_message_bubble_);
+  }
 }
 
 void ValidationMessageBubbleAndroid::SetPositionRelativeToAnchor(
     RenderWidgetHost* widget_host, const gfx::Rect& anchor_in_root_view) {
   base::android::ScopedJavaLocalRef<jobject> java_content_view_core =
       GetJavaContentViewCoreFrom(widget_host);
-  if (java_content_view_core.is_null())
+  if (java_content_view_core.is_null() ||
+      java_validation_message_bubble_.is_null()) {
     return;
+  }
 
   Java_ValidationMessageBubble_setPositionRelativeToAnchor(
       base::android::AttachCurrentThread(), java_validation_message_bubble_,
