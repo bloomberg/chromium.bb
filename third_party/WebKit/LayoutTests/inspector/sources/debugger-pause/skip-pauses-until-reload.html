@@ -71,11 +71,10 @@ function test()
     function didResolveNode(node)
     {
         testRunner.logToStderr("didResolveNode");
-        var pane = Components.domBreakpointsSidebarPane;
         InspectorTest.addResult("Set up DOM breakpoints.");
-        pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
-        pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
-        pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.NodeRemoved, true);
+        InspectorTest.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+        InspectorTest.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+        InspectorTest.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
         setUpEventBreakpoints();
     }
 
