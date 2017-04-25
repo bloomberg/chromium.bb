@@ -14,10 +14,14 @@
 #include "content/public/child/child_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
+#include "content/public/test/test_host_resolver.h"
 #include "content/public/test/test_service.h"
 #include "content/public/test/test_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "net/base/net_errors.h"
+#include "net/base/network_interfaces.h"
+#include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -74,7 +78,35 @@ std::unique_ptr<service_manager::Service> CreateTestService() {
   return std::unique_ptr<service_manager::Service>(new TestService);
 }
 
+class NetworkServiceTestImpl : public mojom::NetworkServiceTest {
+ public:
+  static void Create(mojom::NetworkServiceTestRequest request) {
+    // Leak this.
+    new NetworkServiceTestImpl(std::move(request));
+  }
+  explicit NetworkServiceTestImpl(mojom::NetworkServiceTestRequest request)
+      : binding_(this, std::move(request)) {}
+  ~NetworkServiceTestImpl() override = default;
+
+  // mojom::NetworkServiceTest implementation.
+  void AddRules(std::vector<mojom::RulePtr> rules) override {
+    for (const auto& rule : rules) {
+      test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
+                                                   rule->replacement);
+    }
+  }
+
+ private:
+  mojo::Binding<mojom::NetworkServiceTest> binding_;
+
+  TestHostResolver test_host_resolver_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestImpl);
+};
+
 }  // namespace
+
+ShellContentUtilityClient::ShellContentUtilityClient() {}
 
 ShellContentUtilityClient::~ShellContentUtilityClient() {
 }
@@ -93,6 +125,19 @@ void ShellContentUtilityClient::RegisterServices(StaticServiceMap* services) {
   ServiceInfo info;
   info.factory = base::Bind(&CreateTestService);
   services->insert(std::make_pair(kTestServiceUrl, info));
+}
+
+void ShellContentUtilityClient::RegisterNetworkBinders(
+    service_manager::BinderRegistry* registry) {
+  registry->AddInterface<mojom::NetworkServiceTest>(
+      base::Bind(&ShellContentUtilityClient::Create, base::Unretained(this)));
+}
+
+void ShellContentUtilityClient::Create(
+    mojom::NetworkServiceTestRequest request) {
+  DCHECK(!network_service_test_);
+  network_service_test_ =
+      base::MakeUnique<NetworkServiceTestImpl>(std::move(request));
 }
 
 }  // namespace content

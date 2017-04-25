@@ -21,10 +21,9 @@ class NetworkService
     : public service_manager::Service,
       public service_manager::InterfaceFactory<mojom::URLLoaderFactory> {
  public:
-  NetworkService();
+  explicit NetworkService(
+      std::unique_ptr<service_manager::BinderRegistry> registry);
   ~NetworkService() override;
-
-  static std::unique_ptr<service_manager::Service> CreateNetworkService();
 
  private:
   // service_manager::Service implementation.
@@ -36,7 +35,7 @@ class NetworkService
   void Create(const service_manager::Identity& remote_identity,
               mojom::URLLoaderFactoryRequest request) override;
 
-  service_manager::BinderRegistry registry_;
+  std::unique_ptr<service_manager::BinderRegistry> registry_;
 
   NetworkContext context_;
 

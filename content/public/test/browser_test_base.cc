@@ -26,13 +26,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/network_service_test.mojom.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/content_browser_sanity_checker.h"
-#include "net/base/net_errors.h"
-#include "net/base/network_interfaces.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/compositor_switches.h"
@@ -86,51 +88,6 @@ void RunTaskOnRendererThread(const base::Closure& task,
   task.Run();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_task);
 }
-
-// In many cases it may be not obvious that a test makes a real DNS lookup.
-// We generally don't want to rely on external DNS servers for our tests,
-// so this host resolver procedure catches external queries and returns a failed
-// lookup result.
-class LocalHostResolverProc : public net::HostResolverProc {
- public:
-  LocalHostResolverProc() : HostResolverProc(NULL) {}
-
-  int Resolve(const std::string& host,
-              net::AddressFamily address_family,
-              net::HostResolverFlags host_resolver_flags,
-              net::AddressList* addrlist,
-              int* os_error) override {
-    const char* kLocalHostNames[] = {"localhost", "127.0.0.1", "::1"};
-    bool local = false;
-
-    if (host == net::GetHostName()) {
-      local = true;
-    } else {
-      for (size_t i = 0; i < arraysize(kLocalHostNames); i++)
-        if (host == kLocalHostNames[i]) {
-          local = true;
-          break;
-        }
-    }
-
-    // To avoid depending on external resources and to reduce (if not preclude)
-    // network interactions from tests, we simulate failure for non-local DNS
-    // queries, rather than perform them.
-    // If you really need to make an external DNS query, use
-    // net::RuleBasedHostResolverProc and its AllowDirectLookup method.
-    if (!local) {
-      DVLOG(1) << "To avoid external dependencies, simulating failure for "
-          "external DNS lookup of " << host;
-      return net::ERR_NOT_IMPLEMENTED;
-    }
-
-    return ResolveUsingPrevious(host, address_family, host_resolver_flags,
-                                addrlist, os_error);
-  }
-
- private:
-  ~LocalHostResolverProc() override {}
-};
 
 void TraceStopTracingComplete(const base::Closure& quit,
                                    const base::FilePath& file_path) {
@@ -269,13 +226,7 @@ void BrowserTestBase::SetUp() {
   if (use_software_gl && !use_software_compositing_)
     command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
 
-  scoped_refptr<net::HostResolverProc> local_resolver =
-      new LocalHostResolverProc();
-  rule_based_resolver_ =
-      new net::RuleBasedHostResolverProc(local_resolver.get());
-  rule_based_resolver_->AddSimulatedFailure("wpad");
-  net::ScopedDefaultHostResolverProc scoped_local_host_resolver_proc(
-      rule_based_resolver_.get());
+  test_host_resolver_.reset(new TestHostResolver);
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
 
@@ -347,6 +298,11 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
         base::MessageLoop::current());
     PreRunTestOnMainThread();
     SetUpOnMainThread();
+
+    // Tests would have added their host_resolver() rules by now, so copy them
+    // to the network process if it's in use.
+    InitializeNetworkProcess();
+
     bool old_io_allowed_value = false;
     if (!disable_io_checks_)
       base::ThreadRestrictions::SetIOAllowed(false);
@@ -414,6 +370,41 @@ bool BrowserTestBase::UsingSoftwareGL() const {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   return cmd->GetSwitchValueASCII(switches::kUseGL) ==
          gl::GetGLImplementationName(gl::GetSoftwareGLImplementation());
+}
+
+void BrowserTestBase::InitializeNetworkProcess() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService))
+    return;
+
+  net::RuleBasedHostResolverProc::RuleList rules = host_resolver()->GetRules();
+  std::vector<mojom::RulePtr> mojo_rules;
+  for (const auto& rule : rules) {
+    // For now, this covers all the rules used in content's tests.
+    // TODO(jam: expand this when we try to make browser_tests and
+    // components_browsertests work.
+    if (rule.resolver_type !=
+            net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem ||
+        rule.address_family != net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED ||
+        !!rule.latency_ms || rule.replacement.empty())
+      continue;
+    mojom::RulePtr mojo_rule = mojom::Rule::New();
+    mojo_rule->host_pattern = rule.host_pattern;
+    mojo_rule->replacement = rule.replacement;
+    mojo_rules.push_back(std::move(mojo_rule));
+  }
+
+  if (mojo_rules.empty())
+    return;
+
+  mojom::NetworkServiceTestPtr network_service_test;
+  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+      mojom::kNetworkServiceName, &network_service_test);
+  network_service_test->AddRules(std::move(mojo_rules));
+
+  // TODO(jam): enable this once all access to host_resolver() is in
+  // SetUpOnMainThread or before. http://crbug.com/713847
+  // host_resolver()->DisableModifications();
 }
 
 }  // namespace content

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/child/service_factory.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 
@@ -23,6 +24,12 @@ class UtilityServiceFactory : public ServiceFactory {
 
  private:
   void OnLoadFailed() override;
+
+  std::unique_ptr<service_manager::Service> CreateNetworkService();
+
+  // Allows embedders to register their interface implementations before the
+  // network service is created.
+  std::unique_ptr<service_manager::BinderRegistry> network_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityServiceFactory);
 };

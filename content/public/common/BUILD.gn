@@ -335,6 +335,7 @@ source_set("feature_h264_with_openh264_ffmpeg") {
 
 mojom("interfaces") {
   sources = [
+    "network_service_test.mojom",
     "window_container_type.mojom",
   ]
 }

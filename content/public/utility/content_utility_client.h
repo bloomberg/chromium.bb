@@ -13,6 +13,7 @@
 #include "content/public/common/service_info.h"
 
 namespace service_manager {
+class BinderRegistry;
 class InterfaceRegistry;
 }
 
@@ -37,6 +38,9 @@ class CONTENT_EXPORT ContentUtilityClient {
       service_manager::InterfaceRegistry* registry) {}
 
   virtual void RegisterServices(StaticServiceMap* services) {}
+
+  virtual void RegisterNetworkBinders(
+      service_manager::BinderRegistry* registry) {}
 };
 
 }  // namespace content
