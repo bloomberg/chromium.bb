@@ -136,7 +136,7 @@ const AtomicString& InputType::NormalizeTypeName(
     const AtomicString& type_name) {
   if (type_name.IsEmpty())
     return InputTypeNames::text;
-  InputTypeFactoryMap::const_iterator it = FactoryMap()->Find(type_name);
+  InputTypeFactoryMap::const_iterator it = FactoryMap()->find(type_name);
   return it == FactoryMap()->end() ? InputTypeNames::text : it->key;
 }
 

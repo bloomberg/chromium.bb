@@ -31,7 +31,7 @@ void ModuleTreeLinkerRegistry::ReleaseFinishedFetcher(
     ModuleTreeLinker* fetcher) {
   DCHECK(fetcher->HasFinished());
 
-  auto it = active_tree_linkers_.Find(fetcher);
+  auto it = active_tree_linkers_.find(fetcher);
   DCHECK_NE(it, active_tree_linkers_.end());
   active_tree_linkers_.erase(it);
 }

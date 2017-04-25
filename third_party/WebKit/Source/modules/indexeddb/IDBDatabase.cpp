@@ -186,7 +186,7 @@ void IDBDatabase::OnChanges(
     const WebVector<WebIDBObservation>& observations,
     const IDBDatabaseCallbacks::TransactionMap& transactions) {
   for (const auto& map_entry : observation_index_map) {
-    auto it = observers_.Find(map_entry.first);
+    auto it = observers_.find(map_entry.first);
     if (it != observers_.end()) {
       IDBObserver* observer = it->value;
 
@@ -221,7 +221,7 @@ DOMStringList* IDBDatabase::objectStoreNames() const {
 }
 
 const String& IDBDatabase::GetObjectStoreName(int64_t object_store_id) const {
-  const auto& it = metadata_.object_stores.Find(object_store_id);
+  const auto& it = metadata_.object_stores.find(object_store_id);
   DCHECK(it != metadata_.object_stores.end());
   return it->value->name;
 }

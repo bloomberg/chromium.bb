@@ -468,7 +468,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
   {
     MutexLocker locker(GuidMutex());
 
-    GuidVersionMap::iterator entry = GuidToVersionMap().Find(guid_);
+    GuidVersionMap::iterator entry = GuidToVersionMap().find(guid_);
     if (entry != GuidToVersionMap().end()) {
       // Map null string to empty string (see updateGuidVersionMap()).
       current_version =

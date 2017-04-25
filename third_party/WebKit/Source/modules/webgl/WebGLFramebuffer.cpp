@@ -309,7 +309,7 @@ WebGLSharedObject* WebGLFramebuffer::GetAttachmentObject(
 
 WebGLFramebuffer::WebGLAttachment* WebGLFramebuffer::GetAttachment(
     GLenum attachment) const {
-  const AttachmentMap::const_iterator it = attachments_.Find(attachment);
+  const AttachmentMap::const_iterator it = attachments_.find(attachment);
   return (it != attachments_.end()) ? it->value.Get() : 0;
 }
 

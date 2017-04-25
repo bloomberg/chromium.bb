@@ -45,7 +45,7 @@ static ElementObserverMap& ElementObservers() {
 }
 
 void V0CustomElementObserver::NotifyElementWasDestroyed(Element* element) {
-  ElementObserverMap::iterator it = ElementObservers().Find(element);
+  ElementObserverMap::iterator it = ElementObservers().find(element);
   if (it == ElementObservers().end())
     return;
   it->value->ElementWasDestroyed(element);

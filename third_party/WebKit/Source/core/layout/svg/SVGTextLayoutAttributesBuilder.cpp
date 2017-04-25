@@ -41,7 +41,7 @@ void UpdateLayoutAttributes(LayoutSVGInlineText& text,
     if (iterator.Metrics().IsEmpty())
       continue;
 
-    auto it = all_characters_map.Find(value_list_position + 1);
+    auto it = all_characters_map.find(value_list_position + 1);
     if (it != all_characters_map.end())
       character_data_map.Set(iterator.CharacterOffset() + 1, it->value);
 

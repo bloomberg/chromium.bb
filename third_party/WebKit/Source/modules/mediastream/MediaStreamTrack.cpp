@@ -394,7 +394,7 @@ void MediaStreamTrack::RegisterMediaStream(MediaStream* media_stream) {
 void MediaStreamTrack::UnregisterMediaStream(MediaStream* media_stream) {
   CHECK(!is_iterating_registered_media_streams_);
   HeapHashSet<Member<MediaStream>>::iterator iter =
-      registered_media_streams_.Find(media_stream);
+      registered_media_streams_.find(media_stream);
   CHECK(iter != registered_media_streams_.end());
   registered_media_streams_.erase(iter);
 }

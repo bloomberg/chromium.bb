@@ -162,11 +162,11 @@ WebInputEventResult TouchEventManager::DispatchTouchEvents(
     // Ensure this target's touch list exists, even if it ends up empty, so
     // it can always be passed to TouchEvent::Create below.
     TargetTouchesHeapMap::iterator target_touches_iterator =
-        touches_by_target.Find(touch_info.touch_node.Get());
+        touches_by_target.find(touch_info.touch_node.Get());
     if (target_touches_iterator == touches_by_target.end()) {
       touches_by_target.Set(touch_info.touch_node.Get(), TouchList::Create());
       target_touches_iterator =
-          touches_by_target.Find(touch_info.touch_node.Get());
+          touches_by_target.find(touch_info.touch_node.Get());
     }
 
     // |touches| and |targetTouches| should only contain information about

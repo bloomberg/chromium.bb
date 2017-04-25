@@ -55,7 +55,7 @@ void MediaSourceRegistry::RegisterURL(SecurityOrigin*,
 void MediaSourceRegistry::UnregisterURL(const KURL& url) {
   DCHECK(IsMainThread());
   PersistentHeapHashMap<String, Member<MediaSource>>::iterator iter =
-      media_sources_.Find(url.GetString());
+      media_sources_.find(url.GetString());
   if (iter == media_sources_.end())
     return;
 

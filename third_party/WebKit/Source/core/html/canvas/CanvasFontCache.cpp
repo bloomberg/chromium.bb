@@ -56,7 +56,7 @@ unsigned CanvasFontCache::HardMaxFonts() {
 bool CanvasFontCache::GetFontUsingDefaultStyle(const String& font_string,
                                                Font& resolved_font) {
   HashMap<String, Font>::iterator i =
-      fonts_resolved_using_default_style_.Find(font_string);
+      fonts_resolved_using_default_style_.find(font_string);
   if (i != fonts_resolved_using_default_style_.end()) {
     ASSERT(font_lru_list_.Contains(font_string));
     font_lru_list_.erase(font_string);
@@ -75,13 +75,13 @@ bool CanvasFontCache::GetFontUsingDefaultStyle(const String& font_string,
   document_->EnsureStyleResolver().ComputeFont(font_style.Get(), *parsed_style);
   fonts_resolved_using_default_style_.insert(font_string,
                                              font_style->GetFont());
-  resolved_font = fonts_resolved_using_default_style_.Find(font_string)->value;
+  resolved_font = fonts_resolved_using_default_style_.find(font_string)->value;
   return true;
 }
 
 MutableStylePropertySet* CanvasFontCache::ParseFont(const String& font_string) {
   MutableStylePropertySet* parsed_style;
-  MutableStylePropertyMap::iterator i = fetched_fonts_.Find(font_string);
+  MutableStylePropertyMap::iterator i = fetched_fonts_.find(font_string);
   if (i != fetched_fonts_.end()) {
     ASSERT(font_lru_list_.Contains(font_string));
     parsed_style = i->value;
@@ -140,7 +140,7 @@ void CanvasFontCache::SchedulePruningIfNeeded() {
 }
 
 bool CanvasFontCache::IsInCache(const String& font_string) {
-  return fetched_fonts_.Find(font_string) != fetched_fonts_.end();
+  return fetched_fonts_.find(font_string) != fetched_fonts_.end();
 }
 
 void CanvasFontCache::PruneAll() {

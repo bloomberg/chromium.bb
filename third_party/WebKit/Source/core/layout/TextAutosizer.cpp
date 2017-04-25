@@ -1243,7 +1243,7 @@ bool TextAutosizer::FingerprintMapper::Remove(LayoutObject* layout_object) {
     return false;
 
   ReverseFingerprintMap::iterator blocks_iter =
-      blocks_for_fingerprint_.Find(fingerprint);
+      blocks_for_fingerprint_.find(fingerprint);
   if (blocks_iter == blocks_for_fingerprint_.end())
     return false;
 
@@ -1253,7 +1253,7 @@ bool TextAutosizer::FingerprintMapper::Remove(LayoutObject* layout_object) {
     blocks_for_fingerprint_.erase(blocks_iter);
 
     SuperclusterMap::iterator supercluster_iter =
-        superclusters_.Find(fingerprint);
+        superclusters_.find(fingerprint);
 
     if (supercluster_iter != superclusters_.end()) {
       Supercluster* supercluster = supercluster_iter->value.get();

@@ -55,7 +55,7 @@ void IdTargetObserverRegistry::RemoveObserver(const AtomicString& id,
   if (id.IsEmpty() || registry_.IsEmpty())
     return;
 
-  IdToObserverSetMap::iterator iter = registry_.Find(id.Impl());
+  IdToObserverSetMap::iterator iter = registry_.find(id.Impl());
 
   ObserverSet* set = iter->value.Get();
   set->erase(observer);

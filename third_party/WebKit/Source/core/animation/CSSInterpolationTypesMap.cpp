@@ -59,7 +59,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
   using ApplicableTypesMap =
       HashMap<PropertyHandle, std::unique_ptr<const InterpolationTypes>>;
   DEFINE_STATIC_LOCAL(ApplicableTypesMap, applicable_types_map, ());
-  auto entry = applicable_types_map.Find(property);
+  auto entry = applicable_types_map.find(property);
   bool found_entry = entry != applicable_types_map.end();
 
   // Custom property interpolation types may change over time so don't trust the

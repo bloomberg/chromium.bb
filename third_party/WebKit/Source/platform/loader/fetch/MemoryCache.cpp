@@ -150,7 +150,7 @@ void MemoryCache::AddInternal(ResourceMap* resource_map,
   DCHECK(resource->Url().IsValid());
 
   KURL url = RemoveFragmentIdentifierIfNeeded(resource->Url());
-  ResourceMap::iterator it = resource_map->Find(url);
+  ResourceMap::iterator it = resource_map->find(url);
   if (it != resource_map->end()) {
     Resource* old_resource = it->value->GetResource();
     CHECK_NE(old_resource, resource);
@@ -173,7 +173,7 @@ void MemoryCache::Remove(Resource* resource) {
     return;
 
   KURL url = RemoveFragmentIdentifierIfNeeded(resource->Url());
-  ResourceMap::iterator it = resources->Find(url);
+  ResourceMap::iterator it = resources->find(url);
   if (it == resources->end() || it->value->GetResource() != resource)
     return;
   RemoveInternal(resources, it);

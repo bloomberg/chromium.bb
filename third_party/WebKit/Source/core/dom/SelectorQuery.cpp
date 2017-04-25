@@ -544,7 +544,7 @@ SelectorQuery* SelectorQueryCache::Add(const AtomicString& selectors,
   }
 
   HashMap<AtomicString, std::unique_ptr<SelectorQuery>>::iterator it =
-      entries_.Find(selectors);
+      entries_.find(selectors);
   if (it != entries_.end())
     return it->value.get();
 

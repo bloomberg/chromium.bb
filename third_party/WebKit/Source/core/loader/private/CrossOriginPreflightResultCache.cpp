@@ -196,7 +196,7 @@ bool CrossOriginPreflightResultCache::CanSkipPreflight(
     const HTTPHeaderMap& request_headers) {
   DCHECK(IsMainThread());
   CrossOriginPreflightResultHashMap::iterator cache_it =
-      preflight_hash_map_.Find(std::make_pair(origin, url));
+      preflight_hash_map_.find(std::make_pair(origin, url));
   if (cache_it == preflight_hash_map_.end())
     return false;
 

@@ -49,7 +49,7 @@ bool CSSOMKeywords::ValidKeywordForProperty(CSSPropertyID id,
     return true;
   }
 
-  const KeywordTable::iterator tableIterator = keywordTable().Find(id);
+  const KeywordTable::iterator tableIterator = keywordTable().find(id);
   if (tableIterator == keywordTable().end()) {
     return false;
   }

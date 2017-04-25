@@ -382,7 +382,7 @@ RefPtr<BlobDataHandle> V8ScriptValueDeserializer::GetOrCreateBlobDataHandle(
   // is deserializing.
   // For example in sharedWorker.postMessage(...).
   BlobDataHandleMap& handles = serialized_script_value_->BlobDataHandles();
-  BlobDataHandleMap::const_iterator it = handles.Find(uuid);
+  BlobDataHandleMap::const_iterator it = handles.find(uuid);
   if (it != handles.end())
     return it->value;
   return BlobDataHandle::Create(uuid, type, size);

@@ -40,7 +40,7 @@ void SVGTreeScopeResources::UpdateResource(
   LayoutSVGResourceContainer* current_resource =
       LookupResource(*tree_scope_, id);
   // Lookup the currently registered resource.
-  auto it = resources_.Find(id);
+  auto it = resources_.find(id);
   if (it != resources_.end()) {
     // Is the local map up-to-date already?
     if (it->value == current_resource)
@@ -65,7 +65,7 @@ void SVGTreeScopeResources::RemoveResource(
   DCHECK(resource);
   if (!resource->IsRegistered() || id.IsEmpty())
     return;
-  auto it = resources_.Find(id);
+  auto it = resources_.find(id);
   // If this is not the currently registered resource for this id, then do
   // nothing.
   if (it == resources_.end() || it->value != resource)

@@ -162,7 +162,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   if (!transform_node)
     return kSecondaryRootNodeId;
 
-  auto it = transform_node_map_.Find(transform_node);
+  auto it = transform_node_map_.find(transform_node);
   if (it != transform_node_map_.end())
     return it->value;
 
@@ -221,7 +221,7 @@ int PropertyTreeManager::EnsureCompositorClipNode(
   if (!clip_node)
     return kSecondaryRootNodeId;
 
-  auto it = clip_node_map_.Find(clip_node);
+  auto it = clip_node_map_.find(clip_node);
   if (it != clip_node_map_.end())
     return it->value;
 
@@ -260,7 +260,7 @@ int PropertyTreeManager::EnsureCompositorScrollNode(
   if (!scroll_node)
     return kSecondaryRootNodeId;
 
-  auto it = scroll_node_map_.Find(scroll_node);
+  auto it = scroll_node_map_.find(scroll_node);
   if (it != scroll_node_map_.end())
     return it->value;
 

@@ -1732,7 +1732,7 @@ CSSRule* InspectorStyleSheet::RuleForSourceData(
   size_t index = source_data_->Find(source_data);
   if (index == kNotFound)
     return nullptr;
-  IndexMap::iterator it = source_data_to_rule_.Find(index);
+  IndexMap::iterator it = source_data_to_rule_.find(index);
   if (it == source_data_to_rule_.end())
     return nullptr;
 
@@ -1755,7 +1755,7 @@ CSSRuleSourceData* InspectorStyleSheet::SourceDataForRule(CSSRule* rule) {
   size_t index = cssom_flat_rules_.Find(rule);
   if (index == kNotFound)
     return nullptr;
-  IndexMap::iterator it = rule_to_source_data_.Find(index);
+  IndexMap::iterator it = rule_to_source_data_.find(index);
   if (it == rule_to_source_data_.end())
     return nullptr;
 

@@ -108,7 +108,7 @@ bool ProcessingInstruction::CheckStyleSheet(String& href, String& charset) {
   const HashMap<String, String> attrs = ParseAttributes(data_, attrs_ok);
   if (!attrs_ok)
     return false;
-  HashMap<String, String>::const_iterator i = attrs.Find("type");
+  HashMap<String, String>::const_iterator i = attrs.find("type");
   String type;
   if (i != attrs.end())
     type = i->value;

@@ -41,7 +41,7 @@ class HeapCompact::MovableObjectFixups final {
   }
 
   void AddInteriorFixup(MovableReference* slot) {
-    auto it = interior_fixups_.Find(slot);
+    auto it = interior_fixups_.find(slot);
     // Ephemeron fixpoint iterations may cause repeated registrations.
     if (UNLIKELY(it != interior_fixups_.end())) {
       DCHECK(!it->value);
@@ -66,7 +66,7 @@ class HeapCompact::MovableObjectFixups final {
 
 #if DCHECK_IS_ON()
     DCHECK(HeapCompact::IsCompactableArena(ref_page->Arena()->ArenaIndex()));
-    auto it = fixups_.Find(reference);
+    auto it = fixups_.find(reference);
     DCHECK(it == fixups_.end() || it->value == slot);
 #endif
 
@@ -127,7 +127,7 @@ class HeapCompact::MovableObjectFixups final {
         continue;
       MovableReference* slot =
           reinterpret_cast<MovableReference*>(from + offset);
-      auto it = interior_fixups_.Find(slot);
+      auto it = interior_fixups_.find(slot);
       if (it == interior_fixups_.end())
         continue;
 
@@ -152,14 +152,14 @@ class HeapCompact::MovableObjectFixups final {
   }
 
   void Relocate(Address from, Address to) {
-    auto it = fixups_.Find(from);
+    auto it = fixups_.find(from);
     DCHECK(it != fixups_.end());
 #if DCHECK_IS_ON()
     BasePage* from_page = PageFromObject(from);
     DCHECK(relocatable_pages_.Contains(from_page));
 #endif
     MovableReference* slot = reinterpret_cast<MovableReference*>(it->value);
-    auto interior = interior_fixups_.Find(slot);
+    auto interior = interior_fixups_.find(slot);
     if (interior != interior_fixups_.end()) {
       MovableReference* slot_location =
           reinterpret_cast<MovableReference*>(interior->value);
@@ -201,7 +201,7 @@ class HeapCompact::MovableObjectFixups final {
     *slot = to;
 
     size_t size = 0;
-    auto callback = fixup_callbacks_.Find(from);
+    auto callback = fixup_callbacks_.find(from);
     if (UNLIKELY(callback != fixup_callbacks_.end())) {
       size = HeapObjectHeader::FromPayload(to)->PayloadSize();
       callback->value.second(callback->value.first, from, to, size);

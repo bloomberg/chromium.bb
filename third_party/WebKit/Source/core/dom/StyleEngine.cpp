@@ -111,7 +111,7 @@ TreeScopeStyleSheetCollection* StyleEngine::StyleSheetCollectionFor(
     return &GetDocumentStyleSheetCollection();
 
   StyleSheetCollectionMap::iterator it =
-      style_sheet_collection_map_.Find(&tree_scope);
+      style_sheet_collection_map_.find(&tree_scope);
   if (it == style_sheet_collection_map_.end())
     return nullptr;
   return it->value.Get();

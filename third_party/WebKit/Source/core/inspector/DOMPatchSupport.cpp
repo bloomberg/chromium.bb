@@ -276,7 +276,7 @@ DOMPatchSupport::Diff(const HeapVector<Member<Digest>>& old_list,
     if (new_it.value.size() != 1)
       continue;
 
-    DiffTable::iterator old_it = old_table.Find(new_it.key);
+    DiffTable::iterator old_it = old_table.find(new_it.key);
     if (old_it == old_table.end() || old_it->value.size() != 1)
       continue;
 
@@ -521,7 +521,7 @@ bool DOMPatchSupport::RemoveChildAndMoveToNew(Digest* old_digest,
   // whether new DOM has a digest with matching sha1. If it does, replace it
   // with the original DOM chunk.  Chances are high that it will get merged back
   // into the original DOM during the further patching.
-  UnusedNodesMap::iterator it = unused_nodes_map_.Find(old_digest->sha1_);
+  UnusedNodesMap::iterator it = unused_nodes_map_.find(old_digest->sha1_);
   if (it != unused_nodes_map_.end()) {
     Digest* new_digest = it->value;
     Node* new_node = new_digest->node_;

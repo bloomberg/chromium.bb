@@ -115,7 +115,7 @@ inline bool DocumentOrderedMap::Contains(const AtomicString& id) const {
 }
 
 inline bool DocumentOrderedMap::ContainsMultiple(const AtomicString& id) const {
-  Map::const_iterator it = map_.Find(id);
+  Map::const_iterator it = map_.find(id);
   return it != map_.end() && it->value->count > 1;
 }
 

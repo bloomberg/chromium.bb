@@ -43,7 +43,7 @@ void DepthOrderedLayoutObjectList::Add(LayoutObject& object) {
 }
 
 void DepthOrderedLayoutObjectList::Remove(LayoutObject& object) {
-  auto it = data_->objects_.Find(&object);
+  auto it = data_->objects_.find(&object);
   if (it == data_->objects_.end())
     return;
   DCHECK(!object.GetFrameView()->IsInPerformLayout());

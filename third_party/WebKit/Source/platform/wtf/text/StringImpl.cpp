@@ -424,7 +424,7 @@ StringImpl* StringImpl::CreateStatic(const char* string,
   DCHECK(string);
   DCHECK(length);
 
-  StaticStringsTable::const_iterator it = StaticStrings().Find(hash);
+  StaticStringsTable::const_iterator it = StaticStrings().find(hash);
   if (it != StaticStrings().end()) {
     DCHECK(!memcmp(string, it->value + 1, length * sizeof(LChar)));
     return it->value;

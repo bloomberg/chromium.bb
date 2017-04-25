@@ -178,9 +178,9 @@ TEST(HashMapTest, RefPtrAsKey) {
   DummyRefCounted* raw_ptr = ptr.Get();
 
   EXPECT_TRUE(map.Contains(raw_ptr));
-  EXPECT_NE(map.end(), map.Find(raw_ptr));
+  EXPECT_NE(map.end(), map.find(raw_ptr));
   EXPECT_TRUE(map.Contains(ptr));
-  EXPECT_NE(map.end(), map.Find(ptr));
+  EXPECT_NE(map.end(), map.find(ptr));
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
   ptr.Clear();
@@ -266,15 +266,15 @@ TEST(HashMapTest, AddResultVectorValue) {
   EXPECT_EQ(0u, result.stored_value->value.size());
 
   result.stored_value->value.push_back(11);
-  EXPECT_EQ(1u, map.Find(1)->value.size());
-  EXPECT_EQ(11, map.Find(1)->value.front());
+  EXPECT_EQ(1u, map.find(1)->value.size());
+  EXPECT_EQ(11, map.find(1)->value.front());
 
   IntVectorMap::AddResult result2 = map.insert(1, Vector<int>());
   EXPECT_FALSE(result2.is_new_entry);
   EXPECT_EQ(1, result.stored_value->key);
   EXPECT_EQ(1u, result.stored_value->value.size());
   EXPECT_EQ(11, result.stored_value->value.front());
-  EXPECT_EQ(11, map.Find(1)->value.front());
+  EXPECT_EQ(11, map.find(1)->value.front());
 }
 
 class InstanceCounter {
@@ -367,12 +367,12 @@ TEST(HashMapTest, MoveOnlyValueType) {
     EXPECT_EQ(1, add_result.stored_value->key);
     EXPECT_EQ(10, add_result.stored_value->value.Value());
   }
-  auto iter = map.Find(1);
+  auto iter = map.find(1);
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key);
   EXPECT_EQ(10, iter->value.Value());
 
-  iter = map.Find(2);
+  iter = map.find(2);
   EXPECT_TRUE(iter == map.end());
 
   // Try to add more to trigger rehashing.
@@ -383,12 +383,12 @@ TEST(HashMapTest, MoveOnlyValueType) {
     EXPECT_EQ(i * 10, add_result.stored_value->value.Value());
   }
 
-  iter = map.Find(1);
+  iter = map.find(1);
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key);
   EXPECT_EQ(10, iter->value.Value());
 
-  iter = map.Find(7);
+  iter = map.find(7);
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(7, iter->key);
   EXPECT_EQ(70, iter->value.Value());
@@ -401,12 +401,12 @@ TEST(HashMapTest, MoveOnlyValueType) {
   }
 
   map.erase(11);
-  iter = map.Find(11);
+  iter = map.find(11);
   EXPECT_TRUE(iter == map.end());
 
   MoveOnly one_thirty(map.Take(13));
   EXPECT_EQ(130, one_thirty.Value());
-  iter = map.Find(13);
+  iter = map.find(13);
   EXPECT_TRUE(iter == map.end());
 
   map.clear();
@@ -423,12 +423,12 @@ TEST(HashMapTest, MoveOnlyKeyType) {
     EXPECT_EQ(1, add_result.stored_value->key.Value());
     EXPECT_EQ(10, add_result.stored_value->value);
   }
-  auto iter = map.Find(MoveOnly(1));
+  auto iter = map.find(MoveOnly(1));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key.Value());
   EXPECT_EQ(10, iter->value);
 
-  iter = map.Find(MoveOnly(2));
+  iter = map.find(MoveOnly(2));
   EXPECT_TRUE(iter == map.end());
 
   for (int i = 2; i < 32; ++i) {
@@ -438,12 +438,12 @@ TEST(HashMapTest, MoveOnlyKeyType) {
     EXPECT_EQ(i * 10, add_result.stored_value->value);
   }
 
-  iter = map.Find(MoveOnly(1));
+  iter = map.find(MoveOnly(1));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key.Value());
   EXPECT_EQ(10, iter->value);
 
-  iter = map.Find(MoveOnly(7));
+  iter = map.find(MoveOnly(7));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(7, iter->key.Value());
   EXPECT_EQ(70, iter->value);
@@ -456,12 +456,12 @@ TEST(HashMapTest, MoveOnlyKeyType) {
   }
 
   map.erase(MoveOnly(11));
-  iter = map.Find(MoveOnly(11));
+  iter = map.find(MoveOnly(11));
   EXPECT_TRUE(iter == map.end());
 
   int one_thirty = map.Take(MoveOnly(13));
   EXPECT_EQ(130, one_thirty);
-  iter = map.Find(MoveOnly(13));
+  iter = map.find(MoveOnly(13));
   EXPECT_TRUE(iter == map.end());
 
   map.clear();
@@ -513,13 +513,13 @@ TEST(HashMapTest, UniquePtrAsKey) {
     EXPECT_EQ(1, *add_result.stored_value->key);
     EXPECT_EQ(1, add_result.stored_value->value);
   }
-  auto iter = map.Find(one_pointer);
+  auto iter = map.find(one_pointer);
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(one_pointer, iter->key.get());
   EXPECT_EQ(1, iter->value);
 
   Pointer nonexistent(new int(42));
-  iter = map.Find(nonexistent.get());
+  iter = map.find(nonexistent.get());
   EXPECT_TRUE(iter == map.end());
 
   // Insert more to cause a rehash.
@@ -530,7 +530,7 @@ TEST(HashMapTest, UniquePtrAsKey) {
     EXPECT_EQ(i, add_result.stored_value->value);
   }
 
-  iter = map.Find(one_pointer);
+  iter = map.find(one_pointer);
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(one_pointer, iter->key.get());
   EXPECT_EQ(1, iter->value);
@@ -538,7 +538,7 @@ TEST(HashMapTest, UniquePtrAsKey) {
   EXPECT_EQ(1, map.Take(one_pointer));
   // From now on, |onePointer| is a dangling pointer.
 
-  iter = map.Find(one_pointer);
+  iter = map.find(one_pointer);
   EXPECT_TRUE(iter == map.end());
 }
 
@@ -552,7 +552,7 @@ TEST(HashMapTest, UniquePtrAsValue) {
     EXPECT_EQ(1, add_result.stored_value->key);
     EXPECT_EQ(1, *add_result.stored_value->value);
   }
-  auto iter = map.Find(1);
+  auto iter = map.find(1);
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key);
   EXPECT_EQ(1, *iter->value);
@@ -561,7 +561,7 @@ TEST(HashMapTest, UniquePtrAsValue) {
   EXPECT_TRUE(one_pointer);
   EXPECT_EQ(1, *one_pointer);
 
-  iter = map.Find(42);
+  iter = map.find(42);
   EXPECT_TRUE(iter == map.end());
 
   for (int i = 2; i < 32; ++i) {
@@ -571,7 +571,7 @@ TEST(HashMapTest, UniquePtrAsValue) {
     EXPECT_EQ(i, *add_result.stored_value->value);
   }
 
-  iter = map.Find(1);
+  iter = map.find(1);
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key);
   EXPECT_EQ(1, *iter->value);
@@ -583,7 +583,7 @@ TEST(HashMapTest, UniquePtrAsValue) {
   Pointer empty(map.Take(42));
   EXPECT_TRUE(!empty);
 
-  iter = map.Find(1);
+  iter = map.find(1);
   EXPECT_TRUE(iter == map.end());
 
   {
@@ -605,13 +605,13 @@ TEST(HashMapTest, MoveOnlyPairKeyType) {
     EXPECT_EQ(-1, add_result.stored_value->key.second);
     EXPECT_EQ(10, add_result.stored_value->value);
   }
-  auto iter = map.Find(Pair(MoveOnly(1), -1));
+  auto iter = map.find(Pair(MoveOnly(1), -1));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key.first.Value());
   EXPECT_EQ(-1, iter->key.second);
   EXPECT_EQ(10, iter->value);
 
-  iter = map.Find(Pair(MoveOnly(1), 0));
+  iter = map.find(Pair(MoveOnly(1), 0));
   EXPECT_TRUE(iter == map.end());
 
   for (int i = 2; i < 32; ++i) {
@@ -622,13 +622,13 @@ TEST(HashMapTest, MoveOnlyPairKeyType) {
     EXPECT_EQ(i * 10, add_result.stored_value->value);
   }
 
-  iter = map.Find(Pair(MoveOnly(1), -1));
+  iter = map.find(Pair(MoveOnly(1), -1));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key.first.Value());
   EXPECT_EQ(-1, iter->key.second);
   EXPECT_EQ(10, iter->value);
 
-  iter = map.Find(Pair(MoveOnly(7), -7));
+  iter = map.find(Pair(MoveOnly(7), -7));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(7, iter->key.first.Value());
   EXPECT_EQ(-7, iter->key.second);
@@ -643,12 +643,12 @@ TEST(HashMapTest, MoveOnlyPairKeyType) {
   }
 
   map.erase(Pair(MoveOnly(11), -11));
-  iter = map.Find(Pair(MoveOnly(11), -11));
+  iter = map.find(Pair(MoveOnly(11), -11));
   EXPECT_TRUE(iter == map.end());
 
   int one_thirty = map.Take(Pair(MoveOnly(13), -13));
   EXPECT_EQ(130, one_thirty);
-  iter = map.Find(Pair(MoveOnly(13), -13));
+  iter = map.find(Pair(MoveOnly(13), -13));
   EXPECT_TRUE(iter == map.end());
 
   map.clear();

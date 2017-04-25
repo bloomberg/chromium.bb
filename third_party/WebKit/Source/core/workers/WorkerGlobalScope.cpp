@@ -141,7 +141,7 @@ void WorkerGlobalScope::RegisterEventListener(
 
 void WorkerGlobalScope::DeregisterEventListener(
     V8AbstractEventListener* event_listener) {
-  auto it = event_listeners_.Find(event_listener);
+  auto it = event_listeners_.find(event_listener);
   CHECK(it != event_listeners_.end() || closing_);
   event_listeners_.erase(it);
 }

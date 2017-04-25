@@ -144,7 +144,7 @@ bool LayoutSVGInlineText::CharacterStartsNewTextChunk(int position) const {
     return true;
 
   const SVGCharacterDataMap::const_iterator it =
-      character_data_map_.Find(static_cast<unsigned>(position + 1));
+      character_data_map_.find(static_cast<unsigned>(position + 1));
   if (it == character_data_map_.end())
     return false;
 

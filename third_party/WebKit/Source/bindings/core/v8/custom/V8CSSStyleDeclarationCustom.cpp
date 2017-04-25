@@ -135,7 +135,7 @@ static CSSPropertyID ParseCSSPropertyID(const String& property_name) {
 static CSSPropertyID CssPropertyInfo(const AtomicString& name) {
   typedef HashMap<String, CSSPropertyID> CSSPropertyIDMap;
   DEFINE_STATIC_LOCAL(CSSPropertyIDMap, map, ());
-  CSSPropertyIDMap::iterator iter = map.Find(name);
+  CSSPropertyIDMap::iterator iter = map.find(name);
   if (iter != map.end())
     return iter->value;
 

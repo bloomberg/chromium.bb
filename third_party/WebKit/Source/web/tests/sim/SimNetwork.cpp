@@ -41,7 +41,7 @@ void SimNetwork::ServePendingRequests() {
 
 void SimNetwork::DidReceiveResponse(WebURLLoaderClient* client,
                                     const WebURLResponse& response) {
-  auto it = requests_.Find(response.Url().GetString());
+  auto it = requests_.find(response.Url().GetString());
   if (it == requests_.end()) {
     client->DidReceiveResponse(response);
     return;

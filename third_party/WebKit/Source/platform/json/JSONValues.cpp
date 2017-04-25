@@ -310,7 +310,7 @@ JSONArray* JSONObject::GetArray(const String& name) const {
 }
 
 JSONValue* JSONObject::Get(const String& name) const {
-  Dictionary::const_iterator it = data_.Find(name);
+  Dictionary::const_iterator it = data_.find(name);
   if (it == data_.end())
     return nullptr;
   return it->value.get();
@@ -318,7 +318,7 @@ JSONValue* JSONObject::Get(const String& name) const {
 
 JSONObject::Entry JSONObject::at(size_t index) const {
   const String key = order_[index];
-  return std::make_pair(key, data_.Find(key)->value.get());
+  return std::make_pair(key, data_.find(key)->value.get());
 }
 
 bool JSONObject::BooleanProperty(const String& name, bool default_value) const {
@@ -353,7 +353,7 @@ void JSONObject::Remove(const String& name) {
 void JSONObject::WriteJSON(StringBuilder* output) const {
   output->Append('{');
   for (size_t i = 0; i < order_.size(); ++i) {
-    Dictionary::const_iterator it = data_.Find(order_[i]);
+    Dictionary::const_iterator it = data_.find(order_[i]);
     CHECK(it != data_.end());
     if (i)
       output->Append(',');
@@ -368,7 +368,7 @@ void JSONObject::PrettyWriteJSONInternal(StringBuilder* output,
                                          int depth) const {
   output->Append("{\n");
   for (size_t i = 0; i < order_.size(); ++i) {
-    Dictionary::const_iterator it = data_.Find(order_[i]);
+    Dictionary::const_iterator it = data_.find(order_[i]);
     CHECK(it != data_.end());
     if (i)
       output->Append(",\n");
@@ -386,7 +386,7 @@ std::unique_ptr<JSONValue> JSONObject::Clone() const {
   std::unique_ptr<JSONObject> result = JSONObject::Create();
   for (size_t i = 0; i < order_.size(); ++i) {
     String key = order_[i];
-    Dictionary::const_iterator value = data_.Find(key);
+    Dictionary::const_iterator value = data_.find(key);
     DCHECK(value != data_.end() && value->value);
     result->SetValue(key, value->value->Clone());
   }

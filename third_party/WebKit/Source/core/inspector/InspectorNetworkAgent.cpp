@@ -629,7 +629,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
           initiator_info);
   if (initiator_info.name == FetchInitiatorTypeNames::document) {
     FrameNavigationInitiatorMap::iterator it =
-        frame_navigation_initiator_map_.Find(frame_id);
+        frame_navigation_initiator_map_.find(frame_id);
     if (it != frame_navigation_initiator_map_.end())
       initiator_object = it->value->clone();
   }
@@ -972,7 +972,7 @@ void InspectorNetworkAgent::DidFinishXHRInternal(ExecutionContext* context,
   DelayedRemoveReplayXHR(xhr);
 
   ThreadableLoaderClientRequestIdMap::iterator it =
-      known_request_id_map_.Find(client);
+      known_request_id_map_.find(client);
   if (it == known_request_id_map_.end())
     return;
   known_request_id_map_.erase(client);
@@ -993,7 +993,7 @@ void InspectorNetworkAgent::DidFinishFetch(ExecutionContext* context,
                                            const AtomicString& method,
                                            const String& url) {
   ThreadableLoaderClientRequestIdMap::iterator it =
-      known_request_id_map_.Find(client);
+      known_request_id_map_.find(client);
   if (it == known_request_id_map_.end())
     return;
   known_request_id_map_.erase(client);
@@ -1012,7 +1012,7 @@ void InspectorNetworkAgent::WillDispatchEventSourceEvent(
     const AtomicString& event_id,
     const String& data) {
   ThreadableLoaderClientRequestIdMap::iterator it =
-      known_request_id_map_.Find(event_source);
+      known_request_id_map_.find(event_source);
   if (it == known_request_id_map_.end())
     return;
   GetFrontend()->eventSourceMessageReceived(

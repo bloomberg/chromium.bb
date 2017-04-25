@@ -196,7 +196,7 @@ CustomElementDefinition* CustomElementRegistry::define(
     definition->EnqueueUpgradeReaction(candidate);
 
   // 16: when-defined promise processing
-  const auto& entry = when_defined_promise_map_.Find(name);
+  const auto& entry = when_defined_promise_map_.find(name);
   if (entry != when_defined_promise_map_.end()) {
     entry->value->Resolve();
     when_defined_promise_map_.erase(entry);
@@ -259,7 +259,7 @@ void CustomElementRegistry::AddCandidate(Element* candidate) {
   const AtomicString& name = candidate->localName();
   if (NameIsDefined(name) || V0NameIsDefined(name))
     return;
-  UpgradeCandidateMap::iterator it = upgrade_candidates_->Find(name);
+  UpgradeCandidateMap::iterator it = upgrade_candidates_->find(name);
   UpgradeCandidateSet* set;
   if (it != upgrade_candidates_->end()) {
     set = it->value;
@@ -292,7 +292,7 @@ ScriptPromise CustomElementRegistry::whenDefined(
 void CustomElementRegistry::CollectCandidates(
     const CustomElementDescriptor& desc,
     HeapVector<Member<Element>>* elements) {
-  UpgradeCandidateMap::iterator it = upgrade_candidates_->Find(desc.GetName());
+  UpgradeCandidateMap::iterator it = upgrade_candidates_->find(desc.GetName());
   if (it == upgrade_candidates_->end())
     return;
   CustomElementUpgradeSorter sorter;

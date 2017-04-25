@@ -466,7 +466,7 @@ inline StringImpl* FindStringIfStatic(const CharType* characters,
   const WTF::StaticStringsTable& table = StringImpl::AllStaticStrings();
   DCHECK(!table.IsEmpty());
 
-  WTF::StaticStringsTable::const_iterator it = table.Find(hash);
+  WTF::StaticStringsTable::const_iterator it = table.find(hash);
   if (it == table.end())
     return nullptr;
   // It's possible to have hash collisions between arbitrary strings and known

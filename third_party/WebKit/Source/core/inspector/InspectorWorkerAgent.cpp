@@ -128,7 +128,7 @@ void InspectorWorkerAgent::DidStartWorker(WorkerInspectorProxy* proxy,
 
 void InspectorWorkerAgent::WorkerTerminated(WorkerInspectorProxy* proxy) {
   DCHECK(GetFrontend() && AutoAttachEnabled());
-  if (connected_proxies_.Find(proxy->InspectorId()) == connected_proxies_.end())
+  if (connected_proxies_.find(proxy->InspectorId()) == connected_proxies_.end())
     return;
   AttachedWorkerIds()->remove(proxy->InspectorId());
   GetFrontend()->detachedFromTarget(proxy->InspectorId());

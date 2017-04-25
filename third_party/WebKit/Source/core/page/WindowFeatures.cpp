@@ -233,7 +233,7 @@ WindowFeatures::WindowFeatures(const String& dialog_features_string,
 bool WindowFeatures::BoolFeature(const DialogFeaturesMap& features,
                                  const char* key,
                                  bool default_value) {
-  DialogFeaturesMap::const_iterator it = features.Find(key);
+  DialogFeaturesMap::const_iterator it = features.find(key);
   if (it == features.end())
     return default_value;
   const String& value = it->value;
@@ -245,7 +245,7 @@ int WindowFeatures::IntFeature(const DialogFeaturesMap& features,
                                int min,
                                int max,
                                int default_value) {
-  DialogFeaturesMap::const_iterator it = features.Find(key);
+  DialogFeaturesMap::const_iterator it = features.find(key);
   if (it == features.end())
     return default_value;
   bool ok;

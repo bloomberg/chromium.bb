@@ -62,7 +62,7 @@ inline bool UserActionElementSet::HasFlags(const Element* element,
                                            unsigned flags) const {
   DCHECK(element->IsUserActionElement());
   ElementFlagMap::const_iterator found =
-      elements_.Find(const_cast<Element*>(element));
+      elements_.find(const_cast<Element*>(element));
   if (found == elements_.end())
     return false;
   return found->value & flags;
@@ -70,11 +70,11 @@ inline bool UserActionElementSet::HasFlags(const Element* element,
 
 inline void UserActionElementSet::ClearFlags(Element* element, unsigned flags) {
   if (!element->IsUserActionElement()) {
-    DCHECK(elements_.end() == elements_.Find(element));
+    DCHECK(elements_.end() == elements_.find(element));
     return;
   }
 
-  ElementFlagMap::iterator found = elements_.Find(element);
+  ElementFlagMap::iterator found = elements_.find(element);
   if (found == elements_.end()) {
     element->SetUserActionElement(false);
     return;
@@ -91,7 +91,7 @@ inline void UserActionElementSet::ClearFlags(Element* element, unsigned flags) {
 }
 
 inline void UserActionElementSet::SetFlags(Element* element, unsigned flags) {
-  ElementFlagMap::iterator result = elements_.Find(element);
+  ElementFlagMap::iterator result = elements_.find(element);
   if (result != elements_.end()) {
     DCHECK(element->IsUserActionElement());
     result->value |= flags;

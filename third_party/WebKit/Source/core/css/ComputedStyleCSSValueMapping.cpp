@@ -967,8 +967,8 @@ void OrderedNamedLinesCollector::AppendLines(
     size_t index,
     NamedLinesType type) const {
   auto iter = type == kNamedLines
-                  ? ordered_named_grid_lines_.Find(index)
-                  : ordered_named_auto_repeat_grid_lines_.Find(index);
+                  ? ordered_named_grid_lines_.find(index)
+                  : ordered_named_auto_repeat_grid_lines_.find(index);
   auto end_iter = type == kNamedLines
                       ? ordered_named_grid_lines_.end()
                       : ordered_named_auto_repeat_grid_lines_.end();

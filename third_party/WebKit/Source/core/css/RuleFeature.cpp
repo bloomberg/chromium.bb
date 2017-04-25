@@ -988,7 +988,7 @@ void RuleFeatureSet::CollectInvalidationSetsForClass(
     Element& element,
     const AtomicString& class_name) const {
   InvalidationSetMap::const_iterator it =
-      class_invalidation_sets_.Find(class_name);
+      class_invalidation_sets_.find(class_name);
   if (it == class_invalidation_sets_.end())
     return;
 
@@ -1015,7 +1015,7 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForClass(
     const AtomicString& class_name,
     unsigned min_direct_adjacent) const {
   InvalidationSetMap::const_iterator it =
-      class_invalidation_sets_.Find(class_name);
+      class_invalidation_sets_.find(class_name);
   if (it == class_invalidation_sets_.end())
     return;
 
@@ -1037,7 +1037,7 @@ void RuleFeatureSet::CollectInvalidationSetsForId(
     InvalidationLists& invalidation_lists,
     Element& element,
     const AtomicString& id) const {
-  InvalidationSetMap::const_iterator it = id_invalidation_sets_.Find(id);
+  InvalidationSetMap::const_iterator it = id_invalidation_sets_.find(id);
   if (it == id_invalidation_sets_.end())
     return;
 
@@ -1061,7 +1061,7 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForId(
     Element& element,
     const AtomicString& id,
     unsigned min_direct_adjacent) const {
-  InvalidationSetMap::const_iterator it = id_invalidation_sets_.Find(id);
+  InvalidationSetMap::const_iterator it = id_invalidation_sets_.find(id);
   if (it == id_invalidation_sets_.end())
     return;
 
@@ -1083,7 +1083,7 @@ void RuleFeatureSet::CollectInvalidationSetsForAttribute(
     Element& element,
     const QualifiedName& attribute_name) const {
   InvalidationSetMap::const_iterator it =
-      attribute_invalidation_sets_.Find(attribute_name.LocalName());
+      attribute_invalidation_sets_.find(attribute_name.LocalName());
   if (it == attribute_invalidation_sets_.end())
     return;
 
@@ -1110,7 +1110,7 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForAttribute(
     const QualifiedName& attribute_name,
     unsigned min_direct_adjacent) const {
   InvalidationSetMap::const_iterator it =
-      attribute_invalidation_sets_.Find(attribute_name.LocalName());
+      attribute_invalidation_sets_.find(attribute_name.LocalName());
   if (it == attribute_invalidation_sets_.end())
     return;
 
@@ -1133,7 +1133,7 @@ void RuleFeatureSet::CollectInvalidationSetsForPseudoClass(
     Element& element,
     CSSSelector::PseudoType pseudo) const {
   PseudoTypeInvalidationSetMap::const_iterator it =
-      pseudo_invalidation_sets_.Find(pseudo);
+      pseudo_invalidation_sets_.find(pseudo);
   if (it == pseudo_invalidation_sets_.end())
     return;
 

@@ -4116,10 +4116,10 @@ TEST(HeapTest, CollectionNesting) {
   map->insert(key, IntVector());
   map2->insert(key, IntDeque());
 
-  HeapHashMap<void*, IntVector>::iterator it = map->Find(key);
+  HeapHashMap<void*, IntVector>::iterator it = map->find(key);
   EXPECT_EQ(0u, map->at(key).size());
 
-  HeapHashMap<void*, IntDeque>::iterator it2 = map2->Find(key);
+  HeapHashMap<void*, IntDeque>::iterator it2 = map2->find(key);
   EXPECT_EQ(0u, map2->at(key).size());
 
   it->value.push_back(IntWrapper::Create(42));
@@ -4175,7 +4175,7 @@ TEST(HeapTest, CollectionNesting2) {
 
   map->insert(key, IntSet());
 
-  HeapHashMap<void*, IntSet>::iterator it = map->Find(key);
+  HeapHashMap<void*, IntSet>::iterator it = map->find(key);
   EXPECT_EQ(0u, map->at(key).size());
 
   it->value.insert(IntWrapper::Create(42));

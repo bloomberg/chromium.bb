@@ -648,7 +648,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
 
   if (rendering_context3d_) {
     RenderingContextMap::const_iterator it =
-        rendering_context_map.Find(rendering_context3d_);
+        rendering_context_map.find(rendering_context3d_);
     int context_id = rendering_context_map.size() + 1;
     if (it == rendering_context_map.end())
       rendering_context_map.Set(rendering_context3d_, context_id);

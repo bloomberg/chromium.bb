@@ -126,7 +126,7 @@ void ImageQualityController::Set(const LayoutObject& object,
                                  bool is_resizing) {
   if (inner_map) {
     inner_map->Set(layer, size);
-    object_layer_size_map_.Find(&object)->value.is_resizing = is_resizing;
+    object_layer_size_map_.find(&object)->value.is_resizing = is_resizing;
   } else {
     ObjectResizeInfo new_resize_info;
     new_resize_info.layer_size_map.Set(layer, size);
@@ -189,7 +189,7 @@ bool ImageQualityController::ShouldPaintAtLowQuality(
   }
 
   // Look ourselves up in the hashtables.
-  ObjectLayerSizeMap::iterator i = object_layer_size_map_.Find(&object);
+  ObjectLayerSizeMap::iterator i = object_layer_size_map_.find(&object);
   LayerSizeMap* inner_map = nullptr;
   bool object_is_resizing = false;
   if (i != object_layer_size_map_.end()) {
@@ -199,7 +199,7 @@ bool ImageQualityController::ShouldPaintAtLowQuality(
   LayoutSize old_size;
   bool is_first_resize = true;
   if (inner_map) {
-    LayerSizeMap::iterator j = inner_map->Find(layer);
+    LayerSizeMap::iterator j = inner_map->find(layer);
     if (j != inner_map->end()) {
       is_first_resize = false;
       old_size = j->value;

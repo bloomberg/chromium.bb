@@ -76,7 +76,7 @@ class HashCountedSet {
   const_iterator begin() const { return impl_.begin(); }
   const_iterator end() const { return impl_.end(); }
 
-  iterator find(const ValueType& value) { return impl_.Find(value); }
+  iterator find(const ValueType& value) { return impl_.find(value); }
   const_iterator find(const ValueType& value) const {
     return impl_.find(value);
   }

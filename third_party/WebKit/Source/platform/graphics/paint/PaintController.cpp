@@ -133,7 +133,7 @@ bool PaintController::UseCachedSubsequenceIfPossible(
 
 PaintController::SubsequenceMarkers* PaintController::GetSubsequenceMarkers(
     const DisplayItemClient& client) {
-  auto result = current_cached_subsequences_.Find(&client);
+  auto result = current_cached_subsequences_.find(&client);
   if (result == current_cached_subsequences_.end())
     return nullptr;
   return &result->value;
@@ -159,7 +159,7 @@ void PaintController::AddCachedSubsequence(const DisplayItemClient& client,
     }
   }
 
-  DCHECK(new_cached_subsequences_.Find(&client) ==
+  DCHECK(new_cached_subsequences_.find(&client) ==
          new_cached_subsequences_.end());
 
   new_cached_subsequences_.insert(&client, SubsequenceMarkers(start, end));
@@ -185,7 +185,7 @@ void PaintController::RemoveLastDisplayItem() {
 
 #if DCHECK_IS_ON()
   // Also remove the index pointing to the removed display item.
-  IndicesByClientMap::iterator it = new_display_item_indices_by_client_.Find(
+  IndicesByClientMap::iterator it = new_display_item_indices_by_client_.find(
       &new_display_item_list_.Last().Client());
   if (it != new_display_item_indices_by_client_.end()) {
     Vector<size_t>& indices = it->value;
@@ -326,7 +326,7 @@ size_t PaintController::FindMatchingItemFromIndex(
     const IndicesByClientMap& display_item_indices_by_client,
     const DisplayItemList& list) {
   IndicesByClientMap::const_iterator it =
-      display_item_indices_by_client.Find(&id.client);
+      display_item_indices_by_client.find(&id.client);
   if (it == display_item_indices_by_client.end())
     return kNotFound;
 
@@ -351,7 +351,7 @@ void PaintController::AddItemToIndexIfNeeded(
     return;
 
   IndicesByClientMap::iterator it =
-      display_item_indices_by_client.Find(&display_item.Client());
+      display_item_indices_by_client.find(&display_item.Client());
   Vector<size_t>& indices =
       it == display_item_indices_by_client.end()
           ? display_item_indices_by_client
@@ -688,7 +688,7 @@ void PaintController::GenerateChunkRasterInvalidationRects(
 
     // Add skipped old chunks into the index.
     if (old_chunk.id) {
-      auto it = out_of_order_chunk_indices_.Find(&old_chunk.id->client);
+      auto it = out_of_order_chunk_indices_.find(&old_chunk.id->client);
       Vector<size_t>& indices =
           it == out_of_order_chunk_indices_.end()
               ? out_of_order_chunk_indices_
@@ -701,7 +701,7 @@ void PaintController::GenerateChunkRasterInvalidationRects(
   }
 
   // Sequential matching reaches the end. Find from the out-of-order index.
-  auto it = out_of_order_chunk_indices_.Find(&new_chunk.id->client);
+  auto it = out_of_order_chunk_indices_.find(&new_chunk.id->client);
   if (it != out_of_order_chunk_indices_.end()) {
     for (size_t i : it->value) {
       if (new_chunk.Matches(old_chunks[i])) {

@@ -569,7 +569,7 @@ static void MakeLayerChildFrameMap(const LocalFrame* current_frame,
     if (owner_layout_item.IsNull())
       continue;
     const PaintLayer* containing_layer = owner_layout_item.EnclosingLayer();
-    LayerFrameMap::iterator iter = map->Find(containing_layer);
+    LayerFrameMap::iterator iter = map->find(containing_layer);
     if (iter == map->end())
       map->insert(containing_layer, HeapVector<Member<const LocalFrame>>())
           .stored_value->value.push_back(ToLocalFrame(child));
@@ -590,7 +590,7 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
       cur_layer->GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return;
   // Project any rects for the current layer
-  LayerHitTestRects::const_iterator layer_iter = layer_rects.Find(cur_layer);
+  LayerHitTestRects::const_iterator layer_iter = layer_rects.find(cur_layer);
   if (layer_iter != layer_rects.end()) {
     // Find the enclosing composited layer when it's in another document (for
     // non-composited iframes).
@@ -604,7 +604,7 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
         composited_layer->GraphicsLayerBacking(&cur_layer->GetLayoutObject());
 
     GraphicsLayerHitTestRects::iterator gl_iter =
-        graphics_rects.Find(graphics_layer);
+        graphics_rects.find(graphics_layer);
     Vector<LayoutRect>* gl_rects;
     if (gl_iter == graphics_rects.end())
       gl_rects = &graphics_rects.insert(graphics_layer, Vector<LayoutRect>())
@@ -647,7 +647,7 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
 
   // If this layer has any frames of interest as a child of it, walk those (with
   // an updated frame map).
-  LayerFrameMap::iterator map_iter = layer_child_frame_map.Find(cur_layer);
+  LayerFrameMap::iterator map_iter = layer_child_frame_map.find(cur_layer);
   if (map_iter != layer_child_frame_map.end()) {
     for (size_t i = 0; i < map_iter->value.size(); i++) {
       const LocalFrame* child_frame = map_iter->value[i];

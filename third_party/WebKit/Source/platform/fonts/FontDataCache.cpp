@@ -60,7 +60,7 @@ PassRefPtr<SimpleFontData> FontDataCache::Get(
     return nullptr;
   }
 
-  Cache::iterator result = cache_.Find(platform_data);
+  Cache::iterator result = cache_.find(platform_data);
   if (result == cache_.end()) {
     std::pair<RefPtr<SimpleFontData>, unsigned> new_value(
         SimpleFontData::Create(*platform_data, nullptr, false,
@@ -100,7 +100,7 @@ bool FontDataCache::Contains(const FontPlatformData* font_platform_data) const {
 void FontDataCache::Release(const SimpleFontData* font_data) {
   DCHECK(!font_data->IsCustomFont());
 
-  Cache::iterator it = cache_.Find(&(font_data->PlatformData()));
+  Cache::iterator it = cache_.find(&(font_data->PlatformData()));
   DCHECK_NE(it, cache_.end());
   if (it == cache_.end())
     return;

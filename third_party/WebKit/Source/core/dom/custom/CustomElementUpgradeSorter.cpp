@@ -73,7 +73,7 @@ void CustomElementUpgradeSorter::Visit(HeapVector<Member<Element>>* result,
 
 void CustomElementUpgradeSorter::Sorted(HeapVector<Member<Element>>* result,
                                         Node* parent) {
-  ParentChildMap::iterator children_iterator = parent_child_map_->Find(parent);
+  ParentChildMap::iterator children_iterator = parent_child_map_->find(parent);
   if (children_iterator == parent_child_map_->end())
     return;
 
@@ -89,11 +89,11 @@ void CustomElementUpgradeSorter::Sorted(HeapVector<Member<Element>>* result,
   ShadowRoot* shadow_root =
       parent->IsElementNode() ? ToElement(parent)->AuthorShadowRoot() : nullptr;
   if (shadow_root)
-    Visit(result, *children, children->Find(shadow_root));
+    Visit(result, *children, children->find(shadow_root));
 
   for (Element* e = ElementTraversal::FirstChild(*parent);
        e && children->size() > 1; e = ElementTraversal::NextSibling(*e)) {
-    Visit(result, *children, children->Find(e));
+    Visit(result, *children, children->find(e));
   }
 
   if (children->size() == 1)

@@ -142,7 +142,7 @@ StyleRuleKeyframes* ScopedStyleResolver::KeyframeStylesForAnimation(
   if (keyframes_rule_map_.IsEmpty())
     return nullptr;
 
-  KeyframesRuleMap::iterator it = keyframes_rule_map_.Find(animation_name);
+  KeyframesRuleMap::iterator it = keyframes_rule_map_.find(animation_name);
   if (it == keyframes_rule_map_.end())
     return nullptr;
 
@@ -153,7 +153,7 @@ void ScopedStyleResolver::AddKeyframeStyle(StyleRuleKeyframes* rule) {
   AtomicString s(rule->GetName());
 
   if (rule->IsVendorPrefixed()) {
-    KeyframesRuleMap::iterator it = keyframes_rule_map_.Find(s.Impl());
+    KeyframesRuleMap::iterator it = keyframes_rule_map_.find(s.Impl());
     if (it == keyframes_rule_map_.end())
       keyframes_rule_map_.Set(s.Impl(), rule);
     else if (it->value->IsVendorPrefixed())

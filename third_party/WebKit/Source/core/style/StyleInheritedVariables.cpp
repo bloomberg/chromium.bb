@@ -43,7 +43,7 @@ StyleInheritedVariables::StyleInheritedVariables(
 
 CSSVariableData* StyleInheritedVariables::GetVariable(
     const AtomicString& name) const {
-  auto result = data_.Find(name);
+  auto result = data_.find(name);
   if (result == data_.end() && root_)
     return root_->GetVariable(name);
   if (result == data_.end())
@@ -59,7 +59,7 @@ void StyleInheritedVariables::SetRegisteredVariable(
 
 const CSSValue* StyleInheritedVariables::RegisteredVariable(
     const AtomicString& name) const {
-  auto result = registered_data_.Find(name);
+  auto result = registered_data_.find(name);
   if (result != registered_data_.end())
     return result->value.Get();
   if (root_)
@@ -69,7 +69,7 @@ const CSSValue* StyleInheritedVariables::RegisteredVariable(
 
 void StyleInheritedVariables::RemoveVariable(const AtomicString& name) {
   data_.Set(name, nullptr);
-  auto iterator = registered_data_.Find(name);
+  auto iterator = registered_data_.find(name);
   if (iterator != registered_data_.end())
     iterator->value = nullptr;
 }

@@ -170,9 +170,9 @@ void EventPath::CalculateTreeOrderAndSetNearestAncestorClosedTree() {
       root_tree = tree_scope_event_context.Get();
       continue;
     }
-    DCHECK_NE(tree_scope_event_context_map.Find(parent),
+    DCHECK_NE(tree_scope_event_context_map.find(parent),
               tree_scope_event_context_map.end());
-    tree_scope_event_context_map.Find(parent)->value->AddChild(
+    tree_scope_event_context_map.find(parent)->value->AddChild(
         *tree_scope_event_context.Get());
   }
   DCHECK(root_tree);
@@ -259,7 +259,7 @@ EventTarget* EventPath::FindRelatedNode(TreeScope& scope,
   for (TreeScope* current = &scope; current;
        current = current->OlderShadowRootOrParentTreeScope()) {
     parent_tree_scopes.push_back(current);
-    RelatedTargetMap::const_iterator iter = related_target_map.Find(current);
+    RelatedTargetMap::const_iterator iter = related_target_map.find(current);
     if (iter != related_target_map.end() && iter->value) {
       related_node = iter->value;
       break;

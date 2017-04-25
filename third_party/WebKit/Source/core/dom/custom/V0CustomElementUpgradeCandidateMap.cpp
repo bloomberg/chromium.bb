@@ -51,7 +51,7 @@ void V0CustomElementUpgradeCandidateMap::Add(
   DCHECK(result.is_new_entry);
 
   UnresolvedDefinitionMap::iterator it =
-      unresolved_definitions_.Find(descriptor);
+      unresolved_definitions_.find(descriptor);
   ElementSet* elements;
   if (it == unresolved_definitions_.end())
     elements = unresolved_definitions_.insert(descriptor, new ElementSet())
@@ -63,11 +63,11 @@ void V0CustomElementUpgradeCandidateMap::Add(
 
 void V0CustomElementUpgradeCandidateMap::ElementWasDestroyed(Element* element) {
   V0CustomElementObserver::ElementWasDestroyed(element);
-  UpgradeCandidateMap::iterator candidate = upgrade_candidates_.Find(element);
+  UpgradeCandidateMap::iterator candidate = upgrade_candidates_.find(element);
   SECURITY_DCHECK(candidate != upgrade_candidates_.end());
 
   UnresolvedDefinitionMap::iterator elements =
-      unresolved_definitions_.Find(candidate->value);
+      unresolved_definitions_.find(candidate->value);
   SECURITY_DCHECK(elements != unresolved_definitions_.end());
   elements->value->erase(element);
   upgrade_candidates_.erase(candidate);

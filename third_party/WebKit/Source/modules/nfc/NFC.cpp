@@ -762,7 +762,7 @@ void NFC::OnConnectionError() {
 void NFC::OnWatch(const WTF::Vector<uint32_t>& ids,
                   device::nfc::mojom::blink::NFCMessagePtr message) {
   for (const auto& id : ids) {
-    auto it = callbacks_.Find(id);
+    auto it = callbacks_.find(id);
     if (it != callbacks_.end()) {
       MessageCallback* callback = it->value;
       ScriptState* script_state = callback->GetScriptState();

@@ -74,7 +74,7 @@ static PassRefPtr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
 
   MutexLocker locker(mutex);
   RefPtr<AudioBus> bus;
-  AudioBusMap::iterator iterator = audio_bus_map.Find(subject_name);
+  AudioBusMap::iterator iterator = audio_bus_map.find(subject_name);
   if (iterator == audio_bus_map.end()) {
     RefPtr<AudioBus> concatenated_impulse_responses(
         AudioBus::LoadPlatformResource(subject_name.Utf8().data(),

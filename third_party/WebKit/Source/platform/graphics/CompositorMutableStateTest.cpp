@@ -140,7 +140,7 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties) {
   // The corresponding mutation should reflect the changed values.
   EXPECT_EQ(1ul, mutations.map.size());
 
-  const CompositorMutation& mutation = *mutations.map.Find(primary_id)->value;
+  const CompositorMutation& mutation = *mutations.map.find(primary_id)->value;
   EXPECT_TRUE(mutation.IsOpacityMutated());
   EXPECT_TRUE(mutation.IsTransformMutated());
   EXPECT_TRUE(mutation.IsScrollLeftMutated());

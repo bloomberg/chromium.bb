@@ -742,8 +742,8 @@ class HashTable final
   template <typename HashTranslator, typename T, typename Extra>
   AddResult InsertPassingHashCode(T&& key, Extra&&);
 
-  iterator Find(KeyPeekInType key) { return Find<IdentityTranslatorType>(key); }
-  const_iterator Find(KeyPeekInType key) const {
+  iterator find(KeyPeekInType key) { return Find<IdentityTranslatorType>(key); }
+  const_iterator find(KeyPeekInType key) const {
     return Find<IdentityTranslatorType>(key);
   }
   bool Contains(KeyPeekInType key) const {
@@ -1526,7 +1526,7 @@ template <typename Key,
 inline void
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     erase(KeyPeekInType key) {
-  erase(Find(key));
+  erase(find(key));
 }
 
 template <typename Key,

@@ -49,7 +49,7 @@ void CSSImageGeneratorValue::AddClient(const LayoutObject* layout_object,
   if (!size.IsEmpty())
     sizes_.insert(size);
 
-  LayoutObjectSizeCountMap::iterator it = clients_.Find(layout_object);
+  LayoutObjectSizeCountMap::iterator it = clients_.find(layout_object);
   if (it == clients_.end()) {
     clients_.insert(layout_object, SizeAndCount(size, 1));
   } else {
@@ -66,7 +66,7 @@ CSSImageGeneratorValue* CSSImageGeneratorValue::ValueWithURLsMadeAbsolute() {
 
 void CSSImageGeneratorValue::RemoveClient(const LayoutObject* layout_object) {
   DCHECK(layout_object);
-  LayoutObjectSizeCountMap::iterator it = clients_.Find(layout_object);
+  LayoutObjectSizeCountMap::iterator it = clients_.find(layout_object);
   SECURITY_DCHECK(it != clients_.end());
 
   IntSize removed_image_size;
@@ -89,7 +89,7 @@ void CSSImageGeneratorValue::RemoveClient(const LayoutObject* layout_object) {
 
 Image* CSSImageGeneratorValue::GetImage(const LayoutObject* layout_object,
                                         const IntSize& size) {
-  LayoutObjectSizeCountMap::iterator it = clients_.Find(layout_object);
+  LayoutObjectSizeCountMap::iterator it = clients_.find(layout_object);
   if (it != clients_.end()) {
     SizeAndCount& size_count = it->value;
     IntSize old_size = size_count.size;

@@ -133,7 +133,7 @@ void RadioButtonGroup::UpdateCheckedState(HTMLInputElement* button) {
 
 void RadioButtonGroup::RequiredAttributeChanged(HTMLInputElement* button) {
   DCHECK_EQ(button->type(), InputTypeNames::radio);
-  auto it = members_.Find(button);
+  auto it = members_.find(button);
   DCHECK_NE(it, members_.end());
   bool was_valid = IsValid();
   // Synchronize the 'required' flag for the button, along with
@@ -145,7 +145,7 @@ void RadioButtonGroup::RequiredAttributeChanged(HTMLInputElement* button) {
 
 void RadioButtonGroup::Remove(HTMLInputElement* button) {
   DCHECK_EQ(button->type(), InputTypeNames::radio);
-  auto it = members_.Find(button);
+  auto it = members_.find(button);
   if (it == members_.end())
     return;
   bool was_valid = IsValid();

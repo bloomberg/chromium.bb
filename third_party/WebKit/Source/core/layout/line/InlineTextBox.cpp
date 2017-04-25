@@ -75,7 +75,7 @@ LayoutRect InlineTextBox::LogicalOverflowRect() const {
   if (KnownToHaveNoOverflow() || !g_text_boxes_with_overflow)
     return LogicalFrameRect();
 
-  const auto& it = g_text_boxes_with_overflow->Find(this);
+  const auto& it = g_text_boxes_with_overflow->find(this);
   if (it != g_text_boxes_with_overflow->end())
     return it->value;
 
@@ -94,7 +94,7 @@ void InlineTextBox::Move(const LayoutSize& delta) {
   InlineBox::Move(delta);
 
   if (!KnownToHaveNoOverflow() && g_text_boxes_with_overflow) {
-    const auto& it = g_text_boxes_with_overflow->Find(this);
+    const auto& it = g_text_boxes_with_overflow->find(this);
     if (it != g_text_boxes_with_overflow->end())
       it->value.Move(IsHorizontal() ? delta : delta.TransposedSize());
   }

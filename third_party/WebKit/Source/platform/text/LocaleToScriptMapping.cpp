@@ -169,7 +169,7 @@ UScriptCode ScriptNameToCode(const String& script_name) {
     CreateSubtagScriptMap(script_name_code_map, kScriptNameCodeList,
                           WTF_ARRAY_LENGTH(kScriptNameCodeList));
 
-  const auto& it = script_name_code_map.Find(script_name);
+  const auto& it = script_name_code_map.find(script_name);
   if (it != script_name_code_map.end())
     return it->value;
   return USCRIPT_INVALID_CODE;
@@ -463,7 +463,7 @@ UScriptCode LocaleToScriptCodeForFontSelection(const String& locale) {
   String canonical_locale = locale;
   canonical_locale.Replace('_', '-');
   while (!canonical_locale.IsEmpty()) {
-    const auto& it = locale_script_map.Find(canonical_locale);
+    const auto& it = locale_script_map.find(canonical_locale);
     if (it != locale_script_map.end())
       return it->value;
     size_t pos = canonical_locale.ReverseFind('-');
@@ -491,7 +491,7 @@ static UScriptCode ScriptCodeForHanFromRegion(const String& region) {
     CreateSubtagScriptMap(region_script_map, kRegionScriptList,
                           WTF_ARRAY_LENGTH(kRegionScriptList));
 
-  const auto& it = region_script_map.Find(region);
+  const auto& it = region_script_map.find(region);
   return it != region_script_map.end() ? it->value : USCRIPT_COMMON;
 }
 

@@ -542,7 +542,7 @@ Node* InspectorDOMAgent::NodeForId(int id) {
   if (!id)
     return nullptr;
 
-  HeapHashMap<int, Member<Node>>::iterator it = id_to_node_.Find(id);
+  HeapHashMap<int, Member<Node>>::iterator it = id_to_node_.find(id);
   if (it != id_to_node_.end())
     return it->value;
   return nullptr;
@@ -1088,7 +1088,7 @@ Response InspectorDOMAgent::getSearchResults(
     int from_index,
     int to_index,
     std::unique_ptr<protocol::Array<int>>* node_ids) {
-  SearchResults::iterator it = search_results_.Find(search_id);
+  SearchResults::iterator it = search_results_.find(search_id);
   if (it == search_results_.end())
     return Response::Error("No search session with given id found");
 

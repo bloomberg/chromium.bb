@@ -947,7 +947,7 @@ static inline void HandleElementAttributes(
         attr_uri = ToAtomicString(attributes[i].uri);
       } else {
         const HashMap<AtomicString, AtomicString>::const_iterator it =
-            initial_prefix_to_namespace_map.Find(attr_prefix);
+            initial_prefix_to_namespace_map.find(attr_prefix);
         if (it != initial_prefix_to_namespace_map.end())
           attr_uri = it->value;
         else

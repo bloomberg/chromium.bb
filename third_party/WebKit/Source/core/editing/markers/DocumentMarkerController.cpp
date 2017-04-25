@@ -482,7 +482,7 @@ void DocumentMarkerController::RemoveMarkersForNode(
     return;
   DCHECK(!markers_.IsEmpty());
 
-  MarkerMap::iterator iterator = markers_.Find(node);
+  MarkerMap::iterator iterator = markers_.find(node);
   if (iterator != markers_.end())
     RemoveMarkersFromList(iterator, marker_types);
 }
@@ -515,7 +515,7 @@ void DocumentMarkerController::RemoveMarkersOfTypes(
   CopyKeysToVector(markers_, nodes_with_markers);
   unsigned size = nodes_with_markers.size();
   for (unsigned i = 0; i < size; ++i) {
-    MarkerMap::iterator iterator = markers_.Find(nodes_with_markers[i]);
+    MarkerMap::iterator iterator = markers_.find(nodes_with_markers[i]);
     if (iterator != markers_.end())
       RemoveMarkersFromList(iterator, marker_types);
   }

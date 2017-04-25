@@ -196,7 +196,7 @@ DocumentElementSetMap& DocumentToElementSetMap() {
 void AddElementToDocumentMap(HTMLMediaElement* element, Document* document) {
   DocumentElementSetMap& map = DocumentToElementSetMap();
   WeakMediaElementSet* set = nullptr;
-  auto it = map.Find(document);
+  auto it = map.find(document);
   if (it == map.end()) {
     set = new WeakMediaElementSet;
     map.insert(document, set);
@@ -209,7 +209,7 @@ void AddElementToDocumentMap(HTMLMediaElement* element, Document* document) {
 void RemoveElementFromDocumentMap(HTMLMediaElement* element,
                                   Document* document) {
   DocumentElementSetMap& map = DocumentToElementSetMap();
-  auto it = map.Find(document);
+  auto it = map.find(document);
   DCHECK(it != map.end());
   WeakMediaElementSet* set = it->value;
   set->erase(element);
@@ -411,7 +411,7 @@ bool HTMLMediaElement::MediaTracksEnabledInternally() {
 
 // static
 void HTMLMediaElement::OnMediaControlsEnabledChange(Document* document) {
-  auto it = DocumentToElementSetMap().Find(document);
+  auto it = DocumentToElementSetMap().find(document);
   if (it == DocumentToElementSetMap().end())
     return;
   DCHECK(it->value);
@@ -3617,7 +3617,7 @@ void HTMLMediaElement::MediaControlsDidBecomeVisible() {
 
 void HTMLMediaElement::SetTextTrackKindUserPreferenceForAllMediaElements(
     Document* document) {
-  auto it = DocumentToElementSetMap().Find(document);
+  auto it = DocumentToElementSetMap().find(document);
   if (it == DocumentToElementSetMap().end())
     return;
   DCHECK(it->value);

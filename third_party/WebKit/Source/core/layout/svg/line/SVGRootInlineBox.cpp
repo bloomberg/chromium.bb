@@ -141,7 +141,7 @@ static inline void SwapPositioningValuesInTextBoxes(
   SVGCharacterDataMap& first_character_data_map =
       first_text_node.CharacterDataMap();
   SVGCharacterDataMap::iterator it_first =
-      first_character_data_map.Find(first_text_box->Start() + 1);
+      first_character_data_map.find(first_text_box->Start() + 1);
   if (it_first == first_character_data_map.end())
     return;
   LineLayoutSVGInlineText last_text_node =
@@ -149,7 +149,7 @@ static inline void SwapPositioningValuesInTextBoxes(
   SVGCharacterDataMap& last_character_data_map =
       last_text_node.CharacterDataMap();
   SVGCharacterDataMap::iterator it_last =
-      last_character_data_map.Find(last_text_box->Start() + 1);
+      last_character_data_map.find(last_text_box->Start() + 1);
   if (it_last == last_character_data_map.end())
     return;
   // We only want to perform the swap if both inline boxes are absolutely

@@ -1051,7 +1051,7 @@ inline void InlineFlowBox::AddTextBoxVisualOverflow(
       text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
 
   GlyphOverflowAndFallbackFontsMap::iterator it =
-      text_box_data_map.Find(text_box);
+      text_box_data_map.find(text_box);
   GlyphOverflow* glyph_overflow =
       it == text_box_data_map.end() ? nullptr : &it->value.second;
   bool is_flipped_line = style.IsFlippedLinesWritingMode();

@@ -414,7 +414,7 @@ Response InspectorLayerTreeAgent::loadSnapshot(
 }
 
 Response InspectorLayerTreeAgent::releaseSnapshot(const String& snapshot_id) {
-  SnapshotById::iterator it = snapshot_by_id_.Find(snapshot_id);
+  SnapshotById::iterator it = snapshot_by_id_.find(snapshot_id);
   if (it == snapshot_by_id_.end())
     return Response::Error("Snapshot not found");
   snapshot_by_id_.erase(it);
@@ -424,7 +424,7 @@ Response InspectorLayerTreeAgent::releaseSnapshot(const String& snapshot_id) {
 Response InspectorLayerTreeAgent::GetSnapshotById(
     const String& snapshot_id,
     const PictureSnapshot*& result) {
-  SnapshotById::iterator it = snapshot_by_id_.Find(snapshot_id);
+  SnapshotById::iterator it = snapshot_by_id_.find(snapshot_id);
   if (it == snapshot_by_id_.end())
     return Response::Error("Snapshot not found");
   result = it->value.Get();

@@ -262,7 +262,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void DestroyImageCHROMIUM(GLuint image_id) {
     image_sizes_.erase(image_id);
     // No textures should be bound to this.
-    CHECK(image_to_texture_map_.Find(image_id) == image_to_texture_map_.end());
+    CHECK(image_to_texture_map_.find(image_id) == image_to_texture_map_.end());
     image_sizes_.erase(image_id);
     DestroyImageMock(image_id);
   }
@@ -271,7 +271,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) {
     if (target == ImageCHROMIUMTextureTarget()) {
       texture_sizes_.Set(bound_textures_[target],
-                         image_sizes_.Find(image_id)->value);
+                         image_sizes_.find(image_id)->value);
       image_to_texture_map_.Set(image_id, bound_textures_[target]);
       BindTexImage2DMock(image_id);
     }

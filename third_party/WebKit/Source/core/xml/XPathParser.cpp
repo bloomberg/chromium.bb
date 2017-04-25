@@ -96,7 +96,7 @@ static bool IsAxisName(const String& name, Step::Axis& type) {
   if (axis_names.IsEmpty())
     SetUpAxisNamesMap(axis_names);
 
-  AxisNamesMap::iterator it = axis_names.Find(name);
+  AxisNamesMap::iterator it = axis_names.find(name);
   if (it == axis_names.end())
     return false;
   type = it->value;

@@ -50,7 +50,7 @@ PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::GetOrCreate(
         new InlineToAbstractInlineTextBoxHashMap();
 
   InlineToAbstractInlineTextBoxHashMap::const_iterator it =
-      g_abstract_inline_text_box_map_->Find(inline_text_box);
+      g_abstract_inline_text_box_map_->find(inline_text_box);
   if (it != g_abstract_inline_text_box_map_->end())
     return it->value;
 
@@ -65,7 +65,7 @@ void AbstractInlineTextBox::WillDestroy(InlineTextBox* inline_text_box) {
     return;
 
   InlineToAbstractInlineTextBoxHashMap::const_iterator it =
-      g_abstract_inline_text_box_map_->Find(inline_text_box);
+      g_abstract_inline_text_box_map_->find(inline_text_box);
   if (it != g_abstract_inline_text_box_map_->end()) {
     it->value->Detach();
     g_abstract_inline_text_box_map_->erase(inline_text_box);

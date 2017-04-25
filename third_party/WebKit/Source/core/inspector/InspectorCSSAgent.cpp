@@ -856,7 +856,7 @@ void InspectorCSSAgent::ForcePseudoState(Element* element,
     return;
 
   NodeIdToForcedPseudoState::iterator it =
-      node_id_to_forced_pseudo_state_.Find(node_id);
+      node_id_to_forced_pseudo_state_.find(node_id);
   if (it == node_id_to_forced_pseudo_state_.end())
     return;
 
@@ -1572,7 +1572,7 @@ Response InspectorCSSAgent::forcePseudoState(
   unsigned forced_pseudo_state =
       ComputePseudoClassMask(std::move(forced_pseudo_classes));
   NodeIdToForcedPseudoState::iterator it =
-      node_id_to_forced_pseudo_state_.Find(node_id);
+      node_id_to_forced_pseudo_state_.find(node_id);
   unsigned current_forced_pseudo_state =
       it == node_id_to_forced_pseudo_state_.end() ? 0 : it->value;
   bool need_style_recalc = forced_pseudo_state != current_forced_pseudo_state;
@@ -1784,7 +1784,7 @@ InspectorCSSAgent::BuildMediaListChain(CSSRule* rule) {
 InspectorStyleSheetForInlineStyle* InspectorCSSAgent::AsInspectorStyleSheet(
     Element* element) {
   NodeToInspectorStyleSheet::iterator it =
-      node_to_inspector_style_sheet_.Find(element);
+      node_to_inspector_style_sheet_.find(element);
   if (it != node_to_inspector_style_sheet_.end())
     return it->value.Get();
 
@@ -1893,7 +1893,7 @@ Response InspectorCSSAgent::AssertInspectorStyleSheetForId(
     const String& style_sheet_id,
     InspectorStyleSheet*& result) {
   IdToInspectorStyleSheet::iterator it =
-      id_to_inspector_style_sheet_.Find(style_sheet_id);
+      id_to_inspector_style_sheet_.find(style_sheet_id);
   if (it == id_to_inspector_style_sheet_.end())
     return Response::Error("No style sheet with given id found");
   result = it->value.Get();
@@ -1911,7 +1911,7 @@ Response InspectorCSSAgent::AssertStyleSheetForId(
     return response;
   }
   IdToInspectorStyleSheetForInlineStyle::iterator it =
-      id_to_inspector_style_sheet_for_inline_style_.Find(style_sheet_id);
+      id_to_inspector_style_sheet_for_inline_style_.find(style_sheet_id);
   if (it == id_to_inspector_style_sheet_for_inline_style_.end())
     return Response::Error("No style sheet with given id found");
   result = it->value.Get();
@@ -2051,7 +2051,7 @@ void InspectorCSSAgent::DidRemoveDOMNode(Node* node) {
     node_id_to_forced_pseudo_state_.erase(node_id);
 
   NodeToInspectorStyleSheet::iterator it =
-      node_to_inspector_style_sheet_.Find(node);
+      node_to_inspector_style_sheet_.find(node);
   if (it == node_to_inspector_style_sheet_.end())
     return;
 
@@ -2064,7 +2064,7 @@ void InspectorCSSAgent::DidModifyDOMAttr(Element* element) {
     return;
 
   NodeToInspectorStyleSheet::iterator it =
-      node_to_inspector_style_sheet_.Find(element);
+      node_to_inspector_style_sheet_.find(element);
   if (it == node_to_inspector_style_sheet_.end())
     return;
 
@@ -2349,7 +2349,7 @@ int InspectorCSSAgent::GetStyleIndexForNode(
   if (all_properties_empty)
     return -1;
 
-  ComputedStylesMap::iterator it = style_to_index_map.Find(style);
+  ComputedStylesMap::iterator it = style_to_index_map.find(style);
   if (it != style_to_index_map.end())
     return it->value;
 

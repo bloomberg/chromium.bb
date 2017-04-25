@@ -33,7 +33,7 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
            << ", referrer.hash=" << ScriptModuleHash::GetHash(referrer) << ")";
 
   // Step 1. Let referencing module script be referencingModule.[[HostDefined]].
-  const auto it = record_to_module_script_map_.Find(referrer);
+  const auto it = record_to_module_script_map_.find(referrer);
   CHECK_NE(it, record_to_module_script_map_.end())
       << "Failed to find referrer ModuleScript corresponding to the record";
   ModuleScript* referrer_module = it->value;

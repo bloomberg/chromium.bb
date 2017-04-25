@@ -30,7 +30,7 @@ void ModuleScriptLoaderRegistry::ReleaseFinishedLoader(
     ModuleScriptLoader* loader) {
   DCHECK(loader->HasFinished());
 
-  auto it = active_loaders_.Find(loader);
+  auto it = active_loaders_.find(loader);
   DCHECK_NE(it, active_loaders_.end());
   active_loaders_.erase(it);
 }

@@ -29,7 +29,7 @@ const InterpolationTypes& SVGInterpolationTypesMap::Get(
   using ApplicableTypesMap =
       HashMap<PropertyHandle, std::unique_ptr<const InterpolationTypes>>;
   DEFINE_STATIC_LOCAL(ApplicableTypesMap, applicable_types_map, ());
-  auto entry = applicable_types_map.Find(property);
+  auto entry = applicable_types_map.find(property);
   if (entry != applicable_types_map.end())
     return *entry->value.get();
 

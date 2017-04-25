@@ -2494,7 +2494,7 @@ void LayoutObject::AddLayerHitTestRects(
   // WebLayer::setTouchEventHandlerRegion - crbug.com/300282.
   const size_t kMaxRectsPerLayer = 100;
 
-  LayerHitTestRects::iterator iter = layer_rects.Find(current_layer);
+  LayerHitTestRects::iterator iter = layer_rects.find(current_layer);
   Vector<LayoutRect>* iter_value;
   if (iter == layer_rects.end())
     iter_value = &layer_rects.insert(current_layer, Vector<LayoutRect>())

@@ -201,7 +201,7 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
     return nullptr;
   }
 
-  IDBObjectStoreMap::iterator it = object_store_map_.Find(name);
+  IDBObjectStoreMap::iterator it = object_store_map_.find(name);
   if (it != object_store_map_.end())
     return it->value;
 
@@ -258,7 +258,7 @@ void IDBTransaction::ObjectStoreDeleted(const int64_t object_store_id,
       << "A finished transaction deleted an object store";
   DCHECK_EQ(mode_, kWebIDBTransactionModeVersionChange)
       << "A non-versionchange transaction deleted an object store";
-  IDBObjectStoreMap::iterator it = object_store_map_.Find(name);
+  IDBObjectStoreMap::iterator it = object_store_map_.find(name);
   if (it == object_store_map_.end()) {
     // No IDBObjectStore instance was created for the deleted store in this
     // transaction. This happens if IDBDatabase.deleteObjectStore() is called
@@ -312,7 +312,7 @@ void IDBTransaction::IndexDeleted(IDBIndex* index) {
   DCHECK(object_store_map_.Contains(object_store->name()))
       << "An index was deleted without accessing its object store";
 
-  const auto& object_store_iterator = old_store_metadata_.Find(object_store);
+  const auto& object_store_iterator = old_store_metadata_.find(object_store);
   if (object_store_iterator == old_store_metadata_.end()) {
     // The index's object store was created in this transaction, so this
     // index was also created (and deleted) in this transaction, and will

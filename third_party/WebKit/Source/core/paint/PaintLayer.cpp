@@ -3196,7 +3196,7 @@ void PaintLayer::ComputeSelfHitTestRects(LayerHitTestRects& rects) const {
 
       rects.Set(this, rect);
       if (const PaintLayer* parent_layer = Parent()) {
-        LayerHitTestRects::iterator iter = rects.Find(parent_layer);
+        LayerHitTestRects::iterator iter = rects.find(parent_layer);
         if (iter == rects.end()) {
           rects.insert(parent_layer, Vector<LayoutRect>())
               .stored_value->value.push_back(PhysicalBoundingBox(parent_layer));

@@ -924,7 +924,7 @@ void USBDevice::OnConnectionError() {
 }
 
 bool USBDevice::MarkRequestComplete(ScriptPromiseResolver* resolver) {
-  auto request_entry = device_requests_.Find(resolver);
+  auto request_entry = device_requests_.find(resolver);
   if (request_entry == device_requests_.end())
     return false;
   device_requests_.erase(request_entry);

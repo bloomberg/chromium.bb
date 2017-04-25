@@ -532,10 +532,10 @@ bool PointerEventManager::GetPointerCaptureState(
     EventTarget** pending_pointer_capture_target) {
   PointerCapturingMap::const_iterator it;
 
-  it = pointer_capture_target_.Find(pointer_id);
+  it = pointer_capture_target_.find(pointer_id);
   EventTarget* pointer_capture_target_temp =
       (it != pointer_capture_target_.end()) ? it->value : nullptr;
-  it = pending_pointer_capture_target_.Find(pointer_id);
+  it = pending_pointer_capture_target_.find(pointer_id);
   EventTarget* pending_pointercapture_target_temp =
       (it != pending_pointer_capture_target_.end()) ? it->value : nullptr;
 
@@ -556,7 +556,7 @@ EventTarget* PointerEventManager::ProcessCaptureAndPositionOfPointerEvent(
   ProcessPendingPointerCapture(pointer_event);
 
   PointerCapturingMap::const_iterator it =
-      pointer_capture_target_.Find(pointer_event->pointerId());
+      pointer_capture_target_.find(pointer_event->pointerId());
   if (EventTarget* pointercapture_target =
           (it != pointer_capture_target_.end()) ? it->value : nullptr)
     hit_test_target = pointercapture_target;

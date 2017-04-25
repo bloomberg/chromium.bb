@@ -86,7 +86,7 @@ void WorkerEventQueue::Close() {
 }
 
 bool WorkerEventQueue::RemoveEvent(Event* event) {
-  auto found = pending_events_.Find(event);
+  auto found = pending_events_.find(event);
   if (found == pending_events_.end())
     return false;
   pending_events_.erase(found);

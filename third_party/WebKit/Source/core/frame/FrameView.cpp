@@ -3802,7 +3802,7 @@ void FrameView::RemoveResizerArea(LayoutBox& resizer_box) {
   if (!resizer_areas_)
     return;
 
-  ResizerAreaSet::iterator it = resizer_areas_->Find(&resizer_box);
+  ResizerAreaSet::iterator it = resizer_areas_->find(&resizer_box);
   if (it != resizer_areas_->end())
     resizer_areas_->erase(it);
 }

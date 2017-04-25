@@ -203,7 +203,7 @@ const QualifiedName* AnimationInputHelpers::KeyframeAttributeToSVGAttribute(
   String unprefixed_property = RemoveSVGPrefix(property);
   QualifiedName attribute_name = SvgAttributeName(unprefixed_property);
   const AttributeNameMap& supported_attributes = GetSupportedAttributes();
-  auto iter = supported_attributes.Find(attribute_name);
+  auto iter = supported_attributes.find(attribute_name);
   if (iter == supported_attributes.end() ||
       !svg_element.PropertyFromAttribute(*iter->value))
     return nullptr;

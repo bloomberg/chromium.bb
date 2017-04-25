@@ -141,7 +141,7 @@ class FileReader::ThrottlingController final
   }
 
   FinishReaderType RemoveReader(FileReader* reader) {
-    FileReaderHashSet::const_iterator hash_iter = running_readers_.Find(reader);
+    FileReaderHashSet::const_iterator hash_iter = running_readers_.find(reader);
     if (hash_iter != running_readers_.end()) {
       running_readers_.erase(hash_iter);
       return kRunPendingReaders;

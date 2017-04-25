@@ -189,7 +189,7 @@ unsigned NthIndexData::NthIndex(Element& element) const {
   unsigned index = 0;
   for (Element *sibling = &element; sibling;
        sibling = ElementTraversal::PreviousSibling(*sibling), index++) {
-    auto it = element_index_map_.Find(sibling);
+    auto it = element_index_map_.find(sibling);
     if (it != element_index_map_.end())
       return it->value + index;
   }
@@ -204,7 +204,7 @@ unsigned NthIndexData::NthOfTypeIndex(Element& element) const {
        sibling = ElementTraversal::PreviousSibling(
            *sibling, HasTagName(element.TagQName())),
                index++) {
-    auto it = element_index_map_.Find(sibling);
+    auto it = element_index_map_.find(sibling);
     if (it != element_index_map_.end())
       return it->value + index;
   }

@@ -40,7 +40,7 @@ OffscreenCanvasPlaceholder::~OffscreenCanvasPlaceholder() {
 
 OffscreenCanvasPlaceholder* OffscreenCanvasPlaceholder::GetPlaceholderById(
     unsigned placeholder_id) {
-  PlaceholderIdMap::iterator it = placeholderRegistry().Find(placeholder_id);
+  PlaceholderIdMap::iterator it = placeholderRegistry().find(placeholder_id);
   if (it == placeholderRegistry().end())
     return nullptr;
   return it->value;
@@ -56,7 +56,7 @@ void OffscreenCanvasPlaceholder::RegisterPlaceholder(unsigned placeholder_id) {
 void OffscreenCanvasPlaceholder::UnregisterPlaceholder() {
   if (!IsPlaceholderRegistered())
     return;
-  DCHECK(placeholderRegistry().Find(placeholder_id_)->value == this);
+  DCHECK(placeholderRegistry().find(placeholder_id_)->value == this);
   placeholderRegistry().erase(placeholder_id_);
   placeholder_id_ = kNoPlaceholderId;
 }

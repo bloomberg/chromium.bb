@@ -53,7 +53,7 @@ void QuotaTracker::GetDatabaseSizeAndSpaceAvailableToOrigin(
     MutexLocker lock_data(data_guard_);
     DCHECK(database_sizes_.Contains(origin->ToRawString()));
     HashMap<String, SizeMap>::const_iterator it =
-        database_sizes_.Find(origin->ToRawString());
+        database_sizes_.find(origin->ToRawString());
     DCHECK(it->value.Contains(database_name));
     *database_size = it->value.at(database_name);
 

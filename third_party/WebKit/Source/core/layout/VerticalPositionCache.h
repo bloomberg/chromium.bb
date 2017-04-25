@@ -48,7 +48,7 @@ class VerticalPositionCache {
         baseline_type == kAlphabeticBaseline ? alphabetic_positions_
                                              : ideographic_positions_;
     const HashMap<LineLayoutItem, int>::const_iterator it =
-        map_to_check.Find(layout_object);
+        map_to_check.find(layout_object);
     if (it == map_to_check.end())
       return kPositionUndefined;
     return it->value;

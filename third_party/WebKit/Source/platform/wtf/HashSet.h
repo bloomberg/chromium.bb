@@ -91,7 +91,7 @@ class HashSet {
   iterator begin() const;
   iterator end() const;
 
-  iterator Find(ValuePeekInType) const;
+  iterator find(ValuePeekInType) const;
   bool Contains(ValuePeekInType) const;
 
   // An alternate version of find() that finds the object by hashing and
@@ -214,9 +214,9 @@ inline typename HashSet<T, U, V, W>::iterator HashSet<T, U, V, W>::end() const {
 }
 
 template <typename T, typename U, typename V, typename W>
-inline typename HashSet<T, U, V, W>::iterator HashSet<T, U, V, W>::Find(
+inline typename HashSet<T, U, V, W>::iterator HashSet<T, U, V, W>::find(
     ValuePeekInType value) const {
-  return impl_.Find(value);
+  return impl_.find(value);
 }
 
 template <typename Value,
@@ -278,7 +278,7 @@ inline void HashSet<T, U, V, W>::erase(iterator it) {
 
 template <typename T, typename U, typename V, typename W>
 inline void HashSet<T, U, V, W>::erase(ValuePeekInType value) {
-  erase(Find(value));
+  erase(find(value));
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -299,7 +299,7 @@ inline auto HashSet<T, U, V, W>::Take(iterator it) -> ValueType {
 
 template <typename T, typename U, typename V, typename W>
 inline auto HashSet<T, U, V, W>::Take(ValuePeekInType value) -> ValueType {
-  return Take(Find(value));
+  return Take(find(value));
 }
 
 template <typename T, typename U, typename V, typename W>

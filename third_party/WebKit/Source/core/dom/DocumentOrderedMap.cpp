@@ -95,7 +95,7 @@ void DocumentOrderedMap::Remove(const AtomicString& key, Element* element) {
   DCHECK(key);
   DCHECK(element);
 
-  Map::iterator it = map_.Find(key);
+  Map::iterator it = map_.find(key);
   if (it == map_.end())
     return;
 
@@ -161,7 +161,7 @@ const HeapVector<Member<Element>>& DocumentOrderedMap::GetAllElementsById(
   DEFINE_STATIC_LOCAL(HeapVector<Member<Element>>, empty_vector,
                       (new HeapVector<Member<Element>>));
 
-  Map::iterator it = map_.Find(key);
+  Map::iterator it = map_.find(key);
   if (it == map_.end())
     return empty_vector;
 

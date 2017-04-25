@@ -1326,7 +1326,7 @@ static bool ParseGridTemplateAreasRow(const String& grid_row_names,
       look_ahead_column++;
 
     NamedGridAreaMap::iterator grid_area_it =
-        grid_area_map.Find(grid_area_name);
+        grid_area_map.find(grid_area_name);
     if (grid_area_it == grid_area_map.end()) {
       grid_area_map.insert(grid_area_name,
                            GridArea(GridSpan::TranslatedDefiniteGridSpan(

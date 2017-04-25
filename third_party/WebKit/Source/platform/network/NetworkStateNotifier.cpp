@@ -235,7 +235,7 @@ NetworkStateNotifier::LockAndFindObserverList(
     ObserverListMap& map,
     PassRefPtr<WebTaskRunner> task_runner) {
   MutexLocker locker(mutex_);
-  ObserverListMap::iterator it = map.Find(task_runner);
+  ObserverListMap::iterator it = map.find(task_runner);
   return it == map.end() ? nullptr : it->value.get();
 }
 

@@ -62,7 +62,7 @@ const CachedMatchedProperties* MatchedPropertiesCache::Find(
     const MatchedPropertiesVector& properties) {
   DCHECK(hash);
 
-  Cache::iterator it = cache_.Find(hash);
+  Cache::iterator it = cache_.find(hash);
   if (it == cache_.end())
     return nullptr;
   CachedMatchedProperties* cache_item = it->value.Get();

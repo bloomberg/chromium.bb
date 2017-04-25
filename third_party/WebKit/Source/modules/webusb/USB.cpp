@@ -154,7 +154,7 @@ USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
 
 void USB::OnGetDevices(ScriptPromiseResolver* resolver,
                        Vector<UsbDeviceInfoPtr> device_infos) {
-  auto request_entry = device_manager_requests_.Find(resolver);
+  auto request_entry = device_manager_requests_.find(resolver);
   if (request_entry == device_manager_requests_.end())
     return;
   device_manager_requests_.erase(request_entry);
@@ -168,7 +168,7 @@ void USB::OnGetDevices(ScriptPromiseResolver* resolver,
 
 void USB::OnGetPermission(ScriptPromiseResolver* resolver,
                           UsbDeviceInfoPtr device_info) {
-  auto request_entry = chooser_service_requests_.Find(resolver);
+  auto request_entry = chooser_service_requests_.find(resolver);
   if (request_entry == chooser_service_requests_.end())
     return;
   chooser_service_requests_.erase(request_entry);

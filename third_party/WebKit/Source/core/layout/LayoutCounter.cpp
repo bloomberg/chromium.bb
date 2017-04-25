@@ -521,7 +521,7 @@ static void DestroyCounterNodeWithoutMapRemoval(const AtomicString& identifier,
 
 void LayoutCounter::DestroyCounterNodes(LayoutObject& owner) {
   CounterMaps& maps = GetCounterMaps();
-  CounterMaps::iterator maps_iterator = maps.Find(&owner);
+  CounterMaps::iterator maps_iterator = maps.find(&owner);
   if (maps_iterator == maps.end())
     return;
   CounterMap* map = maps_iterator->value.get();
@@ -538,7 +538,7 @@ void LayoutCounter::DestroyCounterNode(LayoutObject& owner,
   CounterMap* map = GetCounterMaps().at(&owner);
   if (!map)
     return;
-  CounterMap::iterator map_iterator = map->Find(identifier);
+  CounterMap::iterator map_iterator = map->find(identifier);
   if (map_iterator == map->end())
     return;
   DestroyCounterNodeWithoutMapRemoval(identifier, map_iterator->value.Get());
@@ -650,7 +650,7 @@ void LayoutCounter::LayoutObjectStyleChanged(LayoutObject& layout_object,
                new_counter_directives->begin();
            it != new_map_end; ++it) {
         CounterDirectiveMap::const_iterator old_map_it =
-            old_counter_directives->Find(it->key);
+            old_counter_directives->find(it->key);
         if (old_map_it != old_map_end) {
           if (old_map_it->value == it->value)
             continue;

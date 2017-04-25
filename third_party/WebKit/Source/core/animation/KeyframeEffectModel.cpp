@@ -191,7 +191,7 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
       zero_offset_easing = &keyframe->Easing();
 
     for (const PropertyHandle& property : keyframe->Properties()) {
-      KeyframeGroupMap::iterator group_iter = keyframe_groups_->Find(property);
+      KeyframeGroupMap::iterator group_iter = keyframe_groups_->find(property);
       PropertySpecificKeyframeGroup* group;
       if (group_iter == keyframe_groups_->end()) {
         group = keyframe_groups_

@@ -513,7 +513,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     KeyframeEffectReadOnly* effect =
         ToKeyframeEffectReadOnly(animation->effect());
     if (effect->HasActiveAnimationsOnCompositor(property) &&
-        pending_update_.NewTransitions().Find(property) !=
+        pending_update_.NewTransitions().find(property) !=
             pending_update_.NewTransitions().end() &&
         !animation->Limited()) {
       retargeted_compositor_transitions.insert(
@@ -649,7 +649,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   const RunningTransition* interrupted_transition = nullptr;
   if (state.active_transitions) {
     TransitionMap::const_iterator active_transition_iter =
-        state.active_transitions->Find(property);
+        state.active_transitions->find(property);
     if (active_transition_iter != state.active_transitions->end()) {
       const RunningTransition* running_transition =
           &active_transition_iter->value;

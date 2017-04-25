@@ -149,7 +149,7 @@ PassRefPtr<Hyphenation> Hyphenation::PlatformGetHyphenation(
   hyphenation.Clear();
 
   DEFINE_STATIC_LOCAL(LocaleMap, locale_fallback, (CreateLocaleFallbackMap()));
-  const auto& it = locale_fallback.Find(locale);
+  const auto& it = locale_fallback.find(locale);
   if (it != locale_fallback.end())
     return LayoutLocale::Get(it->value)->GetHyphenation();
 

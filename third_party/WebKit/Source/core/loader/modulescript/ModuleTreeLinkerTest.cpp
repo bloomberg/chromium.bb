@@ -96,7 +96,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   // Get AncestorList specified in |Modulator::FetchTreeInternal()| call for
   // request matching |url|.
   AncestorList GetAncestorListForTreeFetch(const KURL& url) const {
-    const auto& it = pending_tree_ancestor_list_.Find(url);
+    const auto& it = pending_tree_ancestor_list_.find(url);
     if (it == pending_tree_ancestor_list_.end())
       return AncestorList();
     return it->value;
@@ -104,7 +104,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
 
   // Resolve |Modulator::FetchTreeInternal()| for given url.
   void ResolveDependentTreeFetch(const KURL& url, ResolveResult result) {
-    const auto& it = pending_tree_client_map_.Find(url);
+    const auto& it = pending_tree_client_map_.find(url);
     EXPECT_NE(pending_tree_client_map_.end(), it);
     auto pending_client = it->value;
     EXPECT_TRUE(pending_client);
@@ -159,7 +159,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   }
 
   ModuleScript* GetFetchedModuleScript(const KURL& url) override {
-    const auto& it = module_map_.Find(url);
+    const auto& it = module_map_.find(url);
     if (it == module_map_.end())
       return nullptr;
 
@@ -178,7 +178,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
 
   Vector<String> ModuleRequestsFromScriptModule(
       ScriptModule script_module) override {
-    const auto& it = dependency_module_requests_map_.Find(script_module);
+    const auto& it = dependency_module_requests_map_.find(script_module);
     if (it == dependency_module_requests_map_.end())
       return Vector<String>();
 

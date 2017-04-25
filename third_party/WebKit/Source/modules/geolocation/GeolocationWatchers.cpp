@@ -24,7 +24,7 @@ bool GeolocationWatchers::Add(int id, GeoNotifier* notifier) {
 
 GeoNotifier* GeolocationWatchers::Find(int id) {
   DCHECK_GT(id, 0);
-  IdToNotifierMap::iterator iter = id_to_notifier_map_.Find(id);
+  IdToNotifierMap::iterator iter = id_to_notifier_map_.find(id);
   if (iter == id_to_notifier_map_.end())
     return 0;
   return iter->value;
@@ -32,7 +32,7 @@ GeoNotifier* GeolocationWatchers::Find(int id) {
 
 void GeolocationWatchers::Remove(int id) {
   DCHECK_GT(id, 0);
-  IdToNotifierMap::iterator iter = id_to_notifier_map_.Find(id);
+  IdToNotifierMap::iterator iter = id_to_notifier_map_.find(id);
   if (iter == id_to_notifier_map_.end())
     return;
   notifier_to_id_map_.erase(iter->value);
@@ -40,7 +40,7 @@ void GeolocationWatchers::Remove(int id) {
 }
 
 void GeolocationWatchers::Remove(GeoNotifier* notifier) {
-  NotifierToIdMap::iterator iter = notifier_to_id_map_.Find(notifier);
+  NotifierToIdMap::iterator iter = notifier_to_id_map_.find(notifier);
   if (iter == notifier_to_id_map_.end())
     return;
   id_to_notifier_map_.erase(iter->value);

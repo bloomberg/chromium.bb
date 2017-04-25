@@ -57,13 +57,13 @@ template <class TargetClass>
 class PLATFORM_EXPORT RasterInvalidationTrackingMap {
  public:
   void AsJSON(TargetClass* key, JSONObject* json) {
-    auto it = invalidation_tracking_map_.Find(key);
+    auto it = invalidation_tracking_map_.find(key);
     if (it != invalidation_tracking_map_.end())
       it->value.AsJSON(json);
   }
 
   void Remove(TargetClass* key) {
-    auto it = invalidation_tracking_map_.Find(key);
+    auto it = invalidation_tracking_map_.find(key);
     if (it != invalidation_tracking_map_.end())
       invalidation_tracking_map_.erase(it);
   }
@@ -74,7 +74,7 @@ class PLATFORM_EXPORT RasterInvalidationTrackingMap {
   }
 
   RasterInvalidationTracking* Find(TargetClass* key) {
-    auto it = invalidation_tracking_map_.Find(key);
+    auto it = invalidation_tracking_map_.find(key);
     if (it == invalidation_tracking_map_.end())
       return nullptr;
     return &it->value;

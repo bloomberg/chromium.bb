@@ -130,7 +130,7 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* script_state,
     return promise;
   }
 
-  auto iter = availability_callbacks_.Find(id);
+  auto iter = availability_callbacks_.find(id);
   if (iter == availability_callbacks_.end()) {
     resolver->Reject(DOMException::Create(
         kNotFoundError, "A callback with the given id is not found."));
@@ -222,7 +222,7 @@ bool RemotePlayback::HasPendingActivity() const {
 
 void RemotePlayback::NotifyInitialAvailability(int callback_id) {
   // May not find the callback if the website cancels it fast enough.
-  auto iter = availability_callbacks_.Find(callback_id);
+  auto iter = availability_callbacks_.find(callback_id);
   if (iter == availability_callbacks_.end())
     return;
 

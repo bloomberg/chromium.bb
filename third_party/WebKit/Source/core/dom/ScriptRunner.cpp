@@ -200,7 +200,7 @@ void ScriptRunner::MovePendingScript(Document& old_document,
 
 void ScriptRunner::MovePendingScript(ScriptRunner* new_runner,
                                      ScriptLoader* script_loader) {
-  auto it = pending_async_scripts_.Find(script_loader);
+  auto it = pending_async_scripts_.find(script_loader);
   if (it != pending_async_scripts_.end()) {
     new_runner->QueueScriptForExecution(script_loader, kAsync);
     pending_async_scripts_.erase(it);

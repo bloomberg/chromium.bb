@@ -268,7 +268,7 @@ bool ParsedContentType::Parse(const String& content_type) {
     // and hence we don't need to care about non-ascii lowercasing.
     DCHECK(key.ToString().ContainsOnlyASCII());
     String key_string = key.ToString().DeprecatedLower();
-    if (mode_ == Mode::kStrict && map.Find(key_string) != map.end()) {
+    if (mode_ == Mode::kStrict && map.find(key_string) != map.end()) {
       DVLOG(1) << "Parameter " << key_string << " is defined multiple times.";
       return false;
     }

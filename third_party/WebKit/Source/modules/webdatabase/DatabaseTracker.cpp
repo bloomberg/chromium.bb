@@ -128,7 +128,7 @@ void DatabaseTracker::RemoveOpenDatabase(Database* database) {
     if (!database_set)
       return;
 
-    DatabaseSet::iterator found = database_set->Find(database);
+    DatabaseSet::iterator found = database_set->find(database);
     if (found == database_set->end())
       return;
 
@@ -230,7 +230,7 @@ void DatabaseTracker::CloseOneDatabaseImmediately(const String& origin_string,
     if (!database_set)
       return;
 
-    DatabaseSet::iterator found = database_set->Find(database);
+    DatabaseSet::iterator found = database_set->find(database);
     if (found == database_set->end())
       return;
   }

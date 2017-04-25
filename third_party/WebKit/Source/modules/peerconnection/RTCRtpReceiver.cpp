@@ -42,7 +42,7 @@ void RTCRtpReceiver::UpdateSourcesIfNeeded() {
     }
     DCHECK_EQ(web_contributing_source->SourceType(),
               WebRTCRtpContributingSourceType::CSRC);
-    auto it = contributing_sources_by_source_id_.Find(
+    auto it = contributing_sources_by_source_id_.find(
         web_contributing_source->Source());
     if (it == contributing_sources_by_source_id_.end()) {
       RTCRtpContributingSource* contributing_source =

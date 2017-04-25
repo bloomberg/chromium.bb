@@ -464,7 +464,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
   const ComputedStyle* computed_style = canvas()->EnsureComputedStyle();
   if (computed_style) {
     HashMap<String, Font>::iterator i =
-        fonts_resolved_using_current_style_.Find(new_font);
+        fonts_resolved_using_current_style_.find(new_font);
     if (i != fonts_resolved_using_current_style_.end()) {
       DCHECK(font_lru_list_.Contains(new_font));
       font_lru_list_.erase(new_font);

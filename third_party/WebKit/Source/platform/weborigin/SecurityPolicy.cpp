@@ -232,7 +232,7 @@ void SecurityPolicy::RemoveOriginAccessWhitelistEntry(
 
   String source_string = source_origin.ToString();
   OriginAccessMap& map = GetOriginAccessMap();
-  OriginAccessMap::iterator it = map.Find(source_string);
+  OriginAccessMap::iterator it = map.find(source_string);
   if (it == map.end())
     return;
 

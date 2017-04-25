@@ -420,7 +420,7 @@ void OfflineAudioContext::ResolveSuspendOnMainThread(size_t frame) {
     // |frame| must exist in the map.
     DCHECK(scheduled_suspends_.Contains(frame));
 
-    SuspendMap::iterator it = scheduled_suspends_.Find(frame);
+    SuspendMap::iterator it = scheduled_suspends_.find(frame);
     it->value->Resolve();
 
     scheduled_suspends_.erase(it);

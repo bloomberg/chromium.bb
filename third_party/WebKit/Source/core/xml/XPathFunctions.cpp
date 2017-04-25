@@ -757,7 +757,7 @@ Function* CreateFunction(const String& name,
     CreateFunctionMap();
 
   HashMap<String, FunctionRec>::iterator function_map_iter =
-      g_function_map->Find(name);
+      g_function_map->find(name);
   FunctionRec* function_rec = nullptr;
 
   if (function_map_iter == g_function_map->end() ||

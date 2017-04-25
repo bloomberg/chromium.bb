@@ -115,7 +115,7 @@ void SVGElementProxy::RemoveClient(SVGResourceClient* client) {
       document_->RemoveClient(client);
     return;
   }
-  auto entry = clients_.Find(client);
+  auto entry = clients_.find(client);
   if (entry == clients_.end())
     return;
   IdObserver* observer = entry->value;

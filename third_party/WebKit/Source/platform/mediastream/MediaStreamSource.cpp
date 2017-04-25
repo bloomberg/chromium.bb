@@ -99,7 +99,7 @@ bool MediaStreamSource::RemoveAudioConsumer(
     AudioDestinationConsumer* consumer) {
   ASSERT(requires_consumer_);
   MutexLocker locker(audio_consumers_lock_);
-  auto it = audio_consumers_.Find(consumer);
+  auto it = audio_consumers_.find(consumer);
   if (it == audio_consumers_.end())
     return false;
   audio_consumers_.erase(it);

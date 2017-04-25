@@ -151,7 +151,7 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::EnsureIsolatedWorld(
 #endif
 
   WorldMap& map = GetWorldMap();
-  auto it = map.Find(world_id);
+  auto it = map.find(world_id);
   if (it != map.end()) {
     RefPtr<DOMWrapperWorld> world = it->value;
     DCHECK(world->IsIsolatedWorld());
@@ -172,7 +172,7 @@ static IsolatedWorldSecurityOriginMap& IsolatedWorldSecurityOrigins() {
 SecurityOrigin* DOMWrapperWorld::IsolatedWorldSecurityOrigin() {
   DCHECK(this->IsIsolatedWorld());
   IsolatedWorldSecurityOriginMap& origins = IsolatedWorldSecurityOrigins();
-  IsolatedWorldSecurityOriginMap::iterator it = origins.Find(GetWorldId());
+  IsolatedWorldSecurityOriginMap::iterator it = origins.find(GetWorldId());
   return it == origins.end() ? 0 : it->value.Get();
 }
 
@@ -222,7 +222,7 @@ bool DOMWrapperWorld::IsolatedWorldHasContentSecurityPolicy() {
   IsolatedWorldContentSecurityPolicyMap& policies =
       IsolatedWorldContentSecurityPolicies();
   IsolatedWorldContentSecurityPolicyMap::iterator it =
-      policies.Find(GetWorldId());
+      policies.find(GetWorldId());
   return it == policies.end() ? false : it->value;
 }
 

@@ -16,7 +16,7 @@ void ScrollCustomizationCallbacks::SetDistributeScroll(
 
 ScrollStateCallback* ScrollCustomizationCallbacks::GetDistributeScroll(
     Element* element) {
-  auto it = distribute_scroll_callbacks_.Find(element);
+  auto it = distribute_scroll_callbacks_.find(element);
   if (it == distribute_scroll_callbacks_.end())
     return nullptr;
   return it->value.Get();
@@ -34,7 +34,7 @@ void ScrollCustomizationCallbacks::RemoveApplyScroll(Element* element) {
 
 ScrollStateCallback* ScrollCustomizationCallbacks::GetApplyScroll(
     Element* element) {
-  auto it = apply_scroll_callbacks_.Find(element);
+  auto it = apply_scroll_callbacks_.find(element);
   if (it == apply_scroll_callbacks_.end())
     return nullptr;
   return it->value.Get();

@@ -214,7 +214,7 @@ ShapeCache* FontCache::GetShapeCache(const FallbackListCompositeKey& key) {
     g_fallback_list_shaper_cache = new FallbackListShaperCache;
 
   FallbackListShaperCache::iterator it =
-      g_fallback_list_shaper_cache->Find(key);
+      g_fallback_list_shaper_cache->find(key);
   ShapeCache* result = nullptr;
   if (it == g_fallback_list_shaper_cache->end()) {
     result = new ShapeCache();
@@ -248,7 +248,7 @@ PassRefPtr<OpenTypeVerticalData> FontCache::GetVerticalData(
     const FontPlatformData& platform_data) {
   FontVerticalDataCache& font_vertical_data_cache =
       FontVerticalDataCacheInstance();
-  FontVerticalDataCache::iterator result = font_vertical_data_cache.Find(key);
+  FontVerticalDataCache::iterator result = font_vertical_data_cache.find(key);
   if (result != font_vertical_data_cache.end())
     return result.Get()->value;
 

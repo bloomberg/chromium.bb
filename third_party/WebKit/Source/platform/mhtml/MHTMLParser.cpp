@@ -109,7 +109,7 @@ static KeyValueMap RetrieveKeyValuePairs(SharedBufferChunkReader* buffer) {
     }
     // New key/value, store the previous one if any.
     if (!key.IsEmpty()) {
-      if (key_value_pairs.Find(key) != key_value_pairs.end())
+      if (key_value_pairs.find(key) != key_value_pairs.end())
         DVLOG(1) << "Key duplicate found in MIME header. Key is '" << key
                  << "', previous value replaced.";
       key_value_pairs.insert(key, value.ToString().StripWhiteSpace());
@@ -135,7 +135,7 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
   MIMEHeader* mime_header = MIMEHeader::Create();
   KeyValueMap key_value_pairs = RetrieveKeyValuePairs(buffer);
   KeyValueMap::iterator mime_parameters_iterator =
-      key_value_pairs.Find("content-type");
+      key_value_pairs.find("content-type");
   if (mime_parameters_iterator != key_value_pairs.end()) {
     ParsedContentType parsed_content_type(mime_parameters_iterator->value,
                                           ParsedContentType::Mode::kRelaxed);
@@ -158,17 +158,17 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
     }
   }
 
-  mime_parameters_iterator = key_value_pairs.Find("content-transfer-encoding");
+  mime_parameters_iterator = key_value_pairs.find("content-transfer-encoding");
   if (mime_parameters_iterator != key_value_pairs.end())
     mime_header->content_transfer_encoding_ =
         ParseContentTransferEncoding(mime_parameters_iterator->value);
 
-  mime_parameters_iterator = key_value_pairs.Find("content-location");
+  mime_parameters_iterator = key_value_pairs.find("content-location");
   if (mime_parameters_iterator != key_value_pairs.end())
     mime_header->content_location_ = mime_parameters_iterator->value;
 
   // See rfc2557 - section 8.3 - Use of the Content-ID header and CID URLs.
-  mime_parameters_iterator = key_value_pairs.Find("content-id");
+  mime_parameters_iterator = key_value_pairs.find("content-id");
   if (mime_parameters_iterator != key_value_pairs.end())
     mime_header->content_id_ = mime_parameters_iterator->value;
 

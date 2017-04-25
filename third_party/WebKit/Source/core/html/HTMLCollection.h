@@ -124,14 +124,14 @@ class CORE_EXPORT HTMLCollection
 
     const HeapVector<Member<Element>>* GetElementsById(
         const AtomicString& id) const {
-      auto it = id_cache_.Find(id.Impl());
+      auto it = id_cache_.find(id.Impl());
       if (it == id_cache_.end())
         return nullptr;
       return &it->value;
     }
     const HeapVector<Member<Element>>* GetElementsByName(
         const AtomicString& name) const {
-      auto it = name_cache_.Find(name.Impl());
+      auto it = name_cache_.find(name.Impl());
       if (it == name_cache_.end())
         return nullptr;
       return &it->value;

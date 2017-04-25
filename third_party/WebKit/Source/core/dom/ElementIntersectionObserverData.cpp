@@ -15,7 +15,7 @@ ElementIntersectionObserverData::ElementIntersectionObserverData() {}
 
 IntersectionObservation* ElementIntersectionObserverData::GetObservationFor(
     IntersectionObserver& observer) {
-  auto i = intersection_observations_.Find(&observer);
+  auto i = intersection_observations_.find(&observer);
   if (i == intersection_observations_.end())
     return nullptr;
   return i->value;

@@ -83,7 +83,7 @@ UserTiming::UserTiming(PerformanceBase& performance)
 
 static void InsertPerformanceEntry(PerformanceEntryMap& performance_entry_map,
                                    PerformanceEntry& entry) {
-  PerformanceEntryMap::iterator it = performance_entry_map.Find(entry.name());
+  PerformanceEntryMap::iterator it = performance_entry_map.find(entry.name());
   if (it != performance_entry_map.end()) {
     it->value.push_back(&entry);
   } else {
@@ -224,7 +224,7 @@ static PerformanceEntryVector GetEntrySequenceByName(
     const String& name) {
   PerformanceEntryVector entries;
 
-  PerformanceEntryMap::const_iterator it = performance_entry_map.Find(name);
+  PerformanceEntryMap::const_iterator it = performance_entry_map.find(name);
   if (it != performance_entry_map.end())
     entries.AppendVector(it->value);
 

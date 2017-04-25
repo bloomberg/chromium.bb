@@ -49,7 +49,7 @@ V8DOMActivityLogger* V8DOMActivityLogger::ActivityLogger(
   if (world_id) {
     DOMActivityLoggerMapForIsolatedWorld& loggers =
         DomActivityLoggersForIsolatedWorld();
-    DOMActivityLoggerMapForIsolatedWorld::iterator it = loggers.Find(world_id);
+    DOMActivityLoggerMapForIsolatedWorld::iterator it = loggers.find(world_id);
     return it == loggers.end() ? 0 : it->value.get();
   }
 
@@ -57,7 +57,7 @@ V8DOMActivityLogger* V8DOMActivityLogger::ActivityLogger(
     return 0;
 
   DOMActivityLoggerMapForMainWorld& loggers = DomActivityLoggersForMainWorld();
-  DOMActivityLoggerMapForMainWorld::iterator it = loggers.Find(extension_id);
+  DOMActivityLoggerMapForMainWorld::iterator it = loggers.find(extension_id);
   return it == loggers.end() ? 0 : it->value.get();
 }
 

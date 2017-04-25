@@ -44,7 +44,7 @@ void ResizeObserver::unobserve(Element* target) {
   auto observer_map = target ? target->ResizeObserverData() : nullptr;
   if (!observer_map)
     return;
-  auto observation = observer_map->Find(this);
+  auto observation = observer_map->find(this);
   if (observation != observer_map->end()) {
     observations_.erase((*observation).value);
     observer_map->erase(observation);

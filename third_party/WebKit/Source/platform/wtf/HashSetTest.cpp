@@ -102,7 +102,7 @@ TEST(HashSetTest, HashSetOwnPtr) {
 
   EXPECT_FALSE(deleted1);
   EXPECT_EQ(1UL, set.size());
-  OwnPtrSet::iterator it1 = set.Find(ptr1);
+  OwnPtrSet::iterator it1 = set.find(ptr1);
   EXPECT_NE(set.end(), it1);
   EXPECT_EQ(ptr1, (*it1).get());
 
@@ -115,7 +115,7 @@ TEST(HashSetTest, HashSetOwnPtr) {
 
   EXPECT_FALSE(deleted2);
   EXPECT_EQ(2UL, set.size());
-  OwnPtrSet::iterator it2 = set.Find(ptr2);
+  OwnPtrSet::iterator it2 = set.find(ptr2);
   EXPECT_NE(set.end(), it2);
   EXPECT_EQ(ptr2, (*it2).get());
 
@@ -190,9 +190,9 @@ TEST(HashSetTest, HashSetRefPtr) {
   DummyRefCounted* raw_ptr = ptr.Get();
 
   EXPECT_TRUE(set.Contains(raw_ptr));
-  EXPECT_NE(set.end(), set.Find(raw_ptr));
+  EXPECT_NE(set.end(), set.find(raw_ptr));
   EXPECT_TRUE(set.Contains(ptr));
-  EXPECT_NE(set.end(), set.Find(ptr));
+  EXPECT_NE(set.end(), set.find(ptr));
 
   ptr.Clear();
   EXPECT_FALSE(is_deleted);
@@ -355,11 +355,11 @@ TEST(HashSetTest, MoveOnlyValue) {
     EXPECT_EQ(1, add_result.stored_value->Value());
     EXPECT_EQ(1, add_result.stored_value->Id());
   }
-  auto iter = set.Find(MoveOnly(1));
+  auto iter = set.find(MoveOnly(1));
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(1, iter->Value());
 
-  iter = set.Find(MoveOnly(2));
+  iter = set.find(MoveOnly(2));
   EXPECT_TRUE(iter == set.end());
 
   for (int i = 2; i < 32; ++i) {
@@ -369,12 +369,12 @@ TEST(HashSetTest, MoveOnlyValue) {
     EXPECT_EQ(i, add_result.stored_value->Id());
   }
 
-  iter = set.Find(MoveOnly(1));
+  iter = set.find(MoveOnly(1));
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(1, iter->Value());
   EXPECT_EQ(1, iter->Id());
 
-  iter = set.Find(MoveOnly(7));
+  iter = set.find(MoveOnly(7));
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(7, iter->Value());
   EXPECT_EQ(7, iter->Id());
@@ -388,13 +388,13 @@ TEST(HashSetTest, MoveOnlyValue) {
   }
 
   set.erase(MoveOnly(11));
-  iter = set.Find(MoveOnly(11));
+  iter = set.find(MoveOnly(11));
   EXPECT_TRUE(iter == set.end());
 
   MoveOnly thirteen(set.Take(MoveOnly(13)));
   EXPECT_EQ(13, thirteen.Value());
   EXPECT_EQ(13, thirteen.Id());
-  iter = set.Find(MoveOnly(13));
+  iter = set.find(MoveOnly(13));
   EXPECT_TRUE(iter == set.end());
 
   set.clear();
@@ -411,12 +411,12 @@ TEST(HashSetTest, UniquePtr) {
     EXPECT_EQ(one_pointer, add_result.stored_value->get());
     EXPECT_EQ(1, **add_result.stored_value);
   }
-  auto iter = set.Find(one_pointer);
+  auto iter = set.find(one_pointer);
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(one_pointer, iter->get());
 
   Pointer nonexistent(new int(42));
-  iter = set.Find(nonexistent.get());
+  iter = set.find(nonexistent.get());
   EXPECT_TRUE(iter == set.end());
 
   // Insert more to cause a rehash.
@@ -426,7 +426,7 @@ TEST(HashSetTest, UniquePtr) {
     EXPECT_EQ(i, **add_result.stored_value);
   }
 
-  iter = set.Find(one_pointer);
+  iter = set.find(one_pointer);
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(one_pointer, iter->get());
 
@@ -437,7 +437,7 @@ TEST(HashSetTest, UniquePtr) {
   Pointer empty(set.Take(nonexistent.get()));
   EXPECT_TRUE(!empty);
 
-  iter = set.Find(one_pointer);
+  iter = set.find(one_pointer);
   EXPECT_TRUE(iter == set.end());
 
   // Re-insert to the deleted slot.
