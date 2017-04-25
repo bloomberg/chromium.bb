@@ -17,7 +17,11 @@ namespace prerender {
 class PrerenderManager;
 }
 
-// Observer recording metrics related to prerender.
+// Observer responsible for recording First Contentful Paing metrics related to
+// Prerender.
+//
+// To record FCP metrics for non-Prerender loads, the
+// |NoStatePrefetchPageLoadMetricsObserver| is used.
 class PrerenderPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:

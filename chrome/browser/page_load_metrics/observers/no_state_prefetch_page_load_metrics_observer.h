@@ -17,12 +17,24 @@ namespace prerender {
 class PrerenderManager;
 }
 
-// Observer recording metrics related to NoStatePrefetch.
+// Observer responsible for recording First Contentful Paint metrics related to
+// NoStatePrefetch.
+//
+// This observer should be attached to all WebContents instances that are _not_
+// being prerendered. For prerendered page loads, analagous metrics are recorded
+// via |PrerenderPageLoadMetricsObserver|. This allows to compare FCP metrics
+// between three mechanisms: Prerender, NoStatePrefetch, Noop.
+//
+// To record the histograms the knowledge of this class is combined with
+// information from |PrerenderManager|:
+//   * the kind of prefetch, i.e.: prerender::Origin
+//   * whether the load was eligible for prefetch/prerender (also how long ago)
 class NoStatePrefetchPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
   // Returns a NoStatePrefetchPageLoadMetricsObserver, or nullptr if it is not
-  // needed.
+  // needed. Note: can return nullptr at startup, which is believed to be
+  // happening rarely.
   static std::unique_ptr<NoStatePrefetchPageLoadMetricsObserver> CreateIfNeeded(
       content::WebContents* web_contents);
 
