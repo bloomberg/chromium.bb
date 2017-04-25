@@ -11,6 +11,9 @@ namespace switches {
 // Allow users to specify a custom buffer size for debugging purpose.
 const char kAudioBufferSize[] = "audio-buffer-size";
 
+// Command line flag name to set the autoplay policy.
+const char kAutoplayPolicy[] = "autoplay-policy";
+
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
@@ -135,20 +138,24 @@ const char kForceVideoOverlays[] = "force-video-overlays";
 const char kMSEAudioBufferSizeLimit[] = "mse-audio-buffer-size-limit";
 const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
 
+namespace autoplay {
+
+// Autoplay policy to require a user gesture in ordor to play for cross origin
+// iframes.
+const char kCrossOriginUserGestureRequiredPolicy[] =
+    "cross-origin-user-gesture-required";
+
+// Autoplay policy that does not require any user gesture.
+const char kNoUserGestureRequiredPolicy[] = "no-user-gesture-required";
+
+// Autoplay policy to require a user gesture in order to play.
+const char kUserGestureRequiredPolicy[] = "user-gesture-required";
+
+}  // namespace autoplay
+
 }  // namespace switches
 
 namespace media {
-
-#if defined(OS_WIN)
-// Enables video decode acceleration using the D3D11 video decoder api.
-// This is completely insecure - DO NOT USE except for testing.
-const base::Feature kD3D11VideoDecoding{"D3D11VideoDecoding",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables H264 HW encode acceleration using Media Foundation for Windows.
-const base::Feature kMediaFoundationH264Encoding{
-    "MediaFoundationH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN)
 
 // Use new audio rendering mixer.
 const base::Feature kNewAudioRenderingMixingStrategy{
@@ -213,5 +220,16 @@ const base::Feature kMediaDrmPersistentLicense{
     "MediaDrmPersistentLicense", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #endif
+
+#if defined(OS_WIN)
+// Enables video decode acceleration using the D3D11 video decoder api.
+// This is completely insecure - DO NOT USE except for testing.
+const base::Feature kD3D11VideoDecoding{"D3D11VideoDecoding",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables H264 HW encode acceleration using Media Foundation for Windows.
+const base::Feature kMediaFoundationH264Encoding{
+    "MediaFoundationH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN)
 
 }  // namespace media

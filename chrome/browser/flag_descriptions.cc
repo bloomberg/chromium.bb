@@ -660,17 +660,6 @@ const char kGestureRequirementForMediaPlaybackDescription[] =
     "User gesture requirement for playing media elements. Disabling this "
     "will allow autoplay to work.";
 
-#if !defined(OS_ANDROID)
-
-const char kCrossOriginMediaPlaybackRequiresUserGestureName[] =
-    "Media playback in cross-origin iframes requires user gesture";
-
-const char kCrossOriginMediaPlaybackRequiresUserGestureDescription[] =
-    "Playing media elements in cross-origin iframes requires user gesture. "
-    "Disabling this will allow autoplay in cross-origin iframes to work.";
-
-#endif  // !defined(OS_ANDROID)
-
 const char kPassiveDocumentEventListenersDescription[] =
     "Forces touchstart, and touchmove event listeners on document level "
     "targets (which haven't requested otherwise) to be treated as passive.";
@@ -3052,5 +3041,18 @@ const char kEnableOmniboxClipboardProviderDescription[] =
     "focus in the omnibox.";
 
 #endif  // defined(OS_ANDROID)
+
+const char kAutoplayPolicyName[] = "Autoplay policy";
+
+const char kAutoplayPolicyDescription[] =
+    "Policy used when deciding if audio or video is allowed to autoplay.";
+
+const char kAutoplayPolicyNoUserGestureRequired[] =
+    "No user gesture is required.";
+
+const char kAutoplayPolicyUserGestureRequired[] = "User gesture is required.";
+
+const char kAutoplayPolicyCrossOriginUserGestureRequired[] =
+    "User gesture is required for cross-origin iframes.";
 
 }  // namespace flag_descriptions

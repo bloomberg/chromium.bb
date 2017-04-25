@@ -339,14 +339,6 @@ const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if !defined(OS_ANDROID)
-// Controls whether media playback in cross-origin iframes is enabled. The
-// feature overrides |kDisableGestureRequirementForMediaPlayback|.
-const base::Feature kCrossOriginMediaPlaybackRequiresUserGesture{
-    "CrossOriginMediaPlaybackRequiresUserGesture",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_WIN)
 // Emergency "off switch" for new Windows sandbox security mitigation,
 // sandbox::MITIGATION_EXTENSION_POINT_DISABLE.

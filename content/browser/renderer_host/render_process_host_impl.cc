@@ -1685,6 +1685,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kAllowLoopbackInPeerConnection,
     switches::kAndroidFontsPath,
     switches::kAudioBufferSize,
+    switches::kAutoplayPolicy,
     switches::kBlinkSettings,
     switches::kDefaultTileWidth,
     switches::kDefaultTileHeight,

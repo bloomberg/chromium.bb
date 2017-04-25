@@ -706,6 +706,21 @@ const FeatureEntry::Choice kEnableDefaultMediaSessionChoices[] = {
 };
 #endif  // !defined(OS_ANDROID)
 
+const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kAutoplayPolicyNoUserGestureRequired,
+     switches::kAutoplayPolicy,
+     switches::autoplay::kNoUserGestureRequiredPolicy},
+#if defined(OS_ANDROID)
+    {flag_descriptions::kAutoplayPolicyUserGestureRequired,
+     switches::kAutoplayPolicy, switches::autoplay::kUserGestureRequiredPolicy},
+#else
+    {flag_descriptions::kAutoplayPolicyCrossOriginUserGestureRequired,
+     switches::kAutoplayPolicy,
+     switches::autoplay::kCrossOriginUserGestureRequiredPolicy},
+#endif
+};
+
 const FeatureEntry::FeatureParam kNoStatePrefetchEnabled[] = {
     {prerender::kNoStatePrefetchFeatureModeParameterName,
      prerender::kNoStatePrefetchFeatureModeParameterPrefetch}};
@@ -1437,15 +1452,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGestureRequirementForMediaPlaybackDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(
          switches::kDisableGestureRequirementForMediaPlayback)},
-#if !defined(OS_ANDROID)
-    {"cross-origin-media-playback-requires-user-gesture",
-     flag_descriptions::kCrossOriginMediaPlaybackRequiresUserGestureName,
-     flag_descriptions::kCrossOriginMediaPlaybackRequiresUserGestureDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         features::kCrossOriginMediaPlaybackRequiresUserGesture)},
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_CHROMEOS)
     {"enable-virtual-keyboard", flag_descriptions::kVirtualKeyboardName,
      flag_descriptions::kVirtualKeyboardDescription, kOsCrOS,
@@ -2762,6 +2768,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOmniboxClipboardProviderDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kEnableClipboardProvider)},
 #endif
+
+    {"autoplay-policy", flag_descriptions::kAutoplayPolicyName,
+     flag_descriptions::kAutoplayPolicyDescription, kOsAll,
+     MULTI_VALUE_TYPE(kAutoplayPolicyChoices)},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

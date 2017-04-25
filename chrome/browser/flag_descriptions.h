@@ -721,16 +721,6 @@ extern const char kGestureRequirementForMediaPlaybackName[];
 // Description for the flag for gesture requiment for media playback
 extern const char kGestureRequirementForMediaPlaybackDescription[];
 
-#if !defined(OS_ANDROID)
-
-// Title for the flag for gesture requiment for media playback
-extern const char kCrossOriginMediaPlaybackRequiresUserGestureName[];
-
-// Description for the flag for gesture requiment for media playback
-extern const char kCrossOriginMediaPlaybackRequiresUserGestureDescription[];
-
-#endif  // !defined(OS_ANDROID)
-
 // Description for the flag to adjust the default behaviour for document level
 // passive touch listeners.
 extern const char kPassiveDocumentEventListenersDescription[];
@@ -3319,6 +3309,22 @@ extern const char kEnableOmniboxClipboardProviderName[];
 extern const char kEnableOmniboxClipboardProviderDescription[];
 
 #endif  // defined(OS_ANDROID)
+
+// Name of the autoplay policy flag.
+extern const char kAutoplayPolicyName[];
+
+// Description of the autoplay policy entry.
+extern const char kAutoplayPolicyDescription[];
+
+// Description of the autoplay policy that requires a user gesture on cross
+// origin iframes.
+extern const char kAutoplayPolicyCrossOriginUserGestureRequired[];
+
+// Description of the autoplay policy that has no user gesture requirements.
+extern const char kAutoplayPolicyNoUserGestureRequired[];
+
+// Description of the autoplay policy that requires a user gesture.
+extern const char kAutoplayPolicyUserGestureRequired[];
 
 }  // namespace flag_descriptions
 
