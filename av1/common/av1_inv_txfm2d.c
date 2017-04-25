@@ -183,52 +183,40 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, int16_t *output,
   }
 }
 
-void av1_inv_txfm2d_add_4x4_c(const int32_t *input, uint16_t *output,
-                              int stride, int tx_type, int bd) {
-  int txfm_buf[4 * 4 + 4 + 4];
+static INLINE void inv_txfm2d_add_facade(const int32_t *input, uint16_t *output,
+                                         int stride, int32_t *txfm_buf,
+                                         int tx_type, int tx_size, int bd) {
   // output contains the prediction signal which is always positive and smaller
   // than (1 << bd) - 1
   // since bd < 16-1, therefore we can treat the uint16_t* output buffer as an
   // int16_t*
-  TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_cfg(tx_type, TX_4X4);
+  TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_cfg(tx_type, tx_size);
   inv_txfm2d_add_c(input, (int16_t *)output, stride, &cfg, txfm_buf);
-  clamp_block((int16_t *)output, 4, stride, 0, (1 << bd) - 1);
+  clamp_block((int16_t *)output, cfg.cfg->txfm_size, stride, 0, (1 << bd) - 1);
+}
+
+void av1_inv_txfm2d_add_4x4_c(const int32_t *input, uint16_t *output,
+                              int stride, int tx_type, int bd) {
+  int txfm_buf[4 * 4 + 4 + 4];
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_4X4, bd);
 }
 
 void av1_inv_txfm2d_add_8x8_c(const int32_t *input, uint16_t *output,
                               int stride, int tx_type, int bd) {
   int txfm_buf[8 * 8 + 8 + 8];
-  // output contains the prediction signal which is always positive and smaller
-  // than (1 << bd) - 1
-  // since bd < 16-1, therefore we can treat the uint16_t* output buffer as an
-  // int16_t*
-  TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_cfg(tx_type, TX_8X8);
-  inv_txfm2d_add_c(input, (int16_t *)output, stride, &cfg, txfm_buf);
-  clamp_block((int16_t *)output, 8, stride, 0, (1 << bd) - 1);
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_8X8, bd);
 }
 
 void av1_inv_txfm2d_add_16x16_c(const int32_t *input, uint16_t *output,
                                 int stride, int tx_type, int bd) {
   int txfm_buf[16 * 16 + 16 + 16];
-  // output contains the prediction signal which is always positive and smaller
-  // than (1 << bd) - 1
-  // since bd < 16-1, therefore we can treat the uint16_t* output buffer as an
-  // int16_t*
-  TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_cfg(tx_type, TX_16X16);
-  inv_txfm2d_add_c(input, (int16_t *)output, stride, &cfg, txfm_buf);
-  clamp_block((int16_t *)output, 16, stride, 0, (1 << bd) - 1);
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X16, bd);
 }
 
 void av1_inv_txfm2d_add_32x32_c(const int32_t *input, uint16_t *output,
                                 int stride, int tx_type, int bd) {
   int txfm_buf[32 * 32 + 32 + 32];
-  // output contains the prediction signal which is always positive and smaller
-  // than (1 << bd) - 1
-  // since bd < 16-1, therefore we can treat the uint16_t* output buffer as an
-  // int16_t*
-  TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_cfg(tx_type, TX_32X32);
-  inv_txfm2d_add_c(input, (int16_t *)output, stride, &cfg, txfm_buf);
-  clamp_block((int16_t *)output, 32, stride, 0, (1 << bd) - 1);
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X32, bd);
 }
 
 void av1_inv_txfm2d_add_64x64_c(const int32_t *input, uint16_t *output,
