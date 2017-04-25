@@ -4,9 +4,11 @@
 
 #include "chrome/browser/android/offline_pages/background_loader_offliner.h"
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offliner_helper.h"
@@ -71,6 +73,13 @@ void RecordErrorCauseUMA(const ClientId& client_id, net::Error error_code) {
       AddHistogramSuffix(client_id,
                          "OfflinePages.Background.BackgroundLoadingFailedCode"),
       std::abs(error_code));
+}
+
+void HandleApplicationStateChangeCancel(
+    const Offliner::CompletionCallback& completion_callback,
+    const SavePageRequest& canceled_request) {
+  completion_callback.Run(canceled_request,
+                          Offliner::RequestStatus::FOREGROUND_CANCELED);
 }
 }  // namespace
 
@@ -189,33 +198,36 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   return true;
 }
 
-void BackgroundLoaderOffliner::Cancel(const CancelCallback& callback) {
+bool BackgroundLoaderOffliner::Cancel(const CancelCallback& callback) {
+  DCHECK(pending_request_);
+  // We ignore the case where pending_request_ is not set, but given the checks
+  // in RequestCoordinator this should not happen.
+  if (!pending_request_)
+    return false;
+
   // TODO(chili): We are not able to cancel a pending
   // OfflinePageModel::SaveSnapshot() operation. We will notify caller that
   // cancel completed once the SavePage operation returns.
-  if (!pending_request_) {
-    callback.Run(0LL);
-    return;
-  }
-
   if (save_state_ != NONE) {
     save_state_ = DELETE_AFTER_SAVE;
     cancel_callback_ = callback;
-    return;
+    return true;
   }
 
-  int64_t request_id = pending_request_->request_id();
+  // Post the cancel callback right after this call concludes.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, *pending_request_.get()));
   ResetState();
-  callback.Run(request_id);
+  return true;
 }
 
-bool BackgroundLoaderOffliner::HandleTimeout(const SavePageRequest& request) {
+bool BackgroundLoaderOffliner::HandleTimeout(int64_t request_id) {
   if (pending_request_) {
-    DCHECK(request.request_id() == pending_request_->request_id());
-    if (is_low_bar_met_ &&
-        (request.started_attempt_count() + 1 >= policy_->GetMaxStartedTries() ||
-         request.completed_attempt_count() + 1 >=
-             policy_->GetMaxCompletedTries())) {
+    DCHECK(request_id == pending_request_->request_id());
+    if (is_low_bar_met_ && (pending_request_->started_attempt_count() + 1 >=
+                                policy_->GetMaxStartedTries() ||
+                            pending_request_->completed_attempt_count() + 1 >=
+                                policy_->GetMaxCompletedTries())) {
       // If we are already in the middle of a save operation, let it finish
       // but do not return SAVED_ON_LAST_RETRY
       if (save_state_ == NONE) {
@@ -402,7 +414,7 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
 
   if (save_state_ == DELETE_AFTER_SAVE) {
     save_state_ = NONE;
-    cancel_callback_.Run(request.request_id());
+    cancel_callback_.Run(request);
     return;
   }
 
@@ -446,23 +458,12 @@ void BackgroundLoaderOffliner::OnApplicationStateChange(
       application_state ==
           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
     DVLOG(1) << "App became active, canceling current offlining request";
-    SavePageRequest* request = pending_request_.get();
-    // This works because Bind will make a copy of request, and we
-    // should not have to worry about reset being called before cancel callback.
-    Cancel(base::Bind(
-        &BackgroundLoaderOffliner::HandleApplicationStateChangeCancel,
-        weak_ptr_factory_.GetWeakPtr(), *request));
+    // No need to check the return value or complete early, as false would
+    // indicate that there was no request, in which case the state change is
+    // ignored.
+    Cancel(
+        base::Bind(HandleApplicationStateChangeCancel, completion_callback_));
   }
-}
-
-void BackgroundLoaderOffliner::HandleApplicationStateChangeCancel(
-    const SavePageRequest& request,
-    int64_t offline_id) {
-  // If for some reason the request was reset during while waiting for callback
-  // ignore the completion callback.
-  if (pending_request_ && pending_request_->request_id() != offline_id)
-    return;
-  completion_callback_.Run(request, RequestStatus::FOREGROUND_CANCELED);
 }
 
 void BackgroundLoaderOffliner::AddLoadingSignal(const char* signal_name) {

@@ -98,6 +98,9 @@ class RequestCoordinator : public KeyedService,
   typedef base::Callback<void(std::vector<std::unique_ptr<SavePageRequest>>)>
       GetRequestsCallback;
 
+  // Callback for stopping the background offlining.
+  typedef base::Callback<void(int64_t request_id)> CancelCallback;
+
   RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                      std::unique_ptr<Offliner> offliner,
                      std::unique_ptr<RequestQueue> queue,
@@ -284,9 +287,9 @@ class RequestCoordinator : public KeyedService,
   // Handle updating of request status after cancel is called. Will call
   // HandleCancelRecordResultCallback for UMA handling
   void HandleCancelUpdateStatusCallback(
-      const Offliner::CancelCallback& next_callback,
+      const CancelCallback& next_callback,
       Offliner::RequestStatus stop_status,
-      int64_t offline_id);
+      const SavePageRequest& canceled_request);
   void UpdateStatusForCancel(Offliner::RequestStatus stop_status);
   void ResetActiveRequestCallback(int64_t offline_id);
   void StartSchedulerCallback(int64_t offline_id);
@@ -336,7 +339,7 @@ class RequestCoordinator : public KeyedService,
   void HandleWatchdogTimeout();
 
   // Cancels an in progress pre-rendering, and updates state appropriately.
-  void StopPrerendering(const Offliner::CancelCallback& callback,
+  void StopPrerendering(const CancelCallback& callback,
                         Offliner::RequestStatus stop_status);
 
   // Marks attempt on the request and sends it to offliner in continuation.
@@ -396,6 +399,10 @@ class RequestCoordinator : public KeyedService,
                        const std::string& name_space,
                        std::unique_ptr<UpdateRequestsResult> result);
 
+  // Reports offliner status through UMA and event logger.
+  void RecordOfflinerResult(const SavePageRequest& request,
+                            Offliner::RequestStatus status);
+
   void SetDeviceConditionsForTest(const DeviceConditions& current_conditions) {
     use_test_device_conditions_ = true;
     current_conditions_.reset(new DeviceConditions(current_conditions));
@@ -436,8 +443,8 @@ class RequestCoordinator : public KeyedService,
   // Unowned pointer to the Network Quality Estimator.
   net::NetworkQualityEstimator::NetworkQualityProvider*
       network_quality_estimator_;
-  // Holds copy of the active request, if any.
-  std::unique_ptr<SavePageRequest> active_request_;
+  // Holds an ID of the currently active request.
+  int64_t active_request_id_;
   // Status of the most recent offlining.
   Offliner::RequestStatus last_offlining_status_;
   // A set of request_ids that we are holding off until the download manager is

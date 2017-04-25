@@ -65,12 +65,11 @@ class Offliner {
   typedef base::Callback<void(const SavePageRequest&, int64_t received_bytes)>
       ProgressCallback;
   // Reports the completion status of a request.
-  // TODO(dougarnett): consider passing back a request id instead of request.
   typedef base::Callback<void(const SavePageRequest&, RequestStatus)>
       CompletionCallback;
   // Reports that the cancel operation has completed.
   // TODO(chili): make save operation cancellable.
-  typedef base::Callback<void(int64_t request_id)> CancelCallback;
+  typedef base::Callback<void(const SavePageRequest&)> CancelCallback;
 
   Offliner() {}
   virtual ~Offliner() {}
@@ -85,12 +84,14 @@ class Offliner {
                            const ProgressCallback& progress_callback) = 0;
 
   // Clears the currently processing request, if any, and skips running its
-  // CompletionCallback.
-  virtual void Cancel(const CancelCallback& callback) = 0;
+  // CompletionCallback. Returns false if there is nothing to cancel, otherwise
+  // returns true and canceled request will be delivered using callback.
+  virtual bool Cancel(const CancelCallback& callback) = 0;
 
   // Handles timeout scenario. Returns true if lowbar is met and try to do a
-  // snapshot of the current webcontents.
-  virtual bool HandleTimeout(const SavePageRequest& request) = 0;
+  // snapshot of the current webcontents. If that is the case, the result of
+  // offlining will be provided by |completion_callback|.
+  virtual bool HandleTimeout(int64_t request_id) = 0;
 
   // TODO(dougarnett): add policy support methods.
 };

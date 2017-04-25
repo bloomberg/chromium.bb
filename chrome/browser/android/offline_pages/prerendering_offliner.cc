@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offliner_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,14 +22,21 @@
 #include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/web_contents.h"
 
+namespace offline_pages {
+
 namespace {
 const char kContentType[] = "text/plain";
 const char kContentTransferEncodingBinary[] =
     "Content-Transfer-Encoding: binary";
 const char kXHeaderForSignals[] = "X-Chrome-Loading-Metrics-Data: 1";
-}  // namespace
 
-namespace offline_pages {
+void HandleApplicationStateChangeCancel(
+    const Offliner::CompletionCallback& completion_callback,
+    const SavePageRequest& canceled_request) {
+  completion_callback.Run(canceled_request,
+                          Offliner::RequestStatus::FOREGROUND_CANCELED);
+}
+}  // namespace
 
 PrerenderingOffliner::PrerenderingOffliner(
     content::BrowserContext* browser_context,
@@ -254,24 +262,26 @@ bool PrerenderingOffliner::LoadAndSave(
   return accepted;
 }
 
-void PrerenderingOffliner::Cancel(const CancelCallback& callback) {
-  int64_t request_id = 0LL;
-  if (pending_request_) {
-    request_id = pending_request_->request_id();
-    pending_request_.reset(nullptr);
-    app_listener_.reset(nullptr);
-    GetOrCreateLoader()->StopLoading();
-    // TODO(dougarnett): Consider ability to cancel SavePage request.
-  }
-  callback.Run(request_id);
+bool PrerenderingOffliner::Cancel(const CancelCallback& callback) {
+  if (!pending_request_)
+    return false;
+
+  // Post the cancel callback right after this call concludes.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, *pending_request_.get()));
+  GetOrCreateLoader()->StopLoading();
+  pending_request_.reset(nullptr);
+  app_listener_.reset(nullptr);
+  return true;
 }
 
-bool PrerenderingOffliner::HandleTimeout(const SavePageRequest& request) {
+bool PrerenderingOffliner::HandleTimeout(int64_t request_id) {
   if (pending_request_) {
-    DCHECK(request.request_id() == pending_request_->request_id());
+    DCHECK(request_id == pending_request_->request_id());
     if (GetOrCreateLoader()->IsLowbarMet() &&
-        (request.started_attempt_count() + 1 >= policy_->GetMaxStartedTries() ||
-         request.completed_attempt_count() + 1 >=
+        (pending_request_->started_attempt_count() + 1 >=
+             policy_->GetMaxStartedTries() ||
+         pending_request_->completed_attempt_count() + 1 >=
              policy_->GetMaxCompletedTries())) {
       saved_on_last_retry_ = true;
       GetOrCreateLoader()->StartSnapshot();
@@ -318,21 +328,11 @@ void PrerenderingOffliner::OnApplicationStateChange(
       application_state ==
           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
     DVLOG(1) << "App became active, canceling current offlining request";
-    SavePageRequest* request = pending_request_.get();
-    // This works because Bind will make a copy of request, and we
-    // should not have to worry about reset being called before cancel callback.
-    Cancel(base::Bind(&PrerenderingOffliner::HandleApplicationStateChangeCancel,
-                      weak_ptr_factory_.GetWeakPtr(), *request));
+    // No need to check the return value or complete early, as false would
+    // indicate that there was no request, in which case the state change is
+    // ignored.
+    Cancel(
+        base::Bind(HandleApplicationStateChangeCancel, completion_callback_));
   }
-}
-
-void PrerenderingOffliner::HandleApplicationStateChangeCancel(
-    const SavePageRequest& request,
-    int64_t offline_id) {
-  // This shouldn't be immediate, but account for case where request was reset
-  // while waiting for callback.
-  if (pending_request_ && pending_request_->request_id() != offline_id)
-    return;
-  completion_callback_.Run(request, RequestStatus::FOREGROUND_CANCELED);
 }
 }  // namespace offline_pages

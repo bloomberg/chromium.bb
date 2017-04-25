@@ -44,8 +44,8 @@ class BackgroundLoaderOffliner : public Offliner,
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& completion_callback,
                    const ProgressCallback& progress_callback) override;
-  void Cancel(const CancelCallback& callback) override;
-  bool HandleTimeout(const SavePageRequest& request) override;
+  bool Cancel(const CancelCallback& callback) override;
+  bool HandleTimeout(int64_t request_id) override;
 
   // WebContentsObserver implementation.
   void DocumentAvailableInMainFrame() override;
@@ -77,8 +77,6 @@ class BackgroundLoaderOffliner : public Offliner,
   // Called when application state has changed.
   void OnApplicationStateChange(
       base::android::ApplicationState application_state);
-  void HandleApplicationStateChangeCancel(const SavePageRequest& request,
-                                          int64_t offline_id);
 
   // Called to remember at what time we started loading.
   void MarkLoadStartTime();
