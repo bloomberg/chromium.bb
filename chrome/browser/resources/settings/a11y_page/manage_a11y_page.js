@@ -101,10 +101,4 @@ Polymer({
         settings.Route.POINTERS,
         /* dynamicParams */ null, /* removeSearch */ true);
   },
-
-  /** @private */
-  onMoreFeaturesTap_: function() {
-    window.open(
-        'https://chrome.google.com/webstore/category/collection/accessibility');
-  },
 });

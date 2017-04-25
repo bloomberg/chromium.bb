@@ -378,12 +378,13 @@
               sub-option-secondary="$i18n{siteSettingsFlashAskBeforeSubtitle}">
           </category-default-setting>
 <if expr="chromeos">
-          <div actionable class="settings-box"
-              on-tap="onAdobeFlashStorageClicked_">
+          <a class="settings-box inherit-color no-outline" tabindex="-1"
+              target="_blank"
+              href="https://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html">
             <div class="start">$i18n{adobeFlashStorage}</div>
             <button class="icon-external" is="paper-icon-button-light"
-                aria-label="$i18n{adobeFlashStorage}"></button>
-          </div>
+                actionable aria-label="$i18n{adobeFlashStorage}"></button>
+          </a>
 </if>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.PLUGINS}}">

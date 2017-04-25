@@ -61,7 +61,8 @@
         <div class="settings-box two-line first"
             hidden="[[!pageVisibility.setTheme]]">
 </if>
-          <div class="start two-line" on-tap="onThemesTap_" actionable>
+          <a class="start two-line inherit-color no-outline" tabindex="-1"
+              target="_blank" href$="[[getThemeHref_(themeUrl_)]]">
             <div class="flex">
               $i18n{themes}
               <div class="secondary" id="themesSecondary">
@@ -69,9 +70,9 @@
               </div>
             </div>
             <button class="icon-external" is="paper-icon-button-light"
-                aria-label="$i18n{themes}"
+                actionable aria-label="$i18n{themes}"
                 aria-describedby="themesSecondary"></button>
-          </div>
+          </a>
 <if expr="not is_linux or chromeos">
           <template is="dom-if" if="[[prefs.extensions.theme.id.value]]">
             <div class="secondary-action">

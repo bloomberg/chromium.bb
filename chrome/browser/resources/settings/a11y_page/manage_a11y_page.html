@@ -205,17 +205,19 @@
     </div>
 
     <template is="dom-if" if="[[!isGuest_]]">
-      <div class="settings-box two-line" on-tap="onMoreFeaturesTap_" actionable>
+      <a class="settings-box two-line inherit-color no-outline" tabindex="-1"
+          target="_blank"
+          href="https://chrome.google.com/webstore/category/collection/accessibility">
         <div class="start">
           $i18n{additionalFeaturesTitle}
           <div class="secondary" id="moreFeaturesSecondary">
             $i18n{a11yWebStore}
           </div>
         </div>
-        <button class="icon-external" is="paper-icon-button-light"
+        <button class="icon-external" is="paper-icon-button-light" actionable
             aria-label="$i18n{additionalFeaturesTitle}"
             aria-describedby="moreFeaturesSecondary"></button>
-      </div>
+      </a>
     </template>
   </template>
   <script src="manage_a11y_page.js"></script>

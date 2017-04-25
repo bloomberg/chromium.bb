@@ -94,6 +94,9 @@ Polymer({
     themeSublabel_: String,
 
     /** @private */
+    themeUrl_: String,
+
+    /** @private */
     useSystemTheme_: {
       type: Boolean,
       value: false,  // Can only be true on Linux, but value exists everywhere.
@@ -114,9 +117,6 @@ Polymer({
 
   /** @private {?settings.AppearanceBrowserProxy} */
   browserProxy_: null,
-
-  /** @private {string} */
-  themeUrl_: '',
 
   observers: [
     'defaultFontSizeChanged_(prefs.webkit.webprefs.default_font_size.value)',
@@ -187,9 +187,13 @@ Polymer({
         value - SIZE_DIFFERENCE_FIXED_STANDARD_);
   },
 
-  /** @private */
-  onThemesTap_: function() {
-    window.open(this.themeUrl_ || loadTimeData.getString('themesGalleryUrl'));
+  /**
+   * URL for either current theme or the theme gallery.
+   * @return {string}
+   * @private
+   */
+  getThemeHref_: function() {
+    return this.themeUrl_ || loadTimeData.getString('themesGalleryUrl');
   },
 
   // <if expr="chromeos">

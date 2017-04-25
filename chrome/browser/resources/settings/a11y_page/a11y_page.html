@@ -50,18 +50,19 @@
 </if>
 
 <if expr="not chromeos">
-    <div class="settings-box first two-line" on-tap="onMoreFeaturesTap_"
-        actionable>
+    <a class="settings-box first two-line inherit-color no-outline"
+        tabindex="-1" target="_blank"
+        href="https://chrome.google.com/webstore/category/collection/accessibility">
       <div class="start">
         $i18n{moreFeaturesLink}
         <div class="secondary" id="moreFeaturesSecondary">
           $i18n{a11yWebStore}
         </div>
       </div>
-      <button class="icon-external" is="paper-icon-button-light"
+      <button class="icon-external" is="paper-icon-button-light" actionable
           aria-label="$i18n{moreFeaturesLink}"
           aria-describedby="moreFeaturesSecondary"></button>
-    </div>
+    </a>
 </if>
 
   </template>

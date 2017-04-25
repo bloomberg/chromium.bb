@@ -106,8 +106,9 @@
           </template>
 
           <template is="dom-if" if="[[hotwordInfo_.historyEnabled]]">
-            <div class="settings-box two-line continuation indented"
-                on-tap="onManageAudioHistoryTap_" actionable>
+            <a class="settings-box two-line continuation indented inherit-color
+                no-outline" tabindex="-1" target="_blank"
+                href="$i18n{manageAudioHistoryUrl}">
               <div class="start">
                 [[i18n('searchOkGoogleAudioHistoryLabel',
                        hotwordInfo_.userName)]]
@@ -115,11 +116,12 @@
                   $i18n{searchOkGoogleAudioHistorySubtext}
                 </div>
               </div>
-              <button class="icon-external" is="paper-icon-button-light"
+              <button actionable class="icon-external"
+                  is="paper-icon-button-light"
                   aria-label$="[[i18n('searchOkGoogleAudioHistoryLabel',
                                       hotwordInfo_.userName)]]"
                   aria-describedby="audioHistorySecondary"></button>
-            </div>
+            </a>
           </template>
         </template>
 

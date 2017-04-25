@@ -49,10 +49,4 @@ Polymer({
     settings.navigateTo(settings.Route.MANAGE_ACCESSIBILITY);
   },
 // </if>
-
-  /** @private */
-  onMoreFeaturesTap_: function() {
-    window.open(
-        'https://chrome.google.com/webstore/category/collection/accessibility');
-  },
 });

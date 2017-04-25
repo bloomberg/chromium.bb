@@ -269,11 +269,6 @@ Polymer({
     this.browserProxy_.openActivityControlsUrl();
   },
 
-  /** @private */
-  onManageSyncedDataTap_: function() {
-    window.open(loadTimeData.getString('syncDashboardUrl'));
-  },
-
   /**
    * Handler for when the autofill data type checkbox is changed.
    * @private

@@ -16,9 +16,4 @@ Polymer({
       notify: true,
     },
   },
-
-  /** @private */
-  onManageTap_: function() {
-    window.open(loadTimeData.getString('devicesUrl'));
-  },
 });
