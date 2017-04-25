@@ -11,7 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/storage_monitor/udev_util_linux.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -47,10 +47,14 @@ void CameraDetector::StartPresenceCheck(const base::Closure& callback) {
   DVLOG(1) << "Starting camera presence check";
   presence_check_in_progress_ = true;
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN).get(),
-      FROM_HERE,
-      base::Bind(&CameraDetector::CheckPresence),
+      base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))
+          .get(),
+      FROM_HERE, base::Bind(&CameraDetector::CheckPresence),
       base::Bind(&CameraDetector::OnPresenceCheckDone, callback));
 }
 
