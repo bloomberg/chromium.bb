@@ -596,11 +596,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   locationBarView_->OnAddedToWindow();
 }
 
-- (BOOL)locationBarHasFocus {
-  return [[autocompleteTextFieldEditor_ window] firstResponder] ==
-         autocompleteTextFieldEditor_.get();
-}
-
 - (void)focusLocationBar:(BOOL)selectAll {
   if (locationBarView_.get()) {
     locationBarView_->FocusLocation(selectAll ? true : false);
