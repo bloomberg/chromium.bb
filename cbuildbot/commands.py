@@ -1026,9 +1026,13 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     json_dump_result = None
     job_id = _HWTestCreate(cmd, debug, **swarming_args)
     if wait_for_results and job_id:
-      _HWTestWait(cmd, job_id, **swarming_args)
-      running_json_dump_flag = True
-      json_dump_result = _HWTestDumpJson(cmd, job_id, **swarming_args)
+      pass_hwtest = _HWTestWait(cmd, job_id, **swarming_args)
+      # Only dump the json output when tests don't pass, since the json output
+      # is used to decide whether we can do subsystem based partial submission.
+      running_json_dump_flag = not pass_hwtest
+      if running_json_dump_flag:
+        json_dump_result = retry_util.RetryException(
+            ValueError, 3, _HWTestDumpJson, cmd, job_id, **swarming_args)
     return HWTestSuiteResult(None, json_dump_result)
   except cros_build_lib.RunCommandError as e:
     result = e.result
@@ -1254,19 +1258,29 @@ def _HWTestCreate(cmd, debug=False, **kwargs):
 def _HWTestWait(cmd, job_id, **kwargs):
   """Wait for HWTest suite to complete.
 
+  Wait for the HWTest suite to complete. All the test related exceptions will
+  be mute(swarming client side exception), only the swarming server side
+  exception will be raised, e.g. swarming internal failure. The test related
+  exception will be raised in _HWTestDumpJson step.
+
   Args:
     cmd: Proxied run_suite command.
     job_id: The job id of the suite that was created.
     kwargs: args to be passed to RunSwarmingCommand.
+
+  Returns:
+    True if all tests pass.
   """
   # Wait on the suite
   wait_cmd = list(cmd) + ['-m', str(job_id)]
+  pass_hwtest = False
   try:
     result = swarming_lib.RunSwarmingCommandWithRetries(
         max_retry=_MAX_HWTEST_CMD_RETRY,
         error_check=swarming_lib.SwarmingRetriableErrorCheck,
         cmd=wait_cmd, capture_output=True, combine_stdout_stderr=True,
         **kwargs)
+    pass_hwtest = True
   except cros_build_lib.RunCommandError as e:
     result = e.result
     # Delay the lab-related exceptions, since those will be raised in the next
@@ -1281,6 +1295,7 @@ def _HWTestWait(cmd, job_id, **kwargs):
     sys.stdout.write(output)
   sys.stdout.flush()
 
+  return pass_hwtest
 
 def _HWTestDumpJson(cmd, job_id, **kwargs):
   """Consume HWTest suite json output and return passed/failed subsystems dict.

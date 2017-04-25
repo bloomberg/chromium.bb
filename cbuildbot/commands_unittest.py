@@ -403,15 +403,17 @@ The suite job has another 2:39:39.789250 till timeout.
         side_effect=lambda *args, **kwargs: wait_results.next(),
     )
 
-    dump_json_results = iter([
-        self.rc.CmdResult(returncode=dump_json_return_code,
-                          output=self.JSON_OUTPUT,
-                          error=''),
-    ])
-    self.rc.AddCmdResult(
-        self.json_dump_cmd,
-        side_effect=lambda *args, **kwargs: dump_json_results.next(),
-    )
+    # Json dump will only run when wait_cmd fails
+    if wait_return_code != 0:
+      dump_json_results = iter([
+          self.rc.CmdResult(returncode=dump_json_return_code,
+                            output=self.JSON_OUTPUT,
+                            error=''),
+      ])
+      self.rc.AddCmdResult(
+          self.json_dump_cmd,
+          side_effect=lambda *args, **kwargs: dump_json_results.next(),
+      )
 
   def PatchJson(self, task_outputs):
     """Mock out the code that loads from json.
@@ -480,8 +482,7 @@ The suite job has another 2:39:39.789250 till timeout.
         swarming_hard_timeout_secs=swarming_timeout)
 
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None),
-                    (self.WAIT_OUTPUT, False, None),
-                    (self.JSON_OUTPUT, False, None)])
+                    (self.WAIT_OUTPUT, False, None)])
     with self.OutputCapturer() as output:
       cmd_result = self.RunHWTestSuite(pool=self._pool, num=self._num,
                                        file_bugs=self._file_bugs,
@@ -493,13 +494,10 @@ The suite job has another 2:39:39.789250 till timeout.
                                        minimum_duts=self._minimum_duts,
                                        suite_min_duts=self._suite_min_duts,
                                        subsystems=self._subsystems)
-    expect_result = json.loads(self.JSON_DICT)
-    self.assertEqual(cmd_result, (None, expect_result))
+    self.assertEqual(cmd_result, (None, None))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
                              combine_stdout_stderr=True)
     self.assertCommandCalled(self.wait_cmd, capture_output=True,
-                             combine_stdout_stderr=True)
-    self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
                              combine_stdout_stderr=True)
     self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
     self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
@@ -583,8 +581,6 @@ The suite job has another 2:39:39.789250 till timeout.
                                combine_stdout_stderr=True)
       self.assertCommandCalled(self.wait_cmd, capture_output=True,
                                combine_stdout_stderr=True)
-      self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
-                               combine_stdout_stderr=True)
       self.assertIn(self.WAIT_RETRY_OUTPUT.strip(),
                     '\n'.join(output.GetStdoutLines()))
       self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
@@ -616,6 +612,24 @@ The suite job has another 2:39:39.789250 till timeout.
 
     self.assertEqual(result_1, expected_1)
     self.assertEqual(result_2, expected_2)
+
+
+  def testRunHWTestSuiteJsonDumpWhenWaitCmdFail(self):
+    """Test RunHWTestSuite run json dump cmd when wait_cmd fail."""
+    self.SetCmdResults(wait_return_code=1, wait_retry=True)
+    self.PatchJson(
+        [(self.JOB_ID_OUTPUT, False, None),
+         (self.JSON_OUTPUT, False, None),
+        ])
+    with (mock.patch.object(commands, '_HWTestWait', return_value=False)):
+      with self.OutputCapturer() as output:
+        self.RunHWTestSuite(wait_for_results=self._wait_for_results)
+        self.assertCommandCalled(self.create_cmd, capture_output=True,
+                                 combine_stdout_stderr=True)
+        self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
+                                 combine_stdout_stderr=True)
+        self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
+        self.assertIn(self.JSON_OUTPUT, '\n'.join(output.GetStdoutLines()))
 
 
 class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
