@@ -5,6 +5,7 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include <stdint.h>
+#include <climits>
 
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_host.h"
@@ -1403,7 +1404,11 @@ class LayerTreeHostAnimationTestRemoveAnimation
     player_child_->AttachElement(layer_->element_id());
   }
 
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  void BeginTest() override {
+    animation_stopped_ = false;
+    last_frame_number_ = INT_MAX;
+    PostSetNeedsCommitToMainThread();
+  }
 
   void DidCommit() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
@@ -1433,6 +1438,7 @@ class LayerTreeHostAnimationTestRemoveAnimation
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    GetImplTimelineAndPlayerByID(*host_impl);
     LayerImpl* child = host_impl->active_tree()->LayerById(layer_->id());
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
@@ -1443,18 +1449,37 @@ class LayerTreeHostAnimationTestRemoveAnimation
         EXPECT_TRUE(child->screen_space_transform_is_animating());
         break;
       case 2: {
-        // The animation is removed, the transform that was set afterward is
+        // The animation is stopped, the transform that was set afterward is
         // applied.
         gfx::Transform expected_transform;
         expected_transform.Translate(10.f, 10.f);
         EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
                                         child->DrawTransform());
         EXPECT_FALSE(child->screen_space_transform_is_animating());
-        EndTest();
+        animation_stopped_ = true;
+        PostSetNeedsCommitToMainThread();
         break;
       }
-      default:
-        NOTREACHED();
+    }
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->sync_tree()->source_frame_number() >= last_frame_number_) {
+      // Check that eventually the animation is removed.
+      EXPECT_FALSE(player_child_impl_->has_any_animation());
+      EndTest();
+    }
+  }
+
+  void UpdateAnimationState(LayerTreeHostImpl* host_impl,
+                            bool has_unfinished_animation) override {
+    // Non impl only animations are removed during commit. After the animation
+    // is fully stopped on compositor thread, make sure another commit happens.
+    if (animation_stopped_ && !has_unfinished_animation) {
+      last_frame_number_ =
+          std::min(last_frame_number_,
+                   host_impl->active_tree()->source_frame_number() + 1);
+      PostSetNeedsCommitToMainThread();
     }
   }
 
@@ -1463,6 +1488,9 @@ class LayerTreeHostAnimationTestRemoveAnimation
  private:
   scoped_refptr<Layer> layer_;
   FakeContentLayerClient client_;
+
+  int last_frame_number_;
+  bool animation_stopped_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestRemoveAnimation);

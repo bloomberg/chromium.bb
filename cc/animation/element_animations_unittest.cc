@@ -2696,10 +2696,11 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
 
   PushProperties();
 
-  // animations_impl hasn't yet ticked at/past the end of the animation.
-  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+  // Finished animations are pushed, but animations_impl hasn't yet ticked
+  // at/past the end of the animation.
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::PENDING));
-  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
@@ -2913,10 +2914,11 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
 
   PushProperties();
 
-  // animations_impl hasn't yet ticked at/past the end of the animation.
-  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+  // Finished animations are pushed, but animations_impl hasn't yet ticked
+  // at/past the end of the animation.
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::PENDING));
-  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::ACTIVE));
@@ -3123,10 +3125,11 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
 
   PushProperties();
 
-  // animations_impl hasn't yet ticked at/past the end of the animation.
-  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+  // Finished animations are pushed, but animations_impl hasn't yet ticked
+  // at/past the end of the animation.
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::PENDING));
-  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::ACTIVE));
@@ -3304,7 +3307,6 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
 
   const int animation_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.5f, 1.f, true);
-
   PushProperties();
   player_impl_->ActivateAnimations();
   player_impl_->Tick(kInitialTickTime);
@@ -3342,8 +3344,20 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
             client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   player_impl_->ActivateAnimations();
+  events = CreateEventsForTesting();
+  player_impl_->UpdateState(true, events.get());
 
-  // Activation should cause the animation to be deleted.
+  // After Activation the animation doesn't affect neither active nor pending
+  // thread. UpdateState for this animation would put the animation to wait for
+  // deletion state.
+  EXPECT_EQ(Animation::WAITING_FOR_DELETION,
+            player_impl_->GetAnimationById(animation_id)->run_state());
+  EXPECT_EQ(1u, events->events_.size());
+
+  // The animation is finished on impl thread, and main thread will delete it
+  // during commit.
+  player_->animation_host()->SetAnimationEvents(std::move(events));
+  PushProperties();
   EXPECT_FALSE(player_impl_->has_any_animation());
 }
 
@@ -3402,9 +3416,12 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
 
   player_impl_->ActivateAnimations();
 
-  // The original animation should have been deleted, and the new animation
-  // should now affect both elements.
-  EXPECT_FALSE(player_impl_->GetAnimationById(first_animation_id));
+  // The original animation no longer affect either elements, and the new
+  // animation should now affect both elements.
+  EXPECT_FALSE(player_impl_->GetAnimationById(first_animation_id)
+                   ->affects_pending_elements());
+  EXPECT_FALSE(player_impl_->GetAnimationById(first_animation_id)
+                   ->affects_active_elements());
   EXPECT_TRUE(player_impl_->GetAnimationById(second_animation_id)
                   ->affects_pending_elements());
   EXPECT_TRUE(player_impl_->GetAnimationById(second_animation_id)
@@ -3412,6 +3429,10 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
 
   player_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   player_impl_->UpdateState(true, events.get());
+
+  // The original animation should be marked for waiting for deletion.
+  EXPECT_EQ(Animation::WAITING_FOR_DELETION,
+            player_impl_->GetAnimationById(first_animation_id)->run_state());
 
   // The new animation should be running, and the active observer should have
   // been ticked at the new animation's starting point.

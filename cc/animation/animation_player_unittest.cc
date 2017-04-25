@@ -172,7 +172,7 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
 
   time += base::TimeDelta::FromSecondsD(duration);
   TickAnimationsTransferEvents(time, 3u);
-  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(true));
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
                                        end_opacity);
@@ -265,8 +265,8 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   EXPECT_TRUE(delegate1.finished());
   EXPECT_TRUE(delegate2.finished());
 
-  EXPECT_FALSE(player1->needs_push_properties());
-  EXPECT_FALSE(player2->needs_push_properties());
+  EXPECT_TRUE(player1->needs_push_properties());
+  EXPECT_TRUE(player2->needs_push_properties());
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
                                        end_opacity);
