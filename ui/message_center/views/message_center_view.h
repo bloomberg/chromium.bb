@@ -122,6 +122,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView
   void UpdateButtonBarStatus();
   void EnableCloseAllIfAppropriate();
   void SetNotificationViewForTest(MessageView* view);
+  void UpdateNotification(const std::string& notification_id);
 
   MessageCenter* message_center_;  // Weak reference.
   MessageCenterTray* tray_;  // Weak reference.
