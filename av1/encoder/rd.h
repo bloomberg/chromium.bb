@@ -348,16 +348,83 @@ typedef struct RD_OPT {
   int RDDIV;
 } RD_OPT;
 
-typedef struct RD_COST {
-  int rate;
-  int64_t dist;
-  int64_t rdcost;
-} RD_COST;
+static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
+#if CONFIG_RD_DEBUG
+  int plane;
+#endif
+  rd_stats->rate = 0;
+  rd_stats->dist = 0;
+  rd_stats->rdcost = 0;
+  rd_stats->sse = 0;
+  rd_stats->skip = 1;
+#if CONFIG_RD_DEBUG
+  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    rd_stats->txb_coeff_cost[plane] = 0;
+#if CONFIG_VAR_TX
+    {
+      int r, c;
+      for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
+        for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
+          rd_stats->txb_coeff_cost_map[plane][r][c] = 0;
+    }
+#endif
+  }
+#endif
+}
 
-// Reset the rate distortion cost values to maximum (invalid) value.
-void av1_rd_cost_reset(RD_COST *rd_cost);
-// Initialize the rate distortion cost values to zero.
-void av1_rd_cost_init(RD_COST *rd_cost);
+static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
+#if CONFIG_RD_DEBUG
+  int plane;
+#endif
+  rd_stats->rate = INT_MAX;
+  rd_stats->dist = INT64_MAX;
+  rd_stats->rdcost = INT64_MAX;
+  rd_stats->sse = INT64_MAX;
+  rd_stats->skip = 0;
+#if CONFIG_RD_DEBUG
+  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    rd_stats->txb_coeff_cost[plane] = INT_MAX;
+#if CONFIG_VAR_TX
+    {
+      int r, c;
+      for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
+        for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
+          rd_stats->txb_coeff_cost_map[plane][r][c] = INT_MAX;
+    }
+#endif
+  }
+#endif
+}
+
+static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
+                                      const RD_STATS *rd_stats_src) {
+#if CONFIG_RD_DEBUG
+  int plane;
+#endif
+  rd_stats_dst->rate += rd_stats_src->rate;
+  rd_stats_dst->dist += rd_stats_src->dist;
+  rd_stats_dst->sse += rd_stats_src->sse;
+  rd_stats_dst->skip &= rd_stats_src->skip;
+#if CONFIG_RD_DEBUG
+  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    rd_stats_dst->txb_coeff_cost[plane] += rd_stats_src->txb_coeff_cost[plane];
+#if CONFIG_VAR_TX
+    {
+      // TODO(angiebird): optimize this part
+      int r, c;
+      int ref_txb_coeff_cost = 0;
+      for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
+        for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c) {
+          rd_stats_dst->txb_coeff_cost_map[plane][r][c] +=
+              rd_stats_src->txb_coeff_cost_map[plane][r][c];
+          ref_txb_coeff_cost += rd_stats_dst->txb_coeff_cost_map[plane][r][c];
+        }
+      assert(ref_txb_coeff_cost == rd_stats_dst->txb_coeff_cost[plane]);
+    }
+#endif
+  }
+#endif
+}
 
 struct TileInfo;
 struct TileDataEnc;

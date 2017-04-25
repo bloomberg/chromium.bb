@@ -281,10 +281,10 @@ typedef struct {
 #endif
 #endif
 
-// TODO(angiebird): Merge RD_COST and RD_STATS
 typedef struct RD_STATS {
   int rate;
   int64_t dist;
+  int64_t rdcost;
   int64_t sse;
   int skip;
 #if CONFIG_RD_DEBUG

@@ -9068,7 +9068,7 @@ static int64_t handle_inter_mode(
 // This is a dummy function that forces intrabc on for testing purposes
 // TODO(aconverse@google.com): Implement a real intrabc search
 static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
-                                       RD_COST *rd_cost, BLOCK_SIZE bsize,
+                                       RD_STATS *rd_cost, BLOCK_SIZE bsize,
                                        int64_t best_rd) {
   MACROBLOCKD *const xd = &x->e_mbd;
   (void)best_rd;
@@ -9105,7 +9105,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif  // CONFIG_INTRABC
 
 void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
-                               RD_COST *rd_cost, BLOCK_SIZE bsize,
+                               RD_STATS *rd_cost, BLOCK_SIZE bsize,
                                PICK_MODE_CONTEXT *ctx, int64_t best_rd) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -9310,7 +9310,7 @@ static void pick_filter_intra_interframe(
 #if CONFIG_SUPERTX
     int *returnrate_nocoef,
 #endif  // CONFIG_SUPERTX
-    int64_t *best_pred_rd, MB_MODE_INFO *best_mbmode, RD_COST *rd_cost) {
+    int64_t *best_pred_rd, MB_MODE_INFO *best_mbmode, RD_STATS *rd_cost) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -9473,7 +9473,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
 
 void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
-                               RD_COST *rd_cost,
+                               RD_STATS *rd_cost,
 #if CONFIG_SUPERTX
                                int *returnrate_nocoef,
 #endif  // CONFIG_SUPERTX
@@ -11358,7 +11358,7 @@ PALETTE_EXIT:
 void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
                                         TileDataEnc *tile_data, MACROBLOCK *x,
                                         int mi_row, int mi_col,
-                                        RD_COST *rd_cost, BLOCK_SIZE bsize,
+                                        RD_STATS *rd_cost, BLOCK_SIZE bsize,
                                         PICK_MODE_CONTEXT *ctx,
                                         int64_t best_rd_so_far) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -11498,7 +11498,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
 void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
                                    TileDataEnc *tile_data, struct macroblock *x,
                                    int mi_row, int mi_col,
-                                   struct RD_COST *rd_cost,
+                                   struct RD_STATS *rd_cost,
 #if CONFIG_SUPERTX
                                    int *returnrate_nocoef,
 #endif  // CONFIG_SUPERTX
