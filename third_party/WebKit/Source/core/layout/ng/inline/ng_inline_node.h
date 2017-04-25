@@ -121,6 +121,13 @@ class NGLayoutInlineItem {
     // enough to store.
   };
 
+  // Whether pre- and post-context should be used for shaping.
+  enum NGLayoutInlineShapeOptions {
+    kNoContext = 0,
+    kPreContext = 1,
+    kPostContext = 2
+  };
+
   NGLayoutInlineItem(NGLayoutInlineItemType type,
                      unsigned start,
                      unsigned end,
@@ -128,13 +135,14 @@ class NGLayoutInlineItem {
                      LayoutObject* layout_object = nullptr)
       : start_offset_(start),
         end_offset_(end),
-        bidi_level_(UBIDI_LTR),
         script_(USCRIPT_INVALID_CODE),
-        fallback_priority_(FontFallbackPriority::kInvalid),
-        rotate_sideways_(false),
         style_(style),
         layout_object_(layout_object),
-        type_(type) {
+        type_(type),
+        bidi_level_(UBIDI_LTR),
+        shape_options_(kPreContext | kPostContext),
+        rotate_sideways_(false),
+        fallback_priority_(FontFallbackPriority::kInvalid) {
     DCHECK_GE(end, start);
   }
 
@@ -142,13 +150,17 @@ class NGLayoutInlineItem {
     return static_cast<NGLayoutInlineItemType>(type_);
   }
 
+  NGLayoutInlineShapeOptions ShapeOptions() const {
+    return static_cast<NGLayoutInlineShapeOptions>(shape_options_);
+  }
+
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
   unsigned Length() const { return end_offset_ - start_offset_; }
   TextDirection Direction() const {
-    return bidi_level_ & 1 ? TextDirection::kRtl : TextDirection::kLtr;
+    return BidiLevel() & 1 ? TextDirection::kRtl : TextDirection::kLtr;
   }
-  UBiDiLevel BidiLevel() const { return bidi_level_; }
+  UBiDiLevel BidiLevel() const { return static_cast<UBiDiLevel>(bidi_level_); }
   UScriptCode GetScript() const { return script_; }
   const ComputedStyle* Style() const { return style_; }
   LayoutObject* GetLayoutObject() const { return layout_object_; }
@@ -177,15 +189,19 @@ class NGLayoutInlineItem {
  private:
   unsigned start_offset_;
   unsigned end_offset_;
-  UBiDiLevel bidi_level_;
   UScriptCode script_;
-  FontFallbackPriority fallback_priority_;
-  bool rotate_sideways_;
-  const ComputedStyle* style_;
   RefPtr<const ShapeResult> shape_result_;
+  const ComputedStyle* style_;
   LayoutObject* layout_object_;
 
   unsigned type_ : 3;
+  unsigned bidi_level_ : 8;  // UBiDiLevel is defined as uint8_t.
+  unsigned shape_options_ : 2;
+  unsigned rotate_sideways_ : 1;
+
+  // TODO(layout-ng): Do we need fallback_priority_ here? If so we should pack
+  // it with the bit field above.
+  FontFallbackPriority fallback_priority_;
 
   friend class NGInlineNode;
 };
