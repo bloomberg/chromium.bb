@@ -15,6 +15,7 @@ branch, but not on TOT.
 
 from __future__ import print_function
 
+import functools
 import os
 
 from chromite.cbuildbot import repository
@@ -29,6 +30,23 @@ from chromite.scripts import cbuildbot
 # This number should be incremented when we change the layout of the buildroot
 # in a non-backwards compatible way. This wipes all buildroots.
 BUILDROOT_BUILDROOT_LAYOUT = 1
+
+
+def StageDecorator(functor):
+  """A Decorator that adds buildbot stage tags around a method.
+
+  It uses the method name as the stage name, and assumes failure on exception.
+  """
+  @functools.wraps(functor)
+  def wrapped_functor(*args, **kwargs):
+    try:
+      logging.PrintBuildbotStepName(functor.__name__)
+      return functor(*args, **kwargs)
+    except Exception:
+      logging.PrintBuildbotStepFailure()
+      raise
+
+  return wrapped_functor
 
 
 def PreParseArguments(argv):
@@ -76,6 +94,7 @@ def SetBuildrootState(branchname, buildroot):
   osutils.WriteFile(state_file, new_state)
 
 
+@StageDecorator
 def CleanBuildroot(branchname, buildroot):
   """Some kinds of branch transitions break builds.
 
@@ -84,32 +103,23 @@ def CleanBuildroot(branchname, buildroot):
   if necessary.
 
   Args:
-    branchname: Name of branch to checkout. None for no branch.
+    branchname: Name of branch to checkout.
     buildroot: Directory with old buildroot to clean as needed.
   """
-  if branchname is None:
-    # None means TOT for manifest. Not converting to 'master' since I'm not
-    # sure if those are exactly the same in all cases.
-    branchname = 'default'
-
   old_buildroot_layout, old_branch = GetBuildrootState(buildroot)
 
   if old_buildroot_layout != BUILDROOT_BUILDROOT_LAYOUT:
-    logging.warning('Wiping buildboot.')
+    logging.PrintBuildbotStepText('Unknown layout: Wiping buildroot.')
     osutils.RmDir(buildroot, ignore_missing=True, sudo=True)
 
   elif old_branch != branchname:
-    # If we are changing branches, clobber the chroot. Note that this chroot
-    # clobber is unsafe if the chroot is in use, but since no build is in
-    # progress (and we don't use chroot the), this should be okay.
+    logging.PrintBuildbotStepText('Branch change: Cleaning buildroot.')
     logging.info('Unmatched branch: %s -> %s', old_branch, branchname)
 
-    # Wipe chroot.
     logging.info('Remove Chroot.')
     osutils.RmDir(os.path.join(buildroot, 'chroot'),
                   ignore_missing=True, sudo=True)
 
-    # Wipe Chrome build related files.
     logging.info('Remove Chrome checkout.')
     osutils.RmDir(os.path.join(buildroot, '.cache', 'distfiles'),
                   ignore_missing=True, sudo=True)
@@ -119,6 +129,7 @@ def CleanBuildroot(branchname, buildroot):
   SetBuildrootState(branchname, buildroot)
 
 
+@StageDecorator
 def InitialCheckout(branchname, buildroot, git_cache_dir):
   """Preliminary ChromeOS checkout.
 
@@ -132,10 +143,11 @@ def InitialCheckout(branchname, buildroot, git_cache_dir):
   used.
 
   Args:
-    branchname: Name of branch to checkout. None for no branch.
+    branchname: Name of branch to checkout.
     buildroot: Directory to checkout into.
     git_cache_dir: Directory to use for git cache. None to not use it.
   """
+  logging.PrintBuildbotStepText('Branch: %s' % branchname)
   logging.info('Bootstrap script starting initial sync on branch: %s',
                branchname)
 
@@ -148,6 +160,7 @@ def InitialCheckout(branchname, buildroot, git_cache_dir):
   repo.Sync()
 
 
+@StageDecorator
 def RunCbuildbot(options):
   """Start cbuildbot in specified directory with all arguments.
 
@@ -164,11 +177,7 @@ def RunCbuildbot(options):
   cmd = sync_stages.BootstrapStage.FilterArgsForTargetCbuildbot(
       options.buildroot, cbuildbot_path, options)
 
-  result = cros_build_lib.RunCommand(
-      cmd, error_code_ok=True, cwd=options.buildroot)
-
-  logging.debug('cbuildbot result is: %s', result.returncode)
-  return result.returncode
+  cros_build_lib.RunCommand(cmd, cwd=options.buildroot)
 
 
 def ConfigureGlobalEnvironment():
@@ -186,12 +195,12 @@ def main(argv):
   Returns:
     Return code of cbuildbot as an integer.
   """
+  logging.EnableBuildbotMarkers()
   ConfigureGlobalEnvironment()
 
-  # Specified branch, or 'master'
   options = PreParseArguments(argv)
 
-  branchname = options.branch
+  branchname = options.branch or 'master'
   buildroot = options.buildroot
   git_cache_dir = options.git_cache_dir
 
@@ -203,4 +212,7 @@ def main(argv):
   InitialCheckout(branchname, buildroot, git_cache_dir)
 
   # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
-  return RunCbuildbot(options)
+  try:
+    RunCbuildbot(options)
+  except cros_build_lib.RunCommandError as e:
+    return e.result.returncode

@@ -104,7 +104,7 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     cbuildbot_launch.RunCbuildbot(options)
 
     self.assertCommandCalled(
-        expected_cmd, cwd=options.buildroot, error_code_ok=True)
+        expected_cmd, cwd=options.buildroot)
 
   def testRunCbuildbotSimple(self):
     """Ensure we invoke cbuildbot correctly."""
@@ -141,17 +141,17 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
-                     [mock.call(None, '/buildroot')])
+                     [mock.call('master', '/buildroot')])
 
     # Ensure we checkout, as expected.
     self.assertEqual(mock_checkout.mock_calls,
-                     [mock.call(None, '/buildroot', None)])
+                     [mock.call('master', '/buildroot', None)])
 
     # Ensure we invoke cbuildbot, as expected.
     self.assertCommandCalled(
         ['/buildroot/chromite/bin/cbuildbot',
          'config', '--buildroot', '/buildroot'],
-        cwd='/buildroot', error_code_ok=True)
+        cwd='/buildroot')
 
   def testMainMax(self):
     """Test a larger set of command line options."""
@@ -164,24 +164,26 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
                                      autospec=True)
 
     cbuildbot_launch.main(['--buildroot', '/buildroot',
+                           '--branch', 'branch',
                            '--git-cache-dir', '/git-cache',
                            'config'])
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
-                     [mock.call(None, '/buildroot')])
+                     [mock.call('branch', '/buildroot')])
 
     # Ensure we checkout, as expected.
     self.assertEqual(mock_checkout.mock_calls,
-                     [mock.call(None, '/buildroot', '/git-cache')])
+                     [mock.call('branch', '/buildroot', '/git-cache')])
 
     # Ensure we invoke cbuildbot, as expected.
     self.assertCommandCalled(
         ['/buildroot/chromite/bin/cbuildbot',
          'config',
          '--buildroot', '/buildroot',
+         '--branch', 'branch',
          '--git-cache-dir', '/git-cache'],
-        cwd='/buildroot', error_code_ok=True)
+        cwd='/buildroot')
 
 
 class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
@@ -209,28 +211,28 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
 
   def testNoBuildroot(self):
     """Test CleanBuildroot with no history."""
-    cbuildbot_launch.CleanBuildroot(None, self.root)
+    cbuildbot_launch.CleanBuildroot('master', self.root)
 
-    self.assertEqual(osutils.ReadFile(self.state), '1 default')
+    self.assertEqual(osutils.ReadFile(self.state), '1 master')
 
   def testBuildrootNoState(self):
     """Test CleanBuildroot with no state information."""
     self.populateBuildroot()
 
-    cbuildbot_launch.CleanBuildroot(None, self.root)
+    cbuildbot_launch.CleanBuildroot('master', self.root)
 
-    self.assertEqual(osutils.ReadFile(self.state), '1 default')
+    self.assertEqual(osutils.ReadFile(self.state), '1 master')
     self.assertNotExists(self.repo)
     self.assertNotExists(self.chroot)
     self.assertNotExists(self.general)
 
   def testBuildrootFormatMismatch(self):
     """Test CleanBuildroot with no state information."""
-    self.populateBuildroot('0 default')
+    self.populateBuildroot('0 master')
 
-    cbuildbot_launch.CleanBuildroot(None, self.root)
+    cbuildbot_launch.CleanBuildroot('master', self.root)
 
-    self.assertEqual(osutils.ReadFile(self.state), '1 default')
+    self.assertEqual(osutils.ReadFile(self.state), '1 master')
     self.assertNotExists(self.repo)
     self.assertNotExists(self.chroot)
     self.assertNotExists(self.general)
@@ -253,28 +255,6 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
     cbuildbot_launch.CleanBuildroot('branchA', self.root)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 branchA')
-    self.assertExists(self.repo)
-    self.assertExists(self.chroot)
-    self.assertExists(self.general)
-
-  def testBuildrootBranchChangeToDefault(self):
-    """Test CleanBuildroot with a change in branches."""
-    self.populateBuildroot('1 branchA')
-
-    cbuildbot_launch.CleanBuildroot(None, self.root)
-
-    self.assertEqual(osutils.ReadFile(self.state), '1 default')
-    self.assertExists(self.repo)
-    self.assertNotExists(self.chroot)
-    self.assertExists(self.general)
-
-  def testBuildrootBranchMatchDefault(self):
-    """Test CleanBuildroot with no change in branch."""
-    self.populateBuildroot('1 default')
-
-    cbuildbot_launch.CleanBuildroot(None, self.root)
-
-    self.assertEqual(osutils.ReadFile(self.state), '1 default')
     self.assertExists(self.repo)
     self.assertExists(self.chroot)
     self.assertExists(self.general)
