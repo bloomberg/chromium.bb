@@ -58,6 +58,7 @@ void SearchAnswerWebContentsDelegate::Update() {
   // Reset the state.
   received_answer_ = false;
   model_->SetSearchAnswerAvailable(false);
+  current_request_url_ = GURL();
 
   if (!model_->search_engine_is_google())
     return;
