@@ -11,42 +11,78 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::UnorderedElementsAre;
+
 namespace {
 
-HostDescriptionNode GetDummyNode() {
-  return {std::string(), std::string(), base::DictionaryValue()};
+HostDescriptionNode GetNodeWithLabel(const char* name, int label) {
+  HostDescriptionNode node = {name, std::string(), base::DictionaryValue()};
+  node.representation.SetInteger("label", label);
+  return node;
 }
 
-HostDescriptionNode GetNodeWithLabel(int id) {
-  base::DictionaryValue dict;
-  dict.SetInteger("label", id);
-  return {std::string(), std::string(), std::move(dict)};
+// Returns the list of children of |arg|.
+const base::Value* GetChildren(const base::Value& arg) {
+  const base::DictionaryValue* dict = nullptr;
+  EXPECT_TRUE(arg.GetAsDictionary(&dict));
+
+  const base::Value* children = nullptr;
+  if (!dict->Get("children", &children))
+    return nullptr;
+  EXPECT_EQ(base::Value::Type::LIST, children->type());
+  return children;
 }
 
-int GetLabel(const base::DictionaryValue* dict) {
+// Checks that |arg| is a description of a node with label |l|.
+bool CheckLabel(const base::Value& arg, int l) {
+  const base::DictionaryValue* dict = nullptr;
+  EXPECT_TRUE(arg.GetAsDictionary(&dict));
   int result = 0;
-  EXPECT_TRUE(dict->GetInteger("label", &result));
-  return result;
+  if (!dict->GetInteger("label", &result))
+    return false;
+  return l == result;
+}
+
+// Matches every |arg| with label |label| and checks that it has no children.
+MATCHER_P(EmptyNode, label, "") {
+  if (!CheckLabel(arg, label))
+    return false;
+  EXPECT_FALSE(GetChildren(arg));
+  return true;
 }
 
 }  // namespace
 
-TEST(SerializeDictionaryForestTest, Empty) {
+TEST(SerializeHostDescriptionTest, Empty) {
   base::ListValue result =
       SerializeHostDescriptions(std::vector<HostDescriptionNode>(), "123");
-  EXPECT_TRUE(result.empty());
+  EXPECT_THAT(result.base::Value::GetList(), ::testing::IsEmpty());
 }
 
 // Test serializing a forest of stubs (no edges).
-TEST(SerializeDictionaryForestTest, Stubs) {
+TEST(SerializeHostDescriptionTest, Stubs) {
   base::ListValue result = SerializeHostDescriptions(
-      {GetDummyNode(), GetDummyNode(), GetDummyNode()}, "123");
-  EXPECT_EQ(3u, result.GetSize());
-  for (const base::Value& value : result) {
-    const base::DictionaryValue* dict = nullptr;
-    ASSERT_TRUE(value.GetAsDictionary(&dict));
-    EXPECT_FALSE(dict->HasKey("123"));
-  }
+      {GetNodeWithLabel("1", 1), GetNodeWithLabel("2", 2),
+       GetNodeWithLabel("3", 3)},
+      "children");
+  EXPECT_THAT(result.base::Value::GetList(),
+              UnorderedElementsAre(EmptyNode(1), EmptyNode(2), EmptyNode(3)));
+}
+
+// Test handling multiple nodes sharing the same name.
+TEST(SerializeHostDescriptionTest, SameNames) {
+  std::vector<HostDescriptionNode> nodes = {
+      GetNodeWithLabel("A", 1), GetNodeWithLabel("A", 2),
+      GetNodeWithLabel("A", 3), GetNodeWithLabel("B", 4),
+      GetNodeWithLabel("C", 5)};
+
+  base::ListValue result =
+      SerializeHostDescriptions(std::move(nodes), "children");
+
+  // Only the first node called "A", and both nodes "B" and "C" should be
+  // returned.
+  EXPECT_THAT(result.base::Value::GetList(),
+              UnorderedElementsAre(EmptyNode(1), EmptyNode(4), EmptyNode(5)));
 }
 
 // Test serializing a small forest, of this structure:
@@ -54,12 +90,39 @@ TEST(SerializeDictionaryForestTest, Stubs) {
 // 0 -- 6
 //   \ 1
 //   \ 3
-TEST(SerializeDictionaryForestTest, Forest) {
+
+namespace {
+
+// Matchers for non-empty nodes specifically in this test:
+MATCHER(Node2, "") {
+  if (!CheckLabel(arg, 2))
+    return false;
+  EXPECT_THAT(GetChildren(arg)->GetList(), UnorderedElementsAre(EmptyNode(4)));
+  return true;
+}
+
+MATCHER(Node5, "") {
+  if (!CheckLabel(arg, 5))
+    return false;
+  EXPECT_THAT(GetChildren(arg)->GetList(), UnorderedElementsAre(Node2()));
+  return true;
+}
+
+MATCHER(Node0, "") {
+  if (!CheckLabel(arg, 0))
+    return false;
+  EXPECT_THAT(GetChildren(arg)->GetList(),
+              UnorderedElementsAre(EmptyNode(1), EmptyNode(3), EmptyNode(6)));
+  return true;
+}
+
+}  // namespace
+
+TEST(SerializeHostDescriptionTest, Forest) {
   std::vector<HostDescriptionNode> nodes(7);
   const char* kNames[] = {"0", "1", "2", "3", "4", "5", "6"};
   for (size_t i = 0; i < 7; ++i) {
-    nodes[i] = GetNodeWithLabel(i);
-    nodes[i].name = kNames[i];
+    nodes[i] = GetNodeWithLabel(kNames[i], i);
   }
   nodes[2].parent_name = "5";
   nodes[4].parent_name = "2";
@@ -70,47 +133,6 @@ TEST(SerializeDictionaryForestTest, Forest) {
   base::ListValue result =
       SerializeHostDescriptions(std::move(nodes), "children");
 
-  EXPECT_EQ(2u, result.GetSize());
-  const base::Value* value = nullptr;
-  const base::DictionaryValue* dict = nullptr;
-  const base::ListValue* list = nullptr;
-
-  // Check the result. Note that sibling nodes are in the same order in which
-  // they appear in |nodes|.
-
-  // Node 0
-  ASSERT_TRUE(result.Get(0, &value));
-  ASSERT_TRUE(value->GetAsDictionary(&dict));
-  EXPECT_EQ(0, GetLabel(dict));
-  ASSERT_TRUE(dict->GetList("children", &list));
-  EXPECT_EQ(3u, list->GetSize());
-
-  // Nodes 1, 3, 6
-  constexpr int kLabels[] = {1, 3, 6};
-  for (int i = 0; i < 3; ++i) {
-    ASSERT_TRUE(list->Get(i, &value));
-    ASSERT_TRUE(value->GetAsDictionary(&dict));
-    EXPECT_EQ(kLabels[i], GetLabel(dict));
-    EXPECT_FALSE(dict->HasKey("children"));
-  }
-
-  // Node 5
-  ASSERT_TRUE(result.Get(1, &value));
-  ASSERT_TRUE(value->GetAsDictionary(&dict));
-  EXPECT_EQ(5, GetLabel(dict));
-  ASSERT_TRUE(dict->GetList("children", &list));
-  EXPECT_EQ(1u, list->GetSize());
-
-  // Node 2
-  ASSERT_TRUE(list->Get(0, &value));
-  ASSERT_TRUE(value->GetAsDictionary(&dict));
-  EXPECT_EQ(2, GetLabel(dict));
-  ASSERT_TRUE(dict->GetList("children", &list));
-  EXPECT_EQ(1u, list->GetSize());
-
-  // Node 4
-  ASSERT_TRUE(list->Get(0, &value));
-  ASSERT_TRUE(value->GetAsDictionary(&dict));
-  EXPECT_EQ(4, GetLabel(dict));
-  EXPECT_FALSE(dict->HasKey("children"));
+  EXPECT_THAT(result.base::Value::GetList(),
+              UnorderedElementsAre(Node0(), Node5()));
 }
