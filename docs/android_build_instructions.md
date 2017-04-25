@@ -214,8 +214,7 @@ build/android/adb_install_apk.py out/Default/apks/ContentShell.apk
 ```
 
 this will build and install an Android apk under
-`out/Default/apks/ContentShell.apk`. (Where `Release` is the name of your build
-directory.)
+`out/Default/apks/ContentShell.apk`.
 
 If you use custom out dir instead of standard out/ dir, use
 CHROMIUM_OUT_DIR env.
