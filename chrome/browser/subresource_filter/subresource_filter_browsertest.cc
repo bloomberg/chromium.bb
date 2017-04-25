@@ -381,9 +381,6 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
   void ToggleFeatures(
       std::unique_ptr<ScopedSubresourceFilterFeatureToggle> features) {
     scoped_feature_toggle_ = std::move(features);
-    ContentSubresourceFilterDriverFactory* driver_factory =
-        ContentSubresourceFilterDriverFactory::FromWebContents(web_contents());
-    driver_factory->set_configuration_for_testing(GetActiveConfiguration());
   }
 
  private:

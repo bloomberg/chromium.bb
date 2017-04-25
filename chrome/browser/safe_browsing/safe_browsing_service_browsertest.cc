@@ -60,7 +60,6 @@
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
@@ -930,10 +929,6 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SubresourceFilterEndToEndTest) {
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto* driver_factory = subresource_filter::
-      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
-  driver_factory->set_configuration_for_testing(
-      subresource_filter::GetActiveConfiguration());
 
   // Navigation to a phishing page should trigger an interstitial. If the user
   // clicks through it, the page load should proceed, but with subresource
@@ -2004,10 +1999,6 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto* driver_factory = subresource_filter::
-      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
-  driver_factory->set_configuration_for_testing(
-      subresource_filter::GetActiveConfiguration());
 
   // Navigation to a phishing page should trigger an interstitial. If the user
   // clicks through it, the page load should proceed, but with subresource

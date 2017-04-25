@@ -5,12 +5,15 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 
 #include <string>
+#include <utility>
 
+#include "base/lazy_instance.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/lock.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace subresource_filter {
@@ -76,6 +79,45 @@ bool ParseBool(const base::StringPiece value) {
   return base::LowerCaseEqualsASCII(value, "true");
 }
 
+Configuration ParseFieldTrialConfiguration() {
+  Configuration configuration;
+
+  std::map<std::string, std::string> params;
+  base::GetFieldTrialParamsByFeature(kSafeBrowsingSubresourceFilter, &params);
+
+  configuration.activation_level = ParseActivationLevel(
+      TakeVariationParamOrReturnEmpty(&params, kActivationLevelParameterName));
+
+  configuration.activation_scope = ParseActivationScope(
+      TakeVariationParamOrReturnEmpty(&params, kActivationScopeParameterName));
+
+  configuration.activation_list = ParseActivationList(
+      TakeVariationParamOrReturnEmpty(&params, kActivationListsParameterName));
+
+  configuration.performance_measurement_rate =
+      ParsePerformanceMeasurementRate(TakeVariationParamOrReturnEmpty(
+          &params, kPerformanceMeasurementRateParameterName));
+
+  configuration.should_suppress_notifications =
+      ParseBool(TakeVariationParamOrReturnEmpty(
+          &params, kSuppressNotificationsParameterName));
+
+  configuration.ruleset_flavor =
+      TakeVariationParamOrReturnEmpty(&params, kRulesetFlavorParameterName);
+
+  configuration.should_whitelist_site_on_reload =
+      ParseBool(TakeVariationParamOrReturnEmpty(
+          &params, kWhitelistSiteOnReloadParameterName));
+
+  return configuration;
+}
+
+base::LazyInstance<base::Lock>::Leaky g_active_configurations_lock =
+    LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<scoped_refptr<ConfigurationList>>::Leaky
+    g_active_configurations = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 const base::Feature kSafeBrowsingSubresourceFilter{
@@ -115,37 +157,26 @@ Configuration::~Configuration() = default;
 Configuration::Configuration(Configuration&&) = default;
 Configuration& Configuration::operator=(Configuration&&) = default;
 
-Configuration GetActiveConfiguration() {
-  Configuration active_configuration;
+ConfigurationList::ConfigurationList(Configuration config)
+    : config_(std::move(config)) {}
+ConfigurationList::~ConfigurationList() = default;
 
-  std::map<std::string, std::string> params;
-  base::GetFieldTrialParamsByFeature(kSafeBrowsingSubresourceFilter, &params);
-
-  active_configuration.activation_level = ParseActivationLevel(
-      TakeVariationParamOrReturnEmpty(&params, kActivationLevelParameterName));
-
-  active_configuration.activation_scope = ParseActivationScope(
-      TakeVariationParamOrReturnEmpty(&params, kActivationScopeParameterName));
-
-  active_configuration.activation_list = ParseActivationList(
-      TakeVariationParamOrReturnEmpty(&params, kActivationListsParameterName));
-
-  active_configuration.performance_measurement_rate =
-      ParsePerformanceMeasurementRate(TakeVariationParamOrReturnEmpty(
-          &params, kPerformanceMeasurementRateParameterName));
-
-  active_configuration.should_suppress_notifications =
-      ParseBool(TakeVariationParamOrReturnEmpty(
-          &params, kSuppressNotificationsParameterName));
-
-  active_configuration.ruleset_flavor =
-      TakeVariationParamOrReturnEmpty(&params, kRulesetFlavorParameterName);
-
-  active_configuration.should_whitelist_site_on_reload =
-      ParseBool(TakeVariationParamOrReturnEmpty(
-          &params, kWhitelistSiteOnReloadParameterName));
-
-  return active_configuration;
+scoped_refptr<ConfigurationList> GetActiveConfigurations() {
+  base::AutoLock lock(g_active_configurations_lock.Get());
+  if (!g_active_configurations.Get()) {
+    g_active_configurations.Get() =
+        base::MakeShared<ConfigurationList>(ParseFieldTrialConfiguration());
+  }
+  return g_active_configurations.Get();
 }
+
+namespace testing {
+
+void ClearCachedActiveConfigurations() {
+  base::AutoLock lock(g_active_configurations_lock.Get());
+  g_active_configurations.Get() = nullptr;
+}
+
+}  // namespace testing
 
 }  // namespace subresource_filter

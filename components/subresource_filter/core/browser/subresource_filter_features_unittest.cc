@@ -42,7 +42,9 @@ TEST(SubresourceFilterFeaturesTest, ActivationLevel) {
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         test_case.activation_level_param, kActivationScopeNoSites);
 
-    Configuration actual_configuration = GetActiveConfiguration();
+    auto active_configurations = GetActiveConfigurations();
+    const Configuration& actual_configuration =
+        active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_activation_level,
               actual_configuration.activation_level);
     EXPECT_EQ(ActivationScope::NO_SITES, actual_configuration.activation_scope);
@@ -79,7 +81,9 @@ TEST(SubresourceFilterFeaturesTest, ActivationScope) {
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         kActivationLevelDisabled, test_case.activation_scope_param);
 
-    Configuration actual_configuration = GetActiveConfiguration();
+    auto active_configurations = GetActiveConfigurations();
+    const Configuration& actual_configuration =
+        active_configurations->the_one_and_only();
     EXPECT_EQ(ActivationLevel::DISABLED, actual_configuration.activation_level);
     EXPECT_EQ(test_case.expected_activation_scope,
               actual_configuration.activation_scope);
@@ -130,7 +134,9 @@ TEST(SubresourceFilterFeaturesTest, ActivationLevelAndScope) {
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         test_case.activation_level_param, test_case.activation_scope_param);
 
-    Configuration actual_configuration = GetActiveConfiguration();
+    auto active_configurations = GetActiveConfigurations();
+    const Configuration& actual_configuration =
+        active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_activation_level,
               actual_configuration.activation_level);
     EXPECT_EQ(test_case.expected_activation_scope,
@@ -186,7 +192,9 @@ TEST(SubresourceFilterFeaturesTest, ActivationList) {
         kActivationLevelDisabled, kActivationScopeNoSites,
         test_case.activation_list_param);
 
-    Configuration actual_configuration = GetActiveConfiguration();
+    auto active_configurations = GetActiveConfigurations();
+    const Configuration& actual_configuration =
+        active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_activation_list,
               actual_configuration.activation_list);
   }
@@ -223,7 +231,9 @@ TEST(SubresourceFilterFeaturesTest, PerfMeasurementRate) {
         {{kPerformanceMeasurementRateParameterName,
           test_case.perf_measurement_param}});
 
-    Configuration actual_configuration = GetActiveConfiguration();
+    auto active_configurations = GetActiveConfigurations();
+    const Configuration& actual_configuration =
+        active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_perf_measurement_rate,
               actual_configuration.performance_measurement_rate);
   }
@@ -257,7 +267,9 @@ TEST(SubresourceFilterFeaturesTest, SuppressNotifications) {
         {{kSuppressNotificationsParameterName,
           test_case.suppress_notifications_param}});
 
-    Configuration actual_configuration = GetActiveConfiguration();
+    auto active_configurations = GetActiveConfigurations();
+    const Configuration& actual_configuration =
+        active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_suppress_notifications_value,
               actual_configuration.should_suppress_notifications);
   }
@@ -291,7 +303,9 @@ TEST(SubresourceFilterFeaturesTest, WhitelistSiteOnReload) {
         {{kWhitelistSiteOnReloadParameterName,
           test_case.whitelist_site_on_reload_param}});
 
-    Configuration actual_configuration = GetActiveConfiguration();
+    auto active_configurations = GetActiveConfigurations();
+    const Configuration& actual_configuration =
+        active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_whitelist_site_on_reload_value,
               actual_configuration.should_whitelist_site_on_reload);
   }

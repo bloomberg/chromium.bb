@@ -65,10 +65,18 @@ ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
   }
 
   scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+
+  // Force the active ConfigurationList to be reparsed on next access so that
+  // the variation parameters come into effect.
+  ClearCachedActiveConfigurations();
 }
 
 ScopedSubresourceFilterFeatureToggle::~ScopedSubresourceFilterFeatureToggle() {
   variations::testing::ClearAllVariationParams();
+
+  // Force the active ConfigurationList to be reparsed on next access, so that
+  // the overrides from this instance are no longer in effect.
+  ClearCachedActiveConfigurations();
 }
 
 }  // namespace testing

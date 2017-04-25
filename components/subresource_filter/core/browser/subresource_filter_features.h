@@ -6,6 +6,8 @@
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
@@ -53,8 +55,37 @@ struct Configuration {
   bool should_whitelist_site_on_reload = false;
 };
 
-// Retrieves the subresource filtering configuration to use. Expensive to call.
-Configuration GetActiveConfiguration();
+// TODO(engedy): Make this an actual list once all call sites are prepared to
+// handle multiple simultaneous configurations.
+class ConfigurationList : public base::RefCountedThreadSafe<ConfigurationList> {
+ public:
+  ConfigurationList(Configuration config);
+
+  const Configuration& the_one_and_only() const { return config_; }
+
+ private:
+  friend class base::RefCountedThreadSafe<ConfigurationList>;
+  ~ConfigurationList();
+
+  const Configuration config_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConfigurationList);
+};
+
+// Retrieves all currently enabled subresource filtering configurations. The
+// configurations are parsed on first access and then the result is cached.
+//
+// In tests, however, the config may change in-between navigations, so callers
+// should not hold on to the result for long.
+scoped_refptr<ConfigurationList> GetActiveConfigurations();
+
+namespace testing {
+
+// Clears the cached active ConfigurationList so that it will be recomputed on
+// next access. Used in tests when the variation parameters are altered.
+void ClearCachedActiveConfigurations();
+
+}  // namespace testing
 
 // Feature and variation parameter definitions -------------------------------
 

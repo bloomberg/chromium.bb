@@ -86,7 +86,6 @@ ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
     content::WebContents* web_contents,
     std::unique_ptr<SubresourceFilterClient> client)
     : content::WebContentsObserver(web_contents),
-      configuration_(GetActiveConfiguration()),
       client_(std::move(client)),
       throttle_manager_(
           base::MakeUnique<ContentSubresourceFilterThrottleManager>(
@@ -115,10 +114,14 @@ ContentSubresourceFilterDriverFactory::
     ComputeActivationDecisionForMainFrameNavigation(
         content::NavigationHandle* navigation_handle) const {
   const GURL& url(navigation_handle->GetURL());
-  if (configuration_.activation_level == ActivationLevel::DISABLED)
+
+  auto configurations = GetActiveConfigurations();
+  if (configurations->the_one_and_only().activation_level ==
+      ActivationLevel::DISABLED)
     return ActivationDecision::ACTIVATION_DISABLED;
 
-  if (configuration_.activation_scope == ActivationScope::NO_SITES)
+  if (configurations->the_one_and_only().activation_scope ==
+      ActivationScope::NO_SITES)
     return ActivationDecision::ACTIVATION_DISABLED;
 
   if (!url.SchemeIsHTTPOrHTTPS())
@@ -129,7 +132,7 @@ ContentSubresourceFilterDriverFactory::
   if (client_->ShouldSuppressActivation(navigation_handle))
     return ActivationDecision::URL_WHITELISTED;
 
-  switch (configuration_.activation_scope) {
+  switch (configurations->the_one_and_only().activation_scope) {
     case ActivationScope::ALL_SITES:
       return ActivationDecision::ACTIVATED;
     case ActivationScope::ACTIVATION_LIST: {
@@ -137,10 +140,11 @@ ContentSubresourceFilterDriverFactory::
       // AddActivationListMatch to ensure the activation list only has relevant
       // entries.
       DCHECK(url.SchemeIsHTTPOrHTTPS() ||
-             !DidURLMatchActivationList(url, configuration_.activation_list));
-      bool should_activate =
-          DidURLMatchActivationList(url, configuration_.activation_list);
-      if (configuration_.activation_list ==
+             !DidURLMatchActivationList(
+                 url, configurations->the_one_and_only().activation_list));
+      bool should_activate = DidURLMatchActivationList(
+          url, configurations->the_one_and_only().activation_list);
+      if (configurations->the_one_and_only().activation_list ==
           ActivationList::PHISHING_INTERSTITIAL) {
         // Handling special case, where activation on the phishing sites also
         // mean the activation on the sites with social engineering metadata.
@@ -185,7 +189,8 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
 
   RecordRedirectChainMatchPattern();
 
-  if (configuration_.should_whitelist_site_on_reload &&
+  auto configurations = GetActiveConfigurations();
+  if (configurations->the_one_and_only().should_whitelist_site_on_reload &&
       NavigationIsPageReload(url, referrer, transition)) {
     // Whitelist this host for the current as well as subsequent navigations.
     client_->WhitelistInCurrentWebContents(url);
@@ -199,17 +204,19 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
     return;
   }
 
-  activation_level_ = configuration_.activation_level;
-  measure_performance_ = activation_level_ != ActivationLevel::DISABLED &&
-                         ShouldMeasurePerformanceForPageLoad(
-                             configuration_.performance_measurement_rate);
+  activation_level_ = configurations->the_one_and_only().activation_level;
+  measure_performance_ =
+      activation_level_ != ActivationLevel::DISABLED &&
+      ShouldMeasurePerformanceForPageLoad(
+          configurations->the_one_and_only().performance_measurement_rate);
   ActivationState state = ActivationState(activation_level_);
   state.measure_performance = measure_performance_;
   throttle_manager_->NotifyPageActivationComputed(navigation_handle, state);
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
-  if (configuration_.should_suppress_notifications)
+  auto configurations = GetActiveConfigurations();
+  if (configurations->the_one_and_only().should_suppress_notifications)
     return;
 
   client_->ToggleNotificationVisibility(activation_level_ ==
