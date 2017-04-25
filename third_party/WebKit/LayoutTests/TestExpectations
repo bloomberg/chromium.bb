@@ -3352,8 +3352,11 @@ crbug.com/676229 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Fa
 crbug.com/678346 [ Win7 Debug ] fast/dom/shadow/selections-in-shadow.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] virtual/sharedarraybuffer/fast/dom/shadow/selections-in-shadow.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeout ]
+crbug.com/678346 [ Win7 Debug ] virtual/sharedarraybuffer/storage/indexeddb/index-cursor.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Timeout ]
+crbug.com/678346 [ Win7 Debug ] virtual/sharedarraybuffer/storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
+crbug.com/678346 [ Win7 Debug ] virtual/sharedarraybuffer/storage/indexeddb/structured-clone.html [ Pass Timeout ]
 
 crbug.com/678487 http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
 crbug.com/678487 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
