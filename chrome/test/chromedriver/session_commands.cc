@@ -357,7 +357,7 @@ Status ExecuteGetWindowHandles(Session* session,
        it != web_view_ids.end(); ++it) {
     window_ids->AppendString(WebViewIdToWindowHandle(*it));
   }
-  value->reset(window_ids.release());
+  *value = std::move(window_ids);
   return Status(kOk);
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/test/chromedriver/capabilities.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -111,7 +112,7 @@ Status ParseDeviceName(const std::string& device_name,
                   status);
   }
 
-  capabilities->device_metrics.reset(device->device_metrics.release());
+  capabilities->device_metrics = std::move(device->device_metrics);
   // Don't override the user agent if blank (like for notebooks).
   if (!device->user_agent.empty())
     capabilities->switches.SetSwitch("user-agent", device->user_agent);

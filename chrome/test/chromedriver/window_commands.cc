@@ -8,6 +8,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
@@ -903,7 +904,7 @@ Status ExecuteGetCookies(Session* session,
        it != cookies.end(); ++it) {
     cookie_list->Append(CreateDictionaryFrom(*it));
   }
-  value->reset(cookie_list.release());
+  *value = std::move(cookie_list);
   return Status(kOk);
 }
 

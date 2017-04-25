@@ -15,6 +15,7 @@
 #include <limits>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -335,7 +336,7 @@ base::Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
         new base::Version(base::UTF16ToASCII(find_data.GetName().value())));
     if (found_version->IsValid() &&
         found_version->CompareTo(*max_version.get()) > 0) {
-      max_version.reset(found_version.release());
+      max_version = std::move(found_version);
       version_found = true;
     }
   }

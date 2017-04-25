@@ -208,7 +208,7 @@ Status DevToolsClientImpl::SendCommandAndGetResultWithTimeout(
     return status;
   if (!intermediate_result)
     return Status(kUnknownError, "inspector response missing result");
-  result->reset(intermediate_result.release());
+  *result = std::move(intermediate_result);
   return Status(kOk);
 }
 
