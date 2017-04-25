@@ -134,7 +134,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
     }
     benchmarks = [BlacklistedBenchmark, NotBlacklistedBenchmark]
     tests = perf_data_generator.generate_telemetry_tests(
-        test_config, benchmarks, None, False, ['blacklisted'])
+        test_config, benchmarks, None, ['blacklisted'])
 
     generated_test_names = set(t['name'] for t in tests)
     self.assertEquals(

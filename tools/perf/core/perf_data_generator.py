@@ -122,15 +122,13 @@ def add_builder(waterfall, name, additional_compile_targets=None):
   return waterfall
 
 def add_tester(waterfall, name, perf_id, platform, target_bits=64,
-              num_host_shards=1, num_device_shards=1, swarming=None,
-              use_whitelist=False):
+              num_host_shards=1, num_device_shards=1, swarming=None):
   del perf_id # this will be needed
   waterfall['testers'][name] = {
     'platform': platform,
     'num_device_shards': num_device_shards,
     'num_host_shards': num_host_shards,
     'target_bits': target_bits,
-    'use_whitelist': use_whitelist
   }
 
   if swarming:
@@ -600,7 +598,7 @@ def generate_cplusplus_isolate_script_test(dimension):
 
 
 def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map,
-                             use_whitelist, benchmark_ref_build_blacklist):
+                             benchmark_ref_build_blacklist):
   isolated_scripts = []
   # First determine the browser that you need based on the tester
   browser_name = ''
@@ -622,12 +620,9 @@ def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map,
       device_affinity = None
       if benchmark_sharding_map:
         sharding_map = benchmark_sharding_map.get(str(num_shards), None)
-        if not sharding_map and not use_whitelist:
+        if not sharding_map:
           raise Exception('Invalid number of shards, generate new sharding map')
-        if use_whitelist:
-          device_affinity = current_shard
-        else:
-          device_affinity = sharding_map.get(benchmark.Name(), None)
+        device_affinity = sharding_map.get(benchmark.Name(), None)
       else:
         # No sharding map was provided, default to legacy device
         # affinity algorithm
@@ -656,14 +651,6 @@ def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map,
   return isolated_scripts
 
 
-BENCHMARK_NAME_WHITELIST = set([
-    u'smoothness.top_25_smooth',
-    u'sunspider',
-    u'system_health.webview_startup',
-    u'page_cycler_v2.intl_hi_ru',
-    u'dromaeo.cssqueryjquery',
-])
-
 # List of benchmarks that are to never be run on a waterfall.
 BENCHMARK_NAME_BLACKLIST = [
     'multipage_skpicture_printer',
@@ -676,11 +663,13 @@ BENCHMARK_NAME_BLACKLIST = [
     'skpicture_printer_ct',
 ]
 
+
 # Overrides the default 2 hour timeout for swarming tasks.
 BENCHMARK_SWARMING_TIMEOUTS = {
     'loading.mobile': 14400, # 4 hours
     'system_health.memory_mobile': 10800, # 4 hours
 }
+
 
 # List of benchmarks that are to never be run with reference builds.
 BENCHMARK_REF_BUILD_BLACKLIST = [
@@ -688,7 +677,8 @@ BENCHMARK_REF_BUILD_BLACKLIST = [
 ]
 
 
-def current_benchmarks(use_whitelist):
+
+def current_benchmarks():
   benchmarks_dir = os.path.join(src_dir(), 'tools', 'perf', 'benchmarks')
   top_level_dir = os.path.dirname(benchmarks_dir)
 
@@ -702,10 +692,6 @@ def current_benchmarks(use_whitelist):
         all_benchmarks.remove(benchmark)
         break
 
-  if use_whitelist:
-    all_benchmarks = (
-        bench for bench in all_benchmarks
-        if bench.Name() in BENCHMARK_NAME_WHITELIST)
   return sorted(all_benchmarks, key=lambda b: b.Name())
 
 
@@ -763,8 +749,7 @@ def shard_benchmarks(num_shards, all_benchmarks):
 def generate_all_tests(waterfall):
   tests = {}
 
-  all_benchmarks = current_benchmarks(False)
-  whitelist_benchmarks = current_benchmarks(True)
+  all_benchmarks = current_benchmarks()
   # Get benchmark sharding according to common sharding configurations
   # Currently we only have bots sharded 5 directions and 1 direction
   benchmark_sharding_map = {}
@@ -774,10 +759,7 @@ def generate_all_tests(waterfall):
   benchmark_sharding_map['21'] = shard_benchmarks(21, all_benchmarks)
 
   for name, config in waterfall['testers'].iteritems():
-    use_whitelist = config['use_whitelist']
     benchmark_list = all_benchmarks
-    if use_whitelist:
-      benchmark_list = whitelist_benchmarks
     if config.get('swarming', False):
       # Our current configuration only ever has one set of swarming dimensions
       # Make sure this still holds true
@@ -786,7 +768,7 @@ def generate_all_tests(waterfall):
       # Generate benchmarks
       sharding_map = benchmark_sharding_map
       isolated_scripts = generate_telemetry_tests(
-          config, benchmark_list, sharding_map, use_whitelist,
+          config, benchmark_list, sharding_map,
           BENCHMARK_REF_BUILD_BLACKLIST)
       # Generate swarmed non-telemetry tests if present
       if config['swarming_dimensions'][0].get('perf_tests', False):
@@ -891,7 +873,7 @@ def get_all_waterfall_benchmarks_metadata():
 
 
 def get_all_benchmarks_metadata(metadata):
-  benchmark_list = current_benchmarks(False)
+  benchmark_list = current_benchmarks()
 
   for benchmark in benchmark_list:
     emails = decorators.GetEmails(benchmark)
