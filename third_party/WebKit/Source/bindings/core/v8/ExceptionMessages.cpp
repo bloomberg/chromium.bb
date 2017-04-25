@@ -122,16 +122,6 @@ String ExceptionMessages::ArgumentNullOrIncorrectType(
          " object.";
 }
 
-String ExceptionMessages::NotAnArrayTypeArgumentOrValue(int argument_index) {
-  String kind;
-  if (argument_index)  // method argument
-    kind = OrdinalNumber(argument_index) + " argument";
-  else  // value, e.g. attribute setter
-    kind = "value provided";
-  return "The " + kind +
-         " is neither an array, nor does it have indexed properties.";
-}
-
 String ExceptionMessages::NotASequenceTypeProperty(
     const String& property_name) {
   return "'" + property_name +

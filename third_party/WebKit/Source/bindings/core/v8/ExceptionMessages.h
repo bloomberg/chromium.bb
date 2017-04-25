@@ -142,9 +142,6 @@ class CORE_EXPORT ExceptionMessages {
 
   static String InvalidArity(const char* expected, unsigned provided);
 
-  // If  > 0, the argument index that failed type check (1-indexed.)
-  // If == 0, a (non-argument) value (e.g., a setter) failed the same check.
-  static String NotAnArrayTypeArgumentOrValue(int argument_index);
   static String NotASequenceTypeProperty(const String& property_name);
   static String NotAFiniteNumber(double value,
                                  const char* name = "value provided");

@@ -290,145 +290,6 @@ NodeFilter* ToNodeFilter(v8::Local<v8::Value>,
                          ScriptState*);
 XPathNSResolver* ToXPathNSResolver(ScriptState*, v8::Local<v8::Value>);
 
-bool ToV8Sequence(v8::Local<v8::Value>,
-                  uint32_t& length,
-                  v8::Isolate*,
-                  ExceptionState&);
-
-template <typename T>
-HeapVector<Member<T>> ToMemberNativeArray(v8::Local<v8::Value> value,
-                                          int argument_index,
-                                          v8::Isolate* isolate,
-                                          ExceptionState& exception_state) {
-  v8::Local<v8::Value> v8_value(v8::Local<v8::Value>::New(isolate, value));
-  uint32_t length = 0;
-  if (value->IsArray()) {
-    length = v8::Local<v8::Array>::Cast(v8_value)->Length();
-  } else if (!ToV8Sequence(value, length, isolate, exception_state)) {
-    if (!exception_state.HadException()) {
-      exception_state.ThrowTypeError(
-          ExceptionMessages::NotAnArrayTypeArgumentOrValue(argument_index));
-    }
-    return HeapVector<Member<T>>();
-  }
-
-  using VectorType = HeapVector<Member<T>>;
-  if (length > VectorType::MaxCapacity()) {
-    exception_state.ThrowRangeError("Array length exceeds supported limit.");
-    return VectorType();
-  }
-
-  VectorType result;
-  result.ReserveInitialCapacity(length);
-  v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8_value);
-  v8::TryCatch block(isolate);
-  for (uint32_t i = 0; i < length; ++i) {
-    v8::Local<v8::Value> element;
-    if (!V8Call(object->Get(isolate->GetCurrentContext(), i), element, block)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return VectorType();
-    }
-    if (V8TypeOf<T>::Type::hasInstance(element, isolate)) {
-      v8::Local<v8::Object> element_object =
-          v8::Local<v8::Object>::Cast(element);
-      result.UncheckedAppend(V8TypeOf<T>::Type::toImpl(element_object));
-    } else {
-      exception_state.ThrowTypeError("Invalid Array element type");
-      return VectorType();
-    }
-  }
-  return result;
-}
-
-template <typename T>
-HeapVector<Member<T>> ToMemberNativeArray(v8::Local<v8::Value> value,
-                                          const String& property_name,
-                                          v8::Isolate* isolate,
-                                          ExceptionState& exception_state) {
-  v8::Local<v8::Value> v8_value(v8::Local<v8::Value>::New(isolate, value));
-  uint32_t length = 0;
-  if (value->IsArray()) {
-    length = v8::Local<v8::Array>::Cast(v8_value)->Length();
-  } else if (!ToV8Sequence(value, length, isolate, exception_state)) {
-    if (!exception_state.HadException()) {
-      exception_state.ThrowTypeError(
-          ExceptionMessages::NotASequenceTypeProperty(property_name));
-    }
-    return HeapVector<Member<T>>();
-  }
-
-  using VectorType = HeapVector<Member<T>>;
-  if (length > VectorType::MaxCapacity()) {
-    exception_state.ThrowRangeError("Array length exceeds supported limit.");
-    return VectorType();
-  }
-
-  VectorType result;
-  result.ReserveInitialCapacity(length);
-  v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8_value);
-  v8::TryCatch block(isolate);
-  for (uint32_t i = 0; i < length; ++i) {
-    v8::Local<v8::Value> element;
-    if (!V8Call(object->Get(isolate->GetCurrentContext(), i), element, block)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return VectorType();
-    }
-    if (V8TypeOf<T>::Type::hasInstance(element, isolate)) {
-      v8::Local<v8::Object> element_object =
-          v8::Local<v8::Object>::Cast(element);
-      result.UncheckedAppend(V8TypeOf<T>::Type::toImpl(element_object));
-    } else {
-      exception_state.ThrowTypeError("Invalid Array element type");
-      return VectorType();
-    }
-  }
-  return result;
-}
-
-// Converts a JavaScript value to an array as per the Web IDL specification:
-// http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
-template <typename VectorType,
-          typename ValueType = typename VectorType::ValueType>
-VectorType ToImplArray(v8::Local<v8::Value> value,
-                       int argument_index,
-                       v8::Isolate* isolate,
-                       ExceptionState& exception_state) {
-  typedef NativeValueTraits<ValueType> TraitsType;
-
-  uint32_t length = 0;
-  if (value->IsArray()) {
-    length = v8::Local<v8::Array>::Cast(value)->Length();
-  } else if (!ToV8Sequence(value, length, isolate, exception_state)) {
-    if (!exception_state.HadException()) {
-      exception_state.ThrowTypeError(
-          ExceptionMessages::NotAnArrayTypeArgumentOrValue(argument_index));
-    }
-    return VectorType();
-  }
-
-  if (length > VectorType::MaxCapacity()) {
-    exception_state.ThrowRangeError("Array length exceeds supported limit.");
-    return VectorType();
-  }
-
-  VectorType result;
-  result.ReserveInitialCapacity(length);
-  v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-  v8::TryCatch block(isolate);
-  for (uint32_t i = 0; i < length; ++i) {
-    v8::Local<v8::Value> element;
-    if (!V8Call(object->Get(isolate->GetCurrentContext(), i), element, block)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return VectorType();
-    }
-    result.UncheckedAppend(
-        TraitsType::NativeValue(isolate, element, exception_state));
-    if (exception_state.HadException())
-      return VectorType();
-  }
-  return result;
-}
-
 template <typename VectorType>
 VectorType ToImplArray(const Vector<ScriptValue>& value,
                        v8::Isolate* isolate,
@@ -482,53 +343,6 @@ CORE_EXPORT v8::Local<v8::Object> GetEsIterator(v8::Isolate*,
                                                 v8::Local<v8::Object>,
                                                 ExceptionState&);
 
-// Validates that the passed object is a sequence type per WebIDL spec
-// http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-sequence
-inline bool ToV8Sequence(v8::Local<v8::Value> value,
-                         uint32_t& length,
-                         v8::Isolate* isolate,
-                         ExceptionState& exception_state) {
-  // Attempt converting to a sequence if the value is not already an array but
-  // is any kind of object except for a native Date object or a native RegExp
-  // object.
-  DCHECK(!value->IsArray());
-  // FIXME: Do we really need to special case Date and RegExp object?
-  // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22806
-  if (!value->IsObject() || value->IsDate() || value->IsRegExp()) {
-    // The caller is responsible for reporting a TypeError.
-    return false;
-  }
-
-  v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-  v8::Local<v8::String> length_symbol = V8AtomicString(isolate, "length");
-
-  // FIXME: The specification states that the length property should be used as
-  // fallback, if value is not a platform object that supports indexed
-  // properties. If it supports indexed properties, length should actually be
-  // one greater than value's maximum indexed property index.
-  v8::TryCatch block(isolate);
-  v8::Local<v8::Value> length_value;
-  if (!V8Call(object->Get(isolate->GetCurrentContext(), length_symbol),
-              length_value, block)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return false;
-  }
-
-  if (length_value->IsNullOrUndefined()) {
-    // The caller is responsible for reporting a TypeError.
-    return false;
-  }
-
-  uint32_t sequence_length;
-  if (!V8Call(length_value->Uint32Value(isolate->GetCurrentContext()),
-              sequence_length, block)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return false;
-  }
-
-  length = sequence_length;
-  return true;
-}
 // Validates that the passed object is a sequence type per the WebIDL spec: it
 // has a callable @iterator.
 // https://heycam.github.io/webidl/#es-sequence
@@ -553,54 +367,6 @@ struct NativeValueTraits<String> {
 };
 
 template <>
-struct NativeValueTraits<AtomicString> {
-  static inline AtomicString NativeValue(v8::Isolate* isolate,
-                                         v8::Local<v8::Value> value,
-                                         ExceptionState& exception_state) {
-    V8StringResource<> string_value(value);
-    if (!string_value.Prepare(exception_state))
-      return AtomicString();
-    return string_value;
-  }
-};
-
-template <>
-struct NativeValueTraits<int> {
-  static inline int NativeValue(v8::Isolate* isolate,
-                                v8::Local<v8::Value> value,
-                                ExceptionState& exception_state) {
-    return ToInt32(isolate, value, kNormalConversion, exception_state);
-  }
-};
-
-template <>
-struct NativeValueTraits<unsigned> {
-  static inline unsigned NativeValue(v8::Isolate* isolate,
-                                     v8::Local<v8::Value> value,
-                                     ExceptionState& exception_state) {
-    return ToUInt32(isolate, value, kNormalConversion, exception_state);
-  }
-};
-
-template <>
-struct NativeValueTraits<float> {
-  static inline float NativeValue(v8::Isolate* isolate,
-                                  v8::Local<v8::Value> value,
-                                  ExceptionState& exception_state) {
-    return ToFloat(isolate, value, exception_state);
-  }
-};
-
-template <>
-struct NativeValueTraits<double> {
-  static inline double NativeValue(v8::Isolate* isolate,
-                                   v8::Local<v8::Value> value,
-                                   ExceptionState& exception_state) {
-    return ToDouble(isolate, value, exception_state);
-  }
-};
-
-template <>
 struct NativeValueTraits<v8::Local<v8::Value>>
     : public NativeValueTraitsBase<v8::Local<v8::Value>> {
   static inline v8::Local<v8::Value> NativeValue(
@@ -608,15 +374,6 @@ struct NativeValueTraits<v8::Local<v8::Value>>
       v8::Local<v8::Value> value,
       ExceptionState& exception_state) {
     return value;
-  }
-};
-
-template <typename T>
-struct NativeValueTraits<Vector<T>> {
-  static inline Vector<T> NativeValue(v8::Isolate* isolate,
-                                      v8::Local<v8::Value> value,
-                                      ExceptionState& exception_state) {
-    return ToImplArray<Vector<T>>(value, 0, isolate, exception_state);
   }
 };
 
