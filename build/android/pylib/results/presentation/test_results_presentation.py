@@ -308,12 +308,12 @@ def upload_to_google_bucket(html, test_name, builder_name, build_number,
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--json-file', help='Path of json file.', required=True)
+  parser.add_argument('--json-file', help='Path of json file.')
   parser.add_argument('--cs-base-url', help='Base url for code search.',
                       default='http://cs.chromium.org')
   parser.add_argument('--bucket', help='Google storage bucket.', required=True)
-  parser.add_argument('--builder-name', help='Builder name.', required=True)
-  parser.add_argument('--build-number', help='Build number.', required=True)
+  parser.add_argument('--builder-name', help='Builder name.')
+  parser.add_argument('--build-number', help='Build number.')
   parser.add_argument('--test-name', help='The name of the test.',
                       required=True)
   parser.add_argument('--server-url', help='The url of the server.',
@@ -324,18 +324,77 @@ def main():
             'whether to download the file, or view in browser.'),
       default='text/html',
       choices=['text/html', 'application/octet-stream'])
+  parser.add_argument(
+      '-o', '--output-json',
+      help='(Swarming Merge Script API)'
+           ' Output JSON file to create.')
+  parser.add_argument(
+      '--build-properties',
+      help='(Swarming Merge Script API) '
+           'Build property JSON file provided by recipes.')
+  parser.add_argument(
+      '--summary-json',
+      help='(Swarming Merge Script API)'
+           ' Summary of shard state running on swarming.'
+           ' (Output of the swarming.py collect'
+           ' --task-summary-json=XXX command.)')
+  parser.add_argument(
+      'positional', nargs='*',
+      help='output.json from shards.')
 
   args = parser.parse_args()
-  if os.path.exists(args.json_file):
-    result_html_string = result_details(args.json_file, args.cs_base_url,
-                                        args.bucket, args.server_url)
-    print upload_to_google_bucket(result_html_string.encode('UTF-8'),
-                                  args.test_name, args.builder_name,
-                                  args.build_number, args.bucket,
-                                  args.server_url, args.content_type)
-  else:
-    raise IOError('--json-file %s not found.' % args.json_file)
 
+  if ((args.build_properties is None) ==
+         (args.build_number is None or args.builder_name is None)):
+    raise parser.error('Exactly one of build_perperties or '
+                    '(build_number or builder_names) should be given.')
+
+  if (args.build_number is None) != (args.builder_name is None):
+    raise parser.error('args.build_number and args.builder_name '
+                    'has to be be given together'
+                    'or not given at all.')
+
+  if (len(args.positional) == 0) == (args.json_file is None):
+    raise parser.error('Exactly one of args.positional and '
+                    'args.json_file should be given.')
+
+  if args.build_properties:
+    build_properties = json.loads(args.build_properties)
+    if ((not 'buildnumber' in build_properties) or
+        (not 'buildername' in build_properties)):
+      raise parser.error('Build number/builder name not specified.')
+    build_number = build_properties['buildnumber']
+    builder_name = build_properties['buildername']
+  elif args.build_number and args.builder_name:
+    build_number = args.build_number
+    builder_name = args.builder_name
+
+  if args.positional:
+    if not len(args.positional) == 1:
+      raise parser.error('More than 1 json file specified.')
+    json_file = args.positional[0]
+  elif args.json_file:
+    json_file = args.json_file
+
+  if not os.path.exists(json_file):
+    raise IOError('--json-file %s not found.' % json_file)
+
+  result_html_string = result_details(json_file, args.cs_base_url,
+                                      args.bucket, args.server_url)
+  result_details_link = upload_to_google_bucket(
+      result_html_string.encode('UTF-8'),
+      args.test_name, builder_name,
+      build_number, args.bucket,
+      args.server_url, args.content_type)
+
+  if args.output_json:
+    with open(json_file) as original_json_file:
+      json_object = json.load(original_json_file)
+      json_object['links'] = {'result_details': result_details_link}
+      with open(args.output_json, 'w') as f:
+        json.dump(json_object, f)
+  else:
+    print result_details_link
 
 if __name__ == '__main__':
   sys.exit(main())

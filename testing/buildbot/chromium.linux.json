@@ -245,6 +245,15 @@
         "test": "cc_unittests"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "chrome_public_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "chrome_public_test_apk"
         ],
