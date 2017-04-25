@@ -50,12 +50,6 @@ enum ChromeDistanceMetric {
   DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE,
 };
 
-enum class DialogWidth {
-  SMALL,
-  MEDIUM,
-  LARGE,
-};
-
 class ChromeLayoutProvider : public views::LayoutProvider {
  public:
   ChromeLayoutProvider() {}
@@ -64,8 +58,8 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   static ChromeLayoutProvider* Get();
   static std::unique_ptr<views::LayoutProvider> CreateLayoutProvider();
 
+  // views::LayoutProvider:
   int GetDistanceMetric(int metric) const override;
-
   const views::TypographyProvider& GetTypographyProvider() const override;
 
   // Returns the alignment used for control labels in a GridLayout; for example,
@@ -91,10 +85,6 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   //
   // TODO(pkasting): Fix callers and remove this.
   virtual bool IsHarmonyMode() const;
-
-  // Returns the preferred width in DIPs for a dialog of the specified |width|.
-  // May return 0 if the dialog has no preferred width.
-  virtual int GetDialogPreferredWidth(DialogWidth width) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLayoutProvider);

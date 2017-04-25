@@ -290,13 +290,6 @@ gfx::Size CollectedCookiesViews::GetMinimumSize() const {
   return gfx::Size(0, View::GetMinimumSize().height());
 }
 
-gfx::Size CollectedCookiesViews::GetPreferredSize() const {
-  int preferred =
-      ChromeLayoutProvider::Get()->GetDialogPreferredWidth(DialogWidth::MEDIUM);
-  return gfx::Size(preferred ? preferred : View::GetPreferredSize().width(),
-                   View::GetPreferredSize().height());
-}
-
 void CollectedCookiesViews::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   views::DialogDelegateView::ViewHierarchyChanged(details);

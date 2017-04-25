@@ -187,15 +187,10 @@ ContentSettingBubbleContents::~ContentSettingBubbleContents() {
 gfx::Size ContentSettingBubbleContents::GetPreferredSize() const {
   gfx::Size preferred_size(views::View::GetPreferredSize());
   int preferred_width =
-      ChromeLayoutProvider::Get()->GetDialogPreferredWidth(DialogWidth::SMALL);
-  if (!preferred_width)
-    preferred_width = (!content_setting_bubble_model_->bubble_content()
-                            .domain_lists.empty() &&
-                       (kMinMultiLineContentsWidth > preferred_size.width()))
-                          ? kMinMultiLineContentsWidth
-                          : preferred_size.width();
-  else
-    preferred_width -= margins().width();
+      (!content_setting_bubble_model_->bubble_content().domain_lists.empty() &&
+       (kMinMultiLineContentsWidth > preferred_size.width()))
+          ? kMinMultiLineContentsWidth
+          : preferred_size.width();
   if (content_setting_bubble_model_->AsSubresourceFilterBubbleModel()) {
     preferred_size.set_width(std::min(preferred_width,
                                       kMaxDefaultContentsWidth));

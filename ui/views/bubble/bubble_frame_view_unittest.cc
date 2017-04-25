@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
@@ -486,6 +487,85 @@ TEST_F(BubbleFrameViewTest, GetMaximumSize) {
                           kPreferredClientHeight + kExpectedAdditionalHeight);
   EXPECT_EQ(expected_size, maximum_rect.size());
 #endif
+}
+
+namespace {
+
+class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
+ public:
+  TestBubbleDialogDelegateView()
+      : BubbleDialogDelegateView(nullptr, BubbleBorder::NONE) {
+    set_shadow(BubbleBorder::NO_ASSETS);
+    SetAnchorRect(gfx::Rect());
+  }
+  ~TestBubbleDialogDelegateView() override {}
+
+  using BubbleDialogDelegateView::SetAnchorView;
+
+  // BubbleDialogDelegateView:
+  void DeleteDelegate() override {
+    // This delegate is owned by the test case itself, so it should not delete
+    // itself here.
+  }
+
+  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
+
+  gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
+};
+
+class TestLayoutProvider : public LayoutProvider {
+ public:
+  TestLayoutProvider() : LayoutProvider() {}
+  ~TestLayoutProvider() override {}
+
+  // LayoutProvider:
+  int GetSnappedDialogWidth(int min_width) const override {
+    return snap_to_ ? snap_to_ : min_width;
+  }
+
+  void set_snap_to(int width) { snap_to_ = width; }
+
+ private:
+  int snap_to_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLayoutProvider);
+};
+
+}  // namespace
+
+// This test ensures that if the installed LayoutProvider snaps dialog widths,
+// BubbleFrameView correctly sizes itself to that width.
+TEST_F(BubbleFrameViewTest, WidthSnaps) {
+  TestLayoutProvider provider;
+  TestBubbleDialogDelegateView delegate;
+
+  Widget anchor;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  anchor.Init(params);
+  anchor.Show();
+
+  delegate.SetAnchorView(anchor.GetContentsView());
+  delegate.set_margins(gfx::Insets());
+
+  Widget* w0 = BubbleDialogDelegateView::CreateBubble(&delegate);
+  w0->Show();
+  EXPECT_EQ(delegate.GetPreferredSize().width(),
+            w0->GetWindowBoundsInScreen().width());
+  w0->CloseNow();
+
+  constexpr int kTestWidth = 300;
+  provider.set_snap_to(kTestWidth);
+
+  // The Widget's snapped width should exactly match the width returned by the
+  // LayoutProvider.
+  Widget* w1 = BubbleDialogDelegateView::CreateBubble(&delegate);
+  w1->Show();
+  EXPECT_EQ(kTestWidth, w1->GetWindowBoundsInScreen().width());
+  w1->CloseNow();
 }
 
 }  // namespace views

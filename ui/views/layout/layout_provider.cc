@@ -77,4 +77,8 @@ const TypographyProvider& LayoutProvider::GetTypographyProvider() const {
   return typography_provider_;
 }
 
+int LayoutProvider::GetSnappedDialogWidth(int min_width) const {
+  return min_width;
+}
+
 }  // namespace views

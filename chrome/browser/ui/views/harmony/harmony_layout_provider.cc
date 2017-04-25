@@ -95,17 +95,14 @@ bool HarmonyLayoutProvider::IsHarmonyMode() const {
   return true;
 }
 
-int HarmonyLayoutProvider::GetDialogPreferredWidth(DialogWidth width) const {
-  switch (width) {
-    case DialogWidth::SMALL:
-      return 320;
-    case DialogWidth::MEDIUM:
-      return 448;
-    case DialogWidth::LARGE:
-      return 512;
+int HarmonyLayoutProvider::GetSnappedDialogWidth(int min_width) const {
+  for (int snap_point : {320, 448, 512}) {
+    if (min_width <= snap_point)
+      return snap_point;
   }
-  NOTREACHED();
-  return 0;
+
+  return ((min_width + kHarmonyLayoutUnit - 1) / kHarmonyLayoutUnit) *
+         kHarmonyLayoutUnit;
 }
 
 const views::TypographyProvider& HarmonyLayoutProvider::GetTypographyProvider()

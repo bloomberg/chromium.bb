@@ -36,6 +36,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 
@@ -531,6 +532,9 @@ gfx::Size BubbleFrameView::GetSizeForClientSize(
 
   if (footnote_container_)
     size.Enlarge(0, footnote_container_->GetHeightForWidth(size.width()));
+
+  if (GetWidget()->widget_delegate()->AsDialogDelegate())
+    size.set_width(LayoutProvider::Get()->GetSnappedDialogWidth(size.width()));
 
   return size;
 }

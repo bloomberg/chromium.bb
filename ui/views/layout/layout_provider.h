@@ -85,6 +85,10 @@ class VIEWS_EXPORT LayoutProvider {
   // font, weight, color, size, and line height. Never null.
   virtual const TypographyProvider& GetTypographyProvider() const;
 
+  // Returns the actual width to use for a dialog that requires at least
+  // |min_width|.
+  virtual int GetSnappedDialogWidth(int min_width) const;
+
  private:
   DefaultTypographyProvider typography_provider_;
 

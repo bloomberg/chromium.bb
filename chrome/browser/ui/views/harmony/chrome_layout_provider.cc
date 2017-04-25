@@ -83,7 +83,3 @@ bool ChromeLayoutProvider::ShouldShowWindowIcon() const {
 bool ChromeLayoutProvider::IsHarmonyMode() const {
   return false;
 }
-
-int ChromeLayoutProvider::GetDialogPreferredWidth(DialogWidth width) const {
-  return 0;
-}
