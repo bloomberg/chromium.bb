@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/android/offline_pages/background_loader_offliner.h"
 #include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
@@ -29,7 +29,6 @@
 #include "components/offline_pages/core/background/scheduler.h"
 #include "components/offline_pages/core/downloads/download_notifying_observer.h"
 #include "components/offline_pages/core/offline_page_feature.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/nqe/network_quality_estimator.h"
 
 namespace offline_pages {
@@ -68,8 +67,9 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   }
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken());
+      base::CreateSequencedTaskRunnerWithTraits(
+          base::TaskTraits().MayBlock().WithPriority(
+              base::TaskPriority::BACKGROUND));
   Profile* profile = Profile::FromBrowserContext(context);
   base::FilePath queue_store_path =
       profile->GetPath().Append(chrome::kOfflinePageRequestQueueDirname);
