@@ -225,7 +225,7 @@ bool SQLStatementBackend::Execute(Database* db) {
     db->ReportExecuteStatementResult(6, SQLError::kConstraintErr, result);
     error_ = SQLErrorData::Create(
         SQLError::kConstraintErr,
-        "could not execute statement due to a constaint failure", result,
+        "could not execute statement due to a constraint failure", result,
         database->LastErrorMsg());
     return false;
   } else {
