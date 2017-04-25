@@ -28,7 +28,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
@@ -90,18 +89,11 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ApplicationTestUtils.setUp(getInstrumentation().getTargetContext(), true);
         SearchActivity.disableForTests();
 
         mContext = new TestContext();
         mDelegate = new TestDelegate(mContext);
         SearchWidgetProvider.setDelegateForTest(mDelegate);
-    }
-
-    @Override
-    public void tearDown() throws Exception {
-        ApplicationTestUtils.tearDown(getInstrumentation().getTargetContext());
-        super.tearDown();
     }
 
     @SmallTest
@@ -127,36 +119,6 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
         mDelegate.mViews.clear();
         SearchWidgetProvider.updateCachedVoiceSearchAvailability(true);
         checkWidgetStates(TEXT_SEARCH_ENGINE_FULL, View.VISIBLE);
-    }
-
-    @SmallTest
-    @CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-    public void testUpdateCachedEngineNameBeforeFirstRun() {
-        assertFalse(SearchWidgetProvider.shouldShowFullString());
-        SearchWidgetProvider.handleAction(
-                new Intent(SearchWidgetProvider.ACTION_UPDATE_ALL_WIDGETS));
-
-        // Without any idea of what the default search engine is, widgets should default to saying
-        // just "Search".
-        checkWidgetStates(TEXT_GENERIC, View.VISIBLE);
-
-        // Until First Run is complete, no search engine branding should be displayed.  Widgets are
-        // already displaying the generic string, and should continue doing so, so they don't get
-        // updated.
-        mDelegate.mViews.clear();
-        SearchWidgetProvider.updateCachedEngineName(TEXT_SEARCH_ENGINE);
-        assertEquals(0, mDelegate.mViews.size());
-
-        // Manually set the preference, then update the cached engine name again.  The
-        // SearchWidgetProvider should now believe that its widgets are displaying branding when it
-        // isn't allowed to, then update them.
-        mDelegate.mViews.clear();
-        mDelegate.getSharedPreferences()
-                .edit()
-                .putString(SearchWidgetProvider.PREF_SEARCH_ENGINE_SHORTNAME, TEXT_SEARCH_ENGINE)
-                .apply();
-        SearchWidgetProvider.updateCachedEngineName(TEXT_SEARCH_ENGINE);
-        checkWidgetStates(TEXT_GENERIC, View.VISIBLE);
     }
 
     private void checkWidgetStates(final String expectedString, final int expectedMicrophoneState) {

@@ -38,9 +38,9 @@
             android:id="@+id/microphone_icon"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/btn_mic"
+            android:src="@drawable/infobar_microphone"
             android:tint="@color/light_normal_color"
-            android:scaleType="centerInside"
-            android:contentDescription="@string/accessibility_toolbar_btn_mic" />
+            android:contentDescription="@null"
+            android:scaleType="centerInside" />
 
 </LinearLayout>

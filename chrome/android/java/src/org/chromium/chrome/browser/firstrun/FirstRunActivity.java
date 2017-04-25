@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.ref.WeakReference;
@@ -47,24 +46,6 @@ import java.util.concurrent.Callable;
  * The activity might be run more than once, e.g. 1) for ToS and sign-in, and 2) for intro.
  */
 public class FirstRunActivity extends AsyncInitializationActivity implements FirstRunPageDelegate {
-    /** Alerted about various events when FirstRunActivity performs them. */
-    public interface FirstRunActivityObserver {
-        /** See {@link #onFlowIsKnown}. */
-        void onFlowIsKnown();
-
-        /** See {@link #acceptTermsOfService}. */
-        void onAcceptTermsOfService();
-
-        /** See {@link #jumpToPage}. */
-        void onJumpToPage(int position);
-
-        /** Called when First Run is completed. */
-        void onUpdateCachedEngineName();
-
-        /** See {@link #abortFirstRunExperience}. */
-        void onAbortFirstRunExperience();
-    }
-
     protected static final String TAG = "FirstRunActivity";
 
     // Incoming parameters:
@@ -113,8 +94,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
 
     @VisibleForTesting
     static FirstRunGlue sGlue = new FirstRunGlueImpl();
-
-    private static FirstRunActivityObserver sObserver;
 
     private boolean mShowWelcomePage = true;
 
@@ -262,7 +241,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
                     skipPagesIfNecessary();
                 }
 
-                if (sObserver != null) sObserver.onFlowIsKnown();
                 recordFreProgressHistogram(mFreProgressStates.get(0));
             }
         };
@@ -413,7 +391,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         finishAllTheActivities(getLocalClassName(), Activity.RESULT_CANCELED, intent);
 
         sendPendingIntentIfNecessary(false);
-        if (sObserver != null) sObserver.onAbortFirstRunExperience();
     }
 
     @Override
@@ -465,10 +442,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         resultData.putExtras(mFreProperties);
         finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, resultData);
 
-        // Update the search engine name cached by the widget.
-        SearchWidgetProvider.updateCachedEngineName();
-        if (sObserver != null) sObserver.onUpdateCachedEngineName();
-
         sendPendingIntentIfNecessary(true);
     }
 
@@ -491,9 +464,7 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
 
     @Override
     public boolean didAcceptTermsOfService() {
-        boolean result = sGlue.didAcceptTermsOfService(getApplicationContext());
-        if (sObserver != null) sObserver.onAcceptTermsOfService();
-        return result;
+        return sGlue.didAcceptTermsOfService(getApplicationContext());
     }
 
     @Override
@@ -575,8 +546,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
      * @param position A page index to transition to.
      */
     private boolean jumpToPage(int position) {
-        if (sObserver != null) sObserver.onJumpToPage(position);
-
         if (mShowWelcomePage && !didAcceptTermsOfService()) {
             return position == 0;
         }
@@ -634,9 +603,9 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         CustomTabActivity.showInfoPage(this, getString(url));
     }
 
+    /** Returns whether or not First Run is ready for interaction. */
     @VisibleForTesting
-    public static void setObserverForTest(FirstRunActivityObserver observer) {
-        assert sObserver == null;
-        sObserver = observer;
+    public boolean isPostNativePageSequenceCreated() {
+        return mPostNativePageSequenceCreated;
     }
 }

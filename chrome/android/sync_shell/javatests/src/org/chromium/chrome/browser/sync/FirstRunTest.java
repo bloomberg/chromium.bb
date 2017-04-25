@@ -14,14 +14,12 @@ import android.os.Bundle;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
-import org.chromium.chrome.browser.firstrun.FirstRunActivity.FirstRunActivityObserver;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -31,8 +29,6 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-
-import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for the first run experience.
@@ -47,34 +43,10 @@ public class FirstRunTest extends SyncTestBase {
         NO;
     }
 
-    private static final class TestObserver implements FirstRunActivityObserver {
-        public final CallbackHelper flowIsKnownCallback = new CallbackHelper();
-
-        @Override
-        public void onFlowIsKnown() {
-            flowIsKnownCallback.notifyCalled();
-        }
-
-        @Override
-        public void onAcceptTermsOfService() {}
-
-        @Override
-        public void onJumpToPage(int position) {}
-
-        @Override
-        public void onUpdateCachedEngineName() {}
-
-        @Override
-        public void onAbortFirstRunExperience() {}
-    }
-
-    private final TestObserver mTestObserver = new TestObserver();
     private FirstRunActivity mActivity;
 
     @Override
     public void startMainActivity() throws InterruptedException {
-        FirstRunActivity.setObserverForTest(mTestObserver);
-
         // Starts up and waits for the FirstRunActivity to be ready.
         // This isn't exactly what startMainActivity is supposed to be doing, but short of a
         // refactoring of SyncTestBase to use something other than ChromeTabbedActivity, it's the
@@ -106,18 +78,14 @@ public class FirstRunTest extends SyncTestBase {
         assertTrue(activity instanceof FirstRunActivity);
         mActivity = (FirstRunActivity) activity;
 
-        try {
-            mTestObserver.flowIsKnownCallback.waitForCallback(0);
-        } catch (TimeoutException e) {
-            fail();
-        }
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivity.isPostNativePageSequenceCreated();
+            }
+        });
 
         getInstrumentation().waitForIdleSync();
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
     }
 
     @Override
