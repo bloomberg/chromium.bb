@@ -75,11 +75,9 @@ void FakeRendererScheduler::SuspendRenderer() {}
 
 void FakeRendererScheduler::ResumeRenderer() {}
 
-void FakeRendererScheduler::AddPendingNavigation(
-    blink::WebScheduler::NavigatingFrameType type) {}
+void FakeRendererScheduler::AddPendingNavigation(NavigatingFrameType type) {}
 
-void FakeRendererScheduler::RemovePendingNavigation(
-    blink::WebScheduler::NavigatingFrameType type) {}
+void FakeRendererScheduler::RemovePendingNavigation(NavigatingFrameType type) {}
 
 void FakeRendererScheduler::OnNavigationStarted() {}
 

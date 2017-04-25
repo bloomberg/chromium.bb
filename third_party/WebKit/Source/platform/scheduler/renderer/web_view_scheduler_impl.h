@@ -11,10 +11,11 @@
 
 #include "base/macros.h"
 #include "platform/scheduler/base/task_queue.h"
+#include "platform/scheduler/child/web_scheduler.h"
+#include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
+#include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebScheduler.h"
-#include "public/platform/WebViewScheduler.h"
 
 namespace base {
 namespace trace_event {

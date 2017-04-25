@@ -35,13 +35,13 @@
 #include <utility>
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 
 namespace base {

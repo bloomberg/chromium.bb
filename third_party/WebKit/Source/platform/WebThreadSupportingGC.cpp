@@ -6,9 +6,9 @@
 
 #include <memory>
 #include "platform/heap/SafePoint.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Threading.h"
-#include "public/platform/WebScheduler.h"
 
 namespace blink {
 

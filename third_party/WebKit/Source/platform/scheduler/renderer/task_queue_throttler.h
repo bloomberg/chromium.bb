@@ -15,7 +15,7 @@
 #include "platform/scheduler/base/cancelable_closure_holder.h"
 #include "platform/scheduler/base/time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
-#include "public/platform/WebViewScheduler.h"
+#include "platform/scheduler/renderer/web_view_scheduler.h"
 
 namespace base {
 namespace trace_event {

@@ -6,8 +6,8 @@
 
 #include <memory>
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/WebScheduler.h"
 
 namespace blink {
 

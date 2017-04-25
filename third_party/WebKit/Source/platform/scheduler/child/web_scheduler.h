@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebScheduler_h
-#define WebScheduler_h
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_SCHEDULER_H_
 
-#include "WebCommon.h"
-#include "WebString.h"
+#include "platform/scheduler/renderer/web_view_scheduler.h"
+#include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "public/platform/WebViewScheduler.h"
+#include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
 #include <memory>
 
@@ -86,14 +86,14 @@ class BLINK_PLATFORM_EXPORT WebScheduler {
   // if the suspension count is zero and the current scheduler policy allows it.
   virtual void ResumeTimerQueue() = 0;
 
-  enum class NavigatingFrameType { kMainFrame, kChildFrame };
-
   // Tells the scheduler that a navigation task is pending.
   // TODO(alexclarke): Long term should this be a task trait?
-  virtual void AddPendingNavigation(NavigatingFrameType) = 0;
+  virtual void AddPendingNavigation(
+      scheduler::RendererScheduler::NavigatingFrameType) = 0;
 
   // Tells the scheduler that a navigation task is no longer pending.
-  virtual void RemovePendingNavigation(NavigatingFrameType) = 0;
+  virtual void RemovePendingNavigation(
+      scheduler::RendererScheduler::NavigatingFrameType) = 0;
 
 #ifdef INSIDE_BLINK
   // Helpers for posting bound functions as tasks.
@@ -107,4 +107,4 @@ class BLINK_PLATFORM_EXPORT WebScheduler {
 
 }  // namespace blink
 
-#endif  // WebScheduler_h
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_SCHEDULER_H_

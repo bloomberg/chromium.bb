@@ -7,9 +7,9 @@
 #include "core/dom/MockScriptElementBase.h"
 #include "core/dom/ScriptLoader.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebViewScheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

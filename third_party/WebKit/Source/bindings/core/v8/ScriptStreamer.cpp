@@ -18,10 +18,10 @@
 #include "platform/SharedBuffer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/CachedMetadata.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextEncodingRegistry.h"
-#include "public/platform/WebScheduler.h"
 
 namespace blink {
 

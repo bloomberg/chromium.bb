@@ -42,7 +42,7 @@
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebScheduler.h"
+#include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
 namespace blink {
 
@@ -94,7 +94,7 @@ class CORE_EXPORT NavigationScheduler final
   Member<ScheduledNavigation> redirect_;
 
   // Exists because we can't deref m_frame in destructor.
-  WebScheduler::NavigatingFrameType frame_type_;
+  scheduler::RendererScheduler::NavigatingFrameType frame_type_;
 };
 
 class NavigationDisablerForBeforeUnload {

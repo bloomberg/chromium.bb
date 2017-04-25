@@ -32,10 +32,10 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {

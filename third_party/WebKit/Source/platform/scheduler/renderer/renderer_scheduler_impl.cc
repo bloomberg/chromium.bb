@@ -1573,20 +1573,18 @@ void RendererSchedulerImpl::OnIdlePeriodEnded() {
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
-void RendererSchedulerImpl::AddPendingNavigation(
-    WebScheduler::NavigatingFrameType type) {
+void RendererSchedulerImpl::AddPendingNavigation(NavigatingFrameType type) {
   helper_.CheckOnValidThread();
-  if (type == blink::WebScheduler::NavigatingFrameType::kMainFrame) {
+  if (type == NavigatingFrameType::kMainFrame) {
     GetMainThreadOnly().navigation_task_expected_count++;
     UpdatePolicy();
   }
 }
 
-void RendererSchedulerImpl::RemovePendingNavigation(
-    WebScheduler::NavigatingFrameType type) {
+void RendererSchedulerImpl::RemovePendingNavigation(NavigatingFrameType type) {
   helper_.CheckOnValidThread();
   DCHECK_GT(GetMainThreadOnly().navigation_task_expected_count, 0);
-  if (type == blink::WebScheduler::NavigatingFrameType::kMainFrame &&
+  if (type == NavigatingFrameType::kMainFrame &&
       GetMainThreadOnly().navigation_task_expected_count > 0) {
     GetMainThreadOnly().navigation_task_expected_count--;
     UpdatePolicy();

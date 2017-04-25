@@ -11,9 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebInputEvent.h"
 #include "public/platform/WebInputEventResult.h"
-#include "public/platform/WebScheduler.h"
 #include "public/platform/scheduler/child/child_scheduler.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 #include "public/platform/scheduler/renderer/render_widget_scheduling_state.h"
@@ -31,6 +29,7 @@ struct BeginFrameArgs;
 
 namespace blink {
 class WebThread;
+class WebInputEvent;
 }
 
 namespace blink {
@@ -130,16 +129,17 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // backgrounded.
   virtual void ResumeRenderer() = 0;
 
+  enum class NavigatingFrameType { kMainFrame, kChildFrame };
+
   // Tells the scheduler that a navigation task is pending. While any main-frame
   // navigation tasks are pending, the scheduler will ensure that loading tasks
   // are not blocked even if they are expensive. Must be called on the main
   // thread.
-  virtual void AddPendingNavigation(WebScheduler::NavigatingFrameType type) = 0;
+  virtual void AddPendingNavigation(NavigatingFrameType type) = 0;
 
   // Tells the scheduler that a navigation task is no longer pending.
   // Must be called on the main thread.
-  virtual void RemovePendingNavigation(
-      WebScheduler::NavigatingFrameType type) = 0;
+  virtual void RemovePendingNavigation(NavigatingFrameType type) = 0;
 
   // Tells the scheduler that a navigation has started.  The scheduler will
   // prioritize loading tasks for a short duration afterwards.

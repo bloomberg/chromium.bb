@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "cc/output/begin_frame_args.h"
+#include "public/platform/WebThread.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -42,9 +43,8 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD0(OnRendererForegrounded, void());
   MOCK_METHOD0(SuspendRenderer, void());
   MOCK_METHOD0(ResumeRenderer, void());
-  MOCK_METHOD1(AddPendingNavigation, void(WebScheduler::NavigatingFrameType));
-  MOCK_METHOD1(RemovePendingNavigation,
-               void(WebScheduler::NavigatingFrameType));
+  MOCK_METHOD1(AddPendingNavigation, void(NavigatingFrameType));
+  MOCK_METHOD1(RemovePendingNavigation, void(NavigatingFrameType));
   MOCK_METHOD0(OnNavigationStarted, void());
   MOCK_METHOD0(IsHighPriorityWorkAnticipated, bool());
   MOCK_CONST_METHOD0(CanExceedIdleDeadlineIfRequired, bool());

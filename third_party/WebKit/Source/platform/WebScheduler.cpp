@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebScheduler.h"
+#include "platform/scheduler/child/web_scheduler.h"
 
 #include "platform/WebFrameScheduler.h"
 #include "platform/wtf/Assertions.h"

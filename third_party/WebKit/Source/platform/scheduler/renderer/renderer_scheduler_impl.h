@@ -101,8 +101,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   void OnRendererForegrounded() override;
   void SuspendRenderer() override;
   void ResumeRenderer() override;
-  void AddPendingNavigation(WebScheduler::NavigatingFrameType type) override;
-  void RemovePendingNavigation(WebScheduler::NavigatingFrameType type) override;
+  void AddPendingNavigation(NavigatingFrameType type) override;
+  void RemovePendingNavigation(NavigatingFrameType type) override;
   void OnNavigationStarted() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;

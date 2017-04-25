@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebViewScheduler_h
-#define WebViewScheduler_h
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
 
-#include "WebCommon.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/BlameContext.h"
+#include "public/platform/WebCommon.h"
 
 #include <memory>
 
@@ -89,4 +90,4 @@ class BLINK_PLATFORM_EXPORT WebViewScheduler {
 
 }  // namespace blink
 
-#endif  // WebViewScheduler
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_

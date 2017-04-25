@@ -44,6 +44,7 @@
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/MathExtras.h"
@@ -53,7 +54,6 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
-#include "public/platform/WebScheduler.h"
 #include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {

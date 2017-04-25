@@ -2,12 +2,12 @@
 // Use of this source code if governed by a BSD-style license that can be
 // found in LICENSE file.
 
+#include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/WebRTCError.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCRtpReceiver.h"
 #include "public/platform/WebRTCSessionDescription.h"
-#include "public/platform/WebViewScheduler.h"
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"

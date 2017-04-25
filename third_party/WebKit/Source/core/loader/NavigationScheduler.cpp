@@ -52,11 +52,11 @@
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
-#include "public/platform/WebScheduler.h"
 
 namespace blink {
 
@@ -339,9 +339,11 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
 
 NavigationScheduler::NavigationScheduler(LocalFrame* frame)
     : frame_(frame),
-      frame_type_(frame_->IsMainFrame()
-                      ? WebScheduler::NavigatingFrameType::kMainFrame
-                      : WebScheduler::NavigatingFrameType::kChildFrame) {}
+      frame_type_(
+          frame_->IsMainFrame()
+              ? scheduler::RendererScheduler::NavigatingFrameType::kMainFrame
+              : scheduler::RendererScheduler::NavigatingFrameType::
+                    kChildFrame) {}
 
 NavigationScheduler::~NavigationScheduler() {
   if (navigate_task_handle_.IsActive()) {

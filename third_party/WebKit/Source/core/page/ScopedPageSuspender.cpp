@@ -24,10 +24,10 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebScheduler.h"
 
 namespace blink {
 

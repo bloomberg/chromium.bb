@@ -30,8 +30,8 @@
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {

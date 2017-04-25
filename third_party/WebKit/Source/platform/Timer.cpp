@@ -31,12 +31,12 @@
 #include <algorithm>
 #include <limits>
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Atomics.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/HashSet.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebScheduler.h"
 
 namespace blink {
 

@@ -4,9 +4,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebViewScheduler.h"
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebScriptExecutionCallback.h"
 #include "public/web/WebScriptSource.h"

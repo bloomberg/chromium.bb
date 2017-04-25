@@ -20,9 +20,9 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "platform/heap/HeapCompact.h"
 #include "platform/heap/HeapPage.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/AutoReset.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebScheduler.h"
 
 namespace blink {
 

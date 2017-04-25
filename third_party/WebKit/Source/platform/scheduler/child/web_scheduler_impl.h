@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "platform/scheduler/base/task_queue.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {
@@ -45,9 +45,10 @@ class BLINK_PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
       WebViewScheduler::WebViewSchedulerSettings*) override;
   void SuspendTimerQueue() override {}
   void ResumeTimerQueue() override {}
-  void AddPendingNavigation(WebScheduler::NavigatingFrameType type) override {}
+  void AddPendingNavigation(
+      scheduler::RendererScheduler::NavigatingFrameType type) override {}
   void RemovePendingNavigation(
-      WebScheduler::NavigatingFrameType type) override {}
+      scheduler::RendererScheduler::NavigatingFrameType type) override {}
 
  private:
   static void RunIdleTask(std::unique_ptr<WebThread::IdleTask> task,
