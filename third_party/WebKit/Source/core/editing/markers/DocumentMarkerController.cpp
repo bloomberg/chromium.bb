@@ -491,17 +491,16 @@ void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
     const Vector<String>& words) {
   for (auto& node_markers : markers_) {
     const Node& node = *node_markers.key;
-    if (!node.IsTextNode())  // MarkerRemoverPredicate requires a Text node.
+    if (!node.IsTextNode())
       continue;
     MarkerLists* markers = node_markers.value;
-    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+    for (DocumentMarker::MarkerType type :
+         DocumentMarker::MisspellingMarkers()) {
       MarkerList* list = ListForType(markers, type);
       if (!list)
         continue;
-      bool removed_markers = DocumentMarkerListEditor::RemoveMarkersUnderWords(
+      DocumentMarkerListEditor::RemoveMarkersUnderWords(
           list, ToText(node).data(), words);
-      if (removed_markers && type == DocumentMarker::kTextMatch)
-        InvalidatePaintForTickmarks(node);
     }
   }
 }

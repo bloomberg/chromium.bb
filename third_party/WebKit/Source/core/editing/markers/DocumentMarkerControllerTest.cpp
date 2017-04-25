@@ -324,4 +324,28 @@ TEST_F(DocumentMarkerControllerTest, RemoveEndOfMarker) {
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
+TEST_F(DocumentMarkerControllerTest, RemoveSpellingMarkersUnderWords) {
+  SetBodyInnerHTML("<div contenteditable>foo</div>");
+  GetDocument().UpdateStyleAndLayout();
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+
+  // Add a spelling marker and a text match marker to "foo".
+  const EphemeralRange marker_range(Position(text, 0), Position(text, 3));
+  MarkerController().AddMarker(marker_range.StartPosition(),
+                               marker_range.EndPosition(),
+                               DocumentMarker::kSpelling, "");
+  MarkerController().AddTextMatchMarker(marker_range,
+                                        DocumentMarker::MatchStatus::kInactive);
+
+  MarkerController().RemoveSpellingMarkersUnderWords({"foo"});
+
+  // RemoveSpellingMarkersUnderWords does not remove text match marker.
+  ASSERT_EQ(1u, MarkerController().Markers().size());
+  const DocumentMarker& marker = *MarkerController().Markers()[0];
+  EXPECT_EQ(0u, marker.StartOffset());
+  EXPECT_EQ(3u, marker.EndOffset());
+  EXPECT_EQ(DocumentMarker::kTextMatch, marker.GetType());
+}
+
 }  // namespace blink
