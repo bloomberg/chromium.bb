@@ -2199,7 +2199,9 @@ void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {
 
 bool ProfileSyncService::IsSyncRequested() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return sync_prefs_.IsSyncRequested();
+  // When local sync is on sync should be considered requsted or otherwise it
+  // will not resume after the policy or the flag has been removed.
+  return sync_prefs_.IsSyncRequested() || sync_prefs_.IsLocalSyncEnabled();
 }
 
 SigninManagerBase* ProfileSyncService::signin() const {

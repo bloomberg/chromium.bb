@@ -386,7 +386,6 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
 TEST_F(ProfileSyncServiceTest, SuccessfulLocalBackendInitialization) {
   prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
                           base::MakeUnique<base::Value>(false));
-  IssueTestTokens();
   CreateServiceWithLocalSyncBackend();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
   ExpectSyncEngineCreation(1);
@@ -941,6 +940,34 @@ TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SYNC_TIME_NEVER),
             service()->GetLastSyncedTimeString());
   EXPECT_FALSE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+}
+
+// Verify a that local sync mode resumes after the policy is lifted.
+TEST_F(ProfileSyncServiceTest, LocalBackendDisabledByPolicy) {
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          base::MakeUnique<base::Value>(false));
+  CreateServiceWithLocalSyncBackend();
+  ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
+  ExpectSyncEngineCreation(1);
+  InitializeForNthSync();
+  EXPECT_FALSE(service()->IsManaged());
+  EXPECT_TRUE(service()->IsSyncActive());
+
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          base::MakeUnique<base::Value>(true));
+
+  EXPECT_TRUE(service()->IsManaged());
+  EXPECT_FALSE(service()->IsSyncActive());
+
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          base::MakeUnique<base::Value>(false));
+
+  ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
+  ExpectSyncEngineCreation(1);
+
+  service()->RequestStart();
+  EXPECT_FALSE(service()->IsManaged());
+  EXPECT_TRUE(service()->IsSyncActive());
 }
 
 // Regression test for crbug/555434. The issue is that check for sessions DTC in
