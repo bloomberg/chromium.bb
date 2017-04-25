@@ -69,7 +69,8 @@ void ScreenManagerForwarding::OnDisplaySnapshotsInvalidated() {
 }
 
 void ScreenManagerForwarding::Initialize(
-    mojom::NativeDisplayObserverPtr observer) {
+    mojom::NativeDisplayObserverPtr observer,
+    const InitializeCallback& callback) {
   DCHECK(!native_display_delegate_);
   observer_ = std::move(observer);
 
@@ -77,6 +78,16 @@ void ScreenManagerForwarding::Initialize(
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate();
   native_display_delegate_->AddObserver(this);
   native_display_delegate_->Initialize();
+
+  // Provide the list of display snapshots initially. ForwardingDisplayDelegate
+  // will wait synchronously for this.
+  native_display_delegate_->GetDisplays(
+      base::Bind(&ScreenManagerForwarding::ForwardGetDisplays,
+                 base::Unretained(this), callback));
+
+  // When ForwardingDisplayDelegate receives this it will start asynchronous
+  // operation and redo any configuration that was skipped.
+  observer_->OnConfigurationChanged();
 }
 
 void ScreenManagerForwarding::TakeDisplayControl(
@@ -170,7 +181,7 @@ void ScreenManagerForwarding::Create(
 }
 
 void ScreenManagerForwarding::ForwardGetDisplays(
-    const mojom::NativeDisplayDelegate::GetDisplaysCallback& callback,
+    const GetDisplaysCallback& callback,
     const std::vector<DisplaySnapshot*>& snapshots) {
   snapshot_map_.clear();
 

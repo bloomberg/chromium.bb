@@ -43,7 +43,8 @@ class ScreenManagerForwarding
   void OnDisplaySnapshotsInvalidated() override;
 
   // mojom::NativeDisplayDelegate:
-  void Initialize(mojom::NativeDisplayObserverPtr observer) override;
+  void Initialize(mojom::NativeDisplayObserverPtr observer,
+                  const InitializeCallback& callback) override;
   void TakeDisplayControl(const TakeDisplayControlCallback& callback) override;
   void RelinquishDisplayControl(
       const RelinquishDisplayControlCallback& callback) override;
@@ -69,9 +70,8 @@ class ScreenManagerForwarding
 
  private:
   // Forwards results from GetDisplays() back with |callback|.
-  void ForwardGetDisplays(
-      const mojom::NativeDisplayDelegate::GetDisplaysCallback& callback,
-      const std::vector<DisplaySnapshot*>& displays);
+  void ForwardGetDisplays(const GetDisplaysCallback& callback,
+                          const std::vector<DisplaySnapshot*>& displays);
 
   // Forwards results from call to Configure() back with |callback|.
   void ForwardConfigure(

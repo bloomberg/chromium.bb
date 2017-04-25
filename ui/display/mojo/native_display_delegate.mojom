@@ -18,8 +18,10 @@ interface NativeDisplayObserver {
 // Corresponds to display::NativeDisplayDelegate. This only implements
 // functionality that is used by Ozone DRM.
 interface NativeDisplayDelegate {
-  // Initializes and registers the observer.
-  Initialize(NativeDisplayObserver observer);
+  // Initializes and registers the observer. This is synchronous so that ash
+  // initialization has an initial set of displays to use.
+  [Sync]
+  Initialize(NativeDisplayObserver observer) => (array<DisplaySnapshotMojo> snapshots);
 
   // Take control of the displays from any other controlling process.
   TakeDisplayControl() => (bool result);

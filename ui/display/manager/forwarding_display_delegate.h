@@ -69,10 +69,17 @@ class DISPLAY_MANAGER_EXPORT ForwardingDisplayDelegate
   void OnConfigurationChanged() override;
 
  private:
-  // Stores display snapshots and forards them to |callback|.
+  // Stores display snapshots and forwards pointers to |callback|.
   void StoreAndForwardDisplays(
       const GetDisplaysCallback& callback,
       std::vector<std::unique_ptr<DisplaySnapshotMojo>> snapshots);
+
+  // Forwards display snapshot pointers to |callback|.
+  void ForwardDisplays(const GetDisplaysCallback& callback);
+
+  // True if we should use |delegate_|. This will be false if synchronous
+  // GetDisplays() and Configure() are required.
+  bool use_delegate_ = false;
 
   mojom::NativeDisplayDelegatePtr delegate_;
   mojo::Binding<mojom::NativeDisplayObserver> binding_;

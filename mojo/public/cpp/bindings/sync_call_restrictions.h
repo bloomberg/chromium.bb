@@ -15,6 +15,10 @@
 #define ENABLE_SYNC_CALL_RESTRICTIONS 0
 #endif
 
+namespace display {
+class ForwardingDisplayDelegate;
+}
+
 namespace leveldb {
 class LevelDBMojoProxy;
 }
@@ -72,6 +76,10 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // implementation which weren't caught by sync call restrictions. Our blocking
   // calls to mus, however, are.
   friend class views::ClipboardMus;
+  // In ash::Shell::Init() it assumes that NativeDisplayDelegate will be
+  // synchronous at first. In mushrome ForwardingDisplayDelegate uses a
+  // synchronous call to get the display snapshots as a workaround.
+  friend class display::ForwardingDisplayDelegate;
   // END USAGE THAT NEEDS TO BE FIXED.
 
 #if ENABLE_SYNC_CALL_RESTRICTIONS

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "ui/display/types/display_snapshot_mojo.h"
 
 namespace display {
@@ -18,7 +19,14 @@ ForwardingDisplayDelegate::ForwardingDisplayDelegate(
 ForwardingDisplayDelegate::~ForwardingDisplayDelegate() {}
 
 void ForwardingDisplayDelegate::Initialize() {
-  delegate_->Initialize(binding_.CreateInterfacePtrAndBind());
+  // TODO(kylechar/sky): Figure out how to make this not synchronous.
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall scoped_sync;
+
+  // This is a synchronous call to Initialize() because ash depends on
+  // NativeDisplayDelegate being synchronous during it's initialization. Calls
+  // to GetDisplays() and Configure() will return early starting now using
+  // whatever is in |snapshots_|.
+  delegate_->Initialize(binding_.CreateInterfacePtrAndBind(), &snapshots_);
 }
 
 void ForwardingDisplayDelegate::GrabServer() {}
@@ -43,6 +51,11 @@ void ForwardingDisplayDelegate::ForceDPMSOn() {}
 
 void ForwardingDisplayDelegate::GetDisplays(
     const GetDisplaysCallback& callback) {
+  if (!use_delegate_) {
+    ForwardDisplays(callback);
+    return;
+  }
+
   delegate_->GetDisplays(
       base::Bind(&ForwardingDisplayDelegate::StoreAndForwardDisplays,
                  base::Unretained(this), callback));
@@ -55,6 +68,13 @@ void ForwardingDisplayDelegate::Configure(const DisplaySnapshot& snapshot,
                                           const DisplayMode* mode,
                                           const gfx::Point& origin,
                                           const ConfigureCallback& callback) {
+  if (!use_delegate_) {
+    // Pretend configuration succeeded. When the first OnConfigurationChanged()
+    // is received this will run again and actually happen.
+    callback.Run(true);
+    return;
+  }
+
   delegate_->Configure(snapshot.display_id(), mode->Clone(), origin, callback);
 }
 
@@ -111,6 +131,10 @@ FakeDisplayController* ForwardingDisplayDelegate::GetFakeDisplayController() {
 }
 
 void ForwardingDisplayDelegate::OnConfigurationChanged() {
+  // Start asynchronous operation once the first OnConfigurationChanged()
+  // arrives. We know |delegate_| is usable at this point.
+  use_delegate_ = true;
+
   // Forward OnConfigurationChanged received over Mojo to local observers.
   for (auto& observer : observers_)
     observer.OnConfigurationChanged();
@@ -123,6 +147,11 @@ void ForwardingDisplayDelegate::StoreAndForwardDisplays(
     observer.OnDisplaySnapshotsInvalidated();
   snapshots_ = std::move(snapshots);
 
+  ForwardDisplays(callback);
+}
+
+void ForwardingDisplayDelegate::ForwardDisplays(
+    const GetDisplaysCallback& callback) {
   std::vector<DisplaySnapshot*> snapshot_ptrs;
   for (auto& snapshot : snapshots_)
     snapshot_ptrs.push_back(snapshot.get());
