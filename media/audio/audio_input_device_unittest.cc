@@ -93,6 +93,8 @@ TEST(AudioInputDeviceTest, FailToCreateStream) {
   EXPECT_CALL(callback, OnCaptureError(_))
       .WillOnce(QuitLoop(io_loop.task_runner()));
   base::RunLoop().Run();
+  device->Stop();
+  base::RunLoop().RunUntilIdle();
 }
 
 ACTION_P5(ReportOnStreamCreated, device, handle, socket, length, segments) {
@@ -139,5 +141,8 @@ TEST(AudioInputDeviceTest, CreateStream) {
   EXPECT_CALL(callback, OnCaptureStarted())
       .WillOnce(QuitLoop(io_loop.task_runner()));
   base::RunLoop().Run();
+  device->Stop();
+  base::RunLoop().RunUntilIdle();
 }
+
 }  // namespace media.

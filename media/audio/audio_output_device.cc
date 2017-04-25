@@ -96,7 +96,17 @@ void AudioOutputDevice::Initialize(const AudioParameters& params,
   callback_ = callback;
 }
 
-AudioOutputDevice::~AudioOutputDevice() {}
+AudioOutputDevice::~AudioOutputDevice() {
+#if DCHECK_IS_ON()
+  // Make sure we've stopped the stream properly before destructing |this|.
+  DCHECK(audio_thread_lock_.Try());
+  DCHECK_LE(state_, IDLE);
+  DCHECK(!audio_thread_);
+  DCHECK(!audio_callback_);
+  DCHECK(!stopping_hack_);
+  audio_thread_lock_.Release();
+#endif  // DCHECK_IS_ON()
+}
 
 void AudioOutputDevice::RequestDeviceAuthorization() {
   task_runner()->PostTask(

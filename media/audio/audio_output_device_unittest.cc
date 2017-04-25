@@ -158,6 +158,10 @@ AudioOutputDeviceTest::~AudioOutputDeviceTest() {
 }
 
 void AudioOutputDeviceTest::CreateDevice(const std::string& device_id) {
+  // Make sure the previous device is properly cleaned up.
+  if (audio_device_)
+    StopAudioDevice();
+
   audio_output_ipc_ = new MockAudioOutputIPC();
   audio_device_ = new AudioOutputDevice(
       base::WrapUnique(audio_output_ipc_), io_loop_.task_runner(), 0, device_id,
