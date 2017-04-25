@@ -35,6 +35,7 @@
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/mhtml/MHTMLArchive.h"
+#include "platform/mhtml/MHTMLParser.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
@@ -161,6 +162,15 @@ class MHTMLTest : public ::testing::Test {
     }
     MHTMLArchive::GenerateMHTMLFooterForTesting(boundary,
                                                 *mhtml_data->MutableData());
+
+    // Validate the generated MHTML.
+    MHTMLParser parser(
+        SharedBuffer::Create(mhtml_data->data(), mhtml_data->length()));
+    if (parser.ParseArchive().IsEmpty()) {
+      ADD_FAILURE() << "Invalid MHTML";
+      return RawData::Create();
+    }
+
     return mhtml_data.Release();
   }
 
@@ -206,6 +216,7 @@ TEST_F(MHTMLTest, TestMHTMLEncoding) {
   AddTestResources();
   RefPtr<RawData> data = Serialize("Test Serialization", "text/html",
                                    MHTMLArchive::kUseDefaultEncoding);
+  ASSERT_FALSE(HasFailure());
 
   // Read the MHTML data line per line and do some pseudo-parsing to make sure
   // the right encoding is used for the different sections.
@@ -242,6 +253,8 @@ TEST_F(MHTMLTest, MHTMLFromScheme) {
   AddTestResources();
   RefPtr<RawData> raw_data = Serialize("Test Serialization", "text/html",
                                        MHTMLArchive::kUseDefaultEncoding);
+  ASSERT_FALSE(HasFailure());
+
   RefPtr<SharedBuffer> data =
       SharedBuffer::Create(raw_data->data(), raw_data->length());
   KURL http_url = ToKURL("http://www.example.com");
