@@ -4,7 +4,7 @@
 
 import("//build/config/android/rules.gni")
 import("//chrome/common/features.gni")
-import("//device/vr/features/features.gni")
+import("//device/vr/features.gni")
 import("//testing/test.gni")
 
 assert(enable_vr)

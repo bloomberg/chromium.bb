@@ -2,11 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("features/features.gni")
+import("features.gni")
+import("//build/buildflag_header.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
+}
+
+# Generate a buildflag header for compile-time checking of WebVR support.
+buildflag_header("features") {
+  header = "features.h"
+  flags = [
+    "ENABLE_VR=$enable_vr",
+    "ENABLE_OPENVR=$enable_openvr",
+  ]
 }
 
 component("vr") {
@@ -17,9 +27,11 @@ component("vr") {
   ]
   defines = [ "DEVICE_VR_IMPLEMENTATION" ]
   deps = [
-    ":mojo_bindings",
-    "features",
+    ":features",
   ]
+  if (!is_ios) {
+    deps += [ ":mojo_bindings" ]
+  }
 
   if (!enable_vr) {
     sources += [
@@ -116,17 +128,19 @@ if (enable_vr) {
   }
 }
 
-mojom("mojo_bindings") {
-  sources = [
-    "vr_service.mojom",
-  ]
+if (!is_ios) {
+  mojom("mojo_bindings") {
+    sources = [
+      "vr_service.mojom",
+    ]
 
-  public_deps = [
-    "//gpu/ipc/common:interfaces",
-    "//mojo/common:common_custom_types",
-  ]
+    public_deps = [
+      "//gpu/ipc/common:interfaces",
+      "//mojo/common:common_custom_types",
+    ]
 
-  export_class_attribute = "DEVICE_VR_EXPORT"
-  export_define = "DEVICE_VR_IMPLEMENTATION=1"
-  export_header = "device/vr/vr_export.h"
+    export_class_attribute = "DEVICE_VR_EXPORT"
+    export_define = "DEVICE_VR_IMPLEMENTATION=1"
+    export_header = "device/vr/vr_export.h"
+  }
 }
