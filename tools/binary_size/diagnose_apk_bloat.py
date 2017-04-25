@@ -44,6 +44,10 @@ def _SetRestoreFunc(subrepo):
   _global_restore_checkout_func = lambda: _GitCmd(['checkout', branch], subrepo)
 
 
+_DiffResult = collections.namedtuple(
+    'DiffResult', ['name', 'value', 'units'])
+
+
 class BaseDiff(object):
   """Base class capturing binary size diffs."""
   def __init__(self, name):
@@ -57,6 +61,10 @@ class BaseDiff(object):
     _PrintAndWriteToFile(logfile, self.Summary())
     _PrintAndWriteToFile(logfile, '\nDetails:')
     _PrintAndWriteToFile(logfile, self.DetailedResults())
+
+  @property
+  def summary_stat(self):
+    return None
 
   def Summary(self):
     """A short description that summarizes the source of binary size bloat."""
@@ -79,12 +87,23 @@ class NativeDiff(BaseDiff):
   _RE_SUMMARY = re.compile(
       r'.*(Section Sizes .*? object files added, \d+ removed).*',
       flags=re.DOTALL)
+  _RE_SUMMARY_STAT = re.compile(
+      r'Section Sizes \(Total=(?P<value>\d+) (?P<units>\w+)\)')
+  _SUMMARY_STAT_NAME = 'Native Library Delta'
 
   def __init__(self, size_name, supersize_path):
     self._size_name = size_name
     self._supersize_path = supersize_path
     self._diff = []
     super(NativeDiff, self).__init__('Native Diff')
+
+  @property
+  def summary_stat(self):
+    m = NativeDiff._RE_SUMMARY_STAT.search(self._diff)
+    if m:
+      return _DiffResult(
+          NativeDiff._SUMMARY_STAT_NAME, m.group('value'), m.group('units'))
+    return None
 
   def DetailedResults(self):
     return self._diff.splitlines()
@@ -99,10 +118,6 @@ class NativeDiff(BaseDiff):
     self._diff = _RunCmd(cmd)[0].replace('{', '{{').replace('}', '}}')
 
 
-_ResourceSizesDiffResult = collections.namedtuple(
-    'ResourceSizesDiffResult', ['section', 'value', 'units'])
-
-
 class ResourceSizesDiff(BaseDiff):
   _RESOURCE_SIZES_PATH = os.path.join(
       _SRC_ROOT, 'build', 'android', 'resource_sizes.py')
@@ -113,15 +128,20 @@ class ResourceSizesDiff(BaseDiff):
     self._diff = None  # Set by |ProduceDiff()|
     super(ResourceSizesDiff, self).__init__('Resource Sizes Diff')
 
+  @property
+  def summary_stat(self):
+    for s in self._diff:
+      if 'normalized' in s.name:
+        return s
+    return None
+
   def DetailedResults(self):
-    return ['{:>+10,} {} {}'.format(value, units, section)
-            for section, value, units in self._diff]
+    return ['{:>+10,} {} {}'.format(value, units, name)
+            for name, value, units in self._diff]
 
   def Summary(self):
-    for s in self._diff:
-      if 'normalized' in s.section:
-        return 'Normalized APK size: {:+,} {}'.format(s.value, s.units)
-    return ''
+    return 'Normalized APK size: {:+,} {}'.format(
+        self.summary_stat.value, self.summary_stat.units)
 
   def ProduceDiff(self, archive_dirs):
     chartjsons = self._RunResourceSizes(archive_dirs)
@@ -138,7 +158,7 @@ class ResourceSizesDiff(BaseDiff):
                  'skipping {} {}', section, subsection)
         else:
           diff.append(
-              _ResourceSizesDiffResult(
+              _DiffResult(
                   '%s %s' % (section, subsection),
                   v['value'] - without_patch[section][subsection]['value'],
                   v['units']))
@@ -307,6 +327,7 @@ class _DiffArchiveManager(object):
                            for rev in revs]
     self.diffs = diffs
     self.subrepo = subrepo
+    self._summary_stats = []
 
   def IterArchives(self):
     return iter(self.build_archives)
@@ -333,8 +354,32 @@ class _DiffArchiveManager(object):
       with open(diff_path, 'a') as diff_file:
         for d in self.diffs:
           d.RunDiff(diff_file, archive_dirs)
-        _Print('See detailed diff results here: {}.', diff_path)
+        _Print('\nSee detailed diff results here: {}.', diff_path)
       _WriteMetadata(metadata)
+      self._AddDiffSummaryStat(archives)
+
+  def Summarize(self):
+    if self._summary_stats:
+      path = os.path.join(self.archive_dir, 'last_diff_summary.txt')
+      with open(path, 'w') as f:
+        stats = sorted(
+            self._summary_stats, key=lambda x: x[0].value, reverse=True)
+        _PrintAndWriteToFile(f, '\nDiff Summary')
+        for s, before, after in stats:
+          _PrintAndWriteToFile(f, '{:>+10} {} {} for range: {}..{}',
+                               s.value, s.units, s.name, before, after)
+
+  def _AddDiffSummaryStat(self, archives):
+    stat = None
+    if self.build.IsAndroid():
+      summary_diff_type = ResourceSizesDiff
+    else:
+      summary_diff_type = NativeDiff
+    for d in self.diffs:
+      if isinstance(d, summary_diff_type):
+        stat = d.summary_stat
+    if stat:
+      self._summary_stats.append((stat, archives[1].rev, archives[0].rev))
 
   def _CanDiff(self, archives):
     return all(a.Exists() for a in archives)
@@ -346,8 +391,8 @@ class _DiffArchiveManager(object):
     return os.path.join(self._DiffDir(archives), 'metadata.txt')
 
   def _DiffDir(self, archives):
-    diff_path = os.path.join(
-        self.archive_dir, 'diffs', '_'.join(a.rev for a in archives))
+    archive_range = '%s..%s' % (archives[1].rev, archives[0].rev)
+    diff_path = os.path.join(self.archive_dir, 'diffs', archive_range)
     _EnsureDirsExist(diff_path)
     return diff_path
 
@@ -569,9 +614,10 @@ def _Print(s, *args, **kwargs):
   print s.format(*args, **kwargs)
 
 
-def _PrintAndWriteToFile(logfile, s):
+def _PrintAndWriteToFile(logfile, s, *args, **kwargs):
   """Write and print |s| thottling output if |s| is a large list."""
   if isinstance(s, basestring):
+    s = s.format(*args, **kwargs)
     _Print(s)
     logfile.write('%s\n' % s)
   else:
@@ -706,6 +752,8 @@ def main():
 
       if i != 0:
         diff_mngr.MaybeDiff(i - 1, i)
+
+    diff_mngr.Summarize()
 
   _global_restore_checkout_func()
 
