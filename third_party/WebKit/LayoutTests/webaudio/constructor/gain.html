@@ -5,8 +5,8 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
-    <script src="audionodeoptions.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="new-audionodeoptions.js"></script>
   </head>
 
   <body>
@@ -15,102 +15,64 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("initialize", function (taskDone) {
-        Should("context = new OfflineAudioContext(...)", function () {
-          context = new OfflineAudioContext(1, 1, 48000);
-        }).notThrow();
-        taskDone();
+      audit.define('initialize', (task, should) => {
+        context = initializeContext(should);
+        task.done();
       });
 
-      audit.defineTask("invalid constructor", function (taskDone) {
+      audit.define('invalid constructor', (task, should) => {
+        testInvalidConstructor(should, 'GainNode', context);
+        task.done();
+      });
+
+      audit.define('default constructor', (task, should) => {
+        let prefix = 'node0';
+        let node = testDefaultConstructor(should, 'GainNode', context, {
+          prefix: prefix,
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          channelCount: 2,
+          channelCountMode: 'max',
+          channelInterpretation: 'speakers'
+        });
+
+        testDefaultAttributes(should, node, prefix, [{name: 'gain', value: 1}]);
+
+        task.done();
+      });
+
+      audit.define('test AudioNodeOptions', (task, should) => {
+        testAudioNodeOptions(should, context, 'GainNode');
+        task.done();
+      });
+
+      audit.define('constructor with options', (task, should) => {
         var node;
-        var success = true;
-
-        success = Should("new GainNode()", function () {
-          node = new GainNode();
-        }).throw("TypeError");
-        success = Should("new GainNode(1)", function () {
-          node = new GainNode(1);
-        }).throw("TypeError") && success;
-        success = Should("new GainNode(context, 42)", function () {
-          node = new GainNode(context, 42);
-        }).throw("TypeError") && success;
-
-        Should("Invalid constructors", success)
-            .summarize(
-                "correctly threw errors",
-                "did not throw errors in all cases");
-
-        taskDone();
-      });
-
-      audit.defineTask("default constructor", function (taskDone) {
-        var node;
-        var success = true;
-
-        success = Should("node0 = new GainNode(context)", function () {
-          node = new GainNode(context);
-        }).notThrow();
-        success = Should("node0 instanceof GainNode",
-            node instanceof GainNode)
-          .beEqualTo(true) && success;
-
-        success = Should("node0.gain.value", node.gain.value)
-          .beEqualTo(1) && success;
-
-        success = Should("node0.channelCount", node.channelCount)
-          .beEqualTo(2) && success;
-        success = Should("node0.channelCountMode", node.channelCountMode)
-          .beEqualTo("max") && success;
-        success = Should("node0.channelInterpretation", node.channelInterpretation)
-          .beEqualTo("speakers") && success;
-
-        Should("new GainNode(context)", success)
-            .summarize(
-                "constructed node with correct attributes",
-                "did not construct correct node correctly")
-
-        taskDone();
-      });
-
-      audit.defineTask("test AudioNodeOptions", function (taskDone) {
-        testAudioNodeOptions(context, "GainNode");
-        taskDone();
-      });
-
-      audit.defineTask("constructor with options", function (taskDone) {
-        var node;
-        var success = true;
         var options = {
           gain: -2,
         };
 
-        success = Should("node1 = new GainNode(c, " + JSON.stringify(options) + ")", function () {
-          node = new GainNode(context, options);
-        }).notThrow();
-        success = Should("node1 instanceof GainNode",
-            node instanceof GainNode)
-          .beEqualTo(true) && success;
+        should(
+            () => {
+              node = new GainNode(context, options);
+            },
+            'node1 = new GainNode(c, ' + JSON.stringify(options) + ')')
+            .notThrow();
+        should(node instanceof GainNode, 'node1 instanceof GainNode')
+            .beEqualTo(true);
 
-        success = Should("node1.gain.value", node.gain.value)
-          .beEqualTo(options.gain) && success;
+        should(node.gain.value, 'node1.gain.value').beEqualTo(options.gain);
 
-        success = Should("node1.channelCount", node.channelCount)
-          .beEqualTo(2) && success;
-        success = Should("node1.channelCountMode", node.channelCountMode)
-          .beEqualTo("max") && success;
-        success = Should("node1.channelInterpretation", node.channelInterpretation)
-          .beEqualTo("speakers") && success;
+        should(node.channelCount, 'node1.channelCount').beEqualTo(2);
+        should(node.channelCountMode, 'node1.channelCountMode')
+            .beEqualTo('max');
+        should(node.channelInterpretation, 'node1.channelInterpretation')
+            .beEqualTo('speakers');
 
-        Should("new GainNode() with options", success)
-          .summarize(
-            "constructed with correct attributes",
-            "was not constructed correctly");
-
-        taskDone();
+        task.done();
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
