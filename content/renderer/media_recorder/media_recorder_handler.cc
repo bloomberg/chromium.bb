@@ -44,7 +44,7 @@ media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
       return media::kCodecVP8;
     case VideoTrackRecorder::CodecId::VP9:
       return media::kCodecVP9;
-#if defined(IS_H264_SUPPORTED)
+#if BUILDFLAG(RTC_USE_H264)
     case VideoTrackRecorder::CodecId::H264:
       return media::kCodecH264;
 #endif
@@ -142,7 +142,7 @@ bool MediaRecorderHandler::Initialize(
     codec_id_ = VideoTrackRecorder::CodecId::VP8;
   else if (codecs_str.find("vp9") != std::string::npos)
     codec_id_ = VideoTrackRecorder::CodecId::VP9;
-#if defined(IS_H264_SUPPORTED)
+#if BUILDFLAG(RTC_USE_H264)
   else if (codecs_str.find("h264") != std::string::npos)
     codec_id_ = VideoTrackRecorder::CodecId::H264;
   else if (codecs_str.find("avc1") != std::string::npos)

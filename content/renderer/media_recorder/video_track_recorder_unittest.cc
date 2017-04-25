@@ -47,8 +47,6 @@ const VideoTrackRecorder::CodecId kTrackRecorderTestCodec[] = {
     VideoTrackRecorder::CodecId::VP8,
     VideoTrackRecorder::CodecId::VP9
 #if BUILDFLAG(RTC_USE_H264)
-    // This test case can't be enabled in Android because there is no software
-    // OpenH264 fallback nor render thread to enumerate the hardware encoders.
     , VideoTrackRecorder::CodecId::H264
 #endif
 };

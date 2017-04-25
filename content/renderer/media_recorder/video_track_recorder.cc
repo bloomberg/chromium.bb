@@ -66,7 +66,7 @@ static const struct {
 } kPreferredCodecIdAndVEAProfiles[] = {
     {CodecId::VP8, media::VP8PROFILE_MIN, media::VP8PROFILE_MAX},
     {CodecId::VP9, media::VP9PROFILE_MIN, media::VP9PROFILE_MAX},
-#if defined(IS_H264_SUPPORTED)
+#if BUILDFLAG(RTC_USE_H264)
     {CodecId::H264, media::H264PROFILE_MIN, media::H264PROFILE_MAX}
 #endif
 };
@@ -106,6 +106,11 @@ CodecEnumerator* GetCodecEnumerator() {
 CodecEnumerator::CodecEnumerator() {
 #if defined(OS_CHROMEOS)
   // See https://crbug.com/616659.
+  return;
+#endif
+
+#if defined(OS_ANDROID)
+  // See https://crbug.com/653864.
   return;
 #endif
 

@@ -18,12 +18,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#if BUILDFLAG(RTC_USE_H264) || defined(OS_ANDROID)
-// H264 encoding is supported on Android using the platform encode
-// accelerator, and elsewhere using OpenH264.
-#define IS_H264_SUPPORTED
-#endif
-
 namespace base {
 class Thread;
 }  // namespace base
@@ -38,13 +32,8 @@ class VideoFrame;
 }  // namespace media
 
 namespace video_track_recorder {
-#if defined(OS_ANDROID)
-const int kVEAEncoderMinResolutionWidth = 176;
-const int kVEAEncoderMinResolutionHeight = 144;
-#else
 const int kVEAEncoderMinResolutionWidth = 640;
 const int kVEAEncoderMinResolutionHeight = 480;
-#endif
 }  // namespace video_track_recorder
 
 namespace content {
@@ -62,7 +51,7 @@ class CONTENT_EXPORT VideoTrackRecorder
   enum class CodecId {
     VP8,
     VP9,
-#if defined(IS_H264_SUPPORTED)
+#if BUILDFLAG(RTC_USE_H264)
     H264,
 #endif
     LAST

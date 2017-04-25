@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "media/base/media_switches.h"
@@ -23,9 +22,7 @@ static struct EncodingParameters {
 } const kEncodingParameters[] = {
     {true, "video/webm;codecs=VP8"},
     {true, "video/webm;codecs=VP9"},
-#if BUILDFLAG(RTC_USE_H264)
     {true, "video/x-matroska;codecs=AVC1"},
-#endif
     {false, ""},  // Instructs the platform to choose any accelerated codec.
     {false, "video/webm;codecs=VP8"},
     {false, "video/webm;codecs=VP9"},
@@ -128,14 +125,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, TwoChannelAudioRecording) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, RecordWithTransparency) {
-  // Alpha channel is only supported in "video/webm;codecs={vp8/vp9}" cases.
-  if (GetParam().mime_type.find("video/webm") == std::string::npos)
-    return;
-
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testRecordWithTransparency(\"%s\");",
                                      GetParam().mime_type.c_str()),
-                                     kMediaRecorderHtmlFile);
+                  kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, IllegalStopThrowsDOMError) {
