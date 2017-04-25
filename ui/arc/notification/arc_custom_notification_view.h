@@ -70,7 +70,7 @@ class ArcCustomNotificationView
 
   void CreateCloseButton();
   void CreateSettingsButton();
-  void CreateFloatingControlButtons();
+  void MaybeCreateFloatingControlButtons();
   void SetSurface(exo::NotificationSurface* surface);
   void UpdatePreferredSize();
   void UpdateControlButtonsVisibility();
@@ -116,6 +116,8 @@ class ArcCustomNotificationView
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
 
+  // If |item_| is null, we may be about to be destroyed. In this case,
+  // we have to be careful about what we do.
   ArcCustomNotificationItem* item_ = nullptr;
   exo::NotificationSurface* surface_ = nullptr;
 

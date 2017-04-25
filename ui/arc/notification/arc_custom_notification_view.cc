@@ -294,11 +294,12 @@ void ArcCustomNotificationView::CreateSettingsButton() {
   control_buttons_view_->AddChildView(settings_button_);
 }
 
-void ArcCustomNotificationView::CreateFloatingControlButtons() {
+void ArcCustomNotificationView::MaybeCreateFloatingControlButtons() {
   // Floating close button is a transient child of |surface_| and also part
   // of the hosting widget's focus chain. It could only be created when both
-  // are present.
-  if (!surface_ || !GetWidget())
+  // are present. Further, if we are being destroyed (|item_| is null), don't
+  // create the control buttons.
+  if (!surface_ || !GetWidget() || !item_)
     return;
 
   // Creates the control_buttons_view_, which collects all control buttons into
@@ -307,9 +308,9 @@ void ArcCustomNotificationView::CreateFloatingControlButtons() {
   control_buttons_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
-  if (item_ && item_->IsOpeningSettingsSupported())
+  if (item_->IsOpeningSettingsSupported())
     CreateSettingsButton();
-  if (item_ && !item_->pinned())
+  if (!item_->pinned())
     CreateCloseButton();
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
@@ -350,7 +351,7 @@ void ArcCustomNotificationView::SetSurface(exo::NotificationSurface* surface) {
     surface_->window()->AddObserver(this);
     surface_->window()->AddPreTargetHandler(event_forwarder_.get());
 
-    CreateFloatingControlButtons();
+    MaybeCreateFloatingControlButtons();
 
     if (GetWidget())
       AttachSurface();
@@ -378,10 +379,16 @@ void ArcCustomNotificationView::UpdateControlButtonsVisibility() {
   if (!surface_)
     return;
 
+  // TODO(edcourtney, yhanada): Creating the floating control widget here is not
+  // correct. This function may be called during the destruction of
+  // |floating_control_buttons_widget_|. This can lead to memory corruption.
+  // Rather than creating it here, we should fix the behaviour of OnMouseExited
+  // and OnMouseEntered for ARC notifications in MessageCenterView. See
+  // crbug.com/714587 and crbug.com/709862.
   if (!floating_control_buttons_widget_) {
-    if (GetWidget())
-      CreateFloatingControlButtons();
-    else
+    // This may update |floating_control_buttons_widget_|.
+    MaybeCreateFloatingControlButtons();
+    if (!floating_control_buttons_widget_)
       return;
   }
 
@@ -398,7 +405,8 @@ void ArcCustomNotificationView::UpdateControlButtonsVisibility() {
 }
 
 void ArcCustomNotificationView::UpdatePinnedState() {
-  DCHECK(item_);
+  if (!item_)
+    return;
 
   if (item_->pinned() && close_button_) {
     control_buttons_view_->RemoveChildView(close_button_.get());
@@ -452,7 +460,9 @@ void ArcCustomNotificationView::StartControlButtonsColorAnimation() {
 }
 
 bool ArcCustomNotificationView::ShouldUpdateControlButtonsColor() const {
-  DCHECK(item_);
+  // Don't update the control button color when we are about to be destroyed.
+  if (!item_)
+    return false;
 
   if (settings_button_ &&
       settings_button_->background()->get_color() !=
