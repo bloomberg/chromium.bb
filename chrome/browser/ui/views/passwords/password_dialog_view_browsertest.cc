@@ -478,8 +478,7 @@ void PasswordDialogViewTest::ShowDialog(const std::string& name) {
   if (name == "PopupAutoSigninPrompt") {
     form.icon_url = GURL("broken url");
     local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
-    GURL icon_url("https://google.com/icon.png");
-    form.icon_url = icon_url;
+    form.icon_url = GURL("https://google.com/icon.png");
     form.display_name = base::ASCIIToUTF16("Peter Pan");
     form.federation_origin = url::Origin(GURL("https://google.com/federation"));
     local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
