@@ -92,16 +92,6 @@ class PLATFORM_EXPORT LengthBox {
   const Length& Top() const { return top_; }
   const Length& Bottom() const { return bottom_; }
 
-  const Length& LogicalLeft(WritingMode) const;
-  const Length& LogicalRight(WritingMode) const;
-
-  const Length& Before(WritingMode) const;
-  const Length& After(WritingMode) const;
-  const Length& Start(WritingMode, TextDirection) const;
-  const Length& end(WritingMode, TextDirection) const;
-  const Length& Over(WritingMode) const;
-  const Length& Under(WritingMode) const;
-
   bool operator==(const LengthBox& o) const {
     return left_ == o.left_ && right_ == o.right_ && top_ == o.top_ &&
            bottom_ == o.bottom_;
