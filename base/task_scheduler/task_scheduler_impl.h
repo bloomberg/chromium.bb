@@ -38,17 +38,12 @@ namespace internal {
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
  public:
-  // Creates and returns an initialized TaskSchedulerImpl. CHECKs on failure.
-  // |name| is used to label threads and histograms. It should identify the
-  // component that creates the TaskScheduler. |init_params| contains params to
-  // initialize worker pools.
-  static std::unique_ptr<TaskSchedulerImpl> Create(
-      StringPiece name,
-      const TaskScheduler::InitParams& init_params);
-
+  // |name| is used to label threads and histograms.
+  explicit TaskSchedulerImpl(StringPiece name);
   ~TaskSchedulerImpl() override;
 
   // TaskScheduler:
+  void Start(const TaskScheduler::InitParams& init_params) override;
   void PostDelayedTaskWithTraits(const tracked_objects::Location& from_here,
                                  const TaskTraits& traits,
                                  OnceClosure task,
@@ -71,10 +66,6 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   void JoinForTesting() override;
 
  private:
-  explicit TaskSchedulerImpl(StringPiece name);
-
-  void Initialize(const TaskScheduler::InitParams& init_params);
-
   // Returns the worker pool that runs Tasks with |traits|.
   SchedulerWorkerPoolImpl* GetWorkerPoolForTraits(
       const TaskTraits& traits) const;

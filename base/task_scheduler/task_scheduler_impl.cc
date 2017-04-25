@@ -54,19 +54,69 @@ size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
 
 }  // namespace
 
-// static
-std::unique_ptr<TaskSchedulerImpl> TaskSchedulerImpl::Create(
-    StringPiece name,
-    const TaskScheduler::InitParams& init_params) {
-  auto task_scheduler = WrapUnique(new TaskSchedulerImpl(name));
-  task_scheduler->Initialize(init_params);
-  return task_scheduler;
+TaskSchedulerImpl::TaskSchedulerImpl(StringPiece name)
+    : name_(name),
+      service_thread_("TaskSchedulerServiceThread"),
+      single_thread_task_runner_manager_(&task_tracker_,
+                                         &delayed_task_manager_) {
+  static_assert(arraysize(worker_pools_) == ENVIRONMENT_COUNT,
+                "The size of |worker_pools_| must match ENVIRONMENT_COUNT.");
+  static_assert(
+      arraysize(kEnvironmentParams) == ENVIRONMENT_COUNT,
+      "The size of |kEnvironmentParams| must match ENVIRONMENT_COUNT.");
+
+  // Callback invoked by workers to re-enqueue a sequence in the appropriate
+  // PriorityQueue.
+  const auto reenqueue_sequence_callback = BindRepeating(
+      &TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
+
+  for (int environment_type = 0; environment_type < ENVIRONMENT_COUNT;
+       ++environment_type) {
+    worker_pools_[environment_type] = MakeUnique<SchedulerWorkerPoolImpl>(
+        name_ + kEnvironmentParams[environment_type].name_suffix,
+        kEnvironmentParams[environment_type].priority_hint,
+        reenqueue_sequence_callback, &task_tracker_, &delayed_task_manager_);
+  }
 }
 
 TaskSchedulerImpl::~TaskSchedulerImpl() {
 #if DCHECK_IS_ON()
   DCHECK(join_for_testing_returned_.IsSet());
 #endif
+}
+
+void TaskSchedulerImpl::Start(const TaskScheduler::InitParams& init_params) {
+  // Start the service thread. On platforms that support it (POSIX except NaCL
+  // SFI), the service thread runs a MessageLoopForIO which is used to support
+  // FileDescriptorWatcher in the scope in which tasks run.
+  Thread::Options service_thread_options;
+  service_thread_options.message_loop_type =
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
+      MessageLoop::TYPE_IO;
+#else
+      MessageLoop::TYPE_DEFAULT;
+#endif
+  service_thread_options.timer_slack = TIMER_SLACK_MAXIMUM;
+  CHECK(service_thread_.StartWithOptions(service_thread_options));
+
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
+  // Needs to happen after starting the service thread to get its
+  // message_loop().
+  task_tracker_.set_watch_file_descriptor_message_loop(
+      static_cast<MessageLoopForIO*>(service_thread_.message_loop()));
+#endif
+
+  // Needs to happen after starting the service thread to get its task_runner().
+  delayed_task_manager_.Start(service_thread_.task_runner());
+
+  single_thread_task_runner_manager_.Start();
+
+  worker_pools_[BACKGROUND]->Start(init_params.background_worker_pool_params);
+  worker_pools_[BACKGROUND_BLOCKING]->Start(
+      init_params.background_blocking_worker_pool_params);
+  worker_pools_[FOREGROUND]->Start(init_params.foreground_worker_pool_params);
+  worker_pools_[FOREGROUND_BLOCKING]->Start(
+      init_params.foreground_blocking_worker_pool_params);
 }
 
 void TaskSchedulerImpl::PostDelayedTaskWithTraits(
@@ -148,76 +198,6 @@ void TaskSchedulerImpl::JoinForTesting() {
 #if DCHECK_IS_ON()
   join_for_testing_returned_.Set();
 #endif
-}
-
-TaskSchedulerImpl::TaskSchedulerImpl(StringPiece name)
-    : name_(name),
-      service_thread_("TaskSchedulerServiceThread"),
-      single_thread_task_runner_manager_(&task_tracker_,
-                                         &delayed_task_manager_) {}
-
-void TaskSchedulerImpl::Initialize(
-    const TaskScheduler::InitParams& init_params) {
-  // Start the service thread. On platforms that support it (POSIX except NaCL
-  // SFI), the service thread runs a MessageLoopForIO which is used to support
-  // FileDescriptorWatcher in the scope in which tasks run.
-  Thread::Options service_thread_options;
-  service_thread_options.message_loop_type =
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-      MessageLoop::TYPE_IO;
-#else
-      MessageLoop::TYPE_DEFAULT;
-#endif
-  service_thread_options.timer_slack = TIMER_SLACK_MAXIMUM;
-  CHECK(service_thread_.StartWithOptions(service_thread_options));
-
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-  // Needs to happen after starting the service thread to get its
-  // message_loop().
-  task_tracker_.set_watch_file_descriptor_message_loop(
-      static_cast<MessageLoopForIO*>(service_thread_.message_loop()));
-#endif
-
-  // Needs to happen after starting the service thread to get its task_runner().
-  delayed_task_manager_.Start(service_thread_.task_runner());
-
-  single_thread_task_runner_manager_.Start();
-
-  // Callback invoked by workers to re-enqueue a sequence in the appropriate
-  // PriorityQueue.
-  const SchedulerWorkerPoolImpl::ReEnqueueSequenceCallback
-      re_enqueue_sequence_callback =
-          Bind(&TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
-
-  // Order must match the EnvironmentType enum.
-  const SchedulerWorkerPoolParams* worker_pool_params[] = {
-      &init_params.background_worker_pool_params,
-      &init_params.background_blocking_worker_pool_params,
-      &init_params.foreground_worker_pool_params,
-      &init_params.foreground_blocking_worker_pool_params};
-
-  static_assert(arraysize(worker_pools_) == ENVIRONMENT_COUNT,
-                "The size of |worker_pools_| must match ENVIRONMENT_COUNT.");
-  static_assert(
-      arraysize(kEnvironmentParams) == ENVIRONMENT_COUNT,
-      "The size of |kEnvironmentParams| must match ENVIRONMENT_COUNT.");
-  static_assert(
-      arraysize(worker_pool_params) == ENVIRONMENT_COUNT,
-      "The size of |worker_pool_params| must match ENVIRONMENT_COUNT.");
-
-  // Start worker pools.
-  for (int environment_type = 0; environment_type < ENVIRONMENT_COUNT;
-       ++environment_type) {
-    // Passing pointers to objects owned by |this| to the constructor of
-    // SchedulerWorkerPoolImpl is safe because a TaskSchedulerImpl can't be
-    // deleted before all its worker pools have been joined.
-    worker_pools_[environment_type] = MakeUnique<SchedulerWorkerPoolImpl>(
-        name_ + kEnvironmentParams[environment_type].name_suffix,
-        kEnvironmentParams[environment_type].priority_hint,
-        re_enqueue_sequence_callback, &task_tracker_, &delayed_task_manager_);
-    worker_pools_[environment_type]->Start(
-        *worker_pool_params[environment_type]);
-  }
 }
 
 SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(

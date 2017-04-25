@@ -33,9 +33,16 @@ namespace base {
 class HistogramBase;
 
 // Interface for a task scheduler and static methods to manage the instance used
-// by the post_task.h API. Note: all base/task_scheduler users should go through
-// post_task.h instead of TaskScheduler except for the one callsite per process
-// which manages the process' instance.
+// by the post_task.h API.
+//
+// The task scheduler doesn't create threads until Start() is called. Tasks can
+// be posted at any time but will not run until after Start() is called.
+//
+// The instance methods of this class are thread-safe.
+//
+// Note: All base/task_scheduler users should go through post_task.h instead of
+// TaskScheduler except for the one callsite per process which manages the
+// process's instance.
 class BASE_EXPORT TaskScheduler {
  public:
   struct BASE_EXPORT InitParams {
@@ -58,6 +65,10 @@ class BASE_EXPORT TaskScheduler {
   // leaked. In tests, it should only be destroyed after JoinForTesting() has
   // returned.
   virtual ~TaskScheduler() = default;
+
+  // Allows the task scheduler to create threads and run tasks following the
+  // |init_params| specification. CHECKs on failure.
+  virtual void Start(const InitParams& init_params) = 0;
 
   // Posts |task| with a |delay| and specific |traits|. |delay| can be zero.
   // For one off tasks that don't require a TaskRunner.

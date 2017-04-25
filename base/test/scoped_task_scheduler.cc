@@ -38,6 +38,9 @@ namespace {
 
 enum class ExecutionMode { PARALLEL, SEQUENCED, SINGLE_THREADED };
 
+// ScopedTaskScheduler intentionally breaks the TaskScheduler contract of not
+// running tasks before Start(). This avoid having to call Start() with dummy
+// parameters.
 class TestTaskScheduler : public TaskScheduler {
  public:
   // |external_message_loop| is an externally provided MessageLoop on which to
@@ -47,6 +50,7 @@ class TestTaskScheduler : public TaskScheduler {
   ~TestTaskScheduler() override;
 
   // TaskScheduler:
+  void Start(const TaskScheduler::InitParams& init_params) override;
   void PostDelayedTaskWithTraits(const tracked_objects::Location& from_here,
                                  const TaskTraits& traits,
                                  OnceClosure task,
@@ -162,6 +166,10 @@ TestTaskScheduler::~TestTaskScheduler() {
   // Shutdown if it hasn't already been done explicitly.
   if (!task_tracker_.HasShutdownStarted())
     Shutdown();
+}
+
+void TestTaskScheduler::Start(const TaskScheduler::InitParams&) {
+  NOTREACHED();
 }
 
 void TestTaskScheduler::PostDelayedTaskWithTraits(

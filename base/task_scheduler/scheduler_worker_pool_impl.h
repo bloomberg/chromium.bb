@@ -38,16 +38,19 @@ namespace internal {
 class DelayedTaskManager;
 class TaskTracker;
 
-// A pool of workers that run Tasks. This class is thread-safe.
+// A pool of workers that run Tasks.
+//
+// The pool doesn't create threads until Start() is called. Tasks can be posted
+// at any time but will not run until after Start() is called.
+//
+// This class is thread-safe.
 class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
  public:
   // Callback invoked when a Sequence isn't empty after a worker pops a Task
   // from it.
   using ReEnqueueSequenceCallback = Callback<void(scoped_refptr<Sequence>)>;
 
-  // Constructs a pool without workers. Tasks can be posted to the pool, but
-  // they won't run until workers are created. To create workers and start
-  // running tasks, call Start().
+  // Constructs a pool without workers.
   //
   // |name| is used to label the pool's threads ("TaskScheduler" + |name| +
   // index) and histograms ("TaskScheduler." + histogram name + "." + |name| +

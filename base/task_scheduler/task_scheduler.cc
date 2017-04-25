@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_scheduler_impl.h"
@@ -68,7 +69,8 @@ void TaskScheduler::CreateAndSetSimpleTaskScheduler(StringPiece name) {
 void TaskScheduler::CreateAndSetDefaultTaskScheduler(
     StringPiece name,
     const InitParams& init_params) {
-  SetInstance(internal::TaskSchedulerImpl::Create(name, init_params));
+  SetInstance(MakeUnique<internal::TaskSchedulerImpl>(name));
+  GetInstance()->Start(init_params);
 }
 
 // static
