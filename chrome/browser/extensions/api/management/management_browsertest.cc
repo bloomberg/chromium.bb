@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -294,8 +294,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+      base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -384,8 +388,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+      base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -453,8 +461,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+      base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -549,8 +561,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+      base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -630,8 +646,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+      base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
