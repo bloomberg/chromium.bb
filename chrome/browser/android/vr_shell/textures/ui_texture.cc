@@ -55,6 +55,9 @@ gfx::FontList UiTexture::GetFontList(int size, base::string16 text) {
     sk_sp<SkTypeface> tf(font_mgr->matchFamilyStyleCharacter(
         default_font.GetFontName().c_str(), SkFontStyle(), nullptr, 0,
         it.get()));
+    // TODO(acondor): How should we handle no matching font?
+    if (!tf)
+      continue;
     SkString sk_name;
     tf->getFamilyName(&sk_name);
     std::string name(sk_name.c_str());
