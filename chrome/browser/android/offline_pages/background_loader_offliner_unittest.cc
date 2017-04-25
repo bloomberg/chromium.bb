@@ -69,6 +69,14 @@ class MockOfflinePageModel : public StubOfflinePageModel {
         base::Bind(save_page_callback_, SavePageResult::SUCCESS, 123456));
   }
 
+  void CompleteSavingAsAlreadyExists() {
+    DCHECK(mock_saving_);
+    mock_saving_ = false;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(save_page_callback_,
+                              SavePageResult::ALREADY_EXISTS, 123456));
+  }
+
   bool mock_saving() const { return mock_saving_; }
 
  private:
@@ -368,6 +376,24 @@ TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveSuccess) {
   CompleteLoading();
   PumpLoop();
   model()->CompleteSavingAsSuccess();
+  PumpLoop();
+
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::SAVED, request_status());
+  EXPECT_FALSE(offliner()->is_loading());
+  EXPECT_FALSE(SaveInProgress());
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveAlreadyExists) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+
+  CompleteLoading();
+  PumpLoop();
+  model()->CompleteSavingAsAlreadyExists();
   PumpLoop();
 
   EXPECT_TRUE(completion_callback_called());

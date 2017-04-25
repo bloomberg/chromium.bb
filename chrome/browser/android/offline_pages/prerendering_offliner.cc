@@ -165,7 +165,9 @@ void PrerenderingOffliner::OnSavePageDone(
 
   // Determine status and run the completion callback.
   Offliner::RequestStatus save_status;
-  if (save_result == SavePageResult::SUCCESS) {
+  if (save_result == SavePageResult::ALREADY_EXISTS) {
+    save_status = RequestStatus::SAVED;
+  } else if (save_result == SavePageResult::SUCCESS) {
     if (saved_on_last_retry_)
       save_status = RequestStatus::SAVED_ON_LAST_RETRY;
     else

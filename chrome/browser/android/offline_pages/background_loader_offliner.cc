@@ -421,7 +421,9 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
   save_state_ = NONE;
 
   Offliner::RequestStatus save_status;
-  if (save_result == SavePageResult::SUCCESS) {
+  if (save_result == SavePageResult::ALREADY_EXISTS) {
+    save_status = RequestStatus::SAVED;
+  } else if (save_result == SavePageResult::SUCCESS) {
     if (did_snapshot_on_last_retry)
       save_status = RequestStatus::SAVED_ON_LAST_RETRY;
     else
