@@ -35,6 +35,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
@@ -2513,85 +2514,10 @@ BrowserAccessibilityManager*
 
 void RenderWidgetHostImpl::GrantFileAccessFromDropData(DropData* drop_data) {
   DCHECK_EQ(GetRoutingID(), drop_data->view_id);
-  const int renderer_id = GetProcess()->GetID();
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-#if defined(OS_CHROMEOS)
-  // The externalfile:// scheme is used in Chrome OS to open external files in a
-  // browser tab.
-  if (drop_data->url.SchemeIs(content::kExternalFileScheme))
-    policy->GrantRequestURL(renderer_id, drop_data->url);
-#endif
-
-  // The filenames vector represents a capability to access the given files.
-  storage::IsolatedContext::FileInfoSet files;
-  for (auto& filename : drop_data->filenames) {
-    // Make sure we have the same display_name as the one we register.
-    if (filename.display_name.empty()) {
-      std::string name;
-      files.AddPath(filename.path, &name);
-      filename.display_name = base::FilePath::FromUTF8Unsafe(name);
-    } else {
-      files.AddPathWithName(filename.path,
-                            filename.display_name.AsUTF8Unsafe());
-    }
-    // A dragged file may wind up as the value of an input element, or it
-    // may be used as the target of a navigation instead.  We don't know
-    // which will happen at this point, so generously grant both access
-    // and request permissions to the specific file to cover both cases.
-    // We do not give it the permission to request all file:// URLs.
-    policy->GrantRequestSpecificFileURL(renderer_id,
-                                        net::FilePathToFileURL(filename.path));
-
-    // If the renderer already has permission to read these paths, we don't need
-    // to re-grant them. This prevents problems with DnD for files in the CrOS
-    // file manager--the file manager already had read/write access to those
-    // directories, but dragging a file would cause the read/write access to be
-    // overwritten with read-only access, making them impossible to delete or
-    // rename until the renderer was killed.
-    if (!policy->CanReadFile(renderer_id, filename.path))
-      policy->GrantReadFile(renderer_id, filename.path);
-  }
-
-  storage::IsolatedContext* isolated_context =
-      storage::IsolatedContext::GetInstance();
-  DCHECK(isolated_context);
-
-  if (!files.fileset().empty()) {
-    std::string filesystem_id =
-        isolated_context->RegisterDraggedFileSystem(files);
-    if (!filesystem_id.empty()) {
-      // Grant the permission iff the ID is valid.
-      policy->GrantReadFileSystem(renderer_id, filesystem_id);
-    }
-    drop_data->filesystem_id = base::UTF8ToUTF16(filesystem_id);
-  }
-
-  storage::FileSystemContext* file_system_context =
-      GetProcess()->GetStoragePartition()->GetFileSystemContext();
-  for (auto& file_system_file : drop_data->file_system_files) {
-    storage::FileSystemURL file_system_url =
-        file_system_context->CrackURL(file_system_file.url);
-
-    std::string register_name;
-    std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-        file_system_url.type(), file_system_url.filesystem_id(),
-        file_system_url.path(), &register_name);
-
-    if (!filesystem_id.empty()) {
-      // Grant the permission iff the ID is valid.
-      policy->GrantReadFileSystem(renderer_id, filesystem_id);
-    }
-
-    // Note: We are using the origin URL provided by the sender here. It may be
-    // different from the receiver's.
-    file_system_file.url =
-        GURL(storage::GetIsolatedFileSystemRootURIString(
-                 file_system_url.origin(), filesystem_id, std::string())
-                 .append(register_name));
-    file_system_file.filesystem_id = filesystem_id;
-  }
+  RenderProcessHost* process = GetProcess();
+  PrepareDropDataForChildProcess(
+      drop_data, ChildProcessSecurityPolicyImpl::GetInstance(),
+      process->GetID(), process->GetStoragePartition()->GetFileSystemContext());
 }
 
 void RenderWidgetHostImpl::RequestCompositionUpdates(bool immediate_request,
