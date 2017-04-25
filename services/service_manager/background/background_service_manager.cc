@@ -63,6 +63,13 @@ BackgroundServiceManager::~BackgroundServiceManager() {
   DCHECK(!context_);
 }
 
+void BackgroundServiceManager::StartService(const Identity& identity) {
+  background_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&BackgroundServiceManager::StartServiceOnBackgroundThread,
+                 base::Unretained(this), identity));
+}
+
 void BackgroundServiceManager::RegisterService(
     const Identity& identity,
     mojom::ServicePtr service,
@@ -109,6 +116,11 @@ void BackgroundServiceManager::ShutDownOnBackgroundThread(
     base::WaitableEvent* done_event) {
   context_.reset();
   done_event->Signal();
+}
+
+void BackgroundServiceManager::StartServiceOnBackgroundThread(
+    const Identity& identity) {
+  context_->service_manager()->StartService(identity);
 }
 
 void BackgroundServiceManager::RegisterServiceOnBackgroundThread(

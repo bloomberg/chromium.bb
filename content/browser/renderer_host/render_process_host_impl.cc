@@ -1984,7 +1984,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   }
 
   DCHECK(child_connection_);
-  renderer_cmd->AppendSwitchASCII(switches::kPrimordialPipeToken,
+  renderer_cmd->AppendSwitchASCII(service_manager::switches::kServicePipeToken,
                                   child_connection_->service_token());
 
 #if defined(OS_WIN) && !defined(OFFICIAL_BUILD)

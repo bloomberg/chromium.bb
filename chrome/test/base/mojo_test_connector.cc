@@ -53,7 +53,6 @@ class MojoTestState : public content::TestState {
             base::TestLauncher::LaunchOptions* test_launch_options,
             const std::string& mus_config_switch) {
     command_line->AppendSwitch(MojoTestConnector::kTestSwitch);
-    command_line->AppendSwitch(switches::kChildProcess);
     command_line->AppendSwitchASCII(switches::kMusConfig, mus_config_switch);
 
     platform_channel_ = base::MakeUnique<mojo::edk::PlatformChannelPair>();
@@ -244,4 +243,9 @@ std::unique_ptr<content::TestState> MojoTestConnector::PrepareForTest(
                    config_ == MojoTestConnector::Config::MASH ? switches::kMash
                                                               : switches::kMus);
   return test_state;
+}
+
+void MojoTestConnector::StartService(const std::string& service_name) {
+  background_service_manager_->StartService(service_manager::Identity(
+      service_name, service_manager::mojom::kRootUserID));
 }

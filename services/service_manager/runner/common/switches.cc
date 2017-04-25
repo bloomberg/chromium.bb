@@ -4,26 +4,21 @@
 
 #include "services/service_manager/runner/common/switches.h"
 
+namespace service_manager {
 namespace switches {
-
-// Used internally by the main process to indicate that a new process should be
-// a child process. Takes the absolute path to the service library to load as
-// an argument. Not for user use.
-const char kChildProcess[] = "child-process";
 
 // Enables the sandbox on this process.
 const char kEnableSandbox[] = "enable-sandbox";
 
-// Provides a child process with a token string they can use to establish a
-// primordial message pipe to the parent.
-const char kPrimordialPipeToken[] = "primordial-pipe-token";
+// Specified on the command line of service processes to indicate which service
+// should be run. Useful when the service process binary may act as one of many
+// different embedded services.
+const char kServiceName[] = "service-name";
 
-// The name of the service the process is starting for.
-const char kProcessServiceName[] = "process-service-name";
-
-// Specifies a JSON file from which to read a set of service metadata overrides.
-// This can be used with the standalone mojo_runner to override executable and
-// package resolution behavior.
-const char kServiceOverrides[] = "service-overrides";
+// Provides a child process with a token string they can exchange for a message
+// pipe whose other end is bound to a service_manager::Service binding in the
+// Service Manager.
+const char kServicePipeToken[] = "service-pipe-token";
 
 }  // namespace switches
+}  // namespace service_manager

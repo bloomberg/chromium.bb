@@ -6,7 +6,9 @@ component("embedder") {
   sources = [
     "main.cc",
     "main.h",
+    "main_delegate.cc",
     "main_delegate.h",
+    "process_type.h",
     "service_manager_embedder_export.h",
     "set_process_title.cc",
     "set_process_title.h",
@@ -28,10 +30,20 @@ component("embedder") {
   }
 
   deps = [
-    "//base",
+    "//base:base_static",
     "//base/allocator:features",
+    "//components/tracing:startup_tracing",
     "//mojo/edk/system",
     "//ui/base",
+  ]
+
+  public_deps = [
+    "//base",
+    "//services/service_manager/background:lib",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp/standalone_service",
+    "//services/service_manager/runner:init",
+    "//services/service_manager/runner/common",
   ]
 
   defines = [ "SERVICE_MANAGER_EMBEDDER_IMPL" ]

@@ -5,16 +5,16 @@
 #ifndef SERVICES_SERVICE_MANAGER_RUNNER_COMMON_SWITCHES_H_
 #define SERVICES_SERVICE_MANAGER_RUNNER_COMMON_SWITCHES_H_
 
+namespace service_manager {
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
-extern const char kChildProcess[];
 extern const char kEnableSandbox[];
-extern const char kPrimordialPipeToken[];
-extern const char kProcessServiceName[];
-extern const char kServiceOverrides[];
+extern const char kServiceName[];
+extern const char kServicePipeToken[];
 
 }  // namespace switches
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_COMMON_SWITCHES_H_

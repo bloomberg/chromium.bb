@@ -303,8 +303,10 @@ class ServiceManagerConnectionImpl::IOThreadContext
                      const std::string& name) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     auto it = request_handlers_.find(name);
-    DCHECK(it != request_handlers_.end())
-        << "Can't create service " << name << ". No handler found.";
+    if (it == request_handlers_.end()) {
+      LOG(ERROR) << "Can't create service " << name << ". No handler found.";
+      return;
+    }
     it->second.Run(std::move(request));
   }
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -94,6 +95,9 @@ void LoadCatalogManifestIntoCache(const base::Value* root, EntryCache* cache) {
     }
 
     DCHECK(!(is_embedded && !executable_path.empty()));
+
+    if (is_embedded)
+      executable_path = base::CommandLine::ForCurrentProcess()->GetProgram();
 
     auto entry = Entry::Deserialize(*manifest);
     if (entry) {

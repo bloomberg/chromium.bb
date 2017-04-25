@@ -316,6 +316,7 @@ static_library("test_support") {
 
   deps = [
     "//base",
+    "//chrome/app:shutdown_signal_handlers",
     "//chrome/browser",
     "//chrome/browser/policy:path_parser",
     "//chrome/child",
@@ -328,9 +329,11 @@ static_library("test_support") {
     "//components/startup_metric_utils/browser:lib",
     "//content/public/app:both",
     "//content/public/common",
+    "//content/public/common:service_names",
     "//pdf",
     "//ppapi/features",
     "//printing/features",
+    "//services/service_manager/embedder",
     "//ui/base",
   ]
 
@@ -360,6 +363,20 @@ static_library("test_support") {
       "//components/nacl/browser",
       "//components/nacl/renderer/plugin:nacl_trusted_plugin",
     ]
+  }
+
+  if (enable_package_mash_services) {
+    deps += [
+      "//chrome/app/mash:chrome_mash_catalog",
+      "//chrome/app/mash:embedded_services",
+      "//mash/common",
+      "//mash/quick_launch/public/interfaces:constants",
+      "//services/ui/public/interfaces:constants",
+    ]
+
+    if (is_chromeos) {
+      deps += [ "//chrome/app/mash:chrome_mus_catalog" ]
+    }
   }
 }
 

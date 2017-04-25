@@ -71,6 +71,10 @@ class ServiceManager {
   // instance of the target application is running, one will be loaded.
   void Connect(std::unique_ptr<ConnectParams> params);
 
+  // Directly requests that the Service Manager start a new instance for
+  // |identity| if one is not already running.
+  void StartService(const Identity& identity);
+
   // Creates a service instance for |identity|. This is intended for use by the
   // Service Manager's embedder to register instances directly, without
   // requiring a Connector.

@@ -9,7 +9,6 @@ include_rules = [
   "+device/bluetooth/dbus",
   "+device/geolocation",
   "+extensions",
-  "+mash/package",
   "+mash/session/public/interfaces",
   "+mojo",
   "+rlz/features",

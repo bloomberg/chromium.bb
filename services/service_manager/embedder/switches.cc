@@ -4,7 +4,41 @@
 
 #include "services/service_manager/embedder/switches.h"
 
+namespace service_manager {
 namespace switches {
+
+#if defined(OS_WIN)
+
+// Prefetch arguments are used by the Windows prefetcher to disambiguate
+// different execution modes (i.e. process types) of the same executable image
+// so that different types of processes don't trample each others' prefetch
+// behavior.
+//
+// Legal values are integers in the range [1, 8]. We reserve 8 to mean
+// "whatever", and this will ultimately lead to processes with /prefetch:8
+// having inconsistent behavior thus disabling prefetch in practice.
+//
+// TODO(rockot): Make it possible for embedders to override this argument on a
+// per-service basis.
+const char kDefaultServicePrefetchArgument[] = "/prefetch:8";
+
+#endif  // defined(OS_WIN)
+
+// Controls whether console logging is enabled and optionally configures where
+// it's routed.
+const char kEnableLogging[] = "enable-logging";
+
+// Indicates the type of process to run. This may be "service-manager",
+// "service", or any other arbitrary value supported by the embedder.
+const char kProcessType[] = "type";
+
+// The value of the |kProcessType| switch which tells the executable to assume
+// the role of a standalone Service Manager instance.
+const char kProcessTypeServiceManager[] = "service-manager";
+
+// The value of the |kProcessType| switch which tells the executable to assume
+// the role of a service instance.
+const char kProcessTypeService[] = "service";
 
 // Describes the file descriptors passed to a child process in the following
 // list format:
@@ -18,3 +52,4 @@ namespace switches {
 const char kSharedFiles[] = "shared-files";
 
 }  // namespace switches
+}  // namespace service_manager

@@ -40,24 +40,17 @@ void InitializeLogging() {
 void WaitForDebuggerIfNecessary() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kWaitForDebugger)) {
+  if (command_line->HasSwitch(::switches::kWaitForDebugger)) {
     std::vector<std::string> apps_to_debug = base::SplitString(
-        command_line->GetSwitchValueASCII(switches::kWaitForDebugger), ",",
+        command_line->GetSwitchValueASCII(::switches::kWaitForDebugger), ",",
         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::string app = "launcher";
-    if (command_line->HasSwitch(switches::kChildProcess)) {
-      app = command_line->GetSwitchValuePath(switches::kChildProcess)
-                .BaseName()
-                .RemoveExtension()
-                .MaybeAsASCII();
-    } else {
-      base::FilePath exe_path =
-          command_line->GetProgram().BaseName().RemoveExtension();
-      for (const auto& app_name : apps_to_debug) {
-        if (base::FilePath().AppendASCII(app_name) == exe_path) {
-          app = app_name;
-          break;
-        }
+    base::FilePath exe_path =
+        command_line->GetProgram().BaseName().RemoveExtension();
+    for (const auto& app_name : apps_to_debug) {
+      if (base::FilePath().AppendASCII(app_name) == exe_path) {
+        app = app_name;
+        break;
       }
     }
     if (apps_to_debug.empty() || base::ContainsValue(apps_to_debug, app)) {
