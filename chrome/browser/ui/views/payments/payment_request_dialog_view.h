@@ -112,7 +112,13 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
       base::OnceCallback<void(const autofill::CreditCard&)> on_added,
       autofill::CreditCard* credit_card = nullptr);
   // |profile| is the address to be edited, or nullptr for adding an address.
-  void ShowShippingAddressEditor(autofill::AutofillProfile* profile = nullptr);
+  // |on_edited| is called when |profile| was successfully edited, and
+  // |on_added| is called when a new profile was added (the reference is
+  // short-lived; callee should make a copy of the profile object).
+  void ShowShippingAddressEditor(
+      base::OnceClosure on_edited,
+      base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
+      autofill::AutofillProfile* profile);
   // |profile| is the profile to be edited, or nullptr for adding a profile.
   void ShowContactInfoEditor(autofill::AutofillProfile* profile = nullptr);
   void EditorViewUpdated();

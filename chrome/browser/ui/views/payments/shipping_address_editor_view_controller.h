@@ -27,11 +27,18 @@ class PaymentRequestDialogView;
 // Shipping Address editor screen of the Payment Request flow.
 class ShippingAddressEditorViewController : public EditorViewController {
  public:
-  // Does not take ownership of the arguments, which should outlive this object.
-  ShippingAddressEditorViewController(PaymentRequestSpec* spec,
-                                      PaymentRequestState* state,
-                                      PaymentRequestDialogView* dialog,
-                                      autofill::AutofillProfile* profile);
+  // Does not take ownership of the arguments (except for the |on_edited| and
+  // |on_added| callbacks), which should outlive this object. Additionally,
+  // |profile| could be nullptr if we are adding a new shipping address. Else,
+  // it's a valid pointer to a card that needs to be updated, and which will
+  // outlive this controller.
+  ShippingAddressEditorViewController(
+      PaymentRequestSpec* spec,
+      PaymentRequestState* state,
+      PaymentRequestDialogView* dialog,
+      base::OnceClosure on_edited,
+      base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
+      autofill::AutofillProfile* profile);
   ~ShippingAddressEditorViewController() override;
 
   // EditorViewController:
@@ -74,6 +81,12 @@ class ShippingAddressEditorViewController : public EditorViewController {
     DISALLOW_COPY_AND_ASSIGN(ShippingAddressValidationDelegate);
   };
   friend class ShippingAddressValidationDelegate;
+
+  // Called when |profile_to_edit_| was successfully edited.
+  base::OnceClosure on_edited_;
+  // Called when a new profile was added. The const reference is short-lived,
+  // and the callee should make a copy.
+  base::OnceCallback<void(const autofill::AutofillProfile&)> on_added_;
 
   // If non-nullptr, a point to an object to be edited, which should outlive
   // this controller.

@@ -143,6 +143,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
   SetRegionDataLoader(&test_region_data_loader_);
   OpenShippingAddressSectionScreen();
 
+  // No shipping profiles are available.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(0U, request->state()->shipping_profiles().size());
+  EXPECT_EQ(nullptr, request->state()->selected_shipping_profile());
+
   test_region_data_loader_.set_synchronous_callback(true);
   OpenShippingAddressEditorScreen();
 
@@ -212,6 +217,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
   ExpectExistingRequiredFields(nullptr);
+
+  // One shipping profile is available and selected.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(1UL, request->state()->shipping_profiles().size());
+  EXPECT_EQ(request->state()->shipping_profiles().back(),
+            request->state()->selected_shipping_profile());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,

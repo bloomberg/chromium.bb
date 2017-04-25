@@ -105,6 +105,20 @@ void PaymentRequestState::AddAutofillPaymentInstrument(
     SetSelectedInstrument(available_instruments_.back().get());
 }
 
+void PaymentRequestState::AddAutofillShippingProfile(
+    bool selected,
+    const autofill::AutofillProfile& profile) {
+  profile_cache_.push_back(
+      base::MakeUnique<autofill::AutofillProfile>(profile));
+  // TODO(tmartino): Implement deduplication rules specific to shipping
+  // profiles.
+  autofill::AutofillProfile* new_cached_profile = profile_cache_.back().get();
+  shipping_profiles_.push_back(new_cached_profile);
+
+  if (selected)
+    SetSelectedShippingProfile(new_cached_profile);
+}
+
 void PaymentRequestState::SetSelectedShippingOption(
     const std::string& shipping_option_id) {
   spec_->StartWaitingForUpdateWith(

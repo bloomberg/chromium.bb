@@ -29,10 +29,11 @@ class PaymentRequestDialogView;
 // Credit card editor screen of the Payment Request flow.
 class CreditCardEditorViewController : public EditorViewController {
  public:
-  // Does not take ownership of the arguments, which should outlive this object.
-  // Additionally, |credit_card| could be nullptr if we are adding a card. Else,
-  // it's a valid pointer to a card that needs to be updated, and which will
-  // outlive this controller.
+  // Does not take ownership of the arguments (except for the |on_edited| and
+  // |on_added| callbacks), which should outlive this object. Additionally,
+  // |credit_card| could be nullptr if we are adding a card. Else, it's a valid
+  // pointer to a card that needs to be updated, and which will outlive this
+  // controller.
   CreditCardEditorViewController(
       PaymentRequestSpec* spec,
       PaymentRequestState* state,

@@ -67,8 +67,12 @@ ShippingAddressEditorViewController::ShippingAddressEditorViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
+    base::OnceClosure on_edited,
+    base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
     autofill::AutofillProfile* profile)
     : EditorViewController(spec, state, dialog),
+      on_edited_(std::move(on_edited)),
+      on_added_(std::move(on_added)),
       profile_to_edit_(profile),
       chosen_country_index_(0),
       failed_to_load_region_data_(false) {
@@ -113,6 +117,8 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
     // Add the profile (will not add a duplicate).
     profile.set_origin(autofill::kSettingsOrigin);
     state()->GetPersonalDataManager()->AddProfile(profile);
+    std::move(on_added_).Run(profile);
+    on_edited_.Reset();
   } else {
     // Copy the temporary object's data to the object to be edited. Prefer this
     // method to copying |profile| into |profile_to_edit_|, because the latter
@@ -123,6 +129,8 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
     DCHECK(success);
     profile_to_edit_->set_origin(autofill::kSettingsOrigin);
     state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
+    std::move(on_edited_).Run();
+    on_added_.Reset();
   }
 
   return true;

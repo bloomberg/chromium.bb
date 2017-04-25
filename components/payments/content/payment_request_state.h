@@ -124,6 +124,12 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate {
   void AddAutofillPaymentInstrument(bool selected,
                                     const autofill::CreditCard& card);
 
+  // Creates and adds an AutofillProfile as a shipping profile, which makes a
+  // copy of |profile|. |selected| indicates if the newly-created shipping
+  // profile should be selected, after which observers will be notified.
+  void AddAutofillShippingProfile(bool selected,
+                                  const autofill::AutofillProfile& profile);
+
   // Setters to change the selected information. Will have the side effect of
   // recomputing "is ready to pay" and notify observers.
   void SetSelectedShippingOption(const std::string& shipping_option_id);

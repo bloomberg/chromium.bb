@@ -116,7 +116,14 @@ class ShippingProfileViewController : public ProfileListViewController {
   }
 
   void ShowEditor(autofill::AutofillProfile* profile) override {
-    dialog()->ShowShippingAddressEditor(profile);
+    dialog()->ShowShippingAddressEditor(
+        /*on_edited=*/base::BindOnce(
+            &PaymentRequestState::SetSelectedShippingProfile,
+            base::Unretained(state()), profile),
+        /*on_added=*/
+        base::BindOnce(&PaymentRequestState::AddAutofillShippingProfile,
+                       base::Unretained(state()), /*selected=*/true),
+        profile);
   }
 
   autofill::AutofillProfile* GetSelectedProfile() override {
