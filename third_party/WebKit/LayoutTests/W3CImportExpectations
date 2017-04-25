@@ -194,7 +194,8 @@ external/wpt/css/css-variables-1 [ Skip ]
 external/wpt/css/css3-color [ Skip ]
 external/wpt/css/css3-selectors [ Skip ]
 external/wpt/css/filter-effects-1 [ Skip ]
-external/wpt/css/geometry-1 [ Skip ]
+## Owners: xlai@chromium.org,jinho.bang@samsung.com,hs1217.lee@samsung.com
+# external/wpt/css/geometry-1 [ Pass ]
 external/wpt/css/mediaqueries-3 [ Skip ]
 ## Owners: rego@igalia.com
 # external/wpt/css/selectors4 [ Pass ]
