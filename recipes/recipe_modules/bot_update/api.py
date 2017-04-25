@@ -231,8 +231,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--clobber')
     if no_shallow:
       cmd.append('--no_shallow')
-    # TODO(machenbach): Remove in a separate CL for expectation changes.
-    cmd.append('--output_manifest')
     if with_branch_heads or cfg.with_branch_heads:
       cmd.append('--with_branch_heads')
     if with_tags:

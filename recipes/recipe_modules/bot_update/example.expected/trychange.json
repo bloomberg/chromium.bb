@@ -17,8 +17,7 @@
       "--revision",
       "src@HEAD",
       "--refs",
-      "+refs/change/1/2/333",
-      "--output_manifest"
+      "+refs/change/1/2/333"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",
@@ -74,8 +73,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
-      "--output_manifest"
+      "src@f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",

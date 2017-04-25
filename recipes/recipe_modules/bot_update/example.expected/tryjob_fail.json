@@ -21,8 +21,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@HEAD",
-      "--output_manifest"
+      "src@HEAD"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",
