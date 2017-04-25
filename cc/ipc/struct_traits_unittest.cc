@@ -379,6 +379,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
                 LocalSurfaceId(8765, base::UnguessableToken::Create()));
   embedded_surfaces.push_back(id2);
   uint32_t frame_token = 0xdeadbeef;
+  uint64_t begin_frame_ack_sequence_number = 0xdeadbeef;
 
   CompositorFrameMetadata input;
   input.device_scale_factor = device_scale_factor;
@@ -403,6 +404,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.referenced_surfaces = referenced_surfaces;
   input.embedded_surfaces = embedded_surfaces;
   input.frame_token = frame_token;
+  input.begin_frame_ack.sequence_number = begin_frame_ack_sequence_number;
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   CompositorFrameMetadata output;
@@ -438,6 +440,8 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   for (uint32_t i = 0; i < embedded_surfaces.size(); ++i)
     EXPECT_EQ(embedded_surfaces[i], output.embedded_surfaces[i]);
   EXPECT_EQ(frame_token, output.frame_token);
+  EXPECT_EQ(begin_frame_ack_sequence_number,
+            output.begin_frame_ack.sequence_number);
 }
 
 TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {

@@ -29,6 +29,8 @@ bool StructTraits<cc::mojom::BeginFrameArgsDataView, cc::BeginFrameArgs>::Read(
 bool StructTraits<cc::mojom::BeginFrameAckDataView, cc::BeginFrameAck>::Read(
     cc::mojom::BeginFrameAckDataView data,
     cc::BeginFrameAck* out) {
+  if (data.sequence_number() < cc::BeginFrameArgs::kStartingFrameNumber)
+    return false;
   out->source_id = data.source_id();
   out->sequence_number = data.sequence_number();
   out->latest_confirmed_sequence_number =

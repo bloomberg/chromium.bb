@@ -1926,13 +1926,6 @@ void RenderWidgetHostImpl::OnRequestMove(const gfx::Rect& pos) {
 }
 
 void RenderWidgetHostImpl::BeginFrameDidNotSwap(const cc::BeginFrameAck& ack) {
-  if (ack.sequence_number < cc::BeginFrameArgs::kStartingFrameNumber) {
-    // Received an invalid ack, renderer misbehaved.
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RWH_INVALID_BEGIN_FRAME_ACK_DID_NOT_SWAP);
-    return;
-  }
-
   // |has_damage| is not transmitted.
   cc::BeginFrameAck modified_ack = ack;
   modified_ack.has_damage = false;
@@ -2581,14 +2574,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 
   last_received_content_source_id_ = frame.metadata.content_source_id;
 
-  if (frame.metadata.begin_frame_ack.sequence_number <
-      cc::BeginFrameArgs::kStartingFrameNumber) {
-    // Received an invalid ack, renderer misbehaved.
-    bad_message::ReceivedBadMessage(
-        GetProcess(),
-        bad_message::RWH_INVALID_BEGIN_FRAME_ACK_COMPOSITOR_FRAME);
-    return;
-  }
   // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
 

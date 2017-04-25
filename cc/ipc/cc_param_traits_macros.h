@@ -176,13 +176,6 @@ IPC_STRUCT_TRAITS_BEGIN(cc::BeginFrameArgs)
   IPC_STRUCT_TRAITS_MEMBER(type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::BeginFrameAck)
-  IPC_STRUCT_TRAITS_MEMBER(sequence_number)
-  IPC_STRUCT_TRAITS_MEMBER(latest_confirmed_sequence_number)
-  IPC_STRUCT_TRAITS_MEMBER(source_id)
-// |has_damage| is implicit through IPC message name, so not transmitted.
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(root_scroll_offset)

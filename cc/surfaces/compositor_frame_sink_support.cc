@@ -108,10 +108,7 @@ void CompositorFrameSinkSupport::BeginFrameDidNotSwap(
   // TODO(eseckler): While a pending CompositorFrame exists (see TODO below), we
   // should not acknowledge immediately. Instead, we should update the ack that
   // will be sent to DisplayScheduler when the pending frame is activated.
-  if (ack.sequence_number < BeginFrameArgs::kStartingFrameNumber) {
-    DLOG(ERROR) << "Received BeginFrameDidNotSwap with invalid BeginFrameAck.";
-    return;
-  }
+  DCHECK_GE(ack.sequence_number, BeginFrameArgs::kStartingFrameNumber);
 
   // |has_damage| is not transmitted, but false by default.
   DCHECK(!ack.has_damage);
