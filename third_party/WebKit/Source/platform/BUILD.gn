@@ -470,6 +470,8 @@ component("platform") {
     "audio/ffmpeg/FFTFrameFFMPEG.cpp",
     "audio/ipp/FFTFrameIPP.cpp",
     "audio/mac/FFTFrameMac.cpp",
+    "bindings/Microtask.cpp",
+    "bindings/Microtask.h",
     "blob/BlobData.cpp",
     "blob/BlobData.h",
     "blob/BlobRegistry.cpp",

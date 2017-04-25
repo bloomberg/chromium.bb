@@ -70,7 +70,6 @@ bindings_core_v8_files =
                     "core/v8/LocalWindowProxy.cpp",
                     "core/v8/LocalWindowProxy.h",
                     "core/v8/Maplike.h",
-                    "core/v8/Microtask.cpp",
                     "core/v8/Microtask.h",
                     "core/v8/NativeValueTraits.h",
                     "core/v8/NativeValueTraitsImpl.h",

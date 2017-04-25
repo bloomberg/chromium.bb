@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/Microtask.h"
+#include "platform/bindings/Microtask.h"
 
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/wtf/PtrUtil.h"

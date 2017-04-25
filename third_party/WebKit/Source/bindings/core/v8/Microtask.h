@@ -28,51 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Microtask_h
-#define Microtask_h
-
-#include "core/CoreExport.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Functional.h"
-#include "v8/include/v8.h"
-
-namespace blink {
-
-// C++ calls into script contexts which are "owned" by blink (created in a
-// process where WebKit.cpp initializes v8) must declare their type:
-//
-//   1. Calls into page/author script from a frame
-//   2. Calls into page/author script from a worker
-//   3. Calls into internal script (typically setup/teardown work)
-//
-// Debug-time checking of this is enforced via v8::MicrotasksScope.
-//
-// Calls of type (1) should generally go through ScriptController, as inspector
-// instrumentation is needed. ScriptController allocates V8RecursionScope for
-// you.
-//
-// Calls of type (2) should always stack-allocate a
-// v8::MicrotasksScope(kRunMicrtoasks) in the same block as the call into
-// script.
-//
-// Calls of type (3) should stack allocate a
-// v8::MicrotasksScope(kDoNotRunMicrotasks) -- this skips work that is spec'd to
-// happen at the end of the outer-most script stack frame of calls into page
-// script:
-// http://www.whatwg.org/specs/web-apps/current-work/#perform-a-microtask-checkpoint
-class CORE_EXPORT Microtask {
-  STATIC_ONLY(Microtask);
-
- public:
-  static void PerformCheckpoint(v8::Isolate*);
-
-  // TODO(jochen): Make all microtasks pass in the ScriptState they want to be
-  // executed in. Until then, all microtasks have to keep track of their
-  // ScriptState themselves.
-  static void EnqueueMicrotask(std::unique_ptr<WTF::Closure>);
-};
-
-}  // namespace blink
-
-#endif  // Microtask_h
+// This file has moved to platform/bindings/Microtask.h
+// TODO(adithyas): Remove this file.
+#include "platform/bindings/Microtask.h"
