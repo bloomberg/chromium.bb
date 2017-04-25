@@ -95,14 +95,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         }
 
         private void updateCachedEngineName() {
-            assert LibraryLoader.isInitialized();
-
-            // Getting an instance of the TemplateUrlService requires that the native library be
-            // loaded, but the TemplateUrlService also itself needs to be initialized.
-            TemplateUrlService service = TemplateUrlService.getInstance();
-            assert service.isLoaded();
-            SearchWidgetProvider.updateCachedEngineName(
-                    service.getDefaultSearchEngineTemplateUrl().getShortName());
+            SearchWidgetProvider.updateCachedEngineName();
         }
     }
 
@@ -120,7 +113,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
             "org.chromium.chrome.browser.searchwidget.IS_VOICE_SEARCH_AVAILABLE";
     private static final String PREF_NUM_CONSECUTIVE_CRASHES =
             "org.chromium.chrome.browser.searchwidget.NUM_CONSECUTIVE_CRASHES";
-    private static final String PREF_SEARCH_ENGINE_SHORTNAME =
+    static final String PREF_SEARCH_ENGINE_SHORTNAME =
             "org.chromium.chrome.browser.searchwidget.SEARCH_ENGINE_SHORTNAME";
 
     /** Number of consecutive crashes this widget will absorb before giving up. */
@@ -263,7 +256,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         }
 
         // Update what string is displayed by the widget.
-        String text = TextUtils.isEmpty(engineName)
+        String text = TextUtils.isEmpty(engineName) || !shouldShowFullString()
                 ? context.getString(R.string.search_widget_default)
                 : context.getString(R.string.search_with_product, engineName);
         views.setTextViewText(R.id.title, text);
@@ -288,6 +281,19 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         }
     }
 
+    /** Attempts to update the cached search engine name. */
+    public static void updateCachedEngineName() {
+        ThreadUtils.assertOnUiThread();
+        if (!LibraryLoader.isInitialized()) return;
+
+        // Getting an instance of the TemplateUrlService requires that the native library be
+        // loaded, but the TemplateUrlService also itself needs to be initialized.
+        TemplateUrlService service = TemplateUrlService.getInstance();
+        if (!service.isLoaded()) return;
+
+        updateCachedEngineName(service.getDefaultSearchEngineTemplateUrl().getShortName());
+    }
+
     /**
      * Updates the name of the user's default search engine that is cached in SharedPreferences.
      * Caching it in SharedPreferences prevents us from having to load the native library and the
@@ -295,6 +301,9 @@ public class SearchWidgetProvider extends AppWidgetProvider {
      */
     static void updateCachedEngineName(String engineName) {
         SharedPreferences prefs = getDelegate().getSharedPreferences();
+
+        if (!shouldShowFullString()) engineName = null;
+
         if (!TextUtils.equals(getCachedEngineName(prefs), engineName)) {
             prefs.edit().putString(PREF_SEARCH_ENGINE_SHORTNAME, engineName).apply();
             performUpdate(null);
@@ -360,6 +369,12 @@ public class SearchWidgetProvider extends AppWidgetProvider {
                 throw e;
             }
         }
+    }
+
+    static boolean shouldShowFullString() {
+        Intent freIntent = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
+                getDelegate().getContext(), null, false);
+        return freIntent == null;
     }
 
     /** Sets an {@link SearchWidgetProviderDelegate} to interact with. */
