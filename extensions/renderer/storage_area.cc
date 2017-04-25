@@ -183,11 +183,7 @@ void StorageArea::HandleFunctionCall(const std::string& method_name,
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
 
-  std::vector<v8::Local<v8::Value>> argument_list;
-  if (arguments->Length() > 0) {
-    // Just copying handles should never fail.
-    CHECK(arguments->GetRemaining(&argument_list));
-  }
+  std::vector<v8::Local<v8::Value>> argument_list = arguments->GetAll();
 
   std::unique_ptr<base::ListValue> converted_arguments;
   v8::Local<v8::Function> callback;

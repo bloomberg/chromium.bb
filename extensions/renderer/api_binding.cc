@@ -498,11 +498,7 @@ void APIBinding::HandleCall(const std::string& name,
   // GetCurrentContext() should always be correct.
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-  std::vector<v8::Local<v8::Value>> argument_list;
-  if (arguments->Length() > 0) {
-    // Just copying handles should never fail.
-    CHECK(arguments->GetRemaining(&argument_list));
-  }
+  std::vector<v8::Local<v8::Value>> argument_list = arguments->GetAll();
 
   bool invalid_invocation = false;
   v8::Local<v8::Function> custom_callback;

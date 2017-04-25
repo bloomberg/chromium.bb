@@ -174,13 +174,7 @@ void DeclarativeEvent::HandleFunction(const std::string& signature_name,
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
 
-  // TODO(devlin): This pattern is getting common. We should probably pull it
-  // out somewhere.
-  std::vector<v8::Local<v8::Value>> argument_list;
-  if (arguments->Length() > 0) {
-    // Just copying handles should never fail.
-    CHECK(arguments->GetRemaining(&argument_list));
-  }
+  std::vector<v8::Local<v8::Value>> argument_list = arguments->GetAll();
 
   // The events API has two undocumented parameters for each function: the name
   // of the event, and the "webViewInstanceId". Currently, stub 0 for webview
