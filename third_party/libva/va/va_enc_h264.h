@@ -121,7 +121,7 @@ typedef enum {
 } VAEncPackedHeaderTypeH264;
 
 /**
- * \brief Sequence parameter for H.264 encoding in baseline, main & high 
+ * \brief Sequence parameter for H.264 encoding in baseline, main & high
  * profiles.
  *
  * This structure holds information for \c seq_parameter_set_data() as
@@ -521,6 +521,19 @@ typedef struct _VAEncSliceParameterBufferH264 {
 #define VA_MB_PRED_AVAIL_TOP_RIGHT        (1 << 3)
 /** \brief References macroblock on the left of the current macroblock. */
 #define VA_MB_PRED_AVAIL_LEFT             (1 << 6)
+/**@}*/
+
+/**
+ * \brief Macroblock parameter for H.264 encoding in baseline, main & high
+ * profiles.
+ *
+ * This structure holds per-macroblock information. The buffer must be
+ * allocated with as many elements (macroblocks) as necessary to fit
+ * the slice to be encoded. Besides, the per-macroblock records must
+ * be written in a strict raster order and with no gap. i.e. every
+ * macroblock, regardless of its type, shall have an entry.
+ */
+
 /**@}*/
 
 #ifdef __cplusplus

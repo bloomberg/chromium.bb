@@ -1,8 +1,8 @@
 Name: libva
-URL: http://freedesktop.org/wiki/Software/vaapi
-Source: git clone git://anongit.freedesktop.org/git/libva
-Version: unknown
-RealVersion: git tag libva-1.6.0
+URL: https://github.com/01org/libva
+Source: git clone https://github.com/01org/libva.git
+Version: 1.7.1
+RealVersion: git tag libva-1.7.1
 License: MIT
 License File: COPYING
 Security Critical: no
@@ -15,4 +15,3 @@ Local modifications:
 - remove struct _VAEncMacroblockParameterBufferH264 from va/va_enc_h264.h,
   which contained an empty union, causing compile errors
 - remove va/egl/va_egl.h due to the lack of license header
-- remove third_party/libva/va/wayland/wayland-drm-client-protocol.h

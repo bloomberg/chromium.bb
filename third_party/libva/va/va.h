@@ -222,6 +222,13 @@ typedef int VAStatus;	/** Return status type from functions */
  */
 const char *vaErrorStr(VAStatus error_status);
 
+typedef struct _VARectangle {
+  short x;
+  short y;
+  unsigned short width;
+  unsigned short height;
+} VARectangle;
+
 /**
  * Initialization:
  * A display must be obtained by calling vaGetDisplay() before calling
@@ -280,168 +287,189 @@ VAPrivFunc vaGetLibFunc (
 );
 
 /** Currently defined profiles */
-typedef enum
-{
-    /** \brief Profile ID used for video processing. */
-    VAProfileNone                       = -1,
-    VAProfileMPEG2Simple		= 0,
-    VAProfileMPEG2Main			= 1,
-    VAProfileMPEG4Simple		= 2,
-    VAProfileMPEG4AdvancedSimple	= 3,
-    VAProfileMPEG4Main			= 4,
-    VAProfileH264Baseline		= 5,
-    VAProfileH264Main			= 6,
-    VAProfileH264High			= 7,
-    VAProfileVC1Simple			= 8,
-    VAProfileVC1Main			= 9,
-    VAProfileVC1Advanced		= 10,
-    VAProfileH263Baseline		= 11,
-    VAProfileJPEGBaseline               = 12,
-    VAProfileH264ConstrainedBaseline    = 13,
-    VAProfileVP8Version0_3              = 14,
-    VAProfileH264MultiviewHigh          = 15,
-    VAProfileH264StereoHigh             = 16,
-    VAProfileHEVCMain                   = 17,
-    VAProfileHEVCMain10                 = 18,
-    VAProfileVP9Profile0                = 19
+typedef enum {
+  /** \brief Profile ID used for video processing. */
+  VAProfileNone = -1,
+  VAProfileMPEG2Simple = 0,
+  VAProfileMPEG2Main = 1,
+  VAProfileMPEG4Simple = 2,
+  VAProfileMPEG4AdvancedSimple = 3,
+  VAProfileMPEG4Main = 4,
+  VAProfileH264Baseline = 5,
+  VAProfileH264Main = 6,
+  VAProfileH264High = 7,
+  VAProfileVC1Simple = 8,
+  VAProfileVC1Main = 9,
+  VAProfileVC1Advanced = 10,
+  VAProfileH263Baseline = 11,
+  VAProfileJPEGBaseline = 12,
+  VAProfileH264ConstrainedBaseline = 13,
+  VAProfileVP8Version0_3 = 14,
+  VAProfileH264MultiviewHigh = 15,
+  VAProfileH264StereoHigh = 16,
+  VAProfileHEVCMain = 17,
+  VAProfileHEVCMain10 = 18,
+  VAProfileVP9Profile0 = 19,
+  VAProfileVP9Profile1 = 20,
+  VAProfileVP9Profile2 = 21,
+  VAProfileVP9Profile3 = 22
 } VAProfile;
 
 /**
  *  Currently defined entrypoints 
  */
-typedef enum
-{
-    VAEntrypointVLD		= 1,
-    VAEntrypointIZZ		= 2,
-    VAEntrypointIDCT		= 3,
-    VAEntrypointMoComp		= 4,
-    VAEntrypointDeblocking	= 5,
-    VAEntrypointEncSlice	= 6,	/* slice level encode */
-    VAEntrypointEncPicture 	= 7,	/* pictuer encode, JPEG, etc */
-    VAEntrypointVideoProc       = 10,   /**< Video pre/post-processing. */
+typedef enum {
+  VAEntrypointVLD = 1,
+  VAEntrypointIZZ = 2,
+  VAEntrypointIDCT = 3,
+  VAEntrypointMoComp = 4,
+  VAEntrypointDeblocking = 5,
+  VAEntrypointEncSlice = 6,   /* slice level encode */
+  VAEntrypointEncPicture = 7, /* pictuer encode, JPEG, etc */
+  /*
+   * For an implementation that supports a low power/high performance variant
+   * for slice level encode, it can choose to expose the
+   * VAEntrypointEncSliceLP entrypoint. Certain encoding tools may not be
+   * available with this entrypoint (e.g. interlace, MBAFF) and the
+   * application can query the encoding configuration attributes to find
+   * out more details if this entrypoint is supported.
+   */
+  VAEntrypointEncSliceLP = 8,
+  VAEntrypointVideoProc = 10, /**< Video pre/post-processing. */
 } VAEntrypoint;
 
 /** Currently defined configuration attribute types */
-typedef enum
-{
-    VAConfigAttribRTFormat		= 0,
-    VAConfigAttribSpatialResidual	= 1,
-    VAConfigAttribSpatialClipping	= 2,
-    VAConfigAttribIntraResidual		= 3,
-    VAConfigAttribEncryption		= 4,
-    VAConfigAttribRateControl		= 5,
+typedef enum {
+  VAConfigAttribRTFormat = 0,
+  VAConfigAttribSpatialResidual = 1,
+  VAConfigAttribSpatialClipping = 2,
+  VAConfigAttribIntraResidual = 3,
+  VAConfigAttribEncryption = 4,
+  VAConfigAttribRateControl = 5,
 
-    /** @name Attributes for decoding */
-    /**@{*/
-    /**
-     * \brief Slice Decoding mode. Read/write.
-     *
-     * This attribute determines what mode the driver supports for slice
-     * decoding, through vaGetConfigAttributes(); and what mode the user
-     * will be providing to the driver, through vaCreateConfig(), if the
-     * driver supports those. If this attribute is not set by the user then
-     * it is assumed that VA_DEC_SLICE_MODE_NORMAL mode is used.
-     *
-     * See \c VA_DEC_SLICE_MODE_xxx for the list of slice decoding modes.
-     */
-    VAConfigAttribDecSliceMode		= 6,
+  /** @name Attributes for decoding */
+  /**@{*/
+  /**
+   * \brief Slice Decoding mode. Read/write.
+   *
+   * This attribute determines what mode the driver supports for slice
+   * decoding, through vaGetConfigAttributes(); and what mode the user
+   * will be providing to the driver, through vaCreateConfig(), if the
+   * driver supports those. If this attribute is not set by the user then
+   * it is assumed that VA_DEC_SLICE_MODE_NORMAL mode is used.
+   *
+   * See \c VA_DEC_SLICE_MODE_xxx for the list of slice decoding modes.
+   */
+  VAConfigAttribDecSliceMode = 6,
 
-    /** @name Attributes for encoding */
-    /**@{*/
-    /**
-     * \brief Packed headers mode. Read/write.
-     *
-     * This attribute determines what packed headers the driver supports,
-     * through vaGetConfigAttributes(); and what packed headers the user
-     * will be providing to the driver, through vaCreateConfig(), if the
-     * driver supports those.
-     *
-     * See \c VA_ENC_PACKED_HEADER_xxx for the list of packed headers.
-     */
-    VAConfigAttribEncPackedHeaders      = 10,
-    /**
-     * \brief Interlaced mode. Read/write.
-     *
-     * This attribute determines what kind of interlaced encoding mode
-     * the driver supports.
-     *
-     * See \c VA_ENC_INTERLACED_xxx for the list of interlaced modes.
-     */
-    VAConfigAttribEncInterlaced         = 11,
-    /**
-     * \brief Maximum number of reference frames. Read-only.
-     *
-     * This attribute determines the maximum number of reference
-     * frames supported for encoding.
-     *
-     * Note: for H.264 encoding, the value represents the maximum number
-     * of reference frames for both the reference picture list 0 (bottom
-     * 16 bits) and the reference picture list 1 (top 16 bits).
-     */
-    VAConfigAttribEncMaxRefFrames       = 13,
-    /**
-     * \brief Maximum number of slices per frame. Read-only.
-     *
-     * This attribute determines the maximum number of slices the
-     * driver can support to encode a single frame.
-     */
-    VAConfigAttribEncMaxSlices          = 14,
-    /**
-     * \brief Slice structure. Read-only.
-     *
-     * This attribute determines slice structures supported by the
-     * driver for encoding. This attribute is a hint to the user so
-     * that he can choose a suitable surface size and how to arrange
-     * the encoding process of multiple slices per frame.
-     *
-     * More specifically, for H.264 encoding, this attribute
-     * determines the range of accepted values to
-     * VAEncSliceParameterBufferH264::macroblock_address and
-     * VAEncSliceParameterBufferH264::num_macroblocks.
-     *
-     * See \c VA_ENC_SLICE_STRUCTURE_xxx for the supported slice
-     * structure types.
-     */
-    VAConfigAttribEncSliceStructure     = 15,
-    /**
-     * \brief Macroblock information. Read-only.
-     *
-     * This attribute determines whether the driver supports extra
-     * encoding information per-macroblock. e.g. QP.
-     *
-     * More specifically, for H.264 encoding, if the driver returns a non-zero
-     * value for this attribute, this means the application can create
-     * additional #VAEncMacroblockParameterBufferH264 buffers referenced
-     * through VAEncSliceParameterBufferH264::macroblock_info.
-     */
-    VAConfigAttribEncMacroblockInfo     = 16,
-    /**
-     * \brief JPEG encoding attribute. Read-only.
-     *
-     * This attribute exposes a number of capabilities of the underlying
-     * JPEG implementation. The attribute value is partitioned into fields as defined in the 
-     * VAConfigAttribValEncJPEG union.
-     */
-    VAConfigAttribEncJPEG             = 20,
-    /**
-     * \brief Encoding quality range attribute. Read-only.
-     *
-     * This attribute conveys whether the driver supports different quality level settings
-     * for encoding. A value less than or equal to 1 means that the encoder only has a single
-     * quality setting, and a value greater than 1 represents the number of quality levels 
-     * that can be configured. e.g. a value of 2 means there are two distinct quality levels. 
-     */
-    VAConfigAttribEncQualityRange     = 21,
-    /**
-     * \brief Encoding skip frame attribute. Read-only.
-     *
-     * This attribute conveys whether the driver supports sending skip frame parameters 
-     * (VAEncMiscParameterTypeSkipFrame) to the encoder's rate control, when the user has 
-     * externally skipped frames. 
-     */
-    VAConfigAttribEncSkipFrame        = 24,
-    /**@}*/
-    VAConfigAttribTypeMax
+  /** @name Attributes for encoding */
+  /**@{*/
+  /**
+   * \brief Packed headers mode. Read/write.
+   *
+   * This attribute determines what packed headers the driver supports,
+   * through vaGetConfigAttributes(); and what packed headers the user
+   * will be providing to the driver, through vaCreateConfig(), if the
+   * driver supports those.
+   *
+   * See \c VA_ENC_PACKED_HEADER_xxx for the list of packed headers.
+   */
+  VAConfigAttribEncPackedHeaders = 10,
+  /**
+   * \brief Interlaced mode. Read/write.
+   *
+   * This attribute determines what kind of interlaced encoding mode
+   * the driver supports.
+   *
+   * See \c VA_ENC_INTERLACED_xxx for the list of interlaced modes.
+   */
+  VAConfigAttribEncInterlaced = 11,
+  /**
+   * \brief Maximum number of reference frames. Read-only.
+   *
+   * This attribute determines the maximum number of reference
+   * frames supported for encoding.
+   *
+   * Note: for H.264 encoding, the value represents the maximum number
+   * of reference frames for both the reference picture list 0 (bottom
+   * 16 bits) and the reference picture list 1 (top 16 bits).
+   */
+  VAConfigAttribEncMaxRefFrames = 13,
+  /**
+   * \brief Maximum number of slices per frame. Read-only.
+   *
+   * This attribute determines the maximum number of slices the
+   * driver can support to encode a single frame.
+   */
+  VAConfigAttribEncMaxSlices = 14,
+  /**
+   * \brief Slice structure. Read-only.
+   *
+   * This attribute determines slice structures supported by the
+   * driver for encoding. This attribute is a hint to the user so
+   * that he can choose a suitable surface size and how to arrange
+   * the encoding process of multiple slices per frame.
+   *
+   * More specifically, for H.264 encoding, this attribute
+   * determines the range of accepted values to
+   * VAEncSliceParameterBufferH264::macroblock_address and
+   * VAEncSliceParameterBufferH264::num_macroblocks.
+   *
+   * See \c VA_ENC_SLICE_STRUCTURE_xxx for the supported slice
+   * structure types.
+   */
+  VAConfigAttribEncSliceStructure = 15,
+  /**
+   * \brief Macroblock information. Read-only.
+   *
+   * This attribute determines whether the driver supports extra
+   * encoding information per-macroblock. e.g. QP.
+   *
+   * More specifically, for H.264 encoding, if the driver returns a non-zero
+   * value for this attribute, this means the application can create
+   * additional #VAEncMacroblockParameterBufferH264 buffers referenced
+   * through VAEncSliceParameterBufferH264::macroblock_info.
+   */
+  VAConfigAttribEncMacroblockInfo = 16,
+  /**
+   * \brief JPEG encoding attribute. Read-only.
+   *
+   * This attribute exposes a number of capabilities of the underlying
+   * JPEG implementation. The attribute value is partitioned into fields as
+   * defined in the VAConfigAttribValEncJPEG union.
+   */
+  VAConfigAttribEncJPEG = 20,
+  /**
+   * \brief Encoding quality range attribute. Read-only.
+   *
+   * This attribute conveys whether the driver supports different quality level
+   * settings for encoding. A value less than or equal to 1 means that the
+   * encoder only has a single quality setting, and a value greater than 1
+   * represents the number of quality levels that can be configured. e.g. a
+   * value of 2 means there are two distinct quality levels.
+   */
+  VAConfigAttribEncQualityRange = 21,
+  /**
+   * \brief Encoding skip frame attribute. Read-only.
+   *
+   * This attribute conveys whether the driver supports sending skip frame
+   * parameters (VAEncMiscParameterTypeSkipFrame) to the encoder's rate control,
+   * when the user has externally skipped frames.
+   */
+  VAConfigAttribEncSkipFrame = 24,
+  /**
+   * \brief Encoding region-of-interest (ROI) attribute. Read-only.
+   *
+   * This attribute conveys whether the driver supports region-of-interest (ROI)
+   * encoding, based on user provided ROI rectangles.  The attribute value is
+   * partitioned into fields as defined in the VAConfigAttribValEncROI union.
+   *
+   * If ROI encoding is supported, the ROI information is passed to the driver
+   * using VAEncMiscParameterTypeROI.
+   */
+  VAConfigAttribEncROI = 25,
+  /**@}*/
+  VAConfigAttribTypeMax
 } VAConfigAttribType;
 
 /**
@@ -461,9 +489,12 @@ typedef struct _VAConfigAttrib {
 #define VA_RT_FORMAT_YUV444	0x00000004
 #define VA_RT_FORMAT_YUV411	0x00000008
 #define VA_RT_FORMAT_YUV400	0x00000010
+/** YUV formats with more than 8 bpp */
+#define VA_RT_FORMAT_YUV420_10BPP 0x00000100
+/** RGB formats */
 #define VA_RT_FORMAT_RGB16	0x00010000
 #define VA_RT_FORMAT_RGB32	0x00020000
-/* RGBP covers RGBP and BGRP fourcc */ 
+/* RGBP covers RGBP and BGRP fourcc */
 #define VA_RT_FORMAT_RGBP	0x00100000
 #define VA_RT_FORMAT_PROTECTED	0x80000000
 
@@ -481,6 +512,11 @@ typedef struct _VAConfigAttrib {
 #define VA_RC_CQP                       0x00000010
 /** \brief Variable bitrate with peak rate higher than average bitrate. */
 #define VA_RC_VBR_CONSTRAINED           0x00000020
+/** \brief Macroblock based rate control.  Per MB control is decided
+ *  internally in the encoder. It may be combined with other RC modes, except
+ * CQP. */
+#define VA_RC_MB 0x00000080
+
 /**@}*/
 
 /** @name Attribute values for VAConfigAttribDecSliceMode */
@@ -549,6 +585,23 @@ typedef union _VAConfigAttribValEncJPEG {
     } bits;
     unsigned int value;
 } VAConfigAttribValEncJPEG;
+
+/** \brief Attribute value for VAConfigAttribEncROI */
+typedef union _VAConfigAttribValEncROI {
+  struct {
+    /** \brief The number of ROI regions supported, 0 if ROI is not supported.
+     */
+    unsigned int num_roi_regions : 8;
+    /** \brief Indicates if ROI priority indication is supported when
+     * VAConfigAttribRateControl != VA_RC_CQP, else only ROI delta QP added on
+     * top of the frame level QP is supported when VAConfigAttribRateControl ==
+     * VA_RC_CQP.
+     */
+    unsigned int roi_rc_priority_support : 1;
+    unsigned int reserved : 23;
+  } bits;
+  unsigned int value;
+} VAConfigAttribValEncROI;
 
 /**
  * if an attribute is not applicable for a given
@@ -1010,20 +1063,21 @@ typedef enum
     VABufferTypeMax
 } VABufferType;
 
-typedef enum
-{
-    VAEncMiscParameterTypeFrameRate 	= 0,
-    VAEncMiscParameterTypeRateControl  	= 1,
-    VAEncMiscParameterTypeMaxSliceSize	= 2,
-    VAEncMiscParameterTypeAIR    	= 3,
-    /** \brief Buffer type used to express a maximum frame size (in bits). */
-    VAEncMiscParameterTypeMaxFrameSize  = 4,
-    /** \brief Buffer type used for HRD parameters. */
-    VAEncMiscParameterTypeHRD           = 5,
-    VAEncMiscParameterTypeQualityLevel  = 6,
-    /** \brief Buffer type used for sending skip frame parameters to the encoder's
-      * rate control, when the user has externally skipped frames. */
-    VAEncMiscParameterTypeSkipFrame     = 9
+typedef enum {
+  VAEncMiscParameterTypeFrameRate = 0,
+  VAEncMiscParameterTypeRateControl = 1,
+  VAEncMiscParameterTypeMaxSliceSize = 2,
+  VAEncMiscParameterTypeAIR = 3,
+  /** \brief Buffer type used to express a maximum frame size (in bits). */
+  VAEncMiscParameterTypeMaxFrameSize = 4,
+  /** \brief Buffer type used for HRD parameters. */
+  VAEncMiscParameterTypeHRD = 5,
+  VAEncMiscParameterTypeQualityLevel = 6,
+  /** \brief Buffer type used for sending skip frame parameters to the encoder's
+   * rate control, when the user has externally skipped frames. */
+  VAEncMiscParameterTypeSkipFrame = 9,
+  /** \brief Buffer type used for region-of-interest (ROI) parameters. */
+  VAEncMiscParameterTypeROI = 10
 } VAEncMiscParameterType;
 
 /** \brief Packed header type. */
@@ -1106,6 +1160,9 @@ typedef struct _VAEncMiscParameterRateControl
             unsigned int reset : 1;
             unsigned int disable_frame_skip : 1; /* Disable frame skip in rate control mode */
             unsigned int disable_bit_stuffing : 1; /* Disable bit stuffing in rate control mode */
+            unsigned int
+                mb_rate_control : 4; /* Control VA_RC_MB 0: default, 1: enable,
+                                        2: disable, other: reserved*/
         } bits;
         unsigned int value;
     } rc_flags;
@@ -1197,13 +1254,57 @@ typedef struct _VAEncMiscParameterSkipFrame {
     unsigned int                size_skip_frames;
 } VAEncMiscParameterSkipFrame;
 
-/* 
- * There will be cases where the bitstream buffer will not have enough room to hold
- * the data for the entire slice, and the following flags will be used in the slice
- * parameter to signal to the server for the possible cases.
- * If a slice parameter buffer and slice data buffer pair is sent to the server with 
- * the slice data partially in the slice data buffer (BEGIN and MIDDLE cases below), 
- * then a slice parameter and data buffer needs to be sent again to complete this slice. 
+/**
+ * \brief Encoding region-of-interest (ROI).
+ *
+ * The encoding ROI can be set through VAEncMiscParameterBufferROI, if the
+ * implementation supports ROI input. The ROI set through this structure is
+ * applicable only to the current frame or field, so must be sent every frame or
+ * field to be applied.  The number of supported ROIs can be queried through the
+ * VAConfigAttribEncROI.  The encoder will use the ROI information to adjust the
+ * QP values of the MB's that fall within the ROIs.
+ */
+typedef struct _VAEncROI {
+  /** \brief Defines the ROI boundary in pixels, the driver will map it to
+   * appropriate codec coding units.  It is relative to frame coordinates for
+   * the frame case and to field coordinates for the field case. */
+  VARectangle roi_rectangle;
+  /** \brief When VAConfigAttribRateControl == VA_RC_CQP then roi_value specifes
+   * the delta QP that will be added on top of the frame level QP.  For other
+   * rate control modes, roi_value specifies the priority of the ROI region
+   * relative to the non-ROI region.  It can be positive (more important) or
+   * negative (less important) values and is compared with non-ROI region
+   * (taken as value 0). E.g. ROI region with roi_value -3 is less important
+   * than the non-ROI region (roi_value implied to be 0) which is less
+   * important than ROI region with roi_value +2.  For overlapping regions, the
+   * roi_value that is first in the ROI array will have priority.   */
+  char roi_value;
+} VAEncROI;
+
+typedef struct _VAEncMiscParameterBufferROI {
+  /** \brief Number of ROIs being sent.*/
+  unsigned int num_roi;
+
+  /** \brief Valid when VAConfigAttribRateControl != VA_RC_CQP, then the
+   * encoder's rate control will determine actual delta QPs.  Specifies the
+   * max/min allowed delta QPs. */
+  char max_delta_qp;
+  char min_delta_qp;
+
+  /** \brief Pointer to a VAEncROI array with num_roi elements.  It is relative
+   * to frame coordinates for the frame case and to field coordinates for the
+   * field case.*/
+  VAEncROI* roi;
+} VAEncMiscParameterBufferROI;
+
+/**
+ * There will be cases where the bitstream buffer will not have enough room to
+ * hold the data for the entire slice, and the following flags will be used in
+ * the slice parameter to signal to the server for the possible cases. If a
+ * slice parameter buffer and slice data buffer pair is sent to the server with
+ * the slice data partially in the slice data buffer (BEGIN and MIDDLE cases
+ * below), then a slice parameter and data buffer needs to be sent again to
+ * complete this slice.
  */
 #define VA_SLICE_DATA_FLAG_ALL		0x00	/* whole slice is in the buffer */
 #define VA_SLICE_DATA_FLAG_BEGIN	0x01	/* The beginning of the slice is in the buffer but the end if not */
@@ -2281,6 +2382,16 @@ VAStatus vaQuerySurfaceError(
 #define VA_FOURCC_RGBP          0x50424752
 #define VA_FOURCC_BGRP          0x50524742
 #define VA_FOURCC_411R          0x52313134 /* rotated 411P */
+/**
+ * Planar YUV 4:2:2.
+ * 8-bit Y plane, followed by 8-bit 2x1 subsampled V and U planes
+ */
+#define VA_FOURCC_YV16 0x36315659
+/**
+ * 10-bit and 16-bit Planar YUV 4:2:0.
+ */
+#define VA_FOURCC_P010 0x30313050
+#define VA_FOURCC_P016 0x36313050
 
 /* byte order */
 #define VA_LSB_FIRST		1
@@ -2593,14 +2704,6 @@ VAStatus vaDeassociateSubpicture (
     int num_surfaces
 );
 
-typedef struct _VARectangle
-{
-    short x;
-    short y;
-    unsigned short width;
-    unsigned short height;
-} VARectangle;
-
 /**
  * Display attributes
  * Display attributes are used to control things such as contrast, hue, saturation,
@@ -2840,11 +2943,12 @@ typedef struct _VAPictureHEVC
 #include <va/va_dec_jpeg.h>
 #include <va/va_dec_vp8.h>
 #include <va/va_dec_vp9.h>
-#include <va/va_enc_hevc.h>
 #include <va/va_enc_h264.h>
+#include <va/va_enc_hevc.h>
 #include <va/va_enc_jpeg.h>
 #include <va/va_enc_mpeg2.h>
 #include <va/va_enc_vp8.h>
+#include <va/va_enc_vp9.h>
 #include <va/va_vpp.h>
 
 /**@}*/

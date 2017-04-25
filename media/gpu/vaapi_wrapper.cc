@@ -129,9 +129,10 @@ static const ProfileMap kProfileMap[] = {
     // H264PROFILE_HIGH*.
     {H264PROFILE_HIGH, VAProfileH264High},
     {VP8PROFILE_ANY, VAProfileVP8Version0_3},
-    // TODO(servolk): Need to add VP9 profiles 1,2,3 here after rolling
-    // third_party/libva to 1.7. crbug.com/598118
     {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
+    {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
+    {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
+    {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
 };
 
 static std::vector<VAConfigAttrib> GetRequiredAttribs(
@@ -1224,8 +1225,8 @@ bool VaapiWrapper::VADisplayState::Initialize() {
     DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;
   }
 
-  if (VAAPIVersionLessThan(0, 34)) {
-    LOG(ERROR) << "VAAPI version < 0.34 is not supported.";
+  if (VAAPIVersionLessThan(0, 39)) {
+    LOG(ERROR) << "VAAPI version < 0.39 is not supported.";
     return false;
   }
   return true;
