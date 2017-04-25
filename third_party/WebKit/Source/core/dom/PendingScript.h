@@ -88,14 +88,14 @@ class CORE_EXPORT PendingScript
   // https://html.spec.whatwg.org/#the-script-is-ready
   virtual bool IsReady() const = 0;
 
-  virtual KURL Url() const = 0;
   virtual bool IsExternal() const = 0;
   virtual bool ErrorOccurred() const = 0;
   virtual bool WasCanceled() const = 0;
   virtual void StartStreamingIfPossible(Document*, ScriptStreamer::Type) = 0;
 
-  // Used for document.write() intervention.
-  // Has effects only for classic scripts.
+  // The following two methods are used for document.write() intervention and
+  // have effects only for classic scripts.
+  virtual KURL UrlForClassicScript() const = 0;
   virtual void RemoveFromMemoryCache() = 0;
 
   void Dispose();
