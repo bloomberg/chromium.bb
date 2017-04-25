@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -33,6 +34,9 @@ public class WebApkActivity extends WebappActivity {
 
     private final ChildProcessCreationParams mDefaultParams =
             ChildProcessCreationParams.getDefault();
+
+    /** The start time that the activity becomes focused. */
+    private long mStartTime;
 
     @Override
     protected WebappInfo createWebappInfo(Intent intent) {
@@ -121,6 +125,12 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        mStartTime = SystemClock.elapsedRealtime();
+    }
+
+    @Override
     protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
         super.onDeferredStartupWithStorage(storage);
 
@@ -153,6 +163,12 @@ public class WebApkActivity extends WebappActivity {
     public void onPause() {
         super.onPause();
         initializeChildProcessCreationParams(false);
+    }
+
+    @Override
+    public void onPauseWithNative() {
+        WebApkUma.recordWebApkSessionDuration(SystemClock.elapsedRealtime() - mStartTime);
+        super.onPauseWithNative();
     }
 
     /**
