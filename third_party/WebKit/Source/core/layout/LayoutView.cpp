@@ -128,8 +128,6 @@ bool LayoutView::HitTestNoLifecycleUpdate(HitTestResult& result) {
   DCHECK(!result.GetHitTestLocation().IsRectBasedTest() ||
          result.GetHitTestRequest().ListBased());
 
-  CommitPendingSelection();
-
   uint64_t dom_tree_version = GetDocument().DomTreeVersion();
   HitTestResult cache_result = result;
   bool hit_layer = false;
