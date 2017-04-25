@@ -197,27 +197,15 @@ TEST_F(SignalSenderVerificationTest, TestSignalAccepted) {
   ASSERT_EQ(kMessage, test_signal_string_);
 }
 
-// Disabled, http://crbug.com/407063 .
-TEST_F(SignalSenderVerificationTest, DISABLED_TestSignalRejected) {
-  // To make sure the histogram instance is created.
-  UMA_HISTOGRAM_COUNTS("DBus.RejectedSignalCount", 0);
-  base::HistogramBase* reject_signal_histogram =
-        base::StatisticsRecorder::FindHistogram("DBus.RejectedSignalCount");
-  std::unique_ptr<base::HistogramSamples> samples1(
-      reject_signal_histogram->SnapshotSamples());
-
+TEST_F(SignalSenderVerificationTest, TestSignalRejected) {
   const char kNewMessage[] = "hello, new world";
   test_service2_->SendTestSignal(kNewMessage);
 
   // This test tests that our callback is NOT called by the ObjectProxy.
   // Sleep to have message delivered to the client via the D-Bus service.
-  base::PlatformThread::Sleep(TestTimeouts::action_timeout());
-
-  std::unique_ptr<base::HistogramSamples> samples2(
-      reject_signal_histogram->SnapshotSamples());
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
 
   ASSERT_EQ("", test_signal_string_);
-  EXPECT_EQ(samples1->TotalCount() + 1, samples2->TotalCount());
 }
 
 TEST_F(SignalSenderVerificationTest, TestOwnerChanged) {

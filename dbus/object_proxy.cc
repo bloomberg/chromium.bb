@@ -503,7 +503,6 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   std::string sender = signal->GetSender();
   if (service_name_owner_ != sender) {
     LOG(ERROR) << "Rejecting a message from a wrong sender.";
-    UMA_HISTOGRAM_COUNTS("DBus.RejectedSignalCount", 1);
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
