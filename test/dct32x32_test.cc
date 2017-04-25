@@ -69,16 +69,6 @@ typedef void (*InvTxfmFunc)(const tran_low_t *in, uint8_t *out, int stride);
 typedef std::tr1::tuple<FwdTxfmFunc, InvTxfmFunc, int, aom_bit_depth_t>
     Trans32x32Param;
 
-#if CONFIG_HIGHBITDEPTH
-void idct32x32_10(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct32x32_1024_add_c(in, out, stride, 10);
-}
-
-void idct32x32_12(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct32x32_1024_add_c(in, out, stride, 12);
-}
-#endif  // CONFIG_HIGHBITDEPTH
-
 class Trans32x32Test : public ::testing::TestWithParam<Trans32x32Param> {
  public:
   virtual ~Trans32x32Test() {}
@@ -356,14 +346,10 @@ using std::tr1::make_tuple;
 #if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     C, Trans32x32Test,
-    ::testing::Values(
-        make_tuple(&aom_highbd_fdct32x32_c, &idct32x32_10, 0, AOM_BITS_10),
-        make_tuple(&aom_highbd_fdct32x32_rd_c, &idct32x32_10, 1, AOM_BITS_10),
-        make_tuple(&aom_highbd_fdct32x32_c, &idct32x32_12, 0, AOM_BITS_12),
-        make_tuple(&aom_highbd_fdct32x32_rd_c, &idct32x32_12, 1, AOM_BITS_12),
-        make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c, 0, AOM_BITS_8),
-        make_tuple(&aom_fdct32x32_rd_c, &aom_idct32x32_1024_add_c, 1,
-                   AOM_BITS_8)));
+    ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c, 0,
+                                 AOM_BITS_8),
+                      make_tuple(&aom_fdct32x32_rd_c, &aom_idct32x32_1024_add_c,
+                                 1, AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     C, PartialTrans32x32Test,
     ::testing::Values(make_tuple(&aom_highbd_fdct32x32_1_c, AOM_BITS_8),
@@ -411,17 +397,10 @@ INSTANTIATE_TEST_CASE_P(AVX2, PartialTrans32x32Test,
 #if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans32x32Test,
-    ::testing::Values(
-        make_tuple(&aom_highbd_fdct32x32_sse2, &idct32x32_10, 0, AOM_BITS_10),
-        make_tuple(&aom_highbd_fdct32x32_rd_sse2, &idct32x32_10, 1,
-                   AOM_BITS_10),
-        make_tuple(&aom_highbd_fdct32x32_sse2, &idct32x32_12, 0, AOM_BITS_12),
-        make_tuple(&aom_highbd_fdct32x32_rd_sse2, &idct32x32_12, 1,
-                   AOM_BITS_12),
-        make_tuple(&aom_fdct32x32_sse2, &aom_idct32x32_1024_add_c, 0,
-                   AOM_BITS_8),
-        make_tuple(&aom_fdct32x32_rd_sse2, &aom_idct32x32_1024_add_c, 1,
-                   AOM_BITS_8)));
+    ::testing::Values(make_tuple(&aom_fdct32x32_sse2, &aom_idct32x32_1024_add_c,
+                                 0, AOM_BITS_8),
+                      make_tuple(&aom_fdct32x32_rd_sse2,
+                                 &aom_idct32x32_1024_add_c, 1, AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(SSE2, PartialTrans32x32Test,
                         ::testing::Values(make_tuple(&aom_fdct32x32_1_sse2,
                                                      AOM_BITS_8)));

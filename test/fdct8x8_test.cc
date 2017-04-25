@@ -87,14 +87,6 @@ void fht8x8_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
 }
 
 #if CONFIG_HIGHBITDEPTH
-void idct8x8_10(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct8x8_64_add_c(in, out, stride, 10);
-}
-
-void idct8x8_12(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct8x8_64_add_c(in, out, stride, 12);
-}
-
 void iht8x8_10(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
   av1_highbd_iht8x8_64_add_c(in, out, stride, tx_type, 10);
 }
@@ -623,12 +615,10 @@ TEST_P(InvTrans8x8DCT, CompareReference) {
 using std::tr1::make_tuple;
 
 #if CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    C, FwdTrans8x8DCT,
-    ::testing::Values(
-        make_tuple(&aom_fdct8x8_c, &aom_idct8x8_64_add_c, 0, AOM_BITS_8),
-        make_tuple(&aom_highbd_fdct8x8_c, &idct8x8_10, 0, AOM_BITS_10),
-        make_tuple(&aom_highbd_fdct8x8_c, &idct8x8_12, 0, AOM_BITS_12)));
+INSTANTIATE_TEST_CASE_P(C, FwdTrans8x8DCT,
+                        ::testing::Values(make_tuple(&aom_fdct8x8_c,
+                                                     &aom_idct8x8_64_add_c, 0,
+                                                     AOM_BITS_8)));
 #else
 INSTANTIATE_TEST_CASE_P(C, FwdTrans8x8DCT,
                         ::testing::Values(make_tuple(&aom_fdct8x8_c,
@@ -719,13 +709,10 @@ INSTANTIATE_TEST_CASE_P(
 // that to test both branches.
 INSTANTIATE_TEST_CASE_P(
     SSE2, InvTrans8x8DCT,
-    ::testing::Values(
-        make_tuple(&idct8x8_10_add_10_c, &idct8x8_10_add_10_sse2, 6225,
-                   AOM_BITS_10),
-        make_tuple(&idct8x8_10, &idct8x8_64_add_10_sse2, 6225, AOM_BITS_10),
-        make_tuple(&idct8x8_10_add_12_c, &idct8x8_10_add_12_sse2, 6225,
-                   AOM_BITS_12),
-        make_tuple(&idct8x8_12, &idct8x8_64_add_12_sse2, 6225, AOM_BITS_12)));
+    ::testing::Values(make_tuple(&idct8x8_10_add_10_c, &idct8x8_10_add_10_sse2,
+                                 6225, AOM_BITS_10),
+                      make_tuple(&idct8x8_10_add_12_c, &idct8x8_10_add_12_sse2,
+                                 6225, AOM_BITS_12)));
 #endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH
 
 #if HAVE_SSSE3 && ARCH_X86_64
