@@ -786,11 +786,6 @@ class NET_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
 
 class NET_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameWithStreamIdIR {
  public:
-  explicit SpdyPriorityIR(SpdyStreamId stream_id)
-      : SpdyFrameWithStreamIdIR(stream_id),
-        parent_stream_id_(0),
-        weight_(1),
-        exclusive_(false) {}
   SpdyPriorityIR(SpdyStreamId stream_id,
                  SpdyStreamId parent_stream_id,
                  int weight,
@@ -800,11 +795,8 @@ class NET_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameWithStreamIdIR {
         weight_(weight),
         exclusive_(exclusive) {}
   SpdyStreamId parent_stream_id() const { return parent_stream_id_; }
-  void set_parent_stream_id(SpdyStreamId id) { parent_stream_id_ = id; }
   int weight() const { return weight_; }
-  void set_weight(uint8_t weight) { weight_ = weight; }
   bool exclusive() const { return exclusive_; }
-  void set_exclusive(bool exclusive) { exclusive_ = exclusive; }
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 

@@ -2729,18 +2729,6 @@ TEST_P(SpdyFramerTest, CreatePriority) {
     frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
   }
   CompareFrame(kDescription, frame, kFrameData, arraysize(kFrameData));
-  SpdyPriorityIR priority2(2);
-  priority2.set_parent_stream_id(1);
-  priority2.set_weight(17);
-  priority2.set_exclusive(true);
-  if (use_output_) {
-    output_.Reset();
-    ASSERT_TRUE(framer.SerializeFrame(priority2, &output_));
-    frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
-  } else {
-    frame = framer.SerializeFrame(priority2);
-  }
-  CompareFrame(kDescription, frame, kFrameData, arraysize(kFrameData));
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {

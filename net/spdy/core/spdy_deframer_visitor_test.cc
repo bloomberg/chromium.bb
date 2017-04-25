@@ -179,25 +179,10 @@ TEST_F(SpdyDeframerVisitorTest, PriorityFrame) {
   EXPECT_TRUE(cf0.VerifyHasFrame(expected_ir));
 
   // Confirm that mismatches are also detected.
-  expected_ir.set_weight(16);
-  EXPECT_FALSE(cf0.VerifyHasFrame(expected_ir));
-  expected_ir.set_weight(17);
-  EXPECT_TRUE(cf0.VerifyHasFrame(expected_ir));
-
-  expected_ir.set_parent_stream_id(50);
-  EXPECT_FALSE(cf0.VerifyHasFrame(expected_ir));
-  expected_ir.set_parent_stream_id(1);
-  EXPECT_TRUE(cf0.VerifyHasFrame(expected_ir));
-
-  expected_ir.set_stream_id(201);
-  EXPECT_FALSE(cf0.VerifyHasFrame(expected_ir));
-  expected_ir.set_stream_id(101);
-  EXPECT_TRUE(cf0.VerifyHasFrame(expected_ir));
-
-  expected_ir.set_exclusive(false);
-  EXPECT_FALSE(cf0.VerifyHasFrame(expected_ir));
-  expected_ir.set_exclusive(true);
-  EXPECT_TRUE(cf0.VerifyHasFrame(expected_ir));
+  EXPECT_FALSE(cf0.VerifyHasFrame(SpdyPriorityIR(101, 1, 16, true)));
+  EXPECT_FALSE(cf0.VerifyHasFrame(SpdyPriorityIR(101, 50, 17, true)));
+  EXPECT_FALSE(cf0.VerifyHasFrame(SpdyPriorityIR(201, 1, 17, true)));
+  EXPECT_FALSE(cf0.VerifyHasFrame(SpdyPriorityIR(101, 1, 17, false)));
 }
 
 TEST_F(SpdyDeframerVisitorTest, DISABLED_RstStreamFrame) {
