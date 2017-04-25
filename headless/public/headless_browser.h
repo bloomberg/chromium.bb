@@ -22,10 +22,6 @@
 #include "net/base/ip_endpoint.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_WIN)
-#include "sandbox/win/src/sandbox_types.h"
-#endif
-
 namespace base {
 class MessagePump;
 class SingleThreadTaskRunner;
@@ -93,7 +89,7 @@ class HEADLESS_EXPORT HeadlessBrowser {
 };
 
 // Embedding API overrides for the headless browser.
-struct HEADLESS_EXPORT HeadlessBrowser::Options {
+struct HeadlessBrowser::Options {
   class Builder;
 
   Options(Options&& options);
@@ -104,14 +100,6 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // Command line options to be passed to browser.
   int argc;
   const char** argv;
-
-#if defined(OS_WIN)
-  // Set hardware instance if available, otherwise it defaults to 0.
-  HINSTANCE instance;
-
-  // Set with sandbox information. This has to be already initialized.
-  sandbox::SandboxInterfaceInfo* sandbox_info;
-#endif
 
   // Address at which DevTools should listen for connections. Disabled by
   // default.
@@ -184,7 +172,7 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   DISALLOW_COPY_AND_ASSIGN(Options);
 };
 
-class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
+class HeadlessBrowser::Options::Builder {
  public:
   Builder(int argc, const char** argv);
   Builder();
@@ -198,10 +186,6 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetDisableSandbox(bool disable_sandbox);
   Builder& SetGLImplementation(const std::string& gl_implementation);
   Builder& AddMojoServiceName(const std::string& mojo_service_name);
-#if defined(OS_WIN)
-  Builder& SetInstance(HINSTANCE instance);
-  Builder& SetSandboxInfo(sandbox::SandboxInterfaceInfo* sandbox_info);
-#endif
 
   // Per-context settings.
 
@@ -245,9 +229,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
 //
 // [1]
 // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
-#if !defined(OS_WIN)
-HEADLESS_EXPORT void RunChildProcessIfNeeded(int argc, const char** argv);
-#endif
+void RunChildProcessIfNeeded(int argc, const char** argv);
 
 // Main entry point for running the headless browser. This function constructs
 // the headless browser instance, passing it to the given
@@ -255,7 +237,7 @@ HEADLESS_EXPORT void RunChildProcessIfNeeded(int argc, const char** argv);
 // the main loop, it will only return after HeadlessBrowser::Shutdown() is
 // called, returning the exit code for the process. It is not possible to
 // initialize the browser again after it has been torn down.
-HEADLESS_EXPORT int HeadlessBrowserMain(
+int HeadlessBrowserMain(
     HeadlessBrowser::Options options,
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback);
 

@@ -5,27 +5,13 @@
 #ifndef HEADLESS_PUBLIC_HEADLESS_SHELL_H_
 #define HEADLESS_PUBLIC_HEADLESS_SHELL_H_
 
-#include "content/public/app/content_main.h"
-
-#if defined(OS_WIN)
-#include "sandbox/win/src/sandbox_types.h"
-#endif
+#include "headless/public/headless_export.h"
 
 namespace headless {
 
-// Start the headless shell applications from a |ContentMainParams| object.
-// Note that the |ContentMainDelegate| is ignored and
-// |HeadlessContentMainDelegate| is used instead.
-int HeadlessShellMain(const content::ContentMainParams& params);
-
 // Start the Headless Shell application. Intended to be called early in main().
 // Returns the exit code for the process.
-#if defined(OS_WIN)
-int HeadlessShellMain(HINSTANCE instance,
-                      sandbox::SandboxInterfaceInfo* sandbox_info);
-#else
-int HeadlessShellMain(int argc, const char** argv);
-#endif  // defined(OS_WIN)
+HEADLESS_EXPORT int HeadlessShellMain(int argc, const char** argv);
 }  // namespace headless
 
 #endif  // HEADLESS_PUBLIC_HEADLESS_SHELL_H_

@@ -22,6 +22,7 @@
 #include "headless/lib/browser/headless_content_browser_client.h"
 #include "headless/lib/headless_crash_reporter_client.h"
 #include "headless/lib/headless_macros.h"
+#include "headless/lib/renderer/headless_content_renderer_client.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -30,10 +31,6 @@
 
 #ifdef HEADLESS_USE_EMBEDDED_RESOURCES
 #include "headless/embedded_resource_pak.h"
-#endif
-
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-#include "headless/lib/renderer/headless_content_renderer_client.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -189,8 +186,10 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
 #else
   if (command_line.HasSwitch(switches::kEnableLogging))
     InitLogging(command_line);
-#endif  // defined(OS_WIN)
+#endif
+#if !defined(OS_MACOSX)
   InitCrashReporter(command_line);
+#endif  // defined(OS_WIN)
   InitializeResourceBundle();
 }
 
@@ -278,23 +277,15 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
 
 content::ContentBrowserClient*
 HeadlessContentMainDelegate::CreateContentBrowserClient() {
-#if defined(CHROME_MULTIPLE_DLL_CHILD)
-  return nullptr;
-#else
   browser_client_ =
       base::MakeUnique<HeadlessContentBrowserClient>(browser_.get());
   return browser_client_.get();
-#endif
 }
 
 content::ContentRendererClient*
 HeadlessContentMainDelegate::CreateContentRendererClient() {
-#if defined(CHROME_MULTIPLE_DLL_BROWSER)
-  return nullptr;
-#else
   renderer_client_ = base::MakeUnique<HeadlessContentRendererClient>();
   return renderer_client_.get();
-#endif
 }
 
 }  // namespace headless
