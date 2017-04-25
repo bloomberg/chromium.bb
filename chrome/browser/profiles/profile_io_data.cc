@@ -22,6 +22,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -230,9 +231,12 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
     if (IsSupportedDevToolsURL(request->url(), &path))
       return new net::URLRequestFileJob(
           request, network_delegate, path,
-          content::BrowserThread::GetBlockingPool()->
-              GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+          base::CreateTaskRunnerWithTraits(
+              base::TaskTraits()
+                  .MayBlock()
+                  .WithPriority(base::TaskPriority::BACKGROUND)
+                  .WithShutdownBehavior(
+                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
 
     return NULL;
   }
@@ -1130,9 +1134,12 @@ ProfileIOData::SetUpJobFactoryDefaults(
   bool set_protocol = job_factory->SetProtocolHandler(
       url::kFileScheme,
       base::MakeUnique<net::FileProtocolHandler>(
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+          base::CreateTaskRunnerWithTraits(
+              base::TaskTraits()
+                  .MayBlock()
+                  .WithPriority(base::TaskPriority::BACKGROUND)
+                  .WithShutdownBehavior(
+                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
   DCHECK(set_protocol);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1160,10 +1167,12 @@ ProfileIOData::SetUpJobFactoryDefaults(
 #if defined(OS_ANDROID)
   set_protocol = job_factory->SetProtocolHandler(
       url::kContentScheme,
-      content::ContentProtocolHandler::Create(
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+      content::ContentProtocolHandler::Create(base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
 #endif
 
   job_factory->SetProtocolHandler(
