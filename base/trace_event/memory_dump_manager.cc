@@ -36,6 +36,7 @@
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/memory_infra_background_whitelist.h"
 #include "base/trace_event/memory_peak_detector.h"
+#include "base/trace_event/memory_tracing_observer.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -49,10 +50,6 @@ namespace base {
 namespace trace_event {
 
 namespace {
-
-const int kTraceEventNumArgs = 1;
-const char* kTraceEventArgNames[] = {"dumps"};
-const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
 
 StaticAtomicSequenceNumber g_next_guid;
 MemoryDumpManager* g_instance_for_testing = nullptr;
@@ -199,7 +196,6 @@ MemoryDumpManager::MemoryDumpManager()
 }
 
 MemoryDumpManager::~MemoryDumpManager() {
-  TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
 }
 
 void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
@@ -290,14 +286,9 @@ void MemoryDumpManager::Initialize(
                                         TraceLog::FILTERING_MODE);
   }
 
-  // If tracing was enabled before initializing MemoryDumpManager, we missed the
-  // OnTraceLogEnabled() event. Synthetize it so we can late-join the party.
-  // IsEnabled is called before adding observer to avoid calling
-  // OnTraceLogEnabled twice.
-  bool is_tracing_already_enabled = TraceLog::GetInstance()->IsEnabled();
-  TraceLog::GetInstance()->AddEnabledStateObserver(this);
-  if (is_tracing_already_enabled)
-    OnTraceLogEnabled();
+  // TODO(hjd): Move out of MDM. See: crbug.com/703184
+  tracing_observer_ =
+      MakeUnique<MemoryTracingObserver>(TraceLog::GetInstance(), this);
 }
 
 void MemoryDumpManager::RegisterDumpProvider(
@@ -723,7 +714,6 @@ uint32_t MemoryDumpManager::GetDumpsSumKb(const std::string& pattern,
   return sum / 1024;
 }
 
-// static
 void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     std::unique_ptr<ProcessMemoryDumpAsyncState> pmd_async_state) {
   HEAP_PROFILER_SCOPED_IGNORE;
@@ -734,7 +724,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
         pmd_async_state->callback_task_runner;
     callback_task_runner->PostTask(
         FROM_HERE, BindOnce(&MemoryDumpManager::FinalizeDumpAndAddToTrace,
-                            Passed(&pmd_async_state)));
+                            Unretained(this), Passed(&pmd_async_state)));
     return;
   }
 
@@ -743,26 +733,17 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
   // The results struct to fill.
   // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
   base::Optional<MemoryDumpCallbackResult> result;
+
+  bool dump_successful = pmd_async_state->dump_successful;
+
   for (const auto& kv : pmd_async_state->process_dumps) {
     ProcessId pid = kv.first;  // kNullProcessId for the current process.
     ProcessMemoryDump* process_memory_dump = kv.second.get();
-    std::unique_ptr<TracedValue> traced_value(new TracedValue);
-    process_memory_dump->AsValueInto(traced_value.get());
-    traced_value->SetString("level_of_detail",
-                            MemoryDumpLevelOfDetailToString(
-                                pmd_async_state->req_args.level_of_detail));
-    const char* const event_name =
-        MemoryDumpTypeToString(pmd_async_state->req_args.dump_type);
 
-    std::unique_ptr<ConvertableToTraceFormat> event_value(
-        std::move(traced_value));
-    TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
-        TRACE_EVENT_PHASE_MEMORY_DUMP,
-        TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name,
-        trace_event_internal::kGlobalScope, dump_guid, pid,
-        kTraceEventNumArgs, kTraceEventArgNames,
-        kTraceEventArgTypes, nullptr /* arg_values */, &event_value,
-        TRACE_EVENT_FLAG_HAS_ID);
+    bool added_to_trace = tracing_observer_->AddDumpToTraceIfEnabled(
+        &pmd_async_state->req_args, pid, process_memory_dump);
+
+    dump_successful = dump_successful && added_to_trace;
 
     // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
     // Don't try to fill the struct in detailed mode since it is hard to avoid
@@ -794,17 +775,8 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     }
   }
 
-  bool tracing_still_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategory, &tracing_still_enabled);
-  if (!tracing_still_enabled) {
-    pmd_async_state->dump_successful = false;
-    VLOG(1) << kLogPrefix << " failed because tracing was disabled before"
-            << " the dump was completed";
-  }
-
   if (!pmd_async_state->callback.is_null()) {
-    pmd_async_state->callback.Run(dump_guid, pmd_async_state->dump_successful,
-                                  result);
+    pmd_async_state->callback.Run(dump_guid, dump_successful, result);
     pmd_async_state->callback.Reset();
   }
 
@@ -812,17 +784,8 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
                                   TRACE_ID_LOCAL(dump_guid));
 }
 
-void MemoryDumpManager::OnTraceLogEnabled() {
-  bool enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategory, &enabled);
-  if (!enabled)
-    return;
-
-  // Initialize the TraceLog for the current thread. This is to avoid that the
-  // TraceLog memory dump provider is registered lazily in the PostTask() below
-  // while the |lock_| is taken;
-  TraceLog::GetInstance()->InitializeThreadLocalEventBufferIfSupported();
-
+void MemoryDumpManager::Enable(
+    const TraceConfig::MemoryDumpConfig& memory_dump_config) {
   // Spin-up the thread used to invoke unbound dump providers.
   std::unique_ptr<Thread> dump_thread(new Thread("MemoryInfra"));
   if (!dump_thread->Start()) {
@@ -830,10 +793,6 @@ void MemoryDumpManager::OnTraceLogEnabled() {
     return;
   }
 
-  const TraceConfig& trace_config =
-      TraceLog::GetInstance()->GetCurrentTraceConfig();
-  const TraceConfig::MemoryDumpConfig& memory_dump_config =
-      trace_config.memory_dump_config();
   scoped_refptr<MemoryDumpSessionState> session_state =
       new MemoryDumpSessionState;
   session_state->SetAllowedDumpModes(memory_dump_config.allowed_dump_modes);
@@ -918,7 +877,7 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   }
 }
 
-void MemoryDumpManager::OnTraceLogDisabled() {
+void MemoryDumpManager::Disable() {
   // There might be a memory dump in progress while this happens. Therefore,
   // ensure that the MDM state which depends on the tracing enabled / disabled
   // state is always accessed by the dumping methods holding the |lock_|.

@@ -39,6 +39,7 @@ class Thread;
 
 namespace trace_event {
 
+class MemoryTracingObserver;
 class MemoryDumpManagerDelegate;
 class MemoryDumpProvider;
 class MemoryDumpSessionState;
@@ -46,7 +47,7 @@ class MemoryDumpSessionState;
 // This is the interface exposed to the rest of the codebase to deal with
 // memory tracing. The main entry point for clients is represented by
 // RequestDumpPoint(). The extension by Un(RegisterDumpProvider).
-class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
+class BASE_EXPORT MemoryDumpManager {
  public:
   static const char* const kTraceCategory;
   static const char* const kLogPrefix;
@@ -119,9 +120,15 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   void RequestGlobalDump(MemoryDumpType dump_type,
                          MemoryDumpLevelOfDetail level_of_detail);
 
-  // TraceLog::EnabledStateObserver implementation.
-  void OnTraceLogEnabled() override;
-  void OnTraceLogDisabled() override;
+  // Prepare MemoryDumpManager for RequestGlobalMemoryDump calls.
+  // Starts the MemoryDumpManager thread.
+  // Also uses the given config to initialize the peak detector,
+  // scheduler and heap profiler.
+  void Enable(const TraceConfig::MemoryDumpConfig&);
+
+  // Tearsdown the MemoryDumpManager thread and various other state set up by
+  // Enable.
+  void Disable();
 
   // Enable heap profiling if kEnableHeapProfiling is specified.
   void EnableHeapProfilingIfNeeded();
@@ -230,11 +237,12 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   static const char* const kSystemAllocatorPoolName;
 
   MemoryDumpManager();
-  ~MemoryDumpManager() override;
+  virtual ~MemoryDumpManager();
 
   static void SetInstanceForTesting(MemoryDumpManager* instance);
   static uint32_t GetDumpsSumKb(const std::string&, const ProcessMemoryDump*);
-  static void FinalizeDumpAndAddToTrace(
+
+  void FinalizeDumpAndAddToTrace(
       std::unique_ptr<ProcessMemoryDumpAsyncState> pmd_async_state);
 
   // Internal, used only by MemoryDumpManagerDelegate.
@@ -284,6 +292,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
       strict_thread_check_blacklist_;
 
   std::unique_ptr<MemoryDumpManagerDelegate> delegate_;
+  std::unique_ptr<MemoryTracingObserver> tracing_observer_;
 
   // Protects from concurrent accesses to the |dump_providers_*| and |delegate_|
   // to guard against disabling logging while dumping on another thread.

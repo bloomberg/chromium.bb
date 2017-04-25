@@ -1015,64 +1015,6 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   DisableTracing();
 }
 
-// Tests against race conditions that might arise when disabling tracing in the
-// middle of a global memory dump.
-// Flaky on iOS, see crbug.com/706961
-#if defined(OS_IOS)
-#define MAYBE_DisableTracingWhileDumping DISABLED_DisableTracingWhileDumping
-#else
-#define MAYBE_DisableTracingWhileDumping DisableTracingWhileDumping
-#endif
-TEST_F(MemoryDumpManagerTest, MAYBE_DisableTracingWhileDumping) {
-  base::WaitableEvent tracing_disabled_event(
-      WaitableEvent::ResetPolicy::AUTOMATIC,
-      WaitableEvent::InitialState::NOT_SIGNALED);
-  InitializeMemoryDumpManager(false /* is_coordinator */);
-
-  // Register a bound dump provider.
-  std::unique_ptr<Thread> mdp_thread(new Thread("test thread"));
-  mdp_thread->Start();
-  MockMemoryDumpProvider mdp_with_affinity;
-  RegisterDumpProvider(&mdp_with_affinity, mdp_thread->task_runner(),
-                       kDefaultOptions);
-
-  // Register also an unbound dump provider. Unbound dump providers are always
-  // invoked after bound ones.
-  MockMemoryDumpProvider unbound_mdp;
-  RegisterDumpProvider(&unbound_mdp, nullptr, kDefaultOptions);
-
-  EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
-  EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
-  EXPECT_CALL(mdp_with_affinity, OnMemoryDump(_, _))
-      .Times(1)
-      .WillOnce(
-          Invoke([&tracing_disabled_event](const MemoryDumpArgs&,
-                                           ProcessMemoryDump* pmd) -> bool {
-            tracing_disabled_event.Wait();
-
-            // At this point tracing has been disabled and the
-            // MemoryDumpManager.dump_thread_ has been shut down.
-            return true;
-          }));
-
-  // |unbound_mdp| should never be invoked because the thread for unbound dump
-  // providers has been shutdown in the meanwhile.
-  EXPECT_CALL(unbound_mdp, OnMemoryDump(_, _)).Times(0);
-
-  last_callback_success_ = true;
-  RunLoop run_loop;
-  GlobalMemoryDumpCallback callback =
-      Bind(&MemoryDumpManagerTest::GlobalDumpCallbackAdapter, Unretained(this),
-           ThreadTaskRunnerHandle::Get(), run_loop.QuitClosure());
-  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          MemoryDumpLevelOfDetail::DETAILED, callback);
-  DisableTracing();
-  tracing_disabled_event.Signal();
-  run_loop.Run();
-
-  EXPECT_FALSE(last_callback_success_);
-}
-
 // Tests against race conditions that can happen if tracing is disabled before
 // the CreateProcessDump() call. Real-world regression: crbug.com/580295 .
 TEST_F(MemoryDumpManagerTest, DisableTracingRightBeforeStartOfDump) {
@@ -1306,6 +1248,37 @@ TEST_F(MemoryDumpManagerTest, TestBlacklistedUnsafeUnregistration) {
   // Unregistering on wrong thread should not crash.
   mdm_->UnregisterDumpProvider(&mdp1);
   thread.Stop();
+}
+
+// Tests that we can manually take a dump without enabling tracing.
+TEST_F(MemoryDumpManagerTest, DumpWithTracingDisabled) {
+  InitializeMemoryDumpManager(false /* is_coordinator */);
+  MockMemoryDumpProvider mdp;
+  RegisterDumpProvider(&mdp, ThreadTaskRunnerHandle::Get());
+
+  DisableTracing();
+
+  const TraceConfig& trace_config =
+      TraceConfig(TraceConfigMemoryTestUtil::GetTraceConfig_NoTriggers());
+  const TraceConfig::MemoryDumpConfig& memory_dump_config =
+      trace_config.memory_dump_config();
+
+  mdm_->Enable(memory_dump_config);
+
+  EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(3);
+  EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(3).WillRepeatedly(Return(true));
+  last_callback_success_ = true;
+  for (int i = 0; i < 3; ++i)
+    RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                             MemoryDumpLevelOfDetail::DETAILED);
+  // The callback result should actually be false since (for the moment at
+  // least) a true result means that as well as the dump generally being
+  // successful we also managed to add the dump to the trace.
+  EXPECT_FALSE(last_callback_success_);
+
+  mdm_->Disable();
+
+  mdm_->UnregisterDumpProvider(&mdp);
 }
 
 }  // namespace trace_event
