@@ -923,15 +923,15 @@ ResourceFetcher::DetermineRevalidationPolicy(
     return kReload;
   }
 
-  // Don't reload resources while pasting.
-  if (allow_stale_resources_)
-    return kUse;
-
   if (!fetch_params.Options().CanReuseRequest(existing_resource->Options()))
     return kReload;
 
   // Always use preloads.
   if (existing_resource->IsPreloaded())
+    return kUse;
+
+  // Don't reload resources while pasting.
+  if (allow_stale_resources_)
     return kUse;
 
   // WebCachePolicy::ReturnCacheDataElseLoad uses the cache no matter what.
