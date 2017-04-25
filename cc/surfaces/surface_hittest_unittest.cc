@@ -10,6 +10,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/surface_hittest_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -405,7 +406,7 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
 
   // Create a CompostiorFrame with two RenderPasses.
   gfx::Rect root_rect(300, 300);
-  CompositorFrame root_frame;
+  CompositorFrame root_frame = test::MakeCompositorFrame();
   RenderPassList& render_pass_list = root_frame.render_pass_list;
 
   // Create a child RenderPass.

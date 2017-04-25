@@ -10,6 +10,7 @@
 #include "cc/surfaces/surface_dependency_tracker.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +33,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
-  support->SubmitCompositorFrame(local_surface_id, CompositorFrame());
+  support->SubmitCompositorFrame(local_surface_id, test::MakeCompositorFrame());
   EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
   support->EvictFrame();
 
@@ -64,7 +65,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
-  CompositorFrame frame;
+  CompositorFrame frame = test::MakeCompositorFrame();
   frame.render_pass_list.push_back(RenderPass::Create());
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   Surface* surface = manager.GetSurfaceForId(surface_id);
@@ -78,7 +79,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
 
   int max_frame = 3, start_id = 200;
   for (int i = 0; i < max_frame; ++i) {
-    CompositorFrame frame;
+    CompositorFrame frame = test::MakeCompositorFrame();
     frame.render_pass_list.push_back(RenderPass::Create());
     frame.render_pass_list.back()->id = i * 3 + start_id;
     frame.render_pass_list.push_back(RenderPass::Create());

@@ -11,6 +11,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,8 +83,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
                      SK_ColorGREEN,
                      force_anti_aliasing_off);
 
-
-  CompositorFrame root_frame;
+  CompositorFrame root_frame = test::MakeCompositorFrame();
   root_frame.render_pass_list.push_back(std::move(pass));
 
   LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
@@ -140,7 +140,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                        SK_ColorYELLOW,
                        force_anti_aliasing_off);
 
-    CompositorFrame root_frame;
+    CompositorFrame root_frame = test::MakeCompositorFrame();
     root_frame.render_pass_list.push_back(std::move(pass));
 
     support_->SubmitCompositorFrame(root_local_surface_id,
@@ -165,7 +165,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                        SK_ColorBLUE,
                        force_anti_aliasing_off);
 
-    CompositorFrame child_frame;
+    CompositorFrame child_frame = test::MakeCompositorFrame();
     child_frame.render_pass_list.push_back(std::move(pass));
 
     child_support->SubmitCompositorFrame(child_local_surface_id,
@@ -240,7 +240,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                                right_child_id, SurfaceDrawQuadType::PRIMARY,
                                nullptr);
 
-    CompositorFrame root_frame;
+    CompositorFrame root_frame = test::MakeCompositorFrame();
     root_frame.render_pass_list.push_back(std::move(pass));
 
     support_->SubmitCompositorFrame(root_local_surface_id,
@@ -273,7 +273,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                               SK_ColorBLUE,
                               force_anti_aliasing_off);
 
-    CompositorFrame child_frame;
+    CompositorFrame child_frame = test::MakeCompositorFrame();
     child_frame.render_pass_list.push_back(std::move(pass));
 
     left_support->SubmitCompositorFrame(left_child_local_id,
@@ -306,7 +306,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                               SK_ColorGREEN,
                               force_anti_aliasing_off);
 
-    CompositorFrame child_frame;
+    CompositorFrame child_frame = test::MakeCompositorFrame();
     child_frame.render_pass_list.push_back(std::move(pass));
 
     right_support->SubmitCompositorFrame(right_child_local_id,

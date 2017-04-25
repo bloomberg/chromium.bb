@@ -125,13 +125,9 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
   DCHECK(surface_factory_);
   ++ack_pending_count_;
 
-  if (frame.metadata.begin_frame_ack.sequence_number <
-      BeginFrameArgs::kStartingFrameNumber) {
-    DLOG(ERROR) << "Received CompositorFrame with invalid BeginFrameAck.";
-    frame.metadata.begin_frame_ack.source_id = BeginFrameArgs::kManualSourceId;
-    frame.metadata.begin_frame_ack.sequence_number =
-        BeginFrameArgs::kStartingFrameNumber;
-  }
+  DCHECK_GE(frame.metadata.begin_frame_ack.sequence_number,
+            BeginFrameArgs::kStartingFrameNumber);
+
   // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
 

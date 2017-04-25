@@ -21,6 +21,7 @@
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -125,7 +126,7 @@ class DisplayTest : public testing::Test {
  protected:
   void SubmitCompositorFrame(RenderPassList* pass_list,
                              const LocalSurfaceId& local_surface_id) {
-    CompositorFrame frame;
+    CompositorFrame frame = test::MakeCompositorFrame();
     pass_list->swap(frame.render_pass_list);
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -330,7 +331,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    CompositorFrame frame;
+    CompositorFrame frame = test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
 
@@ -360,7 +361,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    CompositorFrame frame;
+    CompositorFrame frame = test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));

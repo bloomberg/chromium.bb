@@ -9,6 +9,7 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "cc/test/compositor_frame_helpers.h"
 
 namespace cc {
 namespace test {
@@ -70,7 +71,7 @@ void CreateRenderPass(int render_pass_id,
 
 CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
                                       RenderPass** render_pass) {
-  CompositorFrame root_frame;
+  CompositorFrame root_frame = test::MakeCompositorFrame();
   int root_id = 1;
   CreateRenderPass(root_id, root_rect, gfx::Transform(),
                    &root_frame.render_pass_list);
