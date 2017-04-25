@@ -177,9 +177,8 @@ void av1_twopass_postencode_update(struct AV1_COMP *cpi);
 // Post encode update of the rate control parameters for 2-pass
 void av1_twopass_postencode_update(struct AV1_COMP *cpi);
 
-void av1_init_subsampling(struct AV1_COMP *cpi);
-
-void av1_calculate_coded_size(struct AV1_COMP *cpi, int *scaled_frame_width,
+void av1_calculate_coded_size(const struct AV1_COMP *cpi,
+                              int *scaled_frame_width,
                               int *scaled_frame_height);
 
 #if CONFIG_EXT_REFS

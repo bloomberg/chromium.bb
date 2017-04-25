@@ -629,6 +629,8 @@ typedef struct AV1_COMP {
   int resize_state;
   int resize_scale_num;
   int resize_scale_den;
+  int resize_next_scale_num;
+  int resize_next_scale_den;
   int resize_avg_qp;
   int resize_buffer_underflow;
   int resize_count;

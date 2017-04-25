@@ -2189,9 +2189,15 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   memset(cm->fc, 0, sizeof(*cm->fc));
   memset(cm->frame_contexts, 0, FRAME_CONTEXTS * sizeof(*cm->frame_contexts));
 
+  cpi->resize_pending = 0;
   cpi->resize_state = 0;
   cpi->resize_avg_qp = 0;
   cpi->resize_buffer_underflow = 0;
+  cpi->resize_scale_num = 16;
+  cpi->resize_scale_den = 16;
+  cpi->resize_next_scale_num = 16;
+  cpi->resize_next_scale_den = 16;
+
   cpi->common.buffer_pool = pool;
 
   init_config(cpi, oxcf);
@@ -3047,11 +3053,18 @@ static int scale_down(AV1_COMP *cpi, int q) {
   int scale = 0;
   assert(frame_is_kf_gf_arf(cpi));
 
-  if (rc->frame_size_selector == UNSCALED &&
+  if (cpi->resize_scale_num == cpi->resize_scale_den &&
       q >= rc->rf_level_maxq[gf_group->rf_level[gf_group->index]]) {
+    const int old_num = cpi->resize_scale_num;
+    --cpi->resize_scale_num;
+    if (cpi->resize_scale_num <= 0) {
+      cpi->resize_scale_num = old_num;
+      return 0;
+    }
     const int max_size_thresh =
-        (int)(rate_thresh_mult[SCALE_STEP1] *
+        (int)(av1_resize_rate_factor(cpi) *
               AOMMAX(rc->this_frame_target, rc->avg_frame_bandwidth));
+    cpi->resize_scale_num = old_num;
     scale = rc->projected_frame_size > max_size_thresh ? 1 : 0;
   }
   return scale;
@@ -4332,9 +4345,13 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
         if (cpi->resize_pending == 1) {
           // Change in frame size so go back around the recode loop.
-          cpi->rc.frame_size_selector =
-              SCALE_STEP1 - cpi->rc.frame_size_selector;
-          cpi->rc.next_frame_size_selector = cpi->rc.frame_size_selector;
+          // 11/16 is close to the old 2/3, then goes back to 16/16.
+          cpi->resize_scale_num -= 5;
+          if (cpi->resize_scale_num < 8 || cpi->resize_scale_num > 16)
+            cpi->resize_scale_num = 16;
+          cpi->resize_scale_den = 16;
+          cpi->resize_next_scale_num = cpi->resize_scale_num;
+          cpi->resize_next_scale_den = cpi->resize_scale_den;
 
 #if CONFIG_INTERNAL_STATS
           ++cpi->tot_recode_hits;
