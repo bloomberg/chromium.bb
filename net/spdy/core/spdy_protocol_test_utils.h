@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_SPDY_PROTOCOL_TEST_UTILS_H_
-#define NET_SPDY_SPDY_PROTOCOL_TEST_UTILS_H_
+#ifndef NET_SPDY_CORE_SPDY_PROTOCOL_TEST_UTILS_H_
+#define NET_SPDY_CORE_SPDY_PROTOCOL_TEST_UTILS_H_
 
 // These functions support tests that need to compare two concrete SpdyFrameIR
 // instances for equality. They return AssertionResult, so they may be used as
@@ -156,4 +156,4 @@ template <class E>
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_SPDY_SPDY_PROTOCOL_TEST_UTILS_H_
+#endif  // NET_SPDY_CORE_SPDY_PROTOCOL_TEST_UTILS_H_

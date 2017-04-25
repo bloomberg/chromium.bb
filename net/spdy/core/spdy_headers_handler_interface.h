@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_SPDY_HEADERS_HANDLER_INTERFACE_H_
-#define NET_SPDY_SPDY_HEADERS_HANDLER_INTERFACE_H_
+#ifndef NET_SPDY_CORE_SPDY_HEADERS_HANDLER_INTERFACE_H_
+#define NET_SPDY_CORE_SPDY_HEADERS_HANDLER_INTERFACE_H_
 
 #include <stddef.h>
 
@@ -43,4 +43,4 @@ class NET_EXPORT_PRIVATE SpdyHeadersHandlerInterface {
 
 }  // namespace net
 
-#endif  // NET_SPDY_SPDY_HEADERS_HANDLER_INTERFACE_H_
+#endif  // NET_SPDY_CORE_SPDY_HEADERS_HANDLER_INTERFACE_H_

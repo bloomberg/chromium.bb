@@ -7,8 +7,8 @@
 // fields and HTTP/2 and QUIC ALTSVC frames.  See specification at
 // https://httpwg.github.io/http-extensions/alt-svc.html.
 
-#ifndef NET_SPDY_SPDY_ALT_SVC_WIRE_FORMAT_H_
-#define NET_SPDY_SPDY_ALT_SVC_WIRE_FORMAT_H_
+#ifndef NET_SPDY_CORE_SPDY_ALT_SVC_WIRE_FORMAT_H_
+#define NET_SPDY_CORE_SPDY_ALT_SVC_WIRE_FORMAT_H_
 
 #include <cstdint>
 #include <vector>
@@ -84,4 +84,4 @@ class NET_EXPORT_PRIVATE SpdyAltSvcWireFormat {
 
 }  // namespace net
 
-#endif  // NET_SPDY_SPDY_ALT_SVC_WIRE_FORMAT_H_
+#endif  // NET_SPDY_CORE_SPDY_ALT_SVC_WIRE_FORMAT_H_

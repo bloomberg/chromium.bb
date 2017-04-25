@@ -6,8 +6,8 @@
 // to make it easier to write tests that need to provide instances. Other
 // interfaces can be added as needed.
 
-#ifndef NET_SPDY_SPDY_NO_OP_VISITOR_H_
-#define NET_SPDY_SPDY_NO_OP_VISITOR_H_
+#ifndef NET_SPDY_CORE_SPDY_NO_OP_VISITOR_H_
+#define NET_SPDY_CORE_SPDY_NO_OP_VISITOR_H_
 
 #include <cstdint>
 
@@ -87,4 +87,4 @@ class SpdyNoOpVisitor : public SpdyFramerVisitorInterface,
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_SPDY_SPDY_NO_OP_VISITOR_H_
+#endif  // NET_SPDY_CORE_SPDY_NO_OP_VISITOR_H_

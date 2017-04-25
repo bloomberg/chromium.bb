@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_SPDY_HEADER_BLOCK_H_
-#define NET_SPDY_SPDY_HEADER_BLOCK_H_
+#ifndef NET_SPDY_CORE_SPDY_HEADER_BLOCK_H_
+#define NET_SPDY_CORE_SPDY_HEADER_BLOCK_H_
 
 #include <stddef.h>
 
@@ -257,4 +257,4 @@ NET_EXPORT bool SpdyHeaderBlockFromNetLogParam(
 
 }  // namespace net
 
-#endif  // NET_SPDY_SPDY_HEADER_BLOCK_H_
+#endif  // NET_SPDY_CORE_SPDY_HEADER_BLOCK_H_

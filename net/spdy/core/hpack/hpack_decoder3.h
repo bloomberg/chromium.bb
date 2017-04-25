@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_HPACK_HPACK_DECODER3_H_
-#define NET_SPDY_HPACK_HPACK_DECODER3_H_
+#ifndef NET_SPDY_CORE_HPACK_HPACK_DECODER3_H_
+#define NET_SPDY_CORE_HPACK_HPACK_DECODER3_H_
 
 // HpackDecoder3 implements HpackDecoderInterface, using Http2HpackDecoder to
 // decode HPACK blocks into HTTP/2 header lists as outlined in
@@ -128,4 +128,4 @@ class NET_EXPORT_PRIVATE HpackDecoder3 : public HpackDecoderInterface {
 
 }  // namespace net
 
-#endif  // NET_SPDY_HPACK_HPACK_DECODER3_H_
+#endif  // NET_SPDY_CORE_HPACK_HPACK_DECODER3_H_

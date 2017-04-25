@@ -6,8 +6,8 @@
 // The SPDY 3 spec can be found at:
 // http://dev.chromium.org/spdy/spdy-protocol/spdy-protocol-draft3
 
-#ifndef NET_SPDY_SPDY_PROTOCOL_H_
-#define NET_SPDY_SPDY_PROTOCOL_H_
+#ifndef NET_SPDY_CORE_SPDY_PROTOCOL_H_
+#define NET_SPDY_CORE_SPDY_PROTOCOL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -915,4 +915,4 @@ class SpdyFrameVisitor {
 
 }  // namespace net
 
-#endif  // NET_SPDY_SPDY_PROTOCOL_H_
+#endif  // NET_SPDY_CORE_SPDY_PROTOCOL_H_

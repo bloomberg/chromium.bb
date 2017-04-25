@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_ZERO_COPY_OUTPUT_BUFFER_H_
-#define NET_SPDY_ZERO_COPY_OUTPUT_BUFFER_H_
+#ifndef NET_SPDY_CORE_ZERO_COPY_OUTPUT_BUFFER_H_
+#define NET_SPDY_CORE_ZERO_COPY_OUTPUT_BUFFER_H_
 
 #include <cstdint>
 
@@ -27,4 +27,4 @@ class ZeroCopyOutputBuffer {
 
 }  // namespace net
 
-#endif  // NET_SPDY_ZERO_COPY_OUTPUT_BUFFER_H_
+#endif  // NET_SPDY_CORE_ZERO_COPY_OUTPUT_BUFFER_H_

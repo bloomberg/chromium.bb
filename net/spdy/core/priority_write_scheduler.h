@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_PRIORITY_WRITE_SCHEDULER_H_
-#define NET_SPDY_PRIORITY_WRITE_SCHEDULER_H_
+#ifndef NET_SPDY_CORE_PRIORITY_WRITE_SCHEDULER_H_
+#define NET_SPDY_CORE_PRIORITY_WRITE_SCHEDULER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -295,4 +295,4 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
 
 }  // namespace net
 
-#endif  // NET_SPDY_PRIORITY_WRITE_SCHEDULER_H_
+#endif  // NET_SPDY_CORE_PRIORITY_WRITE_SCHEDULER_H_

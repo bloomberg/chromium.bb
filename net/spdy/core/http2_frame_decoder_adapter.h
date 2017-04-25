@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_HTTP2_FRAME_DECODER_ADAPTER_H_
-#define NET_SPDY_HTTP2_FRAME_DECODER_ADAPTER_H_
+#ifndef NET_SPDY_CORE_HTTP2_FRAME_DECODER_ADAPTER_H_
+#define NET_SPDY_CORE_HTTP2_FRAME_DECODER_ADAPTER_H_
 
 // Provides a SpdyFramerDecoderAdapter that uses Http2FrameDecoder for decoding
 // HTTP/2 frames. The adapter does not directly decode HPACK, but instead calls
@@ -21,4 +21,4 @@ std::unique_ptr<SpdyFramerDecoderAdapter> CreateHttp2FrameDecoderAdapter(
 
 }  // namespace net
 
-#endif  // NET_SPDY_HTTP2_FRAME_DECODER_ADAPTER_H_
+#endif  // NET_SPDY_CORE_HTTP2_FRAME_DECODER_ADAPTER_H_

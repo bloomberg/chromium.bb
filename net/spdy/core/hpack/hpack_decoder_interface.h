@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_HPACK_HPACK_DECODER_INTERFACE_H_
-#define NET_SPDY_HPACK_HPACK_DECODER_INTERFACE_H_
+#ifndef NET_SPDY_CORE_HPACK_HPACK_DECODER_INTERFACE_H_
+#define NET_SPDY_CORE_HPACK_HPACK_DECODER_INTERFACE_H_
 
 // HpackDecoderInterface is the base class for HPACK block decoders.
 // HPACK is defined in http://tools.ietf.org/html/rfc7541
@@ -73,4 +73,4 @@ class NET_EXPORT_PRIVATE HpackDecoderInterface {
 
 }  // namespace net
 
-#endif  // NET_SPDY_HPACK_HPACK_DECODER_INTERFACE_H_
+#endif  // NET_SPDY_CORE_HPACK_HPACK_DECODER_INTERFACE_H_
