@@ -624,9 +624,6 @@ Resource* ResourceFetcher::RequestResource(
   // TODO(yoav): turn to a DCHECK. See https://crbug.com/690632
   CHECK_EQ(resource->GetType(), factory.GetType());
 
-  if (!resource->IsAlive())
-    dead_stats_recorder_.Update(policy);
-
   if (policy != kUse)
     resource->SetIdentifier(identifier);
 
@@ -1519,43 +1516,6 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
                        SecurityViolationReportingPolicy::kReport,
                        params.GetOriginRestriction());
   RequestLoadStarted(resource->Identifier(), resource, params, kUse);
-}
-
-ResourceFetcher::DeadResourceStatsRecorder::DeadResourceStatsRecorder()
-    : use_count_(0), revalidate_count_(0), load_count_(0) {}
-
-ResourceFetcher::DeadResourceStatsRecorder::~DeadResourceStatsRecorder() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, hit_count_histogram,
-      new CustomCountHistogram("WebCore.ResourceFetcher.HitCount", 0, 1000,
-                               50));
-  hit_count_histogram.Count(use_count_);
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, revalidate_count_histogram,
-      new CustomCountHistogram("WebCore.ResourceFetcher.RevalidateCount", 0,
-                               1000, 50));
-  revalidate_count_histogram.Count(revalidate_count_);
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, load_count_histogram,
-      new CustomCountHistogram("WebCore.ResourceFetcher.LoadCount", 0, 1000,
-                               50));
-  load_count_histogram.Count(load_count_);
-}
-
-void ResourceFetcher::DeadResourceStatsRecorder::Update(
-    RevalidationPolicy policy) {
-  switch (policy) {
-    case kReload:
-    case kLoad:
-      ++load_count_;
-      return;
-    case kRevalidate:
-      ++revalidate_count_;
-      return;
-    case kUse:
-      ++use_count_;
-      return;
-  }
 }
 
 DEFINE_TRACE(ResourceFetcher) {

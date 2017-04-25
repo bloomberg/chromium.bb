@@ -245,23 +245,6 @@ class PLATFORM_EXPORT ResourceFetcher
   HeapHashSet<Member<ResourceLoader>> loaders_;
   HeapHashSet<Member<ResourceLoader>> non_blocking_loaders_;
 
-  // Used in hit rate histograms.
-  class DeadResourceStatsRecorder {
-    DISALLOW_NEW();
-
-   public:
-    DeadResourceStatsRecorder();
-    ~DeadResourceStatsRecorder();
-
-    void Update(RevalidationPolicy);
-
-   private:
-    int use_count_;
-    int revalidate_count_;
-    int load_count_;
-  };
-  DeadResourceStatsRecorder dead_stats_recorder_;
-
   std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
 
   // 28 bits left
