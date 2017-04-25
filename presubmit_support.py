@@ -299,7 +299,26 @@ class OutputApi(object):
     if m:
       new_description = include_re.sub(new_include_trybots, description)
     else:
-      new_description = description + '\n' + new_include_trybots + '\n'
+      # If we're adding a new CQ_INCLUDE_TRYBOTS line then make
+      # absolutely sure to add it before any Change-Id: line, to avoid
+      # breaking Gerrit.
+      #
+      # The use of \n outside the capture group causes the last
+      # newline before Change-Id and any extra newlines after it to be
+      # consumed. They are re-added during the join operation.
+      #
+      # The filter operation drops the trailing empty string after the
+      # original string is split.
+      split_desc = filter(
+        None, re.split('\n(Change-Id: \w*)\n*', description, 1, re.M))
+      # Make sure to insert this before the last entry. For backward
+      # compatibility, ensure the CL description ends in a newline.
+      if len(split_desc) == 1:
+        insert_idx = 1
+      else:
+        insert_idx = len(split_desc) - 1
+      split_desc.insert(insert_idx, new_include_trybots)
+      new_description = '\n'.join(split_desc) + '\n'
     cl.UpdateDescription(new_description, force=True)
     return [self.PresubmitNotifyResult(message)]
 

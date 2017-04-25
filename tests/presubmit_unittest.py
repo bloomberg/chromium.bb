@@ -1461,6 +1461,53 @@ CQ_INCLUDE_TRYBOTS=master.tryserver.blink:linux_trusty_blink_rel;master.tryserve
 CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel
 """)
 
+    # Starting without any CQ_INCLUDE_TRYBOTS line, but with a
+    # Change-Id: line (with no trailing newline), which must continue
+    # to be the last line.
+    self._testIncludingCQTrybots(
+      """A change to GPU-related code.
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""",
+      [
+        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
+        'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
+      ],
+      """A change to GPU-related code.
+CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
+""")
+
+    # Starting without any CQ_INCLUDE_TRYBOTS line, but with a
+    # Change-Id: line (with a trailing newline), which must continue
+    # to be the last line.
+    self._testIncludingCQTrybots(
+      """A change to GPU-related code.
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
+""",
+      [
+        'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
+        'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
+      ],
+      """A change to GPU-related code.
+CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.mac:mac_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
+""")
+
+    # Starting with a CQ_INCLUDE_TRYBOTS line and a Change-Id: line,
+    # the latter of which must continue to be the last line.
+    self._testIncludingCQTrybots(
+      """A change to GPU-related code.
+CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
+""",
+      [
+        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
+        'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
+      ],
+      """A change to GPU-related code.
+CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
+""")
+
     # All pre-existing bots are already in output set.
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
