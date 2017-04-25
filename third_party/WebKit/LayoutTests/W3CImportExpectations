@@ -257,7 +257,9 @@ external/wpt/eventsource [ Skip ]
 external/wpt/ext-xhtml-pubid [ Skip ]
 ## Owners: tyoshino@chromium.org,yhirano@chromium.org,mkwst@chromium.org,japhet@chromium.org
 # external/wpt/fetch [ Pass ]
-external/wpt/fonts [ Skip ]
+## Owners: none; No tests in the directory.
+# external/wpt/fonts [ Pass ]
+external/wpt/fonts/math [ Skip ]
 ## Owners: foolip@chromium.org
 # external/wpt/fullscreen [ Pass ]
 ## Owners: bajones@chromium.org
