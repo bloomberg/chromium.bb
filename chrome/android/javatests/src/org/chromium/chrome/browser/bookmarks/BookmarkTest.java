@@ -21,6 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
+import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
@@ -175,6 +176,40 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
         assertEquals("chrome-native://bookmarks/folder/3",
                 BookmarkUtils.getLastUsedUrl(getActivity()));
+    }
+
+    @MediumTest
+    public void testTopLevelFolders() throws InterruptedException {
+        openBookmarkManager();
+        final BookmarkDelegate delegate =
+                ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).getDelegateForTesting();
+        final BookmarkActionBar toolbar = ((BookmarkManager) delegate).getToolbarForTests();
+
+        // Open the "Mobile bookmarks" folder.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                delegate.openFolder(mBookmarkModel.getMobileFolderId());
+            }
+        });
+
+        assertEquals(SelectableListToolbar.NAVIGATION_BUTTON_BACK,
+                toolbar.getNavigationButtonForTests());
+        assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
+
+        // Call BookmarkActionBar#onClick() to activate the navigation button.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                toolbar.onClick(toolbar);
+            }
+        });
+
+        // Check that we are in the root folder.
+        assertEquals("Bookmarks", toolbar.getTitle());
+        assertEquals(SelectableListToolbar.NAVIGATION_BUTTON_NONE,
+                toolbar.getNavigationButtonForTests());
+        assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
     }
 
     @MediumTest

@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkPromoHeader.PromoHeaderShowingChangeListener;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,27 +30,25 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         BookmarkUIObserver, PromoHeaderShowingChangeListener {
     private static final int PROMO_HEADER_VIEW = 0;
     private static final int FOLDER_VIEW = 1;
-    private static final int DIVIDER_VIEW = 2;
-    private static final int BOOKMARK_VIEW = 3;
+    private static final int BOOKMARK_VIEW = 2;
 
     private static final int MAXIMUM_NUMBER_OF_SEARCH_RESULTS = 500;
     private static final String EMPTY_QUERY = null;
 
+    private final List<List<? extends Object>> mSections;
+    private final List<Object> mPromoHeaderSection = new ArrayList<>();
+    private final List<BookmarkId> mFolderSection = new ArrayList<>();
+    private final List<BookmarkId> mBookmarkSection = new ArrayList<>();
+
+    private final List<BookmarkRow> mBookmarkRows = new ArrayList<>();
+    private final List<BookmarkRow> mFolderRows = new ArrayList<>();
+
+    private final List<BookmarkId> mTopLevelFolders = new ArrayList<>();
+
     private BookmarkDelegate mDelegate;
     private Context mContext;
     private BookmarkPromoHeader mPromoHeaderManager;
-    private boolean mShouldShowDividers;
     private String mSearchText;
-
-    private List<List<? extends Object>> mSections;
-    private List<Object> mPromoHeaderSection = new ArrayList<>();
-    private List<Object> mFolderDividerSection;
-    private List<BookmarkId> mFolderSection = new ArrayList<>();
-    private List<Object> mBookmarkDividerSection;
-    private List<BookmarkId> mBookmarkSection = new ArrayList<>();
-
-    private List<BookmarkRow> mBookmarkRows = new ArrayList<>();
-    private List<BookmarkRow> mFolderRows = new ArrayList<>();
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -90,25 +87,9 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     BookmarkItemsAdapter(Context context) {
         mContext = context;
 
-        // TODO(twellington): remove dividers entirely after the bookmarks 720dp layout is restyled
-        //                    to match the < 720dp style.
-        mShouldShowDividers = DeviceFormFactor.isLargeTablet(context);
-
         mSections = new ArrayList<>();
         mSections.add(mPromoHeaderSection);
-
-        if (mShouldShowDividers) {
-            mFolderDividerSection = new ArrayList<>();
-            mSections.add(mFolderDividerSection);
-        }
-
         mSections.add(mFolderSection);
-
-        if (mShouldShowDividers) {
-            mBookmarkDividerSection = new ArrayList<>();
-            mSections.add(mBookmarkDividerSection);
-        }
-
         mSections.add(mBookmarkSection);
     }
 
@@ -166,22 +147,6 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         updateHeaderAndNotify();
     }
 
-    private void updateDividerSections() {
-        if (!mShouldShowDividers) return;
-
-        mFolderDividerSection.clear();
-        mBookmarkDividerSection.clear();
-
-        boolean isHeaderPresent = !mPromoHeaderSection.isEmpty();
-
-        if (isHeaderPresent && !mFolderSection.isEmpty()) {
-            mFolderDividerSection.add(null);
-        }
-        if ((isHeaderPresent || !mFolderSection.isEmpty()) && !mBookmarkSection.isEmpty()) {
-            mBookmarkDividerSection.add(null);
-        }
-    }
-
     private void removeItem(int position) {
         List<?> section = getSection(position);
         assert section == mFolderSection || section == mBookmarkSection;
@@ -218,9 +183,6 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         if (section == mPromoHeaderSection) {
             return PROMO_HEADER_VIEW;
-        } else if (section == mFolderDividerSection
-                || section == mBookmarkDividerSection) {
-            return DIVIDER_VIEW;
         } else if (section == mFolderSection) {
             return FOLDER_VIEW;
         } else if (section == mBookmarkSection) {
@@ -238,9 +200,6 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         switch (viewType) {
             case PROMO_HEADER_VIEW:
                 return mPromoHeaderManager.createHolder(parent);
-            case DIVIDER_VIEW:
-                return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.bookmark_divider, parent, false)) {};
             case FOLDER_VIEW:
                 BookmarkFolderRow folder = (BookmarkFolderRow) LayoutInflater.from(
                         parent.getContext()).inflate(R.layout.bookmark_folder_row, parent, false);
@@ -266,7 +225,6 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         switch (getItemViewType(position)) {
             case PROMO_HEADER_VIEW:
-            case DIVIDER_VIEW:
                 break;
             case FOLDER_VIEW:
                 ((BookmarkRow) holder.itemView).setBookmarkId(id);
@@ -301,6 +259,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         mDelegate.addUIObserver(this);
         mDelegate.getModel().addObserver(mBookmarkModelObserver);
         mPromoHeaderManager = new BookmarkPromoHeader(mContext, this);
+        populateTopLevelFoldersList();
     }
 
     @Override
@@ -315,10 +274,15 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public void onFolderStateSet(BookmarkId folder) {
         assert mDelegate != null;
-        setBookmarks(mDelegate.getModel().getChildIDs(folder, true, false),
-                mDelegate.getModel().getChildIDs(folder, false, true));
 
         mSearchText = EMPTY_QUERY;
+
+        if (folder.equals(mDelegate.getModel().getRootFolderId())) {
+            setBookmarks(mTopLevelFolders, new ArrayList<BookmarkId>());
+        } else {
+            setBookmarks(mDelegate.getModel().getChildIDs(folder, true, false),
+                    mDelegate.getModel().getChildIDs(folder, false, true));
+        }
     }
 
     @Override
@@ -348,7 +312,6 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private void updateHeaderAndNotify() {
         updateHeader();
-        updateDividerSections();
         notifyDataSetChanged();
     }
 
@@ -365,6 +328,22 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         assert currentUIState == BookmarkUIState.STATE_FOLDER : "Unexpected UI state";
         if (mPromoHeaderManager.shouldShow()) {
             mPromoHeaderSection.add(null);
+        }
+    }
+
+    private void populateTopLevelFoldersList() {
+        BookmarkId desktopNodeId = mDelegate.getModel().getDesktopFolderId();
+        BookmarkId mobileNodeId = mDelegate.getModel().getMobileFolderId();
+        BookmarkId othersNodeId = mDelegate.getModel().getOtherFolderId();
+
+        if (mDelegate.getModel().isFolderVisible(mobileNodeId)) {
+            mTopLevelFolders.add(mobileNodeId);
+        }
+        if (mDelegate.getModel().isFolderVisible(desktopNodeId)) {
+            mTopLevelFolders.add(desktopNodeId);
+        }
+        if (mDelegate.getModel().isFolderVisible(othersNodeId)) {
+            mTopLevelFolders.add(othersNodeId);
         }
     }
 

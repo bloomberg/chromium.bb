@@ -180,7 +180,6 @@
     <!-- Bookmark UI colors -->
     <color name="bookmark_detail_text">#212121</color>
     <color name="bookmark_detail_section">#7C7B79</color>
-    <color name="bookmark_drawer_selected_background_color">#F0F0F0</color>
 
     <!-- Favicon colors -->
     <color name="default_favicon_background_color">#ff787878</color>

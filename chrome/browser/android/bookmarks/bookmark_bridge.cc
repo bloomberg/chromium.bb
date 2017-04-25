@@ -802,7 +802,7 @@ bool BookmarkBridge::IsEditable(const BookmarkNode* node) const {
       node->type() != BookmarkNode::URL)) {
     return false;
   }
-  if (!IsEditBookmarksEnabled())
+  if (!IsEditBookmarksEnabled() || bookmark_model_->is_permanent_node(node))
     return false;
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return partner_bookmarks_shim_->IsEditable(node);

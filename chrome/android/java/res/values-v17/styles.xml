@@ -432,17 +432,6 @@
     <style name="BookmarkMenuStyle" parent="Widget.AppCompat.ListPopupWindow">
         <item name="android:popupBackground">@drawable/menu_bg</item>
     </style>
-    <style name="BookmarkDrawerItemStyle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">?android:attr/listPreferredItemHeightSmall</item>
-        <item name="android:textAlignment">viewStart</item>
-        <item name="android:gravity">start|center_vertical</item>
-        <item name="android:paddingStart">@dimen/bookmark_drawer_drawable_padding</item>
-        <item name="android:paddingEnd">@dimen/bookmark_drawer_drawable_padding</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">?android:attr/textAppearanceLargePopupMenu</item>
-        <item name="android:textSize">14sp</item>
-    </style>
 
     <!-- Contextual Search styles -->
     <style name="ContextualSearchTextViewLayout">

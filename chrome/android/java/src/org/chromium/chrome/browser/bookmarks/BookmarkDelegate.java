@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.support.v4.widget.DrawerLayout;
-
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -35,8 +33,7 @@ interface BookmarkDelegate {
     boolean isDialogUi();
 
     /**
-     * Corresponds to any folder named list item in the side drawer. Shows bookmarks under the
-     * folder.
+     * Shows bookmarks contained in the specified folder.
      * @param folder Parent folder that contains bookmarks to show as its children.
      */
     void openFolder(BookmarkId folder);
@@ -51,21 +48,6 @@ interface BookmarkDelegate {
      * is MODE_ALL_BOOKMARKS, it calls onAllBookmarksModeSet.
      */
     void notifyStateChange(BookmarkUIObserver observer);
-
-    /**
-     * @return Whether there is a drawer.
-     */
-    boolean doesDrawerExist();
-
-    /**
-     * Close drawer if it's visible.
-     */
-    void closeDrawer();
-
-    /**
-     * @return The current drawer layout instance, if it exists.
-     */
-    DrawerLayout getDrawerLayout();
 
     /**
      * Closes the Bookmark UI (if on phone) and opens the given bookmark.
