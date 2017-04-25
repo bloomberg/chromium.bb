@@ -18,11 +18,6 @@
 <dom-module id="site-list">
   <template>
     <style include="settings-shared">
-      paper-icon-button {
-        left: 8px;
-        right: 8px;
-      }
-
       .selectable {
         -webkit-user-select: text;
       }
@@ -66,17 +61,30 @@
       </div>
       <div class="list-frame menu-content vertical-list" id="listContainer">
         <template is="dom-repeat" items="[[sites]]">
-          <div class="list-item" actionable$="[[enableSiteSettings_]]"
-              on-tap="onOriginTap_">
-            <div class="favicon-image"
-                style$="[[computeSiteIcon(item.origin)]]">
-            </div>
-            <div class="middle no-min-width">
-              <div class="selectable text-elide">[[item.displayName]]</div>
+          <div class="list-item">
+            <div class="layout horizontal center flex"
+                actionable$="[[enableSiteSettings_]]" on-tap="onOriginTap_">
+              <div class="favicon-image"
+                  style$="[[computeSiteIcon(item.origin)]]">
+              </div>
+              <div class="middle no-min-width">
+                <div class="selectable text-elide">[[item.displayName]]</div>
 
-              <!-- This div must not contain extra whitespace. -->
-              <div class="selectable secondary text-elide" id="siteDescription"
-                  >[[computeSiteDescription_(item)]]</div>
+                <!-- This div must not contain extra whitespace. -->
+                <div class="selectable secondary text-elide"
+                    id="siteDescription">[[computeSiteDescription_(item)]]</div>
+              </div>
+              <template is="dom-if" if="[[enableSiteSettings_]]">
+                <div on-tap="onOriginTap_" actionable>
+                  <button class="subpage-arrow" is="paper-icon-button-light"
+                      aria-label$="[[item.displayName]]"
+                      aria-describedby="siteDescription"></button>
+                </div>
+                <!-- This div is intentionally empty. It creates a vertical grey
+                     bar. This can be merged into the html that follows this
+                     template after the |enableSiteSettings_| is removed. -->
+                <div class="secondary-action"></div>
+              </template>
             </div>
             <template is="dom-if" if="[[item.controlledBy]]">
               <cr-policy-pref-indicator pref="[[item]]"
@@ -87,19 +95,14 @@
             <paper-icon-button id="resetSite" icon="cr:delete"
                 hidden="[[isResetButtonHidden_(
                     item.enforcement, readOnlyList)]]"
-                on-tap="onResetButtonTap_" alt="$i18n{siteSettingsActionReset}">
+                on-tap="onResetButtonTap_"
+                alt="$i18n{siteSettingsActionReset}">
             </paper-icon-button>
             <paper-icon-button id="actionMenuButton" icon="cr:more-vert"
-                hidden="[[isActionMenuHidden_(item.enforcement, readOnlyList)]]"
+                hidden=
+                    "[[isActionMenuHidden_(item.enforcement, readOnlyList)]]"
                 on-tap="onShowActionMenuTap_" title="$i18n{moreActions}">
             </paper-icon-button>
-            <template is="dom-if" if="[[enableSiteSettings_]]">
-              <div on-tap="onOriginTap_" actionable>
-                <button class="subpage-arrow" is="paper-icon-button-light"
-                    aria-label$="[[item.displayName]]"
-                    aria-describedby="siteDescription"></button>
-              </div>
-            </template>
           </div>
         </template>
       </div>

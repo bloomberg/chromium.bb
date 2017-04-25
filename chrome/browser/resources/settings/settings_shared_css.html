@@ -334,7 +334,11 @@
         align-items: center;
         display: flex;
         flex-shrink: 0;
-        height: var(--settings-row-min-height);
+        height: 36px;
+      }
+
+      :-webkit-any(.settings-box, .list-item).two-line .secondary-action {
+        height: 46px;
       }
 
       /* Helper for a list frame to automatically avoid the separator line. */
