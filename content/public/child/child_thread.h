@@ -22,6 +22,7 @@ struct UserMetricsAction;
 
 namespace service_manager {
 class Connector;
+class InterfaceRegistry;
 }
 
 namespace content {
@@ -69,6 +70,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Sender {
   // Returns the ServiceManagerConnection for the thread (from which a
   // service_manager::Connector can be obtained).
   virtual ServiceManagerConnection* GetServiceManagerConnection() = 0;
+
+  // Returns the InterfaceRegistry that this process uses to expose interfaces
+  // to the browser.
+  virtual service_manager::InterfaceRegistry* GetInterfaceRegistry() = 0;
 
   // Returns a connector that can be used to bind interfaces exposed by other
   // services.

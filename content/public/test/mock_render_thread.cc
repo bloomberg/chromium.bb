@@ -19,6 +19,9 @@
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebScriptController.h"
 
@@ -248,6 +251,14 @@ void MockRenderThread::ReleaseCachedFonts() {
 
 ServiceManagerConnection* MockRenderThread::GetServiceManagerConnection() {
   return nullptr;
+}
+
+service_manager::InterfaceRegistry* MockRenderThread::GetInterfaceRegistry() {
+  if (!interface_registry_) {
+    interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
+        service_manager::mojom::kServiceManager_ConnectorSpec);
+  }
+  return interface_registry_.get();
 }
 
 service_manager::Connector* MockRenderThread::GetConnector() {
