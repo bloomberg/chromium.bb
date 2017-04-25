@@ -22,10 +22,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/win/windows_version.h"
 #include "device/usb/usb_ids.h"
 #include "media/midi/message_util.h"
+#include "media/midi/midi_manager_winrt.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_service.h"
+#include "media/midi/midi_switches.h"
 
 namespace midi {
 
@@ -850,6 +853,13 @@ void DynamicallyInitializedMidiManagerWin::SendOnTaskRunner(
   PostReplyTask(
       base::Bind(&DynamicallyInitializedMidiManagerWin::AccumulateMidiBytesSent,
                  base::Unretained(this), client, data.size()));
+}
+
+MidiManager* MidiManager::Create(MidiService* service) {
+  if (base::FeatureList::IsEnabled(features::kMidiManagerWinrt) &&
+      base::win::GetVersion() >= base::win::VERSION_WIN10)
+    return new MidiManagerWinrt(service);
+  return new DynamicallyInitializedMidiManagerWin(service);
 }
 
 }  // namespace midi
