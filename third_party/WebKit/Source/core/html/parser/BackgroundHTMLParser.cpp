@@ -100,7 +100,8 @@ void BackgroundHTMLParser::Init(
     const MediaValuesCached::MediaValuesCachedData& media_values_cached_data) {
   preload_scanner_.reset(new TokenPreloadScanner(
       document_url, std::move(cached_document_parameters),
-      media_values_cached_data));
+      media_values_cached_data,
+      TokenPreloadScanner::ScannerType::kMainDocument));
 }
 
 BackgroundHTMLParser::Configuration::Configuration()

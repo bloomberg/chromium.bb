@@ -136,7 +136,9 @@ class TokenPreloadScanner::StartTagScanner {
   STACK_ALLOCATED();
 
  public:
-  StartTagScanner(const StringImpl* tag_impl, MediaValuesCached* media_values)
+  StartTagScanner(const StringImpl* tag_impl,
+                  MediaValuesCached* media_values,
+                  TokenPreloadScanner::ScannerType scanner_type)
       : tag_impl_(tag_impl),
         link_is_style_sheet_(false),
         link_is_preconnect_(false),
@@ -151,7 +153,8 @@ class TokenPreloadScanner::StartTagScanner {
         cross_origin_(kCrossOriginAttributeNotSet),
         media_values_(media_values),
         referrer_policy_set_(false),
-        referrer_policy_(kReferrerPolicyDefault) {
+        referrer_policy_(kReferrerPolicyDefault),
+        scanner_type_(scanner_type) {
     if (Match(tag_impl_, imgTag) || Match(tag_impl_, sourceTag)) {
       source_size_ = SizesAttributeParser(media_values_, String()).length();
       return;
@@ -258,6 +261,8 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetCharset(Charset());
     request->SetDefer(defer_);
     request->SetIntegrityMetadata(integrity_metadata_);
+    if (scanner_type_ == ScannerType::kInsertion)
+      request->SetFromInsertionScanner(true);
 
     return request;
   }
@@ -574,12 +579,14 @@ class TokenPreloadScanner::StartTagScanner {
   bool referrer_policy_set_;
   ReferrerPolicy referrer_policy_;
   IntegrityMetadataSet integrity_metadata_;
+  TokenPreloadScanner::ScannerType scanner_type_;
 };
 
 TokenPreloadScanner::TokenPreloadScanner(
     const KURL& document_url,
     std::unique_ptr<CachedDocumentParameters> document_parameters,
-    const MediaValuesCached::MediaValuesCachedData& media_values_cached_data)
+    const MediaValuesCached::MediaValuesCachedData& media_values_cached_data,
+    const ScannerType scanner_type)
     : document_url_(document_url),
       in_style_(false),
       in_picture_(false),
@@ -587,6 +594,7 @@ TokenPreloadScanner::TokenPreloadScanner(
       template_count_(0),
       document_parameters_(std::move(document_parameters)),
       media_values_(MediaValuesCached::Create(media_values_cached_data)),
+      scanner_type_(scanner_type),
       did_rewind_(false) {
   DCHECK(document_parameters_.get());
   DCHECK(media_values_.Get());
@@ -854,7 +862,7 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
         return;
       }
 
-      StartTagScanner scanner(tag_impl, media_values_);
+      StartTagScanner scanner(tag_impl, media_values_, scanner_type_);
       scanner.ProcessAttributes(token.Attributes());
       // TODO(yoav): ViewportWidth is currently racy and might be zero in some
       // cases, at least in tests. That problem will go away once
@@ -888,10 +896,12 @@ HTMLPreloadScanner::HTMLPreloadScanner(
     const HTMLParserOptions& options,
     const KURL& document_url,
     std::unique_ptr<CachedDocumentParameters> document_parameters,
-    const MediaValuesCached::MediaValuesCachedData& media_values_cached_data)
+    const MediaValuesCached::MediaValuesCachedData& media_values_cached_data,
+    const TokenPreloadScanner::ScannerType scanner_type)
     : scanner_(document_url,
                std::move(document_parameters),
-               media_values_cached_data),
+               media_values_cached_data,
+               scanner_type),
       tokenizer_(HTMLTokenizer::Create(options)) {}
 
 HTMLPreloadScanner::~HTMLPreloadScanner() {}

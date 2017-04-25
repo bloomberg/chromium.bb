@@ -2,15 +2,31 @@ CONSOLE WARNING: line 22: Synchronous XMLHttpRequest on the main thread is depre
 Tests resource priorities.
 
 
+sendSyncScriptRequest
 Request: empty-script.js?sync priority: High
+sendAsyncScriptRequest
 Request: empty-script.js?async priority: Low
-Request: abe.png?preceding priority: Low
-Request: empty-script.js?preceded priority: Medium
-Request: abe.png?precedingPreload priority: Low
-Request: empty-script.js?precededByPreload priority: High
+sendScriptRequestPrecededByImage
+Request: abe.png?precedingScript priority: Low
+Request: empty-script.js?precededByImage priority: Medium
+sendScriptRequestPrecededByPreloadedImage
+Request: abe.png?preloaded priority: Low
+Request: empty-script.js?precededByPreloadedImage priority: High
+Request: abe.png?followingPreload priority: Low
+sendXHRSync
 Request: empty.html?xhr-sync priority: VeryHigh
+sendXHRAsync
 Request: empty.html?xhr-async priority: High
-Request: abe.png priority: Low
-Request: style.css priority: VeryHigh
+sendImageRequest
+Request: abe.png?image priority: Low
+sendStyleRequest
+Request: style.css?style priority: VeryHigh
+createIFrame
 Request: empty.html?iframe priority: VeryHigh
+sendScriptsFromDocumentWriteAfterImage
+Request: abe.png?precedingDocWrite priority: Low
+Request: docwrite.js priority: Medium
+Request: empty-script.js?docWritten-1 priority: High
+Request: empty-script.js?docWritten-2 priority: High
+Request: empty-script.js?docWritten-3 priority: High
 
