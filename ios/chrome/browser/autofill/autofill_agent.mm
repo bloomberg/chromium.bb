@@ -316,6 +316,18 @@ void GetFormAndField(autofill::FormData* form,
                        pageURL:(const GURL&)pageURL
              completionHandler:(FetchFormsCompletionHandler)completionHandler {
   DCHECK(completionHandler);
+
+  // TODO(crbug.com/418827): Early-inject the script and replace the following
+  // if statement with a DCHECK if a race condition between the script injection
+  // and the call to the this function continues to happen.
+  // Return if the script has not been injected.
+  if (![jsAutofillManager_ hasBeenInjected]) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      completionHandler(NO, FormDataVector());
+    });
+    return;
+  }
+
   // Necessary so the values can be used inside a block.
   base::string16 formNameCopy = formName;
   GURL pageURLCopy = pageURL;
