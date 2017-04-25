@@ -5621,6 +5621,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
           plane, MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
     } else {
       second_pred = (uint8_t *)second_pred_alloc_16;
+#endif  // CONFIG_HIGHBITDEPTH
       av1_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
           &frame_mv[refs[!id]].as_mv, &sf, pw, ph, &conv_params, interp_filter,
@@ -5628,15 +5629,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
           &warp_types, p_col, p_row, plane, !id,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
           MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
+#if CONFIG_HIGHBITDEPTH
     }
-#else
-    av1_build_inter_predictor(
-        ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
-        &frame_mv[refs[!id]].as_mv, &sf, pw, ph, &conv_params, interp_filter,
-#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-        &warp_types, p_col, p_row, plane, !id,
-#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-        MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
 #endif  // CONFIG_HIGHBITDEPTH
 
     // Do compound motion search on the current reference frame.
