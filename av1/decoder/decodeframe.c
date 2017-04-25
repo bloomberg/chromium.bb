@@ -1005,22 +1005,10 @@ static void dec_extend_all(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                            BLOCK_SIZE bsize, BLOCK_SIZE top_bsize, int mi_row,
                            int mi_col, int mi_row_top, int mi_col_top,
                            uint8_t *dst_buf[3], int dst_stride[3]) {
-  dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
-                 mi_row_top, mi_col_top, dst_buf, dst_stride, 0);
-  dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
-                 mi_row_top, mi_col_top, dst_buf, dst_stride, 1);
-  dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
-                 mi_row_top, mi_col_top, dst_buf, dst_stride, 2);
-  dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
-                 mi_row_top, mi_col_top, dst_buf, dst_stride, 3);
-  dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
-                 mi_row_top, mi_col_top, dst_buf, dst_stride, 4);
-  dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
-                 mi_row_top, mi_col_top, dst_buf, dst_stride, 5);
-  dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
-                 mi_row_top, mi_col_top, dst_buf, dst_stride, 6);
-  dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
-                 mi_row_top, mi_col_top, dst_buf, dst_stride, 7);
+  for (int i = 0; i < 8; ++i) {
+    dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
+                   mi_row_top, mi_col_top, dst_buf, dst_stride, i);
+  }
 }
 
 static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
