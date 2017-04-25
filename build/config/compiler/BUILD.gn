@@ -512,12 +512,22 @@ config("compiler") {
       ldflags += [ "-Wl,-all_load" ]
     }
 
-    # Allows the linker to apply ICF to the LTO object file. Also, when
-    # targeting ARM, without this flag, LTO produces a .text section that is
-    # larger than the maximum call displacement, preventing the linker from
-    # relocating calls (http://llvm.org/PR22999).
+    # Allows the linker to apply --gc-sections and ICF to the LTO object file.
+    # Also, when targeting ARM, without this flag, LTO produces a .text section
+    # that is larger than the maximum call displacement, preventing the linker
+    # from relocating calls (http://llvm.org/PR22999).
     if (is_linux) {
-      ldflags += [ "-Wl,-plugin-opt,-function-sections" ]
+      if (use_lld) {
+        ldflags += [
+          "-Wl,-mllvm,-function-sections",
+          "-Wl,-mllvm,-data-sections",
+        ]
+      } else {
+        ldflags += [
+          "-Wl,-plugin-opt,-function-sections",
+          "-Wl,-plugin-opt,-data-sections",
+        ]
+      }
     }
   }
 
