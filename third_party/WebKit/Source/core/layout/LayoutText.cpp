@@ -367,7 +367,7 @@ static FloatRect LocalQuadForTextBox(InlineTextBox* box,
 void LayoutText::AbsoluteRectsForRange(Vector<IntRect>& rects,
                                        unsigned start,
                                        unsigned end,
-                                       bool use_selection_height) {
+                                       bool use_selection_height) const {
   // Work around signed/unsigned issues. This function takes unsigneds, and is
   // often passed UINT_MAX to mean "all the way to the end". InlineTextBox
   // coordinates are unsigneds, so changing this function to take ints causes
@@ -486,7 +486,7 @@ void LayoutText::AbsoluteQuads(Vector<FloatQuad>& quads,
 void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
                                        unsigned start,
                                        unsigned end,
-                                       bool use_selection_height) {
+                                       bool use_selection_height) const {
   // Work around signed/unsigned issues. This function takes unsigneds, and is
   // often passed UINT_MAX to mean "all the way to the end". InlineTextBox
   // coordinates are unsigneds, so changing this function to take ints causes

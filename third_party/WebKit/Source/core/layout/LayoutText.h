@@ -102,14 +102,14 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void AbsoluteRectsForRange(Vector<IntRect>&,
                              unsigned start_offset = 0,
                              unsigned end_offset = INT_MAX,
-                             bool use_selection_height = false);
+                             bool use_selection_height = false) const;
 
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const final;
   void AbsoluteQuadsForRange(Vector<FloatQuad>&,
                              unsigned start_offset = 0,
                              unsigned end_offset = INT_MAX,
-                             bool use_selection_height = false);
+                             bool use_selection_height = false) const;
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
   enum ClippingOption { kNoClipping, kClipToEllipsis };
