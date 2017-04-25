@@ -153,7 +153,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
     // Messages that we have read off of the Chrome IPC channel that are waiting
     // to be received by the plugin.
-    std::queue< scoped_refptr<RewrittenMessage> > to_be_received_;
+    std::queue<std::unique_ptr<RewrittenMessage>> to_be_received_;
 
     ppapi::proxy::NaClMessageScanner nacl_msg_scanner_;
 
@@ -210,7 +210,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   // Saves the message to forward to NaCl. This method assumes that the caller
   // holds the lock for locked_data_.
   void SaveMessage(const IPC::Message& message,
-                   RewrittenMessage* rewritten_message);
+                   std::unique_ptr<RewrittenMessage> rewritten_message);
 
   base::Lock lock_;
   base::ConditionVariable cond_var_;
