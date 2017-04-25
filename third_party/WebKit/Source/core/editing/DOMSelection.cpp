@@ -442,6 +442,10 @@ void DOMSelection::modify(const String& alter_string,
   else
     return;
 
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
   Element* focused_element = GetFrame()->GetDocument()->FocusedElement();
   GetFrame()->Selection().Modify(alter, direction, granularity);
   if (GetFrame() && GetFrame()->GetDocument() &&

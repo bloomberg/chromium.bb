@@ -377,15 +377,15 @@ bool FrameSelection::Modify(EAlteration alter,
                             SelectionDirection direction,
                             TextGranularity granularity,
                             EUserTriggered user_triggered) {
-  SelectionModifier selection_modifier(
-      *GetFrame(), ComputeVisibleSelectionInDOMTreeDeprecated(),
-      x_pos_for_vertical_arrow_navigation_);
+  SelectionModifier selection_modifier(*GetFrame(),
+                                       ComputeVisibleSelectionInDOMTree(),
+                                       x_pos_for_vertical_arrow_navigation_);
   const bool modified =
       selection_modifier.Modify(alter, direction, granularity);
   if (user_triggered == kUserTriggered &&
       selection_modifier.Selection().IsRange() &&
-      ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret() &&
-      DispatchSelectStart(ComputeVisibleSelectionInDOMTreeDeprecated()) !=
+      ComputeVisibleSelectionInDOMTree().IsCaret() &&
+      DispatchSelectStart(ComputeVisibleSelectionInDOMTree()) !=
           DispatchEventResult::kNotCanceled) {
     return false;
   }
@@ -420,8 +420,8 @@ bool FrameSelection::Modify(EAlteration alter,
 bool FrameSelection::Modify(EAlteration alter,
                             unsigned vertical_distance,
                             VerticalDirection direction) {
-  SelectionModifier selection_modifier(
-      *GetFrame(), ComputeVisibleSelectionInDOMTreeDeprecated());
+  SelectionModifier selection_modifier(*GetFrame(),
+                                       ComputeVisibleSelectionInDOMTree());
   if (!selection_modifier.ModifyWithPageGranularity(alter, vertical_distance,
                                                     direction)) {
     return false;
