@@ -4018,7 +4018,7 @@ static INLINE int find_identical_tile(
   const MV32 candidate_offset[1] = { { 1, 0 } };
   const uint8_t *const cur_tile_data =
       tile_buffers[tile_row][tile_col].data + 4;
-  const unsigned int cur_tile_size = tile_buffers[tile_row][tile_col].size;
+  const size_t cur_tile_size = tile_buffers[tile_row][tile_col].size;
 
   int i;
 
@@ -4122,7 +4122,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   for (tile_col = 0; tile_col < tile_cols; tile_col++) {
     TileInfo tile_info;
     const int is_last_col = (tile_col == tile_cols - 1);
-    const size_t col_offset = total_size;
+    const uint32_t col_offset = total_size;
 
     av1_tile_set_col(&tile_info, cm, tile_col);
 
@@ -4201,7 +4201,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
     }
 
     if (!is_last_col) {
-      size_t col_size = total_size - col_offset - 4;
+      uint32_t col_size = total_size - col_offset - 4;
       mem_put_le32(dst + col_offset, col_size);
 
       // If it is not final packing, record the maximum tile column size we see,

@@ -3143,7 +3143,7 @@ static void get_tile_buffers(
   const int have_tiles = tile_cols * tile_rows > 1;
 
   if (!have_tiles) {
-    const uint32_t tile_size = data_end - data;
+    const size_t tile_size = data_end - data;
     tile_buffers[0][0].data = data;
     tile_buffers[0][0].size = tile_size;
     tile_buffers[0][0].raw_data_end = NULL;
