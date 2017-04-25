@@ -17,39 +17,32 @@
 
 namespace base {
 
-// An STL-like associative container which starts out backed by a simple
-// array but switches to some other container type if it grows beyond a
-// fixed size.
+// small_map is a container with a std::map-like interface. It starts out
+// backed by a unsorted array but switches to some other container type if it
+// grows beyond this fixed size.
 //
-// WHAT TYPE OF MAP SHOULD YOU USE?
-// --------------------------------
+// Please see //base/containers/README.md for an overview of which container
+// to select.
 //
-//  - std::map should be the default if you're not sure, since it's the most
-//    difficult to mess up. Generally this is backed by a red-black tree. It
-//    will generate a lot of code (if you use a common key type like int or
-//    string the linker will probably emiminate the duplicates). It will
-//    do heap allocations for each element.
+// PROS
 //
-//  - If you only ever keep a couple of items and have very simple usage,
-//    use a base::flat_map.
+//  - Good memory locality and low overhead for smaller maps.
+//  - Handles large maps without the degenerate performance of flat_map.
 //
-//  - std::unordered_map should be used if you need O(1) lookups. It may waste
-//    space in the hash table, and it can be easy to write correct-looking
-//    code with the default hash function being wrong or poorly-behaving.
+// CONS
 //
-//  - base::small_map combines the performance benefits of the
-//    brute-force-searched vector for small cases (no extra heap allocations),
-//    but can efficiently fall back if you end up adding many items. It will
-//    generate more code than std::map (at least 160 bytes for operator[])
-//    which is bad if you have a "weird" key where map functions can't be
-//    duplicate-code-eliminated. If you have a one-off key and aren't in
-//    performance-critical code, this bloat may negate some of the benefits and
-//    you should consider on of the other options.
+//  - Larger code size than the alternatives.
+//
+// IMPORTANT NOTES
+//
+//  - Iterators are invalidated across mutations.
+//
+// DETAILS
 //
 // base::small_map will pick up the comparator from the underlying map type. In
-// std::map (and in MSVC additionally hash_map) only a "less" operator is
-// defined, which requires us to do two comparisons per element when doing the
-// brute-force search in the simple array.
+// std::map only a "less" operator is defined, which requires us to do two
+// comparisons per element when doing the brute-force search in the simple
+// array. std::unordered_map has a key_equal function which will be used.
 //
 // We define default overrides for the common map types to avoid this
 // double-compare, but you should be aware of this if you use your own
@@ -90,9 +83,6 @@ namespace base {
 //   days["thursday" ] = 4;
 //   days["friday"   ] = 5;
 //   days["saturday" ] = 6;
-//
-// You should assume that small_map might invalidate all the iterators
-// on any call to erase(), insert() and operator[].
 
 namespace internal {
 
@@ -147,7 +137,7 @@ struct select_equal_key {
 // If we switch to using std::unordered_map for base::hash_map, then the
 // hash_map specialization can be removed.
 template <typename KeyType, typename ValueType>
-struct select_equal_key< std::map<KeyType, ValueType>, false> {
+struct select_equal_key<std::map<KeyType, ValueType>, false> {
   struct equal_key {
     bool operator()(const KeyType& left, const KeyType& right) {
       return left == right;
@@ -155,7 +145,7 @@ struct select_equal_key< std::map<KeyType, ValueType>, false> {
   };
 };
 template <typename KeyType, typename ValueType>
-struct select_equal_key< base::hash_map<KeyType, ValueType>, false> {
+struct select_equal_key<base::hash_map<KeyType, ValueType>, false> {
   struct equal_key {
     bool operator()(const KeyType& left, const KeyType& right) {
       return left == right;
