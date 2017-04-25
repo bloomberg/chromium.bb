@@ -88,7 +88,7 @@ bool DictionaryIterator::ValueAsDictionary(Dictionary& result,
   DCHECK(!done_);
 
   v8::Local<v8::Value> value;
-  if (!V8Call(value_, value) || !value->IsObject())
+  if (!value_.ToLocal(&value) || !value->IsObject())
     return false;
 
   result = Dictionary(isolate_, value, exception_state);
@@ -100,7 +100,7 @@ bool DictionaryIterator::ValueAsString(String& result) {
   DCHECK(!done_);
 
   v8::Local<v8::Value> value;
-  if (!V8Call(value_, value))
+  if (!value_.ToLocal(&value))
     return false;
 
   V8StringResource<> string_value(value);

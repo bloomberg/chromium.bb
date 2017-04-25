@@ -30,10 +30,11 @@ v8::MaybeLocal<v8::Value> V8UnpackIteratorResult(ScriptState* script_state,
   if (maybe_value.IsEmpty())
     return maybe_value;
   v8::Local<v8::Value> done_value;
-  if (!V8Call(result->Get(script_state->GetContext(),
-                          V8String(script_state->GetIsolate(), "done")),
-              done_value) ||
-      !V8Call(done_value->BooleanValue(script_state->GetContext()), *done)) {
+  if (!result
+           ->Get(script_state->GetContext(),
+                 V8String(script_state->GetIsolate(), "done"))
+           .ToLocal(&done_value) ||
+      !done_value->BooleanValue(script_state->GetContext()).To(done)) {
     return v8::MaybeLocal<v8::Value>();
   }
   return maybe_value;

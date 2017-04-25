@@ -221,7 +221,7 @@ static IDBKey* CreateIDBKeyFromValue(v8::Isolate* isolate,
       if (!V8CallBoolean(array->HasOwnProperty(context, i)))
         return nullptr;
       v8::Local<v8::Value> item;
-      if (!V8Call(array->Get(context, i), item, block)) {
+      if (!array->Get(context, i).ToLocal(&item)) {
         exception_state.RethrowV8Exception(block.Exception());
         return nullptr;
       }
@@ -343,7 +343,7 @@ static IDBKey* CreateIDBKeyFromValueAndKeyPath(
     v8::Local<v8::String> key = V8String(isolate, element);
     if (!V8CallBoolean(object->HasOwnProperty(context, key)))
       return nullptr;
-    if (!V8Call(object->Get(context, key), v8_value, block)) {
+    if (!object->Get(context, key).ToLocal(&v8_value)) {
       exception_state.RethrowV8Exception(block.Exception());
       return nullptr;
     }
@@ -522,7 +522,7 @@ bool InjectV8KeyIntoV8Value(v8::Isolate* isolate,
     v8::Local<v8::Object> object = value.As<v8::Object>();
     v8::Local<v8::String> property = V8String(isolate, key_path_element);
     bool has_own_property;
-    if (!V8Call(object->HasOwnProperty(context, property), has_own_property))
+    if (!object->HasOwnProperty(context, property).To(&has_own_property))
       return false;
     if (has_own_property) {
       if (!object->Get(context, property).ToLocal(&value))
@@ -585,7 +585,7 @@ bool CanInjectIDBKeyIntoScriptValue(v8::Isolate* isolate,
     // If the value lacks an "own" property, it can be added - either as
     // an intermediate object or as the final value.
     bool has_own_property;
-    if (!V8Call(object->HasOwnProperty(context, property), has_own_property))
+    if (!object->HasOwnProperty(context, property).To(&has_own_property))
       return false;
     if (!has_own_property)
       return true;

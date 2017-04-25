@@ -86,8 +86,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       v8::Local<v8::Function>::Cast(ctor_value.V8Value());
 
   v8::Local<v8::Value> input_properties_value;
-  if (!V8Call(constructor->Get(context, V8String(isolate, "inputProperties")),
-              input_properties_value))
+  if (!constructor->Get(context, V8String(isolate, "inputProperties"))
+           .ToLocal(&input_properties_value))
     return;
 
   Vector<CSSPropertyID> native_invalidation_properties;
@@ -116,8 +116,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   Vector<CSSSyntaxDescriptor> input_argument_types;
   if (RuntimeEnabledFeatures::cssPaintAPIArgumentsEnabled()) {
     v8::Local<v8::Value> input_argument_type_values;
-    if (!V8Call(constructor->Get(context, V8String(isolate, "inputArguments")),
-                input_argument_type_values))
+    if (!constructor->Get(context, V8String(isolate, "inputArguments"))
+             .ToLocal(&input_argument_type_values))
       return;
 
     if (!IsUndefinedOrNull(input_argument_type_values)) {
@@ -141,8 +141,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
 
   // Parse 'alpha' AKA hasAlpha property.
   v8::Local<v8::Value> alpha_value;
-  if (!V8Call(constructor->Get(context, V8String(isolate, "alpha")),
-              alpha_value))
+  if (!constructor->Get(context, V8String(isolate, "alpha"))
+           .ToLocal(&alpha_value))
     return;
   if (!IsUndefinedOrNull(alpha_value) && !alpha_value->IsBoolean()) {
     exception_state.ThrowTypeError(
@@ -154,8 +154,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
                        : true;
 
   v8::Local<v8::Value> prototype_value;
-  if (!V8Call(constructor->Get(context, V8String(isolate, "prototype")),
-              prototype_value))
+  if (!constructor->Get(context, V8String(isolate, "prototype"))
+           .ToLocal(&prototype_value))
     return;
 
   if (IsUndefinedOrNull(prototype_value)) {
@@ -174,7 +174,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       v8::Local<v8::Object>::Cast(prototype_value);
 
   v8::Local<v8::Value> paint_value;
-  if (!V8Call(prototype->Get(context, V8String(isolate, "paint")), paint_value))
+  if (!prototype->Get(context, V8String(isolate, "paint"))
+           .ToLocal(&paint_value))
     return;
 
   if (IsUndefinedOrNull(paint_value)) {

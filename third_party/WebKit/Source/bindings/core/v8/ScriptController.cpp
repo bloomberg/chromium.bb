@@ -128,15 +128,14 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     try_catch.SetVerbose(true);
 
     v8::Local<v8::Script> script;
-    if (!V8Call(
-            V8ScriptRunner::CompileScript(
-                source, GetIsolate(), access_control_status, v8_cache_options),
-            script, try_catch))
+    if (!V8ScriptRunner::CompileScript(source, GetIsolate(),
+                                       access_control_status, v8_cache_options)
+             .ToLocal(&script))
       return result;
 
-    if (!V8Call(V8ScriptRunner::RunCompiledScript(GetIsolate(), script,
-                                                  GetFrame()->GetDocument()),
-                result, try_catch))
+    if (!V8ScriptRunner::RunCompiledScript(GetIsolate(), script,
+                                           GetFrame()->GetDocument())
+             .ToLocal(&result))
       return result;
   }
 

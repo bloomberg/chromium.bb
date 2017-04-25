@@ -102,9 +102,9 @@ void V8HTMLConstructor::HtmlConstructor(
   // 6. Let prototype be Get(NewTarget, "prototype"). Rethrow any exceptions.
   v8::Local<v8::Value> prototype;
   v8::Local<v8::String> prototype_string = V8AtomicString(isolate, "prototype");
-  if (!V8Call(new_target.As<v8::Object>()->Get(script_state->GetContext(),
-                                               prototype_string),
-              prototype)) {
+  if (!new_target.As<v8::Object>()
+           ->Get(script_state->GetContext(), prototype_string)
+           .ToLocal(&prototype)) {
     return;
   }
 

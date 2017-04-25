@@ -274,9 +274,9 @@ Element* ScriptCustomElementDefinition::CallConstructor() {
   ExecutionContext* execution_context =
       ExecutionContext::From(script_state_.Get());
   v8::Local<v8::Value> result;
-  if (!V8Call(V8ScriptRunner::CallAsConstructor(isolate, Constructor(),
-                                                execution_context, 0, nullptr),
-              result)) {
+  if (!V8ScriptRunner::CallAsConstructor(isolate, Constructor(),
+                                         execution_context, 0, nullptr)
+           .ToLocal(&result)) {
     return nullptr;
   }
   return V8Element::toImplWithTypeCheck(isolate, result);

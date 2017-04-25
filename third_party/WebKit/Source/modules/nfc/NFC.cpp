@@ -512,7 +512,7 @@ v8::Local<v8::Value> ToV8(
           device::nfc::mojom::blink::NFCRecordType::JSON) {
         v8::Local<v8::Value> json_object;
         v8::TryCatch try_catch(isolate);
-        if (!V8Call(v8::JSON::Parse(isolate, string), json_object, try_catch)) {
+        if (!v8::JSON::Parse(isolate, string).ToLocal(&json_object)) {
           return v8::Null(isolate);
         }
 

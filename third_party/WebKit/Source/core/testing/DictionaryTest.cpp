@@ -190,7 +190,7 @@ String DictionaryTest::stringFromIterable(
       result.Append(',');
 
     v8::Local<v8::Value> value;
-    if (V8Call(iterator.GetValue(), value))
+    if (iterator.GetValue().ToLocal(&value))
       result.Append(ToCoreString(value->ToString()));
   }
 

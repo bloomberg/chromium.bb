@@ -25,9 +25,9 @@ ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
   v8::Local<v8::Module> module;
-  if (!V8Call(V8ScriptRunner::CompileModule(isolate, source, file_name,
-                                            access_control_status),
-              module, try_catch)) {
+  if (!V8ScriptRunner::CompileModule(isolate, source, file_name,
+                                     access_control_status)
+           .ToLocal(&module)) {
     // Compilation error is not used in Blink implementaion logic.
     // Note: Error message is delivered to user (e.g. console) by message
     // listeners set on v8::Isolate. See V8Initializer::initalizeMainThread().
@@ -68,10 +68,9 @@ void ScriptModule::Evaluate(ScriptState* script_state) const {
   // TODO(kouhei): We currently don't have a code-path which use return value of
   // EvaluateModule. Stop ignoring result once we have such path.
   v8::Local<v8::Value> result;
-  if (!V8Call(
-          V8ScriptRunner::EvaluateModule(module_->NewLocal(isolate),
-                                         script_state->GetContext(), isolate),
-          result, try_catch)) {
+  if (!V8ScriptRunner::EvaluateModule(module_->NewLocal(isolate),
+                                      script_state->GetContext(), isolate)
+           .ToLocal(&result)) {
     return;
   }
 }

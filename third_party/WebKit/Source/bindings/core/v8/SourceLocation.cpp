@@ -95,10 +95,8 @@ std::unique_ptr<SourceLocation> SourceLocation::FromMessage(
 
   int line_number = 0;
   int column_number = 0;
-  if (V8Call(message->GetLineNumber(isolate->GetCurrentContext()),
-             line_number) &&
-      V8Call(message->GetStartColumn(isolate->GetCurrentContext()),
-             column_number))
+  if (message->GetLineNumber(isolate->GetCurrentContext()).To(&line_number) &&
+      message->GetStartColumn(isolate->GetCurrentContext()).To(&column_number))
     ++column_number;
 
   if ((!script_id || !line_number) && stack_trace && !stack_trace->isEmpty())

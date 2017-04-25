@@ -100,7 +100,7 @@ bool ToBooleanSlow(v8::Isolate* isolate,
   DCHECK(!value->IsBoolean());
   v8::TryCatch block(isolate);
   bool result = false;
-  if (!V8Call(value->BooleanValue(isolate->GetCurrentContext()), result, block))
+  if (!value->BooleanValue(isolate->GetCurrentContext()).To(&result))
     exception_state.RethrowV8Exception(block.Exception());
   return result;
 }
@@ -193,8 +193,8 @@ static inline T ToSmallerInt(v8::Isolate* isolate,
   } else {
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
-    if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
-                block)) {
+    if (!value->ToNumber(isolate->GetCurrentContext())
+             .ToLocal(&number_object)) {
       exception_state.RethrowV8Exception(block.Exception());
       return 0;
     }
@@ -254,8 +254,8 @@ static inline T ToSmallerUInt(v8::Isolate* isolate,
   } else {
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
-    if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
-                block)) {
+    if (!value->ToNumber(isolate->GetCurrentContext())
+             .ToLocal(&number_object)) {
       exception_state.RethrowV8Exception(block.Exception());
       return 0;
     }
@@ -323,8 +323,7 @@ int32_t ToInt32Slow(v8::Isolate* isolate,
   // Can the value be converted to a number?
   v8::TryCatch block(isolate);
   v8::Local<v8::Number> number_object;
-  if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
-              block)) {
+  if (!value->ToNumber(isolate->GetCurrentContext()).ToLocal(&number_object)) {
     exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
@@ -347,8 +346,7 @@ int32_t ToInt32Slow(v8::Isolate* isolate,
     return 0;
 
   int32_t result;
-  if (!V8Call(number_object->Int32Value(isolate->GetCurrentContext()), result,
-              block)) {
+  if (!number_object->Int32Value(isolate->GetCurrentContext()).To(&result)) {
     exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
@@ -377,8 +375,7 @@ uint32_t ToUInt32Slow(v8::Isolate* isolate,
   // Can the value be converted to a number?
   v8::TryCatch block(isolate);
   v8::Local<v8::Number> number_object;
-  if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
-              block)) {
+  if (!value->ToNumber(isolate->GetCurrentContext()).ToLocal(&number_object)) {
     exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
@@ -401,8 +398,7 @@ uint32_t ToUInt32Slow(v8::Isolate* isolate,
     return 0;
 
   uint32_t result;
-  if (!V8Call(number_object->Uint32Value(isolate->GetCurrentContext()), result,
-              block)) {
+  if (!number_object->Uint32Value(isolate->GetCurrentContext()).To(&result)) {
     exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
@@ -418,8 +414,7 @@ int64_t ToInt64Slow(v8::Isolate* isolate,
   v8::Local<v8::Number> number_object;
   // Can the value be converted to a number?
   v8::TryCatch block(isolate);
-  if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
-              block)) {
+  if (!value->ToNumber(isolate->GetCurrentContext()).ToLocal(&number_object)) {
     exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
@@ -463,8 +458,7 @@ uint64_t ToUInt64Slow(v8::Isolate* isolate,
   v8::Local<v8::Number> number_object;
   // Can the value be converted to a number?
   v8::TryCatch block(isolate);
-  if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
-              block)) {
+  if (!value->ToNumber(isolate->GetCurrentContext()).ToLocal(&number_object)) {
     exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
@@ -548,8 +542,8 @@ String ToByteString(v8::Isolate* isolate,
     string_object = value.As<v8::String>();
   } else {
     v8::TryCatch block(isolate);
-    if (!V8Call(value->ToString(isolate->GetCurrentContext()), string_object,
-                block)) {
+    if (!value->ToString(isolate->GetCurrentContext())
+             .ToLocal(&string_object)) {
       exception_state.RethrowV8Exception(block.Exception());
       return String();
     }
@@ -686,8 +680,8 @@ String ToUSVString(v8::Isolate* isolate,
     string_object = value.As<v8::String>();
   } else {
     v8::TryCatch block(isolate);
-    if (!V8Call(value->ToString(isolate->GetCurrentContext()), string_object,
-                block)) {
+    if (!value->ToString(isolate->GetCurrentContext())
+             .ToLocal(&string_object)) {
       exception_state.RethrowV8Exception(block.Exception());
       return String();
     }
@@ -959,8 +953,8 @@ v8::Local<v8::Value> FromJSONString(v8::Isolate* isolate,
                                     ExceptionState& exception_state) {
   v8::Local<v8::Value> parsed;
   v8::TryCatch try_catch(isolate);
-  if (!V8Call(v8::JSON::Parse(isolate, V8String(isolate, stringified_json)),
-              parsed, try_catch)) {
+  if (!v8::JSON::Parse(isolate, V8String(isolate, stringified_json))
+           .ToLocal(&parsed)) {
     if (try_catch.HasCaught())
       exception_state.RethrowV8Exception(try_catch.Exception());
   }

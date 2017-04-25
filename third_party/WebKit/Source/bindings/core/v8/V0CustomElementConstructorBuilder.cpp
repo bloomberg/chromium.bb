@@ -266,9 +266,9 @@ bool V0CustomElementConstructorBuilder::PrototypeIsValid(
   }
 
   v8::PropertyAttribute property_attribute;
-  if (!V8Call(prototype_->GetPropertyAttributes(
-                  context, V8String(isolate, "constructor")),
-              property_attribute) ||
+  if (!prototype_
+           ->GetPropertyAttributes(context, V8String(isolate, "constructor"))
+           .To(&property_attribute) ||
       (property_attribute & v8::DontDelete)) {
     V0CustomElementException::ThrowException(
         V0CustomElementException::kConstructorPropertyNotConfigurable, type,

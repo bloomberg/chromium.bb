@@ -80,10 +80,10 @@ DictionaryIterator Dictionary::GetIterator(
       !iterator_getter->IsFunction())
     return nullptr;
   v8::Local<v8::Value> iterator;
-  if (!V8Call(V8ScriptRunner::CallFunction(
-                  v8::Local<v8::Function>::Cast(iterator_getter),
-                  execution_context, dictionary_object_, 0, nullptr, isolate_),
-              iterator))
+  if (!V8ScriptRunner::CallFunction(
+           v8::Local<v8::Function>::Cast(iterator_getter), execution_context,
+           dictionary_object_, 0, nullptr, isolate_)
+           .ToLocal(&iterator))
     return nullptr;
   if (!iterator->IsObject())
     return nullptr;

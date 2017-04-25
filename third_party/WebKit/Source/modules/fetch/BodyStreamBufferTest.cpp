@@ -41,14 +41,14 @@ class BodyStreamBufferTest : public ::testing::Test {
     v8::Local<v8::Script> script;
     v8::MicrotasksScope microtasks(script_state->GetIsolate(),
                                    v8::MicrotasksScope::kDoNotRunMicrotasks);
-    if (!V8Call(v8::String::NewFromUtf8(script_state->GetIsolate(), s,
-                                        v8::NewStringType::kNormal),
-                source)) {
+    if (!v8::String::NewFromUtf8(script_state->GetIsolate(), s,
+                                 v8::NewStringType::kNormal)
+             .ToLocal(&source)) {
       ADD_FAILURE();
       return ScriptValue();
     }
-    if (!V8Call(v8::Script::Compile(script_state->GetContext(), source),
-                script)) {
+    if (!v8::Script::Compile(script_state->GetContext(), source)
+             .ToLocal(&script)) {
       ADD_FAILURE() << "Compilation fails";
       return ScriptValue();
     }

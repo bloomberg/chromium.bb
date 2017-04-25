@@ -123,8 +123,7 @@ unsigned V8NodeFilterCondition::AcceptNode(
   DCHECK(!result.IsEmpty());
 
   uint32_t uint32_value;
-  if (!V8Call(result->Uint32Value(script_state_->GetContext()), uint32_value,
-              exception_catcher)) {
+  if (!result->Uint32Value(script_state_->GetContext()).To(&uint32_value)) {
     exception_state.RethrowV8Exception(exception_catcher.Exception());
     return NodeFilter::kFilterReject;
   }

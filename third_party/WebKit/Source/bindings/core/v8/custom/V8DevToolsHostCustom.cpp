@@ -99,7 +99,7 @@ static bool PopulateContextMenuItems(v8::Isolate* isolate,
       menu.AppendItem(item);
     } else {
       int32_t int32_id;
-      if (!V8Call(id->Int32Value(context), int32_id))
+      if (!id->Int32Value(context).To(&int32_id))
         return false;
       ContextMenuAction typed_id = static_cast<ContextMenuAction>(
           kContextMenuItemBaseCustomTag + int32_id);
