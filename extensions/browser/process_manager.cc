@@ -248,7 +248,9 @@ ProcessManager::ProcessManager(BrowserContext* context,
   content::DevToolsAgentHost::AddObserver(this);
 }
 
-ProcessManager::~ProcessManager() = default;
+ProcessManager::~ProcessManager() {
+  content::DevToolsAgentHost::RemoveObserver(this);
+}
 
 void ProcessManager::Shutdown() {
   extension_registry_->RemoveObserver(this);
