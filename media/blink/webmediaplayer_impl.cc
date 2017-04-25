@@ -880,9 +880,7 @@ void WebMediaPlayerImpl::Paint(blink::WebCanvas* canvas,
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
 
-  // TODO(sandersd): Move this check into GetCurrentFrameFromCompositor() when
-  // we have other ways to check if decoder owns video frame.
-  // See http://crbug.com/595716 and http://crbug.com/602708
+  // We can't copy from protected frames.
   if (cdm_)
     return;
 
@@ -958,9 +956,7 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:copyVideoTextureToPlatformTexture");
 
-  // TODO(sandersd): Move this check into GetCurrentFrameFromCompositor() when
-  // we have other ways to check if decoder owns video frame.
-  // See http://crbug.com/595716 and http://crbug.com/602708
+  // We can't copy from protected frames.
   if (cdm_)
     return false;
 

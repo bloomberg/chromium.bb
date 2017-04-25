@@ -56,7 +56,7 @@ DecoderStream<StreamType>::DecoderStream(
       decoder_selector_(new DecoderSelector<StreamType>(task_runner,
                                                         std::move(decoders),
                                                         media_log)),
-      decoded_frames_since_fallback_(0),
+      decoder_produced_a_frame_(false),
       decoding_eos_(false),
       pending_decode_requests_(0),
       duration_tracker_(8),
@@ -284,8 +284,6 @@ void DecoderStream<StreamType>::OnDecoderSelected(
     DCHECK(decoder_);
   }
 
-  previous_decoder_ = std::move(decoder_);
-  decoded_frames_since_fallback_ = 0;
   decoder_ = std::move(selected_decoder);
   if (decrypting_demuxer_stream) {
     decrypting_demuxer_stream_ = std::move(decrypting_demuxer_stream);
@@ -346,7 +344,7 @@ void DecoderStream<StreamType>::Decode(
 
   // We don't know if the decoder will error out on first decode yet. Save the
   // buffer to feed it to the fallback decoder later if needed.
-  if (!decoded_frames_since_fallback_)
+  if (!decoder_produced_a_frame_)
     pending_buffers_.push_back(buffer);
 
   // It's possible for a buffer to arrive from the demuxer right after the
@@ -431,10 +429,10 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
 
   switch (status) {
     case DecodeStatus::DECODE_ERROR:
-      if (!decoded_frames_since_fallback_) {
+      if (!decoder_produced_a_frame_) {
         pending_decode_requests_ = 0;
 
-        // Prevent all pending decode requests and outputs form those requests
+        // Prevent all pending decode requests and outputs from those requests
         // from being called back.
         fallback_weak_factory_.InvalidateWeakPtrs();
 
@@ -500,9 +498,8 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
   if (!reset_cb_.is_null())
     return;
 
+  decoder_produced_a_frame_ = true;
   traits_.OnDecodeDone(output);
-
-  ++decoded_frames_since_fallback_;
 
   // |decoder_| sucessfully decoded a frame. No need to keep buffers for a
   // fallback decoder.
@@ -520,13 +517,6 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
 
   // Store decoded output.
   ready_outputs_.push_back(output);
-
-  // Destruct any previous decoder once we've decoded enough frames to ensure
-  // that it's no longer in use.
-  if (previous_decoder_ &&
-      decoded_frames_since_fallback_ > limits::kMaxVideoFrames) {
-    previous_decoder_.reset();
-  }
 }
 
 template <DemuxerStream::Type StreamType>
@@ -564,9 +554,7 @@ void DecoderStream<StreamType>::OnBufferReady(
 
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(pending_demuxer_read_);
-  if (decoded_frames_since_fallback_) {
-    DCHECK(pending_demuxer_read_ || state_ == STATE_ERROR) << state_;
-  } else {
+  if (!decoder_produced_a_frame_) {
     DCHECK(state_ == STATE_ERROR || state_ == STATE_REINITIALIZING_DECODER ||
            state_ == STATE_NORMAL)
         << state_;
@@ -577,8 +565,7 @@ void DecoderStream<StreamType>::OnBufferReady(
   // If parallel decode requests are supported, multiple read requests might
   // have been sent to the demuxer. The buffers might arrive while the decoder
   // is reinitializing after falling back on first decode error.
-  if (state_ == STATE_REINITIALIZING_DECODER &&
-      !decoded_frames_since_fallback_) {
+  if (state_ == STATE_REINITIALIZING_DECODER && !decoder_produced_a_frame_) {
     switch (status) {
       case DemuxerStream::kOk:
         // Save valid buffers to be consumed by the new decoder.

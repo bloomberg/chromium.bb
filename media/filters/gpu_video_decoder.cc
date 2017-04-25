@@ -679,9 +679,6 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
     frame->metadata()->SetBoolean(VideoFrameMetadata::WANTS_PROMOTION_HINT,
                                   true);
   }
-#if defined(OS_WIN)
-  frame->metadata()->SetBoolean(VideoFrameMetadata::DECODER_OWNS_FRAME, true);
-#endif
 
   if (requires_texture_copy_)
     frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);

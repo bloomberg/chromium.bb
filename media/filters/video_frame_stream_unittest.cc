@@ -977,7 +977,6 @@ TEST_P(VideoFrameStreamTest, FallbackDecoder_PendingBuffersIsFilledAndCleared) {
   EXPECT_EQ(0, video_frame_stream_->get_fallback_buffers_size_for_testing());
   EXPECT_EQ(demuxer_reads_satisfied,
             video_frame_stream_->get_pending_buffers_size_for_testing());
-  EXPECT_EQ(video_frame_stream_->get_previous_decoder_for_testing(), decoder1_);
   EXPECT_TRUE(pending_read_);
 
   // Give the decoder one more buffer, enough to release a frame.
@@ -1083,15 +1082,9 @@ TEST_P(VideoFrameStreamTest, DecoderErrorWhenNotReading) {
 TEST_P(VideoFrameStreamTest, FallbackDecoderSelectedOnFailureToReinitialize) {
   Initialize();
   decoder1_->SimulateFailureToInit();
-  // Holding decode, because large decoder delays might cause us to get rid of
-  // |previous_decoder_| before we are in a pending state again.
-  decoder2_->HoldDecode();
   ReadUntilDecoderReinitialized(decoder1_);
-  ASSERT_TRUE(video_frame_stream_->get_previous_decoder_for_testing());
-  decoder2_->SatisfyDecode();
-  base::RunLoop().RunUntilIdle();
   ReadAllFrames();
-  ASSERT_FALSE(video_frame_stream_->get_previous_decoder_for_testing());
+  ASSERT_GT(decoder2_->total_bytes_decoded(), 0);
 }
 
 TEST_P(VideoFrameStreamTest,
