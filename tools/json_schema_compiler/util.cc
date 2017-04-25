@@ -72,7 +72,7 @@ bool PopulateItem(const base::Value& from, std::vector<char>* out) {
   const base::Value* binary = nullptr;
   if (!from.GetAsBinary(&binary))
     return false;
-  out->assign(binary->GetBuffer(), binary->GetBuffer() + binary->GetSize());
+  *out = binary->GetBlob();
   return true;
 }
 
@@ -82,7 +82,7 @@ bool PopulateItem(const base::Value& from,
   const base::Value* binary = nullptr;
   if (!from.GetAsBinary(&binary))
     return ReportError(from, base::Value::Type::BINARY, error);
-  out->assign(binary->GetBuffer(), binary->GetBuffer() + binary->GetSize());
+  *out = binary->GetBlob();
   return true;
 }
 

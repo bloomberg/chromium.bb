@@ -169,8 +169,8 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
       return "";
     }
 
-    return std::string(result_binary_value->GetBuffer(),
-                       result_binary_value->GetSize());
+    return std::string(result_binary_value->GetBlob().data(),
+                       result_binary_value->GetBlob().size());
   }
 
   chromeos::EasyUnlockClient* client_;
@@ -200,8 +200,8 @@ TEST_F(EasyUnlockPrivateApiTest, GenerateEcP256KeyPair) {
   ASSERT_TRUE(private_key);
 
   EXPECT_TRUE(chromeos::FakeEasyUnlockClient::IsEcP256KeyPair(
-      std::string(private_key->GetBuffer(), private_key->GetSize()),
-      std::string(public_key->GetBuffer(), public_key->GetSize())));
+      std::string(private_key->GetBlob().data(), private_key->GetBlob().size()),
+      std::string(public_key->GetBlob().data(), public_key->GetBlob().size())));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, PerformECDHKeyAgreement) {

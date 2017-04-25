@@ -76,9 +76,7 @@ void StoreDigest(std::vector<uint8_t>* digest,
   const bool is_binary = value->GetAsBinary(&binary);
   EXPECT_TRUE(is_binary) << "Unexpected value in StoreDigest";
   if (is_binary) {
-    const uint8_t* const binary_begin =
-        reinterpret_cast<const uint8_t*>(binary->GetBuffer());
-    digest->assign(binary_begin, binary_begin + binary->GetSize());
+    digest->assign(binary->GetBlob().begin(), binary->GetBlob().end());
   }
 
   callback.Run();

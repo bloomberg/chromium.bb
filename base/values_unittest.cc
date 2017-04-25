@@ -442,25 +442,26 @@ TEST(ValuesTest, BinaryValue) {
   // Default constructor creates a BinaryValue with a buffer of size 0.
   auto binary = MakeUnique<Value>(Value::Type::BINARY);
   ASSERT_TRUE(binary.get());
-  ASSERT_EQ(0U, binary->GetSize());
+  ASSERT_TRUE(binary->GetBlob().empty());
 
   // Test the common case of a non-empty buffer
   Value::BlobStorage buffer(15);
   char* original_buffer = buffer.data();
   binary.reset(new Value(std::move(buffer)));
   ASSERT_TRUE(binary.get());
-  ASSERT_TRUE(binary->GetBuffer());
-  ASSERT_EQ(original_buffer, binary->GetBuffer());
-  ASSERT_EQ(15U, binary->GetSize());
+  ASSERT_TRUE(binary->GetBlob().data());
+  ASSERT_EQ(original_buffer, binary->GetBlob().data());
+  ASSERT_EQ(15U, binary->GetBlob().size());
 
   char stack_buffer[42];
   memset(stack_buffer, '!', 42);
   binary = Value::CreateWithCopiedBuffer(stack_buffer, 42);
   ASSERT_TRUE(binary.get());
-  ASSERT_TRUE(binary->GetBuffer());
-  ASSERT_NE(stack_buffer, binary->GetBuffer());
-  ASSERT_EQ(42U, binary->GetSize());
-  ASSERT_EQ(0, memcmp(stack_buffer, binary->GetBuffer(), binary->GetSize()));
+  ASSERT_TRUE(binary->GetBlob().data());
+  ASSERT_NE(stack_buffer, binary->GetBlob().data());
+  ASSERT_EQ(42U, binary->GetBlob().size());
+  ASSERT_EQ(0, memcmp(stack_buffer, binary->GetBlob().data(),
+                      binary->GetBlob().size()));
 
   // Test overloaded GetAsBinary.
   Value* narrow_value = binary.get();
@@ -754,10 +755,8 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_binary);
   ASSERT_NE(copy_binary, original_binary);
   ASSERT_TRUE(copy_binary->IsType(Value::Type::BINARY));
-  ASSERT_NE(original_binary->GetBuffer(), copy_binary->GetBuffer());
-  ASSERT_EQ(original_binary->GetSize(), copy_binary->GetSize());
-  ASSERT_EQ(0, memcmp(original_binary->GetBuffer(), copy_binary->GetBuffer(),
-                      original_binary->GetSize()));
+  ASSERT_NE(original_binary->GetBlob().data(), copy_binary->GetBlob().data());
+  ASSERT_EQ(original_binary->GetBlob(), copy_binary->GetBlob());
 
   Value* copy_value = NULL;
   ASSERT_TRUE(copy_dict->Get("list", &copy_value));

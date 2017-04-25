@@ -244,14 +244,6 @@ const Value::ListStorage& Value::GetList() const {
   return *list_;
 }
 
-size_t Value::GetSize() const {
-  return GetBlob().size();
-}
-
-const char* Value::GetBuffer() const {
-  return GetBlob().data();
-}
-
 bool Value::GetAsBoolean(bool* out_value) const {
   if (out_value && is_bool()) {
     *out_value = bool_value_;

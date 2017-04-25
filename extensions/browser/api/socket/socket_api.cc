@@ -539,8 +539,8 @@ bool SocketWriteFunction::Prepare() {
   base::Value* data = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
 
-  io_buffer_size_ = data->GetSize();
-  io_buffer_ = new net::WrappedIOBuffer(data->GetBuffer());
+  io_buffer_size_ = data->GetBlob().size();
+  io_buffer_ = new net::WrappedIOBuffer(data->GetBlob().data());
   return true;
 }
 
@@ -627,8 +627,8 @@ bool SocketSendToFunction::Prepare() {
   }
   port_ = static_cast<uint16_t>(port);
 
-  io_buffer_size_ = data->GetSize();
-  io_buffer_ = new net::WrappedIOBuffer(data->GetBuffer());
+  io_buffer_size_ = data->GetBlob().size();
+  io_buffer_ = new net::WrappedIOBuffer(data->GetBlob().data());
   return true;
 }
 

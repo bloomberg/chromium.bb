@@ -49,8 +49,8 @@ bool MessageInfoToCastMessage(const MessageInfo& message,
     // JS ArrayBuffer
     case base::Value::Type::BINARY:
       message_proto->set_payload_type(CastMessage_PayloadType_BINARY);
-      message_proto->set_payload_binary(message.data->GetBuffer(),
-                                        message.data->GetSize());
+      message_proto->set_payload_binary(message.data->GetBlob().data(),
+                                        message.data->GetBlob().size());
       break;
     default:
       // Unknown value type.  message_proto will remain uninitialized because

@@ -177,8 +177,8 @@ struct UnionTraits<common::mojom::ValueDataView, base::Value> {
     if (!value.GetAsBinary(&binary_value))
       NOTREACHED();
     return mojo::ConstCArray<uint8_t>(
-        binary_value->GetSize(),
-        reinterpret_cast<const uint8_t*>(binary_value->GetBuffer()));
+        binary_value->GetBlob().size(),
+        reinterpret_cast<const uint8_t*>(binary_value->GetBlob().data()));
   }
 
   static const base::ListValue& list_value(const base::Value& value) {

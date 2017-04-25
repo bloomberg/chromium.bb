@@ -137,9 +137,6 @@ class BASE_EXPORT Value {
   ListStorage& GetList();
   const ListStorage& GetList() const;
 
-  size_t GetSize() const;         // DEPRECATED, use GetBlob().size() instead.
-  const char* GetBuffer() const;  // DEPRECATED, use GetBlob().data() instead.
-
   // These methods allow the convenient retrieval of the contents of the Value.
   // If the current object can be converted into the given type, the value is
   // returned through the |out_value| parameter and true is returned;

@@ -392,8 +392,8 @@ TEST_F(EPKChallengeMachineKeyTest, Success) {
 
   const base::Value* response;
   ASSERT_TRUE(value->GetAsBinary(&response));
-  EXPECT_EQ("response",
-            std::string(response->GetBuffer(), response->GetSize()));
+  EXPECT_EQ("response", std::string(response->GetBlob().data(),
+                                    response->GetBlob().size()));
 }
 
 TEST_F(EPKChallengeMachineKeyTest, KeyRegisteredSuccess) {
@@ -422,8 +422,8 @@ TEST_F(EPKChallengeMachineKeyTest, KeyRegisteredSuccess) {
 
   const base::Value* response;
   ASSERT_TRUE(value->GetAsBinary(&response));
-  EXPECT_EQ("response",
-            std::string(response->GetBuffer(), response->GetSize()));
+  EXPECT_EQ("response", std::string(response->GetBlob().data(),
+                                    response->GetBlob().size()));
 }
 
 TEST_F(EPKChallengeMachineKeyTest, AttestationNotPrepared) {
@@ -597,8 +597,8 @@ TEST_F(EPKChallengeUserKeyTest, Success) {
 
   const base::Value* response;
   ASSERT_TRUE(value->GetAsBinary(&response));
-  EXPECT_EQ("response",
-            std::string(response->GetBuffer(), response->GetSize()));
+  EXPECT_EQ("response", std::string(response->GetBlob().data(),
+                                    response->GetBlob().size()));
 }
 
 TEST_F(EPKChallengeUserKeyTest, AttestationNotPrepared) {

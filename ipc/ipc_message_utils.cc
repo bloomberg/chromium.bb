@@ -110,7 +110,7 @@ void GetValueSize(base::PickleSizer* sizer,
       break;
     }
     case base::Value::Type::BINARY: {
-      sizer->AddData(static_cast<int>(value->GetSize()));
+      sizer->AddData(static_cast<int>(value->GetBlob().size()));
       break;
     }
     case base::Value::Type::DICTIONARY: {
@@ -178,7 +178,8 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
       break;
     }
     case base::Value::Type::BINARY: {
-      m->WriteData(value->GetBuffer(), static_cast<int>(value->GetSize()));
+      m->WriteData(value->GetBlob().data(),
+                   static_cast<int>(value->GetBlob().size()));
       break;
     }
     case base::Value::Type::DICTIONARY: {

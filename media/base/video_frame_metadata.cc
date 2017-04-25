@@ -111,7 +111,8 @@ bool VideoFrameMetadata::GetString(Key key, std::string* value) const {
   DCHECK(value);
   const base::Value* const binary_value = GetBinaryValue(key);
   if (binary_value)
-    value->assign(binary_value->GetBuffer(), binary_value->GetSize());
+    value->assign(binary_value->GetBlob().data(),
+                  binary_value->GetBlob().size());
   return !!binary_value;
 }
 
@@ -120,9 +121,10 @@ template <class TimeType>
 bool ToTimeValue(const base::Value& binary_value, TimeType* value) {
   DCHECK(value);
   int64_t internal_value;
-  if (binary_value.GetSize() != sizeof(internal_value))
+  if (binary_value.GetBlob().size() != sizeof(internal_value))
     return false;
-  memcpy(&internal_value, binary_value.GetBuffer(), sizeof(internal_value));
+  memcpy(&internal_value, binary_value.GetBlob().data(),
+         sizeof(internal_value));
   *value = TimeType::FromInternalValue(internal_value);
   return true;
 }
