@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_EQUALS_TRAITS_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_EQUALS_TRAITS_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_EQUALS_TRAITS_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_EQUALS_TRAITS_H_
 
 #include <type_traits>
 #include <unordered_map>
@@ -13,7 +13,10 @@
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 
 namespace mojo {
-namespace internal {
+
+// EqualsTraits<> allows you to specify comparison functions for mapped mojo
+// objects. By default objects can be compared if they implement operator==()
+// or have a method named Equals().
 
 template <typename T>
 struct HasEqualsMethod {
@@ -24,7 +27,7 @@ struct HasEqualsMethod {
   static const bool value = sizeof(Test<T>(0)) == sizeof(char);
 
  private:
-  EnsureTypeIsComplete<T> check_t_;
+  internal::EnsureTypeIsComplete<T> check_t_;
 };
 
 template <typename T, bool has_equals_method = HasEqualsMethod<T>::value>
@@ -51,7 +54,9 @@ struct EqualsTraits<base::Optional<T>, false> {
     if (!a || !b)
       return false;
 
-    return internal::Equals(*a, *b);
+    // NOTE: Not just Equals() because that's EqualsTraits<>::Equals() and we
+    // want mojo::Equals() for things like base::Optional<std::vector<T>>.
+    return mojo::Equals(*a, *b);
   }
 };
 
@@ -61,7 +66,7 @@ struct EqualsTraits<std::vector<T>, false> {
     if (a.size() != b.size())
       return false;
     for (size_t i = 0; i < a.size(); ++i) {
-      if (!internal::Equals(a[i], b[i]))
+      if (!mojo::Equals(a[i], b[i]))
         return false;
     }
     return true;
@@ -76,7 +81,7 @@ struct EqualsTraits<std::unordered_map<K, V>, false> {
       return false;
     for (const auto& element : a) {
       auto iter = b.find(element.first);
-      if (iter == b.end() || !internal::Equals(element.second, iter->second))
+      if (iter == b.end() || !mojo::Equals(element.second, iter->second))
         return false;
     }
     return true;
@@ -88,7 +93,6 @@ bool Equals(const T& a, const T& b) {
   return EqualsTraits<T>::Equals(a, b);
 }
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_EQUALS_TRAITS_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_EQUALS_TRAITS_H_
