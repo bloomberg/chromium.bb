@@ -340,6 +340,37 @@ TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
   EXPECT_EQ(Button::STATE_HOVERED, menu_button_listener.last_source_state());
 }
 
+// Tests that the ink drop center point is set from the mouse click point.
+TEST_F(MenuButtonTest, InkDropCenterSetFromClick) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+
+  gfx::Point click_point(6, 8);
+  generator()->MoveMouseTo(click_point);
+  generator()->ClickLeftButton();
+
+  EXPECT_EQ(button(), menu_button_listener.last_source());
+  EXPECT_EQ(
+      click_point,
+      InkDropHostViewTestApi(button()).GetInkDropCenterBasedOnLastEvent());
+}
+
+// Tests that the ink drop center point is set from the PressedLock constructor.
+TEST_F(MenuButtonTest, InkDropCenterSetFromClickWithPressedLock) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+
+  gfx::Point click_point(11, 7);
+  ui::MouseEvent click_event(ui::EventType::ET_MOUSE_PRESSED, click_point,
+                             click_point, base::TimeTicks(), 0, 0);
+  MenuButton::PressedLock pressed_lock(button(), false, &click_event);
+
+  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  EXPECT_EQ(
+      click_point,
+      InkDropHostViewTestApi(button()).GetInkDropCenterBasedOnLastEvent());
+}
+
 // Test that the MenuButton stays pressed while there are any PressedLocks.
 TEST_F(MenuButtonTest, ButtonStateForMenuButtonsWithPressedLocks) {
   // Similarly for aura-mus-client the location of the cursor is not updated by

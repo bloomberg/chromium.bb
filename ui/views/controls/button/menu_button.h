@@ -32,7 +32,10 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   class VIEWS_EXPORT PressedLock {
    public:
     explicit PressedLock(MenuButton* menu_button);
-    PressedLock(MenuButton* menu_button, bool is_sibling_menu_show);
+    // |event| is the event that caused the button to be pressed. May be null.
+    PressedLock(MenuButton* menu_button,
+                bool is_sibling_menu_show,
+                const ui::LocatedEvent* event);
     ~PressedLock();
 
    private:
@@ -108,8 +111,10 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // Increment/decrement the number of "pressed" locks this button has, and
   // set the state accordingly. The ink drop is snapped to the final ACTIVATED
   // state if |snap_ink_drop_to_activated| is true, otherwise the ink drop will
-  // be animated to the ACTIVATED node_data.
-  void IncrementPressedLocked(bool snap_ink_drop_to_activated);
+  // be animated to the ACTIVATED node_data. The ink drop is animated at the
+  // location of |event| if non-null, otherwise at the default location.
+  void IncrementPressedLocked(bool snap_ink_drop_to_activated,
+                              const ui::LocatedEvent* event);
   void DecrementPressedLocked();
 
   // Compute the maximum X coordinate for the current screen. MenuButtons
