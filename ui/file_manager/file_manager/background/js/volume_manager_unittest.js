@@ -245,7 +245,7 @@ function testGetLocationInfo(callback) {
             new MockFileSystem('download:Downloads'),
             '/foo/bar/bla.zip');
         var downloadLocationInfo = volumeManager.getLocationInfo(downloadEntry);
-        assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS,
+        assertEquals(VolumeManagerCommon.RootType.DOWNLOADS,
             downloadLocationInfo.rootType);
         assertFalse(downloadLocationInfo.isReadOnly);
         assertFalse(downloadLocationInfo.isRootEntry);
@@ -254,7 +254,7 @@ function testGetLocationInfo(callback) {
             new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
             '/root');
         var driveLocationInfo = volumeManager.getLocationInfo(driveEntry);
-        assertEquals(VolumeManagerCommon.VolumeType.DRIVE,
+        assertEquals(VolumeManagerCommon.RootType.DRIVE,
             driveLocationInfo.rootType);
         assertFalse(driveLocationInfo.isReadOnly);
         assertTrue(driveLocationInfo.isRootEntry);
