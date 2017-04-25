@@ -7,11 +7,13 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
@@ -31,12 +33,16 @@
 namespace favicon {
 namespace {
 
+// This feature is only used for accessing field trial parameters, not for
+// switching on/off the code.
+const base::Feature kLargeIconServiceFetchingFeature{
+    "LargeIconServiceFetching", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const char kGoogleServerV2RequestFormat[] =
     "https://t0.gstatic.com/faviconV2?"
-    "client=chrome&drop_404_icon=true&size=%d&min_size=%d&max_size=%d&"
+    "client=chrome&drop_404_icon=true&size=32&min_size=%d&max_size=64&"
     "fallback_opts=TYPE,SIZE,URL&url=%s";
-const int kGoogleServerV2MaxSizeInPixel = 128;
-const int kGoogleServerV2DesiredSizeInPixel = 64;
+const char kGoogleServerV2RequestFormatParam[] = "request_format";
 
 GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
   if (!page_url.SchemeIsHTTPOrHTTPS() || page_url.HostIsIPAddress())
@@ -52,10 +58,12 @@ GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
 
 GURL GetRequestUrlForGoogleServerV2(const GURL& page_url,
                                     int min_source_size_in_pixel) {
+  std::string url_format = base::GetFieldTrialParamValueByFeature(
+      kLargeIconServiceFetchingFeature, kGoogleServerV2RequestFormatParam);
+
   return GURL(base::StringPrintf(
-      kGoogleServerV2RequestFormat, kGoogleServerV2DesiredSizeInPixel,
-      min_source_size_in_pixel, kGoogleServerV2MaxSizeInPixel,
-      page_url.spec().c_str()));
+      url_format.empty() ? kGoogleServerV2RequestFormat : url_format.c_str(),
+      min_source_size_in_pixel, page_url.spec().c_str()));
 }
 
 bool IsDbResultAdequate(const favicon_base::FaviconRawBitmapResult& db_result,
@@ -321,7 +329,8 @@ void LargeIconService::
 
   // Do not download if the URL is invalid after trimming, or there is a
   // previous cache miss recorded for |server_request_url|.
-  if (!trimmed_page_url.is_valid() || !image_fetcher_ ||
+  if (!server_request_url.is_valid() || !trimmed_page_url.is_valid() ||
+      !image_fetcher_ ||
       favicon_service_->WasUnableToDownloadFavicon(server_request_url)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, false));
