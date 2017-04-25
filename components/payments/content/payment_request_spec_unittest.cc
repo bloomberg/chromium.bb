@@ -68,12 +68,12 @@ TEST_F(PaymentRequestSpecTest, IsMethodSupportedThroughBasicCard) {
 
   RecreateSpecWithMethodData(std::move(method_data));
 
-  // Only unionpay and jcb are supported through basic-card.
+  // unionpay and jcb are supported through basic-card. visa is supported
+  // through basic card because it was specified in basic-card in addition to
+  // supportedMethods.
   EXPECT_TRUE(spec()->IsMethodSupportedThroughBasicCard("unionpay"));
   EXPECT_TRUE(spec()->IsMethodSupportedThroughBasicCard("jcb"));
-  // "visa" is NOT supported through basic card because it was specified
-  // directly first in supportedMethods.
-  EXPECT_FALSE(spec()->IsMethodSupportedThroughBasicCard("visa"));
+  EXPECT_TRUE(spec()->IsMethodSupportedThroughBasicCard("visa"));
   EXPECT_FALSE(spec()->IsMethodSupportedThroughBasicCard("mastercard"));
   EXPECT_FALSE(spec()->IsMethodSupportedThroughBasicCard("diners"));
   EXPECT_FALSE(spec()->IsMethodSupportedThroughBasicCard("garbage"));
