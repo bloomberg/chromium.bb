@@ -2280,6 +2280,12 @@
     <message name="IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK" desc="The text on the checkbox to enable screenlocker for current user.">
       Show lock screen when waking from sleep
     </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_HIGH_SECURITY" desc="Text on the lock screen which indicates an unlock method is high security.">
+      High security
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_MEDIUM_SECURITY" desc="Text on the lock screen which indicates an unlock method is medium security.">
+      Medium security
+    </message>
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE" desc="Text on the people page which opens up the quick unlock subpage and the title of the quick unlock subpage.">
       Screen lock
     </message>

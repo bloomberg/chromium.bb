@@ -218,7 +218,7 @@ Polymer({
 
   /** @private */
   onSetupPinClosed_: function() {
-    this.$$('#setupPinLink').focus();
+    this.$$('#setupPinButton').focus();
   },
 
   /**

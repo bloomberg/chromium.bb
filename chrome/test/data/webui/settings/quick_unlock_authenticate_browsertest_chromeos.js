@@ -146,7 +146,6 @@ cr.define('settings_people_page_quick_unlock', function() {
       var passwordRadioButton = null;
       var pinPasswordRadioButton = null;
       var noneRadioButton = null;
-      var configureButton = null;
 
       /**
        * Asserts that only the given radio button is active and all of the
@@ -185,6 +184,12 @@ cr.define('settings_people_page_quick_unlock', function() {
        */
       function setLockScreenPref(value) {
         fakeSettings.setPref(ENABLE_LOCK_SCREEN_PREF, value, '', assertTrue);
+      }
+
+      function isSetupPinButtonVisible() {
+        Polymer.dom.flush();
+        var setupPinButton = element.$$('#setupPinButton');
+        return isVisible(setupPinButton);
       }
 
       setup(function(done) {
@@ -229,7 +234,6 @@ cr.define('settings_people_page_quick_unlock', function() {
               getFromElement('paper-radio-button[name="password"]');
           pinPasswordRadioButton =
               getFromElement('paper-radio-button[name="pin+password"]');
-          configureButton = getFromElement('a[is="action-link"]');
 
           done();
         });
@@ -252,7 +256,7 @@ cr.define('settings_people_page_quick_unlock', function() {
           // Tap pin+password button.
           MockInteractions.tap(pinPasswordRadioButton);
           assertRadioButtonActive(pinPasswordRadioButton);
-          assertTrue(isVisible(configureButton));
+          assertTrue(isSetupPinButtonVisible());
           assertDeepEquals([], quickUnlockPrivateApi.activeModes);
 
           // Enable quick unlock so that we verify tapping password disables it.
@@ -261,7 +265,7 @@ cr.define('settings_people_page_quick_unlock', function() {
           // Tap password button and verify quick unlock is disabled.
           MockInteractions.tap(passwordRadioButton);
           assertRadioButtonActive(passwordRadioButton);
-          assertFalse(isVisible(configureButton));
+          assertFalse(isSetupPinButtonVisible());
           assertDeepEquals([], quickUnlockPrivateApi.activeModes);
         }
 
@@ -281,7 +285,7 @@ cr.define('settings_people_page_quick_unlock', function() {
       test('EnablingQuickUnlockChangesButtonState', function() {
         setActiveModes([QuickUnlockMode.PIN]);
         assertRadioButtonActive(pinPasswordRadioButton);
-        assertTrue(isVisible(configureButton));
+        assertTrue(isSetupPinButtonVisible());
 
         setActiveModes([]);
         assertRadioButtonActive(passwordRadioButton);
@@ -296,10 +300,11 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertRadioButtonActive(passwordRadioButton);
 
         MockInteractions.tap(pinPasswordRadioButton);
-        assertTrue(isVisible(configureButton));
+        assertTrue(isSetupPinButtonVisible());
         assertRadioButtonActive(pinPasswordRadioButton)
 
-        MockInteractions.tap(configureButton);
+        Polymer.dom.flush();
+        MockInteractions.tap(getFromElement('#setupPinButton'));
         var setupPinDialog = getFromElement('#setupPin');
         assertTrue(setupPinDialog.$.dialog.open);
         assertEquals(1, fakeUma.getHistogramValue(
