@@ -60,7 +60,7 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
     return 'rasterize_and_record_micro.top_25'
 
 
-@benchmark.Disabled('mac', 'win', 'android')  # http://crbug.com/531597
+@benchmark.Disabled('all')  # http://crbug.com/531597
 class RasterizeAndRecordMicroKeyMobileSites(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the key mobile sites.
 
