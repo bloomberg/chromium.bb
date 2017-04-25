@@ -15,9 +15,9 @@ PASS document.styleSheets[0].cssRules[3].type is CSSRule.MEDIA_RULE
 FAIL document.styleSheets[0].cssRules[3].cssRules.foo should be bar (of type string). Was undefined (of type undefined).
 PASS document.styleSheets[0].cssRules[3].type is CSSRule.MEDIA_RULE
 FAIL document.styleSheets[0].cssRules[3].media.foo should be bar (of type string). Was undefined (of type undefined).
-PASS document.styleSheets[0].cssRules[4].type is CSSRule.WEBKIT_KEYFRAMES_RULE
+PASS document.styleSheets[0].cssRules[4].type is CSSRule.KEYFRAMES_RULE
 FAIL document.styleSheets[0].cssRules[4].cssRules.foo should be bar (of type string). Was undefined (of type undefined).
-PASS document.styleSheets[0].cssRules[4].cssRules[0].type is CSSRule.WEBKIT_KEYFRAME_RULE
+PASS document.styleSheets[0].cssRules[4].cssRules[0].type is CSSRule.KEYFRAME_RULE
 FAIL document.styleSheets[0].cssRules[4].cssRules[0].style.foo should be bar (of type string). Was undefined (of type undefined).
 PASS document.styleSheets[0].cssRules[5].type is CSSRule.PAGE_RULE
 FAIL document.styleSheets[0].cssRules[5].style.foo should be bar (of type string). Was undefined (of type undefined).

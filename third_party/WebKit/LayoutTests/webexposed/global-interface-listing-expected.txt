@@ -664,8 +664,6 @@ interface CSSRule
     attribute STYLE_RULE
     attribute SUPPORTS_RULE
     attribute VIEWPORT_RULE
-    attribute WEBKIT_KEYFRAMES_RULE
-    attribute WEBKIT_KEYFRAME_RULE
     getter cssText
     getter parentRule
     getter parentStyleSheet

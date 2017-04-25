@@ -277,7 +277,7 @@ ProgressCenterPanel.getToggleAnimation_ = function(document) {
     var styleSheet = document.styleSheets[i];
     for (var j = 0; j < styleSheet.cssRules.length; j++) {
       var rule = styleSheet.cssRules[j];
-      if (rule.type === CSSRule.WEBKIT_KEYFRAMES_RULE &&
+      if (rule.type === CSSRule.KEYFRAMES_RULE &&
           rule.name === 'progress-center-toggle') {
         return rule;
       }

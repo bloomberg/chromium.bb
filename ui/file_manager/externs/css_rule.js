@@ -36,18 +36,9 @@ CSSKeyframesRule.prototype.cssRules;
  */
 CSSRule.KEYFRAMES_RULE = 7;
 
-/**
- * @type {number}
- */
-CSSRule.WEBKIT_KEYFRAMES_RULE = 7;
 
 /**
  * @type {number}
  * @see http://dev.w3.org/csswg/css-animations/#interface-cssrule
  */
 CSSRule.KEYFRAME_RULE = 8;
-
-/**
- * @type {number}
- */
-CSSRule.WEBKIT_KEYFRAME_RULE = 8;

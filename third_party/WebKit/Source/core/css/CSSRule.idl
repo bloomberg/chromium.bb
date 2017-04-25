@@ -49,8 +49,4 @@
     // CSS Device Adaptation
     // https://dev.w3.org/csswg/css-device-adapt/#css-rule-interface
     [RuntimeEnabled=CSSViewport] const unsigned short VIEWPORT_RULE = 15;
-
-    // Non-standard APIs
-    const unsigned short WEBKIT_KEYFRAMES_RULE = 7;
-    const unsigned short WEBKIT_KEYFRAME_RULE = 8;
 };

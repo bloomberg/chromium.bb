@@ -2,11 +2,7 @@ description(
 'This test checks that the CSSRule RuleTypes for keyframe-related rules are what we expect.'
 );
 
-var ruleType = window.CSSRule.WEBKIT_KEYFRAMES_RULE;
-shouldBe("ruleType", "7");
-ruleType = window.CSSRule.WEBKIT_KEYFRAME_RULE;
-shouldBe("ruleType", "8");
-ruleType = window.CSSRule.KEYFRAMES_RULE;
+var ruleType = window.CSSRule.KEYFRAMES_RULE;
 shouldBe("ruleType", "7");
 ruleType = window.CSSRule.KEYFRAME_RULE;
 shouldBe("ruleType", "8");
