@@ -60,6 +60,9 @@ class ServiceWorkerURLTrackingRequestHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       ResourceContext* resource_context) override {
+    // |provider_host_| may have been deleted when the request is resumed.
+    if (!provider_host_)
+      return nullptr;
     const GURL stripped_url = net::SimplifyUrlForRequest(request->url());
     provider_host_->SetDocumentUrl(stripped_url);
     provider_host_->SetTopmostFrameUrl(request->first_party_for_cookies());
