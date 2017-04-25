@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/ios/ios_util.h"
+#import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -153,7 +154,10 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
 
     [[result stub] backForwardList];
     [[[result stub] andReturn:[NSURL URLWithString:@(kTestURLString)]] URL];
-    [[result stub] setNavigationDelegate:OCMOCK_ANY];
+    [[result stub] setNavigationDelegate:[OCMArg checkWithBlock:^(id delegate) {
+                     navigation_delegate_.reset(delegate);
+                     return YES;
+                   }]];
     [[result stub] setUIDelegate:OCMOCK_ANY];
     [[result stub] setFrame:GetExpectedWebViewFrame()];
     [[result stub] addObserver:web_controller()
@@ -165,6 +169,7 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
     return result;
   }
 
+  base::WeakNSProtocol<id<WKNavigationDelegate>> navigation_delegate_;
   base::scoped_nsobject<UIScrollView> scroll_view_;
   base::scoped_nsobject<id> mock_web_view_;
 };
@@ -195,11 +200,9 @@ TEST_F(CRWWebControllerTest, SslCertError) {
                         web::kNSErrorFailingURLKey : net::NSURLWithGURL(url),
                       }];
   base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
-  [static_cast<id<WKNavigationDelegate>>(web_controller())
-                            webView:mock_web_view_
+  [navigation_delegate_ webView:mock_web_view_
       didStartProvisionalNavigation:static_cast<WKNavigation*>(navigation)];
-  [static_cast<id<WKNavigationDelegate>>(web_controller())
-                           webView:mock_web_view_
+  [navigation_delegate_ webView:mock_web_view_
       didFailProvisionalNavigation:static_cast<WKNavigation*>(navigation)
                          withError:error];
 
@@ -613,11 +616,9 @@ TEST_F(CRWWebControllerJSExecutionTest, WindowIdMissmatch) {
   EXPECT_FALSE(ExecuteJavaScript(@"window.test2"));
 }
 
-TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {
-  [web_controller() webStateImpl]->GetNavigationManagerImpl().AddPendingItem(
-      GURL("http://chromium.test"), web::Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::USER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+// Tests |currentURLWithTrustLevel:| method.
+TEST_F(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
+  AddPendingItem(GURL("http://chromium.test"), ui::PAGE_TRANSITION_TYPED);
 
   [[[mock_web_view_ stub] andReturnBool:NO] hasOnlySecureContent];
   [[[mock_web_view_ stub] andReturn:@""] title];
@@ -626,12 +627,10 @@ TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {
   [[mock_web_view_ stub] evaluateJavaScript:OCMOCK_ANY
                           completionHandler:OCMOCK_ANY];
 
-  // Simulate registering load request to avoid failing page load simulation.
-  [web_controller() simulateLoadRequestWithURL:GURL(kTestURLString)];
   // Simulate a page load to trigger a URL update.
-  [static_cast<id<WKNavigationDelegate>>(web_controller())
-                  webView:mock_web_view_
-      didCommitNavigation:nil];
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:nil];
+  [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:nil];
 
   web::URLVerificationTrustLevel trust_level = web::kNone;
   GURL url = [web_controller() currentURLWithTrustLevel:&trust_level];

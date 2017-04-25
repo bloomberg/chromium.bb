@@ -41,7 +41,6 @@ enum LoadPhase {
 class GURL;
 
 namespace web {
-class NavigationItemImpl;
 class WebState;
 class WebStateImpl;
 }
@@ -267,9 +266,6 @@ class WebStateImpl;
 
 @interface CRWWebController (UsedOnlyForTesting)  // Testing or internal API.
 
-// YES if a user interaction has been registered at any time since the page has
-// loaded.
-@property(nonatomic, readwrite) BOOL userInteractionRegistered;
 // Returns whether the user is interacting with the page.
 @property(nonatomic, readonly) BOOL userIsInteracting;
 
@@ -277,26 +273,12 @@ class WebStateImpl;
 // |webViewContentView|.
 - (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView;
 - (void)resetInjectedWebViewContentView;
+
 // Returns the number of observers registered for this CRWWebController.
 - (NSUInteger)observerCount;
-- (void)setURLOnStartLoading:(const GURL&)url;
-- (void)simulateLoadRequestWithURL:(const GURL&)URL;
-
-// Returns the header height.
-- (CGFloat)headerHeight;
 
 // Loads the HTML into the page at the given URL.
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL;
-
-// Caches request POST data in the given session entry.  Exposed for testing.
-- (void)cachePOSTDataForRequest:(NSURLRequest*)request
-               inNavigationItem:(web::NavigationItemImpl*)item;
-
-// Acts on a single message from the JS object, parsed from JSON into a
-// DictionaryValue. Returns NO if the format for the message was invalid.
-- (BOOL)respondToMessage:(base::DictionaryValue*)crwMessage
-       userIsInteracting:(BOOL)userIsInteracting
-               originURL:(const GURL&)originURL;
 
 @end
 

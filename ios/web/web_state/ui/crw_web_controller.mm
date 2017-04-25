@@ -493,6 +493,10 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // unless the request was a POST.
 @property(nonatomic, readonly) NSDictionary* currentHTTPHeaders;
 
+// YES if a user interaction has been registered at any time since the page has
+// loaded.
+@property(nonatomic, readwrite) BOOL userInteractionRegistered;
+
 // Updates web view's user agent according to |userAgentType|. It is no-op if
 // |userAgentType| is NONE.
 - (void)updateWebViewUserAgentFromUserAgentType:
@@ -629,6 +633,11 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)goDelta:(int)delta;
 // Informs the native controller if web usage is allowed or not.
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled;
+// Acts on a single message from the JS object, parsed from JSON into a
+// DictionaryValue. Returns NO if the format for the message was invalid.
+- (BOOL)respondToMessage:(base::DictionaryValue*)crwMessage
+       userIsInteracting:(BOOL)userIsInteracting
+               originURL:(const GURL&)originURL;
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
 // Returns a new script which wraps |script| with windowID check so |script| is
@@ -750,6 +759,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
 // Returns whether external URL navigation action should be opened.
 - (BOOL)shouldOpenExternalURLForNavigationAction:(WKNavigationAction*)action;
+// Returns the header height.
+- (CGFloat)headerHeight;
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
@@ -879,6 +890,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)handleWindowHistoryDidReplaceStateMessage:
             (base::DictionaryValue*)message
                                           context:(NSDictionary*)context;
+
+// Caches request POST data in the given session entry.
+- (void)cachePOSTDataForRequest:(NSURLRequest*)request
+               inNavigationItem:(web::NavigationItemImpl*)item;
 
 // Returns YES if the given |action| should be allowed to continue.
 // If this returns NO, the load should be cancelled.
@@ -5163,11 +5178,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (NSUInteger)observerCount {
   DCHECK_EQ(_observerBridges.size(), [_observers count]);
   return [_observers count];
-}
-
-- (void)simulateLoadRequestWithURL:(const GURL&)URL {
-  _lastRegisteredRequestURL = URL;
-  _loadPhase = web::LOAD_REQUESTED;
 }
 
 - (NSString*)referrerFromNavigationAction:(WKNavigationAction*)action {
