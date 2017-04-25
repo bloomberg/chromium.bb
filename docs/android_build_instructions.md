@@ -191,13 +191,13 @@ unplugging and reattaching your device.
 ### Build the full browser
 
 ```shell
-ninja -C out/Release chrome_public_apk
+ninja -C out/Default chrome_public_apk
 ```
 
 And deploy it to your Android device:
 
 ```shell
-CHROMIUM_OUTPUT_DIR=$gndir build/android/adb_install_apk.py $gndir/apks/ChromePublic.apk # for gn.
+build/android/adb_install_apk.py out/Default/apks/ChromePublic.apk
 ```
 
 The app will appear on the device as "Chromium".
@@ -209,12 +209,12 @@ Wraps the content module (but not the /chrome embedder). See
 for details on the content module and content shell.
 
 ```shell
-ninja -C out/Release content_shell_apk
-build/android/adb_install_apk.py out/Release/apks/ContentShell.apk
+ninja -C out/Default content_shell_apk
+build/android/adb_install_apk.py out/Default/apks/ContentShell.apk
 ```
 
 this will build and install an Android apk under
-`out/Release/apks/ContentShell.apk`. (Where `Release` is the name of your build
+`out/Default/apks/ContentShell.apk`. (Where `Release` is the name of your build
 directory.)
 
 If you use custom out dir instead of standard out/ dir, use
