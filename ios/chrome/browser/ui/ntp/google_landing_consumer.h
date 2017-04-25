@@ -41,6 +41,9 @@
 // |YES| if a what's new promo can be displayed.
 - (void)setPromoCanShow:(BOOL)promoCanShow;
 
+// The number of tabs to show in the google landing fake toolbar.
+- (void)setTabCount:(int)tabCount;
+
 // TODO(crbug.com/694750): This should be replaced with consumer suitable data
 // type property.
 // Tells the consumer to that most visited data updated.

@@ -190,6 +190,9 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 // |YES| if a what's new promo can be displayed.
 @property(nonatomic, assign) BOOL promoCanShow;
 
+// The number of tabs to show in the google landing fake toolbar.
+@property(nonatomic, assign) int tabCount;
+
 // iPhone landscape uses a slightly different layout for the doodle and search
 // field frame. Returns the proper frame from |frames| based on orientation,
 // centered in the view.
@@ -259,6 +262,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 @synthesize promoIcon = _promoIcon;
 @synthesize promoCanShow = _promoCanShow;
 @synthesize maximumMostVisitedSitesShown = _maximumMostVisitedSitesShown;
+@synthesize tabCount = _tabCount;
 @synthesize voiceSearchIsEnabled = _voiceSearchIsEnabled;
 
 - (void)loadView {
@@ -995,6 +999,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
         // iPhone header also contains a toolbar since the normal toolbar is
         // hidden.
         [_headerView addToolbarWithDataSource:self.dataSource];
+        [_headerView setToolbarTabCount:self.tabCount];
       }
       [_supplementaryViews addObject:_headerView];
     }
@@ -1482,6 +1487,11 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   NSIndexPath* indexPath =
       [NSIndexPath indexPathForRow:index inSection:SectionWithMostVisited];
   [_mostVisitedView reloadItemsAtIndexPaths:@[ indexPath ]];
+}
+
+- (void)setTabCount:(int)tabCount {
+  _tabCount = tabCount;
+  [_headerView setToolbarTabCount:self.tabCount];
 }
 
 @end

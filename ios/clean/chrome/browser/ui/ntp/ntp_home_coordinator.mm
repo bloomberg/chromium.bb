@@ -36,9 +36,14 @@
                   loader:self.mediator
                  focuser:self.mediator
       webToolbarDelegate:nil
-                tabModel:nil];
+            webStateList:&self.browser->web_state_list()];
   self.viewController.dataSource = self.googleLandingMediator;
   [super start];
+}
+
+- (void)stop {
+  [super stop];
+  [self.googleLandingMediator shutdown];
 }
 
 @end

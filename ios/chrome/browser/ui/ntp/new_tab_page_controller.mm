@@ -296,6 +296,8 @@ enum {
   // delegate.
   self.ntpView.scrollView.delegate = nil;
 
+  [googleLandingMediator_ shutdown];
+
   // This is not an ideal place to put view controller contaimnent, rather a
   // //web -wasDismissed method on CRWNativeContent would be more accurate. If
   // CRWNativeContent leaks, this will not be called.
@@ -543,7 +545,7 @@ enum {
                       loader:loader_
                      focuser:focuser_
           webToolbarDelegate:webToolbarDelegate_
-                    tabModel:tabModel_]);
+                webStateList:[tabModel_ webStateList]]);
       [googleLandingController_ setDataSource:googleLandingMediator_];
     }
     panelController = googleLandingController_;
