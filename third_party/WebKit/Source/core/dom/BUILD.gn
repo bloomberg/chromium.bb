@@ -33,6 +33,8 @@ blink_core_sources("dom") {
     "ChildNodeList.h",
     "ClassCollection.cpp",
     "ClassCollection.h",
+    "ClassicPendingScript.cpp",
+    "ClassicPendingScript.h",
     "ClassicScript.cpp",
     "ClassicScript.h",
     "ClientRect.cpp",
