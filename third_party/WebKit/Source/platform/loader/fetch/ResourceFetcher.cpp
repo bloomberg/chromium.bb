@@ -897,11 +897,7 @@ ResourceFetcher::DetermineRevalidationPolicy(
     return kReload;
   }
 
-  // If resource was populated from a SubstituteData load or data: url, use it.
-  if (is_static_data)
-    return kUse;
-
-  if (!existing_resource->CanReuse(fetch_params))
+  if (!is_static_data && !existing_resource->CanReuse(fetch_params))
     return kReload;
 
   // Certain requests (e.g., XHRs) might have manually set headers that require
@@ -915,16 +911,23 @@ ResourceFetcher::DetermineRevalidationPolicy(
   // status code, but for a manual revalidation the response code remains 304.
   // In this case, the Resource likely has insufficient context to provide a
   // useful cache hit or revalidation. See http://crbug.com/643659
-  if (request.IsConditional() ||
-      existing_resource->GetResponse().HttpStatusCode() == 304) {
+  if (!is_static_data &&
+      (request.IsConditional() ||
+       existing_resource->GetResponse().HttpStatusCode() == 304)) {
     return kReload;
   }
 
-  if (!fetch_params.Options().CanReuseRequest(existing_resource->Options()))
+  if (!is_static_data &&
+      !fetch_params.Options().CanReuseRequest(existing_resource->Options())) {
     return kReload;
+  }
 
   // Always use preloads.
   if (existing_resource->IsPreloaded())
+    return kUse;
+
+  // If resource was populated from a SubstituteData load or data: url, use it.
+  if (is_static_data)
     return kUse;
 
   // Don't reload resources while pasting.
