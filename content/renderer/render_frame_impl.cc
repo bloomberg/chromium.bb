@@ -160,6 +160,7 @@
 #include "media/base/media.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/renderer_factory_selector.h"
 #include "media/blink/url_index.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
@@ -2898,6 +2899,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
 #endif  // defined(OS_ANDROID)
 
   std::unique_ptr<media::RendererFactory> media_renderer_factory;
+  media::RendererFactorySelector::FactoryType factory_type;
   if (use_fallback_path) {
 #if defined(OS_ANDROID)
     auto mojo_renderer_factory = base::MakeUnique<media::MojoRendererFactory>(
@@ -2912,6 +2914,12 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
                    render_thread->GetStreamTexureFactory(),
                    base::ThreadTaskRunnerHandle::Get()));
 #endif  // defined(OS_ANDROID)
+
+    // TODO(tguilbert): Move this line back into an #if defined(OS_ANDROID).
+    // This will never be reached, unless we are on Android. Moving this line
+    // outside of the #if/#endif block fixes a "sometimes-uninitialized" error
+    // on desktop. This will be fixed with the next CL for crbug.com/663503.
+    factory_type = media::RendererFactorySelector::FactoryType::MEDIA_PLAYER;
   } else {
 #if defined(ENABLE_MOJO_RENDERER)
 #if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
@@ -2921,6 +2929,8 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
           media_log.get(), GetDecoderFactory(),
           base::Bind(&RenderThreadImpl::GetGpuFactories,
                      base::Unretained(render_thread)));
+
+      factory_type = media::RendererFactorySelector::FactoryType::DEFAULT;
     }
 #endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
     if (!media_renderer_factory) {
@@ -2928,12 +2938,16 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
           base::Bind(&RenderThreadImpl::GetGpuFactories,
                      base::Unretained(render_thread)),
           GetMediaInterfaceProvider());
+
+      factory_type = media::RendererFactorySelector::FactoryType::MOJO;
     }
 #else
     media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
         media_log.get(), GetDecoderFactory(),
         base::Bind(&RenderThreadImpl::GetGpuFactories,
                    base::Unretained(render_thread)));
+
+    factory_type = media::RendererFactorySelector::FactoryType::DEFAULT;
 #endif  // defined(ENABLE_MOJO_RENDERER)
   }
 
@@ -2941,10 +2955,17 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   media_renderer_factory =
       base::MakeUnique<media::remoting::AdaptiveRendererFactory>(
           std::move(media_renderer_factory), std::move(remoting_controller));
+
+  factory_type = media::RendererFactorySelector::FactoryType::ADAPTIVE;
 #endif
 
   if (!url_index_.get() || url_index_->frame() != frame_)
     url_index_.reset(new media::UrlIndex(frame_));
+
+  auto factory_selector = base::MakeUnique<media::RendererFactorySelector>();
+
+  factory_selector->AddFactory(factory_type, std::move(media_renderer_factory));
+  factory_selector->SetBaseFactoryType(factory_type);
 
   std::unique_ptr<media::WebMediaPlayerParams> params(
       new media::WebMediaPlayerParams(
@@ -2967,7 +2988,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
 
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
       frame_, client, encrypted_client, GetWebMediaPlayerDelegate(),
-      std::move(media_renderer_factory), url_index_, std::move(params));
+      std::move(factory_selector), url_index_, std::move(params));
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   media_player->SetMediaPlayerManager(GetMediaPlayerManager());

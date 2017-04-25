@@ -28,7 +28,7 @@
 #include "media/base/media_observer.h"
 #include "media/base/media_tracks.h"
 #include "media/base/pipeline_impl.h"
-#include "media/base/renderer_factory.h"
+#include "media/base/renderer_factory_selector.h"
 #include "media/base/surface_manager.h"
 #include "media/base/text_track.h"
 #include "media/blink/buffered_data_source_host_impl.h"
@@ -92,13 +92,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
-  // |delegate| and |renderer_factory| must not be null.
+  // |delegate| and |renderer_factory_selector| must not be null.
   WebMediaPlayerImpl(
       blink::WebLocalFrame* frame,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       WebMediaPlayerDelegate* delegate,
-      std::unique_ptr<RendererFactory> renderer_factory,
+      std::unique_ptr<RendererFactorySelector> renderer_factory_selector,
       linked_ptr<UrlIndex> url_index,
       std::unique_ptr<WebMediaPlayerParams> params);
   ~WebMediaPlayerImpl() override;
@@ -294,7 +294,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnSurfaceRequested(bool decoder_requires_restart_for_overlay,
                           const SurfaceCreatedCB& surface_created_cb);
 
-  // Creates a Renderer via the |renderer_factory_|.
+  // Creates a Renderer via the |renderer_factory_selector_|.
   std::unique_ptr<Renderer> CreateRenderer();
 
   // Finishes starting the pipeline due to a call to load().
@@ -617,7 +617,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   double volume_;
   double volume_multiplier_;
 
-  std::unique_ptr<RendererFactory> renderer_factory_;
+  std::unique_ptr<RendererFactorySelector> renderer_factory_selector_;
 
   // For requesting surfaces on behalf of the Android H/W decoder in fullscreen.
   // This will be null everywhere but Android.

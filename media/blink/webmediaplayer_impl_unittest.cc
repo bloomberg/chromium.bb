@@ -211,14 +211,19 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   void InitializeWebMediaPlayerImpl(bool allow_suspend) {
     std::unique_ptr<MediaLog> media_log(new MediaLog());
-    std::unique_ptr<RendererFactory> renderer_factory(
-        new DefaultRendererFactory(
+
+    auto factory_selector = base::MakeUnique<RendererFactorySelector>();
+    factory_selector->AddFactory(
+        RendererFactorySelector::FactoryType::DEFAULT,
+        base::MakeUnique<DefaultRendererFactory>(
             media_log.get(), nullptr,
             DefaultRendererFactory::GetGpuFactoriesCB()));
+    factory_selector->SetBaseFactoryType(
+        RendererFactorySelector::FactoryType::DEFAULT);
 
     wmpi_ = base::MakeUnique<WebMediaPlayerImpl>(
         web_local_frame_, &client_, nullptr, &delegate_,
-        std::move(renderer_factory), url_index_,
+        std::move(factory_selector), url_index_,
         base::MakeUnique<WebMediaPlayerParams>(
             std::move(media_log), WebMediaPlayerParams::DeferLoadCB(),
             scoped_refptr<SwitchableAudioRendererSink>(),
