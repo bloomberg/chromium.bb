@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
 }
 
-#if (defined(OS_LINUX) && !defined(USE_OZONE))
+#if (defined(OS_LINUX) && !defined(USE_OZONE)) || defined(OS_WIN)
 // Ensures that renderers know to advance focus to sibling frames and parent
 // frames in the presence of mouse click initiated focus changes.
 // Verifies against regression of https://crbug.com/702330
@@ -367,6 +367,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   std::string script =
       "function onFocus(e) {"
       "  domAutomationController.setAutomationId(0);"
+      "  console.log(window.name + '-focused-' + e.target.id);"
       "  domAutomationController.send(window.name + '-focused-' + e.target.id);"
       "}"
       ""
@@ -380,7 +381,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
       "  return Math.floor(rect.left) +','+"
       "         Math.floor(rect.top);"
       "}"
+      "function onClick(e) {"
+      " console.log('Click event ' + window.name + ' at: ' + e.x + ', ' + e.y "
+      "             + ' screen: ' + e.screenX + ', ' + e.screenY);"
+      "}"
       ""
+      "window.addEventListener('click', onClick);"
+      "console.log(document.location.origin);"
       "document.styleSheets[0].insertRule('input {width:100%;margin:0;}', 1);"
       "document.styleSheets[0].insertRule('h2 {margin:0;}', 1);"
       "var input1 = document.createElement('input');"
@@ -440,6 +447,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
     std::string reply;
     SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
                      ui::VKEY_TAB, false, reverse /* shift */, false, false);
+    LOG(INFO) << "Press tab";
     EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
     return reply;
   };
@@ -454,6 +462,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
         ui_controls::SendMouseClick(ui_controls::LEFT);
 
         std::string reply;
+        LOG(INFO) << "Click element";
         EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
         return reply;
       };
