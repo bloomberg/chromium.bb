@@ -268,7 +268,9 @@ class NavigationController {
   // committed entries.
   virtual NavigationEntry* GetLastCommittedEntry() const = 0;
 
-  // Returns the index of the last committed entry.
+  // Returns the index of the last committed entry.  It will be -1 if there are
+  // no entries, or if there is a transient entry before the first entry
+  // commits.
   virtual int GetLastCommittedEntryIndex() const = 0;
 
   // Returns true if the source for the current entry can be viewed.

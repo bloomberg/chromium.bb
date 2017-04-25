@@ -5288,4 +5288,82 @@ TEST_F(NavigationControllerTest, MultipleNavigationsAndReload) {
   main_test_rfh()->SimulateNavigationCommit(url_1);
 }
 
+// Test to ensure that the pending entry index is updated when a transient entry
+// is inserted or removed.
+TEST_F(NavigationControllerTest, PendingEntryIndexUpdatedWithTransient) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url_0("http://foo/0");
+  const GURL url_1("http://foo/1");
+  const GURL url_transient_1("http://foo/transient_1");
+  const GURL url_transient_2("http://foo/transient_2");
+
+  NavigateAndCommit(url_0);
+  NavigateAndCommit(url_1);
+  controller.GoBack();
+  contents()->CommitPendingNavigation();
+  controller.GoForward();
+
+  // Check the state before the insertion of the transient entry.
+  // entries[0] = url_0  <- last committed entry.
+  // entries[1] = url_1  <- pending entry.
+  ASSERT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(controller.GetEntryAtIndex(1), controller.GetPendingEntry());
+  EXPECT_EQ(url_0, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url_1, controller.GetEntryAtIndex(1)->GetURL());
+
+  // Insert a transient entry before the pending one. It should increase the
+  // pending entry index by one (1 -> 2).
+  std::unique_ptr<NavigationEntry> transient_entry_1(new NavigationEntryImpl);
+  transient_entry_1->SetURL(url_transient_1);
+  controller.SetTransientEntry(std::move(transient_entry_1));
+
+  // Check the state after the insertion of the transient entry.
+  // entries[0] = url_0           <- last committed entry
+  // entries[1] = url_transient_1 <- transient entry
+  // entries[2] = url_1           <- pending entry
+  ASSERT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(2, controller.GetPendingEntryIndex());
+  EXPECT_EQ(controller.GetEntryAtIndex(1), controller.GetTransientEntry());
+  EXPECT_EQ(controller.GetEntryAtIndex(2), controller.GetPendingEntry());
+  EXPECT_EQ(url_0, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url_transient_1, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url_1, controller.GetEntryAtIndex(2)->GetURL());
+
+  // Insert another transient entry. It should replace the previous one and this
+  // time the pending entry index should retain its value (i.e. 2).
+  std::unique_ptr<NavigationEntry> transient_entry_2(new NavigationEntryImpl);
+  transient_entry_2->SetURL(url_transient_2);
+  controller.SetTransientEntry(std::move(transient_entry_2));
+
+  // Check the state after the second insertion of a transient entry.
+  // entries[0] = url_0           <- last committed entry
+  // entries[1] = url_transient_2 <- transient entry
+  // entries[2] = url_1           <- pending entry
+  ASSERT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(2, controller.GetPendingEntryIndex());
+  EXPECT_EQ(controller.GetEntryAtIndex(1), controller.GetTransientEntry());
+  EXPECT_EQ(controller.GetEntryAtIndex(2), controller.GetPendingEntry());
+  EXPECT_EQ(url_0, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url_transient_2, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url_1, controller.GetEntryAtIndex(2)->GetURL());
+
+  // Commit the pending entry.
+  contents()->CommitPendingNavigation();
+
+  // Check the final state.
+  // entries[0] = url_0
+  // entries[1] = url_1  <- last committed entry
+  ASSERT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(nullptr, controller.GetPendingEntry());
+  EXPECT_EQ(nullptr, controller.GetTransientEntry());
+  EXPECT_EQ(url_0, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url_1, controller.GetEntryAtIndex(1)->GetURL());
+}
+
 }  // namespace content
