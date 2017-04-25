@@ -58,6 +58,7 @@ void TetherService::StartTether() {
       std::move(notification_presenter), profile_->GetPrefs(),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
       chromeos::NetworkHandler::Get()->network_state_handler(),
+      chromeos::NetworkHandler::Get()->managed_network_configuration_handler(),
       chromeos::NetworkConnect::Get());
 }
 

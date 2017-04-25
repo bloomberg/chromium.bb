@@ -9,12 +9,16 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/tether/fake_active_host.h"
+#include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
+
+using testing::_;
+using testing::NiceMock;
 
 namespace chromeos {
 
@@ -36,6 +40,15 @@ std::string CreateConnectedWifiConfigurationJsonString() {
   return ss.str();
 }
 
+class MockNetworkConfigurationRemover : public NetworkConfigurationRemover {
+ public:
+  MockNetworkConfigurationRemover()
+      : NetworkConfigurationRemover(nullptr, nullptr) {}
+  ~MockNetworkConfigurationRemover() override {}
+
+  MOCK_METHOD1(RemoveNetworkConfiguration, void(const std::string&));
+};
+
 }  // namespace
 
 class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
@@ -51,9 +64,12 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
         ConfigureService(CreateConnectedWifiConfigurationJsonString());
 
     fake_active_host_ = base::MakeUnique<FakeActiveHost>();
+    mock_network_configuration_remover_ =
+        base::WrapUnique(new NiceMock<MockNetworkConfigurationRemover>);
 
     handler_ = base::WrapUnique(new TetherNetworkDisconnectionHandler(
-        fake_active_host_.get(), network_state_handler()));
+        fake_active_host_.get(), network_state_handler(),
+        mock_network_configuration_remover_.get()));
   }
 
   void TearDown() override {
@@ -73,6 +89,8 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
   std::string wifi_service_path_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
+  std::unique_ptr<MockNetworkConfigurationRemover>
+      mock_network_configuration_remover_;
 
   std::unique_ptr<TetherNetworkDisconnectionHandler> handler_;
 
@@ -81,6 +99,10 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
 };
 
 TEST_F(TetherNetworkDisconnectionHandlerTest, TestConnectAndDisconnect) {
+  EXPECT_CALL(*mock_network_configuration_remover_,
+              RemoveNetworkConfiguration(kWifiNetworkGuid))
+      .Times(1);
+
   // Connect to the network. |handler_| should start tracking the connection.
   fake_active_host_->SetActiveHostConnecting(kDeviceId, kTetherNetworkGuid);
   fake_active_host_->SetActiveHostConnected(kDeviceId, kTetherNetworkGuid,
@@ -95,4 +117,4 @@ TEST_F(TetherNetworkDisconnectionHandlerTest, TestConnectAndDisconnect) {
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

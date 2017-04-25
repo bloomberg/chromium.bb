@@ -15,6 +15,8 @@ class NetworkStateHandler;
 
 namespace tether {
 
+class NetworkConfigurationRemover;
+
 class ActiveHost;
 
 // Handles lost Wi-Fi connections for ongoing tether sessions. When a tether
@@ -24,7 +26,10 @@ class ActiveHost;
 // tracks ongoing connections and updates this metadata when necessary.
 class TetherNetworkDisconnectionHandler : public NetworkStateHandlerObserver {
  public:
-  TetherNetworkDisconnectionHandler(ActiveHost* active_host);
+  TetherNetworkDisconnectionHandler(
+      ActiveHost* active_host,
+      NetworkStateHandler* network_state_handler,
+      NetworkConfigurationRemover* network_configuration_remover);
   ~TetherNetworkDisconnectionHandler() override;
 
   // NetworkStateHandlerObserver:
@@ -33,11 +38,9 @@ class TetherNetworkDisconnectionHandler : public NetworkStateHandlerObserver {
  private:
   friend class TetherNetworkDisconnectionHandlerTest;
 
-  TetherNetworkDisconnectionHandler(ActiveHost* active_host,
-                                    NetworkStateHandler* network_state_handler);
-
   ActiveHost* active_host_;
   NetworkStateHandler* network_state_handler_;
+  NetworkConfigurationRemover* network_configuration_remover_;
 
   DISALLOW_COPY_AND_ASSIGN(TetherNetworkDisconnectionHandler);
 };

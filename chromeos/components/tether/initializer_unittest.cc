@@ -13,6 +13,8 @@
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/mock_managed_network_configuration_handler.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_test.h"
@@ -111,11 +113,13 @@ class InitializerTest : public NetworkStateTest {
       PrefService* pref_service,
       ProfileOAuth2TokenService* token_service,
       NetworkStateHandler* network_state_handler,
+      ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
       NetworkConnect* network_connect,
       scoped_refptr<device::BluetoothAdapter> adapter) {
-    Initializer* initializer = new Initializer(
-        cryptauth_service, std::move(notification_presenter), pref_service,
-        token_service, network_state_handler, network_connect);
+    Initializer* initializer =
+        new Initializer(cryptauth_service, std::move(notification_presenter),
+                        pref_service, token_service, network_state_handler,
+                        managed_network_configuration_handler, network_connect);
     initializer->OnBluetoothAdapterAdvertisingIntervalSet(adapter);
     delete initializer;
   }
@@ -158,6 +162,10 @@ TEST_F(InitializerTest, TestCreateAndDestroy) {
   std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service =
       base::MakeUnique<FakeProfileOAuth2TokenService>();
 
+  std::unique_ptr<ManagedNetworkConfigurationHandler>
+      managed_network_configuration_handler = base::WrapUnique(
+          new NiceMock<MockManagedNetworkConfigurationHandler>);
+
   std::unique_ptr<MockNetworkConnect> mock_network_connect =
       base::WrapUnique(new NiceMock<MockNetworkConnect>);
 
@@ -170,8 +178,9 @@ TEST_F(InitializerTest, TestCreateAndDestroy) {
   InitializeAndDestroy(fake_cryptauth_service.get(),
                        base::MakeUnique<FakeNotificationPresenter>(),
                        test_pref_service_.get(), fake_token_service.get(),
-                       network_state_handler(), mock_network_connect.get(),
-                       mock_adapter);
+                       network_state_handler(),
+                       managed_network_configuration_handler.get(),
+                       mock_network_connect.get(), mock_adapter);
 }
 
 }  // namespace tether
