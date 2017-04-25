@@ -560,6 +560,10 @@ void RenderWidgetHostViewChildFrame::SetActive(bool active) {
 }
 
 void RenderWidgetHostViewChildFrame::ShowDefinitionForSelection() {
+  if (frame_connector_) {
+    frame_connector_->GetRootRenderWidgetHostView()
+        ->ShowDefinitionForSelection();
+  }
 }
 
 bool RenderWidgetHostViewChildFrame::SupportsSpeech() const {

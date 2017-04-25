@@ -35,6 +35,17 @@ bool TextInputClientMessageFilter::OnMessageReceived(
   return handled;
 }
 
+void TextInputClientMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) {
+  switch (message.type()) {
+    case TextInputClientReplyMsg_GotStringAtPoint::ID:
+    case TextInputClientReplyMsg_GotStringForRange::ID:
+      *thread = BrowserThread::UI;
+      break;
+  }
+}
+
 TextInputClientMessageFilter::~TextInputClientMessageFilter() {}
 
 void TextInputClientMessageFilter::OnGotStringAtPoint(

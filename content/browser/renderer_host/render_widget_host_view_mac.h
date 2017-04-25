@@ -484,6 +484,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // platform view for a guest).
   const TextInputManager::TextSelection* GetTextSelection();
 
+  // Get the focused view that should be used for retrieving the text selection.
+  RenderWidgetHostViewBase* GetFocusedViewForTextSelection();
+
  private:
   friend class RenderWidgetHostViewMacTest;
 
@@ -502,9 +505,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Dispatches a TTS session.
   void SpeakText(const std::string& text);
-
-  // Get the focused view that should be used for retrieving the text selection.
-  RenderWidgetHostViewBase* GetFocusedViewForTextSelection();
 
   // Adds/Removes frame observer based on state.
   void UpdateNeedsBeginFramesInternal();

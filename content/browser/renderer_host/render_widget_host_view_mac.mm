@@ -2421,41 +2421,32 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       NSPerformService(@"Look Up in Dictionary", pasteboard->get());
     return;
   }
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSPoint flippedBaselinePoint = {
-        baselinePoint.x, [view frame].size.height - baselinePoint.y,
-    };
-    [view showDefinitionForAttributedString:string
-                                    atPoint:flippedBaselinePoint];
-  });
+  NSPoint flippedBaselinePoint = {
+      baselinePoint.x, [view frame].size.height - baselinePoint.y,
+  };
+  [view showDefinitionForAttributedString:string atPoint:flippedBaselinePoint];
 }
 
 - (void)showLookUpDictionaryOverlayFromRange:(NSRange)range
                                   targetView:(NSView*)targetView {
-  RenderWidgetHostImpl* widgetHost = renderWidgetHostView_->render_widget_host_;
-  if (!widgetHost || !widgetHost->delegate())
+  content::RenderWidgetHostViewBase* focusedView =
+      renderWidgetHostView_->GetFocusedViewForTextSelection();
+  if (!focusedView)
     return;
-  widgetHost = widgetHost->delegate()->GetFocusedRenderWidgetHost(widgetHost);
 
+  RenderWidgetHostImpl* widgetHost =
+      RenderWidgetHostImpl::From(focusedView->GetRenderWidgetHost());
   if (!widgetHost)
     return;
 
-  // TODO(ekaramad): The position reported by the renderer is with respect to
-  // |widgetHost|'s coordinate space with y-axis inverted to conform to AppKit
-  // coordinate system. The point will need to be transformed into root view's
-  // coordinate system (RenderWidgetHostViewMac in this case). However, since
-  // the callback is invoked on IO thread it will require some thread hopping to
-  // do so. For this reason, for now, we accept this non-ideal way of fixing the
-  // point offset manually from the view bounds. This should be revisited when
-  // fixing issues in TextInputClientMac (https://crbug.com/643233).
-  gfx::Rect root_box = renderWidgetHostView_->GetViewBounds();
-  gfx::Rect view_box = widgetHost->GetView()->GetViewBounds();
-
   TextInputClientMac::GetInstance()->GetStringFromRange(
       widgetHost, range, ^(NSAttributedString* string, NSPoint baselinePoint) {
-        baselinePoint.x += view_box.origin().x() - root_box.origin().x();
-        baselinePoint.y +=
-            root_box.bottom_left().y() - view_box.bottom_left().y();
+        if (auto* rwhv = widgetHost->GetView()) {
+          gfx::Point pointInRootView = rwhv->TransformPointToRootCoordSpace(
+              gfx::Point(baselinePoint.x, baselinePoint.y));
+          baselinePoint.x = pointInRootView.x();
+          baselinePoint.y = pointInRootView.y();
+        }
         [self showLookUpDictionaryOverlayInternal:string
                                     baselinePoint:baselinePoint
                                        targetView:targetView];
@@ -2479,23 +2470,15 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (!widgetHost)
     return;
 
-  // TODO(ekaramad): The position reported by the renderer is with respect to
-  // |widgetHost|'s coordinate space with y-axis inverted to conform to AppKit
-  // coordinate system. The point will need to be transformed into root view's
-  // coordinate system (RenderWidgetHostViewMac in this case). However, since
-  // the callback is invoked on IO thread it will require some thread hopping to
-  // do so. For this reason, for now, we accept this non-ideal way of fixing the
-  // point offset manually from the view bounds. This should be revisited when
-  // fixing issues in TextInputClientMac (https://crbug.com/643233).
-  gfx::Rect root_box = renderWidgetHostView_->GetViewBounds();
-  gfx::Rect view_box = widgetHost->GetView()->GetViewBounds();
-
   TextInputClientMac::GetInstance()->GetStringAtPoint(
       widgetHost, transformedPoint,
       ^(NSAttributedString* string, NSPoint baselinePoint) {
-        baselinePoint.x += view_box.origin().x() - root_box.origin().x();
-        baselinePoint.y +=
-            root_box.bottom_left().y() - view_box.bottom_left().y();
+        if (auto* rwhv = widgetHost->GetView()) {
+          gfx::Point pointInRootView = rwhv->TransformPointToRootCoordSpace(
+              gfx::Point(baselinePoint.x, baselinePoint.y));
+          baselinePoint.x = pointInRootView.x();
+          baselinePoint.y = pointInRootView.y();
+        }
         [self showLookUpDictionaryOverlayInternal:string
                                     baselinePoint:baselinePoint
                                        targetView:self];
