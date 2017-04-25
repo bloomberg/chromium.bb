@@ -40,7 +40,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
-#include "net/quic/chromium/quic_http_stream.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_manager.h"

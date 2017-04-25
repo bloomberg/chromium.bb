@@ -130,7 +130,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // returns the amount of time waiting job should be delayed.
   base::TimeDelta GetTimeDelayForWaitingJob() const;
 
-  std::unique_ptr<QuicHttpStream> CreateStream();
+  std::unique_ptr<HttpStream> CreateStream();
 
   std::unique_ptr<BidirectionalStreamImpl> CreateBidirectionalStreamImpl();
 

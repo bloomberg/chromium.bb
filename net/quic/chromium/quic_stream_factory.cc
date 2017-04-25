@@ -623,7 +623,7 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
   return factory_->GetTimeDelayForWaitingJob(server_id_);
 }
 
-std::unique_ptr<QuicHttpStream> QuicStreamRequest::CreateStream() {
+std::unique_ptr<HttpStream> QuicStreamRequest::CreateStream() {
   if (!session_)
     return nullptr;
   return base::MakeUnique<QuicHttpStream>(session_, http_server_properties_);
