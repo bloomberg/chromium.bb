@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
             profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
-  ExpectExistingRequiredFields(nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
             profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
-  ExpectExistingRequiredFields(nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
 
   // One shipping profile is available and selected.
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
-  ExpectExistingRequiredFields(nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
@@ -397,7 +397,57 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
-  ExpectExistingRequiredFields(nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       SelectingIncompleteAddress) {
+  // Add incomplete address.
+  autofill::AutofillProfile profile;
+  profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                  base::ASCIIToUTF16(kNameFull), "fr_CA");
+  PaymentRequestBrowserTestBase::AddAutofillProfile(profile);
+
+  InvokePaymentRequestUI();
+
+  // One shipping address is available, but it's not selected.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(1U, request->state()->shipping_profiles().size());
+  EXPECT_EQ(nullptr, request->state()->selected_shipping_profile());
+
+  OpenShippingAddressSectionScreen();
+
+  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
+                                DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
+
+  EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
+            GetEditorTextfieldValue(autofill::NAME_FULL));
+  EXPECT_EQ(base::ASCIIToUTF16(""),
+            GetEditorTextfieldValue(autofill::ADDRESS_HOME_ZIP));
+
+  // Set all required fields.
+  SetCommonFields();
+
+  // Verifying the data is in the DB.
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  data_loop.Run();
+
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
+
+  // Still have one shipping address, but now it's selected.
+  EXPECT_EQ(1U, request->state()->shipping_profiles().size());
+  EXPECT_EQ(request->state()->shipping_profiles().back(),
+            request->state()->selected_shipping_profile());
 }
 
 }  // namespace payments
