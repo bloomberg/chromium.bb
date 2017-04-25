@@ -111,14 +111,6 @@ void idct8x8_10_add_10_sse2(const tran_low_t *in, uint8_t *out, int stride) {
 void idct8x8_10_add_12_sse2(const tran_low_t *in, uint8_t *out, int stride) {
   aom_highbd_idct8x8_10_add_sse2(in, out, stride, 12);
 }
-
-void idct8x8_64_add_10_sse2(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct8x8_64_add_sse2(in, out, stride, 10);
-}
-
-void idct8x8_64_add_12_sse2(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct8x8_64_add_sse2(in, out, stride, 12);
-}
 #endif  // HAVE_SSE2
 #endif  // CONFIG_HIGHBITDEPTH
 
@@ -684,18 +676,10 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
 
 #if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    SSE2, FwdTrans8x8DCT,
-    ::testing::Values(make_tuple(&aom_fdct8x8_sse2, &aom_idct8x8_64_add_c, 0,
-                                 AOM_BITS_8),
-                      make_tuple(&aom_highbd_fdct8x8_c, &idct8x8_64_add_10_sse2,
-                                 12, AOM_BITS_10),
-                      make_tuple(&aom_highbd_fdct8x8_sse2,
-                                 &idct8x8_64_add_10_sse2, 12, AOM_BITS_10),
-                      make_tuple(&aom_highbd_fdct8x8_c, &idct8x8_64_add_12_sse2,
-                                 12, AOM_BITS_12),
-                      make_tuple(&aom_highbd_fdct8x8_sse2,
-                                 &idct8x8_64_add_12_sse2, 12, AOM_BITS_12)));
+INSTANTIATE_TEST_CASE_P(SSE2, FwdTrans8x8DCT,
+                        ::testing::Values(make_tuple(&aom_fdct8x8_sse2,
+                                                     &aom_idct8x8_64_add_c, 0,
+                                                     AOM_BITS_8)));
 
 INSTANTIATE_TEST_CASE_P(
     SSE2, FwdTrans8x8HT,
