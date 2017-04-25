@@ -90,8 +90,12 @@ void UtilityThreadImpl::Init() {
       base::Bind(&UtilityThreadImpl::BindServiceFactoryRequest,
                  base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
-  ChildThread::Get()->GetServiceManagerConnection()->AddConnectionFilter(
-      base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
+
+  content::ServiceManagerConnection* connection = GetServiceManagerConnection();
+  if (connection) {
+    connection->AddConnectionFilter(
+        base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
+  }
 
   GetContentClient()->utility()->UtilityThreadStarted();
 
