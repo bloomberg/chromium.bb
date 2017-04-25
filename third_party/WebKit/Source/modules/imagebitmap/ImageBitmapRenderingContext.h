@@ -40,6 +40,11 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
   // Script API
   void transferFromImageBitmap(ImageBitmap*, ExceptionState&);
 
+  HTMLCanvasElement* canvas() {
+    DCHECK(!host() || !host()->IsOffscreenCanvas());
+    return static_cast<HTMLCanvasElement*>(host());
+  }
+
   // CanvasRenderingContext implementation
   ContextType GetContextType() const override {
     return CanvasRenderingContext::kContextImageBitmap;

@@ -161,7 +161,7 @@ void HTMLCanvasElement::Dispose() {
     ReleasePlaceholderFrame();
 
   if (context_) {
-    context_->DetachCanvas();
+    context_->DetachHost();
     context_ = nullptr;
   }
 
@@ -201,7 +201,7 @@ void HTMLCanvasElement::setWidth(int value, ExceptionState& exception_state) {
 }
 
 void HTMLCanvasElement::SetSize(const IntSize& new_size) {
-  if (new_size == size())
+  if (new_size == Size())
     return;
   ignore_reset_ = true;
   SetIntegralAttribute(widthAttr, new_size.Width());
@@ -301,7 +301,7 @@ bool HTMLCanvasElement::ShouldBeDirectComposited() const {
 
 bool HTMLCanvasElement::IsPaintable() const {
   return (context_ && context_->IsPaintable()) ||
-         ImageBuffer::CanCreateImageBuffer(size());
+         ImageBuffer::CanCreateImageBuffer(Size());
 }
 
 bool HTMLCanvasElement::IsAccelerated() const {
@@ -328,7 +328,7 @@ void HTMLCanvasElement::DidDraw(const FloatRect& rect) {
 }
 
 void HTMLCanvasElement::DidDraw() {
-  DidDraw(FloatRect(0, 0, size().Width(), size().Height()));
+  DidDraw(FloatRect(0, 0, Size().Width(), Size().Height()));
 }
 
 void HTMLCanvasElement::FinalizeFrame() {
@@ -367,7 +367,7 @@ void HTMLCanvasElement::SetNeedsCompositingUpdate() {
 void HTMLCanvasElement::DoDeferredPaintInvalidation() {
   DCHECK(!dirty_rect_.IsEmpty());
   if (Is2d()) {
-    FloatRect src_rect(0, 0, size().Width(), size().Height());
+    FloatRect src_rect(0, 0, Size().Width(), Size().Height());
     dirty_rect_.Intersect(src_rect);
     LayoutBox* lb = GetLayoutBox();
     FloatRect invalidation_rect;
@@ -403,7 +403,7 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
 
   // Propagate the m_dirtyRect accumulated so far to the compositor
   // before restarting with a blank dirty rect.
-  FloatRect src_rect(0, 0, size().Width(), size().Height());
+  FloatRect src_rect(0, 0, Size().Width(), Size().Height());
 
   LayoutBox* ro = GetLayoutBox();
   // Canvas content updates do not need to be propagated as
@@ -482,7 +482,7 @@ void HTMLCanvasElement::Reset() {
   if (Is2d())
     context_->Reset();
 
-  IntSize old_size = size();
+  IntSize old_size = Size();
   IntSize new_size(w, h);
 
   // If the size of an existing buffer matches, we can just clear it instead of
@@ -498,12 +498,12 @@ void HTMLCanvasElement::Reset() {
 
   SetSurfaceSize(new_size);
 
-  if (Is3d() && old_size != size())
+  if (Is3d() && old_size != Size())
     context_->Reshape(width(), height());
 
   if (LayoutObject* layout_object = this->GetLayoutObject()) {
     if (layout_object->IsCanvas()) {
-      if (old_size != size()) {
+      if (old_size != Size()) {
         ToLayoutHTMLCanvas(layout_object)->CanvasSizeChanged();
         if (GetLayoutBox() && GetLayoutBox()->HasAcceleratedCompositing())
           GetLayoutBox()->ContentChanged(kCanvasChanged);
@@ -812,10 +812,6 @@ void HTMLCanvasElement::RemoveListener(CanvasDrawListener* listener) {
   listeners_.erase(listener);
 }
 
-SecurityOrigin* HTMLCanvasElement::GetSecurityOrigin() const {
-  return GetDocument().GetSecurityOrigin();
-}
-
 bool HTMLCanvasElement::OriginClean() const {
   if (GetDocument().GetSettings() &&
       GetDocument().GetSettings()->GetDisableReadingFromCanvas())
@@ -841,8 +837,8 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (GetLayoutBox() && !GetLayoutBox()->HasAcceleratedCompositing())
     return false;
 
-  CheckedNumeric<int> checked_canvas_pixel_count = size().Width();
-  checked_canvas_pixel_count *= size().Height();
+  CheckedNumeric<int> checked_canvas_pixel_count = Size().Width();
+  checked_canvas_pixel_count *= Size().Height();
   if (!checked_canvas_pixel_count.IsValid())
     return false;
   int canvas_pixel_count = checked_canvas_pixel_count.ValueOrDie();
@@ -911,7 +907,7 @@ HTMLCanvasElement::CreateWebGLImageBufferSurface(OpacityMode opacity_mode) {
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
   auto surface = WTF::MakeUnique<AcceleratedImageBufferSurface>(
-      size(), opacity_mode, context_->color_params());
+      Size(), opacity_mode, context_->color_params());
   if (surface->IsValid())
     return std::move(surface);
   return nullptr;
@@ -939,7 +935,7 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(OpacityMode opacity_mode,
     return nullptr;  // Don't use accelerated canvas with swiftshader.
 
   auto surface = WTF::MakeUnique<Canvas2DImageBufferSurface>(
-      std::move(context_provider), size(), *msaa_sample_count, opacity_mode,
+      std::move(context_provider), Size(), *msaa_sample_count, opacity_mode,
       Canvas2DLayerBridge::kEnableAcceleration, context_->color_params());
   if (!surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
@@ -957,7 +953,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
     OpacityMode opacity_mode) {
   if (ShouldUseDisplayList()) {
     auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
-        size(), opacity_mode, context_->color_params());
+        Size(), opacity_mode, context_->color_params());
     if (surface->IsValid()) {
       CanvasMetrics::CountCanvasContextUsage(
           CanvasMetrics::kDisplayList2DCanvasImageBufferCreated);
@@ -968,7 +964,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
   }
 
   auto surface = WTF::MakeUnique<UnacceleratedImageBufferSurface>(
-      size(), opacity_mode, kInitializeImagePixels, context_->color_params());
+      Size(), opacity_mode, kInitializeImagePixels, context_->color_params());
   if (surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kUnaccelerated2DCanvasImageBufferCreated);
@@ -982,7 +978,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
 
 void HTMLCanvasElement::CreateImageBuffer() {
   CreateImageBufferInternal(nullptr);
-  if (did_fail_to_create_image_buffer_ && Is2d() && !size().IsEmpty())
+  if (did_fail_to_create_image_buffer_ && Is2d() && !Size().IsEmpty())
     context_->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
 }
 
@@ -993,7 +989,7 @@ void HTMLCanvasElement::CreateImageBufferInternal(
   did_fail_to_create_image_buffer_ = true;
   image_buffer_is_clear_ = true;
 
-  if (!ImageBuffer::CanCreateImageBuffer(size()))
+  if (!ImageBuffer::CanCreateImageBuffer(Size()))
     return;
 
   OpacityMode opacity_mode = !context_ || context_->CreationAttributes().alpha()
@@ -1138,7 +1134,7 @@ void HTMLCanvasElement::EnsureUnacceleratedImageBuffer() {
   DiscardImageBuffer();
   OpacityMode opacity_mode =
       context_->CreationAttributes().alpha() ? kNonOpaque : kOpaque;
-  image_buffer_ = ImageBuffer::Create(size(), opacity_mode);
+  image_buffer_ = ImageBuffer::Create(Size(), opacity_mode);
   did_fail_to_create_image_buffer_ = !image_buffer_;
 }
 
@@ -1149,7 +1145,7 @@ PassRefPtr<Image> HTMLCanvasElement::CopiedImage(
   if (!IsPaintable())
     return nullptr;
   if (!context_)
-    return CreateTransparentImage(size());
+    return CreateTransparentImage(Size());
 
   if (context_->GetContextType() ==
       CanvasRenderingContext::kContextImageBitmap) {
@@ -1260,7 +1256,7 @@ PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
   }
 
   if (!context_) {
-    RefPtr<Image> result = CreateTransparentImage(size());
+    RefPtr<Image> result = CreateTransparentImage(Size());
     *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
     return result;
   }
@@ -1282,7 +1278,7 @@ PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     if (HasImageBuffer()) {
       sk_image = Buffer()->NewSkImageSnapshot(hint, reason);
     } else {
-      sk_image = CreateTransparentSkImage(size());
+      sk_image = CreateTransparentSkImage(Size());
     }
   } else {
     if (ExpensiveCanvasHeuristicParameters::
@@ -1296,7 +1292,7 @@ PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     if (image) {
       sk_image = image->ImageForCurrentFrame();
     } else {
-      sk_image = CreateTransparentSkImage(size());
+      sk_image = CreateTransparentSkImage(Size());
     }
   }
 

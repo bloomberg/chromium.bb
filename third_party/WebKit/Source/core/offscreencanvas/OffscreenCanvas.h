@@ -5,17 +5,18 @@
 #ifndef OffscreenCanvas_h
 #define OffscreenCanvas_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/html/canvas/CanvasRenderingContextHost.h"
 #include "core/offscreencanvas/ImageEncodeOptions.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/heap/Handle.h"
-#include <memory>
 
 namespace blink {
 
@@ -30,8 +31,10 @@ class CORE_EXPORT OffscreenCanvas final
     : public EventTargetWithInlineData,
       public CanvasImageSource,
       public ImageBitmapSource,
+      public CanvasRenderingContextHost,
       public OffscreenCanvasFrameDispatcherClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(OffscreenCanvas);
   USING_PRE_FINALIZER(OffscreenCanvas, Dispose);
 
  public:
@@ -39,6 +42,7 @@ class CORE_EXPORT OffscreenCanvas final
   ~OffscreenCanvas() override;
   void Dispose();
 
+  bool IsOffscreenCanvas() const override { return true; }
   // IDL attributes
   unsigned width() const { return size_.Width(); }
   unsigned height() const { return size_.Height(); }
@@ -51,7 +55,7 @@ class CORE_EXPORT OffscreenCanvas final
                               const ImageEncodeOptions&,
                               ExceptionState&);
 
-  IntSize Size() const { return size_; }
+  const IntSize& Size() const override { return size_; }
   void SetSize(const IntSize&);
 
   void SetPlaceholderCanvasId(int canvas_id) {
@@ -92,10 +96,11 @@ class CORE_EXPORT OffscreenCanvas final
 
   ScriptPromise Commit(RefPtr<StaticBitmapImage>,
                        bool is_web_gl_software_rendering,
-                       ScriptState*);
-  void FinalizeFrame();
+                       ScriptState*,
+                       ExceptionState&) override;
+  void FinalizeFrame() override;
 
-  void DetachContext() { context_ = nullptr; }
+  void DetachContext() override { context_ = nullptr; }
 
   // OffscreenCanvasFrameDispatcherClient implementation
   void BeginFrame() final;
@@ -104,8 +109,16 @@ class CORE_EXPORT OffscreenCanvas final
   const AtomicString& InterfaceName() const final {
     return EventTargetNames::OffscreenCanvas;
   }
-  ExecutionContext* GetExecutionContext() const {
+  ExecutionContext* GetExecutionContext() const override {
     return execution_context_.Get();
+  }
+
+  ExecutionContext* GetTopExecutionContext() const override {
+    return execution_context_.Get();
+  }
+
+  const KURL& GetExecutionContextUrl() const override {
+    return GetExecutionContext()->Url();
   }
 
   // ImageBitmapSource implementation
@@ -122,7 +135,6 @@ class CORE_EXPORT OffscreenCanvas final
                                             SnapshotReason,
                                             const FloatSize&) const final;
   bool WouldTaintOrigin(SecurityOrigin*) const final { return !origin_clean_; }
-  bool IsOffscreenCanvas() const final { return true; }
   FloatSize ElementSize(const FloatSize& default_object_size) const final {
     return FloatSize(width(), height());
   }
@@ -130,6 +142,10 @@ class CORE_EXPORT OffscreenCanvas final
   bool IsAccelerated() const final;
   int SourceWidth() final { return width(); }
   int SourceHeight() final { return height(); }
+
+  DispatchEventResult HostDispatchEvent(Event* event) {
+    return DispatchEvent(event);
+  }
 
   DECLARE_VIRTUAL_TRACE();
 

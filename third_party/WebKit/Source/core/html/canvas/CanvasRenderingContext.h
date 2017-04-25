@@ -87,7 +87,7 @@ class CORE_EXPORT CanvasRenderingContext
   static ContextType ContextTypeFromId(const String& id);
   static ContextType ResolveContextTypeAliases(ContextType);
 
-  HTMLCanvasElement* canvas() const { return canvas_; }
+  CanvasRenderingContextHost* host() const { return host_; }
 
   WTF::String ColorSpaceAsString() const;
   WTF::String PixelFormatAsString() const;
@@ -104,6 +104,7 @@ class CORE_EXPORT CanvasRenderingContext
   virtual bool ShouldAntialias() const { return false; }
   virtual void SetIsHidden(bool) = 0;
   virtual bool isContextLost() const { return true; }
+  // TODO(fserb): remove SetCanvasGetContextResult.
   virtual void SetCanvasGetContextResult(RenderingContext&) { NOTREACHED(); };
   virtual void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) {
     NOTREACHED();
@@ -182,22 +183,19 @@ class CORE_EXPORT CanvasRenderingContext
   virtual bool Paint(GraphicsContext&, const IntRect&) { return false; }
 
   // OffscreenCanvas-specific methods
-  OffscreenCanvas* offscreenCanvas() const { return offscreen_canvas_; }
   virtual ImageBitmap* TransferToImageBitmap(ScriptState*) { return nullptr; }
 
   bool WouldTaintOrigin(CanvasImageSource*, SecurityOrigin*);
   void DidMoveToNewDocument(Document*);
 
-  void DetachCanvas() { canvas_ = nullptr; }
-  void DetachOffscreenCanvas() { offscreen_canvas_ = nullptr; }
+  void DetachHost() { host_ = nullptr; }
 
   const CanvasContextCreationAttributes& CreationAttributes() const {
     return creation_attributes_;
   }
 
  protected:
-  CanvasRenderingContext(HTMLCanvasElement*,
-                         OffscreenCanvas*,
+  CanvasRenderingContext(CanvasRenderingContextHost*,
                          const CanvasContextCreationAttributes&);
   DECLARE_VIRTUAL_TRACE();
   virtual void Stop() = 0;
@@ -205,8 +203,7 @@ class CORE_EXPORT CanvasRenderingContext
  private:
   void Dispose();
 
-  Member<HTMLCanvasElement> canvas_;
-  Member<OffscreenCanvas> offscreen_canvas_;
+  Member<CanvasRenderingContextHost> host_;
   HashSet<String> clean_urls_;
   HashSet<String> dirty_urls_;
   CanvasColorParams color_params_;

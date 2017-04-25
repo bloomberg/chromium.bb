@@ -927,9 +927,9 @@ TEST_F(CanvasRenderingContext2DTest, CanvasDisposedBeforeContext) {
   CreateContext(kNonOpaque);
   Context2d()->fillRect(0, 0, 1, 1);  // results in task observer registration
 
-  Context2d()->DetachCanvas();
+  Context2d()->DetachHost();
 
-  // This is the only method that is callable after detachCanvas
+  // This is the only method that is callable after DetachHost
   // Test passes by not crashing.
   Context2d()->DidProcessTask();
 

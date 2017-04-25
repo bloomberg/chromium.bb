@@ -267,6 +267,8 @@ blink_core_sources("html") {
     "canvas/CanvasRenderingContext.cpp",
     "canvas/CanvasRenderingContext.h",
     "canvas/CanvasRenderingContextFactory.h",
+    "canvas/CanvasRenderingContextHost.cpp",
+    "canvas/CanvasRenderingContextHost.h",
     "canvas/ImageElementBase.cpp",
     "canvas/ImageElementBase.h",
     "forms/BaseButtonInputType.cpp",

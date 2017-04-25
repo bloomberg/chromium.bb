@@ -36,7 +36,7 @@ OffscreenCanvas::~OffscreenCanvas() {}
 
 void OffscreenCanvas::Dispose() {
   if (context_) {
-    context_->DetachOffscreenCanvas();
+    context_->DetachHost();
     context_ = nullptr;
   }
   if (commit_promise_resolver_) {
@@ -238,7 +238,17 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
 
 ScriptPromise OffscreenCanvas::Commit(RefPtr<StaticBitmapImage> image,
                                       bool is_web_gl_software_rendering,
-                                      ScriptState* script_state) {
+                                      ScriptState* script_state,
+                                      ExceptionState& exception_state) {
+  if (!HasPlaceholderCanvas()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "Commit() was called on a context whose "
+        "OffscreenCanvas is not associated with a "
+        "canvas element.");
+    return exception_state.Reject(script_state);
+  }
+
   GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(true);
 
   if (!commit_promise_resolver_) {

@@ -26,7 +26,7 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
     ScriptState* script_state,
     OffscreenCanvas* canvas,
     const CanvasContextCreationAttributes& attrs)
-    : CanvasRenderingContext(nullptr, canvas, attrs) {
+    : CanvasRenderingContext(canvas, attrs) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (execution_context->IsDocument()) {
     if (ToDocument(execution_context)
@@ -52,30 +52,19 @@ ScriptPromise OffscreenCanvasRenderingContext2D::commit(
     ExceptionState& exception_state) {
   UseCounter::Feature feature = UseCounter::kOffscreenCanvasCommit2D;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
-  if (!offscreenCanvas()->HasPlaceholderCanvas()) {
-    // If an OffscreenCanvas has no associated canvas Id, it indicates that
-    // it is not an OffscreenCanvas created by transfering control from html
-    // canvas.
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
-        "Commit() was called on a context whose "
-        "OffscreenCanvas is not associated with a "
-        "canvas element.");
-    return exception_state.Reject(script_state);
-  }
-
   bool is_web_gl_software_rendering = false;
-  return offscreenCanvas()->Commit(TransferToStaticBitmapImage(),
-                                   is_web_gl_software_rendering, script_state);
+  return host()->Commit(TransferToStaticBitmapImage(),
+                        is_web_gl_software_rendering, script_state,
+                        exception_state);
 }
 
 // BaseRenderingContext2D implementation
 bool OffscreenCanvasRenderingContext2D::OriginClean() const {
-  return offscreenCanvas()->OriginClean();
+  return host()->OriginClean();
 }
 
 void OffscreenCanvasRenderingContext2D::SetOriginTainted() {
-  return offscreenCanvas()->SetOriginTainted();
+  return host()->SetOriginTainted();
 }
 
 bool OffscreenCanvasRenderingContext2D::WouldTaintOrigin(
@@ -93,11 +82,11 @@ bool OffscreenCanvasRenderingContext2D::WouldTaintOrigin(
 }
 
 int OffscreenCanvasRenderingContext2D::Width() const {
-  return offscreenCanvas()->width();
+  return host()->Size().Width();
 }
 
 int OffscreenCanvasRenderingContext2D::Height() const {
-  return offscreenCanvas()->height();
+  return host()->Size().Height();
 }
 
 bool OffscreenCanvasRenderingContext2D::HasImageBuffer() const {
@@ -186,7 +175,7 @@ ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
       image_buffer_->NewSkImageSnapshot(kPreferNoAcceleration, reason);
   ImageData* image_data = nullptr;
   if (snapshot) {
-    image_data = ImageData::Create(offscreenCanvas()->Size());
+    image_data = ImageData::Create(host()->Size());
     SkImageInfo image_info =
         SkImageInfo::Make(this->Width(), this->Height(), kRGBA_8888_SkColorType,
                           kUnpremul_SkAlphaType);
@@ -232,11 +221,11 @@ AffineTransform OffscreenCanvasRenderingContext2D::BaseTransform() const {
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {}
 
 bool OffscreenCanvasRenderingContext2D::StateHasFilter() {
-  return GetState().HasFilterForOffscreenCanvas(offscreenCanvas()->Size());
+  return GetState().HasFilterForOffscreenCanvas(host()->Size());
 }
 
 sk_sp<SkImageFilter> OffscreenCanvasRenderingContext2D::StateGetFilter() {
-  return GetState().GetFilterForOffscreenCanvas(offscreenCanvas()->Size());
+  return GetState().GetFilterForOffscreenCanvas(host()->Size());
 }
 
 void OffscreenCanvasRenderingContext2D::ValidateStateStack() const {

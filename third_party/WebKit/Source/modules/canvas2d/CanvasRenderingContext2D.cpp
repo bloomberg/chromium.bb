@@ -115,7 +115,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
     HTMLCanvasElement* canvas,
     const CanvasContextCreationAttributes& attrs,
     Document& document)
-    : CanvasRenderingContext(canvas, nullptr, attrs),
+    : CanvasRenderingContext(canvas, attrs),
       context_lost_mode_(kNotLostContext),
       context_restorable_(true),
       try_restore_context_attempt_count_(0),
@@ -365,11 +365,11 @@ void CanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
 }
 
 bool CanvasRenderingContext2D::StateHasFilter() {
-  return GetState().HasFilter(canvas(), canvas()->size(), this);
+  return GetState().HasFilter(canvas(), canvas()->Size(), this);
 }
 
 sk_sp<SkImageFilter> CanvasRenderingContext2D::StateGetFilter() {
-  return GetState().GetFilter(canvas(), canvas()->size(), this);
+  return GetState().GetFilter(canvas(), canvas()->Size(), this);
 }
 
 void CanvasRenderingContext2D::SnapshotStateForFilter() {
