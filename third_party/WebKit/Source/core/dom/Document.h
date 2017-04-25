@@ -784,18 +784,18 @@ class CORE_EXPORT Document : public ContainerNode,
   // keep track of what types of event listeners are registered, so we don't
   // dispatch events unnecessarily
   enum ListenerType {
-    DOMSUBTREEMODIFIED_LISTENER = 1,
-    DOMNODEINSERTED_LISTENER = 1 << 1,
-    DOMNODEREMOVED_LISTENER = 1 << 2,
-    DOMNODEREMOVEDFROMDOCUMENT_LISTENER = 1 << 3,
-    DOMNODEINSERTEDINTODOCUMENT_LISTENER = 1 << 4,
-    DOMCHARACTERDATAMODIFIED_LISTENER = 1 << 5,
-    ANIMATIONEND_LISTENER = 1 << 6,
-    ANIMATIONSTART_LISTENER = 1 << 7,
-    ANIMATIONITERATION_LISTENER = 1 << 8,
-    TRANSITIONEND_LISTENER = 1 << 9,
-    SCROLL_LISTENER = 1 << 10,
-    LOAD_LISTENER_AT_CAPTURE_PHASE_OR_AT_STYLE_ELEMENT = 1 << 11
+    kDOMSubtreeModifiedListener = 1,
+    kDOMNodeInsertedListener = 1 << 1,
+    kDOMNodeRemovedListener = 1 << 2,
+    kDOMNodeRemovedFromDocumentListener = 1 << 3,
+    kDOMNodeInsertedIntoDocumentListener = 1 << 4,
+    kDOMCharacterDataModifiedListener = 1 << 5,
+    kAnimationEndListener = 1 << 6,
+    kAnimationStartListener = 1 << 7,
+    kAnimationIterationListener = 1 << 8,
+    kTransitionEndListener = 1 << 9,
+    kScrollListener = 1 << 10,
+    kLoadListenerAtCapturePhaseOrAtStyleElement = 1 << 11
     // 4 bits remaining
   };
 

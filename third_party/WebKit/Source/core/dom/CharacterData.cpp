@@ -213,7 +213,7 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
   // Spec: https://html.spec.whatwg.org/multipage/syntax.html#insert-a-character
   if (source != kUpdateFromParser && !IsInShadowTree()) {
     if (GetDocument().HasListenerType(
-            Document::DOMCHARACTERDATAMODIFIED_LISTENER))
+            Document::kDOMCharacterDataModifiedListener))
       DispatchScopedEvent(
           MutationEvent::Create(EventTypeNames::DOMCharacterDataModified, true,
                                 nullptr, old_data, data_));

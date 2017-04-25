@@ -1237,13 +1237,13 @@ static void DispatchChildInsertionEvents(Node& child) {
   Document* document = &child.GetDocument();
 
   if (c->parentNode() &&
-      document->HasListenerType(Document::DOMNODEINSERTED_LISTENER))
+      document->HasListenerType(Document::kDOMNodeInsertedListener))
     c->DispatchScopedEvent(MutationEvent::Create(
         EventTypeNames::DOMNodeInserted, true, c->parentNode()));
 
   // dispatch the DOMNodeInsertedIntoDocument event to all descendants
   if (c->isConnected() && document->HasListenerType(
-                              Document::DOMNODEINSERTEDINTODOCUMENT_LISTENER)) {
+                              Document::kDOMNodeInsertedIntoDocumentListener)) {
     for (; c; c = NodeTraversal::Next(*c, &child))
       c->DispatchScopedEvent(MutationEvent::Create(
           EventTypeNames::DOMNodeInsertedIntoDocument, false));
@@ -1267,7 +1267,7 @@ static void DispatchChildRemovalEvents(Node& child) {
 
   // Dispatch pre-removal mutation events.
   if (c->parentNode() &&
-      document->HasListenerType(Document::DOMNODEREMOVED_LISTENER)) {
+      document->HasListenerType(Document::kDOMNodeRemovedListener)) {
     NodeChildRemovalTracker scope(child);
     c->DispatchScopedEvent(MutationEvent::Create(EventTypeNames::DOMNodeRemoved,
                                                  true, c->parentNode()));
@@ -1275,7 +1275,7 @@ static void DispatchChildRemovalEvents(Node& child) {
 
   // Dispatch the DOMNodeRemovedFromDocument event to all descendants.
   if (c->isConnected() && document->HasListenerType(
-                              Document::DOMNODEREMOVEDFROMDOCUMENT_LISTENER)) {
+                              Document::kDOMNodeRemovedFromDocumentListener)) {
     NodeChildRemovalTracker scope(child);
     for (; c; c = NodeTraversal::Next(*c, &child))
       c->DispatchScopedEvent(MutationEvent::Create(

@@ -1519,11 +1519,10 @@ unsigned short Node::compareDocumentPosition(
 
   // There was no difference between the two parent chains, i.e., one was a
   // subset of the other.  The shorter chain is the ancestor.
-  return index1 < index2
-             ? kDocumentPositionFollowing | kDocumentPositionContainedBy |
-                   connection
-             : kDocumentPositionPreceding | kDocumentPositionContains |
-                   connection;
+  return index1 < index2 ? kDocumentPositionFollowing |
+                               kDocumentPositionContainedBy | connection
+                         : kDocumentPositionPreceding |
+                               kDocumentPositionContains | connection;
 }
 
 String Node::DebugName() const {
@@ -2126,7 +2125,7 @@ void Node::DispatchSubtreeModifiedEvent() {
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
 
-  if (!GetDocument().HasListenerType(Document::DOMSUBTREEMODIFIED_LISTENER))
+  if (!GetDocument().HasListenerType(Document::kDOMSubtreeModifiedListener))
     return;
 
   DispatchScopedEvent(

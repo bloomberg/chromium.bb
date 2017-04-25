@@ -4556,49 +4556,49 @@ void Document::AddListenerTypeIfNeeded(const AtomicString& event_type,
                                        EventTarget& event_target) {
   if (event_type == EventTypeNames::DOMSubtreeModified) {
     UseCounter::Count(*this, UseCounter::kDOMSubtreeModifiedEvent);
-    AddMutationEventListenerTypeIfEnabled(DOMSUBTREEMODIFIED_LISTENER);
+    AddMutationEventListenerTypeIfEnabled(kDOMSubtreeModifiedListener);
   } else if (event_type == EventTypeNames::DOMNodeInserted) {
     UseCounter::Count(*this, UseCounter::kDOMNodeInsertedEvent);
-    AddMutationEventListenerTypeIfEnabled(DOMNODEINSERTED_LISTENER);
+    AddMutationEventListenerTypeIfEnabled(kDOMNodeInsertedListener);
   } else if (event_type == EventTypeNames::DOMNodeRemoved) {
     UseCounter::Count(*this, UseCounter::kDOMNodeRemovedEvent);
-    AddMutationEventListenerTypeIfEnabled(DOMNODEREMOVED_LISTENER);
+    AddMutationEventListenerTypeIfEnabled(kDOMNodeRemovedListener);
   } else if (event_type == EventTypeNames::DOMNodeRemovedFromDocument) {
     UseCounter::Count(*this, UseCounter::kDOMNodeRemovedFromDocumentEvent);
-    AddMutationEventListenerTypeIfEnabled(DOMNODEREMOVEDFROMDOCUMENT_LISTENER);
+    AddMutationEventListenerTypeIfEnabled(kDOMNodeRemovedFromDocumentListener);
   } else if (event_type == EventTypeNames::DOMNodeInsertedIntoDocument) {
     UseCounter::Count(*this, UseCounter::kDOMNodeInsertedIntoDocumentEvent);
-    AddMutationEventListenerTypeIfEnabled(DOMNODEINSERTEDINTODOCUMENT_LISTENER);
+    AddMutationEventListenerTypeIfEnabled(kDOMNodeInsertedIntoDocumentListener);
   } else if (event_type == EventTypeNames::DOMCharacterDataModified) {
     UseCounter::Count(*this, UseCounter::kDOMCharacterDataModifiedEvent);
-    AddMutationEventListenerTypeIfEnabled(DOMCHARACTERDATAMODIFIED_LISTENER);
+    AddMutationEventListenerTypeIfEnabled(kDOMCharacterDataModifiedListener);
   } else if (event_type == EventTypeNames::webkitAnimationStart ||
              event_type == EventTypeNames::animationstart) {
-    AddListenerType(ANIMATIONSTART_LISTENER);
+    AddListenerType(kAnimationStartListener);
   } else if (event_type == EventTypeNames::webkitAnimationEnd ||
              event_type == EventTypeNames::animationend) {
-    AddListenerType(ANIMATIONEND_LISTENER);
+    AddListenerType(kAnimationEndListener);
   } else if (event_type == EventTypeNames::webkitAnimationIteration ||
              event_type == EventTypeNames::animationiteration) {
-    AddListenerType(ANIMATIONITERATION_LISTENER);
+    AddListenerType(kAnimationIterationListener);
     if (View()) {
       // Need to re-evaluate time-to-effect-change for any running animations.
       View()->ScheduleAnimation();
     }
   } else if (event_type == EventTypeNames::webkitTransitionEnd ||
              event_type == EventTypeNames::transitionend) {
-    AddListenerType(TRANSITIONEND_LISTENER);
+    AddListenerType(kTransitionEndListener);
   } else if (event_type == EventTypeNames::scroll) {
-    AddListenerType(SCROLL_LISTENER);
+    AddListenerType(kScrollListener);
   } else if (event_type == EventTypeNames::load) {
     if (Node* node = event_target.ToNode()) {
       if (isHTMLStyleElement(*node)) {
-        AddListenerType(LOAD_LISTENER_AT_CAPTURE_PHASE_OR_AT_STYLE_ELEMENT);
+        AddListenerType(kLoadListenerAtCapturePhaseOrAtStyleElement);
         return;
       }
     }
     if (event_target.HasCapturingEventListeners(event_type))
-      AddListenerType(LOAD_LISTENER_AT_CAPTURE_PHASE_OR_AT_STYLE_ELEMENT);
+      AddListenerType(kLoadListenerAtCapturePhaseOrAtStyleElement);
   }
 }
 

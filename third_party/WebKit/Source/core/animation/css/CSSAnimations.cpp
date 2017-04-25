@@ -1074,7 +1074,7 @@ void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
 
 bool CSSAnimations::AnimationEventDelegate::RequiresIterationEvents(
     const AnimationEffectReadOnly& animation_node) {
-  return GetDocument().HasListenerType(Document::ANIMATIONITERATION_LISTENER);
+  return GetDocument().HasListenerType(Document::kAnimationIterationListener);
 }
 
 void CSSAnimations::AnimationEventDelegate::OnEventCondition(
@@ -1090,7 +1090,7 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
        previous_phase_ == AnimationEffectReadOnly::kPhaseBefore)) {
     const double start_delay = animation_node.SpecifiedTiming().start_delay;
     const double elapsed_time = start_delay < 0 ? -start_delay : 0;
-    MaybeDispatch(Document::ANIMATIONSTART_LISTENER,
+    MaybeDispatch(Document::kAnimationStartListener,
                   EventTypeNames::animationstart, elapsed_time);
   }
 
@@ -1105,13 +1105,13 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
     const double elapsed_time =
         animation_node.SpecifiedTiming().iteration_duration *
         (previous_iteration_ + 1);
-    MaybeDispatch(Document::ANIMATIONITERATION_LISTENER,
+    MaybeDispatch(Document::kAnimationIterationListener,
                   EventTypeNames::animationiteration, elapsed_time);
   }
 
   if (current_phase == AnimationEffectReadOnly::kPhaseAfter &&
       previous_phase_ != AnimationEffectReadOnly::kPhaseAfter)
-    MaybeDispatch(Document::ANIMATIONEND_LISTENER, EventTypeNames::animationend,
+    MaybeDispatch(Document::kAnimationEndListener, EventTypeNames::animationend,
                   animation_node.ActiveDurationInternal());
 
   previous_phase_ = current_phase;
@@ -1133,7 +1133,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
       animation_node.GetPhase();
   if (current_phase == AnimationEffectReadOnly::kPhaseAfter &&
       current_phase != previous_phase_ &&
-      GetDocument().HasListenerType(Document::TRANSITIONEND_LISTENER)) {
+      GetDocument().HasListenerType(Document::kTransitionEndListener)) {
     String property_name = property_.IsCSSCustomProperty()
                                ? property_.CustomPropertyName()
                                : getPropertyNameString(property_.CssProperty());
