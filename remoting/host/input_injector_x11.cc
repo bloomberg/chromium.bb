@@ -10,6 +10,7 @@
 #include <X11/extensions/XTest.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
+#include <X11/keysym.h>
 #undef Status  // Xlib.h #defines this, which breaks protobuf headers.
 
 #include <set>
@@ -120,6 +121,9 @@ class InputInjectorX11 : public InputInjector {
 
     // Enables or disables keyboard auto-repeat globally.
     void SetAutoRepeatEnabled(bool enabled);
+
+    // Sets the keyboard lock states to those provided.
+    void SetLockStates(uint32_t states);
 
     void InjectScrollWheelClicks(int button, int count);
     // Compensates for global button mappings and resets the XTest device
@@ -276,6 +280,10 @@ void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
       XTestFakeKeyEvent(display_, keycode, False, CurrentTime);
     }
 
+    if (event.has_lock_states()) {
+      SetLockStates(event.lock_states());
+    }
+
     if (pressed_keys_.empty()) {
       // Disable auto-repeat, if necessary, to avoid triggering auto-repeat
       // if network congestion delays the key-up event from the client.
@@ -345,6 +353,20 @@ void InputInjectorX11::Core::SetAutoRepeatEnabled(bool mode) {
   XKeyboardControl control;
   control.auto_repeat_mode = mode ? AutoRepeatModeOn : AutoRepeatModeOff;
   XChangeKeyboardControl(display_, KBAutoRepeatMode, &control);
+}
+
+void InputInjectorX11::Core::SetLockStates(uint32_t states) {
+  unsigned int caps_lock_mask = XkbKeysymToModifiers(display_, XK_Caps_Lock);
+  unsigned int num_lock_mask = XkbKeysymToModifiers(display_, XK_Num_Lock);
+  unsigned int lock_values = 0;
+  if (states & protocol::KeyEvent::LOCK_STATES_CAPSLOCK) {
+    lock_values |= caps_lock_mask;
+  }
+  if (states & protocol::KeyEvent::LOCK_STATES_NUMLOCK) {
+    lock_values |= num_lock_mask;
+  }
+  XkbLockModifiers(display_, XkbUseCoreKbd, caps_lock_mask | num_lock_mask,
+                   lock_values);
 }
 
 void InputInjectorX11::Core::InjectScrollWheelClicks(int button, int count) {
