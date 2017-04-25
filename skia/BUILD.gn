@@ -110,7 +110,7 @@ config("skia_library_config") {
     include_dirs += [ "//third_party/skia/include/utils/ios" ]
   }
 
-  defines = [ "SK_IGNORE_GASP_VERSION_CHECK" ]
+  defines = []
 
   if (is_component_build) {
     defines += [ "SKIA_IMPLEMENTATION=1" ]
