@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
 
@@ -111,11 +110,9 @@ JumpListUpdater::~JumpListUpdater() {
 
 // static
 bool JumpListUpdater::IsEnabled() {
-  // JumpList is implemented only on Windows 7 or later.
   // Do not create custom JumpLists in tests. See http://crbug.com/389375.
-  return base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kTestType);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kTestType);
 }
 
 bool JumpListUpdater::BeginUpdate() {

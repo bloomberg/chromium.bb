@@ -20,6 +20,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -64,7 +65,12 @@ using JumpListData = JumpList::JumpListData;
 namespace {
 
 // Delay jumplist updates to allow collapsing of redundant update requests.
-const int kDelayForJumplistUpdateInMS = 3500;
+constexpr base::TimeDelta kDelayForJumplistUpdate =
+    base::TimeDelta::FromMilliseconds(3500);
+
+// Timeout jumplist updates for users with extremely slow OS.
+constexpr base::TimeDelta kTimeOutForJumplistUpdate =
+    base::TimeDelta::FromMilliseconds(500);
 
 // Append the common switches to each shell link.
 void AppendCommonSwitches(ShellLinkItem* shell_link) {
@@ -176,21 +182,30 @@ bool UpdateTaskCategory(
   return jumplist_updater->AddTasks(items);
 }
 
-// Updates the application JumpList.
-bool UpdateJumpList(const wchar_t* app_id,
+// Updates the application JumpList, which consists of 1) delete old icon files;
+// 2) create new icon files; 3) notify the OS.
+// Note that any timeout error along the way results in the old jumplist being
+// left as-is, while any non-timeout error results in the old jumplist being
+// left as-is, but without icon files.
+void UpdateJumpList(const wchar_t* app_id,
                     const base::FilePath& icon_dir,
                     const ShellLinkItemList& most_visited_pages,
                     const ShellLinkItemList& recently_closed_pages,
                     IncognitoModePrefs::Availability incognito_availability) {
-  // JumpList is implemented only on Windows 7 or later.
-  // So, we should return now when this function is called on earlier versions
-  // of Windows.
   if (!JumpListUpdater::IsEnabled())
-    return true;
+    return;
+
+  // Records the time cost of starting a JumpListUpdater.
+  base::ElapsedTimer begin_update_timer;
 
   JumpListUpdater jumplist_updater(app_id);
   if (!jumplist_updater.BeginUpdate())
-    return false;
+    return;
+
+  // Stops jumplist update if JumpListUpdater's start times out, as it's very
+  // likely the following update steps will also take a long time.
+  if (begin_update_timer.Elapsed() >= kTimeOutForJumplistUpdate)
+    return;
 
   // We allocate 60% of the given JumpList slots to "most-visited" items
   // and 40% to "recently-closed" items, respectively.
@@ -218,21 +233,12 @@ bool UpdateJumpList(const wchar_t* app_id,
   // links should be updated anyway, as it doesn't involve disk IO. In this
   // case, Chrome's icon will be used for the new links.
 
-  if (base::DirectoryExists(icon_dir) && base::IsDirectoryEmpty(icon_dir)) {
-    // TODO(chengx): Remove this UMA metric after fixing http://crbug.com/40407.
-    UMA_HISTOGRAM_COUNTS_100(
-        "WinJumplist.CreateIconFilesCount",
-        most_visited_pages.size() + recently_closed_pages.size());
+  bool should_create_icons =
+      base::DirectoryExists(icon_dir) && base::IsDirectoryEmpty(icon_dir);
 
-    // Create icon files for shortcuts in the "Most Visited" category.
+  // Create icon files for shortcuts in the "Most Visited" category.
+  if (should_create_icons)
     CreateIconFiles(icon_dir, most_visited_pages, most_visited_items);
-
-    // Create icon files for shortcuts in the "Recently Closed" category.
-    CreateIconFiles(icon_dir, recently_closed_pages, recently_closed_items);
-  }
-
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.UpdateJumpListDuration");
 
   // Update the "Most Visited" category of the JumpList if it exists.
   // This update request is applied into the JumpList when we commit this
@@ -240,25 +246,26 @@ bool UpdateJumpList(const wchar_t* app_id,
   if (!jumplist_updater.AddCustomCategory(
           l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED),
           most_visited_pages, most_visited_items)) {
-    return false;
+    return;
   }
+
+  // Create icon files for shortcuts in the "Recently Closed" category.
+  if (should_create_icons)
+    CreateIconFiles(icon_dir, recently_closed_pages, recently_closed_items);
 
   // Update the "Recently Closed" category of the JumpList.
   if (!jumplist_updater.AddCustomCategory(
           l10n_util::GetStringUTF16(IDS_RECENTLY_CLOSED),
           recently_closed_pages, recently_closed_items)) {
-    return false;
+    return;
   }
 
   // Update the "Tasks" category of the JumpList.
   if (!UpdateTaskCategory(&jumplist_updater, incognito_availability))
-    return false;
+    return;
 
   // Commit this transaction and send the updated JumpList to Windows.
-  if (!jumplist_updater.CommitUpdate())
-    return false;
-
-  return true;
+  jumplist_updater.CommitUpdate();
 }
 
 // Updates the jumplist, once all the data has been fetched.
@@ -282,9 +289,7 @@ void RunUpdateJumpList(IncognitoModePrefs::Availability incognito_availability,
     local_recently_closed_pages = data->recently_closed_pages_;
   }
 
-  // Create a new JumpList and replace the current JumpList with it. The
-  // jumplist links are updated anyway, while the jumplist icons may not as
-  // mentioned above.
+  // Updates the application JumpList.
   UpdateJumpList(app_id.c_str(), icon_dir, local_most_visited_pages,
                  local_recently_closed_pages, incognito_availability);
 }
@@ -595,9 +600,7 @@ void JumpList::PostRunUpdate() {
   if (timer_.IsRunning()) {
     timer_.Reset();
   } else {
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(kDelayForJumplistUpdateInMS),
-                 this,
+    timer_.Start(FROM_HERE, kDelayForJumplistUpdate, this,
                  &JumpList::DeferredRunUpdate);
   }
 }
