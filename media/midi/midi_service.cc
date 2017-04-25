@@ -17,10 +17,10 @@ namespace {
 bool IsDynamicInstantiationEnabled() {
 // TODO(toyoshim): Support on all platforms. See https://crbug.com/672793.
 #if defined(OS_LINUX) || defined(OS_WIN)
+  return true;
+#else
   return base::FeatureList::IsEnabled(
       features::kMidiManagerDynamicInstantiation);
-#else
-  return false;
 #endif
 }
 
