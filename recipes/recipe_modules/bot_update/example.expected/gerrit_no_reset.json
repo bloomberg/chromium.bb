@@ -16,6 +16,7 @@
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD",
+      "--output_manifest",
       "--gerrit_no_reset"
     ],
     "env": {
@@ -31,6 +32,12 @@
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"src\": \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src.git\", @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"src\", @@@",

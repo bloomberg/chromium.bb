@@ -919,8 +919,9 @@ def parse_args():
                         'Can prepend root@<rev> to specify which repository, '
                         'where root is either a filesystem path or git https '
                         'url. To specify Tip of Tree, set rev to HEAD. ')
+  # TODO(machenbach): Remove the flag when all uses have been removed.
   parse.add_option('--output_manifest', action='store_true',
-                   help=('Add manifest json to the json output.'))
+                   help=('Deprecated.'))
   parse.add_option('--clobber', action='store_true',
                    help='Delete checkout first, always')
   parse.add_option('--output_json',
@@ -1088,7 +1089,6 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
     #raise Exception('No got_revision(s) found in gclient output')
 
   if options.output_json:
-    manifest = create_manifest() if options.output_manifest else None
     # Tell recipes information such as root, got_revision, etc.
     emit_json(options.output_json,
               did_run=True,
@@ -1097,7 +1097,7 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
               step_text=step_text,
               fixed_revisions=revisions,
               properties=got_revisions,
-              manifest=manifest)
+              manifest=create_manifest())
 
 
 def print_debug_info():
