@@ -542,24 +542,24 @@ cc::SurfaceId RenderWidgetHostViewMac::SurfaceIdForTesting() const {
 ui::TextInputType RenderWidgetHostViewMac::GetTextInputType() {
   if (!GetActiveWidget())
     return ui::TEXT_INPUT_TYPE_NONE;
-  return GetTextInputManager()->GetTextInputState()->type;
+  return text_input_manager_->GetTextInputState()->type;
 }
 
 RenderWidgetHostImpl* RenderWidgetHostViewMac::GetActiveWidget() {
-  return GetTextInputManager() ? GetTextInputManager()->GetActiveWidget()
-                               : nullptr;
+  return text_input_manager_ ? text_input_manager_->GetActiveWidget() : nullptr;
 }
 
 const TextInputManager::CompositionRangeInfo*
 RenderWidgetHostViewMac::GetCompositionRangeInfo() {
-  return GetTextInputManager() ? text_input_manager_->GetCompositionRangeInfo()
-                               : nullptr;
+  return text_input_manager_ ? text_input_manager_->GetCompositionRangeInfo()
+                             : nullptr;
 }
 
 const TextInputManager::TextSelection*
 RenderWidgetHostViewMac::GetTextSelection() {
-  return text_input_manager_->GetTextSelection(
-      GetFocusedViewForTextSelection());
+  return text_input_manager_ ? text_input_manager_->GetTextSelection(
+                                   GetFocusedViewForTextSelection())
+                             : nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
