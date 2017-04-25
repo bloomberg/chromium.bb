@@ -23,6 +23,7 @@ class U2fApduResponse {
     SW_NO_ERROR = 0x9000,
     SW_CONDITIONS_NOT_SATISFIED = 0x6985,
     SW_WRONG_DATA = 0x6A80,
+    SW_WRONG_LENGTH = 0x6700,
   };
 
   U2fApduResponse(std::vector<uint8_t> message, Status response_status);

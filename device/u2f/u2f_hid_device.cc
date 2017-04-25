@@ -25,7 +25,6 @@ U2fHidDevice::U2fHidDevice(scoped_refptr<HidDeviceInfo> device_info)
       state_(State::INIT),
       device_info_(device_info),
       weak_factory_(this) {
-  channel_id_ = kBroadcastChannel;
 }
 
 U2fHidDevice::~U2fHidDevice() {
