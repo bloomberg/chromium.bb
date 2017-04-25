@@ -90,6 +90,7 @@ class U2fHidDevice : public U2fDevice {
   void OnTimeout(const DeviceCallback& callback);
   void OnDeviceTransact(bool success,
                         std::unique_ptr<U2fApduResponse> response);
+  base::WeakPtr<U2fDevice> GetWeakPtr() override;
 
   State state_;
   base::CancelableClosure timeout_callback_;

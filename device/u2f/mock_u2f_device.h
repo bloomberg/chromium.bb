@@ -29,6 +29,7 @@ class MockU2fDevice : public U2fDevice {
                void(U2fApduCommand* command, const DeviceCallback& cb));
   void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
                       const DeviceCallback& cb) override;
+  base::WeakPtr<U2fDevice> GetWeakPtr() override;
   static void TransactNoError(std::unique_ptr<U2fApduCommand> command,
                               const DeviceCallback& cb);
   static void NotSatisfied(U2fApduCommand* cmd, const DeviceCallback& cb);
@@ -36,6 +37,9 @@ class MockU2fDevice : public U2fDevice {
   static void NoErrorSign(U2fApduCommand* cmd, const DeviceCallback& cb);
   static void NoErrorRegister(U2fApduCommand* cmd, const DeviceCallback& cb);
   static void WinkDoNothing(const WinkCallback& cb);
+
+ private:
+  base::WeakPtrFactory<U2fDevice> weak_factory_;
 };
 
 }  // namespace device

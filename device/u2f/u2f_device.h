@@ -60,6 +60,7 @@ class U2fDevice {
   // the device communication transaction.
   virtual void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
                               const DeviceCallback& callback) = 0;
+  virtual base::WeakPtr<U2fDevice> GetWeakPtr() = 0;
 
   uint32_t channel_id_;
   uint8_t capabilities_;
@@ -81,8 +82,6 @@ class U2fDevice {
   void OnWink(const WinkCallback& callback,
               bool success,
               std::unique_ptr<U2fApduResponse> response);
-
-  base::WeakPtrFactory<U2fDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(U2fDevice);
 };

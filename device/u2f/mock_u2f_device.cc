@@ -6,7 +6,7 @@
 
 namespace device {
 
-MockU2fDevice::MockU2fDevice() {}
+MockU2fDevice::MockU2fDevice() : weak_factory_(this) {}
 
 MockU2fDevice::~MockU2fDevice() {}
 
@@ -48,6 +48,10 @@ void MockU2fDevice::NoErrorRegister(U2fApduCommand* cmd,
 // static
 void MockU2fDevice::WinkDoNothing(const WinkCallback& cb) {
   cb.Run();
+}
+
+base::WeakPtr<U2fDevice> MockU2fDevice::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace device
