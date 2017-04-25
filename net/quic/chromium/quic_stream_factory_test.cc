@@ -278,9 +278,7 @@ class QuicStreamFactoryTestBase {
 
     MockQuicData socket_data;
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-    socket_data.AddWrite(
-        ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                kDefaultMaxUncompressedHeaderSize, nullptr));
+    socket_data.AddWrite(ConstructInitialSettingsPacket());
     socket_data.AddSocketDataToFactory(&socket_factory_);
 
     QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -392,13 +390,14 @@ class QuicStreamFactoryTestBase {
         std::move(headers), &spdy_headers_frame_len);
   }
 
-  std::unique_ptr<QuicReceivedPacket> ConstructSettingsPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructInitialSettingsPacket() {
+    return client_maker_.MakeInitialSettingsPacket(1, nullptr);
+  }
+
+  std::unique_ptr<QuicReceivedPacket> ConstructInitialSettingsPacket(
       QuicPacketNumber packet_number,
-      SpdySettingsIds id,
-      size_t value,
       QuicStreamOffset* offset) {
-    return client_maker_.MakeSettingsPacket(packet_number, id, value,
-                                            kIncludeVersion, offset);
+    return client_maker_.MakeInitialSettingsPacket(packet_number, offset);
   }
 
   // Helper method for server migration tests.
@@ -419,9 +418,7 @@ class QuicStreamFactoryTestBase {
     // migration.
     MockQuicData socket_data2;
     socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-    socket_data2.AddWrite(
-        ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                kDefaultMaxUncompressedHeaderSize, nullptr));
+    socket_data2.AddWrite(ConstructInitialSettingsPacket());
     socket_data2.AddWrite(
         client_maker_.MakePingPacket(2, /*include_version=*/true));
     socket_data2.AddWrite(client_maker_.MakeRstPacket(
@@ -759,9 +756,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -855,9 +850,7 @@ TEST_P(QuicStreamFactoryTest, DefaultInitialRtt) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -888,9 +881,7 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRtt) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -921,9 +912,7 @@ TEST_P(QuicStreamFactoryTest, 2gInitialRtt) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -954,9 +943,7 @@ TEST_P(QuicStreamFactoryTest, 3gInitialRtt) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -982,9 +969,7 @@ TEST_P(QuicStreamFactoryTest, GoAway) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -1014,9 +999,7 @@ TEST_P(QuicStreamFactoryTest, GoAwayForConnectionMigrationWithPortOnly) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -1055,9 +1038,7 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
@@ -1108,9 +1089,7 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, settings_packet->data(),
                                   settings_packet->length(), 1)};
 
@@ -1147,15 +1126,11 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
 
   MockQuicData socket_data1;
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data1.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data1.AddWrite(ConstructInitialSettingsPacket());
   socket_data1.AddSocketDataToFactory(&socket_factory_);
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
@@ -1204,9 +1179,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server1(kDefaultServerHostName, 443);
@@ -1244,9 +1217,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   Initialize();
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server1(kDefaultServerHostName, 443);
@@ -1291,15 +1262,11 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
 
   MockQuicData socket_data1;
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data1.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data1.AddWrite(ConstructInitialSettingsPacket());
   socket_data1.AddSocketDataToFactory(&socket_factory_);
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server1(kDefaultServerHostName, 443);
@@ -1355,15 +1322,11 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -1416,9 +1379,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
 
   QuicStreamId stream_id = kClientDataStreamId1;
   MockQuicData socket_data;
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(
       client_maker_.MakeRstPacket(2, true, stream_id, QUIC_STREAM_CANCELLED));
   socket_data.AddRead(
@@ -1517,9 +1478,7 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
   Initialize();
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
   {
     QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -1552,17 +1511,13 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(ConstructClientRstPacket(2));
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -1635,9 +1590,7 @@ TEST_P(QuicStreamFactoryTest,
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
@@ -1699,9 +1652,7 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
@@ -1738,17 +1689,13 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(ConstructClientRstPacket(2));
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -1807,9 +1754,8 @@ void QuicStreamFactoryTestBase::OnNetworkMadeDefault(bool async_write_before) {
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      packet_number++, SETTINGS_MAX_HEADER_LIST_SIZE,
-      kDefaultMaxUncompressedHeaderSize, &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(packet_number++, &header_stream_offset));
   socket_data.AddWrite(ConstructGetRequestPacket(packet_number++,
                                                  kClientDataStreamId1, true,
                                                  true, &header_stream_offset));
@@ -1884,9 +1830,7 @@ void QuicStreamFactoryTestBase::OnNetworkMadeDefault(bool async_write_before) {
   // new session is created.
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
@@ -1940,9 +1884,8 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnected(bool async_write_before) {
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      packet_number++, SETTINGS_MAX_HEADER_LIST_SIZE,
-      kDefaultMaxUncompressedHeaderSize, &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(packet_number++, &header_stream_offset));
   socket_data.AddWrite(ConstructGetRequestPacket(packet_number++,
                                                  kClientDataStreamId1, true,
                                                  true, &header_stream_offset));
@@ -2012,9 +1955,7 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnected(bool async_write_before) {
   // new session is created.
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
@@ -2061,9 +2002,7 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnectedWithNetworkList(
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
@@ -2119,9 +2058,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -2170,9 +2107,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultConnectionMigrationDisabled) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -2224,9 +2159,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStream) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -2274,9 +2207,7 @@ TEST_P(QuicStreamFactoryTest,
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -2326,9 +2257,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNoOpenStreams) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
@@ -2366,9 +2295,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNoOpenStreams) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
@@ -2407,9 +2334,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedPauseBeforeConnected) {
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data.AddWrite(ConstructGetRequestPacket(2, kClientDataStreamId1, true,
                                                  true, &header_stream_offset));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -2488,9 +2414,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedPauseBeforeConnected) {
   // Create a new request and verify that a new session is created.
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
   EXPECT_EQ(ERR_IO_PENDING,
@@ -2520,16 +2444,12 @@ TEST_P(QuicStreamFactoryTest,
 
   MockQuicData socket_data1;
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data1.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data1.AddWrite(ConstructInitialSettingsPacket());
   socket_data1.AddWrite(ASYNC, OK);
   socket_data1.AddSocketDataToFactory(&socket_factory_);
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddWrite(ASYNC, OK);
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
@@ -2630,9 +2550,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data.AddWrite(ConstructGetRequestPacket(2, kClientDataStreamId1, true,
                                                  true, &header_stream_offset));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -2698,9 +2617,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   // new session is created.
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
@@ -2757,9 +2674,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyWithAsyncWrites) {
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data.AddWrite(ConstructGetRequestPacket(2, kClientDataStreamId1, true,
                                                  true, &header_stream_offset));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -2827,9 +2743,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyWithAsyncWrites) {
   // new session is created.
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
@@ -2879,9 +2793,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -2933,9 +2845,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -2987,9 +2897,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -3047,9 +2955,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteError(
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -3137,9 +3044,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNoNewNetwork(
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -3228,9 +3133,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -3294,9 +3197,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMigrationDisabled(
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -3370,9 +3271,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnMultipleWriteErrors(
     if (i < kMaxReadersPerQuicSession) {
       socket_data[i].AddRead(SYNCHRONOUS, ERR_IO_PENDING);
       if (i == 0) {
-        socket_data[i].AddWrite(ConstructSettingsPacket(
-            1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-            nullptr));
+        socket_data[i].AddWrite(ConstructInitialSettingsPacket(1, nullptr));
       }
       socket_data[i].AddWrite(
           (i % 2 == 0) ? first_write_error_mode : second_write_error_mode,
@@ -3456,9 +3355,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorWithNotificationQueued(
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -3554,9 +3452,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnNotificationWithWriteErrorQueued(
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -3653,9 +3550,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorPauseBeforeConnected(
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data.AddWrite(SYNCHRONOUS, ERR_FAILED);
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -3737,9 +3633,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorPauseBeforeConnected(
   // new session is created.
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
@@ -3788,9 +3682,8 @@ void QuicStreamFactoryTestBase::
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data.AddWrite(SYNCHRONOUS, ERR_FAILED);
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -3880,9 +3773,7 @@ void QuicStreamFactoryTestBase::
   // new session is created.
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
@@ -3943,9 +3834,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyToBadSocket) {
   MockQuicData socket_data;
   QuicStreamOffset header_stream_offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data.AddWrite(ConstructGetRequestPacket(2, kClientDataStreamId1, true,
                                                  true, &header_stream_offset));
   socket_data.AddSocketDataToFactory(&socket_factory_);
@@ -4007,9 +3897,8 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
   MockQuicData socket_data1;
   QuicStreamOffset header_stream_offset = 0;
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data1.AddWrite(ConstructSettingsPacket(
-      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
-      &header_stream_offset));
+  socket_data1.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
   socket_data1.AddWrite(ConstructGetRequestPacket(2, kClientDataStreamId1, true,
                                                   true, &header_stream_offset));
   socket_data1.AddSocketDataToFactory(&socket_factory_);
@@ -4150,9 +4039,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv6Fails) {
   // Set up only socket data provider.
   MockQuicData socket_data1;
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data1.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data1.AddWrite(ConstructInitialSettingsPacket());
   socket_data1.AddWrite(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   socket_data1.AddSocketDataToFactory(&socket_factory_);
@@ -4203,17 +4090,13 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(ConstructClientRstPacket(2));
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket(1, nullptr));
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -4260,17 +4143,13 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddWrite(ConstructClientRstPacket(2));
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket(1, nullptr));
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -4425,16 +4304,12 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket(1, nullptr));
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
@@ -4524,9 +4399,7 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Save current state of |race_cert_verification|.
@@ -4675,9 +4548,7 @@ TEST_P(QuicStreamFactoryTest, ServerPushSessionAffinity) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -4716,18 +4587,14 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
 
   MockQuicData socket_data1;
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data1.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data1.AddWrite(ConstructInitialSettingsPacket());
   socket_data1.AddWrite(client_maker_.MakeRstPacket(
       2, true, kServerDataStreamId1, QUIC_STREAM_CANCELLED));
   socket_data1.AddSocketDataToFactory(&socket_factory_);
 
   MockQuicData socket_data2;
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -4787,9 +4654,7 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request1(factory_.get(), &http_server_properties_);
@@ -4832,9 +4697,7 @@ TEST_P(QuicStreamFactoryTest, ForceHolBlockingEnabled) {
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get(), &http_server_properties_);
@@ -4968,9 +4831,7 @@ TEST_P(QuicStreamFactoryWithDestinationTest, SharedCertificate) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, settings_packet->data(),
                                   settings_packet->length(), 1)};
   std::unique_ptr<SequencedSocketData> sequenced_socket_data(
@@ -5038,9 +4899,7 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DifferentPrivacyMode) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, settings_packet->data(),
                                   settings_packet->length(), 1)};
   std::unique_ptr<SequencedSocketData> sequenced_socket_data(
@@ -5123,9 +4982,7 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, settings_packet->data(),
                                   settings_packet->length(), 1)};
   std::unique_ptr<SequencedSocketData> sequenced_socket_data(

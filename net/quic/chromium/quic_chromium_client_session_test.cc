@@ -184,9 +184,7 @@ INSTANTIATE_TEST_CASE_P(Tests,
 TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
   socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
@@ -198,9 +196,7 @@ TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
@@ -239,9 +235,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
   base::HistogramTester histogram_tester;
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       2, true, kServerDataStreamId1, QUIC_PUSH_STREAM_TIMED_OUT));
   MockWrite writes[] = {
@@ -290,9 +284,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
   base::HistogramTester histogram_tester;
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       2, true, kServerDataStreamId1, QUIC_PUSH_STREAM_TIMED_OUT));
   MockWrite writes[] = {
@@ -343,9 +335,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
 TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
 
@@ -400,9 +390,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
   base::HistogramTester histogram_tester;
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       2, true, kServerDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
@@ -452,9 +440,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
   base::HistogramTester histogram_tester;
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       2, true, kServerDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
@@ -508,9 +494,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
 TEST_P(QuicChromiumClientSessionTest, Priority) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
@@ -539,9 +523,7 @@ TEST_P(QuicChromiumClientSessionTest, Priority) {
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
@@ -582,9 +564,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
 TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
   socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
@@ -602,9 +582,7 @@ TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
 TEST_P(QuicChromiumClientSessionTest, CanPool) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
   socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
@@ -633,9 +611,7 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
 TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithTlsChannelId) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
   socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
@@ -665,9 +641,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithTlsChannelId) {
 TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
   socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
@@ -700,9 +674,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
 TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
   socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
@@ -734,9 +706,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   MockRead old_reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite old_writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
   socket_data_.reset(new SequencedSocketData(
@@ -802,9 +772,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
   MockRead old_reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite old_writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
   socket_data_.reset(new SequencedSocketData(
@@ -859,9 +827,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
 
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                       kDefaultMaxUncompressedHeaderSize, true,
-                                       nullptr));
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_ping(
       client_maker_.MakePingPacket(2, /*include_version=*/false));
   std::unique_ptr<QuicEncryptedPacket> server_ping(

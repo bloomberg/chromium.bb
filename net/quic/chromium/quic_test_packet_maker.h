@@ -216,20 +216,16 @@ class QuicTestPacketMaker {
                                               SpdyHeaderBlock headers,
                                               QuicStreamOffset* offset);
 
-  std::unique_ptr<QuicReceivedPacket> MakeSettingsPacket(
+  // Creates a packet containing the initial SETTINGS frame, and saves the
+  // headers stream offset into |offset|.
+  std::unique_ptr<QuicReceivedPacket> MakeInitialSettingsPacket(
       QuicPacketNumber packet_number,
-      SpdySettingsIds id,
-      size_t value,
-      bool should_include_version,
       QuicStreamOffset* offset);
 
   // Same as above, but also saves the serialized QUIC stream data in
   // |stream_data|.
-  std::unique_ptr<QuicReceivedPacket> MakeSettingsPacketAndSaveData(
+  std::unique_ptr<QuicReceivedPacket> MakeInitialSettingsPacketAndSaveData(
       QuicPacketNumber packet_number,
-      SpdySettingsIds id,
-      size_t value,
-      bool should_include_version,
       QuicStreamOffset* offset,
       std::string* stream_data);
 

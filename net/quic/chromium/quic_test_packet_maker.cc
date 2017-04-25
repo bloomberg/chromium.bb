@@ -651,30 +651,25 @@ void QuicTestPacketMaker::InitializeHeader(QuicPacketNumber packet_number,
   header_.packet_number = packet_number;
 }
 
-std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeSettingsPacket(
-    QuicPacketNumber packet_number,
-    SpdySettingsIds id,
-    size_t value,
-    bool should_include_version,
-    QuicStreamOffset* offset) {
+std::unique_ptr<QuicReceivedPacket>
+QuicTestPacketMaker::MakeInitialSettingsPacket(QuicPacketNumber packet_number,
+                                               QuicStreamOffset* offset) {
   std::string unused_data;
-  return MakeSettingsPacketAndSaveData(
-      packet_number, id, value, should_include_version, offset, &unused_data);
+  return MakeInitialSettingsPacketAndSaveData(packet_number, offset,
+                                              &unused_data);
 }
 
 std::unique_ptr<QuicReceivedPacket>
-QuicTestPacketMaker::MakeSettingsPacketAndSaveData(
+QuicTestPacketMaker::MakeInitialSettingsPacketAndSaveData(
     QuicPacketNumber packet_number,
-    SpdySettingsIds id,
-    size_t value,
-    bool should_include_version,
     QuicStreamOffset* offset,
     std::string* stream_data) {
   SpdySettingsIR settings_frame;
-  settings_frame.AddSetting(id, value);
+  settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE,
+                            kDefaultMaxUncompressedHeaderSize);
   SpdySerializedFrame spdy_frame(
       spdy_request_framer_.SerializeFrame(settings_frame));
-  InitializeHeader(packet_number, should_include_version);
+  InitializeHeader(packet_number, /*should_include_version*/ true);
   *stream_data = std::string(spdy_frame.data(), spdy_frame.size());
   if (offset != nullptr) {
     QuicStreamFrame quic_frame(

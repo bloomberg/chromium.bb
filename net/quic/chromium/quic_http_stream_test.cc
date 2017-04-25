@@ -531,13 +531,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                        !kIncludeCongestionFeedback);
   }
 
-  std::unique_ptr<QuicReceivedPacket> ConstructSettingsPacket(
-      QuicPacketNumber packet_number,
-      SpdySettingsIds id,
-      size_t value,
+  std::unique_ptr<QuicReceivedPacket> ConstructInitialSettingsPacket(
       QuicStreamOffset* offset) {
-    return client_maker_.MakeSettingsPacket(packet_number, id, value,
-                                            kIncludeVersion, offset);
+    return client_maker_.MakeInitialSettingsPacket(1, offset);
   }
 
   void ReceivePromise(QuicStreamId id) {
@@ -638,9 +634,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_header_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_header_frame_length, &header_stream_offset));
@@ -702,8 +696,7 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
   size_t spdy_request_header_frame_length;
 
   QuicStreamOffset offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize, &offset));
+  AddWrite(ConstructInitialSettingsPacket(&offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_header_frame_length, &offset));
@@ -786,9 +779,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_header_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_header_frame_length, &header_stream_offset));
@@ -882,9 +873,7 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1011,9 +1000,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1051,9 +1038,7 @@ TEST_P(QuicHttpStreamTest, DoNotLogGranularQuicErrorIfHandshakeNotConfirmed) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1096,9 +1081,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeReadResponseHeaders) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1130,9 +1113,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1201,9 +1182,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   size_t chunk_size = strlen(kUploadData);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1277,9 +1256,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   size_t chunk_size = strlen(kUploadData);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1349,9 +1326,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1418,9 +1393,7 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1463,9 +1436,7 @@ TEST_P(QuicHttpStreamTest, Priority) {
   SetRequest("GET", "/", MEDIUM);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, kFin, MEDIUM,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1519,9 +1490,7 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   SetRequest("GET", "/", MEDIUM);
   use_closing_stream_ = true;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(ConstructClientRstStreamPacket(2));
 
   Initialize();
@@ -1554,9 +1523,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedDuringDoLoop) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1593,9 +1560,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedDuringDoLoop) {
 TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(SYNCHRONOUS, ERR_FAILED);
   Initialize();
 
@@ -1618,9 +1583,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBodyComplete) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -2011,9 +1974,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
 
   size_t spdy_request_header_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(ConstructClientRstStreamVaryMismatchPacket(2));
   AddWrite(InnerConstructRequestHeadersPacket(
       3, stream_id_ + 2, !kIncludeVersion, kFin, DEFAULT_PRIORITY,
@@ -2126,9 +2087,7 @@ TEST_P(QuicHttpStreamTest, DataReadErrorSynchronous) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -2163,9 +2122,7 @@ TEST_P(QuicHttpStreamTest, DataReadErrorAsynchronous) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                                   kDefaultMaxUncompressedHeaderSize,
-                                   &header_stream_offset));
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, kClientDataStreamId1, kIncludeVersion, !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
