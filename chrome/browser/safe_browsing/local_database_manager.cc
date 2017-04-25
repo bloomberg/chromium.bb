@@ -562,7 +562,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
 bool LocalSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
     const GURL& url,
     Client* client) {
-  // TODO(melandory): implement Android support.
+  // The check for the Subresource Filter in only implemented for pver4.
   NOTREACHED();
   return true;
 }

@@ -54,7 +54,9 @@ ThreatPatternType ParseThreatSubType(
     const base::DictionaryValue* match,
     SBThreatType threat_type) {
   std::string pattern_key;
-  if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+  if (threat_type == SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
+    return ThreatPatternType::NONE;
+  } else if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
     pattern_key = "pha_pattern_type";
   } else {
     DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING);
@@ -115,8 +117,10 @@ int GetThreatSeverity(int java_threat_num) {
   // Assign higher numbers to more severe threats.
   switch (java_threat_num) {
     case JAVA_THREAT_TYPE_POTENTIALLY_HARMFUL_APPLICATION:
-      return 2;
+      return 3;
     case JAVA_THREAT_TYPE_SOCIAL_ENGINEERING:
+      return 2;
+    case JAVA_THREAT_TYPE_SUBRESOURCE_FILTER:
       return 1;
     default:
       // Unknown threat type
@@ -130,6 +134,8 @@ SBThreatType JavaToSBThreatType(int java_threat_num) {
       return SB_THREAT_TYPE_URL_MALWARE;
     case JAVA_THREAT_TYPE_SOCIAL_ENGINEERING:
       return SB_THREAT_TYPE_URL_PHISHING;
+    case JAVA_THREAT_TYPE_SUBRESOURCE_FILTER:
+      return SB_THREAT_TYPE_SUBRESOURCE_FILTER;
     default:
       // Unknown threat type
       return SB_THREAT_TYPE_SAFE;
@@ -194,7 +200,7 @@ UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,
       ParseThreatSubType(worst_match, *worst_threat);
   metadata->population_id = ParseUserPopulation(worst_match);
 
-  return UMA_STATUS_UNSAFE;  // success
+  return UMA_STATUS_MATCH;  // success
 }
 
 }  // namespace safe_browsing

@@ -21,10 +21,11 @@ enum RemoteCallResultStatus {
 };
 
 // Threat types as per the Java code.
-// This must match those in GMS's SafeBrowsingThreatTypes.java.
+// This must match those in GMS's SafeBrowsingThreat.java.
 enum JavaThreatTypes {
   JAVA_THREAT_TYPE_POTENTIALLY_HARMFUL_APPLICATION = 4,
   JAVA_THREAT_TYPE_SOCIAL_ENGINEERING = 5,
+  JAVA_THREAT_TYPE_SUBRESOURCE_FILTER = 13,
 };
 
 // Do not reorder or delete entries, and make sure changes here are reflected
@@ -33,7 +34,7 @@ enum UmaRemoteCallResult {
   UMA_STATUS_INTERNAL_ERROR = 0,
   UMA_STATUS_TIMEOUT = 1,
   UMA_STATUS_SAFE = 2,
-  UMA_STATUS_UNSAFE = 3,
+  UMA_STATUS_MATCH = 3,
   UMA_STATUS_JSON_EMPTY = 4,
   UMA_STATUS_JSON_FAILED_TO_PARSE = 5,
   UMA_STATUS_JSON_UNKNOWN_THREAT = 6,

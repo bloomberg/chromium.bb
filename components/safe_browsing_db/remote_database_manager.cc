@@ -22,15 +22,21 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace safe_browsing {
+
 namespace {
 
 // Android field trial for controlling types_to_check.
 const char kAndroidFieldExperiment[] = "SafeBrowsingAndroid";
 const char kAndroidTypesToCheckParam[] = "types_to_check";
 
+void LogPendingChecks(size_t current_requests_size) {
+  UMA_HISTOGRAM_COUNTS_10000("SB2.RemoteCall.ChecksPending",
+                             current_requests_size);
+}
+
 }  // namespace
 
-namespace safe_browsing {
 
 //
 // RemoteSafeBrowsingDatabaseManager::ClientRequest methods
@@ -183,19 +189,18 @@ bool RemoteSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
     return true;  // Safe, continue right away.
 
   std::unique_ptr<ClientRequest> req(new ClientRequest(client, this, url));
-  std::vector<SBThreatType> threat_types;  // Not currently used.
 
   DVLOG(1) << "Checking for client " << client << " and URL " << url;
   SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
-  // This shouldn't happen since SafeBrowsingResourceThrottle checks
-  // IsSupported() earlier.
+  // This shouldn't happen since SafeBrowsingResourceThrottle and
+  // SubresourceFilterSafeBrowsingActivationThrottle check IsSupported()
+  // earlier.
   DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
   api_handler->StartURLCheck(
       base::Bind(&ClientRequest::OnRequestDoneWeak, req->GetWeakPtr()), url,
-      threat_types);
+      {SB_THREAT_TYPE_URL_PHISHING, SB_THREAT_TYPE_URL_MALWARE});
 
-  UMA_HISTOGRAM_COUNTS_10000("SB2.RemoteCall.ChecksPending",
-                             current_requests_.size());
+  LogPendingChecks(current_requests_.size());
   current_requests_.push_back(req.release());
 
   // Defer the resource load.
@@ -225,7 +230,26 @@ bool RemoteSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
 bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
     const GURL& url,
     Client* client) {
-  NOTREACHED();
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!enabled_ || !CanCheckUrl(url))
+    return true;
+
+  std::unique_ptr<ClientRequest> req(new ClientRequest(client, this, url));
+
+  DVLOG(1) << "Checking for client " << client << " and URL " << url;
+  SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
+  // This shouldn't happen since SafeBrowsingResourceThrottle and
+  // SubresourceFilterSafeBrowsingActivationThrottle check IsSupported()
+  // earlier.
+  DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
+  api_handler->StartURLCheck(
+      base::Bind(&ClientRequest::OnRequestDoneWeak, req->GetWeakPtr()), url,
+      {SB_THREAT_TYPE_SUBRESOURCE_FILTER});
+
+  LogPendingChecks(current_requests_.size());
+  current_requests_.push_back(req.release());
+
+  // Defer the resource load.
   return false;
 }
 

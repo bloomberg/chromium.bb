@@ -59,12 +59,12 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, BadJson) {
 }
 
 TEST_F(SafeBrowsingApiHandlerUtilTest, BasicThreats) {
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
+  EXPECT_EQ(UMA_STATUS_MATCH,
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"4\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, threat_);
   EXPECT_EQ(empty_meta_, meta_);
 
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
+  EXPECT_EQ(UMA_STATUS_MATCH,
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"5\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING, threat_);
   EXPECT_EQ(empty_meta_, meta_);
@@ -72,7 +72,7 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, BasicThreats) {
 
 TEST_F(SafeBrowsingApiHandlerUtilTest, MultipleThreats) {
   EXPECT_EQ(
-      UMA_STATUS_UNSAFE,
+      UMA_STATUS_MATCH,
       ResetAndParseJson(
           "{\"matches\":[{\"threat_type\":\"4\"}, {\"threat_type\":\"5\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, threat_);
@@ -82,7 +82,7 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, MultipleThreats) {
 TEST_F(SafeBrowsingApiHandlerUtilTest, PhaSubType) {
   ThreatMetadata expected;
 
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
+  EXPECT_EQ(UMA_STATUS_MATCH,
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"4\", "
                               "\"pha_pattern_type\":\"LANDING\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, threat_);
@@ -91,14 +91,14 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, PhaSubType) {
   // Test the ThreatMetadata comparitor for this field.
   EXPECT_NE(empty_meta_, meta_);
 
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
+  EXPECT_EQ(UMA_STATUS_MATCH,
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"4\", "
                               "\"pha_pattern_type\":\"DISTRIBUTION\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, threat_);
   expected.threat_pattern_type = ThreatPatternType::MALWARE_DISTRIBUTION;
   EXPECT_EQ(expected, meta_);
 
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
+  EXPECT_EQ(UMA_STATUS_MATCH,
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"4\", "
                               "\"pha_pattern_type\":\"junk\"}]}"));
   EXPECT_EQ(empty_meta_, meta_);
@@ -108,14 +108,14 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, SocialEngineeringSubType) {
   ThreatMetadata expected;
 
   EXPECT_EQ(
-      UMA_STATUS_UNSAFE,
+      UMA_STATUS_MATCH,
       ResetAndParseJson("{\"matches\":[{\"threat_type\":\"5\", "
                         "\"se_pattern_type\":\"SOCIAL_ENGINEERING_ADS\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING, threat_);
   expected.threat_pattern_type = ThreatPatternType::SOCIAL_ENGINEERING_ADS;
   EXPECT_EQ(expected, meta_);
 
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
+  EXPECT_EQ(UMA_STATUS_MATCH,
             ResetAndParseJson(
                 "{\"matches\":[{\"threat_type\":\"5\", "
                 "\"se_pattern_type\":\"SOCIAL_ENGINEERING_LANDING\"}]}"));
@@ -123,14 +123,14 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, SocialEngineeringSubType) {
   expected.threat_pattern_type = ThreatPatternType::SOCIAL_ENGINEERING_LANDING;
   EXPECT_EQ(expected, meta_);
 
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
+  EXPECT_EQ(UMA_STATUS_MATCH,
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"5\", "
                               "\"se_pattern_type\":\"PHISHING\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING, threat_);
   expected.threat_pattern_type = ThreatPatternType::PHISHING;
   EXPECT_EQ(expected, meta_);
 
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
+  EXPECT_EQ(UMA_STATUS_MATCH,
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"5\", "
                               "\"se_pattern_type\":\"junk\"}]}"));
   EXPECT_EQ(empty_meta_, meta_);
@@ -139,7 +139,7 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, SocialEngineeringSubType) {
 TEST_F(SafeBrowsingApiHandlerUtilTest, PopulationId) {
   ThreatMetadata expected;
 
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
+  EXPECT_EQ(UMA_STATUS_MATCH,
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"4\", "
                               "\"UserPopulation\":\"foobarbazz\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, threat_);
@@ -147,6 +147,16 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, PopulationId) {
   EXPECT_EQ(expected, meta_);
   // Test the ThreatMetadata comparator for this field.
   EXPECT_NE(empty_meta_, meta_);
+}
+
+TEST_F(SafeBrowsingApiHandlerUtilTest, SubresourceFilterSubTypes) {
+  ThreatMetadata expected;
+
+  EXPECT_EQ(UMA_STATUS_MATCH,
+            ResetAndParseJson("{\"matches\":[{\"threat_type\":\"13\"}]}"));
+  EXPECT_EQ(SB_THREAT_TYPE_SUBRESOURCE_FILTER, threat_);
+  expected.threat_pattern_type = ThreatPatternType::NONE;
+  EXPECT_EQ(expected, meta_);
 }
 
 }  // namespace safe_browsing

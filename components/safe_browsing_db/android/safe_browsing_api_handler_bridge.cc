@@ -119,7 +119,7 @@ void OnUrlCheckDone(JNIEnv* env,
     ReportUmaResult(
         ParseJsonFromGMSCore(metadata_str, &worst_threat, &threat_metadata));
     if (worst_threat != SB_THREAT_TYPE_SAFE) {
-      DVLOG(1) << "Check " << callback_id << " marked as UNSAFE";
+      DVLOG(1) << "Check " << callback_id << " was a MATCH";
     }
 
     RunCallbackOnIOThread(*callback, worst_threat, threat_metadata);
@@ -166,10 +166,7 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
 
   // Default threat types, to support upstream code that doesn't yet set them.
   std::vector<SBThreatType> local_threat_types(threat_types);
-  if (local_threat_types.empty()) {
-    local_threat_types.push_back(SB_THREAT_TYPE_URL_PHISHING);
-    local_threat_types.push_back(SB_THREAT_TYPE_URL_MALWARE);
-  }
+  DCHECK(!local_threat_types.empty());
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
