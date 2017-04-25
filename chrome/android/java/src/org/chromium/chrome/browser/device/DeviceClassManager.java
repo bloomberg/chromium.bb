@@ -25,7 +25,6 @@ public class DeviceClassManager {
     private boolean mEnableAnimations;
     private boolean mEnablePrerendering;
     private boolean mEnableToolbarSwipe;
-    private boolean mDisableDomainReliability;
 
     private final boolean mEnableFullscreen;
 
@@ -49,7 +48,6 @@ public class DeviceClassManager {
             mEnableAnimations = false;
             mEnablePrerendering = false;
             mEnableToolbarSwipe = false;
-            mDisableDomainReliability = true;
         } else {
             mEnableSnapshots = true;
             mEnableLayerDecorationCache = true;
@@ -57,7 +55,6 @@ public class DeviceClassManager {
             mEnableAnimations = true;
             mEnablePrerendering = true;
             mEnableToolbarSwipe = true;
-            mDisableDomainReliability = false;
         }
 
         if (DeviceFormFactor.isTablet(ContextUtils.getApplicationContext())) {
@@ -66,6 +63,7 @@ public class DeviceClassManager {
 
         // Flag based configurations.
         CommandLine commandLine = CommandLine.getInstance();
+        assert commandLine.isNativeImplementation();
         mEnableAccessibilityLayout |= commandLine
                 .hasSwitch(ChromeSwitches.ENABLE_ACCESSIBILITY_TAB_SWITCHER);
         mEnableFullscreen =
@@ -124,12 +122,5 @@ public class DeviceClassManager {
      */
     public static boolean enableToolbarSwipe() {
         return getInstance().mEnableToolbarSwipe;
-    }
-
-    /**
-     * @return Whether or not to disable domain reliability.
-     */
-    public static boolean disableDomainReliability() {
-        return getInstance().mDisableDomainReliability;
     }
 }

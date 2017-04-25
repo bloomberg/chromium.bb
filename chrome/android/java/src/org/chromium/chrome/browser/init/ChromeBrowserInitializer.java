@@ -25,6 +25,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.RemovableInRelease;
@@ -37,7 +38,6 @@ import org.chromium.chrome.browser.ChromeStrictMode;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.crash.MinidumpDirectoryObserver;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
@@ -170,7 +170,7 @@ public class ChromeBrowserInitializer {
         // Domain reliability uses significant enough memory that we should disable it on low memory
         // devices for now.
         // TODO(zbowling): remove this after domain reliability is refactored. (crbug.com/495342)
-        if (DeviceClassManager.disableDomainReliability()) {
+        if (SysUtils.isLowEndDevice()) {
             CommandLine.getInstance().appendSwitch(ChromeSwitches.DISABLE_DOMAIN_RELIABILITY);
         }
     }
