@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COURGETTE_WIN32_X86_PATCHER_H_
-#define COURGETTE_WIN32_X86_PATCHER_H_
+#ifndef COURGETTE_PATCHER_X86_32_H_
+#define COURGETTE_PATCHER_X86_32_H_
 
 #include <stdint.h>
 
@@ -11,15 +11,15 @@
 
 #include "base/macros.h"
 #include "courgette/assembly_program.h"
+#include "courgette/courgette_flow.h"
 #include "courgette/encoded_program.h"
 #include "courgette/ensemble.h"
 #include "courgette/program_detector.h"
 
 namespace courgette {
 
-// PatcherX86_32 is the universal patcher for all executables.  The executable
-// type is determined by ParseDetectedExecutable function.
-//
+// PatcherX86_32 is the universal patcher for all executables. The executable
+// type is determined by the program detector.
 class PatcherX86_32 : public TransformationPatcher {
  public:
   explicit PatcherX86_32(const Region& region)
@@ -49,36 +49,26 @@ class PatcherX86_32 : public TransformationPatcher {
 
   Status Transform(SourceStreamSet* corrected_parameters,
                    SinkStreamSet* transformed_element) {
-    Status status;
-    if (!corrected_parameters->Empty())
-      return C_GENERAL_ERROR;   // Don't expect any corrected parameters.
-
-    std::unique_ptr<AssemblyProgram> program;
-    status = ParseDetectedExecutable(ensemble_region_.start() + base_offset_,
-                                     base_length_,
-                                     &program);
-    if (status != C_OK)
-      return status;
-
-    std::unique_ptr<EncodedProgram> encoded;
-    status = Encode(*program, &encoded);
-    if (status != C_OK)
-      return status;
-
-    program.reset();
-
-    return WriteEncodedProgram(encoded.get(), transformed_element);
+    CourgetteFlow flow;
+    RegionBuffer only_buffer(
+        Region(ensemble_region_.start() + base_offset_, base_length_));
+    flow.ReadAssemblyProgramFromBuffer(flow.ONLY, only_buffer, false);
+    flow.CreateEncodedProgramFromAssemblyProgram(flow.ONLY);
+    flow.DestroyAssemblyProgram(flow.ONLY);
+    flow.WriteSinkStreamSetFromEncodedProgram(flow.ONLY, transformed_element);
+    if (flow.failed())
+      LOG(ERROR) << flow.message();
+    return flow.status();
   }
 
   Status Reform(SourceStreamSet* transformed_element,
                 SinkStream* reformed_element) {
-    Status status;
-    std::unique_ptr<EncodedProgram> encoded_program;
-    status = ReadEncodedProgram(transformed_element, &encoded_program);
-    if (status != C_OK)
-      return status;
-
-    return Assemble(encoded_program.get(), reformed_element);
+    CourgetteFlow flow;
+    flow.ReadEncodedProgramFromSourceStreamSet(flow.ONLY, transformed_element);
+    flow.WriteExecutableFromEncodedProgram(flow.ONLY, reformed_element);
+    if (flow.failed())
+      LOG(ERROR) << flow.message();
+    return flow.status();
   }
 
  private:
@@ -90,6 +80,6 @@ class PatcherX86_32 : public TransformationPatcher {
   DISALLOW_COPY_AND_ASSIGN(PatcherX86_32);
 };
 
-}  // namespace
+}  // namespace courgette
 
-#endif  // COURGETTE_WIN32_X86_PATCHER_H_
+#endif  // COURGETTE_PATCHER_X86_32_H_

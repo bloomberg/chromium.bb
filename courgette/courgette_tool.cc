@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,26 +17,45 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
+#include "courgette/courgette_flow.h"
 #include "courgette/encoded_program.h"
 #include "courgette/program_detector.h"
 #include "courgette/streams.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 
+namespace {
+
+using courgette::CourgetteFlow;
+
+const char kUsageGen[] = "-gen <old_in> <new_in> <patch_out>";
+const char kUsageApply[] = "-apply <old_in> <patch_in> <new_out>";
+const char kUsageGenbsdiff[] = "-genbsdiff <old_in> <new_in> <patch_out>";
+const char kUsageApplybsdiff[] = "-applybsdiff <old_in> <patch_in> <new_out>";
+const char kUsageSupported[] = "-supported <exec_file_in>";
+const char kUsageDis[] = "-dis <exec_file_in> <assembly_file_out>";
+const char kUsageAsm[] = "-asm <assembly_file_in> <exec_file_out>";
+const char kUsageDisadj[] = "-disadj <old_in> <new_in> <new_assembly_file_out>";
+const char kUsageGen1[] = "-gen1[au] <old_in> <new_in> <patch_base_out>";
+
+/******** Utilities to print help and exit ********/
+
 void PrintHelp() {
-  fprintf(stderr,
-    "Usage:\n"
-    "  courgette -supported <executable_file>\n"
-    "  courgette -dis <executable_file> <binary_assembly_file>\n"
-    "  courgette -asm <binary_assembly_file> <executable_file>\n"
-    "  courgette -disadj <executable_file> <reference> <binary_assembly_file>\n"
-    "  courgette -gen <v1> <v2> <patch>\n"
-    "  courgette -apply <v1> <patch> <v2>\n"
-    "\n");
+  fprintf(stderr, "Main Usage:\n");
+  for (auto usage :
+       {kUsageGen, kUsageApply, kUsageGenbsdiff, kUsageApplybsdiff}) {
+    fprintf(stderr, "  courgette %s\n", usage);
+  }
+  fprintf(stderr, "Diagnosis Usage:\n");
+  for (auto usage :
+       {kUsageSupported, kUsageDis, kUsageAsm, kUsageDisadj, kUsageGen1}) {
+    fprintf(stderr, "  courgette %s\n", usage);
+  }
 }
 
 void UsageProblem(const char* message) {
@@ -53,19 +74,28 @@ void Problem(const char* format, ...) {
   exit(1);
 }
 
+/******** BufferedFileReader ********/
+
 // A file reader that calls Problem() on failure.
-class BufferedFileReader {
+class BufferedFileReader : public courgette::BasicBuffer {
  public:
   BufferedFileReader(const base::FilePath& file_name, const char* kind) {
     if (!buffer_.Initialize(file_name))
       Problem("Can't read %s file.", kind);
   }
-  const uint8_t* data() const { return buffer_.data(); }
-  size_t length() const { return buffer_.length(); }
+  ~BufferedFileReader() override {}
+
+  // courgette::BasicBuffer:
+  const uint8_t* data() const override { return buffer_.data(); }
+  size_t length() const override { return buffer_.length(); }
 
  private:
   base::MemoryMappedFile buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BufferedFileReader);
 };
+
+/******** Various helpers ********/
 
 void WriteSinkToFile(const courgette::SinkStream *sink,
                      const base::FilePath& output_file) {
@@ -77,38 +107,6 @@ void WriteSinkToFile(const courgette::SinkStream *sink,
     Problem("Can't write output.");
   if (static_cast<size_t>(count) != sink->Length())
     Problem("Incomplete write.");
-}
-
-void Disassemble(const base::FilePath& input_file,
-                 const base::FilePath& output_file) {
-  BufferedFileReader buffer(input_file, "input");
-
-  std::unique_ptr<courgette::AssemblyProgram> program;
-  const courgette::Status parse_status = courgette::ParseDetectedExecutable(
-      buffer.data(), buffer.length(), &program);
-  if (parse_status != courgette::C_OK)
-    Problem("Can't parse input (code = %d).", parse_status);
-
-  std::unique_ptr<courgette::EncodedProgram> encoded;
-  const courgette::Status encode_status = Encode(*program, &encoded);
-  if (encode_status != courgette::C_OK)
-    Problem("Can't encode program.");
-
-  program.reset();
-
-  courgette::SinkStreamSet sinks;
-  const courgette::Status write_status =
-    courgette::WriteEncodedProgram(encoded.get(), &sinks);
-  if (write_status != courgette::C_OK)
-    Problem("Can't serialize encoded program.");
-
-  encoded.reset();
-
-  courgette::SinkStream sink;
-  if (!sinks.CopyTo(&sink))
-    Problem("Can't combine serialized encoded program streams.");
-
-  WriteSinkToFile(&sink, output_file);
 }
 
 bool Supported(const base::FilePath& input_file) {
@@ -153,50 +151,41 @@ bool Supported(const base::FilePath& input_file) {
   return result;
 }
 
-void DisassembleAndAdjust(const base::FilePath& program_file,
-                          const base::FilePath& model_file,
-                          const base::FilePath& output_file) {
-  BufferedFileReader program_buffer(program_file, "program");
-  BufferedFileReader model_buffer(model_file, "model");
-
-  std::unique_ptr<courgette::AssemblyProgram> program;
-  const courgette::Status parse_program_status =
-      courgette::ParseDetectedExecutable(program_buffer.data(),
-                                         program_buffer.length(), &program);
-  if (parse_program_status != courgette::C_OK)
-    Problem("Can't parse program input (code = %d).", parse_program_status);
-
-  std::unique_ptr<courgette::AssemblyProgram> model;
-  const courgette::Status parse_model_status =
-      courgette::ParseDetectedExecutable(model_buffer.data(),
-                                         model_buffer.length(), &model);
-  if (parse_model_status != courgette::C_OK)
-    Problem("Can't parse model input (code = %d).", parse_model_status);
-
-  const courgette::Status adjust_status = Adjust(*model, program.get());
-  if (adjust_status != courgette::C_OK)
-    Problem("Can't adjust program.");
-
-  model.reset();
-
-  std::unique_ptr<courgette::EncodedProgram> encoded;
-  const courgette::Status encode_status = Encode(*program, &encoded);
-  if (encode_status != courgette::C_OK)
-    Problem("Can't encode program.");
-
-  program.reset();
-
-  courgette::SinkStreamSet sinks;
-  const courgette::Status write_status =
-    courgette::WriteEncodedProgram(encoded.get(), &sinks);
-  if (write_status != courgette::C_OK)
-    Problem("Can't serialize encoded program.");
-
-  encoded.reset();
-
+void Disassemble(const base::FilePath& input_file,
+                 const base::FilePath& output_file) {
+  CourgetteFlow flow;
+  BufferedFileReader input_buffer(input_file, flow.name(flow.ONLY));
+  flow.ReadAssemblyProgramFromBuffer(flow.ONLY, input_buffer, false);
+  flow.CreateEncodedProgramFromAssemblyProgram(flow.ONLY);
+  flow.DestroyAssemblyProgram(flow.ONLY);
+  flow.WriteSinkStreamSetFromEncodedProgram(flow.ONLY);
+  flow.DestroyEncodedProgram(flow.ONLY);
   courgette::SinkStream sink;
-  if (!sinks.CopyTo(&sink))
-    Problem("Can't combine serialized encoded program streams.");
+  flow.WriteSinkStreamFromSinkStreamSet(flow.ONLY, &sink);
+  if (flow.failed())
+    Problem(flow.message().c_str());
+
+  WriteSinkToFile(&sink, output_file);
+}
+
+void DisassembleAndAdjust(const base::FilePath& old_file,
+                          const base::FilePath& new_file,
+                          const base::FilePath& output_file) {
+  CourgetteFlow flow;
+  BufferedFileReader old_buffer(old_file, flow.name(flow.OLD));
+  BufferedFileReader new_buffer(new_file, flow.name(flow.NEW));
+  flow.ReadAssemblyProgramFromBuffer(flow.OLD, old_buffer, true);
+  flow.ReadAssemblyProgramFromBuffer(flow.NEW, new_buffer, true);
+  flow.AdjustNewAssemblyProgramToMatchOld();
+  flow.DestroyAssemblyProgram(flow.OLD);
+  flow.CreateEncodedProgramFromAssemblyProgram(flow.NEW);
+  flow.DestroyAssemblyProgram(flow.NEW);
+  flow.WriteSinkStreamSetFromEncodedProgram(flow.NEW);
+  flow.DestroyEncodedProgram(flow.NEW);
+  courgette::SinkStream sink;
+  flow.WriteSinkStreamFromSinkStreamSet(flow.NEW, &sink);
+  if (flow.failed())
+    Problem(flow.message().c_str());
 
   WriteSinkToFile(&sink, output_file);
 }
@@ -206,69 +195,32 @@ void DisassembleAndAdjust(const base::FilePath& program_file,
 // original file's stream and the new file's stream.  This is completely
 // uninteresting to users, but it is handy for seeing how much each which
 // streams are contributing to the final file size.  Adjustment is optional.
-void DisassembleAdjustDiff(const base::FilePath& model_file,
-                           const base::FilePath& program_file,
+void DisassembleAdjustDiff(const base::FilePath& old_file,
+                           const base::FilePath& new_file,
                            const base::FilePath& output_file_root,
                            bool adjust) {
-  BufferedFileReader model_buffer(model_file, "old");
-  BufferedFileReader program_buffer(program_file, "new");
-
-  auto parser = adjust ? courgette::ParseDetectedExecutableWithAnnotation
-                       : courgette::ParseDetectedExecutable;
-
-  std::unique_ptr<courgette::AssemblyProgram> model;
-  const courgette::Status parse_model_status =
-      parser(model_buffer.data(), model_buffer.length(), &model);
-  if (parse_model_status != courgette::C_OK)
-    Problem("Can't parse model input (code = %d).", parse_model_status);
-
-  std::unique_ptr<courgette::AssemblyProgram> program;
-  const courgette::Status parse_program_status =
-      parser(program_buffer.data(), program_buffer.length(), &program);
-  if (parse_program_status != courgette::C_OK)
-    Problem("Can't parse program input (code = %d).", parse_program_status);
-
-  if (adjust) {
-    const courgette::Status adjust_status = Adjust(*model, program.get());
-    if (adjust_status != courgette::C_OK)
-      Problem("Can't adjust program.");
-  }
-
-  std::unique_ptr<courgette::EncodedProgram> encoded_program;
-  const courgette::Status encode_program_status =
-      Encode(*program, &encoded_program);
-  if (encode_program_status != courgette::C_OK)
-    Problem("Can't encode program.");
-
-  program.reset();
-
-  std::unique_ptr<courgette::EncodedProgram> encoded_model;
-  const courgette::Status encode_model_status = Encode(*model, &encoded_model);
-  if (encode_model_status != courgette::C_OK)
-    Problem("Can't encode model.");
-
-  model.reset();
-
-  courgette::SinkStreamSet program_sinks;
-  const courgette::Status write_program_status =
-    courgette::WriteEncodedProgram(encoded_program.get(), &program_sinks);
-  if (write_program_status != courgette::C_OK)
-    Problem("Can't serialize encoded program.");
-
-  encoded_program.reset();
-
-  courgette::SinkStreamSet model_sinks;
-  const courgette::Status write_model_status =
-    courgette::WriteEncodedProgram(encoded_model.get(), &model_sinks);
-  if (write_model_status != courgette::C_OK)
-    Problem("Can't serialize encoded model.");
-
-  encoded_model.reset();
+  CourgetteFlow flow;
+  BufferedFileReader old_buffer(old_file, flow.name(flow.OLD));
+  BufferedFileReader new_buffer(new_file, flow.name(flow.NEW));
+  flow.ReadAssemblyProgramFromBuffer(flow.OLD, old_buffer, adjust);
+  flow.ReadAssemblyProgramFromBuffer(flow.NEW, new_buffer, adjust);
+  if (adjust)
+    flow.AdjustNewAssemblyProgramToMatchOld();
+  flow.CreateEncodedProgramFromAssemblyProgram(flow.OLD);
+  flow.DestroyAssemblyProgram(flow.OLD);
+  flow.CreateEncodedProgramFromAssemblyProgram(flow.NEW);
+  flow.DestroyAssemblyProgram(flow.NEW);
+  flow.WriteSinkStreamSetFromEncodedProgram(flow.OLD);
+  flow.DestroyEncodedProgram(flow.OLD);
+  flow.WriteSinkStreamSetFromEncodedProgram(flow.NEW);
+  flow.DestroyEncodedProgram(flow.NEW);
+  if (flow.failed())
+    Problem(flow.message().c_str());
 
   courgette::SinkStream empty_sink;
   for (int i = 0;  ; ++i) {
-    courgette::SinkStream* old_stream = model_sinks.stream(i);
-    courgette::SinkStream* new_stream = program_sinks.stream(i);
+    courgette::SinkStream* old_stream = flow.data(flow.OLD)->sinks.stream(i);
+    courgette::SinkStream* new_stream = flow.data(flow.NEW)->sinks.stream(i);
     if (old_stream == NULL && new_stream == NULL)
       break;
 
@@ -291,24 +243,14 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
 
 void Assemble(const base::FilePath& input_file,
               const base::FilePath& output_file) {
-  BufferedFileReader buffer(input_file, "input");
-
-  courgette::SourceStreamSet sources;
-  if (!sources.Init(buffer.data(), buffer.length()))
-    Problem("Bad input file.");
-
-  std::unique_ptr<courgette::EncodedProgram> encoded;
-  const courgette::Status read_status =
-      courgette::ReadEncodedProgram(&sources, &encoded);
-  if (read_status != courgette::C_OK)
-    Problem("Bad encoded program.");
-
+  CourgetteFlow flow;
+  BufferedFileReader input_buffer(input_file, flow.name(flow.ONLY));
+  flow.ReadSourceStreamSetFromBuffer(flow.ONLY, input_buffer);
+  flow.ReadEncodedProgramFromSourceStreamSet(flow.ONLY);
   courgette::SinkStream sink;
-
-  const courgette::Status assemble_status =
-      courgette::Assemble(encoded.get(), &sink);
-  if (assemble_status != courgette::C_OK)
-    Problem("Can't assemble.");
+  flow.WriteExecutableFromEncodedProgram(flow.ONLY, &sink);
+  if (flow.failed())
+    Problem(flow.message().c_str());
 
   WriteSinkToFile(&sink, output_file);
 }
@@ -430,6 +372,8 @@ void ApplyBSDiffPatch(const base::FilePath& old_file,
   WriteSinkToFile(&new_stream, new_file);
 }
 
+}  // namespace
+
 int main(int argc, const char* argv[]) {
   base::AtExitManager at_exit_manager;
   base::CommandLine::Init(argc, argv);
@@ -468,50 +412,51 @@ int main(int argc, const char* argv[]) {
       repeat_count = 1;
 
   if (cmd_sup + cmd_dis + cmd_asm + cmd_disadj + cmd_make_patch +
-      cmd_apply_patch + cmd_make_bsdiff_patch + cmd_apply_bsdiff_patch +
-      cmd_spread_1_adjusted + cmd_spread_1_unadjusted
-      != 1)
+          cmd_apply_patch + cmd_make_bsdiff_patch + cmd_apply_bsdiff_patch +
+          cmd_spread_1_adjusted + cmd_spread_1_unadjusted !=
+      1) {
     UsageProblem(
-        "Must have exactly one of:\n"
-        "  -supported -asm, -dis, -disadj, -gen or -apply, -genbsdiff"
-        " or -applybsdiff.");
+        "First argument must be one of:\n"
+        "  -supported, -asm, -dis, -disadj, -gen, -apply, -genbsdiff,"
+        " -applybsdiff, or -gen1[au].");
+  }
 
   while (repeat_count-- > 0) {
     if (cmd_sup) {
       if (values.size() != 1)
-        UsageProblem("-supported <executable_file>");
+        UsageProblem(kUsageSupported);
       return !Supported(values[0]);
     } else if (cmd_dis) {
-        if (values.size() != 2)
-          UsageProblem("-dis <executable_file> <courgette_file>");
-        Disassemble(values[0], values[1]);
+      if (values.size() != 2)
+        UsageProblem(kUsageDis);
+      Disassemble(values[0], values[1]);
     } else if (cmd_asm) {
       if (values.size() != 2)
-        UsageProblem("-asm <courgette_file_input> <executable_file_output>");
+        UsageProblem(kUsageAsm);
       Assemble(values[0], values[1]);
     } else if (cmd_disadj) {
       if (values.size() != 3)
-        UsageProblem("-disadj <executable_file> <model> <courgette_file>");
+        UsageProblem(kUsageDisadj);
       DisassembleAndAdjust(values[0], values[1], values[2]);
     } else if (cmd_make_patch) {
       if (values.size() != 3)
-        UsageProblem("-gen <old_file> <new_file> <patch_file>");
+        UsageProblem(kUsageGen);
       GenerateEnsemblePatch(values[0], values[1], values[2]);
     } else if (cmd_apply_patch) {
       if (values.size() != 3)
-        UsageProblem("-apply <old_file> <patch_file> <new_file>");
+        UsageProblem(kUsageApply);
       ApplyEnsemblePatch(values[0], values[1], values[2]);
     } else if (cmd_make_bsdiff_patch) {
       if (values.size() != 3)
-        UsageProblem("-genbsdiff <old_file> <new_file> <patch_file>");
+        UsageProblem(kUsageGenbsdiff);
       GenerateBSDiffPatch(values[0], values[1], values[2]);
     } else if (cmd_apply_bsdiff_patch) {
       if (values.size() != 3)
-        UsageProblem("-applybsdiff <old_file> <patch_file> <new_file>");
+        UsageProblem(kUsageApplybsdiff);
       ApplyBSDiffPatch(values[0], values[1], values[2]);
     } else if (cmd_spread_1_adjusted || cmd_spread_1_unadjusted) {
       if (values.size() != 3)
-        UsageProblem("-gen1[au] <old_file> <new_file> <patch_files_root>");
+        UsageProblem(kUsageGen1);
       DisassembleAdjustDiff(values[0], values[1], values[2],
                             cmd_spread_1_adjusted);
     } else {

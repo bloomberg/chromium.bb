@@ -33,6 +33,15 @@ class SinkStream;
 // Maximum number of streams in a stream set.
 static const unsigned int kMaxStreams = 10;
 
+// A simple interface for reading binary data.
+class BasicBuffer {
+ public:
+  BasicBuffer() {}
+  virtual ~BasicBuffer() {}
+  virtual const uint8_t* data() const = 0;
+  virtual size_t length() const = 0;
+};
+
 // A SourceStream allows a region of memory to be scanned by a sequence of Read
 // operations.  The stream does not own the memory.
 class SourceStream {
@@ -234,5 +243,6 @@ class SinkStreamSet {
   DISALLOW_COPY_AND_ASSIGN(SinkStreamSet);
 };
 
-}  // namespace
+}  // namespace courgette
+
 #endif  // COURGETTE_STREAMS_H_

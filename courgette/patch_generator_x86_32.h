@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is the transformation and adjustment for all executables.
-// The executable type is determined by ParseDetectedExecutable function.
-
 #ifndef COURGETTE_PATCH_GENERATOR_X86_32_H_
 #define COURGETTE_PATCH_GENERATOR_X86_32_H_
 
@@ -13,12 +10,16 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "courgette/assembly_program.h"
+#include "courgette/courgette_flow.h"
 #include "courgette/ensemble.h"
 #include "courgette/patcher_x86_32.h"
 #include "courgette/program_detector.h"
 
 namespace courgette {
 
+// PatchGeneratorX86_32 is the universal patch generator for all executables,
+// performing transformation and adjustment. The executable type is determined
+// by the program detector.
 class PatchGeneratorX86_32 : public TransformationPatchGenerator {
  public:
   PatchGeneratorX86_32(Element* old_element,
@@ -62,56 +63,26 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
     if (!corrected_parameters->Empty())
       return C_GENERAL_ERROR;
 
-    // Generate old version of program using |corrected_parameters|.
-    // TODO(sra): refactor to use same code from patcher_.
-    std::unique_ptr<AssemblyProgram> old_program;
-    Status old_parse_status = ParseDetectedExecutableWithAnnotation(
-        old_element_->region().start(), old_element_->region().length(),
-        &old_program);
-    if (old_parse_status != C_OK) {
-      LOG(ERROR) << "Cannot parse an executable " << old_element_->Name();
-      return old_parse_status;
+    CourgetteFlow flow;
+    RegionBuffer old_buffer(old_element_->region());
+    RegionBuffer new_buffer(new_element_->region());
+    flow.ReadAssemblyProgramFromBuffer(flow.OLD, old_buffer, true);
+    flow.CreateEncodedProgramFromAssemblyProgram(flow.OLD);
+    flow.WriteSinkStreamSetFromEncodedProgram(flow.OLD,
+                                              old_transformed_element);
+    flow.DestroyEncodedProgram(flow.OLD);
+    flow.ReadAssemblyProgramFromBuffer(flow.NEW, new_buffer, true);
+    flow.AdjustNewAssemblyProgramToMatchOld();
+    flow.DestroyAssemblyProgram(flow.OLD);
+    flow.CreateEncodedProgramFromAssemblyProgram(flow.NEW);
+    flow.DestroyAssemblyProgram(flow.NEW);
+    flow.WriteSinkStreamSetFromEncodedProgram(flow.NEW,
+                                              new_transformed_element);
+    if (flow.failed()) {
+      LOG(ERROR) << flow.message() << " (" << old_element_->Name() << " => "
+                 << new_element_->Name() << ")";
     }
-
-    // TODO(huangs): Move the block below to right before |new_program| gets
-    // used, so we can reduce Courgette-gen peak memory.
-    std::unique_ptr<AssemblyProgram> new_program;
-    Status new_parse_status = ParseDetectedExecutableWithAnnotation(
-        new_element_->region().start(), new_element_->region().length(),
-        &new_program);
-    if (new_parse_status != C_OK) {
-      LOG(ERROR) << "Cannot parse an executable " << new_element_->Name();
-      return new_parse_status;
-    }
-
-    std::unique_ptr<EncodedProgram> old_encoded;
-    Status old_encode_status = Encode(*old_program, &old_encoded);
-    if (old_encode_status != C_OK)
-      return old_encode_status;
-
-    Status old_write_status =
-        WriteEncodedProgram(old_encoded.get(), old_transformed_element);
-
-    old_encoded.reset();
-
-    if (old_write_status != C_OK)
-      return old_write_status;
-
-    Status adjust_status = Adjust(*old_program, new_program.get());
-    old_program.reset();
-    if (adjust_status != C_OK)
-      return adjust_status;
-
-    std::unique_ptr<EncodedProgram> new_encoded;
-    Status new_encode_status = Encode(*new_program, &new_encoded);
-    if (new_encode_status != C_OK)
-      return new_encode_status;
-
-    new_program.reset();
-
-    Status new_write_status =
-        WriteEncodedProgram(new_encoded.get(), new_transformed_element);
-    return new_write_status;
+    return flow.status();
   }
 
   Status Reform(SourceStreamSet* transformed_element,

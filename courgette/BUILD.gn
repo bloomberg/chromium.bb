@@ -13,6 +13,8 @@ static_library("courgette_lib") {
     "assembly_program.h",
     "consecutive_range_visitor.h",
     "courgette.h",
+    "courgette_flow.cc",
+    "courgette_flow.h",
     "crc.cc",
     "crc.h",
     "difference_estimator.cc",
