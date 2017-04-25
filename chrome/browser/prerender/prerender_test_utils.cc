@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -60,8 +61,12 @@ class MockHTTPJob : public net::URLRequestMockHTTPJob {
             request,
             delegate,
             file,
-            BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)) {}
+            base::CreateTaskRunnerWithTraits(
+                base::TaskTraits()
+                    .MayBlock()
+                    .WithPriority(base::TaskPriority::BACKGROUND)
+                    .WithShutdownBehavior(
+                        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))) {}
 
   void set_start_callback(const base::Closure& start_callback) {
     start_callback_ = start_callback;
@@ -193,11 +198,13 @@ class HangingFirstRequestInterceptor : public net::URLRequestInterceptor {
       return new HangingURLRequestJob(request, network_delegate);
     }
     return new net::URLRequestMockHTTPJob(
-        request,
-        network_delegate,
-        file_,
-        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+        request, network_delegate, file_,
+        base::CreateTaskRunnerWithTraits(
+            base::TaskTraits()
+                .MayBlock()
+                .WithPriority(base::TaskPriority::BACKGROUND)
+                .WithShutdownBehavior(
+                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
   }
 
  private:
