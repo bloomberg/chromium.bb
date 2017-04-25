@@ -1172,14 +1172,7 @@ void ExtensionService::OnExtensionRegisteredWithRequestContexts(
 void ExtensionService::NotifyExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  UnloadedExtensionInfo details(extension, reason);
-
   registry_->TriggerOnUnloaded(extension, reason);
-
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(profile_),
-      content::Details<UnloadedExtensionInfo>(&details));
 
   renderer_helper_->OnExtensionUnloaded(*extension);
 

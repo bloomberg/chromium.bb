@@ -177,7 +177,7 @@ void NotificationImageReady(
 
   // Origin URL must be different from the crashed extension to avoid the
   // conflict. NotificationSystemObserver will cancel all notifications from
-  // the same origin when NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED.
+  // the same origin when OnExtensionUnloaded() is called.
   Notification notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                             base::string16(),
                             message,

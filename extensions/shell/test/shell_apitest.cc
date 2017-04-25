@@ -57,14 +57,6 @@ void ShellApiTest::UnloadApp(const Extension* app) {
   UnloadedExtensionInfo::Reason reason(UnloadedExtensionInfo::REASON_DISABLE);
   registry->TriggerOnUnloaded(app, reason);
 
-  // The following notifications are deprecated and in the future, classes
-  // should only be observing the ExtensionRegistry.
-  UnloadedExtensionInfo details(app, reason);
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<content::BrowserContext>(browser_context()),
-      content::Details<UnloadedExtensionInfo>(&details));
-
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_REMOVED,
       content::Source<content::BrowserContext>(browser_context()),

@@ -62,17 +62,6 @@ enum NotificationType {
   // BrowserContext*.
   NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
 
-  // Sent when an extension is unloaded. This happens when an extension is
-  // uninstalled or disabled. The details are an UnloadedExtensionInfo, and the
-  // source is a BrowserContext*.
-  //
-  // Note that when this notification is sent, the ExtensionService and the
-  // ExtensionRegistry have already removed the extension from their internal
-  // state.
-  //
-  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
-  NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-
   // Sent when an Extension object is removed from ExtensionService. This
   // can happen when an extension is uninstalled, upgraded, or blacklisted,
   // including all cases when the Extension is deleted. The details are an

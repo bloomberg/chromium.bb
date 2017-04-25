@@ -547,7 +547,7 @@ void ThemeService::ClearAllThemeData() {
   // There should be no more infobars. This may not be the case because of
   // http://crbug.com/62154
   // RemoveUnusedThemes is called on a task because ClearAllThemeData() may
-  // be called as a result of NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED.
+  // be called as a result of OnExtensionUnloaded().
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&ThemeService::RemoveUnusedThemes,
                             weak_ptr_factory_.GetWeakPtr(), true));
