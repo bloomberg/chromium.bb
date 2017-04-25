@@ -2111,6 +2111,19 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
     }
     if (absdq < DELTA_Q_SMALL) td->counts->delta_q[absdq][0]++;
     xd->prev_qindex = mbmi->current_q_index;
+#if CONFIG_EXT_DELTA_Q
+    if (cm->delta_lf_present_flag) {
+      const int dlf =
+          (mbmi->current_delta_lf_from_base - xd->prev_delta_lf_from_base) /
+          cm->delta_lf_res;
+      const int absdlf = abs(dlf);
+      for (i = 0; i < AOMMIN(absdlf, DELTA_LF_SMALL); ++i) {
+        td->counts->delta_lf[i][1]++;
+      }
+      if (absdlf < DELTA_LF_SMALL) td->counts->delta_lf[absdlf][0]++;
+      xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
+    }
+#endif
   }
 #else
   (void)mi_row;
@@ -4633,6 +4646,10 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   // Reset delta for every tile
   if (cm->delta_q_present_flag)
     if (mi_row == tile_info->mi_row_start) xd->prev_qindex = cm->base_qindex;
+#if CONFIG_EXT_DELTA_Q
+  if (cm->delta_lf_present_flag)
+    if (mi_row == tile_info->mi_row_start) xd->prev_delta_lf_from_base = 0;
+#endif
 #endif
 
   // Code each SB in the row
@@ -4702,6 +4719,24 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       xd->mi[0]->mbmi.segment_id = 0;
 #endif  // CONFIG_EXT_DELTA_Q
       av1_init_plane_quantizers(cpi, x, xd->mi[0]->mbmi.segment_id);
+#if CONFIG_EXT_DELTA_Q
+      if (cpi->oxcf.deltaq_mode == DELTA_Q_LF) {
+        int j, k;
+        int lfmask = ~(cm->delta_lf_res - 1);
+        int current_delta_lf_from_base = offset_qindex / 2;
+        current_delta_lf_from_base =
+            ((current_delta_lf_from_base + cm->delta_lf_res / 2) & lfmask);
+
+        // pre-set the delta lf for loop filter. Note that this value is set
+        // before mi is assigned for each block in current superblock
+        for (j = 0; j < AOMMIN(cm->mib_size, cm->mi_rows - mi_row); j++) {
+          for (k = 0; k < AOMMIN(cm->mib_size, cm->mi_cols - mi_col); k++) {
+            cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
+                .mbmi.current_delta_lf_from_base = current_delta_lf_from_base;
+          }
+        }
+      }
+#endif  // CONFIG_EXT_DELTA_Q
     }
 #endif  // CONFIG_DELTA_Q
 
@@ -5298,7 +5333,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->delta_q_res = DEFAULT_DELTA_Q_RES;
 // Set delta_q_present_flag before it is used for the first time
 #if CONFIG_EXT_DELTA_Q
+  cm->delta_lf_res = DEFAULT_DELTA_LF_RES;
+  // update delta_q_present_flag and delta_lf_present_flag based on base_qindex
   cm->delta_q_present_flag &= cm->base_qindex > 0;
+  cm->delta_lf_present_flag &= cm->base_qindex > 0;
 #else
   cm->delta_q_present_flag =
       cpi->oxcf.aq_mode == DELTA_AQ && cm->base_qindex > 0;

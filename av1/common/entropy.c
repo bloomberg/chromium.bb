@@ -6327,6 +6327,9 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
 #if CONFIG_DELTA_Q
   AVERAGE_TILE_CDFS(delta_q_cdf)
+#if CONFIG_EXT_DELTA_Q
+  AVERAGE_TILE_CDFS(delta_lf_cdf)
+#endif
 #endif
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   AVERAGE_TILE_CDFS(intra_filter_cdf)

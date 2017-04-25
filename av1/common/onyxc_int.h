@@ -417,6 +417,11 @@ typedef struct AV1Common {
   int delta_q_present_flag;
   // Resolution of delta quant
   int delta_q_res;
+#if CONFIG_EXT_DELTA_Q
+  int delta_lf_present_flag;
+  // Resolution of delta lf level
+  int delta_lf_res;
+#endif
 #endif
 #if CONFIG_TILE_GROUPS
   int num_tg;

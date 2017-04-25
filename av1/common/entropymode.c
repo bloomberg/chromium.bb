@@ -909,6 +909,15 @@ static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
   AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0
 };
 #endif
+#if CONFIG_EXT_DELTA_Q
+static const aom_prob default_delta_lf_probs[DELTA_LF_PROBS] = { 220, 220,
+                                                                 220 };
+#if CONFIG_EC_MULTISYMBOL
+static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
+  28160, 32120, 32677, 32768, 0
+};
+#endif
+#endif
 #endif
 #if CONFIG_EC_MULTISYMBOL
 int av1_intra_mode_ind[INTRA_MODES];
@@ -3279,6 +3288,12 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_EC_MULTISYMBOL
   av1_copy(fc->delta_q_cdf, default_delta_q_cdf);
 #endif  // CONFIG_EC_MULTISYMBOL
+#if CONFIG_EXT_DELTA_Q
+  av1_copy(fc->delta_lf_prob, default_delta_lf_probs);
+#if CONFIG_EC_MULTISYMBOL
+  av1_copy(fc->delta_lf_cdf, default_delta_lf_cdf);
+#endif  // CONFIG_EC_MULTISYMBOL
+#endif
 #endif  // CONFIG_DELTA_Q
 }
 
@@ -3628,6 +3643,11 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
   for (i = 0; i < DELTA_Q_PROBS; ++i)
     fc->delta_q_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
+#if CONFIG_EXT_DELTA_Q
+  for (i = 0; i < DELTA_LF_PROBS; ++i)
+    fc->delta_lf_prob[i] =
+        mode_mv_merge_probs(pre_fc->delta_lf_prob[i], counts->delta_lf[i]);
+#endif  // CONFIG_EXT_DELTA_Q
 #endif
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP

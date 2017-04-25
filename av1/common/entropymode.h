@@ -271,6 +271,9 @@ typedef struct frame_contexts {
                           [CDF_SIZE(MAX_TX_DEPTH + 1)];
 #if CONFIG_DELTA_Q
   aom_cdf_prob delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)];
+#if CONFIG_EXT_DELTA_Q
+  aom_cdf_prob delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)];
+#endif
 #endif  // CONFIG_DELTA_Q
 #if CONFIG_EXT_TX
   aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
@@ -287,6 +290,9 @@ typedef struct frame_contexts {
 #endif  // CONFIG_EC_MULTISYMBOL
 #if CONFIG_DELTA_Q
   aom_prob delta_q_prob[DELTA_Q_PROBS];
+#if CONFIG_EXT_DELTA_Q
+  aom_prob delta_lf_prob[DELTA_LF_PROBS];
+#endif
 #endif
 #if CONFIG_PVQ
   // TODO(any): If PVQ is enabled, most of coefficient related cdf,
@@ -393,6 +399,9 @@ typedef struct FRAME_COUNTS {
 #endif
 #if CONFIG_DELTA_Q
   unsigned int delta_q[DELTA_Q_PROBS][2];
+#if CONFIG_EXT_DELTA_Q
+  unsigned int delta_lf[DELTA_LF_PROBS][2];
+#endif
 #endif
 #if CONFIG_EXT_TX
 #if CONFIG_RECT_TX

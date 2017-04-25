@@ -389,6 +389,9 @@ typedef struct {
   int8_t cdef_strength;
 #if CONFIG_DELTA_Q
   int current_q_index;
+#if CONFIG_EXT_DELTA_Q
+  int current_delta_lf_from_base;
+#endif
 #endif
 #if CONFIG_RD_DEBUG
   RD_STATS rd_stats;
@@ -617,6 +620,16 @@ typedef struct macroblockd {
   int prev_qindex;
   int delta_qindex;
   int current_qindex;
+#if CONFIG_EXT_DELTA_Q
+  // Since actual frame level loop filtering level value is not available
+  // at the beginning of the tile (only available during actual filtering)
+  // at encoder side.we record the delta_lf (against the frame level loop
+  // filtering level) and code the delta between previous superblock's delta
+  // lf and current delta lf. It is equivalent to the delta between previous
+  // superblock's actual lf and current lf.
+  int prev_delta_lf_from_base;
+  int current_delta_lf_from_base;
+#endif
 #endif
 #if CONFIG_ADAPT_SCAN
   const EobThresholdMD *eob_threshold_md;
