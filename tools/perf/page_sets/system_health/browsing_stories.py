@@ -565,7 +565,7 @@ class BrowseGloboMobileStory(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.EMERGING_MARKET]
 
-  ITEMS_TO_VISIT = 4
+  ITEMS_TO_VISIT = 3  # 4 links causes renderer OOM crbug.com/714650.
   ITEM_SELECTOR = '.hui-premium__title'
   COMPLETE_STATE_WAIT_TIMEOUT = 150
 
