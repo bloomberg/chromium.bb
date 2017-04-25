@@ -57,7 +57,7 @@ class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
   void ValidateItems() {
     unsigned current_offset = 0;
     for (unsigned i = 0; i < items_.size(); i++) {
-      const NGLayoutInlineItem& item = items_[i];
+      const NGInlineItem& item = items_[i];
       EXPECT_EQ(current_offset, item.StartOffset());
       EXPECT_LT(item.StartOffset(), item.EndOffset());
       current_offset = item.EndOffset();
@@ -65,7 +65,7 @@ class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
     EXPECT_EQ(current_offset, text_.length());
   }
 
-  Vector<NGLayoutInlineItem> items_;
+  Vector<NGInlineItem> items_;
   String text_;
   RefPtr<ComputedStyle> style_;
 };
@@ -223,19 +223,16 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseEastAsianWidth) {
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAroundReplacedElement) {
   NGLayoutInlineItemsBuilder builder(&items_);
   builder.Append("Hello ", style_.Get());
-  builder.Append(NGLayoutInlineItem::kAtomicInline,
-                 kObjectReplacementCharacter);
+  builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
   builder.Append(" World", style_.Get());
   EXPECT_EQ(String(u"Hello \uFFFC World"), builder.ToString());
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewlineAfterObject) {
   NGLayoutInlineItemsBuilder builder(&items_);
-  builder.Append(NGLayoutInlineItem::kAtomicInline,
-                 kObjectReplacementCharacter);
+  builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
   builder.Append("\n", style_.Get());
-  builder.Append(NGLayoutInlineItem::kAtomicInline,
-                 kObjectReplacementCharacter);
+  builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
   EXPECT_EQ(String(u"\uFFFC \uFFFC"), builder.ToString());
   EXPECT_EQ(3u, items_.size());
   EXPECT_EQ(nullptr, items_[0].Style());
@@ -249,7 +246,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, AppendEmptyString) {
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, Empty) {
-  Vector<NGLayoutInlineItem> items;
+  Vector<NGInlineItem> items;
   NGLayoutInlineItemsBuilder builder(&items);
   RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
   builder.EnterBlock(block_style.Get());
@@ -259,7 +256,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, Empty) {
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, BidiBlockOverride) {
-  Vector<NGLayoutInlineItem> items;
+  Vector<NGInlineItem> items;
   NGLayoutInlineItemsBuilder builder(&items);
   RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
   block_style->SetUnicodeBidi(UnicodeBidi::kBidiOverride);
@@ -286,7 +283,7 @@ static std::unique_ptr<LayoutInline> CreateLayoutInline(
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolate) {
-  Vector<NGLayoutInlineItem> items;
+  Vector<NGInlineItem> items;
   NGLayoutInlineItemsBuilder builder(&items);
   builder.Append("Hello ", style_.Get());
   std::unique_ptr<LayoutInline> isolate_rtl(
@@ -310,7 +307,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolate) {
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolateOverride) {
-  Vector<NGLayoutInlineItem> items;
+  Vector<NGInlineItem> items;
   NGLayoutInlineItemsBuilder builder(&items);
   builder.Append("Hello ", style_.Get());
   std::unique_ptr<LayoutInline> isolate_override_rtl(

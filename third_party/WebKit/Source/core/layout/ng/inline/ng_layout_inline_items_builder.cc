@@ -103,14 +103,14 @@ static bool ShouldRemoveNewline(const StringBuilder& before,
                                  after_style);
 }
 
-static void AppendItem(Vector<NGLayoutInlineItem>* items,
-                       NGLayoutInlineItem::NGLayoutInlineItemType type,
+static void AppendItem(Vector<NGInlineItem>* items,
+                       NGInlineItem::NGInlineItemType type,
                        unsigned start,
                        unsigned end,
                        const ComputedStyle* style = nullptr,
                        LayoutObject* layout_object = nullptr) {
   DCHECK(items->IsEmpty() || items->back().EndOffset() == start);
-  items->push_back(NGLayoutInlineItem(type, start, end, style, layout_object));
+  items->push_back(NGInlineItem(type, start, end, style, layout_object));
 }
 
 static inline bool IsCollapsibleSpace(UChar c, bool preserve_newline) {
@@ -179,16 +179,15 @@ void NGLayoutInlineItemsBuilder::Append(const String& string,
   }
 
   if (text_.length() > start_offset) {
-    AppendItem(items_, NGLayoutInlineItem::kText, start_offset, text_.length(),
-               style, layout_object);
+    AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(), style,
+               layout_object);
   }
 }
 
-void NGLayoutInlineItemsBuilder::Append(
-    NGLayoutInlineItem::NGLayoutInlineItemType type,
-    UChar character,
-    const ComputedStyle* style,
-    LayoutObject* layout_object) {
+void NGLayoutInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
+                                        UChar character,
+                                        const ComputedStyle* style,
+                                        LayoutObject* layout_object) {
   DCHECK_NE(character, kSpaceCharacter);
   DCHECK_NE(character, kTabulationCharacter);
   DCHECK_NE(character, kNewlineCharacter);
@@ -200,10 +199,9 @@ void NGLayoutInlineItemsBuilder::Append(
   last_collapsible_space_ = CollapsibleSpace::kNone;
 }
 
-void NGLayoutInlineItemsBuilder::Append(
-    NGLayoutInlineItem::NGLayoutInlineItemType type,
-    const ComputedStyle* style,
-    LayoutObject* layout_object) {
+void NGLayoutInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
+                                        const ComputedStyle* style,
+                                        LayoutObject* layout_object) {
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset, end_offset, style, layout_object);
 }
@@ -220,7 +218,7 @@ void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleNewlineIfNeeded(
 
   const ComputedStyle* before_style = after_style;
   if (!items_->IsEmpty()) {
-    NGLayoutInlineItem& item = items_->back();
+    NGInlineItem& item = items_->back();
     if (text_.length() < item.EndOffset() + 2)
       before_style = item.Style();
   }
@@ -252,9 +250,9 @@ void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleSpace(
 
   // Adjust the last item if the removed space is already appended.
   for (unsigned i = items_->size(); i > 0;) {
-    NGLayoutInlineItem& item = (*items_)[--i];
+    NGInlineItem& item = (*items_)[--i];
     DCHECK_EQ(item.EndOffset(), new_size + 1);
-    if (item.Type() == NGLayoutInlineItem::kText) {
+    if (item.Type() == NGInlineItem::kText) {
       DCHECK_GE(item.Length(), 1u);
       if (item.Length() > 1)
         item.SetEndOffset(new_size);
@@ -275,7 +273,7 @@ void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleSpace(
 void NGLayoutInlineItemsBuilder::AppendBidiControl(const ComputedStyle* style,
                                                    UChar ltr,
                                                    UChar rtl) {
-  Append(NGLayoutInlineItem::kBidiControl,
+  Append(NGInlineItem::kBidiControl,
          style->Direction() == TextDirection::kRtl ? rtl : ltr);
 }
 
@@ -328,11 +326,11 @@ void NGLayoutInlineItemsBuilder::EnterInline(LayoutObject* node) {
       Enter(node, kPopDirectionalIsolateCharacter);
       break;
     case UnicodeBidi::kPlaintext:
-      Append(NGLayoutInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
+      Append(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
       Enter(node, kPopDirectionalIsolateCharacter);
       break;
     case UnicodeBidi::kIsolateOverride:
-      Append(NGLayoutInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
+      Append(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
       AppendBidiControl(style, kLeftToRightOverrideCharacter,
                         kRightToLeftOverrideCharacter);
       Enter(node, kPopDirectionalIsolateCharacter);
@@ -340,7 +338,7 @@ void NGLayoutInlineItemsBuilder::EnterInline(LayoutObject* node) {
       break;
   }
 
-  Append(NGLayoutInlineItem::kOpenTag, style, node);
+  Append(NGInlineItem::kOpenTag, style, node);
 }
 
 void NGLayoutInlineItemsBuilder::Enter(LayoutObject* node,
@@ -356,14 +354,14 @@ void NGLayoutInlineItemsBuilder::ExitBlock() {
 void NGLayoutInlineItemsBuilder::ExitInline(LayoutObject* node) {
   DCHECK(node);
 
-  Append(NGLayoutInlineItem::kCloseTag, node->Style(), node);
+  Append(NGInlineItem::kCloseTag, node->Style(), node);
 
   Exit(node);
 }
 
 void NGLayoutInlineItemsBuilder::Exit(LayoutObject* node) {
   while (!exits_.IsEmpty() && exits_.back().node == node) {
-    Append(NGLayoutInlineItem::kBidiControl, exits_.back().character);
+    Append(NGInlineItem::kBidiControl, exits_.back().character);
     exits_.pop_back();
   }
 }

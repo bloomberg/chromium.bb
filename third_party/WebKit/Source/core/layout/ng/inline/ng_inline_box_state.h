@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class NGLayoutInlineItem;
+class NGInlineItem;
 class NGLineBoxFragmentBuilder;
 class NGTextFragmentBuilder;
 
@@ -40,7 +40,7 @@ struct NGInlineBoxState {
   bool include_used_fonts = false;
 
   // Compute text metrics for a box. All text in a box share the same metrics.
-  void ComputeTextMetrics(const NGLayoutInlineItem&, FontBaseline);
+  void ComputeTextMetrics(const NGInlineItem&, FontBaseline);
 };
 
 // Represents the inline tree structure. This class provides:
@@ -54,12 +54,12 @@ class NGInlineLayoutStateStack {
   NGInlineBoxState* OnBeginPlaceItems(const ComputedStyle*);
 
   // Push a box state stack.
-  NGInlineBoxState* OnOpenTag(const NGLayoutInlineItem&,
+  NGInlineBoxState* OnOpenTag(const NGInlineItem&,
                               NGLineBoxFragmentBuilder*,
                               NGTextFragmentBuilder*);
 
   // Pop a box state stack.
-  NGInlineBoxState* OnCloseTag(const NGLayoutInlineItem&,
+  NGInlineBoxState* OnCloseTag(const NGInlineItem&,
                                NGLineBoxFragmentBuilder*,
                                NGInlineBoxState*);
 

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-void NGInlineBoxState::ComputeTextMetrics(const NGLayoutInlineItem& item,
+void NGInlineBoxState::ComputeTextMetrics(const NGInlineItem& item,
                                           FontBaseline baseline_type) {
   const ComputedStyle& style = *item.Style();
   text_metrics = NGLineHeightMetrics(style, baseline_type);
@@ -43,7 +43,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
 }
 
 NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
-    const NGLayoutInlineItem& item,
+    const NGInlineItem& item,
     NGLineBoxFragmentBuilder* line_box,
     NGTextFragmentBuilder* text_builder) {
   stack_.Resize(stack_.size() + 1);
@@ -55,7 +55,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
 }
 
 NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
-    const NGLayoutInlineItem& item,
+    const NGInlineItem& item,
     NGLineBoxFragmentBuilder* line_box,
     NGInlineBoxState* box) {
   EndBoxState(box, line_box);

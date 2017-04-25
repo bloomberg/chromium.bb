@@ -348,6 +348,8 @@ blink_core_sources("layout") {
     "ng/inline/ng_inline_box_state.h",
     "ng/inline/ng_inline_break_token.cc",
     "ng/inline/ng_inline_break_token.h",
+    "ng/inline/ng_inline_item.cc",
+    "ng/inline/ng_inline_item.h",
     "ng/inline/ng_inline_layout_algorithm.cc",
     "ng/inline/ng_inline_layout_algorithm.h",
     "ng/inline/ng_inline_node.cc",

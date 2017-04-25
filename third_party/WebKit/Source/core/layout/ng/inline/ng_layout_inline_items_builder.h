@@ -16,10 +16,10 @@ namespace blink {
 
 class ComputedStyle;
 class LayoutObject;
-class NGLayoutInlineItem;
+class NGInlineItem;
 
-// NGLayoutInlineItemsBuilder builds a string and a list of NGLayoutInlineItem
-// from inlines.
+// NGLayoutInlineItemsBuilder builds a string and a list of NGInlineItem from
+// inlines.
 //
 // When appending, spaces are collapsed according to CSS Text, The white space
 // processing rules
@@ -32,7 +32,7 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   STACK_ALLOCATED();
 
  public:
-  explicit NGLayoutInlineItemsBuilder(Vector<NGLayoutInlineItem>* items)
+  explicit NGLayoutInlineItemsBuilder(Vector<NGInlineItem>* items)
       : items_(items) {}
   ~NGLayoutInlineItemsBuilder();
 
@@ -60,13 +60,13 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   // as its String version does.
   // See the String version for using nullptr for ComputedStyle and
   // LayoutObject.
-  void Append(NGLayoutInlineItem::NGLayoutInlineItemType,
+  void Append(NGInlineItem::NGInlineItemType,
               UChar,
               const ComputedStyle* = nullptr,
               LayoutObject* = nullptr);
 
   // Append a non-character item.
-  void Append(NGLayoutInlineItem::NGLayoutInlineItemType,
+  void Append(NGInlineItem::NGInlineItemType,
               const ComputedStyle* = nullptr,
               LayoutObject* = nullptr);
 
@@ -79,7 +79,7 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   void ExitInline(LayoutObject*);
 
  private:
-  Vector<NGLayoutInlineItem>* items_;
+  Vector<NGInlineItem>* items_;
   StringBuilder text_;
 
   typedef struct OnExitNode {

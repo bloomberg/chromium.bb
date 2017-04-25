@@ -22,7 +22,7 @@ namespace blink {
 class NGConstraintSpace;
 class NGInlineBreakToken;
 class NGInlineNode;
-class NGLayoutInlineItem;
+class NGInlineItem;
 class NGLineBoxFragmentBuilder;
 class NGTextFragmentBuilder;
 
@@ -91,10 +91,10 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   // part of layout operations and modifies the state of |this|.
   MinMaxContentSize ComputeMinMaxContentSizeByLayout();
 
-  // Compute inline size of an NGLayoutInlineItem.
-  // Same as NGLayoutInlineItem::InlineSize(), except that this function can
-  // compute atomic inlines by performing layout.
-  LayoutUnit InlineSize(const NGLayoutInlineItem&);
+  // Compute inline size of an NGInlineItem.
+  // Same as NGInlineItem::InlineSize(), except that this function can compute
+  // atomic inlines by performing layout.
+  LayoutUnit InlineSize(const NGInlineItem&);
 
  private:
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
@@ -107,11 +107,11 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   // This empties the current line.
   void Initialize(unsigned index, unsigned offset);
 
-  LayoutUnit InlineSize(const NGLayoutInlineItem&,
+  LayoutUnit InlineSize(const NGInlineItem&,
                         unsigned start_offset,
                         unsigned end_offset);
-  LayoutUnit InlineSizeFromLayout(const NGLayoutInlineItem&);
-  const NGLayoutResult* LayoutItem(const NGLayoutInlineItem&);
+  LayoutUnit InlineSizeFromLayout(const NGInlineItem&);
+  const NGLayoutResult* LayoutItem(const NGInlineItem&);
 
   struct LineItemChunk {
     unsigned index;
@@ -131,10 +131,10 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   void LayoutAndPositionFloat(LayoutUnit end_position, LayoutObject*);
 
   bool PlaceItems(const Vector<LineItemChunk, 32>&);
-  void AccumulateUsedFonts(const NGLayoutInlineItem&,
+  void AccumulateUsedFonts(const NGInlineItem&,
                            const LineItemChunk&,
                            NGLineBoxFragmentBuilder*);
-  LayoutUnit PlaceAtomicInline(const NGLayoutInlineItem&,
+  LayoutUnit PlaceAtomicInline(const NGInlineItem&,
                                NGLineBoxFragmentBuilder*,
                                NGInlineBoxState*,
                                NGTextFragmentBuilder*);
