@@ -12,16 +12,11 @@
       "{\"got_cr_revision\": \"src\", \"got_revision\": \"src\"}",
       "--git-cache-dir",
       "[GIT_CACHE]",
-      "--issue",
-      "12345",
-      "--patchset",
-      "654321",
-      "--rietveld_server",
-      "https://rietveld.example.com/",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@HEAD"
+      "src@HEAD",
+      "--output_manifest"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",
@@ -34,12 +29,16 @@
       "@@@STEP_TEXT@Some step text@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true, @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"failed_patch_body\": \"Downloading patch...\\nApplying the patch...\\nPatch: foo/bar.py\\nIndex: foo/bar.py\\ndiff --git a/foo/bar.py b/foo/bar.py\\nindex HASH..HASH MODE\\n--- a/foo/bar.py\\n+++ b/foo/bar.py\\ncontext\\n+something\\n-something\\nmore context\", @@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"src\": \"HEAD\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_apply_return_code\": 3, @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": true, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src.git\", @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  }, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"src\", @@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_cr_revision\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", @@@",
@@ -61,33 +60,6 @@
     "cmd": [
       "python",
       "-u",
-      "import sys; sys.exit(1)"
-    ],
-    "infra_step": true,
-    "name": "Patch failure",
-    "~followup_annotations": [
-      "step returned non-zero exit code: 1",
-      "@@@STEP_TEXT@Git reported a download failure@@@",
-      "@@@STEP_LOG_LINE@patch error@Downloading patch...@@@",
-      "@@@STEP_LOG_LINE@patch error@Applying the patch...@@@",
-      "@@@STEP_LOG_LINE@patch error@Patch: foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@Index: foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@diff --git a/foo/bar.py b/foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@index HASH..HASH MODE@@@",
-      "@@@STEP_LOG_LINE@patch error@--- a/foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@+++ b/foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@context@@@",
-      "@@@STEP_LOG_LINE@patch error@+something@@@",
-      "@@@STEP_LOG_LINE@patch error@-something@@@",
-      "@@@STEP_LOG_LINE@patch error@more context@@@",
-      "@@@STEP_LOG_END@patch error@@@",
-      "@@@STEP_EXCEPTION@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python",
-      "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec",
       "cache_dir = '[GIT_CACHE]'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]",
@@ -97,8 +69,6 @@
       "{\"got_cr_revision\": \"src\", \"got_revision\": \"src\"}",
       "--git-cache-dir",
       "[GIT_CACHE]",
-      "--rietveld_server",
-      "https://rietveld.example.com/",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
@@ -116,7 +86,6 @@
       "@@@STEP_TEXT@Some step text@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true, @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"failed_patch_body\": \"Downloading patch...\\nApplying the patch...\\nPatch: foo/bar.py\\nIndex: foo/bar.py\\ndiff --git a/foo/bar.py b/foo/bar.py\\nindex HASH..HASH MODE\\n--- a/foo/bar.py\\n+++ b/foo/bar.py\\ncontext\\n+something\\n-something\\nmore context\", @@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"src\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
@@ -126,8 +95,7 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_apply_return_code\": 3, @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": true, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"src\", @@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_cr_revision\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", @@@",
@@ -139,33 +107,6 @@
       "@@@STEP_LOG_LINE@json.output@  \"step_text\": \"Some step text\"@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python",
-      "-u",
-      "import sys; sys.exit(1)"
-    ],
-    "infra_step": true,
-    "name": "Patch failure (2)",
-    "~followup_annotations": [
-      "step returned non-zero exit code: 1",
-      "@@@STEP_TEXT@Git reported a download failure@@@",
-      "@@@STEP_LOG_LINE@patch error@Downloading patch...@@@",
-      "@@@STEP_LOG_LINE@patch error@Applying the patch...@@@",
-      "@@@STEP_LOG_LINE@patch error@Patch: foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@Index: foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@diff --git a/foo/bar.py b/foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@index HASH..HASH MODE@@@",
-      "@@@STEP_LOG_LINE@patch error@--- a/foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@+++ b/foo/bar.py@@@",
-      "@@@STEP_LOG_LINE@patch error@context@@@",
-      "@@@STEP_LOG_LINE@patch error@+something@@@",
-      "@@@STEP_LOG_LINE@patch error@-something@@@",
-      "@@@STEP_LOG_LINE@patch error@more context@@@",
-      "@@@STEP_LOG_END@patch error@@@",
-      "@@@STEP_EXCEPTION@@@"
     ]
   },
   {

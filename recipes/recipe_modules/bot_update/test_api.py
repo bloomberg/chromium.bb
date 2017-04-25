@@ -9,7 +9,7 @@ from recipe_engine import recipe_test_api
 
 class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
   def output_json(self, root, first_sln, revision_mapping, fail_patch=False,
-                  fixed_revisions=None):
+                  output_manifest=False, fixed_revisions=None):
     """Deterministically synthesize json.output test data for gclient's
     --output-json option.
     """
@@ -35,15 +35,16 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
         'step_text': 'Some step text'
     })
 
-    output.update({
-      'manifest': {
-        project_name: {
-          'repository': 'https://fake.org/%s.git' % project_name,
-          'revision': self.gen_revision(project_name),
+    if output_manifest:
+      output.update({
+        'manifest': {
+          project_name: {
+            'repository': 'https://fake.org/%s.git' % project_name,
+            'revision': self.gen_revision(project_name),
+          }
+          for project_name in set(revision_mapping.values())
         }
-        for project_name in set(revision_mapping.values())
-      }
-    })
+      })
 
     if fixed_revisions:
       output['fixed_revisions'] = fixed_revisions
