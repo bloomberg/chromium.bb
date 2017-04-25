@@ -131,9 +131,8 @@ void LayoutTableSection::StyleDidChange(StyleDifference diff,
   if (!table)
     return;
 
-  if (!table->SelfNeedsLayout() && !table->NormalChildNeedsLayout() &&
-      old_style->Border() != Style()->Border())
-    table->InvalidateCollapsedBorders();
+  LayoutTableBoxComponent::InvalidateCollapsedBordersOnStyleChange(
+      *this, *table, diff, *old_style);
 
   if (LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *table, diff,
                                                      *old_style))

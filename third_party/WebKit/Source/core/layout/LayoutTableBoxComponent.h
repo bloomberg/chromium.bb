@@ -15,8 +15,15 @@ namespace blink {
 class LayoutTable;
 
 // Common super class for LayoutTableCol, LayoutTableSection and LayoutTableRow.
+// Also provides utility functions for all table parts.
 class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
  public:
+  static void InvalidateCollapsedBordersOnStyleChange(
+      const LayoutObject& table_part,
+      LayoutTable&,
+      const StyleDifference&,
+      const ComputedStyle& old_style);
+
   static bool DoCellsHaveDirtyWidth(const LayoutObject& table_part,
                                     const LayoutTable&,
                                     const StyleDifference&,

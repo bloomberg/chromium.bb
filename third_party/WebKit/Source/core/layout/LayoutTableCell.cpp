@@ -476,26 +476,27 @@ void LayoutTableCell::StyleDidChange(StyleDifference diff,
   LayoutBlockFlow::StyleDidChange(diff, old_style);
   SetHasBoxDecorationBackground(true);
 
-  if (Parent() && Section() && old_style &&
-      Style()->Height() != old_style->Height())
+  if (!old_style)
+    return;
+
+  if (Parent() && Section() && Style()->Height() != old_style->Height())
     Section()->RowLogicalHeightChanged(Row());
 
   // Our intrinsic padding pushes us down to align with the baseline of other
   // cells on the row. If our vertical-align has changed then so will the
   // padding needed to align with other cells - clear it so we can recalculate
   // it from scratch.
-  if (old_style && Style()->VerticalAlign() != old_style->VerticalAlign())
+  if (Style()->VerticalAlign() != old_style->VerticalAlign())
     ClearIntrinsicPadding();
 
-  // If border was changed, notify table.
   if (!Parent())
     return;
-  LayoutTable* table = this->Table();
+  LayoutTable* table = Table();
   if (!table)
     return;
-  if (!table->SelfNeedsLayout() && !table->NormalChildNeedsLayout() &&
-      old_style && old_style->Border() != Style()->Border())
-    table->InvalidateCollapsedBorders();
+
+  LayoutTableBoxComponent::InvalidateCollapsedBordersOnStyleChange(
+      *this, *table, diff, *old_style);
 
   if (LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *table, diff,
                                                      *old_style)) {

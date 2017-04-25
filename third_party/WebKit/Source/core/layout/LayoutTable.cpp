@@ -99,9 +99,12 @@ void LayoutTable::StyleDidChange(StyleDifference diff,
       table_layout_ = WTF::MakeUnique<TableLayoutAlgorithmAuto>(this);
   }
 
-  // If border was changed, invalidate collapsed borders cache.
-  if (!NeedsLayout() && old_style && old_style->Border() != Style()->Border())
-    InvalidateCollapsedBorders();
+  if (!old_style)
+    return;
+
+  LayoutTableBoxComponent::InvalidateCollapsedBordersOnStyleChange(
+      *this, *this, diff, *old_style);
+
   if (LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *this, diff,
                                                      *old_style))
     MarkAllCellsWidthsDirtyAndOrNeedsLayout(kMarkDirtyAndNeedsLayout);

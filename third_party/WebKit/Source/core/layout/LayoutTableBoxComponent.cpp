@@ -10,6 +10,19 @@
 
 namespace blink {
 
+void LayoutTableBoxComponent::InvalidateCollapsedBordersOnStyleChange(
+    const LayoutObject& table_part,
+    LayoutTable& table,
+    const StyleDifference& diff,
+    const ComputedStyle& old_style) {
+  if (!table.CollapseBorders())
+    return;
+  if (old_style.Border() != table_part.StyleRef().Border() ||
+      (diff.TextDecorationOrColorChanged() &&
+       table_part.StyleRef().HasBorderColorReferencingCurrentColor()))
+    table.InvalidateCollapsedBorders();
+}
+
 bool LayoutTableBoxComponent::DoCellsHaveDirtyWidth(
     const LayoutObject& table_part,
     const LayoutTable& table,

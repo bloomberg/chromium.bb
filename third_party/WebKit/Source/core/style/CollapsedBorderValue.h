@@ -36,17 +36,15 @@ class CollapsedBorderValue {
  public:
   CollapsedBorderValue()
       : color_(0),
-        color_is_current_color_(true),
         width_(0),
         style_(kBorderStyleNone),
         precedence_(kBorderPrecedenceOff),
         transparent_(false) {}
 
   CollapsedBorderValue(const BorderValue& border,
-                       const StyleColor& color,
+                       const Color& color,
                        EBorderPrecedence precedence)
-      : color_(color.Resolve(Color())),
-        color_is_current_color_(color.IsCurrentColor()),
+      : color_(color),
         width_(border.NonZero() ? border.Width() : 0),
         style_(border.Style()),
         precedence_(precedence),
@@ -55,10 +53,7 @@ class CollapsedBorderValue {
   unsigned Width() const { return style_ > kBorderStyleHidden ? width_ : 0; }
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
   bool Exists() const { return precedence_ != kBorderPrecedenceOff; }
-  StyleColor GetColor() const {
-    return color_is_current_color_ ? StyleColor::CurrentColor()
-                                   : StyleColor(color_);
-  }
+  Color GetColor() const { return color_; }
   bool IsTransparent() const { return transparent_; }
   EBorderPrecedence Precedence() const {
     return static_cast<EBorderPrecedence>(precedence_);
@@ -87,8 +82,7 @@ class CollapsedBorderValue {
 
  private:
   Color color_;
-  unsigned color_is_current_color_ : 1;
-  unsigned width_ : 23;
+  unsigned width_ : 24;
   unsigned style_ : 4;       // EBorderStyle
   unsigned precedence_ : 3;  // EBorderPrecedence
   unsigned transparent_ : 1;

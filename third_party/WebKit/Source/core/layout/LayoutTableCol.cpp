@@ -55,15 +55,12 @@ void LayoutTableCol::StyleDidChange(StyleDifference diff,
   if (!table)
     return;
 
-  // TODO(dgrogan): Is the "else" necessary for correctness or just a brittle
-  // optimization? The optimization would be: if the first branch is taken then
-  // the next one can't be, so don't even check its condition.
-  if (!table->SelfNeedsLayout() && !table->NormalChildNeedsLayout() &&
-      old_style->Border() != Style()->Border()) {
-    table->InvalidateCollapsedBorders();
-  } else if ((old_style->LogicalWidth() != Style()->LogicalWidth()) ||
-             LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *table, diff,
-                                                            *old_style)) {
+  LayoutTableBoxComponent::InvalidateCollapsedBordersOnStyleChange(
+      *this, *table, diff, *old_style);
+
+  if ((old_style->LogicalWidth() != Style()->LogicalWidth()) ||
+      LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *table, diff,
+                                                     *old_style)) {
     // TODO(dgrogan): Optimization opportunities:
     // (1) Only mark cells which are affected by this col, not every cell in the
     //     table.
