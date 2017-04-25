@@ -178,7 +178,7 @@ void InstallPendingConditionalFeatureForModules(
     }
     return;
   }
-  if (feature == "WebVR") {
+  if (feature == "WebVR1.1") {
     global_instance_object = script_state->GetContext()->Global();
     V8WindowPartial::installGamepadExtensions(
         isolate, world, global_instance_object, v8::Local<v8::Object>(),
