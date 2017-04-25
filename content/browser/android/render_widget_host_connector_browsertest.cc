@@ -8,6 +8,7 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -30,6 +31,26 @@ void RenderWidgetHostConnectorTest::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest,
+                       RenderViewCreatedBeforeConnector) {
+  GURL main_url(embedded_test_server()->GetURL("/page_with_popup.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Navigate to the enclosed <iframe>.
+  FrameTreeNode* iframe = web_contents()->GetFrameTree()->root()->child_at(0);
+  GURL frame_url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateFrameToURL(iframe, frame_url);
+
+  // Open a popup from the iframe. This creates a render widget host view
+  // view before the corresponding web contents. Tests if rwhva gets connected.
+  Shell* new_shell = OpenPopup(iframe, GURL(url::kAboutBlankURL), "");
+  EXPECT_TRUE(new_shell);
+
+  auto* rwhva_popup = static_cast<RenderWidgetHostViewAndroid*>(
+      new_shell->web_contents()->GetRenderWidgetHostView());
+  EXPECT_TRUE(connector_in_rwhva(rwhva_popup) != nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest,
