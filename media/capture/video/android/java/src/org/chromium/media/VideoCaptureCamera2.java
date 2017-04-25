@@ -805,8 +805,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 break;
             }
         }
-        if (cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_LOCK_AVAILABLE)) {
-            exposureModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
+        try {
+            if (cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_LOCK_AVAILABLE)) {
+                exposureModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
+            }
+        } catch (NoSuchFieldError e) {
+            // Ignore this exception, it means CONTROL_AE_LOCK_AVAILABLE is not known.
         }
         builder.setExposureModes(integerArrayListToArray(exposureModes));
 
@@ -840,8 +844,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 break;
             }
         }
-        if (cameraCharacteristics.get(CameraCharacteristics.CONTROL_AWB_LOCK_AVAILABLE)) {
-            whiteBalanceModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
+        try {
+            if (cameraCharacteristics.get(CameraCharacteristics.CONTROL_AWB_LOCK_AVAILABLE)) {
+                whiteBalanceModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
+            }
+        } catch (NoSuchFieldError e) {
+            // Ignore this exception, it means CONTROL_AWB_LOCK_AVAILABLE is not known.
         }
         builder.setWhiteBalanceModes(integerArrayListToArray(whiteBalanceModes));
 
