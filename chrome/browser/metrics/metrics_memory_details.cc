@@ -176,8 +176,8 @@ void MetricsMemoryDetails::UpdateHistograms() {
         continue;
       case content::PROCESS_TYPE_GPU:
 #if defined(OS_MACOSX)
-        // Physical footprint was introduced in macOS 10.11.
-        if (base::mac::IsAtLeastOS10_11()) {
+        // Physical footprint was introduced in macOS 10.12.
+        if (base::mac::IsAtLeastOS10_12()) {
           UMA_HISTOGRAM_MEMORY_LARGE_MB(
               "Memory.Experimental.Gpu.PhysicalFootprint.MacOS",
               browser.processes[index].phys_footprint / 1024 / 1024);
