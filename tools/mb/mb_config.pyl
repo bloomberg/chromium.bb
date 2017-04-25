@@ -157,13 +157,13 @@
       'ClangToTLinuxLLD': 'clang_tot_lld_release_shared',
       'ClangToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ClangToTMac': 'clang_tot_minimal_symbols_shared_release',
-      'ClangToTMac (dbg)': 'clang_tot_minimal_symbols_shared_debug',
+      'ClangToTMac (dbg)': 'clang_tot_shared_debug',
       'ClangToTMacASan': 'asan_disable_nacl_clang_tot_full_symbols_static_release',
       'ClangToTWin': 'clang_tot_official_minimal_symbols_static_release_x86',
-      'ClangToTWin(dbg)': 'clang_tot_minimal_symbols_shared_debug_x86',
+      'ClangToTWin(dbg)': 'clang_tot_shared_debug_x86',
       'ClangToTWin(dll)': 'clang_tot_minimal_symbols_shared_release_x86',
       'ClangToTWin64': 'clang_tot_official_minimal_symbols_static_release',
-      'ClangToTWin64(dbg)': 'clang_tot_minimal_symbols_shared_debug',
+      'ClangToTWin64(dbg)': 'clang_tot_shared_debug',
       'ClangToTWin64(dll)': 'clang_tot_shared_release',
       'ClangToTiOS': 'ios',
       'Closure Compilation Linux': 'closure_compilation',
@@ -1107,8 +1107,8 @@
       'clang_tot', 'full_symbols', 'shared', 'release',
     ],
 
-    'clang_tot_minimal_symbols_shared_debug': [
-      'clang_tot', 'minimal_symbols', 'shared', 'debug',
+    'clang_tot_shared_debug': [
+      'clang_tot', 'shared', 'debug',
     ],
 
     'clang_tot_full_symbols_shared_debug_use_lld': [
@@ -1119,8 +1119,8 @@
       'clang_tot', 'full_symbols', 'shared', 'debug', 'use_lld', 'x86',
     ],
 
-    'clang_tot_minimal_symbols_shared_debug_x86': [
-      'clang_tot', 'minimal_symbols', 'shared', 'debug', 'x86',
+    'clang_tot_shared_debug_x86': [
+      'clang_tot', 'shared', 'debug', 'x86',
     ],
 
     'clang_tot_shared_release_use_lld': [
