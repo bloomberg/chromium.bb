@@ -143,9 +143,9 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 366
+#   For your editing convenience: highest ID currently used: 367
 #   And don't forget to also update the EnterprisePolicies enum of
-#   histograms.xml (run tools/metrics/histograms/update_policies.py).
+#   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -9477,6 +9477,26 @@
       'desc': '''Configures which keyboard layouts are allowed on the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> sign-in screen.
 
       If this policy is set to a list of input method identifiers, the given input methods will be available on the sign-in screen. The first given input method will be preselected. While a user pod is focused on the sign-in screen, the user's last used input method will be available in addition to the input methods given by this policy. If this policy is not set, the input methods on the sign-in screen will be derived from the locale in which the sign-in screen is displayed. Values which are not valid input method identifiers will be ignored.''',
+    },
+    {
+      'name': 'InstantTetheringAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:60-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default_for_enterprise_users': False,
+      'id': 367,
+      'caption': '''Allows Instant Tethering to be used.''',
+      'tags': ['local-data-access', 'google-sharing'],
+      'desc': '''If this setting is enabled, users will be allowed to use Instant Tethering, which allows their Google phone to share its mobile data with their device.
+
+      If this setting is disabled, users will not be allowed to use Instant Tethering.
+
+      If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.''',
     },
   ],
   'messages': {

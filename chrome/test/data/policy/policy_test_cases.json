@@ -2752,6 +2752,14 @@
     ]
   },
 
+  "InstantTetheringAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "InstantTetheringAllowed": false },
+    "pref_mappings": [
+      { "pref": "tether.allowed" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
