@@ -9,9 +9,15 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.test.filters.SmallTest;
+import android.view.ViewGroup;
 
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwContents.DependencyFactory;
+import org.chromium.android_webview.AwContents.InternalAccessDelegate;
+import org.chromium.android_webview.AwContents.NativeDrawGLFunctorFactory;
+import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.AwWebContentsObserver;
 import org.chromium.android_webview.ErrorCodeConversionHelper;
@@ -35,7 +41,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 public class SafeBrowsingTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mContainerView;
-    private AwContents mAwContents;
+    private MockAwContents mAwContents;
     private TestAwWebContentsObserver mWebContentsObserver;
 
     private EmbeddedTestServer mTestServer;
@@ -122,12 +128,59 @@ public class SafeBrowsingTest extends AwTestBase {
         }
     }
 
+    private static class MockAwContents extends AwContents {
+        private boolean mCanShowInterstitial;
+        private boolean mCanShowBigInterstitial;
+
+        public MockAwContents(AwBrowserContext browserContext, ViewGroup containerView,
+                Context context, InternalAccessDelegate internalAccessAdapter,
+                NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory,
+                AwContentsClient contentsClient, AwSettings settings,
+                DependencyFactory dependencyFactory) {
+            super(browserContext, containerView, context, internalAccessAdapter,
+                    nativeDrawGLFunctorFactory, contentsClient, settings, dependencyFactory);
+            mCanShowInterstitial = true;
+            mCanShowBigInterstitial = true;
+        }
+
+        public void setCanShowInterstitial(boolean able) {
+            mCanShowInterstitial = able;
+        }
+
+        public void setCanShowBigInterstitial(boolean able) {
+            mCanShowBigInterstitial = able;
+        }
+
+        @Override
+        protected boolean canShowInterstitial() {
+            return mCanShowInterstitial;
+        }
+
+        @Override
+        protected boolean canShowBigInterstitial() {
+            return mCanShowBigInterstitial;
+        }
+    }
+
+    private static class SafeBrowsingDependencyFactory extends AwTestBase.TestDependencyFactory {
+        @Override
+        public AwContents createAwContents(AwBrowserContext browserContext, ViewGroup containerView,
+                Context context, InternalAccessDelegate internalAccessAdapter,
+                NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory,
+                AwContentsClient contentsClient, AwSettings settings,
+                DependencyFactory dependencyFactory) {
+            return new MockAwContents(browserContext, containerView, context, internalAccessAdapter,
+                    nativeDrawGLFunctorFactory, contentsClient, settings, dependencyFactory);
+        }
+    }
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
-        mContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
-        mAwContents = mContainerView.getAwContents();
+        mContainerView = createAwTestContainerViewOnMainSync(
+                mContentsClient, false, new SafeBrowsingDependencyFactory());
+        mAwContents = (MockAwContents) mContainerView.getAwContents();
 
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -350,5 +403,36 @@ public class SafeBrowsingTest extends AwTestBase {
                 MALWARE_PAGE_BACKGROUND_COLOR
                         != GraphicsTestUtils.getPixelColorAtCenterOfView(
                                    mAwContents, mContainerView));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingShowsNetworkErrorForInvisibleViews() throws Throwable {
+        mAwContents.setCanShowInterstitial(false);
+        mAwContents.setCanShowBigInterstitial(false);
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
+        int errorCount = errorHelper.getCallCount();
+        loadUrlAsync(mAwContents, responseUrl);
+        errorHelper.waitForCallback(errorCount);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
+        assertEquals("Network error is for the malicious page", responseUrl,
+                errorHelper.getRequest().url);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingShowsNetworkErrorForOddSizedViews() throws Throwable {
+        mAwContents.setCanShowBigInterstitial(false);
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
+        int errorCount = errorHelper.getCallCount();
+        loadUrlAsync(mAwContents, responseUrl);
+        errorHelper.waitForCallback(errorCount);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
+        assertEquals("Network error is for the malicious page", responseUrl,
+                errorHelper.getRequest().url);
     }
 }

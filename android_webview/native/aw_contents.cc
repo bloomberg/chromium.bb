@@ -1407,12 +1407,12 @@ void AwContents::DidDetachInterstitialPage() {
   browser_view_renderer_.SetActiveCompositorID(compositor_id);
 }
 
-bool AwContents::CanShowInterstitial() {
+bool AwContents::CanShowBigInterstitial() {
   JNIEnv* env = AttachCurrentThread();
   const ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
-  return Java_AwContents_canShowInterstitial(env, obj);
+  return Java_AwContents_canShowBigInterstitial(env, obj);
 }
 
 void AwContents::CallProceedOnInterstitialForTesting(

@@ -21,7 +21,7 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
     static UIManagerClient* FromWebContents(content::WebContents* web_contents);
 
     // Whether this web contents can show an interstitial
-    virtual bool CanShowInterstitial() = 0;
+    virtual bool CanShowBigInterstitial() = 0;
   };
 
   // Construction needs to happen on the UI thread.
