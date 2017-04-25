@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
-#include "device/vr/features.h"
+#include "device/vr/features/features.h"
 
 #if defined(OS_ANDROID)
 #include "device/vr/android/gvr/gvr_device_provider.h"

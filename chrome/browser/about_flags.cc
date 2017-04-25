@@ -76,7 +76,7 @@
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/features.h"
 #include "device/base/features.h"
-#include "device/vr/features.h"
+#include "device/vr/features/features.h"
 #include "extensions/features/features.h"
 #include "gin/public/gin_features.h"
 #include "gpu/config/gpu_switches.h"

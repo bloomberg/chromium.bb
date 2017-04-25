@@ -97,7 +97,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "device/geolocation/geolocation_service_context.h"
-#include "device/vr/features.h"
+#include "device/vr/features/features.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 #include "media/base/media_switches.h"
