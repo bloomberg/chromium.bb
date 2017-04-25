@@ -260,7 +260,7 @@ void ScriptWrappableVisitor::MarkWrapper(
   // The write barrier may try to mark a wrapper because cleanup is still
   // delayed. Bail out in this case. We also allow unconditional marking which
   // requires us to bail out here when tracing is not in progress.
-  if (!tracing_in_progress_)
+  if (!tracing_in_progress_ || handle->IsEmpty())
     return;
   handle->RegisterExternalReference(isolate_);
 }
