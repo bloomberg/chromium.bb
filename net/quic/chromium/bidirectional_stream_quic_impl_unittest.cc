@@ -610,11 +610,11 @@ class BidirectionalStreamQuicImplTest
   std::unique_ptr<QuicReceivedPacket> ConstructClientAckAndRstStreamPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
-      QuicPacketNumber ack_least_unacked,
-      QuicPacketNumber stop_least_unacked) {
+      QuicPacketNumber smallest_received,
+      QuicPacketNumber least_unacked) {
     return client_maker_.MakeAckAndRstPacket(
         packet_number, !kIncludeVersion, stream_id_, QUIC_STREAM_CANCELLED,
-        largest_received, ack_least_unacked, stop_least_unacked,
+        largest_received, smallest_received, least_unacked,
         !kIncludeCongestionFeedback);
   }
 
@@ -622,6 +622,7 @@ class BidirectionalStreamQuicImplTest
       QuicPacketNumber packet_number,
       bool should_include_version,
       QuicPacketNumber largest_received,
+      QuicPacketNumber smallest_received,
       QuicPacketNumber least_unacked,
       bool fin,
       QuicStreamOffset offset,
@@ -629,7 +630,7 @@ class BidirectionalStreamQuicImplTest
       QuicTestPacketMaker* maker) {
     std::unique_ptr<QuicReceivedPacket> packet(maker->MakeAckAndDataPacket(
         packet_number, should_include_version, stream_id_, largest_received,
-        least_unacked, fin, offset, data));
+        smallest_received, least_unacked, fin, offset, data));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
              << QuicTextUtils::HexDump(packet->AsStringPiece());
     return packet;
@@ -638,18 +639,20 @@ class BidirectionalStreamQuicImplTest
   std::unique_ptr<QuicReceivedPacket> ConstructClientAckPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
+      QuicPacketNumber smallest_received,
       QuicPacketNumber least_unacked) {
     return client_maker_.MakeAckPacket(packet_number, largest_received,
-                                       least_unacked,
+                                       smallest_received, least_unacked,
                                        !kIncludeCongestionFeedback);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructServerAckPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
+      QuicPacketNumber smallest_received,
       QuicPacketNumber least_unacked) {
     return server_maker_.MakeAckPacket(packet_number, largest_received,
-                                       least_unacked,
+                                       smallest_received, least_unacked,
                                        !kIncludeCongestionFeedback);
   }
 
@@ -722,7 +725,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   AddWrite(ConstructSettingsPacket(2, SETTINGS_MAX_HEADER_LIST_SIZE,
                                    kDefaultMaxUncompressedHeaderSize,
                                    &header_stream_offset));
-  AddWrite(ConstructClientAckPacket(3, 3, 1));
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
 
   Initialize();
 
@@ -741,7 +744,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   ConfirmHandshake();
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -823,7 +826,7 @@ TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
       2, kClientDataStreamId2, kFin, DEFAULT_PRIORITY, nullptr, &offset));
   AddWrite(ConstructSettingsPacket(3, SETTINGS_MAX_HEADER_LIST_SIZE,
                                    kDefaultMaxUncompressedHeaderSize, &offset));
-  AddWrite(ConstructClientAckPacket(4, 3, 1));
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
   Initialize();
 
   BidirectionalStreamRequestInfo request;
@@ -849,7 +852,7 @@ TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
 
   ConfirmHandshake();
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   offset = 0;
@@ -896,7 +899,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   AddWrite(ConstructClientMultipleDataFramesPacket(3, kIncludeVersion, !kFin, 0,
                                                    {kBody1, kBody2}));
   // Ack server's data packet.
-  AddWrite(ConstructClientAckPacket(4, 3, 1));
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
   const char kBody3[] = "hello there";
   const char kBody4[] = "another piece of small data";
   const char kBody5[] = "really small";
@@ -933,7 +936,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1006,7 +1009,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
       2, !kFin, DEFAULT_PRIORITY, &header_stream_offset,
       &spdy_request_headers_frame_length, {kBody1}));
   // Ack server's data packet.
-  AddWrite(ConstructClientAckPacket(3, 3, 1));
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
   const char kBody2[] = "really small";
   QuicStreamOffset data_offset = strlen(kBody1);
   AddWrite(ConstructClientMultipleDataFramesPacket(4, !kIncludeVersion, kFin,
@@ -1035,7 +1038,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1105,7 +1108,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
       2, !kFin, DEFAULT_PRIORITY, &header_stream_offset,
       &spdy_request_headers_frame_length, two_writes));
   // Ack server's data packet.
-  AddWrite(ConstructClientAckPacket(3, 3, 1));
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
   const char kBody3[] = "hello there";
   const char kBody4[] = "another piece of small data";
   const char kBody5[] = "really small";
@@ -1138,7 +1141,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1208,7 +1211,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
                                    &header_stream_offset));
   AddWrite(ConstructDataPacket(3, kIncludeVersion, kFin, 0, kUploadData,
                                &client_maker_));
-  AddWrite(ConstructClientAckPacket(4, 3, 1));
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
 
   Initialize();
 
@@ -1232,7 +1235,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1286,7 +1289,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PutRequest) {
                                          &spdy_request_headers_frame_length));
   AddWrite(ConstructDataPacket(2, kIncludeVersion, kFin, 0, kUploadData,
                                &client_maker_));
-  AddWrite(ConstructClientAckPacket(3, 3, 1));
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
 
   Initialize();
 
@@ -1309,7 +1312,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PutRequest) {
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1367,9 +1370,9 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   AddWrite(ConstructSettingsPacket(2, SETTINGS_MAX_HEADER_LIST_SIZE,
                                    kDefaultMaxUncompressedHeaderSize,
                                    &header_stream_offset));
-  AddWrite(ConstructAckAndDataPacket(3, !kIncludeVersion, 2, 1, !kFin, 0,
+  AddWrite(ConstructAckAndDataPacket(3, !kIncludeVersion, 2, 1, 1, !kFin, 0,
                                      kUploadData, &client_maker_));
-  AddWrite(ConstructAckAndDataPacket(4, !kIncludeVersion, 3, 3, kFin,
+  AddWrite(ConstructAckAndDataPacket(4, !kIncludeVersion, 3, 3, 3, kFin,
                                      strlen(kUploadData), kUploadData,
                                      &client_maker_));
   Initialize();
@@ -1388,7 +1391,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1412,8 +1415,8 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   const char kResponseBody[] = "Hello world!";
 
   // Server sends a data packet.
-  ProcessPacket(ConstructAckAndDataPacket(3, !kIncludeVersion, 2, 1, !kFin, 0,
-                                          kResponseBody, &server_maker_));
+  ProcessPacket(ConstructAckAndDataPacket(3, !kIncludeVersion, 2, 1, 1, !kFin,
+                                          0, kResponseBody, &server_maker_));
 
   EXPECT_EQ(static_cast<int64_t>(strlen(kResponseBody)), cb.WaitForResult());
   EXPECT_EQ(std::string(kResponseBody), delegate->data_received());
@@ -1425,7 +1428,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   TestCompletionCallback cb2;
   rv = delegate->ReadData(cb2.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  ProcessPacket(ConstructAckAndDataPacket(4, !kIncludeVersion, 3, 1, kFin,
+  ProcessPacket(ConstructAckAndDataPacket(4, !kIncludeVersion, 3, 1, 1, kFin,
                                           strlen(kResponseBody), kResponseBody,
                                           &server_maker_));
 
@@ -1501,7 +1504,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
                                    kDefaultMaxUncompressedHeaderSize,
                                    &header_stream_offset));
   // Why does QUIC ack Rst? Is this expected?
-  AddWrite(ConstructClientAckPacket(3, 3, 1));
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
 
   Initialize();
 
@@ -1519,7 +1522,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   ConfirmHandshake();
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1579,7 +1582,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1643,7 +1646,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1700,7 +1703,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1729,7 +1732,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   AddWrite(ConstructSettingsPacket(2, SETTINGS_MAX_HEADER_LIST_SIZE,
                                    kDefaultMaxUncompressedHeaderSize,
                                    &header_stream_offset));
-  AddWrite(ConstructClientAckPacket(3, 3, 1));
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
   AddWrite(ConstructClientRstStreamPacket(4));
 
   Initialize();
@@ -1748,7 +1751,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
@@ -1782,7 +1785,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   size_t spdy_request_headers_frame_length;
   AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY,
                                          &spdy_request_headers_frame_length));
-  AddWrite(ConstructClientAckPacket(2, 3, 1));  // Ack the data packet
+  AddWrite(ConstructClientAckPacket(2, 3, 1, 1));  // Ack the data packet
   AddWrite(ConstructClientAckAndRstStreamPacket(3, 4, 4, 1));
 
   Initialize();
@@ -1801,7 +1804,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
   // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
   SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");

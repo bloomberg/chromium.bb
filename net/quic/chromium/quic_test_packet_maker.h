@@ -56,14 +56,15 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       QuicRstStreamErrorCode error_code,
       QuicPacketNumber largest_received,
-      QuicPacketNumber ack_least_unacked,
-      QuicPacketNumber stop_least_unacked,
+      QuicPacketNumber smallest_received,
+      QuicPacketNumber least_unacked,
       bool send_feedback);
   std::unique_ptr<QuicReceivedPacket> MakeAckAndConnectionClosePacket(
       QuicPacketNumber num,
       bool include_version,
       QuicTime::Delta delta_time_largest_observed,
       QuicPacketNumber largest_received,
+      QuicPacketNumber smallest_received,
       QuicPacketNumber least_unacked,
       QuicErrorCode quic_error,
       const std::string& quic_error_details);
@@ -76,19 +77,14 @@ class QuicTestPacketMaker {
   std::unique_ptr<QuicReceivedPacket> MakeAckPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
+      QuicPacketNumber smallest_received,
       QuicPacketNumber least_unacked,
       bool send_feedback);
   std::unique_ptr<QuicReceivedPacket> MakeAckPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
-      QuicPacketNumber ack_least_unacked,
-      QuicPacketNumber stop_least_unacked,
-      bool send_feedback);
-  std::unique_ptr<QuicReceivedPacket> MakeAckPacket(
-      QuicPacketNumber packet_number,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber ack_least_unacked,
-      QuicPacketNumber stop_least_unacked,
+      QuicPacketNumber smallest_received,
+      QuicPacketNumber least_unacked,
       bool send_feedback,
       QuicTime::Delta ack_delay_time);
   std::unique_ptr<QuicReceivedPacket> MakeDataPacket(
@@ -117,6 +113,7 @@ class QuicTestPacketMaker {
       bool include_version,
       QuicStreamId stream_id,
       QuicPacketNumber largest_received,
+      QuicPacketNumber smallest_received,
       QuicPacketNumber least_unacked,
       bool fin,
       QuicStreamOffset offset,
