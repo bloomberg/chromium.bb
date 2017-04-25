@@ -56,6 +56,7 @@ const struct {
     {"jcbCC", IDR_AUTOFILL_CC_GENERIC},
     {"masterCardCC", IDR_AUTOFILL_CC_MASTERCARD},
     {"mirCC", IDR_AUTOFILL_CC_MIR},
+    {"unionPayCC", IDR_AUTOFILL_CC_UNIONPAY},
     {"visaCC", IDR_AUTOFILL_CC_VISA},
 #if defined(OS_ANDROID)
     {"httpWarning", IDR_AUTOFILL_HTTP_WARNING},

@@ -7,6 +7,7 @@
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_JCB" file="autofill/jcb.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="autofill/mastercard.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MIR" file="autofill/mir.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_UNIONPAY" file="autofill/unionpay.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="autofill/visa.png" />
 
   <!-- These are not used on desktop, only Android, so use a placeholder file.

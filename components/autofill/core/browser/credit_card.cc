@@ -152,7 +152,7 @@ int CreditCard::IconResourceId(const std::string& type) {
   if (type == kMirCard)
     return IDR_AUTOFILL_CC_MIR;
   if (type == kUnionPay)
-    return IDR_AUTOFILL_CC_GENERIC;
+    return IDR_AUTOFILL_CC_UNIONPAY;
   if (type == kVisaCard)
     return IDR_AUTOFILL_CC_VISA;
 
