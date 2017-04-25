@@ -1049,6 +1049,7 @@ void LocalizedError::GetStrings(
   if (!is_post && !reload_visible && !show_saved_copy_visible &&
       !is_incognito && failed_url.is_valid() &&
       failed_url.SchemeIsHTTPOrHTTPS() &&
+      IsSuggested(options.suggestions, SUGGEST_OFFLINE_CHECKS) &&
       offline_pages::IsOfflinePagesAsyncDownloadEnabled()) {
     std::unique_ptr<base::DictionaryValue> download_button =
         base::MakeUnique<base::DictionaryValue>();
