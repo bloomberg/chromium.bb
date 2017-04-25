@@ -1549,17 +1549,34 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
                                EGL_ALPHA_SIZE,   0,
                                EGL_NONE};
 
-    EGLint num_configs;
+    EGLint num_configs = 0;
 
-    if (!eglChooseConfig(egl_display, config_attribs, &egl_config_, 1,
-                         &num_configs) ||
-        num_configs == 0) {
-      if (use_fp16_) {
-        // Try again, but without use_fp16_
-        use_fp16_ = false;
-        continue;
+    if (eglChooseConfig(egl_display, config_attribs, NULL, 0, &num_configs) &&
+        num_configs > 0) {
+      std::vector<EGLConfig> configs(num_configs);
+      if (eglChooseConfig(egl_display, config_attribs, configs.data(),
+                          num_configs, &num_configs)) {
+        egl_config_ = configs[0];
+        for (int i = 0; i < num_configs; i++) {
+          EGLint red_bits;
+          eglGetConfigAttrib(egl_display, configs[i], EGL_RED_SIZE, &red_bits);
+          // Try to pick a configuration with the right number of bits rather
+          // than one that just has enough bits.
+          if (red_bits == (use_fp16_ ? 16 : 8)) {
+            egl_config_ = configs[i];
+            break;
+          }
+        }
       }
-      return false;
+
+      if (!num_configs) {
+        if (use_fp16_) {
+          // Try again, but without use_fp16_
+          use_fp16_ = false;
+          continue;
+        }
+        return false;
+      }
     }
 
     break;
