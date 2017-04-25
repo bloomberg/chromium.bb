@@ -15,6 +15,40 @@
 
 namespace wallpaper {
 
+namespace {
+
+// The largest image size, in pixels, to synchronously calculate the prominent
+// color. This is a simple heuristic optimization because extraction on images
+// smaller than this should run very quickly, and offloading the task to another
+// thread would actually take longer.
+const int kMaxPixelsForSynchronousCalculation = 100;
+
+// Wrapper for color_utils::CalculateProminentColorOfBitmap() that records
+// wallpaper specific metrics.
+//
+// NOTE: |image| is intentionally a copy to ensure it exists for the duration of
+// the calculation.
+SkColor CalculateWallpaperColor(const gfx::ImageSkia image,
+                                color_utils::LumaRange luma,
+                                color_utils::SaturationRange saturation) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  const SkColor prominent_color = color_utils::CalculateProminentColorOfBitmap(
+      *image.bitmap(), luma, saturation);
+
+  UMA_HISTOGRAM_TIMES("Ash.Wallpaper.ColorExtraction.Durations",
+                      base::TimeTicks::Now() - start_time);
+  UMA_HISTOGRAM_BOOLEAN("Ash.Wallpaper.ColorExtractionResult",
+                        prominent_color != SK_ColorTRANSPARENT);
+
+  return prominent_color;
+}
+
+bool ShouldCalculateSync(const gfx::ImageSkia& image) {
+  return image.width() * image.height() <= kMaxPixelsForSynchronousCalculation;
+}
+
+}  // namespace
+
 WallpaperColorCalculator::WallpaperColorCalculator(
     const gfx::ImageSkia& image,
     color_utils::LumaRange luma,
@@ -39,15 +73,19 @@ void WallpaperColorCalculator::RemoveObserver(
 }
 
 bool WallpaperColorCalculator::StartCalculation() {
-  start_calculation_time_ = base::Time::Now();
+  if (ShouldCalculateSync(image_)) {
+    const SkColor prominent_color =
+        CalculateWallpaperColor(image_, luma_, saturation_);
+    NotifyCalculationComplete(prominent_color);
+    return true;
+  }
 
   image_.MakeThreadSafe();
   if (base::PostTaskAndReplyWithResult(
           task_runner_.get(), FROM_HERE,
-          base::Bind(&color_utils::CalculateProminentColorOfBitmap,
-                     *image_.bitmap(), luma_, saturation_),
-          base::Bind(&WallpaperColorCalculator::NotifyCalculationComplete,
-                     weak_ptr_factory_.GetWeakPtr()))) {
+          base::Bind(&CalculateWallpaperColor, image_, luma_, saturation_),
+          base::Bind(&WallpaperColorCalculator::OnAsyncCalculationComplete,
+                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()))) {
     return true;
   }
 
@@ -63,14 +101,16 @@ void WallpaperColorCalculator::SetTaskRunnerForTest(
   task_runner_ = task_runner;
 }
 
+void WallpaperColorCalculator::OnAsyncCalculationComplete(
+    base::TimeTicks async_start_time,
+    SkColor prominent_color) {
+  UMA_HISTOGRAM_TIMES("Ash.Wallpaper.ColorExtraction.UserDelay",
+                      base::TimeTicks::Now() - async_start_time);
+  NotifyCalculationComplete(prominent_color);
+}
+
 void WallpaperColorCalculator::NotifyCalculationComplete(
     SkColor prominent_color) {
-  UMA_HISTOGRAM_MEDIUM_TIMES("Ash.Wallpaper.TimeSpentExtractingColors",
-                             base::Time::Now() - start_calculation_time_);
-
-  UMA_HISTOGRAM_BOOLEAN("Ash.Wallpaper.ColorExtractionResult",
-                        prominent_color != SK_ColorTRANSPARENT);
-
   prominent_color_ = prominent_color;
   for (auto& observer : observers_)
     observer.OnColorCalculationComplete();
