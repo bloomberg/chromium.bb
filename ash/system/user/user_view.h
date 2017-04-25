@@ -62,10 +62,10 @@ class UserView : public views::View,
 
   // Create the menu option to add another user. If |disabled| is set the user
   // cannot actively click on the item.
-  void ToggleUserDropdownWidget();
+  void ToggleAddUserMenuOption();
 
   // Removes the add user menu option.
-  void HideUserDropdownWidget();
+  void RemoveAddUserMenuOption();
 
   // If |user_card_view_| is clickable, this is a ButtonFromView that wraps it.
   // If |user_card_view_| is not clickable, this will be equal to
@@ -79,7 +79,7 @@ class UserView : public views::View,
   SystemTrayItem* owner_;
 
   views::View* logout_button_ = nullptr;
-  std::unique_ptr<views::Widget> user_dropdown_widget_;
+  std::unique_ptr<views::Widget> add_menu_option_;
 
   // False when the add user panel is visible but not activatable.
   bool add_user_enabled_ = true;

@@ -175,7 +175,8 @@ TrayBubbleView::InitParams::InitParams(AnchorAlignment anchor_alignment,
       max_width(max_width),
       max_height(0),
       can_activate(false),
-      close_on_deactivate(true) {}
+      close_on_deactivate(true),
+      bg_color(gfx::kPlaceholderColor) {}
 
 TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
 
@@ -195,14 +196,12 @@ TrayBubbleView::TrayBubbleView(View* anchor,
       layout_(new BottomAlignedBoxLayout(this)),
       delegate_(delegate),
       preferred_width_(init_params.min_width),
-      bubble_border_(new BubbleBorder(
-          arrow(),
-          BubbleBorder::NO_ASSETS,
-          init_params.bg_color.value_or(gfx::kPlaceholderColor))),
+      bubble_border_(new BubbleBorder(arrow(),
+                                      BubbleBorder::NO_ASSETS,
+                                      init_params.bg_color)),
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
       mouse_actively_entered_(false) {
-  bubble_border_->set_use_theme_background_color(!init_params.bg_color);
   bubble_border_->set_alignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_border_->set_paint_arrow(BubbleBorder::PAINT_NONE);
   set_can_activate(params_.can_activate);

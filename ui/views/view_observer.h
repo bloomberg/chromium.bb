@@ -35,9 +35,6 @@ class VIEWS_EXPORT ViewObserver {
   // View::ReorderChildView() is called on |observed_view|.
   virtual void OnChildViewReordered(View* observed_view, View* child) {}
 
-  // Called when the active NativeTheme has changed for |observed_view|.
-  virtual void OnViewNativeThemeChanged(View* observed_view) {}
-
   // Called from ~View.
   virtual void OnViewIsDeleting(View* observed_view) {}
 

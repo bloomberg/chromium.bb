@@ -2136,8 +2136,6 @@ void View::PropagateNativeThemeChanged(const ui::NativeTheme* theme) {
       child->PropagateNativeThemeChanged(theme);
   }
   OnNativeThemeChanged(theme);
-  for (ViewObserver& observer : observers_)
-    observer.OnViewNativeThemeChanged(this);
 }
 
 // Size and disposition --------------------------------------------------------

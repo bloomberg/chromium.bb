@@ -20,7 +20,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -131,9 +130,7 @@ VolumeView::VolumeView(SystemTrayItem* owner,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VOLUME));
   tri_view_->AddView(TriView::Container::CENTER, slider_);
 
-  set_background(views::Background::CreateThemedSolidBackground(
-      this, ui::NativeTheme::kColorId_BubbleBackground));
-
+  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
   Update();
 }
 

@@ -64,7 +64,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
@@ -473,6 +472,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       // This is the case where a volume control or brightness control bubble
       // is created.
       init_params.max_height = default_bubble_height_;
+      init_params.bg_color = kBackgroundColor;
     } else {
       init_params.bg_color = kHeaderBackgroundColor;
     }
