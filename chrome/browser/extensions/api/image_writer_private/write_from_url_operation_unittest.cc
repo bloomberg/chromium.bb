@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
 
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/test/base/testing_profile.h"
@@ -81,8 +81,12 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
     // Turn on interception and set up our dummy file.
     get_interceptor_.reset(new GetInterceptor(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+        base::CreateTaskRunnerWithTraits(
+            base::TaskTraits()
+                .MayBlock()
+                .WithPriority(base::TaskPriority::BACKGROUND)
+                .WithShutdownBehavior(
+                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
     get_interceptor_->SetResponse(GURL(kTestImageUrl),
                                   test_utils_.GetImagePath());
   }
