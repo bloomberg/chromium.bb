@@ -1481,7 +1481,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 }
 
 - (void)mostVisitedIconMadeAvailableAtIndex:(NSUInteger)index {
-  if (index > [self numberOfItems])
+  if (index >= [self numberOfItems])
     return;
 
   NSIndexPath* indexPath =
