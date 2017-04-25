@@ -399,10 +399,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::map<QuicServerId, std::unique_ptr<CertVerifierJob>>
       CertVerifierJobMap;
 
-  // Returns a newly created QuicHttpStream owned by the caller.
-  std::unique_ptr<QuicHttpStream> CreateFromSession(
-      QuicChromiumClientSession* session);
-
   bool OnResolution(const QuicSessionKey& key, const AddressList& address_list);
   void OnJobComplete(Job* job, int rv);
   void OnCertVerifyJobComplete(CertVerifierJob* job, int rv);

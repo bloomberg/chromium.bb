@@ -24,7 +24,6 @@ class QuicChromiumClientSession;
 class QuicClientPushPromiseIndex;
 class QuicConfig;
 class QuicCryptoClientConfig;
-class QuicHttpStream;
 class QuicStreamFactory;
 
 namespace test {
@@ -47,10 +46,6 @@ class QuicStreamFactoryPeer {
   static QuicChromiumClientSession* GetActiveSession(
       QuicStreamFactory* factory,
       const QuicServerId& server_id);
-
-  static std::unique_ptr<QuicHttpStream> CreateFromSession(
-      QuicStreamFactory* factory,
-      QuicChromiumClientSession* session);
 
   static bool IsLiveSession(QuicStreamFactory* factory,
                             QuicChromiumClientSession* session);

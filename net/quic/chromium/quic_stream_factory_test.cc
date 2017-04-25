@@ -262,12 +262,6 @@ class QuicStreamFactoryTestBase {
     return QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server_id);
   }
 
-  std::unique_ptr<QuicHttpStream> CreateFromSession(
-      const HostPortPair& host_port_pair) {
-    QuicChromiumClientSession* session = GetActiveSession(host_port_pair);
-    return QuicStreamFactoryPeer::CreateFromSession(factory_.get(), session);
-  }
-
   int GetSourcePortForNewSession(const HostPortPair& destination) {
     return GetSourcePortForNewSessionInner(destination, false);
   }
@@ -780,17 +774,22 @@ TEST_P(QuicStreamFactoryTest, Create) {
   std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
   EXPECT_TRUE(stream.get());
 
-  // Will reset stream 3.
-  stream = CreateFromSession(host_port_pair_);
-  EXPECT_TRUE(stream.get());
-
-  // TODO(rtenneti): We should probably have a tests that HTTP and HTTPS result
-  // in streams on different sessions.
   QuicStreamRequest request2(factory_.get(), &http_server_properties_);
   EXPECT_EQ(OK, request2.Request(host_port_pair_, privacy_mode_,
                                  /*cert_verify_flags=*/0, url_, "GET", net_log_,
                                  callback_.callback()));
-  stream = request2.CreateStream();   // Will reset stream 5.
+  // Will reset stream 3.
+  stream = request.CreateStream();
+
+  EXPECT_TRUE(stream.get());
+
+  // TODO(rtenneti): We should probably have a tests that HTTP and HTTPS result
+  // in streams on different sessions.
+  QuicStreamRequest request3(factory_.get(), &http_server_properties_);
+  EXPECT_EQ(OK, request3.Request(host_port_pair_, privacy_mode_,
+                                 /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                 callback_.callback()));
+  stream = request3.CreateStream();   // Will reset stream 5.
   stream.reset();                     // Will reset stream 7.
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
@@ -1532,7 +1531,12 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
 
   base::RunLoop().RunUntilIdle();
 
-  std::unique_ptr<QuicHttpStream> stream(CreateFromSession(host_port_pair_));
+  QuicStreamRequest request2(factory_.get(), &http_server_properties_);
+  EXPECT_EQ(OK, request2.Request(host_port_pair_, privacy_mode_,
+                                 /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                 callback_.callback()));
+  std::unique_ptr<QuicHttpStream> stream = request2.CreateStream();
+
   EXPECT_TRUE(stream.get());
   stream.reset();
 

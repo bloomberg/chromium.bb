@@ -1059,12 +1059,6 @@ void QuicStreamFactory::OnCertVerifyJobComplete(CertVerifierJob* job, int rv) {
   active_cert_verifier_jobs_.erase(job->server_id());
 }
 
-std::unique_ptr<QuicHttpStream> QuicStreamFactory::CreateFromSession(
-    QuicChromiumClientSession* session) {
-  return base::MakeUnique<QuicHttpStream>(session->GetWeakPtr(),
-                                          http_server_properties_);
-}
-
 void QuicStreamFactory::OnIdleSession(QuicChromiumClientSession* session) {}
 
 void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
