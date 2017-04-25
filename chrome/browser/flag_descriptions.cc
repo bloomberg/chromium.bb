@@ -3036,4 +3036,15 @@ const char kEnableIdleTimeSpellCheckingDescription[] =
     "Make spell-checking code run only when the browser is idle, so that input "
     "latency is reduced, especially when editing long articles, emails, etc.";
 
+#if defined(OS_ANDROID)
+
+const char kEnableOmniboxClipboardProviderName[] =
+    "Omnibox clipboard URL suggestions";
+
+const char kEnableOmniboxClipboardProviderDescription[] =
+    "Provide a suggestion of the URL stored in the clipboard (if any) upon "
+    "focus in the omnibox.";
+
+#endif  // defined(OS_ANDROID)
+
 }  // namespace flag_descriptions

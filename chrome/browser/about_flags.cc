@@ -2752,6 +2752,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableIdleTimeSpellCheckingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kIdleTimeSpellChecking)},
 
+#if defined(OS_ANDROID)
+    {"enable-clipboard-provider",
+     flag_descriptions::kEnableOmniboxClipboardProviderName,
+     flag_descriptions::kEnableOmniboxClipboardProviderDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kEnableClipboardProvider)},
+#endif
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

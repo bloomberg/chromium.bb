@@ -3302,6 +3302,16 @@ extern const char kEnableIdleTimeSpellCheckingName[];
 // Description of the flag that enables Blink's idle time spell checker.
 extern const char kEnableIdleTimeSpellCheckingDescription[];
 
+#if defined(OS_ANDROID)
+
+// Name of the flag that enables the omnibox's clipboard URL provider.
+extern const char kEnableOmniboxClipboardProviderName[];
+
+// Description of the flag that enables the omnibox's clipboard URL provider.
+extern const char kEnableOmniboxClipboardProviderDescription[];
+
+#endif  // defined(OS_ANDROID)
+
 }  // namespace flag_descriptions
 
 #endif  // CHROME_BROWSER_FLAG_DESCRIPTIONS_H_
