@@ -7657,7 +7657,7 @@ static int64_t pick_interinter_seg_mask(const AV1_COMP *const cpi,
   int rate;
   uint64_t sse;
   int64_t dist;
-  int rd0;
+  int64_t rd0;
   SEG_MASK_TYPE cur_mask_type;
   int64_t best_rd = INT64_MAX;
   SEG_MASK_TYPE best_mask_type = 0;
