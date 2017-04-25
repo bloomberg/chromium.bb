@@ -132,7 +132,7 @@
   if (![self.childCoordinators containsObject:childCoordinator])
     return;
   // Remove the grand-children first.
-  for (BrowserCoordinator* grandChild in childCoordinator.childCoordinators) {
+  for (BrowserCoordinator* grandChild in childCoordinator.children) {
     [childCoordinator removeChildCoordinator:grandChild];
   }
   // Remove the child.

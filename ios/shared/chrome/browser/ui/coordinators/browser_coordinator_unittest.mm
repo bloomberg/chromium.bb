@@ -315,3 +315,16 @@ TEST_F(BrowserCoordinatorTest,
 
   EXPECT_TRUE(child.willBeRemovedCalled);
 }
+
+TEST_F(BrowserCoordinatorTest, RemoveChildWithMultipleGrandChildren) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+  TestCoordinator* grandChild1 = [[TestCoordinator alloc] init];
+  TestCoordinator* grandChild2 = [[TestCoordinator alloc] init];
+  [child addChildCoordinator:grandChild1];
+  [child addChildCoordinator:grandChild2];
+  [parent addChildCoordinator:child];
+
+  // Remove the child.
+  [parent removeChildCoordinator:child];
+}
