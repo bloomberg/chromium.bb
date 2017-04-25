@@ -289,9 +289,9 @@ APIBinding::~APIBinding() {}
 
 v8::Local<v8::Object> APIBinding::CreateInstance(
     v8::Local<v8::Context> context,
-    v8::Isolate* isolate,
     const AvailabilityCallback& is_available) {
   DCHECK(IsContextValid(context));
+  v8::Isolate* isolate = context->GetIsolate();
   if (object_template_.IsEmpty())
     InitializeTemplate(isolate);
   DCHECK(!object_template_.IsEmpty());

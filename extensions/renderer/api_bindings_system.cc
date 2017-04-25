@@ -31,7 +31,6 @@ APIBindingsSystem::~APIBindingsSystem() {}
 v8::Local<v8::Object> APIBindingsSystem::CreateAPIInstance(
     const std::string& api_name,
     v8::Local<v8::Context> context,
-    v8::Isolate* isolate,
     const APIBinding::AvailabilityCallback& is_available,
     APIBindingHooks** hooks_out) {
   std::unique_ptr<APIBinding>& binding = api_bindings_[api_name];
@@ -39,7 +38,7 @@ v8::Local<v8::Object> APIBindingsSystem::CreateAPIInstance(
     binding = CreateNewAPIBinding(api_name);
   if (hooks_out)
     *hooks_out = binding->hooks();
-  return binding->CreateInstance(context, isolate, is_available);
+  return binding->CreateInstance(context, is_available);
 }
 
 std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(

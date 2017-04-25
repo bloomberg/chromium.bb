@@ -54,7 +54,6 @@ class APIBindingsSystem {
   v8::Local<v8::Object> CreateAPIInstance(
       const std::string& api_name,
       v8::Local<v8::Context> context,
-      v8::Isolate* isolate,
       const APIBinding::AvailabilityCallback& is_available,
       APIBindingHooks** hooks_out);
 

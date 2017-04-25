@@ -198,8 +198,7 @@ v8::Local<v8::Object> CreateRootBinding(v8::Local<v8::Context> context,
                                         APIBindingsSystem* bindings_system) {
   APIBindingHooks* hooks = nullptr;
   v8::Local<v8::Object> binding_object = bindings_system->CreateAPIInstance(
-      name, context, context->GetIsolate(),
-      base::Bind(&IsAPIMethodAvailable, script_context), &hooks);
+      name, context, base::Bind(&IsAPIMethodAvailable, script_context), &hooks);
 
   gin::Handle<APIBindingBridge> bridge_handle = gin::CreateHandle(
       context->GetIsolate(),

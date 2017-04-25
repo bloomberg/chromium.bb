@@ -205,10 +205,10 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
   v8::Local<v8::Context> context = MainContext();
 
   v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
+      kAlphaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
   ASSERT_FALSE(alpha_api.IsEmpty());
   v8::Local<v8::Object> beta_api = bindings_system()->CreateAPIInstance(
-      kBetaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
+      kBetaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
   ASSERT_FALSE(beta_api.IsEmpty());
 
   {
@@ -334,7 +334,7 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
   binding_hooks->SetDelegate(std::move(test_hooks));
 
   v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
+      kAlphaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
   ASSERT_FALSE(alpha_api.IsEmpty());
 
   {
@@ -372,7 +372,7 @@ TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
 
   APIBindingHooks* hooks = nullptr;
   v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), &hooks);
+      kAlphaAPIName, context, base::Bind(&AllowAllAPIs), &hooks);
   ASSERT_FALSE(alpha_api.IsEmpty());
   ASSERT_TRUE(hooks);
   v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
@@ -415,7 +415,7 @@ TEST_F(APIBindingsSystemTest, CrossAPIReferences) {
   // alpha API yet, since this tests that we can lazily populate the type
   // information.
   v8::Local<v8::Object> gamma_api = bindings_system()->CreateAPIInstance(
-      kGammaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
+      kGammaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
   ASSERT_FALSE(gamma_api.IsEmpty());
 
   {
@@ -449,7 +449,7 @@ TEST_F(APIBindingsSystemTest, TestCustomEvent) {
   binding_hooks->SetDelegate(std::move(test_hooks));
 
   v8::Local<v8::Object> api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
+      kAlphaAPIName, context, base::Bind(&AllowAllAPIs), nullptr);
 
   v8::Local<v8::Value> event =
       GetPropertyFromObject(api, context, "alphaEvent");

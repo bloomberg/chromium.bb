@@ -72,7 +72,6 @@ class APIBinding {
   // Returns a new v8::Object for the API this APIBinding represents.
   v8::Local<v8::Object> CreateInstance(
       v8::Local<v8::Context> context,
-      v8::Isolate* isolate,
       const AvailabilityCallback& is_available);
 
   APIBindingHooks* hooks() { return binding_hooks_.get(); }
