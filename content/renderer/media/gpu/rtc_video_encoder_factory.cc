@@ -27,10 +27,9 @@ void VEAToWebRTCCodecs(
   const int fps = profile.max_framerate_numerator;
   DCHECK_EQ(profile.max_framerate_denominator, 1U);
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (profile.profile >= media::VP8PROFILE_MIN &&
       profile.profile <= media::VP8PROFILE_MAX) {
-    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWVP8Encoding)) {
+    if (base::FeatureList::IsEnabled(features::kWebRtcHWVP8Encoding)) {
       codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
           webrtc::kVideoCodecVP8, "VP8", width, height, fps));
     }

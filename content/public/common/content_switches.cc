@@ -921,9 +921,6 @@ const char kDisableWebRtcHWDecoding[]       = "disable-webrtc-hw-decoding";
 // Disables HW encode acceleration for WebRTC.
 const char kDisableWebRtcHWEncoding[] = "disable-webrtc-hw-encoding";
 
-// Disables HW VP8 encode acceleration for WebRTC.
-const char kDisableWebRtcHWVP8Encoding[]     = "disable-webrtc-hw-vp8-encoding";
-
 // Enables negotiation of GCM cipher suites from RFC 7714 for SRTP in WebRTC.
 // See https://tools.ietf.org/html/rfc7714 for further information.
 const char kEnableWebRtcSrtpAesGcm[] = "enable-webrtc-srtp-aes-gcm";

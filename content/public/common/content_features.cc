@@ -275,6 +275,16 @@ const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
 const base::Feature kWebRtcHWH264Encoding{
     "WebRtcHWH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables HW VP8 encoding on Android.
+const base::Feature kWebRtcHWVP8Encoding {
+  "WebRtcHWVP8Encoding",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
+
 // Enables the WebRTC Echo Canceller version 3 (AEC3). Feature for
 // http://crbug.com/688388. This value is sent to WebRTC's echo canceller to
 // toggle which echo canceller should be used.

@@ -728,11 +728,6 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
 
   if (ShouldDisableAcceleratedVideoDecode(command_line))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-#if BUILDFLAG(ENABLE_WEBRTC)
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE) &&
-      !command_line->HasSwitch(switches::kDisableWebRtcHWVP8Encoding))
-    command_line->AppendSwitch(switches::kDisableWebRtcHWVP8Encoding);
-#endif
 
 #if defined(USE_AURA)
   if (!CanUseGpuBrowserCompositor())
@@ -812,25 +807,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     gpu_preferences->enable_accelerated_vpx_decode =
         gpu::GpuPreferences::VPX_VENDOR_NONE;
   }
-#endif
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE)) {
-#if defined (OS_ANDROID)
-  // On Android HW H264 is enabled by default behind a flag now, regardless of
-  // the blacklist. Disable HW encoding if every single HW codec is disabled.
-  // TODO(braveyao): remove this once the blacklist is removed
-  // (crbug.com/638664).
-  if (!base::FeatureList::IsEnabled(features::kWebRtcHWH264Encoding)) {
-#endif
-    if (!command_line->HasSwitch(switches::kDisableWebRtcHWEncoding))
-      command_line->AppendSwitch(switches::kDisableWebRtcHWEncoding);
-    if (gpu_preferences)
-      gpu_preferences->disable_web_rtc_hw_encoding = true;
-#if defined (OS_ANDROID)
-  }
-#endif
-}
 #endif
 
   if (gpu_preferences) { // enable_es3_apis

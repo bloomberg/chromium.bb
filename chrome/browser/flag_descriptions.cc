@@ -554,6 +554,12 @@ const char kWebrtcHwH264EncodingDescription[] =
     "Support in WebRTC for encoding h264 video streams using platform "
     "hardware.";
 
+const char kWebrtcHwVP8EncodingName[] = "WebRTC hardware vp8 video encoding";
+
+const char kWebrtcHwVP8EncodingDescription[] =
+    "Support in WebRTC for encoding vp8 video streams using platform "
+    "hardware.";
+
 const char kWebrtcSrtpAesGcmName[] =
     "Negotiation with GCM cipher suites for SRTP in WebRTC";
 

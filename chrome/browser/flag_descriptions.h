@@ -603,6 +603,14 @@ extern const char kWebrtcHwH264EncodingName[];
 // encoding support.
 extern const char kWebrtcHwH264EncodingDescription[];
 
+// Name of chrome:flags option to turn on WebRTC vp8 hardware video encoding
+// support.
+extern const char kWebrtcHwVP8EncodingName[];
+
+// Description of chrome:flags option to turn on WebRTC hardware vp8 video
+// encoding support.
+extern const char kWebrtcHwVP8EncodingDescription[];
+
 // Name of chrome:flags option to enable GCM cipher suites for WebRTC
 extern const char kWebrtcSrtpAesGcmName[];
 

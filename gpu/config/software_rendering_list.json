@@ -645,17 +645,6 @@
       ]
     },
     {
-      "id": 82,
-      "description": "MediaCodec is still too buggy to use for encoding (b/11536167)",
-      "cr_bugs": [615108],
-      "os": {
-        "type": "android"
-      },
-      "features": [
-        "accelerated_video_encode"
-      ]
-    },
-    {
       "id": 86,
       "description": "Intel Graphics Media Accelerator 3150 causes the GPU process to hang running WebGL",
       "cr_bugs": [305431],
