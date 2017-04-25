@@ -12,11 +12,13 @@ import "screen_rect.mojom";
 // Next method ID: 3
 interface VoiceInteractionFrameworkHost {
   // Returns a screenshot of currently focused window or empty array if
-  // no window is focused.
-  CaptureFocusedWindow@0() => (array<uint8> png_data);
+  // no window is focused. |data| represents the image encoded in JPEG
+  // format.
+  CaptureFocusedWindow@0() => (array<uint8> data);
 
   // Returns a fullscreen screenshot of the primary display.
-  [MinVersion=1]CaptureFullscreen@1() => (array<uint8> png_data);
+  // |data| represents the image encoded in JPEG format.
+  [MinVersion=1]CaptureFullscreen@1() => (array<uint8> data);
 
   // Notifies the host that the metalayer has closed or could not open.
   [MinVersion=2]OnMetalayerClosed@2();

@@ -28,13 +28,12 @@ namespace {
 void ScreenshotCallback(
     const mojom::VoiceInteractionFrameworkHost::CaptureFocusedWindowCallback&
         callback,
-    scoped_refptr<base::RefCountedMemory> png_data) {
-  if (png_data.get() == nullptr) {
+    scoped_refptr<base::RefCountedMemory> data) {
+  if (data.get() == nullptr) {
     callback.Run(std::vector<uint8_t>{});
     return;
   }
-  std::vector<uint8_t> result(png_data->front(),
-                              png_data->front() + png_data->size());
+  std::vector<uint8_t> result(data->front(), data->front() + data->size());
   callback.Run(result);
 }
 
@@ -123,11 +122,12 @@ void ArcVoiceInteractionFrameworkService::CaptureFocusedWindow(
     callback.Run(std::vector<uint8_t>{});
     return;
   }
-  ui::GrabWindowSnapshotAsyncPNG(window, gfx::Rect(window->bounds().size()),
-                                 base::CreateTaskRunnerWithTraits(
-                                     base::TaskTraits().MayBlock().WithPriority(
-                                         base::TaskPriority::USER_BLOCKING)),
-                                 base::Bind(&ScreenshotCallback, callback));
+  ui::GrabWindowSnapshotAsyncJPEG(
+      window, gfx::Rect(window->bounds().size()),
+      base::CreateTaskRunnerWithTraits(
+          base::TaskTraits().MayBlock().WithPriority(
+              base::TaskPriority::USER_BLOCKING)),
+      base::Bind(&ScreenshotCallback, callback));
 }
 
 void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
@@ -137,11 +137,12 @@ void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
   // the screenshot to it.
   aura::Window* window = ash::Shell::GetPrimaryRootWindow();
   DCHECK(window);
-  ui::GrabWindowSnapshotAsyncPNG(window, gfx::Rect(window->bounds().size()),
-                                 base::CreateTaskRunnerWithTraits(
-                                     base::TaskTraits().MayBlock().WithPriority(
-                                         base::TaskPriority::USER_BLOCKING)),
-                                 base::Bind(&ScreenshotCallback, callback));
+  ui::GrabWindowSnapshotAsyncJPEG(
+      window, gfx::Rect(window->bounds().size()),
+      base::CreateTaskRunnerWithTraits(
+          base::TaskTraits().MayBlock().WithPriority(
+              base::TaskPriority::USER_BLOCKING)),
+      base::Bind(&ScreenshotCallback, callback));
 }
 
 void ArcVoiceInteractionFrameworkService::OnMetalayerClosed() {
