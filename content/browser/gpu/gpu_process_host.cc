@@ -124,6 +124,7 @@ static const char* const kSwitchNames[] = {
     switches::kDisableGLExtensions,
     switches::kDisableLogging,
     switches::kDisableSeccompFilterSandbox,
+    switches::kDisableShaderNameHashing,
 #if BUILDFLAG(ENABLE_WEBRTC)
     switches::kDisableWebRtcHWEncoding,
 #endif
