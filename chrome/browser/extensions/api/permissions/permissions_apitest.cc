@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
+#include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -31,21 +32,6 @@ class ExperimentalApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
-};
-
-class ExtensionApiTestWithManagementPolicy : public ExtensionApiTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
-    policy_provider_.SetAutoRefresh();
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
-        &policy_provider_);
-  }
-
- protected:
-  policy::MockConfigurationPolicyProvider policy_provider_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PermissionsFail) {

@@ -198,6 +198,16 @@ APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
   return default_settings_->blocked_permissions;
 }
 
+const URLPatternSet& ExtensionManagement::GetDefaultRuntimeBlockedHosts()
+    const {
+  return default_settings_->runtime_blocked_hosts;
+}
+
+const URLPatternSet& ExtensionManagement::GetDefaultRuntimeAllowedHosts()
+    const {
+  return default_settings_->runtime_allowed_hosts;
+}
+
 const URLPatternSet& ExtensionManagement::GetRuntimeBlockedHosts(
     const Extension* extension) const {
   auto iter_id = settings_by_id_.find(extension->id());
@@ -214,8 +224,13 @@ const URLPatternSet& ExtensionManagement::GetRuntimeAllowedHosts(
   return default_settings_->runtime_allowed_hosts;
 }
 
-bool ExtensionManagement::IsBlockedHost(const Extension* extension,
-                                        const GURL& url) const {
+bool ExtensionManagement::UsesDefaultRuntimeHostRestrictions(
+    const Extension* extension) const {
+  return settings_by_id_.find(extension->id()) == settings_by_id_.end();
+}
+
+bool ExtensionManagement::IsRuntimeBlockedHost(const Extension* extension,
+                                               const GURL& url) const {
   auto iter_id = settings_by_id_.find(extension->id());
   if (iter_id != settings_by_id_.end())
     return iter_id->second->runtime_blocked_hosts.MatchesURL(url);
