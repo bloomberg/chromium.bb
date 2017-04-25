@@ -62,6 +62,7 @@
 #include "modules/media_controls/elements/MediaControlTextTrackListElement.h"
 #include "modules/media_controls/elements/MediaControlTimelineElement.h"
 #include "modules/media_controls/elements/MediaControlToggleClosedCaptionsButtonElement.h"
+#include "modules/media_controls/elements/MediaControlVolumeSliderElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
 
 namespace blink {
@@ -344,10 +345,8 @@ void MediaControlsImpl::InitializeControls() {
   mute_button_ = new MediaControlMuteButtonElement(*this);
   panel_->AppendChild(mute_button_);
 
-  MediaControlVolumeSliderElement* slider =
-      MediaControlVolumeSliderElement::Create(*this);
-  volume_slider_ = slider;
-  panel_->AppendChild(slider);
+  volume_slider_ = new MediaControlVolumeSliderElement(*this);
+  panel_->AppendChild(volume_slider_);
   if (PreferHiddenVolumeControls(GetDocument()))
     volume_slider_->SetIsWanted(false);
 

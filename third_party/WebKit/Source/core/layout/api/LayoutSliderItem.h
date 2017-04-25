@@ -6,32 +6,27 @@
 #define LayoutSliderItem_h
 
 #include "core/CoreExport.h"
-#include "core/layout/LayoutSlider.h"
 #include "core/layout/api/LayoutBlockItem.h"
 
 namespace blink {
 
-class LayoutSliderItem : public LayoutBlockItem {
+class LayoutSlider;
+
+class CORE_EXPORT LayoutSliderItem : NON_EXPORTED_BASE(public LayoutBlockItem) {
  public:
-  explicit LayoutSliderItem(LayoutSlider* layout_slider)
-      : LayoutBlockItem(layout_slider) {}
+  explicit LayoutSliderItem(LayoutSlider*);
 
-  explicit LayoutSliderItem(const LayoutBlockItem& item)
-      : LayoutBlockItem(item) {
-    SECURITY_DCHECK(!item || item.IsSlider());
-  }
+  explicit LayoutSliderItem(const LayoutBlockItem&);
 
-  explicit LayoutSliderItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}
+  explicit LayoutSliderItem(std::nullptr_t);
 
-  LayoutSliderItem() = default;
+  LayoutSliderItem();
 
-  CORE_EXPORT bool InDragMode() const { return ToSlider()->InDragMode(); }
+  bool InDragMode() const;
 
  private:
-  LayoutSlider* ToSlider() { return ToLayoutSlider(GetLayoutObject()); }
-  const LayoutSlider* ToSlider() const {
-    return ToLayoutSlider(GetLayoutObject());
-  }
+  LayoutSlider* ToSlider();
+  const LayoutSlider* ToSlider() const;
 };
 
 }  // namespace blink

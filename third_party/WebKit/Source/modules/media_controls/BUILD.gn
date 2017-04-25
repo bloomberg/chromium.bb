@@ -50,5 +50,7 @@ blink_modules_sources("media_controls") {
     "elements/MediaControlTimelineMetrics.h",
     "elements/MediaControlToggleClosedCaptionsButtonElement.cpp",
     "elements/MediaControlToggleClosedCaptionsButtonElement.h",
+    "elements/MediaControlVolumeSliderElement.cpp",
+    "elements/MediaControlVolumeSliderElement.h",
   ]
 }

@@ -62,7 +62,7 @@
 #include "core/html/TextControlElement.h"
 #include "core/html/forms/RadioInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/shadow/MediaControlElements.h"
+#include "core/html/shadow/MediaControlElementTypes.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGElement.h"

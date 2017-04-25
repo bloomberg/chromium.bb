@@ -29,7 +29,6 @@
 
 #include "core/html/HTMLDivElement.h"
 #include "core/html/media/MediaControls.h"
-#include "core/html/shadow/MediaControlElements.h"
 #include "modules/ModulesExport.h"
 
 namespace blink {
@@ -54,6 +53,7 @@ class MediaControlRemainingTimeDisplayElement;
 class MediaControlTextTrackListElement;
 class MediaControlTimelineElement;
 class MediaControlToggleClosedCaptionsButtonElement;
+class MediaControlVolumeSliderElement;
 class ShadowRoot;
 
 // Default implementation of the core/ MediaControls interface used by

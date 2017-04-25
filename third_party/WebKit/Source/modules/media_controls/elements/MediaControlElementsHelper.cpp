@@ -5,6 +5,7 @@
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
 
 #include "core/events/Event.h"
+#include "core/layout/LayoutSlider.h"
 #include "core/layout/api/LayoutSliderItem.h"
 
 namespace blink {

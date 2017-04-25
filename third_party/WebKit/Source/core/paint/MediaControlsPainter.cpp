@@ -32,7 +32,6 @@
 #include "core/html/TimeRanges.h"
 #include "core/html/media/MediaControls.h"
 #include "core/html/shadow/MediaControlElementTypes.h"
-#include "core/html/shadow/MediaControlElements.h"
 #include "core/layout/LayoutBox.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
