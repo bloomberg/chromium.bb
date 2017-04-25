@@ -30,6 +30,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -270,6 +271,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (sInstance != null) return sInstance;
         VrClassesWrapper wrapper = getVrClassesWrapper();
         if (wrapper == null) return null;
+        ThreadUtils.assertOnUiThread();
         sInstance = new VrShellDelegate(activity, wrapper);
 
         return sInstance;
