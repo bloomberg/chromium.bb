@@ -585,9 +585,14 @@ cr.define('print_preview', function() {
      */
     onDestinationConfigureRequest_: function(event) {
       var destination = event.detail.destination;
-      var destinationItem = destination.isLocal ?
-          this.localList_.getDestinationItem(destination.id) :
-          this.cloudList_.getDestinationItem(destination.id);
+      // Cloud Print Device printers are stored in the local list
+      // crbug.com/713831.
+      // TODO(crbug.com/416701): Upon resolution, update this.
+      var destinationItem =
+          (destination.isLocal ||
+           destination.origin == print_preview.Destination.Origin.DEVICE) ?
+               this.localList_.getDestinationItem(destination.id) :
+               this.cloudList_.getDestinationItem(destination.id);
       assert(destinationItem != null,
             'User does not select a valid destination item.');
 
