@@ -636,8 +636,8 @@ const char* const kSafePermissionStrings[] = {
     // request is made via chrome.tabCapture.capture call.
     "tabCapture",
 
-    // Privacy sensitive URL access.
-    // "tabs",
+    // The URL returned by chrome.tabs API is scrubbed down to the origin.
+    "tabs",
 
     // Privacy sensitive URL access.
     // "topSites",
