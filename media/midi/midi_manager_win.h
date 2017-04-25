@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MIDI_DYNAMICALLY_INITIALIZED_MIDI_MANAGER_WIN_H_
-#define MEDIA_MIDI_DYNAMICALLY_INITIALIZED_MIDI_MANAGER_WIN_H_
+#ifndef MEDIA_MIDI_MIDI_MANAGER_WIN_H_
+#define MEDIA_MIDI_MIDI_MANAGER_WIN_H_
 
 #include <memory>
 #include <vector>
@@ -22,14 +22,14 @@ class TimeDelta;
 namespace midi {
 
 // New backend for legacy Windows that support dynamic instantiation.
-class DynamicallyInitializedMidiManagerWin final
+class MidiManagerWin final
     : public MidiManager,
       public base::SystemMonitor::DevicesChangedObserver {
  public:
   class PortManager;
 
-  explicit DynamicallyInitializedMidiManagerWin(MidiService* service);
-  ~DynamicallyInitializedMidiManagerWin() override;
+  explicit MidiManagerWin(MidiService* service);
+  ~MidiManagerWin() override;
 
   // Returns PortManager that implements interfaces to help implementation.
   // This hides Windows specific structures, i.e. HMIDIIN in the header.
@@ -74,7 +74,7 @@ class DynamicallyInitializedMidiManagerWin final
 
   // Reflect active port list to a device list.
   template <typename T>
-  void ReflectActiveDeviceList(DynamicallyInitializedMidiManagerWin* manager,
+  void ReflectActiveDeviceList(MidiManagerWin* manager,
                                std::vector<T>* known_ports,
                                std::vector<T>* active_ports);
 
@@ -93,9 +93,9 @@ class DynamicallyInitializedMidiManagerWin final
   // accessed with the task lock.
   std::unique_ptr<PortManager> port_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(DynamicallyInitializedMidiManagerWin);
+  DISALLOW_COPY_AND_ASSIGN(MidiManagerWin);
 };
 
 }  // namespace midi
 
-#endif  // MEDIA_MIDI_DYNAMICALLY_INITIALIZED_MIDI_MANAGER_WIN_H_
+#endif  // MEDIA_MIDI_MIDI_MANAGER_WIN_H_
