@@ -85,8 +85,10 @@ source_set("tests") {
   if (is_android) {
     deps += [ "//services/device/vibration/android:vibration_jni_headers" ]
   } else {
+    sources += [ "battery/battery_monitor_impl_unittest.cc" ]
     deps += [
       "//device/battery",
+      "//device/battery:mojo_bindings",
       "//services/device/vibration",
     ]
   }

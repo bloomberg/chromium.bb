@@ -585,7 +585,6 @@ test("content_browsertests") {
     "../browser/accessibility/snapshot_ax_tree_browsertest.cc",
     "../browser/accessibility/touch_accessibility_aura_browsertest.cc",
     "../browser/background_sync/background_sync_browsertest.cc",
-    "../browser/battery_status/battery_monitor_impl_browsertest.cc",
     "../browser/blob_storage/blob_storage_browsertest.cc",
     "../browser/blob_storage/blob_url_browsertest.cc",
     "../browser/bookmarklet_browsertest.cc",
@@ -740,8 +739,6 @@ test("content_browsertests") {
     "//content/shell:pak",
     "//content/test:test_support",
     "//device/base/synchronization",
-    "//device/battery",
-    "//device/battery:mojo_bindings",
     "//device/generic_sensor",
     "//device/power_save_blocker",
     "//device/screen_orientation/public/interfaces",
@@ -867,7 +864,6 @@ test("content_browsertests") {
       "../shell/android/browsertests_apk/content_browser_tests_jni_onload.cc",
     ]
     sources -= [
-      "../browser/battery_status/battery_monitor_impl_browsertest.cc",
       "../browser/media/session/audio_focus_delegate_default_browsertest.cc",
       "../browser/pointer_lock_browsertest.cc",
       "../browser/pointer_lock_browsertest.h",
@@ -879,7 +875,6 @@ test("content_browsertests") {
       "//content/shell/android:content_shell_jni_headers",
       "//testing/android/native_test:native_test_support",
     ]
-    deps -= [ "//device/battery" ]
     android_manifest =
         "${target_gen_dir}/content_browsertests_manifest/AndroidManifest.xml"
     android_manifest_dep = ":content_browsertests_manifest"
@@ -1455,8 +1450,6 @@ test("content_unittests") {
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
     "//crypto",
-    "//device/battery",
-    "//device/battery:mojo_bindings",
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//device/gamepad",
@@ -1703,7 +1696,6 @@ test("content_unittests") {
       "../browser/media/session/audio_focus_manager_unittest.cc",
       "../browser/webui/url_data_manager_backend_unittest.cc",
     ]
-    deps -= [ "//device/battery" ]
 
     deps += [
       "//base:base_java_unittest_support",

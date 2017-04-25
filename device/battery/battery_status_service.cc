@@ -105,6 +105,8 @@ void BatteryStatusService::SetBatteryManagerForTesting(
   battery_fetcher_ = std::move(test_battery_manager);
   status_ = mojom::BatteryStatus();
   status_updated_ = false;
+  is_shutdown_ = false;
+  main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 }  // namespace device

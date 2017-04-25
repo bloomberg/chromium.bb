@@ -9,7 +9,10 @@
         ]
       },
       "requires": {
-        "device": [ "device:vibration" ]
+        "device": [
+          "device:battery_monitor",
+          "device:vibration"
+        ]
       }
     }
   }
