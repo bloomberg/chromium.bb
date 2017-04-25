@@ -150,7 +150,7 @@ RenderWidgetHostView* GetRenderWidgetHostViewToUse(
 @property(nonatomic, assign) NSRange selectedRange;
 @property(nonatomic, assign) NSRange markedRange;
 
-+ (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
+- (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed;
@@ -2149,7 +2149,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     widgetHost->ForwardKeyboardEvent(event);
 
     // Possibly autohide the cursor.
-    if ([RenderWidgetHostViewCocoa shouldAutohideCursorForEvent:theEvent])
+    if ([self shouldAutohideCursorForEvent:theEvent])
       [NSCursor setHiddenUntilMouseMoves:YES];
 
     return;
@@ -2315,7 +2315,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   }
 
   // Possibly autohide the cursor.
-  if ([RenderWidgetHostViewCocoa shouldAutohideCursorForEvent:theEvent])
+  if ([self shouldAutohideCursorForEvent:theEvent])
     [NSCursor setHiddenUntilMouseMoves:YES];
 }
 
@@ -2833,9 +2833,13 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 // Determine whether we should autohide the cursor (i.e., hide it until mouse
 // move) for the given event. Customize here to be more selective about which
 // key presses to autohide on.
-+ (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event {
-  return ([event type] == NSKeyDown &&
-             !([event modifierFlags] & NSCommandKeyMask)) ? YES : NO;
+- (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event {
+  return (renderWidgetHostView_->GetTextInputType() !=
+              ui::TEXT_INPUT_TYPE_NONE &&
+          [event type] == NSKeyDown &&
+          !([event modifierFlags] & NSCommandKeyMask))
+             ? YES
+             : NO;
 }
 
 - (NSArray *)accessibilityArrayAttributeValues:(NSString *)attribute
