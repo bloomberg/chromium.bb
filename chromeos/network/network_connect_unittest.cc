@@ -40,8 +40,6 @@ const char kCellular1DevicePath[] = "/device/stub_cellular_device1";
 const char kCellular1ServicePath[] = "/service/cellular1";
 const char kCellular1Guid[] = "cellular1_guid";
 
-const char kTether1Guid[] = "tether1_guid";
-
 class MockDelegate : public NetworkConnect::Delegate {
  public:
   MockDelegate() {}
@@ -56,14 +54,6 @@ class MockDelegate : public NetworkConnect::Delegate {
                void(const std::string& error_name,
                     const std::string& network_id));
   MOCK_METHOD1(ShowMobileActivationError, void(const std::string& network_id));
-};
-
-class MockTetherDelegate : public NetworkConnect::TetherDelegate {
- public:
-  MockTetherDelegate() {}
-  ~MockTetherDelegate() override {}
-
-  MOCK_METHOD1(ConnectToNetwork, void(const std::string& guid));
 };
 
 }  // namespace
@@ -83,8 +73,6 @@ class NetworkConnectTest : public testing::Test {
 
     mock_delegate_.reset(new MockDelegate());
     ON_CALL(*mock_delegate_, ShowEnrollNetwork(_)).WillByDefault(Return(true));
-
-    mock_tether_delegate_.reset(new MockTetherDelegate());
 
     NetworkConnect::Initialize(mock_delegate_.get());
   }
@@ -146,7 +134,6 @@ class NetworkConnectTest : public testing::Test {
   }
 
   std::unique_ptr<MockDelegate> mock_delegate_;
-  std::unique_ptr<MockTetherDelegate> mock_tether_delegate_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ShillDeviceClient::TestInterface* device_test_;
   ShillServiceClient::TestInterface* service_test_;
@@ -331,43 +318,6 @@ TEST_F(NetworkConnectTest, ShowMobileSimDialog_SimUnlocked) {
 
   NetworkConnect::Get()->SetTechnologyEnabled(NetworkTypePattern::Cellular(),
                                               true);
-}
-
-TEST_F(NetworkConnectTest, ConnectToTetherNetwork) {
-  EXPECT_CALL(*mock_tether_delegate_, ConnectToNetwork(kTether1Guid));
-
-  NetworkHandler::Get()->network_state_handler()->SetTetherTechnologyState(
-      NetworkStateHandler::TECHNOLOGY_ENABLED);
-
-  NetworkHandler::Get()->network_state_handler()->AddTetherNetworkState(
-      kTether1Guid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
-      100 /* signal_strength */);
-
-  NetworkConnect::Get()->SetTetherDelegate(mock_tether_delegate_.get());
-  NetworkConnect::Get()->ConnectToNetworkId(kTether1Guid);
-}
-
-TEST_F(NetworkConnectTest, ConnectToTetherNetwork_TetherNetworkDoesNotExist) {
-  EXPECT_CALL(*mock_tether_delegate_, ConnectToNetwork(_)).Times(0);
-
-  NetworkHandler::Get()->network_state_handler()->SetTetherTechnologyState(
-      NetworkStateHandler::TECHNOLOGY_ENABLED);
-
-  NetworkConnect::Get()->SetTetherDelegate(mock_tether_delegate_.get());
-  NetworkConnect::Get()->ConnectToNetworkId(kTether1Guid);
-}
-
-TEST_F(NetworkConnectTest, ConnectToTetherNetwork_TetherDelegateNotSet) {
-  EXPECT_CALL(*mock_tether_delegate_, ConnectToNetwork(_)).Times(0);
-
-  NetworkHandler::Get()->network_state_handler()->SetTetherTechnologyState(
-      NetworkStateHandler::TECHNOLOGY_ENABLED);
-
-  NetworkHandler::Get()->network_state_handler()->AddTetherNetworkState(
-      kTether1Guid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
-      100 /* signal_strength */);
-
-  NetworkConnect::Get()->ConnectToNetworkId(kTether1Guid);
 }
 
 }  // namespace chromeos

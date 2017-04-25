@@ -81,7 +81,8 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Configuration failed during the configure stage of the connect flow.
   static const char kErrorConfigureFailed[];
 
-  // An unexpected DBus or Shill error occurred while connecting.
+  // An unexpected DBus, Shill, or Tether communication error occurred while
+  // connecting.
   static const char kErrorConnectFailed[];
 
   // An unexpected DBus or Shill error occurred while disconnecting.
@@ -103,7 +104,24 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   static const char kErrorActivateFailed[];
 
   // Network was enabled/disabled when it was not available.
-  static const char kEnabledOrDisabledWhenNotAvailable[];
+  static const char kErrorEnabledOrDisabledWhenNotAvailable[];
+
+  // Connection to Tether network attempted when no tether delegate present.
+  static const char kErrorTetherConnectionAttemptWithNoDelegate[];
+
+  class CHROMEOS_EXPORT TetherDelegate {
+   public:
+    // Connects to the Tether network with GUID |tether_network_guid|. On
+    // success, invokes |success_callback|, and on failure, invokes
+    // |error_callback|, passing the relevant error code declared above.
+    virtual void ConnectToNetwork(
+        const std::string& tether_network_guid,
+        const base::Closure& success_callback,
+        const network_handler::StringResultCallback& error_callback) = 0;
+
+   protected:
+    virtual ~TetherDelegate() {}
+  };
 
   ~NetworkConnectionHandler() override;
 
@@ -141,6 +159,10 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Returns true if there are any pending connect requests.
   bool HasPendingConnectRequest();
 
+  // Sets the TetherDelegate to handle Tether actions. |tether_delegate| is
+  // owned by the caller.
+  void SetTetherDelegate(TetherDelegate* tether_delegate);
+
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
@@ -152,13 +174,19 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void OnCertificatesLoaded(const net::CertificateList& cert_list,
                             bool initial_load) override;
 
+ protected:
+  NetworkConnectionHandler();
+
+  void InitiateTetherNetworkConnection(
+      const std::string& tether_network_guid,
+      const base::Closure& success_callback,
+      const network_handler::ErrorCallback& error_callback);
+
  private:
   friend class NetworkHandler;
   friend class NetworkConnectionHandlerTest;
 
   struct ConnectRequest;
-
-  NetworkConnectionHandler();
 
   void Init(NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler,
@@ -256,6 +284,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   bool logged_in_;
   bool certificates_loaded_;
   base::TimeTicks logged_in_time_;
+
+  // Delegate used to start a connection to a tether network.
+  TetherDelegate* tether_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandler);
 };

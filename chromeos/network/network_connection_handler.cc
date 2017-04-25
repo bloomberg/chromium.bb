@@ -118,8 +118,11 @@ const char NetworkConnectionHandler::kErrorCertLoadTimeout[] =
 const char NetworkConnectionHandler::kErrorUnmanagedNetwork[] =
     "unmanaged-network";
 const char NetworkConnectionHandler::kErrorActivateFailed[] = "activate-failed";
-const char NetworkConnectionHandler::kEnabledOrDisabledWhenNotAvailable[] =
+const char NetworkConnectionHandler::kErrorEnabledOrDisabledWhenNotAvailable[] =
     "not-available";
+const char
+    NetworkConnectionHandler::kErrorTetherConnectionAttemptWithNoDelegate[] =
+        "tether-with-no-delegate";
 
 struct NetworkConnectionHandler::ConnectRequest {
   ConnectRequest(const std::string& service_path,
@@ -149,8 +152,8 @@ NetworkConnectionHandler::NetworkConnectionHandler()
       network_state_handler_(NULL),
       configuration_handler_(NULL),
       logged_in_(false),
-      certificates_loaded_(false) {
-}
+      certificates_loaded_(false),
+      tether_delegate_(nullptr) {}
 
 NetworkConnectionHandler::~NetworkConnectionHandler() {
   if (network_state_handler_)
@@ -223,6 +226,19 @@ void NetworkConnectionHandler::OnCertificatesLoaded(
     ConnectToQueuedNetwork();
 }
 
+void NetworkConnectionHandler::InitiateTetherNetworkConnection(
+    const std::string& tether_network_guid,
+    const base::Closure& success_callback,
+    const network_handler::ErrorCallback& error_callback) {
+  DCHECK(tether_delegate_);
+  tether_delegate_->ConnectToNetwork(
+      tether_network_guid,
+      base::Bind(&NetworkConnectionHandler::InvokeConnectSuccessCallback,
+                 AsWeakPtr(), tether_network_guid, success_callback),
+      base::Bind(&NetworkConnectionHandler::InvokeConnectErrorCallback,
+                 AsWeakPtr(), tether_network_guid, error_callback));
+}
+
 void NetworkConnectionHandler::ConnectToNetwork(
     const std::string& service_path,
     const base::Closure& success_callback,
@@ -271,6 +287,19 @@ void NetworkConnectionHandler::ConnectToNetwork(
                                    kErrorAuthenticationRequired);
         return;
       }
+    }
+
+    if (NetworkTypePattern::Tether().MatchesType(network->type())) {
+      if (tether_delegate_) {
+        const std::string& tether_network_guid = network->guid();
+        DCHECK(!tether_network_guid.empty());
+        InitiateTetherNetworkConnection(tether_network_guid, success_callback,
+                                        error_callback);
+      } else {
+        InvokeConnectErrorCallback(service_path, error_callback,
+                                   kErrorTetherConnectionAttemptWithNoDelegate);
+      }
+      return;
     }
   }
 
@@ -344,6 +373,11 @@ bool NetworkConnectionHandler::HasConnectingNetwork(
 
 bool NetworkConnectionHandler::HasPendingConnectRequest() {
   return pending_requests_.size() > 0;
+}
+
+void NetworkConnectionHandler::SetTetherDelegate(
+    TetherDelegate* tether_delegate) {
+  tether_delegate_ = tether_delegate;
 }
 
 void NetworkConnectionHandler::NetworkListChanged() {

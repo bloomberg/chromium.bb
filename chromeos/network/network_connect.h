@@ -56,15 +56,6 @@ class CHROMEOS_EXPORT NetworkConnect {
     virtual ~Delegate() {}
   };
 
-  class CHROMEOS_EXPORT TetherDelegate {
-   public:
-    // Connect to the Tether network associated with |guid|.
-    virtual void ConnectToNetwork(const std::string& guid) = 0;
-
-   protected:
-    virtual ~TetherDelegate() {}
-  };
-
   // Creates the global NetworkConnect object. |delegate| is owned by the
   // caller.
   static void Initialize(Delegate* delegate);
@@ -119,10 +110,6 @@ class CHROMEOS_EXPORT NetworkConnect {
   // Shill properties. The profile used is determined by |shared|.
   virtual void CreateConfiguration(base::DictionaryValue* shill_properties,
                                    bool shared) = 0;
-
-  // Sets the TetherDelegate to handle Tether actions. |tether_delegate| is
-  // owned by the caller.
-  virtual void SetTetherDelegate(TetherDelegate* tether_delegate) = 0;
 
  protected:
   NetworkConnect();

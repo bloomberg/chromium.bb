@@ -52,7 +52,7 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
  public:
   class TestNetworkConnect : public NetworkConnect {
    public:
-    TestNetworkConnect(NetworkStateTest* network_state_test)
+    explicit TestNetworkConnect(NetworkStateTest* network_state_test)
         : network_state_test_(network_state_test) {}
     ~TestNetworkConnect() override {}
 
@@ -81,7 +81,6 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
         bool shared) override {}
     void CreateConfigurationAndConnect(base::DictionaryValue* shill_properties,
                                        bool shared) override {}
-    void SetTetherDelegate(TetherDelegate* tether_delegate) override {}
 
     void CreateConfiguration(base::DictionaryValue* shill_properties,
                              bool shared) override {
@@ -381,4 +380,4 @@ TEST_F(WifiHotspotConnectorTest,
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

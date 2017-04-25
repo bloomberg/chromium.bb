@@ -125,8 +125,6 @@ class TetherNotificationPresenterTest : public testing::Test {
         bool shared) override {}
     void CreateConfigurationAndConnect(base::DictionaryValue* shill_properties,
                                        bool shared) override {}
-    void SetTetherDelegate(TetherDelegate* tether_delegate) override {}
-
     void CreateConfiguration(base::DictionaryValue* shill_properties,
                              bool shared) override {}
 

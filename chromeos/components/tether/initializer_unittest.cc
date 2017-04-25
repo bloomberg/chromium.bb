@@ -16,6 +16,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/mock_managed_network_configuration_handler.h"
 #include "chromeos/network/network_connect.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_test.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
@@ -82,7 +83,12 @@ class MockNetworkConnect : public NetworkConnect {
   MOCK_METHOD2(CreateConfigurationAndConnect,
                void(base::DictionaryValue*, bool));
   MOCK_METHOD2(CreateConfiguration, void(base::DictionaryValue*, bool));
-  MOCK_METHOD1(SetTetherDelegate, void(NetworkConnect::TetherDelegate*));
+};
+
+class TestNetworkConnectionHandler : public NetworkConnectionHandler {
+ public:
+  TestNetworkConnectionHandler() : NetworkConnectionHandler() {}
+  ~TestNetworkConnectionHandler() override {}
 };
 
 }  // namespace
@@ -115,11 +121,13 @@ class InitializerTest : public NetworkStateTest {
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
       NetworkConnect* network_connect,
+      NetworkConnectionHandler* network_connection_handler,
       scoped_refptr<device::BluetoothAdapter> adapter) {
     Initializer* initializer =
         new Initializer(cryptauth_service, std::move(notification_presenter),
                         pref_service, token_service, network_state_handler,
-                        managed_network_configuration_handler, network_connect);
+                        managed_network_configuration_handler, network_connect,
+                        network_connection_handler);
     initializer->OnBluetoothAdapterAdvertisingIntervalSet(adapter);
     delete initializer;
   }
@@ -169,18 +177,21 @@ TEST_F(InitializerTest, TestCreateAndDestroy) {
   std::unique_ptr<MockNetworkConnect> mock_network_connect =
       base::WrapUnique(new NiceMock<MockNetworkConnect>);
 
+  std::unique_ptr<NetworkConnectionHandler> network_connection_handler_ =
+      base::MakeUnique<TestNetworkConnectionHandler>();
+
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter =
       make_scoped_refptr(new NiceMock<device::MockBluetoothAdapter>());
 
   // Call an instance method of the test instead of initializing and destroying
   // here because the friend relationship between Initializer and
   // InitializerTest only applies to the class itself, not these test functions.
-  InitializeAndDestroy(fake_cryptauth_service.get(),
-                       base::MakeUnique<FakeNotificationPresenter>(),
-                       test_pref_service_.get(), fake_token_service.get(),
-                       network_state_handler(),
-                       managed_network_configuration_handler.get(),
-                       mock_network_connect.get(), mock_adapter);
+  InitializeAndDestroy(
+      fake_cryptauth_service.get(),
+      base::MakeUnique<FakeNotificationPresenter>(), test_pref_service_.get(),
+      fake_token_service.get(), network_state_handler(),
+      managed_network_configuration_handler.get(), mock_network_connect.get(),
+      network_connection_handler_.get(), mock_adapter);
 }
 
 }  // namespace tether

@@ -39,7 +39,9 @@ namespace chromeos {
 
 namespace {
 
-const char* kSuccessResult = "success";
+const char kSuccessResult[] = "success";
+
+const char kTetherGuid[] = "tether-guid";
 
 class TestNetworkConnectionObserver : public NetworkConnectionObserver {
  public:
@@ -80,6 +82,34 @@ class TestNetworkConnectionObserver : public NetworkConnectionObserver {
   std::map<std::string, std::string> results_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkConnectionObserver);
+};
+
+class FakeTetherDelegate : public NetworkConnectionHandler::TetherDelegate {
+ public:
+  FakeTetherDelegate() {}
+  ~FakeTetherDelegate() override {}
+
+  void ConnectToNetwork(
+      const std::string& service_path,
+      const base::Closure& success_callback,
+      const network_handler::StringResultCallback& error_callback) override {
+    last_service_path_ = service_path;
+    last_success_callback_ = success_callback;
+    last_error_callback_ = error_callback;
+  }
+
+  std::string& last_service_path() { return last_service_path_; }
+
+  base::Closure& last_success_callback() { return last_success_callback_; }
+
+  network_handler::StringResultCallback& last_error_callback() {
+    return last_error_callback_;
+  }
+
+ private:
+  std::string last_service_path_;
+  base::Closure last_success_callback_;
+  network_handler::StringResultCallback last_error_callback_;
 };
 
 }  // namespace
@@ -130,6 +160,8 @@ class NetworkConnectionHandlerTest : public NetworkStateTest {
         network_connection_observer_.get());
 
     base::RunLoop().RunUntilIdle();
+
+    fake_tether_delegate_.reset(new FakeTetherDelegate());
   }
 
   void TearDown() override {
@@ -262,6 +294,7 @@ class NetworkConnectionHandlerTest : public NetworkStateTest {
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
   base::MessageLoopForUI message_loop_;
   std::string result_;
+  std::unique_ptr<FakeTetherDelegate> fake_tether_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandlerTest);
@@ -445,6 +478,63 @@ TEST_F(NetworkConnectionHandlerTest,
   EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
   Disconnect(kWifi0);
   EXPECT_EQ(NetworkConnectionHandler::kErrorNotConnected, GetResultAndReset());
+}
+
+TEST_F(NetworkConnectionHandlerTest, ConnectToTetherNetwork_Success) {
+  network_state_handler()->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+  network_state_handler()->AddTetherNetworkState(
+      kTetherGuid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
+      100 /* signal_strength */);
+  network_connection_handler_->SetTetherDelegate(fake_tether_delegate_.get());
+
+  Connect(kTetherGuid /* service_path */);
+
+  EXPECT_EQ(kTetherGuid, fake_tether_delegate_->last_service_path());
+  fake_tether_delegate_->last_success_callback().Run();
+  EXPECT_EQ(kSuccessResult, GetResultAndReset());
+  EXPECT_TRUE(network_connection_observer_->GetRequested(kTetherGuid));
+  EXPECT_EQ(kSuccessResult,
+            network_connection_observer_->GetResult(kTetherGuid));
+}
+
+TEST_F(NetworkConnectionHandlerTest, ConnectToTetherNetwork_Failure) {
+  network_state_handler()->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+  network_state_handler()->AddTetherNetworkState(
+      kTetherGuid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
+      100 /* signal_strength */);
+  network_connection_handler_->SetTetherDelegate(fake_tether_delegate_.get());
+
+  Connect(kTetherGuid /* service_path */);
+
+  EXPECT_EQ(kTetherGuid, fake_tether_delegate_->last_service_path());
+  fake_tether_delegate_->last_error_callback().Run(
+      NetworkConnectionHandler::kErrorConnectFailed);
+  EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed, GetResultAndReset());
+  EXPECT_TRUE(network_connection_observer_->GetRequested(kTetherGuid));
+  EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed,
+            network_connection_observer_->GetResult(kTetherGuid));
+}
+
+TEST_F(NetworkConnectionHandlerTest, ConnectToTetherNetwork_NoTetherDelegate) {
+  network_state_handler()->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+  network_state_handler()->AddTetherNetworkState(
+      kTetherGuid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
+      100 /* signal_strength */);
+
+  // Do not set a tether delegate.
+
+  Connect(kTetherGuid /* service_path */);
+
+  EXPECT_EQ(
+      NetworkConnectionHandler::kErrorTetherConnectionAttemptWithNoDelegate,
+      GetResultAndReset());
+  EXPECT_TRUE(network_connection_observer_->GetRequested(kTetherGuid));
+  EXPECT_EQ(
+      NetworkConnectionHandler::kErrorTetherConnectionAttemptWithNoDelegate,
+      network_connection_observer_->GetResult(kTetherGuid));
 }
 
 }  // namespace chromeos

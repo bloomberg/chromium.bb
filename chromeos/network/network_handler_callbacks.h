@@ -36,8 +36,8 @@ typedef base::Callback<
   void(const std::string& service_path,
        const base::DictionaryValue& dictionary)> DictionaryResultCallback;
 
-typedef base::Callback<
-  void(const std::string& service_path)> StringResultCallback;
+typedef base::Callback<void(const std::string& string_result)>
+    StringResultCallback;
 
 typedef base::Callback<void(const std::string& service_path,
                             const std::string& guid)>
