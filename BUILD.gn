@@ -257,6 +257,10 @@ group("gn_all") {
     ]
   }
 
+  if (is_mac) {
+    deps += [ "//chrome/installer/gcapi_mac:gcapi_example" ]
+  }
+
   if (is_android) {
     deps += [
       "//base:base_junit_tests",
