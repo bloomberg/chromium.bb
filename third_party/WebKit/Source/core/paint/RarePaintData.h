@@ -32,6 +32,7 @@ class CORE_EXPORT RarePaintData {
     return paint_properties_.get();
   }
   ObjectPaintProperties& EnsurePaintProperties();
+  void ClearPaintProperties();
 
   PropertyTreeState* LocalBorderBoxProperties() const {
     return local_border_box_properties_.get();

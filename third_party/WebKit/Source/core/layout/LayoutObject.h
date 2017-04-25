@@ -1817,6 +1817,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
         return paint_data->PaintProperties();
       return nullptr;
     }
+    void ClearPaintProperties() {
+      if (auto* paint_data = layout_object_.GetRarePaintData())
+        paint_data->ClearPaintProperties();
+    }
 
     // The following non-const functions for local border box properties should
     // only be called from PaintPropertyTreeBuilder.

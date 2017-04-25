@@ -161,6 +161,12 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE static void UpdateOutOfFlowContext(
       const LayoutObject&,
       PaintPropertyTreeBuilderContext&);
+
+  // Ensure the ObjectPaintProperties object is created if it will be needed, or
+  // cleared otherwise.
+  ALWAYS_INLINE static void UpdatePaintProperties(
+      const LayoutObject&,
+      PaintPropertyTreeBuilderContext&);
 };
 
 }  // namespace blink

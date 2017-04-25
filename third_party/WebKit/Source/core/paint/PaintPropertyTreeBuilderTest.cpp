@@ -378,8 +378,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
       HTMLNames::styleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr,
-            transform->GetLayoutObject()->PaintProperties()->Transform());
+  EXPECT_EQ(nullptr, transform->GetLayoutObject()->PaintProperties());
 
   transform->setAttribute(
       HTMLNames::styleAttr,
@@ -479,8 +478,7 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
       HTMLNames::styleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr,
-            transform->GetLayoutObject()->PaintProperties()->Transform());
+  EXPECT_EQ(nullptr, transform->GetLayoutObject()->PaintProperties());
 
   transform->setAttribute(
       HTMLNames::styleAttr,
@@ -1943,8 +1941,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset) {
   EXPECT_EQ(TransformationMatrix(),
             svg_with_transform_properties->Transform()->Matrix());
   EXPECT_EQ(LayoutPoint(FloatPoint(0.1, 0)), svg_with_transform.PaintOffset());
-  EXPECT_EQ(nullptr,
-            svg_with_transform_properties->SvgLocalToBorderBoxTransform());
+  EXPECT_TRUE(svg_with_transform_properties->SvgLocalToBorderBoxTransform() ==
+              nullptr);
 
   LayoutObject& rect_with_transform =
       *GetDocument().GetElementById("rect")->GetLayoutObject();
@@ -2335,8 +2333,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   EXPECT_EQ(a_properties, a->GetLayoutObject()->PaintProperties());
   EXPECT_EQ(a_transform_node, a_properties->Transform());
 
-  EXPECT_EQ(b_properties, b->GetLayoutObject()->PaintProperties());
-  EXPECT_EQ(nullptr, b_properties->Transform());
+  EXPECT_EQ(nullptr, b->GetLayoutObject()->PaintProperties());
 
   EXPECT_EQ(c_properties, c->GetLayoutObject()->PaintProperties());
   EXPECT_EQ(c_transform_node, c_properties->Transform());
@@ -2358,6 +2355,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   EXPECT_EQ(a_properties, a->GetLayoutObject()->PaintProperties());
   EXPECT_EQ(a_transform_node, a_properties->Transform());
 
+  b_properties = b->GetLayoutObject()->PaintProperties();
   EXPECT_EQ(b_properties, b->GetLayoutObject()->PaintProperties());
   b_transform_node = b_properties->Transform();
   EXPECT_EQ(TransformationMatrix().Translate(4, 5), b_transform_node->Matrix());
@@ -3014,6 +3012,18 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // serving as the container of "absolute".
   EXPECT_TRUE(
       GetLayoutObjectByElementId("absolute")->Container()->IsLayoutBlock());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, Reflection) {
+  SetBodyInnerHTML(
+      "<div id='filter' style='-webkit-box-reflect: below; height:1000px;'>"
+      "</div>");
+  const ObjectPaintProperties* filter_properties =
+      GetLayoutObjectByElementId("filter")->PaintProperties();
+  EXPECT_TRUE(filter_properties->Filter()->Parent()->IsRoot());
+  EXPECT_EQ(FrameScrollTranslation(),
+            filter_properties->Filter()->LocalTransformSpace());
+  EXPECT_EQ(FrameContentClip(), filter_properties->Filter()->OutputClip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {

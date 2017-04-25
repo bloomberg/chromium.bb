@@ -552,7 +552,8 @@ TEST_P(PaintPropertyTreeUpdateTest,
   // Removing the animation should remove the transform node.
   target->removeAttribute(HTMLNames::classAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr, properties->Transform());
+  // Ensure the paint properties object was cleared as it is no longer needed.
+  EXPECT_EQ(nullptr, target->GetLayoutObject()->PaintProperties());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest,
@@ -566,7 +567,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
   // Removing the animation should remove the effect node.
   target->removeAttribute(HTMLNames::classAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr, properties->Effect());
+  EXPECT_EQ(nullptr, target->GetLayoutObject()->PaintProperties());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest,

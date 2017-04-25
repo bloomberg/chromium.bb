@@ -23,6 +23,10 @@ ObjectPaintProperties& RarePaintData::EnsurePaintProperties() {
   return *paint_properties_.get();
 }
 
+void RarePaintData::ClearPaintProperties() {
+  paint_properties_.reset(nullptr);
+}
+
 void RarePaintData::ClearLocalBorderBoxProperties() {
   local_border_box_properties_ = nullptr;
 }
