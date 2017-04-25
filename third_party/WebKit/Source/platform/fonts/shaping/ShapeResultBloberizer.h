@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Glyph.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/shaping/ShapeResultBuffer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
@@ -29,6 +30,11 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
                         Type = Type::kNormal);
 
   Type GetType() const { return type_; }
+
+  float FillGlyphs(const TextRunPaintInfo&, const ShapeResultBuffer&);
+  void FillTextEmphasisGlyphs(const TextRunPaintInfo&,
+                              const GlyphData& emphasis_data,
+                              const ShapeResultBuffer&);
 
   void Add(Glyph glyph, const SimpleFontData* font_data, float h_offset) {
     // cannot mix x-only/xy offsets
@@ -80,6 +86,17 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
 
  private:
   friend class ShapeResultBloberizerTestInfo;
+
+  float FillGlyphsForResult(const ShapeResult&,
+                            const TextRunPaintInfo&,
+                            float initial_advance,
+                            unsigned run_offset);
+  float FillFastHorizontalGlyphs(const ShapeResultBuffer&, const TextRun&);
+  float FillTextEmphasisGlyphsForRun(const ShapeResult::RunInfo*,
+                                     const TextRunPaintInfo&,
+                                     const GlyphData& emphasis_data,
+                                     float initial_advance,
+                                     unsigned run_offset);
 
   void CommitPendingRun();
   void CommitPendingBlob();

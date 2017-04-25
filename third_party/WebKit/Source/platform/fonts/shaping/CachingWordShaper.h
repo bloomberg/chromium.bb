@@ -39,7 +39,6 @@ struct CharacterRange;
 class Font;
 class ShapeCache;
 class SimpleFontData;
-class ShapeResultBloberizer;
 struct GlyphData;
 
 class PLATFORM_EXPORT CachingWordShaper final {
@@ -57,10 +56,7 @@ class PLATFORM_EXPORT CachingWordShaper final {
                         float target_x,
                         bool include_partial_glyphs);
 
-  float FillGlyphs(const TextRunPaintInfo&, ShapeResultBloberizer&);
-  void FillTextEmphasisGlyphs(const TextRunPaintInfo&,
-                              const GlyphData& emphasis_data,
-                              ShapeResultBloberizer&);
+  void FillResultBuffer(const TextRunPaintInfo&, ShapeResultBuffer*);
   CharacterRange GetCharacterRange(const TextRun&, unsigned from, unsigned to);
   Vector<CharacterRange> IndividualCharacterRanges(const TextRun&);
 

@@ -142,7 +142,10 @@ bool Font::DrawText(PaintCanvas* canvas,
     return false;
 
   ShapeResultBloberizer bloberizer(*this, device_scale_factor);
-  CachingWordShaper(*this).FillGlyphs(run_info, bloberizer);
+  CachingWordShaper word_shaper(*this);
+  ShapeResultBuffer buffer;
+  word_shaper.FillResultBuffer(run_info, &buffer);
+  bloberizer.FillGlyphs(run_info, buffer);
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
   return true;
 }
@@ -178,6 +181,7 @@ bool Font::DrawBidiText(PaintCanvas* canvas,
 
   FloatPoint curr_point = point;
   BidiCharacterRun* bidi_run = bidi_runs.FirstRun();
+  CachingWordShaper word_shaper(*this);
   while (bidi_run) {
     TextRun subrun =
         run.SubRun(bidi_run->Start(), bidi_run->Stop() - bidi_run->Start());
@@ -189,8 +193,9 @@ bool Font::DrawBidiText(PaintCanvas* canvas,
     subrun_info.bounds = run_info.bounds;
 
     ShapeResultBloberizer bloberizer(*this, device_scale_factor);
-    float run_width =
-        CachingWordShaper(*this).FillGlyphs(subrun_info, bloberizer);
+    ShapeResultBuffer buffer;
+    word_shaper.FillResultBuffer(subrun_info, &buffer);
+    float run_width = bloberizer.FillGlyphs(subrun_info, buffer);
     DrawBlobs(canvas, flags, bloberizer.Blobs(), curr_point);
 
     bidi_run = bidi_run->Next();
@@ -217,8 +222,10 @@ void Font::DrawEmphasisMarks(PaintCanvas* canvas,
     return;
 
   ShapeResultBloberizer bloberizer(*this, device_scale_factor);
-  CachingWordShaper(*this).FillTextEmphasisGlyphs(run_info, emphasis_glyph_data,
-                                                  bloberizer);
+  CachingWordShaper word_shaper(*this);
+  ShapeResultBuffer buffer;
+  word_shaper.FillResultBuffer(run_info, &buffer);
+  bloberizer.FillTextEmphasisGlyphs(run_info, emphasis_glyph_data, buffer);
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
 }
 
@@ -267,7 +274,12 @@ void Font::GetTextIntercepts(const TextRunPaintInfo& run_info,
 
   ShapeResultBloberizer bloberizer(
       *this, device_scale_factor, ShapeResultBloberizer::Type::kTextIntercepts);
-  CachingWordShaper(*this).FillGlyphs(run_info, bloberizer);
+
+  CachingWordShaper word_shaper(*this);
+  ShapeResultBuffer buffer;
+  word_shaper.FillResultBuffer(run_info, &buffer);
+  bloberizer.FillGlyphs(run_info, buffer);
+
   const auto& blobs = bloberizer.Blobs();
 
   // Get the number of intervals, without copying the actual values by

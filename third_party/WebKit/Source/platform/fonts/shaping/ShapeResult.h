@@ -126,6 +126,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   friend class HarfBuzzShaper;
   friend class ShapeResultBuffer;
+  friend class ShapeResultBloberizer;
 };
 
 }  // namespace blink

@@ -4,9 +4,11 @@
 
 #include "platform/fonts/shaping/ShapeResultBloberizer.h"
 
+#include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
+#include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "platform/wtf/Optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,9 +38,34 @@ class TestSimpleFontData : public SimpleFontData {
       : SimpleFontData(platform_data, std::move(vertical_data)) {}
 };
 
+class ShapeResultBloberizerTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    font_description.SetComputedSize(12.0);
+    font_description.SetLocale(LayoutLocale::Get("en"));
+    ASSERT_EQ(USCRIPT_LATIN, font_description.GetScript());
+    font_description.SetGenericFamily(FontDescription::kStandardFamily);
+
+    font = Font(font_description);
+    font.Update(nullptr);
+    ASSERT_TRUE(font.CanShapeWordByWord());
+    fallback_fonts = nullptr;
+    cache = WTF::MakeUnique<ShapeCache>();
+  }
+
+  FontCachePurgePreventer font_cache_purge_preventer;
+  FontDescription font_description;
+  Font font;
+  std::unique_ptr<ShapeCache> cache;
+  HashSet<const SimpleFontData*>* fallback_fonts;
+  unsigned start_index = 0;
+  unsigned num_glyphs = 0;
+  hb_script_t script = HB_SCRIPT_INVALID;
+};
+
 }  // anonymous namespace
 
-TEST(ShapeResultBloberizerTest, StartsEmpty) {
+TEST_F(ShapeResultBloberizerTest, StartsEmpty) {
   Font font;
   ShapeResultBloberizer bloberizer(font, 1);
 
@@ -57,7 +84,7 @@ TEST(ShapeResultBloberizerTest, StartsEmpty) {
   EXPECT_TRUE(bloberizer.Blobs().IsEmpty());
 }
 
-TEST(ShapeResultBloberizerTest, StoresGlyphsOffsets) {
+TEST_F(ShapeResultBloberizerTest, StoresGlyphsOffsets) {
   Font font;
   ShapeResultBloberizer bloberizer(font, 1);
 
@@ -117,7 +144,7 @@ TEST(ShapeResultBloberizerTest, StoresGlyphsOffsets) {
   EXPECT_EQ(bloberizer.Blobs().size(), 1ul);
 }
 
-TEST(ShapeResultBloberizerTest, StoresGlyphsVerticalOffsets) {
+TEST_F(ShapeResultBloberizerTest, StoresGlyphsVerticalOffsets) {
   Font font;
   ShapeResultBloberizer bloberizer(font, 1);
 
@@ -180,7 +207,7 @@ TEST(ShapeResultBloberizerTest, StoresGlyphsVerticalOffsets) {
   EXPECT_EQ(bloberizer.Blobs().size(), 1ul);
 }
 
-TEST(ShapeResultBloberizerTest, MixedBlobRotation) {
+TEST_F(ShapeResultBloberizerTest, MixedBlobRotation) {
   Font font;
   ShapeResultBloberizer bloberizer(font, 1);
 
@@ -233,6 +260,107 @@ TEST(ShapeResultBloberizerTest, MixedBlobRotation) {
 
   // flush everything -> 4 blobs total
   EXPECT_EQ(4u, bloberizer.Blobs().size());
+}
+
+// Tests that filling a glyph buffer for a specific range returns the same
+// results when shaping word by word as when shaping the full run in one go.
+TEST_F(ShapeResultBloberizerTest, CommonAccentLeftToRightFillGlyphBuffer) {
+  // "/. ." with an accent mark over the first dot.
+  const UChar kStr[] = {0x2F, 0x301, 0x2E, 0x20, 0x2E, 0x0};
+  TextRun text_run(kStr, 5);
+  TextRunPaintInfo run_info(text_run);
+  run_info.to = 3;
+
+  ShapeResultBloberizer bloberizer(font, 1);
+  CachingWordShaper word_shaper(font);
+  ShapeResultBuffer buffer;
+  word_shaper.FillResultBuffer(run_info, &buffer);
+  bloberizer.FillGlyphs(run_info, buffer);
+
+  Font reference_font(font_description);
+  reference_font.Update(nullptr);
+  reference_font.SetCanShapeWordByWordForTesting(false);
+
+  ShapeResultBloberizer reference_bloberizer(reference_font, 1);
+  CachingWordShaper reference_word_shaper(font);
+  ShapeResultBuffer reference_buffer;
+  reference_word_shaper.FillResultBuffer(run_info, &reference_buffer);
+  reference_bloberizer.FillGlyphs(run_info, reference_buffer);
+
+  const auto& glyphs =
+      ShapeResultBloberizerTestInfo::PendingRunGlyphs(bloberizer);
+  ASSERT_EQ(glyphs.size(), 3ul);
+  const auto reference_glyphs =
+      ShapeResultBloberizerTestInfo::PendingRunGlyphs(reference_bloberizer);
+  ASSERT_EQ(reference_glyphs.size(), 3ul);
+
+  EXPECT_EQ(reference_glyphs[0], glyphs[0]);
+  EXPECT_EQ(reference_glyphs[1], glyphs[1]);
+  EXPECT_EQ(reference_glyphs[2], glyphs[2]);
+}
+
+// Tests that filling a glyph buffer for a specific range returns the same
+// results when shaping word by word as when shaping the full run in one go.
+TEST_F(ShapeResultBloberizerTest, CommonAccentRightToLeftFillGlyphBuffer) {
+  // "[] []" with an accent mark over the last square bracket.
+  const UChar kStr[] = {0x5B, 0x5D, 0x20, 0x5B, 0x301, 0x5D, 0x0};
+  TextRun text_run(kStr, 6);
+  text_run.SetDirection(TextDirection::kRtl);
+  TextRunPaintInfo run_info(text_run);
+  run_info.from = 1;
+
+  ShapeResultBloberizer bloberizer(font, 1);
+  CachingWordShaper word_shaper(font);
+  ShapeResultBuffer buffer;
+  word_shaper.FillResultBuffer(run_info, &buffer);
+  bloberizer.FillGlyphs(run_info, buffer);
+
+  Font reference_font(font_description);
+  reference_font.Update(nullptr);
+  reference_font.SetCanShapeWordByWordForTesting(false);
+
+  ShapeResultBloberizer reference_bloberizer(reference_font, 1);
+  CachingWordShaper reference_word_shaper(font);
+  ShapeResultBuffer reference_buffer;
+  reference_word_shaper.FillResultBuffer(run_info, &reference_buffer);
+  reference_bloberizer.FillGlyphs(run_info, reference_buffer);
+
+  const auto& glyphs =
+      ShapeResultBloberizerTestInfo::PendingRunGlyphs(bloberizer);
+  ASSERT_EQ(5u, glyphs.size());
+  const auto reference_glyphs =
+      ShapeResultBloberizerTestInfo::PendingRunGlyphs(reference_bloberizer);
+  ASSERT_EQ(5u, reference_glyphs.size());
+
+  EXPECT_EQ(reference_glyphs[0], glyphs[0]);
+  EXPECT_EQ(reference_glyphs[1], glyphs[1]);
+  EXPECT_EQ(reference_glyphs[2], glyphs[2]);
+  EXPECT_EQ(reference_glyphs[3], glyphs[3]);
+  EXPECT_EQ(reference_glyphs[4], glyphs[4]);
+}
+
+// Tests that runs with zero glyphs (the ZWJ non-printable character in this
+// case) are handled correctly. This test passes if it does not cause a crash.
+TEST_F(ShapeResultBloberizerTest, SubRunWithZeroGlyphs) {
+  // "Foo &zwnj; bar"
+  const UChar kStr[] = {0x46, 0x6F, 0x6F, 0x20, 0x200C,
+                        0x20, 0x62, 0x61, 0x71, 0x0};
+  TextRun text_run(kStr, 9);
+
+  CachingWordShaper shaper(font);
+  FloatRect glyph_bounds;
+  ASSERT_GT(shaper.Width(text_run, nullptr, &glyph_bounds), 0);
+
+  ShapeResultBloberizer bloberizer(font, 1);
+  TextRunPaintInfo run_info(text_run);
+  run_info.to = 8;
+
+  CachingWordShaper word_shaper(font);
+  ShapeResultBuffer buffer;
+  word_shaper.FillResultBuffer(run_info, &buffer);
+  bloberizer.FillGlyphs(run_info, buffer);
+
+  shaper.GetCharacterRange(text_run, 0, 8);
 }
 
 }  // namespace blink

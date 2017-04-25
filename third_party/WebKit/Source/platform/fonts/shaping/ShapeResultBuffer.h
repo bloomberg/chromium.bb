@@ -18,7 +18,6 @@ class FontDescription;
 struct GlyphData;
 class ShapeResultBloberizer;
 class TextRun;
-struct TextRunPaintInfo;
 
 class PLATFORM_EXPORT ShapeResultBuffer {
   WTF_MAKE_NONCOPYABLE(ShapeResultBuffer);
@@ -34,10 +33,6 @@ class PLATFORM_EXPORT ShapeResultBuffer {
 
   bool HasVerticalOffsets() const { return has_vertical_offsets_; }
 
-  float FillGlyphs(const TextRunPaintInfo&, ShapeResultBloberizer&) const;
-  void FillTextEmphasisGlyphs(const TextRunPaintInfo&,
-                              const GlyphData& emphasis_data,
-                              ShapeResultBloberizer&) const;
   int OffsetForPosition(const TextRun&,
                         float target_x,
                         bool include_partial_glyphs) const;
@@ -64,26 +59,13 @@ class PLATFORM_EXPORT ShapeResultBuffer {
   GlyphData EmphasisMarkGlyphData(const FontDescription&) const;
 
  private:
+  friend class ShapeResultBloberizer;
   static CharacterRange GetCharacterRangeInternal(
       const Vector<RefPtr<const ShapeResult>, 64>&,
       TextDirection,
       float total_width,
       unsigned from,
       unsigned to);
-
-  float FillFastHorizontalGlyphs(const TextRun&, ShapeResultBloberizer&) const;
-
-  static float FillGlyphsForResult(ShapeResultBloberizer&,
-                                   const ShapeResult&,
-                                   const TextRunPaintInfo&,
-                                   float initial_advance,
-                                   unsigned run_offset);
-  static float FillTextEmphasisGlyphsForRun(ShapeResultBloberizer&,
-                                            const ShapeResult::RunInfo*,
-                                            const TextRunPaintInfo&,
-                                            const GlyphData&,
-                                            float initial_advance,
-                                            unsigned run_offset);
 
   static void AddRunInfoRanges(const ShapeResult::RunInfo&,
                                float offset,

@@ -88,22 +88,10 @@ int CachingWordShaper::OffsetForPosition(const TextRun& run,
   return buffer.OffsetForPosition(run, target_x, include_partial_glyphs);
 }
 
-float CachingWordShaper::FillGlyphs(const TextRunPaintInfo& run_info,
-                                    ShapeResultBloberizer& bloberizer) {
-  ShapeResultBuffer buffer;
-  ShapeResultsForRun(GetShapeCache(), &font_, run_info.run, &buffer);
-
-  return buffer.FillGlyphs(run_info, bloberizer);
-}
-
-void CachingWordShaper::FillTextEmphasisGlyphs(
-    const TextRunPaintInfo& run_info,
-    const GlyphData& emphasis_data,
-    ShapeResultBloberizer& bloberizer) {
-  ShapeResultBuffer buffer;
-  ShapeResultsForRun(GetShapeCache(), &font_, run_info.run, &buffer);
-
-  buffer.FillTextEmphasisGlyphs(run_info, emphasis_data, bloberizer);
+void CachingWordShaper::FillResultBuffer(const TextRunPaintInfo& run_info,
+                                         ShapeResultBuffer* buffer) {
+  DCHECK(buffer);
+  ShapeResultsForRun(GetShapeCache(), &font_, run_info.run, buffer);
 }
 
 CharacterRange CachingWordShaper::GetCharacterRange(const TextRun& run,
