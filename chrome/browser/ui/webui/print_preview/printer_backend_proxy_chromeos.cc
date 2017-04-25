@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
@@ -65,8 +65,10 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
 
   PrinterBasicInfo basic_info = ToBasicInfo(*printer);
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
       base::Bind(&GetSettingsOnBlockingPool, printer->id(), basic_info), cb);
 }
 
