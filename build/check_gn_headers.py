@@ -19,7 +19,21 @@ import sys
 
 def GetHeadersFromNinja(out_dir):
   """Return all the header files from ninja_deps"""
-  ninja_out = subprocess.check_output(['ninja', '-C', out_dir, '-t', 'deps'])
+
+  def NinjaSource():
+    cmd = ['ninja', '-C', out_dir, '-t', 'deps']
+    # A negative bufsize means to use the system default, which usually
+    # means fully buffered.
+    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=-1)
+    for line in iter(popen.stdout.readline, ''):
+      yield line
+
+    popen.stdout.close()
+    return_code = popen.wait()
+    if return_code:
+      raise subprocess.CalledProcessError(return_code, cmd)
+
+  ninja_out = NinjaSource()
   return ParseNinjaDepsOutput(ninja_out)
 
 
@@ -30,7 +44,7 @@ def ParseNinjaDepsOutput(ninja_out):
   prefix = '..' + os.sep + '..' + os.sep
 
   is_valid = False
-  for line in ninja_out.split('\n'):
+  for line in ninja_out:
     if line.startswith('    '):
       if not is_valid:
         continue
