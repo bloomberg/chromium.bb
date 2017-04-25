@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/views_export.h"
 
 #if defined(OS_WIN)
@@ -46,6 +47,12 @@ class VIEWS_EXPORT Background {
 
   // Creates a background that fills the canvas in the specified color.
   static Background* CreateSolidBackground(SkColor color);
+
+  // Creates a background that fills the canvas in the color specified by the
+  // view's NativeTheme and the given color identifier.
+  static Background* CreateThemedSolidBackground(
+      View* view,
+      ui::NativeTheme::ColorId color_id);
 
   // Creates a background that fills the canvas in the specified color.
   static Background* CreateSolidBackground(int r, int g, int b) {

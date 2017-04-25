@@ -27,6 +27,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -130,7 +131,8 @@ AccessibilityPopupView::AccessibilityPopupView(uint32_t enabled_state_bits)
     : label_(CreateLabel(enabled_state_bits)) {}
 
 void AccessibilityPopupView::Init() {
-  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+  set_background(views::Background::CreateThemedSolidBackground(
+      this, ui::NativeTheme::kColorId_BubbleBackground));
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);

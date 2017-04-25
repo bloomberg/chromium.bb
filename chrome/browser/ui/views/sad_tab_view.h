@@ -51,10 +51,6 @@ class SadTabView : public chrome::SadTab,
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-
-  views::Label* CreateLabel(const base::string16& text);
-  views::Link* CreateLink(const base::string16& text, const SkColor& color);
-
   bool painted_ = false;
   views::Label* message_;
   views::Link* help_link_;

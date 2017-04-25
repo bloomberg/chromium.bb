@@ -155,9 +155,8 @@ PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
       PasswordGenerationPopupController::kHorizontalPadding));
   AddChildView(help_label_);
 
-  set_background(views::Background::CreateSolidBackground(
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_ResultsTableNormalBackground)));
+  set_background(views::Background::CreateThemedSolidBackground(
+      this, ui::NativeTheme::kColorId_ResultsTableNormalBackground));
 }
 
 PasswordGenerationPopupViewViews::~PasswordGenerationPopupViewViews() {}
@@ -212,12 +211,11 @@ void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
   if (controller_->password_selected())
     NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
 
-  password_view_->set_background(
-      views::Background::CreateSolidBackground(
-          GetNativeTheme()->GetSystemColor(
-              controller_->password_selected() ?
-                  ui::NativeTheme::kColorId_ResultsTableHoveredBackground :
-                  ui::NativeTheme::kColorId_ResultsTableNormalBackground)));
+  password_view_->set_background(views::Background::CreateThemedSolidBackground(
+      password_view_,
+      controller_->password_selected()
+          ? ui::NativeTheme::kColorId_ResultsTableHoveredBackground
+          : ui::NativeTheme::kColorId_ResultsTableNormalBackground));
 }
 
 void PasswordGenerationPopupViewViews::Layout() {

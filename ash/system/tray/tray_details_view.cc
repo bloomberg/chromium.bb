@@ -21,6 +21,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -238,7 +239,8 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
       tri_view_(nullptr),
       back_button_(nullptr) {
   SetLayoutManager(box_layout_);
-  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+  set_background(views::Background::CreateThemedSolidBackground(
+      this, ui::NativeTheme::kColorId_BubbleBackground));
 }
 
 TrayDetailsView::~TrayDetailsView() {}
@@ -295,8 +297,8 @@ void TrayDetailsView::CreateScrollableList() {
   // Make the |scroller_| have a layer to clip |scroll_content_|'s children.
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
   scroller_->SetPaintToLayer();
-  scroller_->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
+  scroller_->set_background(views::Background::CreateThemedSolidBackground(
+      scroller_, ui::NativeTheme::kColorId_BubbleBackground));
   scroller_->layer()->SetMasksToBounds(true);
 
   AddChildView(scroller_);
