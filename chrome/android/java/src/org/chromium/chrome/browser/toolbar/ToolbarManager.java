@@ -18,6 +18,7 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
+import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -27,6 +28,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.UrlConstants;
@@ -43,11 +45,14 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
+import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.feature_engagement_tracker.FeatureEngagementTrackerFactory;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -70,6 +75,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
+import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
+import org.chromium.components.feature_engagement_tracker.EventConstants;
+import org.chromium.components.feature_engagement_tracker.FeatureConstants;
+import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -139,6 +148,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private final ActionModeController mActionModeController;
     private final LoadProgressSimulator mLoadProgressSimulator;
     private final Callback<Boolean> mUrlFocusChangedCallback;
+    private final Handler mHandler = new Handler();
 
     private BrowserStateBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
     private int mFullscreenFocusToken = FullscreenManager.INVALID_TOKEN;
@@ -152,6 +162,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private boolean mTabRestoreCompleted;
 
     private AppMenuButtonHelper mAppMenuButtonHelper;
+
+    private ViewAnchoredTextBubble mTextBubble;
 
     private HomepageStateListener mHomepageStateListener;
 
@@ -340,6 +352,16 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
+            public void onPageLoadFinished(Tab tab) {
+                if (tab.isShowingErrorPage()) {
+                    handleIPHForErrorPageShown(tab);
+                    return;
+                }
+
+                handleIPHForSuccessfulPageLoad(tab);
+            }
+
+            @Override
             public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
                 if (!toDifferentDocument) return;
                 updateButtonStatus();
@@ -480,6 +502,67 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     mToolbar.onTabOrModelChanged();
                     if (mToolbar.getProgressBar() != null) mToolbar.getProgressBar().finish(false);
                 }
+            }
+
+            private void handleIPHForSuccessfulPageLoad(final Tab tab) {
+                if (mTextBubble != null) {
+                    mTextBubble.dismiss();
+                    mTextBubble = null;
+                    return;
+                }
+
+                // TODO(shaktisahu): Find out if the download menu button is enabled (crbug/712438).
+                if (!(activity instanceof ChromeTabbedActivity)
+                        || DeviceFormFactor.isTablet(mToolbar.getContext())
+                        || activity.isInOverviewMode()
+                        || !DownloadUtils.isAllowedToDownloadPage(tab)) {
+                    return;
+                }
+
+                final FeatureEngagementTracker tracker =
+                        FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
+                                tab.getProfile());
+
+                if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_PAGE_FEATURE)) return;
+
+                mTextBubble = new ViewAnchoredTextBubble(mToolbar.getContext(), getMenuAnchor(),
+                        R.string.iph_download_page_for_offline_usage_text);
+                mTextBubble.setDismissOnTouchInteraction(true);
+                mTextBubble.addOnDismissListener(new OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                tracker.dismissed();
+                                activity.getAppMenuHandler().setMenuHighlight(null);
+                            }
+                        });
+                    }
+                });
+                activity.getAppMenuHandler().setMenuHighlight(R.id.offline_page_id);
+                int yInsetPx = activity.getResources().getDimensionPixelOffset(
+                        R.dimen.text_bubble_menu_anchor_y_inset);
+                mTextBubble.setInsetPx(0, yInsetPx, 0, 0);
+                mTextBubble.show();
+            }
+
+            private void handleIPHForErrorPageShown(Tab tab) {
+                if (!(activity instanceof ChromeTabbedActivity)
+                        || DeviceFormFactor.isTablet(mToolbar.getContext())) {
+                    return;
+                }
+
+                OfflinePageBridge bridge = OfflinePageBridge.getForProfile(tab.getProfile());
+                if (bridge == null
+                        || !bridge.isShowingDownloadButtonInErrorPage(tab.getWebContents())) {
+                    return;
+                }
+
+                FeatureEngagementTracker tracker =
+                        FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
+                                tab.getProfile());
+                tracker.notifyEvent(EventConstants.USER_HAS_SEEN_DINO);
             }
         };
 
