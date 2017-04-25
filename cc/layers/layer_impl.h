@@ -269,8 +269,12 @@ class CC_EXPORT LayerImpl {
   // Like bounds() but doesn't snap to int. Lossy on giant pages (e.g. millions
   // of pixels) due to use of single precision float.
   gfx::SizeF BoundsForScrolling() const;
-  void SetBoundsDelta(const gfx::Vector2dF& bounds_delta);
-  gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
+
+  // Viewport bounds delta are used for viewport layers and accounts for changes
+  // in the viewport layers from browser controls and page scale factors. These
+  // deltas are only set on the active tree.
+  void SetViewportBoundsDelta(const gfx::Vector2dF& bounds_delta);
+  gfx::Vector2dF ViewportBoundsDelta() const;
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
   gfx::ScrollOffset CurrentScrollOffset() const;
@@ -470,8 +474,6 @@ class CC_EXPORT LayerImpl {
   LayerTreeImpl* layer_tree_impl_;
 
   std::unique_ptr<LayerImplTestProperties> test_properties_;
-
-  gfx::Vector2dF bounds_delta_;
 
   // Properties synchronized from the associated Layer.
   gfx::Size bounds_;

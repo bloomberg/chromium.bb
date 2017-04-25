@@ -2830,7 +2830,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationCompletedNotification) {
   host_impl_->DidFinishImplFrame();
 }
 
-TEST_F(LayerTreeHostImplTest, MaxScrollOffsetAffectedByBoundsDelta) {
+TEST_F(LayerTreeHostImplTest, MaxScrollOffsetAffectedByViewportBoundsDelta) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
@@ -2843,17 +2843,17 @@ TEST_F(LayerTreeHostImplTest, MaxScrollOffsetAffectedByBoundsDelta) {
   DCHECK(inner_container);
   EXPECT_EQ(gfx::ScrollOffset(50, 50), inner_scroll->MaxScrollOffset());
 
-  inner_container->SetBoundsDelta(gfx::Vector2dF(15.f, 15.f));
-  inner_scroll->SetBoundsDelta(gfx::Vector2dF(7.f, 7.f));
+  inner_container->SetViewportBoundsDelta(gfx::Vector2dF(15.f, 15.f));
+  inner_scroll->SetViewportBoundsDelta(gfx::Vector2dF(7.f, 7.f));
   EXPECT_EQ(gfx::ScrollOffset(42, 42), inner_scroll->MaxScrollOffset());
 
-  inner_container->SetBoundsDelta(gfx::Vector2dF());
-  inner_scroll->SetBoundsDelta(gfx::Vector2dF());
+  inner_container->SetViewportBoundsDelta(gfx::Vector2dF());
+  inner_scroll->SetViewportBoundsDelta(gfx::Vector2dF());
   inner_scroll->SetBounds(gfx::Size());
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
 
-  inner_scroll->SetBoundsDelta(gfx::Vector2dF(60.f, 60.f));
+  inner_scroll->SetViewportBoundsDelta(gfx::Vector2dF(60.f, 60.f));
   EXPECT_EQ(gfx::ScrollOffset(10, 10), inner_scroll->MaxScrollOffset());
 }
 
@@ -3410,8 +3410,9 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   // Changing one of the viewport layers should result in a scrollbar animation
   // update.
   animation_task_ = base::Closure();
-  host_impl_->active_tree()->InnerViewportContainerLayer()->SetBoundsDelta(
-      gfx::Vector2dF(10, 10));
+  host_impl_->active_tree()
+      ->InnerViewportContainerLayer()
+      ->SetViewportBoundsDelta(gfx::Vector2dF(10, 10));
   EXPECT_FALSE(animation_task_.Equals(base::Closure()));
   animation_task_ = base::Closure();
   host_impl_->active_tree()->OuterViewportScrollLayer()->SetCurrentScrollOffset(
@@ -4825,7 +4826,8 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   // account for the difference between the layout height and the current
   // browser controls offset.
   EXPECT_EQ(viewport_size_, inner_clip_ptr->bounds());
-  EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 50.f), inner_clip_ptr->bounds_delta());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 50.f),
+                   inner_clip_ptr->ViewportBoundsDelta());
 
   host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f);
   host_impl_->DidChangeBrowserControlsPosition();
@@ -4834,7 +4836,8 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
             host_impl_->browser_controls_manager()->TopControlsShownRatio());
   EXPECT_EQ(50.f, host_impl_->browser_controls_manager()->TopControlsHeight());
   EXPECT_EQ(50.f, host_impl_->browser_controls_manager()->ContentTopOffset());
-  EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 0.f), inner_clip_ptr->bounds_delta());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 0.f),
+                   inner_clip_ptr->ViewportBoundsDelta());
   EXPECT_EQ(gfx::Size(viewport_size_.width(), viewport_size_.height() - 50.f),
             inner_clip_ptr->bounds());
 }

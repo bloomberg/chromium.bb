@@ -132,8 +132,6 @@ class CC_EXPORT LayerTreeImpl {
   void SetPropertyTrees(PropertyTrees* property_trees);
   PropertyTrees* property_trees() { return &property_trees_; }
 
-  void UpdatePropertyTreesForBoundsDelta();
-
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
   void MoveChangeTrackingToLayers();

@@ -215,7 +215,7 @@ void SetFixedContainerSizeDelta(LayerImpl* scroll_layer,
   DCHECK(scroll_layer->scrollable());
 
   LayerImpl* container_layer = scroll_layer->scroll_clip_layer();
-  container_layer->SetBoundsDelta(delta);
+  container_layer->SetViewportBoundsDelta(delta);
 }
 }  // namespace
 

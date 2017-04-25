@@ -138,6 +138,11 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   root_clip_ptr->test_properties()->AddChild(std::move(root_ptr));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root_clip_ptr));
 
+  // Make root the inner viewport scroll layer. This ensures the later call to
+  // |SetViewportBoundsDelta| will be on a viewport layer.
+  host_impl.active_tree()->SetViewportLayersFromIds(
+      Layer::INVALID_ID, Layer::INVALID_ID, root->id(), Layer::INVALID_ID);
+
   root->test_properties()->force_render_surface = true;
   root->SetMasksToBounds(true);
   root->layer_tree_impl()->ResetAllChangeTracking();
@@ -192,11 +197,13 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
                                                    arbitrary_transform));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d);
                                      root->SetNeedsPushProperties());
-  // SetBoundsDelta changes subtree only when masks_to_bounds is true and it
-  // doesn't set needs_push_properties as it is always called on active tree.
+  // SetViewportBoundsDelta changes subtree only when masks_to_bounds is true
+  // and it doesn't set needs_push_properties as it is always called on active
+  // tree.
   root->SetMasksToBounds(true);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBoundsDelta(arbitrary_vector2d);
-                                     root->SetNeedsPushProperties());
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
+      root->SetViewportBoundsDelta(arbitrary_vector2d);
+      root->SetNeedsPushProperties());
 
   // Changing these properties only affects the layer itself.
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetDrawsContent(true));

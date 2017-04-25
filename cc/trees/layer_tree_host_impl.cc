@@ -1958,7 +1958,7 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   // for changes in the size (e.g. browser controls) since the last resize from
   // Blink.
   gfx::Vector2dF amount_to_expand(0.f, delta_from_top_controls);
-  inner_container->SetBoundsDelta(amount_to_expand);
+  inner_container->SetViewportBoundsDelta(amount_to_expand);
 
   if (outer_container && !outer_container->BoundsForScrolling().IsEmpty()) {
     // Adjust the outer viewport container as well, since adjusting only the
@@ -1966,8 +1966,8 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
     // clamping.
     gfx::Vector2dF amount_to_expand_scaled = gfx::ScaleVector2d(
         amount_to_expand, 1.f / active_tree_->min_page_scale_factor());
-    outer_container->SetBoundsDelta(amount_to_expand_scaled);
-    active_tree_->InnerViewportScrollLayer()->SetBoundsDelta(
+    outer_container->SetViewportBoundsDelta(amount_to_expand_scaled);
+    active_tree_->InnerViewportScrollLayer()->SetViewportBoundsDelta(
         amount_to_expand_scaled);
 
     anchor.ResetViewportToAnchoredPosition();
