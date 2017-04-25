@@ -30,8 +30,9 @@
 ] interface IDBFactory {
     [CallWith=ScriptState, ImplementedAs=getDatabaseNames, RaisesException, DeprecateAs=V8IDBFactory_WebkitGetDatabaseNames_Method] IDBRequest webkitGetDatabaseNames();
 
-    [CallWith=ScriptState, RaisesException] IDBOpenDBRequest open(DOMString name, [EnforceRange] optional unsigned long long version);
-    [CallWith=ScriptState, RaisesException] IDBOpenDBRequest deleteDatabase(DOMString name);
+    [NewObject, CallWith=ScriptState, RaisesException] IDBOpenDBRequest open(DOMString name,
+                                                                             [EnforceRange] optional unsigned long long version);
+    [NewObject, CallWith=ScriptState, RaisesException] IDBOpenDBRequest deleteDatabase(DOMString name);
 
     [CallWith=ScriptState, RaisesException] short cmp(any first, any second);
 };

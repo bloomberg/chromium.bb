@@ -43,7 +43,7 @@ enum IDBTransactionMode {
     // Properties
     readonly attribute DOMStringList objectStoreNames;
     readonly attribute IDBTransactionMode mode;
-    readonly attribute IDBDatabase db;
+    [SameObject] readonly attribute IDBDatabase db;
     readonly attribute DOMException error;
 
     // Methods

@@ -43,11 +43,8 @@ enum IDBRequestReadyState {
 ] interface IDBRequest : EventTarget {
     [CallWith=ScriptState, RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;
     [RaisesException=Getter] readonly attribute DOMException error;
-
     [CallWith=ScriptState] readonly attribute any source;
     readonly attribute IDBTransaction transaction;
-
-    // States
     readonly attribute IDBRequestReadyState readyState;
 
     // Events
