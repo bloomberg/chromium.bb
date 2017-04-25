@@ -36,18 +36,20 @@ public class ChildProcessLauncher {
     /**
      * Implemented by ChildProcessLauncherHelper.
      */
-    public interface LaunchCallback { void onChildProcessStarted(int pid); }
+    public interface LaunchCallback {
+        void onChildProcessStarted(BaseChildProcessConnection connection);
+    }
 
     private static final boolean SPARE_CONNECTION_ALWAYS_IN_FOREGROUND = false;
 
     @VisibleForTesting
-    static ChildProcessConnection allocateConnection(
+    static BaseChildProcessConnection allocateConnection(
             ChildSpawnData spawnData, Bundle childProcessCommonParams, boolean forWarmUp) {
         assert LauncherThread.runningOnLauncherThread();
-        ChildProcessConnection.DeathCallback deathCallback =
-                new ChildProcessConnection.DeathCallback() {
+        BaseChildProcessConnection.DeathCallback deathCallback =
+                new BaseChildProcessConnection.DeathCallback() {
                     @Override
-                    public void onChildProcessDied(ChildProcessConnection connection) {
+                    public void onChildProcessDied(BaseChildProcessConnection connection) {
                         assert LauncherThread.runningOnLauncherThread();
                         if (connection.getPid() != 0) {
                             stop(connection.getPid());
@@ -106,14 +108,14 @@ public class ChildProcessLauncher {
     }
 
     @VisibleForTesting
-    static ChildProcessConnection allocateBoundConnection(ChildSpawnData spawnData,
-            ChildProcessConnection.StartCallback startCallback, boolean forWarmUp) {
+    static BaseChildProcessConnection allocateBoundConnection(ChildSpawnData spawnData,
+            BaseChildProcessConnection.StartCallback startCallback, boolean forWarmUp) {
         assert LauncherThread.runningOnLauncherThread();
         final Context context = spawnData.getContext();
         final boolean inSandbox = spawnData.isInSandbox();
         final ChildProcessCreationParams creationParams = spawnData.getCreationParams();
 
-        ChildProcessConnection connection = allocateConnection(
+        BaseChildProcessConnection connection = allocateConnection(
                 spawnData, createCommonParamsBundle(spawnData.getCreationParams()), forWarmUp);
         if (connection != null) {
             connection.start(startCallback);
@@ -121,7 +123,8 @@ public class ChildProcessLauncher {
             String packageName = creationParams != null ? creationParams.getPackageName()
                                                         : context.getPackageName();
             if (inSandbox
-                    && !ChildConnectionAllocator.getAllocator(context, packageName, inSandbox)
+                    && !ChildConnectionAllocator
+                                .getAllocator(context, packageName, true /* sandboxed */)
                                 .isFreeConnectionAvailable()) {
                 // Proactively releases all the moderate bindings once all the sandboxed services
                 // are allocated, which will be very likely to have some of them killed by OOM
@@ -134,7 +137,7 @@ public class ChildProcessLauncher {
 
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
 
-    private static void freeConnection(ChildProcessConnection connection) {
+    private static void freeConnection(BaseChildProcessConnection connection) {
         assert LauncherThread.runningOnLauncherThread();
         if (connection == sSpareSandboxedConnection) clearSpareConnection();
 
@@ -143,7 +146,7 @@ public class ChildProcessLauncher {
         // alive when it's been unbound for a short time. If a new connection to the same service
         // is bound at that point, the process is reused and bad things happen (mostly static
         // variables are set when we don't expect them to).
-        final ChildProcessConnection conn = connection;
+        final BaseChildProcessConnection conn = connection;
         LauncherThread.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -154,7 +157,7 @@ public class ChildProcessLauncher {
                 // ChildProcessLauncherHelper, we'll have a context around that we can pass in
                 // there.
                 ChildConnectionAllocator allocator = ChildConnectionAllocator.getAllocator(
-                        null /* context */, conn.getPackageName(), conn.isInSandbox());
+                        null /* context */, conn.getPackageName(), conn.isSandboxed());
                 assert allocator != null;
                 final ChildSpawnData pendingSpawn = allocator.free(conn);
                 if (pendingSpawn != null) {
@@ -175,12 +178,9 @@ public class ChildProcessLauncher {
         }, FREE_CONNECTION_DELAY_MILLIS);
     }
 
-    // Represents an invalid process handle; same as base/process/process.h kNullProcessHandle.
-    private static final int NULL_PROCESS_HANDLE = 0;
-
     // Map from pid to ChildService connection.
-    private static Map<Integer, ChildProcessConnection> sServiceMap =
-            new ConcurrentHashMap<Integer, ChildProcessConnection>();
+    private static Map<Integer, BaseChildProcessConnection> sServiceMap =
+            new ConcurrentHashMap<Integer, BaseChildProcessConnection>();
 
     // Lock for getBindingManager()
     private static final Object sBindingManagerLock = new Object();
@@ -192,9 +192,9 @@ public class ChildProcessLauncher {
     // This is used for a child process allocation to determine if StartCallback should be chained.
     // |sSpareConnectionStartCallback| is the chained StartCallback. This is also used to determine
     // if there is already a child process launch that's used this this connection.
-    private static ChildProcessConnection sSpareSandboxedConnection;
+    private static BaseChildProcessConnection sSpareSandboxedConnection;
     private static boolean sSpareConnectionStarting;
-    private static ChildProcessConnection.StartCallback sSpareConnectionStartCallback;
+    private static BaseChildProcessConnection.StartCallback sSpareConnectionStartCallback;
 
     // Manages oom bindings used to bind chind services. Lazily initialized by getBindingManager()
     private static BindingManager sBindingManager;
@@ -278,8 +278,8 @@ public class ChildProcessLauncher {
                 if (sSpareSandboxedConnection != null) return;
                 ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
 
-                ChildProcessConnection.StartCallback startCallback =
-                        new ChildProcessConnection.StartCallback() {
+                BaseChildProcessConnection.StartCallback startCallback =
+                        new BaseChildProcessConnection.StartCallback() {
                             @Override
                             public void onChildStarted() {
                                 assert LauncherThread.runningOnLauncherThread();
@@ -347,7 +347,7 @@ public class ChildProcessLauncher {
         if (!ContentSwitches.SWITCH_RENDERER_PROCESS.equals(processType)) {
             if (params != null && !params.getPackageName().equals(context.getPackageName())) {
                 // WebViews and WebAPKs have renderer processes running in their applications.
-                // When launching these renderer processes, {@link ChildProcessConnectionImpl}
+                // When launching these renderer processes, {@link ManagedChildProcessConnection}
                 // requires the package name of the application which holds the renderer process.
                 // Therefore, the package name in ChildProcessCreationParams could be the package
                 // name of WebViews, WebAPKs, or Chrome, depending on the host application.
@@ -375,7 +375,7 @@ public class ChildProcessLauncher {
     }
 
     @VisibleForTesting
-    public static ChildProcessConnection startInternal(final Context context,
+    public static BaseChildProcessConnection startInternal(final Context context,
             final String[] commandLine, final int childProcessId,
             final FileDescriptorInfo[] filesToBeMapped, final LaunchCallback launchCallback,
             final IBinder childProcessCallback, final boolean inSandbox,
@@ -384,18 +384,18 @@ public class ChildProcessLauncher {
         try {
             TraceEvent.begin("ChildProcessLauncher.startInternal");
 
-            ChildProcessConnection allocatedConnection = null;
+            BaseChildProcessConnection allocatedConnection = null;
             String packageName = creationParams != null ? creationParams.getPackageName()
                     : context.getPackageName();
-            ChildProcessConnection.StartCallback startCallback =
-                    new ChildProcessConnection.StartCallback() {
+            BaseChildProcessConnection.StartCallback startCallback =
+                    new BaseChildProcessConnection.StartCallback() {
                         @Override
                         public void onChildStarted() {}
 
                         @Override
                         public void onChildStartFailed() {
                             assert LauncherThread.runningOnLauncherThread();
-                            Log.e(TAG, "ChildProcessConnection.start failed, trying again");
+                            Log.e(TAG, "BaseChildProcessConnection.start failed, trying again");
                             LauncherThread.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -464,25 +464,29 @@ public class ChildProcessLauncher {
     }
 
     @VisibleForTesting
-    static void triggerConnectionSetup(final ChildProcessConnection connection,
+    static void triggerConnectionSetup(final BaseChildProcessConnection connection,
             String[] commandLine, int childProcessId, FileDescriptorInfo[] filesToBeMapped,
             final IBinder childProcessCallback, final LaunchCallback launchCallback) {
         assert LauncherThread.runningOnLauncherThread();
         Log.d(TAG, "Setting up connection to process: slot=%d", connection.getServiceNumber());
-        ChildProcessConnection.ConnectionCallback connectionCallback =
-                new ChildProcessConnection.ConnectionCallback() {
+        BaseChildProcessConnection.ConnectionCallback connectionCallback =
+                new BaseChildProcessConnection.ConnectionCallback() {
                     @Override
-                    public void onConnected(int pid) {
-                        Log.d(TAG, "on connect callback, pid=%d", pid);
-                        if (pid != NULL_PROCESS_HANDLE) {
-                            getBindingManager().addNewConnection(pid, connection);
+                    public void onConnected(BaseChildProcessConnection connection) {
+                        if (connection != null) {
+                            int pid = connection.getPid();
+                            Log.d(TAG, "on connect callback, pid=%d", pid);
+                            if (connection instanceof ManagedChildProcessConnection) {
+                                getBindingManager().addNewConnection(
+                                        pid, (ManagedChildProcessConnection) connection);
+                            }
                             sServiceMap.put(pid, connection);
                         }
                         // If the connection fails and pid == 0, the Java-side cleanup was already
                         // handled by DeathCallback. We still have to call back to native for
                         // cleanup there.
                         if (launchCallback != null) { // Will be null in Java instrumentation tests.
-                            launchCallback.onChildProcessStarted(pid);
+                            launchCallback.onChildProcessStarted(connection);
                         }
                     }
                 };
@@ -499,12 +503,12 @@ public class ChildProcessLauncher {
     static void stop(int pid) {
         assert LauncherThread.runningOnLauncherThread();
         Log.d(TAG, "stopping child connection: pid=%d", pid);
-        ChildProcessConnection connection = sServiceMap.remove(pid);
+        BaseChildProcessConnection connection = sServiceMap.remove(pid);
         if (connection == null) {
             // Can happen for single process.
             return;
         }
-        getBindingManager().clearConnection(pid);
+        getBindingManager().removeConnection(pid);
         connection.stop();
         freeConnection(connection);
     }
@@ -524,7 +528,7 @@ public class ChildProcessLauncher {
         if (sServiceMap.get(pid) == null) return false;
 
         try {
-            ((ChildProcessConnectionImpl) sServiceMap.get(pid)).crashServiceForTesting();
+            ((ManagedChildProcessConnection) sServiceMap.get(pid)).crashServiceForTesting();
         } catch (RemoteException ex) {
             return false;
         }

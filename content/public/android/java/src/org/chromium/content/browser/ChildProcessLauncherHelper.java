@@ -25,9 +25,12 @@ import java.io.IOException;
 class ChildProcessLauncherHelper {
     private static final String TAG = "ChildProcLH";
 
+    // Represents an invalid process handle; same as base/process/process.h kNullProcessHandle.
+    private static final int NULL_PROCESS_HANDLE = 0;
+
     // Note native pointer is only guaranteed live until nativeOnChildProcessStarted.
     private long mNativeChildProcessLauncherHelper;
-    private int mPid;
+    private BaseChildProcessConnection mChildProcessConnection;
 
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
@@ -64,27 +67,47 @@ class ChildProcessLauncherHelper {
         ChildProcessLauncher.start(ContextUtils.getApplicationContext(), paramId, commandLine,
                 childProcessId, filesToBeMapped, new ChildProcessLauncher.LaunchCallback() {
                     @Override
-                    public void onChildProcessStarted(int pid) {
-                        mPid = pid;
+                    public void onChildProcessStarted(BaseChildProcessConnection connection) {
+                        mChildProcessConnection = connection;
                         if (mNativeChildProcessLauncherHelper != 0) {
-                            nativeOnChildProcessStarted(mNativeChildProcessLauncherHelper, pid);
+                            nativeOnChildProcessStarted(
+                                    mNativeChildProcessLauncherHelper, getPid());
                         }
                         mNativeChildProcessLauncherHelper = 0;
                     }
                 });
     }
 
+    private int getPid() {
+        return mChildProcessConnection == null ? NULL_PROCESS_HANDLE
+                                               : mChildProcessConnection.getPid();
+    }
+
     // Called on client (UI or IO) thread.
     @CalledByNative
     private boolean isOomProtected() {
-        return ChildProcessLauncher.getBindingManager().isOomProtected(mPid);
+        // mChildProcessConnection is set on a different thread but does not change once it's been
+        // set. So it is safe to test whether it's null from a different thread.
+        if (mChildProcessConnection == null) {
+            return false;
+        }
+
+        if (mChildProcessConnection instanceof ImportantChildProcessConnection) {
+            // The connection was bound as BIND_IMPORTANT. This should prevent it from being killed
+            // when the app is on the foreground (that's our best guess, but there is no absolute
+            // guarantee).
+            return ChildProcessLauncher.isApplicationInForeground();
+        }
+
+        return ((ManagedChildProcessConnection) mChildProcessConnection)
+                .isOomProtectedOrWasWhenDied();
     }
 
     @CalledByNative
     private void setInForeground(int pid, boolean inForeground) {
         assert LauncherThread.runningOnLauncherThread();
-        assert mPid == pid;
-        ChildProcessLauncher.getBindingManager().setInForeground(mPid, inForeground);
+        assert getPid() == pid;
+        ChildProcessLauncher.getBindingManager().setInForeground(pid, inForeground);
     }
 
     @CalledByNative

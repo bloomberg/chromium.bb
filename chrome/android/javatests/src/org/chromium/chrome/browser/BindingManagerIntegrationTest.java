@@ -26,8 +26,8 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.PrerenderTestHelper;
 import org.chromium.content.browser.BindingManager;
-import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.ManagedChildProcessConnection;
 import org.chromium.content.browser.test.ChildProcessAllocatorSettings;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -99,7 +99,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         }
 
         @Override
-        public void addNewConnection(int pid, ChildProcessConnection connection) {
+        public void addNewConnection(int pid, ManagedChildProcessConnection connection) {
             synchronized (mVisibilityCallsMap) {
                 mVisibilityCallsMap.put(pid, "");
             }
@@ -132,12 +132,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         public void onBroughtToForeground() {}
 
         @Override
-        public boolean isOomProtected(int pid) {
-            return false;
-        }
-
-        @Override
-        public void clearConnection(int pid) {}
+        public void removeConnection(int pid) {}
 
         @Override
         public void startModerateBindingManagement(Context context, int maxSize) {}

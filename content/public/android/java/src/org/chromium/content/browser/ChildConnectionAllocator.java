@@ -48,8 +48,11 @@ public class ChildConnectionAllocator {
     private static int sSandboxedServicesCountForTesting = -1;
     private static String sSandboxedServicesNameForTesting;
 
+    // The factory used to create BaseChildProcessConnection instances.
+    private final BaseChildProcessConnection.Factory mConnectionFactory;
+
     // Connections to services. Indices of the array correspond to the service numbers.
-    private final ChildProcessConnection[] mChildProcessConnections;
+    private final BaseChildProcessConnection[] mChildProcessConnections;
 
     private final String mChildClassName;
     private final boolean mInSandbox;
@@ -63,11 +66,12 @@ public class ChildConnectionAllocator {
 
     @SuppressFBWarnings("LI_LAZY_INIT_STATIC") // Method is single thread.
     public static ChildConnectionAllocator getAllocator(
-            Context context, String packageName, boolean inSandbox) {
+            Context context, String packageName, boolean sandboxed) {
         assert LauncherThread.runningOnLauncherThread();
-        if (!inSandbox) {
+        if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
-                sPrivilegedChildConnectionAllocator = new ChildConnectionAllocator(false,
+                sPrivilegedChildConnectionAllocator = new ChildConnectionAllocator(
+                        ImportantChildProcessConnection.FACTORY, false /* sandboxed */,
                         getNumberOfServices(context, false, packageName),
                         getClassNameOfService(context, false, packageName));
             }
@@ -83,8 +87,8 @@ public class ChildConnectionAllocator {
                             + " inSandbox = true",
                     packageName);
             sSandboxedChildConnectionAllocatorMap.put(packageName,
-                    new ChildConnectionAllocator(true,
-                            getNumberOfServices(context, true, packageName),
+                    new ChildConnectionAllocator(ManagedChildProcessConnection.FACTORY,
+                            true /* sandboxed */, getNumberOfServices(context, true, packageName),
                             getClassNameOfService(context, true, packageName)));
         }
         return sSandboxedChildConnectionAllocatorMap.get(packageName);
@@ -160,9 +164,10 @@ public class ChildConnectionAllocator {
         sSandboxedServicesNameForTesting = serviceName;
     }
 
-    private ChildConnectionAllocator(
+    private ChildConnectionAllocator(BaseChildProcessConnection.Factory connectionFactory,
             boolean inSandbox, int numChildServices, String serviceClassName) {
-        mChildProcessConnections = new ChildProcessConnectionImpl[numChildServices];
+        mConnectionFactory = connectionFactory;
+        mChildProcessConnections = new BaseChildProcessConnection[numChildServices];
         mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
         for (int i = 0; i < numChildServices; i++) {
             mFreeConnectionIndices.add(i);
@@ -172,9 +177,9 @@ public class ChildConnectionAllocator {
     }
 
     // Allocates or enqueues. If there are no free slots, returns null and enqueues the spawn data.
-    public ChildProcessConnection allocate(ChildSpawnData spawnData,
-            ChildProcessConnection.DeathCallback deathCallback, Bundle childProcessCommonParameters,
-            boolean queueIfNoSlotAvailable) {
+    public BaseChildProcessConnection allocate(ChildSpawnData spawnData,
+            BaseChildProcessConnection.DeathCallback deathCallback,
+            Bundle childProcessCommonParameters, boolean queueIfNoSlotAvailable) {
         assert LauncherThread.runningOnLauncherThread();
         assert spawnData.isInSandbox() == mInSandbox;
         if (mFreeConnectionIndices.isEmpty()) {
@@ -186,15 +191,15 @@ public class ChildConnectionAllocator {
         }
         int slot = mFreeConnectionIndices.remove(0);
         assert mChildProcessConnections[slot] == null;
-        mChildProcessConnections[slot] = new ChildProcessConnectionImpl(spawnData.getContext(),
-                slot, mInSandbox, deathCallback, mChildClassName, childProcessCommonParameters,
-                spawnData.isAlwaysInForeground(), spawnData.getCreationParams());
+        mChildProcessConnections[slot] = mConnectionFactory.create(spawnData.getContext(), slot,
+                mInSandbox, deathCallback, mChildClassName, childProcessCommonParameters,
+                spawnData.getCreationParams());
         Log.d(TAG, "Allocator allocated a connection, sandbox: %b, slot: %d", mInSandbox, slot);
         return mChildProcessConnections[slot];
     }
 
     // Also return the first ChildSpawnData in the pending queue, if any.
-    public ChildSpawnData free(ChildProcessConnection connection) {
+    public ChildSpawnData free(BaseChildProcessConnection connection) {
         assert LauncherThread.runningOnLauncherThread();
         int slot = connection.getServiceNumber();
         if (mChildProcessConnections[slot] != connection) {
@@ -228,7 +233,7 @@ public class ChildConnectionAllocator {
     }
 
     @VisibleForTesting
-    ChildProcessConnection[] connectionArrayForTesting() {
+    BaseChildProcessConnection[] connectionArrayForTesting() {
         return mChildProcessConnections;
     }
 

@@ -22,6 +22,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /**
  * Manages oom bindings used to bound child services.
  */
@@ -47,7 +49,10 @@ class BindingManagerImpl implements BindingManager {
     private static class ModerateBindingPool
             extends LruCache<Integer, ManagedConnection> implements ComponentCallbacks2 {
         private final Object mDelayedClearerLock = new Object();
+
+        @GuardedBy("mDelayedClearerLock")
         private Runnable mDelayedClearer;
+
         private final Handler mHandler = new Handler(ThreadUtils.getUiThreadLooper());
 
         public ModerateBindingPool(int maxSize) {
@@ -102,8 +107,8 @@ class BindingManagerImpl implements BindingManager {
         }
 
         void addConnection(ManagedConnection managedConnection) {
-            ChildProcessConnection connection = managedConnection.mConnection;
-            if (connection != null && connection.isInSandbox()) {
+            ManagedChildProcessConnection connection = managedConnection.mConnection;
+            if (connection != null && connection.isSandboxed()) {
                 managedConnection.addModerateBinding();
                 if (connection.isModerateBindingBound()) {
                     put(connection.getServiceNumber(), managedConnection);
@@ -114,8 +119,8 @@ class BindingManagerImpl implements BindingManager {
         }
 
         void removeConnection(ManagedConnection managedConnection) {
-            ChildProcessConnection connection = managedConnection.mConnection;
-            if (connection != null && connection.isInSandbox()) {
+            ManagedChildProcessConnection connection = managedConnection.mConnection;
+            if (connection != null && connection.isSandboxed()) {
                 remove(connection.getServiceNumber());
             }
         }
@@ -163,15 +168,15 @@ class BindingManagerImpl implements BindingManager {
             new AtomicReference<>();
 
     /**
-     * Wraps ChildProcessConnection keeping track of additional information needed to manage the
-     * bindings of the connection. The reference to ChildProcessConnection is cleared when the
-     * connection goes away, but ManagedConnection itself is kept (until overwritten by a new entry
-     * for the same pid).
+     * Wraps ManagedChildProcessConnection keeping track of additional information needed to manage
+     * the bindings of the connection. The reference to ManagedChildProcessConnection is cleared
+     * when the connection goes away, but ManagedConnection itself is kept (until overwritten by a
+     * new entry for the same pid).
      */
     private class ManagedConnection {
         // Set in constructor, cleared in clearConnection() (on a separate thread).
         // Need to keep a local reference to avoid it being cleared while using it.
-        private ChildProcessConnection mConnection;
+        private ManagedChildProcessConnection mConnection;
 
         // True iff there is a strong binding kept on the service because it is working in
         // foreground.
@@ -181,15 +186,12 @@ class BindingManagerImpl implements BindingManager {
         // application background period.
         private boolean mBoundForBackgroundPeriod;
 
-        // When mConnection is cleared, oom binding status is stashed here.
-        private boolean mWasOomProtected;
-
         /**
          * Removes the initial service binding.
          * @return true if the binding was removed.
          */
         private boolean removeInitialBinding() {
-            ChildProcessConnection connection = mConnection;
+            ManagedChildProcessConnection connection = mConnection;
             if (connection == null || !connection.isInitialBindingBound()) return false;
 
             connection.removeInitialBinding();
@@ -198,7 +200,7 @@ class BindingManagerImpl implements BindingManager {
 
         /** Adds a strong service binding. */
         private void addStrongBinding() {
-            ChildProcessConnection connection = mConnection;
+            ManagedChildProcessConnection connection = mConnection;
             if (connection == null) return;
 
             connection.addStrongBinding();
@@ -208,7 +210,7 @@ class BindingManagerImpl implements BindingManager {
 
         /** Removes a strong service binding. */
         private void removeStrongBinding(final boolean keepAsModerate) {
-            final ChildProcessConnection connection = mConnection;
+            final ManagedChildProcessConnection connection = mConnection;
             // We have to fail gracefully if the strong binding is not present, as on low-end the
             // binding could have been removed by dropOomBindings() when a new service was started.
             if (connection == null || !connection.isStrongBindingBound()) return;
@@ -239,7 +241,7 @@ class BindingManagerImpl implements BindingManager {
          * binding.
          * @param connection The ChildProcessConnection to add to the moderate binding pool.
          */
-        private void addConnectionToModerateBindingPool(ChildProcessConnection connection) {
+        private void addConnectionToModerateBindingPool(ManagedChildProcessConnection connection) {
             ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
             if (moderateBindingPool != null && !connection.isStrongBindingBound()) {
                 moderateBindingPool.addConnection(ManagedConnection.this);
@@ -248,15 +250,14 @@ class BindingManagerImpl implements BindingManager {
 
         /** Removes the moderate service binding. */
         private void removeModerateBinding() {
-            ChildProcessConnection connection = mConnection;
+            ManagedChildProcessConnection connection = mConnection;
             if (connection == null || !connection.isModerateBindingBound()) return;
-
             connection.removeModerateBinding();
         }
 
         /** Adds the moderate service binding. */
         private void addModerateBinding() {
-            ChildProcessConnection connection = mConnection;
+            ManagedChildProcessConnection connection = mConnection;
             if (connection == null) return;
 
             connection.addModerateBinding();
@@ -268,13 +269,13 @@ class BindingManagerImpl implements BindingManager {
          */
         private void dropBindings() {
             assert mIsLowMemoryDevice;
-            ChildProcessConnection connection = mConnection;
+            ManagedChildProcessConnection connection = mConnection;
             if (connection == null) return;
 
             connection.dropOomBindings();
         }
 
-        ManagedConnection(ChildProcessConnection connection) {
+        ManagedConnection(ManagedChildProcessConnection connection) {
             mConnection = connection;
         }
 
@@ -315,26 +316,10 @@ class BindingManagerImpl implements BindingManager {
             mBoundForBackgroundPeriod = nextBound;
         }
 
-        boolean isOomProtected() {
-            // When a process crashes, we can be queried about its oom status before or after the
-            // connection is cleared. For the latter case, the oom status is stashed in
-            // mWasOomProtected.
-            ChildProcessConnection connection = mConnection;
-            return connection != null
-                    ? connection.isOomProtectedOrWasWhenDied() : mWasOomProtected;
-        }
-
         void clearConnection() {
-            mWasOomProtected = mConnection.isOomProtectedOrWasWhenDied();
             ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
             if (moderateBindingPool != null) moderateBindingPool.removeConnection(this);
             mConnection = null;
-        }
-
-        /** @return true iff the reference to the connection is no longer held */
-        @VisibleForTesting
-        boolean isConnectionCleared() {
-            return mConnection == null;
         }
     }
 
@@ -381,7 +366,7 @@ class BindingManagerImpl implements BindingManager {
     }
 
     @Override
-    public void addNewConnection(int pid, ChildProcessConnection connection) {
+    public void addNewConnection(int pid, ManagedChildProcessConnection connection) {
         // This will reset the previous entry for the pid in the unlikely event of the OS
         // reusing renderer pids.
         synchronized (mManagedConnections) {
@@ -454,31 +439,24 @@ class BindingManagerImpl implements BindingManager {
     }
 
     @Override
-    public boolean isOomProtected(int pid) {
-        // In the unlikely event of the OS reusing renderer pid, the call will refer to the most
-        // recent renderer of the given pid. The binding state for a pid is being reset in
-        // addNewConnection().
+    public void removeConnection(int pid) {
         ManagedConnection managedConnection;
         synchronized (mManagedConnections) {
             managedConnection = mManagedConnections.get(pid);
+            if (managedConnection != null) {
+                mManagedConnections.remove(pid);
+            }
         }
-        return managedConnection != null ? managedConnection.isOomProtected() : false;
-    }
-
-    @Override
-    public void clearConnection(int pid) {
-        ManagedConnection managedConnection;
-        synchronized (mManagedConnections) {
-            managedConnection = mManagedConnections.get(pid);
+        if (managedConnection != null) {
+            managedConnection.clearConnection();
         }
-        if (managedConnection != null) managedConnection.clearConnection();
     }
 
     /** @return true iff the connection reference is no longer held */
     @VisibleForTesting
     public boolean isConnectionCleared(int pid) {
         synchronized (mManagedConnections) {
-            return mManagedConnections.get(pid).isConnectionCleared();
+            return mManagedConnections.get(pid) == null;
         }
     }
 

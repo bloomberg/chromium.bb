@@ -21,7 +21,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.content.browser.ChildProcessConnection;
+import org.chromium.content.browser.BaseChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.LauncherThread;
 
@@ -86,12 +86,12 @@ public class ChildProcessLauncherTestHelperService extends Service {
         }
     }
 
-    public static ChildProcessConnection startInternalForTesting(final Context context,
+    public static BaseChildProcessConnection startInternalForTesting(final Context context,
             final String[] commandLine, final FileDescriptorInfo[] filesToMap,
             final ChildProcessCreationParams params) {
-        return runOnLauncherAndGetResult(new Callable<ChildProcessConnection>() {
+        return runOnLauncherAndGetResult(new Callable<BaseChildProcessConnection>() {
             @Override
-            public ChildProcessConnection call() {
+            public BaseChildProcessConnection call() {
                 return ChildProcessLauncher.startInternal(context, commandLine,
                         0 /* childProcessId */, filesToMap, null /* launchCallback */,
                         null /* childProcessCallback */, true /* inSandbox */,
@@ -124,7 +124,7 @@ public class ChildProcessLauncherTestHelperService extends Service {
         final boolean bindToCaller = true;
         ChildProcessCreationParams params = new ChildProcessCreationParams(
                 getPackageName(), false, LibraryProcessType.PROCESS_CHILD, bindToCaller);
-        final ChildProcessConnection conn =
+        final BaseChildProcessConnection conn =
                 startInternalForTesting(this, commandLine, new FileDescriptorInfo[0], params);
 
         // Poll the connection until it is set up. The main test in ChildProcessLauncherTest, which
