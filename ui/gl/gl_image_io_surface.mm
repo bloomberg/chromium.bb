@@ -168,8 +168,9 @@ GLenum DataType(gfx::BufferFormat format) {
 }
 
 // When an IOSurface is bound to a texture with internalformat "GL_RGB", many
-// OpenGL operations are broken. Therefore, never allow an IOSurface to be bound
-// with GL_RGB. https://crbug.com/595948.
+// OpenGL operations are broken. Therefore, don't allow an IOSurface to be bound
+// with GL_RGB unless overridden via BindTexImageWithInternalformat.
+// crbug.com/595948, crbug.com/699566.
 GLenum ConvertRequestedInternalFormat(GLenum internalformat) {
   if (internalformat == GL_RGB)
     return GL_RGBA;
@@ -237,6 +238,11 @@ unsigned GLImageIOSurface::GetInternalFormat() {
 }
 
 bool GLImageIOSurface::BindTexImage(unsigned target) {
+  return BindTexImageWithInternalformat(target, 0);
+}
+
+bool GLImageIOSurface::BindTexImageWithInternalformat(unsigned target,
+                                                      unsigned internalformat) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("gpu", "GLImageIOSurface::BindTexImage");
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -258,10 +264,12 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
       static_cast<CGLContextObj>(GLContext::GetCurrent()->GetHandle());
 
   DCHECK(io_surface_);
-  CGLError cgl_error =
-      CGLTexImageIOSurface2D(cgl_context, target, TextureFormat(format_),
-                             size_.width(), size_.height(), DataFormat(format_),
-                             DataType(format_), io_surface_.get(), 0);
+
+  GLenum texture_format =
+      internalformat ? internalformat : TextureFormat(format_);
+  CGLError cgl_error = CGLTexImageIOSurface2D(
+      cgl_context, target, texture_format, size_.width(), size_.height(),
+      DataFormat(format_), DataType(format_), io_surface_.get(), 0);
   if (cgl_error != kCGLNoError) {
     LOG(ERROR) << "Error in CGLTexImageIOSurface2D: "
                << CGLErrorString(cgl_error);

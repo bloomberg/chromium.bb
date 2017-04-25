@@ -4024,6 +4024,24 @@ error::Error GLES2DecoderPassthroughImpl::HandleBindTexImage2DCHROMIUM(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::HandleBindTexImage2DWithInternalformatCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::BindTexImage2DWithInternalformatCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::
+                       BindTexImage2DWithInternalformatCHROMIUM*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
+  GLint imageId = static_cast<GLint>(c.imageId);
+  error::Error error = DoBindTexImage2DWithInternalformatCHROMIUM(
+      target, internalformat, imageId);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleReleaseTexImage2DCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

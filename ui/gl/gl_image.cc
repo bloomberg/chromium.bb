@@ -6,6 +6,11 @@
 
 namespace gl {
 
+bool GLImage::BindTexImageWithInternalformat(unsigned target,
+                                             unsigned internalformat) {
+  return false;
+}
+
 bool GLImage::EmulatingRGB() const {
   return false;
 }

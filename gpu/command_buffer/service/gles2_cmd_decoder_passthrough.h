@@ -303,6 +303,10 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void UpdateTextureBinding(GLenum target, GLuint client_id, GLuint service_id);
 
+  error::Error BindTexImage2DCHROMIUMImpl(GLenum target,
+                                          GLenum internalformat,
+                                          GLint image_id);
+
   int commands_to_process_;
 
   DebugMarkerManager debug_marker_manager_;

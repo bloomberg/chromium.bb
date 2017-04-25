@@ -965,6 +965,10 @@ void GLES2InterfaceStub::BindUniformLocationCHROMIUM(GLuint /* program */,
                                                      const char* /* name */) {}
 void GLES2InterfaceStub::BindTexImage2DCHROMIUM(GLenum /* target */,
                                                 GLint /* imageId */) {}
+void GLES2InterfaceStub::BindTexImage2DWithInternalformatCHROMIUM(
+    GLenum /* target */,
+    GLenum /* internalformat */,
+    GLint /* imageId */) {}
 void GLES2InterfaceStub::ReleaseTexImage2DCHROMIUM(GLenum /* target */,
                                                    GLint /* imageId */) {}
 void GLES2InterfaceStub::TraceBeginCHROMIUM(const char* /* category_name */,
