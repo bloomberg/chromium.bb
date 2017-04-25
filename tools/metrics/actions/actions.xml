@@ -15806,6 +15806,65 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Suggestions.ContextMenu.DownloadItem">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: User used the context menu to download a suggested item.
+  </description>
+</action>
+
+<action name="Suggestions.ContextMenu.OpenItemInIncognitoTab">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: User used the context menu to open a suggested item in an incognito
+    tab.
+  </description>
+</action>
+
+<action name="Suggestions.ContextMenu.OpenItemInNewTab">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: User used the context menu to open a suggested item in a new tab.
+  </description>
+</action>
+
+<action name="Suggestions.ContextMenu.OpenItemInNewWindow">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: User used the context menu to open a suggested item in a new
+    window.
+  </description>
+</action>
+
+<action name="Suggestions.ContextMenu.RemoveItem">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: User used the context menu to remove a suggested item.
+  </description>
+</action>
+
+<action name="Suggestions.ContextMenu.Shown">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: User opened the context menu on a suggested item.
+  </description>
+</action>
+
+<action name="Suggestions.Tile.RemovalUndone">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: User tapped the undo button in the snackbar after removing a
+    suggested item.
+  </description>
+</action>
+
 <action name="SuspiciousExtensionBubbleDismissed">
   <owner>finnur@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
