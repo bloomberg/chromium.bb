@@ -22,7 +22,6 @@
 #include "ios/web/public/url_util.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#include "ios/web/public/web_state/credential.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -276,47 +275,6 @@ void WebStateImpl::OnFaviconUrlUpdated(
     const std::vector<FaviconURL>& candidates) {
   for (auto& observer : observers_)
     observer.FaviconUrlUpdated(candidates);
-}
-
-void WebStateImpl::OnCredentialsRequested(
-    int request_id,
-    const GURL& source_url,
-    bool unmediated,
-    const std::vector<std::string>& federations,
-    bool user_interaction) {
-  for (auto& observer : observers_) {
-    observer.CredentialsRequested(request_id, source_url, unmediated,
-                                  federations, user_interaction);
-  }
-}
-
-void WebStateImpl::OnSignedIn(int request_id,
-                              const GURL& source_url,
-                              const web::Credential& credential) {
-  for (auto& observer : observers_)
-    observer.SignedIn(request_id, source_url, credential);
-}
-
-void WebStateImpl::OnSignedIn(int request_id, const GURL& source_url) {
-  for (auto& observer : observers_)
-    observer.SignedIn(request_id, source_url);
-}
-
-void WebStateImpl::OnSignedOut(int request_id, const GURL& source_url) {
-  for (auto& observer : observers_)
-    observer.SignedOut(request_id, source_url);
-}
-
-void WebStateImpl::OnSignInFailed(int request_id,
-                                  const GURL& source_url,
-                                  const web::Credential& credential) {
-  for (auto& observer : observers_)
-    observer.SignInFailed(request_id, source_url, credential);
-}
-
-void WebStateImpl::OnSignInFailed(int request_id, const GURL& source_url) {
-  for (auto& observer : observers_)
-    observer.SignInFailed(request_id, source_url);
 }
 
 void WebStateImpl::OnDocumentSubmitted(const std::string& form_name,

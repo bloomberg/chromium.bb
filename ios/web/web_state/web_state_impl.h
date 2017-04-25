@@ -39,7 +39,6 @@ namespace web {
 
 class BrowserState;
 struct ContextMenuParams;
-struct Credential;
 struct FaviconURL;
 struct LoadCommittedDetails;
 class NavigationManager;
@@ -120,34 +119,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Called when new FaviconURL candidates are received.
   void OnFaviconUrlUpdated(const std::vector<FaviconURL>& candidates);
-
-  // Called when the page requests a credential.
-  void OnCredentialsRequested(int request_id,
-                              const GURL& source_url,
-                              bool unmediated,
-                              const std::vector<std::string>& federations,
-                              bool user_interaction);
-
-  // Called when the page sends a notification that the user signed in with
-  // |credential|.
-  void OnSignedIn(int request_id,
-                  const GURL& source_url,
-                  const web::Credential& credential);
-
-  // Called when the page sends a notification that the user signed in.
-  void OnSignedIn(int request_id, const GURL& source_url);
-
-  // Called when the page sends a notification that the user was signed out.
-  void OnSignedOut(int request_id, const GURL& source_url);
-
-  // Called when the page sends a notification that the user failed to sign in
-  // with |credential|.
-  void OnSignInFailed(int request_id,
-                      const GURL& source_url,
-                      const web::Credential& credential);
-
-  // Called when the page sends a notification that the user failed to sign in.
-  void OnSignInFailed(int request_id, const GURL& source_url);
 
   // Returns the NavigationManager for this WebState.
   const NavigationManagerImpl& GetNavigationManagerImpl() const;
