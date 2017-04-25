@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"
@@ -23,8 +24,8 @@ class DownloadsHandlerTest : public testing::Test {
       : download_manager_(new content::MockDownloadManager()),
         chrome_download_manager_delegate_(&profile_),
         handler_(&profile_) {
-    content::BrowserContext::SetDownloadManagerForTesting(&profile_,
-                                                          download_manager_);
+    content::BrowserContext::SetDownloadManagerForTesting(
+        &profile_, base::WrapUnique(download_manager_));
     EXPECT_EQ(download_manager_,
               content::BrowserContext::GetDownloadManager(&profile_));
 
@@ -73,8 +74,7 @@ class DownloadsHandlerTest : public testing::Test {
   content::TestWebUI test_web_ui_;
   TestingProfile profile_;
 
-  // This is heap allocated because its ownership is transferred to |profile_|.
-  content::MockDownloadManager* download_manager_;
+  content::MockDownloadManager* download_manager_;  // Owned by |profile_|.
   ChromeDownloadManagerDelegate chrome_download_manager_delegate_;
 
   DownloadsHandler handler_;

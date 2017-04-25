@@ -5,6 +5,7 @@
 #include "content/public/common/url_fetcher.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "content/common/net/url_request_user_data.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -12,9 +13,11 @@ namespace content {
 
 namespace {
 
-base::SupportsUserData::Data* CreateURLRequestUserData(int render_process_id,
-                                                       int render_frame_id) {
-  return new URLRequestUserData(render_process_id, render_frame_id);
+std::unique_ptr<base::SupportsUserData::Data> CreateURLRequestUserData(
+    int render_process_id,
+    int render_frame_id) {
+  return base::MakeUnique<URLRequestUserData>(render_process_id,
+                                              render_frame_id);
 }
 
 }  // namespace

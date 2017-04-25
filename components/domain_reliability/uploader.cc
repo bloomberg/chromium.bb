@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "components/domain_reliability/util.h"
@@ -41,8 +42,9 @@ class UploadUserData : public base::SupportsUserData::Data {
  private:
   UploadUserData(int depth) : depth_(depth) {}
 
-  static base::SupportsUserData::Data* CreateUploadUserData(int depth) {
-    return new UploadUserData(depth);
+  static std::unique_ptr<base::SupportsUserData::Data> CreateUploadUserData(
+      int depth) {
+    return base::WrapUnique(new UploadUserData(depth));
   }
 
   int depth_;

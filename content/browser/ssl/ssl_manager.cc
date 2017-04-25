@@ -5,9 +5,11 @@
 #include "content/browser/ssl/ssl_manager.h"
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
@@ -173,8 +175,10 @@ SSLManager::SSLManager(NavigationControllerImpl* controller)
   SSLManagerSet* managers = static_cast<SSLManagerSet*>(
       controller_->GetBrowserContext()->GetUserData(kSSLManagerKeyName));
   if (!managers) {
-    managers = new SSLManagerSet;
-    controller_->GetBrowserContext()->SetUserData(kSSLManagerKeyName, managers);
+    auto managers_owned = base::MakeUnique<SSLManagerSet>();
+    managers = managers_owned.get();
+    controller_->GetBrowserContext()->SetUserData(kSSLManagerKeyName,
+                                                  std::move(managers_owned));
   }
   managers->get().insert(this);
 }

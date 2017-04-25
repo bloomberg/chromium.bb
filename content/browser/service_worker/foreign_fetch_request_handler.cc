@@ -5,9 +5,11 @@
 #include "content/browser/service_worker/foreign_fetch_request_handler.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
@@ -124,12 +126,12 @@ void ForeignFetchRequestHandler::InitializeHandler(
 
   // Any more precise checks to see if the request should be intercepted are
   // asynchronous, so just create our handler in all cases.
-  std::unique_ptr<ForeignFetchRequestHandler> handler(
-      new ForeignFetchRequestHandler(
+  std::unique_ptr<ForeignFetchRequestHandler> handler =
+      base::WrapUnique(new ForeignFetchRequestHandler(
           context_wrapper, blob_storage_context->AsWeakPtr(), request_mode,
           credentials_mode, redirect_mode, resource_type, request_context_type,
           frame_type, body, timeout));
-  request->SetUserData(&kUserDataKey, handler.release());
+  request->SetUserData(&kUserDataKey, std::move(handler));
 }
 
 ForeignFetchRequestHandler* ForeignFetchRequestHandler::GetHandler(

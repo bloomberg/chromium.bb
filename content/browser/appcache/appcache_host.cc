@@ -5,6 +5,7 @@
 #include "content/browser/appcache/appcache_host.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/appcache/appcache.h"
@@ -310,7 +311,7 @@ AppCacheHost* AppCacheHost::GetParentAppCacheHost() const {
   return backend ? backend->GetHost(parent_host_id_) : NULL;
 }
 
-AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
+std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
     net::URLRequest* request,
     ResourceType resource_type,
     bool should_reset_appcache) {
@@ -326,14 +327,14 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
     // Store the first party origin so that it can be used later in SelectCache
     // for checking whether the creation of the appcache is allowed.
     first_party_url_ = request->first_party_for_cookies();
-    return new AppCacheRequestHandler(
-        this, resource_type, should_reset_appcache);
+    return base::WrapUnique(
+        new AppCacheRequestHandler(this, resource_type, should_reset_appcache));
   }
 
   if ((associated_cache() && associated_cache()->is_complete()) ||
       is_selection_pending()) {
-    return new AppCacheRequestHandler(
-        this, resource_type, should_reset_appcache);
+    return base::WrapUnique(
+        new AppCacheRequestHandler(this, resource_type, should_reset_appcache));
   }
   return NULL;
 }

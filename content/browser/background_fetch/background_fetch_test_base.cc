@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -213,8 +214,8 @@ void BackgroundFetchTestBase::SetUp() {
 
   // The |download_manager_| ownership is given to the BrowserContext, and the
   // BrowserContext will take care of deallocating it.
-  BrowserContext::SetDownloadManagerForTesting(browser_context(),
-                                               download_manager_);
+  BrowserContext::SetDownloadManagerForTesting(
+      browser_context(), base::WrapUnique(download_manager_));
 
   set_up_called_ = true;
 }

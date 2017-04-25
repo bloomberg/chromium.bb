@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
@@ -78,7 +80,7 @@ class CONTENT_EXPORT AppCacheInterceptor : public net::URLRequestInterceptor {
 
  private:
   static void SetHandler(net::URLRequest* request,
-                         AppCacheRequestHandler* handler);
+                         std::unique_ptr<AppCacheRequestHandler> handler);
   static AppCacheRequestHandler* GetHandler(net::URLRequest* request);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheInterceptor);

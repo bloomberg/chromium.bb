@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -18,6 +19,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -99,8 +101,11 @@ StoragePartitionImplMap* GetStoragePartitionMap(
       static_cast<StoragePartitionImplMap*>(
           browser_context->GetUserData(kStoragePartitionMapKeyName));
   if (!partition_map) {
-    partition_map = new StoragePartitionImplMap(browser_context);
-    browser_context->SetUserData(kStoragePartitionMapKeyName, partition_map);
+    auto partition_map_owned =
+        base::MakeUnique<StoragePartitionImplMap>(browser_context);
+    partition_map = partition_map_owned.get();
+    browser_context->SetUserData(kStoragePartitionMapKeyName,
+                                 std::move(partition_map_owned));
   }
   return partition_map;
 }
@@ -141,11 +146,12 @@ void ShutdownServiceWorkerContext(StoragePartition* partition) {
   wrapper->process_manager()->Shutdown();
 }
 
-void SetDownloadManager(BrowserContext* context,
-                        content::DownloadManager* download_manager) {
+void SetDownloadManager(
+    BrowserContext* context,
+    std::unique_ptr<content::DownloadManager> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(download_manager);
-  context->SetUserData(kDownloadManagerKeyName, download_manager);
+  context->SetUserData(kDownloadManagerKeyName, std::move(download_manager));
 }
 
 class BrowserContextServiceManagerConnectionHolder
@@ -196,7 +202,7 @@ DownloadManager* BrowserContext::GetDownloadManager(
         new DownloadManagerImpl(
             GetContentClient()->browser()->GetNetLog(), context);
 
-    SetDownloadManager(context, download_manager);
+    SetDownloadManager(context, base::WrapUnique(download_manager));
     download_manager->SetDelegate(context->GetDownloadManagerDelegate());
   }
 
@@ -394,8 +400,8 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
 
 void BrowserContext::SetDownloadManagerForTesting(
     BrowserContext* browser_context,
-    DownloadManager* download_manager) {
-  SetDownloadManager(browser_context, download_manager);
+    std::unique_ptr<content::DownloadManager> download_manager) {
+  SetDownloadManager(browser_context, std::move(download_manager));
 }
 
 // static
@@ -420,10 +426,10 @@ void BrowserContext::Initialize(
   RemoveBrowserContextFromUserIdMap(browser_context);
   g_user_id_to_context.Get()[new_id] = browser_context;
   browser_context->SetUserData(kServiceUserId,
-                               new ServiceUserIdHolder(new_id));
+                               base::MakeUnique<ServiceUserIdHolder>(new_id));
 
-  browser_context->SetUserData(kMojoWasInitialized,
-                               new base::SupportsUserData::Data);
+  browser_context->SetUserData(
+      kMojoWasInitialized, base::MakeUnique<base::SupportsUserData::Data>());
 
   ServiceManagerConnection* service_manager_connection =
       ServiceManagerConnection::GetForProcess();
@@ -444,7 +450,8 @@ void BrowserContext::Initialize(
     BrowserContextServiceManagerConnectionHolder* connection_holder =
         new BrowserContextServiceManagerConnectionHolder(
             std::move(service_request));
-    browser_context->SetUserData(kServiceManagerConnection, connection_holder);
+    browser_context->SetUserData(kServiceManagerConnection,
+                                 base::WrapUnique(connection_holder));
 
     ServiceManagerConnection* connection =
         connection_holder->service_manager_connection();

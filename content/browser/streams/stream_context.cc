@@ -5,6 +5,7 @@
 #include "content/browser/streams/stream_context.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,8 +25,9 @@ StreamContext::StreamContext() {}
 StreamContext* StreamContext::GetFor(BrowserContext* context) {
   if (!context->GetUserData(kStreamContextKeyName)) {
     scoped_refptr<StreamContext> stream = new StreamContext();
-    context->SetUserData(kStreamContextKeyName,
-                         new UserDataAdapter<StreamContext>(stream.get()));
+    context->SetUserData(
+        kStreamContextKeyName,
+        base::MakeUnique<UserDataAdapter<StreamContext>>(stream.get()));
     // Check first to avoid memory leak in unittests.
     if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
       BrowserThread::PostTask(

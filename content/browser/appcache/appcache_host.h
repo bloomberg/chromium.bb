@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -113,7 +115,7 @@ class CONTENT_EXPORT AppCacheHost
 
   // Support for loading resources out of the appcache.
   // May return NULL if the request isn't subject to retrieval from an appache.
-  AppCacheRequestHandler* CreateRequestHandler(
+  std::unique_ptr<AppCacheRequestHandler> CreateRequestHandler(
       net::URLRequest* request,
       ResourceType resource_type,
       bool should_reset_appcache);

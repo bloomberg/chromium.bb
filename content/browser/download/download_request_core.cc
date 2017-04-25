@@ -83,13 +83,13 @@ const int DownloadRequestData::kKey = 0;
 void DownloadRequestData::Attach(net::URLRequest* request,
                                  DownloadUrlParameters* parameters,
                                  uint32_t download_id) {
-  DownloadRequestData* request_data = new DownloadRequestData;
+  auto request_data = base::MakeUnique<DownloadRequestData>();
   request_data->save_info_.reset(
       new DownloadSaveInfo(parameters->GetSaveInfo()));
   request_data->download_id_ = download_id;
   request_data->transient_ = parameters->is_transient();
   request_data->on_started_callback_ = parameters->callback();
-  request->SetUserData(&kKey, request_data);
+  request->SetUserData(&kKey, std::move(request_data));
 }
 
 // static

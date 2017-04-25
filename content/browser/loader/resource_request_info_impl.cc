@@ -307,13 +307,13 @@ NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
 }
 
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
-  request->SetUserData(NULL, this);
+  request->SetUserData(nullptr, base::WrapUnique(this));
   int render_process_id;
   int render_frame_id;
   if (GetAssociatedRenderFrame(&render_process_id, &render_frame_id)) {
-    request->SetUserData(
-        URLRequestUserData::kUserDataKey,
-        new URLRequestUserData(render_process_id, render_frame_id));
+    request->SetUserData(URLRequestUserData::kUserDataKey,
+                         base::MakeUnique<URLRequestUserData>(render_process_id,
+                                                              render_frame_id));
   }
 }
 

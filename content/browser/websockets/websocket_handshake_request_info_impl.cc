@@ -4,6 +4,7 @@
 
 #include "content/browser/websockets/websocket_handshake_request_info_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -25,8 +26,9 @@ void WebSocketHandshakeRequestInfoImpl::CreateInfoAndAssociateWithRequest(
     int child_id,
     int render_frame_id,
     net::URLRequest* request) {
-  request->SetUserData(
-      &g_tag, new WebSocketHandshakeRequestInfoImpl(child_id, render_frame_id));
+  request->SetUserData(&g_tag,
+                       base::WrapUnique(new WebSocketHandshakeRequestInfoImpl(
+                           child_id, render_frame_id)));
 }
 
 int WebSocketHandshakeRequestInfoImpl::GetChildId() const {

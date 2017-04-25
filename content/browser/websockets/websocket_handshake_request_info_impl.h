@@ -16,6 +16,8 @@ class WebSocketHandshakeRequestInfoImpl final
     : public WebSocketHandshakeRequestInfo,
       public base::SupportsUserData::Data {
  public:
+  ~WebSocketHandshakeRequestInfoImpl() override;
+
   static void CreateInfoAndAssociateWithRequest(int child_id,
                                                 int render_frame_id,
                                                 net::URLRequest* request);
@@ -25,7 +27,6 @@ class WebSocketHandshakeRequestInfoImpl final
 
  private:
   WebSocketHandshakeRequestInfoImpl(int child_id, int render_frame_id);
-  ~WebSocketHandshakeRequestInfoImpl() override;
 
   const int child_id_;
   const int render_frame_id_;

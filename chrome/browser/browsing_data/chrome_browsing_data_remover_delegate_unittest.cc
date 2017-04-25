@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -730,8 +731,8 @@ class RemoveDownloadsTester {
   explicit RemoveDownloadsTester(TestingProfile* testing_profile)
       : download_manager_(new content::MockDownloadManager()),
         chrome_download_manager_delegate_(testing_profile) {
-    content::BrowserContext::SetDownloadManagerForTesting(testing_profile,
-                                                          download_manager_);
+    content::BrowserContext::SetDownloadManagerForTesting(
+        testing_profile, base::WrapUnique(download_manager_));
     EXPECT_EQ(download_manager_,
               content::BrowserContext::GetDownloadManager(testing_profile));
 
@@ -745,7 +746,7 @@ class RemoveDownloadsTester {
   content::MockDownloadManager* download_manager() { return download_manager_; }
 
  private:
-  content::MockDownloadManager* download_manager_;
+  content::MockDownloadManager* download_manager_;  // Owned by testing profile.
   ChromeDownloadManagerDelegate chrome_download_manager_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveDownloadsTester);

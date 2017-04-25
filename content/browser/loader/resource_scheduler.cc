@@ -5,6 +5,7 @@
 #include "content/browser/loader/resource_scheduler.h"
 
 #include <stdint.h>
+
 #include <set>
 #include <string>
 #include <utility>
@@ -12,6 +13,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -228,7 +230,7 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
         host_port_pair_(net::HostPortPair::FromURL(request->url())),
         weak_ptr_factory_(this) {
     DCHECK(!request_->GetUserData(kUserDataKey));
-    request_->SetUserData(kUserDataKey, new UnownedPointer(this));
+    request_->SetUserData(kUserDataKey, base::MakeUnique<UnownedPointer>(this));
   }
 
   ~ScheduledResourceRequest() override {

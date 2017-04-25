@@ -11,6 +11,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
@@ -82,7 +83,8 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
         new ChromeBlobStorageContext();
     context->SetUserData(
         kBlobStorageContextKeyName,
-        new UserDataAdapter<ChromeBlobStorageContext>(blob.get()));
+        base::MakeUnique<UserDataAdapter<ChromeBlobStorageContext>>(
+            blob.get()));
 
     // Check first to avoid memory leak in unittests.
     bool io_thread_valid = BrowserThread::IsMessageLoopValid(BrowserThread::IO);

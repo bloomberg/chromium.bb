@@ -145,8 +145,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // across the next restart.
   static void SaveSessionState(BrowserContext* browser_context);
 
-  static void SetDownloadManagerForTesting(BrowserContext* browser_context,
-                                           DownloadManager* download_manager);
+  static void SetDownloadManagerForTesting(
+      BrowserContext* browser_context,
+      std::unique_ptr<content::DownloadManager> download_manager);
 
   // Makes the Service Manager aware of this BrowserContext, and assigns a user
   // ID number to it. Should be called for each BrowserContext created.

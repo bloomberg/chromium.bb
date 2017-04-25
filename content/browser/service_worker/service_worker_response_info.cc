@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_response_info.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/common/resource_response_info.h"
 #include "net/url_request/url_request.h"
 
@@ -23,7 +24,7 @@ ServiceWorkerResponseInfo* ServiceWorkerResponseInfo::ForRequest(
       request->GetUserData(&kUserDataKey));
   if (!info && create) {
     info = new ServiceWorkerResponseInfo();
-    request->SetUserData(&kUserDataKey, info);
+    request->SetUserData(&kUserDataKey, base::WrapUnique(info));
   }
   return info;
 }
