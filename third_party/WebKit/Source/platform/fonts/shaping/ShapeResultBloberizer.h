@@ -32,6 +32,10 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   Type GetType() const { return type_; }
 
   float FillGlyphs(const TextRunPaintInfo&, const ShapeResultBuffer&);
+  float FillGlyphs(const StringView&,
+                   unsigned from,
+                   unsigned to,
+                   const ShapeResult*);
   void FillTextEmphasisGlyphs(const TextRunPaintInfo&,
                               const GlyphData& emphasis_data,
                               const ShapeResultBuffer&);
@@ -87,11 +91,25 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
  private:
   friend class ShapeResultBloberizerTestInfo;
 
-  float FillGlyphsForResult(const ShapeResult&,
-                            const TextRunPaintInfo&,
+  // Where TextContainerType can be either a TextRun or a StringView.
+  // For legacy layout and LayoutNG respectively.
+  template <typename TextContainerType>
+  float FillGlyphsForResult(const ShapeResult*,
+                            const TextContainerType&,
+                            unsigned from,
+                            unsigned to,
                             float initial_advance,
                             unsigned run_offset);
-  float FillFastHorizontalGlyphs(const ShapeResultBuffer&, const TextRun&);
+
+  // Whether the FillFastHorizontalGlyphs can be used. Only applies for full
+  // runs with no vertical offsets and no text intercepts.
+  bool CanUseFastPath(unsigned from,
+                      unsigned to,
+                      unsigned length,
+                      bool has_vertical_offsets);
+  float FillFastHorizontalGlyphs(const ShapeResultBuffer&, TextDirection);
+  float FillFastHorizontalGlyphs(const ShapeResult*, float advance = 0);
+
   float FillTextEmphasisGlyphsForRun(const ShapeResult::RunInfo*,
                                      const TextRunPaintInfo&,
                                      const GlyphData& emphasis_data,

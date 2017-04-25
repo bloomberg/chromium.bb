@@ -119,6 +119,15 @@ class WTF_EXPORT StringView {
     return characters16_;
   }
 
+  UChar32 CodepointAt(unsigned i) const {
+    SECURITY_DCHECK(i < length());
+    if (Is8Bit())
+      return (*this)[i];
+    UChar32 codepoint;
+    U16_GET(Characters16(), 0, i, length(), codepoint);
+    return codepoint;
+  }
+
   const void* Bytes() const { return bytes_; }
 
   // This is not named impl() like String because it has different semantics.

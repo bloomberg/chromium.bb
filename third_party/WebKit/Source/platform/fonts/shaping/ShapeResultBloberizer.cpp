@@ -88,11 +88,9 @@ ShapeResultBloberizer::BlobRotation ShapeResultBloberizer::GetBlobRotation(
 float ShapeResultBloberizer::FillGlyphs(
     const TextRunPaintInfo& run_info,
     const ShapeResultBuffer& result_buffer) {
-  // Fast path: full run with no vertical offsets, no text intercepts.
-  if (!run_info.from && run_info.to == run_info.run.length() &&
-      !result_buffer.HasVerticalOffsets() &&
-      GetType() != ShapeResultBloberizer::Type::kTextIntercepts) {
-    return FillFastHorizontalGlyphs(result_buffer, run_info.run);
+  if (CanUseFastPath(run_info.from, run_info.to, run_info.run.length(),
+                     result_buffer.HasVerticalOffsets())) {
+    return FillFastHorizontalGlyphs(result_buffer, run_info.run.Direction());
   }
 
   float advance = 0;
@@ -105,18 +103,34 @@ float ShapeResultBloberizer::FillGlyphs(
       const RefPtr<const ShapeResult>& word_result = results[resolved_index];
       word_offset -= word_result->NumCharacters();
       advance =
-          FillGlyphsForResult(*word_result, run_info, advance, word_offset);
+          FillGlyphsForResult(word_result.Get(), run_info.run, run_info.from,
+                              run_info.to, advance, word_offset);
     }
   } else {
     unsigned word_offset = 0;
     for (const auto& word_result : results) {
       advance =
-          FillGlyphsForResult(*word_result, run_info, advance, word_offset);
+          FillGlyphsForResult(word_result.Get(), run_info.run, run_info.from,
+                              run_info.to, advance, word_offset);
       word_offset += word_result->NumCharacters();
     }
   }
 
   return advance;
+}
+
+float ShapeResultBloberizer::FillGlyphs(const StringView& text,
+                                        unsigned from,
+                                        unsigned to,
+                                        const ShapeResult* result) {
+  DCHECK(result);
+  DCHECK(to <= text.length());
+  if (CanUseFastPath(from, to, text.length(), result->HasVerticalOffsets()))
+    return FillFastHorizontalGlyphs(result);
+
+  float advance = 0;
+  float word_offset = 0;
+  return FillGlyphsForResult(result, text, from, to, advance, word_offset);
 }
 
 void ShapeResultBloberizer::FillTextEmphasisGlyphs(
@@ -143,27 +157,29 @@ void ShapeResultBloberizer::FillTextEmphasisGlyphs(
 
 namespace {
 
+template <typename TextContainerType>
 inline bool IsSkipInkException(const ShapeResultBloberizer& bloberizer,
-                               const TextRun& run,
+                               const TextContainerType& text,
                                unsigned character_index) {
   // We want to skip descenders in general, but it is undesirable renderings for
   // CJK characters.
   return bloberizer.GetType() == ShapeResultBloberizer::Type::kTextIntercepts &&
-         !run.Is8Bit() &&
-         Character::IsCJKIdeographOrSymbol(run.CodepointAt(character_index));
+         !text.Is8Bit() &&
+         Character::IsCJKIdeographOrSymbol(text.CodepointAt(character_index));
 }
 
+template <typename TextContainerType>
 inline void AddGlyphToBloberizer(ShapeResultBloberizer& bloberizer,
                                  float advance,
                                  hb_direction_t direction,
                                  const SimpleFontData* font_data,
                                  const HarfBuzzRunGlyphData& glyph_data,
-                                 const TextRun& run,
+                                 const TextContainerType& text,
                                  unsigned character_index) {
   FloatPoint start_offset = HB_DIRECTION_IS_HORIZONTAL(direction)
                                 ? FloatPoint(advance, 0)
                                 : FloatPoint(0, advance);
-  if (!IsSkipInkException(bloberizer, run, character_index)) {
+  if (!IsSkipInkException(bloberizer, text, character_index)) {
     bloberizer.Add(glyph_data.glyph, font_data,
                    start_offset + glyph_data.offset);
   }
@@ -215,21 +231,23 @@ inline unsigned CountGraphemesInCluster(const UChar* str,
 
 }  // namespace
 
-float ShapeResultBloberizer::FillGlyphsForResult(
-    const ShapeResult& result,
-    const TextRunPaintInfo& run_info,
-    float initial_advance,
-    unsigned run_offset) {
+template <typename TextContainerType>
+float ShapeResultBloberizer::FillGlyphsForResult(const ShapeResult* result,
+                                                 const TextContainerType& text,
+                                                 unsigned from,
+                                                 unsigned to,
+                                                 float initial_advance,
+                                                 unsigned run_offset) {
   auto total_advance = initial_advance;
 
-  for (const auto& run : result.runs_) {
+  for (const auto& run : result->runs_) {
     total_advance = run->ForEachGlyphInRange(
-        total_advance, run_info.from, run_info.to, run_offset,
+        total_advance, from, to, run_offset,
         [&](const HarfBuzzRunGlyphData& glyph_data, float total_advance,
             uint16_t character_index) -> bool {
 
           AddGlyphToBloberizer(*this, total_advance, run->direction_,
-                               run->font_data_.Get(), glyph_data, run_info.run,
+                               run->font_data_.Get(), glyph_data, text,
                                character_index);
           return true;
         });
@@ -238,9 +256,17 @@ float ShapeResultBloberizer::FillGlyphsForResult(
   return total_advance;
 }
 
+bool ShapeResultBloberizer::CanUseFastPath(unsigned from,
+                                           unsigned to,
+                                           unsigned length,
+                                           bool has_vertical_offsets) {
+  return !from && to == length && !has_vertical_offsets &&
+         GetType() != ShapeResultBloberizer::Type::kTextIntercepts;
+}
+
 float ShapeResultBloberizer::FillFastHorizontalGlyphs(
     const ShapeResultBuffer& result_buffer,
-    const TextRun& text_run) {
+    TextDirection text_direction) {
   DCHECK(!result_buffer.HasVerticalOffsets());
   DCHECK_NE(GetType(), ShapeResultBloberizer::Type::kTextIntercepts);
 
@@ -248,25 +274,34 @@ float ShapeResultBloberizer::FillFastHorizontalGlyphs(
   auto results = result_buffer.results_;
 
   for (unsigned i = 0; i < results.size(); ++i) {
-    const auto& word_result = IsLeftToRightDirection(text_run.Direction())
+    const auto& word_result = IsLeftToRightDirection(text_direction)
                                   ? results[i]
                                   : results[results.size() - 1 - i];
-    DCHECK(!word_result->HasVerticalOffsets());
+    advance = FillFastHorizontalGlyphs(word_result.Get(), advance);
+  }
 
-    for (const auto& run : word_result->runs_) {
-      DCHECK(run);
-      DCHECK(HB_DIRECTION_IS_HORIZONTAL(run->direction_));
+  return advance;
+}
 
-      advance =
-          run->ForEachGlyph(advance,
-                            [&](const HarfBuzzRunGlyphData& glyph_data,
-                                float total_advance) -> bool {
-                              DCHECK(!glyph_data.offset.Height());
-                              Add(glyph_data.glyph, run->font_data_.Get(),
-                                  total_advance + glyph_data.offset.Width());
-                              return true;
-                            });
-    }
+float ShapeResultBloberizer::FillFastHorizontalGlyphs(
+    const ShapeResult* shape_result,
+    float advance) {
+  DCHECK(!shape_result->HasVerticalOffsets());
+  DCHECK_NE(GetType(), ShapeResultBloberizer::Type::kTextIntercepts);
+
+  for (const auto& run : shape_result->runs_) {
+    DCHECK(run);
+    DCHECK(HB_DIRECTION_IS_HORIZONTAL(run->direction_));
+
+    advance =
+        run->ForEachGlyph(advance,
+                          [&](const HarfBuzzRunGlyphData& glyph_data,
+                              float total_advance) -> bool {
+                            DCHECK(!glyph_data.offset.Height());
+                            Add(glyph_data.glyph, run->font_data_.Get(),
+                                total_advance + glyph_data.offset.Width());
+                            return true;
+                          });
   }
 
   return advance;

@@ -150,6 +150,23 @@ bool Font::DrawText(PaintCanvas* canvas,
   return true;
 }
 
+bool Font::DrawText(PaintCanvas* canvas,
+                    const TextFragmentPaintInfo& text_info,
+                    const FloatPoint& point,
+                    float device_scale_factor,
+                    const PaintFlags& flags) const {
+  // Don't draw anything while we are using custom fonts that are in the process
+  // of loading.
+  if (ShouldSkipDrawing())
+    return false;
+
+  ShapeResultBloberizer bloberizer(*this, device_scale_factor);
+  bloberizer.FillGlyphs(text_info.text, text_info.from, text_info.to,
+                        text_info.shape_result);
+  DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
+  return true;
+}
+
 bool Font::DrawBidiText(PaintCanvas* canvas,
                         const TextRunPaintInfo& run_info,
                         const FloatPoint& point,

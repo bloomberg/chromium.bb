@@ -56,6 +56,15 @@ class ShapeCache;
 class TextRun;
 struct TextRunPaintInfo;
 
+// Represents text content of a NGPhysicalTextFragment for painting.
+// TODO(eae): Move to a separate file?
+struct PLATFORM_EXPORT TextFragmentPaintInfo {
+  const StringView text;
+  unsigned from;
+  unsigned to;
+  const ShapeResult* shape_result;
+};
+
 class PLATFORM_EXPORT Font {
   DISALLOW_NEW();
 
@@ -82,6 +91,11 @@ class PLATFORM_EXPORT Font {
   };
   bool DrawText(PaintCanvas*,
                 const TextRunPaintInfo&,
+                const FloatPoint&,
+                float device_scale_factor,
+                const PaintFlags&) const;
+  bool DrawText(PaintCanvas*,
+                const TextFragmentPaintInfo&,
                 const FloatPoint&,
                 float device_scale_factor,
                 const PaintFlags&) const;
