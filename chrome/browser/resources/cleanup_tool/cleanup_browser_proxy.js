@@ -27,6 +27,11 @@ cr.define('cleanup', function() {
      * @return {!Promise<LastScanResult>}
      */
     requestLastScanResult: function() {},
+    /**
+     * Attempts to run the Chrome Cleanup Tool in scanning mode.
+     * @return {!Promise<LastScanResult>}
+     */
+    startScan: function() {},
   };
 
   /**
@@ -40,6 +45,10 @@ cr.define('cleanup', function() {
     /** @override */
     requestLastScanResult: function() {
       return cr.sendWithPromise('requestLastScanResult');
+    },
+    /** @override */
+    startScan: function() {
+      return cr.sendWithPromise('startScan');
     },
   };
 

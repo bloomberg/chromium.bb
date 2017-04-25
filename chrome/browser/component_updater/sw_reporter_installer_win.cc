@@ -498,4 +498,13 @@ void RegisterProfilePrefsForSwReporter(
   registry->RegisterStringPref(prefs::kSwReporterPromptSeed, "");
 }
 
+void RegisterUserInitiatedSwReporterScan(base::Closure callback) {
+  // Fetch the latest version of the Cleanup component and run it,
+  // bypassing the usual scheduling logic. Once the scan is done, report
+  // whether the scan was successful and the names of the Unwanted Software that
+  // can be removed by the Cleanup tool.
+  // TODO(proberge): Implement me.
+  callback.Run();
+}
+
 }  // namespace component_updater

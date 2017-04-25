@@ -51,7 +51,16 @@ Polymer({
    * @private
    */
   onScanTap_: function() {
-    // TODO implement me.
+    this.isRunningScanner = true;
+    this.browserProxy_.startScan().then(this.onScanComplete_.bind(this));
+  },
+
+  /**
+   * @param {LastScanResult} lastScanResults
+   */
+  onScanComplete_: function(lastScanResults) {
+    this.isRunningScanner = false;
+    this.updateLastScanState_(lastScanResults);
   },
 
   /**

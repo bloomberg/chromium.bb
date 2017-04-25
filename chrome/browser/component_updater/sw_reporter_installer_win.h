@@ -31,6 +31,8 @@ namespace component_updater {
 
 class ComponentUpdateService;
 
+constexpr char kSwReporterComponentId[] = "gkmgaooipdjhmangpemjhigmamcehddo";
+
 // These MUST match the values for SwReporterExperimentError in histograms.xml.
 // Exposed for testing.
 enum SwReporterExperimentError {
@@ -90,6 +92,10 @@ void RegisterPrefsForSwReporter(PrefRegistrySimple* registry);
 // Register profile preferences related to the SwReporter.
 void RegisterProfilePrefsForSwReporter(
     user_prefs::PrefRegistrySyncable* registry);
+
+// Called by chrome://cleanup/ to manually trigger a reporter run.
+// TODO(proberge): Replace the Closure with a typed callback.
+void RegisterUserInitiatedSwReporterScan(base::Closure callback);
 
 }  // namespace component_updater
 

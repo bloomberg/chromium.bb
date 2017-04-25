@@ -7,6 +7,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 // The handler for Javascript messages related to the "Chrome Cleanup" view.
@@ -19,7 +21,18 @@ class CleanupActionHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
  private:
+  // Invalidates the weak pointers in callbacks that are no longer safe to run.
+  void OnJavascriptDisallowed() override;
+
   void HandleRequestLastScanResult(const base::ListValue* args);
+  void HandleStartScan(const base::ListValue* args);
+
+  // Returns the scan result initiated by HandleStartScan() to the Javascript
+  // caller refererenced by |callback_id|.
+  void ReportScanResults(const std::string& callback_id);
+
+  // Used to cancel callbacks when JavaScript becomes disallowed.
+  base::WeakPtrFactory<CleanupActionHandler> callback_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CleanupActionHandler);
 };
