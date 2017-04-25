@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
@@ -66,8 +66,9 @@ public class SectionList
             int categoryStatus = suggestionsSource.getCategoryStatus(category);
             if (categoryStatus == CategoryStatus.LOADING_ERROR
                     || categoryStatus == CategoryStatus.NOT_PROVIDED
-                    || categoryStatus == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED)
+                    || categoryStatus == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED) {
                 continue;
+            }
 
             suggestionsPerCategory[categoryIndex] =
                     resetSection(category, categoryStatus, alwaysAllowEmptySections);
@@ -112,8 +113,8 @@ public class SectionList
         }
 
         // Set the new suggestions.
-        setSuggestions(category, suggestions, categoryStatus, /* replaceExisting = */ true);
-
+        section.setStatus(categoryStatus);
+        section.appendSuggestions(suggestions, /* userRequested = */ false);
         return suggestions.size();
     }
 
@@ -121,27 +122,22 @@ public class SectionList
     public void onNewSuggestions(@CategoryInt int category) {
         @CategoryStatus
         int status = mUiDelegate.getSuggestionsSource().getCategoryStatus(category);
+        if (!canProcessSuggestions(category, status)) return;
 
-        if (!canLoadSuggestions(category, status)) return;
-
-        List<SnippetArticle> suggestions =
-                mUiDelegate.getSuggestionsSource().getSuggestionsForCategory(category);
-
-        Log.d(TAG, "Received %d new suggestions for category %d.", suggestions.size(), category);
-
-        // At first, there might be no suggestions available, we wait until they have been fetched.
-        if (suggestions.isEmpty()) return;
-
-        setSuggestions(category, suggestions, status, /* replaceExisting = */ true);
+        SuggestionsSection section = mSections.get(category);
+        section.setStatus(status);
+        section.updateSuggestions(mUiDelegate.getSuggestionsSource());
     }
 
     @Override
     public void onMoreSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions) {
         @CategoryStatus
         int status = mUiDelegate.getSuggestionsSource().getCategoryStatus(category);
-        if (!canLoadSuggestions(category, status)) return;
+        if (!canProcessSuggestions(category, status)) return;
 
-        setSuggestions(category, suggestions, status, /* replaceExisting = */ false);
+        SuggestionsSection section = mSections.get(category);
+        section.setStatus(status);
+        section.appendSuggestions(suggestions, /* userRequested = */ true);
     }
 
     @Override
@@ -180,6 +176,24 @@ public class SectionList
         refreshSuggestions();
     }
 
+    @Override
+    public void dismissSection(SuggestionsSection section) {
+        mUiDelegate.getSuggestionsSource().dismissCategory(section.getCategory());
+        removeSection(section);
+    }
+
+    @Override
+    public boolean isResetAllowed() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME)) return false;
+
+        // TODO(dgn): Also check if the bottom sheet is closed and how long since it has been closed
+        // or opened, so that we don't refresh content while the user still cares about it.
+        // Note: don't only use visibility, as pending FetchMore requests can still come, we don't
+        // want to clear all the current suggestions in that case. See https://crbug.com/711414
+
+        return !mUiDelegate.isVisible();
+    }
+
     /**
      * Resets all the sections, getting the current list of categories and the associated
      * suggestions from the backend.
@@ -189,48 +203,50 @@ public class SectionList
     }
 
     /**
-     * Puts {@code suggestions} into given {@code category}. It can either replace all existing
-     * suggestions with the new ones or append the new suggestions at the end of the list. This call
-     * may have no or only partial effect if changing the list of suggestions is not allowed (e.g.
-     * because the user has already seen the suggestions).
-     * @param category The category for which the suggestions should be set.
-     * @param suggestions The new list of suggestions for the given category.
-     * @param status The new category status.
-     * @param replaceExisting If true, {@code suggestions} replace the current list of suggestions.
-     * If false, {@code suggestions} are appended to current list of suggestions.
+     * Restores any sections that have been dismissed and triggers a new fetch.
      */
-    private void setSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions,
-            @CategoryStatus int status, boolean replaceExisting) {
-        mSections.get(category).setSuggestions(suggestions, status, replaceExisting);
-    }
-
-    private boolean canLoadSuggestions(@CategoryInt int category, @CategoryStatus int status) {
-        // We never want to add suggestions from unknown categories.
-        if (!mSections.containsKey(category)) return false;
-
-        // The status may have changed while the suggestions were loading, perhaps they should not
-        // be displayed any more.
-        if (!SnippetsBridge.isCategoryEnabled(status)) {
-            Log.w(TAG, "Received suggestions for a disabled category (id=%d, status=%d)", category,
-                    status);
-            return false;
-        }
-
-        return true;
+    public void restoreDismissedSections() {
+        mUiDelegate.getSuggestionsSource().restoreDismissedCategories();
+        resetSections(/* allowEmptySections = */ true);
+        mUiDelegate.getSuggestionsSource().fetchRemoteSuggestions();
     }
 
     /**
-     * Dismisses a section.
-     * @param section The section to be dismissed.
+     * @return Whether the list of sections is empty.
      */
-    @Override
-    public void dismissSection(SuggestionsSection section) {
-        mUiDelegate.getSuggestionsSource().dismissCategory(section.getCategory());
-        removeSection(section);
+    public boolean isEmpty() {
+        return mSections.isEmpty();
     }
 
-    @VisibleForTesting
-    void removeSection(SuggestionsSection section) {
+    /**
+     * Synchronises the data of the sections with that of the suggestions source, resetting the ones
+     * that are stale. (see {@link SuggestionsSection#isDataStale()})
+     */
+    public void synchroniseWithSource() {
+        int[] categories = mUiDelegate.getSuggestionsSource().getCategories();
+
+        // TODO(dgn): this naive implementation does not quite work as some sections are removed
+        // from the UI when they are empty, even though they stay around in the backend. Also, we
+        // might not always get notifications of new content for local sections.
+        // See https://crbug.com/711414, https://crbug.com/689962
+
+        if (categoriesChanged(categories)) {
+            // The number or the order of the sections changed. We reset everything.
+            resetSections(/* alwaysAllowEmptySections = */ false);
+            return;
+        }
+
+        for (Map.Entry<Integer, SuggestionsSection> sectionsEntry : mSections.entrySet()) {
+            if (!sectionsEntry.getValue().isDataStale()) continue;
+
+            @CategoryInt
+            int category = sectionsEntry.getKey();
+            resetSection(category, mUiDelegate.getSuggestionsSource().getCategoryStatus(category),
+                    /* alwaysAllowEmptySections = */ false);
+        }
+    }
+
+    private void removeSection(SuggestionsSection section) {
         mSections.remove(section.getCategory());
         removeChild(section);
     }
@@ -252,19 +268,38 @@ public class SectionList
     }
 
     /**
-     * Restores any sections that have been dismissed and triggers a new fetch.
+     * Checks that the list of categories currently displayed by this list is the same as
+     * {@code newCategories}: same categories in the same order.
      */
-    public void restoreDismissedSections() {
-        mUiDelegate.getSuggestionsSource().restoreDismissedCategories();
-        resetSections(/* allowEmptySections = */ true);
-        mUiDelegate.getSuggestionsSource().fetchRemoteSuggestions();
+    private boolean categoriesChanged(@CategoryInt int[] newCategories) {
+        if (mSections.size() != newCategories.length) return true;
+
+        int index = 0;
+        for (@CategoryInt int category : mSections.keySet()) {
+            if (category != newCategories[index++]) return true;
+        }
+
+        return false;
     }
 
     /**
-     * @return Whether the list of sections is empty.
+     * Returns whether the category is able to process the suggestions. The category might decide
+     * not to show incoming suggestions later, but this check ensures it's in a basic state
+     * compatible with displaying content.
      */
-    public boolean isEmpty() {
-        return mSections.isEmpty();
+    private boolean canProcessSuggestions(@CategoryInt int category, @CategoryStatus int status) {
+        // We never want to add suggestions from unknown categories.
+        if (!mSections.containsKey(category)) return false;
+
+        // The status may have changed while the suggestions were loading, perhaps they should not
+        // be displayed any more.
+        if (!SnippetsBridge.isCategoryEnabled(status)) {
+            Log.w(TAG, "Received suggestions for a disabled category (id=%d, status=%d)", category,
+                    status);
+            return false;
+        }
+
+        return true;
     }
 
     SuggestionsSection getSectionForTesting(@CategoryInt int categoryId) {

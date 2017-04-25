@@ -10,7 +10,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,17 +22,20 @@ import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsUnitTestUt
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.registerCategory;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
@@ -38,10 +45,12 @@ import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalActio
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -52,6 +61,8 @@ import java.util.List;
 public class SectionListTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
+    @Rule
+    public Features.Processor mFeaturesProcessor = new Features.Processor();
 
     @CategoryInt
     private static final int CATEGORY1 = 42;
@@ -68,11 +79,17 @@ public class SectionListTest {
 
     @Before
     public void setUp() {
+        CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
         MockitoAnnotations.initMocks(this);
-        mSuggestionSource = new FakeSuggestionsSource();
+        mSuggestionSource = spy(new FakeSuggestionsSource());
 
         when(mUiDelegate.getSuggestionsSource()).thenReturn(mSuggestionSource);
         when(mUiDelegate.getMetricsReporter()).thenReturn(mMetricsReporter);
+    }
+
+    @After
+    public void tearDown() {
+        CardsVariationParameters.setTestVariationParams(null);
     }
 
     @Test
@@ -308,5 +325,71 @@ public class SectionListTest {
         sectionList.refreshSuggestions();
         SuggestionsSection articles = sectionList.getSectionForTesting(KnownCategories.ARTICLES);
         assertTrue(articles.getHeaderItemForTesting().isVisible());
+    }
+
+    @Test
+    @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
+    public void testSynchroniseWithSourceWithNoChange() {
+        registerCategory(mSuggestionSource, CATEGORY1, 1);
+        registerCategory(mSuggestionSource, CATEGORY2, 2);
+        when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
+        SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
+        sectionList.refreshSuggestions();
+
+        // No changes since initialisation
+
+        clearInvocations(mSuggestionSource);
+        sectionList.synchroniseWithSource();
+
+        InOrder inOrder = inOrder(mSuggestionSource);
+        inOrder.verify(mSuggestionSource).getCategories();
+        inOrder.verifyNoMoreInteractions(); // The content is not fetched as sync should recognise
+                                            // we have up to date data!
+    }
+
+    @Test
+    @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
+    public void testSynchroniseWithSourceWithStaleSection() {
+        registerCategory(mSuggestionSource, CATEGORY1, 1);
+        registerCategory(mSuggestionSource, CATEGORY2, 2);
+        when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
+        SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
+        sectionList.refreshSuggestions();
+
+        // New suggestions are added, which will make CATEGORY2 stale.
+        bindViewHolders(sectionList);
+        mSuggestionSource.setSuggestionsForCategory(CATEGORY2,
+                createDummySuggestions(CATEGORY2, 5));
+        assertTrue(sectionList.getSectionForTesting(CATEGORY2).isDataStale());
+
+        clearInvocations(mSuggestionSource);
+        sectionList.synchroniseWithSource();
+
+        InOrder inOrder = inOrder(mSuggestionSource);
+        inOrder.verify(mSuggestionSource).getCategories();
+        inOrder.verify(mSuggestionSource).getSuggestionsForCategory(CATEGORY2);
+        // CATEGORY1 doesn't need to be refreshed.
+        inOrder.verify(mSuggestionSource, never()).getSuggestionsForCategory(CATEGORY1);
+    }
+
+    @Test
+    @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
+    public void testSynchroniseWithSourceWithChangedCategories() {
+        registerCategory(mSuggestionSource, CATEGORY1, 1);
+
+        when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
+        SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
+        sectionList.refreshSuggestions();
+
+        registerCategory(mSuggestionSource, CATEGORY2, 2);
+
+        clearInvocations(mSuggestionSource);
+        sectionList.synchroniseWithSource();
+
+        InOrder inOrder = inOrder(mSuggestionSource);
+        inOrder.verify(mSuggestionSource, atLeastOnce()).getCategories();
+        // All the data is refreshed, even though CATEGORY1 wasn't touched.
+        inOrder.verify(mSuggestionSource).getSuggestionsForCategory(CATEGORY1);
+        inOrder.verify(mSuggestionSource).getSuggestionsForCategory(CATEGORY2);
     }
 }
