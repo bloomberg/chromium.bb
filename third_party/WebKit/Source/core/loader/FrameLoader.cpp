@@ -987,12 +987,13 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
     if (policy == kNavigationPolicyDownload) {
       Client()->LoadURLExternally(request.GetResourceRequest(),
                                   kNavigationPolicyDownload, String(), false);
-    } else {
+      return;  // Navigation/download will be handled by the client.
+    } else if (ShouldNavigateTargetFrame(policy)) {
       request.GetResourceRequest().SetFrameType(
           WebURLRequest::kFrameTypeAuxiliary);
       CreateWindowForRequest(request, *frame_, policy);
+      return;  // Navigation will be handled by the new frame/window.
     }
-    return;
   }
 
   if (!frame_->IsNavigationAllowed())

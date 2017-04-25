@@ -326,7 +326,12 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
     // content shell and layout tests, popups don't get special treatment below
     // (i.e. they will have a toolbar and other things described here).
     case WindowOpenDisposition::NEW_POPUP:
-    case WindowOpenDisposition::NEW_WINDOW: {
+    case WindowOpenDisposition::NEW_WINDOW:
+    // content_shell doesn't really support tabs, but some layout tests use
+    // middle click (which translates into kNavigationPolicyNewBackgroundTab),
+    // so we treat the cases below just like a NEW_WINDOW disposition.
+    case WindowOpenDisposition::NEW_BACKGROUND_TAB:
+    case WindowOpenDisposition::NEW_FOREGROUND_TAB: {
       Shell* new_window =
           Shell::CreateNewWindow(source->GetBrowserContext(),
                                  GURL(),  // Don't load anything just yet.
@@ -340,8 +345,6 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
 
     // No tabs in content_shell:
     case WindowOpenDisposition::SINGLETON_TAB:
-    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
-    case WindowOpenDisposition::NEW_BACKGROUND_TAB:
     // No incognito mode in content_shell:
     case WindowOpenDisposition::OFF_THE_RECORD:
     // TODO(lukasza): Investigate if some layout tests might need support for

@@ -250,7 +250,7 @@ class CtrlClickShouldEndUpInNewProcessTest
       EXPECT_EQ("main_contents", name_of_main_contents_window);
 
       // Verify that the new contents doesn't have a window.opener set.
-      bool window_opener_cast_to_bool;
+      bool window_opener_cast_to_bool = true;
       EXPECT_TRUE(ExecuteScriptAndExtractBool(
           new_contents, "window.domAutomationController.send(!!window.opener)",
           &window_opener_cast_to_bool));
@@ -270,36 +270,48 @@ class CtrlClickShouldEndUpInNewProcessTest
 
     return new_contents;
   }
+
+  void TestCtrlClick(const char* id_of_anchor_to_click) {
+    // Navigate to the test page.
+    GURL main_url(embedded_test_server()->GetURL(
+        "/frame_tree/anchor_to_same_site_location.html"));
+    ui_test_utils::NavigateToURL(browser(), main_url);
+
+    // Verify that there is only 1 active tab (with the right contents
+    // committed).
+    EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+    content::WebContents* main_contents =
+        browser()->tab_strip_model()->GetWebContentsAt(0);
+    EXPECT_EQ(main_url, main_contents->GetLastCommittedURL());
+
+    // Test what happens after ctrl-click.  SimulateCtrlClick will verify
+    // that |new_contents1| is in a separate process and browsing instance
+    // from |main_contents|.
+    content::WebContents* new_contents1 =
+        SimulateCtrlClick(main_contents, id_of_anchor_to_click);
+
+    // Test that each subsequent ctrl-click also gets a new process.
+    content::WebContents* new_contents2 =
+        SimulateCtrlClick(main_contents, id_of_anchor_to_click);
+    EXPECT_NE(new_contents1->GetMainFrame()->GetProcess(),
+              new_contents2->GetMainFrame()->GetProcess());
+    EXPECT_NE(new_contents1->GetMainFrame()->GetSiteInstance(),
+              new_contents2->GetMainFrame()->GetSiteInstance());
+    EXPECT_FALSE(new_contents1->GetSiteInstance()->IsRelatedSiteInstance(
+        new_contents2->GetSiteInstance()));
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(CtrlClickShouldEndUpInNewProcessTest, NoTarget) {
-  // Navigate to the test page.
-  GURL main_url(embedded_test_server()->GetURL(
-      "/frame_tree/anchor_to_same_site_location.html"));
-  ui_test_utils::NavigateToURL(browser(), main_url);
-  const char* kIdOfAnchorToClick = "test-anchor-no-target";
+  TestCtrlClick("test-anchor-no-target");
+}
 
-  // Verify that there is only 1 active tab (with the right contents committed).
-  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
-  content::WebContents* main_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(0);
-  EXPECT_EQ(main_url, main_contents->GetLastCommittedURL());
+IN_PROC_BROWSER_TEST_F(CtrlClickShouldEndUpInNewProcessTest, BlankTarget) {
+  TestCtrlClick("test-anchor-with-blank-target");
+}
 
-  // Test what happens after ctrl-click.  SimulateCtrlClick will verify
-  // that |new_contents1| is in a separate process and browsing instance
-  // from |main_contents|.
-  content::WebContents* new_contents1 =
-      SimulateCtrlClick(main_contents, kIdOfAnchorToClick);
-
-  // Test that each subsequent ctrl-click also gets a new process.
-  content::WebContents* new_contents2 =
-      SimulateCtrlClick(main_contents, kIdOfAnchorToClick);
-  EXPECT_NE(new_contents1->GetMainFrame()->GetProcess(),
-            new_contents2->GetMainFrame()->GetProcess());
-  EXPECT_NE(new_contents1->GetMainFrame()->GetSiteInstance(),
-            new_contents2->GetMainFrame()->GetSiteInstance());
-  EXPECT_FALSE(new_contents1->GetSiteInstance()->IsRelatedSiteInstance(
-      new_contents2->GetSiteInstance()));
+IN_PROC_BROWSER_TEST_F(CtrlClickShouldEndUpInNewProcessTest, SubframeTarget) {
+  TestCtrlClick("test-anchor-with-subframe-target");
 }
 
 class ChromeNavigationPortMappedBrowserTest : public InProcessBrowserTest {
