@@ -88,11 +88,11 @@ class CORE_EXPORT SelectionTemplate final {
   TextAffinity Affinity() const { return affinity_; }
   TextGranularity Granularity() const { return granularity_; }
   bool HasTrailingWhitespace() const { return has_trailing_whitespace_; }
-  bool IsCaret() const { return base_.IsNotNull() && base_ == extent_; }
+  bool IsCaret() const;
   bool IsDirectional() const { return is_directional_; }
   bool IsHandleVisible() const { return is_handle_visible_; }
   bool IsNone() const { return base_.IsNull(); }
-  bool IsRange() const { return base_ != extent_; }
+  bool IsRange() const;
 
   // Returns true if |this| selection holds valid values otherwise it causes
   // assertion failure.

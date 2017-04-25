@@ -82,6 +82,18 @@ const PositionTemplate<Strategy>& SelectionTemplate<Strategy>::Extent() const {
 }
 
 template <typename Strategy>
+bool SelectionTemplate<Strategy>::IsCaret() const {
+  return base_.IsNotNull() && base_ == extent_ &&
+         granularity_ == kCharacterGranularity;
+}
+
+template <typename Strategy>
+bool SelectionTemplate<Strategy>::IsRange() const {
+  return base_ != extent_ ||
+         (base_.IsNotNull() && granularity_ != kCharacterGranularity);
+}
+
+template <typename Strategy>
 bool SelectionTemplate<Strategy>::AssertValidFor(
     const Document& document) const {
   if (!AssertValid())
