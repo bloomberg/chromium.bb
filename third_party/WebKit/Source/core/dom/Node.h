@@ -993,12 +993,6 @@ inline bool Node::ShouldCallRecalcStyle(StyleRecalcChange change) {
          ChildNeedsStyleRecalc();
 }
 
-// See the comment at the declaration of ScriptWrappable::fromNode in
-// bindings/core/v8/ScriptWrappable.h about why this method is defined here.
-inline ScriptWrappable* ScriptWrappable::FromNode(Node* node) {
-  return node;
-}
-
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Node)
 

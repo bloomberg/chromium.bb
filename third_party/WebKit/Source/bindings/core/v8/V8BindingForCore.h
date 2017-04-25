@@ -72,23 +72,10 @@ class LocalFrame;
 class NodeFilter;
 class XPathNSResolver;
 
-template <typename CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callback_info, Node* impl) {
-  V8SetReturnValue(callback_info, ScriptWrappable::FromNode(impl));
-}
-
 template <typename CallbackInfo, typename T>
 inline void V8SetReturnValue(const CallbackInfo& callbackInfo,
                              NotShared<T> notShared) {
   V8SetReturnValue(callbackInfo, notShared.View());
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
-                                 Node* impl,
-                                 const ScriptWrappable* wrappable) {
-  V8SetReturnValueFast(callback_info, ScriptWrappable::FromNode(impl),
-                       wrappable);
 }
 
 template <typename CallbackInfo, typename T>
