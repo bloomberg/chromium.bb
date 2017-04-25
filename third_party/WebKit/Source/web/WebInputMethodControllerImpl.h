@@ -42,10 +42,6 @@ class WebInputMethodControllerImpl : public WebInputMethodController {
   WebTextInputInfo TextInputInfo() override;
   WebTextInputType TextInputType() override;
 
-  void SetSuppressNextKeypressEvent(bool suppress) {
-    suppress_next_keypress_event_ = suppress;
-  }
-
   DECLARE_TRACE();
 
  private:
@@ -54,7 +50,6 @@ class WebInputMethodControllerImpl : public WebInputMethodController {
   WebPlugin* FocusedPluginIfInputMethodSupported() const;
 
   WeakMember<WebLocalFrameImpl> web_local_frame_;
-  bool suppress_next_keypress_event_;
 };
 }  // namespace blink
 

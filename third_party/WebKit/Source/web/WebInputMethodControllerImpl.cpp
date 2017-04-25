@@ -27,7 +27,7 @@ namespace blink {
 
 WebInputMethodControllerImpl::WebInputMethodControllerImpl(
     WebLocalFrameImpl* web_local_frame)
-    : web_local_frame_(web_local_frame), suppress_next_keypress_event_(false) {}
+    : web_local_frame_(web_local_frame) {}
 
 WebInputMethodControllerImpl::~WebInputMethodControllerImpl() {}
 
@@ -76,15 +76,6 @@ bool WebInputMethodControllerImpl::SetComposition(
     if (!node || !HasEditableStyle(*node))
       return false;
   }
-
-  // A keypress event is canceled. If an ongoing composition exists, then the
-  // keydown event should have arisen from a handled key (e.g., backspace).
-  // In this case we ignore the cancellation and continue; otherwise (no
-  // ongoing composition) we exit and signal success only for attempts to
-  // clear the composition.
-  if (suppress_next_keypress_event_ &&
-      !GetInputMethodController().HasComposition())
-    return text.IsEmpty();
 
   UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
       GetFrame()->GetDocument(), UserGestureToken::kNewGesture));
