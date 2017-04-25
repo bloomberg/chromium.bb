@@ -2305,7 +2305,11 @@ def generate_telemetry_test(tester_name, tester_config,
   prefix_args = [
     benchmark_name,
     '--show-stdout',
-    '--browser=%s' % tester_config['build_config'].lower()
+    '--browser=%s' % tester_config['build_config'].lower(),
+    # --passthrough displays more of the logging in Telemetry when run
+    # --via typ, in particular some of the warnings about tests being
+    # --expected to fail, but passing.
+    '--passthrough',
   ]
   return generate_isolated_test(tester_name, tester_config, test,
                                 test_config, extra_browser_args,

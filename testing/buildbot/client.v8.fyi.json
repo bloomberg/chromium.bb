@@ -9,6 +9,7 @@
           "context_lost",
           "--show-stdout",
           "--browser=android-chromium",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -33,6 +34,7 @@
           "depth_capture",
           "--show-stdout",
           "--browser=android-chromium",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -57,6 +59,7 @@
           "gpu_process",
           "--show-stdout",
           "--browser=android-chromium",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -81,6 +84,7 @@
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=android-chromium",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -105,6 +109,7 @@
           "maps",
           "--show-stdout",
           "--browser=android-chromium",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -135,6 +140,7 @@
           "pixel",
           "--show-stdout",
           "--browser=android-chromium",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -173,6 +179,7 @@
           "screenshot_sync",
           "--show-stdout",
           "--browser=android-chromium",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -197,6 +204,7 @@
           "trace_test",
           "--show-stdout",
           "--browser=android-chromium",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -221,6 +229,7 @@
           "webgl_conformance",
           "--show-stdout",
           "--browser=android-chromium",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -250,6 +259,7 @@
           "context_lost",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -273,6 +283,7 @@
           "depth_capture",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -296,6 +307,7 @@
           "gpu_process",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -319,6 +331,7 @@
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -342,6 +355,7 @@
           "maps",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -371,6 +385,7 @@
           "pixel",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -408,6 +423,7 @@
           "screenshot_sync",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -431,6 +447,7 @@
           "trace_test",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -454,6 +471,7 @@
           "webgl_conformance",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.1",
@@ -480,6 +498,7 @@
           "webgl_conformance",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -508,6 +527,7 @@
           "context_lost",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -531,6 +551,7 @@
           "depth_capture",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -554,6 +575,7 @@
           "gpu_process",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -577,6 +599,7 @@
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -600,6 +623,7 @@
           "maps",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -629,6 +653,7 @@
           "pixel",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -666,6 +691,7 @@
           "screenshot_sync",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -689,6 +715,7 @@
           "trace_test",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -712,6 +739,7 @@
           "webgl_conformance",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.1",
@@ -738,6 +766,7 @@
           "webgl_conformance",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -827,6 +856,7 @@
           "context_lost",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -850,6 +880,7 @@
           "depth_capture",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -873,6 +904,7 @@
           "gpu_process",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -896,6 +928,7 @@
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -919,6 +952,7 @@
           "maps",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -948,6 +982,7 @@
           "pixel",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -985,6 +1020,7 @@
           "screenshot_sync",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1008,6 +1044,7 @@
           "trace_test",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1031,6 +1068,7 @@
           "webgl_conformance",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.1",
@@ -1057,6 +1095,7 @@
           "webgl_conformance",
           "--show-stdout",
           "--browser=release",
+          "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
