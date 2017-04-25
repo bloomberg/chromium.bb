@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 }
 
 // On Linux, memory pressure listener is not implemented yet.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 
 // Test that the MemoryPressureListener event is properly triggering a tab
 // discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
