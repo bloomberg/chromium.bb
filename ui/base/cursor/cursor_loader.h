@@ -37,7 +37,7 @@ class UI_BASE_EXPORT CursorLoader {
   }
 
   // Creates a cursor from an image resource and puts it in the cursor map.
-  virtual void LoadImageCursor(int id,
+  virtual void LoadImageCursor(CursorType id,
                                int resource_id,
                                const gfx::Point& hot) = 0;
 
@@ -46,7 +46,7 @@ class UI_BASE_EXPORT CursorLoader {
   // from left to right. Also, each frame is assumed to be square
   // (width == height).
   // |frame_delay_ms| is the delay between frames in millisecond.
-  virtual void LoadAnimatedCursor(int id,
+  virtual void LoadAnimatedCursor(CursorType id,
                                   int resource_id,
                                   const gfx::Point& hot,
                                   int frame_delay_ms) = 0;

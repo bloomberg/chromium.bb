@@ -48,13 +48,12 @@ const unsigned int kModifiersMasks[] = {
 X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
     : delegate_(delegate),
       in_move_loop_(false),
-      initial_cursor_(ui::kCursorNull),
+      initial_cursor_(ui::CursorType::kNull),
       should_reset_mouse_flags_(false),
       grab_input_window_(None),
       grabbed_pointer_(false),
       canceled_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
 

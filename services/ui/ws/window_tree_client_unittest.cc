@@ -1639,7 +1639,7 @@ TEST_F(WindowTreeClientTest, SetCursor) {
   changes2()->clear();
 
   ASSERT_TRUE(
-      wt_client1()->SetPredefinedCursor(window_1_1, mojom::CursorType::IBEAM));
+      wt_client1()->SetPredefinedCursor(window_1_1, mojom::CursorType::kIBeam));
   wt_client2_->WaitForChangeCount(1u);
 
   EXPECT_EQ("CursorChanged id=" + IdToString(window_1_1) + " cursor_id=4",

@@ -220,7 +220,7 @@ WindowTreeHost::WindowTreeHost() : WindowTreeHost(nullptr) {}
 
 WindowTreeHost::WindowTreeHost(std::unique_ptr<WindowPort> window_port)
     : window_(new Window(nullptr, std::move(window_port))),
-      last_cursor_(ui::kCursorNull),
+      last_cursor_(ui::CursorType::kNull),
       input_method_(nullptr),
       owned_input_method_(false) {}
 

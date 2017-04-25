@@ -144,7 +144,7 @@ class NativeCursorManagerMus : public wm::NativeCursorManager {
       SetCursor(delegate->GetCursor(), delegate);
     } else {
       aura::WindowPortMus::Get(window_)->SetPredefinedCursor(
-          ui::mojom::CursorType::NONE);
+          ui::mojom::CursorType::kNone);
     }
   }
 

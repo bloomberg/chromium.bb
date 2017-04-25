@@ -20,7 +20,7 @@ PlatformCursor ToPlatformCursor(BitmapCursorOzone* cursor) {
   return static_cast<PlatformCursor>(cursor);
 }
 
-scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(int type) {
+scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(CursorType type) {
   SkBitmap bitmap;
   gfx::Point hotspot;
   if (GetCursorBitmap(type, &bitmap, &hotspot))
@@ -73,7 +73,7 @@ scoped_refptr<BitmapCursorOzone> BitmapCursorFactoryOzone::GetBitmapCursor(
   return make_scoped_refptr(ToBitmapCursorOzone(platform_cursor));
 }
 
-PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(int type) {
+PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(CursorType type) {
   return GetDefaultCursorInternal(type).get();
 }
 
@@ -107,16 +107,16 @@ void BitmapCursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
 }
 
 scoped_refptr<BitmapCursorOzone>
-BitmapCursorFactoryOzone::GetDefaultCursorInternal(int type) {
-  if (type == kCursorNone)
+BitmapCursorFactoryOzone::GetDefaultCursorInternal(CursorType type) {
+  if (type == CursorType::kNone)
     return NULL;  // NULL is used for hidden cursor.
 
   if (!default_cursors_.count(type)) {
     // Create new image cursor from default aura bitmap for this type. We hold a
     // ref forever because clients do not do refcounting for default cursors.
     scoped_refptr<BitmapCursorOzone> cursor = CreateDefaultBitmapCursor(type);
-    if (!cursor.get() && type != kCursorPointer)
-      cursor = GetDefaultCursorInternal(kCursorPointer);
+    if (!cursor.get() && type != CursorType::kPointer)
+      cursor = GetDefaultCursorInternal(CursorType::kPointer);
     DCHECK(cursor.get()) << "Failed to load default cursor bitmap";
     default_cursors_[type] = cursor;
   }

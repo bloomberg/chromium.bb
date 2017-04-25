@@ -59,8 +59,8 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
-  cursor_manager->SetCursor(ui::kCursorCopy);
-  EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
+  cursor_manager->SetCursor(ui::CursorType::kCopy);
+  EXPECT_EQ(ui::CursorType::kCopy, test_api.GetCurrentCursor().native_type());
   UpdateDisplay("800x800*2/r");
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
@@ -80,8 +80,8 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
 
   // Cursor type does not change while cursor is locked.
-  cursor_manager->SetCursor(ui::kCursorPointer);
-  EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
+  cursor_manager->SetCursor(ui::CursorType::kPointer);
+  EXPECT_EQ(ui::CursorType::kCopy, test_api.GetCurrentCursor().native_type());
 
   // Device scale factor and rotation do change even while cursor is locked.
   UpdateDisplay("800x800/u");
@@ -92,7 +92,8 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   EXPECT_FALSE(cursor_manager->IsCursorLocked());
 
   // Cursor type changes to the one specified while cursor is locked.
-  EXPECT_EQ(ui::kCursorPointer, test_api.GetCurrentCursor().native_type());
+  EXPECT_EQ(ui::CursorType::kPointer,
+            test_api.GetCurrentCursor().native_type());
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
@@ -100,11 +101,12 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
 TEST_F(AshNativeCursorManagerTest, SetCursor) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
-  cursor_manager->SetCursor(ui::kCursorCopy);
-  EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
+  cursor_manager->SetCursor(ui::CursorType::kCopy);
+  EXPECT_EQ(ui::CursorType::kCopy, test_api.GetCurrentCursor().native_type());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
-  cursor_manager->SetCursor(ui::kCursorPointer);
-  EXPECT_EQ(ui::kCursorPointer, test_api.GetCurrentCursor().native_type());
+  cursor_manager->SetCursor(ui::CursorType::kPointer);
+  EXPECT_EQ(ui::CursorType::kPointer,
+            test_api.GetCurrentCursor().native_type());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
 
@@ -179,7 +181,7 @@ TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
 // This test is in ash_unittests because ui_base_unittests does not include
 // 2x assets. crbug.com/372541.
 TEST_F(AshNativeCursorManagerTest, CursorLoaderX11Test) {
-  const int kCursorId = 1;
+  const ui::CursorType kCursorId = ui::CursorType::kPointer;
   ui::CursorLoaderX11 loader;
   loader.set_scale(1.0f);
 

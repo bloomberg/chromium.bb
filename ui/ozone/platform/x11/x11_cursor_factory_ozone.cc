@@ -21,7 +21,7 @@ PlatformCursor ToPlatformCursor(X11CursorOzone* cursor) {
 }
 
 // Gets default aura cursor bitmap/hotspot and creates a X11CursorOzone with it.
-scoped_refptr<X11CursorOzone> CreateAuraX11Cursor(int type) {
+scoped_refptr<X11CursorOzone> CreateAuraX11Cursor(CursorType type) {
   SkBitmap bitmap;
   gfx::Point hotspot;
   if (GetCursorBitmap(type, &bitmap, &hotspot)) {
@@ -37,7 +37,7 @@ X11CursorFactoryOzone::X11CursorFactoryOzone()
 
 X11CursorFactoryOzone::~X11CursorFactoryOzone() {}
 
-PlatformCursor X11CursorFactoryOzone::GetDefaultCursor(int type) {
+PlatformCursor X11CursorFactoryOzone::GetDefaultCursor(CursorType type) {
   return ToPlatformCursor(GetDefaultCursorInternal(type).get());
 }
 
@@ -76,8 +76,8 @@ void X11CursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
 }
 
 scoped_refptr<X11CursorOzone> X11CursorFactoryOzone::GetDefaultCursorInternal(
-    int type) {
-  if (type == kCursorNone)
+    CursorType type) {
+  if (type == CursorType::kNone)
     return invisible_cursor_;
 
   // TODO(kylechar): Use predefined X cursors here instead.
@@ -86,8 +86,8 @@ scoped_refptr<X11CursorOzone> X11CursorFactoryOzone::GetDefaultCursorInternal(
     // pointer cursor then invisible cursor if this fails.
     scoped_refptr<X11CursorOzone> cursor = CreateAuraX11Cursor(type);
     if (!cursor.get()) {
-      if (type != kCursorPointer) {
-        cursor = GetDefaultCursorInternal(kCursorPointer);
+      if (type != CursorType::kPointer) {
+        cursor = GetDefaultCursorInternal(CursorType::kPointer);
       } else {
         NOTREACHED() << "Failed to load default cursor bitmap";
       }

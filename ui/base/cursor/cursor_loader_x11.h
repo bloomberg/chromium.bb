@@ -6,7 +6,7 @@
 #define UI_BASE_CURSOR_CURSOR_LOADER_X11_H_
 
 #include <X11/Xcursor/Xcursor.h>
-#include <unordered_map>
+#include <map>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -23,15 +23,17 @@ class UI_BASE_EXPORT CursorLoaderX11 : public CursorLoader {
   ~CursorLoaderX11() override;
 
   // Overridden from CursorLoader:
-  void LoadImageCursor(int id, int resource_id, const gfx::Point& hot) override;
-  void LoadAnimatedCursor(int id,
+  void LoadImageCursor(CursorType id,
+                       int resource_id,
+                       const gfx::Point& hot) override;
+  void LoadAnimatedCursor(CursorType id,
                           int resource_id,
                           const gfx::Point& hot,
                           int frame_delay_ms) override;
   void UnloadAll() override;
   void SetPlatformCursor(gfx::NativeCursor* cursor) override;
 
-  const XcursorImage* GetXcursorImageForTest(int id);
+  const XcursorImage* GetXcursorImageForTest(CursorType id);
 
  private:
   struct ImageCursor {
@@ -49,22 +51,22 @@ class UI_BASE_EXPORT CursorLoaderX11 : public CursorLoader {
   bool IsImageCursor(gfx::NativeCursor native_cursor);
 
   // Loads a new cursor corresponding to |id|.
-  ::Cursor CursorFromId(int id);
+  ::Cursor CursorFromId(CursorType id);
 
   XDisplay* display_;
 
   // A map from a cursor native type to X cursor.
-  std::unordered_map<int, ::Cursor> font_cursors_;
+  std::map<CursorType, ::Cursor> font_cursors_;
 
   // A map to hold all image cursors. It maps the cursor ID to the X Cursor, the
   // display's scale factor, and the display's rotation.
-  typedef std::unordered_map<int, std::unique_ptr<ImageCursor>> ImageCursorMap;
+  typedef std::map<CursorType, std::unique_ptr<ImageCursor>> ImageCursorMap;
   ImageCursorMap image_cursors_;
 
   // A map to hold all animated cursors. It maps the cursor ID to the pair of
   // the X Cursor and the corresponding XcursorImages. We need a pointer to the
   // images so that we can free them on destruction.
-  typedef std::unordered_map<int, std::pair<::Cursor, XcursorImages*>>
+  typedef std::map<CursorType, std::pair<::Cursor, XcursorImages*>>
       AnimatedCursorMap;
   AnimatedCursorMap animated_cursors_;
 

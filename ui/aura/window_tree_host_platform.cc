@@ -59,8 +59,7 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(
     std::unique_ptr<WindowPort> window_port)
     : WindowTreeHost(std::move(window_port)),
       widget_(gfx::kNullAcceleratedWidget),
-      current_cursor_(ui::kCursorNull) {
-}
+      current_cursor_(ui::CursorType::kNull) {}
 
 void WindowTreeHostPlatform::SetPlatformWindow(
     std::unique_ptr<ui::PlatformWindow> window) {

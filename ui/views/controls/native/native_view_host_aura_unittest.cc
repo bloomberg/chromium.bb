@@ -158,12 +158,12 @@ TEST_F(NativeViewHostAuraTest, HostViewPropertyKey) {
 TEST_F(NativeViewHostAuraTest, CursorForNativeView) {
   CreateHost();
 
-  toplevel()->SetCursor(ui::kCursorHand);
-  child()->SetCursor(ui::kCursorWait);
+  toplevel()->SetCursor(ui::CursorType::kHand);
+  child()->SetCursor(ui::CursorType::kWait);
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                             gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
 
-  EXPECT_EQ(ui::kCursorWait, host()->GetCursor(move_event).native_type());
+  EXPECT_EQ(ui::CursorType::kWait, host()->GetCursor(move_event).native_type());
 
   DestroyHost();
 }

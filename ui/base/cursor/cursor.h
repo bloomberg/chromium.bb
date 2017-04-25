@@ -24,62 +24,63 @@ typedef unsigned long PlatformCursor;
 typedef void* PlatformCursor;
 #endif
 
-// TODO(jamescook): Once we're on C++0x we could change these constants
-// to an enum and forward declare it in native_widget_types.h.
+enum class CursorType {
+  // Equivalent to a NULL HCURSOR on Windows.
+  kNull = 0,
 
-// Equivalent to a NULL HCURSOR on Windows.
-const int kCursorNull = 0;
+  // These cursors mirror WebKit cursors from WebCursorInfo, but are replicated
+  // here so we don't introduce a WebKit dependency.
+  kPointer = 1,
+  kCross = 2,
+  kHand = 3,
+  kIBeam = 4,
+  kWait = 5,
+  kHelp = 6,
+  kEastResize = 7,
+  kNorthResize = 8,
+  kNorthEastResize = 9,
+  kNorthWestResize = 10,
+  kSouthResize = 11,
+  kSouthEastResize = 12,
+  kSouthWestResize = 13,
+  kWestResize = 14,
+  kNorthSouthResize = 15,
+  kEastWestResize = 16,
+  kNorthEastSouthWestResize = 17,
+  kNorthWestSouthEastResize = 18,
+  kColumnResize = 19,
+  kRowResize = 20,
+  kMiddlePanning = 21,
+  kEastPanning = 22,
+  kNorthPanning = 23,
+  kNorthEastPanning = 24,
+  kNorthWestPanning = 25,
+  kSouthPanning = 26,
+  kSouthEastPanning = 27,
+  kSouthWestPanning = 28,
+  kWestPanning = 29,
+  kMove = 30,
+  kVerticalText = 31,
+  kCell = 32,
+  kContextMenu = 33,
+  kAlias = 34,
+  kProgress = 35,
+  kNoDrop = 36,
+  kCopy = 37,
+  kNone = 38,
+  kNotAllowed = 39,
+  kZoomIn = 40,
+  kZoomOut = 41,
+  kGrab = 42,
+  kGrabbing = 43,
+  kCustom = 44,
 
-// These cursors mirror WebKit cursors from WebCursorInfo, but are replicated
-// here so we don't introduce a WebKit dependency.
-const int kCursorPointer = 1;
-const int kCursorCross = 2;
-const int kCursorHand = 3;
-const int kCursorIBeam = 4;
-const int kCursorWait = 5;
-const int kCursorHelp = 6;
-const int kCursorEastResize = 7;
-const int kCursorNorthResize = 8;
-const int kCursorNorthEastResize = 9;
-const int kCursorNorthWestResize = 10;
-const int kCursorSouthResize = 11;
-const int kCursorSouthEastResize = 12;
-const int kCursorSouthWestResize = 13;
-const int kCursorWestResize = 14;
-const int kCursorNorthSouthResize = 15;
-const int kCursorEastWestResize = 16;
-const int kCursorNorthEastSouthWestResize = 17;
-const int kCursorNorthWestSouthEastResize = 18;
-const int kCursorColumnResize = 19;
-const int kCursorRowResize = 20;
-const int kCursorMiddlePanning = 21;
-const int kCursorEastPanning = 22;
-const int kCursorNorthPanning = 23;
-const int kCursorNorthEastPanning = 24;
-const int kCursorNorthWestPanning = 25;
-const int kCursorSouthPanning = 26;
-const int kCursorSouthEastPanning = 27;
-const int kCursorSouthWestPanning = 28;
-const int kCursorWestPanning = 29;
-const int kCursorMove = 30;
-const int kCursorVerticalText = 31;
-const int kCursorCell = 32;
-const int kCursorContextMenu = 33;
-const int kCursorAlias = 34;
-const int kCursorProgress = 35;
-const int kCursorNoDrop = 36;
-const int kCursorCopy = 37;
-const int kCursorNone = 38;
-const int kCursorNotAllowed = 39;
-const int kCursorZoomIn = 40;
-const int kCursorZoomOut = 41;
-const int kCursorGrab = 42;
-const int kCursorGrabbing = 43;
-const int kCursorCustom = 44;
-const int kCursorDndNone = 45;
-const int kCursorDndMove = 46;
-const int kCursorDndCopy = 47;
-const int kCursorDndLink = 48;
+  // These additional drag and drop cursors are not listed in WebCursorInfo.
+  kDndNone = 45,
+  kDndMove = 46,
+  kDndCopy = 47,
+  kDndLink = 48,
+};
 
 enum CursorSetType {
   CURSOR_SET_NORMAL,
@@ -92,7 +93,7 @@ class UI_BASE_EXPORT Cursor {
   Cursor();
 
   // Implicit constructor.
-  Cursor(int type);
+  Cursor(CursorType type);
 
   // Allow copy.
   Cursor(const Cursor& cursor);
@@ -104,7 +105,7 @@ class UI_BASE_EXPORT Cursor {
   void RefCustomCursor();
   void UnrefCustomCursor();
 
-  int native_type() const { return native_type_; }
+  CursorType native_type() const { return native_type_; }
   PlatformCursor platform() const { return platform_cursor_; }
   float device_scale_factor() const {
     return device_scale_factor_;
@@ -113,13 +114,13 @@ class UI_BASE_EXPORT Cursor {
     device_scale_factor_ = device_scale_factor;
   }
 
-  bool operator==(int type) const { return native_type_ == type; }
+  bool operator==(CursorType type) const { return native_type_ == type; }
   bool operator==(const Cursor& cursor) const {
     return native_type_ == cursor.native_type_ &&
            platform_cursor_ == cursor.platform_cursor_ &&
            device_scale_factor_ == cursor.device_scale_factor_;
   }
-  bool operator!=(int type) const { return native_type_ != type; }
+  bool operator!=(CursorType type) const { return native_type_ != type; }
   bool operator!=(const Cursor& cursor) const {
     return native_type_ != cursor.native_type_ ||
            platform_cursor_ != cursor.platform_cursor_ ||
@@ -134,7 +135,7 @@ class UI_BASE_EXPORT Cursor {
   void Assign(const Cursor& cursor);
 
   // See definitions above.
-  int native_type_;
+  CursorType native_type_;
 
   PlatformCursor platform_cursor_;
 

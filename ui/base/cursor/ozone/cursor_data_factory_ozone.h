@@ -64,7 +64,7 @@ class UI_BASE_EXPORT CursorDataFactoryOzone : public CursorFactoryOzone {
   static const ui::CursorData& GetCursorData(PlatformCursor platform_cursor);
 
   // CursorFactoryOzone:
-  PlatformCursor GetDefaultCursor(int type) override;
+  PlatformCursor GetDefaultCursor(CursorType type) override;
   PlatformCursor CreateImageCursor(const SkBitmap& bitmap,
                                    const gfx::Point& hotspot,
                                    float bitmap_dpi) override;
@@ -77,10 +77,10 @@ class UI_BASE_EXPORT CursorDataFactoryOzone : public CursorFactoryOzone {
 
  private:
   // Get cached BitmapCursorOzone for a default cursor.
-  scoped_refptr<CursorDataOzone> GetDefaultCursorInternal(int type);
+  scoped_refptr<CursorDataOzone> GetDefaultCursorInternal(CursorType type);
 
   // Default cursors are cached & owned by the factory.
-  typedef std::map<int, scoped_refptr<CursorDataOzone>> DefaultCursorMap;
+  typedef std::map<CursorType, scoped_refptr<CursorDataOzone>> DefaultCursorMap;
   DefaultCursorMap default_cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorDataFactoryOzone);

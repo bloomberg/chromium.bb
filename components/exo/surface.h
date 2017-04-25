@@ -173,7 +173,7 @@ class Surface : public ui::ContextFactoryObserver,
   void UnregisterCursorProvider(CursorProvider* provider);
 
   // Returns the cursor for the surface. If no cursor provider is registered
-  // then kCursorNull is returned.
+  // then CursorType::kNull is returned.
   gfx::NativeCursor GetCursor();
 
   // Set the surface delegate.

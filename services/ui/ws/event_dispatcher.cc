@@ -91,13 +91,13 @@ ui::mojom::CursorType EventDispatcher::GetCurrentMouseCursor() const {
     return drag_controller_->current_cursor();
 
   if (!mouse_cursor_source_window_)
-    return ui::mojom::CursorType::POINTER;
+    return ui::mojom::CursorType::kPointer;
 
   if (mouse_cursor_in_non_client_area_)
     return mouse_cursor_source_window_->non_client_cursor();
 
   const ServerWindow* window = GetWindowForMouseCursor();
-  return window ? window->cursor() : ui::mojom::CursorType::POINTER;
+  return window ? window->cursor() : ui::mojom::CursorType::kPointer;
 }
 
 bool EventDispatcher::SetCaptureWindow(ServerWindow* window,

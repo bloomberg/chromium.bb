@@ -79,7 +79,7 @@ class ASH_EXPORT CursorWindowController {
   gfx::Rect bounds_in_screen_;
 
   // The native_type of the cursor, see definitions in cursor.h
-  int cursor_type_;
+  ui::CursorType cursor_type_;
 
   // The last requested cursor visibility.
   bool visible_;

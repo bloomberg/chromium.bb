@@ -88,12 +88,11 @@ class CursorWindowDelegate : public aura::WindowDelegate {
 CursorWindowController::CursorWindowController()
     : is_cursor_compositing_enabled_(false),
       container_(NULL),
-      cursor_type_(ui::kCursorNone),
+      cursor_type_(ui::CursorType::kNone),
       visible_(true),
       cursor_set_(ui::CURSOR_SET_NORMAL),
       large_cursor_size_in_dip_(ash::kDefaultLargeCursorSize),
-      delegate_(new CursorWindowDelegate()) {
-}
+      delegate_(new CursorWindowDelegate()) {}
 
 CursorWindowController::~CursorWindowController() {
   SetContainer(NULL);
@@ -320,7 +319,7 @@ void CursorWindowController::UpdateCursorImage() {
 void CursorWindowController::UpdateCursorVisibility() {
   if (!cursor_window_)
     return;
-  bool visible = (visible_ && cursor_type_ != ui::kCursorNone);
+  bool visible = (visible_ && cursor_type_ != ui::CursorType::kNone);
   if (visible)
     cursor_window_->Show();
   else

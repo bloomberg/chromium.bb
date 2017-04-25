@@ -25,152 +25,156 @@
 namespace {
 
 // Returns CSS cursor name from an Aura cursor ID.
-const char* CursorCssNameFromId(int id) {
+const char* CursorCssNameFromId(ui::CursorType id) {
   switch (id) {
-    case ui::kCursorMiddlePanning:
+    case ui::CursorType::kMiddlePanning:
       return "all-scroll";
-    case ui::kCursorEastPanning:
+    case ui::CursorType::kEastPanning:
       return "e-resize";
-    case ui::kCursorNorthPanning:
+    case ui::CursorType::kNorthPanning:
       return "n-resize";
-    case ui::kCursorNorthEastPanning:
+    case ui::CursorType::kNorthEastPanning:
       return "ne-resize";
-    case ui::kCursorNorthWestPanning:
+    case ui::CursorType::kNorthWestPanning:
       return "nw-resize";
-    case ui::kCursorSouthPanning:
+    case ui::CursorType::kSouthPanning:
       return "s-resize";
-    case ui::kCursorSouthEastPanning:
+    case ui::CursorType::kSouthEastPanning:
       return "se-resize";
-    case ui::kCursorSouthWestPanning:
+    case ui::CursorType::kSouthWestPanning:
       return "sw-resize";
-    case ui::kCursorWestPanning:
+    case ui::CursorType::kWestPanning:
       return "w-resize";
-    case ui::kCursorNone:
+    case ui::CursorType::kNone:
       return "none";
-    case ui::kCursorGrab:
+    case ui::CursorType::kGrab:
       return "grab";
-    case ui::kCursorGrabbing:
+    case ui::CursorType::kGrabbing:
       return "grabbing";
 
 #if defined(OS_CHROMEOS)
-    case ui::kCursorNull:
-    case ui::kCursorPointer:
-    case ui::kCursorNoDrop:
-    case ui::kCursorNotAllowed:
-    case ui::kCursorCopy:
-    case ui::kCursorMove:
-    case ui::kCursorEastResize:
-    case ui::kCursorNorthResize:
-    case ui::kCursorSouthResize:
-    case ui::kCursorWestResize:
-    case ui::kCursorNorthEastResize:
-    case ui::kCursorNorthWestResize:
-    case ui::kCursorSouthWestResize:
-    case ui::kCursorSouthEastResize:
-    case ui::kCursorIBeam:
-    case ui::kCursorAlias:
-    case ui::kCursorCell:
-    case ui::kCursorContextMenu:
-    case ui::kCursorCross:
-    case ui::kCursorHelp:
-    case ui::kCursorWait:
-    case ui::kCursorNorthSouthResize:
-    case ui::kCursorEastWestResize:
-    case ui::kCursorNorthEastSouthWestResize:
-    case ui::kCursorNorthWestSouthEastResize:
-    case ui::kCursorProgress:
-    case ui::kCursorColumnResize:
-    case ui::kCursorRowResize:
-    case ui::kCursorVerticalText:
-    case ui::kCursorZoomIn:
-    case ui::kCursorZoomOut:
-    case ui::kCursorHand:
+    case ui::CursorType::kNull:
+    case ui::CursorType::kPointer:
+    case ui::CursorType::kNoDrop:
+    case ui::CursorType::kNotAllowed:
+    case ui::CursorType::kCopy:
+    case ui::CursorType::kMove:
+    case ui::CursorType::kEastResize:
+    case ui::CursorType::kNorthResize:
+    case ui::CursorType::kSouthResize:
+    case ui::CursorType::kWestResize:
+    case ui::CursorType::kNorthEastResize:
+    case ui::CursorType::kNorthWestResize:
+    case ui::CursorType::kSouthWestResize:
+    case ui::CursorType::kSouthEastResize:
+    case ui::CursorType::kIBeam:
+    case ui::CursorType::kAlias:
+    case ui::CursorType::kCell:
+    case ui::CursorType::kContextMenu:
+    case ui::CursorType::kCross:
+    case ui::CursorType::kHelp:
+    case ui::CursorType::kWait:
+    case ui::CursorType::kNorthSouthResize:
+    case ui::CursorType::kEastWestResize:
+    case ui::CursorType::kNorthEastSouthWestResize:
+    case ui::CursorType::kNorthWestSouthEastResize:
+    case ui::CursorType::kProgress:
+    case ui::CursorType::kColumnResize:
+    case ui::CursorType::kRowResize:
+    case ui::CursorType::kVerticalText:
+    case ui::CursorType::kZoomIn:
+    case ui::CursorType::kZoomOut:
+    case ui::CursorType::kHand:
+    case ui::CursorType::kDndNone:
+    case ui::CursorType::kDndMove:
+    case ui::CursorType::kDndCopy:
+    case ui::CursorType::kDndLink:
       // In some environments, the image assets are not set (e.g. in
       // content-browsertests, content-shell etc.).
       return "left_ptr";
 #else  // defined(OS_CHROMEOS)
-    case ui::kCursorNull:
+    case ui::CursorType::kNull:
       return "left_ptr";
-    case ui::kCursorPointer:
+    case ui::CursorType::kPointer:
       return "left_ptr";
-    case ui::kCursorMove:
+    case ui::CursorType::kMove:
       // Returning "move" is the correct thing here, but Blink doesn't
       // make a distinction between move and all-scroll.  Other
       // platforms use a cursor more consistent with all-scroll, so
       // use that.
       return "all-scroll";
-    case ui::kCursorCross:
+    case ui::CursorType::kCross:
       return "crosshair";
-    case ui::kCursorHand:
+    case ui::CursorType::kHand:
       return "pointer";
-    case ui::kCursorIBeam:
+    case ui::CursorType::kIBeam:
       return "text";
-    case ui::kCursorProgress:
+    case ui::CursorType::kProgress:
       return "progress";
-    case ui::kCursorWait:
+    case ui::CursorType::kWait:
       return "wait";
-    case ui::kCursorHelp:
+    case ui::CursorType::kHelp:
       return "help";
-    case ui::kCursorEastResize:
+    case ui::CursorType::kEastResize:
       return "e-resize";
-    case ui::kCursorNorthResize:
+    case ui::CursorType::kNorthResize:
       return "n-resize";
-    case ui::kCursorNorthEastResize:
+    case ui::CursorType::kNorthEastResize:
       return "ne-resize";
-    case ui::kCursorNorthWestResize:
+    case ui::CursorType::kNorthWestResize:
       return "nw-resize";
-    case ui::kCursorSouthResize:
+    case ui::CursorType::kSouthResize:
       return "s-resize";
-    case ui::kCursorSouthEastResize:
+    case ui::CursorType::kSouthEastResize:
       return "se-resize";
-    case ui::kCursorSouthWestResize:
+    case ui::CursorType::kSouthWestResize:
       return "sw-resize";
-    case ui::kCursorWestResize:
+    case ui::CursorType::kWestResize:
       return "w-resize";
-    case ui::kCursorNorthSouthResize:
+    case ui::CursorType::kNorthSouthResize:
       return "ns-resize";
-    case ui::kCursorEastWestResize:
+    case ui::CursorType::kEastWestResize:
       return "ew-resize";
-    case ui::kCursorColumnResize:
+    case ui::CursorType::kColumnResize:
       return "col-resize";
-    case ui::kCursorRowResize:
+    case ui::CursorType::kRowResize:
       return "row-resize";
-    case ui::kCursorNorthEastSouthWestResize:
+    case ui::CursorType::kNorthEastSouthWestResize:
       return "nesw-resize";
-    case ui::kCursorNorthWestSouthEastResize:
+    case ui::CursorType::kNorthWestSouthEastResize:
       return "nwse-resize";
-    case ui::kCursorVerticalText:
+    case ui::CursorType::kVerticalText:
       return "vertical-text";
-    case ui::kCursorZoomIn:
+    case ui::CursorType::kZoomIn:
       return "zoom-in";
-    case ui::kCursorZoomOut:
+    case ui::CursorType::kZoomOut:
       return "zoom-out";
-    case ui::kCursorCell:
+    case ui::CursorType::kCell:
       return "cell";
-    case ui::kCursorContextMenu:
+    case ui::CursorType::kContextMenu:
       return "context-menu";
-    case ui::kCursorAlias:
+    case ui::CursorType::kAlias:
       return "alias";
-    case ui::kCursorNoDrop:
+    case ui::CursorType::kNoDrop:
       return "no-drop";
-    case ui::kCursorCopy:
+    case ui::CursorType::kCopy:
       return "copy";
-    case ui::kCursorNotAllowed:
+    case ui::CursorType::kNotAllowed:
       return "not-allowed";
-    case ui::kCursorDndNone:
+    case ui::CursorType::kDndNone:
       return "dnd-none";
-    case ui::kCursorDndMove:
+    case ui::CursorType::kDndMove:
       return "dnd-move";
-    case ui::kCursorDndCopy:
+    case ui::CursorType::kDndCopy:
       return "dnd-copy";
-    case ui::kCursorDndLink:
+    case ui::CursorType::kDndLink:
       return "dnd-link";
 #endif  // defined(OS_CHROMEOS)
-    case ui::kCursorCustom:
+    case ui::CursorType::kCustom:
       NOTREACHED();
       return "left_ptr";
   }
-  NOTREACHED() << "Case not handled for " << id;
+  NOTREACHED() << "Case not handled for " << static_cast<int>(id);
   return "left_ptr";
 }
 
@@ -235,7 +239,7 @@ CursorLoaderX11::~CursorLoaderX11() {
   UnloadAll();
 }
 
-void CursorLoaderX11::LoadImageCursor(int id,
+void CursorLoaderX11::LoadImageCursor(CursorType id,
                                       int resource_id,
                                       const gfx::Point& hot) {
   SkBitmap bitmap;
@@ -246,7 +250,7 @@ void CursorLoaderX11::LoadImageCursor(int id,
   image_cursors_[id].reset(new ImageCursor(x_image, scale(), rotation()));
 }
 
-void CursorLoaderX11::LoadAnimatedCursor(int id,
+void CursorLoaderX11::LoadAnimatedCursor(CursorType id,
                                          int resource_id,
                                          const gfx::Point& hot,
                                          int frame_delay_ms) {
@@ -283,28 +287,28 @@ void CursorLoaderX11::UnloadAll() {
 void CursorLoaderX11::SetPlatformCursor(gfx::NativeCursor* cursor) {
   DCHECK(cursor);
 
-  if (*cursor == kCursorNone) {
+  if (*cursor == CursorType::kNone) {
     cursor->SetPlatformCursor(invisible_cursor_.get());
     return;
   }
 
-  if (*cursor == kCursorCustom)
+  if (*cursor == CursorType::kCustom)
     return;
 
   cursor->set_device_scale_factor(scale());
   cursor->SetPlatformCursor(CursorFromId(cursor->native_type()));
 }
 
-const XcursorImage* CursorLoaderX11::GetXcursorImageForTest(int id) {
+const XcursorImage* CursorLoaderX11::GetXcursorImageForTest(CursorType id) {
   return test::GetCachedXcursorImage(image_cursors_[id]->cursor);
 }
 
 bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
-  int type = native_cursor.native_type();
+  CursorType type = native_cursor.native_type();
   return image_cursors_.count(type) || animated_cursors_.count(type);
 }
 
-::Cursor CursorLoaderX11::CursorFromId(int id) {
+::Cursor CursorLoaderX11::CursorFromId(CursorType id) {
   const char* css_name = CursorCssNameFromId(id);
 
   auto font_it = font_cursors_.find(id);

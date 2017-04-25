@@ -649,8 +649,8 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   window_tree()->AddWindow(FirstRootId(window_tree()), child_window_id);
   child_window->SetVisible(true);
   child_window->SetBounds(gfx::Rect(0, 0, 20, 20));
-  child_window->parent()->SetPredefinedCursor(ui::mojom::CursorType::COPY);
-  EXPECT_EQ(ui::mojom::CursorType::COPY, display_test_api.last_cursor());
+  child_window->parent()->SetPredefinedCursor(ui::mojom::CursorType::kCopy);
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, display_test_api.last_cursor());
   // Move the mouse outside the bounds of the child, so that the mouse is not
   // over any valid windows. Cursor should change to POINTER.
   ui::PointerEvent move(
@@ -660,7 +660,7 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   window_manager_state()->ProcessEvent(move, 0);
   // The event isn't over a valid target, which should trigger resetting the
   // cursor to POINTER.
-  EXPECT_EQ(ui::mojom::CursorType::POINTER, display_test_api.last_cursor());
+  EXPECT_EQ(ui::mojom::CursorType::kPointer, display_test_api.last_cursor());
 }
 
 }  // namespace test

@@ -15,6 +15,7 @@
 class SkBitmap;
 
 namespace ui {
+enum class CursorType;
 
 // The new Cursor class. (aka, Cursor2)
 //
@@ -38,7 +39,7 @@ namespace ui {
 class UI_BASE_EXPORT CursorData {
  public:
   CursorData();
-  explicit CursorData(int type);
+  explicit CursorData(CursorType type);
   CursorData(const gfx::Point& hostpot_point,
              const std::vector<SkBitmap>& cursor_frames,
              float scale_factor,
@@ -48,14 +49,14 @@ class UI_BASE_EXPORT CursorData {
 
   CursorData& operator=(const CursorData& cursor);
 
-  int cursor_type() const { return cursor_type_; }
+  CursorType cursor_type() const { return cursor_type_; }
   const base::TimeDelta& frame_delay() const { return frame_delay_; }
   float scale_factor() const { return scale_factor_; }
   const gfx::Point& hotspot_in_pixels() const { return hotspot_; }
   const std::vector<SkBitmap>& cursor_frames() const { return cursor_frames_; }
 
   // Returns true if this CursorData instance is of |cursor_type|.
-  bool IsType(int cursor_type) const;
+  bool IsType(CursorType cursor_type) const;
 
   // Checks if the data in |rhs| was created from the same input data.
   //
@@ -71,7 +72,7 @@ class UI_BASE_EXPORT CursorData {
 
  private:
   // A native type constant from cursor.h.
-  int cursor_type_;
+  CursorType cursor_type_;
 
   // The delay between cursor frames.
   base::TimeDelta frame_delay_;

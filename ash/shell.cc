@@ -1063,7 +1063,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (cursor_manager_) {
     if (initially_hide_cursor_)
       cursor_manager_->HideCursor();
-    cursor_manager_->SetCursor(ui::kCursorPointer);
+    cursor_manager_->SetCursor(ui::CursorType::kPointer);
   }
 
   power_event_observer_.reset(new PowerEventObserver());

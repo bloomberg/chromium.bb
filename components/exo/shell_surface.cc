@@ -1330,31 +1330,31 @@ void ShellSurface::AttemptToStartDrag(int component) {
 
     switch (component) {
       case HTCAPTION:
-        cursor_client->SetCursor(ui::kCursorPointer);
+        cursor_client->SetCursor(ui::CursorType::kPointer);
         break;
       case HTTOP:
-        cursor_client->SetCursor(ui::kCursorNorthResize);
+        cursor_client->SetCursor(ui::CursorType::kNorthResize);
         break;
       case HTTOPRIGHT:
-        cursor_client->SetCursor(ui::kCursorNorthEastResize);
+        cursor_client->SetCursor(ui::CursorType::kNorthEastResize);
         break;
       case HTRIGHT:
-        cursor_client->SetCursor(ui::kCursorEastResize);
+        cursor_client->SetCursor(ui::CursorType::kEastResize);
         break;
       case HTBOTTOMRIGHT:
-        cursor_client->SetCursor(ui::kCursorSouthEastResize);
+        cursor_client->SetCursor(ui::CursorType::kSouthEastResize);
         break;
       case HTBOTTOM:
-        cursor_client->SetCursor(ui::kCursorSouthResize);
+        cursor_client->SetCursor(ui::CursorType::kSouthResize);
         break;
       case HTBOTTOMLEFT:
-        cursor_client->SetCursor(ui::kCursorSouthWestResize);
+        cursor_client->SetCursor(ui::CursorType::kSouthWestResize);
         break;
       case HTLEFT:
-        cursor_client->SetCursor(ui::kCursorWestResize);
+        cursor_client->SetCursor(ui::CursorType::kWestResize);
         break;
       case HTTOPLEFT:
-        cursor_client->SetCursor(ui::kCursorNorthWestResize);
+        cursor_client->SetCursor(ui::CursorType::kNorthWestResize);
         break;
       default:
         NOTREACHED();

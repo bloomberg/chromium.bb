@@ -178,12 +178,14 @@ TEST_F(DesktopNativeWidgetAuraTest, GlobalCursorState) {
 
   // Verify that setting the cursor using one cursor client
   // will set it for all root windows.
-  EXPECT_EQ(ui::kCursorNone, cursor_client_a->GetCursor().native_type());
-  EXPECT_EQ(ui::kCursorNone, cursor_client_b->GetCursor().native_type());
+  EXPECT_EQ(ui::CursorType::kNone, cursor_client_a->GetCursor().native_type());
+  EXPECT_EQ(ui::CursorType::kNone, cursor_client_b->GetCursor().native_type());
 
-  cursor_client_b->SetCursor(ui::kCursorPointer);
-  EXPECT_EQ(ui::kCursorPointer, cursor_client_a->GetCursor().native_type());
-  EXPECT_EQ(ui::kCursorPointer, cursor_client_b->GetCursor().native_type());
+  cursor_client_b->SetCursor(ui::CursorType::kPointer);
+  EXPECT_EQ(ui::CursorType::kPointer,
+            cursor_client_a->GetCursor().native_type());
+  EXPECT_EQ(ui::CursorType::kPointer,
+            cursor_client_b->GetCursor().native_type());
 
   // Verify that hiding the cursor using one cursor client will
   // hide it for all root windows. Note that hiding the cursor

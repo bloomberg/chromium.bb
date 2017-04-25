@@ -18,7 +18,8 @@ DesktopNativeCursorManager::DesktopNativeCursorManager()
 DesktopNativeCursorManager::~DesktopNativeCursorManager() {
 }
 
-gfx::NativeCursor DesktopNativeCursorManager::GetInitializedCursor(int type) {
+gfx::NativeCursor DesktopNativeCursorManager::GetInitializedCursor(
+    ui::CursorType type) {
   gfx::NativeCursor cursor(type);
   cursor_loader_->SetPlatformCursor(&cursor);
   return cursor;
@@ -63,7 +64,7 @@ void DesktopNativeCursorManager::SetVisibility(
   if (visible) {
     SetCursor(delegate->GetCursor(), delegate);
   } else {
-    gfx::NativeCursor invisible_cursor(ui::kCursorNone);
+    gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
     cursor_loader_->SetPlatformCursor(&invisible_cursor);
     for (Hosts::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
       (*i)->SetCursor(invisible_cursor);

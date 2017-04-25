@@ -22,12 +22,11 @@ namespace internal {
 class CursorState {
  public:
   CursorState()
-      : cursor_(ui::kCursorNone),
+      : cursor_(ui::CursorType::kNone),
         visible_(true),
         cursor_set_(ui::CURSOR_SET_NORMAL),
         mouse_events_enabled_(true),
-        visible_on_mouse_events_enabled_(true) {
-  }
+        visible_on_mouse_events_enabled_(true) {}
 
   gfx::NativeCursor cursor() const { return cursor_; }
   void set_cursor(gfx::NativeCursor cursor) { cursor_ = cursor; }

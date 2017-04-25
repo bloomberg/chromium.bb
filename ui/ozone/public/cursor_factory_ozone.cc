@@ -26,7 +26,7 @@ CursorFactoryOzone* CursorFactoryOzone::GetInstance() {
   return impl_;
 }
 
-PlatformCursor CursorFactoryOzone::GetDefaultCursor(int type) {
+PlatformCursor CursorFactoryOzone::GetDefaultCursor(CursorType type) {
   NOTIMPLEMENTED();
   return NULL;
 }

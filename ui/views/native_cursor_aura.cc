@@ -9,23 +9,23 @@
 namespace views {
 
 gfx::NativeCursor GetNativeIBeamCursor() {
-  return ui::kCursorIBeam;
+  return ui::CursorType::kIBeam;
 }
 
 gfx::NativeCursor GetNativeHandCursor() {
-  return ui::kCursorHand;
+  return ui::CursorType::kHand;
 }
 
 gfx::NativeCursor GetNativeColumnResizeCursor() {
-  return ui::kCursorColumnResize;
+  return ui::CursorType::kColumnResize;
 }
 
 gfx::NativeCursor GetNativeEastWestResizeCursor() {
-  return ui::kCursorEastWestResize;
+  return ui::CursorType::kEastWestResize;
 }
 
 gfx::NativeCursor GetNativeNorthSouthResizeCursor() {
-  return ui::kCursorNorthSouthResize;
+  return ui::CursorType::kNorthSouthResize;
 }
 
 }  // namespace views

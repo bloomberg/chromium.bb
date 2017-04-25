@@ -30,7 +30,9 @@ class CursorWindowControllerTest : public test::AshTestBase {
     SetCursorCompositionEnabled(true);
   }
 
-  int GetCursorType() const { return cursor_window_controller_->cursor_type_; }
+  ui::CursorType GetCursorType() const {
+    return cursor_window_controller_->cursor_type_;
+  }
 
   const gfx::Point& GetCursorHotPoint() const {
     return cursor_window_controller_->hot_point_;
@@ -80,7 +82,7 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
 
   EXPECT_TRUE(primary_root->Contains(GetCursorWindow()));
   EXPECT_EQ(primary_display_id, GetCursorDisplayId());
-  EXPECT_EQ(ui::kCursorNull, GetCursorType());
+  EXPECT_EQ(ui::CursorType::kNull, GetCursorType());
   gfx::Point hot_point = GetCursorHotPoint();
   EXPECT_EQ("4,4", hot_point.ToString());
   gfx::Rect cursor_bounds = GetCursorWindow()->GetBoundsInScreen();
@@ -104,7 +106,7 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
 
   EXPECT_TRUE(secondary_root->Contains(GetCursorWindow()));
   EXPECT_EQ(secondary_display_id, GetCursorDisplayId());
-  EXPECT_EQ(ui::kCursorNull, GetCursorType());
+  EXPECT_EQ(ui::CursorType::kNull, GetCursorType());
   hot_point = GetCursorHotPoint();
   EXPECT_EQ("3,3", hot_point.ToString());
   cursor_bounds = GetCursorWindow()->GetBoundsInScreen();

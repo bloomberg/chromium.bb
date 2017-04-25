@@ -18,23 +18,23 @@ namespace {
 ui::mojom::CursorType CursorForWindowComponent(int window_component) {
   switch (window_component) {
     case HTBOTTOM:
-      return ui::mojom::CursorType::SOUTH_RESIZE;
+      return ui::mojom::CursorType::kSouthResize;
     case HTBOTTOMLEFT:
-      return ui::mojom::CursorType::SOUTH_WEST_RESIZE;
+      return ui::mojom::CursorType::kSouthWestResize;
     case HTBOTTOMRIGHT:
-      return ui::mojom::CursorType::SOUTH_EAST_RESIZE;
+      return ui::mojom::CursorType::kSouthEastResize;
     case HTLEFT:
-      return ui::mojom::CursorType::WEST_RESIZE;
+      return ui::mojom::CursorType::kWestResize;
     case HTRIGHT:
-      return ui::mojom::CursorType::EAST_RESIZE;
+      return ui::mojom::CursorType::kEastResize;
     case HTTOP:
-      return ui::mojom::CursorType::NORTH_RESIZE;
+      return ui::mojom::CursorType::kNorthResize;
     case HTTOPLEFT:
-      return ui::mojom::CursorType::NORTH_WEST_RESIZE;
+      return ui::mojom::CursorType::kNorthWestResize;
     case HTTOPRIGHT:
-      return ui::mojom::CursorType::NORTH_EAST_RESIZE;
+      return ui::mojom::CursorType::kNorthEastResize;
     default:
-      return ui::mojom::CursorType::CURSOR_NULL;
+      return ui::mojom::CursorType::kNull;
   }
 }
 

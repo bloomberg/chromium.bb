@@ -680,19 +680,19 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
     return;
   }
 
-  int cursor_type = ui::kCursorNull;
+  ui::CursorType cursor_type = ui::CursorType::kNull;
   switch (negotiated_operation_) {
     case ui::DragDropTypes::DRAG_NONE:
-      cursor_type = ui::kCursorDndNone;
+      cursor_type = ui::CursorType::kDndNone;
       break;
     case ui::DragDropTypes::DRAG_MOVE:
-      cursor_type = ui::kCursorDndMove;
+      cursor_type = ui::CursorType::kDndMove;
       break;
     case ui::DragDropTypes::DRAG_COPY:
-      cursor_type = ui::kCursorDndCopy;
+      cursor_type = ui::CursorType::kDndCopy;
       break;
     case ui::DragDropTypes::DRAG_LINK:
-      cursor_type = ui::kCursorDndLink;
+      cursor_type = ui::CursorType::kDndLink;
       break;
   }
   move_loop_->UpdateCursor(cursor_manager_->GetInitializedCursor(cursor_type));
@@ -849,9 +849,8 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   // Windows has a specific method, DoDragDrop(), which performs the entire
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
-  move_loop_->RunMoveLoop(
-      source_window,
-      cursor_manager_->GetInitializedCursor(ui::kCursorGrabbing));
+  move_loop_->RunMoveLoop(source_window, cursor_manager_->GetInitializedCursor(
+                                             ui::CursorType::kGrabbing));
 
   if (alive) {
     if (negotiated_operation_ == ui::DragDropTypes::DRAG_NONE) {

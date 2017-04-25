@@ -11,9 +11,15 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<ui::mojom::CursorType, ui::CursorType> {
+  static ui::mojom::CursorType ToMojom(ui::CursorType input);
+  static bool FromMojom(ui::mojom::CursorType input, ui::CursorType* out);
+};
+
+template <>
 struct StructTraits<ui::mojom::CursorDataDataView, ui::CursorData> {
-  static ui::mojom::CursorType cursor_type(const ui::CursorData& c) {
-    return ui::mojom::CursorType(c.cursor_type());
+  static ui::CursorType cursor_type(const ui::CursorData& c) {
+    return c.cursor_type();
   }
   static const base::TimeDelta& frame_delay(const ui::CursorData& c);
   static const gfx::Point& hotspot_in_pixels(const ui::CursorData& c);

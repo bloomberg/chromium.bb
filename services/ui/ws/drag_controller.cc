@@ -52,7 +52,7 @@ DragController::DragController(
       cursor_updater_(cursor_updater),
       drag_operations_(drag_operations),
       drag_pointer_id_(drag_pointer),
-      current_cursor_(ui::mojom::CursorType::NO_DROP),
+      current_cursor_(ui::mojom::CursorType::kNoDrop),
       source_window_(source_window),
       source_connection_(source_connection),
       mime_data_(mime_data),
@@ -190,8 +190,8 @@ void DragController::SetWindowDropOperations(ServerWindow* window,
 ui::mojom::CursorType DragController::CursorForEffectBitmask(
     DropEffectBitmask bitmask) {
   DropEffectBitmask combined = bitmask & drag_operations_;
-  return combined == ui::mojom::kDropEffectNone ? ui::mojom::CursorType::NO_DROP
-                                                : ui::mojom::CursorType::COPY;
+  return combined == ui::mojom::kDropEffectNone ? ui::mojom::CursorType::kNoDrop
+                                                : ui::mojom::CursorType::kCopy;
 }
 
 void DragController::SetCurrentTargetWindow(ServerWindow* current_target) {
@@ -204,7 +204,7 @@ void DragController::SetCurrentTargetWindow(ServerWindow* current_target) {
     current_cursor_ = CursorForEffectBitmask(state.bitmask);
   } else {
     // Can't drop in empty areas.
-    current_cursor_ = ui::mojom::CursorType::NO_DROP;
+    current_cursor_ = ui::mojom::CursorType::kNoDrop;
   }
 
   cursor_updater_->OnDragCursorUpdated();

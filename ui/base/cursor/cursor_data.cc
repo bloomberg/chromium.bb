@@ -9,15 +9,17 @@
 
 namespace ui {
 
-CursorData::CursorData() : cursor_type_(0), scale_factor_(0.0f) {}
+CursorData::CursorData()
+    : cursor_type_(CursorType::kNull), scale_factor_(0.0f) {}
 
-CursorData::CursorData(int type) : cursor_type_(type), scale_factor_(0.0f) {}
+CursorData::CursorData(CursorType type)
+    : cursor_type_(type), scale_factor_(0.0f) {}
 
 CursorData::CursorData(const gfx::Point& hotspot_point,
                        const std::vector<SkBitmap>& cursor_frames,
                        float scale_factor,
                        const base::TimeDelta& frame_delay)
-    : cursor_type_(kCursorCustom),
+    : cursor_type_(CursorType::kCustom),
       frame_delay_(frame_delay),
       scale_factor_(scale_factor),
       hotspot_(hotspot_point),
@@ -32,7 +34,7 @@ CursorData::~CursorData() {}
 
 CursorData& CursorData::operator=(const CursorData& cursor) = default;
 
-bool CursorData::IsType(int cursor_type) const {
+bool CursorData::IsType(CursorType cursor_type) const {
   return cursor_type_ == cursor_type;
 }
 

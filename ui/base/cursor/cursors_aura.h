@@ -19,18 +19,18 @@ namespace ui {
 const int kAnimatedCursorFrameDelayMs = 25;
 
 // Returns data about |id|, where id is a cursor constant like
-// ui::kCursorHelp. The IDR will be placed in |resource_id| and the hotspots
-// for the different DPIs will be placed in |hot_1x| and |hot_2x|. Returns
-// false if |id| is invalid.
+// ui::CursorType::kHelp. The IDR will be placed in |resource_id| and the
+// hotspots for the different DPIs will be placed in |hot_1x| and |hot_2x|.
+// Returns false if |id| is invalid.
 bool UI_BASE_EXPORT GetCursorDataFor(CursorSetType cursor_set_id,
-                                     int id,
+                                     CursorType id,
                                      float scale_factor,
                                      int* resource_id,
                                      gfx::Point* point);
 
 // Like above, but for animated cursors.
 bool UI_BASE_EXPORT GetAnimatedCursorDataFor(CursorSetType cursor_set_id,
-                                             int id,
+                                             CursorType id,
                                              float scale_factor,
                                              int* resource_id,
                                              gfx::Point* point);

@@ -28,7 +28,7 @@ void TestCursorClient::SetCursor(gfx::NativeCursor cursor) {
 }
 
 gfx::NativeCursor TestCursorClient::GetCursor() const {
-  return ui::kCursorNull;
+  return ui::CursorType::kNull;
 }
 
 void TestCursorClient::ShowCursor() {

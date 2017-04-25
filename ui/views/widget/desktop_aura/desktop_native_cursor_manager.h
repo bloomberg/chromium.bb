@@ -38,7 +38,7 @@ class VIEWS_EXPORT DesktopNativeCursorManager
 
   // Builds a cursor and sets the internal platform representation. The return
   // value should not be cached.
-  gfx::NativeCursor GetInitializedCursor(int type);
+  gfx::NativeCursor GetInitializedCursor(ui::CursorType type);
 
   // Adds |host| to the set |hosts_|.
   void AddHost(aura::WindowTreeHost* host);

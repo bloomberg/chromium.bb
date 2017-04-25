@@ -18,94 +18,94 @@ base::LazyInstance<base::string16>::DestructorAtExit
 
 const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
   switch (native_cursor.native_type()) {
-    case kCursorNull:
+    case CursorType::kNull:
       return IDC_ARROW;
-    case kCursorPointer:
+    case CursorType::kPointer:
       return IDC_ARROW;
-    case kCursorCross:
+    case CursorType::kCross:
       return IDC_CROSS;
-    case kCursorHand:
+    case CursorType::kHand:
       return IDC_HAND;
-    case kCursorIBeam:
+    case CursorType::kIBeam:
       return IDC_IBEAM;
-    case kCursorWait:
+    case CursorType::kWait:
       return IDC_WAIT;
-    case kCursorHelp:
+    case CursorType::kHelp:
       return IDC_HELP;
-    case kCursorEastResize:
+    case CursorType::kEastResize:
       return IDC_SIZEWE;
-    case kCursorNorthResize:
+    case CursorType::kNorthResize:
       return IDC_SIZENS;
-    case kCursorNorthEastResize:
+    case CursorType::kNorthEastResize:
       return IDC_SIZENESW;
-    case kCursorNorthWestResize:
+    case CursorType::kNorthWestResize:
       return IDC_SIZENWSE;
-    case kCursorSouthResize:
+    case CursorType::kSouthResize:
       return IDC_SIZENS;
-    case kCursorSouthEastResize:
+    case CursorType::kSouthEastResize:
       return IDC_SIZENWSE;
-    case kCursorSouthWestResize:
+    case CursorType::kSouthWestResize:
       return IDC_SIZENESW;
-    case kCursorWestResize:
+    case CursorType::kWestResize:
       return IDC_SIZEWE;
-    case kCursorNorthSouthResize:
+    case CursorType::kNorthSouthResize:
       return IDC_SIZENS;
-    case kCursorEastWestResize:
+    case CursorType::kEastWestResize:
       return IDC_SIZEWE;
-    case kCursorNorthEastSouthWestResize:
+    case CursorType::kNorthEastSouthWestResize:
       return IDC_SIZENESW;
-    case kCursorNorthWestSouthEastResize:
+    case CursorType::kNorthWestSouthEastResize:
       return IDC_SIZENWSE;
-    case kCursorMove:
+    case CursorType::kMove:
       return IDC_SIZEALL;
-    case kCursorProgress:
+    case CursorType::kProgress:
       return IDC_APPSTARTING;
-    case kCursorNoDrop:
+    case CursorType::kNoDrop:
       return IDC_NO;
-    case kCursorNotAllowed:
+    case CursorType::kNotAllowed:
       return IDC_NO;
-    case kCursorColumnResize:
+    case CursorType::kColumnResize:
       return MAKEINTRESOURCE(IDC_COLRESIZE);
-    case kCursorRowResize:
+    case CursorType::kRowResize:
       return MAKEINTRESOURCE(IDC_ROWRESIZE);
-    case kCursorMiddlePanning:
+    case CursorType::kMiddlePanning:
       return MAKEINTRESOURCE(IDC_PAN_MIDDLE);
-    case kCursorEastPanning:
+    case CursorType::kEastPanning:
       return MAKEINTRESOURCE(IDC_PAN_EAST);
-    case kCursorNorthPanning:
+    case CursorType::kNorthPanning:
       return MAKEINTRESOURCE(IDC_PAN_NORTH);
-    case kCursorNorthEastPanning:
+    case CursorType::kNorthEastPanning:
       return MAKEINTRESOURCE(IDC_PAN_NORTH_EAST);
-    case kCursorNorthWestPanning:
+    case CursorType::kNorthWestPanning:
       return MAKEINTRESOURCE(IDC_PAN_NORTH_WEST);
-    case kCursorSouthPanning:
+    case CursorType::kSouthPanning:
       return MAKEINTRESOURCE(IDC_PAN_SOUTH);
-    case kCursorSouthEastPanning:
+    case CursorType::kSouthEastPanning:
       return MAKEINTRESOURCE(IDC_PAN_SOUTH_EAST);
-    case kCursorSouthWestPanning:
+    case CursorType::kSouthWestPanning:
       return MAKEINTRESOURCE(IDC_PAN_SOUTH_WEST);
-    case kCursorWestPanning:
+    case CursorType::kWestPanning:
       return MAKEINTRESOURCE(IDC_PAN_WEST);
-    case kCursorVerticalText:
+    case CursorType::kVerticalText:
       return MAKEINTRESOURCE(IDC_VERTICALTEXT);
-    case kCursorCell:
+    case CursorType::kCell:
       return MAKEINTRESOURCE(IDC_CELL);
-    case kCursorZoomIn:
+    case CursorType::kZoomIn:
       return MAKEINTRESOURCE(IDC_ZOOMIN);
-    case kCursorZoomOut:
+    case CursorType::kZoomOut:
       return MAKEINTRESOURCE(IDC_ZOOMOUT);
-    case kCursorGrab:
+    case CursorType::kGrab:
       return MAKEINTRESOURCE(IDC_HAND_GRAB);
-    case kCursorGrabbing:
+    case CursorType::kGrabbing:
       return MAKEINTRESOURCE(IDC_HAND_GRABBING);
-    case kCursorCopy:
+    case CursorType::kCopy:
       return MAKEINTRESOURCE(IDC_COPYCUR);
-    case kCursorAlias:
+    case CursorType::kAlias:
       return MAKEINTRESOURCE(IDC_ALIAS);
-    case kCursorNone:
+    case CursorType::kNone:
       return MAKEINTRESOURCE(IDC_CURSOR_NONE);
-    case kCursorContextMenu:
-    case kCursorCustom:
+    case CursorType::kContextMenu:
+    case CursorType::kCustom:
       NOTIMPLEMENTED();
       return IDC_ARROW;
     default:
@@ -126,13 +126,13 @@ CursorLoaderWin::CursorLoaderWin() {
 CursorLoaderWin::~CursorLoaderWin() {
 }
 
-void CursorLoaderWin::LoadImageCursor(int id,
+void CursorLoaderWin::LoadImageCursor(CursorType id,
                                       int resource_id,
                                       const gfx::Point& hot) {
   // NOTIMPLEMENTED();
 }
 
-void CursorLoaderWin::LoadAnimatedCursor(int id,
+void CursorLoaderWin::LoadAnimatedCursor(CursorType id,
                                          int resource_id,
                                          const gfx::Point& hot,
                                          int frame_delay_ms) {
@@ -144,7 +144,7 @@ void CursorLoaderWin::UnloadAll() {
 }
 
 void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
-  if (cursor->native_type() != kCursorCustom) {
+  if (cursor->native_type() != CursorType::kCustom) {
     if (cursor->platform()) {
       cursor->SetPlatformCursor(cursor->platform());
     } else {

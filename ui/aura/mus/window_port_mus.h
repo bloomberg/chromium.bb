@@ -286,7 +286,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
   gfx::Size last_surface_size_;
 
-  ui::mojom::CursorType predefined_cursor_ = ui::mojom::CursorType::CURSOR_NULL;
+  ui::mojom::CursorType predefined_cursor_ = ui::mojom::CursorType::kNull;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPortMus);
 };

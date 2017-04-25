@@ -19,10 +19,10 @@ class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
   ~CursorLoaderOzone() override;
 
   // CursorLoader overrides:
-  void LoadImageCursor(int id,
+  void LoadImageCursor(CursorType id,
                        int resource_id,
                        const gfx::Point& hot) override;
-  void LoadAnimatedCursor(int id,
+  void LoadAnimatedCursor(CursorType id,
                           int resource_id,
                           const gfx::Point& hot,
                           int frame_delay_ms) override;
@@ -31,7 +31,7 @@ class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
 
  private:
   // Pointers are owned by ResourceBundle and must not be freed here.
-  typedef std::map<int, PlatformCursor> ImageCursorMap;
+  typedef std::map<CursorType, PlatformCursor> ImageCursorMap;
   ImageCursorMap cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderOzone);

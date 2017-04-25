@@ -128,7 +128,7 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
     if (visible) {
       SetCursor(delegate->GetCursor(), delegate);
     } else {
-      gfx::NativeCursor invisible_cursor(ui::kCursorNone);
+      gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
       image_cursors_->SetPlatformCursor(&invisible_cursor);
       ApplyCursor(invisible_cursor);
     }
@@ -308,7 +308,7 @@ void ShellDesktopControllerAura::InitWindowManager() {
           new ShellNativeCursorManager(host_.get()))));
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
-  cursor_manager_->SetCursor(ui::kCursorPointer);
+  cursor_manager_->SetCursor(ui::CursorType::kPointer);
   aura::client::SetCursorClient(host_->window(), cursor_manager_.get());
 
   user_activity_detector_.reset(new ui::UserActivityDetector);

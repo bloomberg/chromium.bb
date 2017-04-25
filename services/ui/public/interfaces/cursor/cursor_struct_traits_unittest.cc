@@ -48,11 +48,12 @@ std::vector<SkBitmap> CreateTestCursorFrames(const gfx::Size& size,
 // Tests numeric cursor ids.
 TEST_F(CursorStructTraitsTest, TestBuiltIn) {
   for (int i = 0; i < 43; ++i) {
-    ui::CursorData input(i);
+    ui::CursorType type = static_cast<ui::CursorType>(i);
+    ui::CursorData input(type);
 
     ui::CursorData output;
     ASSERT_TRUE(EchoCursorData(input, &output));
-    EXPECT_TRUE(output.IsType(i));
+    EXPECT_TRUE(output.IsType(type));
   }
 }
 
@@ -68,7 +69,7 @@ TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
   ui::CursorData output;
   ASSERT_TRUE(EchoCursorData(input, &output));
 
-  EXPECT_EQ(kCursorCustom, output.cursor_type());
+  EXPECT_EQ(CursorType::kCustom, output.cursor_type());
   EXPECT_EQ(kScale, output.scale_factor());
   EXPECT_EQ(kFrameDelay, output.frame_delay());
   EXPECT_EQ(kHotspot, output.hotspot_in_pixels());

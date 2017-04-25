@@ -16,6 +16,10 @@ namespace gfx {
 class Point;
 }
 
+namespace ui {
+enum class CursorType;
+}
+
 namespace ash {
 
 namespace test {
@@ -27,7 +31,7 @@ class MirrorWindowTestApi {
 
   const aura::WindowTreeHost* GetHost() const;
 
-  int GetCurrentCursorType() const;
+  ui::CursorType GetCurrentCursorType() const;
 
   // Returns the position of the hot point within the cursor. This is
   // unaffected by the cursor location.

@@ -204,7 +204,7 @@ class ScreenshotController::ScopedCursorSetter {
       return;
     gfx::NativeCursor original_cursor = cursor_manager->GetCursor();
     cursor_manager_ = cursor_manager;
-    if (cursor == ui::kCursorNone) {
+    if (cursor == ui::CursorType::kNone) {
       cursor_manager_->HideCursor();
     } else {
       cursor_manager_->SetCursor(cursor);
@@ -261,8 +261,8 @@ void ScreenshotController::StartWindowScreenshotSession(
   }
   SetSelectedWindow(wm::GetActiveWindow());
 
-  cursor_setter_.reset(
-      new ScopedCursorSetter(Shell::Get()->cursor_manager(), ui::kCursorCross));
+  cursor_setter_.reset(new ScopedCursorSetter(Shell::Get()->cursor_manager(),
+                                              ui::CursorType::kCross));
 
   EnableMouseWarp(true);
 }
@@ -287,7 +287,7 @@ void ScreenshotController::StartPartialScreenshotSession(
 
   if (!pen_events_only_) {
     cursor_setter_.reset(new ScopedCursorSetter(Shell::Get()->cursor_manager(),
-                                                ui::kCursorCross));
+                                                ui::CursorType::kCross));
   }
 
   EnableMouseWarp(false);
@@ -340,7 +340,7 @@ void ScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
       // called before ctor is called.
       cursor_setter_.reset();
       cursor_setter_.reset(new ScopedCursorSetter(
-          Shell::Get()->cursor_manager(), ui::kCursorNone));
+          Shell::Get()->cursor_manager(), ui::CursorType::kNone));
     }
     Update(event);
   }

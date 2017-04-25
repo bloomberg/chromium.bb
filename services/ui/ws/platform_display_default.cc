@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/display/screen_manager.h"
+#include "services/ui/public/interfaces/cursor/cursor_struct_traits.h"
 #include "services/ui/ws/display_client_compositor_frame_sink.h"
 #include "services/ui/ws/server_window.h"
 #include "ui/base/cursor/image_cursors.h"
@@ -108,9 +109,13 @@ void PlatformDisplayDefault::SetCursorById(mojom::CursorType cursor_id) {
   // delegate to the window manager to load images from resource packs.
   //
   // We probably also need to deal with different DPIs.
-  ui::Cursor cursor(static_cast<int32_t>(cursor_id));
-  image_cursors_->SetPlatformCursor(&cursor);
-  platform_window_->SetCursor(cursor.platform());
+  ui::CursorType type;
+  if (mojo::EnumTraits<ui::mojom::CursorType, ui::CursorType>::FromMojom(
+          cursor_id, &type)) {
+    ui::Cursor cursor(type);
+    image_cursors_->SetPlatformCursor(&cursor);
+    platform_window_->SetCursor(cursor.platform());
+  }
 }
 
 void PlatformDisplayDefault::UpdateTextInputState(

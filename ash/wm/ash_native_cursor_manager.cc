@@ -93,12 +93,12 @@ void AshNativeCursorManager::SetCursor(
   if (native_cursor_enabled_) {
     image_cursors_->SetPlatformCursor(&cursor);
   } else {
-    gfx::NativeCursor invisible_cursor(ui::kCursorNone);
+    gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
     image_cursors_->SetPlatformCursor(&invisible_cursor);
-    if (cursor == ui::kCursorCustom) {
+    if (cursor == ui::CursorType::kCustom) {
       // Fall back to the default pointer cursor for now. (crbug.com/476078)
       // TODO(oshima): support custom cursor.
-      cursor = ui::kCursorPointer;
+      cursor = ui::CursorType::kPointer;
     } else {
       cursor.SetPlatformCursor(invisible_cursor.platform());
     }
@@ -135,7 +135,7 @@ void AshNativeCursorManager::SetVisibility(
   if (visible) {
     SetCursor(delegate->GetCursor(), delegate);
   } else {
-    gfx::NativeCursor invisible_cursor(ui::kCursorNone);
+    gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
     image_cursors_->SetPlatformCursor(&invisible_cursor);
     SetCursorOnAllRootWindows(invisible_cursor);
   }

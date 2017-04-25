@@ -17,8 +17,10 @@ class UI_BASE_EXPORT CursorLoaderWin : public CursorLoader {
   ~CursorLoaderWin() override;
 
   // Overridden from CursorLoader:
-  void LoadImageCursor(int id, int resource_id, const gfx::Point& hot) override;
-  void LoadAnimatedCursor(int id,
+  void LoadImageCursor(CursorType id,
+                       int resource_id,
+                       const gfx::Point& hot) override;
+  void LoadAnimatedCursor(CursorType id,
                           int resource_id,
                           const gfx::Point& hot,
                           int frame_delay_ms) override;

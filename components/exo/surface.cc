@@ -571,10 +571,10 @@ gfx::NativeCursor Surface::GetCursor() {
   // important. Return the first non-null cursor.
   for (auto* cursor_provider : cursor_providers_) {
     gfx::NativeCursor cursor = cursor_provider->GetCursor();
-    if (cursor != ui::kCursorNull)
+    if (cursor != ui::CursorType::kNull)
       return cursor;
   }
-  return ui::kCursorNull;
+  return ui::CursorType::kNull;
 }
 
 void Surface::SetSurfaceDelegate(SurfaceDelegate* delegate) {

@@ -70,7 +70,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
-    cursor_client->SetCursor(ui::kCursorPointer);
+    cursor_client->SetCursor(ui::CursorType::kPointer);
 
   base::RunLoop run_loop;
 

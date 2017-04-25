@@ -120,7 +120,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
     : xdisplay_(gfx::GetXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
-      current_cursor_(ui::kCursorNull),
+      current_cursor_(ui::CursorType::kNull),
       window_mapped_(false),
       bounds_(bounds),
       atom_cache_(xdisplay_, kAtomsToCache) {

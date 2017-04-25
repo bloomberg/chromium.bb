@@ -46,6 +46,7 @@ class Window;
 }
 namespace ui {
 class Cursor;
+enum class CursorType;
 class Event;
 }
 #endif  // defined(USE_AURA)
@@ -156,7 +157,7 @@ typedef void* NativeViewAccessible;
 
 // A constant value to indicate that gfx::NativeCursor refers to no cursor.
 #if defined(USE_AURA)
-const int kNullCursor = 0;
+const ui::CursorType kNullCursor = static_cast<ui::CursorType>(0);
 #else
 const gfx::NativeCursor kNullCursor = static_cast<gfx::NativeCursor>(NULL);
 #endif

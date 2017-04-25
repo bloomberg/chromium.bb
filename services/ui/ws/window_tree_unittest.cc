@@ -475,11 +475,11 @@ TEST_F(WindowTreeTest, CursorChangesWhenMouseOverWindowAndWindowSetsCursor) {
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
 
   // Set the cursor on the parent as that is where the cursor is picked up from.
-  window->parent()->SetPredefinedCursor(mojom::CursorType::IBEAM);
+  window->parent()->SetPredefinedCursor(mojom::CursorType::kIBeam);
 
   // Because the cursor is over the window when SetCursor was called, we should
   // have immediately changed the cursor.
-  EXPECT_EQ(mojom::CursorType::IBEAM, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kIBeam, cursor_id());
 }
 
 TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
@@ -492,11 +492,11 @@ TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
   // inside.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
   // Set the cursor on the parent as that is where the cursor is picked up from.
-  window->parent()->SetPredefinedCursor(mojom::CursorType::IBEAM);
-  EXPECT_EQ(mojom::CursorType::POINTER, cursor_id());
+  window->parent()->SetPredefinedCursor(mojom::CursorType::kIBeam);
+  EXPECT_EQ(mojom::CursorType::kPointer, cursor_id());
 
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
-  EXPECT_EQ(mojom::CursorType::IBEAM, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kIBeam, cursor_id());
 }
 
 TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
@@ -508,12 +508,12 @@ TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
   // Let's create a pointer event outside the window and then move the pointer
   // inside.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  window->SetPredefinedCursor(mojom::CursorType::IBEAM);
-  EXPECT_EQ(mojom::CursorType::POINTER, cursor_id());
+  window->SetPredefinedCursor(mojom::CursorType::kIBeam);
+  EXPECT_EQ(mojom::CursorType::kPointer, cursor_id());
 
   // With a touch event, we shouldn't update the cursor.
   DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
-  EXPECT_EQ(mojom::CursorType::POINTER, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kPointer, cursor_id());
 }
 
 TEST_F(WindowTreeTest, DragOutsideWindow) {
@@ -526,25 +526,25 @@ TEST_F(WindowTreeTest, DragOutsideWindow) {
   // change the cursor.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
   // Set the cursor on the parent as that is where the cursor is picked up from.
-  window->parent()->SetPredefinedCursor(mojom::CursorType::IBEAM);
-  EXPECT_EQ(mojom::CursorType::POINTER, cursor_id());
+  window->parent()->SetPredefinedCursor(mojom::CursorType::kIBeam);
+  EXPECT_EQ(mojom::CursorType::kPointer, cursor_id());
 
   // Move the pointer to the inside of the window
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
-  EXPECT_EQ(mojom::CursorType::IBEAM, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kIBeam, cursor_id());
 
   // Start the drag.
   DispatchEventAndAckImmediately(CreateMouseDownEvent(21, 22));
-  EXPECT_EQ(mojom::CursorType::IBEAM, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kIBeam, cursor_id());
 
   // Move the cursor (mouse is still down) outside the window.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  EXPECT_EQ(mojom::CursorType::IBEAM, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kIBeam, cursor_id());
 
   // Release the cursor. We should now adapt the cursor of the window
   // underneath the pointer.
   DispatchEventAndAckImmediately(CreateMouseUpEvent(5, 5));
-  EXPECT_EQ(mojom::CursorType::POINTER, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kPointer, cursor_id());
 }
 
 TEST_F(WindowTreeTest, ChangingWindowBoundsChangesCursor) {
@@ -556,17 +556,17 @@ TEST_F(WindowTreeTest, ChangingWindowBoundsChangesCursor) {
   // Put the cursor just outside the bounds of the window.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(41, 41));
   // Sets the cursor on the root as that is where the cursor is picked up from.
-  window->parent()->SetPredefinedCursor(mojom::CursorType::IBEAM);
-  EXPECT_EQ(mojom::CursorType::POINTER, cursor_id());
+  window->parent()->SetPredefinedCursor(mojom::CursorType::kIBeam);
+  EXPECT_EQ(mojom::CursorType::kPointer, cursor_id());
 
   // Expand the bounds of the window so they now include where the cursor now
   // is.
   window->SetBounds(gfx::Rect(20, 20, 25, 25));
-  EXPECT_EQ(mojom::CursorType::IBEAM, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kIBeam, cursor_id());
 
   // Contract the bounds again.
   window->SetBounds(gfx::Rect(20, 20, 20, 20));
-  EXPECT_EQ(mojom::CursorType::POINTER, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kPointer, cursor_id());
 }
 
 TEST_F(WindowTreeTest, WindowReorderingChangesCursor) {
@@ -583,14 +583,14 @@ TEST_F(WindowTreeTest, WindowReorderingChangesCursor) {
       mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   embed_window2->set_event_targeting_policy(
       mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-  embed_window1->SetPredefinedCursor(mojom::CursorType::IBEAM);
-  embed_window2->SetPredefinedCursor(mojom::CursorType::CROSS);
+  embed_window1->SetPredefinedCursor(mojom::CursorType::kIBeam);
+  embed_window2->SetPredefinedCursor(mojom::CursorType::kCross);
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
   // Cursor should match that of top-most window, which is |embed_window2|.
-  EXPECT_EQ(mojom::CursorType::CROSS, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kCross, cursor_id());
   // Move |embed_window1| on top, cursor should now match it.
   embed_window1->parent()->StackChildAtTop(embed_window1);
-  EXPECT_EQ(mojom::CursorType::IBEAM, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kIBeam, cursor_id());
 }
 
 // Assertions around moving cursor between trees with roots.
@@ -608,9 +608,9 @@ TEST_F(WindowTreeTest, CursorMultipleTrees) {
       mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   embed_window2->parent()->set_event_targeting_policy(
       mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-  embed_window1->SetPredefinedCursor(mojom::CursorType::IBEAM);
-  embed_window2->SetPredefinedCursor(mojom::CursorType::CROSS);
-  embed_window1->parent()->SetPredefinedCursor(mojom::CursorType::COPY);
+  embed_window1->SetPredefinedCursor(mojom::CursorType::kIBeam);
+  embed_window2->SetPredefinedCursor(mojom::CursorType::kCross);
+  embed_window1->parent()->SetPredefinedCursor(mojom::CursorType::kCopy);
 
   // Create a child of |embed_window1|.
   ServerWindow* embed_window1_child = NewWindowInTreeWithParent(
@@ -621,15 +621,15 @@ TEST_F(WindowTreeTest, CursorMultipleTrees) {
 
   // Move mouse into |embed_window1|.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  EXPECT_EQ(mojom::CursorType::IBEAM, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kIBeam, cursor_id());
 
   // Move mouse into |embed_window2|.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(25, 25));
-  EXPECT_EQ(mojom::CursorType::CROSS, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kCross, cursor_id());
 
   // Move mouse into area between, which should use cursor set on parent.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(15, 15));
-  EXPECT_EQ(mojom::CursorType::COPY, cursor_id());
+  EXPECT_EQ(mojom::CursorType::kCopy, cursor_id());
 }
 
 TEST_F(WindowTreeTest, EventAck) {

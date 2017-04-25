@@ -1501,7 +1501,7 @@ void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
   if (mouse_locked_)
-    return ui::kCursorNone;
+    return ui::CursorType::kNone;
   return current_cursor_.GetNativeCursor();
 }
 
@@ -2009,8 +2009,8 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
 
   gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();
   // Do not show loading cursor when the cursor is currently hidden.
-  if (is_loading_ && cursor != ui::kCursorNone)
-    cursor = ui::kCursorPointer;
+  if (is_loading_ && cursor != ui::CursorType::kNone)
+    cursor = ui::Cursor(ui::CursorType::kPointer);
 
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);

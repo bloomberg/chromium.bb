@@ -54,15 +54,15 @@ class CursorManagerTest : public aura::test::AuraTestBase {
 };
 
 TEST_F(CursorManagerTest, ShowHideCursor) {
-  cursor_manager_.SetCursor(ui::kCursorCopy);
-  EXPECT_EQ(ui::kCursorCopy, cursor_manager_.GetCursor().native_type());
+  cursor_manager_.SetCursor(ui::CursorType::kCopy);
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_manager_.GetCursor().native_type());
 
   cursor_manager_.ShowCursor();
   EXPECT_TRUE(cursor_manager_.IsCursorVisible());
   cursor_manager_.HideCursor();
   EXPECT_FALSE(cursor_manager_.IsCursorVisible());
   // The current cursor does not change even when the cursor is not shown.
-  EXPECT_EQ(ui::kCursorCopy, cursor_manager_.GetCursor().native_type());
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_manager_.GetCursor().native_type());
 
   // Check if cursor visibility is locked.
   cursor_manager_.LockCursor();
@@ -105,15 +105,15 @@ TEST_F(CursorManagerTest, ShowHideCursor) {
 // Verifies that LockCursor/UnlockCursor work correctly with
 // EnableMouseEvents and DisableMouseEvents
 TEST_F(CursorManagerTest, EnableDisableMouseEvents) {
-  cursor_manager_.SetCursor(ui::kCursorCopy);
-  EXPECT_EQ(ui::kCursorCopy, cursor_manager_.GetCursor().native_type());
+  cursor_manager_.SetCursor(ui::CursorType::kCopy);
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_manager_.GetCursor().native_type());
 
   cursor_manager_.EnableMouseEvents();
   EXPECT_TRUE(cursor_manager_.IsMouseEventsEnabled());
   cursor_manager_.DisableMouseEvents();
   EXPECT_FALSE(cursor_manager_.IsMouseEventsEnabled());
   // The current cursor does not change even when the cursor is not shown.
-  EXPECT_EQ(ui::kCursorCopy, cursor_manager_.GetCursor().native_type());
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_manager_.GetCursor().native_type());
 
   // Check if cursor enable state is locked.
   cursor_manager_.LockCursor();

@@ -51,7 +51,7 @@ bool SameLocation(const ui::LocatedEvent* event, const gfx::PointF& location) {
 
 Pointer::Pointer(PointerDelegate* delegate)
     : delegate_(delegate),
-      cursor_(ui::kCursorNull),
+      cursor_(ui::CursorType::kNull),
       cursor_capture_source_id_(base::UnguessableToken::Create()),
       cursor_capture_weak_ptr_factory_(this) {
   auto* helper = WMHelper::GetInstance();
@@ -125,7 +125,7 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
     CaptureCursor();
   } else {
     cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
-    cursor_ = ui::kCursorNone;
+    cursor_ = ui::CursorType::kNone;
     UpdateCursor();
   }
 }
@@ -151,7 +151,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       // response to each OnPointerEnter() call.
       focus_->UnregisterCursorProvider(this);
       focus_ = nullptr;
-      cursor_ = ui::kCursorNull;
+      cursor_ = ui::CursorType::kNull;
       cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
     }
     // Second generate an enter event if focus moved to a new target.
@@ -348,7 +348,7 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
   if (!focus_)
     return;
 
-  cursor_ = ui::kCursorNone;
+  cursor_ = ui::CursorType::kNone;
   if (!result->IsEmpty()) {
     DCHECK(result->HasBitmap());
     std::unique_ptr<SkBitmap> bitmap = result->TakeBitmap();
@@ -363,7 +363,7 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
     XcursorImage* image = ui::SkBitmapToXcursorImage(bitmap.get(), hotspot);
     platform_cursor = ui::CreateReffedCustomXCursor(image);
 #endif
-    cursor_ = ui::kCursorCustom;
+    cursor_ = ui::CursorType::kCustom;
     cursor_.SetPlatformCursor(platform_cursor);
 #if defined(USE_OZONE)
     ui::CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor);

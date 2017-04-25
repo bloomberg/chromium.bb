@@ -50,7 +50,7 @@ const ui::CursorData& CursorDataFactoryOzone::GetCursorData(
   return ToCursorDataOzone(platform_cursor)->data();
 }
 
-PlatformCursor CursorDataFactoryOzone::GetDefaultCursor(int type) {
+PlatformCursor CursorDataFactoryOzone::GetDefaultCursor(CursorType type) {
   // Unlike BitmapCursorFactoryOzone, we aren't making heavyweight bitmaps, but
   // we still have to cache these forever because objects that come out of the
   // GetDefaultCursor() method aren't treated as refcounted by the ozone
@@ -89,8 +89,8 @@ void CursorDataFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
 }
 
 scoped_refptr<CursorDataOzone> CursorDataFactoryOzone::GetDefaultCursorInternal(
-    int type) {
-  if (type == kCursorNone)
+    CursorType type) {
+  if (type == CursorType::kNone)
     return nullptr;  // nullptr is used for hidden cursor.
 
   if (!default_cursors_.count(type)) {

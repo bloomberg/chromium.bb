@@ -530,7 +530,7 @@ bool TestWindowServerDelegate::IsTestConfig() const {
 // WindowServerTestHelper  ---------------------------------------------------
 
 WindowServerTestHelper::WindowServerTestHelper()
-    : cursor_id_(mojom::CursorType::CURSOR_NULL),
+    : cursor_id_(mojom::CursorType::kNull),
       platform_display_factory_(&cursor_id_) {
   // Some tests create their own message loop, for example to add a task runner.
   if (!base::MessageLoop::current())

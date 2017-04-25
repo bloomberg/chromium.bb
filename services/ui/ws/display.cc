@@ -37,8 +37,7 @@ namespace ui {
 namespace ws {
 
 Display::Display(WindowServer* window_server)
-    : window_server_(window_server),
-      last_cursor_(mojom::CursorType::CURSOR_NULL) {
+    : window_server_(window_server), last_cursor_(mojom::CursorType::kNull) {
   window_server_->window_manager_window_tree_factory_set()->AddObserver(this);
   window_server_->user_id_tracker()->AddObserver(this);
 }

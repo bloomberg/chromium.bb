@@ -32,10 +32,10 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       transient_parent_(nullptr),
       modal_type_(MODAL_TYPE_NONE),
       visible_(false),
-      // Default to POINTER as CURSOR_NULL doesn't change the cursor, it leaves
+      // Default to kPointer as kNull doesn't change the cursor, it leaves
       // the last non-null cursor.
-      cursor_id_(mojom::CursorType::POINTER),
-      non_client_cursor_id_(mojom::CursorType::POINTER),
+      cursor_id_(mojom::CursorType::kPointer),
+      non_client_cursor_id_(mojom::CursorType::kPointer),
       opacity_(1),
       can_focus_(true),
       properties_(properties),
