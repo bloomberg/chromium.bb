@@ -454,10 +454,6 @@ static void quantize_fp_helper_c(
   (void)zbin_ptr;
   (void)quant_shift_ptr;
   (void)iscan;
-#if CONFIG_AOM_QM
-  const qm_val_t *qm_ptr = qparam->qmatrix;
-  const qm_val_t *iqm_ptr = qparam->iqmatrix;
-#endif  // CONFIG_AOM_QM
 
   memset(qcoeff_ptr, 0, n_coeffs * sizeof(*qcoeff_ptr));
   memset(dqcoeff_ptr, 0, n_coeffs * sizeof(*dqcoeff_ptr));
