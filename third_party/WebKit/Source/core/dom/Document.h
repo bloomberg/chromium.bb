@@ -794,14 +794,15 @@ class CORE_EXPORT Document : public ContainerNode,
     ANIMATIONSTART_LISTENER = 1 << 7,
     ANIMATIONITERATION_LISTENER = 1 << 8,
     TRANSITIONEND_LISTENER = 1 << 9,
-    SCROLL_LISTENER = 1 << 10
-    // 5 bits remaining
+    SCROLL_LISTENER = 1 << 10,
+    LOAD_LISTENER_AT_CAPTURE_PHASE_OR_AT_STYLE_ELEMENT = 1 << 11
+    // 4 bits remaining
   };
 
   bool HasListenerType(ListenerType listener_type) const {
     return (listener_types_ & listener_type);
   }
-  void AddListenerTypeIfNeeded(const AtomicString& event_type);
+  void AddListenerTypeIfNeeded(const AtomicString& event_type, EventTarget&);
 
   bool HasMutationObserversOfType(MutationObserver::MutationType type) const {
     return mutation_observer_types_ & type;

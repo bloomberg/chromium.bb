@@ -1442,7 +1442,7 @@ void LocalDOMWindow::AddedEventListener(
         *this, event_type, registered_listener.Options());
 
   if (Document* document = this->document())
-    document->AddListenerTypeIfNeeded(event_type);
+    document->AddListenerTypeIfNeeded(event_type, *this);
 
   for (auto& it : event_listener_observers_) {
     it->DidAddEventListener(this, event_type);

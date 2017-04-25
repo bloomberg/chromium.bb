@@ -1867,7 +1867,7 @@ void Node::DidMoveToNewDocument(Document& old_document) {
         event_target_data->event_listener_map;
     if (!listener_map.IsEmpty()) {
       for (const auto& type : listener_map.EventTypes())
-        GetDocument().AddListenerTypeIfNeeded(type);
+        GetDocument().AddListenerTypeIfNeeded(type, *this);
     }
   }
 
@@ -1894,7 +1894,7 @@ void Node::DidMoveToNewDocument(Document& old_document) {
 void Node::AddedEventListener(const AtomicString& event_type,
                               RegisteredEventListener& registered_listener) {
   EventTarget::AddedEventListener(event_type, registered_listener);
-  GetDocument().AddListenerTypeIfNeeded(event_type);
+  GetDocument().AddListenerTypeIfNeeded(event_type, *this);
   if (Page* page = GetDocument().GetPage())
     page->GetEventHandlerRegistry().DidAddEventHandler(
         *this, event_type, registered_listener.Options());

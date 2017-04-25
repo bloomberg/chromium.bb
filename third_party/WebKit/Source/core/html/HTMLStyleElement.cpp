@@ -107,9 +107,13 @@ const AtomicString& HTMLStyleElement::type() const {
 
 void HTMLStyleElement::DispatchPendingEvent(
     std::unique_ptr<IncrementLoadEventDelayCount> count) {
-  DispatchEvent(Event::Create(loaded_sheet_ ? EventTypeNames::load
-                                            : EventTypeNames::error));
-
+  if (loaded_sheet_) {
+    if (GetDocument().HasListenerType(
+            Document::LOAD_LISTENER_AT_CAPTURE_PHASE_OR_AT_STYLE_ELEMENT))
+      DispatchEvent(Event::Create(EventTypeNames::load));
+  } else {
+    DispatchEvent(Event::Create(EventTypeNames::error));
+  }
   // Checks Document's load event synchronously here for performance.
   // This is safe because dispatchPendingEvent() is called asynchronously.
   count->ClearAndCheckLoadEvent();

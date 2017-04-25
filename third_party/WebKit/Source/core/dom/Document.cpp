@@ -4552,7 +4552,8 @@ void Document::AddMutationEventListenerTypeIfEnabled(
     AddListenerType(listener_type);
 }
 
-void Document::AddListenerTypeIfNeeded(const AtomicString& event_type) {
+void Document::AddListenerTypeIfNeeded(const AtomicString& event_type,
+                                       EventTarget& event_target) {
   if (event_type == EventTypeNames::DOMSubtreeModified) {
     UseCounter::Count(*this, UseCounter::kDOMSubtreeModifiedEvent);
     AddMutationEventListenerTypeIfEnabled(DOMSUBTREEMODIFIED_LISTENER);
@@ -4589,6 +4590,15 @@ void Document::AddListenerTypeIfNeeded(const AtomicString& event_type) {
     AddListenerType(TRANSITIONEND_LISTENER);
   } else if (event_type == EventTypeNames::scroll) {
     AddListenerType(SCROLL_LISTENER);
+  } else if (event_type == EventTypeNames::load) {
+    if (Node* node = event_target.ToNode()) {
+      if (isHTMLStyleElement(*node)) {
+        AddListenerType(LOAD_LISTENER_AT_CAPTURE_PHASE_OR_AT_STYLE_ELEMENT);
+        return;
+      }
+    }
+    if (event_target.HasCapturingEventListeners(event_type))
+      AddListenerType(LOAD_LISTENER_AT_CAPTURE_PHASE_OR_AT_STYLE_ELEMENT);
   }
 }
 
