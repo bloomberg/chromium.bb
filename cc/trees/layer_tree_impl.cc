@@ -760,7 +760,8 @@ float LayerTreeImpl::ClampPageScaleFactorToLimits(
   return page_scale_factor;
 }
 
-void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
+void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread(
+    bool is_impl_side_update) {
   // TODO(enne): This should get replaced by pulling out scrolling and
   // animations into their own trees.  Then scrolls and animations would have
   // their own ways of synchronizing across commits.  This occurs to push
@@ -769,13 +770,19 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   // frame to a newly-committed property tree.
   if (layer_list_.empty())
     return;
+
+  // Entries from |element_id_to_*_animations_| should be deleted only after
+  // they have been synchronized with the main thread, which will not be the
+  // case if this is an impl-side invalidation.
+  const bool can_delete_animations = !is_impl_side_update;
   auto element_id_to_opacity = element_id_to_opacity_animations_.begin();
   while (element_id_to_opacity != element_id_to_opacity_animations_.end()) {
     const ElementId id = element_id_to_opacity->first;
     if (EffectNode* node =
             property_trees_.effect_tree.FindNodeFromElementId(id)) {
-      if (!node->is_currently_animating_opacity ||
-          node->opacity == element_id_to_opacity->second) {
+      if ((!node->is_currently_animating_opacity ||
+           node->opacity == element_id_to_opacity->second) &&
+          can_delete_animations) {
         element_id_to_opacity_animations_.erase(element_id_to_opacity++);
         continue;
       }
@@ -790,8 +797,9 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
     const ElementId id = element_id_to_filter->first;
     if (EffectNode* node =
             property_trees_.effect_tree.FindNodeFromElementId(id)) {
-      if (!node->is_currently_animating_filter ||
-          node->filters == element_id_to_filter->second) {
+      if ((!node->is_currently_animating_filter ||
+           node->filters == element_id_to_filter->second) &&
+          can_delete_animations) {
         element_id_to_filter_animations_.erase(element_id_to_filter++);
         continue;
       }
@@ -806,8 +814,9 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
     const ElementId id = element_id_to_transform->first;
     if (TransformNode* node =
             property_trees_.transform_tree.FindNodeFromElementId(id)) {
-      if (!node->is_currently_animating ||
-          node->local == element_id_to_transform->second) {
+      if ((!node->is_currently_animating ||
+           node->local == element_id_to_transform->second) &&
+          can_delete_animations) {
         element_id_to_transform_animations_.erase(element_id_to_transform++);
         continue;
       }

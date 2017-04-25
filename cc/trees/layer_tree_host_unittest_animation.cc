@@ -1648,6 +1648,84 @@ class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
 // compositor thread.
 MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestAnimationFinishesDuringCommit);
 
+class LayerTreeHostAnimationTestImplSideInvalidation
+    : public LayerTreeHostAnimationTest {
+ public:
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+    layer_ = FakePictureLayer::Create(&client_);
+    layer_->SetBounds(gfx::Size(4, 4));
+    client_.set_bounds(layer_->bounds());
+    layer_tree_host()->root_layer()->AddChild(layer_);
+
+    AttachPlayersToTimeline();
+
+    player_->AttachElement(layer_tree_host()->root_layer()->element_id());
+    player_child_->AttachElement(layer_->element_id());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    if (layer_tree_host()->SourceFrameNumber() == 1)
+      AddAnimatedTransformToPlayer(player_child_.get(), 0.04, 5, 5);
+  }
+
+  void WillCommit() override {
+    if (layer_tree_host()->SourceFrameNumber() == 2) {
+      // Block until the animation finishes on the compositor thread. Since
+      // animations have already been ticked on the main thread, when the commit
+      // happens the state on the main thread will be consistent with having a
+      // running animation but the state on the compositor thread will be
+      // consistent with having only a finished animation.
+      completion_.Wait();
+    }
+  }
+
+  void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) override {
+    DCHECK(did_request_impl_side_invalidation_);
+    completion_.Signal();
+  }
+
+  void UpdateAnimationState(LayerTreeHostImpl* host_impl,
+                            bool has_unfinished_animation) override {
+    if (host_impl->active_tree()->source_frame_number() == 1 &&
+        !has_unfinished_animation && !did_request_impl_side_invalidation_) {
+      // The animation on the active tree has finished, now request an impl-side
+      // invalidation and make sure it finishes before the main thread is
+      // released.
+      did_request_impl_side_invalidation_ = true;
+      host_impl->RequestImplSideInvalidation();
+    }
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    switch (host_impl->sync_tree()->source_frame_number()) {
+      case 1:
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        gfx::Transform expected_transform;
+        expected_transform.Translate(5.f, 5.f);
+        LayerImpl* layer_impl = host_impl->sync_tree()->LayerById(layer_->id());
+        EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
+                                        layer_impl->DrawTransform());
+        EndTest();
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> layer_;
+  FakeContentLayerClient client_;
+  CompletionEvent completion_;
+  bool did_request_impl_side_invalidation_ = false;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestImplSideInvalidation);
+
 class LayerTreeHostAnimationTestNotifyAnimationFinished
     : public LayerTreeHostAnimationTest {
  public:

@@ -1073,6 +1073,19 @@ void LayerTreeHostImpl::InvalidateContentOnImplSide() {
 
   if (!CommitToActiveTree())
     CreatePendingTree();
+
+  // The state of PropertyTrees on the recycle tree can be stale if scrolling
+  // and animation updates were made on the active tree, since these are not
+  // replicated on the recycle tree. We use the function below to handle the
+  // similar case for updates from the main thread not being in sync with
+  // changes made on the active tree.
+  // Note that while in practice only the scroll state should need to be
+  // updated, since the animation state is updated both on the recycle and
+  // active tree. We use the same function as for main thread commits for
+  // consistency.
+  bool is_impl_side_update = true;
+  sync_tree()->UpdatePropertyTreeScrollingAndAnimationFromMainThread(
+      is_impl_side_update);
   UpdateSyncTreeAfterCommitOrImplSideInvalidation();
 }
 

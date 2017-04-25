@@ -186,6 +186,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     if (block_notify_ready_to_activate_for_testing_) {
       notify_ready_to_activate_was_blocked_ = true;
     } else {
+      test_hooks_->WillNotifyReadyToActivateOnThread(this);
       LayerTreeHostImpl::NotifyReadyToActivate();
       test_hooks_->NotifyReadyToActivateOnThread(this);
     }
