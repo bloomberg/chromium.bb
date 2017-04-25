@@ -356,7 +356,8 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
     LOGGER.warn('A transient error occurred while querying %s:\n'
                 '%s %s %s\n'
                 '%s %d %s',
-                conn.host, conn.req_params['method'], conn.req_params['uri'],
+                conn.req_host, conn.req_params['method'],
+                conn.req_params['uri'],
                 http_version, http_version, response.status, response.reason)
     if TRY_LIMIT - idx > 1:
       LOGGER.warn('... will retry %d more times.', TRY_LIMIT - idx - 1)
