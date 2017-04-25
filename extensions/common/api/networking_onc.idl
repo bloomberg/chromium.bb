@@ -263,9 +263,12 @@ namespace networking.onc {
     ClientCertificateType ClientCertType;
     DOMString? Identity;
     DOMString? Inner;
-    DOMString Outer;
+    // The outer EAP type. Required by ONC, but may not be provided when
+    // translating from Shill.
+    DOMString? Outer;
     DOMString? Password;
     boolean? SaveCredentials;
+    DOMString[]? ServerCAPEMs;
     DOMString[]? ServerCARefs;
     boolean? UseProactiveKeyCaching;
     boolean? UseSystemCAs;
