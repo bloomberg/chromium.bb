@@ -89,15 +89,13 @@ class VisualStudioVersion(object):
     if self.sdk_based and sdk_dir and os.path.exists(setup_path):
       return [setup_path, '/' + target_arch]
 
-    # For VS2017 (and newer) it's faily easy
+    # For VS2017 (and newer) it's fairly easy
     if self.short_name >= '2017':
       script_path = JoinPath(self.path,
                              'VC', 'Auxiliary', 'Build', 'vcvarsall.bat')
       return [script_path, target_arch]
 
-    # We try to find the best version of the env setup batch:
-    # We don't use VC/vcvarsall.bat for x86 because vcvarsall calls vcvars32,
-    # which it can only find if VS??COMNTOOLS is set, which isn't guaranteed.
+    # We try to find the best version of the env setup batch.
     vcvarsall = JoinPath(self.path, 'VC', 'vcvarsall.bat')
     is_host_arch_x64 = (
       os.environ.get('PROCESSOR_ARCHITECTURE') == 'AMD64' or
@@ -108,12 +106,12 @@ class VisualStudioVersion(object):
          is_host_arch_x64:
         # VS2013 and later, non-Express have a x64-x86 cross that we want
         # to prefer.
-        arg = 'amd64_x86'
-        script_path = vcvarsall
+        return [vcvarsall, 'amd64_x86']
       else:
-        # Otherwise, the standard x86 compiler.
-        script_path = JoinPath(self.path, 'Common7', 'Tools', 'vsvars32.bat')
-      return [script_path, arg]
+        # Otherwise, the standard x86 compiler. We don't use VC/vcvarsall.bat
+        # for x86 because vcvarsall calls vcvars32, which it can only find if
+        # VS??COMNTOOLS is set, which isn't guaranteed.
+        return [JoinPath(self.path, 'Common7', 'Tools', 'vsvars32.bat')]
     elif target_arch == 'x64':
       arg = 'x86_amd64'
       # Use the 64-on-64 compiler if we're not using an express edition and
