@@ -106,13 +106,11 @@ class CORE_EXPORT PendingScript
   virtual void DisposeInternal() = 0;
 
   PendingScriptClient* Client() { return client_; }
-  bool IsWatchingForLoad() const { return watching_for_load_; }
+  bool IsWatchingForLoad() const { return client_; }
 
   virtual void CheckState() const = 0;
 
  private:
-  bool watching_for_load_;
-
   // |m_element| must points to the corresponding ScriptLoader's
   // ScriptElementBase and thus must be non-null before dispose() is called
   // (except for unit tests).

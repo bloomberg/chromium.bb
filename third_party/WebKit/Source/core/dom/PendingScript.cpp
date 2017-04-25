@@ -32,8 +32,7 @@ namespace blink {
 
 PendingScript::PendingScript(ScriptElementBase* element,
                              const TextPosition& starting_position)
-    : watching_for_load_(false),
-      element_(element),
+    : element_(element),
       starting_position_(starting_position),
       parser_blocking_load_start_time_(0),
       client_(nullptr) {}
@@ -56,12 +55,12 @@ void PendingScript::WatchForLoad(PendingScriptClient* client) {
   CheckState();
 
   DCHECK(!IsWatchingForLoad());
+  DCHECK(client);
   // addClient() will call streamingFinished() if the load is complete. Callers
   // who do not expect to be re-entered from this call should not call
   // watchForLoad for a PendingScript which isReady. We also need to set
   // m_watchingForLoad early, since addClient() can result in calling
   // notifyFinished and further stopWatchingForLoad().
-  watching_for_load_ = true;
   client_ = client;
   if (IsReady())
     client_->PendingScriptFinished(this);
@@ -73,7 +72,6 @@ void PendingScript::StopWatchingForLoad() {
   CheckState();
   DCHECK(IsExternal());
   client_ = nullptr;
-  watching_for_load_ = false;
 }
 
 ScriptElementBase* PendingScript::GetElement() const {
