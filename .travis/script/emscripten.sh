@@ -35,8 +35,9 @@ echo "[liblouis-js] testing builds..."
 # and tested instead.
 cd liblouis-js &&
 npm link ../../js-build --production &&
-# NOTE: we only test the build in NodeJS
-node testrunner/main.js &&
+# NOTE: we only test the build in NodeJS as the browser test environment
+# segfaults sometimes for successful builds.
+npm run test-node &&
 cd ..
 
 if [ $? != 0 ]; then

@@ -31,12 +31,5 @@ git tag -a ${BUILD_VERSION} -m "automatic build for version ${BUILD_VERSION}" &&
 git push git@github.com:liblouis/js-build.git master &&
 git push git@github.com:liblouis/js-build.git $BUILD_VERSION
 
-# --- push in npm registry and move the `next` tag pointing
-#     to the latest development version if necessary
-# TODO: get credentials
-# npm publish
-
-# if [ -z $TRAVIS_TAG ]
-# 	npm dist-tag v0.0.0-${BUILD_VERSION} next
-# 	npm dist-tag v0.0.0-${BUILD_VERSION} ${TRAVIS_COMMIT}
-# fi
+# --- push in npm registry
+# TODO
