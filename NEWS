@@ -4,6 +4,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** New features
 ** Bug fixes
 ** Other changes
+- Fix building of Python bindings when cross-compiling. Thanks to
+  Chris Brannon
 ** Braille table improvements
 - Improvements to the Swedish 8-dots table (~se-se.ctb~) thanks to
   Kevin Derome
