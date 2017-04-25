@@ -76,7 +76,7 @@ source_set("browser") {
     "//device/power_save_blocker",
     "//device/screen_orientation/public/interfaces",
     "//device/vr",
-    "//device/vr:features",
+    "//device/vr/features",
     "//device/wake_lock/public/interfaces",
     "//google_apis",
     "//gpu",
