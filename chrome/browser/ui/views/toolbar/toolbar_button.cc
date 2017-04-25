@@ -177,9 +177,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
   View::ConvertPointToScreen(this, &menu_position);
 
-#if defined(OS_WIN)
-  int left_bound = GetSystemMetrics(SM_XVIRTUALSCREEN);
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   // A window won't overlap between displays on ChromeOS.
   // Use the left bound of the display on which
   // the menu button exists.
