@@ -367,6 +367,7 @@ source_set("common") {
     "//components/tracing:startup_tracing",
     "//content:resources",
     "//content/app/resources",
+    "//content/public/common:service_names",
     "//device/base/synchronization",
     "//device/bluetooth",
     "//gpu",

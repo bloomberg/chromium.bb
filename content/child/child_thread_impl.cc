@@ -70,7 +70,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/runner/common/client_util.h"
 
 #if defined(OS_POSIX)
@@ -451,13 +450,6 @@ void ChildThreadImpl::Init(const Options& options) {
     service_manager_connection_ = ServiceManagerConnection::Create(
         mojo::MakeRequest<service_manager::mojom::Service>(std::move(handle)),
         GetIOTaskRunner());
-
-    // TODO(rockot): Remove this once all child-to-browser interface connections
-    // are made via a Connector rather than directly through an
-    // InterfaceProvider, and all exposed interfaces are exposed via a
-    // ConnectionFilter.
-    service_manager_connection_->SetupInterfaceRequestProxies(
-        GetInterfaceRegistry(), nullptr);
   }
 
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
@@ -635,14 +627,6 @@ void ChildThreadImpl::RecordComputedAction(const std::string& action) {
 
 ServiceManagerConnection* ChildThreadImpl::GetServiceManagerConnection() {
   return service_manager_connection_.get();
-}
-
-service_manager::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
-  if (!interface_registry_.get()) {
-    interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
-        service_manager::mojom::kServiceManager_ConnectorSpec);
-  }
-  return interface_registry_.get();
 }
 
 service_manager::Connector* ChildThreadImpl::GetConnector() {
