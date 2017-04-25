@@ -15,6 +15,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
+#include "chromeos/network/tether_constants.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -100,7 +101,10 @@ void UIProxyConfigService::UpdateFromPrefs(const std::string& network_guid) {
             network_guid);
     if (!network) {
       NET_LOG(ERROR) << "No NetworkState for guid: " << network_guid;
-    } else if (!network->IsInProfile()) {
+    } else if (!network->IsInProfile() && network->type() != kTypeTether) {
+      // Tether networks are not expected to have an associated profile; only
+      // log an error if the provided properties do not correspond to a
+      // Tether network.
       NET_LOG(ERROR) << "Network not in profile: " << network_guid;
       network = nullptr;
     }

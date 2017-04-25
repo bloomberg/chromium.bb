@@ -361,6 +361,37 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(NetworkConfigurationHandlerTest, GetProperties_TetherNetwork) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
+
+  std::string kTetherGuid = "TetherGuid";
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid, "TetherNetworkName", "TetherNetworkCarrier",
+      100 /* battery_percentage */, 100 /* signal_strength */);
+
+  std::string expected_json =
+      "{\n   "
+      "\"GUID\": \"TetherGuid\",\n   "
+      "\"Name\": \"TetherNetworkName\",\n   "
+      "\"Priority\": 0,\n   "
+      "\"Profile\": \"\",\n   "
+      "\"SecurityClass\": \"\",\n   "
+      "\"State\": \"\",\n   "
+      "\"Tether.BatteryPercentage\": 100,\n   "
+      "\"Tether.Carrier\": \"TetherNetworkCarrier\",\n   "
+      "\"Tether.SignalStrength\": 100,\n   "
+      "\"Type\": \"wifi-tether\"\n"
+      "}\n";
+
+  // Tether networks use service path and GUID interchangeably.
+  std::string& tether_service_path = kTetherGuid;
+  network_configuration_handler_->GetShillProperties(
+      tether_service_path,
+      base::Bind(&DictionaryValueCallback, tether_service_path, expected_json),
+      base::Bind(&ErrorCallback));
+}
+
 TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
   std::string service_path = "/service/1";
   std::string networkName = "MyNetwork";

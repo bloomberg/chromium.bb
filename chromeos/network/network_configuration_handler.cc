@@ -228,6 +228,20 @@ void NetworkConfigurationHandler::GetShillProperties(
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG(USER) << "GetShillProperties: " << service_path;
+
+  const NetworkState* network_state =
+      network_state_handler_->GetNetworkState(service_path);
+  if (network_state &&
+      NetworkTypePattern::Tether().MatchesType(network_state->type())) {
+    // If this is a Tether network, use the properties present in the
+    // NetworkState object provided by NetworkStateHandler. Tether networks are
+    // not present in Shill, so the Shill call below will not work.
+    base::DictionaryValue dictionary;
+    network_state->GetStateProperties(&dictionary);
+    callback.Run(service_path, dictionary);
+    return;
+  }
+
   DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
       dbus::ObjectPath(service_path),
       base::Bind(&NetworkConfigurationHandler::GetPropertiesCallback,

@@ -318,6 +318,7 @@ const OncFieldSignature network_configuration_fields[] = {
     {::onc::kRecommended, &kRecommendedSignature},
     {::onc::kRemove, &kBoolSignature},
     {::onc::network_config::kStaticIPConfig, &kStaticIPConfigSignature},
+    {::onc::network_config::kTether, &kTetherSignature},
     {::onc::network_config::kType, &kStringSignature},
     {::onc::network_config::kVPN, &kVPNSignature},
     {::onc::network_config::kWiFi, &kWiFiSignature},

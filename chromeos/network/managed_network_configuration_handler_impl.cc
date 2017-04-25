@@ -38,6 +38,7 @@
 #include "chromeos/network/policy_util.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/network/shill_property_util.h"
+#include "chromeos/network/tether_constants.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -85,6 +86,13 @@ const base::DictionaryValue* GetByGUID(const GuidToPolicyMap& policies,
   if (it == policies.end())
     return NULL;
   return it->second.get();
+}
+
+bool IsTetherShillDictionary(const base::DictionaryValue& dict) {
+  std::string network_type;
+  return dict.GetStringWithoutPathExpansion(shill::kTypeProperty,
+                                            &network_type) &&
+         network_type == kTypeTether;
 }
 
 }  // namespace
@@ -143,13 +151,17 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
                                                   &profile_path);
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForPath(profile_path);
-  if (!profile)
+  if (!profile && !IsTetherShillDictionary(*shill_properties)) {
+    // Tether networks are not expected to have an associated profile; only
+    // log an error if the provided properties do not correspond to a
+    // Tether network.
     NET_LOG_ERROR("No profile for service: " + profile_path, service_path);
+  }
 
   std::unique_ptr<NetworkUIData> ui_data =
       shill_property_util::GetUIDataFromProperties(*shill_properties);
 
-  const base::DictionaryValue* user_settings = NULL;
+  const base::DictionaryValue* user_settings = nullptr;
 
   if (ui_data && profile) {
     user_settings = ui_data->user_settings();
@@ -172,8 +184,8 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
                                           &onc::kNetworkWithStateSignature,
                                           network_state));
 
-  const base::DictionaryValue* network_policy = NULL;
-  const base::DictionaryValue* global_policy = NULL;
+  const base::DictionaryValue* network_policy = nullptr;
+  const base::DictionaryValue* global_policy = nullptr;
   if (profile) {
     const Policies* policies = GetPoliciesForProfile(*profile);
     if (!policies) {
