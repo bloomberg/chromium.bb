@@ -333,10 +333,7 @@ bool BrowserWindowCocoa::IsToolbarShowing() const {
   if (!IsFullscreen())
     return true;
 
-  // TODO(zijiehe): Retrieve the visibility of toolbar from
-  // FullscreenToolbarController. See http://crbug.com/702251 and
-  // http://crbug.com/680809.
-  return true;
+  return [cocoa_controller() isToolbarShowing] == YES;
 }
 
 void BrowserWindowCocoa::BookmarkBarStateChanged(
@@ -734,13 +731,14 @@ BrowserWindowCocoa::PreHandleKeyboardEvent(
     return content::KeyboardEventProcessingResult::NOT_HANDLED;
 
   if (browser_->command_controller()->IsReservedCommandOrKey(id, event)) {
+    using Result = content::KeyboardEventProcessingResult;
     return [BrowserWindowUtils handleKeyboardEvent:event.os_event
                                           inWindow:window()]
-               ? content::KeyboardEventProcessingResult::HANDLED
-               : content::KeyboardEventProcessingResult::NOT_HANDLED;
+               ? Result::HANDLED
+               : Result::NOT_HANDLED_IS_SHORTCUT;
   }
 
-  return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 void BrowserWindowCocoa::HandleKeyboardEvent(

@@ -172,7 +172,7 @@ class BrowserWindowCocoa
   void UpdateAlertState(TabAlertState alert_state);
 
   // Returns the cocoa-world BrowserWindowController
-  BrowserWindowController* cocoa_controller() { return controller_; }
+  BrowserWindowController* cocoa_controller() const { return controller_; }
 
   // Returns window title based on the active tab title and the window's alert
   // state.

@@ -1919,6 +1919,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
     [[self window] performSelector:@selector(setTouchBar:) withObject:nil];
 }
 
+- (BOOL)isToolbarShowing {
+  return [fullscreenToolbarController_ mustShowFullscreenToolbar];
+}
+
 @end  // @implementation BrowserWindowController
 
 @implementation BrowserWindowController(Fullscreen)

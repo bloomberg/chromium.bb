@@ -404,6 +404,10 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Invalidates the browser's touch bar.
 - (void)invalidateTouchBar;
 
+// Indicates whether the toolbar is visible to the user. Toolbar is usually
+// triggered by moving mouse cursor to the top of the monitor.
+- (BOOL)isToolbarShowing;
+
 @end  // @interface BrowserWindowController
 
 
