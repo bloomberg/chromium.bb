@@ -146,8 +146,7 @@ public class DataReductionProxySettings {
 
     /** Returns true if the snackbar promo is allowed to be shown. */
     public boolean isSnackbarPromoAllowed(String url) {
-        return url.startsWith(UrlConstants.HTTP_URL_PREFIX) && isDataReductionProxyEnabled()
-                && isDataReductionProxyPromoAllowed();
+        return url.startsWith(UrlConstants.HTTP_URL_PREFIX) && isDataReductionProxyEnabled();
     }
 
     /**

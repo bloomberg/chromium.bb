@@ -10,6 +10,7 @@ import android.test.UiThreadTest;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -76,6 +77,37 @@ public class DataReductionPromoSnackbarControllerTest extends ChromeTabbedActivi
                 .endsWith(SECOND_SNACKBAR_SIZE_STRING));
         assertEquals(SECOND_SNACKBAR_SIZE_MB * BYTES_IN_MB,
                 DataReductionPromoUtils.getDisplayedSnackbarPromoSavedBytes());
+    }
+
+    @UiThreadTest
+    @MediumTest
+    @CommandLineFlags.Add({
+            "force-fieldtrials=" + DataReductionPromoSnackbarController.PROMO_FIELD_TRIAL_NAME
+                    + "/SnackbarPromoOnly",
+            "force-fieldtrial-params=" + DataReductionPromoSnackbarController.PROMO_FIELD_TRIAL_NAME
+                    + ".SnackbarPromoOnly:"
+                    + DataReductionPromoSnackbarController.PROMO_PARAM_NAME + "/"
+                    + FIRST_SNACKBAR_SIZE_MB + ";"
+                    + SECOND_SNACKBAR_SIZE_MB })
+    public void testDataReductionPromoSnackbarControllerNoOtherPromos() {
+        assertFalse(DataReductionPromoUtils.hasSnackbarPromoBeenInitWithStartingSavedBytes());
+
+        mController.maybeShowDataReductionPromoSnackbar(0);
+
+        assertFalse(mManager.isShowing());
+        assertTrue(DataReductionPromoUtils.hasSnackbarPromoBeenInitWithStartingSavedBytes());
+        assertEquals(0, DataReductionPromoUtils.getDisplayedSnackbarPromoSavedBytes());
+
+        mController.maybeShowDataReductionPromoSnackbar(FIRST_SNACKBAR_SIZE_MB * BYTES_IN_MB);
+
+        assertTrue(mManager.isShowing());
+        assertTrue(mManager.getCurrentSnackbarForTesting().getText().toString()
+                .endsWith(FIRST_SNACKBAR_SIZE_STRING));
+        assertEquals(FIRST_SNACKBAR_SIZE_MB * BYTES_IN_MB,
+                DataReductionPromoUtils.getDisplayedSnackbarPromoSavedBytes());
+        mManager.dismissSnackbars(mController);
+
+        assertFalse(DataReductionProxySettings.getInstance().isDataReductionProxyPromoAllowed());
     }
 
     @UiThreadTest
