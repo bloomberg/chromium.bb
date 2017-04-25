@@ -89,18 +89,27 @@ class VisualStudioVersion(object):
     if self.sdk_based and sdk_dir and os.path.exists(setup_path):
       return [setup_path, '/' + target_arch]
 
-    # For VS2017 (and newer) it's fairly easy
-    if self.short_name >= '2017':
-      script_path = JoinPath(self.path,
-                             'VC', 'Auxiliary', 'Build', 'vcvarsall.bat')
-      return [script_path, target_arch]
-
-    # We try to find the best version of the env setup batch.
-    vcvarsall = JoinPath(self.path, 'VC', 'vcvarsall.bat')
     is_host_arch_x64 = (
       os.environ.get('PROCESSOR_ARCHITECTURE') == 'AMD64' or
       os.environ.get('PROCESSOR_ARCHITEW6432') == 'AMD64'
     )
+
+    # For VS2017 (and newer) it's fairly easy
+    if self.short_name >= '2017':
+      script_path = JoinPath(self.path,
+                             'VC', 'Auxiliary', 'Build', 'vcvarsall.bat')
+
+      # Always use a native executable, cross-compiling if necessary.
+      host_arch = 'amd64' if is_host_arch_x64 else 'x86'
+      msvc_target_arch = 'amd64' if target_arch == 'x64' else 'x86'
+      arg = host_arch
+      if host_arch != msvc_target_arch:
+        arg += '_' + msvc_target_arch
+
+      return [script_path, arg]
+
+    # We try to find the best version of the env setup batch.
+    vcvarsall = JoinPath(self.path, 'VC', 'vcvarsall.bat')
     if target_arch == 'x86':
       if self.short_name >= '2013' and self.short_name[-1] != 'e' and \
          is_host_arch_x64:
