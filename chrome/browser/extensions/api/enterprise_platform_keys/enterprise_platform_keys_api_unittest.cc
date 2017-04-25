@@ -390,10 +390,9 @@ TEST_F(EPKChallengeMachineKeyTest, Success) {
   std::unique_ptr<base::Value> value(
       RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), browser()));
 
-  const base::Value* response;
-  ASSERT_TRUE(value->GetAsBinary(&response));
-  EXPECT_EQ("response", std::string(response->GetBlob().data(),
-                                    response->GetBlob().size()));
+  ASSERT_TRUE(value->is_blob());
+  EXPECT_EQ("response",
+            std::string(value->GetBlob().data(), value->GetBlob().size()));
 }
 
 TEST_F(EPKChallengeMachineKeyTest, KeyRegisteredSuccess) {
@@ -420,10 +419,9 @@ TEST_F(EPKChallengeMachineKeyTest, KeyRegisteredSuccess) {
   std::unique_ptr<base::Value> value(RunFunctionAndReturnSingleResult(
       func_.get(), CreateArgsRegister(), browser()));
 
-  const base::Value* response;
-  ASSERT_TRUE(value->GetAsBinary(&response));
-  EXPECT_EQ("response", std::string(response->GetBlob().data(),
-                                    response->GetBlob().size()));
+  ASSERT_TRUE(value->is_blob());
+  EXPECT_EQ("response",
+            std::string(value->GetBlob().data(), value->GetBlob().size()));
 }
 
 TEST_F(EPKChallengeMachineKeyTest, AttestationNotPrepared) {
@@ -595,10 +593,9 @@ TEST_F(EPKChallengeUserKeyTest, Success) {
   std::unique_ptr<base::Value> value(
       RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), browser()));
 
-  const base::Value* response;
-  ASSERT_TRUE(value->GetAsBinary(&response));
-  EXPECT_EQ("response", std::string(response->GetBlob().data(),
-                                    response->GetBlob().size()));
+  ASSERT_TRUE(value->is_blob());
+  EXPECT_EQ("response",
+            std::string(value->GetBlob().data(), value->GetBlob().size()));
 }
 
 TEST_F(EPKChallengeUserKeyTest, AttestationNotPrepared) {

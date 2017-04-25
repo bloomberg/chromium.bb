@@ -126,12 +126,11 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     gfx::ImageSkia* icon) {
   for (base::DictionaryValue::Iterator iter(dict); !iter.IsAtEnd();
        iter.Advance()) {
-    const base::Value* image_data;
     std::string binary_string64;
     IPC::Message pickle;
-    if (iter.value().GetAsBinary(&image_data)) {
-      pickle = IPC::Message(image_data->GetBlob().data(),
-                            image_data->GetBlob().size());
+    if (iter.value().is_blob()) {
+      pickle = IPC::Message(iter.value().GetBlob().data(),
+                            iter.value().GetBlob().size());
     } else if (iter.value().GetAsString(&binary_string64)) {
       std::string binary_string;
       if (!base::Base64Decode(binary_string64, &binary_string))

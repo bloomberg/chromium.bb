@@ -173,12 +173,11 @@ struct UnionTraits<common::mojom::ValueDataView, base::Value> {
   }
 
   static mojo::ConstCArray<uint8_t> binary_value(const base::Value& value) {
-    const base::Value* binary_value = nullptr;
-    if (!value.GetAsBinary(&binary_value))
+    if (!value.is_blob())
       NOTREACHED();
     return mojo::ConstCArray<uint8_t>(
-        binary_value->GetBlob().size(),
-        reinterpret_cast<const uint8_t*>(binary_value->GetBlob().data()));
+        value.GetBlob().size(),
+        reinterpret_cast<const uint8_t*>(value.GetBlob().data()));
   }
 
   static const base::ListValue& list_value(const base::Value& value) {

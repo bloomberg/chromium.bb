@@ -304,14 +304,6 @@ bool Value::GetAsString(StringPiece* out_value) const {
   return is_string();
 }
 
-bool Value::GetAsBinary(const Value** out_value) const {
-  if (out_value && is_blob()) {
-    *out_value = this;
-    return true;
-  }
-  return is_blob();
-}
-
 bool Value::GetAsList(ListValue** out_value) {
   if (out_value && is_list()) {
     *out_value = static_cast<ListValue*>(this);

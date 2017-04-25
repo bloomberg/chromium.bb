@@ -148,7 +148,6 @@ class BASE_EXPORT Value {
   bool GetAsString(string16* out_value) const;
   bool GetAsString(const Value** out_value) const;
   bool GetAsString(StringPiece* out_value) const;
-  bool GetAsBinary(const Value** out_value) const;
   // ListValue::From is the equivalent for std::unique_ptr conversions.
   bool GetAsList(ListValue** out_value);
   bool GetAsList(const ListValue** out_value) const;

@@ -462,12 +462,6 @@ TEST(ValuesTest, BinaryValue) {
   ASSERT_EQ(42U, binary->GetBlob().size());
   ASSERT_EQ(0, memcmp(stack_buffer, binary->GetBlob().data(),
                       binary->GetBlob().size()));
-
-  // Test overloaded GetAsBinary.
-  Value* narrow_value = binary.get();
-  const Value* narrow_binary = NULL;
-  ASSERT_TRUE(narrow_value->GetAsBinary(&narrow_binary));
-  EXPECT_EQ(binary.get(), narrow_binary);
 }
 
 TEST(ValuesTest, StringValue) {
