@@ -163,6 +163,7 @@ static_library("browser") {
     "//components/url_formatter",
     "//components/variations",
     "//components/webdata/common",
+    "//crypto",
     "//google_apis",
     "//net",
     "//sql",

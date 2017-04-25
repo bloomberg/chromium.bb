@@ -49,6 +49,9 @@ void TrimUsernameOnlyCredentials(
 // and required to always return non-null.
 bool IsLoggingActive(const password_manager::PasswordManagerClient* client);
 
+// Returns 37 bits from Sha256 hash.
+uint64_t Calculate37BitsOfSHA256Hash(const base::StringPiece16& text);
+
 }  // namespace password_manager_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_

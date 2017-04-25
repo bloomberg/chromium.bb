@@ -9,6 +9,7 @@ include_rules = [
   "+components/url_formatter",
   "+components/variations",
   "+components/webdata/common",
+  "+crypto",
   "+google_apis",
   "+grit",
 ]

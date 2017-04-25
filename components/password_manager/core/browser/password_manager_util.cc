@@ -11,6 +11,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/sync/driver/sync_service.h"
+#include "crypto/sha2.h"
 
 namespace password_manager_util {
 
@@ -81,6 +82,20 @@ void TrimUsernameOnlyCredentials(
 bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {
   const password_manager::LogManager* log_manager = client->GetLogManager();
   return log_manager && log_manager->IsLoggingActive();
+}
+
+uint64_t Calculate37BitsOfSHA256Hash(const base::StringPiece16& text) {
+  constexpr size_t kBytesFromSha256Hash = 5;
+  uint8_t hash[kBytesFromSha256Hash];
+  base::StringPiece text_8bits(reinterpret_cast<const char*>(text.data()),
+                               text.size() * 2);
+  crypto::SHA256HashString(text_8bits, hash, kBytesFromSha256Hash);
+  uint64_t hash37 = ((static_cast<uint64_t>(hash[0]))) |
+                    ((static_cast<uint64_t>(hash[1])) << 8) |
+                    ((static_cast<uint64_t>(hash[2])) << 16) |
+                    ((static_cast<uint64_t>(hash[3])) << 24) |
+                    (((static_cast<uint64_t>(hash[4])) & 0x1F) << 32);
+  return hash37;
 }
 
 }  // namespace password_manager_util

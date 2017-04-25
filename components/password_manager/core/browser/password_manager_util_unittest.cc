@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_manager_util.h"
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -55,4 +56,20 @@ TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
   password_manager_util::TrimUsernameOnlyCredentials(&forms);
 
   EXPECT_THAT(forms, UnorderedPasswordFormElementsAre(&expected_forms));
+}
+
+TEST(PasswordManagerUtil, Calculate37BitsOfSHA256Hash) {
+  const char* kInputData[] = {"", "password", "secret"};
+
+  const uint64_t kExpectedResult[] = {
+      UINT64_C(0x1842c4b0e3), UINT64_C(0x55d0601e2), UINT64_C(0x8b9dea8b3)};
+
+  ASSERT_EQ(arraysize(kInputData), arraysize(kExpectedResult));
+
+  for (size_t i = 0; i < arraysize(kInputData); ++i) {
+    base::string16 input = base::UTF8ToUTF16(kInputData[i]);
+
+    EXPECT_EQ(kExpectedResult[i],
+              password_manager_util::Calculate37BitsOfSHA256Hash(input));
+  }
 }
