@@ -158,17 +158,17 @@ class OmniboxResultView : public views::View,
                        bool is_ui_rtl,
                        bool is_match_contents_rtl) const;
 
-  // Returns the font to use for the description line of answer suggestions.
-  const gfx::FontList& GetAnswerLineFont() const;
+  // Returns the font to use for the description section of answer suggestions.
+  const gfx::FontList& GetAnswerFont() const;
 
-  // Returns the height of the the description line of answer suggestions.
-  int GetAnswerLineHeight() const;
+  // Returns the height of the the description section of answer suggestions.
+  int GetAnswerHeight() const;
 
-  // Returns the height of the content line.
-  int GetContentLineHeight() const;
+  // Returns the margin that should appear at the top and bottom of the result.
+  int GetVerticalMargin() const;
 
   // Creates a RenderText with text and styling from the image line.
-  std::unique_ptr<gfx::RenderText> CreateAnswerLine(
+  std::unique_ptr<gfx::RenderText> CreateAnswerText(
       const SuggestionAnswer::ImageLine& line,
       const gfx::FontList& font_list) const;
 
