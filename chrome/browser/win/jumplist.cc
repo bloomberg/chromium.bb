@@ -207,19 +207,30 @@ void UpdateJumpList(const wchar_t* app_id,
   if (begin_update_timer.Elapsed() >= kTimeOutForJumplistUpdate)
     return;
 
-  // We allocate 60% of the given JumpList slots to "most-visited" items
-  // and 40% to "recently-closed" items, respectively.
-  // Nevertheless, if there are not so many items in |recently_closed_pages|,
-  // we give the remaining slots to "most-visited" items.
   // The default maximum number of items to display in JumpList is 10.
-  // https://msdn.microsoft.com/en-us/library/windows/desktop/dd378398(v=vs.85).aspx
-  const int kMostVisited = 60;
-  const int kRecentlyClosed = 40;
+  // https://msdn.microsoft.com/library/windows/desktop/dd378398.aspx
+  // The "Most visited" category title always takes 1 of the JumpList slots if
+  // |most_visited_pages| isn't empty.
+  // The "Recently closed" category title will also take 1 if
+  // |recently_closed_pages| isn't empty.
+  // For the remaining slots, we allocate 5/8 (i.e., 5 slots if both categories
+  // present) to "most-visited" items and 3/8 (i.e., 3 slots if both categories
+  // present) to "recently-closed" items, respectively.
+
+  const int kMostVisited = 50;
+  const int kRecentlyClosed = 30;
   const int kTotal = kMostVisited + kRecentlyClosed;
+
+  // Adjust the available jumplist slots to account for the category titles.
+  size_t user_max_items_adjusted = jumplist_updater.user_max_items();
+  if (!most_visited_pages.empty())
+    --user_max_items_adjusted;
+  if (!recently_closed_pages.empty())
+    --user_max_items_adjusted;
+
   size_t most_visited_items =
-      MulDiv(jumplist_updater.user_max_items(), kMostVisited, kTotal);
-  size_t recently_closed_items =
-      jumplist_updater.user_max_items() - most_visited_items;
+      MulDiv(user_max_items_adjusted, kMostVisited, kTotal);
+  size_t recently_closed_items = user_max_items_adjusted - most_visited_items;
   if (recently_closed_pages.size() < recently_closed_items) {
     most_visited_items += recently_closed_items - recently_closed_pages.size();
     recently_closed_items = recently_closed_pages.size();
@@ -441,7 +452,7 @@ void JumpList::TabRestoreServiceChanged(sessions::TabRestoreService* service) {
   //   An empty string. This value is to be updated in OnFaviconDataAvailable().
   // This code is copied from
   // RecentlyClosedTabsHandler::TabRestoreServiceChanged() to emulate it.
-  const int kRecentlyClosedCount = 4;
+  const int kRecentlyClosedCount = 3;
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile_);
   for (const auto& entry : tab_restore_service->entries()) {
