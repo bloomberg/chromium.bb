@@ -5480,7 +5480,6 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_EXT_INTER
                                 int_mv *ref_mv_sub8x8[2],
 #endif  // CONFIG_EXT_INTER
-                                int_mv single_newmv[TOTAL_REFS_PER_FRAME],
                                 int *rate_mv, const int block) {
   const AV1_COMMON *const cm = &cpi->common;
   const int pw = block_size_wide[bsize];
@@ -5489,8 +5488,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   // This function should only ever be called for compound modes
   assert(has_second_ref(mbmi));
-  const int refs[2] = { mbmi->ref_frame[0],
-                        mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1] };
+  const int refs[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
   int_mv ref_mv[2];
   int ite, ref;
 #if CONFIG_DUAL_FILTER
@@ -5523,8 +5521,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   struct buf_2d backup_yv12[2][MAX_MB_PLANE];
   int last_besterr[2] = { INT_MAX, INT_MAX };
   const YV12_BUFFER_CONFIG *const scaled_ref_frame[2] = {
-    av1_get_scaled_ref_frame(cpi, mbmi->ref_frame[0]),
-    av1_get_scaled_ref_frame(cpi, mbmi->ref_frame[1])
+    av1_get_scaled_ref_frame(cpi, refs[0]),
+    av1_get_scaled_ref_frame(cpi, refs[1])
   };
 
 // Prediction buffer from second frame.
@@ -5557,8 +5555,6 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       av1_setup_pre_planes(xd, ref, scaled_ref_frame[ref], mi_row, mi_col,
                            NULL);
     }
-
-    frame_mv[refs[ref]].as_int = single_newmv[refs[ref]].as_int;
   }
 
 // Since we have scaled the reference frames to match the size of the current
@@ -6236,12 +6232,16 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
           mi_buf_shift(x, index);
           if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
             int rate_mv;
+            frame_mv[this_mode][mbmi->ref_frame[0]].as_int =
+                seg_mvs[index][mbmi->ref_frame[0]].as_int;
+            frame_mv[this_mode][mbmi->ref_frame[1]].as_int =
+                seg_mvs[index][mbmi->ref_frame[1]].as_int;
             joint_motion_search(cpi, x, bsize, frame_mv[this_mode], mi_row,
                                 mi_col,
 #if CONFIG_EXT_INTER
                                 bsi->ref_mv,
 #endif  // CONFIG_EXT_INTER
-                                seg_mvs[index], &rate_mv, index);
+                                &rate_mv, index);
 #if CONFIG_EXT_INTER
             compound_seg_newmvs[index][0].as_int =
                 frame_mv[this_mode][mbmi->ref_frame[0]].as_int;
@@ -7966,12 +7966,12 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
       if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
         joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col, NULL,
-                            single_newmv, rate_mv, 0);
+                            rate_mv, 0);
       } else {
         *rate_mv = 0;
         for (i = 0; i < 2; ++i) {
 #if CONFIG_REF_MV
-          av1_set_mvcost(x, mbmi->ref_frame[i], i, mbmi->ref_mv_idx);
+          av1_set_mvcost(x, refs[i], i, mbmi->ref_mv_idx);
 #endif  // CONFIG_REF_MV
           *rate_mv += av1_mv_bit_cost(
               &frame_mv[refs[i]].as_mv, &mbmi_ext->ref_mvs[refs[i]][0].as_mv,
@@ -7981,7 +7981,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
     } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
       frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
 #if CONFIG_REF_MV
-      av1_set_mvcost(x, mbmi->ref_frame[1], 1, mbmi->ref_mv_idx);
+      av1_set_mvcost(x, refs[1], 1, mbmi->ref_mv_idx);
 #endif  // CONFIG_REF_MV
       *rate_mv = av1_mv_bit_cost(&frame_mv[refs[1]].as_mv,
                                  &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
@@ -7990,7 +7990,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       assert(this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV);
       frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
 #if CONFIG_REF_MV
-      av1_set_mvcost(x, mbmi->ref_frame[0], 0, mbmi->ref_mv_idx);
+      av1_set_mvcost(x, refs[0], 0, mbmi->ref_mv_idx);
 #endif  // CONFIG_REF_MV
       *rate_mv = av1_mv_bit_cost(&frame_mv[refs[0]].as_mv,
                                  &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
@@ -8002,13 +8002,12 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
     frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
 
     if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
-      joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col, single_newmv,
-                          rate_mv, 0);
+      joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col, rate_mv, 0);
     } else {
       *rate_mv = 0;
       for (i = 0; i < 2; ++i) {
 #if CONFIG_REF_MV
-        av1_set_mvcost(x, mbmi->ref_frame[i], i, mbmi->ref_mv_idx);
+        av1_set_mvcost(x, refs[i], i, mbmi->ref_mv_idx);
 #endif  // CONFIG_REF_MV
         *rate_mv += av1_mv_bit_cost(&frame_mv[refs[i]].as_mv,
                                     &mbmi_ext->ref_mvs[refs[i]][0].as_mv,
