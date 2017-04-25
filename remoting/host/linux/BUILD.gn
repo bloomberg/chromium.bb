@@ -56,22 +56,30 @@ source_set("linux") {
     "audio_pipe_reader.h",
     "certificate_watcher.cc",
     "certificate_watcher.h",
-    "unicode_to_keysym.cc",
-    "unicode_to_keysym.h",
   ]
 
   deps = [
     "//remoting/protocol",
     "//third_party/webrtc/modules/desktop_capture",
   ]
+  public_deps = []
 
   if (use_x11) {
     deps += [ ":x11" ]
+  }
+  if (is_desktop_linux) {
+    deps += [ "//build/config/linux/gtk" ]
   }
 }
 
 source_set("x11") {
   sources = [
+    "unicode_to_keysym.cc",
+    "unicode_to_keysym.h",
+    "x11_character_injector.cc",
+    "x11_character_injector.h",
+    "x11_keyboard_impl.cc",
+    "x11_keyboard_impl.h",
     "x11_util.cc",
     "x11_util.h",
     "x_server_clipboard.cc",
@@ -107,4 +115,40 @@ target("executable", "remoting_native_messaging_host") {
   defines =
       [ "VERSION=" + "$chrome_version_major" + "." + "$remoting_version_patch" +
         "." + "$chrome_version_build" + "." + "$chrome_version_patch" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "audio_pipe_reader_unittest.cc",
+    "certificate_watcher_unittest.cc",
+    "unicode_to_keysym_unittest.cc",
+    "x11_character_injector_unittest.cc",
+    "x_server_clipboard_unittest.cc",
+  ]
+
+  if (!use_x11) {
+    sources -= [ "unicode_to_keysym_unittest.cc" ]
+  }
+
+  configs += [ "//remoting/build/config:version" ]
+
+  deps = [
+    "//remoting/host",
+    "//remoting/host:test_support",
+    "//remoting/host/it2me:common",
+    "//remoting/host/native_messaging",
+    "//remoting/host/security_key:unit_tests",
+    "//remoting/host/setup",
+    "//remoting/proto",
+    "//remoting/resources",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (!is_ios) {
+    deps += [ "//components/policy/core/browser:test_support" ]
+  }
 }

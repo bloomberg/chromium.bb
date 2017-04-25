@@ -4,9 +4,7 @@
 
 #include "remoting/host/mac/constants_mac.h"
 
-#if defined(GN_BUILD)
 #include "remoting/host/version.h"
-#endif
 
 namespace remoting {
 

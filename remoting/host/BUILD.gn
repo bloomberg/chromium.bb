@@ -57,6 +57,7 @@ static_library("host") {
   sources = [
     "audio_capturer.cc",
     "audio_capturer.h",
+    "audio_capturer_chromeos.cc",
     "audio_capturer_linux.cc",
     "audio_capturer_linux.h",
     "audio_capturer_mac.cc",
@@ -70,18 +71,6 @@ static_library("host") {
     "basic_desktop_environment.h",
     "branding.cc",
     "branding.h",
-    "chromeos/aura_desktop_capturer.cc",
-    "chromeos/aura_desktop_capturer.h",
-    "chromeos/clipboard_aura.cc",
-    "chromeos/clipboard_aura.h",
-    "chromeos/message_box.cc",
-    "chromeos/message_box.h",
-    "chromeos/mouse_cursor_monitor_aura.cc",
-    "chromeos/mouse_cursor_monitor_aura.h",
-    "chromeos/point_transformer.cc",
-    "chromeos/point_transformer.h",
-    "chromeos/skia_bitmap_desktop_frame.cc",
-    "chromeos/skia_bitmap_desktop_frame.h",
     "chromoting_host.cc",
     "chromoting_host.h",
     "chromoting_host_context.cc",
@@ -206,20 +195,6 @@ static_library("host") {
     "ipc_video_frame_capturer.h",
     "it2me_desktop_environment.cc",
     "it2me_desktop_environment.h",
-    "linux/audio_pipe_reader.cc",
-    "linux/audio_pipe_reader.h",
-    "linux/certificate_watcher.cc",
-    "linux/certificate_watcher.h",
-    "linux/unicode_to_keysym.cc",
-    "linux/unicode_to_keysym.h",
-    "linux/x11_character_injector.cc",
-    "linux/x11_character_injector.h",
-    "linux/x11_keyboard_impl.cc",
-    "linux/x11_keyboard_impl.h",
-    "linux/x11_util.cc",
-    "linux/x11_util.h",
-    "linux/x_server_clipboard.cc",
-    "linux/x_server_clipboard.h",
     "local_input_monitor.h",
     "local_input_monitor_chromeos.cc",
     "local_input_monitor_mac.mm",
@@ -326,6 +301,7 @@ static_library("host") {
   }
 
   if (is_linux && !is_chromeos) {
+    public_deps += [ "//remoting/host/linux" ]
     libs += [ "pam" ]
   }
 
@@ -334,6 +310,7 @@ static_library("host") {
       "//build/config/linux:x11",
       "//build/config/linux:xrandr",
     ]
+    deps += [ "//remoting/host/linux:x11" ]
     if (is_desktop_linux) {
       deps += [ "//build/config/linux/gtk" ]
     }
@@ -344,17 +321,6 @@ static_library("host") {
       "input_injector_x11.cc",
       "local_input_monitor_x11.cc",
     ]
-    if (is_linux) {
-      # These will already be filtered out on non-Linux.
-      sources -= [
-        "linux/unicode_to_keysym.cc",
-        "linux/x11_keyboard_impl.cc",
-        "linux/x11_keyboard_impl.h",
-        "linux/x11_util.cc",
-        "linux/x_server_clipboard.cc",
-        "linux/x_server_clipboard.h",
-      ]
-    }
   }
 
   if (!use_ozone) {
@@ -365,19 +331,15 @@ static_library("host") {
     # TODO(GYP): crbug.com/481627. These should only be included
     # when enable_me2me_host is true.
     sources -= [
+      "audio_capturer_linux.cc",
+      "audio_capturer_linux.h",
+      "continue_window_linux.cc",
+      "curtain_mode_linux.cc",
+      "disconnect_window_linux.cc",
       "me2me_desktop_environment.cc",
       "me2me_desktop_environment.h",
     ]
-    deps += [
-      "//cc",
-      "//gpu/command_buffer/common",
-      "//ppapi/host",
-      "//skia",
-      "//ui/aura",
-      "//ui/compositor",
-      "//ui/events",
-      "//ui/views",
-    ]
+    deps += [ "//remoting/host/chromeos" ]
 
     if (use_ash) {
       deps += [ "//ash" ]
@@ -392,17 +354,9 @@ static_library("host") {
         "desktop_resizer_x11.cc",
         "input_injector_chromeos.cc",
         "input_injector_chromeos.h",
-        "linux/x_server_clipboard.cc",
-        "linux/x_server_clipboard.h",
         "local_input_monitor_x11.cc",
       ]
     }
-
-    sources -= [
-      "continue_window_linux.cc",
-      "curtain_mode_linux.cc",
-      "disconnect_window_linux.cc",
-    ]
   }
 
   if (is_mac) {
@@ -411,9 +365,6 @@ static_library("host") {
       "Carbon.framework",
     ]
 
-    # TODO(nicholss): When we can delete GYP builds,
-    # this flag and usage can be removed.
-    defines += [ "GN_BUILD=1" ]
     deps += [
       ":remoting_version",
       "//third_party/google_toolbox_for_mac",
@@ -479,8 +430,6 @@ source_set("unit_tests") {
   sources = [
     "audio_silence_detector_unittest.cc",
     "backoff_timer_unittest.cc",
-    "chromeos/aura_desktop_capturer_unittest.cc",
-    "chromeos/clipboard_aura_unittest.cc",
     "chromoting_host_context_unittest.cc",
     "chromoting_host_unittest.cc",
     "client_session_unittest.cc",
@@ -502,11 +451,6 @@ source_set("unit_tests") {
     "it2me/it2me_confirmation_dialog_proxy_unittest.cc",
     "it2me/it2me_host_unittest.cc",
     "it2me/it2me_native_messaging_host_unittest.cc",
-    "linux/audio_pipe_reader_unittest.cc",
-    "linux/certificate_watcher_unittest.cc",
-    "linux/unicode_to_keysym_unittest.cc",
-    "linux/x11_character_injector_unittest.cc",
-    "linux/x_server_clipboard_unittest.cc",
     "local_input_monitor_unittest.cc",
     "mouse_cursor_monitor_proxy_unittest.cc",
     "mouse_shape_pump_unittest.cc",
@@ -530,14 +474,8 @@ source_set("unit_tests") {
     "touch_injector_win_unittest.cc",
   ]
 
-  if (!use_x11 && is_linux) {
-    sources -= [ "linux/unicode_to_keysym_unittest.cc" ]
-  }
   if (use_ozone || is_chromeos) {
     sources -= [ "local_input_monitor_unittest.cc" ]
-  }
-  if (is_chromeos) {
-    sources -= [ "linux/x_server_clipboard_unittest.cc" ]
   }
 
   configs += [ "//remoting/build/config:version" ]
@@ -555,6 +493,18 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (is_linux && !is_chromeos) {
+    deps += [ "//remoting/host/linux:unit_tests" ]
+  }
+
+  if (is_chromeos) {
+    deps += [
+      "//remoting/host/chromeos:unit_tests",
+      "//remoting/host/linux",  # for AudioPipeReader
+    ]
+  }
+
   if (is_win) {
     deps += [ "//remoting/host/win:unit_tests" ]
   }
