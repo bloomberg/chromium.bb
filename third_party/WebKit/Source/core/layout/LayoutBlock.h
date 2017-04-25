@@ -453,6 +453,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
     return IsInline() && IsAtomicInlineLevel();
   }
 
+  bool NeedsPreferredWidthsRecalculation() const override;
+
  private:
   LayoutObjectChildList* VirtualChildren() final { return Children(); }
   const LayoutObjectChildList* VirtualChildren() const final {
