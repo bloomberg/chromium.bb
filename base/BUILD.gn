@@ -2116,7 +2116,6 @@ test("base_unittests") {
     "task_scheduler/task_scheduler_impl_unittest.cc",
     "task_scheduler/task_tracker_posix_unittest.cc",
     "task_scheduler/task_tracker_unittest.cc",
-    "task_scheduler/task_traits_unittest.cc",
     "task_scheduler/task_unittest.cc",
     "task_scheduler/test_task_factory.cc",
     "task_scheduler/test_task_factory.h",
