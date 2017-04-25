@@ -31,10 +31,7 @@ def Main(args):
   # dotfiles and the Headers directories.
   subprocess.check_call(
       ['rsync', '-acC', '--delete',
-       # TODO(rsesek): Exclude these directories again after they are marked as
-       # optional in the code signing resource rules, otherwise the code
-       # signature is invalidated. https://crbug.com/688076
-       #'--exclude', 'Headers', '--exclude', 'PrivateHeaders',
+       '--exclude', 'Headers', '--exclude', 'PrivateHeaders',
        '--include', '*.so',
        os.path.join(args[1], 'Versions/Current/'),
        output_path])

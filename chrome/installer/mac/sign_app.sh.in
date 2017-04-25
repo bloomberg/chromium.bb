@@ -71,13 +71,18 @@ codesign --display --verbose=5 -r- "${browser_app}"
 # Verify everything. Check the framework and helper apps to make sure that the
 # signatures are present and weren't altered by the signing process. Use
 # --ignore-resources on the app mode loader because its signature only covers
-# the main executable, not its containing .app bundle. Use --no-strict on the
-# outermost browser .app because it uses custom resource rules.
+# the main executable, not its containing .app bundle. Use --no-strict to
+# verify items that use custom resource rules:
+#  - The outermost brrowser .app
+#  - The inner .framework, which has a nested component that uses them.
 codesign --verify --verbose=6 --deep --no-strict "${browser_app}"
 codesign --verify --verbose=6 --deep "${crashpad_handler}"
 codesign --verify --verbose=6 --ignore-resources "${app_mode_loader}"
 codesign --verify --verbose=6 --deep "${notification_service}"
-codesign --verify --verbose=6 --deep "${framework}"
+# Check the framework twice: once deep with no-strict, and once shallow with
+# strict verification.
+codesign --verify --verbose=6 --deep --no-strict "${framework}"
+codesign --verify --verbose=6 --strict "${framework}"
 codesign --verify --verbose=6 --deep "${helper_app}"
 
 # Verify with spctl, which uses the same rules that Gatekeeper does for

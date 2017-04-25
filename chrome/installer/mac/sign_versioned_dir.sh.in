@@ -109,5 +109,8 @@ ${requirement_suffix}"
 codesign_display_and_verify "${crashpad_handler}" --deep
 codesign_display_and_verify "${app_mode_loader}" --ignore-resources
 codesign_display_and_verify "${notification_service}" --deep
-codesign_display_and_verify "${framework}" --deep
+# The framework contains KeystoneRegistration.framework, which uses
+# custom resource rules, so use --no-strict to verify.
+codesign_display_and_verify "${framework}" --deep --no-strict
+codesign_display_and_verify "${framework}" --strict
 codesign_display_and_verify "${helper_app}" --deep
