@@ -20,6 +20,7 @@ source_set("run_all_service_tests") {
     "//mojo/edk/system",
     "//services/catalog:lib",
     "//services/service_manager/background:lib",
+    "//services/service_manager/public/cpp/standalone_service",
   ]
 
   if (is_android) {

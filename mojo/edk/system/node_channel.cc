@@ -692,7 +692,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
               MACH_PORT_NULL) {
             pending_relay_messages_.push(
                 std::make_pair(data->destination, std::move(message)));
-            break;
+            return;
           }
         }
   #endif

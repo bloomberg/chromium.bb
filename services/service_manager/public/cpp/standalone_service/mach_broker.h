@@ -7,10 +7,6 @@
 
 #include "base/mac/mach_port_broker.h"
 
-namespace base {
-template <typename T> struct DefaultSingletonTraits;
-}
-
 namespace service_manager {
 
 // A global singleton |MachBroker| is used by the service manager to provide
@@ -43,7 +39,6 @@ class MachBroker {
  private:
   MachBroker();
   ~MachBroker();
-  friend struct base::DefaultSingletonTraits<MachBroker>;
 
   base::MachPortBroker broker_;
 };

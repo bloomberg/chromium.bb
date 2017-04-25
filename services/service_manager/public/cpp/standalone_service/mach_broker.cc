@@ -5,7 +5,6 @@
 #include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
 
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 
 namespace service_manager {
 
@@ -22,7 +21,8 @@ void MachBroker::SendTaskPortToParent() {
 
 // static
 MachBroker* MachBroker::GetInstance() {
-  return base::Singleton<MachBroker>::get();
+  static MachBroker* broker = new MachBroker;
+  return broker;
 }
 
 MachBroker::MachBroker() : broker_(kBootstrapPortName) {

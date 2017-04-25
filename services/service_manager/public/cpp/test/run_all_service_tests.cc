@@ -18,13 +18,7 @@
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/mac/mach_port_broker.h"
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-namespace {
-base::MachPortBroker* g_mach_broker = nullptr;
-}
+#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
 #endif
 
 int main(int argc, char** argv) {
@@ -36,11 +30,8 @@ int main(int argc, char** argv) {
   mojo::edk::Init();
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (!g_mach_broker) {
-    g_mach_broker = new base::MachPortBroker("Service Tests");
-    CHECK(g_mach_broker->Init());
-    mojo::edk::SetMachPortProvider(g_mach_broker);
-  }
+  mojo::edk::SetMachPortProvider(
+      service_manager::MachBroker::GetInstance()->port_provider());
 #endif
 
 #if defined(OS_ANDROID)
