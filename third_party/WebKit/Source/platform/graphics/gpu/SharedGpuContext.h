@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef SharedGpuContext_h
+#define SharedGpuContext_h
+
 #include "platform/PlatformExport.h"
 #include "platform/wtf/ThreadSpecific.h"
 
@@ -60,3 +63,5 @@ class PLATFORM_EXPORT SharedGpuContext {
 };
 
 }  // blink
+
+#endif  // SharedGpuContext_h
