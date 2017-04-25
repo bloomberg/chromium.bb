@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENCRYPTION_MIGRATION_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENCRYPTION_MIGRATION_SCREEN_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -12,6 +14,10 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
+
+namespace device {
+class PowerSaveBlocker;
+}  // namespace device
 
 namespace chromeos {
 
@@ -69,6 +75,9 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void OnMountExistingVault(bool success,
                             cryptohome::MountError return_code,
                             const std::string& mount_hash);
+  void StartBlockingPowerSave();
+  void StopBlockingPowerSave();
+
   // Creates authorization key for MountEx method using |user_context_|.
   cryptohome::KeyDefinition GetAuthKey();
 
@@ -100,6 +109,8 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // True if the migration should start immediately once the battery level gets
   // sufficient.
   bool should_migrate_on_enough_battery_ = false;
+
+  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 
   base::WeakPtrFactory<EncryptionMigrationScreenHandler> weak_ptr_factory_;
 

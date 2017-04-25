@@ -6,6 +6,7 @@
   -webkit-padding-start: 15px;
   bottom: 0;
   left: 0;
+  min-height: 34px;  /* Should be consistent with .header-bar-item's height. */
   padding-bottom: 6px;
   position: absolute;
   right: 0;

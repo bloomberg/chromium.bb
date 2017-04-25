@@ -1278,6 +1278,7 @@ split_static_library("ui") {
       "//components/drive:drive_chromeos",
       "//components/exo",
       "//components/login",
+      "//device/power_save_blocker",
       "//ui/base/ime",
       "//ui/chromeos",
       "//ui/chromeos/events",

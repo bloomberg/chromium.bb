@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
@@ -21,6 +22,8 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/login/localized_values_builder.h"
+#include "content/public/browser/browser_thread.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "ui/base/text/bytes_formatting.h"
 
 namespace {
@@ -212,6 +215,12 @@ void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
   // latest battery status and show it on the screen.
   if (state == UIState::READY)
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
+
+  // We should block power save during migration.
+  if (state == UIState::MIGRATING)
+    StartBlockingPowerSave();
+  else
+    StopBlockingPowerSave();
 }
 
 void EncryptionMigrationScreenHandler::CheckAvailableStorage() {
@@ -282,6 +291,25 @@ void EncryptionMigrationScreenHandler::OnMountExistingVault(
       cryptohome::Identification(user_context_.GetAccountId()),
       base::Bind(&EncryptionMigrationScreenHandler::OnMigrationRequested,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EncryptionMigrationScreenHandler::StartBlockingPowerSave() {
+  if (!power_save_blocker_) {
+    power_save_blocker_.reset(new device::PowerSaveBlocker(
+        device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+        device::PowerSaveBlocker::kReasonOther,
+        "Encryption migration is in progress...",
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::UI),
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::FILE)));
+  }
+}
+
+void EncryptionMigrationScreenHandler::StopBlockingPowerSave() {
+  if (power_save_blocker_.get()) {
+    power_save_blocker_.reset();
+  }
 }
 
 cryptohome::KeyDefinition EncryptionMigrationScreenHandler::GetAuthKey() {

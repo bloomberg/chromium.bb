@@ -48,10 +48,15 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
     /**
      * Updates the migration screen by specifying a state which corresponds to
      * a sub step in the migration process.
-     * @param {number} state The UI state to identify a sub step in migration.
+     * @param {EncryptionMigrationUIState} state The UI state to identify a sub
+     *     step in migration.
      */
     setUIState: function(state) {
       $('encryption-migration-element').uiState = state;
+
+      // Hide "Shut down" button during migration.
+      $('login-header-bar').showShutdownButton =
+          state != EncryptionMigrationUIState.MIGRATING;
     },
 
     /**
