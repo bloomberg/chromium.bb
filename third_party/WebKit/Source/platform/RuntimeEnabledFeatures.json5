@@ -293,7 +293,7 @@
     },
     {
       name: "CSSSnapSize",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "CSSStickyPosition",

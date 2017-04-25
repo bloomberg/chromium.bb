@@ -165,7 +165,6 @@ length
 letterSpacing
 lightingColor
 lineHeight
-lineHeightStep
 listStyle
 listStyleImage
 listStylePosition
