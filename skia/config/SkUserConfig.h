@@ -202,6 +202,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_ETC1_SUPPORT
 #endif
 
+#ifndef    SK_SUPPORT_GPU_REF_ENCODED_DATA
+#   define SK_SUPPORT_GPU_REF_ENCODED_DATA
+#endif
+
 #ifndef    SK_IGNORE_GPU_DITHER
 #   define SK_IGNORE_GPU_DITHER
 #endif
