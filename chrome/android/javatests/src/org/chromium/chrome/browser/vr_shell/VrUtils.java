@@ -22,6 +22,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Class containing static functions and constants that are useful for VR
@@ -46,6 +47,23 @@ public class VrUtils {
     private static final byte[] PROTO_BYTES = new byte[] {(byte) 0x08, (byte) 0x03};
     private static final int VERSION = 123;
     private static final int RESERVED = 456;
+
+    /**
+     * Gets the VrShellDelegate instance on the UI thread, as otherwise the
+     * Choreographer obtained in VrShellDelegate's constructor is for the instrumentation
+     * thread instead of the UI thread.
+     * @return The browser's current VrShellDelegate instance
+     */
+    public static VrShellDelegate getVrShellDelegateInstance() {
+        final AtomicReference<VrShellDelegate> delegate = new AtomicReference<VrShellDelegate>();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                delegate.set(VrShellDelegate.getInstanceForTesting());
+            }
+        });
+        return delegate.get();
+    }
 
     /**
      * Forces the browser into VR mode via a VrShellDelegate call.

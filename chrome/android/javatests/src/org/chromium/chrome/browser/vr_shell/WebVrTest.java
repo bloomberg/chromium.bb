@@ -229,7 +229,6 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * Tests that a successful requestPresent call actually enters VR
      */
     @SmallTest
-    @DisabledTest(message = "crbug.com/713781")
     public void testRequestPresentEntersVr() throws InterruptedException {
         String testName = "test_requestPresent_enters_vr";
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
@@ -309,7 +308,6 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * Tests that non-focused tabs cannot get pose information.
      */
     @SmallTest
-    @DisabledTest(message = "crbug.com/713781")
     public void testPoseDataUnfocusedTab() throws InterruptedException {
         String testName = "test_pose_data_unfocused_tab";
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
@@ -331,7 +329,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     private void infoBarTestHelper(int checkerReturnValue) throws InterruptedException {
         MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();
         mockChecker.setMockReturnValue(checkerReturnValue);
-        VrShellDelegate.getInstanceForTesting().overrideVrCoreVersionCheckerForTesting(mockChecker);
+        VrUtils.getVrShellDelegateInstance().overrideVrCoreVersionCheckerForTesting(mockChecker);
         String testName = "generic_webvr_page";
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         String displayFound = "VRDisplay Found";
@@ -382,7 +380,6 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * VR Services is installed and up to date.
      */
     @MediumTest
-    @DisabledTest(message = "crbug.com/713781")
     public void testInfoBarNotPresentWhenVrServicesCurrent() throws InterruptedException {
         infoBarTestHelper(VrCoreVersionChecker.VR_READY);
     }
@@ -392,7 +389,6 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * VR Services is outdated.
      */
     @MediumTest
-    @DisabledTest(message = "crbug.com/713781")
     public void testInfoBarPresentWhenVrServicesOutdated() throws InterruptedException {
         infoBarTestHelper(VrCoreVersionChecker.VR_OUT_OF_DATE);
     }
@@ -402,7 +398,6 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * Services is missing.
      */
     @MediumTest
-    @DisabledTest(message = "crbug.com/713781")
     public void testInfoBarPresentWhenVrServicesMissing() throws InterruptedException {
         infoBarTestHelper(VrCoreVersionChecker.VR_NOT_AVAILABLE);
     }
@@ -412,7 +407,6 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * is not supported on the device.
      */
     @MediumTest
-    @DisabledTest(message = "crbug.com/713781")
     public void testInfoBarNotPresentWhenVrServicesNotSupported() throws InterruptedException {
         infoBarTestHelper(VrCoreVersionChecker.VR_NOT_SUPPORTED);
     }
@@ -422,7 +416,6 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * devices the WebVR tests are run on continuously.
      */
     @MediumTest
-    @DisabledTest(message = "crbug.com/713781")
     public void testDeviceCapabilitiesMatchExpectations() throws InterruptedException {
         String testName = "test_device_capabilities_match_expectations";
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);

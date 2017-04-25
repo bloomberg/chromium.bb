@@ -47,16 +47,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        // We need to run the constructor on the main/UI thread, otherwise the Choreographer
-        // acquired in the constructor is incorrect during e2e tests
-        final AtomicReference<VrShellDelegate> delegate = new AtomicReference<VrShellDelegate>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                delegate.set(VrShellDelegate.getInstanceForTesting());
-            }
-        });
-        mDelegate = delegate.get();
+        mDelegate = VrUtils.getVrShellDelegateInstance();
     }
 
     @Override
