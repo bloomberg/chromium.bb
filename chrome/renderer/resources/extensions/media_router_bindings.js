@@ -565,14 +565,10 @@ define('media_router_bindings', [
     this.provideSinks = null;
 
     /**
-     * @type {function(string, !bindings.InterfaceRequest): !Promise<boolean>}
+     * @type {function(string, !bindings.InterfaceRequest,
+     *            !mediaStatusMojom.MediaStatusObserverPtr): !Promise<void>}
      */
     this.createMediaRouteController = null;
-
-    /**
-     * @type {function(string, !mediaStatusMojom.MediaStatusObserverPtr)}
-     */
-    this.setMediaRouteStatusObserver = null;
   };
 
   /**
@@ -626,7 +622,6 @@ define('media_router_bindings', [
       'searchSinks',
       'provideSinks',
       'createMediaRouteController',
-      'setMediaRouteStatusObserver',
       'onBeforeInvokeHandler'
     ];
     requiredHandlers.forEach(function(nextHandler) {
@@ -919,40 +914,26 @@ define('media_router_bindings', [
 
   /**
    * Creates a controller for the given route and binds the given
-   * InterfaceRequest to it.
+   * InterfaceRequest to it, and registers an observer for media status updates
+   * for the route.
    * @param {string} routeId
    * @param {!bindings.InterfaceRequest} controllerRequest
+   * @param {!mediaStatusMojom.MediaStatusObserverPtr} observer
    * @return {!Promise<!{success: boolean}>} Resolves to true if a controller
    *     is created. Resolves to false if a controller cannot be created, or if
    *     the controller is already bound.
    */
   MediaRouteProvider.prototype.createMediaRouteController = function(
-      routeId, controllerRequest) {
-    // TODO(imcheng): Remove this check when M59 is in stable.
+      routeId, controllerRequest, observer) {
+    // TODO(imcheng): Remove this check when M60 is in stable.
     if (!this.handlers_.createMediaRouteController) {
       return Promise.resolve({success: false});
     }
 
     this.handlers_.onBeforeInvokeHandler();
-    this.handlers_.createMediaRouteController(routeId, controllerRequest)
-        .then(controller => {success: true},
-              e => {success: false});
-  }
-
-  /**
-   * Sets the MediaStatus oberver for a given route. MediaStatus updates are
-   * notified via the given observer interface.
-   * @param {string} routeId
-   * @param {!mediaStatusMojom.MediaStatusObserverPtr} observer
-   */
-  MediaRouteProvider.prototype.setMediaRouteStatusObserver = function(
-      routeId, observer) {
-    // TODO(imcheng): Remove this check when M59 is in stable.
-    if (!this.handlers_.setMediaRouteStatusObserver) {
-      return;
-    }
-    this.handlers_.onBeforeInvokeHandler();
-    this.handlers_.setMediaRouteStatusObserver(routeId, observer);
+    return this.handlers_
+        .createMediaRouteController(routeId, controllerRequest, observer)
+        .then(() => {success: true}, e => {success: false});
   };
 
   mediaRouter = new MediaRouter(new mediaRouterMojom.MediaRouterPtr(
