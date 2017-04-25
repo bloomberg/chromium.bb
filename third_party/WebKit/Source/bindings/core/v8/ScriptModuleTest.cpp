@@ -4,9 +4,13 @@
 
 #include "bindings/core/v8/ScriptModule.h"
 
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/dom/ScriptModuleResolver.h"
+#include "core/frame/LocalFrame.h"
 #include "core/testing/DummyModulator.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -192,6 +196,28 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
   ASSERT_EQ(2u, resolver->ResolveCount());
   EXPECT_EQ("a", resolver->Specifiers()[0]);
   EXPECT_EQ("b", resolver->Specifiers()[1]);
+}
+
+TEST(ScriptModuleTest, Evaluate) {
+  V8TestingScope scope;
+
+  auto modulator = new ScriptModuleTestModulator();
+  Modulator::SetModulator(scope.GetScriptState(), modulator);
+
+  ScriptModule module = ScriptModule::Compile(
+      scope.GetIsolate(), "export const a = 42; window.foo = 'bar';", "foo.js",
+      kSharableCrossOrigin);
+  ASSERT_FALSE(module.IsNull());
+  ScriptValue exception = module.Instantiate(scope.GetScriptState());
+  ASSERT_TRUE(exception.IsEmpty());
+
+  module.Evaluate(scope.GetScriptState());
+  v8::Local<v8::Value> value = scope.GetFrame()
+                                   .GetScriptController()
+                                   .ExecuteScriptInMainWorldAndReturnValue(
+                                       ScriptSourceCode("window.foo"));
+  ASSERT_TRUE(value->IsString());
+  EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(value)));
 }
 
 }  // namespace
