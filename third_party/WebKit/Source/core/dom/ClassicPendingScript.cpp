@@ -27,19 +27,11 @@ ClassicPendingScript* ClassicPendingScript::Create(
   return new ClassicPendingScript(element, nullptr, starting_position);
 }
 
-ClassicPendingScript* ClassicPendingScript::CreateForTesting(
-    ScriptResource* resource) {
-  return new ClassicPendingScript(nullptr, resource, TextPosition(), true);
-}
-
 ClassicPendingScript::ClassicPendingScript(
     ScriptElementBase* element,
     ScriptResource* resource,
-    const TextPosition& starting_position,
-    bool is_for_testing)
-    : PendingScript(element, starting_position),
-      integrity_failure_(false),
-      is_for_testing_(is_for_testing) {
+    const TextPosition& starting_position)
+    : PendingScript(element, starting_position), integrity_failure_(false) {
   CheckState();
   SetResource(resource);
   MemoryCoordinator::Instance().RegisterClient(this);
@@ -49,7 +41,7 @@ ClassicPendingScript::~ClassicPendingScript() {}
 
 NOINLINE void ClassicPendingScript::CheckState() const {
   // TODO(hiroshige): Turn these CHECK()s into DCHECK() before going to beta.
-  CHECK(is_for_testing_ || GetElement());
+  CHECK(GetElement());
   CHECK(GetResource() || !streamer_);
   CHECK(!streamer_ || streamer_->GetResource() == GetResource());
 }
@@ -143,7 +135,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   //
   // See https://crbug.com/500701 for more information.
   CheckState();
-  if (!is_for_testing_ && GetElement()) {
+  if (GetElement()) {
     integrity_failure_ = !CheckScriptResourceIntegrity(resource, GetElement());
   }
 

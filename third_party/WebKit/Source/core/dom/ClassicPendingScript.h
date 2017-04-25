@@ -39,8 +39,6 @@ class CORE_EXPORT ClassicPendingScript final
   // For inline script.
   static ClassicPendingScript* Create(ScriptElementBase*, const TextPosition&);
 
-  static ClassicPendingScript* CreateForTesting(ScriptResource*);
-
   ~ClassicPendingScript() override;
 
   void SetStreamer(ScriptStreamer*);
@@ -72,8 +70,7 @@ class CORE_EXPORT ClassicPendingScript final
  private:
   ClassicPendingScript(ScriptElementBase*,
                        ScriptResource*,
-                       const TextPosition&,
-                       bool is_for_testing = false);
+                       const TextPosition&);
   ClassicPendingScript() = delete;
 
   void CheckState() const override;
@@ -89,10 +86,6 @@ class CORE_EXPORT ClassicPendingScript final
   bool integrity_failure_;
 
   Member<ScriptStreamer> streamer_;
-
-  // This flag is used to skip non-null checks of |m_element| in unit
-  // tests, because |m_element| can be null in unit tests.
-  const bool is_for_testing_;
 };
 
 }  // namespace blink

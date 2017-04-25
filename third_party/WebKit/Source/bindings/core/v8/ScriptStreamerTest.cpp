@@ -13,6 +13,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/ClassicPendingScript.h"
 #include "core/dom/ClassicScript.h"
+#include "core/dom/MockScriptElementBase.h"
 #include "core/frame/Settings.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -34,11 +35,16 @@ class ScriptStreamingTest : public ::testing::Test {
                                  ->LoadingTaskRunner()),
         settings_(Settings::Create()),
         resource_request_("http://www.streaming-test.com/"),
-        resource_(ScriptResource::Create(resource_request_, "UTF-8")),
-        pending_script_(
-            ClassicPendingScript::CreateForTesting(resource_.Get())) {
+        resource_(ScriptResource::Create(resource_request_, "UTF-8")) {
     resource_->SetStatus(ResourceStatus::kPending);
-    pending_script_ = ClassicPendingScript::CreateForTesting(resource_.Get());
+
+    MockScriptElementBase* element = MockScriptElementBase::Create();
+    // Basically we are not interested in ScriptElementBase* calls, just making
+    // the method(s) to return default values.
+    EXPECT_CALL(*element, IntegrityAttributeValue())
+        .WillRepeatedly(::testing::Return(String()));
+
+    pending_script_ = ClassicPendingScript::Create(element, resource_.Get());
     ScriptStreamer::SetSmallScriptThresholdForTesting(0);
   }
 
