@@ -102,4 +102,27 @@ TEST(ComputedStyleTest,
   EXPECT_TRUE(diff.TransformChanged());
 }
 
+TEST(CompuetedStyleTest, HasOutlineWithCurrentColor) {
+  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  EXPECT_FALSE(style->HasOutline());
+  EXPECT_FALSE(style->HasOutlineWithCurrentColor());
+  style->SetOutlineColor(StyleColor::CurrentColor());
+  EXPECT_FALSE(style->HasOutlineWithCurrentColor());
+  style->SetOutlineWidth(5);
+  EXPECT_FALSE(style->HasOutlineWithCurrentColor());
+  style->SetOutlineStyle(kBorderStyleSolid);
+  EXPECT_TRUE(style->HasOutlineWithCurrentColor());
+}
+
+TEST(CompuetedStyleTest, HasBorderColorReferencingCurrentColor) {
+  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  EXPECT_FALSE(style->HasBorderColorReferencingCurrentColor());
+  style->SetBorderBottomColor(StyleColor::CurrentColor());
+  EXPECT_FALSE(style->HasBorderColorReferencingCurrentColor());
+  style->SetBorderBottomWidth(5);
+  EXPECT_FALSE(style->HasBorderColorReferencingCurrentColor());
+  style->SetBorderBottomStyle(kBorderStyleSolid);
+  EXPECT_TRUE(style->HasBorderColorReferencingCurrentColor());
+}
+
 }  // namespace blink

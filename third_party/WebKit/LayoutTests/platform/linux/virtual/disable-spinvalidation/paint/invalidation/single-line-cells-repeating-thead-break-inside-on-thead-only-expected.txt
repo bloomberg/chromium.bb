@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TH id='target'",
-          "rect": [8, 72, 840, 190],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [10, 72, 836, 190],
           "reason": "style change"
@@ -20,14 +15,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCell TH id='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "style change"
-    },
     {
       "object": "LayoutText #text",
       "reason": "style change"

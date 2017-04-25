@@ -2,13 +2,13 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [1059, 585],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [10, 72, 836, 190],
+          "object": "LayoutBlockFlow DIV id='currentColor'",
+          "rect": [58, 220, 120, 120],
           "reason": "style change"
         }
       ]
@@ -16,11 +16,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Col 1'",
+      "object": "LayoutBlockFlow DIV id='currentColor'",
       "reason": "style change"
     }
   ]

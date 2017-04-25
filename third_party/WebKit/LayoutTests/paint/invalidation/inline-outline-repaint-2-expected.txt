@@ -9,7 +9,7 @@
         {
           "object": "LayoutInline SPAN",
           "rect": [210, -5, 50, 20],
-          "reason": "style change"
+          "reason": "outline"
         }
       ]
     }
@@ -17,11 +17,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutInline SPAN",
-      "reason": "style change"
+      "reason": "outline"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "style change"
+      "reason": "outline"
     },
     {
       "object": "LayoutText #text",

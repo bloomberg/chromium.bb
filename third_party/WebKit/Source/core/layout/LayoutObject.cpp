@@ -1543,7 +1543,8 @@ StyleDifference LayoutObject::AdjustStyleDifference(
   // needed if we have style or text affected by these properties.
   if (diff.TextDecorationOrColorChanged() &&
       !diff.NeedsFullPaintInvalidation()) {
-    if (Style()->HasBorder() || Style()->HasOutline() ||
+    if (Style()->HasBorderColorReferencingCurrentColor() ||
+        Style()->HasOutlineWithCurrentColor() ||
         Style()->HasBackgroundRelatedColorReferencingCurrentColor() ||
         // Skip any text nodes that do not contain text boxes. Whitespace cannot
         // be skipped or we will miss invalidating decorations (e.g.,

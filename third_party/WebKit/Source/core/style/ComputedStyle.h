@@ -2953,6 +2953,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool HasBorder() const { return Border().HasBorder(); }
   bool HasBorderDecoration() const { return HasBorder() || HasBorderFill(); }
   bool HasBorderRadius() const { return Border().HasBorderRadius(); }
+  bool HasBorderColorReferencingCurrentColor() const {
+    return Border().HasBorderColorReferencingCurrentColor();
+  }
 
   void ResetBorder() {
     ResetBorderImage();
@@ -3044,6 +3047,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   int OutlineOutsetExtent() const;
   float GetOutlineStrokeWidthForFocusRing() const;
+  bool HasOutlineWithCurrentColor() const {
+    return HasOutline() && OutlineColor().IsCurrentColor();
+  }
 
   // Position utility functions.
   bool HasOutOfFlowPosition() const {

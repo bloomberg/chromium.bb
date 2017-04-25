@@ -63,6 +63,13 @@ class BorderData {
     return false;
   }
 
+  bool HasBorderColorReferencingCurrentColor() const {
+    return (left_.NonZero() && left_.GetColor().IsCurrentColor()) ||
+           (right_.NonZero() && right_.GetColor().IsCurrentColor()) ||
+           (top_.NonZero() && top_.GetColor().IsCurrentColor()) ||
+           (bottom_.NonZero() && bottom_.GetColor().IsCurrentColor());
+  }
+
   float BorderLeftWidth() const {
     if (left_.Style() == kBorderStyleNone ||
         left_.Style() == kBorderStyleHidden)
