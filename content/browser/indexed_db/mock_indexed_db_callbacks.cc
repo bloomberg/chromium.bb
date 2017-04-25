@@ -11,14 +11,17 @@
 namespace content {
 
 MockIndexedDBCallbacks::MockIndexedDBCallbacks()
-    : IndexedDBCallbacks(nullptr, url::Origin(), nullptr, nullptr),
-      expect_connection_(true) {}
+    : IndexedDBCallbacks(nullptr, url::Origin(), nullptr, nullptr) {}
 MockIndexedDBCallbacks::MockIndexedDBCallbacks(bool expect_connection)
     : IndexedDBCallbacks(nullptr, url::Origin(), nullptr, nullptr),
       expect_connection_(expect_connection) {}
 
 MockIndexedDBCallbacks::~MockIndexedDBCallbacks() {
   EXPECT_EQ(expect_connection_, !!connection_);
+}
+
+void MockIndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
+  error_called_ = true;
 }
 
 void MockIndexedDBCallbacks::OnSuccess() {}
@@ -33,6 +36,15 @@ void MockIndexedDBCallbacks::OnSuccess(
     std::unique_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata) {
   connection_ = std::move(connection);
+}
+
+void MockIndexedDBCallbacks::OnUpgradeNeeded(
+    int64_t old_version,
+    std::unique_ptr<IndexedDBConnection> connection,
+    const content::IndexedDBDatabaseMetadata& metadata,
+    const IndexedDBDataLossInfo& data_loss_info) {
+  connection_ = std::move(connection);
+  upgrade_called_ = true;
 }
 
 }  // namespace content

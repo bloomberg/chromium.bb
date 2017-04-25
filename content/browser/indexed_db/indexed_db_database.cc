@@ -100,6 +100,9 @@ class IndexedDBDatabase::ConnectionRequest {
   // Called when the upgrade transaction has finished.
   virtual void UpgradeTransactionFinished(bool committed) = 0;
 
+  // Called for pending tasks that we need to clear for a force close.
+  virtual void AbortForForceClose() = 0;
+
  protected:
   scoped_refptr<IndexedDBDatabase> db_;
 
@@ -269,6 +272,12 @@ class IndexedDBDatabase::OpenRequest
     db_->RequestComplete(this);
   }
 
+  void AbortForForceClose() override {
+    DCHECK(!connection_);
+    pending_->database_callbacks->OnForcedClose();
+    pending_.reset();
+  }
+
  private:
   std::unique_ptr<IndexedDBPendingConnection> pending_;
 
@@ -343,6 +352,13 @@ class IndexedDBDatabase::DeleteRequest
   void UpgradeTransactionStarted(int64_t old_version) override { NOTREACHED(); }
 
   void UpgradeTransactionFinished(bool committed) override { NOTREACHED(); }
+
+  void AbortForForceClose() override {
+    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+                                 "The request could not be completed.");
+    callbacks_->OnError(error);
+    callbacks_ = nullptr;
+  }
 
  private:
   scoped_refptr<IndexedDBCallbacks> callbacks_;
@@ -800,6 +816,12 @@ void IndexedDBDatabase::AddPendingObserver(
     const IndexedDBObserver::Options& options) {
   DCHECK(transaction);
   transaction->AddPendingObserver(observer_id, options);
+}
+
+void IndexedDBDatabase::CallUpgradeTransactionStartedForTesting(
+    int64_t old_version) {
+  DCHECK(active_request_);
+  active_request_->UpgradeTransactionStarted(old_version);
 }
 
 void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
@@ -1846,12 +1868,21 @@ void IndexedDBDatabase::DeleteDatabase(
 void IndexedDBDatabase::ForceClose() {
   // IndexedDBConnection::ForceClose() may delete this database, so hold ref.
   scoped_refptr<IndexedDBDatabase> protect(this);
+
+  while (!pending_requests_.empty()) {
+    std::unique_ptr<ConnectionRequest> request =
+        std::move(pending_requests_.front());
+    pending_requests_.pop();
+    request->AbortForForceClose();
+  }
+
   auto it = connections_.begin();
   while (it != connections_.end()) {
     IndexedDBConnection* connection = *it++;
     connection->ForceClose();
   }
   DCHECK(connections_.empty());
+  DCHECK(!active_request_);
 }
 
 void IndexedDBDatabase::VersionChangeIgnored() {
