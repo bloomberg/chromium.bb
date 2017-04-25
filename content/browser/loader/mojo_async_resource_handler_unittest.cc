@@ -310,7 +310,7 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
                 const ResourceRequest& url_request,
-                const SyncLoadCallback& callback) override {
+                SyncLoadCallback callback) override {
     NOTREACHED();
   }
 

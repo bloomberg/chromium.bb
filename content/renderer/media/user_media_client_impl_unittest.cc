@@ -118,7 +118,7 @@ class MockMediaDevicesDispatcherHost
                         bool request_video_input,
                         bool request_audio_output,
                         const url::Origin& security_origin,
-                        const EnumerateDevicesCallback& callback) override {
+                        EnumerateDevicesCallback callback) override {
     std::vector<std::vector<MediaDeviceInfo>> result(NUM_MEDIA_DEVICE_TYPES);
     if (request_audio_input) {
       result[MEDIA_DEVICE_TYPE_AUDIO_INPUT].push_back(MediaDeviceInfo(
@@ -136,12 +136,12 @@ class MockMediaDevicesDispatcherHost
       result[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].push_back(MediaDeviceInfo(
           kFakeAudioOutputDeviceId1, "Fake Audio Input 1", "fake_group 1"));
     }
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   void GetVideoInputCapabilities(
       const url::Origin& security_origin,
-      const GetVideoInputCapabilitiesCallback& client_callback) override {
+      GetVideoInputCapabilitiesCallback client_callback) override {
     ::mojom::VideoInputDeviceCapabilitiesPtr device =
         ::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kFakeVideoInputDeviceId1;
@@ -158,7 +158,7 @@ class MockMediaDevicesDispatcherHost
         gfx::Size(640, 480), 30.0f, media::PIXEL_FORMAT_I420));
     result.push_back(std::move(device));
 
-    client_callback.Run(std::move(result));
+    std::move(client_callback).Run(std::move(result));
   }
 
   MOCK_METHOD3(SubscribeDeviceChangeNotifications,

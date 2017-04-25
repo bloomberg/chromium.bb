@@ -39,7 +39,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
-                        const base::Closure& ack_callback) override;
+                        OnUploadProgressCallback ack_callback) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const ResourceRequestCompletionStatus& status) override;

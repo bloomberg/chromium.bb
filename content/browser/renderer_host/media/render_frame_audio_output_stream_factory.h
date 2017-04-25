@@ -38,20 +38,20 @@ class CONTENT_EXPORT RenderFrameAudioOutputStreamFactory
       media::mojom::AudioOutputStreamProviderRequest stream_provider,
       int64_t session_id,
       const std::string& device_id,
-      const RequestDeviceAuthorizationCallback& callback) override;
+      RequestDeviceAuthorizationCallback callback) override;
 
   void RequestDeviceAuthorizationForOrigin(
       base::TimeTicks auth_start_time,
       media::mojom::AudioOutputStreamProviderRequest stream_provider_request,
       int session_id,
       const std::string& device_id,
-      const RequestDeviceAuthorizationCallback& callback,
+      RequestDeviceAuthorizationCallback callback,
       const url::Origin& origin);
 
   void AuthorizationCompleted(
       base::TimeTicks auth_start_time,
       media::mojom::AudioOutputStreamProviderRequest request,
-      const RequestDeviceAuthorizationCallback& callback,
+      RequestDeviceAuthorizationCallback callback,
       const url::Origin& origin,
       media::OutputDeviceStatus status,
       bool should_send_id,

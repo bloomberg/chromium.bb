@@ -1481,10 +1481,10 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
   }
 
   void OnActivateEvent(
-      const mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback&
+      mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
           callback) override {
-    callback.Run(EventResultToStatus(activate_event_result_),
-                 base::Time::Now());
+    std::move(callback).Run(EventResultToStatus(activate_event_result_),
+                            base::Time::Now());
   }
 
   void set_install_callback(const base::Closure& callback) {

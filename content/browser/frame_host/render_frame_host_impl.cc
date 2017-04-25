@@ -2440,7 +2440,7 @@ void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
 
 void RenderFrameHostImpl::CreateNewWindow(
     mojom::CreateNewWindowParamsPtr params,
-    const CreateNewWindowCallback& callback) {
+    CreateNewWindowCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   bool no_javascript_access = false;
@@ -2461,7 +2461,7 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New();
   if (!can_create_window) {
-    RunCreateWindowCompleteCallback(callback, std::move(reply),
+    RunCreateWindowCompleteCallback(std::move(callback), std::move(reply),
                                     MSG_ROUTING_NONE, MSG_ROUTING_NONE,
                                     MSG_ROUTING_NONE, 0);
     return;
@@ -2527,7 +2527,7 @@ void RenderFrameHostImpl::CreateNewWindow(
     if (!succeeded) {
       DCHECK(!RenderFrameHost::FromID(render_process_id, main_frame_route_id));
       DCHECK(!RenderViewHost::FromID(render_process_id, render_view_route_id));
-      RunCreateWindowCompleteCallback(callback, std::move(reply),
+      RunCreateWindowCompleteCallback(std::move(callback), std::move(reply),
                                       MSG_ROUTING_NONE, MSG_ROUTING_NONE,
                                       MSG_ROUTING_NONE, 0);
       return;
@@ -2537,12 +2537,12 @@ void RenderFrameHostImpl::CreateNewWindow(
   }
 
   RunCreateWindowCompleteCallback(
-      callback, std::move(reply), render_view_route_id, main_frame_route_id,
-      main_frame_widget_route_id, cloned_namespace->id());
+      std::move(callback), std::move(reply), render_view_route_id,
+      main_frame_route_id, main_frame_widget_route_id, cloned_namespace->id());
 }
 
 void RenderFrameHostImpl::RunCreateWindowCompleteCallback(
-    const CreateNewWindowCallback& callback,
+    CreateNewWindowCallback callback,
     mojom::CreateNewWindowReplyPtr reply,
     int render_view_route_id,
     int main_frame_route_id,
@@ -2553,7 +2553,7 @@ void RenderFrameHostImpl::RunCreateWindowCompleteCallback(
   reply->main_frame_widget_route_id = main_frame_widget_route_id;
   reply->cloned_session_storage_namespace_id =
       cloned_session_storage_namespace_id;
-  callback.Run(std::move(reply));
+  std::move(callback).Run(std::move(reply));
 }
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {

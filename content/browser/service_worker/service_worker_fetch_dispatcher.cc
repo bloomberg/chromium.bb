@@ -150,8 +150,9 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   }
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
-                        const base::Closure& ack_callback) override {
-    client_->OnUploadProgress(current_position, total_size, ack_callback);
+                        OnUploadProgressCallback ack_callback) override {
+    client_->OnUploadProgress(current_position, total_size,
+                              std::move(ack_callback));
   }
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
     client_->OnReceiveCachedMetadata(data);

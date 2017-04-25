@@ -21,12 +21,12 @@ class MockFrameHost : public mojom::FrameHost {
   ~MockFrameHost() override = default;
 
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
-                       const CreateNewWindowCallback& callback) override {
+                       CreateNewWindowCallback callback) override {
     mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New();
     MockRenderThread* mock_render_thread =
         static_cast<MockRenderThread*>(RenderThread::Get());
     mock_render_thread->OnCreateWindow(*params, reply.get());
-    callback.Run(std::move(reply));
+    std::move(callback).Run(std::move(reply));
   }
 
   void Bind(mojo::ScopedInterfaceEndpointHandle handle) {

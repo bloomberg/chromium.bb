@@ -15,20 +15,19 @@ namespace content {
 
 namespace {
 
-void DispatchSyncLoadResult(
-    const URLLoaderFactoryImpl::SyncLoadCallback& callback,
-    const SyncLoadResult* result) {
+void DispatchSyncLoadResult(URLLoaderFactoryImpl::SyncLoadCallback callback,
+                            const SyncLoadResult* result) {
   // |result| can be null when a loading task is aborted unexpectedly. Reply
   // with a failure result on that case.
   // TODO(tzik): Test null-result case.
   if (!result) {
     SyncLoadResult failure;
     failure.error_code = net::ERR_FAILED;
-    callback.Run(failure);
+    std::move(callback).Run(failure);
     return;
   }
 
-  callback.Run(*result);
+  std::move(callback).Run(*result);
 }
 
 } // namespace
@@ -62,9 +61,9 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
 void URLLoaderFactoryImpl::SyncLoad(int32_t routing_id,
                                     int32_t request_id,
                                     const ResourceRequest& url_request,
-                                    const SyncLoadCallback& callback) {
+                                    SyncLoadCallback callback) {
   SyncLoad(requester_info_.get(), routing_id, request_id, url_request,
-           callback);
+           std::move(callback));
 }
 
 // static
@@ -90,14 +89,15 @@ void URLLoaderFactoryImpl::SyncLoad(ResourceRequesterInfo* requester_info,
                                     int32_t routing_id,
                                     int32_t request_id,
                                     const ResourceRequest& url_request,
-                                    const SyncLoadCallback& callback) {
+                                    SyncLoadCallback callback) {
   DCHECK(ResourceDispatcherHostImpl::Get()
              ->io_thread_task_runner()
              ->BelongsToCurrentThread());
 
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  rdh->OnSyncLoadWithMojo(requester_info, routing_id, request_id, url_request,
-                          base::Bind(&DispatchSyncLoadResult, callback));
+  rdh->OnSyncLoadWithMojo(
+      requester_info, routing_id, request_id, url_request,
+      base::Bind(&DispatchSyncLoadResult, base::Passed(&callback)));
 }
 
 void URLLoaderFactoryImpl::Create(

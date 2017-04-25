@@ -82,12 +82,18 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
   MOCK_METHOD1(RequestRefreshFrame, void(int32_t));
   MOCK_METHOD3(ReleaseBuffer,
                void(int32_t, int32_t, double));
-  MOCK_METHOD3(GetDeviceSupportedFormats,
-               void(int32_t,
-                    int32_t,
-                    const GetDeviceSupportedFormatsCallback&));
-  MOCK_METHOD3(GetDeviceFormatsInUse,
-               void(int32_t, int32_t, const GetDeviceFormatsInUseCallback&));
+
+  void GetDeviceSupportedFormats(int32_t,
+                                 int32_t,
+                                 GetDeviceSupportedFormatsCallback) override {
+    NOTREACHED();
+  }
+
+  void GetDeviceFormatsInUse(int32_t,
+                             int32_t,
+                             GetDeviceFormatsInUseCallback) override {
+    NOTREACHED();
+  }
 
   PauseResumeCallback* const pause_callback_;
   const base::Closure destruct_callback_;

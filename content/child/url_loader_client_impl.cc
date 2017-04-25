@@ -202,9 +202,10 @@ void URLLoaderClientImpl::StoreAndDispatch(const IPC::Message& message) {
   }
 }
 
-void URLLoaderClientImpl::OnUploadProgress(int64_t current_position,
-                                           int64_t total_size,
-                                           const base::Closure& ack_callback) {
+void URLLoaderClientImpl::OnUploadProgress(
+    int64_t current_position,
+    int64_t total_size,
+    OnUploadProgressCallback ack_callback) {
   if (NeedsStoringMessage()) {
     StoreAndDispatch(
         ResourceMsg_UploadProgress(request_id_, current_position, total_size));
@@ -212,7 +213,7 @@ void URLLoaderClientImpl::OnUploadProgress(int64_t current_position,
     resource_dispatcher_->OnUploadProgress(request_id_, current_position,
                                            total_size);
   }
-  ack_callback.Run();
+  std::move(ack_callback).Run();
 }
 
 }  // namespace content

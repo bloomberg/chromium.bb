@@ -31,7 +31,7 @@ class NetworkServiceURLLoaderFactoryImpl : public mojom::URLLoaderFactory {
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
                 const ResourceRequest& request,
-                const SyncLoadCallback& callback) override;
+                SyncLoadCallback callback) override;
 
  private:
   // Not owned.

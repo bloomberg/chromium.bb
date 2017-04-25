@@ -73,9 +73,10 @@ void TestURLLoaderClient::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   body_transfer_size_ += transfer_size_diff;
 }
 
-void TestURLLoaderClient::OnUploadProgress(int64_t current_position,
-                                           int64_t total_size,
-                                           const base::Closure& ack_callback) {
+void TestURLLoaderClient::OnUploadProgress(
+    int64_t current_position,
+    int64_t total_size,
+    OnUploadProgressCallback ack_callback) {
   EXPECT_TRUE(ack_callback);
   EXPECT_FALSE(has_received_response_);
   EXPECT_FALSE(has_received_completion_);
@@ -85,7 +86,7 @@ void TestURLLoaderClient::OnUploadProgress(int64_t current_position,
   has_received_upload_progress_ = true;
   current_upload_position_ = current_position;
   total_upload_size_ = total_size;
-  ack_callback.Run();
+  std::move(ack_callback).Run();
 }
 
 void TestURLLoaderClient::OnStartLoadingResponseBody(

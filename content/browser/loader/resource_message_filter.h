@@ -79,7 +79,7 @@ class CONTENT_EXPORT ResourceMessageFilter
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
                 const ResourceRequest& request,
-                const SyncLoadCallback& callback) override;
+                SyncLoadCallback callback) override;
   int child_id() const;
 
   ResourceRequesterInfo* requester_info_for_test() {

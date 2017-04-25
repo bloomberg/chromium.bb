@@ -62,7 +62,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
                 const ResourceRequest& request,
-                const SyncLoadCallback& callback) override {
+                SyncLoadCallback callback) override {
     NOTREACHED();
   }
 

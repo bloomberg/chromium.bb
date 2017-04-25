@@ -83,17 +83,16 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            const std::string& source,
-           const PutCallback& callback) override;
+           PutCallback callback) override;
   void Delete(const std::vector<uint8_t>& key,
               const std::string& source,
-              const DeleteCallback& callback) override;
+              DeleteCallback callback) override;
   void DeleteAll(const std::string& source,
-                 const DeleteAllCallback& callback) override;
-  void Get(const std::vector<uint8_t>& key,
-           const GetCallback& callback) override;
+                 DeleteAllCallback callback) override;
+  void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
   void GetAll(
       mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
-      const GetAllCallback& callback) override;
+      GetAllCallback callback) override;
 
  private:
   // Used to rate limit commits.

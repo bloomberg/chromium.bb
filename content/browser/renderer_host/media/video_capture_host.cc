@@ -234,7 +234,7 @@ void VideoCaptureHost::ReleaseBuffer(int32_t device_id,
 void VideoCaptureHost::GetDeviceSupportedFormats(
     int32_t device_id,
     int32_t session_id,
-    const GetDeviceSupportedFormatsCallback& callback) {
+    GetDeviceSupportedFormatsCallback callback) {
   DVLOG(1) << __func__ << " " << device_id;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media::VideoCaptureFormats supported_formats;
@@ -242,13 +242,13 @@ void VideoCaptureHost::GetDeviceSupportedFormats(
            ->GetDeviceSupportedFormats(session_id, &supported_formats)) {
     DLOG(WARNING) << "Could not retrieve device supported formats";
   }
-  callback.Run(supported_formats);
+  std::move(callback).Run(supported_formats);
 }
 
 void VideoCaptureHost::GetDeviceFormatsInUse(
     int32_t device_id,
     int32_t session_id,
-    const GetDeviceFormatsInUseCallback& callback) {
+    GetDeviceFormatsInUseCallback callback) {
   DVLOG(1) << __func__ << " " << device_id;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media::VideoCaptureFormats formats_in_use;
@@ -256,7 +256,7 @@ void VideoCaptureHost::GetDeviceFormatsInUse(
            session_id, &formats_in_use)) {
     DLOG(WARNING) << "Could not retrieve device format(s) in use";
   }
-  callback.Run(formats_in_use);
+  std::move(callback).Run(formats_in_use);
 }
 
 void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id) {

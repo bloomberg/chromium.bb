@@ -35,21 +35,26 @@ class MockMediaDevicesDispatcherHost
  public:
   MockMediaDevicesDispatcherHost() : binding_(this) {}
 
-  MOCK_METHOD5(EnumerateDevices,
-               void(bool request_audio_input,
-                    bool request_video_input,
-                    bool request_audio_output,
-                    const url::Origin& security_origin,
-                    const EnumerateDevicesCallback& callback));
   MOCK_METHOD3(SubscribeDeviceChangeNotifications,
                void(MediaDeviceType type,
                     uint32_t subscription_id,
                     const url::Origin& security_origin));
   MOCK_METHOD2(UnsubscribeDeviceChangeNotifications,
                void(MediaDeviceType type, uint32_t subscription_id));
-  MOCK_METHOD2(GetVideoInputCapabilities,
-               void(const url::Origin& security_origin,
-                    const GetVideoInputCapabilitiesCallback& client_callback));
+
+  void EnumerateDevices(bool request_audio_input,
+                        bool request_video_input,
+                        bool request_audio_output,
+                        const url::Origin& security_origin,
+                        EnumerateDevicesCallback) override {
+    NOTREACHED();
+  }
+
+  void GetVideoInputCapabilities(
+      const url::Origin& security_origin,
+      GetVideoInputCapabilitiesCallback client_callback) override {
+    NOTREACHED();
+  }
 
   ::mojom::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
     return binding_.CreateInterfacePtrAndBind();

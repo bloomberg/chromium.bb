@@ -98,11 +98,11 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
   RejectActivateTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
   void OnActivateEvent(
-      const mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback&
+      mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
           callback) override {
     dispatched_events()->push_back(Event::Activate);
-    callback.Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
-                 base::Time::Now());
+    std::move(callback).Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+                            base::Time::Now());
   }
 };
 

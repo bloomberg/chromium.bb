@@ -109,10 +109,10 @@ void LevelDBWrapperImpl::AddObserver(
 void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,
                              const std::vector<uint8_t>& value,
                              const std::string& source,
-                             const PutCallback& callback) {
+                             PutCallback callback) {
   if (!map_) {
     LoadMap(base::Bind(&LevelDBWrapperImpl::Put, base::Unretained(this), key,
-                       value, source, callback));
+                       value, source, base::Passed(&callback)));
     return;
   }
 
@@ -121,7 +121,7 @@ void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,
   auto found = map_->find(key);
   if (found != map_->end()) {
     if (found->second == value) {
-      callback.Run(true);  // Key already has this value.
+      std::move(callback).Run(true);  // Key already has this value.
       return;
     }
     old_item_size = key.size() + found->second.size();
@@ -133,7 +133,7 @@ void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,
   // Only check quota if the size is increasing, this allows
   // shrinking changes to pre-existing maps that are over budget.
   if (new_item_size > old_item_size && new_bytes_used > max_size_) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -161,21 +161,21 @@ void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,
           observer->KeyChanged(key, value, old_value, source);
         });
   }
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void LevelDBWrapperImpl::Delete(const std::vector<uint8_t>& key,
                                 const std::string& source,
-                                const DeleteCallback& callback) {
+                                DeleteCallback callback) {
   if (!map_) {
     LoadMap(base::Bind(&LevelDBWrapperImpl::Delete, base::Unretained(this), key,
-                       source, callback));
+                       source, base::Passed(&callback)));
     return;
   }
 
   auto found = map_->find(key);
   if (found == map_->end()) {
-    callback.Run(true);
+    std::move(callback).Run(true);
     return;
   }
 
@@ -191,20 +191,19 @@ void LevelDBWrapperImpl::Delete(const std::vector<uint8_t>& key,
       [&key, &source, &old_value](mojom::LevelDBObserver* observer) {
         observer->KeyDeleted(key, old_value, source);
       });
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void LevelDBWrapperImpl::DeleteAll(const std::string& source,
-                                   const DeleteAllCallback& callback) {
+                                   DeleteAllCallback callback) {
   if (!map_) {
-    LoadMap(
-        base::Bind(&LevelDBWrapperImpl::DeleteAll, base::Unretained(this),
-                    source, callback));
+    LoadMap(base::Bind(&LevelDBWrapperImpl::DeleteAll, base::Unretained(this),
+                       source, base::Passed(&callback)));
     return;
   }
 
   if (map_->empty()) {
-    callback.Run(true);
+    std::move(callback).Run(true);
     return;
   }
 
@@ -220,31 +219,32 @@ void LevelDBWrapperImpl::DeleteAll(const std::string& source,
       [&source](mojom::LevelDBObserver* observer) {
         observer->AllDeleted(source);
       });
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void LevelDBWrapperImpl::Get(const std::vector<uint8_t>& key,
-                             const GetCallback& callback) {
+                             GetCallback callback) {
   if (!map_) {
     LoadMap(base::Bind(&LevelDBWrapperImpl::Get, base::Unretained(this), key,
-                       callback));
+                       base::Passed(&callback)));
     return;
   }
 
   auto found = map_->find(key);
   if (found == map_->end()) {
-    callback.Run(false, std::vector<uint8_t>());
+    std::move(callback).Run(false, std::vector<uint8_t>());
     return;
   }
-  callback.Run(true, found->second);
+  std::move(callback).Run(true, found->second);
 }
 
 void LevelDBWrapperImpl::GetAll(
     mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
-    const GetAllCallback& callback) {
+    GetAllCallback callback) {
   if (!map_) {
     LoadMap(base::Bind(&LevelDBWrapperImpl::GetAll, base::Unretained(this),
-                       base::Passed(std::move(complete_callback)), callback));
+                       base::Passed(&complete_callback),
+                       base::Passed(&callback)));
     return;
   }
 
@@ -255,7 +255,7 @@ void LevelDBWrapperImpl::GetAll(
     kv->value = it.second;
     all.push_back(std::move(kv));
   }
-  callback.Run(leveldb::mojom::DatabaseError::OK, std::move(all));
+  std::move(callback).Run(leveldb::mojom::DatabaseError::OK, std::move(all));
   if (complete_callback.is_valid()) {
     mojom::LevelDBWrapperGetAllCallbackAssociatedPtr complete_ptr;
     complete_ptr.Bind(std::move(complete_callback));

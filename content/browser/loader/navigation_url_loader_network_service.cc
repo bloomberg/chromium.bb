@@ -141,7 +141,7 @@ void NavigationURLLoaderNetworkService::OnDataDownloaded(
 void NavigationURLLoaderNetworkService::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
-    const OnUploadProgressCallback& callback) {}
+    OnUploadProgressCallback callback) {}
 
 void NavigationURLLoaderNetworkService::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {}

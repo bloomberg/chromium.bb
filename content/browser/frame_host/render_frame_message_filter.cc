@@ -327,7 +327,7 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
     int render_frame_id,
     const GURL& url,
     const GURL& first_party_for_cookies,
-    const GetCookiesCallback& callback,
+    GetCookiesCallback callback,
     const net::CookieList& cookie_list) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
   // Check the policy for get cookies, and pass cookie_list to the
@@ -336,9 +336,9 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
       GetContentClient()->browser()->AllowGetCookie(
           url, first_party_for_cookies, cookie_list, resource_context_,
           render_process_id_, render_frame_id)) {
-    callback.Run(net::CookieStore::BuildCookieLine(cookie_list));
+    std::move(callback).Run(net::CookieStore::BuildCookieLine(cookie_list));
   } else {
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
   }
 }
 
@@ -408,13 +408,13 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
 void RenderFrameMessageFilter::GetCookies(int render_frame_id,
                                           const GURL& url,
                                           const GURL& first_party_for_cookies,
-                                          const GetCookiesCallback& callback) {
+                                          GetCookiesCallback callback) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::RFMF_GET_COOKIES_BAD_ORIGIN);
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -441,7 +441,8 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
   context->cookie_store()->GetCookieListWithOptionsAsync(
       url, options,
       base::Bind(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
-                 render_frame_id, url, first_party_for_cookies, callback));
+                 render_frame_id, url, first_party_for_cookies,
+                 base::Passed(&callback)));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

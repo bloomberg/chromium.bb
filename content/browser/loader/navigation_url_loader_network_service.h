@@ -52,7 +52,7 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
-                        const OnUploadProgressCallback& callback) override;
+                        OnUploadProgressCallback callback) override;
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(

@@ -96,7 +96,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   void CheckPolicyForCookies(int render_frame_id,
                              const GURL& url,
                              const GURL& first_party_for_cookies,
-                             const GetCookiesCallback& callback,
+                             GetCookiesCallback callback,
                              const net::CookieList& cookie_list);
 
   void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
@@ -120,8 +120,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   void GetCookies(int render_frame_id,
                   const GURL& url,
                   const GURL& first_party_for_cookies,
-                  const GetCookiesCallback& callback) override;
-
+                  GetCookiesCallback callback) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void OnGetPlugins(bool refresh,

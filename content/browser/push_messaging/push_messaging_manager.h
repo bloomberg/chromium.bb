@@ -41,15 +41,14 @@ class PushMessagingManager : public mojom::PushMessaging {
   void Subscribe(int32_t render_frame_id,
                  int64_t service_worker_registration_id,
                  const PushSubscriptionOptions& options,
-                 const SubscribeCallback& callback) override;
+                 SubscribeCallback callback) override;
   void Unsubscribe(int64_t service_worker_registration_id,
-                   const UnsubscribeCallback& callback) override;
+                   UnsubscribeCallback callback) override;
   void GetSubscription(int64_t service_worker_registration_id,
-                       const GetSubscriptionCallback& callback) override;
-  void GetPermissionStatus(
-      int64_t service_worker_registration_id,
-      bool user_visible,
-      const GetPermissionStatusCallback& callback) override;
+                       GetSubscriptionCallback callback) override;
+  void GetPermissionStatus(int64_t service_worker_registration_id,
+                           bool user_visible,
+                           GetPermissionStatusCallback callback) override;
 
  private:
   struct RegisterData;
@@ -62,50 +61,49 @@ class PushMessagingManager : public mojom::PushMessaging {
   ~PushMessagingManager() override;
 
   void DidCheckForExistingRegistration(
-      const RegisterData& data,
+      RegisterData data,
       const std::vector<std::string>& push_registration_id,
       ServiceWorkerStatusCode service_worker_status);
 
-  void DidGetSenderIdFromStorage(const RegisterData& data,
+  void DidGetSenderIdFromStorage(RegisterData data,
                                  const std::vector<std::string>& sender_id,
                                  ServiceWorkerStatusCode service_worker_status);
 
   // Called via PostTask from UI thread.
-  void PersistRegistrationOnIO(const RegisterData& data,
+  void PersistRegistrationOnIO(RegisterData data,
                                const std::string& push_registration_id,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth);
 
   void DidPersistRegistrationOnIO(
-      const RegisterData& data,
+      RegisterData data,
       const std::string& push_registration_id,
       const std::vector<uint8_t>& p256dh,
       const std::vector<uint8_t>& auth,
       ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.
-  void SendSubscriptionError(const RegisterData& data,
-                             PushRegistrationStatus status);
+  void SendSubscriptionError(RegisterData data, PushRegistrationStatus status);
   // Called both from IO thread, and via PostTask from UI thread.
-  void SendSubscriptionSuccess(const RegisterData& data,
+  void SendSubscriptionSuccess(RegisterData data,
                                PushRegistrationStatus status,
                                const std::string& push_subscription_id,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth);
 
   void UnsubscribeHavingGottenSenderId(
-      const UnsubscribeCallback& callback,
+      UnsubscribeCallback callback,
       int64_t service_worker_registration_id,
       const GURL& requesting_origin,
       const std::vector<std::string>& sender_id,
       ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.
-  void DidUnregister(const UnsubscribeCallback& callback,
+  void DidUnregister(UnsubscribeCallback callback,
                      PushUnregistrationStatus unregistration_status);
 
   void DidGetSubscription(
-      const GetSubscriptionCallback& callback,
+      GetSubscriptionCallback callback,
       int64_t service_worker_registration_id,
       const std::vector<std::string>& push_subscription_id_and_sender_info,
       ServiceWorkerStatusCode service_worker_status);

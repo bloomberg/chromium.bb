@@ -32,12 +32,12 @@ void NetworkServiceURLLoaderFactoryImpl::SyncLoad(
     int32_t routing_id,
     int32_t request_id,
     const ResourceRequest& url_request,
-    const SyncLoadCallback& callback) {
+    SyncLoadCallback callback) {
   NOTIMPLEMENTED();
 
   SyncLoadResult result;
   result.error_code = net::ERR_NOT_IMPLEMENTED;
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 }  // namespace content

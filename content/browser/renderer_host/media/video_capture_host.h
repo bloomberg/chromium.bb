@@ -71,11 +71,10 @@ class CONTENT_EXPORT VideoCaptureHost
   void GetDeviceSupportedFormats(
       int32_t device_id,
       int32_t session_id,
-      const GetDeviceSupportedFormatsCallback& callback) override;
-  void GetDeviceFormatsInUse(
-      int32_t device_id,
-      int32_t session_id,
-      const GetDeviceFormatsInUseCallback& callback) override;
+      GetDeviceSupportedFormatsCallback callback) override;
+  void GetDeviceFormatsInUse(int32_t device_id,
+                             int32_t session_id,
+                             GetDeviceFormatsInUseCallback callback) override;
 
   void DoError(VideoCaptureControllerID id);
   void DoEnded(VideoCaptureControllerID id);

@@ -33,14 +33,14 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
   ~MockRenderMessageFilterImpl() override {}
 
   // mojom::RenderMessageFilter:
-  void GenerateRoutingID(const GenerateRoutingIDCallback& callback) override {
+  void GenerateRoutingID(GenerateRoutingIDCallback callback) override {
     NOTREACHED();
-    callback.Run(MSG_ROUTING_NONE);
+    std::move(callback).Run(MSG_ROUTING_NONE);
   }
 
   void CreateNewWidget(int32_t opener_id,
-                      blink::WebPopupType popup_type,
-                      const CreateNewWidgetCallback& callback) override {
+                       blink::WebPopupType popup_type,
+                       CreateNewWidgetCallback callback) override {
     // See comment in CreateNewWindow().
     NOTREACHED();
   }
@@ -54,7 +54,7 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
 
   void CreateFullscreenWidget(
       int opener_id,
-      const CreateFullscreenWidgetCallback& callback) override {
+      CreateFullscreenWidgetCallback callback) override {
     NOTREACHED();
   }
 

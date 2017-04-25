@@ -142,7 +142,7 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
     bool request_video_input,
     bool request_audio_output,
     const url::Origin& security_origin,
-    const EnumerateDevicesCallback& client_callback) {
+    EnumerateDevicesCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!request_audio_input && !request_video_input && !request_audio_output) {
@@ -172,12 +172,12 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
       security_origin,
       base::Bind(&MediaDevicesDispatcherHost::DoEnumerateDevices,
                  weak_factory_.GetWeakPtr(), devices_to_enumerate,
-                 security_origin, client_callback));
+                 security_origin, base::Passed(&client_callback)));
 }
 
 void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
     const url::Origin& security_origin,
-    const GetVideoInputCapabilitiesCallback& client_callback) {
+    GetVideoInputCapabilitiesCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
                                            security_origin)) {
@@ -189,7 +189,8 @@ void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
   GetDefaultMediaDeviceID(
       MEDIA_DEVICE_TYPE_VIDEO_INPUT, render_process_id_, render_frame_id_,
       base::Bind(&MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID,
-                 weak_factory_.GetWeakPtr(), security_origin, client_callback));
+                 weak_factory_.GetWeakPtr(), security_origin,
+                 base::Passed(&client_callback)));
 }
 
 void MediaDevicesDispatcherHost::SubscribeDeviceChangeNotifications(
@@ -312,20 +313,20 @@ void MediaDevicesDispatcherHost::SetDeviceChangeListenerForTesting(
 void MediaDevicesDispatcherHost::DoEnumerateDevices(
     const MediaDevicesManager::BoolDeviceTypes& requested_types,
     const url::Origin& security_origin,
-    const EnumerateDevicesCallback& client_callback,
+    EnumerateDevicesCallback client_callback,
     const MediaDevicesManager::BoolDeviceTypes& has_permissions) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       requested_types,
       base::Bind(&MediaDevicesDispatcherHost::DevicesEnumerated,
                  weak_factory_.GetWeakPtr(), requested_types, security_origin,
-                 client_callback, has_permissions));
+                 base::Passed(&client_callback), has_permissions));
 }
 
 void MediaDevicesDispatcherHost::DevicesEnumerated(
     const MediaDevicesManager::BoolDeviceTypes& requested_types,
     const url::Origin& security_origin,
-    const EnumerateDevicesCallback& client_callback,
+    EnumerateDevicesCallback client_callback,
     const MediaDevicesManager::BoolDeviceTypes& has_permissions,
     const MediaDeviceEnumeration& enumeration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -340,24 +341,24 @@ void MediaDevicesDispatcherHost::DevicesEnumerated(
                                               security_origin, device_info));
     }
   }
-  client_callback.Run(result);
+  std::move(client_callback).Run(result);
 }
 
 void MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID(
     const url::Origin& security_origin,
-    const GetVideoInputCapabilitiesCallback& client_callback,
+    GetVideoInputCapabilitiesCallback client_callback,
     const std::string& default_device_id) {
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
   devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   media_stream_manager_->video_capture_manager()->EnumerateDevices(
       base::Bind(&MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities,
-                 weak_factory_.GetWeakPtr(), security_origin, client_callback,
-                 default_device_id));
+                 weak_factory_.GetWeakPtr(), security_origin,
+                 base::Passed(&client_callback), default_device_id));
 }
 
 void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
     const url::Origin& security_origin,
-    const GetVideoInputCapabilitiesCallback& client_callback,
+    GetVideoInputCapabilitiesCallback client_callback,
     const std::string& default_device_id,
     const media::VideoCaptureDeviceDescriptors& device_descriptors) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -400,7 +401,7 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
     }
   }
 
-  client_callback.Run(std::move(video_input_capabilities));
+  std::move(client_callback).Run(std::move(video_input_capabilities));
 }
 
 media::VideoCaptureFormats MediaDevicesDispatcherHost::GetVideoInputFormats(

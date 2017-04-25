@@ -834,10 +834,10 @@ class MessageReceiverControlEvents : public MessageReceiver {
 
   void OnExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchExtendableMessageEventCallback& callback) override {
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchExtendableMessageEventCallback callback) override {
     EXPECT_FALSE(extendable_message_event_callback_);
-    extendable_message_event_callback_ = callback;
+    extendable_message_event_callback_ = std::move(callback);
   }
 
   void OnStopWorker(int embedded_worker_id) override {
@@ -847,10 +847,13 @@ class MessageReceiverControlEvents : public MessageReceiver {
                    base::Unretained(this), embedded_worker_id);
   }
 
-  const mojom::ServiceWorkerEventDispatcher::
-      DispatchExtendableMessageEventCallback&
-      extendable_message_event_callback() {
-    return extendable_message_event_callback_;
+  bool has_extendable_message_event_callback() {
+    return !extendable_message_event_callback_.is_null();
+  }
+
+  mojom::ServiceWorkerEventDispatcher::DispatchExtendableMessageEventCallback
+  TakeExtendableMessageEventCallback() {
+    return std::move(extendable_message_event_callback_);
   }
 
   const base::Closure& stop_worker_callback() { return stop_worker_callback_; }
@@ -869,11 +872,15 @@ class ServiceWorkerRequestTimeoutTest : public ServiceWorkerVersionTest {
     return base::MakeUnique<MessageReceiverControlEvents>();
   }
 
-  const mojom::ServiceWorkerEventDispatcher::
-      DispatchExtendableMessageEventCallback&
-      extendable_message_event_callback() {
+  bool has_extendable_message_event_callback() {
     return static_cast<MessageReceiverControlEvents*>(helper_.get())
-        ->extendable_message_event_callback();
+        ->has_extendable_message_event_callback();
+  }
+
+  mojom::ServiceWorkerEventDispatcher::DispatchExtendableMessageEventCallback
+  TakeExtendableMessageEventCallback() {
+    return static_cast<MessageReceiverControlEvents*>(helper_.get())
+        ->TakeExtendableMessageEventCallback();
   }
 
   const base::Closure& stop_worker_callback() {
@@ -900,14 +907,14 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
                              CreateReceiverOnCurrentThread(&error_status));
 
   // Dispatch a dummy event whose response will be received by SWVersion.
-  EXPECT_FALSE(extendable_message_event_callback());
+  EXPECT_FALSE(has_extendable_message_event_callback());
   version_->event_dispatcher()->DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEvent::New(),
       version_->CreateSimpleEventCallback(request_id));
 
   base::RunLoop().RunUntilIdle();
   // The renderer should have received an ExtendableMessageEvent request.
-  EXPECT_TRUE(extendable_message_event_callback());
+  EXPECT_TRUE(has_extendable_message_event_callback());
 
   // Callback has not completed yet.
   EXPECT_EQ(SERVICE_WORKER_ERROR_NETWORK, error_status);
@@ -930,8 +937,8 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
 
   // Simulate the renderer aborting the pending event.
   // This should not crash: https://crbug.com/676984.
-  extendable_message_event_callback().Run(SERVICE_WORKER_ERROR_ABORT,
-                                          base::Time::Now());
+  TakeExtendableMessageEventCallback().Run(SERVICE_WORKER_ERROR_ABORT,
+                                           base::Time::Now());
   base::RunLoop().RunUntilIdle();
 
   // Simulate the renderer stopping the worker.

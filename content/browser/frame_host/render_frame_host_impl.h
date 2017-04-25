@@ -789,9 +789,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // mojom::FrameHost
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
-                       const CreateNewWindowCallback& callback) override;
+                       CreateNewWindowCallback callback) override;
 
-  void RunCreateWindowCompleteCallback(const CreateNewWindowCallback& callback,
+  void RunCreateWindowCompleteCallback(CreateNewWindowCallback callback,
                                        mojom::CreateNewWindowReplyPtr reply,
                                        int render_view_route_id,
                                        int main_frame_route_id,

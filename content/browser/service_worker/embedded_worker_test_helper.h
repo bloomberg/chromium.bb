@@ -64,8 +64,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
  public:
   enum class Event { Activate };
   using FetchCallback =
-      base::Callback<void(ServiceWorkerStatusCode,
-                          base::Time /* dispatch_event_time */)>;
+      base::OnceCallback<void(ServiceWorkerStatusCode,
+                              base::Time /* dispatch_event_time */)>;
 
   class MockEmbeddedWorkerInstanceClient
       : public mojom::EmbeddedWorkerInstanceClient {
@@ -187,31 +187,31 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // worker. By default they just return success via
   // SimulateSendReplyToBrowser.
   virtual void OnActivateEvent(
-      const mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback&
+      mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
           callback);
   virtual void OnBackgroundFetchAbortEvent(
       const std::string& tag,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchAbortEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchAbortEventCallback callback);
   virtual void OnBackgroundFetchClickEvent(
       const std::string& tag,
       mojom::BackgroundFetchState state,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchClickEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchClickEventCallback callback);
   virtual void OnBackgroundFetchFailEvent(
       const std::string& tag,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchFailEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchFailEventCallback callback);
   virtual void OnBackgroundFetchedEvent(
       const std::string& tag,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchedEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchedEventCallback callback);
   virtual void OnExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchExtendableMessageEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchExtendableMessageEventCallback callback);
   virtual void OnInstallEvent(int embedded_worker_id, int request_id);
   virtual void OnFetchEvent(
       int embedded_worker_id,
@@ -219,28 +219,27 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const ServiceWorkerFetchRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      const FetchCallback& finish_callback);
+      FetchCallback finish_callback);
   virtual void OnNotificationClickEvent(
       const std::string& notification_id,
       const PlatformNotificationData& notification_data,
       int action_index,
       const base::Optional<base::string16>& reply,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchNotificationClickEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchNotificationClickEventCallback callback);
   virtual void OnNotificationCloseEvent(
       const std::string& notification_id,
       const PlatformNotificationData& notification_data,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchNotificationCloseEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchNotificationCloseEventCallback callback);
   virtual void OnPushEvent(
       const PushEventPayload& payload,
-      const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
-          callback);
+      mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback callback);
   virtual void OnPaymentRequestEvent(
       payments::mojom::PaymentAppRequestPtr data,
       payments::mojom::PaymentAppResponseCallbackPtr response_callback,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchPaymentRequestEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::DispatchPaymentRequestEventCallback
+          callback);
 
   // These functions simulate sending an EmbeddedHostMsg message through the
   // legacy IPC system to the browser.
@@ -270,31 +269,31 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                              int embedded_worker_id,
                              const IPC::Message& message);
   void OnActivateEventStub(
-      const mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback&
+      mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
           callback);
   void OnBackgroundFetchAbortEventStub(
       const std::string& tag,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchAbortEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchAbortEventCallback callback);
   void OnBackgroundFetchClickEventStub(
       const std::string& tag,
       mojom::BackgroundFetchState state,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchClickEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchClickEventCallback callback);
   void OnBackgroundFetchFailEventStub(
       const std::string& tag,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchFailEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchFailEventCallback callback);
   void OnBackgroundFetchedEventStub(
       const std::string& tag,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchedEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchedEventCallback callback);
   void OnExtendableMessageEventStub(
       mojom::ExtendableMessageEventPtr event,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchExtendableMessageEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchExtendableMessageEventCallback callback);
   void OnInstallEventStub(int request_id);
   void OnFetchEventStub(
       int thread_id,
@@ -302,28 +301,27 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const ServiceWorkerFetchRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      const FetchCallback& finish_callback);
+      FetchCallback finish_callback);
   void OnNotificationClickEventStub(
       const std::string& notification_id,
       const PlatformNotificationData& notification_data,
       int action_index,
       const base::Optional<base::string16>& reply,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchNotificationClickEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchNotificationClickEventCallback callback);
   void OnNotificationCloseEventStub(
       const std::string& notification_id,
       const PlatformNotificationData& notification_data,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchNotificationCloseEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchNotificationCloseEventCallback callback);
   void OnPushEventStub(
       const PushEventPayload& payload,
-      const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
-          callback);
+      mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback callback);
   void OnPaymentRequestEventStub(
       payments::mojom::PaymentAppRequestPtr data,
       payments::mojom::PaymentAppResponseCallbackPtr response_callback,
-      const mojom::ServiceWorkerEventDispatcher::
-          DispatchPaymentRequestEventCallback& callback);
+      mojom::ServiceWorkerEventDispatcher::DispatchPaymentRequestEventCallback
+          callback);
 
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
